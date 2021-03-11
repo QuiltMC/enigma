@@ -12,7 +12,18 @@ subprojects {
     repositories {
         mavenLocal()
         mavenCentral()
-        maven { url 'https://maven.fabricmc.net/' }
+
+        maven {
+            url = "https://maven.fabricmc.net/"
+            content {
+                includeGroup("net.fabricmc") // I'd like to deprecate procyon, so we don't need to maintain it
+                includeModule()
+            }
+        }
+
+        maven {
+            url = "https://maven.quiltmc.org/repository/release/"
+        }
     }
 
     dependencies {
@@ -75,17 +86,3 @@ allprojects {
         }
     }
 }
-
-// A task to ensure that the version being released has not already been released.
-task checkVersion {
-    doFirst {
-        def xml = new URL("https://maven.fabricmc.net/cuchaz/enigma/maven-metadata.xml").text
-        def metadata = new XmlSlurper().parseText(xml)
-        def versions = metadata.versioning.versions.version*.text();
-        if (versions.contains(version)) {
-            throw new RuntimeException("${version} has already been released!")
-        }
-    }
-}
-
-publish.mustRunAfter checkVersion
