@@ -17,7 +17,6 @@ subprojects {
             url = "https://maven.fabricmc.net/"
             content {
                 includeGroup("net.fabricmc") // I'd like to deprecate procyon, so we don't need to maintain it
-                includeModule()
             }
         }
 
