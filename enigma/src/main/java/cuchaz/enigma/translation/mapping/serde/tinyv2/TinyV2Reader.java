@@ -176,8 +176,7 @@ public final class TinyV2Reader implements MappingsReader {
 				}
 
 			} catch (Throwable t) {
-				t.printStackTrace();
-				throw new MappingParseException(path::toString, lineNumber + 1, t.toString());
+				throw new MappingParseException(path::toString, lineNumber + 1, t);
 			}
 		}
 

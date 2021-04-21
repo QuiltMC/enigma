@@ -32,6 +32,13 @@ public class MappingParseException extends Exception {
 		filePath = filenameProvider.get();
 	}
 
+	public MappingParseException(Supplier<String> filenameProvider, int line, Throwable cause) {
+		super(cause);
+		this.line = line;
+		this.message = cause.toString();
+		filePath = filenameProvider.get();
+	}
+
 	@Override
 	public String getMessage() {
 		return "Line " + line + ": " + message + " in file " + filePath;

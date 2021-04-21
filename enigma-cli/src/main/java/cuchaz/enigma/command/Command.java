@@ -41,7 +41,7 @@ public abstract class Command {
 			System.out.println("Reading mappings...");
 
 			MappingSaveParameters saveParameters = enigma.getProfile().getMappingSaveParameters();
-			EntryTree<EntryMapping> mappings = chooseEnigmaFormat(fileMappings).read(fileMappings, progress, saveParameters);
+			EntryTree<EntryMapping> mappings = readMappings(fileMappings, progress, saveParameters);
 
 			project.setMappings(mappings);
 		}
@@ -49,14 +49,20 @@ public abstract class Command {
 		return project;
 	}
 
-	protected static MappingFormat chooseEnigmaFormat(Path path) {
-		if (Files.isDirectory(path)) {
-			return MappingFormat.ENIGMA_DIRECTORY;
-		} else if ("zip".equalsIgnoreCase(MoreFiles.getFileExtension(path))) {
-			return MappingFormat.ENIGMA_ZIP;
+	protected static EntryTree<EntryMapping> readMappings(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws Exception {
+		Exception last = null;
+		if ("zip".equalsIgnoreCase(MoreFiles.getFileExtension(path))) {
+			return MappingFormat.ENIGMA_ZIP.read(path, progress, saveParameters);
 		} else {
-			return MappingFormat.ENIGMA_FILE;
+			for (MappingFormat format : MappingFormat.getReadableFormats()) {
+				try {
+					return format.read(path, progress, saveParameters);
+				} catch (Exception e) {
+					last = e;
+				}
+			}
 		}
+		throw new RuntimeException("Unable to parse mappings", last);
 	}
 
 	protected static File getWritableFile(String path) {
