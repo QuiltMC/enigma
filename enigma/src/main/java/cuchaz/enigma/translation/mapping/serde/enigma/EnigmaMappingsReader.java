@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -48,7 +49,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 		@Override
 		public EntryTree<EntryMapping> read(Path root, ProgressListener progress, MappingSaveParameters saveParameters) throws IOException, MappingParseException {
 			if (!Files.isDirectory(root)) {
-				throw new MappingParseException(root::toString, 0, "Path is not a directory!");
+				throw new NotDirectoryException(root.toString());
 			}
 			EntryTree<EntryMapping> mappings = new HashEntryTree<>();
 
@@ -104,7 +105,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 					}
 				}
 			} catch (Throwable t) {
-				throw new MappingParseException(path::toString, lineNumber, t);
+				throw new MappingParseException(path.toString(), lineNumber, t);
 			}
 		}
 
