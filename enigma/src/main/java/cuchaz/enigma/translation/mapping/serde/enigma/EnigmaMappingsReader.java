@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -47,6 +48,9 @@ public enum EnigmaMappingsReader implements MappingsReader {
 	DIRECTORY {
 		@Override
 		public EntryTree<EntryMapping> read(Path root, ProgressListener progress, MappingSaveParameters saveParameters) throws IOException, MappingParseException {
+			if (!Files.isDirectory(root)) {
+				throw new NotDirectoryException(root.toString());
+			}
 			EntryTree<EntryMapping> mappings = new HashEntryTree<>();
 
 			List<Path> files = Files.walk(root)
@@ -101,8 +105,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 					}
 				}
 			} catch (Throwable t) {
-				t.printStackTrace();
-				throw new MappingParseException(path::toString, lineNumber, t.toString());
+				throw new MappingParseException(path.toString(), lineNumber, t);
 			}
 		}
 
@@ -173,7 +176,11 @@ public enum EnigmaMappingsReader implements MappingsReader {
 				readJavadoc(parent, tokens);
 				return null;
 			default:
-				throw new RuntimeException("Unknown token '" + keyToken + "'");
+				if (keyToken.equals("V1")) {
+					throw new RuntimeException("Unknown token '" + keyToken + "' (wrong mappings format?)");
+				} else {
+					throw new RuntimeException("Unknown token '" + keyToken + "'");
+				}
 		}
 	}
 	
