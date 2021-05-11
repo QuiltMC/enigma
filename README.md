@@ -17,7 +17,7 @@ Enigma includes the following open-source libraries:
 
 ## Usage
 
-Pre-compiled jars can be found on the [fabric maven](https://maven.fabricmc.net/cuchaz/enigma-swing/).
+Pre-compiled jars can be found on the [Quilt maven](https://maven.quiltmc.org/#browse/browse:release:cuchaz%2Fenigma-swing).
 
 ### Launching the GUI
 
