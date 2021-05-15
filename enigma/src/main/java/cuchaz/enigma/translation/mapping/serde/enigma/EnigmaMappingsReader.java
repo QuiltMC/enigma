@@ -103,9 +103,6 @@ public enum EnigmaMappingsReader implements MappingsReader {
 
 		for (Path file : paths) {
 			progress.step(step++, paths.toString());
-			if (Files.isHidden(file)) {
-				continue;
-			}
 			readFile(file, mappings);
 		}
 
