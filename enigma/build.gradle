@@ -8,16 +8,16 @@ configurations {
 }
 
 dependencies {
-    implementation 'org.ow2.asm:asm:9.1'
-    implementation 'org.ow2.asm:asm-commons:9.1'
-    implementation 'org.ow2.asm:asm-tree:9.1'
-    implementation 'org.ow2.asm:asm-util:9.1'
+    implementation 'org.ow2.asm:asm:9.2'
+    implementation 'org.ow2.asm:asm-commons:9.2'
+    implementation 'org.ow2.asm:asm-tree:9.2'
+    implementation 'org.ow2.asm:asm-util:9.2'
 
     implementation 'org.quiltmc:procyon-quilt-compilertools:0.5.35.local' // TODO: Fix the buildscript
     implementation 'org.quiltmc:cfr:0.0.2'
 
     // TODO: When will proguard publish to something other than jcenter
-    proGuard 'com.guardsquare:proguard-base:7.1.0-beta4'
+    proGuard 'com.guardsquare:proguard-base:7.1.0-beta5'
 }
 
 // Generate "version.txt" file
