@@ -368,7 +368,7 @@ public class MenuBar {
 	}
 
 	private void onGithubClicked() {
-		GuiUtil.openUrl("https://github.com/FabricMC/Enigma");
+		GuiUtil.openUrl("https://github.com/QuiltMC/Enigma");
 	}
 
 	private static void prepareOpenMenu(JMenu openMenu, Gui gui) {
