@@ -11,7 +11,7 @@ dependencies {
     implementation 'org.quiltmc:procyon-quilt-compilertools:0.5.35.local' // TODO: Fix the buildscript
     implementation 'org.quiltmc:cfr:0.0.6'
 
-    proGuard 'com.guardsquare:proguard-base:7.1.0'
+    proGuard 'com.guardsquare:proguard-base:7.2.0-beta1'
 }
 
 // Generate "version.txt" file
