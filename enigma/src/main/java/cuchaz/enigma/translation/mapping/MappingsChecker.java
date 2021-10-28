@@ -81,7 +81,6 @@ public class MappingsChecker {
 	}
 
 	public Dropped dropEmptyMappings(ProgressListener progress) {
-		System.out.println("Dropping empty mappings");
 		return dropMappings(progress, this::tryDropEmptyEntry);
 	}
 
@@ -95,13 +94,10 @@ public class MappingsChecker {
 	}
 
 	private boolean shouldDropEmptyMapping(Entry<?> entry) {
-		if (entry.toString().contains("C_kdrxhxjj")) {
-			int x = 0;
-			System.out.println("Hey");
-		}
 		EntryMapping mapping = mappings.get(entry);
 		if (mapping != null) {
-			if (mapping.targetName() == null) {
+			boolean isEmpty = mapping.targetName() == null && mapping.javadoc() == null && mapping.accessModifier() == AccessModifier.UNCHANGED;
+			if (isEmpty) {
 				return mappings.getChildren(entry).isEmpty();
 			}
 		}
