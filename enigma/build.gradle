@@ -61,13 +61,3 @@ file('src/test/java/cuchaz/enigma/inputs').listFiles().each { theFile ->
 
 test.dependsOn 'translationTestObf'
 
-publishing {
-    publications {
-        "$project.name"(MavenPublication) {
-            groupId project.group
-            artifactId project.name
-            version project.version
-            from components.java
-        }
-    }
-}
