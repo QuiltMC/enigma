@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class MappingsChecker {
 	private final JarIndex index;
@@ -38,7 +40,9 @@ public class MappingsChecker {
 	private Dropped dropMappings(ProgressListener progress, BiConsumer<Dropped, Entry<?>> dropper) {
 		Dropped dropped = new Dropped();
 
-		Collection<Entry<?>> obfEntries = mappings.getAllEntries()
+		// HashEntryTree#getAllEntries filters out empty classes
+		Stream<Entry<?>> allEntries = StreamSupport.stream(mappings.spliterator(), false).map(EntryTreeNode::getEntry);
+		Collection<Entry<?>> obfEntries = allEntries
 				.filter(e -> e instanceof ClassEntry || e instanceof MethodEntry || e instanceof FieldEntry || e instanceof LocalVariableEntry)
 				.toList();
 
