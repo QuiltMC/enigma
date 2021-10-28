@@ -24,6 +24,7 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 public class MappingsChecker {
 	private final JarIndex index;
@@ -34,7 +35,7 @@ public class MappingsChecker {
 		this.mappings = mappings;
 	}
 
-	public Dropped dropBrokenMappings(ProgressListener progress) {
+	private Dropped dropMappings(ProgressListener progress, BiConsumer<Dropped, Entry<?>> dropper) {
 		Dropped dropped = new Dropped();
 
 		Collection<Entry<?>> obfEntries = mappings.getAllEntries()
@@ -46,7 +47,7 @@ public class MappingsChecker {
 		int steps = 0;
 		for (Entry<?> entry : obfEntries) {
 			progress.step(steps++, entry.toString());
-			tryDropEntry(dropped, entry);
+			dropper.accept(dropped, entry);
 		}
 
 		dropped.apply(mappings);
@@ -54,8 +55,12 @@ public class MappingsChecker {
 		return dropped;
 	}
 
-	private void tryDropEntry(Dropped dropped, Entry<?> entry) {
-		if (shouldDropEntry(entry)) {
+	public Dropped dropBrokenMappings(ProgressListener progress) {
+		return dropMappings(progress, this::tryDropBrokenEntry);
+	}
+
+	private void tryDropBrokenEntry(Dropped dropped, Entry<?> entry) {
+		if (shouldDropBrokenEntry(entry)) {
 			EntryMapping mapping = mappings.get(entry);
 			if (mapping != null) {
 				dropped.drop(entry, mapping);
@@ -63,12 +68,41 @@ public class MappingsChecker {
 		}
 	}
 
-	private boolean shouldDropEntry(Entry<?> entry) {
+	private boolean shouldDropBrokenEntry(Entry<?> entry) {
 		if (!index.getEntryIndex().hasEntry(entry)) {
 			return true;
 		}
 		Collection<Entry<?>> resolvedEntries = index.getEntryResolver().resolveEntry(entry, ResolutionStrategy.RESOLVE_ROOT);
 		return !resolvedEntries.contains(entry);
+	}
+
+	public Dropped dropEmptyMappings(ProgressListener progress) {
+		System.out.println("Dropping empty mappings");
+		return dropMappings(progress, this::tryDropEmptyEntry);
+	}
+
+	private void tryDropEmptyEntry(Dropped dropped, Entry<?> entry) {
+		if (shouldDropEmptyMapping(entry)) {
+			EntryMapping mapping = mappings.get(entry);
+			if (mapping != null) {
+				dropped.drop(entry, mapping);
+			}
+		}
+	}
+
+	private boolean shouldDropEmptyMapping(Entry<?> entry) {
+		if (entry.toString().contains("C_kdrxhxjj")) {
+			int x = 0;
+			System.out.println("Hey");
+		}
+		EntryMapping mapping = mappings.get(entry);
+		if (mapping != null) {
+			if (mapping.targetName() == null) {
+				return mappings.getChildren(entry).isEmpty();
+			}
+		}
+
+		return false;
 	}
 
 	public static class Dropped {
