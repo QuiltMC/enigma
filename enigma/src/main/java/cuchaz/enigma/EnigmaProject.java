@@ -161,7 +161,7 @@ public class EnigmaProject {
 				return false;
 			} else {
 				ClassDefEntry parent = jarIndex.getEntryIndex().getDefinition(obfMethodEntry.getParent());
-				if (parent.getSuperClass() != null && parent.getSuperClass().getFullName().equals("java/lang/Enum")) {
+				if (parent != null && parent.getSuperClass() != null && parent.getSuperClass().getFullName().equals("java/lang/Enum")) {
 					if (name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";")) {
 						return false;
 					} else if (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")) {
