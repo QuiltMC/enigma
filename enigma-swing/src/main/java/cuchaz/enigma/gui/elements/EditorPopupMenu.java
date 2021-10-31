@@ -1,7 +1,5 @@
 package cuchaz.enigma.gui.elements;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
