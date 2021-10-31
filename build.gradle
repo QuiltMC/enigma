@@ -46,16 +46,16 @@ subprojects {
         it.options.release = 16
     }
 
-   publishing {
-       publications {
-           "$project.name"(MavenPublication) {
-               groupId project.group
-               artifactId project.name
-               version project.version
-               from components.java
-           }
-       }
-   }
+//    publishing {
+//        publications {
+//            "$project.name"(MavenPublication) {
+//                groupId project.group
+//                artifactId project.name
+//                version project.version
+//                from components.java
+//            }
+//        }
+//    }
 }
 
 allprojects {
