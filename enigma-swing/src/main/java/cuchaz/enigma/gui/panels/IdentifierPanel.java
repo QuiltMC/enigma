@@ -46,7 +46,7 @@ public class IdentifierPanel {
 		this.gui = gui;
 
 		this.ui.setLayout(new GridBagLayout());
-		this.ui.setPreferredSize(ScaleUtil.getDimension(0, 120));
+		this.ui.setPreferredSize(ScaleUtil.getDimension(0, 150));
 		this.ui.setBorder(BorderFactory.createTitledBorder(I18n.translate("info_panel.identifier")));
 		this.ui.setEnabled(false);
 	}
@@ -93,11 +93,13 @@ public class IdentifierPanel {
 				ClassEntry ce = (ClassEntry) deobfEntry;
 				String name = ce.isInnerClass() ? ce.getName() : ce.getFullName();
 				this.nameField = th.addRenameTextField(EditableType.CLASS, name);
+				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), entry.getName());
 				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.CLASS, this::onModifierChanged);
 			} else if (deobfEntry instanceof FieldEntry) {
 				FieldEntry fe = (FieldEntry) deobfEntry;
 				this.nameField = th.addRenameTextField(EditableType.FIELD, fe.getName());
 				th.addStringRow(I18n.translate("info_panel.identifier.class"), fe.getParent().getFullName());
+				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.type_descriptor"), fe.getDesc().toString());
 				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.FIELD, this::onModifierChanged);
 			} else if (deobfEntry instanceof MethodEntry) {
@@ -112,6 +114,7 @@ public class IdentifierPanel {
 					this.nameField = th.addRenameTextField(EditableType.METHOD, me.getName());
 					th.addStringRow(I18n.translate("info_panel.identifier.class"), me.getParent().getFullName());
 				}
+				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method_descriptor"), me.getDesc().toString());
 				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.METHOD, this::onModifierChanged);
 			} else if (deobfEntry instanceof LocalVariableEntry) {
