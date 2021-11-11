@@ -360,7 +360,7 @@ public class GuiController implements ClientPacketHandler {
 
 	public void refreshClasses() {
 		if (project == null) return;
-		
+
 		List<ClassEntry> obfClasses = Lists.newArrayList();
 		List<ClassEntry> deobfClasses = Lists.newArrayList();
 		this.addSeparatedClasses(obfClasses, deobfClasses);
