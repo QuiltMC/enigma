@@ -64,7 +64,8 @@ public class EntryRemapper {
 			FieldEntry fieldEntry = (FieldEntry) obfuscatedEntry;
 			ClassEntry classEntry = fieldEntry.getParent();
 
-			mapRecordComponentGetter(vc, classEntry, fieldEntry, deobfMapping);
+			// TODO: Update this to work with hashed mojmap
+			// mapRecordComponentGetter(vc, classEntry, fieldEntry, deobfMapping);
 		}
 
 		boolean renaming = !Objects.equals(getDeobfMapping(obfuscatedEntry).targetName(), deobfMapping.targetName());
