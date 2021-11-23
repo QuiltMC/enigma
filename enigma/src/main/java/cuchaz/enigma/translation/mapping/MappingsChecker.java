@@ -79,7 +79,7 @@ public class MappingsChecker {
 
 		if (entry instanceof LocalVariableEntry localVariableEntry) {
 			// Drop local variables only if the method entry is to be dropped
-			return shouldDropEntry(localVariableEntry.getParent());
+			return shouldDropBrokenEntry(localVariableEntry.getParent());
 		}
 
 		Collection<Entry<?>> resolvedEntries = index.getEntryResolver().resolveEntry(entry, ResolutionStrategy.RESOLVE_ROOT);
