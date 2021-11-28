@@ -8,6 +8,7 @@ import cuchaz.enigma.analysis.index.InheritanceIndex;
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
+import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.validation.Message;
@@ -46,6 +47,7 @@ public class MappingValidator {
 			Entry<?> translatedEntry = deobfuscator.translate(relatedEntry);
 
 			List<? extends Entry<?>> translatedSiblings = obfToDeobf.getSiblings(relatedEntry).stream()
+					.filter(e -> !isStatic(e)) // TODO: Improve this
 					.map(deobfuscator::translate)
 					.toList();
 
@@ -83,4 +85,8 @@ public class MappingValidator {
 		return true;
 	}
 
+	private boolean isStatic(Entry<?> entry) {
+		AccessFlags accessFlags = index.getEntryIndex().getEntryAccess(entry);
+		return accessFlags != null && accessFlags.isStatic();
+	}
 }
