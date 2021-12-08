@@ -55,6 +55,8 @@ public class StatsGenerator {
 
         Map<String, Integer> counts = new HashMap<>();
 
+        String topLevelPackageSlash = topLevelPackage.replace(".", "/");
+
         int numDone = 0;
         if (includedMembers.contains(StatsMember.METHODS) || includedMembers.contains(StatsMember.PARAMETERS)) {
             for (MethodEntry method : entryIndex.getMethods()) {
@@ -66,7 +68,7 @@ public class StatsGenerator {
                         .orElseThrow(AssertionError::new);
 
                 ClassEntry clazz = root.getParent();
-                if (root == method && this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackage)) {
+                if (root == method && this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackageSlash)) {
                     if (includedMembers.contains(StatsMember.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
                         update(counts, method);
                         totalMappable++;
@@ -88,7 +90,7 @@ public class StatsGenerator {
             for (FieldEntry field : entryIndex.getFields()) {
                 progress.step(numDone++, I18n.translate("type.fields"));
                 ClassEntry clazz = field.getParent();
-                if (!((FieldDefEntry) field).getAccess().isSynthetic() && this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackage)) {
+                if (!((FieldDefEntry) field).getAccess().isSynthetic() && this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackageSlash)) {
                     update(counts, field);
                     totalMappable++;
                 }
@@ -98,7 +100,7 @@ public class StatsGenerator {
         if (includedMembers.contains(StatsMember.CLASSES)) {
             for (ClassEntry clazz : entryIndex.getClasses()) {
                 progress.step(numDone++, I18n.translate("type.classes"));
-                if (this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackage)) {
+                if (this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackageSlash)) {
                     update(counts, clazz);
                     totalMappable++;
                 }
