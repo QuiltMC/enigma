@@ -29,7 +29,7 @@ subprojects {
     group = 'cuchaz'
     version = '1.0.6'
 
-//    version = version + (System.getenv("GITHUB_ACTIONS") ? "" : "+local")
+    version = version + (System.getenv("GITHUB_ACTIONS") ? "" : "+local")
 
     task sourcesJar(type: Jar, dependsOn: classes) {
         classifier = 'sources'
