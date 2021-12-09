@@ -1,5 +1,10 @@
 package cuchaz.enigma.gui.stats;
 
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.analysis.index.EntryIndex;
@@ -7,10 +12,14 @@ import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
-import cuchaz.enigma.translation.representation.entry.*;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
+import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
-
-import java.util.*;
 
 public class StatsGenerator {
     private final EnigmaProject project;
@@ -46,6 +55,8 @@ public class StatsGenerator {
 
         Map<String, Integer> counts = new HashMap<>();
 
+        String topLevelPackageSlash = topLevelPackage.replace(".", "/");
+
         int numDone = 0;
         if (includedMembers.contains(StatsMember.METHODS) || includedMembers.contains(StatsMember.PARAMETERS)) {
             for (MethodEntry method : entryIndex.getMethods()) {
@@ -56,18 +67,19 @@ public class StatsGenerator {
                         .findFirst()
                         .orElseThrow(AssertionError::new);
 
-                if (root == method) {
+                ClassEntry clazz = root.getParent();
+                if (root == method && this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackageSlash)) {
                     if (includedMembers.contains(StatsMember.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
                         update(counts, method);
-                        totalMappable ++;
+                        totalMappable++;
                     }
 
                     if (includedMembers.contains(StatsMember.PARAMETERS) && (!((MethodDefEntry) method).getAccess().isSynthetic() || includeSynthetic)) {
                         int index = ((MethodDefEntry) method).getAccess().isStatic() ? 0 : 1;
                         for (TypeDescriptor argument : method.getDesc().getArgumentDescs()) {
-                            update(counts, new LocalVariableEntry(method, index, "", true,null));
+                            update(counts, new LocalVariableEntry(method, index, "", true, null));
                             index += argument.getSize();
-                            totalMappable ++;
+                            totalMappable++;
                         }
                     }
                 }
@@ -77,9 +89,10 @@ public class StatsGenerator {
         if (includedMembers.contains(StatsMember.FIELDS)) {
             for (FieldEntry field : entryIndex.getFields()) {
                 progress.step(numDone++, I18n.translate("type.fields"));
-                if (!((FieldDefEntry)field).getAccess().isSynthetic()) {
+                ClassEntry clazz = field.getParent();
+                if (!((FieldDefEntry) field).getAccess().isSynthetic() && this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackageSlash)) {
                     update(counts, field);
-                    totalMappable ++;
+                    totalMappable++;
                 }
             }
         }
@@ -87,8 +100,10 @@ public class StatsGenerator {
         if (includedMembers.contains(StatsMember.CLASSES)) {
             for (ClassEntry clazz : entryIndex.getClasses()) {
                 progress.step(numDone++, I18n.translate("type.classes"));
-                update(counts, clazz);
-                totalMappable ++;
+                if (this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackageSlash)) {
+                    update(counts, clazz);
+                    totalMappable++;
+                }
             }
         }
 
