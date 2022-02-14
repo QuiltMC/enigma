@@ -25,7 +25,7 @@ public class EditorTabPopupMenu {
 		this.ui = new JPopupMenu();
 
 		this.close = new JMenuItem();
-		this.close.setAccelerator(KeyBinds.EDITOR_CLOSE_TAB.toKeyStroke(KeyEvent.CTRL_DOWN_MASK));
+		this.close.setAccelerator(KeyBinds.EDITOR_CLOSE_TAB.toKeyStroke());
 		this.close.addActionListener(a -> pane.closeEditor(editor));
 		this.ui.add(this.close);
 

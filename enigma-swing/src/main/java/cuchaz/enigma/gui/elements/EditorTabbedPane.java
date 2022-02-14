@@ -73,7 +73,7 @@ public class EditorTabbedPane {
 			ed.getEditor().addKeyListener(new KeyAdapter() {
 				@Override
 				public void keyPressed(KeyEvent e) {
-					if (KeyBinds.EDITOR_CLOSE_TAB.matches(e) && e.isControlDown()) {
+					if (KeyBinds.EDITOR_CLOSE_TAB.matches(e)) {
 						closeEditor(ed);
 					}
 				}

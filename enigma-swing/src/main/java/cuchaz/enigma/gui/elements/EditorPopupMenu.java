@@ -76,19 +76,19 @@ public class EditorPopupMenu {
 		this.openNextItem.setEnabled(false);
 		this.toggleMappingItem.setEnabled(false);
 
-		this.renameItem.setAccelerator(KeyBinds.EDITOR_RENAME.toKeyStroke(InputEvent.CTRL_DOWN_MASK));
-		this.pasteItem.setAccelerator(KeyBinds.EDITOR_PASTE.toKeyStroke(InputEvent.CTRL_DOWN_MASK));
-		this.editJavadocItem.setAccelerator(KeyBinds.EDITOR_EDIT_JAVADOC.toKeyStroke(InputEvent.CTRL_DOWN_MASK));
-		this.showInheritanceItem.setAccelerator(KeyBinds.EDITOR_SHOW_INHERITANCE.toKeyStroke(InputEvent.CTRL_DOWN_MASK));
-		this.showImplementationsItem.setAccelerator(KeyBinds.EDITOR_SHOW_IMPLEMENTATIONS.toKeyStroke(InputEvent.CTRL_DOWN_MASK));
-		this.showCallsItem.setAccelerator(KeyBinds.EDITOR_SHOW_CALLS.toKeyStroke(InputEvent.CTRL_DOWN_MASK));
-		this.showCallsSpecificItem.setAccelerator(KeyBinds.EDITOR_SHOW_CALLS.toKeyStroke(InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK));
-		this.openEntryItem.setAccelerator(KeyBinds.EDITOR_OPEN_ENTRY.toKeyStroke(InputEvent.CTRL_DOWN_MASK));
-		this.openPreviousItem.setAccelerator(KeyBinds.EDITOR_OPEN_PREVIOUS.toKeyStroke(InputEvent.CTRL_DOWN_MASK));
-		this.openNextItem.setAccelerator(KeyBinds.EDITOR_OPEN_NEXT.toKeyStroke(InputEvent.CTRL_DOWN_MASK));
-		this.toggleMappingItem.setAccelerator(KeyBinds.EDITOR_TOGGLE_MAPPING.toKeyStroke(InputEvent.CTRL_DOWN_MASK));
-		this.zoomInItem.setAccelerator(KeyBinds.EDITOR_ZOOM_IN.toKeyStroke(InputEvent.CTRL_DOWN_MASK));
-		this.zoomOutMenu.setAccelerator(KeyBinds.EDITOR_ZOOM_OUT.toKeyStroke(InputEvent.CTRL_DOWN_MASK));
+		this.renameItem.setAccelerator(KeyBinds.EDITOR_RENAME.toKeyStroke());
+		this.pasteItem.setAccelerator(KeyBinds.EDITOR_PASTE.toKeyStroke());
+		this.editJavadocItem.setAccelerator(KeyBinds.EDITOR_EDIT_JAVADOC.toKeyStroke());
+		this.showInheritanceItem.setAccelerator(KeyBinds.EDITOR_SHOW_INHERITANCE.toKeyStroke());
+		this.showImplementationsItem.setAccelerator(KeyBinds.EDITOR_SHOW_IMPLEMENTATIONS.toKeyStroke());
+		this.showCallsItem.setAccelerator(KeyBinds.EDITOR_SHOW_CALLS.toKeyStroke());
+		this.showCallsSpecificItem.setAccelerator(KeyBinds.EDITOR_SHOW_CALLS_SPECIFIC.toKeyStroke());
+		this.openEntryItem.setAccelerator(KeyBinds.EDITOR_OPEN_ENTRY.toKeyStroke());
+		this.openPreviousItem.setAccelerator(KeyBinds.EDITOR_OPEN_PREVIOUS.toKeyStroke());
+		this.openNextItem.setAccelerator(KeyBinds.EDITOR_OPEN_NEXT.toKeyStroke());
+		this.toggleMappingItem.setAccelerator(KeyBinds.EDITOR_TOGGLE_MAPPING.toKeyStroke());
+		this.zoomInItem.setAccelerator(KeyBinds.EDITOR_ZOOM_IN.toKeyStroke());
+		this.zoomOutMenu.setAccelerator(KeyBinds.EDITOR_ZOOM_OUT.toKeyStroke());
 
 		this.renameItem.addActionListener(event -> gui.startRename(editor));
 		this.pasteItem.addActionListener(event -> gui.startRename(editor, GuiUtil.getClipboard()));
@@ -110,42 +110,39 @@ public class EditorPopupMenu {
 	//  	triggered without having to hardcode them here, because this
 	//		is a hack
 	public boolean handleKeyEvent(KeyEvent event) {
-		if (event.isControlDown()) {
-			if (KeyBinds.EDITOR_SHOW_INHERITANCE.matches(event)) {
-				this.showInheritanceItem.doClick();
-				return true;
-			} else if (KeyBinds.EDITOR_SHOW_IMPLEMENTATIONS.matches(event)) {
-				this.showImplementationsItem.doClick();
-				return true;
-			} else if (KeyBinds.EDITOR_OPEN_ENTRY.matches(event)) {
-				this.openEntryItem.doClick();
-				return true;
-			} else if (KeyBinds.EDITOR_OPEN_PREVIOUS.matches(event)) {
-				this.openPreviousItem.doClick();
-				return true;
-			} else if (KeyBinds.EDITOR_OPEN_NEXT.matches(event)) {
-				this.openNextItem.doClick();
-				return true;
-			} else if (KeyBinds.EDITOR_SHOW_CALLS.matches(event)) {
-				if (event.isShiftDown()) {
-					this.showCallsSpecificItem.doClick();
-				} else {
-					this.showCallsItem.doClick();
-				}
-				return true;
-			} else if (KeyBinds.EDITOR_TOGGLE_MAPPING.matches(event)) {
-				this.toggleMappingItem.doClick();
-				return true;
-			} else if (KeyBinds.EDITOR_RENAME.matches(event)) {
-				this.renameItem.doClick();
-				return true;
-			} else if (KeyBinds.EDITOR_EDIT_JAVADOC.matches(event)) {
-				this.editJavadocItem.doClick();
-				return true;
-			} else if (KeyBinds.EDITOR_PASTE.matches(event)) {
-				this.pasteItem.doClick();
-				return true;
-			}
+		if (KeyBinds.EDITOR_SHOW_INHERITANCE.matches(event)) {
+			this.showInheritanceItem.doClick();
+			return true;
+		} else if (KeyBinds.EDITOR_SHOW_IMPLEMENTATIONS.matches(event)) {
+			this.showImplementationsItem.doClick();
+			return true;
+		} else if (KeyBinds.EDITOR_OPEN_ENTRY.matches(event)) {
+			this.openEntryItem.doClick();
+			return true;
+		} else if (KeyBinds.EDITOR_OPEN_PREVIOUS.matches(event)) {
+			this.openPreviousItem.doClick();
+			return true;
+		} else if (KeyBinds.EDITOR_OPEN_NEXT.matches(event)) {
+			this.openNextItem.doClick();
+			return true;
+		} else if (KeyBinds.EDITOR_SHOW_CALLS_SPECIFIC.matches(event)) {
+			this.showCallsSpecificItem.doClick();
+			return true;
+		} else if (KeyBinds.EDITOR_SHOW_CALLS.matches(event)) {
+			this.showCallsItem.doClick();
+			return true;
+		} else if (KeyBinds.EDITOR_TOGGLE_MAPPING.matches(event)) {
+			this.toggleMappingItem.doClick();
+			return true;
+		} else if (KeyBinds.EDITOR_RENAME.matches(event)) {
+			this.renameItem.doClick();
+			return true;
+		} else if (KeyBinds.EDITOR_EDIT_JAVADOC.matches(event)) {
+			this.editJavadocItem.doClick();
+			return true;
+		} else if (KeyBinds.EDITOR_PASTE.matches(event)) {
+			this.pasteItem.doClick();
+			return true;
 		}
 		return false;
 	}

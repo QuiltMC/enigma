@@ -245,6 +245,7 @@
 	"keybind.editor.show_inheritance": "Show entry inheritance",
 	"keybind.editor.show_implementations": "Show entry implementations",
 	"keybind.editor.show_calls": "Show entry calls",
+	"keybind.editor.show_calls_specific": "Show entry calls (Specific)",
 	"keybind.editor.open_entry": "Open entry",
 	"keybind.editor.open_previous": "Open previous entry",
 	"keybind.editor.open_next": "Open next entry",

@@ -13,37 +13,39 @@ public final class KeyBinds {
     private static final String EDITOR_CATEGORY = "editor";
     private static final String MENU_CATEGORY = "menu";
 
-    public static final KeyBind EXIT = new KeyBind("close", KeyEvent.VK_ESCAPE);
-    public static final KeyBind DIALOG_SAVE = new KeyBind("dialog_save", KeyEvent.VK_ENTER);
+    public static final KeyBind EXIT = KeyBind.builder("close").key(KeyEvent.VK_ESCAPE).build();
+    public static final KeyBind DIALOG_SAVE = KeyBind.builder("dialog_save").key(KeyEvent.VK_ENTER).build();
 
-    public static final KeyBind QUICK_FIND_DIALOG_NEXT = new KeyBind("next", KeyEvent.VK_ENTER, QUICK_FIND_DIALOG_CATEGORY);
-    public static final KeyBind SEARCH_DIALOG_NEXT = new KeyBind("next", KeyEvent.VK_DOWN, SEARCH_DIALOG_CATEGORY);
-    public static final KeyBind SEARCH_DIALOG_PREVIOUS = new KeyBind("previous", KeyEvent.VK_UP, SEARCH_DIALOG_CATEGORY);
+    public static final KeyBind QUICK_FIND_DIALOG_NEXT = KeyBind.builder("next", QUICK_FIND_DIALOG_CATEGORY).key(KeyEvent.VK_ENTER).build();
+    public static final KeyBind QUICK_FIND_DIALOG_PREVIOUS = KeyBind.builder("previous", QUICK_FIND_DIALOG_CATEGORY).key(KeyEvent.VK_ENTER).mod(KeyEvent.SHIFT_DOWN_MASK).build();
+    public static final KeyBind SEARCH_DIALOG_NEXT = KeyBind.builder("next", SEARCH_DIALOG_CATEGORY).key(KeyEvent.VK_DOWN).build();
+    public static final KeyBind SEARCH_DIALOG_PREVIOUS = KeyBind.builder("previous", SEARCH_DIALOG_CATEGORY).key(KeyEvent.VK_UP).build();
 
-    public static final KeyBind EDITOR_RENAME = new KeyBind("rename", KeyEvent.VK_R, EDITOR_CATEGORY);
-    public static final KeyBind EDITOR_PASTE = new KeyBind("paste", KeyEvent.VK_V, EDITOR_CATEGORY);
-    public static final KeyBind EDITOR_EDIT_JAVADOC = new KeyBind("edit_javadoc", KeyEvent.VK_D, EDITOR_CATEGORY);
-    public static final KeyBind EDITOR_SHOW_INHERITANCE = new KeyBind("show_inheritance", KeyEvent.VK_I, EDITOR_CATEGORY);
-    public static final KeyBind EDITOR_SHOW_IMPLEMENTATIONS = new KeyBind("show_implementations", KeyEvent.VK_M, EDITOR_CATEGORY);
-    public static final KeyBind EDITOR_SHOW_CALLS = new KeyBind("show_calls", KeyEvent.VK_C, EDITOR_CATEGORY);
-    public static final KeyBind EDITOR_OPEN_ENTRY = new KeyBind("open_entry", KeyEvent.VK_N, EDITOR_CATEGORY);
-    public static final KeyBind EDITOR_OPEN_PREVIOUS = new KeyBind("open_previous", KeyEvent.VK_P, EDITOR_CATEGORY);
-    public static final KeyBind EDITOR_OPEN_NEXT = new KeyBind("open_next", KeyEvent.VK_E, EDITOR_CATEGORY);
-    public static final KeyBind EDITOR_TOGGLE_MAPPING = new KeyBind("toggle_mapping", KeyEvent.VK_O, EDITOR_CATEGORY);
-    public static final KeyBind EDITOR_ZOOM_IN = new KeyBind("zoom_in", EDITOR_CATEGORY, KeyEvent.VK_PLUS, KeyEvent.VK_ADD, KeyEvent.VK_EQUALS);
-    public static final KeyBind EDITOR_ZOOM_OUT = new KeyBind("zoom_out", EDITOR_CATEGORY, KeyEvent.VK_MINUS, KeyEvent.VK_SUBTRACT);
-    public static final KeyBind EDITOR_CLOSE_TAB = new KeyBind("close_tab", KeyEvent.VK_4, EDITOR_CATEGORY);
-    public static final KeyBind EDITOR_RELOAD_CLASS = new KeyBind("reload_class", KeyEvent.VK_F5, EDITOR_CATEGORY);
-    public static final KeyBind EDITOR_QUICK_FIND = new KeyBind("quick_find", KeyEvent.VK_F, EDITOR_CATEGORY);
+    public static final KeyBind EDITOR_RENAME = KeyBind.builder("rename", EDITOR_CATEGORY).key(KeyEvent.VK_R).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind EDITOR_PASTE = KeyBind.builder("paste", EDITOR_CATEGORY).key(KeyEvent.VK_V).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind EDITOR_EDIT_JAVADOC = KeyBind.builder("edit_javadoc", EDITOR_CATEGORY).key(KeyEvent.VK_D).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind EDITOR_SHOW_INHERITANCE = KeyBind.builder("show_inheritance", EDITOR_CATEGORY).key(KeyEvent.VK_I).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind EDITOR_SHOW_IMPLEMENTATIONS = KeyBind.builder("show_implementations", EDITOR_CATEGORY).key(KeyEvent.VK_M).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind EDITOR_SHOW_CALLS = KeyBind.builder("show_calls", EDITOR_CATEGORY).key(KeyEvent.VK_C).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind EDITOR_SHOW_CALLS_SPECIFIC = KeyBind.builder("show_calls_specific", EDITOR_CATEGORY).key(KeyEvent.VK_C).mod(KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK).build();
+    public static final KeyBind EDITOR_OPEN_ENTRY = KeyBind.builder("open_entry", EDITOR_CATEGORY).key(KeyEvent.VK_N).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind EDITOR_OPEN_PREVIOUS = KeyBind.builder("open_previous", EDITOR_CATEGORY).key(KeyEvent.VK_P).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind EDITOR_OPEN_NEXT = KeyBind.builder("open_next", EDITOR_CATEGORY).key(KeyEvent.VK_E).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind EDITOR_TOGGLE_MAPPING = KeyBind.builder("toggle_mapping", EDITOR_CATEGORY).key(KeyEvent.VK_O).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind EDITOR_ZOOM_IN = KeyBind.builder("zoom_in", EDITOR_CATEGORY).keys(KeyEvent.VK_PLUS, KeyEvent.VK_ADD, KeyEvent.VK_EQUALS).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind EDITOR_ZOOM_OUT = KeyBind.builder("zoom_out", EDITOR_CATEGORY).keys(KeyEvent.VK_MINUS, KeyEvent.VK_SUBTRACT).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind EDITOR_CLOSE_TAB = KeyBind.builder("close_tab", EDITOR_CATEGORY).key(KeyEvent.VK_4).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind EDITOR_RELOAD_CLASS = KeyBind.builder("reload_class", EDITOR_CATEGORY).key(KeyEvent.VK_F5).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind EDITOR_QUICK_FIND = KeyBind.builder("quick_find", EDITOR_CATEGORY).key(KeyEvent.VK_F).mod(KeyEvent.CTRL_DOWN_MASK).build();
 
-    public static final KeyBind SAVE_MAPPINGS = new KeyBind("save", KeyEvent.VK_S, MENU_CATEGORY);
-    public static final KeyBind DROP_MAPPINGS = new KeyBind("drop_mappings", MENU_CATEGORY);
-    public static final KeyBind RELOAD_MAPPINGS = new KeyBind("reload_mappings", MENU_CATEGORY);
-    public static final KeyBind RELOAD_ALL = new KeyBind("reload_all", MENU_CATEGORY);
-    public static final KeyBind MAPPING_STATS = new KeyBind("mapping_stats", MENU_CATEGORY);
-    public static final KeyBind SEARCH_CLASS = new KeyBind("search_class", KeyEvent.VK_SPACE, MENU_CATEGORY);
-    public static final KeyBind SEARCH_METHOD = new KeyBind("search_method", MENU_CATEGORY);
-    public static final KeyBind SEARCH_FIELD = new KeyBind("search_field", MENU_CATEGORY);
+    public static final KeyBind SAVE_MAPPINGS = KeyBind.builder("save", MENU_CATEGORY).key(KeyEvent.VK_S).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind DROP_MAPPINGS = KeyBind.builder("drop_mappings", MENU_CATEGORY).build();
+    public static final KeyBind RELOAD_MAPPINGS = KeyBind.builder("reload_mappings", MENU_CATEGORY).build();
+    public static final KeyBind RELOAD_ALL = KeyBind.builder("reload_all", MENU_CATEGORY).build();
+    public static final KeyBind MAPPING_STATS = KeyBind.builder("mapping_stats", MENU_CATEGORY).build();
+    public static final KeyBind SEARCH_CLASS = KeyBind.builder("search_class", MENU_CATEGORY).key(KeyEvent.VK_SPACE).mod(KeyEvent.SHIFT_DOWN_MASK).build();
+    public static final KeyBind SEARCH_METHOD = KeyBind.builder("search_method", MENU_CATEGORY).build();
+    public static final KeyBind SEARCH_FIELD = KeyBind.builder("search_field", MENU_CATEGORY).build();
 
     public static final List<KeyBind> CONFIGURABLE_KEY_BINDS = List.of(EDITOR_RENAME, EDITOR_PASTE, EDITOR_EDIT_JAVADOC,
             EDITOR_SHOW_INHERITANCE, EDITOR_SHOW_IMPLEMENTATIONS, EDITOR_SHOW_CALLS, EDITOR_OPEN_ENTRY,

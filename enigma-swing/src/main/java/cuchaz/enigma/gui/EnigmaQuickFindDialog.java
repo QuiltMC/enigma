@@ -23,11 +23,12 @@ public class EnigmaQuickFindDialog extends QuickFindDialog {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				super.keyPressed(e);
-				if (KeyBinds.QUICK_FIND_DIALOG_NEXT.matches(e)) {
+				if (KeyBinds.QUICK_FIND_DIALOG_PREVIOUS.matches(e)) {
 					JToolBar toolBar = getToolBar();
-					boolean next = !e.isShiftDown();
-					JButton button = next ? getNextButton(toolBar) : getPrevButton(toolBar);
-					button.doClick();
+					getPrevButton(toolBar).doClick();
+				} else if (KeyBinds.QUICK_FIND_DIALOG_NEXT.matches(e)) {
+					JToolBar toolBar = getToolBar();
+					getNextButton(toolBar).doClick();
 				}
 			}
 		});

@@ -142,22 +142,20 @@ public class EditorPanel {
 		this.editor.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent event) {
-				if (event.isControlDown()) {
-					EditorPanel.this.shouldNavigateOnClick = false;
-					if (EditorPanel.this.popupMenu.handleKeyEvent(event)) return;
-					if (KeyBinds.EDITOR_RELOAD_CLASS.matches(event)) {
-						if (EditorPanel.this.classHandle != null) {
-							EditorPanel.this.classHandle.invalidate();
-						}
-					} else if (KeyBinds.EDITOR_QUICK_FIND.matches(event)) {
-						// prevent navigating on click when quick find activated
-					} else if (KeyBinds.EDITOR_ZOOM_IN.matches(event)) {
-						offsetEditorZoom(2);
-					} else if (KeyBinds.EDITOR_ZOOM_OUT.matches(event)) {
-						offsetEditorZoom(-2);
-					} else {
-						EditorPanel.this.shouldNavigateOnClick = true; // CTRL
+				if (EditorPanel.this.popupMenu.handleKeyEvent(event)) return;
+
+				if (KeyBinds.EDITOR_RELOAD_CLASS.matches(event)) {
+					if (EditorPanel.this.classHandle != null) {
+						EditorPanel.this.classHandle.invalidate();
 					}
+				} else if (KeyBinds.EDITOR_QUICK_FIND.matches(event)) {
+					// prevent navigating on click when quick find activated
+				} else if (KeyBinds.EDITOR_ZOOM_IN.matches(event)) {
+					offsetEditorZoom(2);
+				} else if (KeyBinds.EDITOR_ZOOM_OUT.matches(event)) {
+					offsetEditorZoom(-2);
+				} else if (event.isControlDown()) {
+					EditorPanel.this.shouldNavigateOnClick = true; // CTRL
 				}
 			}
 
