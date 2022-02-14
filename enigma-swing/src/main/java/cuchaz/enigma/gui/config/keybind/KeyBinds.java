@@ -37,12 +37,19 @@ public final class KeyBinds {
     public static final KeyBind EDITOR_QUICK_FIND = new KeyBind("quick_find", KeyEvent.VK_F, EDITOR_CATEGORY);
 
     public static final KeyBind SAVE_MAPPINGS = new KeyBind("save", KeyEvent.VK_S, MENU_CATEGORY);
+    public static final KeyBind DROP_MAPPINGS = new KeyBind("drop_mappings", MENU_CATEGORY);
+    public static final KeyBind RELOAD_MAPPINGS = new KeyBind("reload_mappings", MENU_CATEGORY);
+    public static final KeyBind RELOAD_ALL = new KeyBind("reload_all", MENU_CATEGORY);
+    public static final KeyBind MAPPING_STATS = new KeyBind("mapping_stats", MENU_CATEGORY);
     public static final KeyBind SEARCH_CLASS = new KeyBind("search_class", KeyEvent.VK_SPACE, MENU_CATEGORY);
+    public static final KeyBind SEARCH_METHOD = new KeyBind("search_method", MENU_CATEGORY);
+    public static final KeyBind SEARCH_FIELD = new KeyBind("search_field", MENU_CATEGORY);
 
     public static final List<KeyBind> CONFIGURABLE_KEY_BINDS = List.of(EDITOR_RENAME, EDITOR_PASTE, EDITOR_EDIT_JAVADOC,
             EDITOR_SHOW_INHERITANCE, EDITOR_SHOW_IMPLEMENTATIONS, EDITOR_SHOW_CALLS, EDITOR_OPEN_ENTRY,
             EDITOR_OPEN_PREVIOUS, EDITOR_OPEN_NEXT, EDITOR_TOGGLE_MAPPING, EDITOR_ZOOM_IN, EDITOR_ZOOM_OUT,
-            EDITOR_CLOSE_TAB, EDITOR_RELOAD_CLASS, SAVE_MAPPINGS, SEARCH_CLASS);
+            EDITOR_CLOSE_TAB, EDITOR_RELOAD_CLASS, SAVE_MAPPINGS, DROP_MAPPINGS, RELOAD_MAPPINGS, RELOAD_ALL,
+            MAPPING_STATS, SEARCH_CLASS, SEARCH_METHOD, SEARCH_FIELD);
 
     private KeyBinds() {
     }

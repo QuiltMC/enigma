@@ -254,5 +254,11 @@
 	"keybind.editor.close_tab": "Close editor tab",
 	"keybind.editor.reload_class": "Reload open class",
 	"keybind.menu.search_class": "Search for class",
+	"keybind.menu.search_method": "Search for method",
+	"keybind.menu.search_field": "Search for field",
+	"keybind.menu.drop_mappings": "Drop invalid mappings",
+	"keybind.menu.reload_mappings": "Reload mappings",
+	"keybind.menu.reload_all": "Reload Jar and mappings",
+	"keybind.menu.mapping_stats": "Mapping stats",
 	"keybind.menu.save": "Save mappings"
 }
