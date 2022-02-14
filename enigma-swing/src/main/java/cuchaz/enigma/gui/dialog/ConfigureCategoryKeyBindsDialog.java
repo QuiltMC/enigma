@@ -197,18 +197,15 @@ public class ConfigureCategoryKeyBindsDialog extends JDialog {
         private void startEditing() {
             editing = true;
             button.setForeground(Color.ORANGE);
-            // System.out.println("start editing");
             ConfigureCategoryKeyBindsDialog.this.stopEditing(this);
         }
 
         private void stopEditing() {
             editing = false;
             button.setForeground(defaultButtonFg);
-            // System.out.println("stop editing");
         }
 
         private boolean handleKeyEvent(KeyEvent e) {
-            System.out.println("key pressed: " + e.getKeyCode() + "(" + KeyEvent.getKeyText(e.getKeyCode()) + ")");
             if (editing) {
                 if (KeyBinds.EXIT.matches(e)) {
                     stopEditing();
