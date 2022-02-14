@@ -13,6 +13,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter.HighlightPainter;
 
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import de.sciss.syntaxpane.DefaultSyntaxKit;
 
 import cuchaz.enigma.EnigmaProject;
@@ -144,30 +145,18 @@ public class EditorPanel {
 				if (event.isControlDown()) {
 					EditorPanel.this.shouldNavigateOnClick = false;
 					if (EditorPanel.this.popupMenu.handleKeyEvent(event)) return;
-					switch (event.getKeyCode()) {
-						case KeyEvent.VK_F5:
-							if (EditorPanel.this.classHandle != null) {
-								EditorPanel.this.classHandle.invalidate();
-							}
-							break;
-
-						case KeyEvent.VK_F:
-							// prevent navigating on click when quick find activated
-							break;
-
-						case KeyEvent.VK_ADD:
-						case KeyEvent.VK_EQUALS:
-						case KeyEvent.VK_PLUS:
-							offsetEditorZoom(2);
-							break;
-						case KeyEvent.VK_SUBTRACT:
-						case KeyEvent.VK_MINUS:
-							offsetEditorZoom(-2);
-							break;
-
-						default:
-							EditorPanel.this.shouldNavigateOnClick = true; // CTRL
-							break;
+					if (KeyBinds.EDITOR_RELOAD_CLASS.matches(event)) {
+						if (EditorPanel.this.classHandle != null) {
+							EditorPanel.this.classHandle.invalidate();
+						}
+					} else if (KeyBinds.EDITOR_QUICK_FIND.matches(event)) {
+						// prevent navigating on click when quick find activated
+					} else if (KeyBinds.EDITOR_ZOOM_IN.matches(event)) {
+						offsetEditorZoom(2);
+					} else if (KeyBinds.EDITOR_ZOOM_OUT.matches(event)) {
+						offsetEditorZoom(-2);
+					} else {
+						EditorPanel.this.shouldNavigateOnClick = true; // CTRL
 					}
 				}
 			}

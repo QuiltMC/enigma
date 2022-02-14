@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.common.io.MoreFiles;
+import cuchaz.enigma.gui.config.KeyBindsConfig;
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import joptsimple.*;
 
 import cuchaz.enigma.EnigmaProfile;
@@ -110,6 +112,8 @@ public class Main {
 			setDefaultSystemProperty("swing.aatext", "true");
 
 			Themes.setupTheme();
+
+			KeyBinds.loadConfig();
 
 			Gui gui = new Gui(parsedProfile, editables);
 			GuiController controller = gui.getController();
