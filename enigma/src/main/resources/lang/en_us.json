@@ -34,6 +34,8 @@
 	"menu.file.stats.generate": "Generate Diagram",
 	"menu.file.configure_keybinds": "Configure Keybinds...",
 	"menu.file.configure_keybinds.title": "Configure Keybinds",
+	"menu.file.configure_keybinds.category_title": "Configure %s Keybinds",
+	"menu.file.configure_keybinds.edit": "Edit Keybinds...",
 	"menu.file.configure_keybinds.warning": "Restart the application to apply changes.",
 	"menu.file.configure_keybinds.edit_mode": "Edit Mode",
 	"menu.file.configure_keybinds.edit_mode.add": "Add keybind",
@@ -235,6 +237,8 @@
 	"crash.exit": "Exit",
 	"crash.exit.warning": "If you choose exit, you will lose any unsaved work.",
 
+	"keybind.category.editor": "Editor",
+	"keybind.category.menu": "Menu",
 	"keybind.editor.rename": "Rename entry",
 	"keybind.editor.paste": "Paste entry name",
 	"keybind.editor.edit_javadoc": "Edit entry Javadoc",
