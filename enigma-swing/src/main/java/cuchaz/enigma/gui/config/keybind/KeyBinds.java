@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public final class KeyBinds {
@@ -94,7 +95,8 @@ public final class KeyBinds {
         EDITABLE_KEY_BINDS.clear();
         EDITABLE_KEY_BINDS.addAll(CONFIGURABLE_KEY_BINDS.stream().map(KeyBind::copy).toList());
         for (KeyBind keyBind : EDITABLE_KEY_BINDS) {
-            keyBind.deserializeCombinations(KeyBindsConfig.getSavedKeyBindCodes(keyBind));
+            Optional<String[]> savedKeyBindCodes = KeyBindsConfig.getSavedKeyBindCodes(keyBind);
+            savedKeyBindCodes.ifPresent(keyBind::deserializeCombinations);
         }
     }
 }

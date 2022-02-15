@@ -57,7 +57,11 @@ public record KeyBind(String name, String category, List<Combination> combinatio
     public void deserializeCombinations(String[] serialized) {
         combinations.clear();
         for (String serializedCombination : serialized) {
-            combinations.add(Combination.deserialize(serializedCombination));
+            if (!serializedCombination.isEmpty()) {
+                combinations.add(Combination.deserialize(serializedCombination));
+            } else {
+                System.out.println("warning: empty combination deserialized for keybind " + (category.isEmpty() ? "" : category + ".") + name);
+            }
         }
     }
 

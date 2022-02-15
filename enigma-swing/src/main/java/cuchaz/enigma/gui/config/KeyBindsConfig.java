@@ -4,6 +4,8 @@ import cuchaz.enigma.config.ConfigContainer;
 import cuchaz.enigma.config.ConfigSection;
 import cuchaz.enigma.gui.config.keybind.KeyBind;
 
+import java.util.Optional;
+
 public final class KeyBindsConfig {
     private KeyBindsConfig() {
     }
@@ -36,6 +38,10 @@ public final class KeyBindsConfig {
 
     public static String[] getKeyBindCodes(KeyBind keyBind) {
         return getSection(keyBind, true).setIfAbsentArray(keyBind.name(), keyBind.serializeCombinations());
+    }
+
+    public static Optional<String[]> getSavedKeyBindCodes(KeyBind keyBind) {
+        return getSection(keyBind, false).getArray(keyBind.name());
     }
 
     public static void setKeyBind(KeyBind keyBind) {
