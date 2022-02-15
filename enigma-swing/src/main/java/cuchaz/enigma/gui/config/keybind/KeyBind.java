@@ -27,6 +27,11 @@ public record KeyBind(String name, String category, List<Combination> combinatio
             String[] parts = str.split(";", 2);
             return new Combination(Integer.parseInt(parts[0]), Integer.parseInt(parts[1], 16));
         }
+
+        @Override
+        public String toString() {
+            return "Combination[keyCode=" + keyCode + ", keyModifiers=0x" + Integer.toString(keyModifiers, 16) + "]";
+        }
     }
 
     public boolean matches(KeyEvent e) {
@@ -62,6 +67,10 @@ public record KeyBind(String name, String category, List<Combination> combinatio
 
     public String getTranslatedName() {
         return I18n.translate(getTranslationKey());
+    }
+
+    public KeyBind copy() {
+        return new KeyBind(name, category, new ArrayList<>(combinations));
     }
 
     public static Builder builder(String name) {

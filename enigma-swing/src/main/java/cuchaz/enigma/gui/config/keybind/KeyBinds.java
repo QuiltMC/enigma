@@ -3,6 +3,7 @@ package cuchaz.enigma.gui.config.keybind;
 import cuchaz.enigma.gui.config.KeyBindsConfig;
 
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,27 +48,53 @@ public final class KeyBinds {
     public static final KeyBind SEARCH_METHOD = KeyBind.builder("search_method", MENU_CATEGORY).build();
     public static final KeyBind SEARCH_FIELD = KeyBind.builder("search_field", MENU_CATEGORY).build();
 
-    public static final List<KeyBind> CONFIGURABLE_KEY_BINDS = List.of(EDITOR_RENAME, EDITOR_PASTE, EDITOR_EDIT_JAVADOC,
+    private static final List<KeyBind> CONFIGURABLE_KEY_BINDS = List.of(EDITOR_RENAME, EDITOR_PASTE, EDITOR_EDIT_JAVADOC,
             EDITOR_SHOW_INHERITANCE, EDITOR_SHOW_IMPLEMENTATIONS, EDITOR_SHOW_CALLS, EDITOR_OPEN_ENTRY,
             EDITOR_OPEN_PREVIOUS, EDITOR_OPEN_NEXT, EDITOR_TOGGLE_MAPPING, EDITOR_ZOOM_IN, EDITOR_ZOOM_OUT,
             EDITOR_CLOSE_TAB, EDITOR_RELOAD_CLASS, SAVE_MAPPINGS, DROP_MAPPINGS, RELOAD_MAPPINGS, RELOAD_ALL,
             MAPPING_STATS, SEARCH_CLASS, SEARCH_METHOD, SEARCH_FIELD);
+    // Editing entries in CONFIGURABLE_KEY_BINDS would have unwanted runtime effects, so we use a copy instead.
+    public static final List<KeyBind> EDITABLE_KEY_BINDS = CONFIGURABLE_KEY_BINDS.stream().map(KeyBind::copy)
+            .collect(Collectors.toCollection(ArrayList::new));
 
     private KeyBinds() {
     }
 
-    public static boolean isConfigurable(KeyBind keyBind) {
-        return CONFIGURABLE_KEY_BINDS.contains(keyBind);
+    public static boolean isEditable(KeyBind keyBind) {
+        return EDITABLE_KEY_BINDS.contains(keyBind);
     }
 
-    public static Map<String, List<KeyBind>> getConfigurableKeyBindsByCategory() {
-        return CONFIGURABLE_KEY_BINDS.stream()
+    public static Map<String, List<KeyBind>> getEditableKeyBindsByCategory() {
+        return EDITABLE_KEY_BINDS.stream()
                 .collect(Collectors.groupingBy(KeyBind::category));
     }
 
     public static void loadConfig() {
         for (KeyBind keyBind : CONFIGURABLE_KEY_BINDS) {
             keyBind.deserializeCombinations(KeyBindsConfig.getKeyBindCodes(keyBind));
+        }
+    }
+
+    public static void saveConfig() {
+        boolean modified = false;
+        for (int i = 0; i < CONFIGURABLE_KEY_BINDS.size(); i++) {
+            KeyBind keyBind = CONFIGURABLE_KEY_BINDS.get(i);
+            KeyBind editedKeyBind = EDITABLE_KEY_BINDS.get(i);
+            if (!editedKeyBind.equals(keyBind)) {
+                modified = true;
+                KeyBindsConfig.setKeyBind(editedKeyBind);
+            }
+        }
+        if (modified) {
+            KeyBindsConfig.save();
+        }
+    }
+
+    public static void resetEditableKeyBinds() {
+        EDITABLE_KEY_BINDS.clear();
+        EDITABLE_KEY_BINDS.addAll(CONFIGURABLE_KEY_BINDS.stream().map(KeyBind::copy).toList());
+        for (KeyBind keyBind : EDITABLE_KEY_BINDS) {
+            keyBind.deserializeCombinations(KeyBindsConfig.getSavedKeyBindCodes(keyBind));
         }
     }
 }

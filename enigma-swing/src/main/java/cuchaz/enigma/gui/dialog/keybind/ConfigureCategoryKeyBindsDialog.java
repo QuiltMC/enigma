@@ -52,19 +52,16 @@ public class ConfigureCategoryKeyBindsDialog extends JDialog {
 
         // Add buttons
         Container buttonContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, ScaleUtil.scale(4), ScaleUtil.scale(4)));
-        JButton saveButton = new JButton(I18n.translate("menu.file.configure_keybinds.save"));
-        // saveButton.addActionListener(event -> save()); // TODO
-        buttonContainer.add(saveButton);
-        JButton cancelButton = new JButton(I18n.translate("prompt.cancel"));
-        cancelButton.addActionListener(event -> cancel());
-        buttonContainer.add(cancelButton);
+        JButton okButton = new JButton(I18n.translate("prompt.ok"));
+        okButton.addActionListener(event -> close());
+        buttonContainer.add(okButton);
         contentPane.add(buttonContainer, BorderLayout.SOUTH);
 
         pack();
         setLocationRelativeTo(owner);
     }
 
-    private void cancel() {
+    private void close() {
         setVisible(false);
         dispose();
     }

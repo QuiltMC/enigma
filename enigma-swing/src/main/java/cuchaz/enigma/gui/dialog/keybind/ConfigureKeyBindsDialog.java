@@ -19,6 +19,8 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +40,7 @@ public class ConfigureKeyBindsDialog extends JDialog {
         // Add categories
         JPanel categoriesPanel = new JPanel(new GridBagLayout());
         categoriesPanel.setBorder(new EmptyBorder(ScaleUtil.scale(10), ScaleUtil.scale(10), ScaleUtil.scale(10), ScaleUtil.scale(10)));
-        Map<String, List<KeyBind>> keyBinds = KeyBinds.getConfigurableKeyBindsByCategory();
+        Map<String, List<KeyBind>> keyBinds = KeyBinds.getEditableKeyBindsByCategory();
         int i = 0;
         for (Map.Entry<String, List<KeyBind>> entry : keyBinds.entrySet()) {
             String category = entry.getKey();
@@ -65,18 +67,33 @@ public class ConfigureKeyBindsDialog extends JDialog {
         // Add buttons
         Container buttonContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, ScaleUtil.scale(4), ScaleUtil.scale(4)));
         JButton saveButton = new JButton(I18n.translate("menu.file.configure_keybinds.save"));
-        // saveButton.addActionListener(event -> save()); // TODO
+        saveButton.addActionListener(event -> save());
         buttonContainer.add(saveButton);
         JButton cancelButton = new JButton(I18n.translate("prompt.cancel"));
         cancelButton.addActionListener(event -> cancel());
         buttonContainer.add(cancelButton);
         contentPane.add(buttonContainer, BorderLayout.SOUTH);
 
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+                KeyBinds.resetEditableKeyBinds();
+            }
+        });
+
         pack();
         setLocationRelativeTo(owner);
     }
 
+    private void save() {
+        KeyBinds.saveConfig();
+        setVisible(false);
+        dispose();
+    }
+
     private void cancel() {
+        KeyBinds.resetEditableKeyBinds();
         setVisible(false);
         dispose();
     }

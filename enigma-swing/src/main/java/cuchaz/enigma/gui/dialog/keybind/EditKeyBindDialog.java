@@ -3,11 +3,9 @@ package cuchaz.enigma.gui.dialog.keybind;
 import cuchaz.enigma.gui.config.keybind.KeyBind;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
-import org.checkerframework.checker.units.qual.A;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
@@ -22,12 +20,14 @@ import java.util.List;
 
 public class EditKeyBindDialog extends JDialog {
     private final List<CombinationPanel> combinationPanels = new ArrayList<>();
+    private final List<KeyBind.Combination> combinations;
     private final KeyBind keyBind;
     private final JPanel combinationsPanel;
 
     public EditKeyBindDialog(Frame owner, KeyBind bind) {
         super(owner, I18n.translate("menu.file.configure_keybinds.edit.title"), true);
         this.keyBind = bind;
+        this.combinations = new ArrayList<>(keyBind.combinations());
 
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
@@ -49,7 +49,7 @@ public class EditKeyBindDialog extends JDialog {
         combinationsPanel.setBorder(new EmptyBorder(ScaleUtil.scale(10), ScaleUtil.scale(10), ScaleUtil.scale(10), ScaleUtil.scale(10)));
         combinationsPanel.addMouseListener(mouseListener());
         for (KeyBind.Combination combination : keyBind.combinations()) {
-            CombinationPanel combinationPanel = new CombinationPanel(this, keyBind, combination);
+            CombinationPanel combinationPanel = new CombinationPanel(this, combination);
             combinationPanel.addMouseListener(mouseListener());
             combinationPanels.add(combinationPanel);
             combinationsPanel.add(combinationPanel);
@@ -73,7 +73,31 @@ public class EditKeyBindDialog extends JDialog {
     }
 
     private void save() {
-        // TODO
+        boolean modified = !combinations.equals(keyBind.combinations());
+        for (CombinationPanel combinationPanel : combinationPanels) {
+            if (combinationPanel.isModified() && combinationPanel.isCombinationValid()) {
+                modified = true;
+                KeyBind.Combination combination = combinationPanel.getResultCombination();
+                if (isNewCombination(combinationPanel)) {
+                    combinations.add(combination);
+                } else {
+                    int index = combinations.indexOf(combinationPanel.getOriginalCombination());
+                    if (index >= 0) {
+                        combinations.set(index, combination);
+                    } else {
+                        combinations.add(combination);
+                    }
+                }
+            }
+        }
+
+        if (modified) {
+            keyBind.combinations().clear();
+            keyBind.combinations().addAll(combinations);
+        }
+
+        setVisible(false);
+        dispose();
     }
 
     private void cancel() {
@@ -92,13 +116,14 @@ public class EditKeyBindDialog extends JDialog {
     }
 
     protected void removeCombination(CombinationPanel combinationPanel) {
+        combinations.remove(combinationPanel.getOriginalCombination());
         combinationsPanel.remove(combinationPanel);
         combinationPanels.remove(combinationPanel);
         pack();
     }
 
     private void addCombination() {
-        CombinationPanel combinationPanel = CombinationPanel.createEmpty(this, keyBind);
+        CombinationPanel combinationPanel = CombinationPanel.createEmpty(this);
         combinationsPanel.add(combinationPanel);
         combinationPanels.add(combinationPanel);
         pack();
@@ -106,6 +131,7 @@ public class EditKeyBindDialog extends JDialog {
 
     private void clearCombinations() {
         for (CombinationPanel combinationPanel : combinationPanels) {
+            combinations.remove(combinationPanel.getOriginalCombination());
             combinationsPanel.remove(combinationPanel);
         }
         combinationPanels.clear();
@@ -118,7 +144,6 @@ public class EditKeyBindDialog extends JDialog {
 
     // Stop editing all combination panels but the excluded one
     protected void stopEditing(CombinationPanel excluded) {
-        System.out.println("root stop editing");
         for (CombinationPanel combinationPanel : combinationPanels) {
             if (combinationPanel == excluded) continue;
             combinationPanel.stopEditing();

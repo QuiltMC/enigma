@@ -21,7 +21,6 @@ public class CombinationPanel extends JPanel {
     private static final List<Integer> MODIFIER_FLAGS = List.of(InputEvent.SHIFT_DOWN_MASK, InputEvent.CTRL_DOWN_MASK, InputEvent.ALT_DOWN_MASK, InputEvent.META_DOWN_MASK);
     private static final Color EDITING_BUTTON_FOREGROUND = Color.ORANGE;
     private final EditKeyBindDialog parent;
-    private final KeyBind keyBind;
     private final JButton button;
     private final Color defaultButtonFg;
     private final KeyBind.Combination originalCombination;
@@ -29,9 +28,8 @@ public class CombinationPanel extends JPanel {
     private final MutableCombination lastCombination;
     private boolean editing = false;
 
-    public CombinationPanel(EditKeyBindDialog parent, KeyBind bind, KeyBind.Combination combination) {
+    public CombinationPanel(EditKeyBindDialog parent, KeyBind.Combination combination) {
         this.parent = parent;
-        this.keyBind = bind;
         this.originalCombination = combination;
         this.editingCombination = MutableCombination.fromCombination(combination);
         this.lastCombination = editingCombination.copy();
@@ -71,7 +69,6 @@ public class CombinationPanel extends JPanel {
 
     protected void stopEditing() {
         if (editing) {
-            System.out.println("stop editing");
             editing = false;
             button.setForeground(defaultButtonFg);
 
@@ -87,21 +84,18 @@ public class CombinationPanel extends JPanel {
 
     private void startEditing() {
         if (!editing) {
-            System.out.println("start editing");
             editing = true;
             button.setForeground(EDITING_BUTTON_FOREGROUND);
         }
     }
 
     private void update() {
-        System.out.println("update " + getButtonText());
         button.setText(getButtonText());
         parent.pack();
     }
 
     private void onKeyPressed(KeyEvent e) {
         if (editing) {
-            System.out.println("key pressed: " + e.getKeyCode() + "(" + KeyEvent.getKeyText(e.getKeyCode()) + ")");
             if (MODIFIER_KEYS.contains(e.getKeyCode())) {
                 int modifierIndex = MODIFIER_KEYS.indexOf(e.getKeyCode());
                 int modifier = MODIFIER_FLAGS.get(modifierIndex);
@@ -127,12 +121,20 @@ public class CombinationPanel extends JPanel {
         return !editingCombination.isSameCombination(originalCombination);
     }
 
+    public boolean isCombinationValid() {
+        return editingCombination.isValid();
+    }
+
     public KeyBind.Combination getOriginalCombination() {
         return originalCombination;
     }
 
-    public static CombinationPanel createEmpty(EditKeyBindDialog parent, KeyBind bind) {
-        return new CombinationPanel(parent, bind, KeyBind.Combination.EMPTY);
+    public KeyBind.Combination getResultCombination() {
+        return new KeyBind.Combination(editingCombination.keyCode, editingCombination.keyModifiers);
+    }
+
+    public static CombinationPanel createEmpty(EditKeyBindDialog parent) {
+        return new CombinationPanel(parent, KeyBind.Combination.EMPTY);
     }
 
     private static class MutableCombination {
