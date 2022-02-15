@@ -28,17 +28,17 @@ public final class KeyBindsConfig {
 
     private static ConfigSection getSection(KeyBind keyBind, boolean running) {
         if (running) {
-            return keyBind.getCategory().isEmpty() ? runningCfg:runningCfg.section(keyBind.getCategory());
+            return keyBind.category().isEmpty() ? runningCfg : runningCfg.section(keyBind.category());
         } else {
-            return keyBind.getCategory().isEmpty() ? cfg.data() : cfg.data().section(keyBind.getCategory());
+            return keyBind.category().isEmpty() ? cfg.data() : cfg.data().section(keyBind.category());
         }
     }
 
-    public static int[] getKeyBindCodes(KeyBind keyBind) {
-        return getSection(keyBind, true).setIfAbsentIntArray(keyBind.getName(), keyBind.getKeyCodesArray());
+    public static String[] getKeyBindCodes(KeyBind keyBind) {
+        return getSection(keyBind, true).setIfAbsentArray(keyBind.name(), keyBind.serializeCombinations());
     }
 
     public static void setKeyBind(KeyBind keyBind) {
-        getSection(keyBind, false).setIntArray(keyBind.getName(), keyBind.getKeyCodesArray());
+        getSection(keyBind, false).setArray(keyBind.name(), keyBind.serializeCombinations());
     }
 }

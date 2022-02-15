@@ -17,33 +17,33 @@ public final class KeyBinds {
     public static final KeyBind DIALOG_SAVE = KeyBind.builder("dialog_save").key(KeyEvent.VK_ENTER).build();
 
     public static final KeyBind QUICK_FIND_DIALOG_NEXT = KeyBind.builder("next", QUICK_FIND_DIALOG_CATEGORY).key(KeyEvent.VK_ENTER).build();
-    public static final KeyBind QUICK_FIND_DIALOG_PREVIOUS = KeyBind.builder("previous", QUICK_FIND_DIALOG_CATEGORY).key(KeyEvent.VK_ENTER).mod(KeyEvent.SHIFT_DOWN_MASK).build();
+    public static final KeyBind QUICK_FIND_DIALOG_PREVIOUS = KeyBind.builder("previous", QUICK_FIND_DIALOG_CATEGORY).mod(KeyEvent.SHIFT_DOWN_MASK).key(KeyEvent.VK_ENTER).build();
     public static final KeyBind SEARCH_DIALOG_NEXT = KeyBind.builder("next", SEARCH_DIALOG_CATEGORY).key(KeyEvent.VK_DOWN).build();
     public static final KeyBind SEARCH_DIALOG_PREVIOUS = KeyBind.builder("previous", SEARCH_DIALOG_CATEGORY).key(KeyEvent.VK_UP).build();
 
-    public static final KeyBind EDITOR_RENAME = KeyBind.builder("rename", EDITOR_CATEGORY).key(KeyEvent.VK_R).mod(KeyEvent.CTRL_DOWN_MASK).build();
-    public static final KeyBind EDITOR_PASTE = KeyBind.builder("paste", EDITOR_CATEGORY).key(KeyEvent.VK_V).mod(KeyEvent.CTRL_DOWN_MASK).build();
-    public static final KeyBind EDITOR_EDIT_JAVADOC = KeyBind.builder("edit_javadoc", EDITOR_CATEGORY).key(KeyEvent.VK_D).mod(KeyEvent.CTRL_DOWN_MASK).build();
-    public static final KeyBind EDITOR_SHOW_INHERITANCE = KeyBind.builder("show_inheritance", EDITOR_CATEGORY).key(KeyEvent.VK_I).mod(KeyEvent.CTRL_DOWN_MASK).build();
-    public static final KeyBind EDITOR_SHOW_IMPLEMENTATIONS = KeyBind.builder("show_implementations", EDITOR_CATEGORY).key(KeyEvent.VK_M).mod(KeyEvent.CTRL_DOWN_MASK).build();
-    public static final KeyBind EDITOR_SHOW_CALLS = KeyBind.builder("show_calls", EDITOR_CATEGORY).key(KeyEvent.VK_C).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind EDITOR_RENAME = KeyBind.builder("rename", EDITOR_CATEGORY).mod(KeyEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_R).build();
+    public static final KeyBind EDITOR_PASTE = KeyBind.builder("paste", EDITOR_CATEGORY).mod(KeyEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_V).build();
+    public static final KeyBind EDITOR_EDIT_JAVADOC = KeyBind.builder("edit_javadoc", EDITOR_CATEGORY).mod(KeyEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_D).build();
+    public static final KeyBind EDITOR_SHOW_INHERITANCE = KeyBind.builder("show_inheritance", EDITOR_CATEGORY).mod(KeyEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_I).build();
+    public static final KeyBind EDITOR_SHOW_IMPLEMENTATIONS = KeyBind.builder("show_implementations", EDITOR_CATEGORY).mod(KeyEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_M).build();
+    public static final KeyBind EDITOR_SHOW_CALLS = KeyBind.builder("show_calls", EDITOR_CATEGORY).mod(KeyEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_C).build();
     public static final KeyBind EDITOR_SHOW_CALLS_SPECIFIC = KeyBind.builder("show_calls_specific", EDITOR_CATEGORY).key(KeyEvent.VK_C).mod(KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK).build();
-    public static final KeyBind EDITOR_OPEN_ENTRY = KeyBind.builder("open_entry", EDITOR_CATEGORY).key(KeyEvent.VK_N).mod(KeyEvent.CTRL_DOWN_MASK).build();
-    public static final KeyBind EDITOR_OPEN_PREVIOUS = KeyBind.builder("open_previous", EDITOR_CATEGORY).key(KeyEvent.VK_P).mod(KeyEvent.CTRL_DOWN_MASK).build();
-    public static final KeyBind EDITOR_OPEN_NEXT = KeyBind.builder("open_next", EDITOR_CATEGORY).key(KeyEvent.VK_E).mod(KeyEvent.CTRL_DOWN_MASK).build();
-    public static final KeyBind EDITOR_TOGGLE_MAPPING = KeyBind.builder("toggle_mapping", EDITOR_CATEGORY).key(KeyEvent.VK_O).mod(KeyEvent.CTRL_DOWN_MASK).build();
-    public static final KeyBind EDITOR_ZOOM_IN = KeyBind.builder("zoom_in", EDITOR_CATEGORY).keys(KeyEvent.VK_PLUS, KeyEvent.VK_ADD, KeyEvent.VK_EQUALS).mod(KeyEvent.CTRL_DOWN_MASK).build();
-    public static final KeyBind EDITOR_ZOOM_OUT = KeyBind.builder("zoom_out", EDITOR_CATEGORY).keys(KeyEvent.VK_MINUS, KeyEvent.VK_SUBTRACT).mod(KeyEvent.CTRL_DOWN_MASK).build();
-    public static final KeyBind EDITOR_CLOSE_TAB = KeyBind.builder("close_tab", EDITOR_CATEGORY).key(KeyEvent.VK_4).mod(KeyEvent.CTRL_DOWN_MASK).build();
-    public static final KeyBind EDITOR_RELOAD_CLASS = KeyBind.builder("reload_class", EDITOR_CATEGORY).key(KeyEvent.VK_F5).mod(KeyEvent.CTRL_DOWN_MASK).build();
-    public static final KeyBind EDITOR_QUICK_FIND = KeyBind.builder("quick_find", EDITOR_CATEGORY).key(KeyEvent.VK_F).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind EDITOR_OPEN_ENTRY = KeyBind.builder("open_entry", EDITOR_CATEGORY).mod(KeyEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_N).build();
+    public static final KeyBind EDITOR_OPEN_PREVIOUS = KeyBind.builder("open_previous", EDITOR_CATEGORY).mod(KeyEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_P).build();
+    public static final KeyBind EDITOR_OPEN_NEXT = KeyBind.builder("open_next", EDITOR_CATEGORY).mod(KeyEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_E).build();
+    public static final KeyBind EDITOR_TOGGLE_MAPPING = KeyBind.builder("toggle_mapping", EDITOR_CATEGORY).mod(KeyEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_O).build();
+    public static final KeyBind EDITOR_ZOOM_IN = KeyBind.builder("zoom_in", EDITOR_CATEGORY).mod(KeyEvent.CTRL_DOWN_MASK).keys(KeyEvent.VK_PLUS, KeyEvent.VK_ADD, KeyEvent.VK_EQUALS).build();
+    public static final KeyBind EDITOR_ZOOM_OUT = KeyBind.builder("zoom_out", EDITOR_CATEGORY).mod(KeyEvent.CTRL_DOWN_MASK).keys(KeyEvent.VK_MINUS, KeyEvent.VK_SUBTRACT).build();
+    public static final KeyBind EDITOR_CLOSE_TAB = KeyBind.builder("close_tab", EDITOR_CATEGORY).mod(KeyEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_4).build();
+    public static final KeyBind EDITOR_RELOAD_CLASS = KeyBind.builder("reload_class", EDITOR_CATEGORY).mod(KeyEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_F5).build();
+    public static final KeyBind EDITOR_QUICK_FIND = KeyBind.builder("quick_find", EDITOR_CATEGORY).mod(KeyEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_F).build();
 
-    public static final KeyBind SAVE_MAPPINGS = KeyBind.builder("save", MENU_CATEGORY).key(KeyEvent.VK_S).mod(KeyEvent.CTRL_DOWN_MASK).build();
+    public static final KeyBind SAVE_MAPPINGS = KeyBind.builder("save", MENU_CATEGORY).mod(KeyEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_S).build();
     public static final KeyBind DROP_MAPPINGS = KeyBind.builder("drop_mappings", MENU_CATEGORY).build();
     public static final KeyBind RELOAD_MAPPINGS = KeyBind.builder("reload_mappings", MENU_CATEGORY).build();
     public static final KeyBind RELOAD_ALL = KeyBind.builder("reload_all", MENU_CATEGORY).build();
     public static final KeyBind MAPPING_STATS = KeyBind.builder("mapping_stats", MENU_CATEGORY).build();
-    public static final KeyBind SEARCH_CLASS = KeyBind.builder("search_class", MENU_CATEGORY).key(KeyEvent.VK_SPACE).mod(KeyEvent.SHIFT_DOWN_MASK).build();
+    public static final KeyBind SEARCH_CLASS = KeyBind.builder("search_class", MENU_CATEGORY).mod(KeyEvent.SHIFT_DOWN_MASK).key(KeyEvent.VK_SPACE).build();
     public static final KeyBind SEARCH_METHOD = KeyBind.builder("search_method", MENU_CATEGORY).build();
     public static final KeyBind SEARCH_FIELD = KeyBind.builder("search_field", MENU_CATEGORY).build();
 
@@ -62,12 +62,12 @@ public final class KeyBinds {
 
     public static Map<String, List<KeyBind>> getConfigurableKeyBindsByCategory() {
         return CONFIGURABLE_KEY_BINDS.stream()
-                .collect(Collectors.groupingBy(KeyBind::getCategory));
+                .collect(Collectors.groupingBy(KeyBind::category));
     }
 
     public static void loadConfig() {
         for (KeyBind keyBind : CONFIGURABLE_KEY_BINDS) {
-            keyBind.setKeyCodes(KeyBindsConfig.getKeyBindCodes(keyBind));
+            keyBind.deserializeCombinations(KeyBindsConfig.getKeyBindCodes(keyBind));
         }
     }
 }

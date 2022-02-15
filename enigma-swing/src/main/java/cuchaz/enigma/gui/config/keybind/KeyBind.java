@@ -7,97 +7,61 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KeyBind {
-    private final String name;
-    private final String category;
-    private final List<Integer> keyCodes;
-    private final int modifiers;
+public record KeyBind(String name, String category, List<Combination> combinations) {
+    public record Combination(int keyCode, int keyModifiers) {
+        public static final Combination EMPTY = new Combination(-1, 0);
+        public boolean matches(KeyEvent e) {
+            return e.getKeyCode() == keyCode && e.getModifiersEx() == keyModifiers;
+        }
 
-    private KeyBind(String name, String category, List<Integer> keyCodes, int modifiers) {
-        this.name = name;
-        this.category = category;
-        this.keyCodes = new ArrayList<>(keyCodes);
-        this.modifiers = modifiers;
+        public KeyStroke toKeyStroke(int modifiers) {
+            modifiers = keyModifiers | modifiers;
+            return KeyStroke.getKeyStroke(keyCode, modifiers);
+        }
+
+        public String serialize() {
+            return keyCode + ";" + Integer.toString(keyModifiers, 16);
+        }
+
+        public static Combination deserialize(String str) {
+            String[] parts = str.split(";", 2);
+            return new Combination(Integer.parseInt(parts[0]), Integer.parseInt(parts[1], 16));
+        }
     }
 
     public boolean matches(KeyEvent e) {
-        return this.keyCodes.contains(e.getKeyCode());
-    }
-
-    public KeyStroke toKeyStroke() {
-        return this.toKeyStroke(0);
+        return combinations.stream().anyMatch(c -> c.matches(e));
     }
 
     public KeyStroke toKeyStroke(int modifiers) {
-        modifiers = this.modifiers | modifiers;
-        return hasKeyCodes() ? KeyStroke.getKeyStroke(getFirst(), modifiers) : null;
+        return isEmpty() ? null : combinations.get(0).toKeyStroke(modifiers);
     }
 
-    public String getName() {
-        return this.name;
+    public KeyStroke toKeyStroke() {
+        return toKeyStroke(0);
     }
 
-    public String getCategory() {
-        return this.category;
+    public boolean isEmpty() {
+        return combinations.isEmpty();
     }
 
-    public List<Integer> getKeyCodes() {
-        return this.keyCodes;
+    public String[] serializeCombinations() {
+        return combinations.stream().map(Combination::serialize).toArray(String[]::new);
     }
 
-    public int getModifiers() {
-        return this.modifiers;
-    }
-
-    public int[] getKeyCodesArray() {
-        return this.keyCodes.stream().mapToInt(Integer::intValue).toArray();
+    public void deserializeCombinations(String[] serialized) {
+        combinations.clear();
+        for (String serializedCombination : serialized) {
+            combinations.add(Combination.deserialize(serializedCombination));
+        }
     }
 
     private String getTranslationKey() {
-        return "keybind." + (this.category.isEmpty() ? "" : this.category + ".") + this.name;
+        return "keybind." + (category.isEmpty() ? "" : category + ".") + this.name;
     }
 
     public String getTranslatedName() {
-        return I18n.translate(this.getTranslationKey());
-    }
-
-    protected void setKeyCodes(int... keyCodes) {
-        this.keyCodes.clear();
-        for (int keyCode : keyCodes) {
-            if (!this.keyCodes.contains(keyCode)) {
-                this.keyCodes.add(keyCode);
-            }
-        }
-    }
-
-    public void addKeyCode(int keyCode) {
-        if (!this.keyCodes.contains(keyCode)) {
-            this.keyCodes.add(keyCode);
-        }
-    }
-
-    public void removeKeyCode(int keyCode) {
-        this.keyCodes.remove((Object) keyCode);
-    }
-
-    public void clearKeyCodes() {
-        this.keyCodes.clear();
-    }
-
-    public int getFirst() {
-        return this.keyCodes.get(0);
-    }
-
-    public int getLast() {
-        return this.keyCodes.get(this.keyCodes.size() - 1);
-    }
-
-    public boolean hasKeyCodes() {
-        return !this.keyCodes.isEmpty();
-    }
-
-    public KeyBind copy() {
-        return new KeyBind(this.name, this.category, this.keyCodes, this.modifiers);
+        return I18n.translate(getTranslationKey());
     }
 
     public static Builder builder(String name) {
@@ -111,38 +75,42 @@ public class KeyBind {
     public static class Builder {
         private final String name;
         private final String category;
-        private final List<Integer> keyCodes = new ArrayList<>();
+        private final List<Combination> combinations = new ArrayList<>();
         private int modifiers = 0;
 
-        public Builder(String name) {
+        private Builder(String name) {
             this.name = name;
             this.category = "";
         }
 
-        public Builder(String name, String category) {
+        private Builder(String name, String category) {
             this.name = name;
             this.category = category;
         }
 
-        public Builder key(int keyCode) {
-            keyCodes.add(keyCode);
+        public KeyBind build() {
+            return new KeyBind(name, category, combinations);
+        }
+
+        public Builder key(int keyCode, int keyModifiers) {
+            combinations.add(new Combination(keyCode, keyModifiers | modifiers));
             return this;
+        }
+
+        public Builder key(int keyCode) {
+            return key(keyCode, 0);
         }
 
         public Builder keys(int... keyCodes) {
             for (int keyCode : keyCodes) {
-                this.keyCodes.add(keyCode);
+                key(keyCode);
             }
             return this;
         }
 
         public Builder mod(int modifiers) {
-            this.modifiers = modifiers;
+            this.modifiers |= modifiers;
             return this;
-        }
-
-        public KeyBind build() {
-            return new KeyBind(name, category, keyCodes, modifiers);
         }
     }
 }
