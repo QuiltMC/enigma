@@ -11,6 +11,8 @@ import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
@@ -43,11 +45,15 @@ public class MappingValidator {
 		boolean error = false;
 
 		for (ClassEntry relatedClass : relatedClasses) {
+			if (isStatic(entry) && relatedClass != containingClass) {
+				// static entries can only conflict with entries in the same class
+				continue;
+			}
+
 			Entry<?> relatedEntry = entry.replaceAncestor(containingClass, relatedClass);
 			Entry<?> translatedEntry = deobfuscator.translate(relatedEntry);
 
 			List<? extends Entry<?>> translatedSiblings = obfToDeobf.getSiblings(relatedEntry).stream()
-					.filter(e -> !isStatic(e)) // TODO: Improve this
 					.map(deobfuscator::translate)
 					.toList();
 
@@ -78,11 +84,15 @@ public class MappingValidator {
 
 	private boolean isUnique(Entry<?> entry, List<? extends Entry<?>> siblings, String name) {
 		for (Entry<?> sibling : siblings) {
-			if (entry.canConflictWith(sibling) && sibling.getName().equals(name)) {
+			if (canConflict(entry, sibling) && sibling.getName().equals(name)) {
 				return false;
 			}
 		}
 		return true;
+	}
+
+	private boolean canConflict(Entry<?> entry, Entry<?> sibling) {
+		return entry.canConflictWith(sibling);
 	}
 
 	private boolean isStatic(Entry<?> entry) {
