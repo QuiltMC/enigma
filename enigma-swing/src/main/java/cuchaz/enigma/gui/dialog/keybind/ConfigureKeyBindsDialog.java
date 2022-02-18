@@ -1,5 +1,6 @@
 package cuchaz.enigma.gui.dialog.keybind;
 
+import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.keybind.KeyBind;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
@@ -16,7 +17,6 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.WindowAdapter;
@@ -25,17 +25,15 @@ import java.util.List;
 import java.util.Map;
 
 public class ConfigureKeyBindsDialog extends JDialog {
-    public ConfigureKeyBindsDialog(Frame owner) {
-        super(owner, I18n.translate("menu.file.configure_keybinds.title"), true);
+    private final Gui gui;
+
+    public ConfigureKeyBindsDialog(Gui gui) {
+        super(gui.getFrame(), I18n.translate("menu.file.configure_keybinds.title"), true);
+        this.gui = gui;
+        JFrame owner = gui.getFrame();
 
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
-
-        // Add warning
-        JLabel warningLabel = new JLabel(I18n.translate("menu.file.configure_keybinds.warning"));
-        Font f = warningLabel.getFont();
-        warningLabel.setFont(f.deriveFont(f.getStyle() | Font.BOLD));
-        contentPane.add(warningLabel, BorderLayout.NORTH);
 
         // Add categories
         JPanel categoriesPanel = new JPanel(new GridBagLayout());
@@ -88,6 +86,7 @@ public class ConfigureKeyBindsDialog extends JDialog {
 
     private void save() {
         KeyBinds.saveConfig();
+        gui.reloadKeyBinds();
         setVisible(false);
         dispose();
     }
@@ -98,8 +97,8 @@ public class ConfigureKeyBindsDialog extends JDialog {
         dispose();
     }
 
-    public static void show(JFrame owner) {
-        ConfigureKeyBindsDialog dialog = new ConfigureKeyBindsDialog(owner);
+    public static void show(Gui gui) {
+        ConfigureKeyBindsDialog dialog = new ConfigureKeyBindsDialog(gui);
         dialog.setVisible(true);
     }
 }

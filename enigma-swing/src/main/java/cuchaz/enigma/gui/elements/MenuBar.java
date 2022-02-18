@@ -1,6 +1,5 @@
 package cuchaz.enigma.gui.elements;
 
-import java.awt.event.InputEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -129,14 +128,7 @@ public class MenuBar {
 		this.helpMenu.add(this.githubItem);
 		ui.add(this.helpMenu);
 
-		this.saveMappingsItem.setAccelerator(KeyBinds.SAVE_MAPPINGS.toKeyStroke());
-		this.dropMappingsItem.setAccelerator(KeyBinds.DROP_MAPPINGS.toKeyStroke());
-		this.reloadMappingsItem.setAccelerator(KeyBinds.RELOAD_MAPPINGS.toKeyStroke());
-		this.reloadAllItem.setAccelerator(KeyBinds.RELOAD_ALL.toKeyStroke());
-		this.statsItem.setAccelerator(KeyBinds.MAPPING_STATS.toKeyStroke());
-		this.searchClassItem.setAccelerator(KeyBinds.SEARCH_CLASS.toKeyStroke());
-		this.searchMethodItem.setAccelerator(KeyBinds.SEARCH_METHOD.toKeyStroke());
-		this.searchFieldItem.setAccelerator(KeyBinds.SEARCH_FIELD.toKeyStroke());
+		setKeyBinds();
 
 		this.jarOpenItem.addActionListener(_e -> this.onOpenJarClicked());
 		this.jarCloseItem.addActionListener(_e -> this.gui.getController().closeJar());
@@ -148,7 +140,7 @@ public class MenuBar {
 		this.exportSourceItem.addActionListener(_e -> this.onExportSourceClicked());
 		this.exportJarItem.addActionListener(_e -> this.onExportJarClicked());
 		this.statsItem.addActionListener(_e -> StatsDialog.show(this.gui));
-		this.configureKeyBindsItem.addActionListener(_e -> ConfigureKeyBindsDialog.show(this.gui.getFrame()));
+		this.configureKeyBindsItem.addActionListener(_e -> ConfigureKeyBindsDialog.show(this.gui));
 		this.exitItem.addActionListener(_e -> this.gui.close());
 		this.customScaleItem.addActionListener(_e -> this.onCustomScaleClicked());
 		this.fontItem.addActionListener(_e -> this.onFontClicked(this.gui));
@@ -159,6 +151,17 @@ public class MenuBar {
 		this.startServerItem.addActionListener(_e -> this.onStartServerClicked());
 		this.aboutItem.addActionListener(_e -> AboutDialog.show(this.gui.getFrame()));
 		this.githubItem.addActionListener(_e -> this.onGithubClicked());
+	}
+
+	public void setKeyBinds() {
+		this.saveMappingsItem.setAccelerator(KeyBinds.SAVE_MAPPINGS.toKeyStroke());
+		this.dropMappingsItem.setAccelerator(KeyBinds.DROP_MAPPINGS.toKeyStroke());
+		this.reloadMappingsItem.setAccelerator(KeyBinds.RELOAD_MAPPINGS.toKeyStroke());
+		this.reloadAllItem.setAccelerator(KeyBinds.RELOAD_ALL.toKeyStroke());
+		this.statsItem.setAccelerator(KeyBinds.MAPPING_STATS.toKeyStroke());
+		this.searchClassItem.setAccelerator(KeyBinds.SEARCH_CLASS.toKeyStroke());
+		this.searchMethodItem.setAccelerator(KeyBinds.SEARCH_METHOD.toKeyStroke());
+		this.searchFieldItem.setAccelerator(KeyBinds.SEARCH_FIELD.toKeyStroke());
 	}
 
 	public void updateUiState() {

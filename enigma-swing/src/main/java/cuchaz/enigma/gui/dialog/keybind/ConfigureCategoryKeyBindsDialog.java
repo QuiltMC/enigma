@@ -24,12 +24,6 @@ public class ConfigureCategoryKeyBindsDialog extends JDialog {
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 
-        // Add warning
-        JLabel warningLabel = new JLabel(I18n.translate("menu.file.configure_keybinds.warning"));
-        Font f = warningLabel.getFont();
-        warningLabel.setFont(f.deriveFont(f.getStyle() | Font.BOLD));
-        contentPane.add(warningLabel, BorderLayout.NORTH);
-
         // Add keybinds
         JPanel keyBindsPanel = new JPanel(new GridLayout(0, 1, 5, 5));
         keyBindsPanel.setBorder(new EmptyBorder(ScaleUtil.scale(10), ScaleUtil.scale(10), ScaleUtil.scale(10), ScaleUtil.scale(10)));

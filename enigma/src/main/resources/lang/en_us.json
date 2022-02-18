@@ -36,7 +36,6 @@
 	"menu.file.configure_keybinds.title": "Configure Keybinds",
 	"menu.file.configure_keybinds.category_title": "Configure %s Keybinds",
 	"menu.file.configure_keybinds.edit": "Edit Keybinds...",
-	"menu.file.configure_keybinds.warning": "Restart the application to apply changes.",
 	"menu.file.configure_keybinds.save": "Save Keybinds",
 	"menu.file.configure_keybinds.edit_keybind": "Edit Keybind...",
 	"menu.file.configure_keybinds.edit.title": "Edit Keybind",

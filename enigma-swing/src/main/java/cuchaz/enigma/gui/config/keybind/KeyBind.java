@@ -34,6 +34,11 @@ public record KeyBind(String name, String category, List<Combination> combinatio
         }
     }
 
+    public void setFrom(KeyBind other) {
+        this.combinations.clear();
+        this.combinations.addAll(other.combinations);
+    }
+
     public boolean matches(KeyEvent e) {
         return combinations.stream().anyMatch(c -> c.matches(e));
     }
@@ -75,6 +80,10 @@ public record KeyBind(String name, String category, List<Combination> combinatio
 
     public KeyBind copy() {
         return new KeyBind(name, category, new ArrayList<>(combinations));
+    }
+
+    public boolean isSameKeyBind(KeyBind other) {
+        return name.equals(other.name) && category.equals(other.category);
     }
 
     public static Builder builder(String name) {

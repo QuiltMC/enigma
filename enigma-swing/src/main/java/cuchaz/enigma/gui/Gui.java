@@ -637,4 +637,9 @@ public class Gui {
 		return this.editableTypes.contains(t);
 	}
 
+	public void reloadKeyBinds() {
+		System.out.println("Reloading keybinds");
+		this.menuBar.setKeyBinds();
+		this.editorTabbedPane.reloadKeyBinds();
+	}
 }

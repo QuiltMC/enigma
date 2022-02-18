@@ -1,11 +1,9 @@
 package cuchaz.enigma.gui.elements;
 
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
 
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.gui.EditableType;
@@ -76,20 +74,6 @@ public class EditorPopupMenu {
 		this.openNextItem.setEnabled(false);
 		this.toggleMappingItem.setEnabled(false);
 
-		this.renameItem.setAccelerator(KeyBinds.EDITOR_RENAME.toKeyStroke());
-		this.pasteItem.setAccelerator(KeyBinds.EDITOR_PASTE.toKeyStroke());
-		this.editJavadocItem.setAccelerator(KeyBinds.EDITOR_EDIT_JAVADOC.toKeyStroke());
-		this.showInheritanceItem.setAccelerator(KeyBinds.EDITOR_SHOW_INHERITANCE.toKeyStroke());
-		this.showImplementationsItem.setAccelerator(KeyBinds.EDITOR_SHOW_IMPLEMENTATIONS.toKeyStroke());
-		this.showCallsItem.setAccelerator(KeyBinds.EDITOR_SHOW_CALLS.toKeyStroke());
-		this.showCallsSpecificItem.setAccelerator(KeyBinds.EDITOR_SHOW_CALLS_SPECIFIC.toKeyStroke());
-		this.openEntryItem.setAccelerator(KeyBinds.EDITOR_OPEN_ENTRY.toKeyStroke());
-		this.openPreviousItem.setAccelerator(KeyBinds.EDITOR_OPEN_PREVIOUS.toKeyStroke());
-		this.openNextItem.setAccelerator(KeyBinds.EDITOR_OPEN_NEXT.toKeyStroke());
-		this.toggleMappingItem.setAccelerator(KeyBinds.EDITOR_TOGGLE_MAPPING.toKeyStroke());
-		this.zoomInItem.setAccelerator(KeyBinds.EDITOR_ZOOM_IN.toKeyStroke());
-		this.zoomOutMenu.setAccelerator(KeyBinds.EDITOR_ZOOM_OUT.toKeyStroke());
-
 		this.renameItem.addActionListener(event -> gui.startRename(editor));
 		this.pasteItem.addActionListener(event -> gui.startRename(editor, GuiUtil.getClipboard()));
 		this.editJavadocItem.addActionListener(event -> gui.startDocChange(editor));
@@ -104,6 +88,22 @@ public class EditorPopupMenu {
 		this.zoomInItem.addActionListener(event -> editor.offsetEditorZoom(2));
 		this.zoomOutMenu.addActionListener(event -> editor.offsetEditorZoom(-2));
 		this.resetZoomItem.addActionListener(event -> editor.resetEditorZoom());
+	}
+
+	public void setKeyBinds() {
+		this.renameItem.setAccelerator(KeyBinds.EDITOR_RENAME.toKeyStroke());
+		this.pasteItem.setAccelerator(KeyBinds.EDITOR_PASTE.toKeyStroke());
+		this.editJavadocItem.setAccelerator(KeyBinds.EDITOR_EDIT_JAVADOC.toKeyStroke());
+		this.showInheritanceItem.setAccelerator(KeyBinds.EDITOR_SHOW_INHERITANCE.toKeyStroke());
+		this.showImplementationsItem.setAccelerator(KeyBinds.EDITOR_SHOW_IMPLEMENTATIONS.toKeyStroke());
+		this.showCallsItem.setAccelerator(KeyBinds.EDITOR_SHOW_CALLS.toKeyStroke());
+		this.showCallsSpecificItem.setAccelerator(KeyBinds.EDITOR_SHOW_CALLS_SPECIFIC.toKeyStroke());
+		this.openEntryItem.setAccelerator(KeyBinds.EDITOR_OPEN_ENTRY.toKeyStroke());
+		this.openPreviousItem.setAccelerator(KeyBinds.EDITOR_OPEN_PREVIOUS.toKeyStroke());
+		this.openNextItem.setAccelerator(KeyBinds.EDITOR_OPEN_NEXT.toKeyStroke());
+		this.toggleMappingItem.setAccelerator(KeyBinds.EDITOR_TOGGLE_MAPPING.toKeyStroke());
+		this.zoomInItem.setAccelerator(KeyBinds.EDITOR_ZOOM_IN.toKeyStroke());
+		this.zoomOutMenu.setAccelerator(KeyBinds.EDITOR_ZOOM_OUT.toKeyStroke());
 	}
 
 	// TODO have editor redirect key event to menu so that the actions get

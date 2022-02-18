@@ -156,4 +156,8 @@ public class EditorTabbedPane {
 	public Component getUi() {
 		return this.openFiles;
 	}
+
+	public void reloadKeyBinds() {
+		this.editors.values().forEach(EditorPanel::reloadKeyBinds);
+	}
 }

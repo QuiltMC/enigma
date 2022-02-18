@@ -606,6 +606,10 @@ public class EditorPanel {
 		this.popupMenu.retranslateUi();
 	}
 
+	public void reloadKeyBinds() {
+		this.popupMenu.setKeyBinds();
+	}
+
 	private enum DisplayMode {
 		INACTIVE,
 		IN_PROGRESS,
