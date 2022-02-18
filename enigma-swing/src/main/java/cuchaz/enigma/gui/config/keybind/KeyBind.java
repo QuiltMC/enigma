@@ -6,6 +6,7 @@ import javax.swing.KeyStroke;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public record KeyBind(String name, String category, List<Combination> combinations) {
     public record Combination(int keyCode, int keyModifiers) {
@@ -30,7 +31,7 @@ public record KeyBind(String name, String category, List<Combination> combinatio
 
         @Override
         public String toString() {
-            return "Combination[keyCode=" + keyCode + ", keyModifiers=0x" + Integer.toString(keyModifiers, 16) + "]";
+            return "Combination[keyCode=" + keyCode + ", keyModifiers=0x" + Integer.toString(keyModifiers, 16).toUpperCase(Locale.ROOT) + "]";
         }
     }
 
@@ -80,6 +81,10 @@ public record KeyBind(String name, String category, List<Combination> combinatio
 
     public KeyBind copy() {
         return new KeyBind(name, category, new ArrayList<>(combinations));
+    }
+
+    public KeyBind toImmutable() {
+        return new KeyBind(name, category, List.copyOf(combinations));
     }
 
     public boolean isSameKeyBind(KeyBind other) {

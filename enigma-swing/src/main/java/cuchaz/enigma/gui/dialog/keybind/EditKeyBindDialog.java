@@ -1,6 +1,7 @@
 package cuchaz.enigma.gui.dialog.keybind;
 
 import cuchaz.enigma.gui.config.keybind.KeyBind;
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 
@@ -42,6 +43,10 @@ public class EditKeyBindDialog extends JDialog {
         clearButton.addActionListener(e -> clearCombinations());
         clearButton.addMouseListener(mouseListener());
         buttonsPanel.add(clearButton);
+        JButton resetButton = new JButton(I18n.translate("menu.file.configure_keybinds.edit.reset"));
+        resetButton.addActionListener(e -> reset());
+        resetButton.addMouseListener(mouseListener());
+        buttonsPanel.add(resetButton);
         contentPane.add(buttonsPanel, BorderLayout.NORTH);
 
         // Add combinations panel
@@ -124,6 +129,7 @@ public class EditKeyBindDialog extends JDialog {
 
     private void addCombination() {
         CombinationPanel combinationPanel = CombinationPanel.createEmpty(this);
+        combinationPanel.addMouseListener(mouseListener());
         combinationsPanel.add(combinationPanel);
         combinationPanels.add(combinationPanel);
         pack();
@@ -135,6 +141,22 @@ public class EditKeyBindDialog extends JDialog {
             combinationsPanel.remove(combinationPanel);
         }
         combinationPanels.clear();
+        pack();
+    }
+
+    private void reset() {
+        combinations.clear();
+        combinationPanels.clear();
+        combinationsPanel.removeAll();
+
+        KeyBinds.resetToDefault(keyBind);
+        combinations.addAll(keyBind.combinations());
+        for (KeyBind.Combination combination : combinations) {
+            CombinationPanel combinationPanel = new CombinationPanel(this, combination);
+            combinationPanel.addMouseListener(mouseListener());
+            combinationPanels.add(combinationPanel);
+            combinationsPanel.add(combinationPanel);
+        }
         pack();
     }
 

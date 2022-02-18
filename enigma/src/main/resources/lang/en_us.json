@@ -43,6 +43,7 @@
 	"menu.file.configure_keybinds.edit.remove": "Remove Keybind",
 	"menu.file.configure_keybinds.edit.empty": "<Empty>",
 	"menu.file.configure_keybinds.edit.clear": "Clear Keybinds",
+	"menu.file.configure_keybinds.edit.reset": "Reset to defaults",
 	"menu.file.configure_keybinds.edit.save": "Save Keybind",
 	"menu.file.exit": "Exit",
 	"menu.decompiler": "Decompiler",

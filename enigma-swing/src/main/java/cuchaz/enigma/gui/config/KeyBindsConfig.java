@@ -19,7 +19,7 @@ public final class KeyBindsConfig {
     }
 
     public static String[] getKeyBindCodes(KeyBind keyBind) {
-        return getSection(keyBind).setIfAbsentArray(keyBind.name(), keyBind.serializeCombinations());
+        return getSection(keyBind).getArray(keyBind.name()).orElse(keyBind.serializeCombinations());
     }
 
     public static void setKeyBind(KeyBind keyBind) {

@@ -638,7 +638,6 @@ public class Gui {
 	}
 
 	public void reloadKeyBinds() {
-		System.out.println("Reloading keybinds");
 		this.menuBar.setKeyBinds();
 		this.editorTabbedPane.reloadKeyBinds();
 	}

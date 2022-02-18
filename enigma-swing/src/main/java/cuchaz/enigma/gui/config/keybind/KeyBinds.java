@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class KeyBinds {
     private static final String QUICK_FIND_DIALOG_CATEGORY = "quick_find_dialog";
@@ -48,14 +49,21 @@ public final class KeyBinds {
     public static final KeyBind SEARCH_METHOD = KeyBind.builder("search_method", MENU_CATEGORY).build();
     public static final KeyBind SEARCH_FIELD = KeyBind.builder("search_field", MENU_CATEGORY).build();
 
+    private static final List<KeyBind> DEFAULT_KEY_BINDS = Stream.of(EXIT, DIALOG_SAVE, QUICK_FIND_DIALOG_NEXT,
+            QUICK_FIND_DIALOG_PREVIOUS, SEARCH_DIALOG_NEXT, SEARCH_DIALOG_PREVIOUS, EDITOR_RENAME, EDITOR_PASTE,
+            EDITOR_EDIT_JAVADOC, EDITOR_SHOW_INHERITANCE, EDITOR_SHOW_IMPLEMENTATIONS, EDITOR_SHOW_CALLS,
+            EDITOR_SHOW_CALLS_SPECIFIC, EDITOR_OPEN_ENTRY, EDITOR_OPEN_PREVIOUS, EDITOR_OPEN_NEXT,
+            EDITOR_TOGGLE_MAPPING, EDITOR_ZOOM_IN, EDITOR_ZOOM_OUT, EDITOR_CLOSE_TAB, EDITOR_RELOAD_CLASS,
+            EDITOR_QUICK_FIND, SAVE_MAPPINGS, DROP_MAPPINGS, RELOAD_MAPPINGS, RELOAD_ALL, MAPPING_STATS, SEARCH_CLASS,
+            SEARCH_METHOD, SEARCH_FIELD).map(KeyBind::toImmutable).toList();
+
     private static final List<KeyBind> CONFIGURABLE_KEY_BINDS = List.of(EDITOR_RENAME, EDITOR_PASTE, EDITOR_EDIT_JAVADOC,
-            EDITOR_SHOW_INHERITANCE, EDITOR_SHOW_IMPLEMENTATIONS, EDITOR_SHOW_CALLS, EDITOR_OPEN_ENTRY,
-            EDITOR_OPEN_PREVIOUS, EDITOR_OPEN_NEXT, EDITOR_TOGGLE_MAPPING, EDITOR_ZOOM_IN, EDITOR_ZOOM_OUT,
-            EDITOR_CLOSE_TAB, EDITOR_RELOAD_CLASS, SAVE_MAPPINGS, DROP_MAPPINGS, RELOAD_MAPPINGS, RELOAD_ALL,
-            MAPPING_STATS, SEARCH_CLASS, SEARCH_METHOD, SEARCH_FIELD);
+            EDITOR_SHOW_INHERITANCE, EDITOR_SHOW_IMPLEMENTATIONS, EDITOR_SHOW_CALLS, EDITOR_SHOW_CALLS_SPECIFIC,
+            EDITOR_OPEN_ENTRY, EDITOR_OPEN_PREVIOUS, EDITOR_OPEN_NEXT, EDITOR_TOGGLE_MAPPING, EDITOR_ZOOM_IN,
+            EDITOR_ZOOM_OUT, EDITOR_CLOSE_TAB, EDITOR_RELOAD_CLASS, SAVE_MAPPINGS, DROP_MAPPINGS, RELOAD_MAPPINGS,
+            RELOAD_ALL, MAPPING_STATS, SEARCH_CLASS, SEARCH_METHOD, SEARCH_FIELD);
     // Editing entries in CONFIGURABLE_KEY_BINDS directly wouldn't allow to revert the changes instead of saving
-    public static final List<KeyBind> EDITABLE_KEY_BINDS = CONFIGURABLE_KEY_BINDS.stream().map(KeyBind::copy)
-            .collect(Collectors.toCollection(ArrayList::new));
+    private static List<KeyBind> EDITABLE_KEY_BINDS;
 
     private KeyBinds() {
     }
@@ -73,6 +81,8 @@ public final class KeyBinds {
         for (KeyBind keyBind : CONFIGURABLE_KEY_BINDS) {
             keyBind.deserializeCombinations(KeyBindsConfig.getKeyBindCodes(keyBind));
         }
+
+        resetEditableKeyBinds();
     }
 
     public static void saveConfig() {
@@ -93,7 +103,25 @@ public final class KeyBinds {
 
     // Reset the key binds to the saved values
     public static void resetEditableKeyBinds() {
-        EDITABLE_KEY_BINDS.clear();
-        EDITABLE_KEY_BINDS.addAll(CONFIGURABLE_KEY_BINDS.stream().map(KeyBind::copy).toList());
+        EDITABLE_KEY_BINDS = CONFIGURABLE_KEY_BINDS.stream().map(KeyBind::copy)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    public static void resetToDefault(KeyBind keyBind) {
+        // Ensure the key bind is editable
+        if (!EDITABLE_KEY_BINDS.contains(keyBind)) {
+            return;
+        }
+
+        KeyBind defaultKeyBind = DEFAULT_KEY_BINDS.stream().filter(bind -> bind.isSameKeyBind(keyBind)).findFirst().orElse(null);
+        if (defaultKeyBind == null) {
+            throw new IllegalStateException("Could not find default key bind for " + keyBind);
+        }
+
+        keyBind.setFrom(defaultKeyBind);
+    }
+
+    public static List<KeyBind> getEditableKeyBinds() {
+        return EDITABLE_KEY_BINDS;
     }
 }
