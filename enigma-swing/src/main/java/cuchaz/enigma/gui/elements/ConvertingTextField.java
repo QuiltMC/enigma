@@ -12,6 +12,7 @@ import javax.swing.text.Document;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.events.ConvertingTextFieldListener;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
@@ -57,9 +58,9 @@ public class ConvertingTextField implements Validatable {
 		this.textField.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+				if (KeyBinds.EXIT.matches(e)) {
 					stopEditing(true);
-				} else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+				} else if (KeyBinds.DIALOG_SAVE.matches(e)) {
 					stopEditing(false);
 				}
 			}

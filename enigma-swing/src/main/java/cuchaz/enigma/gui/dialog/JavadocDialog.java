@@ -26,6 +26,7 @@ import com.google.common.base.Strings;
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.gui.GuiController;
 import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.elements.ValidatableTextArea;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
@@ -61,20 +62,15 @@ public class JavadocDialog {
 		this.text.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent event) {
-				switch (event.getKeyCode()) {
-					case KeyEvent.VK_ENTER:
-						if (event.isControlDown()) {
-							doSave();
-							if (vc.canProceed()) {
-								close();
-							}
+				if (KeyBinds.DIALOG_SAVE.matches(event)) {
+					if (event.isControlDown()) {
+						doSave();
+						if (vc.canProceed()) {
+							close();
 						}
-						break;
-					case KeyEvent.VK_ESCAPE:
-						close();
-						break;
-					default:
-						break;
+					}
+				} else if (KeyBinds.EXIT.matches(event)) {
+					close();
 				}
 			}
 		});
