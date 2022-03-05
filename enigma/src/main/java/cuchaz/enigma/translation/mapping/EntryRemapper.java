@@ -165,4 +165,7 @@ public class EntryRemapper {
 		return validator;
 	}
 
+	public JarIndex getJarIndex() {
+		return jarIndex;
+	}
 }
