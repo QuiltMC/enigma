@@ -221,6 +221,10 @@ public class EnigmaProject {
 		return true;
 	}
 
+	public boolean isSynthetic(Entry<?> entry) {
+		return jarIndex.getEntryIndex().hasEntry(entry) && jarIndex.getEntryIndex().getEntryAccess(entry).isSynthetic();
+	}
+
 	public JarExport exportRemappedJar(ProgressListener progress) {
 		Collection<ClassEntry> classEntries = jarIndex.getEntryIndex().getClasses();
 		ClassProvider fixingClassProvider = new ObfuscationFixClassProvider(classProvider, jarIndex);
