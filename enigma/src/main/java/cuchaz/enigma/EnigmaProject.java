@@ -177,9 +177,8 @@ public class EnigmaProject {
 			InnerClassIndex innerClassIndex = jarIndex.getInnerClassIndex();
 			if (innerClassIndex.isInnerClass(classEntry) && innerClassIndex.hasOuterClassData(classEntry)) {
 				JarIndexer.InnerClassData innerClassData = innerClassIndex.getInnerClassData(classEntry);
-				JarIndexer.OuterClassData outerClassData = innerClassIndex.getOuterClassData(classEntry);
-				if (!innerClassData.hasInnerName() && outerClassData.hasEnclosingMethod()) {
-					// Anonymous classes don't have inner names
+				if (!innerClassData.hasInnerName() && !innerClassData.hasOuterName()) {
+					// Anonymous classes don't have inner or outer names
 					return false;
 				}
 			}
