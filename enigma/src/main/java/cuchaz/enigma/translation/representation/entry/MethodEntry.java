@@ -101,6 +101,11 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	}
 
 	@Override
+	public boolean canShadow(Entry<?> entry) {
+		return entry instanceof MethodEntry;
+	}
+
+	@Override
 	public String toString() {
 		return this.getFullName() + this.descriptor;
 	}

@@ -42,7 +42,6 @@ task obfuscate(type: proguard.gradle.ProGuardTask) {
     keepattributes 'NestMembers'
     keepattributes 'EnclosingMethod'
     keepattributes 'Deprecated'
-    renamesourcefileattribute 'SourceFile'
     printmapping 'output/out.txt'
     flattenpackagehierarchy('com.example')
 }
