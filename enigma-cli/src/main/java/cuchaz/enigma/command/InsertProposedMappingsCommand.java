@@ -12,7 +12,9 @@ import cuchaz.enigma.translation.ProposingTranslator;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
+import cuchaz.enigma.translation.mapping.MappingDelta;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
+import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
@@ -23,7 +25,11 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.Utils;
 
 import javax.annotation.Nullable;
+import java.io.BufferedWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Locale;
 
 public class InsertProposedMappingsCommand extends Command {
     public InsertProposedMappingsCommand() {
@@ -53,6 +59,8 @@ public class InsertProposedMappingsCommand extends Command {
     }
 
     public void run(Path inJar, Path source, Path output, String resultFormat, @Nullable Path profilePath, @Nullable Iterable<EnigmaPlugin> plugins) throws Exception {
+        boolean debug = System.getProperty("enigma.insert-proposed-mappings.debug", "false").toLowerCase(Locale.ROOT).equals("true");
+
         EnigmaProfile profile = EnigmaProfile.read(profilePath);
         Enigma.Builder builder = Enigma.builder().setProfile(profile);
 
@@ -78,6 +86,10 @@ public class InsertProposedMappingsCommand extends Command {
 
         EntryTree<EntryMapping> mappings = readMappings(source, ProgressListener.none(), saveParameters);
         project.setMappings(mappings);
+
+        if (debug) {
+            mappings = new DeltaTrackingTree<>(mappings);
+        }
 
         EntryRemapper mapper = project.getMapper();
         Translator translator = new ProposingTranslator(mapper, nameProposalServices);
@@ -121,6 +133,21 @@ public class InsertProposedMappingsCommand extends Command {
 
         Utils.delete(output);
         MappingCommandsUtil.write(mappings, resultFormat, output, saveParameters);
+
+        if (debug) {
+            Path debugOutput = output.resolveSibling("debug-" + output.getFileName() + ".txt");
+            MappingDelta<EntryMapping> delta = ((DeltaTrackingTree<EntryMapping>) mappings).takeDelta();
+
+            try (BufferedWriter writer = Files.newBufferedWriter(debugOutput)) {
+                List<String> content = delta.getChanges().getAllEntries().map(Object::toString).toList();
+                for (String s : content) {
+                    writer.write(s);
+                    writer.newLine();
+                }
+            }
+
+            System.out.println("Wrote debug output to " + debugOutput.toAbsolutePath());
+        }
     }
 
     private static <T extends Entry<?>> boolean insertMapping(T entry, EntryTree<EntryMapping> mappings, EntryRemapper mapper, Translator translator) {
