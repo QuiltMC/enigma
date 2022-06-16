@@ -14,8 +14,11 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
+import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.Utils;
 
@@ -83,12 +86,7 @@ public class InsertProposedMappingsCommand extends Command {
         System.out.println("Proposing class names...");
         int classes = 0;
         for (ClassEntry clazz : index.getClasses()) {
-            ClassEntry deobf = mapper.extendedDeobfuscate(clazz).getValue();
-            String name = translator.extendedTranslate(clazz).getValue().getName();
-            if (!deobf.getName().equals(name) && !clazz.getName().equals(name)) {
-                String javadoc = deobf.getJavadocs();
-                EntryMapping mapping = javadoc != null && !javadoc.isEmpty() ? new EntryMapping(name, javadoc) : new EntryMapping(name);
-                mappings.insert(clazz, mapping);
+            if (insertMapping(clazz, mappings, mapper, translator)) {
                 classes++;
             }
         }
@@ -96,32 +94,45 @@ public class InsertProposedMappingsCommand extends Command {
         System.out.println("Proposing field names...");
         int fields = 0;
         for (FieldEntry field : index.getFields()) {
-            FieldEntry deobf = mapper.extendedDeobfuscate(field).getValue();
-            String name = translator.extendedTranslate(field).getValue().getName();
-            if (!deobf.getName().equals(name) && !field.getName().equals(name)) {
-                String javadoc = deobf.getJavadocs();
-                EntryMapping mapping = javadoc != null && !javadoc.isEmpty() ? new EntryMapping(name, javadoc) : new EntryMapping(name);
-                mappings.insert(field, mapping);
+            if (insertMapping(field, mappings, mapper, translator)) {
                 fields++;
             }
         }
 
-        System.out.println("Proposing method names...");
+        System.out.println("Proposing method and parameter names...");
         int methods = 0;
+        int parameters = 0;
         for (MethodEntry method : index.getMethods()) {
-            MethodEntry deobf = mapper.extendedDeobfuscate(method).getValue();
-            String name = translator.extendedTranslate(method).getValue().getName();
-            if (!deobf.getName().equals(name) && !method.getName().equals(name)) {
-                String javadoc = deobf.getJavadocs();
-                EntryMapping mapping = javadoc != null && !javadoc.isEmpty() ? new EntryMapping(name, javadoc) : new EntryMapping(name);
-                mappings.insert(method, mapping);
+            if (insertMapping(method, mappings, mapper, translator)) {
                 methods++;
+            }
+
+            int p = index.getMethodAccess(method).isStatic() ? 0 : 1;
+            for (TypeDescriptor paramDesc : method.getDesc().getArgumentDescs()) {
+                LocalVariableEntry param = new LocalVariableEntry(method, p, "", true, null);
+                if (insertMapping(param, mappings, mapper, translator)) {
+                    parameters++;
+                }
+                p += paramDesc.getSize();
             }
         }
 
-        System.out.println("Proposed names for " + classes + " classes, " + fields + " fields, " + methods + " methods");
+        System.out.println("Proposed names for " + classes + " classes, " + fields + " fields, " + methods + " methods, " + parameters + " parameters");
 
         Utils.delete(output);
         MappingCommandsUtil.write(mappings, resultFormat, output, saveParameters);
+    }
+
+    private static <T extends Entry<?>> boolean insertMapping(T entry, EntryTree<EntryMapping> mappings, EntryRemapper mapper, Translator translator) {
+        T deobf = mapper.extendedDeobfuscate(entry).getValue();
+        String name = translator.extendedTranslate(entry).getValue().getName();
+        if (!deobf.getName().equals(name) && !entry.getName().equals(name)) {
+            String javadoc = deobf.getJavadocs();
+            EntryMapping mapping = javadoc != null && !javadoc.isEmpty() ? new EntryMapping(name, javadoc) : new EntryMapping(name);
+            mappings.insert(entry, mapping);
+            return true;
+        }
+
+        return false;
     }
 }
