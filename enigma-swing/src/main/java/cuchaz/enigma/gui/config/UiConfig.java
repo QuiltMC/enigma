@@ -148,6 +148,14 @@ public final class UiConfig {
 		return getThemeColorRgba("Deobfuscated Outline");
 	}
 
+	public static Color getDebugTokenColor() {
+		return getThemeColorRgba("Debug Token");
+	}
+
+	public static Color getDebugTokenOutlineColor() {
+		return getThemeColorRgba("Debug Token Outline");
+	}
+
 	public static Color getEditorBackgroundColor() {
 		return getThemeColorRgb("Editor Background");
 	}
@@ -382,6 +390,11 @@ public final class UiConfig {
 			s.setIfAbsentRgbColor("Type", 0x000000);
 			s.setIfAbsentRgbColor("Identifier", 0x000000);
 			s.setIfAbsentRgbColor("Text", 0x000000);
+
+			s.setIfAbsentRgbColor("Debug Token", 0xD9BEF9);
+			s.setIfAbsentDouble("Debug Token Alpha", 1.0);
+			s.setIfAbsentRgbColor("Debug Token Outline", 0xBD93F9);
+			s.setIfAbsentDouble("Debug Token Outline Alpha", 1.0);
 		} else {
 			// Based off colors found here: https://github.com/dracula/dracula-theme/
 			s.setIfAbsentRgbColor("Line Numbers Foreground", 0xA4A4A3);
@@ -410,6 +423,11 @@ public final class UiConfig {
 			s.setIfAbsentRgbColor("Type", 0xF8F8F2);
 			s.setIfAbsentRgbColor("Identifier", 0xF8F8F2);
 			s.setIfAbsentRgbColor("Text", 0xF8F8F2);
+
+			s.setIfAbsentRgbColor("Debug Token", 0x4B1370);
+			s.setIfAbsentDouble("Debug Token Alpha", 0.5);
+			s.setIfAbsentRgbColor("Debug Token Outline", 0x701367);
+			s.setIfAbsentDouble("Debug Token Outline Alpha", 0.5);
 		}
 	}
 

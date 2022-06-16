@@ -19,6 +19,8 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableDefEntry;
 
 public class DecompiledClassSource {
+	protected static final boolean DEBUG_TOKEN_HIGHLIGHTS = false;
+
 	private final ClassEntry classEntry;
 
 	private final SourceIndex obfuscatedIndex;
@@ -69,6 +71,8 @@ public class DecompiledClassSource {
 
 				target.add(RenamableTokenType.OBFUSCATED, movedToken);
 			}
+		} else if (DEBUG_TOKEN_HIGHLIGHTS) {
+			target.add(RenamableTokenType.DEBUG, movedToken);
 		}
 
 		String defaultName = generateDefaultName(translatedEntry.getValue());

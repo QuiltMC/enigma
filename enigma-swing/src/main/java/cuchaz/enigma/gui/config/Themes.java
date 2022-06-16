@@ -90,7 +90,8 @@ public class Themes {
 		return ImmutableMap.of(
 				RenamableTokenType.OBFUSCATED, BoxHighlightPainter.create(UiConfig.getObfuscatedColor(), UiConfig.getObfuscatedOutlineColor()),
 				RenamableTokenType.PROPOSED, BoxHighlightPainter.create(UiConfig.getProposedColor(), UiConfig.getProposedOutlineColor()),
-				RenamableTokenType.DEOBFUSCATED, BoxHighlightPainter.create(UiConfig.getDeobfuscatedColor(), UiConfig.getDeobfuscatedOutlineColor())
+				RenamableTokenType.DEOBFUSCATED, BoxHighlightPainter.create(UiConfig.getDeobfuscatedColor(), UiConfig.getDeobfuscatedOutlineColor()),
+				RenamableTokenType.DEBUG, BoxHighlightPainter.create(UiConfig.getDebugTokenColor(), UiConfig.getDebugTokenOutlineColor())
 		);
 	}
 
