@@ -1,5 +1,6 @@
 package cuchaz.enigma.api.service;
 
+import java.nio.file.Path;
 import java.util.Optional;
 
 public interface EnigmaServiceContext<T extends EnigmaService> {
@@ -8,4 +9,8 @@ public interface EnigmaServiceContext<T extends EnigmaService> {
 	}
 
 	Optional<String> getArgument(String key);
+
+	default Path getPath(String path) {
+		return Path.of(path);
+	}
 }

@@ -44,6 +44,9 @@ public final class EnigmaProfile {
 	@SerializedName("mapping_save_parameters")
 	private final MappingSaveParameters mappingSaveParameters = null;
 
+	@Nullable
+	private Path sourcePath;
+
 	private EnigmaProfile(ServiceContainer serviceProfiles) {
 		this.serviceProfiles = serviceProfiles;
 	}
@@ -51,7 +54,7 @@ public final class EnigmaProfile {
 	public static EnigmaProfile read(@Nullable Path file) throws IOException {
 		if (file != null) {
 			try (BufferedReader reader = Files.newBufferedReader(file)) {
-				return EnigmaProfile.parse(reader);
+				return EnigmaProfile.parse(reader).withSourcePath(file.toAbsolutePath());
 			}
 		} else {
 			try (BufferedReader reader = new BufferedReader(new InputStreamReader(EnigmaProfile.class.getResourceAsStream("/profile.json"), StandardCharsets.UTF_8))) {
@@ -97,6 +100,19 @@ public final class EnigmaProfile {
 	public MappingSaveParameters getMappingSaveParameters() {
 		//noinspection ConstantConditions
 		return mappingSaveParameters == null ? EnigmaProfile.DEFAULT_MAPPING_SAVE_PARAMETERS : mappingSaveParameters;
+	}
+
+	private EnigmaProfile withSourcePath(Path sourcePath) {
+		this.sourcePath = sourcePath;
+		return this;
+	}
+
+	public Path resolvePath(Path path) {
+		if (sourcePath == null) {
+			return path;
+		}
+
+		return sourcePath.getParent().resolve(path);
 	}
 
 	public static class Service {
