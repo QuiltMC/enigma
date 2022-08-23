@@ -5,16 +5,21 @@ import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.translation.mapping.EntryMapping;
+import cuchaz.enigma.translation.mapping.MappingDelta;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
+import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import com.google.common.io.MoreFiles;
 
@@ -151,6 +156,26 @@ public abstract class Command {
 			}
 		}
 		return args[i];
+	}
+
+	protected static boolean shouldDebug(String name) {
+		String key = String.format("enigma.%s.debug", name);
+		return System.getProperty(key, "false").toLowerCase(Locale.ROOT).equals("true");
+	}
+
+	protected static <T> void writeDebugDelta(DeltaTrackingTree<T> tree, Path output) throws IOException {
+		Path debugOutput = output.resolveSibling("debug-" + output.getFileName() + ".txt");
+		MappingDelta<T> delta = tree.takeDelta();
+
+		try (BufferedWriter writer = Files.newBufferedWriter(debugOutput)) {
+			List<String> content = delta.getChanges().getAllEntries().map(Object::toString).toList();
+			for (String s : content) {
+				writer.write(s);
+				writer.newLine();
+			}
+		}
+
+		System.out.println("Wrote debug output to " + debugOutput.toAbsolutePath());
 	}
 
 	public static class ConsoleProgressListener implements ProgressListener {

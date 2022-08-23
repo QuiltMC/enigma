@@ -11,6 +11,7 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.serde.MappingFileNameFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
+import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTreeNode;
 import cuchaz.enigma.translation.mapping.tree.HashEntryTree;
@@ -23,8 +24,10 @@ import java.nio.file.Paths;
 import java.util.Map;
 
 public class MapSpecializedMethodsCommand extends Command {
+    private static final String NAME = "map-specialized-methods";
+
     public MapSpecializedMethodsCommand() {
-        super("map-specialized-methods");
+        super(NAME);
     }
 
     @Override
@@ -43,6 +46,8 @@ public class MapSpecializedMethodsCommand extends Command {
     }
 
     public static void run(Path jar, String sourceFormat, Path sourcePath, String resultFormat, Path output) throws IOException, MappingParseException {
+        boolean debug = shouldDebug(NAME);
+
         MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
         EntryTree<EntryMapping> source = MappingCommandsUtil.read(sourceFormat, sourcePath, saveParameters);
         EntryTree<EntryMapping> result = new HashEntryTree<>();
@@ -61,6 +66,10 @@ public class MapSpecializedMethodsCommand extends Command {
             }
         }
 
+        if (debug) {
+            result = new DeltaTrackingTree<>(result);
+        }
+
         // Add correct mappings for specialized methods
         for (Map.Entry<MethodEntry, MethodEntry> entry : bridgeMethodIndex.getBridgeToSpecialized().entrySet()) {
             MethodEntry bridge = entry.getKey();
@@ -71,5 +80,9 @@ public class MapSpecializedMethodsCommand extends Command {
 
         Utils.delete(output);
         MappingCommandsUtil.write(result, resultFormat, output, saveParameters);
+
+        if (debug) {
+            writeDebugDelta((DeltaTrackingTree<EntryMapping>) result, output);
+        }
     }
 }
