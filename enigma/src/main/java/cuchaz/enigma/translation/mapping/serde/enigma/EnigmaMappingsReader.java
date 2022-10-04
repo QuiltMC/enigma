@@ -119,7 +119,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 					mappingStack.push(pair);
 				}
 			} catch (Throwable t) {
-				throw new MappingParseException(path.toString(), lineNumber, t);
+				throw new MappingParseException(path, lineNumber, t);
 			}
 		}
 
