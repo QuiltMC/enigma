@@ -31,7 +31,7 @@ public class JarIndex implements JarIndexer {
 	private final ReferenceIndex referenceIndex;
 	private final BridgeMethodIndex bridgeMethodIndex;
 	private final PackageVisibilityIndex packageVisibilityIndex;
-	private final InnerClassIndex innerClassIndex;
+	private final EnclosingMethodIndex enclosingMethodIndex;
 	private final EntryResolver entryResolver;
 
 	private final Collection<JarIndexer> indexers;
@@ -39,14 +39,14 @@ public class JarIndex implements JarIndexer {
 	private final Multimap<String, MethodDefEntry> methodImplementations = HashMultimap.create();
 	private final ListMultimap<ClassEntry, ParentedEntry> childrenByClass;
 
-	public JarIndex(EntryIndex entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex, BridgeMethodIndex bridgeMethodIndex, PackageVisibilityIndex packageVisibilityIndex, InnerClassIndex innerClassIndex) {
+	public JarIndex(EntryIndex entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex, BridgeMethodIndex bridgeMethodIndex, PackageVisibilityIndex packageVisibilityIndex, EnclosingMethodIndex enclosingMethodIndex) {
 		this.entryIndex = entryIndex;
 		this.inheritanceIndex = inheritanceIndex;
 		this.referenceIndex = referenceIndex;
 		this.bridgeMethodIndex = bridgeMethodIndex;
 		this.packageVisibilityIndex = packageVisibilityIndex;
-		this.innerClassIndex = innerClassIndex;
-		this.indexers = List.of(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex, packageVisibilityIndex, innerClassIndex);
+		this.enclosingMethodIndex = enclosingMethodIndex;
+		this.indexers = List.of(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex, packageVisibilityIndex, enclosingMethodIndex);
 		this.entryResolver = new IndexEntryResolver(this);
 		this.childrenByClass = ArrayListMultimap.create();
 	}
@@ -57,8 +57,8 @@ public class JarIndex implements JarIndexer {
 		ReferenceIndex referenceIndex = new ReferenceIndex();
 		BridgeMethodIndex bridgeMethodIndex = new BridgeMethodIndex(entryIndex, inheritanceIndex, referenceIndex);
 		PackageVisibilityIndex packageVisibilityIndex = new PackageVisibilityIndex();
-		InnerClassIndex innerClassIndex = new InnerClassIndex();
-		return new JarIndex(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex, packageVisibilityIndex, innerClassIndex);
+		EnclosingMethodIndex enclosingMethodIndex = new EnclosingMethodIndex();
+		return new JarIndex(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex, packageVisibilityIndex, enclosingMethodIndex);
 	}
 
 	public void indexJar(Set<String> classNames, ClassProvider classProvider, ProgressListener progress) {
@@ -77,8 +77,7 @@ public class JarIndex implements JarIndexer {
 			try {
 				classProvider.get(className).accept(new IndexReferenceVisitor(this, entryIndex, inheritanceIndex, Enigma.ASM_VERSION));
 			} catch (Exception e) {
-				System.err.println("Exception while indexing class: " + className + ":");
-				e.printStackTrace();
+				throw new RuntimeException("Exception while indexing class: " + className, e);
 			}
 		}
 
@@ -168,21 +167,12 @@ public class JarIndex implements JarIndexer {
 	}
 
 	@Override
-	public void indexInnerClass(ClassDefEntry classEntry, InnerClassData innerClassData) {
+	public void indexEnclosingMethod(ClassDefEntry classEntry, EnclosingMethodData enclosingMethodData) {
 		if (classEntry.isJre()) {
 			return;
 		}
 
-		indexers.forEach(indexer -> indexer.indexInnerClass(classEntry, innerClassData));
-	}
-
-	@Override
-	public void indexOuterClass(ClassDefEntry classEntry, OuterClassData outerClassData) {
-		if (classEntry.isJre()) {
-			return;
-		}
-
-		indexers.forEach(indexer -> indexer.indexOuterClass(classEntry, outerClassData));
+		indexers.forEach(indexer -> indexer.indexEnclosingMethod(classEntry, enclosingMethodData));
 	}
 
 	public EntryIndex getEntryIndex() {
@@ -205,8 +195,8 @@ public class JarIndex implements JarIndexer {
 		return packageVisibilityIndex;
 	}
 
-	public InnerClassIndex getInnerClassIndex() {
-		return innerClassIndex;
+	public EnclosingMethodIndex getEnclosingMethodIndex() {
+		return enclosingMethodIndex;
 	}
 
 	public EntryResolver getEntryResolver() {

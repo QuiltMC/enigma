@@ -24,16 +24,10 @@ public class IndexClassVisitor extends ClassVisitor {
 		super.visit(version, access, name, signature, superName, interfaces);
 	}
 
-	@Override
-	public void visitInnerClass(String name, String outerName, String innerName, int access) {
-		indexer.indexInnerClass(classEntry, new JarIndexer.InnerClassData(name, outerName, innerName, access));
-
-		super.visitInnerClass(name, outerName, innerName, access);
-	}
-
+	// ASM calls the EnclosingMethod attribute "OuterClass"
 	@Override
 	public void visitOuterClass(String owner, String name, String descriptor) {
-		indexer.indexOuterClass(classEntry, new JarIndexer.OuterClassData(owner, name, descriptor));
+		indexer.indexEnclosingMethod(classEntry, new JarIndexer.EnclosingMethodData(owner, name, descriptor));
 
 		super.visitOuterClass(owner, name, descriptor);
 	}

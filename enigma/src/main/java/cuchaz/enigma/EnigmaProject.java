@@ -19,8 +19,7 @@ import java.util.stream.Stream;
 
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
-import cuchaz.enigma.analysis.index.InnerClassIndex;
-import cuchaz.enigma.analysis.index.JarIndexer;
+import cuchaz.enigma.analysis.index.EnclosingMethodIndex;
 import cuchaz.enigma.api.service.ObfuscationTestService;
 import cuchaz.enigma.classprovider.ObfuscationFixClassProvider;
 import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
@@ -174,13 +173,10 @@ public class EnigmaProject {
 		} else if (obfEntry instanceof LocalVariableEntry && !((LocalVariableEntry) obfEntry).isArgument()) {
 			return false;
 		} else if (obfEntry instanceof ClassEntry classEntry) {
-			InnerClassIndex innerClassIndex = jarIndex.getInnerClassIndex();
-			if (innerClassIndex.isInnerClass(classEntry) && innerClassIndex.hasOuterClassData(classEntry)) {
-				JarIndexer.InnerClassData innerClassData = innerClassIndex.getInnerClassData(classEntry);
-				if (!innerClassData.hasInnerName() && !innerClassData.hasOuterName()) {
-					// Anonymous classes don't have inner or outer names
-					return false;
-				}
+			EnclosingMethodIndex enclosingMethodIndex = jarIndex.getEnclosingMethodIndex();
+			// Only local and anonymous classes may have the EnclosingMethod attribute
+			if (enclosingMethodIndex.hasEnclosingMethod(classEntry)) {
+				return false;
 			}
 		}
 
@@ -213,11 +209,7 @@ public class EnigmaProject {
 		}
 
 		String mappedName = mapper.deobfuscate(entry).getName();
-		if (mappedName != null && !mappedName.isEmpty() && !mappedName.equals(name)) {
-			return false;
-		}
-
-		return true;
+		return mappedName == null || mappedName.isEmpty() || mappedName.equals(name);
 	}
 
 	public boolean isSynthetic(Entry<?> entry) {
