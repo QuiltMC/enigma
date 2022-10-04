@@ -16,6 +16,7 @@ public final class KeyBinds {
     private static final String MENU_CATEGORY = "menu";
 
     public static final KeyBind EXIT = KeyBind.builder("close").key(KeyEvent.VK_ESCAPE).build();
+    public static final KeyBind SELECT = KeyBind.builder("select").key(KeyEvent.VK_ENTER).build();
     public static final KeyBind DIALOG_SAVE = KeyBind.builder("dialog_save").key(KeyEvent.VK_ENTER).build();
 
     public static final KeyBind QUICK_FIND_DIALOG_IGNORE_CASE = KeyBind.builder("ignore_case", QUICK_FIND_DIALOG_CATEGORY).key(KeyEvent.VK_C).build();
@@ -52,7 +53,7 @@ public final class KeyBinds {
     public static final KeyBind SEARCH_METHOD = KeyBind.builder("search_method", MENU_CATEGORY).build();
     public static final KeyBind SEARCH_FIELD = KeyBind.builder("search_field", MENU_CATEGORY).build();
 
-    private static final List<KeyBind> DEFAULT_KEY_BINDS = Stream.of(EXIT, DIALOG_SAVE, QUICK_FIND_DIALOG_NEXT,
+    private static final List<KeyBind> DEFAULT_KEY_BINDS = Stream.of(EXIT, SELECT, DIALOG_SAVE, QUICK_FIND_DIALOG_NEXT,
             QUICK_FIND_DIALOG_PREVIOUS, SEARCH_DIALOG_NEXT, SEARCH_DIALOG_PREVIOUS, EDITOR_RENAME, EDITOR_PASTE,
             EDITOR_EDIT_JAVADOC, EDITOR_SHOW_INHERITANCE, EDITOR_SHOW_IMPLEMENTATIONS, EDITOR_SHOW_CALLS,
             EDITOR_SHOW_CALLS_SPECIFIC, EDITOR_OPEN_ENTRY, EDITOR_OPEN_PREVIOUS, EDITOR_OPEN_NEXT,

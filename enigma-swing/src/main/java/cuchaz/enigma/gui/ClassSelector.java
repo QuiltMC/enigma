@@ -11,6 +11,7 @@
 
 package cuchaz.enigma.gui;
 
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
@@ -68,7 +69,7 @@ public class ClassSelector extends JTree {
 				TreePath[] paths = getSelectionPaths();
 
 				if (paths != null) {
-					if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_O) {
+					if (KeyBinds.EDITOR_TOGGLE_MAPPING.matches(e)) {
 						for (TreePath path : paths) {
 							if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
 								gui.toggleMappingFromEntry(node.getObfEntry());
@@ -76,7 +77,7 @@ public class ClassSelector extends JTree {
 						}
 					}
 
-					if (selectionListener != null && e.getKeyCode() == KeyEvent.VK_ENTER) {
+					if (selectionListener != null && KeyBinds.SELECT.matches(e)) {
 						for (TreePath path : paths) {
 							if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
 								selectionListener.onSelectClass(node.getObfEntry());
