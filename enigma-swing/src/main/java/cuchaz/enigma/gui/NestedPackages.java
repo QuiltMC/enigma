@@ -87,9 +87,10 @@ public class NestedPackages {
 		var node = classToNode.remove(entry);
 
 		if (node != null) {
+			var parent = node.getParent();
 			node.removeFromParent();
 			// remove dangling packages
-			var packageNode = packageToNode.get(entry.getPackageName());
+			var packageNode = (DefaultMutableTreeNode) parent;
 
 			while (packageNode != null && packageNode.getChildCount() == 0) {
 				var theNode = packageNode;
