@@ -166,14 +166,14 @@ public class JavadocDialog {
 	}
 
 	private EntryChange<?> getEntryChange() {
-		return text.getText().trim().isEmpty() ? EntryChange.modify(entry).clearJavadoc() : EntryChange.modify(entry).withJavadoc(text.getText());
+		return text.getText().isBlank() ? EntryChange.modify(entry).clearJavadoc() : EntryChange.modify(entry).withJavadoc(text.getText());
 	}
 
 	public static void show(JFrame parent, GuiController controller, EntryReference<Entry<?>, Entry<?>> entry) {
 		EntryReference<Entry<?>, Entry<?>> translatedReference = controller.project.getMapper().deobfuscate(entry);
 		String text = Strings.nullToEmpty(translatedReference.entry.getJavadocs());
 
-		JavadocDialog dialog = new JavadocDialog(parent, controller, entry.getNameableEntry(), text);
+		JavadocDialog dialog = new JavadocDialog(parent, controller, entry.entry, text);
 		//dialog.ui.doLayout();
 		dialog.ui.setVisible(true);
 		dialog.text.grabFocus();
