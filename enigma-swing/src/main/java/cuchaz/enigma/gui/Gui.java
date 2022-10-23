@@ -375,7 +375,7 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		Entry<?> obfEntry = cursorReference.entry;
+		Entry<?> obfEntry = cursorReference.getNameableEntry();
 		toggleMappingFromEntry(obfEntry);
 	}
 
