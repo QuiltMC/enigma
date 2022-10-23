@@ -19,11 +19,11 @@ subprojects {
     }
 
     dependencies {
-        implementation 'com.google.guava:guava:30.1.1-jre'
-        implementation 'com.google.code.gson:gson:2.8.7'
+        implementation "com.google.guava:guava:${project.guava}"
+        implementation "com.google.code.gson:gson:${project.gson}"
 
-        testImplementation 'junit:junit:4.13.2'
-        testImplementation 'org.hamcrest:hamcrest:2.2'
+        testImplementation "junit:junit:${project.junit}"
+        testImplementation "org.hamcrest:hamcrest:${project.hamcrest}"
     }
 
     group = 'cuchaz'
