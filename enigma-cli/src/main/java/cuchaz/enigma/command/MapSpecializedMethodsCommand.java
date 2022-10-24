@@ -1,7 +1,6 @@
 package cuchaz.enigma.command;
 
 import cuchaz.enigma.ProgressListener;
-import cuchaz.enigma.analysis.IndexTreeBuilder;
 import cuchaz.enigma.analysis.index.BridgeMethodIndex;
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.classprovider.CachingClassProvider;
@@ -59,7 +58,6 @@ public class MapSpecializedMethodsCommand extends Command {
 
         BridgeMethodIndex bridgeMethodIndex = jarIndex.getBridgeMethodIndex();
         Translator translator = new MappingTranslator(source, jarIndex.getEntryResolver());
-	    IndexTreeBuilder indexTreeBuilder = new IndexTreeBuilder(jarIndex);
 
         // Copy all non-specialized methods
         for (EntryTreeNode<EntryMapping> node : source) {
@@ -75,7 +73,7 @@ public class MapSpecializedMethodsCommand extends Command {
         // Add correct mappings for specialized methods
         for (Map.Entry<MethodEntry, MethodEntry> entry : bridgeMethodIndex.getBridgeToSpecialized().entrySet()) {
             MethodEntry bridge = entry.getKey();
-            MethodEntry specialized = indexTreeBuilder.buildMethodInheritance(translator, entry.getValue()).getMethodEntry();
+            MethodEntry specialized = entry.getValue();
             String name = translator.translate(bridge).getName();
             result.insert(specialized, new EntryMapping(name));
         }
