@@ -7,7 +7,6 @@ import net.fabricmc.fernflower.api.IFabricJavadocProvider;
 import org.jetbrains.java.decompiler.main.decompiler.BaseDecompiler;
 import org.jetbrains.java.decompiler.main.extern.IContextSource;
 import org.jetbrains.java.decompiler.main.extern.IFernflowerLogger;
-import org.jetbrains.java.decompiler.main.extern.IFernflowerPreferences;
 import org.jetbrains.java.decompiler.main.extern.IResultSaver;
 import org.objectweb.asm.tree.ClassNode;
 
@@ -27,19 +26,9 @@ public class QuiltflowerSource implements Source {
     // TODO: Allow configuration
     // TODO: Remove imports
     private static Map<String, Object> getOptions(IFabricJavadocProvider javadocProvider) {
-        return Map.of(
-                IFernflowerPreferences.BANNER, """
-                        /*
-                         * Class file decompiled with Quiltflower
-                         */
-
-                        """,
-                IFernflowerPreferences.REMOVE_SYNTHETIC, "0",
-                IFernflowerPreferences.INDENT_STRING, "    ",
-                IFernflowerPreferences.DECOMPILE_GENERIC_SIGNATURES, "1",
-                IFernflowerPreferences.PREFERRED_LINE_LENGTH, "180",
-                IFabricJavadocProvider.PROPERTY_NAME, javadocProvider
-        );
+        Map<String, Object> options = QuiltflowerPreferences.getEffectiveOptions();
+        options.put(IFabricJavadocProvider.PROPERTY_NAME, javadocProvider);
+        return options;
     }
 
     @Override

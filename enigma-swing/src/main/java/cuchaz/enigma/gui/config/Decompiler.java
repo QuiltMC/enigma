@@ -27,4 +27,8 @@ public enum Decompiler {
 		this.service = service;
 		this.settingsDialog = settingsDialog;
 	}
+
+	static {
+		DecompilerConfig.bootstrap();
+	}
 }
