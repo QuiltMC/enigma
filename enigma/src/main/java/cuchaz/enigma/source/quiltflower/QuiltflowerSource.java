@@ -23,7 +23,6 @@ public class QuiltflowerSource implements Source {
         this.remapper = remapper;
     }
 
-    // TODO: Allow configuration
     // TODO: Remove imports
     private static Map<String, Object> getOptions(IFabricJavadocProvider javadocProvider) {
         Map<String, Object> options = QuiltflowerPreferences.getEffectiveOptions();
