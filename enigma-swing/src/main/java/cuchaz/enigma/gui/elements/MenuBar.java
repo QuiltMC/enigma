@@ -20,6 +20,7 @@ import cuchaz.enigma.gui.config.NetConfig;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.dialog.*;
+import cuchaz.enigma.gui.dialog.decompiler.DecompilerSettingsDialog;
 import cuchaz.enigma.gui.dialog.keybind.ConfigureKeyBindsDialog;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.LanguageUtil;
@@ -47,6 +48,7 @@ public class MenuBar {
 	private final JMenuItem exitItem = new JMenuItem();
 
 	private final JMenu decompilerMenu = new JMenu();
+	private final JMenuItem decompilerSettingsItem = new JMenuItem();
 
 	private final JMenu viewMenu = new JMenu();
 	private final JMenu themesMenu = new JMenu();
@@ -79,7 +81,7 @@ public class MenuBar {
 
 		prepareOpenMenu(this.openMenu, gui);
 		prepareSaveMappingsAsMenu(this.saveMappingsAsMenu, this.saveMappingsItem, gui);
-		prepareDecompilerMenu(this.decompilerMenu, gui);
+		prepareDecompilerMenu(this.decompilerMenu, this.decompilerSettingsItem, gui);
 		prepareThemesMenu(this.themesMenu, gui);
 		prepareLanguagesMenu(this.languagesMenu);
 		prepareScaleMenu(this.scaleMenu, gui);
@@ -142,6 +144,7 @@ public class MenuBar {
 		this.statsItem.addActionListener(_e -> StatsDialog.show(this.gui));
 		this.configureKeyBindsItem.addActionListener(_e -> ConfigureKeyBindsDialog.show(this.gui));
 		this.exitItem.addActionListener(_e -> this.gui.close());
+		this.decompilerSettingsItem.addActionListener(_e -> DecompilerSettingsDialog.show(this.gui));
 		this.customScaleItem.addActionListener(_e -> this.onCustomScaleClicked());
 		this.fontItem.addActionListener(_e -> this.onFontClicked(this.gui));
 		this.searchClassItem.addActionListener(_e -> this.onSearchClicked(SearchDialog.Type.CLASS));
@@ -203,6 +206,7 @@ public class MenuBar {
 		this.exitItem.setText(I18n.translate("menu.file.exit"));
 
 		this.decompilerMenu.setText(I18n.translate("menu.decompiler"));
+		this.decompilerSettingsItem.setText(I18n.translate("menu.decompiler.settings"));
 
 		this.viewMenu.setText(I18n.translate("menu.view"));
 		this.themesMenu.setText(I18n.translate("menu.view.themes"));
@@ -420,7 +424,7 @@ public class MenuBar {
 		}
 	}
 
-	private static void prepareDecompilerMenu(JMenu decompilerMenu, Gui gui) {
+	private static void prepareDecompilerMenu(JMenu decompilerMenu, JMenuItem decompilerSettingsItem, Gui gui) {
 		ButtonGroup decompilerGroup = new ButtonGroup();
 
 		for (Decompiler decompiler : Decompiler.values()) {
@@ -437,6 +441,9 @@ public class MenuBar {
 			});
 			decompilerMenu.add(decompilerButton);
 		}
+
+		decompilerMenu.addSeparator();
+		decompilerMenu.add(decompilerSettingsItem);
 	}
 
 	private static void prepareThemesMenu(JMenu themesMenu, Gui gui) {

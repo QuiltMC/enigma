@@ -48,6 +48,8 @@
 	"menu.file.configure_keybinds.edit.save": "Save Keybind",
 	"menu.file.exit": "Exit",
 	"menu.decompiler": "Decompiler",
+	"menu.decompiler.settings": "Decompiler Settings",
+	"menu.decompiler.settings.quiltflower": "Quiltflower Settings",
 	"menu.view": "View",
 	"menu.view.themes": "Themes",
 	"menu.view.themes.default": "Default",
