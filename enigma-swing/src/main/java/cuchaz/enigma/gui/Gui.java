@@ -74,7 +74,7 @@ public class Gui {
 	private final JPanel classesPanel = new JPanel(new BorderLayout());
 	private final JSplitPane splitClasses;
 	private final JTabbedPane tabs = new JTabbedPane();
-	private final CollapsibleTabbedPane logTabs = new CollapsibleTabbedPane(JTabbedPane.BOTTOM);
+	private final CollapsibleTabbedPane logTabs = new CollapsibleTabbedPane(SwingConstants.BOTTOM);
 	private final JSplitPane logSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, tabs, logTabs);
 	private final JPanel centerPanel = new JPanel(new BorderLayout());
 	private final JSplitPane splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, this.logSplit);

@@ -1,17 +1,5 @@
 package cuchaz.enigma.gui.elements;
 
-import java.awt.Component;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.util.Iterator;
-
-import javax.annotation.Nullable;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
-
-import com.google.common.collect.HashBiMap;
-
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.classhandle.ClassHandle;
 import cuchaz.enigma.gui.Gui;
@@ -23,9 +11,19 @@ import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 
+import javax.annotation.Nullable;
+import javax.swing.*;
+import java.awt.Component;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 public class EditorTabbedPane {
-	private final JTabbedPane openFiles = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
-	private final HashBiMap<ClassEntry, EditorPanel> editors = HashBiMap.create();
+	private final JTabbedPane openFiles = new JTabbedPane(SwingConstants.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+	private final Map<ClassEntry, EditorPanel> editors = new HashMap<>();
 
 	private final EditorTabPopupMenu editorTabPopupMenu;
 	private final Gui gui;
@@ -92,7 +90,7 @@ public class EditorTabbedPane {
 
 	public void closeEditor(EditorPanel ed) {
 		this.openFiles.remove(ed.getUi());
-		this.editors.inverse().remove(ed);
+		this.editors.values().remove(ed);
 		this.gui.showStructure(this.getActiveEditor());
 		ed.destroy();
 	}

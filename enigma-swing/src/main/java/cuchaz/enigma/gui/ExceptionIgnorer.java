@@ -23,9 +23,7 @@ public class ExceptionIgnorer {
 
 				// does this stack frame match javax.swing.text.DefaultHighlighter.paint*() ?
 				StackTraceElement frame = stackTrace[1];
-				if (frame.getClassName().equals("javax.swing.text.DefaultHighlighter") && frame.getMethodName().startsWith("paint")) {
-					return true;
-				}
+				return frame.getClassName().equals("javax.swing.text.DefaultHighlighter") && frame.getMethodName().startsWith("paint");
 			}
 		}
 

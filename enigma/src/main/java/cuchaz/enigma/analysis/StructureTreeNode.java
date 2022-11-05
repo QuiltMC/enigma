@@ -144,19 +144,19 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
             }
         }
 
-        return "<i>" + String.join(" ", modifiers) + "</i> " + toString();
+        return "<i>" + String.join(" ", modifiers) + "</i> " + this;
     }
 
     private String parseArgs(List<TypeDescriptor> args) {
         if (args.size() > 0) {
-            String result = "(";
+            StringBuilder result = new StringBuilder("(");
 
             for (int i = 0; i < args.size(); i++) {
                 if (i > 0) {
-                    result += ", ";
+                    result.append(", ");
                 }
 
-                result += this.parseDesc(args.get(i));
+                result.append(this.parseDesc(args.get(i)));
             }
 
             return result + ")";
