@@ -11,17 +11,14 @@
 
 package cuchaz.enigma.translation.representation.entry;
 
-import java.util.Objects;
-
-import javax.annotation.Nonnull;
-
-import com.google.common.base.Preconditions;
-
 import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
+
+import javax.annotation.Nonnull;
+import java.util.Objects;
 
 public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<FieldEntry> {
 	protected final TypeDescriptor desc;
@@ -33,8 +30,8 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	public FieldEntry(ClassEntry parent, String name, TypeDescriptor desc, String javadocs) {
 		super(parent, name, javadocs);
 
-		Preconditions.checkNotNull(parent, "Owner cannot be null");
-		Preconditions.checkNotNull(desc, "Field descriptor cannot be null");
+		Objects.requireNonNull(parent, "Owner cannot be null");
+		Objects.requireNonNull(desc, "Field descriptor cannot be null");
 
 		this.desc = desc;
 	}

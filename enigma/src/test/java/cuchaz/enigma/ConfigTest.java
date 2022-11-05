@@ -1,10 +1,9 @@
 package cuchaz.enigma;
 
-import org.junit.Test;
-
 import cuchaz.enigma.config.ConfigContainer;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConfigTest {
 
@@ -17,15 +16,16 @@ public class ConfigTest {
 		cc.data().section("a").section("b").section("c").setInt("c", 5);
 		cc.data().section("a").section("b").section("c").setDouble("d", 3.5);
 		cc.data().section("a").section("b").section("c").setRgbColor("e", 0x123456);
-		assertEquals("a=a\n" +
-						"\n" +
-						"[a][b][c]\n" +
-						"a=abcd\n" +
-						"b=true\n" +
-						"c=5\n" +
-						"d=3.5\n" +
-						"e=#123456\n",
-				cc.serialize());
+		assertEquals("""
+				a=a
+
+				[a][b][c]
+				a=abcd
+				b=true
+				c=5
+				d=3.5
+				e=#123456
+				""", cc.serialize());
 	}
 
 	@Test
@@ -37,14 +37,16 @@ public class ConfigTest {
 		cc.data().section("a").section("b").section("c").setInt("c", 5);
 		cc.data().section("a").section("b").section("c").setDouble("d", 3.5);
 		cc.data().section("a").section("b").section("c").setRgbColor("e", 0x123456);
-		assertEquals(ConfigContainer.parse("a=a\n" +
-				"\n" +
-				"[a][b][c]\n" +
-				"a=abcd\n" +
-				"b=true\n" +
-				"c=5\n" +
-				"d=3.5\n" +
-				"e=#123456\n").data(), cc.data());
+		assertEquals(ConfigContainer.parse("""
+				a=a
+
+				[a][b][c]
+				a=abcd
+				b=true
+				c=5
+				d=3.5
+				e=#123456
+				""").data(), cc.data());
 	}
 
 	@Test
@@ -54,11 +56,11 @@ public class ConfigTest {
 		cc.data().section(thing).setString(thing, thing);
 		cc.data().section(thing).setArray("arr", new String[] { thing, thing, thing, thing });
 
-		assertEquals(
-				"[\\\\[\\],\\\\,./'\"`~!@#$%^&*()_+-=|}{\\n\\\\\\\\\\u000d\\u0008\\u0000\\uffff\\u1234]\n" +
-						"\\\\\\[],\\\\,./'\"`~!@#$%^&*()_+-\\=|}{\\n\\\\\\\\\\u000d\\u0008\\u0000\\uffff\\u1234=\\\\[],\\\\,./'\"`~!@#$%^&*()_+-=|}{\\n\\\\\\\\\\u000d\\u0008\\u0000\\uffff\\u1234\n" +
-						"arr=\\\\\\\\[]\\\\,\\\\\\\\\\\\,./'\"`~!@#$%^&*()_+-=|}{\\n\\\\\\\\\\\\\\\\\\u000d\\u0008\\u0000\\uffff\\u1234,\\\\\\\\[]\\\\,\\\\\\\\\\\\,./'\"`~!@#$%^&*()_+-=|}{\\n\\\\\\\\\\\\\\\\\\u000d\\u0008\\u0000\\uffff\\u1234,\\\\\\\\[]\\\\,\\\\\\\\\\\\,./'\"`~!@#$%^&*()_+-=|}{\\n\\\\\\\\\\\\\\\\\\u000d\\u0008\\u0000\\uffff\\u1234,\\\\\\\\[]\\\\,\\\\\\\\\\\\,./'\"`~!@#$%^&*()_+-=|}{\\n\\\\\\\\\\\\\\\\\\u000d\\u0008\\u0000\\uffff\\u1234\n",
-				cc.serialize());
+		assertEquals("""
+				[\\\\[\\],\\\\,./'"`~!@#$%^&*()_+-=|}{\\n\\\\\\\\\\u000d\\u0008\\u0000\\uffff\\u1234]
+				\\\\\\[],\\\\,./'"`~!@#$%^&*()_+-\\=|}{\\n\\\\\\\\\\u000d\\u0008\\u0000\\uffff\\u1234=\\\\[],\\\\,./'"`~!@#$%^&*()_+-=|}{\\n\\\\\\\\\\u000d\\u0008\\u0000\\uffff\\u1234
+				arr=\\\\\\\\[]\\\\,\\\\\\\\\\\\,./'"`~!@#$%^&*()_+-=|}{\\n\\\\\\\\\\\\\\\\\\u000d\\u0008\\u0000\\uffff\\u1234,\\\\\\\\[]\\\\,\\\\\\\\\\\\,./'"`~!@#$%^&*()_+-=|}{\\n\\\\\\\\\\\\\\\\\\u000d\\u0008\\u0000\\uffff\\u1234,\\\\\\\\[]\\\\,\\\\\\\\\\\\,./'"`~!@#$%^&*()_+-=|}{\\n\\\\\\\\\\\\\\\\\\u000d\\u0008\\u0000\\uffff\\u1234,\\\\\\\\[]\\\\,\\\\\\\\\\\\,./'"`~!@#$%^&*()_+-=|}{\\n\\\\\\\\\\\\\\\\\\u000d\\u0008\\u0000\\uffff\\u1234
+				""", cc.serialize());
 
 		ConfigContainer cc1 = ConfigContainer.parse(cc.serialize());
 		assertEquals(cc.data(), cc1.data());

@@ -1,11 +1,13 @@
 package cuchaz.enigma.network;
 
-import com.google.common.io.MoreFiles;
-import cuchaz.enigma.*;
+import cuchaz.enigma.Enigma;
+import cuchaz.enigma.EnigmaProfile;
+import cuchaz.enigma.EnigmaProject;
+import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.classprovider.ClasspathClassProvider;
-import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
+import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.utils.Utils;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -119,7 +121,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 				System.out.println("Reading mappings...");
 				if (Files.isDirectory(mappingsFile)) {
 					mappingFormat = MappingFormat.ENIGMA_DIRECTORY;
-				} else if ("zip".equalsIgnoreCase(MoreFiles.getFileExtension(mappingsFile))) {
+				} else if ("zip".equalsIgnoreCase(Utils.getFileExtension(mappingsFile))) {
 					mappingFormat = MappingFormat.ENIGMA_ZIP;
 				} else {
 					mappingFormat = MappingFormat.ENIGMA_FILE;

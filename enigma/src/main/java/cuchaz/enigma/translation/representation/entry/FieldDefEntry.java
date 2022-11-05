@@ -11,8 +11,6 @@
 
 package cuchaz.enigma.translation.representation.entry;
 
-import com.google.common.base.Preconditions;
-
 import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
@@ -22,6 +20,7 @@ import cuchaz.enigma.translation.representation.Signature;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 public class FieldDefEntry extends FieldEntry implements DefEntry<ClassEntry> {
 	private final AccessFlags access;
@@ -33,8 +32,8 @@ public class FieldDefEntry extends FieldEntry implements DefEntry<ClassEntry> {
 
 	public FieldDefEntry(ClassEntry owner, String name, TypeDescriptor desc, Signature signature, AccessFlags access, String javadocs) {
 		super(owner, name, desc, javadocs);
-		Preconditions.checkNotNull(access, "Field access cannot be null");
-		Preconditions.checkNotNull(signature, "Field signature cannot be null");
+		Objects.requireNonNull(access, "Field access cannot be null");
+		Objects.requireNonNull(signature, "Field signature cannot be null");
 		this.access = access;
 		this.signature = signature;
 	}

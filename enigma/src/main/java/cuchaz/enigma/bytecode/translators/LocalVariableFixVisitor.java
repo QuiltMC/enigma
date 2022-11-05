@@ -1,7 +1,7 @@
 package cuchaz.enigma.bytecode.translators;
 
-import com.google.common.base.CharMatcher;
 import cuchaz.enigma.translation.LocalNameGenerator;
+import cuchaz.enigma.translation.mapping.IdentifierValidation;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
@@ -16,6 +16,7 @@ import java.util.Map;
 
 public class LocalVariableFixVisitor extends ClassVisitor {
 	private ClassDefEntry ownerEntry;
+	private int classVersion;
 
 	public LocalVariableFixVisitor(int api, ClassVisitor visitor) {
 		super(api, visitor);
@@ -23,6 +24,7 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+		classVersion = version - Opcodes.V1_2;
 		ownerEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
 		super.visit(version, access, name, signature, superName, interfaces);
 	}
@@ -66,15 +68,15 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 				name = "this";
 			} else if (parameterIndices.containsKey(index)) {
 				name = fixParameterName(parameterIndices.get(index), name);
-			} else if (isInvalidName(name)) {
+			} else if (isInvalidName(name, classVersion)) {
 				name = LocalNameGenerator.generateLocalVariableName(index, new TypeDescriptor(desc));
 			}
 
 			super.visitLocalVariable(name, desc, signature, start, end, index);
 		}
 
-		private boolean isInvalidName(String name) {
-			return name == null || name.isEmpty() || !CharMatcher.ascii().matchesAllOf(name);
+		private static boolean isInvalidName(String name, int version) {
+			return name == null || name.isEmpty() || !IdentifierValidation.isIdentifier(name) || IdentifierValidation.isReservedName(name, version);
 		}
 
 		@Override
@@ -94,7 +96,7 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 				return parameterNames.get(index); // to make sure that LVT names are consistent with parameter table names
 			}
 
-			if (isInvalidName(name)) {
+			if (isInvalidName(name, classVersion)) {
 				List<TypeDescriptor> arguments = methodEntry.getDesc().getArgumentDescs();
 				name = LocalNameGenerator.generateArgumentName(index, arguments.get(index), arguments);
 			}

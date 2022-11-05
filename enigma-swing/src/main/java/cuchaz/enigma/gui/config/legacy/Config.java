@@ -4,8 +4,8 @@ import java.awt.Color;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 
-import com.google.common.io.Files;
 import com.google.gson.*;
 
 import cuchaz.enigma.gui.config.Decompiler;
@@ -85,7 +85,7 @@ public class Config {
 	public void loadConfig() {
 		if (CONFIG_FILE.exists()) {
 			try {
-				gson.fromJson(Files.asCharSource(CONFIG_FILE, Charset.defaultCharset()).read(), Config.class);
+				gson.fromJson(Files.readString(CONFIG_FILE.toPath(), Charset.defaultCharset()), Config.class);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

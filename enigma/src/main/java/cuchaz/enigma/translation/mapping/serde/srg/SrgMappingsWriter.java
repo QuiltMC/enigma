@@ -1,14 +1,13 @@
 package cuchaz.enigma.translation.mapping.serde.srg;
 
-import com.google.common.collect.Lists;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.MappingTranslator;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingDelta;
-import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.VoidEntryResolver;
 import cuchaz.enigma.translation.mapping.serde.LfPrintWriter;
+import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.MappingsWriter;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTreeNode;
@@ -26,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 public enum SrgMappingsWriter implements MappingsWriter {
 	INSTANCE;
@@ -43,7 +43,7 @@ public enum SrgMappingsWriter implements MappingsWriter {
 		List<String> fieldLines = new ArrayList<>();
 		List<String> methodLines = new ArrayList<>();
 
-		List<? extends Entry<?>> rootEntries = Lists.newArrayList(mappings).stream()
+		List<? extends Entry<?>> rootEntries = StreamSupport.stream(mappings.spliterator(), false)
 				.map(EntryTreeNode::getEntry)
 				.toList();
 		progress.init(rootEntries.size(), I18n.translate("progress.mappings.srg_file.generating"));
@@ -110,8 +110,8 @@ public enum SrgMappingsWriter implements MappingsWriter {
 		return entry.getParent().getFullName() + "/" + entry.getName();
 	}
 
-	private Collection<Entry<?>> sorted(Iterable<? extends Entry<?>> iterable) {
-		ArrayList<Entry<?>> sorted = Lists.newArrayList(iterable);
+	private Collection<Entry<?>> sorted(Collection<? extends Entry<?>> iterable) {
+		List<Entry<?>> sorted = new ArrayList<>(iterable);
 		sorted.sort(Comparator.comparing(Entry::getName));
 		return sorted;
 	}

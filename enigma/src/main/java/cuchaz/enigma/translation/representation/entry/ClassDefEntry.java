@@ -11,19 +11,17 @@
 
 package cuchaz.enigma.translation.representation.entry;
 
-import java.util.Arrays;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import com.google.common.base.Preconditions;
-
 import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.Signature;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Objects;
 
 public class ClassDefEntry extends ClassEntry implements DefEntry<ClassEntry> {
 	private final AccessFlags access;
@@ -42,8 +40,8 @@ public class ClassDefEntry extends ClassEntry implements DefEntry<ClassEntry> {
 	public ClassDefEntry(ClassEntry parent, String className, Signature signature, AccessFlags access, @Nullable ClassEntry superClass,
 						 ClassEntry[] interfaces, String javadocs) {
 		super(parent, className, javadocs);
-		Preconditions.checkNotNull(signature, "Class signature cannot be null");
-		Preconditions.checkNotNull(access, "Class access cannot be null");
+		Objects.requireNonNull(signature, "Class signature cannot be null");
+		Objects.requireNonNull(access, "Class access cannot be null");
 
 		this.signature = signature;
 		this.access = access;

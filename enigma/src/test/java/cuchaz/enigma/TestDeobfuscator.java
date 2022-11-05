@@ -15,7 +15,7 @@ import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.source.Decompiler;
 import cuchaz.enigma.source.Decompilers;
 import cuchaz.enigma.source.SourceSettings;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Paths;

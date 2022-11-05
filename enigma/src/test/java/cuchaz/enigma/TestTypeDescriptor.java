@@ -12,66 +12,69 @@
 package cuchaz.enigma;
 
 import cuchaz.enigma.translation.representation.TypeDescriptor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static cuchaz.enigma.TestEntryFactory.newClass;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestTypeDescriptor {
 
 	@Test
 	public void isVoid() {
-		assertThat(new TypeDescriptor("V").isVoid(), is(true));
-		assertThat(new TypeDescriptor("Z").isVoid(), is(false));
-		assertThat(new TypeDescriptor("B").isVoid(), is(false));
-		assertThat(new TypeDescriptor("C").isVoid(), is(false));
-		assertThat(new TypeDescriptor("I").isVoid(), is(false));
-		assertThat(new TypeDescriptor("J").isVoid(), is(false));
-		assertThat(new TypeDescriptor("F").isVoid(), is(false));
-		assertThat(new TypeDescriptor("D").isVoid(), is(false));
-		assertThat(new TypeDescriptor("LFoo;").isVoid(), is(false));
-		assertThat(new TypeDescriptor("[I").isVoid(), is(false));
+		assertTrue(new TypeDescriptor("V").isVoid());
+		assertFalse(new TypeDescriptor("Z").isVoid());
+		assertFalse(new TypeDescriptor("B").isVoid());
+		assertFalse(new TypeDescriptor("C").isVoid());
+		assertFalse(new TypeDescriptor("I").isVoid());
+		assertFalse(new TypeDescriptor("J").isVoid());
+		assertFalse(new TypeDescriptor("F").isVoid());
+		assertFalse(new TypeDescriptor("D").isVoid());
+		assertFalse(new TypeDescriptor("LFoo;").isVoid());
+		assertFalse(new TypeDescriptor("[I").isVoid());
 	}
 
 	@Test
 	public void isPrimitive() {
-		assertThat(new TypeDescriptor("V").isPrimitive(), is(false));
-		assertThat(new TypeDescriptor("Z").isPrimitive(), is(true));
-		assertThat(new TypeDescriptor("B").isPrimitive(), is(true));
-		assertThat(new TypeDescriptor("C").isPrimitive(), is(true));
-		assertThat(new TypeDescriptor("I").isPrimitive(), is(true));
-		assertThat(new TypeDescriptor("J").isPrimitive(), is(true));
-		assertThat(new TypeDescriptor("F").isPrimitive(), is(true));
-		assertThat(new TypeDescriptor("D").isPrimitive(), is(true));
-		assertThat(new TypeDescriptor("LFoo;").isPrimitive(), is(false));
-		assertThat(new TypeDescriptor("[I").isPrimitive(), is(false));
+		assertFalse(new TypeDescriptor("V").isPrimitive());
+		assertTrue(new TypeDescriptor("Z").isPrimitive());
+		assertTrue(new TypeDescriptor("B").isPrimitive());
+		assertTrue(new TypeDescriptor("C").isPrimitive());
+		assertTrue(new TypeDescriptor("I").isPrimitive());
+		assertTrue(new TypeDescriptor("J").isPrimitive());
+		assertTrue(new TypeDescriptor("F").isPrimitive());
+		assertTrue(new TypeDescriptor("D").isPrimitive());
+		assertFalse(new TypeDescriptor("LFoo;").isPrimitive());
+		assertFalse(new TypeDescriptor("[I").isPrimitive());
 	}
 
 	@Test
 	public void getPrimitive() {
-		assertThat(new TypeDescriptor("Z").getPrimitive(), is(TypeDescriptor.Primitive.BOOLEAN));
-		assertThat(new TypeDescriptor("B").getPrimitive(), is(TypeDescriptor.Primitive.BYTE));
-		assertThat(new TypeDescriptor("C").getPrimitive(), is(TypeDescriptor.Primitive.CHARACTER));
-		assertThat(new TypeDescriptor("I").getPrimitive(), is(TypeDescriptor.Primitive.INTEGER));
-		assertThat(new TypeDescriptor("J").getPrimitive(), is(TypeDescriptor.Primitive.LONG));
-		assertThat(new TypeDescriptor("F").getPrimitive(), is(TypeDescriptor.Primitive.FLOAT));
-		assertThat(new TypeDescriptor("D").getPrimitive(), is(TypeDescriptor.Primitive.DOUBLE));
+		assertEquals(TypeDescriptor.Primitive.BOOLEAN, new TypeDescriptor("Z").getPrimitive());
+		assertEquals(TypeDescriptor.Primitive.BYTE, new TypeDescriptor("B").getPrimitive());
+		assertEquals(TypeDescriptor.Primitive.CHARACTER, new TypeDescriptor("C").getPrimitive());
+		assertEquals(TypeDescriptor.Primitive.INTEGER, new TypeDescriptor("I").getPrimitive());
+		assertEquals(TypeDescriptor.Primitive.LONG, new TypeDescriptor("J").getPrimitive());
+		assertEquals(TypeDescriptor.Primitive.FLOAT, new TypeDescriptor("F").getPrimitive());
+		assertEquals(TypeDescriptor.Primitive.DOUBLE, new TypeDescriptor("D").getPrimitive());
 	}
 
 	@Test
 	public void isClass() {
-		assertThat(new TypeDescriptor("V").isType(), is(false));
-		assertThat(new TypeDescriptor("Z").isType(), is(false));
-		assertThat(new TypeDescriptor("B").isType(), is(false));
-		assertThat(new TypeDescriptor("C").isType(), is(false));
-		assertThat(new TypeDescriptor("I").isType(), is(false));
-		assertThat(new TypeDescriptor("J").isType(), is(false));
-		assertThat(new TypeDescriptor("F").isType(), is(false));
-		assertThat(new TypeDescriptor("D").isType(), is(false));
-		assertThat(new TypeDescriptor("LFoo;").isType(), is(true));
-		assertThat(new TypeDescriptor("[I").isType(), is(false));
+		assertFalse(new TypeDescriptor("V").isType());
+		assertFalse(new TypeDescriptor("Z").isType());
+		assertFalse(new TypeDescriptor("B").isType());
+		assertFalse(new TypeDescriptor("C").isType());
+		assertFalse(new TypeDescriptor("I").isType());
+		assertFalse(new TypeDescriptor("J").isType());
+		assertFalse(new TypeDescriptor("F").isType());
+		assertFalse(new TypeDescriptor("D").isType());
+		assertTrue(new TypeDescriptor("LFoo;").isType());
+		assertFalse(new TypeDescriptor("[I").isType());
 	}
 
 	@Test
@@ -88,23 +91,23 @@ public class TestTypeDescriptor {
 
 	@Test
 	public void isArray() {
-		assertThat(new TypeDescriptor("V").isArray(), is(false));
-		assertThat(new TypeDescriptor("Z").isArray(), is(false));
-		assertThat(new TypeDescriptor("B").isArray(), is(false));
-		assertThat(new TypeDescriptor("C").isArray(), is(false));
-		assertThat(new TypeDescriptor("I").isArray(), is(false));
-		assertThat(new TypeDescriptor("J").isArray(), is(false));
-		assertThat(new TypeDescriptor("F").isArray(), is(false));
-		assertThat(new TypeDescriptor("D").isArray(), is(false));
-		assertThat(new TypeDescriptor("LFoo;").isArray(), is(false));
-		assertThat(new TypeDescriptor("[I").isArray(), is(true));
+		assertFalse(new TypeDescriptor("V").isArray());
+		assertFalse(new TypeDescriptor("Z").isArray());
+		assertFalse(new TypeDescriptor("B").isArray());
+		assertFalse(new TypeDescriptor("C").isArray());
+		assertFalse(new TypeDescriptor("I").isArray());
+		assertFalse(new TypeDescriptor("J").isArray());
+		assertFalse(new TypeDescriptor("F").isArray());
+		assertFalse(new TypeDescriptor("D").isArray());
+		assertFalse(new TypeDescriptor("LFoo;").isArray());
+		assertTrue(new TypeDescriptor("[I").isArray());
 	}
 
 	@Test
 	public void getArrayDimension() {
-		assertThat(new TypeDescriptor("[I").getArrayDimension(), is(1));
-		assertThat(new TypeDescriptor("[[I").getArrayDimension(), is(2));
-		assertThat(new TypeDescriptor("[[[I").getArrayDimension(), is(3));
+		assertEquals(1, new TypeDescriptor("[I").getArrayDimension());
+		assertEquals(2, new TypeDescriptor("[[I").getArrayDimension());
+		assertEquals(3, new TypeDescriptor("[[[I").getArrayDimension());
 	}
 
 	@Test
@@ -117,58 +120,58 @@ public class TestTypeDescriptor {
 
 	@Test
 	public void hasClass() {
-		assertThat(new TypeDescriptor("LFoo;").containsType(), is(true));
-		assertThat(new TypeDescriptor("Ljava/lang/String;").containsType(), is(true));
-		assertThat(new TypeDescriptor("[LBar;").containsType(), is(true));
-		assertThat(new TypeDescriptor("[[[LCat;").containsType(), is(true));
+		assertTrue(new TypeDescriptor("LFoo;").containsType());
+		assertTrue(new TypeDescriptor("Ljava/lang/String;").containsType());
+		assertTrue(new TypeDescriptor("[LBar;").containsType());
+		assertTrue(new TypeDescriptor("[[[LCat;").containsType());
 
-		assertThat(new TypeDescriptor("V").containsType(), is(false));
-		assertThat(new TypeDescriptor("[I").containsType(), is(false));
-		assertThat(new TypeDescriptor("[[[I").containsType(), is(false));
-		assertThat(new TypeDescriptor("Z").containsType(), is(false));
+		assertFalse(new TypeDescriptor("V").containsType());
+		assertFalse(new TypeDescriptor("[I").containsType());
+		assertFalse(new TypeDescriptor("[[[I").containsType());
+		assertFalse(new TypeDescriptor("Z").containsType());
 	}
 
 	@Test
 	public void parseVoid() {
 		final String answer = "V";
-		assertThat(TypeDescriptor.parseFirst("V"), is(answer));
-		assertThat(TypeDescriptor.parseFirst("VVV"), is(answer));
-		assertThat(TypeDescriptor.parseFirst("VIJ"), is(answer));
-		assertThat(TypeDescriptor.parseFirst("V[I"), is(answer));
-		assertThat(TypeDescriptor.parseFirst("VLFoo;"), is(answer));
-		assertThat(TypeDescriptor.parseFirst("V[LFoo;"), is(answer));
+		assertEquals(answer, TypeDescriptor.parseFirst("V"));
+		assertEquals(answer, TypeDescriptor.parseFirst("VVV"));
+		assertEquals(answer, TypeDescriptor.parseFirst("VIJ"));
+		assertEquals(answer, TypeDescriptor.parseFirst("V[I"));
+		assertEquals(answer, TypeDescriptor.parseFirst("VLFoo;"));
+		assertEquals(answer, TypeDescriptor.parseFirst("V[LFoo;"));
 	}
 
 	@Test
 	public void parsePrimitive() {
 		final String answer = "I";
-		assertThat(TypeDescriptor.parseFirst("I"), is(answer));
-		assertThat(TypeDescriptor.parseFirst("III"), is(answer));
-		assertThat(TypeDescriptor.parseFirst("IJZ"), is(answer));
-		assertThat(TypeDescriptor.parseFirst("I[I"), is(answer));
-		assertThat(TypeDescriptor.parseFirst("ILFoo;"), is(answer));
-		assertThat(TypeDescriptor.parseFirst("I[LFoo;"), is(answer));
+		assertEquals(answer, TypeDescriptor.parseFirst("I"));
+		assertEquals(answer, TypeDescriptor.parseFirst("III"));
+		assertEquals(answer, TypeDescriptor.parseFirst("IJZ"));
+		assertEquals(answer, TypeDescriptor.parseFirst("I[I"));
+		assertEquals(answer, TypeDescriptor.parseFirst("ILFoo;"));
+		assertEquals(answer, TypeDescriptor.parseFirst("I[LFoo;"));
 	}
 
 	@Test
 	public void parseClass() {
 		{
 			final String answer = "LFoo;";
-			assertThat(TypeDescriptor.parseFirst("LFoo;"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("LFoo;I"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("LFoo;JZ"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("LFoo;[I"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("LFoo;LFoo;"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("LFoo;[LFoo;"), is(answer));
+			assertEquals(answer, TypeDescriptor.parseFirst("LFoo;"));
+			assertEquals(answer, TypeDescriptor.parseFirst("LFoo;I"));
+			assertEquals(answer, TypeDescriptor.parseFirst("LFoo;JZ"));
+			assertEquals(answer, TypeDescriptor.parseFirst("LFoo;[I"));
+			assertEquals(answer, TypeDescriptor.parseFirst("LFoo;LFoo;"));
+			assertEquals(answer, TypeDescriptor.parseFirst("LFoo;[LFoo;"));
 		}
 		{
 			final String answer = "Ljava/lang/String;";
-			assertThat(TypeDescriptor.parseFirst("Ljava/lang/String;"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("Ljava/lang/String;I"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("Ljava/lang/String;JZ"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("Ljava/lang/String;[I"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("Ljava/lang/String;LFoo;"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("Ljava/lang/String;[LFoo;"), is(answer));
+			assertEquals(answer, TypeDescriptor.parseFirst("Ljava/lang/String;"));
+			assertEquals(answer, TypeDescriptor.parseFirst("Ljava/lang/String;I"));
+			assertEquals(answer, TypeDescriptor.parseFirst("Ljava/lang/String;JZ"));
+			assertEquals(answer, TypeDescriptor.parseFirst("Ljava/lang/String;[I"));
+			assertEquals(answer, TypeDescriptor.parseFirst("Ljava/lang/String;LFoo;"));
+			assertEquals(answer, TypeDescriptor.parseFirst("Ljava/lang/String;[LFoo;"));
 		}
 	}
 
@@ -176,27 +179,27 @@ public class TestTypeDescriptor {
 	public void parseArray() {
 		{
 			final String answer = "[I";
-			assertThat(TypeDescriptor.parseFirst("[I"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("[III"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("[IJZ"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("[I[I"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("[ILFoo;"), is(answer));
+			assertEquals(answer, TypeDescriptor.parseFirst("[I"));
+			assertEquals(answer, TypeDescriptor.parseFirst("[III"));
+			assertEquals(answer, TypeDescriptor.parseFirst("[IJZ"));
+			assertEquals(answer, TypeDescriptor.parseFirst("[I[I"));
+			assertEquals(answer, TypeDescriptor.parseFirst("[ILFoo;"));
 		}
 		{
 			final String answer = "[[I";
-			assertThat(TypeDescriptor.parseFirst("[[I"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("[[III"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("[[IJZ"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("[[I[I"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("[[ILFoo;"), is(answer));
+			assertEquals(answer, TypeDescriptor.parseFirst("[[I"));
+			assertEquals(answer, TypeDescriptor.parseFirst("[[III"));
+			assertEquals(answer, TypeDescriptor.parseFirst("[[IJZ"));
+			assertEquals(answer, TypeDescriptor.parseFirst("[[I[I"));
+			assertEquals(answer, TypeDescriptor.parseFirst("[[ILFoo;"));
 		}
 		{
 			final String answer = "[LFoo;";
-			assertThat(TypeDescriptor.parseFirst("[LFoo;"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("[LFoo;II"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("[LFoo;JZ"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("[LFoo;[I"), is(answer));
-			assertThat(TypeDescriptor.parseFirst("[LFoo;LFoo;"), is(answer));
+			assertEquals(answer, TypeDescriptor.parseFirst("[LFoo;"));
+			assertEquals(answer, TypeDescriptor.parseFirst("[LFoo;II"));
+			assertEquals(answer, TypeDescriptor.parseFirst("[LFoo;JZ"));
+			assertEquals(answer, TypeDescriptor.parseFirst("[LFoo;[I"));
+			assertEquals(answer, TypeDescriptor.parseFirst("[LFoo;LFoo;"));
 		}
 	}
 
@@ -227,17 +230,17 @@ public class TestTypeDescriptor {
 
 	@Test
 	public void testToString() {
-		assertThat(new TypeDescriptor("V").toString(), is("V"));
-		assertThat(new TypeDescriptor("Z").toString(), is("Z"));
-		assertThat(new TypeDescriptor("B").toString(), is("B"));
-		assertThat(new TypeDescriptor("C").toString(), is("C"));
-		assertThat(new TypeDescriptor("I").toString(), is("I"));
-		assertThat(new TypeDescriptor("J").toString(), is("J"));
-		assertThat(new TypeDescriptor("F").toString(), is("F"));
-		assertThat(new TypeDescriptor("D").toString(), is("D"));
-		assertThat(new TypeDescriptor("LFoo;").toString(), is("LFoo;"));
-		assertThat(new TypeDescriptor("[I").toString(), is("[I"));
-		assertThat(new TypeDescriptor("[[[I").toString(), is("[[[I"));
-		assertThat(new TypeDescriptor("[LFoo;").toString(), is("[LFoo;"));
+		assertEquals("V", new TypeDescriptor("V").toString());
+		assertEquals("Z", new TypeDescriptor("Z").toString());
+		assertEquals("B", new TypeDescriptor("B").toString());
+		assertEquals("C", new TypeDescriptor("C").toString());
+		assertEquals("I", new TypeDescriptor("I").toString());
+		assertEquals("J", new TypeDescriptor("J").toString());
+		assertEquals("F", new TypeDescriptor("F").toString());
+		assertEquals("D", new TypeDescriptor("D").toString());
+		assertEquals("LFoo;", new TypeDescriptor("LFoo;").toString());
+		assertEquals("[I", new TypeDescriptor("[I").toString());
+		assertEquals("[[[I", new TypeDescriptor("[[[I").toString());
+		assertEquals("[LFoo;", new TypeDescriptor("[LFoo;").toString());
 	}
 }

@@ -11,12 +11,12 @@
 
 package cuchaz.enigma.analysis;
 
-import com.google.common.collect.Lists;
 import cuchaz.enigma.analysis.index.InheritanceIndex;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ClassInheritanceTreeNode extends DefaultMutableTreeNode {
@@ -62,7 +62,7 @@ public class ClassInheritanceTreeNode extends DefaultMutableTreeNode {
 
 	public void load(InheritanceIndex ancestries, boolean recurse) {
 		// get all the child nodes
-		List<ClassInheritanceTreeNode> nodes = Lists.newArrayList();
+		List<ClassInheritanceTreeNode> nodes = new ArrayList<>();
 		for (ClassEntry inheritor : ancestries.getChildren(this.obfClassEntry)) {
 			nodes.add(new ClassInheritanceTreeNode(translator, inheritor.getFullName()));
 		}

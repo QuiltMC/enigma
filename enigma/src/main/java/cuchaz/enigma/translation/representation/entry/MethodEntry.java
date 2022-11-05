@@ -11,17 +11,14 @@
 
 package cuchaz.enigma.translation.representation.entry;
 
-import java.util.Objects;
-
-import javax.annotation.Nonnull;
-
-import com.google.common.base.Preconditions;
-
 import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
+
+import javax.annotation.Nonnull;
+import java.util.Objects;
 
 public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable<MethodEntry> {
 
@@ -34,8 +31,8 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	public MethodEntry(ClassEntry parent, String name, MethodDescriptor descriptor, String javadocs) {
 		super(parent, name, javadocs);
 
-		Preconditions.checkNotNull(parent, "Parent cannot be null");
-		Preconditions.checkNotNull(descriptor, "Method descriptor cannot be null");
+		Objects.requireNonNull(parent, "Parent cannot be null");
+		Objects.requireNonNull(descriptor, "Method descriptor cannot be null");
 
 		this.descriptor = descriptor;
 	}
@@ -93,8 +90,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 
 	@Override
 	public boolean canConflictWith(Entry<?> entry) {
-		if (entry instanceof MethodEntry) {
-			MethodEntry methodEntry = (MethodEntry) entry;
+		if (entry instanceof MethodEntry methodEntry) {
 			return methodEntry.parent.equals(parent) && methodEntry.descriptor.canConflictWith(descriptor);
 		}
 		return false;

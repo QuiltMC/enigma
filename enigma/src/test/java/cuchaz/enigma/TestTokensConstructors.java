@@ -12,8 +12,8 @@
 package cuchaz.enigma;
 
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Paths;
 
@@ -21,6 +21,9 @@ import static cuchaz.enigma.TestEntryFactory.newBehaviorReferenceByMethod;
 import static cuchaz.enigma.TestEntryFactory.newMethod;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class TestTokensConstructors extends TokenChecker {
 
@@ -31,48 +34,42 @@ public class TestTokensConstructors extends TokenChecker {
 
 	@Test
 	public void baseDeclarations() {
-		assertThat(getDeclarationToken(newMethod("a", "<init>", "()V")), is("a"));
-		assertThat(getDeclarationToken(newMethod("a", "<init>", "(I)V")), is("a"));
+		assertEquals("a", getDeclarationToken(newMethod("a", "<init>", "()V")));
+		assertEquals("a", getDeclarationToken(newMethod("a", "<init>", "(I)V")));
 	}
 
 	@Test
 	public void subDeclarations() {
-		assertThat(getDeclarationToken(newMethod("d", "<init>", "()V")), is("d"));
-		assertThat(getDeclarationToken(newMethod("d", "<init>", "(I)V")), is("d"));
-		assertThat(getDeclarationToken(newMethod("d", "<init>", "(II)V")), is("d"));
-		assertThat(getDeclarationToken(newMethod("d", "<init>", "(III)V")), is("d"));
+		assertEquals("d", getDeclarationToken(newMethod("d", "<init>", "()V")));
+		assertEquals("d", getDeclarationToken(newMethod("d", "<init>", "(I)V")));
+		assertEquals("d", getDeclarationToken(newMethod("d", "<init>", "(II)V")));
+		assertEquals("d", getDeclarationToken(newMethod("d", "<init>", "(III)V")));
 	}
 
 	@Test
 	public void subsubDeclarations() {
-		assertThat(getDeclarationToken(newMethod("e", "<init>", "(I)V")), is("e"));
+		assertEquals("e", getDeclarationToken(newMethod("e", "<init>", "(I)V")));
 	}
 
 	@Test
 	public void defaultDeclarations() {
-		assertThat(getDeclarationToken(newMethod("c", "<init>", "()V")), nullValue());
+		assertNull(getDeclarationToken(newMethod("c", "<init>", "()V")));
 	}
 
 	@Test
-	@Ignore // TODO needs fixing, broke when compiling against J16
+	@Disabled // TODO needs fixing, broke when compiling against J16
 	public void baseDefaultReferences() {
 		MethodEntry source = newMethod("a", "<init>", "()V");
 		assertThat(
 				getReferenceTokens(newBehaviorReferenceByMethod(source, "b", "a", "()V")),
 				containsInAnyOrder("a")
 		);
-		assertThat(
-				getReferenceTokens(newBehaviorReferenceByMethod(source, "d", "<init>", "()V")),
-				is(empty()) // implicit call, not decompiled to token
-		);
-		assertThat(
-				getReferenceTokens(newBehaviorReferenceByMethod(source, "d", "<init>", "(III)V")),
-				is(empty()) // implicit call, not decompiled to token
-		);
+		assertTrue(getReferenceTokens(newBehaviorReferenceByMethod(source, "d", "<init>", "()V")).isEmpty());
+		assertTrue(getReferenceTokens(newBehaviorReferenceByMethod(source, "d", "<init>", "(III)V")).isEmpty());
 	}
 
 	@Test
-	@Ignore // TODO needs fixing, broke when compiling against J16
+	@Disabled // TODO needs fixing, broke when compiling against J16
 	public void baseIntReferences() {
 		MethodEntry source = newMethod("a", "<init>", "(I)V");
 		assertThat(
@@ -82,7 +79,7 @@ public class TestTokensConstructors extends TokenChecker {
 	}
 
 	@Test
-	@Ignore // TODO needs fixing, broke when compiling against J16
+	@Disabled // TODO needs fixing, broke when compiling against J16
 	public void subDefaultReferences() {
 		MethodEntry source = newMethod("d", "<init>", "()V");
 		assertThat(
@@ -96,7 +93,7 @@ public class TestTokensConstructors extends TokenChecker {
 	}
 
 	@Test
-	@Ignore // TODO needs fixing, broke when compiling against J16
+	@Disabled // TODO needs fixing, broke when compiling against J16
 	public void subIntReferences() {
 		MethodEntry source = newMethod("d", "<init>", "(I)V");
 		assertThat(getReferenceTokens(
@@ -114,7 +111,7 @@ public class TestTokensConstructors extends TokenChecker {
 	}
 
 	@Test
-	@Ignore // TODO needs fixing, broke when compiling against J16
+	@Disabled // TODO needs fixing, broke when compiling against J16
 	public void subIntIntReferences() {
 		MethodEntry source = newMethod("d", "<init>", "(II)V");
 		assertThat(
@@ -124,7 +121,7 @@ public class TestTokensConstructors extends TokenChecker {
 	}
 
 	@Test
-	@Ignore // TODO needs fixing, broke when compiling against J16
+	@Disabled // TODO needs fixing, broke when compiling against J16
 	public void subsubIntReferences() {
 		MethodEntry source = newMethod("e", "<init>", "(I)V");
 		assertThat(
@@ -134,7 +131,7 @@ public class TestTokensConstructors extends TokenChecker {
 	}
 
 	@Test
-	@Ignore // TODO needs fixing, broke when compiling against J16
+	@Disabled // TODO needs fixing, broke when compiling against J16
 	public void defaultConstructableReferences() {
 		MethodEntry source = newMethod("c", "<init>", "()V");
 		assertThat(

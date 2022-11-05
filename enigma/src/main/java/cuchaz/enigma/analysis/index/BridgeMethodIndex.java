@@ -1,6 +1,5 @@
 package cuchaz.enigma.analysis.index;
 
-import com.google.common.collect.Maps;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
@@ -16,8 +15,8 @@ public class BridgeMethodIndex implements JarIndexer {
 	private final InheritanceIndex inheritanceIndex;
 	private final ReferenceIndex referenceIndex;
 
-	private final Map<MethodEntry, MethodEntry> bridgeToSpecialized = Maps.newHashMap();
-	private final Map<MethodEntry, MethodEntry> specializedToBridge = Maps.newHashMap();
+	private final Map<MethodEntry, MethodEntry> bridgeToSpecialized = new HashMap<>();
+	private final Map<MethodEntry, MethodEntry> specializedToBridge = new HashMap<>();
 
 	public BridgeMethodIndex(EntryIndex entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex) {
 		this.entryIndex = entryIndex;

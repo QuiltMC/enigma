@@ -11,12 +11,6 @@
 
 package cuchaz.enigma.translation.representation;
 
-import java.util.Map;
-import java.util.function.Function;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
-
 import cuchaz.enigma.translation.Translatable;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
@@ -25,12 +19,17 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
+import java.util.function.Function;
+
 public class TypeDescriptor implements Translatable {
 
 	protected final String desc;
 
 	public TypeDescriptor(String desc) {
-		Preconditions.checkNotNull(desc, "Desc cannot be null");
+		Objects.requireNonNull(desc, "Desc cannot be null");
 
 		// don't deal with generics
 		// this is just for raw jvm types
@@ -43,7 +42,7 @@ public class TypeDescriptor implements Translatable {
 
 	public static String parseFirst(String in) {
 
-		if (in == null || in.length() <= 0) {
+		if (in == null || in.length() == 0) {
 			throw new IllegalArgumentException("No desc to parse, input is empty!");
 		}
 
@@ -208,11 +207,7 @@ public class TypeDescriptor implements Translatable {
 	}
 
 	private static String getArrayPrefix(int dimension) {
-		StringBuilder buf = new StringBuilder();
-		for (int i = 0; i < dimension; i++) {
-			buf.append("[");
-		}
-		return buf.toString();
+		return "[".repeat(Math.max(0, dimension));
 	}
 
 	public int getSize() {
@@ -247,14 +242,14 @@ public class TypeDescriptor implements Translatable {
 		private static final Map<Character, Primitive> lookup;
 
 		static {
-			lookup = Maps.newTreeMap();
+			lookup = new TreeMap<>();
 			for (Primitive val : values()) {
 				lookup.put(val.getCode(), val);
 			}
 		}
 
-		private char code;
-		private String keyword;
+		private final char code;
+		private final String keyword;
 
 		Primitive(char code, String keyword) {
 			this.code = code;

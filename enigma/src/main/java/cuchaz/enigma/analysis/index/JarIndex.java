@@ -11,7 +11,10 @@
 
 package cuchaz.enigma.analysis.index;
 
-import com.google.common.collect.*;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.analysis.ReferenceTargetType;

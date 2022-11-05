@@ -1,5 +1,17 @@
 package cuchaz.enigma.gui.util;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
+import cuchaz.enigma.analysis.index.EntryIndex;
+import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.translation.representation.AccessFlags;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.utils.Os;
+
+import javax.swing.Timer;
+import javax.swing.*;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -9,25 +21,9 @@ import java.awt.font.TextAttribute;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.function.Consumer;
-
-import javax.swing.*;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
-import com.formdev.flatlaf.extras.FlatSVGIcon;
-import com.google.common.collect.Lists;
-
-import cuchaz.enigma.analysis.index.EntryIndex;
-import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.translation.representation.AccessFlags;
-import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.MethodEntry;
-import cuchaz.enigma.utils.Os;
 
 public class GuiUtil {
     public static final Icon CLASS_ICON = loadIcon("class");
@@ -156,7 +152,7 @@ public class GuiUtil {
     }
 
     public static TreePath getPathToRoot(TreeNode node) {
-        List<TreeNode> nodes = Lists.newArrayList();
+        List<TreeNode> nodes = new ArrayList<>();
         TreeNode n = node;
 
         do {

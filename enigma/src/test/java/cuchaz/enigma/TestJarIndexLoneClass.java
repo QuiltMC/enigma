@@ -23,7 +23,7 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -118,7 +118,6 @@ public class TestJarIndexLoneClass {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void fieldReferences() {
 		FieldEntry source = newField("a", "a", "Ljava/lang/String;");
 		Collection<EntryReference<FieldEntry, MethodDefEntry>> references = index.getReferenceIndex().getReferencesToField(source);

@@ -24,7 +24,7 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.objectweb.asm.Opcodes;
 
 import java.nio.file.Path;

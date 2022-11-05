@@ -69,8 +69,7 @@ public class Signature implements Translatable {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof Signature) {
-			Signature other = (Signature) obj;
+		if (obj instanceof Signature other) {
 			return (other.signature == null && signature == null || other.signature != null
 					&& signature != null && other.signature.equals(signature))
 					&& other.isType == this.isType;

@@ -11,32 +11,21 @@
 
 package cuchaz.enigma;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.Set;
-
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableListMultimap;
-import cuchaz.enigma.api.service.EnigmaServiceContext;
-import org.objectweb.asm.Opcodes;
-
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.api.EnigmaPlugin;
 import cuchaz.enigma.api.EnigmaPluginContext;
-import cuchaz.enigma.api.service.EnigmaService;
-import cuchaz.enigma.api.service.EnigmaServiceFactory;
-import cuchaz.enigma.api.service.EnigmaServiceType;
-import cuchaz.enigma.api.service.JarIndexerService;
+import cuchaz.enigma.api.service.*;
 import cuchaz.enigma.classprovider.CachingClassProvider;
 import cuchaz.enigma.classprovider.ClassProvider;
 import cuchaz.enigma.classprovider.CombiningClassProvider;
 import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.utils.Utils;
+import org.objectweb.asm.Opcodes;
 
-import javax.annotation.Nullable;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.*;
 
 public class Enigma {
     public static final String NAME = "Enigma";
@@ -88,13 +77,13 @@ public class Enigma {
 		}
 
 		public Builder setProfile(EnigmaProfile profile) {
-			Preconditions.checkNotNull(profile, "profile cannot be null");
+			Objects.requireNonNull(profile, "profile cannot be null");
 			this.profile = profile;
 			return this;
 		}
 
 		public Builder setPlugins(Iterable<EnigmaPlugin> plugins) {
-			Preconditions.checkNotNull(plugins, "plugins cannot be null");
+			Objects.requireNonNull(plugins, "plugins cannot be null");
 			this.plugins = plugins;
 			return this;
 		}
@@ -152,7 +141,7 @@ public class Enigma {
 	}
 
 	static {
-		String version = null;
+		String version;
 
 		try {
 			version = Utils.readResourceToString("/version.txt");

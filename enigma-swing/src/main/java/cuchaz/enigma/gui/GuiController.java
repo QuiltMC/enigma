@@ -11,24 +11,6 @@
 
 package cuchaz.enigma.gui;
 
-import java.awt.Desktop;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Stream;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import com.google.common.collect.Lists;
-
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.EnigmaProject;
@@ -68,6 +50,17 @@ import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Utils;
 import cuchaz.enigma.utils.validation.PrintValidatable;
 import cuchaz.enigma.utils.validation.ValidationContext;
+
+import javax.swing.*;
+import java.awt.Desktop;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 
 public class GuiController implements ClientPacketHandler {
 	private final Gui gui;
@@ -362,8 +355,8 @@ public class GuiController implements ClientPacketHandler {
 	public void refreshClasses() {
 		if (project == null) return;
 
-		List<ClassEntry> obfClasses = Lists.newArrayList();
-		List<ClassEntry> deobfClasses = Lists.newArrayList();
+		List<ClassEntry> obfClasses = new ArrayList<>();
+		List<ClassEntry> deobfClasses = new ArrayList<>();
 		this.addSeparatedClasses(obfClasses, deobfClasses);
 		this.gui.setObfClasses(obfClasses);
 		this.gui.setDeobfClasses(deobfClasses);

@@ -1,13 +1,5 @@
 package cuchaz.enigma.translation.mapping.serde.enigma;
 
-import java.io.IOException;
-import java.nio.file.*;
-import java.util.*;
-
-import javax.annotation.Nullable;
-
-import com.google.common.base.Charsets;
-
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.mapping.AccessModifier;
 import cuchaz.enigma.translation.mapping.EntryMapping;
@@ -19,6 +11,11 @@ import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.*;
 import cuchaz.enigma.utils.I18n;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.nio.file.*;
+import java.util.*;
 
 public enum EnigmaMappingsReader implements MappingsReader {
 	FILE {
@@ -99,7 +96,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 	}
 
 	private static void readFile(Path path, EntryTree<EntryMapping> mappings) throws IOException, MappingParseException {
-		List<String> lines = Files.readAllLines(path, Charsets.UTF_8);
+		List<String> lines = Files.readAllLines(path);
 		Deque<MappingPair<?, RawEntryMapping>> mappingStack = new ArrayDeque<>();
 
 		for (int lineNumber = 0; lineNumber < lines.size(); lineNumber++) {
@@ -238,11 +235,9 @@ public enum EnigmaMappingsReader implements MappingsReader {
 	}
 
 	private static MappingPair<FieldEntry, RawEntryMapping> parseField(@Nullable Entry<?> parent, String[] tokens) {
-		if (!(parent instanceof ClassEntry)) {
+		if (!(parent instanceof ClassEntry ownerEntry)) {
 			throw new RuntimeException("Field must be a child of a class!");
 		}
-
-		ClassEntry ownerEntry = (ClassEntry) parent;
 
 		String obfuscatedName = tokens[1];
 		String mapping = null;
@@ -273,11 +268,9 @@ public enum EnigmaMappingsReader implements MappingsReader {
 	}
 
 	private static MappingPair<MethodEntry, RawEntryMapping> parseMethod(@Nullable Entry<?> parent, String[] tokens) {
-		if (!(parent instanceof ClassEntry)) {
+		if (!(parent instanceof ClassEntry ownerEntry)) {
 			throw new RuntimeException("Method must be a child of a class!");
 		}
-
-		ClassEntry ownerEntry = (ClassEntry) parent;
 
 		String obfuscatedName = tokens[1];
 		String mapping = null;
@@ -309,11 +302,10 @@ public enum EnigmaMappingsReader implements MappingsReader {
 	}
 
 	private static MappingPair<LocalVariableEntry, RawEntryMapping> parseArgument(@Nullable Entry<?> parent, String[] tokens) {
-		if (!(parent instanceof MethodEntry)) {
+		if (!(parent instanceof MethodEntry ownerEntry)) {
 			throw new RuntimeException("Method arg must be a child of a method!");
 		}
 
-		MethodEntry ownerEntry = (MethodEntry) parent;
 		LocalVariableEntry obfuscatedEntry = new LocalVariableEntry(ownerEntry, Integer.parseInt(tokens[1]), "", true, null);
 		String mapping = tokens[2];
 

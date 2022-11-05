@@ -83,4 +83,41 @@ public final class IdentifierValidation {
 		return ILLEGAL_IDENTIFIERS.contains(name);
 	}
 
+	public static boolean isIdentifier(String name) {
+		if (name.length() == 0) {
+			return false;
+		}
+		int cp = name.codePointAt(0);
+		if (!Character.isJavaIdentifierStart(cp)) {
+			return false;
+		}
+		for (int i = Character.charCount(cp);
+			 i < name.length();
+			 i += Character.charCount(cp)) {
+			cp = name.codePointAt(i);
+			if (!Character.isJavaIdentifierPart(cp)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static boolean isReservedName(String name, int version) {
+		return switch (name) {
+			case "strictfp" -> version >= 2;
+			case "assert" -> version >= 4;
+			case "enum" -> version >= 5;
+			case "_" -> version >= 9;
+			case "sealed", "record", "permits", "non-sealed" -> version >= 16;
+			case "public", "protected", "private", "abstract", "static", "final",
+					"transient", "volatile", "synchronized", "native", "class", "interface",
+					"extends", "package", "throws", "implements", "boolean", "byte", "char",
+					"short", "int", "long", "float", "double", "void", "if", "else", "try",
+					"catch", "finally", "do", "while", "for", "continue", "switch", "case",
+					"default", "break", "throw", "return", "this", "new", "super", "import",
+					"instanceof", "goto", "const", "null", "true", "false" -> true;
+			default -> false;
+		};
+	}
+
 }

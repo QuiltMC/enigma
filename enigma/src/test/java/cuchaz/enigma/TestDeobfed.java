@@ -15,8 +15,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.source.Decompiler;
@@ -32,7 +32,7 @@ public class TestDeobfed {
 	public static final Path DEOBF = Paths.get("build/test-deobf/translation.jar");
 	private static EnigmaProject deobfProject;
 
-	@BeforeClass
+	@BeforeAll
 	public static void beforeClass() throws Exception {
 		Enigma enigma = Enigma.create();
 

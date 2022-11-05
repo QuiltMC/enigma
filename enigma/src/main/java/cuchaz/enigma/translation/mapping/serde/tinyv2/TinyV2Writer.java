@@ -1,21 +1,16 @@
 package cuchaz.enigma.translation.mapping.serde.tinyv2;
 
-import com.google.common.base.Strings;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.mapping.EntryMap;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingDelta;
-import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.LfPrintWriter;
 import cuchaz.enigma.translation.mapping.serde.MappingHelper;
+import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.MappingsWriter;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTreeNode;
-import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.translation.representation.entry.FieldEntry;
-import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
-import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.translation.representation.entry.*;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -175,7 +170,7 @@ public final class TinyV2Writer implements MappingsWriter {
 	}
 
 	private String indent(int level) {
-		return Strings.repeat("\t", level);
+		return "\t".repeat(level);
 	}
 
 }

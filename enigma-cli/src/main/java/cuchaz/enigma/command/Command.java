@@ -6,10 +6,11 @@ import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingDelta;
-import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
+import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
+import cuchaz.enigma.utils.Utils;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -20,8 +21,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import com.google.common.io.MoreFiles;
 
 public abstract class Command {
 	public final String name;
@@ -58,7 +57,7 @@ public abstract class Command {
 
 	protected static EntryTree<EntryMapping> readMappings(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws Exception {
 		List<Exception> suppressed = new ArrayList<>();
-		if ("zip".equalsIgnoreCase(MoreFiles.getFileExtension(path))) {
+		if ("zip".equalsIgnoreCase(Utils.getFileExtension(path))) {
 			return MappingFormat.ENIGMA_ZIP.read(path, progress, saveParameters);
 		} else {
 			for (MappingFormat format : MappingFormat.getReadableFormats()) {
@@ -78,7 +77,7 @@ public abstract class Command {
 
 	protected static void writeMappings(EntryTree<EntryMapping> mappings, Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws Exception {
 		List<Exception> suppressed = new ArrayList<>();
-		if ("zip".equalsIgnoreCase(MoreFiles.getFileExtension(path))) {
+		if ("zip".equalsIgnoreCase(Utils.getFileExtension(path))) {
 			MappingFormat.ENIGMA_ZIP.write(mappings, path, progress, saveParameters);
 		} else {
 			for (MappingFormat format : MappingFormat.getWritableFormats()) {
@@ -142,7 +141,7 @@ public abstract class Command {
 		}
 		Path file = Paths.get(path).toAbsolutePath();
 		if (!Files.exists(file)) {
-			throw new IllegalArgumentException("Cannot find file: " + file.toString());
+			throw new IllegalArgumentException("Cannot find file: " + file);
 		}
 		return file;
 	}
@@ -202,12 +201,12 @@ public abstract class Command {
 
 			if (shouldReport) {
 				int percent = numDone * 100 / this.totalWork;
-				System.out.println(String.format("\tProgress: %3d%%", percent));
+				System.out.printf("\tProgress: %3d%%%n", percent);
 				this.lastReportTime = now;
 			}
 			if (isLastUpdate) {
 				double elapsedSeconds = (now - this.startTime) / 1000.0;
-				System.out.println(String.format("Finished in %.1f seconds", elapsedSeconds));
+				System.out.printf("Finished in %.1f seconds%n", elapsedSeconds);
 			}
 		}
 	}

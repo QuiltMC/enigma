@@ -11,27 +11,6 @@
 
 package cuchaz.enigma.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
-import com.google.common.collect.Lists;
-
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.analysis.EntryReference;
@@ -55,6 +34,21 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
+
+import javax.annotation.Nullable;
+import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Gui {
 

@@ -11,18 +11,6 @@
 
 package cuchaz.enigma.gui.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-
-import javax.swing.*;
-import javax.swing.text.html.HTML;
-
-import com.google.common.base.Strings;
-
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.gui.GuiController;
 import cuchaz.enigma.gui.config.UiConfig;
@@ -35,6 +23,15 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.ValidationContext;
+
+import javax.swing.*;
+import javax.swing.text.html.HTML;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class JavadocDialog {
 
@@ -119,7 +116,7 @@ public class JavadocDialog {
 		}
 
 		// add html tags
-		JComboBox<String> htmlList = new JComboBox<String>();
+		JComboBox<String> htmlList = new JComboBox<>();
 		htmlList.setPreferredSize(new Dimension());
 		for (HTML.Tag htmlTag : HTML.getAllTags()) {
 			htmlList.addItem(htmlTag.toString());
@@ -172,7 +169,7 @@ public class JavadocDialog {
 
 	public static void show(JFrame parent, GuiController controller, EntryReference<Entry<?>, Entry<?>> entry) {
 		EntryMapping mapping = controller.project.getMapper().getDeobfMapping(entry.entry);
-		String text = Strings.nullToEmpty(mapping.javadoc());
+		String text = mapping.javadoc();
 
 		JavadocDialog dialog = new JavadocDialog(parent, controller, entry.entry, text);
 		//dialog.ui.doLayout();
@@ -189,9 +186,9 @@ public class JavadocDialog {
 		SEE(false),
 		THROWS(false);
 
-		private boolean inline;
+		private final boolean inline;
 
-		private JavadocTag(boolean inline) {
+		JavadocTag(boolean inline) {
 			this.inline = inline;
 		}
 

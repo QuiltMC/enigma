@@ -1,5 +1,9 @@
 package cuchaz.enigma.utils;
 
+import com.google.common.reflect.ClassPath;
+import com.google.common.reflect.ClassPath.ResourceInfo;
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,18 +13,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
-import com.google.common.reflect.ClassPath;
-import com.google.common.reflect.ClassPath.ResourceInfo;
-import com.google.gson.Gson;
-
 public class I18n {
 	public static final String DEFAULT_LANGUAGE = "en_us";
 	private static final Gson GSON = new Gson();
 	private static Map<String, String> defaultTranslations = load(DEFAULT_LANGUAGE);
 	private static Map<String, String> translations = defaultTranslations;
-	private static Map<String, String> languageNames = Maps.newHashMap();
+	private static Map<String, String> languageNames = new HashMap<>();
 
 	@SuppressWarnings("unchecked")
 	public static Map<String, String> load(String language) {
@@ -76,11 +74,11 @@ public class I18n {
 		translations = load(language);
 	}
 
-	public static ArrayList<String> getAvailableLanguages() {
-		ArrayList<String> list = new ArrayList<String>();
+	public static List<String> getAvailableLanguages() {
+		List<String> list = new ArrayList<>();
 
 		try {
-			ImmutableList<ResourceInfo> resources = ClassPath.from(Thread.currentThread().getContextClassLoader()).getResources().asList();
+			List<ResourceInfo> resources = ClassPath.from(Thread.currentThread().getContextClassLoader()).getResources().asList();
 			Stream<ResourceInfo> dirStream = resources.stream();
 			dirStream.forEach(context -> {
 				String file = context.getResourceName();

@@ -1,14 +1,13 @@
 package cuchaz.enigma.translation.representation.entry;
 
-import javax.annotation.Nonnull;
-
-import com.google.common.base.Preconditions;
-
 import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
+
+import javax.annotation.Nonnull;
+import java.util.Objects;
 
 /**
  * TypeDescriptor...
@@ -20,7 +19,7 @@ public class LocalVariableDefEntry extends LocalVariableEntry {
 
 	public LocalVariableDefEntry(MethodEntry ownerEntry, int index, String name, boolean parameter, TypeDescriptor desc, String javadoc) {
 		super(ownerEntry, index, name, parameter, javadoc);
-		Preconditions.checkNotNull(desc, "Variable desc cannot be null");
+		Objects.requireNonNull(desc, "Variable desc cannot be null");
 
 		this.desc = desc;
 	}

@@ -11,11 +11,8 @@
 
 package cuchaz.enigma.utils;
 
-import com.google.common.io.CharStreams;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,7 +29,7 @@ import java.util.zip.ZipFile;
 
 public class Utils {
     public static String readStreamToString(InputStream in) throws IOException {
-        return CharStreams.toString(new InputStreamReader(in, StandardCharsets.UTF_8));
+        return new String(in.readAllBytes(), StandardCharsets.UTF_8);
     }
 
     public static String readResourceToString(String path) throws IOException {
@@ -49,6 +46,19 @@ public class Utils {
                 Files.delete(p);
             }
         }
+    }
+
+    public static String getFileExtension(Path path) {
+        Path name = path.getFileName();
+
+        // null for empty paths and root-only paths
+        if (name == null) {
+            return "";
+        }
+
+        String fileName = name.toString();
+        int dotIndex = fileName.lastIndexOf('.');
+        return dotIndex == -1 ? "" : fileName.substring(dotIndex + 1);
     }
 
     public static byte[] zipSha1(Path path) throws IOException {

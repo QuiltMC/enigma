@@ -1,10 +1,9 @@
 package cuchaz.enigma.translation.mapping.serde.tiny;
 
-import com.google.common.base.Charsets;
 import cuchaz.enigma.ProgressListener;
-import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingPair;
+import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.MappingsReader;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
@@ -27,7 +26,7 @@ public enum TinyMappingsReader implements MappingsReader {
 
 	@Override
 	public EntryTree<EntryMapping> read(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws IOException, MappingParseException {
-		return read(path, Files.readAllLines(path, Charsets.UTF_8), progress);
+		return read(path, Files.readAllLines(path), progress);
 	}
 
 	private EntryTree<EntryMapping> read(Path path, List<String> lines, ProgressListener progress) throws MappingParseException {
@@ -60,18 +59,13 @@ public enum TinyMappingsReader implements MappingsReader {
 		String[] tokens = line.split("\t");
 
 		String key = tokens[0];
-		switch (key) {
-			case "CLASS":
-				return parseClass(tokens);
-			case "FIELD":
-				return parseField(tokens);
-			case "METHOD":
-				return parseMethod(tokens);
-			case "MTH-ARG":
-				return parseArgument(tokens);
-			default:
-				throw new RuntimeException("Unknown token '" + key + "'!");
-		}
+		return switch (key) {
+			case "CLASS" -> parseClass(tokens);
+			case "FIELD" -> parseField(tokens);
+			case "METHOD" -> parseMethod(tokens);
+			case "MTH-ARG" -> parseArgument(tokens);
+			default -> throw new RuntimeException("Unknown token '" + key + "'!");
+		};
 	}
 
 	private MappingPair<ClassEntry, EntryMapping> parseClass(String[] tokens) {

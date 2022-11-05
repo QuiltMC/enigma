@@ -1,6 +1,5 @@
 package cuchaz.enigma.classprovider;
 
-import com.google.common.collect.ImmutableSet;
 import cuchaz.enigma.utils.AsmUtil;
 import org.objectweb.asm.tree.ClassNode;
 
@@ -10,6 +9,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -24,8 +24,8 @@ public class JarClassProvider implements AutoCloseable, ClassProvider {
         this.classNames = collectClassNames(fileSystem);
     }
 
-    private static ImmutableSet<String> collectClassNames(FileSystem fileSystem) throws IOException {
-        ImmutableSet.Builder<String> classNames = ImmutableSet.builder();
+    private static Set<String> collectClassNames(FileSystem fileSystem) throws IOException {
+        Set<String> classNames = new HashSet<>();
         for (Path root : fileSystem.getRootDirectories()) {
             Files.walk(root).map(Path::toString)
                     .forEach(path -> {
@@ -36,7 +36,7 @@ public class JarClassProvider implements AutoCloseable, ClassProvider {
                     });
         }
 
-        return classNames.build();
+        return Set.copyOf(classNames);
     }
 
     public Set<String> getClassNames() {

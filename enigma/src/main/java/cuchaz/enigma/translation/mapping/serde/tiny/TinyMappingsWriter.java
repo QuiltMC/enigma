@@ -1,14 +1,12 @@
 package cuchaz.enigma.translation.mapping.serde.tiny;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.MappingTranslator;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingDelta;
-import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.VoidEntryResolver;
+import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.MappingsWriter;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTreeNode;
@@ -26,10 +24,10 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
 public class TinyMappingsWriter implements MappingsWriter {
     private static final String VERSION_CONSTANT = "v1";
-    private static final Joiner TAB_JOINER = Joiner.on('\t');
 
     //Possibly add a gui or a way to select the namespaces when exporting from the gui
     public static final TinyMappingsWriter INSTANCE = new TinyMappingsWriter("intermediary", "named");
@@ -56,7 +54,7 @@ public class TinyMappingsWriter implements MappingsWriter {
         try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
             writeLine(writer, new String[]{VERSION_CONSTANT, nameObf, nameDeobf});
 
-            Lists.newArrayList(mappings).stream()
+            StreamSupport.stream(mappings.spliterator(), false)
                     .map(EntryTreeNode::getEntry).sorted(Comparator.comparing(Object::toString))
                     .forEach(entry -> writeEntry(writer, mappings, entry));
         } catch (IOException e) {
@@ -113,7 +111,7 @@ public class TinyMappingsWriter implements MappingsWriter {
 
     private void writeLine(Writer writer, String[] data) {
         try {
-            String line = TAB_JOINER.join(data) + "\n";
+            String line = String.join("\t", data) + "\n";
             if (writtenLines.add(line)) {
                 writer.write(line);
             }
@@ -140,7 +138,7 @@ public class TinyMappingsWriter implements MappingsWriter {
         } else if (entry instanceof ClassEntry) {
             data = new String[2 + extraFields.length];
             data[0] = "CLASS";
-            data[1] = ((ClassEntry) entry).getFullName();
+            data[1] = entry.getFullName();
         }
 
         if (data != null) {

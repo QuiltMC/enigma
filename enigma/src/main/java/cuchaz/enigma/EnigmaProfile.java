@@ -1,13 +1,6 @@
 package cuchaz.enigma;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
+import com.google.gson.*;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import cuchaz.enigma.api.service.EnigmaServiceType;
@@ -23,13 +16,10 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public final class EnigmaProfile {
-	public static final EnigmaProfile EMPTY = new EnigmaProfile(new ServiceContainer(ImmutableMap.of()));
+	public static final EnigmaProfile EMPTY = new EnigmaProfile(new ServiceContainer(Map.of()));
 
 	private static final MappingSaveParameters DEFAULT_MAPPING_SAVE_PARAMETERS = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
 	private static final Gson GSON = new GsonBuilder()
@@ -77,7 +67,7 @@ public final class EnigmaProfile {
 
 		JsonObject object = json.getAsJsonObject();
 
-		ImmutableMap.Builder<String, List<Service>> builder = ImmutableMap.builder();
+		Map<String, List<Service>> builder = new HashMap<>();
 
 		for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
 			JsonElement value = entry.getValue();
@@ -90,7 +80,7 @@ public final class EnigmaProfile {
 			}
 		}
 
-		return new ServiceContainer(builder.build());
+		return new ServiceContainer(Map.copyOf(builder));
 	}
 
 	public List<Service> getServiceProfiles(EnigmaServiceType<?> serviceType) {

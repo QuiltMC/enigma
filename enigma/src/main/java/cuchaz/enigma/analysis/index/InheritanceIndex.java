@@ -13,7 +13,6 @@ package cuchaz.enigma.analysis.index;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
@@ -79,7 +78,7 @@ public class InheritanceIndex implements JarIndexer {
 	}
 
 	public Set<ClassEntry> getAncestors(ClassEntry classEntry) {
-		Set<ClassEntry> ancestors = Sets.newHashSet();
+		Set<ClassEntry> ancestors = new HashSet<>();
 
 		LinkedList<ClassEntry> ancestorQueue = new LinkedList<>();
 		ancestorQueue.push(classEntry);

@@ -11,7 +11,6 @@
 
 package cuchaz.enigma.analysis;
 
-import com.google.common.collect.Sets;
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.analysis.index.ReferenceIndex;
 import cuchaz.enigma.translation.Translator;
@@ -24,6 +23,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements ReferenceTreeNode<MethodEntry, MethodDefEntry> {
@@ -75,7 +75,7 @@ public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements R
 				if (child instanceof MethodReferenceTreeNode node) {
 
 					// don't recurse into ancestor
-					Set<Entry<?>> ancestors = Sets.newHashSet();
+					Set<Entry<?>> ancestors = new HashSet<>();
 					TreeNode n = node;
 					while (n.getParent() != null) {
 						n = n.getParent();

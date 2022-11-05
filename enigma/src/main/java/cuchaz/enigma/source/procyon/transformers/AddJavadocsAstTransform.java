@@ -1,7 +1,5 @@
 package cuchaz.enigma.source.procyon.transformers;
 
-import com.google.common.base.Function;
-import com.google.common.base.Strings;
 import com.strobel.assembler.metadata.ParameterDefinition;
 import com.strobel.decompiler.languages.java.ast.*;
 import com.strobel.decompiler.languages.java.ast.transforms.IAstTransform;
@@ -9,12 +7,15 @@ import cuchaz.enigma.source.procyon.EntryParser;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
-import cuchaz.enigma.translation.representation.entry.*;
+import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableDefEntry;
+import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public final class AddJavadocsAstTransform implements IAstTransform {
@@ -47,7 +48,7 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 
 		private <T extends AstNode> Comment[] getComments(T node, Function<T, Entry<?>> retriever) {
 			final EntryMapping mapping = remapper.getDeobfMapping(retriever.apply(node));
-			final String docs = Strings.emptyToNull(mapping.javadoc());
+			final String docs = mapping.javadoc();
 			return docs == null ? null : Stream.of(docs.split("\\R")).map(st -> new Comment(st,
 					CommentType.Documentation)).toArray(Comment[]::new);
 		}
@@ -58,7 +59,7 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 			final Comment[] ret = getComments(node, retriever);
 			if (ret != null) {
 				final String paramPrefix = "@param " + (mapping.targetName() != null ? mapping.targetName() : entry.getName()) + " ";
-				final String indent = Strings.repeat(" ", paramPrefix.length());
+				final String indent = " ".repeat(paramPrefix.length());
 				ret[0].setContent(paramPrefix + ret[0].getContent());
 				for (int i = 1; i < ret.length; i++) {
 					ret[i].setContent(indent + ret[i].getContent());
