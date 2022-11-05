@@ -2,13 +2,12 @@ package cuchaz.enigma.gui.panels;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter.HighlightPainter;
@@ -54,7 +53,7 @@ public class EditorPanel {
 	private final EditorPopupMenu popupMenu;
 
 	// progress UI
-	private final JLabel decompilingLabel = new JLabel(I18n.translate("editor.decompiling"), JLabel.CENTER);
+	private final JLabel decompilingLabel = new JLabel(I18n.translate("editor.decompiling"), SwingConstants.CENTER);
 	private final JProgressBar decompilingProgressBar = new JProgressBar(0, 100);
 
 	// error display UI
@@ -233,9 +232,7 @@ public class EditorPanel {
 		handle.addListener(new ClassHandleListener() {
 			@Override
 			public void onDeobfRefChanged(ClassHandle h, ClassEntry deobfRef) {
-				SwingUtilities.invokeLater(() -> {
-					EditorPanel.this.listeners.forEach(l -> l.onTitleChanged(EditorPanel.this, getFileName()));
-				});
+				SwingUtilities.invokeLater(() -> EditorPanel.this.listeners.forEach(l -> l.onTitleChanged(EditorPanel.this, getFileName())));
 			}
 
 			@Override
@@ -327,7 +324,7 @@ public class EditorPanel {
 				this.ui.setLayout(new GridBagLayout());
 				GridBagConstraintsBuilder cb = GridBagConstraintsBuilder.create().insets(2).weight(1.0, 0.0).anchor(GridBagConstraints.WEST);
 				this.ui.add(this.errorLabel, cb.pos(0, 0).build());
-				this.ui.add(new JSeparator(JSeparator.HORIZONTAL), cb.pos(0, 1).fill(GridBagConstraints.HORIZONTAL).build());
+				this.ui.add(new JSeparator(SwingConstants.HORIZONTAL), cb.pos(0, 1).fill(GridBagConstraints.HORIZONTAL).build());
 				this.ui.add(this.errorScrollPane, cb.pos(0, 2).weight(1.0, 1.0).fill(GridBagConstraints.BOTH).build());
 				this.ui.add(this.retryButton, cb.pos(0, 3).weight(0.0, 0.0).anchor(GridBagConstraints.EAST).build());
 				break;
@@ -508,16 +505,14 @@ public class EditorPanel {
 		List<Token> tokens = this.controller.getTokensForReference(this.source, reference);
 		if (tokens.isEmpty()) {
 			// DEBUG
-			System.err.println(String.format("WARNING: no tokens found for %s in %s", reference, this.classHandle.getRef()));
+			System.err.printf("WARNING: no tokens found for %s in %s%n", reference, this.classHandle.getRef());
 		} else {
 			this.gui.showTokens(this, tokens);
 		}
 	}
 
 	public void navigateToToken(Token token) {
-		if (token == null) {
-			throw new IllegalArgumentException("Token cannot be null!");
-		}
+		Objects.requireNonNull(token, "Token cannot be null!");
 		navigateToToken(token, SelectionHighlightPainter.INSTANCE);
 	}
 

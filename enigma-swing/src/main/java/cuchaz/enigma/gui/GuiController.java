@@ -280,9 +280,7 @@ public class GuiController implements ClientPacketHandler {
 	 * @param entry the entry whose declaration will be navigated to
 	 */
 	public void openDeclaration(Entry<?> entry) {
-		if (entry == null) {
-			throw new IllegalArgumentException("Entry cannot be null!");
-		}
+		Objects.requireNonNull(entry, "Entry cannot be null!");
 		openReference(EntryReference.declaration(entry, entry.getName()));
 	}
 
@@ -292,9 +290,7 @@ public class GuiController implements ClientPacketHandler {
 	 * @param reference the reference
 	 */
 	public void openReference(EntryReference<Entry<?>, Entry<?>> reference) {
-		if (reference == null) {
-			throw new IllegalArgumentException("Reference cannot be null!");
-		}
+		Objects.requireNonNull(reference, "Reference cannot be null!");
 		if (this.referenceHistory == null) {
 			this.referenceHistory = new History<>(reference);
 		} else {

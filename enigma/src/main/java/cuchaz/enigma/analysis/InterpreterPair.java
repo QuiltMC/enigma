@@ -104,7 +104,7 @@ public class InterpreterPair<V extends Value, W extends Value> extends Interpret
 
         public PairValue(V left, W right) {
             if (left == null && right == null) {
-                throw new IllegalArgumentException("should use null rather than pair of nulls");
+                throw new NullPointerException("should use null rather than pair of nulls");
             }
 
             this.left = left;

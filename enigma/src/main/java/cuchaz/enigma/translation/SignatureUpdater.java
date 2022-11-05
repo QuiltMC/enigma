@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SignatureUpdater {
 
@@ -33,9 +34,7 @@ public class SignatureUpdater {
 					// update the class name and add it to the buffer
 					buf.append('L');
 					String className = readClass(reader);
-					if (className == null) {
-						throw new IllegalArgumentException("Malformed signature: " + signature);
-					}
+					Objects.requireNonNull(className, "Malformed signature: " + signature);
 					buf.append(updater.update(className));
 					buf.append(';');
 				} else {

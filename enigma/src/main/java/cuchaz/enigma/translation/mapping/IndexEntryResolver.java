@@ -162,9 +162,7 @@ public class IndexEntryResolver implements EntryResolver {
 
 	private void resolveEquivalentMethods(Set<MethodEntry> methodEntries, MethodEntry methodEntry) {
 		AccessFlags access = entryIndex.getMethodAccess(methodEntry);
-		if (access == null) {
-			throw new IllegalArgumentException("Could not find method " + methodEntry);
-		}
+		Objects.requireNonNull(access, "Could not find method " + methodEntry);
 
 		if (!canInherit(methodEntry, access)) {
 			methodEntries.add(methodEntry);

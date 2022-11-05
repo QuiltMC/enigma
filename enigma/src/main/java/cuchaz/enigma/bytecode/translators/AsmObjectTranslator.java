@@ -14,15 +14,15 @@ public class AsmObjectTranslator {
 	public static Type translateType(Translator translator, Type type) {
 		String descString = type.getDescriptor();
 		switch (type.getSort()) {
-			case Type.OBJECT: {
+			case Type.OBJECT -> {
 				ClassEntry classEntry = new ClassEntry(type.getInternalName());
 				return Type.getObjectType(translator.translate(classEntry).getFullName());
 			}
-			case Type.ARRAY: {
+			case Type.ARRAY -> {
 				TypeDescriptor descriptor = new TypeDescriptor(descString);
 				return Type.getType(translator.translate(descriptor).toString());
 			}
-			case Type.METHOD: {
+			case Type.METHOD -> {
 				MethodDescriptor descriptor = new MethodDescriptor(descString);
 				return Type.getMethodType(translator.translate(descriptor).toString());
 			}

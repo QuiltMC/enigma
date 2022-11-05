@@ -22,6 +22,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class MethodImplementationsTreeNode extends DefaultMutableTreeNode {
 
@@ -29,11 +30,8 @@ public class MethodImplementationsTreeNode extends DefaultMutableTreeNode {
 	private MethodEntry entry;
 
 	public MethodImplementationsTreeNode(Translator translator, MethodEntry entry) {
+		Objects.requireNonNull(entry, "Entry cannot be null!");
 		this.translator = translator;
-		if (entry == null) {
-			throw new IllegalArgumentException("Entry cannot be null!");
-		}
-
 		this.entry = entry;
 	}
 

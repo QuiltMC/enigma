@@ -18,10 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Supplier;
 import java.util.zip.ZipEntry;
@@ -34,9 +31,7 @@ public class Utils {
 
     public static String readResourceToString(String path) throws IOException {
         InputStream in = Utils.class.getResourceAsStream(path);
-        if (in == null) {
-            throw new IllegalArgumentException("Resource not found! " + path);
-        }
+        Objects.requireNonNull(in, "Resource not found! " + path);
         return readStreamToString(in);
     }
 

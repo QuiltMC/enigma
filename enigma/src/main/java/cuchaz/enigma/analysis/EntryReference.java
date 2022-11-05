@@ -51,9 +51,7 @@ public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements T
 	}
 
 	protected EntryReference(E entry, String sourceName, C context, ReferenceTargetType targetType, boolean declaration) {
-		if (entry == null) {
-			throw new IllegalArgumentException("Entry cannot be null!");
-		}
+		Objects.requireNonNull(entry, "Entry cannot be null!");
 
 		this.entry = entry;
 		this.context = context;
