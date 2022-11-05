@@ -60,8 +60,7 @@ public class EntryRemapper {
 	}
 
 	private void doPutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping, boolean validateOnly) {
-		if (obfuscatedEntry instanceof FieldEntry) {
-			FieldEntry fieldEntry = (FieldEntry) obfuscatedEntry;
+		if (obfuscatedEntry instanceof FieldEntry fieldEntry) {
 			ClassEntry classEntry = fieldEntry.getParent();
 
 			// TODO: Update this to work with hashed mojmap

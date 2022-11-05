@@ -69,13 +69,13 @@ public abstract class Command {
 			}
 		}
 		RuntimeException exception = new RuntimeException("Unable to parse mappings!");
-		for (Exception supressedException : suppressed) {
-			exception.addSuppressed(supressedException);
+		for (Exception suppressedException : suppressed) {
+			exception.addSuppressed(suppressedException);
 		}
 		throw exception;
 	}
 
-	protected static void writeMappings(EntryTree<EntryMapping> mappings, Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws Exception {
+	protected static void writeMappings(EntryTree<EntryMapping> mappings, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
 		List<Exception> suppressed = new ArrayList<>();
 		if ("zip".equalsIgnoreCase(Utils.getFileExtension(path))) {
 			MappingFormat.ENIGMA_ZIP.write(mappings, path, progress, saveParameters);

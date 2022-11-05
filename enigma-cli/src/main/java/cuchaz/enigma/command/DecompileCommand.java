@@ -38,7 +38,7 @@ public class DecompileCommand extends Command {
 		try {
 			Field decompilerField = Decompilers.class.getField(decompilerName.toUpperCase(Locale.ROOT));
 			decompilerService = (DecompilerService) decompilerField.get(null);
-		} catch (NoSuchFieldException e) {
+		} catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException e) {
 			System.err.println("Decompiler not found.");
 			return;
 		}
