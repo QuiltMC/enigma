@@ -1,7 +1,6 @@
 package cuchaz.enigma;
 
 import cuchaz.enigma.config.ConfigContainer;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,7 +16,7 @@ public class ConfigTest {
 		cc.data().section("a").section("b").section("c").setInt("c", 5);
 		cc.data().section("a").section("b").section("c").setDouble("d", 3.5);
 		cc.data().section("a").section("b").section("c").setRgbColor("e", 0x123456);
-		Assertions.assertEquals("a=a\n" +
+		assertEquals("a=a\n" +
 						"\n" +
 						"[a][b][c]\n" +
 						"a=abcd\n" +
