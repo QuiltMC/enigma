@@ -18,14 +18,13 @@ import cuchaz.enigma.source.Decompiler;
 import cuchaz.enigma.source.Decompilers;
 import cuchaz.enigma.source.SourceSettings;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static cuchaz.enigma.TestEntryFactory.newClass;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestInnerClasses {
 
@@ -63,25 +62,25 @@ public class TestInnerClasses {
 	public void classTree() {
 
 		// root level
-		assertThat(index.getEntryIndex().hasClass(ClassTreeRoot), is(true));
+		assertTrue(index.getEntryIndex().hasClass(ClassTreeRoot));
 
 		// level 1
 		ClassEntry fullClassEntry = new ClassEntry(ClassTreeRoot.getName()
 			+ "$" + ClassTreeLevel1.getSimpleName());
-		assertThat(index.getEntryIndex().hasClass(fullClassEntry), is(true));
+		assertTrue(index.getEntryIndex().hasClass(fullClassEntry));
 
 		// level 2
 		fullClassEntry = new ClassEntry(ClassTreeRoot.getName()
 			+ "$" + ClassTreeLevel1.getSimpleName()
 			+ "$" + ClassTreeLevel2.getSimpleName());
-		assertThat(index.getEntryIndex().hasClass(fullClassEntry), is(true));
+		assertTrue(index.getEntryIndex().hasClass(fullClassEntry));
 
 		// level 3
 		fullClassEntry = new ClassEntry(ClassTreeRoot.getName()
 			+ "$" + ClassTreeLevel1.getSimpleName()
 			+ "$" + ClassTreeLevel2.getSimpleName()
 			+ "$" + ClassTreeLevel3.getSimpleName());
-		assertThat(index.getEntryIndex().hasClass(fullClassEntry), is(true));
+		assertTrue(index.getEntryIndex().hasClass(fullClassEntry));
 	}
 
 	private void decompile(ClassEntry classEntry) {

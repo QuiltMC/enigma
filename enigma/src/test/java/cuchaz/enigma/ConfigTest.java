@@ -1,10 +1,10 @@
 package cuchaz.enigma;
 
-import org.junit.Test;
-
 import cuchaz.enigma.config.ConfigContainer;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConfigTest {
 
@@ -17,15 +17,14 @@ public class ConfigTest {
 		cc.data().section("a").section("b").section("c").setInt("c", 5);
 		cc.data().section("a").section("b").section("c").setDouble("d", 3.5);
 		cc.data().section("a").section("b").section("c").setRgbColor("e", 0x123456);
-		assertEquals("a=a\n" +
+		Assertions.assertEquals("a=a\n" +
 						"\n" +
 						"[a][b][c]\n" +
 						"a=abcd\n" +
 						"b=true\n" +
 						"c=5\n" +
 						"d=3.5\n" +
-						"e=#123456\n",
-				cc.serialize());
+						"e=#123456\n", cc.serialize());
 	}
 
 	@Test
