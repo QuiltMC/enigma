@@ -1,13 +1,10 @@
 package cuchaz.enigma.translation.mapping.serde.recaf;
 
-import com.google.common.collect.Sets;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import org.junit.jupiter.api.Test;
 
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -19,22 +16,19 @@ public class TestRecaf {
 
     @Test
     public void testIntegrity() throws Exception {
-        Set<String> contents;
-        try (InputStream in = getClass().getResourceAsStream("/recaf.mappings")) {
-            contents = Sets.newHashSet(new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\\R"));
-        }
-
         Path path = Path.of("src/test/resources/recaf.mappings");
-        Files.writeString(path, String.join("\n", contents));
+        Set<String> contents = new HashSet<>(Files.readAllLines(path));
+        Path tempFile = Files.createTempFile(null, null);
+        Files.write(tempFile, contents);
 
         RecafMappingsWriter writer = RecafMappingsWriter.INSTANCE;
         RecafMappingsReader reader = RecafMappingsReader.INSTANCE;
 
-        EntryTree<EntryMapping> mappings = reader.read(path, ProgressListener.none(), null);
-        writer.write(mappings, path, ProgressListener.none(), null);
+        EntryTree<EntryMapping> mappings = reader.read(tempFile, ProgressListener.none(), null);
+        writer.write(mappings, tempFile, ProgressListener.none(), null);
 
-        reader.read(path, ProgressListener.none(), null);
-        Set<String> newContents = new HashSet<>(Files.readAllLines(path));
+        reader.read(tempFile, ProgressListener.none(), null);
+        Set<String> newContents = new HashSet<>(Files.readAllLines(tempFile));
 
         assertEquals(contents, newContents);
     }
