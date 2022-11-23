@@ -8,18 +8,17 @@ import org.jetbrains.java.decompiler.main.decompiler.BaseDecompiler;
 import org.jetbrains.java.decompiler.main.extern.IContextSource;
 import org.jetbrains.java.decompiler.main.extern.IFernflowerLogger;
 import org.jetbrains.java.decompiler.main.extern.IResultSaver;
-import org.objectweb.asm.tree.ClassNode;
 
 import java.util.Map;
 
 public class QuiltflowerSource implements Source {
-    private final ClassNode node;
+    private final IContextSource contextSource;
     private EntryRemapper remapper;
 
     private SourceIndex index;
 
-    public QuiltflowerSource(ClassNode node, EntryRemapper remapper) {
-        this.node = node;
+    public QuiltflowerSource(IContextSource contextSource, EntryRemapper remapper) {
+        this.contextSource = contextSource;
         this.remapper = remapper;
     }
 
@@ -61,7 +60,6 @@ public class QuiltflowerSource implements Source {
         IFernflowerLogger logger = new EnigmaFernflowerLogger();
         BaseDecompiler decompiler = new BaseDecompiler(saver, options, logger);
 
-        IContextSource contextSource = new EnigmaContextSource(node);
         decompiler.addSource(contextSource);
 
         decompiler.decompileContext();

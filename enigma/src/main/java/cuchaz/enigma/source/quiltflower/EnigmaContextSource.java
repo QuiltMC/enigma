@@ -1,5 +1,6 @@
 package cuchaz.enigma.source.quiltflower;
 
+import cuchaz.enigma.classprovider.ClassProvider;
 import cuchaz.enigma.utils.AsmUtil;
 import org.jetbrains.java.decompiler.main.extern.IContextSource;
 import org.jetbrains.java.decompiler.main.extern.IResultSaver;
@@ -7,15 +8,17 @@ import org.objectweb.asm.tree.ClassNode;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class EnigmaContextSource implements IContextSource {
-    private final ClassNode node;
+    private final ClassProvider classProvider;
     private final String name;
 
-    public EnigmaContextSource(ClassNode node) {
-        this.node = node;
-        this.name = node.name;
+    public EnigmaContextSource(ClassProvider classProvider, String className) {
+        this.classProvider = classProvider;
+        this.name = className;
     }
 
     @Override
@@ -25,12 +28,23 @@ public class EnigmaContextSource implements IContextSource {
 
     @Override
     public Entries getEntries() {
-        return new Entries(Collections.singletonList(Entry.atBase(name)),
+        List<String> classNames = new ArrayList<>();
+        classNames.add(name);
+        classNames.addAll(classProvider.getClasses(name));
+        List<Entry> classes = classNames.stream().distinct().map(Entry::atBase).toList();
+
+        return new Entries(classes,
                 Collections.emptyList(), Collections.emptyList());
     }
 
     @Override
     public InputStream getInputStream(String resource) {
+        ClassNode node = classProvider.get(resource.substring(0, resource.lastIndexOf(".")));
+
+        if (node == null) {
+            return null;
+        }
+
         return new ByteArrayInputStream(AsmUtil.nodeToBytes(node));
     }
 

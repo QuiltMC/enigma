@@ -13,6 +13,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Wraps a ClassProvider to apply fixes to the following problems introduced by the obfuscator,
@@ -55,6 +56,11 @@ public class ObfuscationFixClassProvider implements ClassProvider {
         removeRedundantClassCalls(fixedNode);
 
         return fixedNode;
+    }
+
+    @Override
+    public List<String> getClasses(String prefix) {
+        return classProvider.getClasses(prefix);
     }
 
     private void removeRedundantClassCalls(ClassNode node) {
