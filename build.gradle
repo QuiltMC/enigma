@@ -22,7 +22,8 @@ subprojects {
         implementation 'com.google.guava:guava:30.1.1-jre'
         implementation 'com.google.code.gson:gson:2.8.7'
 
-        testImplementation 'junit:junit:4.13.2'
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.9.0'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.0.3'
         testImplementation 'org.hamcrest:hamcrest:2.2'
     }
 
@@ -45,6 +46,10 @@ subprojects {
         it.options.encoding = "UTF-8"
 
         it.options.release = 17
+    }
+
+    test {
+        useJUnitPlatform()
     }
 
 //    publishing {

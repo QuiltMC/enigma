@@ -18,7 +18,7 @@ import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -52,7 +52,6 @@ public class TestJarIndexConstructorReferences {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void baseDefault() {
 		MethodEntry source = newMethod(baseClass, "<init>", "()V");
 		Collection<EntryReference<MethodEntry, MethodDefEntry>> references = index.getReferenceIndex().getReferencesToMethod(source);
@@ -64,7 +63,6 @@ public class TestJarIndexConstructorReferences {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void baseInt() {
 		MethodEntry source = newMethod(baseClass, "<init>", "(I)V");
 		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
@@ -73,7 +71,6 @@ public class TestJarIndexConstructorReferences {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void subDefault() {
 		MethodEntry source = newMethod(subClass, "<init>", "()V");
 		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
@@ -83,7 +80,6 @@ public class TestJarIndexConstructorReferences {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void subInt() {
 		MethodEntry source = newMethod(subClass, "<init>", "(I)V");
 		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
@@ -94,7 +90,6 @@ public class TestJarIndexConstructorReferences {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void subIntInt() {
 		MethodEntry source = newMethod(subClass, "<init>", "(II)V");
 		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
@@ -109,7 +104,6 @@ public class TestJarIndexConstructorReferences {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void subsubInt() {
 		MethodEntry source = newMethod(subsubClass, "<init>", "(I)V");
 		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
@@ -118,7 +112,6 @@ public class TestJarIndexConstructorReferences {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void defaultConstructable() {
 		MethodEntry source = newMethod(defaultClass, "<init>", "()V");
 		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(

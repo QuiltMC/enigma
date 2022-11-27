@@ -12,14 +12,14 @@
 package cuchaz.enigma;
 
 import cuchaz.enigma.translation.representation.entry.Entry;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static cuchaz.enigma.TestEntryFactory.*;
 
 public class TestTranslator {
 
-	@BeforeClass
+	@BeforeAll
 	public static void beforeClass()
 		throws Exception {
 		//TODO FIx

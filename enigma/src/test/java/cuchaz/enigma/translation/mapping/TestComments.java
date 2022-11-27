@@ -12,7 +12,7 @@ import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.enigma.EnigmaMappingsReader;
 import cuchaz.enigma.translation.mapping.serde.tinyv2.TinyV2Writer;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class TestComments {
     private static Path DIRECTORY;
