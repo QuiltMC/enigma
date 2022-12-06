@@ -20,7 +20,8 @@ public class QuiltflowerPreferences {
             IFernflowerPreferences.THREADS,
             IFernflowerPreferences.USER_RENAMER_CLASS,
             IFernflowerPreferences.NEW_LINE_SEPARATOR,
-            IFernflowerPreferences.ERROR_MESSAGE
+            IFernflowerPreferences.ERROR_MESSAGE,
+            IFernflowerPreferences.DUMP_TEXT_TOKENS
     );
 
     public static final Map<String, Object> EXTRA_DEFAULTS = Map.of(

@@ -8,6 +8,7 @@ import org.jetbrains.java.decompiler.main.decompiler.BaseDecompiler;
 import org.jetbrains.java.decompiler.main.extern.IContextSource;
 import org.jetbrains.java.decompiler.main.extern.IFernflowerLogger;
 import org.jetbrains.java.decompiler.main.extern.IResultSaver;
+import org.jetbrains.java.decompiler.main.extern.TextTokenVisitor;
 
 import java.util.Map;
 
@@ -60,6 +61,7 @@ public class QuiltflowerSource implements Source {
         IFernflowerLogger logger = new EnigmaFernflowerLogger();
         BaseDecompiler decompiler = new BaseDecompiler(saver, options, logger);
 
+        TextTokenVisitor.addVisitor(next -> new EnigmaTextTokenVisitor(next, index));
         decompiler.addSource(contextSource);
 
         decompiler.decompileContext();
