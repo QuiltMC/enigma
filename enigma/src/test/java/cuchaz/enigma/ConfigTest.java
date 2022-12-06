@@ -1,10 +1,9 @@
 package cuchaz.enigma;
 
-import org.junit.Test;
-
 import cuchaz.enigma.config.ConfigContainer;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConfigTest {
 
@@ -24,8 +23,7 @@ public class ConfigTest {
 						"b=true\n" +
 						"c=5\n" +
 						"d=3.5\n" +
-						"e=#123456\n",
-				cc.serialize());
+						"e=#123456\n", cc.serialize());
 	}
 
 	@Test

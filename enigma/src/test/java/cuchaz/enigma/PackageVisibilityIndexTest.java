@@ -15,7 +15,7 @@ import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.analysis.index.PackageVisibilityIndex;
 import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

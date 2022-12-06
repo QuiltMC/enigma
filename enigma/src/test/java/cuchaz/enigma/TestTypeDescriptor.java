@@ -12,41 +12,43 @@
 package cuchaz.enigma;
 
 import cuchaz.enigma.translation.representation.TypeDescriptor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static cuchaz.enigma.TestEntryFactory.newClass;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class TestTypeDescriptor {
 
 	@Test
 	public void isVoid() {
-		assertThat(new TypeDescriptor("V").isVoid(), is(true));
-		assertThat(new TypeDescriptor("Z").isVoid(), is(false));
-		assertThat(new TypeDescriptor("B").isVoid(), is(false));
-		assertThat(new TypeDescriptor("C").isVoid(), is(false));
-		assertThat(new TypeDescriptor("I").isVoid(), is(false));
-		assertThat(new TypeDescriptor("J").isVoid(), is(false));
-		assertThat(new TypeDescriptor("F").isVoid(), is(false));
-		assertThat(new TypeDescriptor("D").isVoid(), is(false));
-		assertThat(new TypeDescriptor("LFoo;").isVoid(), is(false));
-		assertThat(new TypeDescriptor("[I").isVoid(), is(false));
+		assertTrue(new TypeDescriptor("V").isVoid());
+		assertFalse(new TypeDescriptor("Z").isVoid());
+		assertFalse(new TypeDescriptor("B").isVoid());
+		assertFalse(new TypeDescriptor("C").isVoid());
+		assertFalse(new TypeDescriptor("I").isVoid());
+		assertFalse(new TypeDescriptor("J").isVoid());
+		assertFalse(new TypeDescriptor("F").isVoid());
+		assertFalse(new TypeDescriptor("D").isVoid());
+		assertFalse(new TypeDescriptor("LFoo;").isVoid());
+		assertFalse(new TypeDescriptor("[I").isVoid());
 	}
 
 	@Test
 	public void isPrimitive() {
-		assertThat(new TypeDescriptor("V").isPrimitive(), is(false));
-		assertThat(new TypeDescriptor("Z").isPrimitive(), is(true));
-		assertThat(new TypeDescriptor("B").isPrimitive(), is(true));
-		assertThat(new TypeDescriptor("C").isPrimitive(), is(true));
-		assertThat(new TypeDescriptor("I").isPrimitive(), is(true));
-		assertThat(new TypeDescriptor("J").isPrimitive(), is(true));
-		assertThat(new TypeDescriptor("F").isPrimitive(), is(true));
-		assertThat(new TypeDescriptor("D").isPrimitive(), is(true));
-		assertThat(new TypeDescriptor("LFoo;").isPrimitive(), is(false));
-		assertThat(new TypeDescriptor("[I").isPrimitive(), is(false));
+		assertFalse(new TypeDescriptor("V").isPrimitive());
+		assertTrue(new TypeDescriptor("Z").isPrimitive());
+		assertTrue(new TypeDescriptor("B").isPrimitive());
+		assertTrue(new TypeDescriptor("C").isPrimitive());
+		assertTrue(new TypeDescriptor("I").isPrimitive());
+		assertTrue(new TypeDescriptor("J").isPrimitive());
+		assertTrue(new TypeDescriptor("F").isPrimitive());
+		assertTrue(new TypeDescriptor("D").isPrimitive());
+		assertFalse(new TypeDescriptor("LFoo;").isPrimitive());
+		assertFalse(new TypeDescriptor("[I").isPrimitive());
 	}
 
 	@Test
@@ -62,16 +64,16 @@ public class TestTypeDescriptor {
 
 	@Test
 	public void isClass() {
-		assertThat(new TypeDescriptor("V").isType(), is(false));
-		assertThat(new TypeDescriptor("Z").isType(), is(false));
-		assertThat(new TypeDescriptor("B").isType(), is(false));
-		assertThat(new TypeDescriptor("C").isType(), is(false));
-		assertThat(new TypeDescriptor("I").isType(), is(false));
-		assertThat(new TypeDescriptor("J").isType(), is(false));
-		assertThat(new TypeDescriptor("F").isType(), is(false));
-		assertThat(new TypeDescriptor("D").isType(), is(false));
-		assertThat(new TypeDescriptor("LFoo;").isType(), is(true));
-		assertThat(new TypeDescriptor("[I").isType(), is(false));
+		assertFalse(new TypeDescriptor("V").isType());
+		assertFalse(new TypeDescriptor("Z").isType());
+		assertFalse(new TypeDescriptor("B").isType());
+		assertFalse(new TypeDescriptor("C").isType());
+		assertFalse(new TypeDescriptor("I").isType());
+		assertFalse(new TypeDescriptor("J").isType());
+		assertFalse(new TypeDescriptor("F").isType());
+		assertFalse(new TypeDescriptor("D").isType());
+		assertTrue(new TypeDescriptor("LFoo;").isType());
+		assertFalse(new TypeDescriptor("[I").isType());
 	}
 
 	@Test
@@ -88,16 +90,16 @@ public class TestTypeDescriptor {
 
 	@Test
 	public void isArray() {
-		assertThat(new TypeDescriptor("V").isArray(), is(false));
-		assertThat(new TypeDescriptor("Z").isArray(), is(false));
-		assertThat(new TypeDescriptor("B").isArray(), is(false));
-		assertThat(new TypeDescriptor("C").isArray(), is(false));
-		assertThat(new TypeDescriptor("I").isArray(), is(false));
-		assertThat(new TypeDescriptor("J").isArray(), is(false));
-		assertThat(new TypeDescriptor("F").isArray(), is(false));
-		assertThat(new TypeDescriptor("D").isArray(), is(false));
-		assertThat(new TypeDescriptor("LFoo;").isArray(), is(false));
-		assertThat(new TypeDescriptor("[I").isArray(), is(true));
+		assertFalse(new TypeDescriptor("V").isArray());
+		assertFalse(new TypeDescriptor("Z").isArray());
+		assertFalse(new TypeDescriptor("B").isArray());
+		assertFalse(new TypeDescriptor("C").isArray());
+		assertFalse(new TypeDescriptor("I").isArray());
+		assertFalse(new TypeDescriptor("J").isArray());
+		assertFalse(new TypeDescriptor("F").isArray());
+		assertFalse(new TypeDescriptor("D").isArray());
+		assertFalse(new TypeDescriptor("LFoo;").isArray());
+		assertTrue(new TypeDescriptor("[I").isArray());
 	}
 
 	@Test
@@ -117,15 +119,15 @@ public class TestTypeDescriptor {
 
 	@Test
 	public void hasClass() {
-		assertThat(new TypeDescriptor("LFoo;").containsType(), is(true));
-		assertThat(new TypeDescriptor("Ljava/lang/String;").containsType(), is(true));
-		assertThat(new TypeDescriptor("[LBar;").containsType(), is(true));
-		assertThat(new TypeDescriptor("[[[LCat;").containsType(), is(true));
+		assertTrue(new TypeDescriptor("LFoo;").containsType());
+		assertTrue(new TypeDescriptor("Ljava/lang/String;").containsType());
+		assertTrue(new TypeDescriptor("[LBar;").containsType());
+		assertTrue(new TypeDescriptor("[[[LCat;").containsType());
 
-		assertThat(new TypeDescriptor("V").containsType(), is(false));
-		assertThat(new TypeDescriptor("[I").containsType(), is(false));
-		assertThat(new TypeDescriptor("[[[I").containsType(), is(false));
-		assertThat(new TypeDescriptor("Z").containsType(), is(false));
+		assertFalse(new TypeDescriptor("V").containsType());
+		assertFalse(new TypeDescriptor("[I").containsType());
+		assertFalse(new TypeDescriptor("[[[I").containsType());
+		assertFalse(new TypeDescriptor("Z").containsType());
 	}
 
 	@Test

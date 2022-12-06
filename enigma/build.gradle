@@ -3,16 +3,16 @@ configurations {
 }
 
 dependencies {
-    implementation 'org.ow2.asm:asm:9.3'
-    implementation 'org.ow2.asm:asm-commons:9.3'
-    implementation 'org.ow2.asm:asm-tree:9.3'
-    implementation 'org.ow2.asm:asm-util:9.3'
+    implementation 'org.ow2.asm:asm:9.4'
+    implementation 'org.ow2.asm:asm-commons:9.4'
+    implementation 'org.ow2.asm:asm-tree:9.4'
+    implementation 'org.ow2.asm:asm-util:9.4'
 
     implementation 'org.quiltmc:quiltflower:1.10.0-20221102.203912-10'
-    implementation 'org.quiltmc:procyon-quilt-compilertools:0.5.35.local' // TODO: Fix the buildscript
+    implementation 'org.bitbucket.mstrobel:procyon-compilertools:0.6.0'
     implementation 'org.quiltmc:cfr:0.0.6'
 
-    proGuard 'com.guardsquare:proguard-base:7.2.0-beta2'
+    proGuard 'com.guardsquare:proguard-base:7.3.0'
 
     testImplementation 'com.google.jimfs:jimfs:1.2'
 }
