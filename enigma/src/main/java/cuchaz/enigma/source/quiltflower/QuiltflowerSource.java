@@ -2,11 +2,13 @@ package cuchaz.enigma.source.quiltflower;
 
 import cuchaz.enigma.source.Source;
 import cuchaz.enigma.source.SourceIndex;
+import cuchaz.enigma.source.SourceSettings;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import net.fabricmc.fernflower.api.IFabricJavadocProvider;
 import org.jetbrains.java.decompiler.main.decompiler.BaseDecompiler;
 import org.jetbrains.java.decompiler.main.extern.IContextSource;
 import org.jetbrains.java.decompiler.main.extern.IFernflowerLogger;
+import org.jetbrains.java.decompiler.main.extern.IFernflowerPreferences;
 import org.jetbrains.java.decompiler.main.extern.IResultSaver;
 import org.jetbrains.java.decompiler.main.extern.TextTokenVisitor;
 
@@ -15,18 +17,25 @@ import java.util.Map;
 public class QuiltflowerSource implements Source {
     private final IContextSource contextSource;
     private EntryRemapper remapper;
+    private final SourceSettings settings;
 
     private SourceIndex index;
 
-    public QuiltflowerSource(IContextSource contextSource, EntryRemapper remapper) {
+    public QuiltflowerSource(IContextSource contextSource, EntryRemapper remapper, SourceSettings settings) {
         this.contextSource = contextSource;
         this.remapper = remapper;
+        this.settings = settings;
     }
 
     // TODO: Remove imports
-    private static Map<String, Object> getOptions(IFabricJavadocProvider javadocProvider) {
+    private static Map<String, Object> getOptions(IFabricJavadocProvider javadocProvider, SourceSettings settings) {
         Map<String, Object> options = QuiltflowerPreferences.getEffectiveOptions();
         options.put(IFabricJavadocProvider.PROPERTY_NAME, javadocProvider);
+
+        if (settings.removeImports) {
+            options.put(IFernflowerPreferences.REMOVE_IMPORTS, "1");
+        }
+
         return options;
     }
 
@@ -57,7 +66,7 @@ public class QuiltflowerSource implements Source {
         index = new SourceIndex();
 
         IResultSaver saver = new EnigmaResultSaver(index);
-        Map<String, Object> options = getOptions(new EnigmaJavadocProvider(remapper));
+        Map<String, Object> options = getOptions(new EnigmaJavadocProvider(remapper), settings);
         IFernflowerLogger logger = new EnigmaFernflowerLogger();
         BaseDecompiler decompiler = new BaseDecompiler(saver, options, logger);
 
