@@ -38,8 +38,9 @@ public class QuiltflowerSettingsDialog extends JDialog {
         preferencesPanel.setLayout(new BoxLayout(preferencesPanel, BoxLayout.Y_AXIS));
 
         JScrollPane preferencesScrollPanel = new JScrollPane(preferencesPanel);
-        preferencesScrollPanel.setPreferredSize(new Dimension(ScaleUtil.scale(640), ScaleUtil.scale(480)));
+        preferencesScrollPanel.setPreferredSize(new Dimension(ScaleUtil.scale(480), ScaleUtil.scale(480)));
         preferencesScrollPanel.setBorder(new EmptyBorder(ScaleUtil.scale(10), ScaleUtil.scale(20), ScaleUtil.scale(10), ScaleUtil.scale(20)));
+        preferencesScrollPanel.getVerticalScrollBar().setUnitIncrement(16);
 
         for (QuiltflowerPreferences.Preference preference : QuiltflowerPreferences.getPreferences()) {
             JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));

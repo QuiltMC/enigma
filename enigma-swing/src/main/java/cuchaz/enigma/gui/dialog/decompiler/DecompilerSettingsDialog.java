@@ -20,7 +20,6 @@ import java.awt.GridBagLayout;
 import java.util.Locale;
 
 public class DecompilerSettingsDialog {
-
     public static void show(Gui gui) {
         JDialog frame = new JDialog(gui.getFrame(), I18n.translate("menu.decompiler.settings"), true);
         Container pane = frame.getContentPane();
