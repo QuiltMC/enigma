@@ -10,6 +10,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -55,6 +56,11 @@ public class JarClassProvider implements AutoCloseable, ClassProvider {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public List<String> getClasses(String prefix) {
+        return classNames.stream().filter(c -> c.startsWith(prefix)).toList();
     }
 
     @Override
