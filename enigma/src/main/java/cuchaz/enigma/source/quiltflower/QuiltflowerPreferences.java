@@ -34,10 +34,8 @@ public class QuiltflowerPreferences {
                         """,
             IFernflowerPreferences.INDENT_STRING, "    ",
             IFernflowerPreferences.LOG_LEVEL, IFernflowerLogger.Severity.WARN.name(),
-            IFernflowerPreferences.NEW_LINE_SEPARATOR, "1",
+            IFernflowerPreferences.NEW_LINE_SEPARATOR, "1", // Always use LF
 
-            IFernflowerPreferences.REMOVE_SYNTHETIC, "0",
-            IFernflowerPreferences.DECOMPILE_GENERIC_SIGNATURES, "1",
             IFernflowerPreferences.PREFERRED_LINE_LENGTH, "180"
     );
 

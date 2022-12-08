@@ -3,22 +3,31 @@ package cuchaz.enigma.source.quiltflower;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.Token;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.utils.Pair;
 import org.jetbrains.java.decompiler.main.extern.TextTokenVisitor;
 import org.jetbrains.java.decompiler.struct.gen.FieldDescriptor;
 import org.jetbrains.java.decompiler.struct.gen.MethodDescriptor;
 import org.jetbrains.java.decompiler.util.token.TextRange;
 
-public class EnigmaTextTokenVisitor extends TextTokenVisitor {
-    private final SourceIndex index;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Function;
+
+public class EnigmaTextTokenCollector extends TextTokenVisitor {
     private String content;
     private MethodEntry currentMethod;
 
-    public EnigmaTextTokenVisitor(TextTokenVisitor next, SourceIndex index) {
+    private final Map<Token, Entry<?>> declarations = new HashMap<>();
+    private final Map<Token, Pair<Entry<?>, Entry<?>>> references = new HashMap<>();
+    private final Map<Token, Boolean> tokens = new LinkedHashMap<>();
+
+    public EnigmaTextTokenCollector(TextTokenVisitor next) {
         super(next);
-        this.index = index;
     }
 
     private static ClassEntry getClassEntry(String name) {
@@ -45,6 +54,32 @@ public class EnigmaTextTokenVisitor extends TextTokenVisitor {
         return new Token(range.start, range.start + range.length, content.substring(range.start, range.start + range.length));
     }
 
+    private void addDeclaration(Token token, Entry<?> entry) {
+        declarations.put(token, entry);
+        tokens.put(token, true);
+    }
+
+    private void addReference(Token token, Entry<?> entry, Entry<?> context) {
+        references.put(token, new Pair<>(entry, context));
+        tokens.put(token, false);
+    }
+
+    public void addTokensToIndex(SourceIndex index, Function<Token, Token> tokenProcessor) {
+        for (Token token : tokens.keySet()) {
+            Token newToken = tokenProcessor.apply(token);
+            if (newToken == null) {
+                continue;
+            }
+
+            if (tokens.get(token)) {
+                index.addDeclaration(newToken, declarations.get(token));
+            } else {
+                Pair<Entry<?>, Entry<?>> ref = references.get(token);
+                index.addReference(newToken, ref.a, ref.b);
+            }
+        }
+    }
+
     @Override
     public void start(String content) {
         this.content = content;
@@ -57,9 +92,9 @@ public class EnigmaTextTokenVisitor extends TextTokenVisitor {
         Token token = getToken(range);
 
         if (declaration) {
-            index.addDeclaration(token, getClassEntry(name));
+            addDeclaration(token, getClassEntry(name));
         } else {
-            index.addReference(token, getClassEntry(name), currentMethod);
+            addReference(token, getClassEntry(name), currentMethod);
         }
     }
 
@@ -69,9 +104,9 @@ public class EnigmaTextTokenVisitor extends TextTokenVisitor {
         Token token = getToken(range);
 
         if (declaration) {
-            index.addDeclaration(token, getFieldEntry(className, name, descriptor));
+            addDeclaration(token, getFieldEntry(className, name, descriptor));
         } else {
-            index.addReference(token, getFieldEntry(className, name, descriptor), currentMethod);
+            addReference(token, getFieldEntry(className, name, descriptor), currentMethod);
         }
     }
 
@@ -86,10 +121,10 @@ public class EnigmaTextTokenVisitor extends TextTokenVisitor {
         }
 
         if (declaration) {
-            index.addDeclaration(token, entry);
+            addDeclaration(token, entry);
             currentMethod = entry;
         } else {
-            index.addReference(token, entry, currentMethod);
+            addReference(token, entry, currentMethod);
         }
     }
 
@@ -100,9 +135,9 @@ public class EnigmaTextTokenVisitor extends TextTokenVisitor {
         MethodEntry parent = getMethodEntry(className, methodName, methodDescriptor);
 
         if (declaration) {
-            index.addDeclaration(token, getParameterEntry(parent, idx, name));
+            addDeclaration(token, getParameterEntry(parent, idx, name));
         } else {
-            index.addReference(token, getParameterEntry(parent, idx, name), currentMethod);
+            addReference(token, getParameterEntry(parent, idx, name), currentMethod);
         }
     }
 
@@ -113,9 +148,9 @@ public class EnigmaTextTokenVisitor extends TextTokenVisitor {
         MethodEntry parent = getMethodEntry(className, methodName, methodDescriptor);
 
         if (declaration) {
-            index.addDeclaration(token, getVariableEntry(parent, idx, name));
+            addDeclaration(token, getVariableEntry(parent, idx, name));
         } else {
-            index.addReference(token, getVariableEntry(parent, idx, name), currentMethod);
+            addReference(token, getVariableEntry(parent, idx, name), currentMethod);
         }
     }
 }

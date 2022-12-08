@@ -13,6 +13,7 @@ import org.jetbrains.java.decompiler.main.extern.IResultSaver;
 import org.jetbrains.java.decompiler.main.extern.TextTokenVisitor;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class QuiltflowerSource implements Source {
     private final IContextSource contextSource;
@@ -27,7 +28,6 @@ public class QuiltflowerSource implements Source {
         this.settings = settings;
     }
 
-    // TODO: Remove imports
     private static Map<String, Object> getOptions(IFabricJavadocProvider javadocProvider, SourceSettings settings) {
         Map<String, Object> options = QuiltflowerPreferences.getEffectiveOptions();
         options.put(IFabricJavadocProvider.PROPERTY_NAME, javadocProvider);
@@ -70,9 +70,38 @@ public class QuiltflowerSource implements Source {
         IFernflowerLogger logger = new EnigmaFernflowerLogger();
         BaseDecompiler decompiler = new BaseDecompiler(saver, options, logger);
 
-        TextTokenVisitor.addVisitor(next -> new EnigmaTextTokenVisitor(next, index));
+        AtomicReference<EnigmaTextTokenCollector> tokenCollector = new AtomicReference<>();
+        TextTokenVisitor.addVisitor(next -> {
+            tokenCollector.set(new EnigmaTextTokenCollector(next));
+            return tokenCollector.get();
+        });
         decompiler.addSource(contextSource);
 
         decompiler.decompileContext();
+
+        removePackageStatement(index, tokenCollector.get());
+    }
+
+    private static void removePackageStatement(SourceIndex index, EnigmaTextTokenCollector tokenCollector) {
+        if (tokenCollector == null) {
+            throw new IllegalStateException("No token collector");
+        }
+
+        String source = index.getSource();
+        int start = source.indexOf("package");
+        int end = index.getPosition(index.getLineNumber(start) + 1, 1);
+        int offset = -(end - start) - 1;
+
+        String newSource = source.substring(0, start) + source.substring(end + 1);
+        index.setSource(newSource);
+        tokenCollector.addTokensToIndex(index, token -> {
+            if (token.start > end) {
+                return token.move(offset);
+            } else if (token.end <= start) {
+                return token;
+            } else {
+                return null;
+            }
+        });
     }
 }
