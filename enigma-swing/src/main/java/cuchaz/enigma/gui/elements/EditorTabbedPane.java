@@ -36,6 +36,7 @@ public class EditorTabbedPane {
 	}
 
 	public EditorPanel openClass(ClassEntry entry) {
+		EditorPanel activeEditor = getActiveEditor();
 		EditorPanel editorPanel = this.editors.computeIfAbsent(entry, e -> {
 			ClassHandle ch = this.gui.getController().getClassHandleProvider().openClass(entry);
 			if (ch == null) return null;
@@ -77,7 +78,7 @@ public class EditorTabbedPane {
 			return ed;
 		});
 
-		if (editorPanel != null) {
+		if (editorPanel != null && activeEditor != editorPanel) {
 			this.openFiles.setSelectedComponent(this.editors.get(entry).getUi());
 			this.gui.showStructure(editorPanel);
 		}

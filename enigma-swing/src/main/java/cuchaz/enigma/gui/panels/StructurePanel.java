@@ -1,6 +1,7 @@
 package cuchaz.enigma.gui.panels;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
 import javax.swing.*;
@@ -12,6 +13,7 @@ import javax.swing.tree.TreePath;
 import cuchaz.enigma.analysis.StructureTreeNode;
 import cuchaz.enigma.analysis.StructureTreeOptions;
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.renderer.StructureOptionListCellRenderer;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.GuiUtil;
@@ -70,6 +72,7 @@ public class StructurePanel {
         this.structureTree.setCellRenderer(new StructureTreeCellRenderer(gui));
         this.structureTree.setSelectionModel(new SingleTreeSelectionModel());
         this.structureTree.setShowsRootHandles(true);
+        this.structureTree.addKeyListener(GuiUtil.onKeyPress(this::onKeyPress));
         this.structureTree.addMouseListener(GuiUtil.onMouseClick(this::onClick));
 
         this.retranslateUi();
@@ -101,19 +104,29 @@ public class StructurePanel {
         structureTree.setSelectionRow(structureTree.getRowForPath(path));
     }
 
+    private void onKeyPress(KeyEvent e) {
+        if (KeyBinds.SELECT.matches(e)) {
+            navigateToSelectedNode();
+        }
+    }
+
     private void onClick(MouseEvent event) {
         if (event.getClickCount() >= 2 && event.getButton() == MouseEvent.BUTTON1) {
-            // get the selected node
-            TreePath path = structureTree.getSelectionPath();
-            if (path == null) {
-                return;
-            }
+            navigateToSelectedNode();
+        }
+    }
 
-            Object node = path.getLastPathComponent();
+    private void navigateToSelectedNode() {
+        // get the selected node
+        TreePath path = structureTree.getSelectionPath();
+        if (path == null) {
+            return;
+        }
 
-            if (node instanceof StructureTreeNode) {
-                this.gui.getController().navigateTo(((StructureTreeNode) node).getEntry());
-            }
+        Object node = path.getLastPathComponent();
+
+        if (node instanceof StructureTreeNode) {
+            this.gui.getController().navigateTo(((StructureTreeNode) node).getEntry());
         }
     }
 
