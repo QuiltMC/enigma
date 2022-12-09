@@ -1,5 +1,7 @@
 package cuchaz.enigma.gui.panels;
 
+import cuchaz.enigma.gui.util.GuiUtil;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -41,14 +43,11 @@ public class ClosableTabTitlePane {
 		this.ui.add(this.closeButton);
 
 		// Use mouse listener here so that it also works for disabled buttons
-		closeButton.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (SwingUtilities.isLeftMouseButton(e) || SwingUtilities.isMiddleMouseButton(e)) {
-					onClose.run();
-				}
+		closeButton.addMouseListener(GuiUtil.onMouseClick(e -> {
+			if (SwingUtilities.isLeftMouseButton(e) || SwingUtilities.isMiddleMouseButton(e)) {
+				onClose.run();
 			}
-		});
+		}));
 
 		this.ui.addMouseListener(new MouseAdapter() {
 			@Override

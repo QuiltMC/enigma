@@ -2,6 +2,7 @@ package cuchaz.enigma.gui.dialog.keybind;
 
 import cuchaz.enigma.gui.config.keybind.KeyBind;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
+import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 
@@ -14,8 +15,7 @@ import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -111,13 +111,8 @@ public class EditKeyBindDialog extends JDialog {
     }
 
     // Stop editing when the user clicks
-    private MouseAdapter mouseListener() {
-        return new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                stopEditing(null);
-            }
-        };
+    private MouseListener mouseListener() {
+        return GuiUtil.onMouseClick(e -> stopEditing(null));
     }
 
     protected void removeCombination(CombinationPanel combinationPanel) {

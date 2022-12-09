@@ -1,6 +1,7 @@
 package cuchaz.enigma.gui.dialog.keybind;
 
 import cuchaz.enigma.gui.config.keybind.KeyBind;
+import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 
@@ -10,10 +11,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.List;
 
 public class CombinationPanel extends JPanel {
@@ -46,12 +45,7 @@ public class CombinationPanel extends JPanel {
         defaultButtonFg = button.getForeground();
         button.addActionListener(e -> onButtonPressed());
         button.addMouseListener(mouseListener());
-        button.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                onKeyPressed(e);
-            }
-        });
+        button.addKeyListener(GuiUtil.onKeyPress(this::onKeyPressed));
         add(button);
     }
 
@@ -108,13 +102,8 @@ public class CombinationPanel extends JPanel {
     }
 
     // Stop editing other CombinationPanels when clicking on this panel
-    private MouseAdapter mouseListener() {
-        return new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                parent.stopEditing(CombinationPanel.this);
-            }
-        };
+    private MouseListener mouseListener() {
+        return GuiUtil.onMouseClick(e -> parent.stopEditing(CombinationPanel.this));
     }
 
     public boolean isModified() {

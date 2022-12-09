@@ -5,7 +5,6 @@ import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ItemEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
@@ -231,15 +230,12 @@ public class IdentifierPanel {
 		}
 
 		public void addCopiableRow(JLabel c1, JLabel c2) {
-			c2.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					if (e.getButton() == MouseEvent.BUTTON1) {
-						GuiUtil.copyToClipboard(c2.getText());
-						GuiUtil.showPopup(c2, I18n.translate("popup.copied"), e.getXOnScreen(), e.getYOnScreen());
-					}
+			c2.addMouseListener(GuiUtil.onMouseClick(e -> {
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					GuiUtil.copyToClipboard(c2.getText());
+					GuiUtil.showPopup(c2, I18n.translate("popup.copied"), e.getXOnScreen(), e.getYOnScreen());
 				}
-			});
+			}));
 			addRow(c1, c2);
 		}
 

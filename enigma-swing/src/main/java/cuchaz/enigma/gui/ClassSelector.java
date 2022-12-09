@@ -22,9 +22,6 @@ import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.tree.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.*;
@@ -51,9 +48,7 @@ public class ClassSelector extends JTree {
 		setModel(null);
 
 		// hook events
-		addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent event) {
+		addMouseListener(GuiUtil.onMouseClick(event -> {
 				if (selectionListener != null && event.getClickCount() == 2) {
 					// get the selected node
 					TreePath path = getSelectionPath();
@@ -61,32 +56,28 @@ public class ClassSelector extends JTree {
 						selectionListener.onSelectClass(node.getObfEntry());
 					}
 				}
-			}
-		});
-		addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				TreePath[] paths = getSelectionPaths();
+			}));
+		addKeyListener(GuiUtil.onKeyPress(e -> {
+			TreePath[] paths = getSelectionPaths();
 
-				if (paths != null) {
-					if (KeyBinds.EDITOR_TOGGLE_MAPPING.matches(e)) {
-						for (TreePath path : paths) {
-							if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
-								gui.toggleMappingFromEntry(node.getObfEntry());
-							}
+			if (paths != null) {
+				if (KeyBinds.EDITOR_TOGGLE_MAPPING.matches(e)) {
+					for (TreePath path : paths) {
+						if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
+							gui.toggleMappingFromEntry(node.getObfEntry());
 						}
 					}
+				}
 
-					if (selectionListener != null && KeyBinds.SELECT.matches(e)) {
-						for (TreePath path : paths) {
-							if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
-								selectionListener.onSelectClass(node.getObfEntry());
-							}
+				if (selectionListener != null && KeyBinds.SELECT.matches(e)) {
+					for (TreePath path : paths) {
+						if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
+							selectionListener.onSelectClass(node.getObfEntry());
 						}
 					}
 				}
 			}
-		});
+		}));
 
 		final DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
 			{

@@ -15,8 +15,6 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 
 import javax.swing.*;
 import javax.swing.text.html.HTML;
@@ -60,21 +58,18 @@ public class JavadocDialog {
 		this.text.setText(preset);
 		this.text.setTabSize(2);
 		contentPane.add(new JScrollPane(this.text), BorderLayout.CENTER);
-		this.text.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent event) {
-				if (KeyBinds.DIALOG_SAVE.matches(event)) {
-					if (event.isControlDown()) {
-						doSave();
-						if (vc.canProceed()) {
-							close();
-						}
+		this.text.addKeyListener(GuiUtil.onKeyPress(event -> {
+			if (KeyBinds.DIALOG_SAVE.matches(event)) {
+				if (event.isControlDown()) {
+					doSave();
+					if (vc.canProceed()) {
+						close();
 					}
-				} else if (KeyBinds.EXIT.matches(event)) {
-					close();
 				}
+			} else if (KeyBinds.EXIT.matches(event)) {
+				close();
 			}
-		});
+		}));
 		this.text.setFont(UiConfig.activeUseCustomFonts() ? UiConfig.getEditorFont() : UiConfig.getFallbackEditorFont());
 
 		// buttons panel

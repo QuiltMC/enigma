@@ -78,22 +78,7 @@ public class SearchDialog {
 			}
 
 		});
-		searchField.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (KeyBinds.SEARCH_DIALOG_NEXT.matches(e)) {
-					int next = classList.isSelectionEmpty() ? 0 : classList.getSelectedIndex() + 1;
-					classList.setSelectedIndex(next);
-					classList.ensureIndexIsVisible(next);
-				} else if (KeyBinds.SEARCH_DIALOG_PREVIOUS.matches(e)) {
-					int prev = classList.isSelectionEmpty() ? classList.getModel().getSize() : classList.getSelectedIndex() - 1;
-					classList.setSelectedIndex(prev);
-					classList.ensureIndexIsVisible(prev);
-				} else if (KeyBinds.EXIT.matches(e)) {
-					close();
-				}
-			}
-		});
+		searchField.addKeyListener(GuiUtil.onKeyPress(this::onKeyPressed));
 		searchField.addActionListener(e -> openSelected());
 		contentPane.add(searchField, BorderLayout.NORTH);
 
@@ -102,16 +87,13 @@ public class SearchDialog {
 		classList.setModel(classListModel);
 		classList.setCellRenderer(new ListCellRendererImpl(parent));
 		classList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		classList.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent mouseEvent) {
-				if (mouseEvent.getClickCount() >= 2) {
-					int idx = classList.locationToIndex(mouseEvent.getPoint());
-					SearchEntryImpl entry = classList.getModel().getElementAt(idx);
-					openEntry(entry);
-				}
+		classList.addMouseListener(GuiUtil.onMouseClick(mouseEvent -> {
+			if (mouseEvent.getClickCount() >= 2) {
+				int idx = classList.locationToIndex(mouseEvent.getPoint());
+				SearchEntryImpl entry = classList.getModel().getElementAt(idx);
+				openEntry(entry);
 			}
-		});
+		}));
 		contentPane.add(new JScrollPane(classList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.CENTER);
 
 		JPanel buttonBar = new JPanel();
@@ -238,6 +220,20 @@ public class SearchDialog {
 
 	public void dispose() {
 		dialog.dispose();
+	}
+
+	private void onKeyPressed(KeyEvent e) {
+		if (KeyBinds.SEARCH_DIALOG_NEXT.matches(e)) {
+			int next = classList.isSelectionEmpty() ? 0 : classList.getSelectedIndex() + 1;
+			classList.setSelectedIndex(next);
+			classList.ensureIndexIsVisible(next);
+		} else if (KeyBinds.SEARCH_DIALOG_PREVIOUS.matches(e)) {
+			int prev = classList.isSelectionEmpty() ? classList.getModel().getSize() : classList.getSelectedIndex() - 1;
+			classList.setSelectedIndex(prev);
+			classList.ensureIndexIsVisible(prev);
+		} else if (KeyBinds.EXIT.matches(e)) {
+			close();
+		}
 	}
 
 	private static final class SearchEntryImpl implements SearchEntry {

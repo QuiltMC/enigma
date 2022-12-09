@@ -1,8 +1,6 @@
 package cuchaz.enigma.gui.elements;
 
 import java.awt.Component;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 
@@ -70,14 +68,11 @@ public class EditorTabbedPane {
 				}
 			});
 
-			ed.getEditor().addKeyListener(new KeyAdapter() {
-				@Override
-				public void keyPressed(KeyEvent e) {
-					if (KeyBinds.EDITOR_CLOSE_TAB.matches(e)) {
-						closeEditor(ed);
-					}
+			ed.getEditor().addKeyListener(GuiUtil.onKeyPress(keyEvent -> {
+				if (KeyBinds.EDITOR_CLOSE_TAB.matches(keyEvent)) {
+					closeEditor(ed);
 				}
-			});
+			}));
 
 			return ed;
 		});

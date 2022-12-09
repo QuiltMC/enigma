@@ -107,12 +107,7 @@ public class GuiUtil {
         Map<TextAttribute, Object> attributes = (Map<TextAttribute, Object>) link.getFont().getAttributes();
         attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
         link.setFont(link.getFont().deriveFont(attributes));
-        link.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                action.run();
-            }
-        });
+        link.addMouseListener(onMousePress(e -> action.run()));
         return link;
     }
 
@@ -181,6 +176,15 @@ public class GuiUtil {
         return new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                op.accept(e);
+            }
+        };
+    }
+
+    public static KeyListener onKeyPress(Consumer<KeyEvent> op) {
+        return new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
                 op.accept(e);
             }
         };

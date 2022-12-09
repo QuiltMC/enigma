@@ -39,12 +39,7 @@ public class ConvertingTextField implements Validatable {
 		this.label = GuiUtil.unboldLabel(new JLabel(text));
 		this.label.setBorder(BorderFactory.createLoweredBevelBorder());
 
-		this.label.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				startEditing();
-			}
-		});
+		this.label.addMouseListener(GuiUtil.onMouseClick(e -> startEditing()));
 
 		this.textField.addFocusListener(new FocusAdapter() {
 			@Override
@@ -55,16 +50,13 @@ public class ConvertingTextField implements Validatable {
 			}
 		});
 
-		this.textField.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (KeyBinds.EXIT.matches(e)) {
-					stopEditing(true);
-				} else if (KeyBinds.DIALOG_SAVE.matches(e)) {
-					stopEditing(false);
-				}
+		this.textField.addKeyListener(GuiUtil.onKeyPress(e -> {
+			if (KeyBinds.EXIT.matches(e)) {
+				stopEditing(true);
+			} else if (KeyBinds.DIALOG_SAVE.matches(e)) {
+				stopEditing(false);
 			}
-		});
+		}));
 
 		this.ui.add(this.label);
 	}

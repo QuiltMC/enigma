@@ -15,6 +15,7 @@
 package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
+import cuchaz.enigma.gui.util.GuiUtil;
 import de.sciss.syntaxpane.actions.DefaultSyntaxAction;
 import de.sciss.syntaxpane.actions.DocumentSearchData;
 import de.sciss.syntaxpane.actions.gui.EscapeListener;
@@ -45,8 +46,6 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
@@ -183,17 +182,13 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		searchField.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		searchField.setMaximumSize(new Dimension(SEARCH_FIELD_MAX_WIDTH, SEARCH_FIELD_MAX_HEIGHT));
 		searchField.setMinimumSize(new Dimension(SEARCH_FIELD_MIN_WIDTH, SEARCH_FIELD_MIN_HEIGHT));
-		searchField.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				super.keyPressed(e);
-				if (KeyBinds.QUICK_FIND_DIALOG_PREVIOUS.matches(e)) {
-					prevButton.doClick();
-				} else if (KeyBinds.QUICK_FIND_DIALOG_NEXT.matches(e)) {
-					nextButton.doClick();
-				}
+		searchField.addKeyListener(GuiUtil.onKeyPress(e -> {
+			if (KeyBinds.QUICK_FIND_DIALOG_PREVIOUS.matches(e)) {
+				prevButton.doClick();
+			} else if (KeyBinds.QUICK_FIND_DIALOG_NEXT.matches(e)) {
+				nextButton.doClick();
 			}
-		});
+		}));
 		toolBar.add(searchField);
 		toolBar.addSeparator();
 

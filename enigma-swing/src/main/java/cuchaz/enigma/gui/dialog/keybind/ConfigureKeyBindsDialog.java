@@ -4,6 +4,7 @@ import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.keybind.KeyBind;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
+import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 
@@ -16,11 +17,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.List;
 import java.util.Map;
 
@@ -72,13 +70,7 @@ public class ConfigureKeyBindsDialog extends JDialog {
         buttonContainer.add(cancelButton);
         contentPane.add(buttonContainer, BorderLayout.SOUTH);
 
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                super.windowClosing(e);
-                KeyBinds.resetEditableKeyBinds();
-            }
-        });
+        addWindowListener(GuiUtil.onWindowClose(e -> KeyBinds.resetEditableKeyBinds()));
 
         pack();
         setLocationRelativeTo(owner);
