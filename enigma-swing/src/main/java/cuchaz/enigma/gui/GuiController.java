@@ -345,7 +345,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void navigateTo(Entry<?> entry) {
-		if (!project.isRenamable(entry)) {
+		if (!project.isNavigable(entry)) {
 			// entry is not in the jar. Ignore it
 			return;
 		}
@@ -353,7 +353,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void navigateTo(EntryReference<Entry<?>, Entry<?>> reference) {
-		if (!project.isRenamable(reference.getLocationClassEntry())) {
+		if (!project.isNavigable(reference.getLocationClassEntry())) {
 			return;
 		}
 		openReference(reference);

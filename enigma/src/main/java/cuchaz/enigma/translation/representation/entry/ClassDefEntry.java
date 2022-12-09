@@ -75,6 +75,10 @@ public class ClassDefEntry extends ClassEntry implements DefEntry<ClassEntry> {
 		return interfaces;
 	}
 
+	public boolean isEnum() {
+		return superClass.getName().equals("java/lang/Enum");
+	}
+
 	public boolean isRecord() {
 		return superClass.getName().equals("java/lang/Record");
 	}

@@ -132,6 +132,16 @@ public class EnigmaProject {
 		return droppedMappings;
 	}
 
+	public boolean isNavigable(Entry<?> obfEntry) {
+		if (obfEntry instanceof ClassEntry classEntry) {
+			if (isAnonymousOrLocal(classEntry)) {
+				return false;
+			}
+		}
+
+		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);
+	}
+
 	public boolean isRenamable(Entry<?> obfEntry) {
 		if (obfEntry instanceof MethodEntry obfMethodEntry) {
 			// HACKHACK: Object methods are not obfuscated identifiers
@@ -162,7 +172,7 @@ public class EnigmaProject {
 				return false;
 			} else {
 				ClassDefEntry parent = jarIndex.getEntryIndex().getDefinition(obfMethodEntry.getParent());
-				if (parent != null && parent.getSuperClass() != null && parent.getSuperClass().getFullName().equals("java/lang/Enum")) {
+				if (parent != null && parent.isEnum()) {
 					if (name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";")) {
 						return false;
 					} else if (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")) {
@@ -173,9 +183,7 @@ public class EnigmaProject {
 		} else if (obfEntry instanceof LocalVariableEntry && !((LocalVariableEntry) obfEntry).isArgument()) {
 			return false;
 		} else if (obfEntry instanceof ClassEntry classEntry) {
-			EnclosingMethodIndex enclosingMethodIndex = jarIndex.getEnclosingMethodIndex();
-			// Only local and anonymous classes may have the EnclosingMethod attribute
-			if (enclosingMethodIndex.hasEnclosingMethod(classEntry)) {
+			if (isAnonymousOrLocal(classEntry)) {
 				return false;
 			}
 		}
@@ -214,6 +222,12 @@ public class EnigmaProject {
 
 	public boolean isSynthetic(Entry<?> entry) {
 		return jarIndex.getEntryIndex().hasEntry(entry) && jarIndex.getEntryIndex().getEntryAccess(entry).isSynthetic();
+	}
+
+	public boolean isAnonymousOrLocal(ClassEntry classEntry) {
+		EnclosingMethodIndex enclosingMethodIndex = jarIndex.getEnclosingMethodIndex();
+		// Only local and anonymous classes may have the EnclosingMethod attribute
+		return enclosingMethodIndex.hasEnclosingMethod(classEntry);
 	}
 
 	public JarExport exportRemappedJar(ProgressListener progress) {
