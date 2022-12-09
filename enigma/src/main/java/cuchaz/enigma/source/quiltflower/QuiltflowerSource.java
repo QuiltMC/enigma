@@ -79,7 +79,11 @@ public class QuiltflowerSource implements Source {
 
         decompiler.decompileContext();
 
-        removePackageStatement(index, tokenCollector.get());
+        if (settings.removeImports) {
+            removePackageStatement(index, tokenCollector.get());
+        } else {
+            tokenCollector.get().addTokensToIndex(index, token -> token);
+        }
     }
 
     private static void removePackageStatement(SourceIndex index, EnigmaTextTokenCollector tokenCollector) {
