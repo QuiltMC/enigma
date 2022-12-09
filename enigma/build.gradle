@@ -8,7 +8,7 @@ dependencies {
     implementation 'org.ow2.asm:asm-tree:9.4'
     implementation 'org.ow2.asm:asm-util:9.4'
 
-    implementation 'org.quiltmc:quiltflower:1.10.0-20221208.211523-22'
+    implementation 'org.quiltmc:quiltflower:1.10.0-20221209.013339-23'
     implementation 'org.bitbucket.mstrobel:procyon-compilertools:0.6.0'
     implementation 'org.quiltmc:cfr:0.0.6'
 
