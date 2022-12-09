@@ -19,22 +19,15 @@ import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.Collection;
 import java.util.List;
 
-public class MethodImplementationsTreeNode extends DefaultMutableTreeNode {
-
-	private final Translator translator;
-	private MethodEntry entry;
-
+public class MethodImplementationsTreeNode extends AbstractMethodTreeNode {
 	public MethodImplementationsTreeNode(Translator translator, MethodEntry entry) {
-		this.translator = translator;
+		super(translator, entry);
 		if (entry == null) {
 			throw new IllegalArgumentException("Entry cannot be null!");
 		}
-
-		this.entry = entry;
 	}
 
 	public static MethodImplementationsTreeNode findNode(MethodImplementationsTreeNode node, MethodEntry entry) {
@@ -51,10 +44,6 @@ public class MethodImplementationsTreeNode extends DefaultMutableTreeNode {
 			}
 		}
 		return null;
-	}
-
-	public MethodEntry getMethodEntry() {
-		return this.entry;
 	}
 
 	@Override

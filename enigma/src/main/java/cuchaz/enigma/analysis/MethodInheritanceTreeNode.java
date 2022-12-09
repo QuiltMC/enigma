@@ -18,17 +18,11 @@ import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
-public class MethodInheritanceTreeNode extends DefaultMutableTreeNode {
-
-	private final Translator translator;
-	private MethodEntry entry;
+public class MethodInheritanceTreeNode extends AbstractMethodTreeNode {
 	private boolean implemented;
 
 	public MethodInheritanceTreeNode(Translator translator, MethodEntry entry, boolean implemented) {
-		this.translator = translator;
-		this.entry = entry;
+		super(translator, entry);
 		this.implemented = implemented;
 	}
 
@@ -46,13 +40,6 @@ public class MethodInheritanceTreeNode extends DefaultMutableTreeNode {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * Returns the method entry represented by this tree node.
-	 */
-	public MethodEntry getMethodEntry() {
-		return this.entry;
 	}
 
 	public boolean isImplemented() {

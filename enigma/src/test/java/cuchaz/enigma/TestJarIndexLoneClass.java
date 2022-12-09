@@ -78,7 +78,7 @@ public class TestJarIndexLoneClass {
 		IndexTreeBuilder treeBuilder = new IndexTreeBuilder(index);
 		ClassInheritanceTreeNode node = treeBuilder.buildClassInheritance(VoidTranslator.INSTANCE, newClass("a"));
 		assertThat(node, is(not(nullValue())));
-		assertThat(node.getObfClassName(), is("a"));
+		assertThat(node.getClassName(), is("a"));
 		assertThat(node.getChildCount(), is(0));
 	}
 

@@ -18,17 +18,12 @@ import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.Collection;
 import java.util.List;
 
-public class ClassImplementationsTreeNode extends DefaultMutableTreeNode {
-	private final Translator translator;
-	private final ClassEntry entry;
-
+public class ClassImplementationsTreeNode extends AbstractClassTreeNode {
 	public ClassImplementationsTreeNode(Translator translator, ClassEntry entry) {
-		this.translator = translator;
-		this.entry = entry;
+		super(translator, entry);
 	}
 
 	public static ClassImplementationsTreeNode findNode(ClassImplementationsTreeNode node, MethodEntry entry) {
@@ -45,15 +40,6 @@ public class ClassImplementationsTreeNode extends DefaultMutableTreeNode {
 			}
 		}
 		return null;
-	}
-
-	public ClassEntry getClassEntry() {
-		return this.entry;
-	}
-
-	@Override
-	public String toString() {
-		return translator.translate(entry).toString();
 	}
 
 	public void load(JarIndex index) {

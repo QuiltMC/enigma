@@ -16,21 +16,16 @@ import cuchaz.enigma.analysis.index.InheritanceIndex;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.List;
 
-public class ClassInheritanceTreeNode extends DefaultMutableTreeNode {
-	private final Translator translator;
-	private final ClassEntry obfClassEntry;
-
+public class ClassInheritanceTreeNode extends AbstractClassTreeNode {
 	public ClassInheritanceTreeNode(Translator translator, String obfClassName) {
-		this.translator = translator;
-		this.obfClassEntry = new ClassEntry(obfClassName);
+		super(translator, new ClassEntry(obfClassName));
 	}
 
 	public static ClassInheritanceTreeNode findNode(ClassInheritanceTreeNode node, ClassEntry entry) {
 		// is this the node?
-		if (node.getObfClassName().equals(entry.getFullName())) {
+		if (node.getClassName().equals(entry.getFullName())) {
 			return node;
 		}
 
@@ -44,26 +39,10 @@ public class ClassInheritanceTreeNode extends DefaultMutableTreeNode {
 		return null;
 	}
 
-	/**
-	 * Returns the class entry represented by this tree node.
-	 */
-	public ClassEntry getClassEntry() {
-		return this.obfClassEntry;
-	}
-
-	public String getObfClassName() {
-		return this.obfClassEntry.getFullName();
-	}
-
-	@Override
-	public String toString() {
-		return translator.translate(obfClassEntry).getFullName();
-	}
-
 	public void load(InheritanceIndex ancestries, boolean recurse) {
 		// get all the child nodes
 		List<ClassInheritanceTreeNode> nodes = Lists.newArrayList();
-		for (ClassEntry inheritor : ancestries.getChildren(this.obfClassEntry)) {
+		for (ClassEntry inheritor : ancestries.getChildren(this.entry)) {
 			nodes.add(new ClassInheritanceTreeNode(translator, inheritor.getFullName()));
 		}
 
