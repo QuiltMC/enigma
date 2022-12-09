@@ -26,6 +26,7 @@ import java.util.List;
  *     <li>LVT names that are invalid or duplicate
  *     <li>Enum constructor parameters that are incorrectly named or missing the "synthetic" access modifier
  *     <li>"this" parameter which is incorrectly named
+ *     <li>Record component fields missing the "private" access modifier
  * </ul>
  * <p>
  * These fixes are only applied to classes that were indexed by the JarIndex provided, and not library classes.

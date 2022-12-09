@@ -5,6 +5,7 @@ import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -21,6 +22,15 @@ public class SourceFixVisitor extends ClassVisitor {
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 		ownerEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
 		super.visit(version, access, name, signature, superName, interfaces);
+	}
+
+	@Override
+	public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
+		if (ownerEntry.isRecord() && (access & Opcodes.ACC_STATIC) == 0) {
+			access |= Opcodes.ACC_PRIVATE;
+		}
+
+		return super.visitField(access, name, descriptor, signature, value);
 	}
 
 	@Override
