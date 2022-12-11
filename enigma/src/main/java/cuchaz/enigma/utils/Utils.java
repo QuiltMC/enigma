@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Supplier;
 import java.util.zip.ZipEntry;
@@ -41,6 +42,17 @@ public class Utils {
             throw new IllegalArgumentException("Resource not found! " + path);
         }
         return readStreamToString(in);
+    }
+
+    public static Properties readResourceToProperties(String path) throws IOException {
+        InputStream in = Utils.class.getResourceAsStream(path);
+        if (in == null) {
+            throw new IllegalStateException("Resource not found! " + path);
+        }
+
+        Properties properties = new Properties();
+        properties.load(in);
+        return properties;
     }
 
     public static void delete(Path path) throws IOException {

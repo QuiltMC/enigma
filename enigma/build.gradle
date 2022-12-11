@@ -3,18 +3,15 @@ configurations {
 }
 
 dependencies {
-    implementation 'org.ow2.asm:asm:9.4'
-    implementation 'org.ow2.asm:asm-commons:9.4'
-    implementation 'org.ow2.asm:asm-tree:9.4'
-    implementation 'org.ow2.asm:asm-util:9.4'
+    implementation libs.bundles.asm
 
-    implementation 'org.quiltmc:quiltflower:1.10.0-20221209.013339-23'
-    implementation 'org.bitbucket.mstrobel:procyon-compilertools:0.6.0'
-    implementation 'org.quiltmc:cfr:0.0.6'
+    implementation libs.quiltflower
+    implementation libs.cfr
+    implementation libs.procyon
 
-    proGuard 'com.guardsquare:proguard-base:7.3.0'
+    proGuard libs.proguard
 
-    testImplementation 'com.google.jimfs:jimfs:1.2'
+    testImplementation libs.jimfs
 }
 
 // Generate "version.txt" file
@@ -22,10 +19,16 @@ dependencies {
 ext.genOutputDir = file("$buildDir/generated-resources")
 
 task generateVersionFile {
-    ext.outputFile = file("$genOutputDir/version.txt")
+    ext.outputFile = file("$genOutputDir/version.properties")
+    inputs.property("version", project.version)
+    inputs.property("quiltflower-version", libs.quiltflower.get().versionConstraint.displayName)
+    inputs.property("cfr-version", libs.cfr.get().versionConstraint.displayName)
+    inputs.property("procyon-version", libs.procyon.get().versionConstraint.displayName)
+
     outputs.file(outputFile)
     doLast {
-        outputFile.text = "${project.version}"
+        outputFile.text = inputs.properties.entrySet()
+                .collect { "$it.key = $it.value" }.join("\n")
     }
 }
 

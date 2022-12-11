@@ -1,0 +1,52 @@
+[versions]
+shadow = "7.1.2"
+
+guava = "31.1-jre"
+gson = "2.10"
+asm = "9.4"
+jopt = "6.0-alpha-3"
+flatlaf = "2.6"
+syntaxpane = "1.2.1"
+swing-dpi = "0.10"
+fontchooser = "2.5.2"
+
+quiltflower = "1.10.0-20221209.013339-23"
+cfr = "0.0.6"
+procyon = "0.6.0"
+
+proguard = "7.3.0"
+junit = "5.9.1"
+hamcrest = "2.2"
+jimfs = "1.2"
+
+[libraries]
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+
+asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
+asm-commons = { module = "org.ow2.asm:asm-commons", version.ref = "asm" }
+asm-tree = { module = "org.ow2.asm:asm-tree", version.ref = "asm" }
+asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
+
+jopt = { module = "net.sf.jopt-simple:jopt-simple", version.ref = "jopt" }
+flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }
+flatlaf-extras = { module = "com.formdev:flatlaf-extras", version.ref = "flatlaf" }
+syntaxpane = { module = "de.sciss:syntaxpane", version.ref = "syntaxpane" }
+swing-dpi = { module = "com.github.lukeu:swing-dpi", version.ref = "swing-dpi" }
+fontchooser = { module = "org.drjekyll:fontchooser", version.ref = "fontchooser" }
+
+quiltflower = { module = "org.quiltmc:quiltflower", version.ref = "quiltflower" }
+cfr = { module = "org.quiltmc:cfr", version.ref = "cfr" }
+procyon = { module = "org.bitbucket.mstrobel:procyon-compilertools", version.ref = "procyon" }
+
+proguard = { module = "com.guardsquare:proguard-base", version.ref = "proguard" }
+junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
+hamcrest = { module = "org.hamcrest:hamcrest", version.ref = "hamcrest" }
+jimfs = { module = "com.google.jimfs:jimfs", version.ref = "jimfs" }
+
+[bundles]
+asm = ["asm", "asm-commons", "asm-tree", "asm-util"]
+
+[plugins]
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }

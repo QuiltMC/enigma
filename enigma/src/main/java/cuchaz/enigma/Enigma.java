@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 
@@ -36,11 +37,12 @@ import cuchaz.enigma.classprovider.CombiningClassProvider;
 import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.utils.Utils;
 
-import javax.annotation.Nullable;
-
 public class Enigma {
     public static final String NAME = "Enigma";
 	public static final String VERSION;
+	public static final String QUILTFLOWER_VERSION;
+	public static final String CFR_VERSION;
+	public static final String PROCYON_VERSION;
 	public static final String URL = "https://quiltmc.org";
     public static final int ASM_VERSION = Opcodes.ASM9;
 
@@ -152,14 +154,24 @@ public class Enigma {
 	}
 
 	static {
-		String version = null;
+		String version;
+		String qf;
+		String cfr;
+		String procyon;
 
 		try {
-			version = Utils.readResourceToString("/version.txt");
+			Properties properties = Utils.readResourceToProperties("/version.properties");
+			version = properties.getProperty("version");
+			qf = properties.getProperty("quiltflower-version");
+			cfr = properties.getProperty("cfr-version");
+			procyon = properties.getProperty("procyon-version");
 		} catch (Throwable t) {
-			version = "Unknown Version";
+			version = qf = cfr = procyon = "Unknown Version";
 		}
 
 		VERSION = version;
+		QUILTFLOWER_VERSION = qf;
+		CFR_VERSION = cfr;
+		PROCYON_VERSION = procyon;
 	}
 }

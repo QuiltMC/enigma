@@ -22,12 +22,12 @@ subprojects {
     }
 
     dependencies {
-        implementation 'com.google.guava:guava:31.1-jre'
-        implementation 'com.google.code.gson:gson:2.10'
+        implementation libs.guava
+        implementation libs.gson
 
-        testImplementation 'org.junit.jupiter:junit-jupiter:5.9.0'
-        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.0.3'
-        testImplementation 'org.hamcrest:hamcrest:2.2'
+        testImplementation libs.junit
+        testRuntimeOnly libs.junit.engine
+        testImplementation libs.hamcrest
     }
 
     group = 'cuchaz'
