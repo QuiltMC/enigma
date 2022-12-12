@@ -60,7 +60,7 @@ public class JarClassProvider implements AutoCloseable, ClassProvider {
 
     @Override
     public List<String> getClasses(String prefix) {
-        return classNames.stream().filter(c -> c.startsWith(prefix)).toList();
+        return classNames.stream().filter(c -> c.lastIndexOf('/') == prefix.lastIndexOf('/') && c.startsWith(prefix)).toList();
     }
 
     @Override

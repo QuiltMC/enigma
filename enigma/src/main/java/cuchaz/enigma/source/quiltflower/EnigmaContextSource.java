@@ -29,8 +29,9 @@ public class EnigmaContextSource implements IContextSource {
     @Override
     public Entries getEntries() {
         List<String> classNames = new ArrayList<>();
-        classNames.add(name);
-        classNames.addAll(classProvider.getClasses(name));
+        String root = name.contains("$") ? name.substring(0, name.indexOf("$")) : name;
+        classNames.add(root);
+        classNames.addAll(classProvider.getClasses(root));
         List<Entry> classes = classNames.stream().distinct().map(Entry::atBase).toList();
 
         return new Entries(classes,

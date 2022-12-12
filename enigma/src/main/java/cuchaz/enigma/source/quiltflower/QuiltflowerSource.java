@@ -93,6 +93,11 @@ public class QuiltflowerSource implements Source {
 
         String source = index.getSource();
         int start = source.indexOf("package");
+        if (start < 0) {
+            tokenCollector.addTokensToIndex(index, token -> token);
+            return;
+        }
+
         int end = index.getPosition(index.getLineNumber(start) + 1, 1);
         int offset = -(end - start) - 1;
 
