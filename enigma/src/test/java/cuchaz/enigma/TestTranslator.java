@@ -11,25 +11,39 @@
 
 package cuchaz.enigma;
 
+import cuchaz.enigma.classprovider.ClasspathClassProvider;
+import cuchaz.enigma.translation.TranslateResult;
+import cuchaz.enigma.translation.Translator;
+import cuchaz.enigma.translation.mapping.EntryMapping;
+import cuchaz.enigma.translation.mapping.serde.MappingFormat;
+import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
+
 import static cuchaz.enigma.TestEntryFactory.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 public class TestTranslator {
+	public static final Path JAR = Path.of("build/test-obf/translation.jar");
+
+	private static Enigma enigma;
+	private static EnigmaProject project;
+	private static EntryTree<EntryMapping> mappings;
+	private static Translator deobfuscator;
 
 	@BeforeAll
-	public static void beforeClass()
-		throws Exception {
-		//TODO FIx
-		//deobfuscator = new Enigma(new JarFile("build/test-obf/translation.jar"));
-		//try (InputStream in = TestTranslator.class.getResourceAsStream("/cuchaz/enigma/resources/translation.mappings")) {
-		//	mappings = new MappingsJsonReader().read(new InputStreamReader(in));
-		//	deobfuscator.setMappings(mappings);
-		//	deobfTranslator = deobfuscator.getTranslator(TranslationDirection.Deobfuscating);
-		//	obfTranslator = deobfuscator.getTranslator(TranslationDirection.Obfuscating);
-		//}
+	public static void beforeClass() throws Exception {
+		enigma = Enigma.create();
+		project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
+		mappings = MappingFormat.ENIGMA_FILE.read(
+				Path.of(TestTranslator.class.getResource("/translation.mappings").toURI()),
+				ProgressListener.none(), enigma.getProfile().getMappingSaveParameters());
+		project.setMappings(mappings);
+		deobfuscator = project.getMapper().getDeobfuscator();
 	}
 
 	@Test
@@ -94,7 +108,6 @@ public class TestTranslator {
 
 	@Test
 	public void innerClasses() {
-
 		// classes
 		assertMapping(newClass("g"), newClass("deobf/G_OuterClass"));
 		assertMapping(newClass("g$a"), newClass("deobf/G_OuterClass$A_InnerClass"));
@@ -120,7 +133,6 @@ public class TestTranslator {
 
 	@Test
 	public void testGenerics() {
-
 		// classes
 		assertMapping(newClass("i"), newClass("deobf/I_Generics"));
 		assertMapping(newClass("i$a"), newClass("deobf/I_Generics$A_Type"));
@@ -139,17 +151,13 @@ public class TestTranslator {
 	}
 
 	private void assertMapping(Entry<?> obf, Entry<?> deobf) {
-		//assertThat(deobfTranslator.translateEntry(obf), is(deobf));
-		//assertThat(obfTranslator.translateEntry(deobf), is(obf));
+		TranslateResult<? extends Entry<?>> result = deobfuscator.extendedTranslate(obf);
+		assertThat(result, is(notNullValue()));
+		assertThat(result.getValue(), is(deobf));
 
-		//String deobfName = deobfTranslator.translate(obf);
-		//if (deobfName != null) {
-		//	assertThat(deobfName, is(deobf.getName()));
-		//}
-
-		//String obfName = obfTranslator.translate(deobf);
-		//if (obfName != null) {
-		//	assertThat(obfName, is(obf.getName()));
-		//}
+		String deobfName = result.getValue().getName();
+		if (deobfName != null) {
+			assertThat(deobfName, is(deobf.getName()));
+		}
 	}
 }
