@@ -16,6 +16,7 @@ import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.translation.mapping.serde.enigma.EnigmaMappingsReader;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,10 +30,9 @@ public final class TestTinyV2InnerClasses {
 		mappings = Paths.get(TestTinyV2InnerClasses.class.getResource("/tinyV2InnerClasses/").toURI());
 	}
 
-//	@Test
+	@Test
 	public void testMappings() throws Exception {
 		EnigmaProject project = Enigma.create().openJar(jar, new ClasspathClassProvider(), ProgressListener.none());
 		project.setMappings(EnigmaMappingsReader.DIRECTORY.read(mappings, ProgressListener.none(), project.getEnigma().getProfile().getMappingSaveParameters()));
-
 	}
 }

@@ -1,5 +1,4 @@
 include 'enigma'
 include 'enigma-swing'
-include 'enigma-swing:testProject'
 include 'enigma-server'
 include 'enigma-cli'

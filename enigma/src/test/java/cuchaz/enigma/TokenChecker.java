@@ -14,28 +14,43 @@ package cuchaz.enigma;
 import com.google.common.collect.Lists;
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.classprovider.CachingClassProvider;
+import cuchaz.enigma.classprovider.ClassProvider;
 import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.source.*;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.utils.Pair;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class TokenChecker {
-	private final Decompiler decompiler;
+	private static final Map<Pair<DecompilerService, Path>, Set<String>> ALL_SHOWN_FILES = new HashMap<>();
 
-	protected TokenChecker(Path path) throws IOException {
-		CachingClassProvider classProvider = new CachingClassProvider(new JarClassProvider(path));
-		decompiler = Decompilers.CFR.create(classProvider, new SourceSettings(false, false));
+	private final Decompiler decompiler;
+	private final Set<String> shownFiles;
+
+	protected TokenChecker(Path path, DecompilerService decompilerService) throws IOException {
+		this(path, decompilerService, new CachingClassProvider(new JarClassProvider(path)));
+	}
+
+	protected TokenChecker(Path path, DecompilerService decompilerService, ClassProvider classProvider) {
+		decompiler = decompilerService.create(classProvider, new SourceSettings(false, false));
+		shownFiles = ALL_SHOWN_FILES.computeIfAbsent(new Pair<>(decompilerService, path), p -> new HashSet<>());
 	}
 
 	protected String getDeclarationToken(Entry<?> entry) {
 		// decompile the class
 		Source source = decompiler.getSource(entry.getContainingClass().getFullName());
 		// DEBUG
-		// tree.acceptVisitor( new TreeDumpVisitor( new File( "tree." + entry.getClassName().replace( '/', '.' ) + ".txt" ) ), null );
+		// createDebugFile(source, entry.getContainingClass());
 		String string = source.asString();
 		SourceIndex index = source.index();
 
@@ -53,6 +68,8 @@ public class TokenChecker {
 		Source source = decompiler.getSource(reference.context.getContainingClass().getFullName());
 		String string = source.asString();
 		SourceIndex index = source.index();
+		// DEBUG
+		// createDebugFile(source, reference.context.getContainingClass());
 
 		// get the token values
 		List<String> values = Lists.newArrayList();
@@ -60,5 +77,21 @@ public class TokenChecker {
 			values.add(string.substring(token.start, token.end));
 		}
 		return values;
+	}
+
+	private void createDebugFile(Source source, ClassEntry classEntry) {
+		if (!shownFiles.add(classEntry.getFullName())) {
+			return;
+		}
+
+		try {
+			String name = classEntry.getContextualName();
+			Path path = Files.createTempFile("class-" + name.replace("$", "_") + "-", ".html");
+			Files.writeString(path, SourceTestUtil.toHtml(source, name));
+			System.out.println(path.toUri());
+		} catch (Exception e) {
+			System.err.println("Failed to create debug source file for " + classEntry);
+			e.printStackTrace();
+		}
 	}
 }
