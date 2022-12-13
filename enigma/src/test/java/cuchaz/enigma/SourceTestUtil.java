@@ -31,8 +31,7 @@ public class SourceTestUtil {
     private static String remapTokenHtml(SourceIndex index, Token token) {
         EntryReference<Entry<?>, Entry<?>> ref = index.getReference(token);
         if (ref != null) {
-            Entry<?> entry = ref.getNameableEntry();
-            return "<span class=\"ref\" title=\"" + ref + "\">" + entry.getName() + "</span>";
+            return "<span class=\"ref\" title=\"" + ref + "\">" + token.text + "</span>";
         }
 
         return null;
