@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
 import java.nio.file.Path;
 
 public class InsertProposedMappingsCommand extends Command {
-    private static final String NAME = "invert-proposed-mappings";
+    private static final String NAME = "insert-proposed-mappings";
 
     public InsertProposedMappingsCommand() {
         super(NAME);
