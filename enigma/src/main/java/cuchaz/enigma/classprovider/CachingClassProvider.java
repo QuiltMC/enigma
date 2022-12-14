@@ -5,7 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import org.objectweb.asm.tree.ClassNode;
 
 import javax.annotation.Nullable;
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +36,12 @@ public class CachingClassProvider implements ClassProvider {
     }
 
     @Override
-    public List<String> getClasses(String prefix) {
-        return classProvider.getClasses(prefix);
+    public Collection<String> getClassNames() {
+        return classProvider.getClassNames();
+    }
+
+    @Override
+    public Collection<String> getClasses(String className) {
+        return classProvider.getClasses(className);
     }
 }

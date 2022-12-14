@@ -4,7 +4,6 @@ import cuchaz.enigma.Enigma;
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.bytecode.translators.LocalVariableFixVisitor;
 import cuchaz.enigma.bytecode.translators.SourceFixVisitor;
-import cuchaz.enigma.classprovider.ClassProvider;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -13,7 +12,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import javax.annotation.Nullable;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Wraps a ClassProvider to apply fixes to the following problems introduced by the obfuscator,
@@ -60,8 +59,13 @@ public class ObfuscationFixClassProvider implements ClassProvider {
     }
 
     @Override
-    public List<String> getClasses(String prefix) {
-        return classProvider.getClasses(prefix);
+    public Collection<String> getClassNames() {
+        return classProvider.getClassNames();
+    }
+
+    @Override
+    public Collection<String> getClasses(String className) {
+        return classProvider.getClasses(className);
     }
 
     private void removeRedundantClassCalls(ClassNode node) {

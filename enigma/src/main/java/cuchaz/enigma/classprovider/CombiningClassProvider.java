@@ -4,6 +4,8 @@ import org.objectweb.asm.tree.ClassNode;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -32,10 +34,15 @@ public class CombiningClassProvider implements ClassProvider {
     }
 
     @Override
-    public List<String> getClasses(String prefix) {
+    public Collection<String> getClassNames() {
+        return Arrays.stream(classProviders).flatMap(c -> c.getClassNames().stream()).toList();
+    }
+
+    @Override
+    public List<String> getClasses(String className) {
         List<String> classes = new ArrayList<>();
         for (ClassProvider cp : classProviders) {
-            classes.addAll(cp.getClasses(prefix));
+            classes.addAll(cp.getClasses(className));
         }
 
         return classes;

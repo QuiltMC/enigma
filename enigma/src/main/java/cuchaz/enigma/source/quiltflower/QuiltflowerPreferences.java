@@ -12,6 +12,8 @@ import java.util.Map;
 
 public class QuiltflowerPreferences {
     public static final List<String> IGNORED_PREFERENCES = List.of(
+            IFernflowerPreferences.INCLUDE_ENTIRE_CLASSPATH,
+            IFernflowerPreferences.INCLUDE_JAVA_RUNTIME,
             IFernflowerPreferences.BANNER,
             IFernflowerPreferences.INDENT_STRING,
             IFernflowerPreferences.BYTECODE_SOURCE_MAPPING,
@@ -26,6 +28,7 @@ public class QuiltflowerPreferences {
     );
 
     public static final Map<String, Object> EXTRA_DEFAULTS = Map.of(
+            IFernflowerPreferences.INCLUDE_ENTIRE_CLASSPATH, "1",
             IFernflowerPreferences.BANNER, """
                         /*
                          * Class file decompiled with Quiltflower

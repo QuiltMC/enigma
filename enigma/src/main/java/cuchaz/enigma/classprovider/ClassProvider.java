@@ -3,8 +3,8 @@ package cuchaz.enigma.classprovider;
 import org.objectweb.asm.tree.ClassNode;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 public interface ClassProvider {
@@ -18,11 +18,22 @@ public interface ClassProvider {
     @Nullable
     ClassNode get(String name);
 
+    Collection<String> getClassNames();
+
     /**
-     * Gets all the classes starting with the given string
+     * Gets all the classes in the same root class as the given one.
      */
-    default List<String> getClasses(String prefix) {
-        return Collections.emptyList();
+    default Collection<String> getClasses(String className) {
+        if (className.contains("$")) {
+            className = className.substring(0, className.indexOf("$"));
+        }
+
+        int depth = className.lastIndexOf('/');
+        String finalClassName = className;
+        return getClassNames()
+                .stream()
+                .filter(s -> s.lastIndexOf('/') == depth && s.startsWith(finalClassName))
+                .toList();
     }
 
     static ClassProvider fromMap(Map<String, ClassNode> classes) {
@@ -34,8 +45,8 @@ public interface ClassProvider {
             }
 
             @Override
-            public List<String> getClasses(String prefix) {
-                return classes.keySet().stream().filter(s -> s.startsWith(prefix)).toList();
+            public Collection<String> getClassNames() {
+                return Collections.unmodifiableSet(classes.keySet());
             }
         };
     }

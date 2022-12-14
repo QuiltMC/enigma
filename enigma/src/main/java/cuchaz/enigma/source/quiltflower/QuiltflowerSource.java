@@ -12,18 +12,27 @@ import org.jetbrains.java.decompiler.main.extern.IFernflowerPreferences;
 import org.jetbrains.java.decompiler.main.extern.IResultSaver;
 import org.jetbrains.java.decompiler.main.extern.TextTokenVisitor;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class QuiltflowerSource implements Source {
     private final IContextSource contextSource;
+    private final IContextSource libraryContextSource;
+    private final boolean hasLibrarySource;
     private EntryRemapper remapper;
     private final SourceSettings settings;
 
     private SourceIndex index;
 
-    public QuiltflowerSource(IContextSource contextSource, EntryRemapper remapper, SourceSettings settings) {
+    public QuiltflowerSource(EnigmaContextSource contextSource, EntryRemapper remapper, SourceSettings settings) {
+        this(contextSource, contextSource.getExternalSource(), remapper, settings);
+    }
+
+    public QuiltflowerSource(IContextSource contextSource, @Nullable IContextSource libraryContextSource, EntryRemapper remapper, SourceSettings settings) {
         this.contextSource = contextSource;
+        this.libraryContextSource = libraryContextSource;
+        this.hasLibrarySource = libraryContextSource != null;
         this.remapper = remapper;
         this.settings = settings;
     }
@@ -76,6 +85,7 @@ public class QuiltflowerSource implements Source {
             return tokenCollector.get();
         });
         decompiler.addSource(contextSource);
+        if (hasLibrarySource) decompiler.addLibrary(libraryContextSource);
 
         decompiler.decompileContext();
 

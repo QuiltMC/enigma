@@ -13,12 +13,18 @@ import java.util.Collections;
 import java.util.List;
 
 public class EnigmaContextSource implements IContextSource {
+    private final IContextSource external = new ExternalContextSource();
     private final ClassProvider classProvider;
     private final String name;
+    private List<String> classNames;
 
     public EnigmaContextSource(ClassProvider classProvider, String className) {
         this.classProvider = classProvider;
         this.name = className;
+    }
+
+    public IContextSource getExternalSource() {
+        return this.external;
     }
 
     @Override
@@ -26,13 +32,22 @@ public class EnigmaContextSource implements IContextSource {
         return "class " + name;
     }
 
-    @Override
-    public Entries getEntries() {
-        List<String> classNames = new ArrayList<>();
+    private void collectClassNames() {
+        if (classNames != null) {
+            return;
+        }
+
+        classNames = new ArrayList<>();
         String root = name.contains("$") ? name.substring(0, name.indexOf("$")) : name;
         classNames.add(root);
         classNames.addAll(classProvider.getClasses(root));
-        List<Entry> classes = classNames.stream().distinct().map(Entry::atBase).toList();
+    }
+
+    @Override
+    public Entries getEntries() {
+        collectClassNames();
+        List<Entry> classes = classNames.stream()
+                .distinct().map(Entry::atBase).toList();
 
         return new Entries(classes,
                 Collections.emptyList(), Collections.emptyList());
@@ -73,5 +88,38 @@ public class EnigmaContextSource implements IContextSource {
             public void close() {
             }
         };
+    }
+
+    public class ExternalContextSource implements IContextSource {
+        private List<String> externalClassNames;
+
+        @Override
+        public String getName() {
+            return "external classes for " + name;
+        }
+
+        private void collectExternalClassNames() {
+            if (externalClassNames != null) {
+                return;
+            }
+
+            collectClassNames();
+            externalClassNames = new ArrayList<>(classProvider.getClassNames());
+            externalClassNames.removeAll(EnigmaContextSource.this.classNames);
+        }
+
+        @Override
+        public Entries getEntries() {
+            collectExternalClassNames();
+            List<Entry> classes = externalClassNames.stream()
+                    .distinct().map(Entry::atBase).toList();
+            return new Entries(classes,
+                    Collections.emptyList(), Collections.emptyList());
+        }
+
+        @Override
+        public InputStream getInputStream(String resource) {
+            return EnigmaContextSource.this.getInputStream(resource);
+        }
     }
 }

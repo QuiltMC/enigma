@@ -6,6 +6,8 @@ import org.objectweb.asm.tree.ClassNode;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Provides classes by loading them from the classpath.
@@ -23,5 +25,10 @@ public class ClasspathClassProvider implements ClassProvider {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    @Override
+    public Collection<String> getClassNames() {
+        return Collections.emptyList();
     }
 }
