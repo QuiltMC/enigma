@@ -10,7 +10,7 @@ syntaxpane = "1.2.1"
 swing-dpi = "0.10"
 fontchooser = "2.5.2"
 
-quiltflower = "1.10.0-20221209.013339-23"
+quiltflower = "1.10.0-20221215.220929-25"
 cfr = "0.0.6"
 procyon = "0.6.0"
 
