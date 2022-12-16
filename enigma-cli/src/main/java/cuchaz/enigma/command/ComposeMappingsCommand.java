@@ -10,33 +10,43 @@ import cuchaz.enigma.utils.Utils;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class ComposeMappingsCommand extends Command {
-    public ComposeMappingsCommand() {
-        super("compose-mappings");
-    }
+	public ComposeMappingsCommand() {
+		super("compose-mappings");
+	}
 
-    @Override
-    public String getUsage() {
-        return "<left-format> <left> <right-format> <right> <result-format> <result> <keep-mode>";
-    }
+	@Override
+	public String getUsage() {
+		return "<left-format> <left> <right-format> <right> <result-format> <result> <keep-mode>";
+	}
 
-    @Override
-    public boolean isValidArgument(int length) {
-        return length == 7;
-    }
+	@Override
+	public boolean isValidArgument(int length) {
+		return length == 7;
+	}
 
-    @Override
-    public void run(String... args) throws IOException, MappingParseException {
-        MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+	@Override
+	public void run(String... args) throws IOException, MappingParseException {
+		String leftFormat = getArg(args, 0, "left-format", true);
+		Path left = getReadablePath(getArg(args, 1, "left", true));
+		String rightFormat = getArg(args, 2, "right-format", true);
+		Path right = getReadablePath(getArg(args, 3, "right", true));
+		String resultFormat = getArg(args, 4, "result-format", true);
+		Path result = getWritablePath(getArg(args, 5, "result", true));
+		String keepMode = getArg(args, 6, "keep-mode", true);
 
-        EntryTree<EntryMapping> left = MappingCommandsUtil.read(args[0], Paths.get(args[1]), saveParameters);
-        EntryTree<EntryMapping> right = MappingCommandsUtil.read(args[2], Paths.get(args[3]), saveParameters);
-        EntryTree<EntryMapping> result = MappingOperations.compose(left, right, args[6].equals("left") || args[6].equals("both"), args[6].equals("right") || args[6].equals("both"));
+		run(leftFormat, left, rightFormat, right, resultFormat, result, keepMode);
+	}
 
-        Path output = Paths.get(args[5]);
-        Utils.delete(output);
-        MappingCommandsUtil.write(result, args[4], output, saveParameters);
-    }
+	public static void run(String leftFormat, Path leftFile, String rightFormat, Path rightFile, String resultFormat, Path resultFile, String keepMode) throws IOException, MappingParseException {
+		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+
+		EntryTree<EntryMapping> left = MappingCommandsUtil.read(leftFormat, leftFile, saveParameters);
+		EntryTree<EntryMapping> right = MappingCommandsUtil.read(rightFormat, rightFile, saveParameters);
+		EntryTree<EntryMapping> result = MappingOperations.compose(left, right, keepMode.equals("left") || keepMode.equals("both"), keepMode.equals("right") || keepMode.equals("both"));
+
+		Utils.delete(resultFile);
+		MappingCommandsUtil.write(result, resultFormat, resultFile, saveParameters);
+	}
 }

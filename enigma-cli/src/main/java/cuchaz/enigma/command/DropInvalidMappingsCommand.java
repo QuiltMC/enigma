@@ -16,73 +16,73 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
 public class DropInvalidMappingsCommand extends Command {
-    public DropInvalidMappingsCommand() {
-        super("dropinvalidmappings");
-    }
+	public DropInvalidMappingsCommand() {
+		super("dropinvalidmappings");
+	}
 
-    @Override
-    public String getUsage() {
-        return "<in jar> <mappings in> [<mappings out>]";
-    }
+	@Override
+	public String getUsage() {
+		return "<in jar> <mappings in> [<mappings out>]";
+	}
 
-    @Override
-    public boolean isValidArgument(int length) {
-        return length==3;
-    }
+	@Override
+	public boolean isValidArgument(int length) {
+		return length == 3;
+	}
 
-    @Override
-    public void run(String... args) throws Exception {
-        Path fileJarIn = getReadableFile(getArg(args, 0, "in jar", true)).toPath();
-        Path fileMappingsIn = getReadablePath(getArg(args, 1, "mappings in", true));
-        if (fileMappingsIn == null) {
-            System.out.println("No mappings input specified, skipping.");
-            return;
-        }
+	@Override
+	public void run(String... args) throws Exception {
+		Path jarIn = getReadablePath(getArg(args, 0, "in jar", true));
+		Path mappingsIn = getReadablePath(getArg(args, 1, "mappings in", true));
+		String mappingsOutArg = getArg(args, 2, "mappings out", false);
+		Path mappingsOut = mappingsOutArg != null && !mappingsOutArg.isEmpty() ? getReadablePath(mappingsOutArg) : mappingsIn;
 
-        String mappingsOut = getArg(args, 2, "mappings out", false);
-        Path fileMappingsOut = mappingsOut != null && !mappingsOut.isEmpty() ? getReadablePath(mappingsOut) : fileMappingsIn;
+		run(jarIn, mappingsIn, mappingsOut);
+	}
 
-        Enigma enigma = Enigma.create();
+	public static void run(Path jarIn, Path mappingsIn, Path mappingsOut) throws Exception {
+		if (mappingsIn == null) {
+			System.out.println("No mappings input specified, skipping.");
+			return;
+		}
 
-        System.out.println("Reading JAR...");
+		Enigma enigma = Enigma.create();
 
-        EnigmaProject project = enigma.openJar(fileJarIn, new ClasspathClassProvider(), ProgressListener.none());
+		System.out.println("Reading JAR...");
 
-        System.out.println("Reading mappings...");
+		EnigmaProject project = enigma.openJar(jarIn, new ClasspathClassProvider(), ProgressListener.none());
 
-        MappingSaveParameters saveParameters = enigma.getProfile().getMappingSaveParameters();
+		System.out.println("Reading mappings...");
 
-        EntryTree<EntryMapping> mappings = readMappings(fileMappingsIn, ProgressListener.none(), saveParameters);
-        project.setMappings(mappings);
+		MappingSaveParameters saveParameters = enigma.getProfile().getMappingSaveParameters();
+		EntryTree<EntryMapping> mappings = readMappings(mappingsIn, ProgressListener.none(), saveParameters);
+		project.setMappings(mappings);
 
-        System.out.println("Dropping invalid mappings...");
+		System.out.println("Dropping invalid mappings...");
 
-        project.dropMappings(ProgressListener.none());
+		project.dropMappings(ProgressListener.none());
 
-        System.out.println("Writing mappings...");
+		System.out.println("Writing mappings...");
 
-        if (fileMappingsOut == fileMappingsIn) {
-            System.out.println("Overwriting input mappings");
-            Files.walkFileTree(fileMappingsIn, new SimpleFileVisitor<>() {
-                @Override
-                public FileVisitResult postVisitDirectory(
-                        Path dir, IOException exc) throws IOException {
-                    Files.delete(dir);
-                    return FileVisitResult.CONTINUE;
-                }
+		if (mappingsOut == mappingsIn) {
+			System.out.println("Overwriting input mappings");
+			Files.walkFileTree(mappingsIn, new SimpleFileVisitor<>() {
+				@Override
+				public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+					Files.delete(dir);
+					return FileVisitResult.CONTINUE;
+				}
 
-                @Override
-                public FileVisitResult visitFile(
-                        Path file, BasicFileAttributes attrs)
-                        throws IOException {
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					Files.delete(file);
+					return FileVisitResult.CONTINUE;
+				}
+			});
 
-            Files.deleteIfExists(fileMappingsIn);
-        }
+			Files.deleteIfExists(mappingsIn);
+		}
 
-        writeMappings(project.getMapper().getObfToDeobf(), fileMappingsOut, ProgressListener.none(), saveParameters);
-    }
+		writeMappings(project.getMapper().getObfToDeobf(), mappingsOut, ProgressListener.none(), saveParameters);
+	}
 }

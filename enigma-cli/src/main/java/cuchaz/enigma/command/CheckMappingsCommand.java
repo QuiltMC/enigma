@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class CheckMappingsCommand extends Command {
-
 	public CheckMappingsCommand() {
 		super("checkmappings");
 	}
@@ -34,7 +33,10 @@ public class CheckMappingsCommand extends Command {
 	public void run(String... args) throws Exception {
 		Path fileJarIn = getReadableFile(getArg(args, 0, "in jar", true)).toPath();
 		Path fileMappings = getReadablePath(getArg(args, 1, "mappings file", true));
+		run(fileJarIn, fileMappings);
+	}
 
+	public static void run(Path fileJarIn, Path fileMappings) throws Exception {
 		Enigma enigma = Enigma.create();
 
 		System.out.println("Reading JAR...");

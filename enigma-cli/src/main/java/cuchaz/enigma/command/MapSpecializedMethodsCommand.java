@@ -20,69 +20,74 @@ import cuchaz.enigma.utils.Utils;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 
 public class MapSpecializedMethodsCommand extends Command {
-    private static final String NAME = "map-specialized-methods";
+	private static final String NAME = "map-specialized-methods";
 
-    public MapSpecializedMethodsCommand() {
-        super(NAME);
-    }
+	public MapSpecializedMethodsCommand() {
+		super(NAME);
+	}
 
-    @Override
-    public String getUsage() {
-        return "<jar> <source-format> <source> <result-format> <result>";
-    }
+	@Override
+	public String getUsage() {
+		return "<jar> <source-format> <source> <result-format> <result>";
+	}
 
-    @Override
-    public boolean isValidArgument(int length) {
-        return length == 5;
-    }
+	@Override
+	public boolean isValidArgument(int length) {
+		return length == 5;
+	}
 
-    @Override
-    public void run(String... args) throws IOException, MappingParseException {
-        run(Paths.get(args[0]), args[1], Paths.get(args[2]), args[3], Paths.get(args[4]));
-    }
+	@Override
+	public void run(String... args) throws IOException, MappingParseException {
+		Path jar = getReadablePath(getArg(args, 0, "jar", true));
+		String sourceFormat = getArg(args, 1, "source-format", true);
+		Path source = getReadablePath(getArg(args, 2, "source", true));
+		String resultFormat = getArg(args, 3, "result-format", true);
+		Path result = getWritablePath(getArg(args, 4, "result", true));
 
-    public static void run(Path jar, String sourceFormat, Path sourcePath, String resultFormat, Path output) throws IOException, MappingParseException {
-        boolean debug = shouldDebug(NAME);
+		run(jar, sourceFormat, source, resultFormat, result);
+	}
 
-        MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
-        EntryTree<EntryMapping> source = MappingCommandsUtil.read(sourceFormat, sourcePath, saveParameters);
-        EntryTree<EntryMapping> result = new HashEntryTree<>();
+	public static void run(Path jar, String sourceFormat, Path sourcePath, String resultFormat, Path output) throws IOException, MappingParseException {
+		boolean debug = shouldDebug(NAME);
 
-        JarClassProvider jcp = new JarClassProvider(jar);
-        JarIndex jarIndex = JarIndex.empty();
-        jarIndex.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.none());
+		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+		EntryTree<EntryMapping> source = MappingCommandsUtil.read(sourceFormat, sourcePath, saveParameters);
+		EntryTree<EntryMapping> result = new HashEntryTree<>();
 
-        BridgeMethodIndex bridgeMethodIndex = jarIndex.getBridgeMethodIndex();
-        Translator translator = new MappingTranslator(source, jarIndex.getEntryResolver());
+		JarClassProvider jcp = new JarClassProvider(jar);
+		JarIndex jarIndex = JarIndex.empty();
+		jarIndex.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.none());
 
-        // Copy all non-specialized methods
-        for (EntryTreeNode<EntryMapping> node : source) {
-            if (!(node.getEntry() instanceof MethodEntry) || !bridgeMethodIndex.isSpecializedMethod((MethodEntry) node.getEntry())) {
-                result.insert(node.getEntry(), node.getValue());
-            }
-        }
+		BridgeMethodIndex bridgeMethodIndex = jarIndex.getBridgeMethodIndex();
+		Translator translator = new MappingTranslator(source, jarIndex.getEntryResolver());
 
-        if (debug) {
-            result = new DeltaTrackingTree<>(result);
-        }
+		// Copy all non-specialized methods
+		for (EntryTreeNode<EntryMapping> node : source) {
+			if (!(node.getEntry() instanceof MethodEntry) || !bridgeMethodIndex.isSpecializedMethod((MethodEntry) node.getEntry())) {
+				result.insert(node.getEntry(), node.getValue());
+			}
+		}
 
-        // Add correct mappings for specialized methods
-        for (Map.Entry<MethodEntry, MethodEntry> entry : bridgeMethodIndex.getBridgeToSpecialized().entrySet()) {
-            MethodEntry bridge = entry.getKey();
-            MethodEntry specialized = entry.getValue();
-            String name = translator.translate(bridge).getName();
-            result.insert(specialized, new EntryMapping(name));
-        }
+		if (debug) {
+			result = new DeltaTrackingTree<>(result);
+		}
 
-        Utils.delete(output);
-        MappingCommandsUtil.write(result, resultFormat, output, saveParameters);
+		// Add correct mappings for specialized methods
+		for (Map.Entry<MethodEntry, MethodEntry> entry : bridgeMethodIndex.getBridgeToSpecialized().entrySet()) {
+			MethodEntry bridge = entry.getKey();
+			MethodEntry specialized = entry.getValue();
+			String name = translator.translate(bridge).getName();
+			result.insert(specialized, new EntryMapping(name));
+		}
 
-        if (debug) {
-            writeDebugDelta((DeltaTrackingTree<EntryMapping>) result, output);
-        }
-    }
+		Utils.delete(output);
+		MappingCommandsUtil.write(result, resultFormat, output, saveParameters);
+
+		if (debug) {
+			writeDebugDelta((DeltaTrackingTree<EntryMapping>) result, output);
+		}
+	}
 }

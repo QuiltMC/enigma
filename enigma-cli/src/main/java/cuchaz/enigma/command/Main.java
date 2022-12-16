@@ -88,6 +88,7 @@ public class Main {
 		register(new CheckMappingsCommand());
 		register(new MapSpecializedMethodsCommand());
 		register(new InsertProposedMappingsCommand());
+		register(new DropInvalidMappingsCommand());
 	}
 
 	private static final class CommandHelpException extends IllegalArgumentException {

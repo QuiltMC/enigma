@@ -6,7 +6,6 @@ import cuchaz.enigma.ProgressListener;
 import java.nio.file.Path;
 
 public class DeobfuscateCommand extends Command {
-
 	public DeobfuscateCommand() {
 		super("deobfuscate");
 	}
@@ -27,6 +26,10 @@ public class DeobfuscateCommand extends Command {
 		Path fileJarOut = getWritableFile(getArg(args, 1, "out jar", true)).toPath();
 		Path fileMappings = getReadablePath(getArg(args, 2, "mappings file", false));
 
+		run(fileJarIn, fileJarOut, fileMappings);
+	}
+
+	public static void run(Path fileJarIn, Path fileJarOut, Path fileMappings) throws Exception {
 		EnigmaProject project = openProject(fileJarIn, fileMappings);
 
 		ProgressListener progress = new ConsoleProgressListener();

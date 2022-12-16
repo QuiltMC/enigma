@@ -17,71 +17,71 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class MappingCommandsUtil {
-    private MappingCommandsUtil() {}
+	private MappingCommandsUtil() {}
 
-    public static EntryTree<EntryMapping> read(String type, Path path, MappingSaveParameters saveParameters) throws MappingParseException, IOException {
-        if (type.equals("enigma")) {
-            return (Files.isDirectory(path) ? EnigmaMappingsReader.DIRECTORY : EnigmaMappingsReader.ZIP).read(path, ProgressListener.none(), saveParameters);
-        }
+	public static EntryTree<EntryMapping> read(String type, Path path, MappingSaveParameters saveParameters) throws MappingParseException, IOException {
+		if (type.equals("enigma")) {
+			return (Files.isDirectory(path) ? EnigmaMappingsReader.DIRECTORY : EnigmaMappingsReader.ZIP).read(path, ProgressListener.none(), saveParameters);
+		}
 
-        if (type.equals("tiny")) {
-            return TinyMappingsReader.INSTANCE.read(path, ProgressListener.none(), saveParameters);
-        }
+		if (type.equals("tiny")) {
+			return TinyMappingsReader.INSTANCE.read(path, ProgressListener.none(), saveParameters);
+		}
 
-        MappingFormat format = null;
-        try {
-            format = MappingFormat.valueOf(type.toUpperCase());
-        } catch (IllegalArgumentException ignored) {
-            if (type.equals("tinyv2")) {
-                format = MappingFormat.TINY_V2;
-            }
-        }
+		MappingFormat format = null;
+		try {
+			format = MappingFormat.valueOf(type.toUpperCase());
+		} catch (IllegalArgumentException ignored) {
+			if (type.equals("tinyv2")) {
+				format = MappingFormat.TINY_V2;
+			}
+		}
 
-        if (format != null) {
-            return format.getReader().read(path, ProgressListener.none(), saveParameters);
-        }
+		if (format != null) {
+			return format.getReader().read(path, ProgressListener.none(), saveParameters);
+		}
 
-        throw new IllegalArgumentException("no reader for " + type);
-    }
+		throw new IllegalArgumentException("no reader for " + type);
+	}
 
-    public static void write(EntryTree<EntryMapping> mappings, String type, Path path, MappingSaveParameters saveParameters) {
-        if (type.equals("enigma")) {
-            EnigmaMappingsWriter.DIRECTORY.write(mappings, path, ProgressListener.none(), saveParameters);
-            return;
-        }
+	public static void write(EntryTree<EntryMapping> mappings, String type, Path path, MappingSaveParameters saveParameters) {
+		if (type.equals("enigma")) {
+			EnigmaMappingsWriter.DIRECTORY.write(mappings, path, ProgressListener.none(), saveParameters);
+			return;
+		}
 
-        if (type.startsWith("tinyv2:") || type.startsWith("tiny_v2:")) {
-            String[] split = type.split(":");
+		if (type.startsWith("tinyv2:") || type.startsWith("tiny_v2:")) {
+			String[] split = type.split(":");
 
-            if (split.length != 3) {
-                throw new IllegalArgumentException("specify column names as 'tinyv2:from_namespace:to_namespace'");
-            }
+			if (split.length != 3) {
+				throw new IllegalArgumentException("specify column names as 'tinyv2:from_namespace:to_namespace'");
+			}
 
-            new TinyV2Writer(split[1], split[2]).write(mappings, path, ProgressListener.none(), saveParameters);
-            return;
-        }
+			new TinyV2Writer(split[1], split[2]).write(mappings, path, ProgressListener.none(), saveParameters);
+			return;
+		}
 
-        if (type.startsWith("tiny:")) {
-            String[] split = type.split(":");
+		if (type.startsWith("tiny:")) {
+			String[] split = type.split(":");
 
-            if (split.length != 3) {
-                throw new IllegalArgumentException("specify column names as 'tiny:from_column:to_column'");
-            }
+			if (split.length != 3) {
+				throw new IllegalArgumentException("specify column names as 'tiny:from_column:to_column'");
+			}
 
-            new TinyMappingsWriter(split[1], split[2]).write(mappings, path, ProgressListener.none(), saveParameters);
-            return;
-        }
+			new TinyMappingsWriter(split[1], split[2]).write(mappings, path, ProgressListener.none(), saveParameters);
+			return;
+		}
 
-        MappingFormat format = null;
-        try {
-            format = MappingFormat.valueOf(type.toUpperCase());
-        } catch (IllegalArgumentException ignored) {}
+		MappingFormat format = null;
+		try {
+			format = MappingFormat.valueOf(type.toUpperCase());
+		} catch (IllegalArgumentException ignored) {}
 
-        if (format != null) {
-            format.getWriter().write(mappings, path, ProgressListener.none(), saveParameters);
-            return;
-        }
+		if (format != null) {
+			format.getWriter().write(mappings, path, ProgressListener.none(), saveParameters);
+			return;
+		}
 
-        throw new IllegalArgumentException("no writer for " + type);
-    }
+		throw new IllegalArgumentException("no writer for " + type);
+	}
 }

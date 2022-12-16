@@ -147,6 +147,24 @@ public abstract class Command {
 		return file;
 	}
 
+	protected static Path getWritablePath(String path) {
+		if (path == null) {
+			return null;
+		}
+
+		Path dir = Path.of(path).toAbsolutePath();
+
+		try {
+			if (!Files.exists(dir.getParent())) {
+				Files.createDirectories(dir.getParent());
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
+		return dir;
+	}
+
 	protected static String getArg(String[] args, int i, String name, boolean required) {
 		if (i >= args.length) {
 			if (required) {

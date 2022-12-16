@@ -10,32 +10,39 @@ import cuchaz.enigma.utils.Utils;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class InvertMappingsCommand extends Command {
-    public InvertMappingsCommand() {
-        super("invert-mappings");
-    }
+	public InvertMappingsCommand() {
+		super("invert-mappings");
+	}
 
-    @Override
-    public String getUsage() {
-        return "<source-format> <source> <result-format> <result>";
-    }
+	@Override
+	public String getUsage() {
+		return "<source-format> <source> <result-format> <result>";
+	}
 
-    @Override
-    public boolean isValidArgument(int length) {
-        return length == 4;
-    }
+	@Override
+	public boolean isValidArgument(int length) {
+		return length == 4;
+	}
 
-    @Override
-    public void run(String... args) throws IOException, MappingParseException {
-        MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+	@Override
+	public void run(String... args) throws IOException, MappingParseException {
+		String sourceFormat = getArg(args, 0, "source-format", true);
+		Path source = getReadablePath(getArg(args, 1, "source", true));
+		String resultFormat = getArg(args, 2, "result-format", true);
+		Path result = getWritablePath(getArg(args, 3, "result", true));
 
-        EntryTree<EntryMapping> source = MappingCommandsUtil.read(args[0], Paths.get(args[1]), saveParameters);
-        EntryTree<EntryMapping> result = MappingOperations.invert(source);
+		run(sourceFormat, source, resultFormat, result);
+	}
 
-        Path output = Paths.get(args[3]);
-        Utils.delete(output);
-        MappingCommandsUtil.write(result, args[2], output, saveParameters);
-    }
+	public static void run(String sourceFormat, Path sourceFile, String resultFormat, Path resultFile) throws MappingParseException, IOException {
+		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+
+		EntryTree<EntryMapping> source = MappingCommandsUtil.read(sourceFormat, sourceFile, saveParameters);
+		EntryTree<EntryMapping> result = MappingOperations.invert(source);
+
+		Utils.delete(resultFile);
+		MappingCommandsUtil.write(result, resultFormat, resultFile, saveParameters);
+	}
 }

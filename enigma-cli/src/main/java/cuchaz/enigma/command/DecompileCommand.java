@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import java.util.Locale;
 
 public class DecompileCommand extends Command {
-
 	public DecompileCommand() {
 		super("decompile");
 	}
@@ -33,6 +32,10 @@ public class DecompileCommand extends Command {
 		Path fileJarOut = getWritableFolder(getArg(args, 2, "out folder", true)).toPath();
 		Path fileMappings = getReadablePath(getArg(args, 3, "mappings file", false));
 
+		run(decompilerName, fileJarIn, fileJarOut, fileMappings);
+	}
+
+	public static void run(String decompilerName, Path fileJarIn, Path fileJarOut, Path fileMappings) throws Exception {
 		DecompilerService decompilerService;
 
 		try {
