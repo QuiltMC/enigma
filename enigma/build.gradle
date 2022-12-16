@@ -62,8 +62,8 @@ def registerTestJarTasks(String name, String... input) {
 
         args "@$confFile", '-injars', file("build/test-inputs/${name}.jar"),
                 '-libraryjars', libraryJarsArg,
-                '-outjars', file("build/test-obf/${name}.jar"),
-                '-printmapping', file("build/test-obf/${name}.txt")
+                '-outjars', file("build/test-obf/${name}.jar")
+                //'-printmapping', file("build/test-obf/${name}.txt")
     }
 }
 
