@@ -46,7 +46,7 @@ public abstract class AbstractInheritanceTree implements RightPanel {
 
 			Object node = path.getLastPathComponent();
 			if (node instanceof ClassInheritanceTreeNode classNode) {
-				gui.getController().navigateTo(new ClassEntry(classNode.getObfClassName()));
+				gui.getController().navigateTo(new ClassEntry(classNode.getClassName()));
 			} else if (node instanceof MethodInheritanceTreeNode methodNode && methodNode.isImplemented()) {
 				gui.getController().navigateTo(methodNode.getMethodEntry());
 			}
