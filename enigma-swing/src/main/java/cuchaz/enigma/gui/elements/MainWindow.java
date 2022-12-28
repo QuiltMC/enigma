@@ -14,6 +14,7 @@ import javax.swing.JFrame;
 import javax.swing.JLayer;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 
 public class MainWindow {
 	private final JFrame frame;
@@ -40,15 +41,20 @@ public class MainWindow {
 		// create buttons from right panel options
 		for (Map.Entry<String, RightPanel> entry : RightPanel.panels.entrySet()) {
 			RightPanel panel = entry.getValue();
-			JButton button = new JButton(entry.getKey());
+			JToggleButton button = panel.getButton();
+
 			button.addActionListener(e -> {
 				RightPanel currentPanel = gui.getRightPanel();
 				RightPanel newPanel = RightPanel.getPanel(entry.getKey());
 
 				if (currentPanel.getId().equals(newPanel.getId())) {
-					currentPanel.getPanel().setVisible(!currentPanel.getPanel().isVisible());
+					boolean visible = !currentPanel.getPanel().isVisible();
+
+					currentPanel.getPanel().setVisible(visible);
 				} else {
 					gui.setRightPanel(entry.getKey());
+					currentPanel.getButton().setSelected(false);
+					newPanel.getButton().setSelected(true);
 				}
 			});
 

@@ -41,6 +41,7 @@ public class StructurePanel implements RightPanel {
     private final JComboBox<StructureTreeOptions.SortingOrder> sortingOrder;
 
     private final JTree structureTree;
+    private final JToggleButton button;
 
     public StructurePanel(Gui gui) {
         this.gui = gui;
@@ -80,6 +81,8 @@ public class StructurePanel implements RightPanel {
 
         this.panel.add(this.optionsPanel, BorderLayout.NORTH);
         this.panel.add(new JScrollPane(this.structureTree));
+
+        this.button = new JToggleButton(this.getId());
     }
 
     public void showStructure(EditorPanel editor) {
@@ -161,6 +164,11 @@ public class StructurePanel implements RightPanel {
     @Override
     public String getId() {
         return "structure";
+    }
+
+    @Override
+    public JToggleButton getButton() {
+        return this.button;
     }
 
     private static class StructureTreeCellRenderer extends DefaultTreeCellRenderer {

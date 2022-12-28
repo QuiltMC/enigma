@@ -13,6 +13,7 @@ package cuchaz.enigma.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.nio.file.Path;
@@ -118,6 +119,12 @@ public class Gui {
 		// bottom panels
 		RightPanel.registerPanel(new MessagesPanel());
 		RightPanel.registerPanel(new UsersPanel());
+
+		// set default sizes for right panels
+		for (RightPanel panel : RightPanel.panels.values()) {
+			panel.getPanel().setPreferredSize(new Dimension(300, 100));
+		}
+
 		// todo right panel default sizes
 		// todo right panel state saving
 
@@ -131,6 +138,7 @@ public class Gui {
 		this.editorTabbedPane = new EditorTabbedPane(this);
 		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, this.obfPanel, this.deobfPanel);
 		this.rightPanel = RightPanel.getPanel("calls");
+		this.rightPanel.getButton().setSelected(true);
 
 		this.setupUi();
 
@@ -320,12 +328,13 @@ public class Gui {
 	}
 
 	public void showTokens(EditorPanel editor, List<Token> tokens) {
-		// todo
+		this.setRightPanel("calls");
+
 		if (tokens.size() > 1) {
 			this.controller.setTokenHandle(editor.getClassHandle().copy());
-			//this.callsTree.showTokens(tokens);
+			((CallsTree) this.getRightPanel()).showTokens(tokens);
 		} else {
-			//this.callsTree.clearTokens();
+			((CallsTree) this.getRightPanel()).clearTokens();
 		}
 
 		// show the first token
@@ -361,35 +370,32 @@ public class Gui {
 	}
 
 	public void showStructure(EditorPanel editor) {
-		// todo
-		//this.structurePanel.showStructure(editor);
+		this.setRightPanel("structure");
+		((StructurePanel) this.getRightPanel()).showStructure(editor);
 	}
 
 	public void showInheritance(EditorPanel editor) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		// todo
-		//this.inheritanceTree.display(cursorReference.entry);
-		//tabs.setSelectedIndex(1);
+		this.setRightPanel("inheritance");
+		((InheritanceTree) this.getRightPanel()).display(cursorReference.entry);
 	}
 
 	public void showImplementations(EditorPanel editor) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		// todo
-		//this.implementationsTree.display(cursorReference.entry);
-		//tabs.setSelectedIndex(2);
+		this.setRightPanel("implementations");
+		((ImplementationsTree) this.getRightPanel()).display(cursorReference.entry);
 	}
 
 	public void showCalls(EditorPanel editor, boolean recurse) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		// todo
-		//this.callsTree.showCalls(cursorReference.entry, recurse);
-		//tabs.setSelectedIndex(3);
+		this.setRightPanel("calls");
+		((CallsTree) this.getRightPanel()).showCalls(cursorReference.entry, recurse);
 	}
 
 	public void toggleMapping(EditorPanel editor) {

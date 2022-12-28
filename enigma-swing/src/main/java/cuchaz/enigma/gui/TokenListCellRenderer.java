@@ -17,9 +17,8 @@ import javax.swing.*;
 import java.awt.*;
 
 public class TokenListCellRenderer implements ListCellRenderer<Token> {
-
-	private GuiController controller;
-	private DefaultListCellRenderer defaultRenderer;
+	private final GuiController controller;
+	private final DefaultListCellRenderer defaultRenderer;
 
 	public TokenListCellRenderer(GuiController controller) {
 		this.controller = controller;
@@ -32,5 +31,4 @@ public class TokenListCellRenderer implements ListCellRenderer<Token> {
 		label.setText(this.controller.getReadableToken(token).toString());
 		return label;
 	}
-
 }

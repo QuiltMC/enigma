@@ -26,19 +26,20 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 public class CallsTree implements RightPanel {
 	private final JPanel panel = new JPanel(new BorderLayout());
 
-	private final JTree callsTree = new JTree();
+	private final JTree tree = new JTree();
 	private final JList<Token> tokens = new JList<>();
 
 	private final Gui gui;
+	private final JToggleButton button;
 
 	public CallsTree(Gui gui) {
 		this.gui = gui;
 
-		this.callsTree.setModel(null);
-		this.callsTree.setCellRenderer(new CallsTreeCellRenderer(gui));
-		this.callsTree.setSelectionModel(new SingleTreeSelectionModel());
-		this.callsTree.setShowsRootHandles(true);
-		this.callsTree.addMouseListener(GuiUtil.onMouseClick(this::onTreeClicked));
+		this.tree.setModel(null);
+		this.tree.setCellRenderer(new CallsTreeCellRenderer(gui));
+		this.tree.setSelectionModel(new SingleTreeSelectionModel());
+		this.tree.setShowsRootHandles(true);
+		this.tree.addMouseListener(GuiUtil.onMouseClick(this::onTreeClicked));
 
 		this.tokens.setCellRenderer(new TokenListCellRenderer(gui.getController()));
 		this.tokens.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -50,13 +51,15 @@ public class CallsTree implements RightPanel {
 		JSplitPane contentPane = new JSplitPane(
 				JSplitPane.VERTICAL_SPLIT,
 				true,
-				new JScrollPane(this.callsTree),
+				new JScrollPane(this.tree),
 				new JScrollPane(this.tokens)
 		);
 
 		contentPane.setResizeWeight(1); // let the top side take all the slack
 		contentPane.resetToPreferredSizes();
 		this.panel.add(contentPane, BorderLayout.CENTER);
+
+		this.button = new JToggleButton(this.getId());
 	}
 
 	public void showCalls(Entry<?> entry, boolean recurse) {
@@ -70,9 +73,9 @@ public class CallsTree implements RightPanel {
 			node = this.gui.getController().getMethodReferences(methodEntry, recurse);
 		}
 
-		this.callsTree.setModel(new DefaultTreeModel(node));
+		this.tree.setModel(new DefaultTreeModel(node));
 
-		this.panel.show();
+		this.panel.setVisible(true);
 	}
 
 	public void showTokens(Collection<Token> tokens) {
@@ -88,7 +91,7 @@ public class CallsTree implements RightPanel {
 	private void onTreeClicked(MouseEvent event) {
 		if (event.getClickCount() >= 2 && event.getButton() == MouseEvent.BUTTON1) {
 			// get the selected node
-			TreePath path = this.callsTree.getSelectionPath();
+			TreePath path = this.tree.getSelectionPath();
 
 			if (path == null) {
 				return;
@@ -132,5 +135,10 @@ public class CallsTree implements RightPanel {
 	@Override
 	public String getId() {
 		return "calls";
+	}
+
+	@Override
+	public JToggleButton getButton() {
+		return this.button;
 	}
 }
