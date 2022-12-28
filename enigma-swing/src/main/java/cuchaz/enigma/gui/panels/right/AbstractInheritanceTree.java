@@ -1,4 +1,4 @@
-package cuchaz.enigma.gui.elements;
+package cuchaz.enigma.gui.panels.right;
 
 import java.awt.BorderLayout;
 import java.awt.event.MouseEvent;
@@ -18,14 +18,14 @@ import cuchaz.enigma.gui.util.SingleTreeSelectionModel;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 
-public abstract class AbstractInheritanceTree {
-	private final JPanel panel = new JPanel(new BorderLayout());
+public abstract class AbstractInheritanceTree implements RightPanel {
+	protected final JPanel panel = new JPanel(new BorderLayout());
 
 	private final JTree tree = new JTree();
 
 	protected final Gui gui;
 
-	public AbstractInheritanceTree(Gui gui, TreeCellRenderer cellRenderer) {
+	protected AbstractInheritanceTree(Gui gui, TreeCellRenderer cellRenderer) {
 		this.gui = gui;
 
 		this.tree.setModel(null);
@@ -69,7 +69,7 @@ public abstract class AbstractInheritanceTree {
 			this.tree.setSelectionRow(this.tree.getRowForPath(path));
 		}
 
-		this.panel.show();
+		this.panel.setVisible(true);
 	}
 
 	public void retranslateUi() {
@@ -79,9 +79,18 @@ public abstract class AbstractInheritanceTree {
 	@Nullable
 	protected abstract DefaultMutableTreeNode getNodeFor(Entry<?> entry);
 
-	protected abstract String getPanelName();
-
+	@Override
 	public JPanel getPanel() {
 		return this.panel;
+	}
+
+	@Override
+	public ButtonPosition getButtonPosition() {
+		return ButtonPosition.TOP;
+	}
+
+	@Override
+	public String getId() {
+		throw new UnsupportedOperationException();
 	}
 }

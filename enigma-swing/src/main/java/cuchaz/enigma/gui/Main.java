@@ -32,6 +32,8 @@ import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.utils.I18n;
 
 public class Main {
+	// todo hack
+	public static Gui gui;
 
 	public static void main(String[] args) throws IOException {
 		OptionParser parser = new OptionParser();
@@ -115,7 +117,7 @@ public class Main {
 
 			KeyBinds.loadConfig();
 
-			Gui gui = new Gui(parsedProfile, editables);
+			gui = new Gui(parsedProfile, editables);
 			GuiController controller = gui.getController();
 			
 			if (options.has("single-class-tree")) {
