@@ -1,4 +1,4 @@
-package cuchaz.enigma.gui.elements;
+package cuchaz.enigma.gui.panels.right;
 
 import java.awt.BorderLayout;
 import java.awt.event.MouseEvent;
@@ -23,7 +23,7 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
-public class CallsTree {
+public class CallsTree implements RightPanel {
 	private final JPanel panel = new JPanel(new BorderLayout());
 
 	private final JTree callsTree = new JTree();
@@ -119,7 +119,18 @@ public class CallsTree {
 
 	}
 
+	@Override
 	public JPanel getPanel() {
 		return this.panel;
+	}
+
+	@Override
+	public ButtonPosition getButtonPosition() {
+		return ButtonPosition.TOP;
+	}
+
+	@Override
+	public String getId() {
+		return "calls";
 	}
 }

@@ -15,9 +15,9 @@ public final class UiConfig {
 	}
 
 	// General UI configuration such as localization
-	private static final ConfigContainer ui = ConfigContainer.getOrCreate("enigma/enigmaui");
+	private static final ConfigContainer ui = ConfigContainer.getOrCreate("enigma/ui");
 	// Swing specific configuration such as theming
-	private static final ConfigContainer swing = ConfigContainer.getOrCreate("enigma/enigmaswing");
+	private static final ConfigContainer swing = ConfigContainer.getOrCreate("enigma/swing");
 
 	// These are used for getting stuff that needs to stay constant for the
 	// runtime of the program, e.g. the current theme, because changing of these
@@ -85,8 +85,9 @@ public final class UiConfig {
 		return swing.data().section("Main Window").getIntArray("Layout").orElseGet(() -> new int[] { -1, -1, -1, -1 });
 	}
 
-	public static void setLayout(int leftV, int left, int right, int rightH) {
-		swing.data().section("Main Window").setIntArray("Layout", new int[] { leftV, left, right, rightH });
+	public static void setLayout(int leftV, int left, int right) {
+		// todo 3 used to be the logSplit panel
+		swing.data().section("Main Window").setIntArray("Layout", new int[] { leftV, left, right, 0 });
 	}
 
 	public static LookAndFeel getLookAndFeel() {

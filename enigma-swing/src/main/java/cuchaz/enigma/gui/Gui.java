@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
@@ -41,6 +42,12 @@ import cuchaz.enigma.gui.dialog.JavadocDialog;
 import cuchaz.enigma.gui.dialog.SearchDialog;
 import cuchaz.enigma.gui.elements.*;
 import cuchaz.enigma.gui.panels.*;
+import cuchaz.enigma.gui.panels.right.CallsTree;
+import cuchaz.enigma.gui.panels.right.ImplementationsTree;
+import cuchaz.enigma.gui.panels.right.InheritanceTree;
+import cuchaz.enigma.gui.panels.right.MessagesPanel;
+import cuchaz.enigma.gui.panels.right.RightPanel;
+import cuchaz.enigma.gui.panels.right.UsersPanel;
 import cuchaz.enigma.gui.renderer.MessageListCellRenderer;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.LanguageUtil;
@@ -58,7 +65,7 @@ import cuchaz.enigma.utils.validation.ValidationContext;
 
 public class Gui {
 
-	private final MainWindow mainWindow = new MainWindow(Enigma.NAME);
+	private final MainWindow mainWindow;
 	private final GuiController controller;
 
 	private ConnectionState connectionState;
@@ -70,20 +77,16 @@ public class Gui {
 	private final ObfPanel obfPanel;
 	private final DeobfPanel deobfPanel;
 	private final IdentifierPanel infoPanel;
-	private final StructurePanel structurePanel;
-	private final InheritanceTree inheritanceTree;
-	private final ImplementationsTree implementationsTree;
-	private final CallsTree callsTree;
 
 	private final EditorTabbedPane editorTabbedPane;
 
 	private final JPanel classesPanel = new JPanel(new BorderLayout());
 	private final JSplitPane splitClasses;
-	private final JTabbedPane tabs = new JTabbedPane();
 	private final CollapsibleTabbedPane logTabs = new CollapsibleTabbedPane(JTabbedPane.BOTTOM);
-	private final JSplitPane logSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, tabs, logTabs);
+	// todo was "tabs" before null
 	private final JPanel centerPanel = new JPanel(new BorderLayout());
-	private final JSplitPane splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, this.logSplit);
+	// todo was "logSplit" before null
+	private final JSplitPane splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, null);
 	private final JSplitPane splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.classesPanel, splitRight);
 
 	private final DefaultListModel<String> userModel = new DefaultListModel<>();
@@ -104,16 +107,24 @@ public class Gui {
 	public SearchDialog searchDialog;
 
 	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes) {
+		// right panels
+		// top panels
+		RightPanel.registerPanel(new CallsTree(this));
+		RightPanel.registerPanel(new ImplementationsTree(this));
+		RightPanel.registerPanel(new InheritanceTree(this));
+		RightPanel.registerPanel(new StructurePanel(this));
+
+		// bottom panels
+		RightPanel.registerPanel(new MessagesPanel());
+		RightPanel.registerPanel(new UsersPanel());
+
+		this.mainWindow = new MainWindow(Enigma.NAME);
 		this.editableTypes = editableTypes;
 		this.controller = new GuiController(this, profile);
-		this.structurePanel = new StructurePanel(this);
 		this.deobfPanel = new DeobfPanel(this);
 		this.infoPanel = new IdentifierPanel(this);
 		this.obfPanel = new ObfPanel(this);
 		this.menuBar = new MenuBar(this);
-		this.inheritanceTree = new InheritanceTree(this);
-		this.implementationsTree = new ImplementationsTree(this);
-		this.callsTree = new CallsTree(this);
 		this.editorTabbedPane = new EditorTabbedPane(this);
 		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, this.obfPanel, this.deobfPanel);
 
@@ -147,12 +158,6 @@ public class Gui {
 		centerPanel.add(infoPanel.getUi(), BorderLayout.NORTH);
 		centerPanel.add(this.editorTabbedPane.getUi(), BorderLayout.CENTER);
 
-		tabs.setPreferredSize(ScaleUtil.getDimension(250, 0));
-		tabs.addTab(I18n.translate("info_panel.tree.structure"), structurePanel.getPanel());
-		tabs.addTab(I18n.translate("info_panel.tree.inheritance"), inheritanceTree.getPanel());
-		tabs.addTab(I18n.translate("info_panel.tree.implementations"), implementationsTree.getPanel());
-		tabs.addTab(I18n.translate("info_panel.tree.calls"), callsTree.getPanel());
-
 		messages.setCellRenderer(new MessageListCellRenderer());
 		JPanel chatPanel = new JPanel(new BorderLayout());
 		AbstractAction sendListener = new AbstractAction("Send") {
@@ -169,8 +174,6 @@ public class Gui {
 		messagePanel.add(chatPanel, BorderLayout.SOUTH);
 		logTabs.addTab(I18n.translate("log_panel.users"), new JScrollPane(this.users));
 		logTabs.addTab(I18n.translate("log_panel.messages"), messagePanel);
-		logSplit.setResizeWeight(0.5);
-		logSplit.resetToPreferredSizes();
 		splitRight.setResizeWeight(1); // let the left side take all the slack
 		splitRight.resetToPreferredSizes();
 		splitCenter.setResizeWeight(0); // let the right side take all the slack
@@ -183,7 +186,6 @@ public class Gui {
 			this.splitClasses.setDividerLocation(layout[0]);
 			this.splitCenter.setDividerLocation(layout[1]);
 			this.splitRight.setDividerLocation(layout[2]);
-			this.logSplit.setDividerLocation(layout[3]);
 		}
 
 		this.mainWindow.statusBar().addPermanentComponent(this.connectionStatusLabel);
@@ -304,11 +306,12 @@ public class Gui {
 	}
 
 	public void showTokens(EditorPanel editor, List<Token> tokens) {
+		// todo
 		if (tokens.size() > 1) {
 			this.controller.setTokenHandle(editor.getClassHandle().copy());
-			this.callsTree.showTokens(tokens);
+			//this.callsTree.showTokens(tokens);
 		} else {
-			this.callsTree.clearTokens();
+			//this.callsTree.clearTokens();
 		}
 
 		// show the first token
@@ -344,31 +347,35 @@ public class Gui {
 	}
 
 	public void showStructure(EditorPanel editor) {
-		this.structurePanel.showStructure(editor);
+		// todo
+		//this.structurePanel.showStructure(editor);
 	}
 
 	public void showInheritance(EditorPanel editor) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.inheritanceTree.display(cursorReference.entry);
-		tabs.setSelectedIndex(1);
+		// todo
+		//this.inheritanceTree.display(cursorReference.entry);
+		//tabs.setSelectedIndex(1);
 	}
 
 	public void showImplementations(EditorPanel editor) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.implementationsTree.display(cursorReference.entry);
-		tabs.setSelectedIndex(2);
+		// todo
+		//this.implementationsTree.display(cursorReference.entry);
+		//tabs.setSelectedIndex(2);
 	}
 
 	public void showCalls(EditorPanel editor, boolean recurse) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.callsTree.showCalls(cursorReference.entry, recurse);
-		tabs.setSelectedIndex(3);
+		// todo
+		//this.callsTree.showCalls(cursorReference.entry, recurse);
+		//tabs.setSelectedIndex(3);
 	}
 
 	public void toggleMapping(EditorPanel editor) {
@@ -387,7 +394,7 @@ public class Gui {
 		}
 	}
 
-	public void showDiscardDiag(Function<Integer, Void> callback, String... options) {
+	public void showDiscardDiag(IntFunction<Void> callback, String... options) {
 		int response = JOptionPane.showOptionDialog(this.mainWindow.frame(), I18n.translate("prompt.close.summary"), I18n.translate("prompt.close.title"), JOptionPane.YES_NO_CANCEL_OPTION,
 				JOptionPane.QUESTION_MESSAGE, null, options, options[2]);
 		callback.apply(response);
@@ -424,8 +431,8 @@ public class Gui {
 		UiConfig.setLayout(
 				this.splitClasses.getDividerLocation(),
 				this.splitCenter.getDividerLocation(),
-				this.splitRight.getDividerLocation(),
-				this.logSplit.getDividerLocation());
+				this.splitRight.getDividerLocation()
+		);
 		UiConfig.save();
 
 		if (searchDialog != null) {
@@ -565,13 +572,13 @@ public class Gui {
 
 		connectionStatusLabel.setText(I18n.translate(connectionState == ConnectionState.NOT_CONNECTED ? "status.disconnected" : "status.connected"));
 
-		if (connectionState == ConnectionState.NOT_CONNECTED) {
-			logSplit.setLeftComponent(null);
-			splitRight.setRightComponent(tabs);
-		} else {
-			splitRight.setRightComponent(logSplit);
-			logSplit.setLeftComponent(tabs);
-		}
+//		if (connectionState == ConnectionState.NOT_CONNECTED) {
+//			//logSplit.setLeftComponent(null);
+//			//splitRight.setRightComponent(tabs);
+//		} else {
+//			//splitRight.setRightComponent(logSplit);
+//			//logSplit.setLeftComponent(tabs);
+//		}
 
 		splitRight.setDividerLocation(splitRight.getDividerLocation());
 	}
@@ -579,10 +586,7 @@ public class Gui {
 	public void retranslateUi() {
 		this.jarFileChooser.setDialogTitle(I18n.translate("menu.file.jar.open"));
 		this.exportJarFileChooser.setDialogTitle(I18n.translate("menu.file.export.jar"));
-		this.tabs.setTitleAt(0, I18n.translate("info_panel.tree.structure"));
-		this.tabs.setTitleAt(1, I18n.translate("info_panel.tree.inheritance"));
-		this.tabs.setTitleAt(2, I18n.translate("info_panel.tree.implementations"));
-		this.tabs.setTitleAt(3, I18n.translate("info_panel.tree.calls"));
+		// todo set titles here
 		this.logTabs.setTitleAt(0, I18n.translate("log_panel.users"));
 		this.logTabs.setTitleAt(1, I18n.translate("log_panel.messages"));
 		this.connectionStatusLabel.setText(I18n.translate(connectionState == ConnectionState.NOT_CONNECTED ? "status.disconnected" : "status.connected"));
@@ -593,12 +597,8 @@ public class Gui {
 		this.obfPanel.retranslateUi();
 		this.deobfPanel.retranslateUi();
 		this.infoPanel.retranslateUi();
-		this.structurePanel.retranslateUi();
 		this.editorTabbedPane.retranslateUi();
-		this.inheritanceTree.retranslateUi();
-		this.implementationsTree.retranslateUi();
-		this.structurePanel.retranslateUi();
-		this.callsTree.retranslateUi();
+		// todo retranslate panels here
 	}
 
 	public void setConnectionState(ConnectionState state) {

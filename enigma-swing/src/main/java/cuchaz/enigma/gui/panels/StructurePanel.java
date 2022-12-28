@@ -12,6 +12,7 @@ import javax.swing.tree.TreePath;
 import cuchaz.enigma.analysis.StructureTreeNode;
 import cuchaz.enigma.analysis.StructureTreeOptions;
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.panels.right.RightPanel;
 import cuchaz.enigma.gui.renderer.StructureOptionListCellRenderer;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.GuiUtil;
@@ -22,7 +23,7 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.I18n;
 
-public class StructurePanel {
+public class StructurePanel implements RightPanel {
     private final Gui gui;
 
     private final JPanel panel = new JPanel(new BorderLayout());
@@ -111,8 +112,8 @@ public class StructurePanel {
 
             Object node = path.getLastPathComponent();
 
-            if (node instanceof StructureTreeNode) {
-                this.gui.getController().navigateTo(((StructureTreeNode) node).getEntry());
+            if (node instanceof StructureTreeNode structureTreeNode) {
+                this.gui.getController().navigateTo(structureTreeNode.getEntry());
             }
         }
     }
@@ -134,8 +135,19 @@ public class StructurePanel {
         this.sortingOrderLabel.setText(I18n.translate("structure.options.sorting"));
     }
 
+    @Override
     public JPanel getPanel() {
         return this.panel;
+    }
+
+    @Override
+    public ButtonPosition getButtonPosition() {
+        return ButtonPosition.TOP;
+    }
+
+    @Override
+    public String getId() {
+        return "structure";
     }
 
     private static class StructureTreeCellRenderer extends DefaultTreeCellRenderer {
