@@ -15,6 +15,7 @@ import cuchaz.enigma.analysis.StructureTreeOptions;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.panels.right.RightPanel;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
+import cuchaz.enigma.gui.panels.right.RightPanel;
 import cuchaz.enigma.gui.renderer.StructureOptionListCellRenderer;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.GuiUtil;
@@ -113,21 +114,17 @@ public class StructurePanel implements RightPanel {
 
     private void onClick(MouseEvent event) {
         if (event.getClickCount() >= 2 && event.getButton() == MouseEvent.BUTTON1) {
-            navigateToSelectedNode();
-        }
-    }
+            // get the selected node
+            TreePath path = structureTree.getSelectionPath();
+            if (path == null) {
+                return;
+            }
 
-    private void navigateToSelectedNode() {
-        // get the selected node
-        TreePath path = structureTree.getSelectionPath();
-        if (path == null) {
-            return;
-        }
+            Object node = path.getLastPathComponent();
 
-        Object node = path.getLastPathComponent();
-
-        if (node instanceof StructureTreeNode structureTreeNode) {
-            this.gui.getController().navigateTo(structureTreeNode.getEntry());
+            if (node instanceof StructureTreeNode structureTreeNode) {
+                this.gui.getController().navigateTo(structureTreeNode.getEntry());
+            }
         }
     }
 
