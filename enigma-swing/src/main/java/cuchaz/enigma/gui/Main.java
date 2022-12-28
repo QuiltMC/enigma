@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.common.io.MoreFiles;
-import cuchaz.enigma.gui.config.KeyBindsConfig;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import joptsimple.*;
 
@@ -32,9 +31,6 @@ import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.utils.I18n;
 
 public class Main {
-	// todo hack
-	public static Gui gui;
-
 	public static void main(String[] args) throws IOException {
 		OptionParser parser = new OptionParser();
 
@@ -117,7 +113,7 @@ public class Main {
 
 			KeyBinds.loadConfig();
 
-			gui = new Gui(parsedProfile, editables);
+			Gui gui = new Gui(parsedProfile, editables);
 			GuiController controller = gui.getController();
 			
 			if (options.has("single-class-tree")) {
