@@ -83,18 +83,15 @@ public class Gui {
 
 	private final JPanel classesPanel = new JPanel(new BorderLayout());
 	private final JSplitPane splitClasses;
-	private final CollapsibleTabbedPane logTabs = new CollapsibleTabbedPane(JTabbedPane.BOTTOM);
-	// todo was "tabs" before null
 	private final JPanel centerPanel = new JPanel(new BorderLayout());
 	private RightPanel rightPanel;
-	// todo was "logSplit" before null
-	private final JSplitPane splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, null);
-	private final JSplitPane splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.classesPanel, splitRight);
+	private final JSplitPane splitRight;
+	private final JSplitPane splitCenter;
 
 	private final DefaultListModel<String> userModel = new DefaultListModel<>();
 	private final DefaultListModel<Message> messageModel = new DefaultListModel<>();
-	private final JList<String> users = new JList<>(userModel);
-	private final JList<Message> messages = new JList<>(messageModel);
+	private final JList<String> users = new JList<>(this.userModel);
+	private final JList<Message> messages = new JList<>(this.messageModel);
 	private final JPanel messagePanel = new JPanel(new BorderLayout());
 	private final JScrollPane messageScrollPane = new JScrollPane(this.messages);
 	private final JTextField chatBox = new JTextField();
@@ -139,6 +136,8 @@ public class Gui {
 		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, this.obfPanel, this.deobfPanel);
 		this.rightPanel = RightPanel.getPanel("calls");
 		this.rightPanel.getButton().setSelected(true);
+		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightPanel.getPanel());
+		this.splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.classesPanel, splitRight);
 
 		this.setupUi();
 
@@ -184,9 +183,7 @@ public class Gui {
 		chatPanel.add(chatSendButton, BorderLayout.EAST);
 		messagePanel.add(messageScrollPane, BorderLayout.CENTER);
 		messagePanel.add(chatPanel, BorderLayout.SOUTH);
-		logTabs.addTab(I18n.translate("log_panel.users"), new JScrollPane(this.users));
-		logTabs.addTab(I18n.translate("log_panel.messages"), messagePanel);
-		splitRight.setRightComponent(rightPanel.getPanel());
+		// todo ?????
 		splitRight.setResizeWeight(1); // let the left side take all the slack
 		splitRight.resetToPreferredSizes();
 		splitCenter.setResizeWeight(0); // let the right side take all the slack
@@ -589,27 +586,13 @@ public class Gui {
 	 */
 	public void updateUiState() {
 		menuBar.updateUiState();
-
-		connectionStatusLabel.setText(I18n.translate(connectionState == ConnectionState.NOT_CONNECTED ? "status.disconnected" : "status.connected"));
-
-//		if (connectionState == ConnectionState.NOT_CONNECTED) {
-//			//logSplit.setLeftComponent(null);
-//			//splitRight.setRightComponent(tabs);
-//		} else {
-//			//splitRight.setRightComponent(logSplit);
-//			//logSplit.setLeftComponent(tabs);
-//		}
-
-		splitRight.setDividerLocation(splitRight.getDividerLocation());
+		this.connectionStatusLabel.setText(I18n.translate(connectionState == ConnectionState.NOT_CONNECTED ? "status.disconnected" : "status.connected"));
 	}
 
 	public void retranslateUi() {
 		this.jarFileChooser.setDialogTitle(I18n.translate("menu.file.jar.open"));
 		this.exportJarFileChooser.setDialogTitle(I18n.translate("menu.file.export.jar"));
 		// todo set titles here
-		this.logTabs.setTitleAt(0, I18n.translate("log_panel.users"));
-		this.logTabs.setTitleAt(1, I18n.translate("log_panel.messages"));
-		this.connectionStatusLabel.setText(I18n.translate(connectionState == ConnectionState.NOT_CONNECTED ? "status.disconnected" : "status.connected"));
 
 		this.updateUiState();
 
