@@ -1,7 +1,6 @@
 package cuchaz.enigma.gui.panels.right;
 
 import javax.annotation.Nullable;
-import javax.swing.JToggleButton;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import cuchaz.enigma.gui.Gui;
@@ -11,11 +10,8 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 public class ImplementationsTree extends AbstractInheritanceTree {
-	private final JToggleButton button;
-
 	public ImplementationsTree(Gui gui) {
 		super(gui, new ImplementationsTreeCellRenderer(gui));
-		this.button = new JToggleButton(this.getId());
 	}
 
 	@Nullable
@@ -33,10 +29,5 @@ public class ImplementationsTree extends AbstractInheritanceTree {
 	@Override
 	public String getId() {
 		return "implementations";
-	}
-
-	@Override
-	public JToggleButton getButton() {
-		return this.button;
 	}
 }

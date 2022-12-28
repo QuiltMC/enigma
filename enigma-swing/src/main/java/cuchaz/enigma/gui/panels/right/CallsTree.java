@@ -23,14 +23,13 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
-public class CallsTree implements RightPanel {
+public class CallsTree extends AbstractRightPanel {
 	private final JPanel panel = new JPanel(new BorderLayout());
 
 	private final JTree tree = new JTree();
 	private final JList<Token> tokens = new JList<>();
 
 	private final Gui gui;
-	private final JToggleButton button;
 
 	public CallsTree(Gui gui) {
 		this.gui = gui;
@@ -58,8 +57,6 @@ public class CallsTree implements RightPanel {
 		contentPane.setResizeWeight(1); // let the top side take all the slack
 		contentPane.resetToPreferredSizes();
 		this.panel.add(contentPane, BorderLayout.CENTER);
-
-		this.button = new JToggleButton(this.getId());
 	}
 
 	public void showCalls(Entry<?> entry, boolean recurse) {
@@ -135,10 +132,5 @@ public class CallsTree implements RightPanel {
 	@Override
 	public String getId() {
 		return "calls";
-	}
-
-	@Override
-	public JToggleButton getButton() {
-		return this.button;
 	}
 }

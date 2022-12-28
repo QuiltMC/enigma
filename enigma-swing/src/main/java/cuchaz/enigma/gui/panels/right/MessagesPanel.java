@@ -1,13 +1,12 @@
 package cuchaz.enigma.gui.panels.right;
 
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
 
-public class MessagesPanel extends JPanel implements RightPanel {
-    private final JToggleButton button;
+public class MessagesPanel extends AbstractRightPanel {
+    private final JPanel panel;
 
     public MessagesPanel() {
-        this.button = new JToggleButton(this.getId());
+        this.panel = new JPanel();
     }
 
     @Override
@@ -17,16 +16,11 @@ public class MessagesPanel extends JPanel implements RightPanel {
 
     @Override
     public JPanel getPanel() {
-        return this;
+        return this.panel;
     }
 
     @Override
     public String getId() {
         return "messages";
-    }
-
-    @Override
-    public JToggleButton getButton() {
-        return this.button;
     }
 }

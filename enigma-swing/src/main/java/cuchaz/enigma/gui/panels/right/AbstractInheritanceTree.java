@@ -16,7 +16,7 @@ import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.SingleTreeSelectionModel;
 import cuchaz.enigma.translation.representation.entry.Entry;
 
-public abstract class AbstractInheritanceTree implements RightPanel {
+public abstract class AbstractInheritanceTree extends AbstractRightPanel {
 	protected final JPanel panel = new JPanel(new BorderLayout());
 
 	private final JTree tree = new JTree();
@@ -75,7 +75,6 @@ public abstract class AbstractInheritanceTree implements RightPanel {
 	@Nullable
 	protected abstract DefaultMutableTreeNode getNodeFor(Entry<?> entry);
 
-
 	@Override
 	public JPanel getPanel() {
 		return this.panel;
@@ -84,10 +83,5 @@ public abstract class AbstractInheritanceTree implements RightPanel {
 	@Override
 	public ButtonPosition getButtonPosition() {
 		return ButtonPosition.TOP;
-	}
-
-	@Override
-	public String getId() {
-		throw new UnsupportedOperationException();
 	}
 }
