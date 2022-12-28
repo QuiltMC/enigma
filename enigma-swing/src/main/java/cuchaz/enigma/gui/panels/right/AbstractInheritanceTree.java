@@ -14,7 +14,6 @@ import cuchaz.enigma.analysis.MethodInheritanceTreeNode;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.SingleTreeSelectionModel;
-import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 
 public abstract class AbstractInheritanceTree implements RightPanel {
@@ -46,7 +45,7 @@ public abstract class AbstractInheritanceTree implements RightPanel {
 
 			Object node = path.getLastPathComponent();
 			if (node instanceof ClassInheritanceTreeNode classNode) {
-				gui.getController().navigateTo(new ClassEntry(classNode.getClassName()));
+				gui.getController().navigateTo(classNode.getClassEntry());
 			} else if (node instanceof MethodInheritanceTreeNode methodNode && methodNode.isImplemented()) {
 				gui.getController().navigateTo(methodNode.getMethodEntry());
 			}
