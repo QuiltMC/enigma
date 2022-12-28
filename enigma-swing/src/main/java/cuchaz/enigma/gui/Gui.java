@@ -85,6 +85,7 @@ public class Gui {
 	private final CollapsibleTabbedPane logTabs = new CollapsibleTabbedPane(JTabbedPane.BOTTOM);
 	// todo was "tabs" before null
 	private final JPanel centerPanel = new JPanel(new BorderLayout());
+	private RightPanel rightPanel;
 	// todo was "logSplit" before null
 	private final JSplitPane splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, null);
 	private final JSplitPane splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.classesPanel, splitRight);
@@ -117,8 +118,10 @@ public class Gui {
 		// bottom panels
 		RightPanel.registerPanel(new MessagesPanel());
 		RightPanel.registerPanel(new UsersPanel());
+		// todo right panel default sizes
+		// todo right panel state saving
 
-		this.mainWindow = new MainWindow(Enigma.NAME);
+		this.mainWindow = new MainWindow(this, Enigma.NAME);
 		this.editableTypes = editableTypes;
 		this.controller = new GuiController(this, profile);
 		this.deobfPanel = new DeobfPanel(this);
@@ -127,6 +130,7 @@ public class Gui {
 		this.menuBar = new MenuBar(this);
 		this.editorTabbedPane = new EditorTabbedPane(this);
 		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, this.obfPanel, this.deobfPanel);
+		this.rightPanel = RightPanel.getPanel("calls");
 
 		this.setupUi();
 
@@ -174,6 +178,7 @@ public class Gui {
 		messagePanel.add(chatPanel, BorderLayout.SOUTH);
 		logTabs.addTab(I18n.translate("log_panel.users"), new JScrollPane(this.users));
 		logTabs.addTab(I18n.translate("log_panel.messages"), messagePanel);
+		splitRight.setRightComponent(rightPanel.getPanel());
 		splitRight.setResizeWeight(1); // let the left side take all the slack
 		splitRight.resetToPreferredSizes();
 		splitCenter.setResizeWeight(0); // let the right side take all the slack
@@ -209,6 +214,15 @@ public class Gui {
 		}
 
 		this.retranslateUi();
+	}
+
+	public RightPanel getRightPanel() {
+		return this.rightPanel;
+	}
+
+	public void setRightPanel(String id) {
+		this.rightPanel = RightPanel.getPanel(id);
+		this.splitRight.setRightComponent(this.rightPanel.getPanel());
 	}
 
 	public MainWindow getMainWindow() {

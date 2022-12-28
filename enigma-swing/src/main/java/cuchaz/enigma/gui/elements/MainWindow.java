@@ -1,5 +1,6 @@
 package cuchaz.enigma.gui.elements;
 
+import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.panels.right.RightPanel;
 import cuchaz.enigma.gui.panels.right.RightRotatedLayerUI;
 
@@ -21,7 +22,7 @@ public class MainWindow {
 	private final JMenuBar menuBar = new JMenuBar();
 	private final StatusBar statusBar = new StatusBar();
 
-	public MainWindow(String title) {
+	public MainWindow(Gui gui, String title) {
 		if (RightPanel.panels.isEmpty()) {
 			throw new IllegalStateException("no right panels registered! right panels should be registered before creating the main window.");
 		}
@@ -40,6 +41,16 @@ public class MainWindow {
 		for (Map.Entry<String, RightPanel> entry : RightPanel.panels.entrySet()) {
 			RightPanel panel = entry.getValue();
 			JButton button = new JButton(entry.getKey());
+			button.addActionListener(e -> {
+				RightPanel currentPanel = gui.getRightPanel();
+				RightPanel newPanel = RightPanel.getPanel(entry.getKey());
+
+				if (currentPanel.getId().equals(newPanel.getId())) {
+					currentPanel.getPanel().setVisible(!currentPanel.getPanel().isVisible());
+				} else {
+					gui.setRightPanel(entry.getKey());
+				}
+			});
 
 			if (panel.getButtonPosition().equals(RightPanel.ButtonPosition.TOP)) {
 				topButtons.add(button);
