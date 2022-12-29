@@ -20,6 +20,8 @@ public abstract class AbstractRightPanel implements RightPanel {
                 boolean visible = !currentPanel.getPanel().isVisible();
 
                 currentPanel.getPanel().setVisible(visible);
+                // todo abstract out right panel visibility setting into AbstractRightPanel
+                // todo maybe move right panels entirely to an abstract class instead of an interface?
                 currentPanel.getButton().setSelected(visible);
             } else {
                 gui.setRightPanel(this.getId());

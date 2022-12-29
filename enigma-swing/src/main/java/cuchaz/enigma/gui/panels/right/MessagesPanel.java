@@ -12,7 +12,7 @@ import javax.swing.JTextField;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 
-public class MessagesPanel extends AbstractRightPanel {
+public class MessagesPanel extends MultiplayerOnlyRightPanel {
     private final Gui gui;
     private final JPanel panel;
     private final JScrollPane messageScrollPane;
@@ -72,7 +72,7 @@ public class MessagesPanel extends AbstractRightPanel {
     }
 
     @Override
-    public JPanel getPanel() {
+    public JPanel getOnlinePanel() {
         return this.panel;
     }
 

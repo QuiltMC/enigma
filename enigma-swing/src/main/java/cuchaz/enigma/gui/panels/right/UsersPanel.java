@@ -5,14 +5,14 @@ import cuchaz.enigma.gui.Gui;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-public class UsersPanel extends AbstractRightPanel {
+public class UsersPanel extends MultiplayerOnlyRightPanel {
     private final JPanel panel;
 
     public UsersPanel(Gui gui) {
         super(gui);
         this.panel = new JPanel();
-        JScrollPane userScrollPane = new JScrollPane(gui.getUsers());
 
+        JScrollPane userScrollPane = new JScrollPane(gui.getUsers());
         this.panel.add(userScrollPane);
     }
 
@@ -22,7 +22,7 @@ public class UsersPanel extends AbstractRightPanel {
     }
 
     @Override
-    public JPanel getPanel() {
+    public JPanel getOnlinePanel() {
         return this.panel;
     }
 

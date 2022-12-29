@@ -26,6 +26,7 @@ import cuchaz.enigma.gui.panels.DeobfPanel;
 import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.panels.IdentifierPanel;
 import cuchaz.enigma.gui.panels.ObfPanel;
+import cuchaz.enigma.gui.panels.right.MultiplayerOnlyRightPanel;
 import cuchaz.enigma.gui.panels.right.StructurePanel;
 import cuchaz.enigma.gui.panels.right.CallsTree;
 import cuchaz.enigma.gui.panels.right.ImplementationsTree;
@@ -127,6 +128,8 @@ public class Gui {
 			panel.getPanel().setPreferredSize(new Dimension(300, 100));
 		}
 
+		// todo save divider location per-panel to save state
+
 		this.mainWindow = new MainWindow(Enigma.NAME);
 		this.editableTypes = editableTypes;
 		this.controller = new GuiController(this, profile);
@@ -220,6 +223,10 @@ public class Gui {
 		this.rightPanel = RightPanel.getPanel(id);
 		this.splitRight.setRightComponent(this.rightPanel.getPanel());
 		UiConfig.setSelectedRightPanel(id);
+	}
+
+	public void reloadRightPanel() {
+		this.setRightPanel(this.rightPanel.getId());
 	}
 
 	public MainWindow getMainWindow() {
@@ -565,9 +572,20 @@ public class Gui {
 	}
 
 	public void setUserList(List<String> users) {
+		boolean wasOffline = this.isOffline();
+
 		userModel.clear();
 		users.forEach(userModel::addElement);
 		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
+
+		// if we were previously offline, we need to reload multiplayer-restricted right panels (ex. messages) so they can be used
+		if (wasOffline && this.getRightPanel() instanceof MultiplayerOnlyRightPanel) {
+			this.reloadRightPanel();
+		}
+	}
+
+	public boolean isOffline() {
+		return this.getUsers().getModel().getSize() <= 0;
 	}
 
 	/**
