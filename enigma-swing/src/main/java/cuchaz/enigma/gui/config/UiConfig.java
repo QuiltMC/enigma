@@ -68,6 +68,15 @@ public final class UiConfig {
 		swing.data().section("General").setDouble("Scale Factor", scale);
 	}
 
+	public static void setSelectedRightPanel(String id) {
+		swing.data().section("General").setString("Right Panel", id);
+	}
+
+	public static String getSelectedRightPanel() {
+		// todo hardcoded default
+		return swing.data().section("General").setIfAbsentString("Right Panel", "structure");
+	}
+
 	/**
 	 * Gets the dimensions of the different panels of the GUI.
 	 * <p>These dimensions are used to determine the location of the separators between these panels.</p>
@@ -76,18 +85,16 @@ public final class UiConfig {
 	 *     <li>[0] - The height of the obfuscated classes panel</li>
 	 *     <li>[1] - The width of the classes panel</li>
 	 *     <li>[2] - The width of the center panel</li>
-	 *     <li>[3] - The height of the tabs panel. Only used if the logs panel should appear</li>
 	 * </ul>
 	 *
-	 * @return an integer array composed of these 4 dimensions
+	 * @return an integer array composed of these 3 dimensions
 	 */
 	public static int[] getLayout() {
-		return swing.data().section("Main Window").getIntArray("Layout").orElseGet(() -> new int[] { -1, -1, -1, -1 });
+		return swing.data().section("Main Window").getIntArray("Layout").orElseGet(() -> new int[] { -1, -1, -1 });
 	}
 
 	public static void setLayout(int leftV, int left, int right) {
-		// todo 3 used to be the logSplit panel
-		swing.data().section("Main Window").setIntArray("Layout", new int[] { leftV, left, right, 0 });
+		swing.data().section("Main Window").setIntArray("Layout", new int[] { leftV, left, right });
 	}
 
 	public static LookAndFeel getLookAndFeel() {

@@ -11,29 +11,6 @@
 
 package cuchaz.enigma.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-
-import javax.annotation.Nullable;
-import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
-import com.google.common.collect.Lists;
-
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.analysis.EntryReference;
@@ -41,8 +18,15 @@ import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.JavadocDialog;
 import cuchaz.enigma.gui.dialog.SearchDialog;
-import cuchaz.enigma.gui.elements.*;
-import cuchaz.enigma.gui.panels.*;
+import cuchaz.enigma.gui.elements.EditorTabbedPane;
+import cuchaz.enigma.gui.elements.MainWindow;
+import cuchaz.enigma.gui.elements.MenuBar;
+import cuchaz.enigma.gui.elements.ValidatableUi;
+import cuchaz.enigma.gui.panels.DeobfPanel;
+import cuchaz.enigma.gui.panels.EditorPanel;
+import cuchaz.enigma.gui.panels.IdentifierPanel;
+import cuchaz.enigma.gui.panels.ObfPanel;
+import cuchaz.enigma.gui.panels.StructurePanel;
 import cuchaz.enigma.gui.panels.right.CallsTree;
 import cuchaz.enigma.gui.panels.right.ImplementationsTree;
 import cuchaz.enigma.gui.panels.right.InheritanceTree;
@@ -54,7 +38,6 @@ import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.LanguageUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.network.Message;
-import cuchaz.enigma.network.packet.MessageC2SPacket;
 import cuchaz.enigma.source.Token;
 import cuchaz.enigma.translation.mapping.EntryChange;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
@@ -63,6 +46,31 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
+
+import javax.annotation.Nullable;
+import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.IntFunction;
 
 public class Gui {
 
@@ -128,9 +136,7 @@ public class Gui {
 		this.menuBar = new MenuBar(this);
 		this.editorTabbedPane = new EditorTabbedPane(this);
 		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, this.obfPanel, this.deobfPanel);
-		// todo hardcoded calls default
-		this.rightPanel = RightPanel.getPanel("calls");
-		this.rightPanel.getButton().setSelected(true);
+		this.rightPanel = RightPanel.getPanel(UiConfig.getSelectedRightPanel());
 		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightPanel.getPanel());
 		this.splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.classesPanel, splitRight);
 
@@ -174,7 +180,7 @@ public class Gui {
 
 		// restore state
 		int[] layout = UiConfig.getLayout();
-		if (layout.length >= 4) {
+		if (layout.length >= 3) {
 			this.splitClasses.setDividerLocation(layout[0]);
 			this.splitCenter.setDividerLocation(layout[1]);
 			this.splitRight.setDividerLocation(layout[2]);
@@ -185,6 +191,9 @@ public class Gui {
 		// init state
 		setConnectionState(ConnectionState.NOT_CONNECTED);
 		onCloseJar();
+
+		// select correct right panel button
+		this.rightPanel.getButton().setSelected(true);
 
 		JFrame frame = this.mainWindow.frame();
 		frame.addWindowListener(GuiUtil.onWindowClose(e -> this.close()));
@@ -210,6 +219,7 @@ public class Gui {
 	public void setRightPanel(String id) {
 		this.rightPanel = RightPanel.getPanel(id);
 		this.splitRight.setRightComponent(this.rightPanel.getPanel());
+		UiConfig.setSelectedRightPanel(id);
 	}
 
 	public MainWindow getMainWindow() {
@@ -560,16 +570,6 @@ public class Gui {
 		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
 	}
 
-	public void sendMessage() {
-		JTextField chatBox = ((MessagesPanel) RightPanel.panels.get("messages")).getChatBox();
-		String text = chatBox.getText().trim();
-
-		if (!text.isEmpty()) {
-			getController().sendPacket(new MessageC2SPacket(text));
-		}
-		chatBox.setText("");
-	}
-
 	/**
 	 * Updates the state of the UI elements (button text, enabled state, ...) to reflect the current program state.
 	 * This is a central place to update the UI state to prevent multiple code paths from changing the same state,
@@ -612,9 +612,9 @@ public class Gui {
 		ValidationContext vc = new ValidationContext();
 		op.accept(vc);
 		if (!vc.canProceed()) {
-			List<ParameterizedMessage> messages = vc.getMessages();
-			String text = ValidatableUi.formatMessages(messages);
-			JOptionPane.showMessageDialog(this.getFrame(), text, String.format("%d message(s)", messages.size()), JOptionPane.ERROR_MESSAGE);
+			List<ParameterizedMessage> parameterizedMessages = vc.getMessages();
+			String text = ValidatableUi.formatMessages(parameterizedMessages);
+			JOptionPane.showMessageDialog(this.getFrame(), text, String.format("%d message(s)", parameterizedMessages.size()), JOptionPane.ERROR_MESSAGE);
 		}
 		return vc.canProceed();
 	}

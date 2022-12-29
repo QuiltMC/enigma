@@ -1,6 +1,7 @@
 package cuchaz.enigma.gui.panels.right;
 
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.network.packet.MessageC2SPacket;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -11,32 +12,43 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 
 public class MessagesPanel extends AbstractRightPanel {
+    private final Gui gui;
     private final JPanel panel;
     private final JScrollPane messageScrollPane;
-    private final JTextField chatBox;
+    private final JTextField pendingMessageBox;
 
     public MessagesPanel(Gui gui) {
+        this.gui = gui;
         this.panel = new JPanel(new BorderLayout());
         this.messageScrollPane = new JScrollPane(gui.getMessages());
-        this.chatBox = new JTextField();
+        this.pendingMessageBox = new JTextField();
 
         JPanel chatPanel = new JPanel(new BorderLayout());
         AbstractAction sendListener = new AbstractAction("Send") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                gui.sendMessage();
+                sendPendingMessage();
             }
         };
-        this.chatBox.addActionListener(sendListener);
-        JButton chatSendButton = new JButton(sendListener);
-        chatPanel.add(this.chatBox, BorderLayout.CENTER);
-        chatPanel.add(chatSendButton, BorderLayout.EAST);
+        this.pendingMessageBox.addActionListener(sendListener);
+        JButton sendPendingMessageButton = new JButton(sendListener);
+        chatPanel.add(this.pendingMessageBox, BorderLayout.CENTER);
+        chatPanel.add(sendPendingMessageButton, BorderLayout.EAST);
         this.panel.add(this.messageScrollPane, BorderLayout.CENTER);
         this.panel.add(chatPanel, BorderLayout.SOUTH);
     }
 
-    public JTextField getChatBox() {
-        return this.chatBox;
+    private void sendPendingMessage() {
+        // get message
+        String text = this.pendingMessageBox.getText().trim();
+
+        // send message, filtering out empty messages
+        if (!text.isEmpty()) {
+            this.gui.getController().sendPacket(new MessageC2SPacket(text));
+        }
+
+        // clear chat box
+        this.pendingMessageBox.setText("");
     }
 
     public JScrollPane getMessageScrollPane() {
