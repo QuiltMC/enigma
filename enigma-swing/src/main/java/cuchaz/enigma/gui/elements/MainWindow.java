@@ -9,7 +9,6 @@ import java.awt.Container;
 import java.awt.FlowLayout;
 import java.util.Map;
 
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLayer;
 import javax.swing.JMenuBar;
@@ -51,10 +50,11 @@ public class MainWindow {
 					boolean visible = !currentPanel.getPanel().isVisible();
 
 					currentPanel.getPanel().setVisible(visible);
+					currentPanel.getButton().setSelected(visible);
 				} else {
 					gui.setRightPanel(entry.getKey());
-					currentPanel.getButton().setSelected(false);
 					newPanel.getButton().setSelected(true);
+					currentPanel.getButton().setSelected(false);
 				}
 			});
 
