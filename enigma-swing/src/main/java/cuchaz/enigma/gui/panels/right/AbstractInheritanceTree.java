@@ -9,6 +9,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.*;
 
+import cuchaz.enigma.analysis.AbstractClassTreeNode;
+import cuchaz.enigma.analysis.AbstractMethodTreeNode;
 import cuchaz.enigma.analysis.ClassInheritanceTreeNode;
 import cuchaz.enigma.analysis.MethodInheritanceTreeNode;
 import cuchaz.enigma.gui.Gui;
@@ -45,9 +47,9 @@ public abstract class AbstractInheritanceTree extends AbstractRightPanel {
 			}
 
 			Object node = path.getLastPathComponent();
-			if (node instanceof ClassInheritanceTreeNode classNode) {
+			if (node instanceof AbstractClassTreeNode classNode) {
 				gui.getController().navigateTo(classNode.getClassEntry());
-			} else if (node instanceof MethodInheritanceTreeNode methodNode && methodNode.isImplemented()) {
+			} else if (node instanceof AbstractMethodTreeNode methodNode) {
 				gui.getController().navigateTo(methodNode.getMethodEntry());
 			}
 		}

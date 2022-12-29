@@ -16,9 +16,9 @@ public final class UiConfig {
 	}
 
 	// General UI configuration such as localization
-	private static final ConfigContainer ui = ConfigContainer.getOrCreate("enigma/ui");
+	private static final ConfigContainer ui = ConfigContainer.getOrCreate("enigma/enigmaui");
 	// Swing specific configuration such as theming
-	private static final ConfigContainer swing = ConfigContainer.getOrCreate("enigma/swing");
+	private static final ConfigContainer swing = ConfigContainer.getOrCreate("enigma/enigmaswing");
 
 	// These are used for getting stuff that needs to stay constant for the
 	// runtime of the program, e.g. the current theme, because changing of these
