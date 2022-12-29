@@ -14,7 +14,6 @@ import java.awt.event.ActionEvent;
 
 public class MessagesPanel extends MultiplayerOnlyRightPanel {
     private final Gui gui;
-    private final JPanel panel;
     private final JScrollPane messageScrollPane;
     private final JTextField pendingMessageBox;
     private final JButton sendPendingMessageButton;
@@ -22,7 +21,6 @@ public class MessagesPanel extends MultiplayerOnlyRightPanel {
     public MessagesPanel(Gui gui) {
         super(gui);
         this.gui = gui;
-        this.panel = new JPanel(new BorderLayout());
         this.messageScrollPane = new JScrollPane(gui.getMessages());
         this.pendingMessageBox = new JTextField();
         AbstractAction sendListener = new AbstractAction() {
@@ -37,8 +35,8 @@ public class MessagesPanel extends MultiplayerOnlyRightPanel {
         JPanel chatPanel = new JPanel(new BorderLayout());
         chatPanel.add(this.pendingMessageBox, BorderLayout.CENTER);
         chatPanel.add(sendPendingMessageButton, BorderLayout.EAST);
-        this.panel.add(this.messageScrollPane, BorderLayout.CENTER);
-        this.panel.add(chatPanel, BorderLayout.SOUTH);
+        this.add(this.messageScrollPane, BorderLayout.CENTER);
+        this.add(chatPanel, BorderLayout.SOUTH);
         // set button text
         this.retranslateUi();
     }
@@ -69,11 +67,6 @@ public class MessagesPanel extends MultiplayerOnlyRightPanel {
     @Override
     public ButtonPosition getButtonPosition() {
         return ButtonPosition.BOTTOM;
-    }
-
-    @Override
-    public JPanel getOnlinePanel() {
-        return this.panel;
     }
 
     @Override

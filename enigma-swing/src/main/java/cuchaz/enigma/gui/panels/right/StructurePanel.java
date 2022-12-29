@@ -28,8 +28,6 @@ import cuchaz.enigma.utils.I18n;
 public class StructurePanel extends AbstractRightPanel {
     private final Gui gui;
 
-    private final JPanel panel = new JPanel(new BorderLayout());
-
     private final JPanel optionsPanel;
 
     private final JLabel obfuscationVisibilityLabel = new JLabel();
@@ -79,8 +77,8 @@ public class StructurePanel extends AbstractRightPanel {
 
         this.retranslateUi();
 
-        this.panel.add(this.optionsPanel, BorderLayout.NORTH);
-        this.panel.add(new JScrollPane(this.structureTree));
+        this.add(this.optionsPanel, BorderLayout.NORTH);
+        this.add(new JScrollPane(this.structureTree));
     }
 
     public void showStructure(EditorPanel editor) {
@@ -153,7 +151,7 @@ public class StructurePanel extends AbstractRightPanel {
 
     @Override
     public JPanel getPanel() {
-        return this.panel;
+        return this;
     }
 
     @Override

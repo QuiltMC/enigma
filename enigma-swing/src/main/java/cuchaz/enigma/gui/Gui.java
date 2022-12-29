@@ -220,7 +220,9 @@ public class Gui {
 	}
 
 	public void setRightPanel(String id) {
+		this.rightPanel.getPanel().setVisible(false);
 		this.rightPanel = RightPanel.getPanel(id);
+		this.rightPanel.getPanel().setVisible(true);
 		this.splitRight.setRightComponent(this.rightPanel.getPanel());
 		UiConfig.setSelectedRightPanel(id);
 	}

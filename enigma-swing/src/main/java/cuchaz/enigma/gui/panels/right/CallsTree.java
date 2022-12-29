@@ -5,7 +5,12 @@ import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.Vector;
 
-import javax.swing.*;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTree;
+import javax.swing.ListSelectionModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -24,8 +29,6 @@ import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 public class CallsTree extends AbstractRightPanel {
-	private final JPanel panel = new JPanel(new BorderLayout());
-
 	private final JTree tree = new JTree();
 	private final JList<Token> tokens = new JList<>();
 
@@ -57,7 +60,7 @@ public class CallsTree extends AbstractRightPanel {
 
 		contentPane.setResizeWeight(1); // let the top side take all the slack
 		contentPane.resetToPreferredSizes();
-		this.panel.add(contentPane, BorderLayout.CENTER);
+		this.add(contentPane, BorderLayout.CENTER);
 	}
 
 	public void showCalls(Entry<?> entry, boolean recurse) {
@@ -73,7 +76,7 @@ public class CallsTree extends AbstractRightPanel {
 
 		this.tree.setModel(new DefaultTreeModel(node));
 
-		this.panel.setVisible(true);
+		this.setVisible(true);
 	}
 
 	public void showTokens(Collection<Token> tokens) {
@@ -118,7 +121,7 @@ public class CallsTree extends AbstractRightPanel {
 
 	@Override
 	public JPanel getPanel() {
-		return this.panel;
+		return this;
 	}
 
 	@Override

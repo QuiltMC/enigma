@@ -32,9 +32,7 @@ public abstract class MultiplayerOnlyRightPanel extends AbstractRightPanel {
         if (gui.isOffline()) {
             return this.offlinePanel;
         } else {
-            return this.getOnlinePanel();
+            return this;
         }
     }
-
-    public abstract JPanel getOnlinePanel();
 }
