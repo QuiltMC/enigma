@@ -78,7 +78,7 @@ public class QuiltflowerSettingsDialog extends JDialog {
                 }
                 case INTEGER -> {
                     JSpinner spinner = new JSpinner();
-                    spinner.setModel(new SpinnerNumberModel(Integer.parseInt((String) value), 0, Integer.MAX_VALUE, 1));
+                    spinner.setModel(new SpinnerNumberModel(toInt(value), 0, Integer.MAX_VALUE, 1));
                     spinner.addChangeListener(e -> {
                         Object newValue = spinner.getValue();
                         if (newValue != QuiltflowerPreferences.DEFAULTS.get(key)) {
@@ -120,6 +120,18 @@ public class QuiltflowerSettingsDialog extends JDialog {
         setLocationRelativeTo(gui.getFrame());
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setVisible(true);
+    }
+
+    private static int toInt(Object val) {
+        if (val instanceof Integer) {
+            return (Integer) val;
+        }
+
+        try {
+            return Integer.parseInt(val.toString());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     private void save() {
