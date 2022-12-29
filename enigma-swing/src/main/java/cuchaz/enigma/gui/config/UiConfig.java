@@ -6,6 +6,7 @@ import java.util.OptionalInt;
 
 import cuchaz.enigma.config.ConfigContainer;
 import cuchaz.enigma.config.ConfigSection;
+import cuchaz.enigma.gui.panels.right.RightPanel;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 
@@ -73,8 +74,7 @@ public final class UiConfig {
 	}
 
 	public static String getSelectedRightPanel() {
-		// todo hardcoded default
-		return swing.data().section("General").setIfAbsentString("Right Panel", "structure");
+		return swing.data().section("General").setIfAbsentString("Right Panel", RightPanel.DEFAULT);
 	}
 
 	/**

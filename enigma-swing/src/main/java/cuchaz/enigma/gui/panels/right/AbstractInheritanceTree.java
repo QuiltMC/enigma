@@ -68,10 +68,6 @@ public abstract class AbstractInheritanceTree extends AbstractRightPanel {
 		this.panel.setVisible(true);
 	}
 
-	public void retranslateUi() {
-
-	}
-
 	@Nullable
 	protected abstract DefaultMutableTreeNode getNodeFor(Entry<?> entry);
 

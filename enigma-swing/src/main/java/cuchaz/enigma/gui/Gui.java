@@ -26,7 +26,7 @@ import cuchaz.enigma.gui.panels.DeobfPanel;
 import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.panels.IdentifierPanel;
 import cuchaz.enigma.gui.panels.ObfPanel;
-import cuchaz.enigma.gui.panels.StructurePanel;
+import cuchaz.enigma.gui.panels.right.StructurePanel;
 import cuchaz.enigma.gui.panels.right.CallsTree;
 import cuchaz.enigma.gui.panels.right.ImplementationsTree;
 import cuchaz.enigma.gui.panels.right.InheritanceTree;
@@ -583,7 +583,6 @@ public class Gui {
 	public void retranslateUi() {
 		this.jarFileChooser.setDialogTitle(I18n.translate("menu.file.jar.open"));
 		this.exportJarFileChooser.setDialogTitle(I18n.translate("menu.file.export.jar"));
-		// todo set titles here
 
 		this.updateUiState();
 
@@ -592,7 +591,9 @@ public class Gui {
 		this.deobfPanel.retranslateUi();
 		this.infoPanel.retranslateUi();
 		this.editorTabbedPane.retranslateUi();
-		// todo retranslate panels here
+		for (RightPanel panel : RightPanel.panels.values()) {
+			panel.retranslateUi();
+		}
 	}
 
 	public void setConnectionState(ConnectionState state) {

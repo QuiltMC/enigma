@@ -1,4 +1,4 @@
-package cuchaz.enigma.gui.panels;
+package cuchaz.enigma.gui.panels.right;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -13,7 +13,7 @@ import javax.swing.tree.TreePath;
 import cuchaz.enigma.analysis.StructureTreeNode;
 import cuchaz.enigma.analysis.StructureTreeOptions;
 import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.gui.panels.right.RightPanel;
+import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.renderer.StructureOptionListCellRenderer;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
@@ -25,7 +25,7 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.I18n;
 
-public class StructurePanel implements RightPanel {
+public class StructurePanel extends AbstractRightPanel {
     private final Gui gui;
 
     private final JPanel panel = new JPanel(new BorderLayout());
@@ -41,7 +41,6 @@ public class StructurePanel implements RightPanel {
     private final JComboBox<StructureTreeOptions.SortingOrder> sortingOrder;
 
     private final JTree structureTree;
-    private final JToggleButton button;
 
     public StructurePanel(Gui gui) {
         this.gui = gui;
@@ -81,8 +80,6 @@ public class StructurePanel implements RightPanel {
 
         this.panel.add(this.optionsPanel, BorderLayout.NORTH);
         this.panel.add(new JScrollPane(this.structureTree));
-
-        this.button = new JToggleButton(this.getId());
     }
 
     public void showStructure(EditorPanel editor) {
@@ -145,7 +142,9 @@ public class StructurePanel implements RightPanel {
         );
     }
 
+    @Override
     public void retranslateUi() {
+        super.retranslateUi();
         this.obfuscationVisibilityLabel.setText(I18n.translate("structure.options.obfuscation"));
         this.documentationVisibilityLabel.setText(I18n.translate("structure.options.documentation"));
         this.sortingOrderLabel.setText(I18n.translate("structure.options.sorting"));
@@ -164,11 +163,6 @@ public class StructurePanel implements RightPanel {
     @Override
     public String getId() {
         return "structure";
-    }
-
-    @Override
-    public JToggleButton getButton() {
-        return this.button;
     }
 
     private static class StructureTreeCellRenderer extends DefaultTreeCellRenderer {

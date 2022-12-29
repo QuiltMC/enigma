@@ -115,10 +115,6 @@ public class CallsTree extends AbstractRightPanel {
 		}
 	}
 
-	public void retranslateUi() {
-
-	}
-
 	@Override
 	public JPanel getPanel() {
 		return this.panel;
