@@ -1,12 +1,18 @@
 package cuchaz.enigma.gui.panels.right;
 
+import cuchaz.enigma.gui.Gui;
+
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 public class UsersPanel extends AbstractRightPanel {
     private final JPanel panel;
 
-    public UsersPanel() {
+    public UsersPanel(Gui gui) {
         this.panel = new JPanel();
+        JScrollPane userScrollPane = new JScrollPane(gui.getUsers());
+
+        this.panel.add(userScrollPane);
     }
 
     @Override

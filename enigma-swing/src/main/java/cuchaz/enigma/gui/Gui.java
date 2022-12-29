@@ -92,9 +92,6 @@ public class Gui {
 	private final DefaultListModel<Message> messageModel = new DefaultListModel<>();
 	private final JList<String> users = new JList<>(this.userModel);
 	private final JList<Message> messages = new JList<>(this.messageModel);
-	private final JPanel messagePanel = new JPanel(new BorderLayout());
-	private final JScrollPane messageScrollPane = new JScrollPane(this.messages);
-	private final JTextField chatBox = new JTextField();
 
 	private final JLabel connectionStatusLabel = new JLabel();
 
@@ -114,16 +111,13 @@ public class Gui {
 		RightPanel.registerPanel(new StructurePanel(this));
 
 		// bottom panels
-		RightPanel.registerPanel(new MessagesPanel());
-		RightPanel.registerPanel(new UsersPanel());
+		RightPanel.registerPanel(new MessagesPanel(this));
+		RightPanel.registerPanel(new UsersPanel(this));
 
 		// set default sizes for right panels
 		for (RightPanel panel : RightPanel.panels.values()) {
 			panel.getPanel().setPreferredSize(new Dimension(300, 100));
 		}
-
-		// todo right panel default sizes
-		// todo right panel state saving
 
 		this.mainWindow = new MainWindow(this, Enigma.NAME);
 		this.editableTypes = editableTypes;
@@ -134,6 +128,7 @@ public class Gui {
 		this.menuBar = new MenuBar(this);
 		this.editorTabbedPane = new EditorTabbedPane(this);
 		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, this.obfPanel, this.deobfPanel);
+		// todo hardcoded calls default
 		this.rightPanel = RightPanel.getPanel("calls");
 		this.rightPanel.getButton().setSelected(true);
 		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightPanel.getPanel());
@@ -170,20 +165,7 @@ public class Gui {
 		centerPanel.add(this.editorTabbedPane.getUi(), BorderLayout.CENTER);
 
 		messages.setCellRenderer(new MessageListCellRenderer());
-		JPanel chatPanel = new JPanel(new BorderLayout());
-		AbstractAction sendListener = new AbstractAction("Send") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				sendMessage();
-			}
-		};
-		chatBox.addActionListener(sendListener);
-		JButton chatSendButton = new JButton(sendListener);
-		chatPanel.add(chatBox, BorderLayout.CENTER);
-		chatPanel.add(chatSendButton, BorderLayout.EAST);
-		messagePanel.add(messageScrollPane, BorderLayout.CENTER);
-		messagePanel.add(chatPanel, BorderLayout.SOUTH);
-		// todo ?????
+
 		splitRight.setResizeWeight(1); // let the left side take all the slack
 		splitRight.resetToPreferredSizes();
 		splitCenter.setResizeWeight(0); // let the right side take all the slack
@@ -232,6 +214,14 @@ public class Gui {
 
 	public MainWindow getMainWindow() {
 		return this.mainWindow;
+	}
+
+	public JList<Message> getMessages() {
+		return this.messages;
+	}
+
+	public JList<String> getUsers() {
+		return this.users;
 	}
 
 	public JFrame getFrame() {
@@ -429,7 +419,7 @@ public class Gui {
 			exit();
 		} else {
 			// ask to save before closing
-			showDiscardDiag((response) -> {
+			showDiscardDiag(response -> {
 				if (response == JOptionPane.YES_OPTION) {
 					this.saveMapping().thenRun(this::exit);
 					// do not join, as join waits on swing to clear events
@@ -479,18 +469,17 @@ public class Gui {
 			node.setUserObject(data);
 			// Ob package will never be modified, just reload deob view
 			this.deobfPanel.deobfClasses.reload();
-		} else if (data instanceof ClassEntry) {
+		} else if (data instanceof ClassEntry entry) {
 			// class rename
 
 			// TODO optimize reverse class lookup, although it looks like it's
 			//      fast enough for now
 			EntryRemapper mapper = this.controller.project.getMapper();
-			ClassEntry deobf = (ClassEntry) prevData;
 			ClassEntry obf = mapper.getObfToDeobf().getAllEntries()
-					.filter(e -> e instanceof ClassEntry)
-					.map(e -> (ClassEntry) e)
-					.filter(e -> mapper.deobfuscate(e).equals(deobf))
-					.findAny().orElse(deobf);
+					.filter(ClassEntry.class::isInstance)
+					.map(ClassEntry.class::cast)
+					.filter(e -> mapper.deobfuscate(e).equals(entry))
+					.findAny().orElse(entry);
 
 			this.controller.applyChange(vc, EntryChange.modify(obf).withDeobfName(((ClassEntry) data).getFullName()));
 		} else {
@@ -554,7 +543,7 @@ public class Gui {
 	}
 
 	public void addMessage(Message message) {
-		JScrollBar verticalScrollBar = messageScrollPane.getVerticalScrollBar();
+		JScrollBar verticalScrollBar = ((MessagesPanel) RightPanel.panels.get("messages")).getMessageScrollPane().getVerticalScrollBar();
 		boolean isAtBottom = verticalScrollBar.getValue() >= verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent();
 		messageModel.addElement(message);
 
@@ -571,8 +560,10 @@ public class Gui {
 		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
 	}
 
-	private void sendMessage() {
+	public void sendMessage() {
+		JTextField chatBox = ((MessagesPanel) RightPanel.panels.get("messages")).getChatBox();
 		String text = chatBox.getText().trim();
+
 		if (!text.isEmpty()) {
 			getController().sendPacket(new MessageC2SPacket(text));
 		}
