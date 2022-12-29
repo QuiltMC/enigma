@@ -1,5 +1,6 @@
 package cuchaz.enigma.gui.panels.right;
 
+import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.utils.I18n;
 
 import javax.swing.JToggleButton;
@@ -9,8 +10,23 @@ public abstract class AbstractRightPanel implements RightPanel {
     protected final JToggleButton button;
     private final Supplier<String> buttonTextProvider = () -> I18n.translate("right_panel.selector." + this.getId() + "_button");
 
-    protected AbstractRightPanel() {
+    protected AbstractRightPanel(Gui gui) {
         this.button = new JToggleButton(buttonTextProvider.get());
+        this.button.addActionListener(e -> {
+            RightPanel currentPanel = gui.getRightPanel();
+            RightPanel newPanel = RightPanel.getPanel(this.getId());
+
+            if (currentPanel.getId().equals(newPanel.getId())) {
+                boolean visible = !currentPanel.getPanel().isVisible();
+
+                currentPanel.getPanel().setVisible(visible);
+                currentPanel.getButton().setSelected(visible);
+            } else {
+                gui.setRightPanel(this.getId());
+                newPanel.getButton().setSelected(true);
+                currentPanel.getButton().setSelected(false);
+            }
+        });
     }
 
     @Override

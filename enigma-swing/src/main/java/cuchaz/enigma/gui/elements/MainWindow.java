@@ -22,7 +22,7 @@ public class MainWindow {
 	private final JMenuBar menuBar = new JMenuBar();
 	private final StatusBar statusBar = new StatusBar();
 
-	public MainWindow(Gui gui, String title) {
+	public MainWindow(String title) {
 		if (RightPanel.panels.isEmpty()) {
 			throw new IllegalStateException("no right panels registered! right panels should be registered before creating the main window.");
 		}
@@ -41,22 +41,6 @@ public class MainWindow {
 		for (Map.Entry<String, RightPanel> entry : RightPanel.panels.entrySet()) {
 			RightPanel panel = entry.getValue();
 			JToggleButton button = panel.getButton();
-
-			button.addActionListener(e -> {
-				RightPanel currentPanel = gui.getRightPanel();
-				RightPanel newPanel = RightPanel.getPanel(entry.getKey());
-
-				if (currentPanel.getId().equals(newPanel.getId())) {
-					boolean visible = !currentPanel.getPanel().isVisible();
-
-					currentPanel.getPanel().setVisible(visible);
-					currentPanel.getButton().setSelected(visible);
-				} else {
-					gui.setRightPanel(entry.getKey());
-					newPanel.getButton().setSelected(true);
-					currentPanel.getButton().setSelected(false);
-				}
-			});
 
 			if (panel.getButtonPosition().equals(RightPanel.ButtonPosition.TOP)) {
 				topButtons.add(button);

@@ -32,6 +32,7 @@ public class CallsTree extends AbstractRightPanel {
 	private final Gui gui;
 
 	public CallsTree(Gui gui) {
+		super(gui);
 		this.gui = gui;
 
 		this.tree.setModel(null);

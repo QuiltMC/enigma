@@ -24,6 +24,7 @@ public abstract class AbstractInheritanceTree extends AbstractRightPanel {
 	protected final Gui gui;
 
 	protected AbstractInheritanceTree(Gui gui, TreeCellRenderer cellRenderer) {
+		super(gui);
 		this.gui = gui;
 
 		this.tree.setModel(null);

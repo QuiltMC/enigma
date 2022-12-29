@@ -43,6 +43,7 @@ public class StructurePanel extends AbstractRightPanel {
     private final JTree structureTree;
 
     public StructurePanel(Gui gui) {
+        super(gui);
         this.gui = gui;
 
         this.optionsPanel = new JPanel(new GridBagLayout());

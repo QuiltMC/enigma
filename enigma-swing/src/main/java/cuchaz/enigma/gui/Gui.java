@@ -127,7 +127,7 @@ public class Gui {
 			panel.getPanel().setPreferredSize(new Dimension(300, 100));
 		}
 
-		this.mainWindow = new MainWindow(this, Enigma.NAME);
+		this.mainWindow = new MainWindow(Enigma.NAME);
 		this.editableTypes = editableTypes;
 		this.controller = new GuiController(this, profile);
 		this.deobfPanel = new DeobfPanel(this);

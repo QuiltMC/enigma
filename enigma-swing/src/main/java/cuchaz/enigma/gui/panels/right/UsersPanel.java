@@ -9,6 +9,7 @@ public class UsersPanel extends AbstractRightPanel {
     private final JPanel panel;
 
     public UsersPanel(Gui gui) {
+        super(gui);
         this.panel = new JPanel();
         JScrollPane userScrollPane = new JScrollPane(gui.getUsers());
 

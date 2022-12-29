@@ -20,6 +20,7 @@ public class MessagesPanel extends AbstractRightPanel {
     private final JButton sendPendingMessageButton;
 
     public MessagesPanel(Gui gui) {
+        super(gui);
         this.gui = gui;
         this.panel = new JPanel(new BorderLayout());
         this.messageScrollPane = new JScrollPane(gui.getMessages());
