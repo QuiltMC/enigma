@@ -25,7 +25,7 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.I18n;
 
-public class StructurePanel extends AbstractRightPanel {
+public class StructurePanel extends RightPanel {
     private final Gui gui;
 
     private final JPanel optionsPanel;
@@ -147,11 +147,6 @@ public class StructurePanel extends AbstractRightPanel {
         this.obfuscationVisibilityLabel.setText(I18n.translate("structure.options.obfuscation"));
         this.documentationVisibilityLabel.setText(I18n.translate("structure.options.documentation"));
         this.sortingOrderLabel.setText(I18n.translate("structure.options.sorting"));
-    }
-
-    @Override
-    public JPanel getPanel() {
-        return this;
     }
 
     @Override

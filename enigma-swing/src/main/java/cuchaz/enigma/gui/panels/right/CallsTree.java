@@ -28,7 +28,7 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
-public class CallsTree extends AbstractRightPanel {
+public class CallsTree extends RightPanel {
 	private final JTree tree = new JTree();
 	private final JList<Token> tokens = new JList<>();
 
@@ -117,11 +117,6 @@ public class CallsTree extends AbstractRightPanel {
 				this.gui.openClass(this.gui.getController().getTokenHandle().getRef()).navigateToToken(selected);
 			}
 		}
-	}
-
-	@Override
-	public JPanel getPanel() {
-		return this;
 	}
 
 	@Override

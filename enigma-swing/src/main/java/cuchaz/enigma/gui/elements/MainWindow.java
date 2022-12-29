@@ -1,6 +1,5 @@
 package cuchaz.enigma.gui.elements;
 
-import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.panels.right.RightPanel;
 import cuchaz.enigma.gui.panels.right.RightRotatedLayerUI;
 
@@ -23,7 +22,7 @@ public class MainWindow {
 	private final StatusBar statusBar = new StatusBar();
 
 	public MainWindow(String title) {
-		if (RightPanel.panels.isEmpty()) {
+		if (RightPanel.getRightPanels().isEmpty()) {
 			throw new IllegalStateException("no right panels registered! right panels should be registered before creating the main window.");
 		}
 
@@ -38,7 +37,7 @@ public class MainWindow {
 		bottomButtons.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
 		// create buttons from right panel options
-		for (Map.Entry<String, RightPanel> entry : RightPanel.panels.entrySet()) {
+		for (Map.Entry<String, RightPanel> entry : RightPanel.getRightPanels().entrySet()) {
 			RightPanel panel = entry.getValue();
 			JToggleButton button = panel.getButton();
 

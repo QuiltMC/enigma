@@ -27,12 +27,12 @@ import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.panels.IdentifierPanel;
 import cuchaz.enigma.gui.panels.ObfPanel;
 import cuchaz.enigma.gui.panels.right.MultiplayerOnlyRightPanel;
+import cuchaz.enigma.gui.panels.right.RightPanel;
 import cuchaz.enigma.gui.panels.right.StructurePanel;
 import cuchaz.enigma.gui.panels.right.CallsTree;
 import cuchaz.enigma.gui.panels.right.ImplementationsTree;
 import cuchaz.enigma.gui.panels.right.InheritanceTree;
 import cuchaz.enigma.gui.panels.right.MessagesPanel;
-import cuchaz.enigma.gui.panels.right.RightPanel;
 import cuchaz.enigma.gui.panels.right.UsersPanel;
 import cuchaz.enigma.gui.renderer.MessageListCellRenderer;
 import cuchaz.enigma.gui.util.GuiUtil;
@@ -124,8 +124,8 @@ public class Gui {
 		RightPanel.registerPanel(new UsersPanel(this));
 
 		// set default sizes for right panels
-		for (RightPanel panel : RightPanel.panels.values()) {
-			panel.getPanel().setPreferredSize(new Dimension(300, 100));
+		for (RightPanel panel : RightPanel.getRightPanels().values()) {
+			panel.setPreferredSize(new Dimension(300, 100));
 		}
 
 		// todo save divider location per-panel to save state
@@ -140,7 +140,7 @@ public class Gui {
 		this.editorTabbedPane = new EditorTabbedPane(this);
 		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, this.obfPanel, this.deobfPanel);
 		this.rightPanel = RightPanel.getPanel(UiConfig.getSelectedRightPanel());
-		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightPanel.getPanel());
+		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightPanel);
 		this.splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.classesPanel, splitRight);
 
 		this.setupUi();
@@ -220,10 +220,10 @@ public class Gui {
 	}
 
 	public void setRightPanel(String id) {
-		this.rightPanel.getPanel().setVisible(false);
+		this.rightPanel.setVisible(false);
 		this.rightPanel = RightPanel.getPanel(id);
-		this.rightPanel.getPanel().setVisible(true);
-		this.splitRight.setRightComponent(this.rightPanel.getPanel());
+		this.rightPanel.setVisible(true);
+		this.splitRight.setRightComponent(this.rightPanel);
 		UiConfig.setSelectedRightPanel(id);
 	}
 
@@ -562,7 +562,7 @@ public class Gui {
 	}
 
 	public void addMessage(Message message) {
-		JScrollBar verticalScrollBar = ((MessagesPanel) RightPanel.panels.get("messages")).getMessageScrollPane().getVerticalScrollBar();
+		JScrollBar verticalScrollBar = ((MessagesPanel) RightPanel.getRightPanels().get("messages")).getMessageScrollPane().getVerticalScrollBar();
 		boolean isAtBottom = verticalScrollBar.getValue() >= verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent();
 		messageModel.addElement(message);
 
@@ -581,8 +581,8 @@ public class Gui {
 		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
 
 		// if we were previously offline, we need to reload multiplayer-restricted right panels (ex. messages) so they can be used
-		if (wasOffline && this.getRightPanel() instanceof MultiplayerOnlyRightPanel) {
-			this.reloadRightPanel();
+		if (wasOffline && this.getRightPanel() instanceof MultiplayerOnlyRightPanel multiplayerPanel) {
+			multiplayerPanel.setUp(true);
 		}
 	}
 
@@ -611,7 +611,7 @@ public class Gui {
 		this.deobfPanel.retranslateUi();
 		this.infoPanel.retranslateUi();
 		this.editorTabbedPane.retranslateUi();
-		for (RightPanel panel : RightPanel.panels.values()) {
+		for (RightPanel panel : RightPanel.getRightPanels().values()) {
 			panel.retranslateUi();
 		}
 	}

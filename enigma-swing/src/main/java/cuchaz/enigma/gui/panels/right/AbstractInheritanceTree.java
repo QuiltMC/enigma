@@ -8,7 +8,6 @@ import cuchaz.enigma.gui.util.SingleTreeSelectionModel;
 import cuchaz.enigma.translation.representation.entry.Entry;
 
 import javax.annotation.Nullable;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -18,7 +17,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.event.MouseEvent;
 
-public abstract class AbstractInheritanceTree extends AbstractRightPanel {
+public abstract class AbstractInheritanceTree extends RightPanel {
 	private final JTree tree = new JTree();
 	protected final Gui gui;
 
@@ -70,11 +69,6 @@ public abstract class AbstractInheritanceTree extends AbstractRightPanel {
 
 	@Nullable
 	protected abstract DefaultMutableTreeNode getNodeFor(Entry<?> entry);
-
-	@Override
-	public JPanel getPanel() {
-		return this;
-	}
 
 	@Override
 	public ButtonPosition getButtonPosition() {

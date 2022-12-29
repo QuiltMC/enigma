@@ -1,34 +1,70 @@
 package cuchaz.enigma.gui.panels.right;
 
+import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.utils.I18n;
+
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
+import java.awt.BorderLayout;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
-public interface RightPanel {
-    // todo right panels sometimes forget their size when hidden
-    String DEFAULT = "structure";
-    Map<String, RightPanel> panels = new HashMap<>();
+public abstract class RightPanel extends JPanel {
+    public static final String DEFAULT = "structure";
+    private static final Map<String, RightPanel> panels = new HashMap<>();
 
-    ButtonPosition getButtonPosition();
+    protected final JToggleButton button;
+    private final Supplier<String> buttonTextProvider = () -> I18n.translate("right_panel.selector." + this.getId() + "_button");
 
-    JPanel getPanel();
+    protected RightPanel(Gui gui) {
+        super(new BorderLayout());
+        this.button = new JToggleButton(buttonTextProvider.get());
+        this.button.addActionListener(e -> {
+            RightPanel currentPanel = gui.getRightPanel();
+            RightPanel newPanel = RightPanel.getPanel(this.getId());
 
-    String getId();
+            if (currentPanel.getId().equals(newPanel.getId())) {
+                boolean visible = !currentPanel.isVisible();
 
-    JToggleButton getButton();
+                currentPanel.setVisible(visible);
+            } else {
+                gui.setRightPanel(this.getId());
+            }
+        });
+    }
 
-    void retranslateUi();
+    public abstract RightPanel.ButtonPosition getButtonPosition();
 
-    static void registerPanel(RightPanel panel) {
+    public abstract String getId();
+
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        this.getButton().setSelected(visible);
+    }
+
+    public void retranslateUi() {
+        this.button.setText(buttonTextProvider.get());
+    }
+
+    public JToggleButton getButton() {
+        return this.button;
+    }
+
+    public static void registerPanel(RightPanel panel) {
         panels.put(panel.getId(), panel);
     }
 
-    static RightPanel getPanel(String id) {
+    public static RightPanel getPanel(String id) {
         return panels.get(id);
     }
 
-    enum ButtonPosition {
+    public static Map<String, RightPanel> getRightPanels() {
+        return panels;
+    }
+
+    public enum ButtonPosition {
         TOP,
         BOTTOM
     }

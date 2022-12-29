@@ -17,6 +17,7 @@ public class MessagesPanel extends MultiplayerOnlyRightPanel {
     private final JScrollPane messageScrollPane;
     private final JTextField pendingMessageBox;
     private final JButton sendPendingMessageButton;
+    private final JPanel chatPanel;
 
     public MessagesPanel(Gui gui) {
         super(gui);
@@ -31,14 +32,15 @@ public class MessagesPanel extends MultiplayerOnlyRightPanel {
         };
         this.pendingMessageBox.addActionListener(sendListener);
         this.sendPendingMessageButton = new JButton(sendListener);
+        this.chatPanel = new JPanel(new BorderLayout());
+        this.chatPanel.add(this.pendingMessageBox, BorderLayout.CENTER);
+        this.chatPanel.add(this.sendPendingMessageButton, BorderLayout.EAST);
 
-        JPanel chatPanel = new JPanel(new BorderLayout());
-        chatPanel.add(this.pendingMessageBox, BorderLayout.CENTER);
-        chatPanel.add(sendPendingMessageButton, BorderLayout.EAST);
-        this.add(this.messageScrollPane, BorderLayout.CENTER);
-        this.add(chatPanel, BorderLayout.SOUTH);
         // set button text
         this.retranslateUi();
+
+        // set online state
+        this.setUp(!gui.isOffline());
     }
 
     private void sendPendingMessage() {
@@ -62,6 +64,12 @@ public class MessagesPanel extends MultiplayerOnlyRightPanel {
     public void retranslateUi() {
         super.retranslateUi();
         this.sendPendingMessageButton.setText(I18n.translate("right_panel.messages.send"));
+    }
+
+    @Override
+    void addComponents() {
+        this.add(this.messageScrollPane, BorderLayout.CENTER);
+        this.add(chatPanel, BorderLayout.SOUTH);
     }
 
     @Override
