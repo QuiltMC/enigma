@@ -68,19 +68,19 @@ public class MainWindow {
 		this.frame.setVisible(visible);
 	}
 
-	public JMenuBar menuBar() {
+	public JMenuBar getMenuBar() {
 		return this.menuBar;
 	}
 
-	public StatusBar statusBar() {
+	public StatusBar getStatusBar() {
 		return this.statusBar;
 	}
 
-	public Container workArea() {
+	public Container getWorkArea() {
 		return this.workArea;
 	}
 
-	public JFrame frame() {
+	public JFrame getFrame() {
 		return this.frame;
 	}
 

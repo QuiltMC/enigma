@@ -20,18 +20,7 @@ public abstract class RightPanel extends JPanel {
     protected RightPanel(Gui gui) {
         super(new BorderLayout());
         this.button = new JToggleButton(buttonTextProvider.get());
-        this.button.addActionListener(e -> {
-            RightPanel currentPanel = gui.getRightPanel();
-            RightPanel newPanel = RightPanel.getPanel(this.getId());
-
-            if (currentPanel.getId().equals(newPanel.getId())) {
-                boolean visible = !currentPanel.isVisible();
-
-                currentPanel.setVisible(visible);
-            } else {
-                gui.setRightPanel(this.getId());
-            }
-        });
+        this.button.addActionListener(e -> gui.setRightPanel(this.getId()));
     }
 
     public abstract RightPanel.ButtonPosition getButtonPosition();

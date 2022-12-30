@@ -128,8 +128,6 @@ public class Gui {
 			panel.setPreferredSize(new Dimension(300, 100));
 		}
 
-		// todo save divider location per-panel to save state
-
 		this.mainWindow = new MainWindow(Enigma.NAME);
 		this.editableTypes = editableTypes;
 		this.controller = new GuiController(this, profile);
@@ -167,7 +165,7 @@ public class Gui {
 		this.classesPanel.setPreferredSize(ScaleUtil.getDimension(250, 0));
 
 		// layout controls
-		Container workArea = this.mainWindow.workArea();
+		Container workArea = this.mainWindow.getWorkArea();
 		workArea.setLayout(new BorderLayout());
 
 		centerPanel.add(infoPanel.getUi(), BorderLayout.NORTH);
@@ -189,7 +187,7 @@ public class Gui {
 			this.splitRight.setDividerLocation(layout[2]);
 		}
 
-		this.mainWindow.statusBar().addPermanentComponent(this.connectionStatusLabel);
+		this.mainWindow.getStatusBar().addPermanentComponent(this.connectionStatusLabel);
 
 		// init state
 		setConnectionState(ConnectionState.NOT_CONNECTED);
@@ -198,7 +196,7 @@ public class Gui {
 		// select correct right panel button
 		this.rightPanel.getButton().setSelected(true);
 
-		JFrame frame = this.mainWindow.frame();
+		JFrame frame = this.mainWindow.getFrame();
 		frame.addWindowListener(GuiUtil.onWindowClose(e -> this.close()));
 
 		frame.setSize(UiConfig.getWindowSize("Main Window", ScaleUtil.getDimension(1024, 576)));
@@ -220,15 +218,30 @@ public class Gui {
 	}
 
 	public void setRightPanel(String id) {
-		this.rightPanel.setVisible(false);
-		this.rightPanel = RightPanel.getPanel(id);
-		this.rightPanel.setVisible(true);
-		this.splitRight.setRightComponent(this.rightPanel);
-		UiConfig.setSelectedRightPanel(id);
-	}
+		if (id.equals(this.rightPanel.getId())) {
+			// only save divider location if hiding panel
+			if (this.rightPanel.isVisible()) {
+				UiConfig.setRightPanelDividerLocation(id, this.splitRight.getDividerLocation());
+			}
 
-	public void reloadRightPanel() {
-		this.setRightPanel(this.rightPanel.getId());
+			// swap visibility
+			this.rightPanel.setVisible(!this.rightPanel.isVisible());
+		} else {
+			// save divider location and hide
+			UiConfig.setRightPanelDividerLocation(this.rightPanel.getId(), this.splitRight.getDividerLocation());
+			this.rightPanel.setVisible(false);
+
+			// set panel
+			this.rightPanel = RightPanel.getPanel(id);
+			this.rightPanel.setVisible(true);
+
+			// show and save new data
+			this.splitRight.setRightComponent(this.rightPanel);
+			UiConfig.setSelectedRightPanel(id);
+		}
+
+		// we call getHeight on the right panel selector here since it's rotated, meaning its height is actually its width
+		this.splitRight.setDividerLocation(UiConfig.getRightPanelDividerLocation(id, this.splitRight.getDividerLocation()));
 	}
 
 	public MainWindow getMainWindow() {
@@ -244,7 +257,7 @@ public class Gui {
 	}
 
 	public JFrame getFrame() {
-		return this.mainWindow.frame();
+		return this.mainWindow.getFrame();
 	}
 
 	public GuiController getController() {
@@ -360,7 +373,7 @@ public class Gui {
 	public void startDocChange(EditorPanel editor) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null || !this.isEditable(EditableType.JAVADOC)) return;
-		JavadocDialog.show(mainWindow.frame(), getController(), cursorReference);
+		JavadocDialog.show(mainWindow.getFrame(), getController(), cursorReference);
 	}
 
 	public void startRename(EditorPanel editor, String text) {
@@ -421,13 +434,13 @@ public class Gui {
 	}
 
 	public void showDiscardDiag(IntFunction<Void> callback, String... options) {
-		int response = JOptionPane.showOptionDialog(this.mainWindow.frame(), I18n.translate("prompt.close.summary"), I18n.translate("prompt.close.title"), JOptionPane.YES_NO_CANCEL_OPTION,
+		int response = JOptionPane.showOptionDialog(this.mainWindow.getFrame(), I18n.translate("prompt.close.summary"), I18n.translate("prompt.close.title"), JOptionPane.YES_NO_CANCEL_OPTION,
 				JOptionPane.QUESTION_MESSAGE, null, options, options[2]);
 		callback.apply(response);
 	}
 
 	public CompletableFuture<Void> saveMapping() {
-		if (this.enigmaMappingsFileChooser.getSelectedFile() != null || this.enigmaMappingsFileChooser.showSaveDialog(this.mainWindow.frame()) == JFileChooser.APPROVE_OPTION)
+		if (this.enigmaMappingsFileChooser.getSelectedFile() != null || this.enigmaMappingsFileChooser.showSaveDialog(this.mainWindow.getFrame()) == JFileChooser.APPROVE_OPTION)
 			return this.controller.saveMappings(this.enigmaMappingsFileChooser.getSelectedFile().toPath());
 		return CompletableFuture.completedFuture(null);
 	}
@@ -452,8 +465,8 @@ public class Gui {
 	}
 
 	private void exit() {
-		UiConfig.setWindowPos("Main Window", this.mainWindow.frame().getLocationOnScreen());
-		UiConfig.setWindowSize("Main Window", this.mainWindow.frame().getSize());
+		UiConfig.setWindowPos("Main Window", this.mainWindow.getFrame().getLocationOnScreen());
+		UiConfig.setWindowSize("Main Window", this.mainWindow.getFrame().getSize());
 		UiConfig.setLayout(
 				this.splitClasses.getDividerLocation(),
 				this.splitCenter.getDividerLocation(),
@@ -464,12 +477,12 @@ public class Gui {
 		if (searchDialog != null) {
 			searchDialog.dispose();
 		}
-		this.mainWindow.frame().dispose();
+		this.mainWindow.getFrame().dispose();
 		System.exit(0);
 	}
 
 	public void redraw() {
-		JFrame frame = this.mainWindow.frame();
+		JFrame frame = this.mainWindow.getFrame();
 
 		frame.validate();
 		frame.repaint();
@@ -570,7 +583,7 @@ public class Gui {
 			SwingUtilities.invokeLater(() -> verticalScrollBar.setValue(verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent()));
 		}
 
-		this.mainWindow.statusBar().showMessage(message.translate(), 5000);
+		this.mainWindow.getStatusBar().showMessage(message.translate(), 5000);
 	}
 
 	public void setUserList(List<String> users) {

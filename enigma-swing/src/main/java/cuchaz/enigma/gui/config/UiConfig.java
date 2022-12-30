@@ -11,6 +11,7 @@ import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 
 public final class UiConfig {
+	private static final String RIGHT_PANEL_DIVIDER_LOCATIONS = "Right Panel Divider Locations";
 
 	private UiConfig() {
 	}
@@ -75,6 +76,14 @@ public final class UiConfig {
 
 	public static String getSelectedRightPanel() {
 		return swing.data().section("General").setIfAbsentString("Right Panel", RightPanel.DEFAULT);
+	}
+
+	public static void setRightPanelDividerLocation(String id, int width) {
+		swing.data().section(RIGHT_PANEL_DIVIDER_LOCATIONS).setInt(id, width);
+	}
+
+	public static int getRightPanelDividerLocation(String id, int defaultLocation) {
+		return swing.data().section(RIGHT_PANEL_DIVIDER_LOCATIONS).setIfAbsentInt(id, defaultLocation);
 	}
 
 	/**

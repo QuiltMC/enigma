@@ -75,7 +75,7 @@ public class MenuBar {
 	public MenuBar(Gui gui) {
 		this.gui = gui;
 
-		JMenuBar ui = gui.getMainWindow().menuBar();
+		JMenuBar ui = gui.getMainWindow().getMenuBar();
 
 		this.retranslateUi();
 
