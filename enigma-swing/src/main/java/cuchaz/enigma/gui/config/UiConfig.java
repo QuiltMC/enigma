@@ -28,10 +28,6 @@ public final class UiConfig {
 	private static ConfigSection runningSwing;
 
 	static {
-		if (!swing.existsOnDisk() && !ui.existsOnDisk()) {
-			OldConfigImporter.doImport();
-		}
-
 		UiConfig.snapshotConfig();
 	}
 
