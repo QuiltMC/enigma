@@ -195,6 +195,8 @@ public class Gui {
 
 		// select correct right panel button
 		this.rightPanel.getButton().setSelected(true);
+		// configure selected right panel
+		this.splitRight.setDividerLocation(UiConfig.getRightPanelDividerLocation(this.getRightPanel().getId(), this.splitRight.getDividerLocation()));
 
 		JFrame frame = this.mainWindow.getFrame();
 		frame.addWindowListener(GuiUtil.onWindowClose(e -> this.close()));
@@ -217,8 +219,8 @@ public class Gui {
 		return this.rightPanel;
 	}
 
-	public void setRightPanel(String id) {
-		if (id.equals(this.rightPanel.getId())) {
+	public void setRightPanel(String id, boolean updateStateIfCurrent) {
+		if (id.equals(this.rightPanel.getId()) && updateStateIfCurrent) {
 			// only save divider location if hiding panel
 			if (this.rightPanel.isVisible()) {
 				UiConfig.setRightPanelDividerLocation(id, this.splitRight.getDividerLocation());
@@ -347,13 +349,12 @@ public class Gui {
 	}
 
 	public void showTokens(EditorPanel editor, List<Token> tokens) {
-		this.setRightPanel("calls");
-
 		if (tokens.size() > 1) {
+			this.setRightPanel("calls", false);
 			this.controller.setTokenHandle(editor.getClassHandle().copy());
 			((CallsTree) this.getRightPanel()).showTokens(tokens);
 		} else {
-			((CallsTree) this.getRightPanel()).clearTokens();
+			((CallsTree) RightPanel.getPanel("calls")).clearTokens();
 		}
 
 		// show the first token
@@ -389,7 +390,7 @@ public class Gui {
 	}
 
 	public void showStructure(EditorPanel editor) {
-		this.setRightPanel("structure");
+		this.setRightPanel("structure", false);
 		((StructurePanel) this.getRightPanel()).showStructure(editor);
 	}
 
@@ -397,7 +398,7 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.setRightPanel("inheritance");
+		this.setRightPanel("inheritance", false);
 		((InheritanceTree) this.getRightPanel()).display(cursorReference.entry);
 	}
 
@@ -405,7 +406,7 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.setRightPanel("implementations");
+		this.setRightPanel("implementations", false);
 		((ImplementationsTree) this.getRightPanel()).display(cursorReference.entry);
 	}
 
@@ -413,7 +414,7 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.setRightPanel("calls");
+		this.setRightPanel("calls", false);
 		((CallsTree) this.getRightPanel()).showCalls(cursorReference.entry, recurse);
 	}
 

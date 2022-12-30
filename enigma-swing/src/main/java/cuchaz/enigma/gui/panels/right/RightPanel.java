@@ -22,7 +22,7 @@ public abstract class RightPanel extends JPanel {
     protected RightPanel(Gui gui) {
         super(new BorderLayout());
         this.button = new JToggleButton(titleProvider.get());
-        this.button.addActionListener(e -> gui.setRightPanel(this.getId()));
+        this.button.addActionListener(e -> gui.setRightPanel(this.getId(), true));
 		this.title = new JLabel(titleProvider.get());
 		this.add(this.title, BorderLayout.NORTH);
     }

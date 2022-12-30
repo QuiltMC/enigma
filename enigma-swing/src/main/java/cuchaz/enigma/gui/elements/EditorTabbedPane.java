@@ -80,7 +80,9 @@ public class EditorTabbedPane {
 
 		if (editorPanel != null && activeEditor != editorPanel) {
 			this.openFiles.setSelectedComponent(this.editors.get(entry).getUi());
-			this.gui.showStructure(editorPanel);
+			if (gui.getRightPanel().getId().equals("structure")) {
+				this.gui.showStructure(editorPanel);
+			}
 		}
 
 		return editorPanel;
