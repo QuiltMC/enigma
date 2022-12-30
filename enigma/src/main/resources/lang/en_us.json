@@ -265,7 +265,7 @@
 
 	"right_panel.messages.send": "Send",
     "right_panel.messages.title": "Messages",
-    "right_panel.multiplayer.offline_text": "Enigma is currently running offline. Start a multiplayer session to use this feature!",
+    "right_panel.multiplayer.offline_text": "Enigma is currently running offline.",
 	"right_panel.calls.title": "Calls",
     "right_panel.structure.title": "Structure",
     "right_panel.inheritance.title": "Inheritance",

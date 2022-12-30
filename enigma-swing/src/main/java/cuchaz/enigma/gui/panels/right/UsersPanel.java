@@ -17,14 +17,13 @@ public class UsersPanel extends MultiplayerOnlyRightPanel {
 		this.topPanel.add(this.title, BorderLayout.NORTH);
 		this.topPanel.add(userScrollPane, BorderLayout.SOUTH);
 
-        // set state
+		// set online state
         this.setUp(!gui.isOffline());
     }
 
     @Override
 	protected void addComponents() {
-		super.addComponents();
-        this.add(topPanel, BorderLayout.NORTH);
+        this.add(this.topPanel, BorderLayout.NORTH);
     }
 
     @Override

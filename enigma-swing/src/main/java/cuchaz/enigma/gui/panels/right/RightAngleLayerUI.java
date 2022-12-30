@@ -18,35 +18,35 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
 /**
- * Originally by 2xsaiko.
- * todo look into replacing this with something simpler
+ * Originally by 2xsaiko. Modified to only allow right-angle rotations.
  */
-public class RightRotatedLayerUI extends LayerUI<JComponent> {
+public class RightAngleLayerUI extends LayerUI<JComponent> {
+    private final Rotation rotation;
 
-    private final int rotation = 3;
-
-    private Component lastEnteredTarget, lastPressedTarget;
-
+    private Component lastEnteredTarget;
+	private Component lastPressedTarget;
     private boolean dispatchingMode = false;
+
+	public RightAngleLayerUI(Rotation rotation) {
+		this.rotation = rotation;
+	}
 
     @Override
     public void paint(Graphics g, JComponent c) {
         Graphics2D g2d = (Graphics2D) g;
-        if (rotation == 1) {
+        if (rotation == Rotation.COUNTERCLOCKWISE) {
             g2d.translate(0, c.getHeight());
-        } else if (rotation == 2) {
-            g2d.translate(c.getWidth(), c.getHeight());
-        } else if (rotation == 3) {
+        } else if (rotation == Rotation.CLOCKWISE) {
             g2d.translate(c.getWidth(), 0);
         }
-        g2d.rotate(-rotation * (Math.PI * 0.5));
+        g2d.rotate(-rotation.getAsInteger() * (Math.PI * 0.5));
         super.paint(g2d, c);
     }
 
     @Override
     public void doLayout(JLayer<? extends JComponent> l) {
         Component view = l.getView();
-        Dimension d = rotate(new Dimension(l.getWidth(), l.getHeight()), rotation);
+        Dimension d = rotate(new Dimension(l.getWidth(), l.getHeight()));
         if (view != null) {
             view.setBounds(0, 0, d.width, d.height);
         }
@@ -75,17 +75,17 @@ public class RightRotatedLayerUI extends LayerUI<JComponent> {
 
     @Override
     public Dimension getPreferredSize(JComponent c) {
-        return rotate(super.getPreferredSize(c), rotation);
+        return rotate(super.getPreferredSize(c));
     }
 
     @Override
     public Dimension getMinimumSize(JComponent c) {
-        return rotate(super.getMinimumSize(c), rotation);
+        return rotate(super.getMinimumSize(c));
     }
 
     @Override
     public Dimension getMaximumSize(JComponent c) {
-        return rotate(super.getMaximumSize(c), rotation);
+        return rotate(super.getMaximumSize(c));
     }
 
     @SuppressWarnings("unchecked")
@@ -112,10 +112,9 @@ public class RightRotatedLayerUI extends LayerUI<JComponent> {
      */
     @Override
     public void eventDispatched(AWTEvent event, JLayer<? extends JComponent> layer) {
-        if (event instanceof MouseEvent) {
-            MouseEvent mouseEvent = (MouseEvent) event;
-            // The if discriminate between generated and original event.
-            // Removing it cause a stack overflow caused by the event being redispatched to this class.
+        if (event instanceof MouseEvent mouseEvent) {
+            // The if discriminates between the generated and original event.
+            // Removing it will cause a stack overflow caused by the event being redispatched to this class.
 
             if (!dispatchingMode) {
                 // Process an original mouse event
@@ -157,39 +156,34 @@ public class RightRotatedLayerUI extends LayerUI<JComponent> {
                 realTarget = getListeningComponent(originalEvent, realTarget);
             }
 
-            switch (originalEvent.getID()) {
-                case MouseEvent.MOUSE_PRESSED:
-                    newEvent = transformMouseEvent(layer, originalEvent, realTarget, realPoint);
-                    if (newEvent != null) {
-                        lastPressedTarget = newEvent.getComponent();
-                    }
-                    break;
-                case MouseEvent.MOUSE_RELEASED:
-                    newEvent = transformMouseEvent(layer, originalEvent, lastPressedTarget, realPoint);
-                    lastPressedTarget = null;
-                    break;
-                case MouseEvent.MOUSE_CLICKED:
-                    newEvent = transformMouseEvent(layer, originalEvent, realTarget, realPoint);
-                    lastPressedTarget = null;
-                    break;
-                case MouseEvent.MOUSE_MOVED:
-                    newEvent = transformMouseEvent(layer, originalEvent, realTarget, realPoint);
-                    generateEnterExitEvents(layer, originalEvent, realTarget, realPoint);
-                    break;
-                case MouseEvent.MOUSE_ENTERED:
-                    generateEnterExitEvents(layer, originalEvent, realTarget, realPoint);
-                    break;
-                case MouseEvent.MOUSE_EXITED:
-                    generateEnterExitEvents(layer, originalEvent, realTarget, realPoint);
-                    break;
-                case MouseEvent.MOUSE_DRAGGED:
-                    newEvent = transformMouseEvent(layer, originalEvent, lastPressedTarget, realPoint);
-                    generateEnterExitEvents(layer, originalEvent, realTarget, realPoint);
-                    break;
-                case MouseEvent.MOUSE_WHEEL:
-                    newEvent = transformMouseWheelEvent(layer, (MouseWheelEvent) originalEvent, realTarget, realPoint);
-                    break;
-            }
+			switch (originalEvent.getID()) {
+				case MouseEvent.MOUSE_PRESSED -> {
+					newEvent = transformMouseEvent(layer, originalEvent, realTarget, realPoint);
+					if (newEvent != null) {
+						lastPressedTarget = newEvent.getComponent();
+					}
+				}
+				case MouseEvent.MOUSE_RELEASED -> {
+					newEvent = transformMouseEvent(layer, originalEvent, lastPressedTarget, realPoint);
+					lastPressedTarget = null;
+				}
+				case MouseEvent.MOUSE_CLICKED -> {
+					newEvent = transformMouseEvent(layer, originalEvent, realTarget, realPoint);
+					lastPressedTarget = null;
+				}
+				case MouseEvent.MOUSE_MOVED -> {
+					newEvent = transformMouseEvent(layer, originalEvent, realTarget, realPoint);
+					generateEnterExitEvents(layer, originalEvent, realTarget, realPoint);
+				}
+				case MouseEvent.MOUSE_ENTERED, MouseEvent.MOUSE_EXITED ->
+						generateEnterExitEvents(layer, originalEvent, realTarget, realPoint);
+				case MouseEvent.MOUSE_DRAGGED -> {
+					newEvent = transformMouseEvent(layer, originalEvent, lastPressedTarget, realPoint);
+					generateEnterExitEvents(layer, originalEvent, realTarget, realPoint);
+				}
+				case MouseEvent.MOUSE_WHEEL ->
+						newEvent = transformMouseWheelEvent(layer, (MouseWheelEvent) originalEvent, realTarget, realPoint);
+			}
             dispatchMouseEvent(newEvent);
         }
     }
@@ -257,21 +251,14 @@ public class RightRotatedLayerUI extends LayerUI<JComponent> {
      * Get the listening component associated to the {@code component}'s {@code event}
      */
     private Component getListeningComponent(MouseEvent event, Component component) {
-        switch (event.getID()) {
-            case MouseEvent.MOUSE_CLICKED:
-            case MouseEvent.MOUSE_ENTERED:
-            case MouseEvent.MOUSE_EXITED:
-            case MouseEvent.MOUSE_PRESSED:
-            case MouseEvent.MOUSE_RELEASED:
-                return getMouseListeningComponent(component);
-            case MouseEvent.MOUSE_DRAGGED:
-            case MouseEvent.MOUSE_MOVED:
-                return getMouseMotionListeningComponent(component);
-            case MouseEvent.MOUSE_WHEEL:
-                return getMouseWheelListeningComponent(component);
-        }
-        return null;
-    }
+		return switch (event.getID()) {
+			case MouseEvent.MOUSE_CLICKED, MouseEvent.MOUSE_ENTERED, MouseEvent.MOUSE_EXITED, MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_RELEASED ->
+					getMouseListeningComponent(component);
+			case MouseEvent.MOUSE_DRAGGED, MouseEvent.MOUSE_MOVED -> getMouseMotionListeningComponent(component);
+			case MouseEvent.MOUSE_WHEEL -> getMouseWheelListeningComponent(component);
+			default -> null;
+		};
+	}
 
     /**
      * Cycles through the {@code component}'s parents to find the {@link Component} with associated {@link MouseListener}
@@ -337,26 +324,33 @@ public class RightRotatedLayerUI extends LayerUI<JComponent> {
     }
 
     @SuppressWarnings("SuspiciousNameCombination")
-    private static Dimension rotate(Dimension self, int rotation) {
-        if (rotation % 2 == 0) {
-            return self;
-        } else {
-            return new Dimension(self.height, self.width);
-        }
+    private static Dimension rotate(Dimension self) {
+		return new Dimension(self.height, self.width);
     }
 
     @SuppressWarnings("SuspiciousNameCombination")
-    private static Point transform(int x, int y, int width, int height, int rotation) {
-        if (rotation == 0) {
-            return new Point(x, y);
-        } else if (rotation == 1) {
+    private static Point transform(int x, int y, int width, int height, Rotation rotation) {
+        if (rotation == Rotation.COUNTERCLOCKWISE) {
             return new Point(height - y, x);
-        } else if (rotation == 2) {
-            return new Point(width - x, height - y);
-        } else if (rotation == 3) {
-            return new Point(y, width - x);
-        } else {
-            throw new IllegalArgumentException(String.format("Invalid rotation %d", rotation));
-        }
+        } else if (rotation == Rotation.CLOCKWISE) {
+			return new Point(y, width - x);
+		} else {
+			throw new IllegalArgumentException("Unknown rotation: " + rotation);
+		}
     }
+
+	public enum Rotation {
+		CLOCKWISE(3),
+		COUNTERCLOCKWISE(1);
+
+		private final int asInteger;
+
+		Rotation(int rotation) {
+			this.asInteger = rotation;
+		}
+
+		public int getAsInteger() {
+			return asInteger;
+		}
+	}
 }

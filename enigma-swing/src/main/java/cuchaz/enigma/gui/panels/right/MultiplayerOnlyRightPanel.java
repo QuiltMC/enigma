@@ -13,15 +13,15 @@ public abstract class MultiplayerOnlyRightPanel extends RightPanel {
 	private final Gui gui;
     private final JLabel offlineLabel;
     private final JPanel offlinePanel;
-    private final Supplier<String> offlineTextProvider = () -> I18n.translate("right_panel.multiplayer.offline_text");
+	private final Supplier<String> offlineTextProvider = () -> I18n.translate("right_panel.multiplayer.offline_text");
 
     protected MultiplayerOnlyRightPanel(Gui gui) {
         super(gui);
 		this.gui = gui;
         this.offlinePanel = new JPanel(new BorderLayout());
         this.offlineLabel = new JLabel(offlineTextProvider.get());
-
 		JPanel offlineTopPanel = new JPanel(new BorderLayout());
+
 		offlineTopPanel.add(this.title, BorderLayout.NORTH);
         offlineTopPanel.add(this.offlineLabel, BorderLayout.SOUTH);
 		this.offlinePanel.add(offlineTopPanel, BorderLayout.NORTH);
@@ -30,7 +30,7 @@ public abstract class MultiplayerOnlyRightPanel extends RightPanel {
     @Override
     public void retranslateUi() {
         super.retranslateUi();
-        this.offlineLabel.setText(offlineTextProvider.get());
+        this.offlineLabel.setText(this.offlineTextProvider.get());
     }
 
 	@Override

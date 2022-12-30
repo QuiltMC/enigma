@@ -70,7 +70,7 @@ public class MessagesPanel extends MultiplayerOnlyRightPanel {
 	protected void addComponents() {
 		super.addComponents();
         this.add(this.messageScrollPane, BorderLayout.CENTER);
-        this.add(chatPanel, BorderLayout.SOUTH);
+        this.add(this.chatPanel, BorderLayout.SOUTH);
     }
 
     @Override

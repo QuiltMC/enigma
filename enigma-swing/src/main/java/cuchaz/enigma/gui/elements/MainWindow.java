@@ -1,7 +1,7 @@
 package cuchaz.enigma.gui.elements;
 
 import cuchaz.enigma.gui.panels.right.RightPanel;
-import cuchaz.enigma.gui.panels.right.RightRotatedLayerUI;
+import cuchaz.enigma.gui.panels.right.RightAngleLayerUI;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -52,7 +52,7 @@ public class MainWindow {
 		rightPanelSelector.add(topButtons, BorderLayout.WEST);
 		rightPanelSelector.add(bottomButtons, BorderLayout.EAST);
 		JLayer<JPanel> layer = new JLayer<>(rightPanelSelector);
-		layer.setUI(new RightRotatedLayerUI());
+		layer.setUI(new RightAngleLayerUI(RightAngleLayerUI.Rotation.CLOCKWISE));
 
 		this.frame = new JFrame(title);
 		this.frame.setJMenuBar(this.menuBar);
