@@ -30,7 +30,7 @@ subprojects {
         testImplementation libs.hamcrest
     }
 
-    group = 'cuchaz'
+    group = 'org.quiltmc'
     version = '1.3.2'
 
     var ENV = System.getenv()
