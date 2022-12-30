@@ -3,6 +3,7 @@ package cuchaz.enigma.gui.panels.right;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.utils.I18n;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import java.awt.BorderLayout;
@@ -15,12 +16,15 @@ public abstract class RightPanel extends JPanel {
     private static final Map<String, RightPanel> panels = new HashMap<>();
 
     protected final JToggleButton button;
-    private final Supplier<String> buttonTextProvider = () -> I18n.translate("right_panel.selector." + this.getId() + "_button");
+	protected final JLabel title;
+	private final Supplier<String> titleProvider = () -> I18n.translate("right_panel." + this.getId() + ".title");
 
     protected RightPanel(Gui gui) {
         super(new BorderLayout());
-        this.button = new JToggleButton(buttonTextProvider.get());
+        this.button = new JToggleButton(titleProvider.get());
         this.button.addActionListener(e -> gui.setRightPanel(this.getId()));
+		this.title = new JLabel(titleProvider.get());
+		this.add(this.title, BorderLayout.NORTH);
     }
 
     public abstract RightPanel.ButtonPosition getButtonPosition();
@@ -34,7 +38,9 @@ public abstract class RightPanel extends JPanel {
     }
 
     public void retranslateUi() {
-        this.button.setText(buttonTextProvider.get());
+		String translatedTitle = this.titleProvider.get();
+        this.button.setText(translatedTitle);
+		this.title.setText(translatedTitle);
     }
 
     public JToggleButton getButton() {

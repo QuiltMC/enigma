@@ -16,7 +16,8 @@ public class UsersPanel extends MultiplayerOnlyRightPanel {
     }
 
     @Override
-    void addComponents() {
+	protected void addComponents() {
+		super.addComponents();
         this.add(userScrollPane);
     }
 

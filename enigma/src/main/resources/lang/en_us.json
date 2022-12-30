@@ -264,10 +264,11 @@
 	"keybind.menu.save": "Save mappings",
 
 	"right_panel.messages.send": "Send",
-	"right_panel.selector.calls_button": "Calls",
-	"right_panel.selector.structure_button": "Structure",
-	"right_panel.selector.inheritance_button": "Inheritance",
-	"right_panel.selector.implementations_button": "Implementations",
-	"right_panel.selector.messages_button": "Messages",
-	"right_panel.selector.users_button": "Users"
+    "right_panel.messages.title": "Messages",
+    "right_panel.multiplayer.offline_text": "Enigma is currently running offline. Start a multiplayer session to use this feature!",
+	"right_panel.calls.title": "Calls",
+    "right_panel.structure.title": "Structure",
+    "right_panel.inheritance.title": "Inheritance",
+    "right_panel.implementations.title": "Implementations",
+    "right_panel.users.title": "Users"
 }
