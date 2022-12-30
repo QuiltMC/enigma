@@ -74,7 +74,6 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 
 public class Gui {
-
 	private final MainWindow mainWindow;
 	private final GuiController controller;
 
@@ -201,11 +200,11 @@ public class Gui {
 		JFrame frame = this.mainWindow.getFrame();
 		frame.addWindowListener(GuiUtil.onWindowClose(e -> this.close()));
 
-		frame.setSize(UiConfig.getWindowSize("Main Window", ScaleUtil.getDimension(1024, 576)));
+		frame.setSize(UiConfig.getWindowSize(UiConfig.MAIN_WINDOW, ScaleUtil.getDimension(1024, 576)));
 		frame.setMinimumSize(ScaleUtil.getDimension(640, 480));
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-		Point windowPos = UiConfig.getWindowPos("Main Window", null);
+		Point windowPos = UiConfig.getWindowPos(UiConfig.MAIN_WINDOW, null);
 		if (windowPos != null) {
 			frame.setLocation(windowPos);
 		} else {
@@ -394,6 +393,10 @@ public class Gui {
 		((StructurePanel) this.getRightPanel()).showStructure(editor);
 	}
 
+	/**
+	 * Opens the Inheritance right panel and displays information for the provided editor's cursor reference.
+	 * @param editor the editor to extract the reference from
+	 */
 	public void showInheritance(EditorPanel editor) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
@@ -402,6 +405,10 @@ public class Gui {
 		((InheritanceTree) this.getRightPanel()).display(cursorReference.entry);
 	}
 
+	/**
+	 * Opens the Implementations right panel and displays information for the provided editor's cursor reference.
+	 * @param editor the editor to extract the reference from
+	 */
 	public void showImplementations(EditorPanel editor) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
@@ -410,6 +417,10 @@ public class Gui {
 		((ImplementationsTree) this.getRightPanel()).display(cursorReference.entry);
 	}
 
+	/**
+	 * Opens the Calls right panel and displays information for the provided editor's cursor reference.
+	 * @param editor the editor to extract the reference from
+	 */
 	public void showCalls(EditorPanel editor, boolean recurse) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
@@ -466,8 +477,8 @@ public class Gui {
 	}
 
 	private void exit() {
-		UiConfig.setWindowPos("Main Window", this.mainWindow.getFrame().getLocationOnScreen());
-		UiConfig.setWindowSize("Main Window", this.mainWindow.getFrame().getSize());
+		UiConfig.setWindowPos(UiConfig.MAIN_WINDOW, this.mainWindow.getFrame().getLocationOnScreen());
+		UiConfig.setWindowSize(UiConfig.MAIN_WINDOW, this.mainWindow.getFrame().getSize());
 		UiConfig.setLayout(
 				this.splitClasses.getDividerLocation(),
 				this.splitCenter.getDividerLocation(),

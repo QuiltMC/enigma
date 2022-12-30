@@ -11,7 +11,61 @@ import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 
 public final class UiConfig {
-	private static final String RIGHT_PANEL_DIVIDER_LOCATIONS = "Right Panel Divider Locations";
+	// sections
+	public static final String MAIN_WINDOW = "Main Window";
+	public static final String GENERAL = "General";
+	public static final String LANGUAGE = "Language";
+	public static final String SCALE_FACTOR = "Scale Factor";
+	public static final String RIGHT_PANEL = "Right Panel";
+	public static final String RIGHT_PANEL_DIVIDER_LOCATIONS = "Right Panel Divider Locations";
+	public static final String LAYOUT = "Layout";
+	public static final String THEMES = "Themes";
+	public static final String COLORS = "Colors";
+	public static final String DECOMPILER = "Decompiler";
+	public static final String FONTS = "Fonts";
+	public static final String FILE_DIALOG = "File Dialog";
+	public static final String MAPPING_STATS = "Mapping Stats";
+
+	// fields
+	public static final String CURRENT = "Current";
+	public static final String SELECTED = "Selected";
+	public static final String USE_CUSTOM = "Use Custom";
+	public static final String DEFAULT = "Default";
+	public static final String DEFAULT_2 = "Default 2";
+	public static final String SMALL = "Small";
+	public static final String EDITOR = "Editor";
+	public static final String TOP_LEVEL_PACKAGE = "Top Level Package";
+	public static final String SYNTHETIC_PARAMETERS = "Synthetic Parameters";
+	public static final String LINE_NUMBERS_FOREGROUND = "Line Numbers Foreground";
+	public static final String LINE_NUMBERS_BACKGROUND = "Line Numbers Background";
+	public static final String LINE_NUMBERS_SELECTED = "Line Numbers Selected";
+	public static final String OBFUSCATED = "Obfuscated";
+	public static final String OBFUSCATED_ALPHA = "Obfuscated Alpha";
+	public static final String OBFUSCATED_OUTLINE = "Obfuscated Outline";
+	public static final String OBFUSCATED_OUTLINE_ALPHA = "Obfuscated Outline Alpha";
+	public static final String PROPOSED = "Proposed";
+	public static final String PROPOSED_ALPHA = "Proposed Alpha";
+	public static final String PROPOSED_OUTLINE = "Proposed Outline";
+	public static final String PROPOSED_OUTLINE_ALPHA = "Proposed Outline Alpha";
+	public static final String DEOBFUSCATED = "Deobfuscated";
+	public static final String DEOBFUSCATED_ALPHA = "Deobfuscated Alpha";
+	public static final String DEOBFUSCATED_OUTLINE = "Deobfuscated Outline";
+	public static final String DEOBFUSCATED_OUTLINE_ALPHA = "Deobfuscated Outline Alpha";
+	public static final String EDITOR_BACKGROUND = "Editor Background";
+	public static final String HIGHLIGHT = "Highlight";
+	public static final String CARET = "Caret";
+	public static final String SELECTION_HIGHLIGHT = "Selection Highlight";
+	public static final String STRING = "String";
+	public static final String NUMBER = "Number";
+	public static final String OPERATOR = "Operator";
+	public static final String DELIMITER = "Delimiter";
+	public static final String TYPE = "Type";
+	public static final String IDENTIFIER = "Identifier";
+	public static final String TEXT = "Text";
+	public static final String DEBUG_TOKEN = "Debug Token";
+	public static final String DEBUG_TOKEN_ALPHA = "Debug Token Alpha";
+	public static final String DEBUG_TOKEN_OUTLINE = "Debug Token Outline";
+	public static final String DEBUG_TOKEN_OUTLINE_ALPHA = "Debug Token Outline Alpha";
 
 	private UiConfig() {
 	}
@@ -47,31 +101,31 @@ public final class UiConfig {
 	}
 
 	public static String getLanguage() {
-		return ui.data().section("General").setIfAbsentString("Language", I18n.DEFAULT_LANGUAGE);
+		return ui.data().section(GENERAL).setIfAbsentString(LANGUAGE, I18n.DEFAULT_LANGUAGE);
 	}
 
 	public static void setLanguage(String language) {
-		ui.data().section("General").setString("Language", language);
+		ui.data().section(GENERAL).setString(LANGUAGE, language);
 	}
 
 	public static float getScaleFactor() {
-		return (float) swing.data().section("General").setIfAbsentDouble("Scale Factor", 1.0);
+		return (float) swing.data().section(GENERAL).setIfAbsentDouble(SCALE_FACTOR, 1.0);
 	}
 
 	public static float getActiveScaleFactor() {
-		return (float) runningSwing.section("General").setIfAbsentDouble("Scale Factor", 1.0);
+		return (float) runningSwing.section(GENERAL).setIfAbsentDouble(SCALE_FACTOR, 1.0);
 	}
 
 	public static void setScaleFactor(float scale) {
-		swing.data().section("General").setDouble("Scale Factor", scale);
+		swing.data().section(GENERAL).setDouble(SCALE_FACTOR, scale);
 	}
 
 	public static void setSelectedRightPanel(String id) {
-		swing.data().section("General").setString("Right Panel", id);
+		swing.data().section(GENERAL).setString(RIGHT_PANEL, id);
 	}
 
 	public static String getSelectedRightPanel() {
-		return swing.data().section("General").setIfAbsentString("Right Panel", RightPanel.DEFAULT);
+		return swing.data().section(GENERAL).setIfAbsentString(RIGHT_PANEL, RightPanel.DEFAULT);
 	}
 
 	public static void setRightPanelDividerLocation(String id, int width) {
@@ -95,31 +149,31 @@ public final class UiConfig {
 	 * @return an integer array composed of these 3 dimensions
 	 */
 	public static int[] getLayout() {
-		return swing.data().section("Main Window").getIntArray("Layout").orElseGet(() -> new int[] { -1, -1, -1 });
+		return swing.data().section(MAIN_WINDOW).getIntArray(LAYOUT).orElseGet(() -> new int[] { -1, -1, -1 });
 	}
 
 	public static void setLayout(int leftV, int left, int right) {
-		swing.data().section("Main Window").setIntArray("Layout", new int[] { leftV, left, right });
+		swing.data().section(MAIN_WINDOW).setIntArray(LAYOUT, new int[] { leftV, left, right });
 	}
 
 	public static LookAndFeel getLookAndFeel() {
-		return swing.data().section("Themes").setIfAbsentEnum(LookAndFeel::valueOf, "Current", LookAndFeel.NONE);
+		return swing.data().section(THEMES).setIfAbsentEnum(LookAndFeel::valueOf, CURRENT, LookAndFeel.NONE);
 	}
 
 	public static LookAndFeel getActiveLookAndFeel() {
-		return runningSwing.section("Themes").setIfAbsentEnum(LookAndFeel::valueOf, "Current", LookAndFeel.NONE);
+		return runningSwing.section(THEMES).setIfAbsentEnum(LookAndFeel::valueOf, CURRENT, LookAndFeel.NONE);
 	}
 
 	public static void setLookAndFeel(LookAndFeel laf) {
-		swing.data().section("Themes").setEnum("Current", laf);
+		swing.data().section(THEMES).setEnum(CURRENT, laf);
 	}
 
 	public static Decompiler getDecompiler() {
-		return ui.data().section("Decompiler").setIfAbsentEnum(Decompiler::valueOf, "Current", Decompiler.CFR);
+		return ui.data().section(DECOMPILER).setIfAbsentEnum(Decompiler::valueOf, CURRENT, Decompiler.CFR);
 	}
 
 	public static void setDecompiler(Decompiler d) {
-		ui.data().section("Decompiler").setEnum("Current", d);
+		ui.data().section(DECOMPILER).setEnum(CURRENT, d);
 	}
 
 	private static Color fromComponents(int rgb, double alpha) {
@@ -128,12 +182,12 @@ public final class UiConfig {
 	}
 
 	private static Color getThemeColorRgba(String colorName) {
-		ConfigSection s = runningSwing.section("Themes").section(getActiveLookAndFeel().name()).section("Colors");
+		ConfigSection s = runningSwing.section(THEMES).section(getActiveLookAndFeel().name()).section(COLORS);
 		return fromComponents(s.getRgbColor(colorName).orElse(0), s.getDouble(String.format("%s Alpha", colorName)).orElse(0));
 	}
 
 	private static Color getThemeColorRgb(String colorName) {
-		ConfigSection s = runningSwing.section("Themes").section(getActiveLookAndFeel().name()).section("Colors");
+		ConfigSection s = runningSwing.section(THEMES).section(getActiveLookAndFeel().name()).section(COLORS);
 		return new Color(s.getRgbColor(colorName).orElse(0));
 	}
 
@@ -226,66 +280,66 @@ public final class UiConfig {
 	}
 
 	public static boolean useCustomFonts() {
-		return swing.data().section("Themes").section(getActiveLookAndFeel().name()).section("Fonts").setIfAbsentBool("Use Custom", false);
+		return swing.data().section(THEMES).section(getActiveLookAndFeel().name()).section(FONTS).setIfAbsentBool(USE_CUSTOM, false);
 	}
 
 	public static boolean activeUseCustomFonts() {
-		return runningSwing.section("Themes").section(getActiveLookAndFeel().name()).section("Fonts").setIfAbsentBool("Use Custom", false);
+		return runningSwing.section(THEMES).section(getActiveLookAndFeel().name()).section(FONTS).setIfAbsentBool(USE_CUSTOM, false);
 	}
 
 	public static void setUseCustomFonts(boolean b) {
-		swing.data().section("Themes").section(getActiveLookAndFeel().name()).section("Fonts").setBool("Use Custom", b);
+		swing.data().section(THEMES).section(getActiveLookAndFeel().name()).section(FONTS).setBool(USE_CUSTOM, b);
 	}
 
 	public static Optional<Font> getFont(String name) {
-		Optional<String> spec = swing.data().section("Themes").section(getActiveLookAndFeel().name()).section("Fonts").getString(name);
+		Optional<String> spec = swing.data().section(THEMES).section(getActiveLookAndFeel().name()).section(FONTS).getString(name);
 		return spec.map(Font::decode);
 	}
 
 	public static Optional<Font> getActiveFont(String name) {
-		Optional<String> spec = runningSwing.section("Themes").section(getActiveLookAndFeel().name()).section("Fonts").getString(name);
+		Optional<String> spec = runningSwing.section(THEMES).section(getActiveLookAndFeel().name()).section(FONTS).getString(name);
 		return spec.map(Font::decode);
 	}
 
 	public static void setFont(String name, Font font) {
-		swing.data().section("Themes").section(getLookAndFeel().name()).section("Fonts").setString(name, encodeFont(font));
+		swing.data().section(THEMES).section(getLookAndFeel().name()).section(FONTS).setString(name, encodeFont(font));
 	}
 
 	public static Font getDefaultFont() {
-		return getActiveFont("Default").orElseGet(() -> ScaleUtil.scaleFont(Font.decode(Font.DIALOG).deriveFont(Font.BOLD)));
+		return getActiveFont(DEFAULT).orElseGet(() -> ScaleUtil.scaleFont(Font.decode(Font.DIALOG).deriveFont(Font.BOLD)));
 	}
 
 	public static void setDefaultFont(Font font) {
-		setFont("Default", font);
+		setFont(DEFAULT, font);
 	}
 
 	public static Font getDefault2Font() {
-		return getActiveFont("Default 2").orElseGet(() -> ScaleUtil.scaleFont(Font.decode(Font.DIALOG)));
+		return getActiveFont(DEFAULT_2).orElseGet(() -> ScaleUtil.scaleFont(Font.decode(Font.DIALOG)));
 	}
 
 	public static void setDefault2Font(Font font) {
-		setFont("Default 2", font);
+		setFont(DEFAULT_2, font);
 	}
 
 	public static Font getSmallFont() {
-		return getActiveFont("Small").orElseGet(() -> ScaleUtil.scaleFont(Font.decode(Font.DIALOG)));
+		return getActiveFont(SMALL).orElseGet(() -> ScaleUtil.scaleFont(Font.decode(Font.DIALOG)));
 	}
 
 	public static void setSmallFont(Font font) {
-		setFont("Small", font);
+		setFont(SMALL, font);
 	}
 
 	public static Font getEditorFont() {
-		return getActiveFont("Editor").orElseGet(UiConfig::getFallbackEditorFont);
+		return getActiveFont(EDITOR).orElseGet(UiConfig::getFallbackEditorFont);
 	}
 
 	public static void setEditorFont(Font font) {
-		setFont("Editor", font);
+		setFont(EDITOR, font);
 	}
 
 	/**
 	 * Gets the fallback editor font.
-	 * It is used
+	 * It is used:
 	 * <ul>
 	 * <li>when there is no custom editor font chosen</li>
 	 * <li>when custom fonts are disabled</li>
@@ -299,7 +353,13 @@ public final class UiConfig {
 
 	public static String encodeFont(Font font) {
 		int style = font.getStyle();
-		String s = style == (Font.BOLD | Font.ITALIC) ? "bolditalic" : style == Font.ITALIC ? "italic" : style == Font.BOLD ? "bold" : "plain";
+		String s = switch (style) {
+			case Font.BOLD | Font.ITALIC -> "bolditalic";
+			case Font.BOLD -> "bold";
+			case Font.ITALIC -> "italic";
+			default -> "plain";
+		};
+
 		return String.format("%s-%s-%s", font.getName(), s, font.getSize());
 	}
 
@@ -350,97 +410,105 @@ public final class UiConfig {
 	}
 
 	public static String getLastSelectedDir() {
-		return swing.data().section("File Dialog").getString("Selected").orElse("");
+		return swing.data().section(FILE_DIALOG).getString(SELECTED).orElse("");
 	}
 
 	public static void setLastSelectedDir(String directory) {
-		swing.data().section("File Dialog").setString("Selected", directory);
+		swing.data().section(FILE_DIALOG).setString(SELECTED, directory);
 	}
 
 	public static String getLastTopLevelPackage() {
-		return swing.data().section("Mapping Stats").getString("Top-Level Package").orElse("");
+		return swing.data().section(MAPPING_STATS).getString(TOP_LEVEL_PACKAGE).orElse("");
 	}
 
 	public static void setLastTopLevelPackage(String topLevelPackage) {
-		swing.data().section("Mapping Stats").setString("Top-Level Package", topLevelPackage);
+		swing.data().section(MAPPING_STATS).setString(TOP_LEVEL_PACKAGE, topLevelPackage);
 	}
 
 	public static boolean shouldIncludeSyntheticParameters() {
-		return swing.data().section("Mapping Stats").setIfAbsentBool("Synthetic Parameters", false);
+		return swing.data().section(MAPPING_STATS).setIfAbsentBool(SYNTHETIC_PARAMETERS, false);
 	}
 
 	public static void setIncludeSyntheticParameters(boolean b) {
-		swing.data().section("Mapping Stats").setBool("Synthetic Parameters", b);
+		swing.data().section(MAPPING_STATS).setBool(SYNTHETIC_PARAMETERS, b);
 	}
 
 	public static void setLookAndFeelDefaults(LookAndFeel laf, boolean isDark) {
-		ConfigSection s = swing.data().section("Themes").section(laf.name()).section("Colors");
+		ConfigSection s = swing.data().section(THEMES).section(laf.name()).section(COLORS);
 		if (!isDark) {
 			// Defaults found here: https://github.com/Sciss/SyntaxPane/blob/122da367ff7a5d31627a70c62a48a9f0f4f85a0a/src/main/resources/de/sciss/syntaxpane/defaultsyntaxkit/config.properties#L139
-			s.setIfAbsentRgbColor("Line Numbers Foreground", 0x333300);
-			s.setIfAbsentRgbColor("Line Numbers Background", 0xEEEEFF);
-			s.setIfAbsentRgbColor("Line Numbers Selected", 0xCCCCEE);
-			s.setIfAbsentRgbColor("Obfuscated", 0xFFDCDC);
-			s.setIfAbsentDouble("Obfuscated Alpha", 1.0);
-			s.setIfAbsentRgbColor("Obfuscated Outline", 0xA05050);
-			s.setIfAbsentDouble("Obfuscated Outline Alpha", 1.0);
-			s.setIfAbsentRgbColor("Proposed", 0x000000);
-			s.setIfAbsentDouble("Proposed Alpha", 0.15);
-			s.setIfAbsentRgbColor("Proposed Outline", 0x000000);
-			s.setIfAbsentDouble("Proposed Outline Alpha", 0.75);
-			s.setIfAbsentRgbColor("Deobfuscated", 0xDCFFDC);
-			s.setIfAbsentDouble("Deobfuscated Alpha", 1.0);
-			s.setIfAbsentRgbColor("Deobfuscated Outline", 0x50A050);
-			s.setIfAbsentDouble("Deobfuscated Outline Alpha", 1.0);
-			s.setIfAbsentRgbColor("Editor Background", 0xFFFFFF);
-			s.setIfAbsentRgbColor("Highlight", 0x3333EE);
-			s.setIfAbsentRgbColor("Caret", 0x000000);
-			s.setIfAbsentRgbColor("Selection Highlight", 0x000000);
-			s.setIfAbsentRgbColor("String", 0xCC6600);
-			s.setIfAbsentRgbColor("Number", 0x999933);
-			s.setIfAbsentRgbColor("Operator", 0x000000);
-			s.setIfAbsentRgbColor("Delimiter", 0x000000);
-			s.setIfAbsentRgbColor("Type", 0x000000);
-			s.setIfAbsentRgbColor("Identifier", 0x000000);
-			s.setIfAbsentRgbColor("Text", 0x000000);
+			s.setIfAbsentRgbColor(LINE_NUMBERS_FOREGROUND, 0x333300);
+			s.setIfAbsentRgbColor(LINE_NUMBERS_BACKGROUND, 0xEEEEFF);
+			s.setIfAbsentRgbColor(LINE_NUMBERS_SELECTED, 0xCCCCEE);
 
-			s.setIfAbsentRgbColor("Debug Token", 0xD9BEF9);
-			s.setIfAbsentDouble("Debug Token Alpha", 1.0);
-			s.setIfAbsentRgbColor("Debug Token Outline", 0xBD93F9);
-			s.setIfAbsentDouble("Debug Token Outline Alpha", 1.0);
+			s.setIfAbsentRgbColor(OBFUSCATED, 0xFFDCDC);
+			s.setIfAbsentDouble(OBFUSCATED_ALPHA, 1.0);
+			s.setIfAbsentRgbColor(OBFUSCATED_OUTLINE, 0xA05050);
+			s.setIfAbsentDouble(OBFUSCATED_OUTLINE_ALPHA, 1.0);
+
+			s.setIfAbsentRgbColor(PROPOSED, 0x000000);
+			s.setIfAbsentDouble(PROPOSED_ALPHA, 0.15);
+			s.setIfAbsentRgbColor(PROPOSED_OUTLINE, 0x000000);
+			s.setIfAbsentDouble(PROPOSED_OUTLINE_ALPHA, 0.75);
+
+			s.setIfAbsentRgbColor(DEOBFUSCATED, 0xDCFFDC);
+			s.setIfAbsentDouble(DEOBFUSCATED_ALPHA, 1.0);
+			s.setIfAbsentRgbColor(DEOBFUSCATED_OUTLINE, 0x50A050);
+			s.setIfAbsentDouble(DEOBFUSCATED_OUTLINE_ALPHA, 1.0);
+
+			s.setIfAbsentRgbColor(EDITOR_BACKGROUND, 0xFFFFFF);
+			s.setIfAbsentRgbColor(HIGHLIGHT, 0x3333EE);
+			s.setIfAbsentRgbColor(CARET, 0x000000);
+			s.setIfAbsentRgbColor(SELECTION_HIGHLIGHT, 0x000000);
+			s.setIfAbsentRgbColor(STRING, 0xCC6600);
+			s.setIfAbsentRgbColor(NUMBER, 0x999933);
+			s.setIfAbsentRgbColor(OPERATOR, 0x000000);
+			s.setIfAbsentRgbColor(DELIMITER, 0x000000);
+			s.setIfAbsentRgbColor(TYPE, 0x000000);
+			s.setIfAbsentRgbColor(IDENTIFIER, 0x000000);
+			s.setIfAbsentRgbColor(TEXT, 0x000000);
+
+			s.setIfAbsentRgbColor(DEBUG_TOKEN, 0xD9BEF9);
+			s.setIfAbsentDouble(DEBUG_TOKEN_ALPHA, 1.0);
+			s.setIfAbsentRgbColor(DEBUG_TOKEN_OUTLINE, 0xBD93F9);
+			s.setIfAbsentDouble(DEBUG_TOKEN_OUTLINE_ALPHA, 1.0);
 		} else {
 			// Based off colors found here: https://github.com/dracula/dracula-theme/
-			s.setIfAbsentRgbColor("Line Numbers Foreground", 0xA4A4A3);
-			s.setIfAbsentRgbColor("Line Numbers Background", 0x313335);
-			s.setIfAbsentRgbColor("Line Numbers Selected", 0x606366);
-			s.setIfAbsentRgbColor("Obfuscated", 0xFF5555);
-			s.setIfAbsentDouble("Obfuscated Alpha", 0.3);
-			s.setIfAbsentRgbColor("Obfuscated Outline", 0xFF5555);
-			s.setIfAbsentDouble("Obfuscated Outline Alpha", 0.5);
-			s.setIfAbsentRgbColor("Proposed", 0x606366);
-			s.setIfAbsentDouble("Proposed Alpha", 0.3);
-			s.setIfAbsentRgbColor("Proposed Outline", 0x606366);
-			s.setIfAbsentDouble("Proposed Outline Alpha", 0.5);
-			s.setIfAbsentRgbColor("Deobfuscated", 0x50FA7B);
-			s.setIfAbsentDouble("Deobfuscated Alpha", 0.3);
-			s.setIfAbsentRgbColor("Deobfuscated Outline", 0x50FA7B);
-			s.setIfAbsentDouble("Deobfuscated Outline Alpha", 0.5);
-			s.setIfAbsentRgbColor("Editor Background", 0x282A36);
-			s.setIfAbsentRgbColor("Highlight", 0xFF79C6);
-			s.setIfAbsentRgbColor("Caret", 0xF8F8F2);
-			s.setIfAbsentRgbColor("Selection Highlight", 0xF8F8F2);
-			s.setIfAbsentRgbColor("String", 0xF1FA8C);
-			s.setIfAbsentRgbColor("Number", 0xBD93F9);
-			s.setIfAbsentRgbColor("Operator", 0xF8F8F2);
-			s.setIfAbsentRgbColor("Delimiter", 0xF8F8F2);
-			s.setIfAbsentRgbColor("Type", 0xF8F8F2);
-			s.setIfAbsentRgbColor("Identifier", 0xF8F8F2);
-			s.setIfAbsentRgbColor("Text", 0xF8F8F2);
+			s.setIfAbsentRgbColor(LINE_NUMBERS_FOREGROUND, 0xA4A4A3);
+			s.setIfAbsentRgbColor(LINE_NUMBERS_BACKGROUND, 0x313335);
+			s.setIfAbsentRgbColor(LINE_NUMBERS_SELECTED, 0x606366);
 
-			s.setIfAbsentRgbColor("Debug Token", 0x4B1370);
-			s.setIfAbsentDouble("Debug Token Alpha", 0.5);
-			s.setIfAbsentRgbColor("Debug Token Outline", 0x701367);
-			s.setIfAbsentDouble("Debug Token Outline Alpha", 0.5);
+			s.setIfAbsentRgbColor(OBFUSCATED, 0xFF5555);
+			s.setIfAbsentDouble(OBFUSCATED_ALPHA, 0.3);
+			s.setIfAbsentRgbColor(OBFUSCATED_OUTLINE, 0xFF5555);
+			s.setIfAbsentDouble(OBFUSCATED_OUTLINE_ALPHA, 0.5);
+
+			s.setIfAbsentRgbColor(PROPOSED, 0x606366);
+			s.setIfAbsentDouble(PROPOSED_ALPHA, 0.3);
+			s.setIfAbsentRgbColor(PROPOSED_OUTLINE, 0x606366);
+			s.setIfAbsentDouble(PROPOSED_OUTLINE_ALPHA, 0.5);
+
+			s.setIfAbsentRgbColor(DEOBFUSCATED, 0x50FA7B);
+			s.setIfAbsentDouble(DEOBFUSCATED_ALPHA, 0.3);
+			s.setIfAbsentRgbColor(DEOBFUSCATED_OUTLINE, 0x50FA7B);
+			s.setIfAbsentDouble(DEOBFUSCATED_OUTLINE_ALPHA, 0.5);
+
+			s.setIfAbsentRgbColor(EDITOR_BACKGROUND, 0x282A36);
+			s.setIfAbsentRgbColor(HIGHLIGHT, 0xFF79C6);
+			s.setIfAbsentRgbColor(CARET, 0xF8F8F2);
+			s.setIfAbsentRgbColor(SELECTION_HIGHLIGHT, 0xF8F8F2);
+			s.setIfAbsentRgbColor(STRING, 0xF1FA8C);
+			s.setIfAbsentRgbColor(NUMBER, 0xBD93F9);
+			s.setIfAbsentRgbColor(OPERATOR, 0xF8F8F2);
+			s.setIfAbsentRgbColor(DELIMITER, 0xF8F8F2);
+			s.setIfAbsentRgbColor(TYPE, 0xF8F8F2);
+			s.setIfAbsentRgbColor(IDENTIFIER, 0xF8F8F2);
+			s.setIfAbsentRgbColor(TEXT, 0xF8F8F2);
+
+			s.setIfAbsentRgbColor(DEBUG_TOKEN, 0x4B1370);
+			s.setIfAbsentDouble(DEBUG_TOKEN_ALPHA, 0.5);
+			s.setIfAbsentRgbColor(DEBUG_TOKEN_OUTLINE, 0x701367);
+			s.setIfAbsentDouble(DEBUG_TOKEN_OUTLINE_ALPHA, 0.5);
 		}
 	}
 
