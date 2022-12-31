@@ -17,6 +17,7 @@ import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.events.EditorActionListener;
 import cuchaz.enigma.gui.panels.ClosableTabTitlePane;
 import cuchaz.enigma.gui.panels.EditorPanel;
+import cuchaz.enigma.gui.panels.right.RightPanel;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
@@ -80,7 +81,7 @@ public class EditorTabbedPane {
 
 		if (editorPanel != null && activeEditor != editorPanel) {
 			this.openFiles.setSelectedComponent(this.editors.get(entry).getUi());
-			if (gui.getRightPanel().getId().equals("structure")) {
+			if (gui.getRightPanel().getId().equals(RightPanel.Type.STRUCTURE)) {
 				this.gui.showStructure(editorPanel);
 			}
 		}

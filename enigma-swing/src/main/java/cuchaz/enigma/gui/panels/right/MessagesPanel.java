@@ -80,6 +80,6 @@ public class MessagesPanel extends MultiplayerOnlyRightPanel {
 
     @Override
     public String getId() {
-        return "messages";
+        return Type.MESSAGES;
     }
 }

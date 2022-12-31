@@ -28,6 +28,6 @@ public class InheritanceTree extends AbstractInheritanceTree {
 
 	@Override
 	public String getId() {
-		return "inheritance";
+		return Type.INHERITANCE;
 	}
 }

@@ -126,6 +126,6 @@ public class CallsTree extends RightPanel {
 
 	@Override
 	public String getId() {
-		return "calls";
+		return Type.CALLS;
 	}
 }

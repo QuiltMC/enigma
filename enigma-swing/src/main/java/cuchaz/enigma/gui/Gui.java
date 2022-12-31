@@ -354,11 +354,11 @@ public class Gui {
 
 	public void showTokens(EditorPanel editor, List<Token> tokens) {
 		if (tokens.size() > 1) {
-			this.setRightPanel("calls", false);
+			this.setRightPanel(RightPanel.Type.CALLS, false);
 			this.controller.setTokenHandle(editor.getClassHandle().copy());
 			((CallsTree) this.getRightPanel()).showTokens(tokens);
 		} else {
-			((CallsTree) RightPanel.getPanel("calls")).clearTokens();
+			((CallsTree) RightPanel.getPanel(RightPanel.Type.CALLS)).clearTokens();
 		}
 
 		// show the first token
@@ -394,7 +394,7 @@ public class Gui {
 	}
 
 	public void showStructure(EditorPanel editor) {
-		this.setRightPanel("structure", false);
+		this.setRightPanel(RightPanel.Type.STRUCTURE, false);
 		((StructurePanel) this.getRightPanel()).showStructure(editor);
 	}
 
@@ -406,7 +406,7 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.setRightPanel("inheritance", false);
+		this.setRightPanel(RightPanel.Type.INHERITANCE, false);
 		((InheritanceTree) this.getRightPanel()).display(cursorReference.entry);
 	}
 
@@ -418,7 +418,7 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.setRightPanel("implementations", false);
+		this.setRightPanel(RightPanel.Type.IMPLEMENTATIONS, false);
 		((ImplementationsTree) this.getRightPanel()).display(cursorReference.entry);
 	}
 
@@ -430,7 +430,7 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.setRightPanel("calls", false);
+		this.setRightPanel(RightPanel.Type.CALLS, false);
 		((CallsTree) this.getRightPanel()).showCalls(cursorReference.entry, recurse);
 	}
 
@@ -592,7 +592,7 @@ public class Gui {
 	}
 
 	public void addMessage(Message message) {
-		JScrollBar verticalScrollBar = ((MessagesPanel) RightPanel.getRightPanels().get("messages")).getMessageScrollPane().getVerticalScrollBar();
+		JScrollBar verticalScrollBar = ((MessagesPanel) RightPanel.getRightPanels().get(RightPanel.Type.MESSAGES)).getMessageScrollPane().getVerticalScrollBar();
 		boolean isAtBottom = verticalScrollBar.getValue() >= verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent();
 		messageModel.addElement(message);
 

@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public abstract class RightPanel extends JPanel {
-    public static final String DEFAULT = "structure";
+    public static final String DEFAULT = Type.STRUCTURE;
     private static final Map<String, RightPanel> panels = new HashMap<>();
 
     protected final JToggleButton button;
@@ -58,6 +58,15 @@ public abstract class RightPanel extends JPanel {
     public static Map<String, RightPanel> getRightPanels() {
         return panels;
     }
+
+	public static final class Type {
+		public static final String STRUCTURE = "structure";
+		public static final String INHERITANCE = "inheritance";
+		public static final String CALLS = "calls";
+		public static final String IMPLEMENTATIONS = "implementations";
+		public static final String MESSAGES = "messages";
+		public static final String USERS = "users";
+	}
 
     public enum ButtonPosition {
         TOP,

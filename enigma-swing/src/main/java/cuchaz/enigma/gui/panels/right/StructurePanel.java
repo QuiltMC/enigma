@@ -160,7 +160,7 @@ public class StructurePanel extends RightPanel {
 
     @Override
     public String getId() {
-        return "structure";
+        return Type.STRUCTURE;
     }
 
     private static class StructureTreeCellRenderer extends DefaultTreeCellRenderer {

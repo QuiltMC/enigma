@@ -33,6 +33,6 @@ public class UsersPanel extends MultiplayerOnlyRightPanel {
 
     @Override
     public String getId() {
-        return "users";
+        return Type.USERS;
     }
 }
