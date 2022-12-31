@@ -511,5 +511,4 @@ public final class UiConfig {
 			s.setIfAbsentDouble(DEBUG_TOKEN_OUTLINE_ALPHA, 0.5);
 		}
 	}
-
 }

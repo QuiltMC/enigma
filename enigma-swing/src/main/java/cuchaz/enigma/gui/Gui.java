@@ -218,6 +218,11 @@ public class Gui {
 		return this.rightPanel;
 	}
 
+	/**
+	 * Sets the right panel to the given panel.
+	 * @param id the id of the new panel
+	 * @param updateStateIfCurrent if the provided id is equal to the current id, this parameter determines whether to update the visibility of the panel
+	 */
 	public void setRightPanel(String id, boolean updateStateIfCurrent) {
 		if (id.equals(this.rightPanel.getId()) && updateStateIfCurrent) {
 			// only save divider location if hiding panel
