@@ -18,14 +18,14 @@ public abstract class RightPanel extends JPanel {
 	protected final Gui gui;
     protected final JToggleButton button;
 	protected final JLabel title;
-	private final Supplier<String> titleProvider = () -> I18n.translate("right_panel." + this.getId() + ".title");
+	protected final Supplier<String> titleProvider = () -> I18n.translate("right_panel." + this.getId() + ".title");
 
     protected RightPanel(Gui gui) {
         super(new BorderLayout());
 		this.gui = gui;
-        this.button = new JToggleButton(titleProvider.get());
+        this.button = new JToggleButton(this.titleProvider.get());
         this.button.addActionListener(e -> gui.setRightPanel(this.getId(), true));
-		this.title = new JLabel(titleProvider.get());
+		this.title = new JLabel(this.titleProvider.get());
 		this.add(this.title, BorderLayout.NORTH);
     }
 
@@ -66,8 +66,6 @@ public abstract class RightPanel extends JPanel {
 		public static final String INHERITANCE = "inheritance";
 		public static final String CALLS = "calls";
 		public static final String IMPLEMENTATIONS = "implementations";
-		public static final String MESSAGES = "messages";
-		public static final String USERS = "users";
 	}
 
     public enum ButtonPosition {

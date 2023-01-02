@@ -26,14 +26,12 @@ import cuchaz.enigma.gui.panels.DeobfPanel;
 import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.panels.IdentifierPanel;
 import cuchaz.enigma.gui.panels.ObfPanel;
-import cuchaz.enigma.gui.panels.right.MultiplayerOnlyRightPanel;
+import cuchaz.enigma.gui.panels.right.OnlinePanel;
 import cuchaz.enigma.gui.panels.right.RightPanel;
 import cuchaz.enigma.gui.panels.right.StructurePanel;
 import cuchaz.enigma.gui.panels.right.CallsTree;
 import cuchaz.enigma.gui.panels.right.ImplementationsTree;
 import cuchaz.enigma.gui.panels.right.InheritanceTree;
-import cuchaz.enigma.gui.panels.right.MessagesPanel;
-import cuchaz.enigma.gui.panels.right.UsersPanel;
 import cuchaz.enigma.gui.renderer.MessageListCellRenderer;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.LanguageUtil;
@@ -119,8 +117,7 @@ public class Gui {
 		RightPanel.registerPanel(new StructurePanel(this));
 
 		// bottom panels
-		RightPanel.registerPanel(new MessagesPanel(this));
-		RightPanel.registerPanel(new UsersPanel(this));
+		RightPanel.registerPanel(new OnlinePanel(this));
 
 		// set default sizes for right panels
 		for (RightPanel panel : RightPanel.getRightPanels().values()) {
@@ -592,7 +589,7 @@ public class Gui {
 	}
 
 	public void addMessage(Message message) {
-		JScrollBar verticalScrollBar = ((MessagesPanel) RightPanel.getRightPanels().get(RightPanel.Type.MESSAGES)).getMessageScrollPane().getVerticalScrollBar();
+		JScrollBar verticalScrollBar = ((OnlinePanel) RightPanel.getRightPanels().get("online")).getMessageScrollPane().getVerticalScrollBar();
 		boolean isAtBottom = verticalScrollBar.getValue() >= verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent();
 		messageModel.addElement(message);
 
@@ -611,8 +608,8 @@ public class Gui {
 		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
 
 		// if we were previously offline, we need to reload multiplayer-restricted right panels (ex. messages) so they can be used
-		if (wasOffline && this.getRightPanel() instanceof MultiplayerOnlyRightPanel multiplayerPanel) {
-			multiplayerPanel.setUp(true);
+		if (wasOffline && this.getRightPanel() instanceof OnlinePanel multiplayerPanel) {
+			multiplayerPanel.setUp();
 		}
 	}
 
