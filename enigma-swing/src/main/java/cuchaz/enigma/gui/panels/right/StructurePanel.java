@@ -26,8 +26,6 @@ import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.I18n;
 
 public class StructurePanel extends RightPanel {
-    private final Gui gui;
-
     private final JPanel optionsPanel;
 
     private final JLabel obfuscationVisibilityLabel = new JLabel();
@@ -42,8 +40,6 @@ public class StructurePanel extends RightPanel {
 
     public StructurePanel(Gui gui) {
         super(gui);
-        this.gui = gui;
-
         this.optionsPanel = new JPanel(new GridBagLayout());
         this.optionsPanel.setVisible(false);
 

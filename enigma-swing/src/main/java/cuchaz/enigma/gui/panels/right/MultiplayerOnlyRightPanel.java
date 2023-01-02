@@ -10,14 +10,12 @@ import java.util.function.Supplier;
 
 public abstract class MultiplayerOnlyRightPanel extends RightPanel {
 	private boolean online;
-	private final Gui gui;
     private final JLabel offlineLabel;
     private final JPanel offlinePanel;
 	private final Supplier<String> offlineTextProvider = () -> I18n.translate("right_panel.multiplayer.offline_text");
 
     protected MultiplayerOnlyRightPanel(Gui gui) {
         super(gui);
-		this.gui = gui;
         this.offlinePanel = new JPanel(new BorderLayout());
         this.offlineLabel = new JLabel(offlineTextProvider.get());
 		JPanel offlineTopPanel = new JPanel(new BorderLayout());

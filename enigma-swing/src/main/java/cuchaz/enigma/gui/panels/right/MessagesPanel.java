@@ -13,7 +13,6 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 
 public class MessagesPanel extends MultiplayerOnlyRightPanel {
-    private final Gui gui;
     private final JScrollPane messageScrollPane;
     private final JTextField pendingMessageBox;
     private final JButton sendPendingMessageButton;
@@ -21,7 +20,6 @@ public class MessagesPanel extends MultiplayerOnlyRightPanel {
 
     public MessagesPanel(Gui gui) {
         super(gui);
-        this.gui = gui;
         this.messageScrollPane = new JScrollPane(gui.getMessages());
         this.pendingMessageBox = new JTextField();
         AbstractAction sendListener = new AbstractAction() {

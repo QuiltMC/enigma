@@ -19,11 +19,9 @@ import java.awt.event.MouseEvent;
 
 public abstract class AbstractInheritanceTree extends RightPanel {
 	private final JTree tree = new JTree();
-	protected final Gui gui;
 
 	protected AbstractInheritanceTree(Gui gui, TreeCellRenderer cellRenderer) {
 		super(gui);
-		this.gui = gui;
 
 		this.tree.setModel(null);
 		this.tree.setCellRenderer(cellRenderer);

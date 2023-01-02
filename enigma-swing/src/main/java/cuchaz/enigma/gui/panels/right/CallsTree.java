@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Vector;
 
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
@@ -32,12 +31,8 @@ public class CallsTree extends RightPanel {
 	private final JTree tree = new JTree();
 	private final JList<Token> tokens = new JList<>();
 
-	private final Gui gui;
-
 	public CallsTree(Gui gui) {
 		super(gui);
-		this.gui = gui;
-
 		this.tree.setModel(null);
 		this.tree.setCellRenderer(new CallsTreeCellRenderer(gui));
 		this.tree.setSelectionModel(new SingleTreeSelectionModel());

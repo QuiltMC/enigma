@@ -15,12 +15,14 @@ public abstract class RightPanel extends JPanel {
     public static final String DEFAULT = Type.STRUCTURE;
     private static final Map<String, RightPanel> panels = new HashMap<>();
 
+	protected final Gui gui;
     protected final JToggleButton button;
 	protected final JLabel title;
 	private final Supplier<String> titleProvider = () -> I18n.translate("right_panel." + this.getId() + ".title");
 
     protected RightPanel(Gui gui) {
         super(new BorderLayout());
+		this.gui = gui;
         this.button = new JToggleButton(titleProvider.get());
         this.button.addActionListener(e -> gui.setRightPanel(this.getId(), true));
 		this.title = new JLabel(titleProvider.get());
