@@ -81,9 +81,7 @@ public class EditorTabbedPane {
 
 		if (editorPanel != null && activeEditor != editorPanel) {
 			this.openFiles.setSelectedComponent(this.editors.get(entry).getUi());
-			if (gui.getRightPanel().getId().equals(RightPanel.Type.STRUCTURE)) {
-				this.gui.showStructure(editorPanel);
-			}
+			this.gui.updateStructure(editorPanel);
 		}
 
 		return editorPanel;
@@ -92,7 +90,7 @@ public class EditorTabbedPane {
 	public void closeEditor(EditorPanel ed) {
 		this.openFiles.remove(ed.getUi());
 		this.editors.inverse().remove(ed);
-		this.gui.showStructure(this.getActiveEditor());
+		this.gui.updateStructure(this.getActiveEditor());
 		ed.destroy();
 	}
 

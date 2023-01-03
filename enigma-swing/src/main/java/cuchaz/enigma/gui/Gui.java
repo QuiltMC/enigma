@@ -398,9 +398,13 @@ public class Gui {
 		infoPanel.startRenaming();
 	}
 
+	public void updateStructure(EditorPanel editor) {
+		RightPanel.getPanel(StructurePanel.class).showStructure(editor);
+	}
+
 	public void showStructure(EditorPanel editor) {
 		this.setRightPanel(StructurePanel.class, false);
-		RightPanel.getPanel(StructurePanel.class).showStructure(editor);
+		this.updateStructure(editor);
 	}
 
 	/**
