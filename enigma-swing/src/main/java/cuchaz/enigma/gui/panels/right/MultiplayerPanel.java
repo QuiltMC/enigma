@@ -28,7 +28,7 @@ public class MultiplayerPanel extends RightPanel {
 	private final Supplier<String> offlineTextProvider = () -> I18n.translate("right_panel.multiplayer.offline_text");
 	private final Supplier<String> usersTitleProvider = () -> I18n.translate("right_panel.multiplayer.users_title");
 	private final Supplier<String> messagesTitleProvider = () -> I18n.translate("right_panel.multiplayer.messages_title");
-	private final Supplier<String> sendButtonTextProvider = () -> I18n.translate("right_panel.messages.send");
+	private final Supplier<String> sendButtonTextProvider = () -> I18n.translate("right_panel.multiplayer.send");
 
 	private JPanel panel;
 	private boolean offline;

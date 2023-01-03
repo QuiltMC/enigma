@@ -263,12 +263,13 @@
 	"keybind.menu.mapping_stats": "Mapping stats",
 	"keybind.menu.save": "Save mappings",
 
-	"right_panel.messages.send": "Send",
-    "right_panel.messages.title": "Messages",
+	"right_panel.multiplayer.send": "Send",
+    "right_panel.multiplayer.title": "Multiplayer",
+    "right_panel.multiplayer.messages_title": "Messages",
+    "right_panel.multiplayer.users_title": "Users",
     "right_panel.multiplayer.offline_text": "Enigma is currently running offline.",
 	"right_panel.calls.title": "Calls",
     "right_panel.structure.title": "Structure",
     "right_panel.inheritance.title": "Inheritance",
-    "right_panel.implementations.title": "Implementations",
-    "right_panel.users.title": "Users"
+    "right_panel.implementations.title": "Implementations"
 }
