@@ -50,7 +50,7 @@ public abstract class RightPanel extends JPanel {
         return this.button;
     }
 
-	public static void registerPanel(RightPanel panel) {
+	public static void addPanel(RightPanel panel) {
 		panels.put(panel.getClass(), panel);
 		panelClasses.put(panel.getId(), panel.getClass());
 	}

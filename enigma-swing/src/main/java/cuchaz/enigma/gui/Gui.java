@@ -111,13 +111,13 @@ public class Gui {
 	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes) {
 		// right panels
 		// top panels
-		RightPanel.registerPanel(new CallsTree(this));
-		RightPanel.registerPanel(new ImplementationsTree(this));
-		RightPanel.registerPanel(new InheritanceTree(this));
-		RightPanel.registerPanel(new StructurePanel(this));
+		RightPanel.addPanel(new StructurePanel(this));
+		RightPanel.addPanel(new InheritanceTree(this));
+		RightPanel.addPanel(new ImplementationsTree(this));
+		RightPanel.addPanel(new CallsTree(this));
 
 		// bottom panels
-		RightPanel.registerPanel(new MultiplayerPanel(this));
+		RightPanel.addPanel(new MultiplayerPanel(this));
 
 		// set default sizes for right panels
 		for (RightPanel panel : RightPanel.getRightPanels().values()) {
