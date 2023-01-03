@@ -57,7 +57,12 @@ public abstract class RightPanel extends JPanel {
 
 	@SuppressWarnings("unchecked")
 	public static <T extends RightPanel> T getPanel(Class<T> clazz) {
-		return (T) panels.get(clazz);
+		RightPanel panel = panels.get(clazz);
+		if (panel != null) {
+			return (T) panels.get(clazz);
+		} else {
+			throw new IllegalArgumentException("no panel registered for class " + clazz);
+		}
 	}
 
     public static RightPanel getPanel(String id) {
