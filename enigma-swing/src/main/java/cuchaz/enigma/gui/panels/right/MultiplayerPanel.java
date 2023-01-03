@@ -14,7 +14,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.util.function.Supplier;
 
-public class OnlinePanel extends RightPanel {
+public class MultiplayerPanel extends RightPanel {
     private final JLabel offlineLabel;
     private final JPanel whenOfflinePanel;
 	private final JPanel whenOnlinePanel;
@@ -33,7 +33,7 @@ public class OnlinePanel extends RightPanel {
 	private JPanel panel;
 	private boolean offline;
 
-    public OnlinePanel(Gui gui) {
+    public MultiplayerPanel(Gui gui) {
         super(gui);
 
 		// offline panel
@@ -98,7 +98,7 @@ public class OnlinePanel extends RightPanel {
 
 	@Override
 	public String getId() {
-		return "online";
+		return Type.MULTIPLAYER;
 	}
 
 	private void sendPendingMessage() {

@@ -37,7 +37,7 @@ public class MainWindow {
 		bottomButtons.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
 		// create buttons from right panel options
-		for (Map.Entry<String, RightPanel> entry : RightPanel.getRightPanels().entrySet()) {
+		for (Map.Entry<Class<? extends RightPanel>, RightPanel> entry : RightPanel.getRightPanels().entrySet()) {
 			RightPanel panel = entry.getValue();
 			JToggleButton button = panel.getButton();
 

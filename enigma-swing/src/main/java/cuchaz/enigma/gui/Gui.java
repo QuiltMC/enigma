@@ -26,7 +26,7 @@ import cuchaz.enigma.gui.panels.DeobfPanel;
 import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.panels.IdentifierPanel;
 import cuchaz.enigma.gui.panels.ObfPanel;
-import cuchaz.enigma.gui.panels.right.OnlinePanel;
+import cuchaz.enigma.gui.panels.right.MultiplayerPanel;
 import cuchaz.enigma.gui.panels.right.RightPanel;
 import cuchaz.enigma.gui.panels.right.StructurePanel;
 import cuchaz.enigma.gui.panels.right.CallsTree;
@@ -117,7 +117,7 @@ public class Gui {
 		RightPanel.registerPanel(new StructurePanel(this));
 
 		// bottom panels
-		RightPanel.registerPanel(new OnlinePanel(this));
+		RightPanel.registerPanel(new MultiplayerPanel(this));
 
 		// set default sizes for right panels
 		for (RightPanel panel : RightPanel.getRightPanels().values()) {
@@ -217,14 +217,16 @@ public class Gui {
 
 	/**
 	 * Sets the right panel to the given panel.
-	 * @param id the id of the new panel
+	 * @param clazz the new panel's class
 	 * @param updateStateIfCurrent if the provided id is equal to the current id, this parameter determines whether to update the visibility of the panel
 	 */
-	public void setRightPanel(String id, boolean updateStateIfCurrent) {
-		if (id.equals(this.rightPanel.getId()) && updateStateIfCurrent) {
+	public void setRightPanel(Class<? extends RightPanel> clazz, boolean updateStateIfCurrent) {
+		RightPanel newPanel = RightPanel.getPanel(clazz);
+
+		if (newPanel.getId().equals(this.rightPanel.getId()) && updateStateIfCurrent) {
 			// only save divider location if hiding panel
 			if (this.rightPanel.isVisible()) {
-				UiConfig.setRightPanelDividerLocation(id, this.splitRight.getDividerLocation());
+				UiConfig.setRightPanelDividerLocation(newPanel.getId(), this.splitRight.getDividerLocation());
 			}
 
 			// swap visibility
@@ -235,16 +237,16 @@ public class Gui {
 			this.rightPanel.setVisible(false);
 
 			// set panel
-			this.rightPanel = RightPanel.getPanel(id);
+			this.rightPanel = newPanel;
 			this.rightPanel.setVisible(true);
 
 			// show and save new data
 			this.splitRight.setRightComponent(this.rightPanel);
-			UiConfig.setSelectedRightPanel(id);
+			UiConfig.setSelectedRightPanel(newPanel.getId());
 		}
 
 		// we call getHeight on the right panel selector here since it's rotated, meaning its height is actually its width
-		this.splitRight.setDividerLocation(UiConfig.getRightPanelDividerLocation(id, this.splitRight.getDividerLocation()));
+		this.splitRight.setDividerLocation(UiConfig.getRightPanelDividerLocation(newPanel.getId(), this.splitRight.getDividerLocation()));
 	}
 
 	public MainWindow getMainWindow() {
@@ -351,11 +353,11 @@ public class Gui {
 
 	public void showTokens(EditorPanel editor, List<Token> tokens) {
 		if (tokens.size() > 1) {
-			this.setRightPanel(RightPanel.Type.CALLS, false);
+			this.setRightPanel(CallsTree.class, false);
 			this.controller.setTokenHandle(editor.getClassHandle().copy());
-			((CallsTree) this.getRightPanel()).showTokens(tokens);
+			RightPanel.getPanel(CallsTree.class).showTokens(tokens);
 		} else {
-			((CallsTree) RightPanel.getPanel(RightPanel.Type.CALLS)).clearTokens();
+			RightPanel.getPanel(CallsTree.class).clearTokens();
 		}
 
 		// show the first token
@@ -391,8 +393,8 @@ public class Gui {
 	}
 
 	public void showStructure(EditorPanel editor) {
-		this.setRightPanel(RightPanel.Type.STRUCTURE, false);
-		((StructurePanel) this.getRightPanel()).showStructure(editor);
+		this.setRightPanel(StructurePanel.class, false);
+		RightPanel.getPanel(StructurePanel.class).showStructure(editor);
 	}
 
 	/**
@@ -403,8 +405,8 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.setRightPanel(RightPanel.Type.INHERITANCE, false);
-		((InheritanceTree) this.getRightPanel()).display(cursorReference.entry);
+		this.setRightPanel(InheritanceTree.class, false);
+		RightPanel.getPanel(InheritanceTree.class).display(cursorReference.entry);
 	}
 
 	/**
@@ -415,8 +417,8 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.setRightPanel(RightPanel.Type.IMPLEMENTATIONS, false);
-		((ImplementationsTree) this.getRightPanel()).display(cursorReference.entry);
+		this.setRightPanel(ImplementationsTree.class, false);
+		RightPanel.getPanel(ImplementationsTree.class).display(cursorReference.entry);
 	}
 
 	/**
@@ -427,8 +429,8 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.setRightPanel(RightPanel.Type.CALLS, false);
-		((CallsTree) this.getRightPanel()).showCalls(cursorReference.entry, recurse);
+		this.setRightPanel(CallsTree.class, false);
+		RightPanel.getPanel(CallsTree.class).showCalls(cursorReference.entry, recurse);
 	}
 
 	public void toggleMapping(EditorPanel editor) {
@@ -589,7 +591,7 @@ public class Gui {
 	}
 
 	public void addMessage(Message message) {
-		JScrollBar verticalScrollBar = ((OnlinePanel) RightPanel.getRightPanels().get("online")).getMessageScrollPane().getVerticalScrollBar();
+		JScrollBar verticalScrollBar = RightPanel.getPanel(MultiplayerPanel.class).getMessageScrollPane().getVerticalScrollBar();
 		boolean isAtBottom = verticalScrollBar.getValue() >= verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent();
 		messageModel.addElement(message);
 
@@ -608,7 +610,7 @@ public class Gui {
 		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
 
 		// if we were previously offline, we need to reload multiplayer-restricted right panels (ex. messages) so they can be used
-		if (wasOffline && this.getRightPanel() instanceof OnlinePanel multiplayerPanel) {
+		if (wasOffline && this.getRightPanel() instanceof MultiplayerPanel multiplayerPanel) {
 			multiplayerPanel.setUp();
 		}
 	}

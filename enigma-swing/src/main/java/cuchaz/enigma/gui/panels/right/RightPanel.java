@@ -13,7 +13,8 @@ import java.util.function.Supplier;
 
 public abstract class RightPanel extends JPanel {
     public static final String DEFAULT = Type.STRUCTURE;
-    private static final Map<String, RightPanel> panels = new HashMap<>();
+    private static final Map<Class<? extends RightPanel>, RightPanel> panels = new HashMap<>();
+	private static final Map<String, Class<? extends RightPanel>> panelClasses = new HashMap<>();
 
 	protected final Gui gui;
     protected final JToggleButton button;
@@ -24,7 +25,7 @@ public abstract class RightPanel extends JPanel {
         super(new BorderLayout());
 		this.gui = gui;
         this.button = new JToggleButton(this.titleProvider.get());
-        this.button.addActionListener(e -> gui.setRightPanel(this.getId(), true));
+        this.button.addActionListener(e -> gui.setRightPanel(this.getClass(), true));
 		this.title = new JLabel(this.titleProvider.get());
 		this.add(this.title, BorderLayout.NORTH);
     }
@@ -49,15 +50,21 @@ public abstract class RightPanel extends JPanel {
         return this.button;
     }
 
-    public static void registerPanel(RightPanel panel) {
-        panels.put(panel.getId(), panel);
-    }
+	public static void registerPanel(RightPanel panel) {
+		panels.put(panel.getClass(), panel);
+		panelClasses.put(panel.getId(), panel.getClass());
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T extends RightPanel> T getPanel(Class<T> clazz) {
+		return (T) panels.get(clazz);
+	}
 
     public static RightPanel getPanel(String id) {
-        return panels.get(id);
+        return panels.get(panelClasses.get(id));
     }
 
-    public static Map<String, RightPanel> getRightPanels() {
+    public static Map<Class<? extends RightPanel>, RightPanel> getRightPanels() {
         return panels;
     }
 
@@ -66,6 +73,7 @@ public abstract class RightPanel extends JPanel {
 		public static final String INHERITANCE = "inheritance";
 		public static final String CALLS = "calls";
 		public static final String IMPLEMENTATIONS = "implementations";
+		public static final String MULTIPLAYER = "multiplayer";
 	}
 
     public enum ButtonPosition {
