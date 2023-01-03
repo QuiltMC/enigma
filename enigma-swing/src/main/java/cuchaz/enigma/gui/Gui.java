@@ -225,17 +225,14 @@ public class Gui {
 
 		if (newPanel.getId().equals(this.rightPanel.getId())) {
 			if (updateStateIfCurrent) {
-				// only save divider location if hiding panel
-				if (this.rightPanel.isVisible()) {
-					UiConfig.setRightPanelDividerLocation(newPanel.getId(), this.splitRight.getDividerLocation());
-				}
+				this.saveRightPanelDividerLocation();
 
 				// swap visibility
 				this.rightPanel.setVisible(!this.rightPanel.isVisible());
 			}
 		} else {
 			// save divider location and hide
-			UiConfig.setRightPanelDividerLocation(this.rightPanel.getId(), this.splitRight.getDividerLocation());
+			this.saveRightPanelDividerLocation();
 			this.rightPanel.setVisible(false);
 
 			// set panel
@@ -248,7 +245,14 @@ public class Gui {
 		}
 
 		// we call getHeight on the right panel selector here since it's rotated, meaning its height is actually its width
+		System.out.println("setting location(" + UiConfig.getRightPanelDividerLocation(newPanel.getId(), this.splitRight.getDividerLocation()));
 		this.splitRight.setDividerLocation(UiConfig.getRightPanelDividerLocation(newPanel.getId(), this.splitRight.getDividerLocation()));
+	}
+
+	private void saveRightPanelDividerLocation() {
+		if (this.rightPanel.isVisible()) {
+			UiConfig.setRightPanelDividerLocation(this.rightPanel.getId(), this.splitRight.getDividerLocation());
+		}
 	}
 
 	public MainWindow getMainWindow() {
