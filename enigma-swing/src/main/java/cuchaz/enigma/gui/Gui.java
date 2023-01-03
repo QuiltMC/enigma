@@ -398,10 +398,18 @@ public class Gui {
 		infoPanel.startRenaming();
 	}
 
+	/**
+	 * Updates the structure right panel without opening it
+	 * @param editor the editor to extract the new structure from
+	 */
 	public void updateStructure(EditorPanel editor) {
-		RightPanel.getPanel(StructurePanel.class).showStructure(editor);
+		RightPanel.getPanel(StructurePanel.class).updateStructure(editor);
 	}
 
+	/**
+	 * Opens the Structure right panel and displays information for the provided editor
+	 * @param editor the editor to extract structure from
+	 */
 	public void showStructure(EditorPanel editor) {
 		this.setRightPanel(StructurePanel.class, false);
 		this.updateStructure(editor);
