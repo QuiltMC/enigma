@@ -14,7 +14,7 @@ import javax.swing.plaf.basic.BasicToolTipUI;
 
 /**
  * Implements a multi line tooltip for GUI components
- * Copied from <a href="http://www.codeguru.com/java/articles/122.shtml">this CodeGuru article</a>
+ * Copied from <a href="https://web.archive.org/web/20120104225105/http://www.codeguru.com:80/java/articles/122.shtml">this CodeGuru article</a>
  *
  * @author Zafir Anjum
  */
