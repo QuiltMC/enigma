@@ -223,14 +223,16 @@ public class Gui {
 	public void setRightPanel(Class<? extends RightPanel> clazz, boolean updateStateIfCurrent) {
 		RightPanel newPanel = RightPanel.getPanel(clazz);
 
-		if (newPanel.getId().equals(this.rightPanel.getId()) && updateStateIfCurrent) {
-			// only save divider location if hiding panel
-			if (this.rightPanel.isVisible()) {
-				UiConfig.setRightPanelDividerLocation(newPanel.getId(), this.splitRight.getDividerLocation());
-			}
+		if (newPanel.getId().equals(this.rightPanel.getId())) {
+			if (updateStateIfCurrent) {
+				// only save divider location if hiding panel
+				if (this.rightPanel.isVisible()) {
+					UiConfig.setRightPanelDividerLocation(newPanel.getId(), this.splitRight.getDividerLocation());
+				}
 
-			// swap visibility
-			this.rightPanel.setVisible(!this.rightPanel.isVisible());
+				// swap visibility
+				this.rightPanel.setVisible(!this.rightPanel.isVisible());
+			}
 		} else {
 			// save divider location and hide
 			UiConfig.setRightPanelDividerLocation(this.rightPanel.getId(), this.splitRight.getDividerLocation());
