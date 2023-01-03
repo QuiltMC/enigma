@@ -66,7 +66,11 @@ public abstract class RightPanel extends JPanel {
 	}
 
     public static RightPanel getPanel(String id) {
-        return panels.get(panelClasses.get(id));
+		if (!panelClasses.containsKey(id)) {
+			throw new IllegalArgumentException("no panel registered for id " + id);
+		}
+
+        return getPanel(panelClasses.get(id));
     }
 
     public static Map<Class<? extends RightPanel>, RightPanel> getRightPanels() {
