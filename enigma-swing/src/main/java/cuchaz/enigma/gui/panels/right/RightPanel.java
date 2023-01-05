@@ -82,7 +82,7 @@ public abstract class RightPanel extends JPanel {
 		public static final String INHERITANCE = "inheritance";
 		public static final String CALLS = "calls";
 		public static final String IMPLEMENTATIONS = "implementations";
-		public static final String MULTIPLAYER = "multiplayer";
+		public static final String COLLAB = "collab";
 	}
 
 	public enum ButtonPosition {

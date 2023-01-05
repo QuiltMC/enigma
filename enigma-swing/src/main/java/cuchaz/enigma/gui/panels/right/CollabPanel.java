@@ -98,7 +98,7 @@ public class CollabPanel extends RightPanel {
 
 	@Override
 	public String getId() {
-		return Type.MULTIPLAYER;
+		return Type.COLLAB;
 	}
 
 	private void sendPendingMessage() {
