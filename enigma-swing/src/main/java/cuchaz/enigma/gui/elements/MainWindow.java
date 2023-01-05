@@ -6,7 +6,6 @@ import cuchaz.enigma.gui.panels.right.RightAngleLayerUI;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.FlowLayout;
-import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JLayer;
@@ -56,8 +55,11 @@ public class MainWindow {
 		this.bottomRightPanelSelector.removeAll();
 
 		// create buttons from right panel options
-		for (Map.Entry<Class<? extends RightPanel>, RightPanel> entry : RightPanel.getRightPanels().entrySet()) {
-			RightPanel panel = entry.getValue();
+		// backwards to use correct order
+		RightPanel[] panels = RightPanel.getRightPanels().values().toArray(new RightPanel[0]);
+
+		for (int i = panels.length - 1; i >= 0; i--) {
+			RightPanel panel = panels[i];
 			JToggleButton button = panel.getButton();
 
 			if (panel.getButtonPosition().equals(RightPanel.ButtonPosition.TOP)) {
