@@ -21,36 +21,23 @@ public class MainWindow {
 	private final JMenuBar menuBar = new JMenuBar();
 	private final StatusBar statusBar = new StatusBar();
 
-	public MainWindow(String title) {
-		if (RightPanel.getRightPanels().isEmpty()) {
-			throw new IllegalStateException("no right panels registered! right panels should be registered before creating the main window.");
-		}
+	private final JPanel topRightPanelSelector;
+	private final JPanel bottomRightPanelSelector;
 
+	public MainWindow(String title) {
 		JPanel rightPanelSelector = new JPanel();
 		rightPanelSelector.setLayout(new BorderLayout());
 
 		// create separate panels for top and bottom button groups
 		// this is necessary because flow layout doesn't support using multiple alignments
-		JPanel topButtons = new JPanel();
-		topButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-		JPanel bottomButtons = new JPanel();
-		bottomButtons.setLayout(new FlowLayout(FlowLayout.RIGHT));
-
-		// create buttons from right panel options
-		for (Map.Entry<Class<? extends RightPanel>, RightPanel> entry : RightPanel.getRightPanels().entrySet()) {
-			RightPanel panel = entry.getValue();
-			JToggleButton button = panel.getButton();
-
-			if (panel.getButtonPosition().equals(RightPanel.ButtonPosition.TOP)) {
-				topButtons.add(button);
-			} else {
-				bottomButtons.add(button);
-			}
-		}
+		this.topRightPanelSelector = new JPanel();
+		this.topRightPanelSelector.setLayout(new FlowLayout(FlowLayout.LEFT));
+		this.bottomRightPanelSelector = new JPanel();
+		this.bottomRightPanelSelector.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
 		// set up button groups
-		rightPanelSelector.add(topButtons, BorderLayout.WEST);
-		rightPanelSelector.add(bottomButtons, BorderLayout.EAST);
+		rightPanelSelector.add(this.topRightPanelSelector, BorderLayout.WEST);
+		rightPanelSelector.add(this.bottomRightPanelSelector, BorderLayout.EAST);
 		JLayer<JPanel> layer = new JLayer<>(rightPanelSelector);
 		layer.setUI(new RightAngleLayerUI(RightAngleLayerUI.Rotation.CLOCKWISE));
 
@@ -62,6 +49,23 @@ public class MainWindow {
 		contentPane.add(this.workArea, BorderLayout.CENTER);
 		contentPane.add(this.statusBar.getUi(), BorderLayout.SOUTH);
 		contentPane.add(layer, BorderLayout.EAST);
+	}
+
+	public void updateRightPanelSelector() {
+		this.topRightPanelSelector.removeAll();
+		this.bottomRightPanelSelector.removeAll();
+
+		// create buttons from right panel options
+		for (Map.Entry<Class<? extends RightPanel>, RightPanel> entry : RightPanel.getRightPanels().entrySet()) {
+			RightPanel panel = entry.getValue();
+			JToggleButton button = panel.getButton();
+
+			if (panel.getButtonPosition().equals(RightPanel.ButtonPosition.TOP)) {
+				this.topRightPanelSelector.add(button);
+			} else {
+				this.bottomRightPanelSelector.add(button);
+			}
+		}
 	}
 
 	public void setVisible(boolean visible) {

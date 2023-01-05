@@ -109,6 +109,29 @@ public class Gui {
 	public SearchDialog searchDialog;
 
 	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes) {
+		this.mainWindow = new MainWindow(Enigma.NAME);
+		this.editableTypes = editableTypes;
+		this.controller = new GuiController(this, profile);
+		this.deobfPanel = new DeobfPanel(this);
+		this.infoPanel = new IdentifierPanel(this);
+		this.obfPanel = new ObfPanel(this);
+		this.menuBar = new MenuBar(this);
+		this.setupRightPanels();
+		this.editorTabbedPane = new EditorTabbedPane(this);
+		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, this.obfPanel, this.deobfPanel);
+		this.rightPanel = RightPanel.getPanel(UiConfig.getSelectedRightPanel());
+		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightPanel);
+		this.splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.classesPanel, splitRight);
+
+		this.setupUi();
+
+		LanguageUtil.addListener(this::retranslateUi);
+		Themes.addListener((lookAndFeel, boxHighlightPainters) -> SwingUtilities.updateComponentTreeUI(this.getFrame()));
+
+		this.mainWindow.setVisible(true);
+	}
+
+	private void setupRightPanels() {
 		// right panels
 		// top panels
 		RightPanel.addPanel(new StructurePanel(this));
@@ -124,25 +147,7 @@ public class Gui {
 			panel.setPreferredSize(new Dimension(300, 100));
 		}
 
-		this.mainWindow = new MainWindow(Enigma.NAME);
-		this.editableTypes = editableTypes;
-		this.controller = new GuiController(this, profile);
-		this.deobfPanel = new DeobfPanel(this);
-		this.infoPanel = new IdentifierPanel(this);
-		this.obfPanel = new ObfPanel(this);
-		this.menuBar = new MenuBar(this);
-		this.editorTabbedPane = new EditorTabbedPane(this);
-		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, this.obfPanel, this.deobfPanel);
-		this.rightPanel = RightPanel.getPanel(UiConfig.getSelectedRightPanel());
-		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightPanel);
-		this.splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.classesPanel, splitRight);
-
-		this.setupUi();
-
-		LanguageUtil.addListener(this::retranslateUi);
-		Themes.addListener((lookAndFeel, boxHighlightPainters) -> SwingUtilities.updateComponentTreeUI(this.getFrame()));
-
-		this.mainWindow.setVisible(true);
+		this.mainWindow.updateRightPanelSelector();
 	}
 
 	private void setupUi() {
