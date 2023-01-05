@@ -15,8 +15,8 @@ import java.awt.event.ActionEvent;
 import java.util.function.Supplier;
 
 public class MultiplayerPanel extends RightPanel {
-    private final JLabel offlineLabel;
-    private final JPanel whenOfflinePanel;
+	private final JLabel offlineLabel;
+	private final JPanel whenOfflinePanel;
 	private final JPanel whenOnlinePanel;
 	private final JButton sendPendingMessageButton;
 	private final JScrollPane messageScrollPane;
@@ -33,19 +33,19 @@ public class MultiplayerPanel extends RightPanel {
 	private JPanel panel;
 	private boolean offline;
 
-    public MultiplayerPanel(Gui gui) {
-        super(gui);
+	public MultiplayerPanel(Gui gui) {
+		super(gui);
 
 		// offline panel
-        this.whenOfflinePanel = new JPanel(new BorderLayout());
-        this.offlineLabel = new JLabel(this.offlineTextProvider.get());
+		this.whenOfflinePanel = new JPanel(new BorderLayout());
+		this.offlineLabel = new JLabel(this.offlineTextProvider.get());
 		JPanel offlineTopPanel = new JPanel(new BorderLayout());
 
 		// there are ghosts in my code
 		this.titleCopy = new JLabel(this.titleProvider.get());
 
 		offlineTopPanel.add(this.offlineLabel, BorderLayout.SOUTH);
-        offlineTopPanel.add(this.titleCopy, BorderLayout.NORTH);
+		offlineTopPanel.add(this.titleCopy, BorderLayout.NORTH);
 		this.whenOfflinePanel.add(offlineTopPanel, BorderLayout.NORTH);
 
 		// online panel
@@ -118,15 +118,15 @@ public class MultiplayerPanel extends RightPanel {
 		return this.messageScrollPane;
 	}
 
-    @Override
-    public void retranslateUi() {
-        super.retranslateUi();
-        this.offlineLabel.setText(this.offlineTextProvider.get());
+	@Override
+	public void retranslateUi() {
+		super.retranslateUi();
+		this.offlineLabel.setText(this.offlineTextProvider.get());
 		this.sendPendingMessageButton.setText(this.sendButtonTextProvider.get());
 		this.usersTitle.setText(this.usersTitleProvider.get());
 		this.messagesTitle.setText(this.messagesTitleProvider.get());
 		this.titleCopy.setText(this.titleProvider.get());
-    }
+	}
 
 	@Override
 	public void setVisible(boolean visible) {
@@ -136,10 +136,10 @@ public class MultiplayerPanel extends RightPanel {
 		}
 	}
 
-    /**
-     * sets up the panel for its offline or online state
-     */
-    public void setUp() {
+	/**
+	 * sets up the panel for its offline or online state
+	 */
+	public void setUp() {
 		if (gui.isOffline() != this.offline) {
 			this.offline = gui.isOffline();
 			if (this.panel != null) {
@@ -154,5 +154,5 @@ public class MultiplayerPanel extends RightPanel {
 
 			this.add(this.panel);
 		}
-    }
+	}
 }

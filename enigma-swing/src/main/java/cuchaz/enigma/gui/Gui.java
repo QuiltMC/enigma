@@ -538,7 +538,7 @@ public class Gui {
 			// class rename
 
 			// TODO optimize reverse class lookup, although it looks like it's
-			//      fast enough for now
+			//	  fast enough for now
 			EntryRemapper mapper = this.controller.project.getMapper();
 			ClassEntry obf = mapper.getObfToDeobf().getAllEntries()
 					.filter(ClassEntry.class::isInstance)
