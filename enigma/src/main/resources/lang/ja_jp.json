@@ -219,6 +219,6 @@
 	"right_panel.inheritance.title": "継承",
 	"right_panel.implementations.title": "実装",
 	"right_panel.calls.title": "呼び出し関係",
-	"right_panel.multiplayer.messages_title": "メッセージ",
-	"right_panel.multiplayer.users_title": "ユーザー"
+	"right_panel.collab.messages_title": "メッセージ",
+	"right_panel.collab.users_title": "ユーザー"
 }

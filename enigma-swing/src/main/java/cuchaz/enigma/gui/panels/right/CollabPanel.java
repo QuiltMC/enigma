@@ -14,7 +14,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.util.function.Supplier;
 
-public class MultiplayerPanel extends RightPanel {
+public class CollabPanel extends RightPanel {
 	private final JLabel offlineLabel;
 	private final JPanel whenOfflinePanel;
 	private final JPanel whenOnlinePanel;
@@ -25,15 +25,15 @@ public class MultiplayerPanel extends RightPanel {
 	private final JLabel messagesTitle;
 	private final JLabel titleCopy;
 
-	private final Supplier<String> offlineTextProvider = () -> I18n.translate("right_panel.multiplayer.offline_text");
-	private final Supplier<String> usersTitleProvider = () -> I18n.translate("right_panel.multiplayer.users_title");
-	private final Supplier<String> messagesTitleProvider = () -> I18n.translate("right_panel.multiplayer.messages_title");
-	private final Supplier<String> sendButtonTextProvider = () -> I18n.translate("right_panel.multiplayer.send");
+	private final Supplier<String> offlineTextProvider = () -> I18n.translate("right_panel.collab.offline_text");
+	private final Supplier<String> usersTitleProvider = () -> I18n.translate("right_panel.collab.users_title");
+	private final Supplier<String> messagesTitleProvider = () -> I18n.translate("right_panel.collab.messages_title");
+	private final Supplier<String> sendButtonTextProvider = () -> I18n.translate("right_panel.collab.send");
 
 	private JPanel panel;
 	private boolean offline;
 
-	public MultiplayerPanel(Gui gui) {
+	public CollabPanel(Gui gui) {
 		super(gui);
 
 		// offline panel

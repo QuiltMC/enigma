@@ -218,8 +218,8 @@
 	"right_panel.inheritance": "Héritage",
 	"right_panel.implementations": "Implémentations",
 	"right_panel.calls": "Graphique des appels",
-	"right_panel.multiplayer.messages_title": "Messages",
-	"right_panel.multiplayer.users_title": "Utilisateurs",
-	"right_panel.multiplayer.send": "Envoie",
-	"right_panel.multiplayer.offline_text": "Enigma n'est pas connecté à un serveur."
+	"right_panel.collab.messages_title": "Messages",
+	"right_panel.collab.users_title": "Utilisateurs",
+	"right_panel.collab.send": "Envoie",
+	"right_panel.collab.offline_text": "Enigma n'est pas connecté à un serveur."
 }

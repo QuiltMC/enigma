@@ -26,7 +26,7 @@ import cuchaz.enigma.gui.panels.DeobfPanel;
 import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.panels.IdentifierPanel;
 import cuchaz.enigma.gui.panels.ObfPanel;
-import cuchaz.enigma.gui.panels.right.MultiplayerPanel;
+import cuchaz.enigma.gui.panels.right.CollabPanel;
 import cuchaz.enigma.gui.panels.right.RightPanel;
 import cuchaz.enigma.gui.panels.right.StructurePanel;
 import cuchaz.enigma.gui.panels.right.CallsTree;
@@ -117,7 +117,7 @@ public class Gui {
 		RightPanel.addPanel(new CallsTree(this));
 
 		// bottom panels
-		RightPanel.addPanel(new MultiplayerPanel(this));
+		RightPanel.addPanel(new CollabPanel(this));
 
 		// set default sizes for right panels
 		for (RightPanel panel : RightPanel.getRightPanels().values()) {
@@ -608,7 +608,7 @@ public class Gui {
 	}
 
 	public void addMessage(Message message) {
-		JScrollBar verticalScrollBar = RightPanel.getPanel(MultiplayerPanel.class).getMessageScrollPane().getVerticalScrollBar();
+		JScrollBar verticalScrollBar = RightPanel.getPanel(CollabPanel.class).getMessageScrollPane().getVerticalScrollBar();
 		boolean isAtBottom = verticalScrollBar.getValue() >= verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent();
 		messageModel.addElement(message);
 
@@ -627,8 +627,8 @@ public class Gui {
 		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
 
 		// if we were previously offline, we need to reload multiplayer-restricted right panels (ex. messages) so they can be used
-		if (wasOffline && this.getRightPanel() instanceof MultiplayerPanel multiplayerPanel) {
-			multiplayerPanel.setUp();
+		if (wasOffline && this.getRightPanel() instanceof CollabPanel collabPanel) {
+			collabPanel.setUp();
 		}
 	}
 
