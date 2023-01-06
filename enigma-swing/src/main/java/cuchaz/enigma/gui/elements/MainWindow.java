@@ -55,11 +55,7 @@ public class MainWindow {
 		this.bottomRightPanelSelector.removeAll();
 
 		// create buttons from right panel options
-		// backwards to use correct order
-		RightPanel[] panels = RightPanel.getRightPanels().values().toArray(new RightPanel[0]);
-
-		for (int i = panels.length - 1; i >= 0; i--) {
-			RightPanel panel = panels[i];
+		for (RightPanel panel : RightPanel.getRightPanels().values()) {
 			JToggleButton button = panel.getButton();
 
 			if (panel.getButtonPosition().equals(RightPanel.ButtonPosition.TOP)) {

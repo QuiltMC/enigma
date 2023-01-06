@@ -8,12 +8,13 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import java.awt.BorderLayout;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
 public abstract class RightPanel extends JPanel {
 	public static final String DEFAULT = Type.STRUCTURE;
-	private static final Map<Class<? extends RightPanel>, RightPanel> panels = new HashMap<>();
+	private static final Map<Class<? extends RightPanel>, RightPanel> panels = new LinkedHashMap<>();
 	private static final Map<String, Class<? extends RightPanel>> panelClasses = new HashMap<>();
 
 	protected final Gui gui;
