@@ -148,6 +148,13 @@ public class Gui {
 		}
 
 		this.mainWindow.updateRightPanelSelector();
+
+		// verify the user has a valid panel id saved in their config
+		if (!RightPanel.getPanelClasses().containsKey(UiConfig.getSelectedRightPanel())) {
+			UiConfig.setSelectedRightPanel(RightPanel.DEFAULT);
+			// todo change with introduction of better logging!
+			System.out.println("invalid right panel id in config, resetting to default (" + RightPanel.DEFAULT + ")!");
+		}
 	}
 
 	private void setupUi() {

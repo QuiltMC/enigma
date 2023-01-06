@@ -77,6 +77,10 @@ public abstract class RightPanel extends JPanel {
 		return panels;
 	}
 
+	public static Map<String, Class<? extends RightPanel>> getPanelClasses() {
+		return panelClasses;
+	}
+
 	public static final class Type {
 		public static final String STRUCTURE = "structure";
 		public static final String INHERITANCE = "inheritance";
