@@ -258,6 +258,9 @@ public class Gui {
 
 		// we call getHeight on the right panel selector here since it's rotated, meaning its height is actually its width
 		this.splitRight.setDividerLocation(UiConfig.getRightPanelDividerLocation(newPanel.getId(), this.splitRight.getDividerLocation()));
+
+		// repaint in case the panel was changing without clicking a button
+		this.mainWindow.getFrame().repaint();
 	}
 
 	private void saveRightPanelDividerLocation() {
