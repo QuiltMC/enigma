@@ -27,7 +27,7 @@ public abstract class RightPanel extends JPanel {
 		this.gui = gui;
 		this.button = new JToggleButton(this.titleProvider.get());
 		this.button.addActionListener(e -> gui.setRightPanel(this.getClass(), true));
-		this.title = new JLabel(this.titleProvider.get());
+		this.title = new DraggableLabel(this.titleProvider.get());
 		this.add(this.title, BorderLayout.NORTH);
 	}
 
