@@ -388,10 +388,10 @@ public class GuiController implements ClientPacketHandler {
 			List<ObfuscationTestService> obfService = enigma.getServices().get(ObfuscationTestService.TYPE);
 			boolean obfuscated = result.isObfuscated() && deobfEntry.equals(entry);
 
-			if (obfuscated && !obfService.isEmpty()) {
-				if (obfService.stream().anyMatch(service -> service.testDeobfuscated(entry))) {
-					obfuscated = false;
-				}
+			if (obfuscated
+					&& !obfService.isEmpty()
+					&& obfService.stream().anyMatch(service -> service.testDeobfuscated(entry))) {
+				obfuscated = false;
 			}
 
 			if (obfuscated) {
@@ -463,7 +463,7 @@ public class GuiController implements ClientPacketHandler {
 		ValidationContext vc = new ValidationContext();
 		vc.setActiveElement(PrintValidatable.INSTANCE);
 		this.applyChange0(vc, change);
-		gui.showStructure(gui.getActiveEditor());
+		gui.updateStructure(gui.getActiveEditor());
 
 		return vc.canProceed();
 	}
@@ -480,7 +480,7 @@ public class GuiController implements ClientPacketHandler {
 
 	public void applyChange(ValidationContext vc, EntryChange<?> change) {
 		this.applyChange0(vc, change);
-		gui.showStructure(gui.getActiveEditor());
+		gui.updateStructure(gui.getActiveEditor());
 		if (!vc.canProceed()) return;
 		this.sendPacket(new EntryChangeC2SPacket(change));
 	}
@@ -495,7 +495,7 @@ public class GuiController implements ClientPacketHandler {
 
 		boolean renamed = !change.getDeobfName().isUnchanged();
 
-		if (renamed && target instanceof ClassEntry && !((ClassEntry) target).isInnerClass()) {
+		if (renamed && target instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
 			this.gui.moveClassTree(target, prev.targetName() == null, mapping.targetName() == null);
 		}
 
@@ -506,7 +506,7 @@ public class GuiController implements ClientPacketHandler {
 		if (!Objects.equals(prev.javadoc(), mapping.javadoc())) {
 			this.chp.invalidateJavadoc(target.getTopLevelClass());
 		}
-		gui.showStructure(gui.getActiveEditor());
+		gui.updateStructure(gui.getActiveEditor());
 	}
 
 	public void openStats(Set<StatsMember> includedMembers, String topLevelPackage, boolean includeSynthetic) {

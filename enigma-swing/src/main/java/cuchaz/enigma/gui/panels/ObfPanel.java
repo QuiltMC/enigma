@@ -13,15 +13,10 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.utils.I18n;
 
 public class ObfPanel extends JPanel {
-
 	public final ClassSelector obfClasses;
 	private final JLabel title = new JLabel();
 
-	private final Gui gui;
-
 	public ObfPanel(Gui gui) {
-		this.gui = gui;
-
 		Comparator<ClassEntry> obfClassComparator = (a, b) -> {
 			String aname = a.getFullName();
 			String bname = b.getFullName();
@@ -45,5 +40,4 @@ public class ObfPanel extends JPanel {
 	public void retranslateUi() {
 		this.title.setText(I18n.translate("info_panel.classes.obfuscated"));
 	}
-
 }

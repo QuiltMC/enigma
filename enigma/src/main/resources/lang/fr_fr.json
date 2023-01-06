@@ -108,10 +108,6 @@
 	"info_panel.identifier.index": "Index",
 	"info_panel.editor.class.decompiling": "(décompilation...)",
 	"info_panel.editor.class.not_found": "Impossible de trouver la classe :",
-	"info_panel.tree.structure": "Structure",
-	"info_panel.tree.inheritance": "Héritage",
-	"info_panel.tree.implementations": "Implémentations",
-	"info_panel.tree.calls": "Graphique des appels",
 
 	"popup.copied": "Copié !",
 
@@ -127,9 +123,6 @@
 	"structure.options.sorting.default": "Par défaut",
 	"structure.options.sorting.a_z": "A à Z",
 	"structure.options.sorting.z_a": "Z à A",
-
-	"log_panel.messages": "Messages",
-	"log_panel.users": "Utilisateurs",
 
 	"progress.operation": "%s - Opération en cours",
 	"progress.jar.indexing": "Indexation du jar",
@@ -219,5 +212,14 @@
 	"crash.export": "Exporter",
 	"crash.ignore": "Ignorer",
 	"crash.exit": "Quitter",
-	"crash.exit.warning": "Si vous choisissez Quitter, vous perdrez tout travail non sauvegardé."
+	"crash.exit.warning": "Si vous choisissez Quitter, vous perdrez tout travail non sauvegardé.",
+
+	"right_panel.structure": "Structure",
+	"right_panel.inheritance": "Héritage",
+	"right_panel.implementations": "Implémentations",
+	"right_panel.calls": "Graphique des appels",
+	"right_panel.collab.messages_title": "Messages",
+	"right_panel.collab.users_title": "Utilisateurs",
+	"right_panel.collab.send": "Envoie",
+	"right_panel.collab.offline_text": "Enigma n'est pas connecté à un serveur."
 }

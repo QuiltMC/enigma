@@ -498,8 +498,6 @@ public class EditorPanel {
 
 	/**
 	 * Navigates to the reference without modifying history. Assumes the class is loaded.
-	 *
-	 * @param reference
 	 */
 	private void showReference0(EntryReference<Entry<?>, Entry<?>> reference) {
 		if (this.source == null) return;

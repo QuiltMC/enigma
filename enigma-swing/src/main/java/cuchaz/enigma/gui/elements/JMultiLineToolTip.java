@@ -3,6 +3,7 @@ package cuchaz.enigma.gui.elements;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.io.Serial;
 
 import javax.swing.CellRendererPane;
 import javax.swing.JComponent;
@@ -13,18 +14,20 @@ import javax.swing.plaf.basic.BasicToolTipUI;
 
 /**
  * Implements a multi line tooltip for GUI components
- * Copied from http://www.codeguru.com/java/articles/122.shtml
+ * Copied from <a href="https://web.archive.org/web/20120104225105/http://www.codeguru.com:80/java/articles/122.shtml">this CodeGuru article</a>
  *
  * @author Zafir Anjum
  */
 public class JMultiLineToolTip extends JToolTip {
 
+	@Serial
 	private static final long serialVersionUID = 7813662474312183098L;
 
 	public JMultiLineToolTip() {
 		updateUI();
 	}
 
+	@Override
 	public void updateUI() {
 		setUI(MultiLineToolTipUI.createUI(this));
 	}

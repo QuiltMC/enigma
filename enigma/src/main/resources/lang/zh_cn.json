@@ -71,9 +71,6 @@
 	"info_panel.identifier.index": "索引",
 	"info_panel.editor.class.decompiling": "（反编译中...）",
 	"info_panel.editor.class.not_found": "找不到类：",
-	"info_panel.tree.inheritance": "继承",
-	"info_panel.tree.implementations": "实现",
-	"info_panel.tree.calls": "调用图",
 
 	"progress.operation": "%s - 进行中",
 	"progress.jar.indexing": "索引 Jar",
@@ -115,5 +112,9 @@
 	"crash.export": "输出",
 	"crash.ignore": "忽略",
 	"crash.exit": "退出",
-	"crash.exit.warning": "如果选择退出，将丢失所有未保存的工作。"
+	"crash.exit.warning": "如果选择退出，将丢失所有未保存的工作。",
+
+	"right_panel.inheritance.title": "继承",
+	"right_panel.implementations.title": "实现",
+	"right_panel.calls.title": "调用图"
 }

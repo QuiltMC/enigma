@@ -16,6 +16,9 @@ indent_style = tab
 [*.tiny]
 indent_style = tab
 
+[*.json]
+indent_style = tab
+
 [*.{mapping,mappings}]
 indent_style = tab
 

@@ -129,10 +129,6 @@
 	"info_panel.identifier.index": "Index",
 	"info_panel.editor.class.decompiling": "(decompiling...)",
 	"info_panel.editor.class.not_found": "Unable to find class:",
-	"info_panel.tree.structure": "Structure",
-	"info_panel.tree.inheritance": "Inheritance",
-	"info_panel.tree.implementations": "Implementations",
-	"info_panel.tree.calls": "Call Graph",
 
 	"popup.copied": "Copied!",
 
@@ -148,9 +144,6 @@
 	"structure.options.sorting.default": "Default",
 	"structure.options.sorting.a_z": "A to Z",
 	"structure.options.sorting.z_a": "Z to A",
-
-	"log_panel.messages": "Messages",
-	"log_panel.users": "Users",
 
 	"progress.operation": "%s - Operation in progress",
 	"progress.jar.indexing": "Indexing jar",
@@ -268,5 +261,15 @@
 	"keybind.menu.reload_mappings": "Reload mappings",
 	"keybind.menu.reload_all": "Reload Jar and mappings",
 	"keybind.menu.mapping_stats": "Mapping stats",
-	"keybind.menu.save": "Save mappings"
+	"keybind.menu.save": "Save mappings",
+
+	"right_panel.collab.send": "Send",
+	"right_panel.collab.title": "Collab",
+	"right_panel.collab.messages_title": "Messages",
+	"right_panel.collab.users_title": "Users",
+	"right_panel.collab.offline_text": "Enigma is currently running offline.",
+	"right_panel.calls.title": "Calls",
+	"right_panel.structure.title": "Structure",
+	"right_panel.inheritance.title": "Inheritance",
+	"right_panel.implementations.title": "Implementations"
 }

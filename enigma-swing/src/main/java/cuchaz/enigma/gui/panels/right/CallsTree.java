@@ -1,11 +1,15 @@
-package cuchaz.enigma.gui.elements;
+package cuchaz.enigma.gui.panels.right;
 
 import java.awt.BorderLayout;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.Vector;
 
-import javax.swing.*;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTree;
+import javax.swing.ListSelectionModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -23,22 +27,17 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
-public class CallsTree {
-	private final JPanel panel = new JPanel(new BorderLayout());
-
-	private final JTree callsTree = new JTree();
+public class CallsTree extends RightPanel {
+	private final JTree tree = new JTree();
 	private final JList<Token> tokens = new JList<>();
 
-	private final Gui gui;
-
 	public CallsTree(Gui gui) {
-		this.gui = gui;
-
-		this.callsTree.setModel(null);
-		this.callsTree.setCellRenderer(new CallsTreeCellRenderer(gui));
-		this.callsTree.setSelectionModel(new SingleTreeSelectionModel());
-		this.callsTree.setShowsRootHandles(true);
-		this.callsTree.addMouseListener(GuiUtil.onMouseClick(this::onTreeClicked));
+		super(gui);
+		this.tree.setModel(null);
+		this.tree.setCellRenderer(new CallsTreeCellRenderer(gui));
+		this.tree.setSelectionModel(new SingleTreeSelectionModel());
+		this.tree.setShowsRootHandles(true);
+		this.tree.addMouseListener(GuiUtil.onMouseClick(this::onTreeClicked));
 
 		this.tokens.setCellRenderer(new TokenListCellRenderer(gui.getController()));
 		this.tokens.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -50,13 +49,13 @@ public class CallsTree {
 		JSplitPane contentPane = new JSplitPane(
 				JSplitPane.VERTICAL_SPLIT,
 				true,
-				new JScrollPane(this.callsTree),
+				new JScrollPane(this.tree),
 				new JScrollPane(this.tokens)
 		);
 
 		contentPane.setResizeWeight(1); // let the top side take all the slack
 		contentPane.resetToPreferredSizes();
-		this.panel.add(contentPane, BorderLayout.CENTER);
+		this.add(contentPane, BorderLayout.CENTER);
 	}
 
 	public void showCalls(Entry<?> entry, boolean recurse) {
@@ -70,9 +69,9 @@ public class CallsTree {
 			node = this.gui.getController().getMethodReferences(methodEntry, recurse);
 		}
 
-		this.callsTree.setModel(new DefaultTreeModel(node));
+		this.tree.setModel(new DefaultTreeModel(node));
 
-		this.panel.show();
+		this.setVisible(true);
 	}
 
 	public void showTokens(Collection<Token> tokens) {
@@ -88,7 +87,7 @@ public class CallsTree {
 	private void onTreeClicked(MouseEvent event) {
 		if (event.getClickCount() >= 2 && event.getButton() == MouseEvent.BUTTON1) {
 			// get the selected node
-			TreePath path = this.callsTree.getSelectionPath();
+			TreePath path = this.tree.getSelectionPath();
 
 			if (path == null) {
 				return;
@@ -115,11 +114,13 @@ public class CallsTree {
 		}
 	}
 
-	public void retranslateUi() {
-
+	@Override
+	public ButtonPosition getButtonPosition() {
+		return ButtonPosition.TOP;
 	}
 
-	public JPanel getPanel() {
-		return this.panel;
+	@Override
+	public String getId() {
+		return Type.CALLS;
 	}
 }

@@ -11,27 +11,6 @@
 
 package cuchaz.enigma.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
-import com.google.common.collect.Lists;
-
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.analysis.EntryReference;
@@ -39,14 +18,25 @@ import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.JavadocDialog;
 import cuchaz.enigma.gui.dialog.SearchDialog;
-import cuchaz.enigma.gui.elements.*;
-import cuchaz.enigma.gui.panels.*;
+import cuchaz.enigma.gui.elements.EditorTabbedPane;
+import cuchaz.enigma.gui.elements.MainWindow;
+import cuchaz.enigma.gui.elements.MenuBar;
+import cuchaz.enigma.gui.elements.ValidatableUi;
+import cuchaz.enigma.gui.panels.DeobfPanel;
+import cuchaz.enigma.gui.panels.EditorPanel;
+import cuchaz.enigma.gui.panels.IdentifierPanel;
+import cuchaz.enigma.gui.panels.ObfPanel;
+import cuchaz.enigma.gui.panels.right.CollabPanel;
+import cuchaz.enigma.gui.panels.right.RightPanel;
+import cuchaz.enigma.gui.panels.right.StructurePanel;
+import cuchaz.enigma.gui.panels.right.CallsTree;
+import cuchaz.enigma.gui.panels.right.ImplementationsTree;
+import cuchaz.enigma.gui.panels.right.InheritanceTree;
 import cuchaz.enigma.gui.renderer.MessageListCellRenderer;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.LanguageUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.network.Message;
-import cuchaz.enigma.network.packet.MessageC2SPacket;
 import cuchaz.enigma.source.Token;
 import cuchaz.enigma.translation.mapping.EntryChange;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
@@ -56,9 +46,33 @@ import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
-public class Gui {
+import javax.annotation.Nullable;
+import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.IntFunction;
 
-	private final MainWindow mainWindow = new MainWindow(Enigma.NAME);
+public class Gui {
+	private final MainWindow mainWindow;
 	private final GuiController controller;
 
 	private ConnectionState connectionState;
@@ -70,29 +84,20 @@ public class Gui {
 	private final ObfPanel obfPanel;
 	private final DeobfPanel deobfPanel;
 	private final IdentifierPanel infoPanel;
-	private final StructurePanel structurePanel;
-	private final InheritanceTree inheritanceTree;
-	private final ImplementationsTree implementationsTree;
-	private final CallsTree callsTree;
 
 	private final EditorTabbedPane editorTabbedPane;
 
 	private final JPanel classesPanel = new JPanel(new BorderLayout());
 	private final JSplitPane splitClasses;
-	private final JTabbedPane tabs = new JTabbedPane();
-	private final CollapsibleTabbedPane logTabs = new CollapsibleTabbedPane(JTabbedPane.BOTTOM);
-	private final JSplitPane logSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, tabs, logTabs);
 	private final JPanel centerPanel = new JPanel(new BorderLayout());
-	private final JSplitPane splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, this.logSplit);
-	private final JSplitPane splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.classesPanel, splitRight);
+	private RightPanel rightPanel;
+	private final JSplitPane splitRight;
+	private final JSplitPane splitCenter;
 
 	private final DefaultListModel<String> userModel = new DefaultListModel<>();
 	private final DefaultListModel<Message> messageModel = new DefaultListModel<>();
-	private final JList<String> users = new JList<>(userModel);
-	private final JList<Message> messages = new JList<>(messageModel);
-	private final JPanel messagePanel = new JPanel(new BorderLayout());
-	private final JScrollPane messageScrollPane = new JScrollPane(this.messages);
-	private final JTextField chatBox = new JTextField();
+	private final JList<String> users = new JList<>(this.userModel);
+	private final JList<Message> messages = new JList<>(this.messageModel);
 
 	private final JLabel connectionStatusLabel = new JLabel();
 
@@ -104,18 +109,19 @@ public class Gui {
 	public SearchDialog searchDialog;
 
 	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes) {
+		this.mainWindow = new MainWindow(Enigma.NAME);
 		this.editableTypes = editableTypes;
 		this.controller = new GuiController(this, profile);
-		this.structurePanel = new StructurePanel(this);
 		this.deobfPanel = new DeobfPanel(this);
 		this.infoPanel = new IdentifierPanel(this);
 		this.obfPanel = new ObfPanel(this);
 		this.menuBar = new MenuBar(this);
-		this.inheritanceTree = new InheritanceTree(this);
-		this.implementationsTree = new ImplementationsTree(this);
-		this.callsTree = new CallsTree(this);
+		this.setupRightPanels();
 		this.editorTabbedPane = new EditorTabbedPane(this);
 		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, this.obfPanel, this.deobfPanel);
+		this.rightPanel = RightPanel.getPanel(UiConfig.getSelectedRightPanel());
+		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightPanel);
+		this.splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.classesPanel, splitRight);
 
 		this.setupUi();
 
@@ -123,6 +129,32 @@ public class Gui {
 		Themes.addListener((lookAndFeel, boxHighlightPainters) -> SwingUtilities.updateComponentTreeUI(this.getFrame()));
 
 		this.mainWindow.setVisible(true);
+	}
+
+	private void setupRightPanels() {
+		// right panels
+		// top panels
+		RightPanel.addPanel(new StructurePanel(this));
+		RightPanel.addPanel(new InheritanceTree(this));
+		RightPanel.addPanel(new ImplementationsTree(this));
+		RightPanel.addPanel(new CallsTree(this));
+
+		// bottom panels
+		RightPanel.addPanel(new CollabPanel(this));
+
+		// set default sizes for right panels
+		for (RightPanel panel : RightPanel.getRightPanels().values()) {
+			panel.setPreferredSize(new Dimension(300, 100));
+		}
+
+		this.mainWindow.updateRightPanelSelector();
+
+		// verify the user has a valid panel id saved in their config
+		if (!RightPanel.getPanelClasses().containsKey(UiConfig.getSelectedRightPanel())) {
+			UiConfig.setSelectedRightPanel(RightPanel.DEFAULT);
+			// todo change with introduction of better logging!
+			System.out.println("invalid right panel id in config, resetting to default (" + RightPanel.DEFAULT + ")!");
+		}
 	}
 
 	private void setupUi() {
@@ -141,36 +173,14 @@ public class Gui {
 		this.classesPanel.setPreferredSize(ScaleUtil.getDimension(250, 0));
 
 		// layout controls
-		Container workArea = this.mainWindow.workArea();
+		Container workArea = this.mainWindow.getWorkArea();
 		workArea.setLayout(new BorderLayout());
 
 		centerPanel.add(infoPanel.getUi(), BorderLayout.NORTH);
 		centerPanel.add(this.editorTabbedPane.getUi(), BorderLayout.CENTER);
 
-		tabs.setPreferredSize(ScaleUtil.getDimension(250, 0));
-		tabs.addTab(I18n.translate("info_panel.tree.structure"), structurePanel.getPanel());
-		tabs.addTab(I18n.translate("info_panel.tree.inheritance"), inheritanceTree.getPanel());
-		tabs.addTab(I18n.translate("info_panel.tree.implementations"), implementationsTree.getPanel());
-		tabs.addTab(I18n.translate("info_panel.tree.calls"), callsTree.getPanel());
-
 		messages.setCellRenderer(new MessageListCellRenderer());
-		JPanel chatPanel = new JPanel(new BorderLayout());
-		AbstractAction sendListener = new AbstractAction("Send") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				sendMessage();
-			}
-		};
-		chatBox.addActionListener(sendListener);
-		JButton chatSendButton = new JButton(sendListener);
-		chatPanel.add(chatBox, BorderLayout.CENTER);
-		chatPanel.add(chatSendButton, BorderLayout.EAST);
-		messagePanel.add(messageScrollPane, BorderLayout.CENTER);
-		messagePanel.add(chatPanel, BorderLayout.SOUTH);
-		logTabs.addTab(I18n.translate("log_panel.users"), new JScrollPane(this.users));
-		logTabs.addTab(I18n.translate("log_panel.messages"), messagePanel);
-		logSplit.setResizeWeight(0.5);
-		logSplit.resetToPreferredSizes();
+
 		splitRight.setResizeWeight(1); // let the left side take all the slack
 		splitRight.resetToPreferredSizes();
 		splitCenter.setResizeWeight(0); // let the right side take all the slack
@@ -179,27 +189,31 @@ public class Gui {
 
 		// restore state
 		int[] layout = UiConfig.getLayout();
-		if (layout.length >= 4) {
+		if (layout.length >= 3) {
 			this.splitClasses.setDividerLocation(layout[0]);
 			this.splitCenter.setDividerLocation(layout[1]);
 			this.splitRight.setDividerLocation(layout[2]);
-			this.logSplit.setDividerLocation(layout[3]);
 		}
 
-		this.mainWindow.statusBar().addPermanentComponent(this.connectionStatusLabel);
+		this.mainWindow.getStatusBar().addPermanentComponent(this.connectionStatusLabel);
 
 		// init state
 		setConnectionState(ConnectionState.NOT_CONNECTED);
 		onCloseJar();
 
-		JFrame frame = this.mainWindow.frame();
+		// select correct right panel button
+		this.rightPanel.getButton().setSelected(true);
+		// configure selected right panel
+		this.splitRight.setDividerLocation(UiConfig.getRightPanelDividerLocation(this.getRightPanel().getId(), this.splitRight.getDividerLocation()));
+
+		JFrame frame = this.mainWindow.getFrame();
 		frame.addWindowListener(GuiUtil.onWindowClose(e -> this.close()));
 
-		frame.setSize(UiConfig.getWindowSize("Main Window", ScaleUtil.getDimension(1024, 576)));
+		frame.setSize(UiConfig.getWindowSize(UiConfig.MAIN_WINDOW, ScaleUtil.getDimension(1024, 576)));
 		frame.setMinimumSize(ScaleUtil.getDimension(640, 480));
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-		Point windowPos = UiConfig.getWindowPos("Main Window", null);
+		Point windowPos = UiConfig.getWindowPos(UiConfig.MAIN_WINDOW, null);
 		if (windowPos != null) {
 			frame.setLocation(windowPos);
 		} else {
@@ -209,12 +223,66 @@ public class Gui {
 		this.retranslateUi();
 	}
 
+	public RightPanel getRightPanel() {
+		return this.rightPanel;
+	}
+
+	/**
+	 * Sets the right panel to the given panel.
+	 * @param clazz the new panel's class
+	 * @param updateStateIfCurrent if the provided id is equal to the current id, this parameter determines whether to update the visibility of the panel
+	 */
+	public void setRightPanel(Class<? extends RightPanel> clazz, boolean updateStateIfCurrent) {
+		RightPanel newPanel = RightPanel.getPanel(clazz);
+
+		if (newPanel.getId().equals(this.rightPanel.getId())) {
+			if (updateStateIfCurrent) {
+				this.saveRightPanelDividerLocation();
+
+				// swap visibility
+				this.rightPanel.setVisible(!this.rightPanel.isVisible());
+			}
+		} else {
+			// save divider location and hide
+			this.saveRightPanelDividerLocation();
+			this.rightPanel.setVisible(false);
+
+			// set panel
+			this.rightPanel = newPanel;
+			this.rightPanel.setVisible(true);
+
+			// show and save new data
+			this.splitRight.setRightComponent(this.rightPanel);
+			UiConfig.setSelectedRightPanel(newPanel.getId());
+		}
+
+		// we call getHeight on the right panel selector here since it's rotated, meaning its height is actually its width
+		this.splitRight.setDividerLocation(UiConfig.getRightPanelDividerLocation(newPanel.getId(), this.splitRight.getDividerLocation()));
+
+		// repaint in case the panel was changing without clicking a button
+		this.mainWindow.getFrame().repaint();
+	}
+
+	private void saveRightPanelDividerLocation() {
+		if (this.rightPanel.isVisible()) {
+			UiConfig.setRightPanelDividerLocation(this.rightPanel.getId(), this.splitRight.getDividerLocation());
+		}
+	}
+
 	public MainWindow getMainWindow() {
 		return this.mainWindow;
 	}
 
+	public JList<Message> getMessages() {
+		return this.messages;
+	}
+
+	public JList<String> getUsers() {
+		return this.users;
+	}
+
 	public JFrame getFrame() {
-		return this.mainWindow.frame();
+		return this.mainWindow.getFrame();
 	}
 
 	public GuiController getController() {
@@ -305,10 +373,11 @@ public class Gui {
 
 	public void showTokens(EditorPanel editor, List<Token> tokens) {
 		if (tokens.size() > 1) {
+			this.setRightPanel(CallsTree.class, false);
 			this.controller.setTokenHandle(editor.getClassHandle().copy());
-			this.callsTree.showTokens(tokens);
+			RightPanel.getPanel(CallsTree.class).showTokens(tokens);
 		} else {
-			this.callsTree.clearTokens();
+			RightPanel.getPanel(CallsTree.class).clearTokens();
 		}
 
 		// show the first token
@@ -328,7 +397,7 @@ public class Gui {
 	public void startDocChange(EditorPanel editor) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null || !this.isEditable(EditableType.JAVADOC)) return;
-		JavadocDialog.show(mainWindow.frame(), getController(), cursorReference);
+		JavadocDialog.show(mainWindow.getFrame(), getController(), cursorReference);
 	}
 
 	public void startRename(EditorPanel editor, String text) {
@@ -343,32 +412,57 @@ public class Gui {
 		infoPanel.startRenaming();
 	}
 
-	public void showStructure(EditorPanel editor) {
-		this.structurePanel.showStructure(editor);
+	/**
+	 * Updates the structure right panel without opening it
+	 * @param editor the editor to extract the new structure from
+	 */
+	public void updateStructure(EditorPanel editor) {
+		RightPanel.getPanel(StructurePanel.class).updateStructure(editor);
 	}
 
+	/**
+	 * Opens the Structure right panel and displays information for the provided editor
+	 * @param editor the editor to extract structure from
+	 */
+	public void showStructure(EditorPanel editor) {
+		this.setRightPanel(StructurePanel.class, false);
+		this.updateStructure(editor);
+	}
+
+	/**
+	 * Opens the Inheritance right panel and displays information for the provided editor's cursor reference.
+	 * @param editor the editor to extract the reference from
+	 */
 	public void showInheritance(EditorPanel editor) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.inheritanceTree.display(cursorReference.entry);
-		tabs.setSelectedIndex(1);
+		this.setRightPanel(InheritanceTree.class, false);
+		RightPanel.getPanel(InheritanceTree.class).display(cursorReference.entry);
 	}
 
+	/**
+	 * Opens the Implementations right panel and displays information for the provided editor's cursor reference.
+	 * @param editor the editor to extract the reference from
+	 */
 	public void showImplementations(EditorPanel editor) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.implementationsTree.display(cursorReference.entry);
-		tabs.setSelectedIndex(2);
+		this.setRightPanel(ImplementationsTree.class, false);
+		RightPanel.getPanel(ImplementationsTree.class).display(cursorReference.entry);
 	}
 
+	/**
+	 * Opens the Calls right panel and displays information for the provided editor's cursor reference.
+	 * @param editor the editor to extract the reference from
+	 */
 	public void showCalls(EditorPanel editor, boolean recurse) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.callsTree.showCalls(cursorReference.entry, recurse);
-		tabs.setSelectedIndex(3);
+		this.setRightPanel(CallsTree.class, false);
+		RightPanel.getPanel(CallsTree.class).showCalls(cursorReference.entry, recurse);
 	}
 
 	public void toggleMapping(EditorPanel editor) {
@@ -387,14 +481,14 @@ public class Gui {
 		}
 	}
 
-	public void showDiscardDiag(Function<Integer, Void> callback, String... options) {
-		int response = JOptionPane.showOptionDialog(this.mainWindow.frame(), I18n.translate("prompt.close.summary"), I18n.translate("prompt.close.title"), JOptionPane.YES_NO_CANCEL_OPTION,
+	public void showDiscardDiag(IntFunction<Void> callback, String... options) {
+		int response = JOptionPane.showOptionDialog(this.mainWindow.getFrame(), I18n.translate("prompt.close.summary"), I18n.translate("prompt.close.title"), JOptionPane.YES_NO_CANCEL_OPTION,
 				JOptionPane.QUESTION_MESSAGE, null, options, options[2]);
 		callback.apply(response);
 	}
 
 	public CompletableFuture<Void> saveMapping() {
-		if (this.enigmaMappingsFileChooser.getSelectedFile() != null || this.enigmaMappingsFileChooser.showSaveDialog(this.mainWindow.frame()) == JFileChooser.APPROVE_OPTION)
+		if (this.enigmaMappingsFileChooser.getSelectedFile() != null || this.enigmaMappingsFileChooser.showSaveDialog(this.mainWindow.getFrame()) == JFileChooser.APPROVE_OPTION)
 			return this.controller.saveMappings(this.enigmaMappingsFileChooser.getSelectedFile().toPath());
 		return CompletableFuture.completedFuture(null);
 	}
@@ -405,7 +499,7 @@ public class Gui {
 			exit();
 		} else {
 			// ask to save before closing
-			showDiscardDiag((response) -> {
+			showDiscardDiag(response -> {
 				if (response == JOptionPane.YES_OPTION) {
 					this.saveMapping().thenRun(this::exit);
 					// do not join, as join waits on swing to clear events
@@ -419,24 +513,24 @@ public class Gui {
 	}
 
 	private void exit() {
-		UiConfig.setWindowPos("Main Window", this.mainWindow.frame().getLocationOnScreen());
-		UiConfig.setWindowSize("Main Window", this.mainWindow.frame().getSize());
+		UiConfig.setWindowPos(UiConfig.MAIN_WINDOW, this.mainWindow.getFrame().getLocationOnScreen());
+		UiConfig.setWindowSize(UiConfig.MAIN_WINDOW, this.mainWindow.getFrame().getSize());
 		UiConfig.setLayout(
 				this.splitClasses.getDividerLocation(),
 				this.splitCenter.getDividerLocation(),
-				this.splitRight.getDividerLocation(),
-				this.logSplit.getDividerLocation());
+				this.splitRight.getDividerLocation()
+		);
 		UiConfig.save();
 
 		if (searchDialog != null) {
 			searchDialog.dispose();
 		}
-		this.mainWindow.frame().dispose();
+		this.mainWindow.getFrame().dispose();
 		System.exit(0);
 	}
 
 	public void redraw() {
-		JFrame frame = this.mainWindow.frame();
+		JFrame frame = this.mainWindow.getFrame();
 
 		frame.validate();
 		frame.repaint();
@@ -455,18 +549,17 @@ public class Gui {
 			node.setUserObject(data);
 			// Ob package will never be modified, just reload deob view
 			this.deobfPanel.deobfClasses.reload();
-		} else if (data instanceof ClassEntry) {
+		} else if (data instanceof ClassEntry entry) {
 			// class rename
 
 			// TODO optimize reverse class lookup, although it looks like it's
-			//      fast enough for now
+			//	  fast enough for now
 			EntryRemapper mapper = this.controller.project.getMapper();
-			ClassEntry deobf = (ClassEntry) prevData;
 			ClassEntry obf = mapper.getObfToDeobf().getAllEntries()
-					.filter(e -> e instanceof ClassEntry)
-					.map(e -> (ClassEntry) e)
-					.filter(e -> mapper.deobfuscate(e).equals(deobf))
-					.findAny().orElse(deobf);
+					.filter(ClassEntry.class::isInstance)
+					.map(ClassEntry.class::cast)
+					.filter(e -> mapper.deobfuscate(e).equals(entry))
+					.findAny().orElse(entry);
 
 			this.controller.applyChange(vc, EntryChange.modify(obf).withDeobfName(((ClassEntry) data).getFullName()));
 		} else {
@@ -530,7 +623,7 @@ public class Gui {
 	}
 
 	public void addMessage(Message message) {
-		JScrollBar verticalScrollBar = messageScrollPane.getVerticalScrollBar();
+		JScrollBar verticalScrollBar = RightPanel.getPanel(CollabPanel.class).getMessageScrollPane().getVerticalScrollBar();
 		boolean isAtBottom = verticalScrollBar.getValue() >= verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent();
 		messageModel.addElement(message);
 
@@ -538,21 +631,24 @@ public class Gui {
 			SwingUtilities.invokeLater(() -> verticalScrollBar.setValue(verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent()));
 		}
 
-		this.mainWindow.statusBar().showMessage(message.translate(), 5000);
+		this.mainWindow.getStatusBar().showMessage(message.translate(), 5000);
 	}
 
 	public void setUserList(List<String> users) {
+		boolean wasOffline = this.isOffline();
+
 		userModel.clear();
 		users.forEach(userModel::addElement);
 		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
+
+		// if we were previously offline, we need to reload multiplayer-restricted right panels (ex. messages) so they can be used
+		if (wasOffline && this.getRightPanel() instanceof CollabPanel collabPanel) {
+			collabPanel.setUp();
+		}
 	}
 
-	private void sendMessage() {
-		String text = chatBox.getText().trim();
-		if (!text.isEmpty()) {
-			getController().sendPacket(new MessageC2SPacket(text));
-		}
-		chatBox.setText("");
+	public boolean isOffline() {
+		return this.getUsers().getModel().getSize() <= 0;
 	}
 
 	/**
@@ -562,30 +658,12 @@ public class Gui {
 	 */
 	public void updateUiState() {
 		menuBar.updateUiState();
-
-		connectionStatusLabel.setText(I18n.translate(connectionState == ConnectionState.NOT_CONNECTED ? "status.disconnected" : "status.connected"));
-
-		if (connectionState == ConnectionState.NOT_CONNECTED) {
-			logSplit.setLeftComponent(null);
-			splitRight.setRightComponent(tabs);
-		} else {
-			splitRight.setRightComponent(logSplit);
-			logSplit.setLeftComponent(tabs);
-		}
-
-		splitRight.setDividerLocation(splitRight.getDividerLocation());
+		this.connectionStatusLabel.setText(I18n.translate(connectionState == ConnectionState.NOT_CONNECTED ? "status.disconnected" : "status.connected"));
 	}
 
 	public void retranslateUi() {
 		this.jarFileChooser.setDialogTitle(I18n.translate("menu.file.jar.open"));
 		this.exportJarFileChooser.setDialogTitle(I18n.translate("menu.file.export.jar"));
-		this.tabs.setTitleAt(0, I18n.translate("info_panel.tree.structure"));
-		this.tabs.setTitleAt(1, I18n.translate("info_panel.tree.inheritance"));
-		this.tabs.setTitleAt(2, I18n.translate("info_panel.tree.implementations"));
-		this.tabs.setTitleAt(3, I18n.translate("info_panel.tree.calls"));
-		this.logTabs.setTitleAt(0, I18n.translate("log_panel.users"));
-		this.logTabs.setTitleAt(1, I18n.translate("log_panel.messages"));
-		this.connectionStatusLabel.setText(I18n.translate(connectionState == ConnectionState.NOT_CONNECTED ? "status.disconnected" : "status.connected"));
 
 		this.updateUiState();
 
@@ -593,12 +671,10 @@ public class Gui {
 		this.obfPanel.retranslateUi();
 		this.deobfPanel.retranslateUi();
 		this.infoPanel.retranslateUi();
-		this.structurePanel.retranslateUi();
 		this.editorTabbedPane.retranslateUi();
-		this.inheritanceTree.retranslateUi();
-		this.implementationsTree.retranslateUi();
-		this.structurePanel.retranslateUi();
-		this.callsTree.retranslateUi();
+		for (RightPanel panel : RightPanel.getRightPanels().values()) {
+			panel.retranslateUi();
+		}
 	}
 
 	public void setConnectionState(ConnectionState state) {
@@ -618,9 +694,9 @@ public class Gui {
 		ValidationContext vc = new ValidationContext();
 		op.accept(vc);
 		if (!vc.canProceed()) {
-			List<ParameterizedMessage> messages = vc.getMessages();
-			String text = ValidatableUi.formatMessages(messages);
-			JOptionPane.showMessageDialog(this.getFrame(), text, String.format("%d message(s)", messages.size()), JOptionPane.ERROR_MESSAGE);
+			List<ParameterizedMessage> parameterizedMessages = vc.getMessages();
+			String text = ValidatableUi.formatMessages(parameterizedMessages);
+			JOptionPane.showMessageDialog(this.getFrame(), text, String.format("%d message(s)", parameterizedMessages.size()), JOptionPane.ERROR_MESSAGE);
 		}
 		return vc.canProceed();
 	}

@@ -8,10 +8,10 @@ import cuchaz.enigma.network.ServerPacketHandler;
 import cuchaz.enigma.network.Message;
 
 public class MessageC2SPacket implements Packet<ServerPacketHandler> {
-
 	private String message;
 
 	MessageC2SPacket() {
+
 	}
 
 	public MessageC2SPacket(String message) {
@@ -30,10 +30,9 @@ public class MessageC2SPacket implements Packet<ServerPacketHandler> {
 
 	@Override
 	public void handle(ServerPacketHandler handler) {
-		String message = this.message.trim();
-		if (!message.isEmpty()) {
-			handler.getServer().sendMessage(Message.chat(handler.getServer().getUsername(handler.getClient()), message));
+		String trimmedMessage = this.message.trim();
+		if (!trimmedMessage.isEmpty()) {
+			handler.getServer().sendMessage(Message.chat(handler.getServer().getUsername(handler.getClient()), trimmedMessage));
 		}
 	}
-
 }
