@@ -83,7 +83,7 @@ public class Gui {
 
 	private final MenuBar menuBar;
 	private final ObfPanel obfPanel;
-	private final DeobfPanel deobfPanel;
+	private final Dock deobfPanel;
 	private final IdentifierPanel infoPanel;
 
 	private final EditorTabbedPane editorTabbedPane;
@@ -113,7 +113,7 @@ public class Gui {
 		this.mainWindow = new MainWindow(Enigma.NAME);
 		this.editableTypes = editableTypes;
 		this.controller = new GuiController(this, profile);
-		this.deobfPanel = new DeobfPanel(this);
+		this.deobfPanel = new Dock();
 		this.infoPanel = new IdentifierPanel(this);
 		this.obfPanel = new ObfPanel(this);
 		this.menuBar = new MenuBar(this);
@@ -364,7 +364,7 @@ public class Gui {
 	}
 
 	public void setDeobfClasses(Collection<ClassEntry> deobfClasses) {
-		this.deobfPanel.deobfClasses.setClasses(deobfClasses);
+		//this.deobfPanel.deobfClasses.setClasses(deobfClasses);
 	}
 
 	public void setMappingsFile(Path path) {
@@ -549,7 +549,7 @@ public class Gui {
 			}
 			node.setUserObject(data);
 			// Ob package will never be modified, just reload deob view
-			this.deobfPanel.deobfClasses.reload();
+			//this.deobfPanel.deobfClasses.reload();
 		} else if (data instanceof ClassEntry entry) {
 			// class rename
 
@@ -578,21 +578,21 @@ public class Gui {
 	public void moveClassTree(Entry<?> obfEntry, boolean isOldOb, boolean isNewOb) {
 		ClassEntry classEntry = obfEntry.getContainingClass();
 
-		List<ClassSelector.StateEntry> stateDeobf = this.deobfPanel.deobfClasses.getExpansionState();
+		//List<ClassSelector.StateEntry> stateDeobf = this.deobfPanel.deobfClasses.getExpansionState();
 		List<ClassSelector.StateEntry> stateObf = this.obfPanel.obfClasses.getExpansionState();
 
 		// Ob -> deob
 		if (!isNewOb) {
-			this.deobfPanel.deobfClasses.moveClassIn(classEntry);
+			//this.deobfPanel.deobfClasses.moveClassIn(classEntry);
 			this.obfPanel.obfClasses.removeEntry(classEntry);
-			this.deobfPanel.deobfClasses.reload();
+			//this.deobfPanel.deobfClasses.reload();
 			this.obfPanel.obfClasses.reload();
 		}
 		// Deob -> ob
 		else if (!isOldOb) {
 			this.obfPanel.obfClasses.moveClassIn(classEntry);
-			this.deobfPanel.deobfClasses.removeEntry(classEntry);
-			this.deobfPanel.deobfClasses.reload();
+			//this.deobfPanel.deobfClasses.removeEntry(classEntry);
+			//this.deobfPanel.deobfClasses.reload();
 			this.obfPanel.obfClasses.reload();
 		}
 		// Local move
@@ -600,11 +600,11 @@ public class Gui {
 			this.obfPanel.obfClasses.moveClassIn(classEntry);
 			this.obfPanel.obfClasses.reload();
 		} else {
-			this.deobfPanel.deobfClasses.moveClassIn(classEntry);
-			this.deobfPanel.deobfClasses.reload();
+			//this.deobfPanel.deobfClasses.moveClassIn(classEntry);
+			//this.deobfPanel.deobfClasses.reload();
 		}
 
-		this.deobfPanel.deobfClasses.restoreExpansionState(stateDeobf);
+		//this.deobfPanel.deobfClasses.restoreExpansionState(stateDeobf);
 		this.obfPanel.obfClasses.restoreExpansionState(stateObf);
 	}
 
@@ -612,8 +612,13 @@ public class Gui {
 		return obfPanel;
 	}
 
-	public DeobfPanel getDeobfPanel() {
+	public Dock getDeobfPanel() {
 		return deobfPanel;
+	}
+
+	public Dock[] getDocks() {
+		// todo bad!!
+		return new Dock[]{ rightPanel, deobfPanel };
 	}
 
 	public SearchDialog getSearchDialog() {
@@ -670,7 +675,7 @@ public class Gui {
 
 		this.menuBar.retranslateUi();
 		this.obfPanel.retranslateUi();
-		this.deobfPanel.retranslateUi();
+		//this.deobfPanel.retranslateUi();
 		this.infoPanel.retranslateUi();
 		this.editorTabbedPane.retranslateUi();
 		for (RightPanel panel : RightPanel.getRightPanels().values()) {

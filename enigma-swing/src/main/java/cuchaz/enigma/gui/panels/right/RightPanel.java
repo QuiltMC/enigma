@@ -1,9 +1,10 @@
 package cuchaz.enigma.gui.panels.right;
 
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.docker.Docker;
+import cuchaz.enigma.gui.docker.DockerLabel;
 import cuchaz.enigma.utils.I18n;
 
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import java.awt.BorderLayout;
@@ -12,14 +13,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public abstract class RightPanel extends JPanel {
+public abstract class RightPanel extends Docker {
 	public static final String DEFAULT = Type.STRUCTURE;
 	private static final Map<Class<? extends RightPanel>, RightPanel> panels = new LinkedHashMap<>();
 	private static final Map<String, Class<? extends RightPanel>> panelClasses = new HashMap<>();
 
 	protected final Gui gui;
 	protected final JToggleButton button;
-	protected final JLabel title;
+	protected final DockerLabel title;
 	protected final Supplier<String> titleProvider = () -> I18n.translate("right_panel." + this.getId() + ".title");
 
 	protected RightPanel(Gui gui) {
@@ -27,8 +28,9 @@ public abstract class RightPanel extends JPanel {
 		this.gui = gui;
 		this.button = new JToggleButton(this.titleProvider.get());
 		this.button.addActionListener(e -> gui.setRightPanel(this.getClass(), true));
-		this.title = new DraggableLabel(gui, this.titleProvider.get());
+		this.title = new DockerLabel(gui, this, this.titleProvider.get());
 		this.add(this.title, BorderLayout.NORTH);
+		this.title.setConstraints(BorderLayout.NORTH);
 	}
 
 	public abstract RightPanel.ButtonPosition getButtonPosition();

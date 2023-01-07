@@ -3,21 +3,22 @@ package cuchaz.enigma.gui.panels;
 import java.awt.BorderLayout;
 import java.util.Comparator;
 
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import cuchaz.enigma.gui.ClassSelector;
 import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.gui.panels.right.DraggableLabel;
+import cuchaz.enigma.gui.docker.Docker;
+import cuchaz.enigma.gui.docker.DockerLabel;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.utils.I18n;
 
-public class ObfPanel extends JPanel {
+public class ObfPanel extends Docker {
 	public final ClassSelector obfClasses;
-	public final JLabel title;
+	public final DockerLabel title;
 
 	public ObfPanel(Gui gui) {
+		super(new BorderLayout());
 		Comparator<ClassEntry> obfClassComparator = (a, b) -> {
 			String aname = a.getFullName();
 			String bname = b.getFullName();
@@ -30,10 +31,10 @@ public class ObfPanel extends JPanel {
 		this.obfClasses = new ClassSelector(gui, obfClassComparator, false);
 		this.obfClasses.setSelectionListener(gui.getController()::navigateTo);
 		this.obfClasses.setRenameSelectionListener(gui::onRenameFromClassTree);
-		this.title = new DraggableLabel(gui, I18n.translate("info_panel.classes.obfuscated"));
+		this.title = new DockerLabel(gui, this, I18n.translate("info_panel.classes.obfuscated"));
 
-		this.setLayout(new BorderLayout());
 		this.add(this.title, BorderLayout.NORTH);
+		this.title.setConstraints(BorderLayout.NORTH);
 		this.add(new JScrollPane(this.obfClasses), BorderLayout.CENTER);
 
 		this.retranslateUi();

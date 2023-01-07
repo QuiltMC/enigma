@@ -10,9 +10,11 @@ import java.awt.event.MouseEvent;
 
 public class Dock extends JPanel {
 	private boolean hovered = false;
+	private Docker hostedDocker;
 
 	public Dock() {
 		super(new BorderLayout());
+		this.hostedDocker = null;
 	}
 
 	@Override
@@ -24,20 +26,46 @@ public class Dock extends JPanel {
 			Color color = new Color(0, 0, 255, 84);
 			g.setColor(color);
 			g.fillRect(0, 0, this.getWidth(), this.getHeight());
-			this.repaint(new Rectangle(0, 0, this.getWidth(), this.getHeight()));
+			this.repaint();
 		}
 	}
 
 	public void receiveMouseEvent(MouseEvent e) {
 		if (e.getID() == MouseEvent.MOUSE_DRAGGED) {
-			Rectangle screenBounds = new Rectangle(this.getLocationOnScreen().x, this.getLocationOnScreen().y, this.getWidth(), this.getHeight());
-
-			if (!hovered && contains(screenBounds, e.getLocationOnScreen())) {
-				this.repaint(new Rectangle(0, 0, this.getWidth(), this.getHeight()));
+			if (!hovered && containsMouse(e)) {
+				this.repaint();
 				this.hovered = true;
-			} else if (!contains(screenBounds, e.getLocationOnScreen())) {
+			} else if (!containsMouse(e)) {
 				this.hovered = false;
 			}
+		} else if (e.getID() == MouseEvent.MOUSE_RELEASED) {
+			this.hovered = false;
+			this.repaint();
+		}
+	}
+
+	public boolean containsMouse(MouseEvent e) {
+		Rectangle screenBounds = new Rectangle(this.getLocationOnScreen().x, this.getLocationOnScreen().y, this.getWidth(), this.getHeight());
+		return contains(screenBounds, e.getLocationOnScreen());
+	}
+
+	public void setHostedDocker(Docker docker) {
+		// remove old docker
+		if (this.hostedDocker != null) {
+			this.remove(this.hostedDocker);
+		}
+
+		this.hostedDocker = docker;
+		this.setUpDocker();
+	}
+
+	public void setUpDocker() {
+		if (this.hostedDocker == null) {
+			throw new IllegalStateException("cannot refresh a dock that has no docker!");
+		} else {
+			// add new docker and revalidate to paint properly
+			this.add(this.hostedDocker);
+			this.revalidate();
 		}
 	}
 

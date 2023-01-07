@@ -166,13 +166,13 @@ public class SearchDialog {
 		parent.getController().navigateTo(e.obf);
 		if (e.obf instanceof ClassEntry) {
 			if (e.deobf != null) {
-				parent.getDeobfPanel().deobfClasses.setSelectionClass((ClassEntry) e.deobf);
+				//parent.getDeobfPanel().deobfClasses.setSelectionClass((ClassEntry) e.deobf);
 			} else {
 				parent.getObfPanel().obfClasses.setSelectionClass((ClassEntry) e.obf);
 			}
 		} else {
 			if (e.deobf != null) {
-				parent.getDeobfPanel().deobfClasses.setSelectionClass((ClassEntry) e.deobf.getParent());
+				//parent.getDeobfPanel().deobfClasses.setSelectionClass((ClassEntry) e.deobf.getParent());
 			} else {
 				parent.getObfPanel().obfClasses.setSelectionClass((ClassEntry) e.obf.getParent());
 			}
