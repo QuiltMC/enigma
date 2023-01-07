@@ -9,12 +9,13 @@ import javax.swing.JScrollPane;
 
 import cuchaz.enigma.gui.ClassSelector;
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.panels.right.DraggableLabel;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.utils.I18n;
 
 public class ObfPanel extends JPanel {
 	public final ClassSelector obfClasses;
-	private final JLabel title = new JLabel();
+	public final JLabel title;
 
 	public ObfPanel(Gui gui) {
 		Comparator<ClassEntry> obfClassComparator = (a, b) -> {
@@ -29,6 +30,7 @@ public class ObfPanel extends JPanel {
 		this.obfClasses = new ClassSelector(gui, obfClassComparator, false);
 		this.obfClasses.setSelectionListener(gui.getController()::navigateTo);
 		this.obfClasses.setRenameSelectionListener(gui::onRenameFromClassTree);
+		this.title = new DraggableLabel(gui, I18n.translate("info_panel.classes.obfuscated"));
 
 		this.setLayout(new BorderLayout());
 		this.add(this.title, BorderLayout.NORTH);

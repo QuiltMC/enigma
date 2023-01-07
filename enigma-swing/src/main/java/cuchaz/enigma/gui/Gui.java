@@ -18,6 +18,7 @@ import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.JavadocDialog;
 import cuchaz.enigma.gui.dialog.SearchDialog;
+import cuchaz.enigma.gui.docker.Dock;
 import cuchaz.enigma.gui.elements.EditorTabbedPane;
 import cuchaz.enigma.gui.elements.MainWindow;
 import cuchaz.enigma.gui.elements.MenuBar;
@@ -90,7 +91,7 @@ public class Gui {
 	private final JPanel classesPanel = new JPanel(new BorderLayout());
 	private final JSplitPane splitClasses;
 	private final JPanel centerPanel = new JPanel(new BorderLayout());
-	private RightPanel rightPanel;
+	private Dock rightPanel;
 	private final JSplitPane splitRight;
 	private final JSplitPane splitCenter;
 
@@ -119,7 +120,7 @@ public class Gui {
 		this.setupRightPanels();
 		this.editorTabbedPane = new EditorTabbedPane(this);
 		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, this.obfPanel, this.deobfPanel);
-		this.rightPanel = RightPanel.getPanel(UiConfig.getSelectedRightPanel());
+		this.rightPanel = new Dock();
 		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightPanel);
 		this.splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.classesPanel, splitRight);
 
@@ -202,9 +203,9 @@ public class Gui {
 		onCloseJar();
 
 		// select correct right panel button
-		this.rightPanel.getButton().setSelected(true);
+		//this.rightPanel.getButton().setSelected(true);
 		// configure selected right panel
-		this.splitRight.setDividerLocation(UiConfig.getRightPanelDividerLocation(this.getRightPanel().getId(), this.splitRight.getDividerLocation()));
+		//this.splitRight.setDividerLocation(UiConfig.getRightPanelDividerLocation(this.getRightPanel().getId(), this.splitRight.getDividerLocation()));
 
 		JFrame frame = this.mainWindow.getFrame();
 		frame.addWindowListener(GuiUtil.onWindowClose(e -> this.close()));
@@ -223,7 +224,7 @@ public class Gui {
 		this.retranslateUi();
 	}
 
-	public RightPanel getRightPanel() {
+	public Dock getRightPanel() {
 		return this.rightPanel;
 	}
 
@@ -235,26 +236,26 @@ public class Gui {
 	public void setRightPanel(Class<? extends RightPanel> clazz, boolean updateStateIfCurrent) {
 		RightPanel newPanel = RightPanel.getPanel(clazz);
 
-		if (newPanel.getId().equals(this.rightPanel.getId())) {
-			if (updateStateIfCurrent) {
-				this.saveRightPanelDividerLocation();
-
-				// swap visibility
-				this.rightPanel.setVisible(!this.rightPanel.isVisible());
-			}
-		} else {
-			// save divider location and hide
-			this.saveRightPanelDividerLocation();
-			this.rightPanel.setVisible(false);
-
-			// set panel
-			this.rightPanel = newPanel;
-			this.rightPanel.setVisible(true);
-
-			// show and save new data
-			this.splitRight.setRightComponent(this.rightPanel);
-			UiConfig.setSelectedRightPanel(newPanel.getId());
-		}
+//		if (newPanel.getId().equals(this.rightPanel.getId())) {
+//			if (updateStateIfCurrent) {
+//				this.saveRightPanelDividerLocation();
+//
+//				// swap visibility
+//				this.rightPanel.setVisible(!this.rightPanel.isVisible());
+//			}
+//		} else {
+//			// save divider location and hide
+//			this.saveRightPanelDividerLocation();
+//			this.rightPanel.setVisible(false);
+//
+//			// set panel
+//			this.rightPanel = newPanel;
+//			this.rightPanel.setVisible(true);
+//
+//			// show and save new data
+//			this.splitRight.setRightComponent(this.rightPanel);
+//			UiConfig.setSelectedRightPanel(newPanel.getId());
+//		}
 
 		// we call getHeight on the right panel selector here since it's rotated, meaning its height is actually its width
 		this.splitRight.setDividerLocation(UiConfig.getRightPanelDividerLocation(newPanel.getId(), this.splitRight.getDividerLocation()));
@@ -264,9 +265,9 @@ public class Gui {
 	}
 
 	private void saveRightPanelDividerLocation() {
-		if (this.rightPanel.isVisible()) {
-			UiConfig.setRightPanelDividerLocation(this.rightPanel.getId(), this.splitRight.getDividerLocation());
-		}
+//		if (this.rightPanel.isVisible()) {
+//			UiConfig.setRightPanelDividerLocation(this.rightPanel.getId(), this.splitRight.getDividerLocation());
+//		}
 	}
 
 	public MainWindow getMainWindow() {
@@ -641,10 +642,10 @@ public class Gui {
 		users.forEach(userModel::addElement);
 		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
 
-		// if we were previously offline, we need to reload multiplayer-restricted right panels (ex. messages) so they can be used
-		if (wasOffline && this.getRightPanel() instanceof CollabPanel collabPanel) {
-			collabPanel.setUp();
-		}
+//		// if we were previously offline, we need to reload multiplayer-restricted right panels (ex. messages) so they can be used
+//		if (wasOffline && this.getRightPanel() instanceof CollabPanel collabPanel) {
+//			collabPanel.setUp();
+//		}
 	}
 
 	public boolean isOffline() {

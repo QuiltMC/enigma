@@ -1,5 +1,7 @@
 package cuchaz.enigma.gui.panels.right;
 
+import cuchaz.enigma.gui.Gui;
+
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -14,11 +16,13 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 public class DraggableLabel extends JLabel {
+	private final Gui gui;
 	private JComponent initialParent;
 
-	public DraggableLabel(String text) {
+	public DraggableLabel(Gui gui, String text) {
 		super(text);
 		this.setOpaque(false);
+		this.gui = gui;
 
 		this.addMouseListener(new MouseListener() {
 			@Override
@@ -90,6 +94,9 @@ public class DraggableLabel extends JLabel {
 				// set location and ensure visibility
 				DraggableLabel.this.setLocation(mouseFrameX, mouseFrameY);
 				DraggableLabel.this.setVisible(true);
+
+				// update dock highlighting
+				DraggableLabel.this.gui.getRightPanel().receiveMouseEvent(e);
 			}
 
 			@Override
