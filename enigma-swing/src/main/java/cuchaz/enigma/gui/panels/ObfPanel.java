@@ -37,4 +37,9 @@ public class ObfPanel extends Docker {
 		// todo
 		return "obf";
 	}
+
+	@Override
+	public Location getPreferredLocation() {
+		return Location.LEFT_TOP;
+	}
 }

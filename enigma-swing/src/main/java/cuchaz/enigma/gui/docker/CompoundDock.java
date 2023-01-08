@@ -3,24 +3,25 @@ package cuchaz.enigma.gui.docker;
 import javax.swing.JSplitPane;
 
 public class CompoundDock extends JSplitPane {
-	private final Dock upperDock;
-	private final Dock lowerDock;
+	private final Dock topDock;
+	private final Dock bottomDock;
 
-	public CompoundDock(Dock upperDock, Dock lowerDock) {
-		super(JSplitPane.VERTICAL_SPLIT, true, upperDock, lowerDock);
-		this.upperDock = upperDock;
-		this.lowerDock = lowerDock;
+	@SuppressWarnings("SuspiciousNameCombination")
+	public CompoundDock(Dock topDock, Dock bottomDock) {
+		super(JSplitPane.VERTICAL_SPLIT, true, topDock, bottomDock);
+		this.topDock = topDock;
+		this.bottomDock = bottomDock;
 	}
 
-	public CompoundDock() {
-		this(new Dock(), new Dock());
+	public CompoundDock(Docker.Location location) {
+		this(new Dock(location.isLeft() ? Docker.Location.LEFT_TOP : Docker.Location.RIGHT_TOP), new Dock(location.isLeft() ? Docker.Location.LEFT_BOTTOM : Docker.Location.RIGHT_BOTTOM));
 	}
 
-	public Dock getUpperDock() {
-		return this.upperDock;
+	public Dock getTopDock() {
+		return this.topDock;
 	}
 
-	public Dock getLowerDock() {
-		return this.lowerDock;
+	public Dock getBottomDock() {
+		return this.bottomDock;
 	}
 }

@@ -70,6 +70,6 @@ public abstract class AbstractInheritanceTree extends RightPanel {
 
 	@Override
 	public ButtonPosition getButtonPosition() {
-		return ButtonPosition.TOP;
+		return ButtonPosition.RIGHT_TOP;
 	}
 }

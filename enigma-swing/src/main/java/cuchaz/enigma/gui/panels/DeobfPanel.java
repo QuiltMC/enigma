@@ -62,4 +62,9 @@ public class DeobfPanel extends Docker {
 		// todo
 		return "deobf";
 	}
+
+	@Override
+	public Location getPreferredLocation() {
+		return Location.LEFT_BOTTOM;
+	}
 }

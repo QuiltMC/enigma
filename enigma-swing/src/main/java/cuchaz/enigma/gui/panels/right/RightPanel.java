@@ -42,7 +42,14 @@ public abstract class RightPanel extends Docker {
 		this.getButton().setSelected(visible);
 	}
 
+	@Override
+	public Location getPreferredLocation() {
+		return Location.RIGHT_FULL;
+	}
+
+	@Override
 	public void retranslateUi() {
+		super.retranslateUi();
 		String translatedTitle = this.titleProvider.get();
 		this.button.setText(translatedTitle);
 		this.title.setText(translatedTitle);
@@ -81,18 +88,5 @@ public abstract class RightPanel extends Docker {
 
 	public static Map<String, Class<? extends RightPanel>> getPanelClasses() {
 		return panelClasses;
-	}
-
-	public static final class Type {
-		public static final String STRUCTURE = "structure";
-		public static final String INHERITANCE = "inheritance";
-		public static final String CALLS = "calls";
-		public static final String IMPLEMENTATIONS = "implementations";
-		public static final String COLLAB = "collab";
-	}
-
-	public enum ButtonPosition {
-		TOP,
-		BOTTOM
 	}
 }

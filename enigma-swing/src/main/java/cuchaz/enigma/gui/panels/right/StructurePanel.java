@@ -155,7 +155,7 @@ public class StructurePanel extends RightPanel {
 
 	@Override
 	public ButtonPosition getButtonPosition() {
-		return ButtonPosition.TOP;
+		return ButtonPosition.RIGHT_TOP;
 	}
 
 	@Override

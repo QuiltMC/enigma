@@ -93,7 +93,7 @@ public class CollabPanel extends RightPanel {
 
 	@Override
 	public ButtonPosition getButtonPosition() {
-		return ButtonPosition.BOTTOM;
+		return ButtonPosition.RIGHT_BOTTOM;
 	}
 
 	@Override

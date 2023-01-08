@@ -6,6 +6,8 @@ import java.util.OptionalInt;
 
 import cuchaz.enigma.config.ConfigContainer;
 import cuchaz.enigma.config.ConfigSection;
+import cuchaz.enigma.gui.docker.Dock;
+import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.panels.right.RightPanel;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
@@ -18,6 +20,8 @@ public final class UiConfig {
 	public static final String SCALE_FACTOR = "Scale Factor";
 	public static final String RIGHT_PANEL = "Right Panel";
 	public static final String RIGHT_PANEL_DIVIDER_LOCATIONS = "Right Panel Divider Locations";
+	public static final String DOCKER_DIVIDER_LOCATIONS = "Docker Divider Locations";
+	public static final String HOSTED_DOCKERS = "Hosted Dockers";
 	public static final String LAYOUT = "Layout";
 	public static final String THEMES = "Themes";
 	public static final String COLORS = "Colors";
@@ -134,6 +138,22 @@ public final class UiConfig {
 
 	public static int getRightPanelDividerLocation(String id, int defaultLocation) {
 		return swing.data().section(RIGHT_PANEL_DIVIDER_LOCATIONS).setIfAbsentInt(id, defaultLocation);
+	}
+
+	public static void setDockerDividerLocation(Docker docker, int location) {
+		swing.data().section(DOCKER_DIVIDER_LOCATIONS).setInt(docker.getCurrentLocation().getSideName(), location);
+	}
+
+	public static int getDockerDividerLocation(Docker docker, int defaultLocation) {
+		return swing.data().section(RIGHT_PANEL_DIVIDER_LOCATIONS).setIfAbsentInt(docker.getCurrentLocation().getSideName(), defaultLocation);
+	}
+
+	public static void setDocker(Dock dock, Docker docker) {
+		swing.data().section(HOSTED_DOCKERS).setString(dock.getDockerLocation().toString(), docker == null ? null : docker.getId());
+	}
+
+	public static String getDocker(Dock dock) {
+		return swing.data().section(HOSTED_DOCKERS).setIfAbsentString(dock.getDockerLocation().toString(), null);
 	}
 
 	/**

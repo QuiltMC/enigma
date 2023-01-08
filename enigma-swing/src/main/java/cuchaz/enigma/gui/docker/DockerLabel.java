@@ -74,12 +74,7 @@ public class DockerLabel extends JLabel {
 				DockerLabel.this.initialParent.repaint();
 
 				// if dropped over a docker, snap into place
-				for (Dock dock : gui.getDocks()) {
-					if (dock.containsMouse(e)) {
-						dock.setHostedDocker(DockerLabel.this.docker);
-						break;
-					}
-				}
+				Dock.Util.dropDocker(DockerLabel.this.docker, e);
 
 				DockerLabel.this.initialParent = null;
 				// constraints are not reset, we assume that the label will stay with the same parent

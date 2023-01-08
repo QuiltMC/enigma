@@ -20,6 +20,7 @@ import cuchaz.enigma.gui.dialog.JavadocDialog;
 import cuchaz.enigma.gui.dialog.SearchDialog;
 import cuchaz.enigma.gui.docker.CompoundDock;
 import cuchaz.enigma.gui.docker.Dock;
+import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.elements.EditorTabbedPane;
 import cuchaz.enigma.gui.elements.MainWindow;
 import cuchaz.enigma.gui.elements.MenuBar;
@@ -68,6 +69,7 @@ import java.awt.Point;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -119,13 +121,13 @@ public class Gui {
 		this.menuBar = new MenuBar(this);
 		this.setupRightPanels();
 		this.editorTabbedPane = new EditorTabbedPane(this);
-		this.rightDock = new CompoundDock();
-		this.leftDock = new CompoundDock();
+		this.rightDock = new CompoundDock(Docker.Location.RIGHT_FULL);
+		this.leftDock = new CompoundDock(Docker.Location.LEFT_FULL);
 		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightDock);
 		this.splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, leftDock, splitRight);
 
-		this.leftDock.getUpperDock().setHostedDocker(this.obfPanel);
-		this.leftDock.getLowerDock().setHostedDocker(this.deobfPanel);
+		this.leftDock.getTopDock().setHostedDocker(this.obfPanel);
+		this.leftDock.getBottomDock().setHostedDocker(this.deobfPanel);
 
 		this.setupUi();
 
@@ -223,50 +225,50 @@ public class Gui {
 		this.retranslateUi();
 	}
 
-	public CompoundDock getRightDock() {
-		return this.rightDock;
-	}
-
 	/**
-	 * Sets the right panel to the given panel.
+	 * Sets the current docker to the provided one.
 	 * @param clazz the new panel's class
 	 * @param updateStateIfCurrent if the provided id is equal to the current id, this parameter determines whether to update the visibility of the panel
 	 */
 	public void setRightPanel(Class<? extends RightPanel> clazz, boolean updateStateIfCurrent) {
-		RightPanel newPanel = RightPanel.getPanel(clazz);
+		// todo
+		Docker newDocker = RightPanel.getPanel(clazz);
 
-//		if (newPanel.getId().equals(this.rightPanel.getId())) {
-//			if (updateStateIfCurrent) {
-//				this.saveRightPanelDividerLocation();
-//
-//				// swap visibility
-//				this.rightPanel.setVisible(!this.rightPanel.isVisible());
-//			}
-//		} else {
-//			// save divider location and hide
-//			this.saveRightPanelDividerLocation();
-//			this.rightPanel.setVisible(false);
-//
-//			// set panel
-//			this.rightPanel = newPanel;
-//			this.rightPanel.setVisible(true);
-//
-//			// show and save new data
-//			this.splitRight.setRightComponent(this.rightPanel);
-//			UiConfig.setSelectedRightPanel(newPanel.getId());
-//		}
+		// update state if docker is shown
+		for (Map.Entry<Dock, Docker> entry : Dock.Util.getActiveDockers().entrySet()) {
+			Docker docker = entry.getValue();
+			Dock dock = entry.getKey();
 
-		// we call getHeight on the right panel selector here since it's rotated, meaning its height is actually its width
-		this.splitRight.setDividerLocation(UiConfig.getRightPanelDividerLocation(newPanel.getId(), this.splitRight.getDividerLocation()));
+			if (newDocker.getId().equals(docker.getId()) && updateStateIfCurrent) {
+				this.saveDividerLocation(docker);
+
+				// swap visibility
+				if (docker.isVisible()) {
+					dock.removeHostedDocker();
+				} else {
+					dock.setHostedDocker(docker);
+				}
+
+				return;
+			}
+		}
+
+		// todo this assumes it's being added from a button
+		Dock dock = Dock.Util.getForLocation(newDocker.getPreferredLocation());
+		dock.removeHostedDocker();
+		dock.setHostedDocker(newDocker);
+
+		// todo hiding of right/left panels if empty
+		// todo opening of right/left panels
 
 		// repaint in case the panel was changing without clicking a button
 		this.mainWindow.getFrame().repaint();
 	}
 
-	private void saveRightPanelDividerLocation() {
-//		if (this.rightPanel.isVisible()) {
-//			UiConfig.setRightPanelDividerLocation(this.rightPanel.getId(), this.splitRight.getDividerLocation());
-//		}
+	private void saveDividerLocation(Docker docker) {
+		if (docker.isActive()) {
+			UiConfig.setDockerDividerLocation(docker, docker.getCurrentLocation().isLeft() ? this.splitCenter.getDividerLocation() : this.splitRight.getDividerLocation());
+		}
 	}
 
 	public MainWindow getMainWindow() {
@@ -614,11 +616,6 @@ public class Gui {
 
 	public DeobfPanel getDeobfPanel() {
 		return deobfPanel;
-	}
-
-	public Dock[] getDocks() {
-		// todo bad!!
-		return new Dock[]{rightDock.getUpperDock(), rightDock.getLowerDock(), leftDock.getLowerDock(), leftDock.getUpperDock() };
 	}
 
 	public SearchDialog getSearchDialog() {

@@ -58,7 +58,7 @@ public class MainWindow {
 		for (RightPanel panel : RightPanel.getRightPanels().values()) {
 			JToggleButton button = panel.getButton();
 
-			if (panel.getButtonPosition().equals(RightPanel.ButtonPosition.TOP)) {
+			if (panel.getButtonPosition().equals(RightPanel.ButtonPosition.RIGHT_TOP)) {
 				this.topRightPanelSelector.add(button);
 			} else {
 				this.bottomRightPanelSelector.add(button);
