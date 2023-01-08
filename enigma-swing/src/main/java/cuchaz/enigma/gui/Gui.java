@@ -18,6 +18,7 @@ import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.JavadocDialog;
 import cuchaz.enigma.gui.dialog.SearchDialog;
+import cuchaz.enigma.gui.docker.CompoundDock;
 import cuchaz.enigma.gui.docker.Dock;
 import cuchaz.enigma.gui.elements.EditorTabbedPane;
 import cuchaz.enigma.gui.elements.MainWindow;
@@ -83,15 +84,14 @@ public class Gui {
 
 	private final MenuBar menuBar;
 	private final ObfPanel obfPanel;
-	private final Dock deobfPanel;
+	private final DeobfPanel deobfPanel;
 	private final IdentifierPanel infoPanel;
 
 	private final EditorTabbedPane editorTabbedPane;
 
-	private final JPanel classesPanel = new JPanel(new BorderLayout());
-	private final JSplitPane splitClasses;
 	private final JPanel centerPanel = new JPanel(new BorderLayout());
-	private Dock rightPanel;
+	private final CompoundDock rightDock;
+	private final CompoundDock leftDock;
 	private final JSplitPane splitRight;
 	private final JSplitPane splitCenter;
 
@@ -113,16 +113,19 @@ public class Gui {
 		this.mainWindow = new MainWindow(Enigma.NAME);
 		this.editableTypes = editableTypes;
 		this.controller = new GuiController(this, profile);
-		this.deobfPanel = new Dock();
+		this.deobfPanel = new DeobfPanel(this);
 		this.infoPanel = new IdentifierPanel(this);
 		this.obfPanel = new ObfPanel(this);
 		this.menuBar = new MenuBar(this);
 		this.setupRightPanels();
 		this.editorTabbedPane = new EditorTabbedPane(this);
-		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, this.obfPanel, this.deobfPanel);
-		this.rightPanel = new Dock();
-		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightPanel);
-		this.splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.classesPanel, splitRight);
+		this.rightDock = new CompoundDock();
+		this.leftDock = new CompoundDock();
+		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightDock);
+		this.splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, leftDock, splitRight);
+
+		this.leftDock.getUpperDock().setHostedDocker(this.obfPanel);
+		this.leftDock.getLowerDock().setHostedDocker(this.deobfPanel);
 
 		this.setupUi();
 
@@ -170,9 +173,6 @@ public class Gui {
 
 		this.exportJarFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-		this.splitClasses.setResizeWeight(0.3);
-		this.classesPanel.setPreferredSize(ScaleUtil.getDimension(250, 0));
-
 		// layout controls
 		Container workArea = this.mainWindow.getWorkArea();
 		workArea.setLayout(new BorderLayout());
@@ -191,7 +191,6 @@ public class Gui {
 		// restore state
 		int[] layout = UiConfig.getLayout();
 		if (layout.length >= 3) {
-			this.splitClasses.setDividerLocation(layout[0]);
 			this.splitCenter.setDividerLocation(layout[1]);
 			this.splitRight.setDividerLocation(layout[2]);
 		}
@@ -224,8 +223,8 @@ public class Gui {
 		this.retranslateUi();
 	}
 
-	public Dock getRightPanel() {
-		return this.rightPanel;
+	public CompoundDock getRightDock() {
+		return this.rightDock;
 	}
 
 	/**
@@ -292,8 +291,8 @@ public class Gui {
 
 	public void setSingleClassTree(boolean singleClassTree) {
 		this.singleClassTree = singleClassTree;
-		this.classesPanel.removeAll();
-		this.classesPanel.add(isSingleClassTree() ? deobfPanel : splitClasses);
+//		this.classesPanel.removeAll();
+//		this.classesPanel.add(isSingleClassTree() ? deobfPanel : splitClasses);
 		getController().refreshClasses();
 		retranslateUi();
 	}
@@ -303,15 +302,15 @@ public class Gui {
 	}
 
 	public void onStartOpenJar() {
-		this.classesPanel.removeAll();
+//		this.classesPanel.removeAll();
 		redraw();
 	}
 
 	public void onFinishOpenJar(String jarName) {
 		// update gui
 		this.mainWindow.setTitle(Enigma.NAME + " - " + jarName);
-		this.classesPanel.removeAll();
-		this.classesPanel.add(isSingleClassTree() ? deobfPanel : splitClasses);
+//		this.classesPanel.removeAll();
+//		this.classesPanel.add(isSingleClassTree() ? deobfPanel : splitClasses);
 		this.editorTabbedPane.closeAllEditorTabs();
 
 		// update menu
@@ -327,7 +326,7 @@ public class Gui {
 		setObfClasses(null);
 		setDeobfClasses(null);
 		this.editorTabbedPane.closeAllEditorTabs();
-		this.classesPanel.removeAll();
+//		this.classesPanel.removeAll();
 
 		// update menu
 		isJarOpen = false;
@@ -517,7 +516,8 @@ public class Gui {
 		UiConfig.setWindowPos(UiConfig.MAIN_WINDOW, this.mainWindow.getFrame().getLocationOnScreen());
 		UiConfig.setWindowSize(UiConfig.MAIN_WINDOW, this.mainWindow.getFrame().getSize());
 		UiConfig.setLayout(
-				this.splitClasses.getDividerLocation(),
+//				this.splitClasses.getDividerLocation(),
+				0,
 				this.splitCenter.getDividerLocation(),
 				this.splitRight.getDividerLocation()
 		);
@@ -612,13 +612,13 @@ public class Gui {
 		return obfPanel;
 	}
 
-	public Dock getDeobfPanel() {
+	public DeobfPanel getDeobfPanel() {
 		return deobfPanel;
 	}
 
 	public Dock[] getDocks() {
 		// todo bad!!
-		return new Dock[]{ rightPanel, deobfPanel };
+		return new Dock[]{rightDock.getUpperDock(), rightDock.getLowerDock(), leftDock.getLowerDock(), leftDock.getUpperDock() };
 	}
 
 	public SearchDialog getSearchDialog() {

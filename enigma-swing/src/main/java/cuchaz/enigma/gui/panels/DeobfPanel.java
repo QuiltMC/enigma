@@ -10,20 +10,19 @@ import javax.swing.SwingUtilities;
 
 import cuchaz.enigma.gui.ClassSelector;
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.elements.DeobfPanelPopupMenu;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.utils.I18n;
 
-public class DeobfPanel extends JPanel {
-
+public class DeobfPanel extends Docker {
 	public final ClassSelector deobfClasses;
-	private final JLabel title = new JLabel();
-
 	public final DeobfPanelPopupMenu deobfPanelPopupMenu;
 
 	private final Gui gui;
 
 	public DeobfPanel(Gui gui) {
+		super(gui, new BorderLayout());
 		this.gui = gui;
 
 		this.deobfClasses = new ClassSelector(gui, ClassSelector.DEOBF_CLASS_COMPARATOR, true);
@@ -33,6 +32,7 @@ public class DeobfPanel extends JPanel {
 
 		this.setLayout(new BorderLayout());
 		this.add(this.title, BorderLayout.NORTH);
+		this.title.setConstraints(BorderLayout.NORTH);
 		this.add(new JScrollPane(this.deobfClasses), BorderLayout.CENTER);
 
 		this.deobfClasses.addMouseListener(GuiUtil.onMousePress(this::onPress));
@@ -50,9 +50,16 @@ public class DeobfPanel extends JPanel {
 		}
 	}
 
+	@Override
 	public void retranslateUi() {
+		super.retranslateUi();
 		this.title.setText(I18n.translate(gui.isSingleClassTree() ? "info_panel.classes" : "info_panel.classes.deobfuscated"));
 		this.deobfPanelPopupMenu.retranslateUi();
 	}
 
+	@Override
+	public String getId() {
+		// todo
+		return "deobf";
+	}
 }

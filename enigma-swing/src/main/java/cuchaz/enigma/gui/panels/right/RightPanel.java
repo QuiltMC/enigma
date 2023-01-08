@@ -5,7 +5,6 @@ import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.docker.DockerLabel;
 import cuchaz.enigma.utils.I18n;
 
-import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import java.awt.BorderLayout;
 import java.util.HashMap;
@@ -24,7 +23,7 @@ public abstract class RightPanel extends Docker {
 	protected final Supplier<String> titleProvider = () -> I18n.translate("right_panel." + this.getId() + ".title");
 
 	protected RightPanel(Gui gui) {
-		super(new BorderLayout());
+		super(gui, new BorderLayout());
 		this.gui = gui;
 		this.button = new JToggleButton(this.titleProvider.get());
 		this.button.addActionListener(e -> gui.setRightPanel(this.getClass(), true));

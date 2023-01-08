@@ -37,12 +37,11 @@ public class DockerLabel extends JLabel {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				if (DockerLabel.this.constraints == null) {
-					throw new IllegalStateException("draggable label was not properly configured and therefore cannot properly be re-added to its parent if dropped outside a dock! (did you forget to call setConstraints()?)");
-				}
-
 				// save parent for re-addition after dragging is finished
 				DockerLabel.this.initialParent = (JComponent) DockerLabel.this.getParent();
+
+				// validate
+				DockerLabel.this.ensureConfigured();
 
 				// configure object to be on the glass pane instead of its former pane
 				DockerLabel.this.setVisible(false);
@@ -60,9 +59,9 @@ public class DockerLabel extends JLabel {
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				for (Dock dock : gui.getDocks()) {
-					dock.receiveMouseEvent(e);
-				}
+				DockerLabel.this.ensureConfigured();
+
+				Dock.Util.receiveMouseEvent(e);
 
 				// remove from glass pane and repaint to display removal
 				JPanel glassPane = (JPanel) SwingUtilities.getRootPane(DockerLabel.this).getGlassPane();
@@ -97,6 +96,7 @@ public class DockerLabel extends JLabel {
 			}
 
 		});
+
 		this.addMouseMotionListener(new MouseMotionListener() {
 			@Override
 			public void mouseDragged(MouseEvent e) {
@@ -120,9 +120,7 @@ public class DockerLabel extends JLabel {
 				DockerLabel.this.setVisible(true);
 
 				// update dock highlighting
-				for (Dock dock : gui.getDocks()) {
-					dock.receiveMouseEvent(e);
-				}
+				Dock.Util.receiveMouseEvent(e);
 			}
 
 			@Override
@@ -140,5 +138,14 @@ public class DockerLabel extends JLabel {
 	public void setConstraints(Object constraints) {
 		this.constraints = constraints;
 	}
-}
 
+	/**
+	 * ensures that the label is properly configured and ready to be dragged.
+	 * <br> should be called before dragging begins to prevent difficult-to-trace errors!
+	 */
+	private void ensureConfigured() {
+		if (DockerLabel.this.constraints == null || DockerLabel.this.initialParent == null) {
+			throw new IllegalStateException("draggable label \"" + this.getText() + "\" was not properly configured and therefore cannot properly be re-added to its parent if dropped outside a dock! (did you forget to call setConstraints()?)");
+		}
+	}
+}

@@ -7,14 +7,19 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Dock extends JPanel {
+	private static final List<Dock> docks = new ArrayList<>();
+
 	private boolean hovered = false;
 	private Docker hostedDocker;
 
 	public Dock() {
 		super(new BorderLayout());
 		this.hostedDocker = null;
+		docks.add(this);
 	}
 
 	@Override
@@ -31,16 +36,18 @@ public class Dock extends JPanel {
 	}
 
 	public void receiveMouseEvent(MouseEvent e) {
-		if (e.getID() == MouseEvent.MOUSE_DRAGGED) {
-			if (!hovered && containsMouse(e)) {
-				this.repaint();
-				this.hovered = true;
-			} else if (!containsMouse(e)) {
+		if (this.isDisplayable()) {
+			if (e.getID() == MouseEvent.MOUSE_DRAGGED) {
+				if (!hovered && containsMouse(e)) {
+					this.repaint();
+					this.hovered = true;
+				} else if (!containsMouse(e)) {
+					this.hovered = false;
+				}
+			} else if (e.getID() == MouseEvent.MOUSE_RELEASED) {
 				this.hovered = false;
+				this.repaint();
 			}
-		} else if (e.getID() == MouseEvent.MOUSE_RELEASED) {
-			this.hovered = false;
-			this.repaint();
 		}
 	}
 
@@ -72,5 +79,13 @@ public class Dock extends JPanel {
 	private boolean contains(Rectangle rectangle, Point point) {
 		return (point.x >= rectangle.x && point.x <= rectangle.x + rectangle.width)
 				&& (point.y >= rectangle.y && point.y <= rectangle.y + rectangle.height);
+	}
+
+	public static class Util {
+		public static void receiveMouseEvent(MouseEvent e) {
+			for (Dock dock : docks) {
+				dock.receiveMouseEvent(e);
+			}
+		}
 	}
 }
