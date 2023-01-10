@@ -4,37 +4,63 @@ import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.utils.I18n;
 
 import javax.swing.JPanel;
-import java.awt.LayoutManager;
+import javax.swing.JToggleButton;
+import java.awt.BorderLayout;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public abstract class Docker extends JPanel {
-	private final Supplier<String> titleSupplier = () -> I18n.translate("docker." + this.getId() + ".title");
+	private static final Map<Class<? extends Docker>, Docker> dockers = new LinkedHashMap<>();
+	private static final Map<String, Class<? extends Docker>> dockerClasses = new HashMap<>();
+
+	protected final Supplier<String> titleSupplier = () -> I18n.translate("docker." + this.getId() + ".title");
 	protected final DockerLabel title;
+	protected final JToggleButton button;
+	protected final Gui gui;
 
-	protected Location currentLocation = null;
+	protected Height currentLocation = null;
+	protected Side side = null;
 
-	protected Docker(Gui gui, LayoutManager layout) {
-		super(layout);
+	protected Docker(Gui gui) {
+		super(new BorderLayout());
+		this.gui = gui;
 		this.title = new DockerLabel(gui, this, this.titleSupplier.get());
+		this.button = new JToggleButton(this.titleSupplier.get());
+		this.button.addActionListener(e -> gui.openDocker(this.getClass(), true));
 	}
 
 	public void retranslateUi() {
-		this.title.setText(this.titleSupplier.get());
+		String translatedTitle = this.titleSupplier.get();
+		this.button.setText(translatedTitle);
+		this.title.setText(translatedTitle);
 	}
 
-	public void dock(Location location) {
+	public void dock(Side side, Height location) {
 		this.currentLocation = location;
+		this.side = side;
 	}
 
 	public boolean isActive() {
 		return this.currentLocation != null;
 	}
 
-	public Location getCurrentLocation() {
+	public Height getCurrentLocation() {
 		return this.currentLocation;
 	}
 
+	public Side getCurrentSide() {
+		return this.side;
+	}
+
+	public JToggleButton getButton() {
+		return this.button;
+	}
+
 	public abstract String getId();
+
+	public abstract Docker.ButtonPosition getButtonPosition();
 
 	/**
 	 * dictates where the panel will open when the user clicks its button
@@ -47,6 +73,39 @@ public abstract class Docker extends JPanel {
 		if (!visible) {
 			this.currentLocation = null;
 		}
+
+		this.getButton().setSelected(visible);
+	}
+
+	public static void addDocker(Docker panel) {
+		dockers.put(panel.getClass(), panel);
+		dockerClasses.put(panel.getId(), panel.getClass());
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T extends Docker> T getDocker(Class<T> clazz) {
+		Docker panel = dockers.get(clazz);
+		if (panel != null) {
+			return (T) dockers.get(clazz);
+		} else {
+			throw new IllegalArgumentException("no panel registered for class " + clazz);
+		}
+	}
+
+	public static Docker getDocker(String id) {
+		if (!dockerClasses.containsKey(id)) {
+			throw new IllegalArgumentException("no panel registered for id " + id);
+		}
+
+		return getDocker(dockerClasses.get(id));
+	}
+
+	public static Map<Class<? extends Docker>, Docker> getDockers() {
+		return dockers;
+	}
+
+	public static Map<String, Class<? extends Docker>> getDockerClasses() {
+		return dockerClasses;
 	}
 
 	/**
@@ -72,27 +131,18 @@ public abstract class Docker extends JPanel {
 		LEFT_BOTTOM
 	}
 
-	/**
-	 * represents all the places a docker can be positioned
-	 */
-	public enum Location {
-		LEFT_FULL,
-		LEFT_TOP,
-		LEFT_BOTTOM,
-		RIGHT_FULL,
-		RIGHT_TOP,
-		RIGHT_BOTTOM;
+	public record Location(Side side, Height height) {
 
-		public boolean isLeft() {
-			return this.ordinal() < 3;
-		}
+	}
 
-		public boolean isRight() {
-			return this.ordinal() > 2;
-		}
+	public enum Side {
+		LEFT,
+		RIGHT
+	}
 
-		public String getSideName() {
-			return this.isLeft() ? "left" : "right";
-		}
+	public enum Height {
+		TOP,
+		BOTTOM,
+		FULL
 	}
 }

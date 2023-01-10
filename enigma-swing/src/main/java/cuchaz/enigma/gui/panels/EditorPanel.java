@@ -47,14 +47,13 @@ import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Result;
 
 public class EditorPanel {
-
 	private final JPanel ui = new JPanel();
 	private final JEditorPane editor = new JEditorPane();
 	private final JScrollPane editorScrollPane = new JScrollPane(this.editor);
 	private final EditorPopupMenu popupMenu;
 
 	// progress UI
-	private final JLabel decompilingLabel = new JLabel(I18n.translate("editor.decompiling"), JLabel.CENTER);
+	private final JLabel decompilingLabel = new JLabel(I18n.translate("editor.decompiling"), SwingConstants.CENTER);
 	private final JProgressBar decompilingProgressBar = new JProgressBar(0, 100);
 
 	// error display UI
@@ -327,7 +326,7 @@ public class EditorPanel {
 				this.ui.setLayout(new GridBagLayout());
 				GridBagConstraintsBuilder cb = GridBagConstraintsBuilder.create().insets(2).weight(1.0, 0.0).anchor(GridBagConstraints.WEST);
 				this.ui.add(this.errorLabel, cb.pos(0, 0).build());
-				this.ui.add(new JSeparator(JSeparator.HORIZONTAL), cb.pos(0, 1).fill(GridBagConstraints.HORIZONTAL).build());
+				this.ui.add(new JSeparator(SwingConstants.HORIZONTAL), cb.pos(0, 1).fill(GridBagConstraints.HORIZONTAL).build());
 				this.ui.add(this.errorScrollPane, cb.pos(0, 2).weight(1.0, 1.0).fill(GridBagConstraints.BOTH).build());
 				this.ui.add(this.retryButton, cb.pos(0, 3).weight(0.0, 0.0).anchor(GridBagConstraints.EAST).build());
 				break;
@@ -614,5 +613,4 @@ public class EditorPanel {
 		SUCCESS,
 		ERRORED,
 	}
-
 }

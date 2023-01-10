@@ -17,6 +17,7 @@ import javax.swing.tree.TreePath;
 import cuchaz.enigma.analysis.StructureTreeNode;
 import cuchaz.enigma.analysis.StructureTreeOptions;
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.renderer.StructureOptionListCellRenderer;
@@ -29,7 +30,7 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.I18n;
 
-public class StructurePanel extends RightPanel {
+public class StructurePanel extends Docker {
 	private final JPanel optionsPanel;
 
 	private final JLabel obfuscationVisibilityLabel = new JLabel();
@@ -80,6 +81,7 @@ public class StructurePanel extends RightPanel {
 		JPanel topPanel = new JPanel(new BorderLayout());
 		topPanel.add(this.optionsPanel, BorderLayout.SOUTH);
 		topPanel.add(this.title, BorderLayout.NORTH);
+		this.title.setConstraints(BorderLayout.NORTH);
 
 		this.add(topPanel, BorderLayout.NORTH);
 		this.add(new JScrollPane(this.structureTree));
@@ -161,6 +163,11 @@ public class StructurePanel extends RightPanel {
 	@Override
 	public String getId() {
 		return Type.STRUCTURE;
+	}
+
+	@Override
+	public Location getPreferredLocation() {
+		return new Location(Side.RIGHT, Height.FULL);
 	}
 
 	private static class StructureTreeCellRenderer extends DefaultTreeCellRenderer {

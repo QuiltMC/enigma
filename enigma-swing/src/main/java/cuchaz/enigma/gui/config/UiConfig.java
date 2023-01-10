@@ -8,7 +8,6 @@ import cuchaz.enigma.config.ConfigContainer;
 import cuchaz.enigma.config.ConfigSection;
 import cuchaz.enigma.gui.docker.Dock;
 import cuchaz.enigma.gui.docker.Docker;
-import cuchaz.enigma.gui.panels.right.RightPanel;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 
@@ -124,13 +123,7 @@ public final class UiConfig {
 		swing.data().section(GENERAL).setDouble(SCALE_FACTOR, scale);
 	}
 
-	public static void setSelectedRightPanel(String id) {
-		swing.data().section(GENERAL).setString(RIGHT_PANEL, id);
-	}
-
-	public static String getSelectedRightPanel() {
-		return swing.data().section(GENERAL).setIfAbsentString(RIGHT_PANEL, RightPanel.DEFAULT);
-	}
+	// todo save a map of docker locations and their active dockers
 
 	public static void setRightPanelDividerLocation(String id, int width) {
 		swing.data().section(RIGHT_PANEL_DIVIDER_LOCATIONS).setInt(id, width);
@@ -141,11 +134,11 @@ public final class UiConfig {
 	}
 
 	public static void setDockerDividerLocation(Docker docker, int location) {
-		swing.data().section(DOCKER_DIVIDER_LOCATIONS).setInt(docker.getCurrentLocation().getSideName(), location);
+		swing.data().section(DOCKER_DIVIDER_LOCATIONS).setInt(docker.getCurrentSide().name(), location);
 	}
 
 	public static int getDockerDividerLocation(Docker docker, int defaultLocation) {
-		return swing.data().section(RIGHT_PANEL_DIVIDER_LOCATIONS).setIfAbsentInt(docker.getCurrentLocation().getSideName(), defaultLocation);
+		return swing.data().section(RIGHT_PANEL_DIVIDER_LOCATIONS).setIfAbsentInt(docker.getCurrentSide().name(), defaultLocation);
 	}
 
 	public static void setDocker(Dock dock, Docker docker) {

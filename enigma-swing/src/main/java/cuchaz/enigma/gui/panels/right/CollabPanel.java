@@ -1,6 +1,7 @@
 package cuchaz.enigma.gui.panels.right;
 
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.network.packet.MessageC2SPacket;
 import cuchaz.enigma.utils.I18n;
 
@@ -14,7 +15,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.util.function.Supplier;
 
-public class CollabPanel extends RightPanel {
+public class CollabPanel extends Docker {
 	private final JLabel offlineLabel;
 	private final JPanel whenOfflinePanel;
 	private final JPanel whenOnlinePanel;
@@ -42,7 +43,7 @@ public class CollabPanel extends RightPanel {
 		JPanel offlineTopPanel = new JPanel(new BorderLayout());
 
 		// there are ghosts in my code
-		this.titleCopy = new JLabel(this.titleProvider.get());
+		this.titleCopy = new JLabel(this.titleSupplier.get());
 
 		offlineTopPanel.add(this.offlineLabel, BorderLayout.SOUTH);
 		offlineTopPanel.add(this.titleCopy, BorderLayout.NORTH);
@@ -97,6 +98,11 @@ public class CollabPanel extends RightPanel {
 	}
 
 	@Override
+	public Location getPreferredLocation() {
+		return new Location(Side.RIGHT, Height.FULL);
+	}
+
+	@Override
 	public String getId() {
 		return Type.COLLAB;
 	}
@@ -125,7 +131,7 @@ public class CollabPanel extends RightPanel {
 		this.sendPendingMessageButton.setText(this.sendButtonTextProvider.get());
 		this.usersTitle.setText(this.usersTitleProvider.get());
 		this.messagesTitle.setText(this.messagesTitleProvider.get());
-		this.titleCopy.setText(this.titleProvider.get());
+		this.titleCopy.setText(this.titleSupplier.get());
 	}
 
 	@Override

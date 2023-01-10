@@ -1,6 +1,6 @@
 package cuchaz.enigma.gui.elements;
 
-import cuchaz.enigma.gui.panels.right.RightPanel;
+import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.panels.right.RightAngleLayerUI;
 
 import java.awt.BorderLayout;
@@ -55,10 +55,10 @@ public class MainWindow {
 		this.bottomRightPanelSelector.removeAll();
 
 		// create buttons from right panel options
-		for (RightPanel panel : RightPanel.getRightPanels().values()) {
+		for (Docker panel : Docker.getDockers().values()) {
 			JToggleButton button = panel.getButton();
 
-			if (panel.getButtonPosition().equals(RightPanel.ButtonPosition.RIGHT_TOP)) {
+			if (panel.getButtonPosition().equals(Docker.ButtonPosition.RIGHT_TOP)) {
 				this.topRightPanelSelector.add(button);
 			} else {
 				this.bottomRightPanelSelector.add(button);

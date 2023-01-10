@@ -30,4 +30,9 @@ public class ImplementationsTree extends AbstractInheritanceTree {
 	public String getId() {
 		return Type.IMPLEMENTATIONS;
 	}
+
+	@Override
+	public Location getPreferredLocation() {
+		return new Location(Side.RIGHT, Height.FULL);
+	}
 }

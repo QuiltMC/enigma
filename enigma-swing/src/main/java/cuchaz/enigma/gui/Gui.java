@@ -30,7 +30,6 @@ import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.panels.IdentifierPanel;
 import cuchaz.enigma.gui.panels.ObfPanel;
 import cuchaz.enigma.gui.panels.right.CollabPanel;
-import cuchaz.enigma.gui.panels.right.RightPanel;
 import cuchaz.enigma.gui.panels.right.StructurePanel;
 import cuchaz.enigma.gui.panels.right.CallsTree;
 import cuchaz.enigma.gui.panels.right.ImplementationsTree;
@@ -85,8 +84,6 @@ public class Gui {
 	private boolean singleClassTree;
 
 	private final MenuBar menuBar;
-	private final ObfPanel obfPanel;
-	private final DeobfPanel deobfPanel;
 	private final IdentifierPanel infoPanel;
 
 	private final EditorTabbedPane editorTabbedPane;
@@ -115,19 +112,17 @@ public class Gui {
 		this.mainWindow = new MainWindow(Enigma.NAME);
 		this.editableTypes = editableTypes;
 		this.controller = new GuiController(this, profile);
-		this.deobfPanel = new DeobfPanel(this);
 		this.infoPanel = new IdentifierPanel(this);
-		this.obfPanel = new ObfPanel(this);
 		this.menuBar = new MenuBar(this);
-		this.setupRightPanels();
+		this.setupDockers();
 		this.editorTabbedPane = new EditorTabbedPane(this);
-		this.rightDock = new CompoundDock(Docker.Location.RIGHT_FULL);
-		this.leftDock = new CompoundDock(Docker.Location.LEFT_FULL);
+		this.rightDock = new CompoundDock(Docker.Side.RIGHT);
+		this.leftDock = new CompoundDock(Docker.Side.LEFT);
 		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightDock);
 		this.splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, leftDock, splitRight);
 
-		this.leftDock.getTopDock().setHostedDocker(this.obfPanel);
-		this.leftDock.getBottomDock().setHostedDocker(this.deobfPanel);
+		this.leftDock.getTopDock().setHostedDocker(Docker.getDocker(ObfPanel.class));
+		this.leftDock.getBottomDock().setHostedDocker(Docker.getDocker(DeobfPanel.class));
 
 		this.setupUi();
 
@@ -137,30 +132,28 @@ public class Gui {
 		this.mainWindow.setVisible(true);
 	}
 
-	private void setupRightPanels() {
+	private void setupDockers() {
 		// right panels
 		// top panels
-		RightPanel.addPanel(new StructurePanel(this));
-		RightPanel.addPanel(new InheritanceTree(this));
-		RightPanel.addPanel(new ImplementationsTree(this));
-		RightPanel.addPanel(new CallsTree(this));
+		Docker.addDocker(new StructurePanel(this));
+		Docker.addDocker(new InheritanceTree(this));
+		Docker.addDocker(new ImplementationsTree(this));
+		Docker.addDocker(new CallsTree(this));
 
 		// bottom panels
-		RightPanel.addPanel(new CollabPanel(this));
+		Docker.addDocker(new CollabPanel(this));
+
+		Docker.addDocker(new DeobfPanel(this));
+		Docker.addDocker(new ObfPanel(this));
 
 		// set default sizes for right panels
-		for (RightPanel panel : RightPanel.getRightPanels().values()) {
+		for (Docker panel : Docker.getDockers().values()) {
 			panel.setPreferredSize(new Dimension(300, 100));
 		}
 
 		this.mainWindow.updateRightPanelSelector();
 
-		// verify the user has a valid panel id saved in their config
-		if (!RightPanel.getPanelClasses().containsKey(UiConfig.getSelectedRightPanel())) {
-			UiConfig.setSelectedRightPanel(RightPanel.DEFAULT);
-			// todo change with introduction of better logging!
-			System.out.println("invalid right panel id in config, resetting to default (" + RightPanel.DEFAULT + ")!");
-		}
+		// todo verify docker config here
 	}
 
 	private void setupUi() {
@@ -204,9 +197,9 @@ public class Gui {
 		onCloseJar();
 
 		// select correct right panel button
-		//this.rightPanel.getButton().setSelected(true);
+		//this.Docker.getButton().setSelected(true);
 		// configure selected right panel
-		//this.splitRight.setDividerLocation(UiConfig.getRightPanelDividerLocation(this.getRightPanel().getId(), this.splitRight.getDividerLocation()));
+		//this.splitRight.setDividerLocation(UiConfig.getDockerDividerLocation(this.getDocker().getId(), this.splitRight.getDividerLocation()));
 
 		JFrame frame = this.mainWindow.getFrame();
 		frame.addWindowListener(GuiUtil.onWindowClose(e -> this.close()));
@@ -226,27 +219,27 @@ public class Gui {
 	}
 
 	/**
-	 * Sets the current docker to the provided one.
+	 * Opens the given docker in its preferred location.
 	 * @param clazz the new panel's class
-	 * @param updateStateIfCurrent if the provided id is equal to the current id, this parameter determines whether to update the visibility of the panel
+	 * @param updateStateIfOpen if the docker is already present on the ui, this parameter determines whether to update the visibility of the panel
 	 */
-	public void setRightPanel(Class<? extends RightPanel> clazz, boolean updateStateIfCurrent) {
+	public void openDocker(Class<? extends Docker> clazz, boolean updateStateIfOpen) {
 		// todo
-		Docker newDocker = RightPanel.getPanel(clazz);
+		Docker newDocker = Docker.getDocker(clazz);
 
 		// update state if docker is shown
 		for (Map.Entry<Dock, Docker> entry : Dock.Util.getActiveDockers().entrySet()) {
 			Docker docker = entry.getValue();
 			Dock dock = entry.getKey();
 
-			if (newDocker.getId().equals(docker.getId()) && updateStateIfCurrent) {
+			if (newDocker.getId().equals(docker.getId()) && updateStateIfOpen) {
 				this.saveDividerLocation(docker);
 
 				// swap visibility
 				if (docker.isVisible()) {
 					dock.removeHostedDocker();
 				} else {
-					dock.setHostedDocker(docker);
+					dock.setHostedDocker(docker, docker.getCurrentLocation());
 				}
 
 				return;
@@ -254,7 +247,7 @@ public class Gui {
 		}
 
 		// todo this assumes it's being added from a button
-		Dock dock = Dock.Util.getForLocation(newDocker.getPreferredLocation());
+		Dock dock = Dock.Util.getForLocation(newDocker.getPreferredLocation().height(), newDocker.getPreferredLocation().side());
 		dock.removeHostedDocker();
 		dock.setHostedDocker(newDocker);
 
@@ -267,7 +260,7 @@ public class Gui {
 
 	private void saveDividerLocation(Docker docker) {
 		if (docker.isActive()) {
-			UiConfig.setDockerDividerLocation(docker, docker.getCurrentLocation().isLeft() ? this.splitCenter.getDividerLocation() : this.splitRight.getDividerLocation());
+			UiConfig.setDockerDividerLocation(docker, docker.getCurrentSide() == Docker.Side.LEFT ? this.splitCenter.getDividerLocation() : this.splitRight.getDividerLocation());
 		}
 	}
 
@@ -361,7 +354,7 @@ public class Gui {
 	}
 
 	public void setObfClasses(Collection<ClassEntry> obfClasses) {
-		this.obfPanel.obfClasses.setClasses(obfClasses);
+		Docker.getDocker(ObfPanel.class).obfClasses.setClasses(obfClasses);
 	}
 
 	public void setDeobfClasses(Collection<ClassEntry> deobfClasses) {
@@ -375,11 +368,11 @@ public class Gui {
 
 	public void showTokens(EditorPanel editor, List<Token> tokens) {
 		if (tokens.size() > 1) {
-			this.setRightPanel(CallsTree.class, false);
+			this.openDocker(CallsTree.class, false);
 			this.controller.setTokenHandle(editor.getClassHandle().copy());
-			RightPanel.getPanel(CallsTree.class).showTokens(tokens);
+			Docker.getDocker(CallsTree.class).showTokens(tokens);
 		} else {
-			RightPanel.getPanel(CallsTree.class).clearTokens();
+			Docker.getDocker(CallsTree.class).clearTokens();
 		}
 
 		// show the first token
@@ -419,7 +412,7 @@ public class Gui {
 	 * @param editor the editor to extract the new structure from
 	 */
 	public void updateStructure(EditorPanel editor) {
-		RightPanel.getPanel(StructurePanel.class).updateStructure(editor);
+		Docker.getDocker(StructurePanel.class).updateStructure(editor);
 	}
 
 	/**
@@ -427,7 +420,7 @@ public class Gui {
 	 * @param editor the editor to extract structure from
 	 */
 	public void showStructure(EditorPanel editor) {
-		this.setRightPanel(StructurePanel.class, false);
+		this.openDocker(StructurePanel.class, false);
 		this.updateStructure(editor);
 	}
 
@@ -439,8 +432,8 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.setRightPanel(InheritanceTree.class, false);
-		RightPanel.getPanel(InheritanceTree.class).display(cursorReference.entry);
+		this.openDocker(InheritanceTree.class, false);
+		Docker.getDocker(InheritanceTree.class).display(cursorReference.entry);
 	}
 
 	/**
@@ -451,8 +444,8 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.setRightPanel(ImplementationsTree.class, false);
-		RightPanel.getPanel(ImplementationsTree.class).display(cursorReference.entry);
+		this.openDocker(ImplementationsTree.class, false);
+		Docker.getDocker(ImplementationsTree.class).display(cursorReference.entry);
 	}
 
 	/**
@@ -463,8 +456,8 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.setRightPanel(CallsTree.class, false);
-		RightPanel.getPanel(CallsTree.class).showCalls(cursorReference.entry, recurse);
+		this.openDocker(CallsTree.class, false);
+		Docker.getDocker(CallsTree.class).showCalls(cursorReference.entry, recurse);
 	}
 
 	public void toggleMapping(EditorPanel editor) {
@@ -579,43 +572,41 @@ public class Gui {
 	// TODO: getExpansionState will *not* actually update itself based on name changes!
 	public void moveClassTree(Entry<?> obfEntry, boolean isOldOb, boolean isNewOb) {
 		ClassEntry classEntry = obfEntry.getContainingClass();
+		// todo
+		ObfPanel obfPanel = Docker.getDocker(ObfPanel.class);
 
 		//List<ClassSelector.StateEntry> stateDeobf = this.deobfPanel.deobfClasses.getExpansionState();
-		List<ClassSelector.StateEntry> stateObf = this.obfPanel.obfClasses.getExpansionState();
+		List<ClassSelector.StateEntry> stateObf = obfPanel.obfClasses.getExpansionState();
 
 		// Ob -> deob
 		if (!isNewOb) {
 			//this.deobfPanel.deobfClasses.moveClassIn(classEntry);
-			this.obfPanel.obfClasses.removeEntry(classEntry);
+			obfPanel.obfClasses.removeEntry(classEntry);
 			//this.deobfPanel.deobfClasses.reload();
-			this.obfPanel.obfClasses.reload();
+			obfPanel.obfClasses.reload();
 		}
 		// Deob -> ob
 		else if (!isOldOb) {
-			this.obfPanel.obfClasses.moveClassIn(classEntry);
+			obfPanel.obfClasses.moveClassIn(classEntry);
 			//this.deobfPanel.deobfClasses.removeEntry(classEntry);
 			//this.deobfPanel.deobfClasses.reload();
-			this.obfPanel.obfClasses.reload();
+			obfPanel.obfClasses.reload();
 		}
 		// Local move
 		else if (isOldOb) {
-			this.obfPanel.obfClasses.moveClassIn(classEntry);
-			this.obfPanel.obfClasses.reload();
+			obfPanel.obfClasses.moveClassIn(classEntry);
+			obfPanel.obfClasses.reload();
 		} else {
 			//this.deobfPanel.deobfClasses.moveClassIn(classEntry);
 			//this.deobfPanel.deobfClasses.reload();
 		}
 
 		//this.deobfPanel.deobfClasses.restoreExpansionState(stateDeobf);
-		this.obfPanel.obfClasses.restoreExpansionState(stateObf);
+		obfPanel.obfClasses.restoreExpansionState(stateObf);
 	}
 
 	public ObfPanel getObfPanel() {
-		return obfPanel;
-	}
-
-	public DeobfPanel getDeobfPanel() {
-		return deobfPanel;
+		return Docker.getDocker(ObfPanel.class);
 	}
 
 	public SearchDialog getSearchDialog() {
@@ -626,7 +617,7 @@ public class Gui {
 	}
 
 	public void addMessage(Message message) {
-		JScrollBar verticalScrollBar = RightPanel.getPanel(CollabPanel.class).getMessageScrollPane().getVerticalScrollBar();
+		JScrollBar verticalScrollBar = Docker.getDocker(CollabPanel.class).getMessageScrollPane().getVerticalScrollBar();
 		boolean isAtBottom = verticalScrollBar.getValue() >= verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent();
 		messageModel.addElement(message);
 
@@ -645,7 +636,7 @@ public class Gui {
 		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
 
 //		// if we were previously offline, we need to reload multiplayer-restricted right panels (ex. messages) so they can be used
-//		if (wasOffline && this.getRightPanel() instanceof CollabPanel collabPanel) {
+//		if (wasOffline && this.getDocker() instanceof CollabPanel collabPanel) {
 //			collabPanel.setUp();
 //		}
 	}
@@ -671,11 +662,10 @@ public class Gui {
 		this.updateUiState();
 
 		this.menuBar.retranslateUi();
-		this.obfPanel.retranslateUi();
 		//this.deobfPanel.retranslateUi();
 		this.infoPanel.retranslateUi();
 		this.editorTabbedPane.retranslateUi();
-		for (RightPanel panel : RightPanel.getRightPanels().values()) {
+		for (Docker panel : Docker.getDockers().values()) {
 			panel.retranslateUi();
 		}
 	}

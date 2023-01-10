@@ -30,4 +30,9 @@ public class InheritanceTree extends AbstractInheritanceTree {
 	public String getId() {
 		return Type.INHERITANCE;
 	}
+
+	@Override
+	public Location getPreferredLocation() {
+		return new Location(Side.RIGHT, Height.FULL);
+	}
 }

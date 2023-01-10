@@ -14,7 +14,7 @@ public class ObfPanel extends Docker {
 	public final ClassSelector obfClasses;
 
 	public ObfPanel(Gui gui) {
-		super(gui, new BorderLayout());
+		super(gui);
 		Comparator<ClassEntry> obfClassComparator = (a, b) -> {
 			String aname = a.getFullName();
 			String bname = b.getFullName();
@@ -34,12 +34,16 @@ public class ObfPanel extends Docker {
 	}
 
 	public String getId() {
-		// todo
-		return "obf";
+		return Type.OBFUSCATED_CLASSES;
+	}
+
+	@Override
+	public ButtonPosition getButtonPosition() {
+		return ButtonPosition.LEFT_TOP;
 	}
 
 	@Override
 	public Location getPreferredLocation() {
-		return Location.LEFT_TOP;
+		return new Location(Side.LEFT, Height.TOP);
 	}
 }

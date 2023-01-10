@@ -17,7 +17,6 @@ import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.events.EditorActionListener;
 import cuchaz.enigma.gui.panels.ClosableTabTitlePane;
 import cuchaz.enigma.gui.panels.EditorPanel;
-import cuchaz.enigma.gui.panels.right.RightPanel;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;

@@ -19,11 +19,8 @@ public class DeobfPanel extends Docker {
 	public final ClassSelector deobfClasses;
 	public final DeobfPanelPopupMenu deobfPanelPopupMenu;
 
-	private final Gui gui;
-
 	public DeobfPanel(Gui gui) {
-		super(gui, new BorderLayout());
-		this.gui = gui;
+		super(gui);
 
 		this.deobfClasses = new ClassSelector(gui, ClassSelector.DEOBF_CLASS_COMPARATOR, true);
 		this.deobfClasses.setSelectionListener(gui.getController()::navigateTo);
@@ -60,11 +57,16 @@ public class DeobfPanel extends Docker {
 	@Override
 	public String getId() {
 		// todo
-		return "deobf";
+		return Type.DEOBFUSCATED_CLASSES;
+	}
+
+	@Override
+	public ButtonPosition getButtonPosition() {
+		return ButtonPosition.LEFT_BOTTOM;
 	}
 
 	@Override
 	public Location getPreferredLocation() {
-		return Location.LEFT_BOTTOM;
+		return new Location(Side.LEFT, Height.BOTTOM);
 	}
 }

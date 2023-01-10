@@ -3,6 +3,7 @@ package cuchaz.enigma.gui.panels.right;
 import cuchaz.enigma.analysis.AbstractClassTreeNode;
 import cuchaz.enigma.analysis.AbstractMethodTreeNode;
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.SingleTreeSelectionModel;
 import cuchaz.enigma.translation.representation.entry.Entry;
@@ -17,7 +18,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.event.MouseEvent;
 
-public abstract class AbstractInheritanceTree extends RightPanel {
+public abstract class AbstractInheritanceTree extends Docker {
 	private final JTree tree = new JTree();
 
 	protected AbstractInheritanceTree(Gui gui, TreeCellRenderer cellRenderer) {
