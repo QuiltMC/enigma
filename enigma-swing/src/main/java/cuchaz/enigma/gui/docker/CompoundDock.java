@@ -45,20 +45,10 @@ public class CompoundDock extends JPanel {
 		if (this.isDisplayable()) {
 			if (e.getID() == MouseEvent.MOUSE_DRAGGED) {
 				if (this.hovered == null) {
-					if (this.isSplit) {
-						// check top and bottom
-						if (this.containsMouse(e, Docker.Height.TOP)) {
-							this.hovered = Docker.Height.FULL;
-						} else if (this.containsMouse(e, Docker.Height.BOTTOM)) {
-							this.hovered = Docker.Height.BOTTOM;
-						}
-					} else {
-						if (this.containsMouse(e, Docker.Height.TOP)) {
-							this.hovered = Docker.Height.TOP;
-						} else if (this.containsMouse(e, Docker.Height.FULL)) {
-							this.hovered = Docker.Height.FULL;
-						} else if (this.containsMouse(e, Docker.Height.BOTTOM)) {
-							this.hovered = Docker.Height.BOTTOM;
+					for (Docker.Height height : Docker.Height.values()) {
+						if (this.containsMouse(e, height)) {
+							this.hovered = height;
+							break;
 						}
 					}
 				} else {
