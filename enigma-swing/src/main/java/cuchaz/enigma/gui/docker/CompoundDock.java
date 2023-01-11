@@ -116,22 +116,9 @@ public class CompoundDock extends JPanel {
 		}
 	}
 
-	boolean containsMouse(MouseEvent e, Docker.Height checkedLocation) {
+	public boolean containsMouse(MouseEvent e, Docker.Height checkedLocation) {
 		Rectangle screenBounds = this.getBoundsFor(this.getLocationOnScreen(), checkedLocation);
 		return contains(screenBounds, e.getLocationOnScreen());
-	}
-
-	private Rectangle getBoundsFor(Point topLeft, Docker.Height checkedLocation) {
-		if (checkedLocation == Docker.Height.TOP) {
-			// top: 0 to 1/4 y
-			return new Rectangle(topLeft.x, topLeft.y, this.getWidth(), this.getHeight() / 4);
-		} else if (checkedLocation == Docker.Height.BOTTOM) {
-			// bottom: 3/4 to 1 y
-			return new Rectangle(topLeft.x, topLeft.y + (this.getHeight() / 4) * 3, this.getWidth(), this.getHeight() / 4);
-		} else {
-			// full: 1/4 to 3/4 y
-			return new Rectangle(topLeft.x, topLeft.y + this.getHeight() / 4, this.getWidth(), this.getHeight() / 2);
-		}
 	}
 
 	public void split() {
@@ -155,32 +142,42 @@ public class CompoundDock extends JPanel {
 		this.isSplit = false;
 	}
 
-	private static boolean contains(Rectangle rectangle, Point point) {
-		return (point.x >= rectangle.x && point.x <= rectangle.x + rectangle.width)
-				&& (point.y >= rectangle.y && point.y <= rectangle.y + rectangle.height);
-	}
-
 	public void dropDockerFromMouse(Docker docker, MouseEvent event) {
-		// todo copilot wrote this it may or may not work
-		if (contains(this.getBoundsFor(this.getLocationOnScreen(), Docker.Height.TOP), event.getLocationOnScreen())) {
+		if (this.containsMouse(event, Docker.Height.TOP)) {
 			this.host(docker, Docker.Height.TOP);
-		} else if (contains(this.getBoundsFor(this.getLocationOnScreen(), Docker.Height.BOTTOM), event.getLocationOnScreen())) {
+		} else if (this.containsMouse(event, Docker.Height.BOTTOM)) {
 			this.host(docker, Docker.Height.BOTTOM);
-		} else {
+		} else if (this.containsMouse(event, Docker.Height.FULL)) {
 			this.host(docker, Docker.Height.FULL);
 		}
 	}
 
-	public boolean isSplit() {
-		return this.isSplit;
+	private Rectangle getHighlightBoundsFor(Point topLeft, Docker.Height checkedLocation) {
+		// todo this isn't good
+		Rectangle bounds = this.getBoundsFor(topLeft, checkedLocation);
+		int height = switch (checkedLocation) {
+			case FULL -> bounds.height;
+			case BOTTOM, TOP -> bounds.height * 2;
+		};
+		return new Rectangle(bounds.x, checkedLocation == Docker.Height.BOTTOM ? bounds.y - this.getHeight() / 4 : bounds.y, bounds.width, height);
 	}
 
-	public Dock getTopDock() {
-		return this.topDock;
+	private Rectangle getBoundsFor(Point topLeft, Docker.Height checkedLocation) {
+		if (checkedLocation == Docker.Height.TOP) {
+			// top: 0 to 1/4 y
+			return new Rectangle(topLeft.x, topLeft.y, this.getWidth(), this.getHeight() / 4);
+		} else if (checkedLocation == Docker.Height.BOTTOM) {
+			// bottom: 3/4 to 1 y
+			return new Rectangle(topLeft.x, topLeft.y + (this.getHeight() / 4) * 3, this.getWidth(), this.getHeight() / 4);
+		} else {
+			// full: 1/4 to 3/4 y
+			return new Rectangle(topLeft.x, topLeft.y + this.getHeight() / 4, this.getWidth(), this.getHeight() / 2);
+		}
 	}
 
-	public Dock getBottomDock() {
-		return this.bottomDock;
+	private static boolean contains(Rectangle rectangle, Point point) {
+		return (point.x >= rectangle.x && point.x <= rectangle.x + rectangle.width)
+				&& (point.y >= rectangle.y && point.y <= rectangle.y + rectangle.height);
 	}
 
 	@Override
@@ -189,7 +186,7 @@ public class CompoundDock extends JPanel {
 
 		// we can rely on paint to always be called when the label is being dragged over the docker
 		if (this.hovered != null) {
-			Rectangle paintedBounds = this.getBoundsFor(new Point(0, 0), this.hovered);
+			Rectangle paintedBounds = this.getHighlightBoundsFor(new Point(0, 0), this.hovered);
 
 			Color color = new Color(0, 0, 255, 84);
 			graphics.setColor(color);

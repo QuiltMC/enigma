@@ -105,12 +105,7 @@ public class Dock extends JPanel {
 		public static void dropDocker(Docker docker, MouseEvent event) {
 			for (CompoundDock dock : COMPOUND_DOCKS) {
 				if (dock.isDisplayable()) {
-					for (Docker.Height location : Docker.Height.values()) {
-						if (dock.containsMouse(event, location)) {
-							dock.host(docker, location);
-							return;
-						}
-					}
+					dock.dropDockerFromMouse(docker, event);
 				}
 			}
 		}
