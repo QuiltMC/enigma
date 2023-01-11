@@ -17,15 +17,15 @@ public class Dock extends JPanel {
 	private final Docker.Side side;
 
 	private CompoundDock parentDock;
-	private Docker.Height location;
+	private Docker.Height dockHeight;
 	private Docker hostedDocker;
 
-	public Dock(Docker.Height height, Docker.Side side) {
+	public Dock(Docker.Height dockHeight, Docker.Side side) {
 		super(new BorderLayout());
 		this.side = side;
 		this.hostedDocker = null;
 		this.parentDock = null;
-		this.setLocation(height);
+		this.setHeight(dockHeight);
 
 		docks.add(this);
 	}
@@ -38,7 +38,7 @@ public class Dock extends JPanel {
 		this.add(this.hostedDocker);
 
 		// add new docker
-		this.hostedDocker.dock(this.side, this.location);
+		this.hostedDocker.dock(this.side, this.dockHeight);
 
 		// revalidate to paint properly
 		this.revalidate();
@@ -55,7 +55,7 @@ public class Dock extends JPanel {
 	}
 
 	public Docker.Height getDockerLocation() {
-		return this.location;
+		return this.dockHeight;
 	}
 
 	public void setParentDock(CompoundDock parentDock) {
@@ -66,28 +66,23 @@ public class Dock extends JPanel {
 		}
 	}
 
-	private void setLocation(Docker.Height height) {
+	private void setHeight(Docker.Height dockHeight) {
 		for (Dock dock : docks) {
-			if (dock.location == height && dock.side == this.side) {
-				throw new IllegalArgumentException("attempted to switch height of docker " + this + " to " + height + " on side " + this.side);
+			if (dock.dockHeight == dockHeight && dock.side == this.side) {
+				throw new IllegalArgumentException("attempted to switch height of docker " + this + " to " + dockHeight + " on side " + this.side);
 			}
 		}
 
-		this.location = height;
+		this.dockHeight = dockHeight;
 	}
 
 	public CompoundDock getParentDock() {
 		return this.parentDock;
 	}
 
-	@Override
-	public String toString() {
-		return "Dock: " + this.location + " on side " + this.side;
-	}
-
 	public static class Util {
 		/**
-		 * Calls {@link CompoundDock#receiveMouseEvent(MouseEvent)}} on both sides.
+		 * Calls {@link CompoundDock#receiveMouseEvent(MouseEvent)}} on all sides.
 		 * @param event the mouse event to pass to the docks
 		 */
 		public static void receiveMouseEvent(MouseEvent event) {
@@ -123,25 +118,6 @@ public class Dock extends JPanel {
 			}
 
 			return dockers;
-		}
-
-		public static Dock getForLocation(Docker.Height location, Docker.Side side) {
-			for (Dock dock : docks) {
-				if (dock.location == location && dock.side == side) {
-					return dock;
-				}
-			}
-
-			if (location == Docker.Height.FULL) {
-				// todo using only top is a hack
-				Dock dock = getForLocation(Docker.Height.TOP, side);
-				dock.parentDock.unify(Docker.Height.TOP);
-
-				return dock;
-			}
-
-			System.out.println("DEBUG: " + docks);
-			throw new IllegalStateException("no dock for location " + location + "! this is a bug!");
 		}
 	}
 }

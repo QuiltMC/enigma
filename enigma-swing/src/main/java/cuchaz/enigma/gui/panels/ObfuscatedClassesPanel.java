@@ -10,21 +10,22 @@ import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
-public class ObfPanel extends Docker {
+public class ObfuscatedClassesPanel extends Docker {
+	private static final Comparator<ClassEntry> obfuscatedClassComparator = (a, b) -> {
+		String aName = a.getFullName();
+		String bName = b.getFullName();
+		if (aName.length() != bName.length()) {
+			return aName.length() - bName.length();
+		}
+		return aName.compareTo(bName);
+	};
+
 	public final ClassSelector obfClasses;
 
-	public ObfPanel(Gui gui) {
+	public ObfuscatedClassesPanel(Gui gui) {
 		super(gui);
-		Comparator<ClassEntry> obfClassComparator = (a, b) -> {
-			String aname = a.getFullName();
-			String bname = b.getFullName();
-			if (aname.length() != bname.length()) {
-				return aname.length() - bname.length();
-			}
-			return aname.compareTo(bname);
-		};
 
-		this.obfClasses = new ClassSelector(gui, obfClassComparator, false);
+		this.obfClasses = new ClassSelector(gui, obfuscatedClassComparator, false);
 		this.obfClasses.setSelectionListener(gui.getController()::navigateTo);
 		this.obfClasses.setRenameSelectionListener(gui::onRenameFromClassTree);
 

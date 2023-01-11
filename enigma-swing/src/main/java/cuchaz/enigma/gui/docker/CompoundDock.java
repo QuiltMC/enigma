@@ -14,8 +14,10 @@ public class CompoundDock extends JPanel {
 	private final Dock topDock;
 	private final Dock bottomDock;
 
+	/**
+	 * Controls hover highlighting for this dock. A value of {@code null} represents no hover, otherwise it represents the currently hovered height.
+	 */
 	private Docker.Height hovered;
-
 	private boolean isSplit;
 
 	@SuppressWarnings("SuspiciousNameCombination")
@@ -44,25 +46,15 @@ public class CompoundDock extends JPanel {
 	public void receiveMouseEvent(MouseEvent e) {
 		if (this.isDisplayable()) {
 			if (e.getID() == MouseEvent.MOUSE_DRAGGED) {
-				if (this.hovered == null) {
-					for (Docker.Height height : Docker.Height.values()) {
-						if (this.containsMouse(e, height)) {
-							this.hovered = height;
-							break;
-						}
+				for (Docker.Height height : Docker.Height.values()) {
+					if (this.containsMouse(e, height)) {
+						this.hovered = height;
+						return;
 					}
-				} else {
-					for (Docker.Height checkedLocation : Docker.Height.values()) {
-						if (this.containsMouse(e, checkedLocation)) {
-							this.hovered = checkedLocation;
-							this.repaint();
-							return;
-						}
-					}
-
-					this.hovered = null;
-					this.repaint();
 				}
+
+				// we've checked every height and can confirm the dock is not being hovered
+				this.hovered = null;
 			} else if (e.getID() == MouseEvent.MOUSE_RELEASED) {
 				this.hovered = null;
 				this.repaint();

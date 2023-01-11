@@ -25,10 +25,10 @@ import cuchaz.enigma.gui.elements.EditorTabbedPane;
 import cuchaz.enigma.gui.elements.MainWindow;
 import cuchaz.enigma.gui.elements.MenuBar;
 import cuchaz.enigma.gui.elements.ValidatableUi;
-import cuchaz.enigma.gui.panels.DeobfPanel;
+import cuchaz.enigma.gui.panels.DeobfuscatedClassesPanel;
 import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.panels.IdentifierPanel;
-import cuchaz.enigma.gui.panels.ObfPanel;
+import cuchaz.enigma.gui.panels.ObfuscatedClassesPanel;
 import cuchaz.enigma.gui.panels.right.CollabPanel;
 import cuchaz.enigma.gui.panels.right.StructurePanel;
 import cuchaz.enigma.gui.panels.right.CallsTree;
@@ -122,8 +122,8 @@ public class Gui {
 		this.splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, leftDock, splitRight);
 
 		// todo bad
-		this.leftDock.host(Docker.getDocker(ObfPanel.class), Docker.Height.TOP);
-		this.leftDock.host(Docker.getDocker(DeobfPanel.class), Docker.Height.BOTTOM);
+		this.leftDock.host(Docker.getDocker(ObfuscatedClassesPanel.class), Docker.Height.TOP);
+		this.leftDock.host(Docker.getDocker(DeobfuscatedClassesPanel.class), Docker.Height.BOTTOM);
 
 		this.setupUi();
 
@@ -144,8 +144,8 @@ public class Gui {
 		// bottom panels
 		Docker.addDocker(new CollabPanel(this));
 
-		Docker.addDocker(new DeobfPanel(this));
-		Docker.addDocker(new ObfPanel(this));
+		Docker.addDocker(new DeobfuscatedClassesPanel(this));
+		Docker.addDocker(new ObfuscatedClassesPanel(this));
 
 		// set default sizes for right panels
 		for (Docker panel : Docker.getDockers().values()) {
@@ -239,7 +239,7 @@ public class Gui {
 				if (docker.isVisible()) {
 					dock.removeHostedDocker();
 				} else {
-					dock.getParentDock().host(docker, docker.getCurrentLocation());
+					dock.getParentDock().host(docker, docker.getCurrentHeight());
 				}
 
 				return;
@@ -349,7 +349,7 @@ public class Gui {
 	}
 
 	public void setObfClasses(Collection<ClassEntry> obfClasses) {
-		Docker.getDocker(ObfPanel.class).obfClasses.setClasses(obfClasses);
+		Docker.getDocker(ObfuscatedClassesPanel.class).obfClasses.setClasses(obfClasses);
 	}
 
 	public void setDeobfClasses(Collection<ClassEntry> deobfClasses) {
@@ -567,41 +567,35 @@ public class Gui {
 	// TODO: getExpansionState will *not* actually update itself based on name changes!
 	public void moveClassTree(Entry<?> obfEntry, boolean isOldOb, boolean isNewOb) {
 		ClassEntry classEntry = obfEntry.getContainingClass();
-		// todo
-		ObfPanel obfPanel = Docker.getDocker(ObfPanel.class);
+		ObfuscatedClassesPanel obfuscatedClassesPanel = Docker.getDocker(ObfuscatedClassesPanel.class);
+		DeobfuscatedClassesPanel deobfuscatedClassesPanel = Docker.getDocker(DeobfuscatedClassesPanel.class);
 
-		//List<ClassSelector.StateEntry> stateDeobf = this.deobfPanel.deobfClasses.getExpansionState();
-		List<ClassSelector.StateEntry> stateObf = obfPanel.obfClasses.getExpansionState();
+		List<ClassSelector.StateEntry> deobfuscatedPanelExpansionState = deobfuscatedClassesPanel.deobfClasses.getExpansionState();
+		List<ClassSelector.StateEntry> obfuscatedPanelExpansionState = obfuscatedClassesPanel.obfClasses.getExpansionState();
 
-		// Ob -> deob
 		if (!isNewOb) {
-			//this.deobfPanel.deobfClasses.moveClassIn(classEntry);
-			obfPanel.obfClasses.removeEntry(classEntry);
-			//this.deobfPanel.deobfClasses.reload();
-			obfPanel.obfClasses.reload();
-		}
-		// Deob -> ob
-		else if (!isOldOb) {
-			obfPanel.obfClasses.moveClassIn(classEntry);
-			//this.deobfPanel.deobfClasses.removeEntry(classEntry);
-			//this.deobfPanel.deobfClasses.reload();
-			obfPanel.obfClasses.reload();
-		}
-		// Local move
-		else if (isOldOb) {
-			obfPanel.obfClasses.moveClassIn(classEntry);
-			obfPanel.obfClasses.reload();
+			// obfuscated -> deobfuscated
+			deobfuscatedClassesPanel.deobfClasses.moveClassIn(classEntry);
+			obfuscatedClassesPanel.obfClasses.removeEntry(classEntry);
+			deobfuscatedClassesPanel.deobfClasses.reload();
+			obfuscatedClassesPanel.obfClasses.reload();
+		} else if (!isOldOb) {
+			// deobfuscated -> obfuscated
+			obfuscatedClassesPanel.obfClasses.moveClassIn(classEntry);
+			deobfuscatedClassesPanel.deobfClasses.removeEntry(classEntry);
+			deobfuscatedClassesPanel.deobfClasses.reload();
+			obfuscatedClassesPanel.obfClasses.reload();
 		} else {
-			//this.deobfPanel.deobfClasses.moveClassIn(classEntry);
-			//this.deobfPanel.deobfClasses.reload();
+			deobfuscatedClassesPanel.deobfClasses.moveClassIn(classEntry);
+			deobfuscatedClassesPanel.deobfClasses.reload();
 		}
 
-		//this.deobfPanel.deobfClasses.restoreExpansionState(stateDeobf);
-		obfPanel.obfClasses.restoreExpansionState(stateObf);
+		deobfuscatedClassesPanel.deobfClasses.restoreExpansionState(deobfuscatedPanelExpansionState);
+		obfuscatedClassesPanel.obfClasses.restoreExpansionState(obfuscatedPanelExpansionState);
 	}
 
-	public ObfPanel getObfPanel() {
-		return Docker.getDocker(ObfPanel.class);
+	public ObfuscatedClassesPanel getObfPanel() {
+		return Docker.getDocker(ObfuscatedClassesPanel.class);
 	}
 
 	public SearchDialog getSearchDialog() {

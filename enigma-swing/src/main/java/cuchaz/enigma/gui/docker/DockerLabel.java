@@ -1,7 +1,5 @@
 package cuchaz.enigma.gui.docker;
 
-import cuchaz.enigma.gui.Gui;
-
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -20,7 +18,7 @@ public class DockerLabel extends JLabel {
 	private Object constraints;
 	private final Docker docker;
 
-	public DockerLabel(Gui gui, Docker docker, String text) {
+	public DockerLabel(Docker docker, String text) {
 		super(text);
 		this.setOpaque(false);
 		// note: docker and parent are not the same!

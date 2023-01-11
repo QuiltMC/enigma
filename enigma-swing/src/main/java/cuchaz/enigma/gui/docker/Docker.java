@@ -20,13 +20,13 @@ public abstract class Docker extends JPanel {
 	protected final JToggleButton button;
 	protected final Gui gui;
 
-	protected Height currentLocation = null;
+	protected Height currentHeight = null;
 	protected Side side = null;
 
 	protected Docker(Gui gui) {
 		super(new BorderLayout());
 		this.gui = gui;
-		this.title = new DockerLabel(gui, this, this.titleSupplier.get());
+		this.title = new DockerLabel(this, this.titleSupplier.get());
 		this.button = new JToggleButton(this.titleSupplier.get());
 		this.button.addActionListener(e -> gui.openDocker(this.getClass(), true));
 	}
@@ -37,17 +37,17 @@ public abstract class Docker extends JPanel {
 		this.title.setText(translatedTitle);
 	}
 
-	public void dock(Side side, Height location) {
-		this.currentLocation = location;
+	public void dock(Side side, Height height) {
+		this.currentHeight = height;
 		this.side = side;
 	}
 
 	public boolean isActive() {
-		return this.currentLocation != null;
+		return this.currentHeight != null;
 	}
 
-	public Height getCurrentLocation() {
-		return this.currentLocation;
+	public Height getCurrentHeight() {
+		return this.currentHeight;
 	}
 
 	public Side getCurrentSide() {
@@ -71,7 +71,7 @@ public abstract class Docker extends JPanel {
 	@Override
 	public void setVisible(boolean visible) {
 		if (!visible) {
-			this.currentLocation = null;
+			this.currentHeight = null;
 		}
 
 		this.getButton().setSelected(visible);

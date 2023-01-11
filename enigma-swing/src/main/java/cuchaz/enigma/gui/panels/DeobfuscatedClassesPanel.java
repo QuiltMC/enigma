@@ -3,8 +3,6 @@ package cuchaz.enigma.gui.panels;
 import java.awt.BorderLayout;
 import java.awt.event.MouseEvent;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
@@ -15,11 +13,11 @@ import cuchaz.enigma.gui.elements.DeobfPanelPopupMenu;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.utils.I18n;
 
-public class DeobfPanel extends Docker {
+public class DeobfuscatedClassesPanel extends Docker {
 	public final ClassSelector deobfClasses;
 	public final DeobfPanelPopupMenu deobfPanelPopupMenu;
 
-	public DeobfPanel(Gui gui) {
+	public DeobfuscatedClassesPanel(Gui gui) {
 		super(gui);
 
 		this.deobfClasses = new ClassSelector(gui, ClassSelector.DEOBF_CLASS_COMPARATOR, true);
