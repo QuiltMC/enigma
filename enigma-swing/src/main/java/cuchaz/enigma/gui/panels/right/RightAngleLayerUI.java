@@ -193,7 +193,7 @@ public class RightAngleLayerUI extends LayerUI<JComponent> {
 	}
 
 	/**
-	 * Create the new event to be dispatched
+	 * Create the new event to be dispatched.
 	 */
 	private MouseEvent transformMouseEvent(JLayer<? extends JComponent> layer, MouseEvent mouseEvent, Component target, Point targetPoint, int id) {
 		if (target == null) {
@@ -213,7 +213,7 @@ public class RightAngleLayerUI extends LayerUI<JComponent> {
 	}
 
 	/**
-	 * Create the new mouse wheel event to be dispatched
+	 * Create the new mouse wheel event to be dispatched.
 	 */
 	private MouseWheelEvent transformMouseWheelEvent(JLayer<? extends JComponent> layer, MouseWheelEvent mouseWheelEvent, Component target, Point targetPoint) {
 		if (target == null) {

@@ -49,9 +49,14 @@ public class Dock extends JPanel {
 
 	public void removeHostedDocker() {
 		if (this.hostedDocker != null) {
-			this.remove(this.hostedDocker);
+			this.hostedDocker.undock();
 			this.hostedDocker = null;
+			this.repaint();
 		}
+	}
+
+	public Docker getHostedDocker() {
+		return this.hostedDocker;
 	}
 
 	public Docker.VerticalLocation getDockerLocation() {
@@ -118,6 +123,18 @@ public class Dock extends JPanel {
 			}
 
 			return dockers;
+		}
+
+		/**
+		 * Hides the specified dock and removes it from its parent.
+		 * @param docker the docker to hide
+		 */
+		public static void undock(Docker docker) {
+			for (Dock dock : docks) {
+				if (docker.equals(dock.hostedDocker)) {
+					dock.removeHostedDocker();
+				}
+			}
 		}
 	}
 }

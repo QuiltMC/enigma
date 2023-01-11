@@ -9,6 +9,7 @@ import java.awt.BorderLayout;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public abstract class Docker extends JPanel {
@@ -28,7 +29,15 @@ public abstract class Docker extends JPanel {
 		this.gui = gui;
 		this.title = new DockerLabel(this, this.titleSupplier.get());
 		this.button = new JToggleButton(this.titleSupplier.get());
-		this.button.addActionListener(e -> gui.openDocker(this.getClass(), true));
+		this.button.addActionListener(e -> {
+			Docker docker = getDocker(this.getClass());
+
+			if (docker.isDocked()) {
+				Dock.Util.undock(docker);
+			} else {
+				gui.openDocker(this.getClass(), true);
+			}
+		});
 	}
 
 	public void retranslateUi() {
@@ -40,14 +49,22 @@ public abstract class Docker extends JPanel {
 	public void dock(Side side, VerticalLocation verticalLocation) {
 		this.currentVerticalLocation = verticalLocation;
 		this.side = side;
+		this.setVisible(true);
 	}
 
-	public boolean isActive() {
-		return this.currentVerticalLocation != null;
+	public void undock() {
+		this.getParent().remove(this);
+		this.currentVerticalLocation = null;
+		this.side = null;
+		this.setVisible(false);
 	}
 
 	public VerticalLocation getCurrentHeight() {
 		return this.currentVerticalLocation;
+	}
+
+	public boolean isDocked() {
+		return this.currentVerticalLocation != null;
 	}
 
 	/**
@@ -77,6 +94,21 @@ public abstract class Docker extends JPanel {
 		}
 
 		this.getButton().setSelected(visible);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		// there should only be one instance of each docker, so we only check ID here
+		if (obj instanceof Docker docker) {
+			return docker.getId().equals(this.getId());
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.getId());
 	}
 
 	public static void addDocker(Docker panel) {

@@ -255,7 +255,7 @@ public class Gui {
 	}
 
 	private void saveDividerLocation(Docker docker) {
-		if (docker.isActive()) {
+		if (docker.isVisible()) {
 			UiConfig.setDockerDividerLocation(docker, docker.getCurrentSide() == Docker.Side.LEFT ? this.splitCenter.getDividerLocation() : this.splitRight.getDividerLocation());
 		}
 	}
