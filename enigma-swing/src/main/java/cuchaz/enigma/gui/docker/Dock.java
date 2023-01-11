@@ -4,10 +4,6 @@ import cuchaz.enigma.gui.config.UiConfig;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,159 +11,31 @@ import java.util.List;
 import java.util.Map;
 
 public class Dock extends JPanel {
+	public static final List<CompoundDock> COMPOUND_DOCKS = new ArrayList<>();
 	private static final List<Dock> docks = new ArrayList<>();
 
 	private final Docker.Side side;
 
 	private CompoundDock parentDock;
-	private Docker.Height hovered;
 	private Docker.Height location;
 	private Docker hostedDocker;
 
 	public Dock(Docker.Height height, Docker.Side side) {
 		super(new BorderLayout());
 		this.side = side;
-		this.hovered = null;
 		this.hostedDocker = null;
 		this.parentDock = null;
-		this.location = height;
+		this.setLocation(height);
 
 		docks.add(this);
 	}
 
-	@Override
-	public void paint(Graphics g) {
-		super.paint(g);
-
-		// we can rely on paint to always be called when the label is being dragged over the docker
-		if (this.hovered != null) {
-			Rectangle paintedBounds = this.getBoundsFor(new Point(0, 0), this.hovered);
-
-			// paint using parent's graphics to avoid cutting off the filled box
-			Graphics parentGraphics = this.parentDock.getGraphics();
-			Color color = new Color(0, 0, 255, 84);
-			parentGraphics.setColor(color);
-			parentGraphics.fillRect(paintedBounds.x, paintedBounds.y, paintedBounds.width, paintedBounds.height);
-			this.parentDock.repaint();
-		}
-	}
-
-	public void receiveMouseEvent(MouseEvent e) {
-		boolean b = this.hovered == null;
-
-		if (this.isDisplayable()) {
-			if (e.getID() == MouseEvent.MOUSE_DRAGGED) {
-				if (this.hovered == null) {
-					if (!this.occupyingFullSide()) {
-						// check top and bottom
-						if (this.containsMouse(e, Docker.Height.TOP)) {
-							this.hovered = Docker.Height.FULL;
-						} else if (this.containsMouse(e, Docker.Height.BOTTOM)) {
-							this.hovered = Docker.Height.BOTTOM;
-						}
-					} else {
-						if (this.containsMouse(e, Docker.Height.TOP)) {
-							this.hovered = Docker.Height.TOP;
-						} else if (this.containsMouse(e, Docker.Height.FULL)) {
-							this.hovered = Docker.Height.FULL;
-						} else if (this.containsMouse(e, Docker.Height.BOTTOM)) {
-							this.hovered = Docker.Height.BOTTOM;
-						}
-					}
-				} else {
-					// todo why is this like this?
-					for (Docker.Height checkedLocation : Docker.Height.values()) {
-						if (this.containsMouse(e, checkedLocation)) {
-							this.hovered = checkedLocation;
-							this.repaint();
-							return;
-						}
-					}
-
-					this.hovered = null;
-					this.repaint();
-				}
-			} else if (e.getID() == MouseEvent.MOUSE_RELEASED) {
-				this.hovered = null;
-				this.repaint();
-			}
-		}
-
-		if (this.hovered == null && !b) {
-			System.out.println();
-		}
-	}
-
-	private boolean containsMouse(MouseEvent e, Docker.Height checkedLocation) {
-		Rectangle screenBounds = this.getBoundsFor(this.getLocationOnScreen(), checkedLocation);
-		return contains(screenBounds, e.getLocationOnScreen());
-	}
-
-	private Rectangle getBoundsFor(Point topLeft, Docker.Height location) {
-		if (this.occupyingFullSide()) {
-			if (location == Docker.Height.TOP) {
-				// top: 0 to 1/4 y
-				return new Rectangle(topLeft.x, topLeft.y, this.getWidth(), this.getHeight() / 2);
-			} else if (location == Docker.Height.BOTTOM) {
-				// bottom: 3/4 to 1 y
-				return new Rectangle(topLeft.x, topLeft.y + (this.getHeight() / 4) * 3, this.getWidth(), this.getHeight() / 4);
-			} else {
-				// full: 1/4 to 3/4 y
-				return new Rectangle(topLeft.x, topLeft.y + this.getHeight() / 4, this.getWidth(), this.getHeight() / 2);
-			}
-		} else {
-			if (this.location == Docker.Height.BOTTOM) {
-				if (location == Docker.Height.FULL) {
-					// check top: 0 to 1/2 y
-					return new Rectangle(topLeft.x, topLeft.y, this.getWidth(), this.getHeight() / 2);
-				} else {
-					// check bottom: 1/2 to 1 y
-					return new Rectangle(topLeft.x, topLeft.y + this.getHeight() / 2, this.getWidth(), this.getHeight() / 2);
-				}
-			} else {
-				// we know the location is top
-				if (location == Docker.Height.FULL) {
-					// check bottom: 1/2 to 1 y
-					return new Rectangle(topLeft.x, topLeft.y + this.getHeight() / 2, this.getWidth(), this.getHeight() / 2);
-				} else {
-					// check top: 0 to 1/2 y
-					return new Rectangle(topLeft.x, topLeft.y, this.getWidth(), this.getHeight() / 2);
-				}
-			}
-		}
-	}
-
 	public void setHostedDocker(Docker docker) {
-		this.setHostedDocker(docker, docker.getPreferredLocation().height());
-	}
-
-	public void setHostedDocker(Docker docker, Docker.Height height) {
-		System.out.println("setHostedDocker: " + docker + " to " + height + " on " + this.side);
-
 		// remove old docker
 		this.removeHostedDocker();
 
 		this.hostedDocker = docker;
-		if (height == Docker.Height.FULL && this.parentDock.isSplit()) {
-			System.out.println("unifying");
-			this.parentDock.unify(this.getDockerLocation());
-			this.location = height;
-
-			this.add(this.hostedDocker);
-		} else if (height != Docker.Height.FULL && !this.parentDock.isSplit()) {
-			System.out.println("splitting");
-			this.parentDock.split();
-			this.location = height;
-
-			if (height == Docker.Height.TOP) {
-				this.parentDock.getTopDock().setHostedDocker(docker, height);
-			} else {
-				this.parentDock.getBottomDock().setHostedDocker(docker, height);
-			}
-		} else {
-			System.out.println("adding as normal");
-			this.add(this.hostedDocker);
-		}
+		this.add(this.hostedDocker);
 
 		// add new docker
 		this.hostedDocker.dock(this.side, this.location);
@@ -198,27 +66,32 @@ public class Dock extends JPanel {
 		}
 	}
 
-	private boolean contains(Rectangle rectangle, Point point) {
-		return (point.x >= rectangle.x && point.x <= rectangle.x + rectangle.width)
-				&& (point.y >= rectangle.y && point.y <= rectangle.y + rectangle.height);
+	private void setLocation(Docker.Height height) {
+		for (Dock dock : docks) {
+			if (dock.location == height && dock.side == this.side) {
+				throw new IllegalArgumentException("attempted to switch height of docker " + this + " to " + height + " on side " + this.side);
+			}
+		}
+
+		this.location = height;
 	}
 
-	private boolean occupyingFullSide() {
-		return this.location == Docker.Height.FULL;
+	public CompoundDock getParentDock() {
+		return this.parentDock;
 	}
 
 	@Override
 	public String toString() {
-		return "Docker: " + this.location;
+		return "Dock: " + this.location + " on side " + this.side;
 	}
 
 	public static class Util {
 		/**
-		 * Calls {@link Dock#receiveMouseEvent(MouseEvent)}} on all docks.
+		 * Calls {@link CompoundDock#receiveMouseEvent(MouseEvent)}} on both sides.
 		 * @param event the mouse event to pass to the docks
 		 */
 		public static void receiveMouseEvent(MouseEvent event) {
-			for (Dock dock : docks) {
+			for (CompoundDock dock : COMPOUND_DOCKS) {
 				dock.receiveMouseEvent(event);
 			}
 		}
@@ -230,11 +103,11 @@ public class Dock extends JPanel {
 		 * @param event an {@link MouseEvent} to use to check if the docker was held over a dock
 		 */
 		public static void dropDocker(Docker docker, MouseEvent event) {
-			for (Dock dock : docks) {
+			for (CompoundDock dock : COMPOUND_DOCKS) {
 				if (dock.isDisplayable()) {
 					for (Docker.Height location : Docker.Height.values()) {
 						if (dock.containsMouse(event, location)) {
-							dock.setHostedDocker(docker, location);
+							dock.host(docker, location);
 							return;
 						}
 					}

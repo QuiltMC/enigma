@@ -121,8 +121,9 @@ public class Gui {
 		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightDock);
 		this.splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, leftDock, splitRight);
 
-		this.leftDock.getTopDock().setHostedDocker(Docker.getDocker(ObfPanel.class));
-		this.leftDock.getBottomDock().setHostedDocker(Docker.getDocker(DeobfPanel.class));
+		// todo bad
+		this.leftDock.host(Docker.getDocker(ObfPanel.class), Docker.Height.TOP);
+		this.leftDock.host(Docker.getDocker(DeobfPanel.class), Docker.Height.BOTTOM);
 
 		this.setupUi();
 
@@ -224,7 +225,6 @@ public class Gui {
 	 * @param updateStateIfOpen if the docker is already present on the ui, this parameter determines whether to update the visibility of the panel
 	 */
 	public void openDocker(Class<? extends Docker> clazz, boolean updateStateIfOpen) {
-		// todo
 		Docker newDocker = Docker.getDocker(clazz);
 
 		// update state if docker is shown
@@ -239,20 +239,15 @@ public class Gui {
 				if (docker.isVisible()) {
 					dock.removeHostedDocker();
 				} else {
-					dock.setHostedDocker(docker, docker.getCurrentLocation());
+					dock.getParentDock().host(docker, docker.getCurrentLocation());
 				}
 
 				return;
 			}
 		}
 
-		// todo this assumes it's being added from a button
-		Dock dock = Dock.Util.getForLocation(newDocker.getPreferredLocation().height(), newDocker.getPreferredLocation().side());
-		dock.removeHostedDocker();
-		dock.setHostedDocker(newDocker);
-
-		// todo hiding of right/left panels if empty
-		// todo opening of right/left panels
+		CompoundDock dock = (newDocker.getPreferredLocation().side() == Docker.Side.LEFT ? this.leftDock : this.rightDock);
+		dock.host(newDocker, newDocker.getPreferredLocation().height());
 
 		// repaint in case the panel was changing without clicking a button
 		this.mainWindow.getFrame().repaint();
