@@ -33,6 +33,6 @@ public class InheritanceTree extends AbstractInheritanceTree {
 
 	@Override
 	public Location getPreferredLocation() {
-		return new Location(Side.RIGHT, Height.FULL);
+		return new Location(Side.RIGHT, VerticalLocation.FULL);
 	}
 }

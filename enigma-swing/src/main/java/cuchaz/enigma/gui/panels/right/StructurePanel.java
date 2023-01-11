@@ -156,8 +156,8 @@ public class StructurePanel extends Docker {
 	}
 
 	@Override
-	public ButtonPosition getButtonPosition() {
-		return ButtonPosition.RIGHT_TOP;
+	public Location getButtonPosition() {
+		return new Location(Side.RIGHT, VerticalLocation.TOP);
 	}
 
 	@Override
@@ -167,7 +167,7 @@ public class StructurePanel extends Docker {
 
 	@Override
 	public Location getPreferredLocation() {
-		return new Location(Side.RIGHT, Height.FULL);
+		return new Location(Side.RIGHT, VerticalLocation.FULL);
 	}
 
 	private static class StructureTreeCellRenderer extends DefaultTreeCellRenderer {

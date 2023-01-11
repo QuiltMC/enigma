@@ -20,7 +20,7 @@ public abstract class Docker extends JPanel {
 	protected final JToggleButton button;
 	protected final Gui gui;
 
-	protected Height currentHeight = null;
+	protected VerticalLocation currentVerticalLocation = null;
 	protected Side side = null;
 
 	protected Docker(Gui gui) {
@@ -37,19 +37,22 @@ public abstract class Docker extends JPanel {
 		this.title.setText(translatedTitle);
 	}
 
-	public void dock(Side side, Height height) {
-		this.currentHeight = height;
+	public void dock(Side side, VerticalLocation verticalLocation) {
+		this.currentVerticalLocation = verticalLocation;
 		this.side = side;
 	}
 
 	public boolean isActive() {
-		return this.currentHeight != null;
+		return this.currentVerticalLocation != null;
 	}
 
-	public Height getCurrentHeight() {
-		return this.currentHeight;
+	public VerticalLocation getCurrentHeight() {
+		return this.currentVerticalLocation;
 	}
 
+	/**
+	 * @return which side of the screen this docker is currently located
+	 */
 	public Side getCurrentSide() {
 		return this.side;
 	}
@@ -60,18 +63,17 @@ public abstract class Docker extends JPanel {
 
 	public abstract String getId();
 
-	public abstract Docker.ButtonPosition getButtonPosition();
+	public abstract Docker.Location getButtonPosition();
 
 	/**
-	 * dictates where the panel will open when the user clicks its button
-	 * @return an {@link Location} representing the preferred position
+	 * @return an {@link Location} representing this docker's preferred position: where the panel will open when the user clicks its button
 	 */
 	public abstract Location getPreferredLocation();
 
 	@Override
 	public void setVisible(boolean visible) {
 		if (!visible) {
-			this.currentHeight = null;
+			this.currentVerticalLocation = null;
 		}
 
 		this.getButton().setSelected(visible);
@@ -109,7 +111,7 @@ public abstract class Docker extends JPanel {
 	}
 
 	/**
-	 * contains the IDs for all existing dockers
+	 * Contains the IDs for all existing dockers.
 	 */
 	public static final class Type {
 		public static final String STRUCTURE = "structure";
@@ -122,25 +124,26 @@ public abstract class Docker extends JPanel {
 	}
 
 	/**
-	 * represents the position of a docker's button on the selector panels
+	 * Represents the location of a docker on the screen.
+	 * @param side the side of the screen, either right or left
+	 * @param verticalLocation the vertical location of the docker, being full, top or bottom
 	 */
-	public enum ButtonPosition {
-		RIGHT_TOP,
-		RIGHT_BOTTOM,
-		LEFT_TOP,
-		LEFT_BOTTOM
-	}
-
-	public record Location(Side side, Height height) {
+	public record Location(Side side, VerticalLocation verticalLocation) {
 
 	}
 
+	/**
+	 * Represents the side of the screen a docker is located on.
+	 */
 	public enum Side {
 		LEFT,
 		RIGHT
 	}
 
-	public enum Height {
+	/**
+	 * Represents the occupied vertical location of a docker.
+	 */
+	public enum VerticalLocation {
 		TOP,
 		BOTTOM,
 		FULL

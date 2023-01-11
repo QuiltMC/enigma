@@ -59,12 +59,12 @@ public class DeobfuscatedClassesPanel extends Docker {
 	}
 
 	@Override
-	public ButtonPosition getButtonPosition() {
-		return ButtonPosition.LEFT_BOTTOM;
+	public Location getButtonPosition() {
+		return new Location(Side.LEFT, VerticalLocation.BOTTOM);
 	}
 
 	@Override
 	public Location getPreferredLocation() {
-		return new Location(Side.LEFT, Height.BOTTOM);
+		return new Location(Side.LEFT, VerticalLocation.BOTTOM);
 	}
 }

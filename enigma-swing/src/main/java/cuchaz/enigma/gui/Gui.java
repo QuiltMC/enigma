@@ -122,8 +122,8 @@ public class Gui {
 		this.splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, leftDock, splitRight);
 
 		// todo bad
-		this.leftDock.host(Docker.getDocker(ObfuscatedClassesPanel.class), Docker.Height.TOP);
-		this.leftDock.host(Docker.getDocker(DeobfuscatedClassesPanel.class), Docker.Height.BOTTOM);
+		this.leftDock.host(Docker.getDocker(ObfuscatedClassesPanel.class), Docker.VerticalLocation.TOP);
+		this.leftDock.host(Docker.getDocker(DeobfuscatedClassesPanel.class), Docker.VerticalLocation.BOTTOM);
 
 		this.setupUi();
 
@@ -152,7 +152,8 @@ public class Gui {
 			panel.setPreferredSize(new Dimension(300, 100));
 		}
 
-		this.mainWindow.updateRightPanelSelector();
+		this.mainWindow.getLeftDockerSelector().update();
+		this.mainWindow.getRightDockerSelector().update();
 
 		// todo verify docker config here
 	}
@@ -247,7 +248,7 @@ public class Gui {
 		}
 
 		CompoundDock dock = (newDocker.getPreferredLocation().side() == Docker.Side.LEFT ? this.leftDock : this.rightDock);
-		dock.host(newDocker, newDocker.getPreferredLocation().height());
+		dock.host(newDocker, newDocker.getPreferredLocation().verticalLocation());
 
 		// repaint in case the panel was changing without clicking a button
 		this.mainWindow.getFrame().repaint();

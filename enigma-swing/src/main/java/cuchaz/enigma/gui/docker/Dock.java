@@ -17,15 +17,15 @@ public class Dock extends JPanel {
 	private final Docker.Side side;
 
 	private CompoundDock parentDock;
-	private Docker.Height dockHeight;
+	private Docker.VerticalLocation dockVerticalLocation;
 	private Docker hostedDocker;
 
-	public Dock(Docker.Height dockHeight, Docker.Side side) {
+	public Dock(Docker.VerticalLocation dockVerticalLocation, Docker.Side side) {
 		super(new BorderLayout());
 		this.side = side;
 		this.hostedDocker = null;
 		this.parentDock = null;
-		this.setHeight(dockHeight);
+		this.setHeight(dockVerticalLocation);
 
 		docks.add(this);
 	}
@@ -38,7 +38,7 @@ public class Dock extends JPanel {
 		this.add(this.hostedDocker);
 
 		// add new docker
-		this.hostedDocker.dock(this.side, this.dockHeight);
+		this.hostedDocker.dock(this.side, this.dockVerticalLocation);
 
 		// revalidate to paint properly
 		this.revalidate();
@@ -54,8 +54,8 @@ public class Dock extends JPanel {
 		}
 	}
 
-	public Docker.Height getDockerLocation() {
-		return this.dockHeight;
+	public Docker.VerticalLocation getDockerLocation() {
+		return this.dockVerticalLocation;
 	}
 
 	public void setParentDock(CompoundDock parentDock) {
@@ -66,14 +66,14 @@ public class Dock extends JPanel {
 		}
 	}
 
-	private void setHeight(Docker.Height dockHeight) {
+	private void setHeight(Docker.VerticalLocation dockVerticalLocation) {
 		for (Dock dock : docks) {
-			if (dock.dockHeight == dockHeight && dock.side == this.side) {
-				throw new IllegalArgumentException("attempted to switch height of docker " + this + " to " + dockHeight + " on side " + this.side);
+			if (dock.dockVerticalLocation == dockVerticalLocation && dock.side == this.side) {
+				throw new IllegalArgumentException("attempted to switch height of docker " + this + " to " + dockVerticalLocation + " on side " + this.side);
 			}
 		}
 
-		this.dockHeight = dockHeight;
+		this.dockVerticalLocation = dockVerticalLocation;
 	}
 
 	public CompoundDock getParentDock() {

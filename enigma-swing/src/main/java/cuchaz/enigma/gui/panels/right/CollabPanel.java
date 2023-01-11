@@ -93,13 +93,13 @@ public class CollabPanel extends Docker {
 	}
 
 	@Override
-	public ButtonPosition getButtonPosition() {
-		return ButtonPosition.RIGHT_BOTTOM;
+	public Location getButtonPosition() {
+		return new Location(Side.RIGHT, VerticalLocation.BOTTOM);
 	}
 
 	@Override
 	public Location getPreferredLocation() {
-		return new Location(Side.RIGHT, Height.FULL);
+		return new Location(Side.RIGHT, VerticalLocation.FULL);
 	}
 
 	@Override
