@@ -1,4 +1,4 @@
-package cuchaz.enigma.gui.panels.right;
+package cuchaz.enigma.gui.docker;
 
 import javax.annotation.Nullable;
 import javax.swing.tree.DefaultMutableTreeNode;

@@ -1,6 +1,9 @@
 package cuchaz.enigma.gui.docker;
 
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.docker.component.DockerLabel;
+import cuchaz.enigma.gui.docker.dock.CompoundDock;
+import cuchaz.enigma.gui.docker.dock.Dock;
 import cuchaz.enigma.utils.I18n;
 
 import javax.swing.JPanel;
@@ -23,12 +26,14 @@ public abstract class Docker extends JPanel {
 
 	protected VerticalLocation currentVerticalLocation = null;
 	protected Side side = null;
+	protected CompoundDock parentDock = null;
 
 	protected Docker(Gui gui) {
 		super(new BorderLayout());
 		this.gui = gui;
 		this.title = new DockerLabel(this, this.titleSupplier.get());
 		this.button = new JToggleButton(this.titleSupplier.get());
+		// add action listener to open and close the docker when its button is pressed
 		this.button.addActionListener(e -> {
 			Docker docker = getDocker(this.getClass());
 
@@ -38,6 +43,11 @@ public abstract class Docker extends JPanel {
 				gui.openDocker(this.getClass(), true);
 			}
 		});
+
+		// validate to prevent difficult-to-trace errors
+		if (this.getButtonPosition().verticalLocation == VerticalLocation.FULL) {
+			throw new IllegalStateException("docker button vertical location cannot be full! allowed values are top and bottom.");
+		}
 	}
 
 	public void retranslateUi() {
@@ -46,25 +56,41 @@ public abstract class Docker extends JPanel {
 		this.title.setText(translatedTitle);
 	}
 
-	public void dock(Side side, VerticalLocation verticalLocation) {
+	/**
+	 * Docks the docker in the provided dock, with the provided vertical location. Should always be used when adding a docker to a dock.
+	 * @param parentDock the dock to place the docker in
+	 * @param verticalLocation the location to place the docker in
+	 */
+	public void dock(Dock parentDock, VerticalLocation verticalLocation) {
 		this.currentVerticalLocation = verticalLocation;
-		this.side = side;
+		this.side = parentDock.getSide();
+		this.parentDock = parentDock.getParentDock();
 		this.setVisible(true);
 	}
 
+	/**
+	 * Undocks the docker from its parent dock. Should always be used when removing a docker from a dock.
+	 */
 	public void undock() {
 		this.getParent().remove(this);
 		this.currentVerticalLocation = null;
 		this.side = null;
+		this.parentDock = null;
 		this.setVisible(false);
 	}
 
-	public VerticalLocation getCurrentHeight() {
+	/**
+	 * @return the current vertical of the docker. null if not docked
+	 */
+	public VerticalLocation getCurrentVerticalLocation() {
 		return this.currentVerticalLocation;
 	}
 
+	/**
+	 * @return whether the docker is docked and visible on screen
+	 */
 	public boolean isDocked() {
-		return this.currentVerticalLocation != null;
+		return this.parentDock != null;
 	}
 
 	/**
@@ -74,12 +100,21 @@ public abstract class Docker extends JPanel {
 		return this.side;
 	}
 
+	/**
+	 * @return the side panel button that opens and closes this docker
+	 */
 	public JToggleButton getButton() {
 		return this.button;
 	}
 
+	/**
+	 * @return an ID used to check equality and save docker information to the config
+	 */
 	public abstract String getId();
 
+	/**
+	 * @return the position of the docker's button in the selector panels. cannot use {@link Docker.VerticalLocation#FULL}
+	 */
 	public abstract Docker.Location getButtonPosition();
 
 	/**

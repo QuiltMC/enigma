@@ -18,8 +18,8 @@ import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.JavadocDialog;
 import cuchaz.enigma.gui.dialog.SearchDialog;
-import cuchaz.enigma.gui.docker.CompoundDock;
-import cuchaz.enigma.gui.docker.Dock;
+import cuchaz.enigma.gui.docker.dock.CompoundDock;
+import cuchaz.enigma.gui.docker.dock.Dock;
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.elements.EditorTabbedPane;
 import cuchaz.enigma.gui.elements.MainWindow;
@@ -29,11 +29,11 @@ import cuchaz.enigma.gui.panels.DeobfuscatedClassesPanel;
 import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.panels.IdentifierPanel;
 import cuchaz.enigma.gui.panels.ObfuscatedClassesPanel;
-import cuchaz.enigma.gui.panels.right.CollabPanel;
-import cuchaz.enigma.gui.panels.right.StructurePanel;
-import cuchaz.enigma.gui.panels.right.CallsTree;
-import cuchaz.enigma.gui.panels.right.ImplementationsTree;
-import cuchaz.enigma.gui.panels.right.InheritanceTree;
+import cuchaz.enigma.gui.docker.CollabPanel;
+import cuchaz.enigma.gui.docker.StructurePanel;
+import cuchaz.enigma.gui.docker.CallsTree;
+import cuchaz.enigma.gui.docker.ImplementationsTree;
+import cuchaz.enigma.gui.docker.InheritanceTree;
 import cuchaz.enigma.gui.renderer.MessageListCellRenderer;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.LanguageUtil;
@@ -240,7 +240,7 @@ public class Gui {
 				if (docker.isVisible()) {
 					dock.removeHostedDocker();
 				} else {
-					dock.getParentDock().host(docker, docker.getCurrentHeight());
+					dock.getParentDock().host(docker, docker.getCurrentVerticalLocation());
 				}
 
 				return;
@@ -625,10 +625,11 @@ public class Gui {
 		users.forEach(userModel::addElement);
 		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
 
-//		// if we were previously offline, we need to reload multiplayer-restricted right panels (ex. messages) so they can be used
-//		if (wasOffline && this.getDocker() instanceof CollabPanel collabPanel) {
-//			collabPanel.setUp();
-//		}
+		// if we were previously offline, we need to reload multiplayer-restricted right panels (ex. messages) so they can be used
+		CollabPanel collabDocker = Docker.getDocker(CollabPanel.class);
+		if (wasOffline && collabDocker.isDocked()) {
+			collabDocker.setUp();
+		}
 	}
 
 	public boolean isOffline() {
@@ -652,7 +653,6 @@ public class Gui {
 		this.updateUiState();
 
 		this.menuBar.retranslateUi();
-		//this.deobfPanel.retranslateUi();
 		this.infoPanel.retranslateUi();
 		this.editorTabbedPane.retranslateUi();
 		for (Docker panel : Docker.getDockers().values()) {

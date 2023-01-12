@@ -1,4 +1,7 @@
-package cuchaz.enigma.gui.docker;
+package cuchaz.enigma.gui.docker.component;
+
+import cuchaz.enigma.gui.docker.Docker;
+import cuchaz.enigma.gui.docker.dock.Dock;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;

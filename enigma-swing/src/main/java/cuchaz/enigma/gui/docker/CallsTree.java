@@ -1,4 +1,4 @@
-package cuchaz.enigma.gui.panels.right;
+package cuchaz.enigma.gui.docker;
 
 import java.awt.BorderLayout;
 import java.awt.event.MouseEvent;

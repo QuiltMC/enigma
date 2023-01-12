@@ -1,4 +1,4 @@
-package cuchaz.enigma.gui.panels.right;
+package cuchaz.enigma.gui.docker;
 
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.docker.Docker;

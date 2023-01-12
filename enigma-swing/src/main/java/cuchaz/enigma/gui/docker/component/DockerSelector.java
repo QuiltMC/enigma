@@ -1,6 +1,6 @@
-package cuchaz.enigma.gui.docker;
+package cuchaz.enigma.gui.docker.component;
 
-import cuchaz.enigma.gui.panels.right.RightAngleLayerUI;
+import cuchaz.enigma.gui.docker.Docker;
 
 import javax.swing.JLayer;
 import javax.swing.JPanel;

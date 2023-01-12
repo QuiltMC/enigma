@@ -1,6 +1,7 @@
-package cuchaz.enigma.gui.docker;
+package cuchaz.enigma.gui.docker.dock;
 
 import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.gui.docker.Docker;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -38,7 +39,7 @@ public class Dock extends JPanel {
 		this.add(this.hostedDocker);
 
 		// add new docker
-		this.hostedDocker.dock(this.side, this.dockVerticalLocation);
+		this.hostedDocker.dock(this, this.dockVerticalLocation);
 
 		// revalidate to paint properly
 		this.revalidate();
@@ -55,8 +56,8 @@ public class Dock extends JPanel {
 		}
 	}
 
-	public Docker getHostedDocker() {
-		return this.hostedDocker;
+	public Docker.Side getSide() {
+		return this.side;
 	}
 
 	public Docker.VerticalLocation getDockerLocation() {
@@ -135,6 +136,20 @@ public class Dock extends JPanel {
 					dock.removeHostedDocker();
 				}
 			}
+		}
+
+		/**
+		 * @param docker the docker to find the dock for
+		 * @return
+		 */
+		public static Dock getDock(Docker docker) {
+			for (Dock dock : docks) {
+				if (docker.equals(dock.hostedDocker)) {
+					return dock;
+				}
+			}
+
+			return null;
 		}
 	}
 }

@@ -1,4 +1,4 @@
-package cuchaz.enigma.gui.panels.right;
+package cuchaz.enigma.gui.docker.component;
 
 import javax.swing.JComponent;
 import javax.swing.JLayer;
@@ -59,7 +59,7 @@ public class RightAngleLayerUI extends LayerUI<JComponent> {
 	/**
 	 * Find the deepest component in the AWT hierarchy
 	 *
-	 * @param layer	   the layer to which this UI is installed
+	 * @param layer the layer to which this UI is installed
 	 * @param targetPoint the point in layer's coordinates
 	 * @return the component in the specified point
 	 */

@@ -6,7 +6,7 @@ import java.util.OptionalInt;
 
 import cuchaz.enigma.config.ConfigContainer;
 import cuchaz.enigma.config.ConfigSection;
-import cuchaz.enigma.gui.docker.Dock;
+import cuchaz.enigma.gui.docker.dock.Dock;
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;

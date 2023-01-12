@@ -1,4 +1,6 @@
-package cuchaz.enigma.gui.docker;
+package cuchaz.enigma.gui.docker.dock;
+
+import cuchaz.enigma.gui.docker.Docker;
 
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;

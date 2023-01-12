@@ -1,4 +1,4 @@
-package cuchaz.enigma.gui.panels.right;
+package cuchaz.enigma.gui.docker;
 
 import cuchaz.enigma.analysis.AbstractClassTreeNode;
 import cuchaz.enigma.analysis.AbstractMethodTreeNode;

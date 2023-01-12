@@ -1,15 +1,12 @@
 package cuchaz.enigma.gui.elements;
 
 import cuchaz.enigma.gui.docker.Docker;
-import cuchaz.enigma.gui.docker.DockerSelector;
-import cuchaz.enigma.gui.panels.right.RightAngleLayerUI;
+import cuchaz.enigma.gui.docker.component.DockerSelector;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.FlowLayout;
 
 import javax.swing.JFrame;
-import javax.swing.JLayer;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 
