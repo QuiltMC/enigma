@@ -72,7 +72,9 @@ public abstract class Docker extends JPanel {
 	 * Undocks the docker from its parent dock. Should always be used when removing a docker from a dock.
 	 */
 	public void undock() {
-		this.getParent().remove(this);
+		if (this.getParent() != null) {
+			this.getParent().remove(this);
+		}
 		this.currentVerticalLocation = null;
 		this.side = null;
 		this.parentDock = null;
