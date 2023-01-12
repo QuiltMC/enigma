@@ -38,12 +38,8 @@ public class MainWindow {
 		this.frame.setVisible(visible);
 	}
 
-	public DockerSelector getRightDockerSelector() {
-		return this.rightDockerSelector;
-	}
-
-	public DockerSelector getLeftDockerSelector() {
-		return this.leftDockerSelector;
+	public DockerSelector getDockerSelector(Docker.Side side) {
+		return side == Docker.Side.LEFT ? this.leftDockerSelector : this.rightDockerSelector;
 	}
 
 	public JMenuBar getMenuBar() {

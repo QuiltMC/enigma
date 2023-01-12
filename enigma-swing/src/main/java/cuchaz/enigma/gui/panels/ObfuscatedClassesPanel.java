@@ -30,7 +30,6 @@ public class ObfuscatedClassesPanel extends Docker {
 		this.classSelector.setRenameSelectionListener(gui::onRenameFromClassTree);
 
 		this.add(this.title, BorderLayout.NORTH);
-		this.title.setConstraints(BorderLayout.NORTH);
 		this.add(new JScrollPane(this.classSelector), BorderLayout.CENTER);
 	}
 

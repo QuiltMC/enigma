@@ -81,7 +81,6 @@ public class StructurePanel extends Docker {
 		JPanel topPanel = new JPanel(new BorderLayout());
 		topPanel.add(this.optionsPanel, BorderLayout.SOUTH);
 		topPanel.add(this.title, BorderLayout.NORTH);
-		this.title.setConstraints(BorderLayout.NORTH);
 
 		this.add(topPanel, BorderLayout.NORTH);
 		this.add(new JScrollPane(this.structureTree));

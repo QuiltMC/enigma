@@ -53,6 +53,7 @@ public class Dock extends JPanel {
 			this.hostedDocker.undock();
 			this.hostedDocker = null;
 			this.repaint();
+			// todo revalidate side buttons
 		}
 	}
 
@@ -136,20 +137,6 @@ public class Dock extends JPanel {
 					dock.removeHostedDocker();
 				}
 			}
-		}
-
-		/**
-		 * @param docker the docker to find the dock for
-		 * @return
-		 */
-		public static Dock getDock(Docker docker) {
-			for (Dock dock : docks) {
-				if (docker.equals(dock.hostedDocker)) {
-					return dock;
-				}
-			}
-
-			return null;
 		}
 	}
 }

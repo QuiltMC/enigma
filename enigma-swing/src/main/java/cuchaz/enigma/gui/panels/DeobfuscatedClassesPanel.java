@@ -27,7 +27,6 @@ public class DeobfuscatedClassesPanel extends Docker {
 
 		this.setLayout(new BorderLayout());
 		this.add(this.title, BorderLayout.NORTH);
-		this.title.setConstraints(BorderLayout.NORTH);
 		this.add(new JScrollPane(this.classSelector), BorderLayout.CENTER);
 
 		this.classSelector.addMouseListener(GuiUtil.onMousePress(this::onPress));
@@ -52,7 +51,6 @@ public class DeobfuscatedClassesPanel extends Docker {
 	@Override
 	public void retranslateUi() {
 		super.retranslateUi();
-		this.title.setText(I18n.translate("info_panel.classes.deobfuscated"));
 		this.popupMenu.retranslateUi();
 	}
 

@@ -1,7 +1,7 @@
 package cuchaz.enigma.gui.docker;
 
 import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.gui.docker.component.DockerLabel;
+import cuchaz.enigma.gui.docker.component.DockerTitleBar;
 import cuchaz.enigma.gui.docker.dock.CompoundDock;
 import cuchaz.enigma.gui.docker.dock.Dock;
 import cuchaz.enigma.utils.I18n;
@@ -20,7 +20,7 @@ public abstract class Docker extends JPanel {
 	private static final Map<String, Class<? extends Docker>> dockerClasses = new HashMap<>();
 
 	protected final Supplier<String> titleSupplier = () -> I18n.translate("docker." + this.getId() + ".title");
-	protected final DockerLabel title;
+	protected final DockerTitleBar title;
 	protected final JToggleButton button;
 	protected final Gui gui;
 
@@ -31,7 +31,7 @@ public abstract class Docker extends JPanel {
 	protected Docker(Gui gui) {
 		super(new BorderLayout());
 		this.gui = gui;
-		this.title = new DockerLabel(this, this.titleSupplier.get());
+		this.title = new DockerTitleBar(this, this.titleSupplier);
 		this.button = new JToggleButton(this.titleSupplier.get());
 		// add action listener to open and close the docker when its button is pressed
 		this.button.addActionListener(e -> {
@@ -53,7 +53,7 @@ public abstract class Docker extends JPanel {
 	public void retranslateUi() {
 		String translatedTitle = this.titleSupplier.get();
 		this.button.setText(translatedTitle);
-		this.title.setText(translatedTitle);
+		this.title.retranslateUi();
 	}
 
 	/**
@@ -72,13 +72,19 @@ public abstract class Docker extends JPanel {
 	 * Undocks the docker from its parent dock. Should always be used when removing a docker from a dock.
 	 */
 	public void undock() {
+		// remove from parent
 		if (this.getParent() != null) {
 			this.getParent().remove(this);
 		}
+
+		this.setVisible(false);
+		// ensure that button is properly repainted with its new state
+		this.gui.getMainWindow().getDockerSelector(this.side).getPanel().repaint();
+
+		// reset fields
 		this.currentVerticalLocation = null;
 		this.side = null;
 		this.parentDock = null;
-		this.setVisible(false);
 	}
 
 	/**

@@ -151,8 +151,9 @@ public class Gui {
 			panel.setPreferredSize(new Dimension(300, 100));
 		}
 
-		this.mainWindow.getLeftDockerSelector().update();
-		this.mainWindow.getRightDockerSelector().update();
+		for (Docker.Side side : Docker.Side.values()) {
+			this.mainWindow.getDockerSelector(side).update();
+		}
 
 		// todo verify docker config here
 	}
