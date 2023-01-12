@@ -81,7 +81,6 @@ public class Gui {
 	private ConnectionState connectionState;
 	private boolean isJarOpen;
 	private final Set<EditableType> editableTypes;
-	private boolean singleClassTree;
 
 	private final MenuBar menuBar;
 	private final IdentifierPanel infoPanel;
@@ -198,11 +197,6 @@ public class Gui {
 		setConnectionState(ConnectionState.NOT_CONNECTED);
 		onCloseJar();
 
-		// select correct right panel button
-		//this.Docker.getButton().setSelected(true);
-		// configure selected right panel
-		//this.splitRight.setDividerLocation(UiConfig.getDockerDividerLocation(this.getDocker().getId(), this.splitRight.getDividerLocation()));
-
 		JFrame frame = this.mainWindow.getFrame();
 		frame.addWindowListener(GuiUtil.onWindowClose(e -> this.close()));
 
@@ -280,28 +274,13 @@ public class Gui {
 		return this.controller;
 	}
 
-	public void setSingleClassTree(boolean singleClassTree) {
-		this.singleClassTree = singleClassTree;
-//		this.classesPanel.removeAll();
-//		this.classesPanel.add(isSingleClassTree() ? deobfPanel : splitClasses);
-		getController().refreshClasses();
-		retranslateUi();
-	}
-
-	public boolean isSingleClassTree() {
-		return singleClassTree;
-	}
-
 	public void onStartOpenJar() {
-//		this.classesPanel.removeAll();
 		redraw();
 	}
 
 	public void onFinishOpenJar(String jarName) {
 		// update gui
 		this.mainWindow.setTitle(Enigma.NAME + " - " + jarName);
-//		this.classesPanel.removeAll();
-//		this.classesPanel.add(isSingleClassTree() ? deobfPanel : splitClasses);
 		this.editorTabbedPane.closeAllEditorTabs();
 
 		// update menu
@@ -317,7 +296,6 @@ public class Gui {
 		setObfClasses(null);
 		setDeobfClasses(null);
 		this.editorTabbedPane.closeAllEditorTabs();
-//		this.classesPanel.removeAll();
 
 		// update menu
 		isJarOpen = false;
@@ -350,11 +328,12 @@ public class Gui {
 	}
 
 	public void setObfClasses(Collection<ClassEntry> obfClasses) {
-		Docker.getDocker(ObfuscatedClassesPanel.class).obfClasses.setClasses(obfClasses);
+		Docker.getDocker(ObfuscatedClassesPanel.class).getClassSelector().setClasses(obfClasses);
 	}
 
 	public void setDeobfClasses(Collection<ClassEntry> deobfClasses) {
-		//this.deobfPanel.deobfClasses.setClasses(deobfClasses);
+		DeobfuscatedClassesPanel deobfuscatedPanel = Docker.getDocker(DeobfuscatedClassesPanel.class);
+		deobfuscatedPanel.getClassSelector().setClasses(deobfClasses);
 	}
 
 	public void setMappingsFile(Path path) {
@@ -507,7 +486,7 @@ public class Gui {
 		UiConfig.setWindowPos(UiConfig.MAIN_WINDOW, this.mainWindow.getFrame().getLocationOnScreen());
 		UiConfig.setWindowSize(UiConfig.MAIN_WINDOW, this.mainWindow.getFrame().getSize());
 		UiConfig.setLayout(
-//				this.splitClasses.getDividerLocation(),
+				// todo
 				0,
 				this.splitCenter.getDividerLocation(),
 				this.splitRight.getDividerLocation()
@@ -539,8 +518,10 @@ public class Gui {
 				onRenameFromClassTree(vc, prevDataChild, dataChild, node);
 			}
 			node.setUserObject(data);
+
 			// Ob package will never be modified, just reload deob view
-			//this.deobfPanel.deobfClasses.reload();
+			DeobfuscatedClassesPanel deobfuscatedPanel = Docker.getDocker(DeobfuscatedClassesPanel.class);
+			deobfuscatedPanel.getClassSelector().reload();
 		} else if (data instanceof ClassEntry entry) {
 			// class rename
 
@@ -571,32 +552,32 @@ public class Gui {
 		ObfuscatedClassesPanel obfuscatedClassesPanel = Docker.getDocker(ObfuscatedClassesPanel.class);
 		DeobfuscatedClassesPanel deobfuscatedClassesPanel = Docker.getDocker(DeobfuscatedClassesPanel.class);
 
-		List<ClassSelector.StateEntry> deobfuscatedPanelExpansionState = deobfuscatedClassesPanel.deobfClasses.getExpansionState();
-		List<ClassSelector.StateEntry> obfuscatedPanelExpansionState = obfuscatedClassesPanel.obfClasses.getExpansionState();
+		ClassSelector deobfuscatedClassSelector = deobfuscatedClassesPanel.getClassSelector();
+		ClassSelector obfuscatedClassSelector = obfuscatedClassesPanel.getClassSelector();
+
+		List<ClassSelector.StateEntry> deobfuscatedPanelExpansionState = deobfuscatedClassSelector.getExpansionState();
+		List<ClassSelector.StateEntry> obfuscatedPanelExpansionState = obfuscatedClassSelector.getExpansionState();
 
 		if (!isNewOb) {
 			// obfuscated -> deobfuscated
-			deobfuscatedClassesPanel.deobfClasses.moveClassIn(classEntry);
-			obfuscatedClassesPanel.obfClasses.removeEntry(classEntry);
-			deobfuscatedClassesPanel.deobfClasses.reload();
-			obfuscatedClassesPanel.obfClasses.reload();
+			deobfuscatedClassSelector.moveClassIn(classEntry);
+			obfuscatedClassSelector.removeEntry(classEntry);
+			deobfuscatedClassSelector.reload();
+			obfuscatedClassSelector.reload();
 		} else if (!isOldOb) {
 			// deobfuscated -> obfuscated
-			obfuscatedClassesPanel.obfClasses.moveClassIn(classEntry);
-			deobfuscatedClassesPanel.deobfClasses.removeEntry(classEntry);
-			deobfuscatedClassesPanel.deobfClasses.reload();
-			obfuscatedClassesPanel.obfClasses.reload();
+			obfuscatedClassSelector.moveClassIn(classEntry);
+			deobfuscatedClassSelector.removeEntry(classEntry);
+			deobfuscatedClassSelector.reload();
+			obfuscatedClassSelector.reload();
 		} else {
-			deobfuscatedClassesPanel.deobfClasses.moveClassIn(classEntry);
-			deobfuscatedClassesPanel.deobfClasses.reload();
+			// local move
+			deobfuscatedClassSelector.moveClassIn(classEntry);
+			deobfuscatedClassSelector.reload();
 		}
 
-		deobfuscatedClassesPanel.deobfClasses.restoreExpansionState(deobfuscatedPanelExpansionState);
-		obfuscatedClassesPanel.obfClasses.restoreExpansionState(obfuscatedPanelExpansionState);
-	}
-
-	public ObfuscatedClassesPanel getObfPanel() {
-		return Docker.getDocker(ObfuscatedClassesPanel.class);
+		deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
+		obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
 	}
 
 	public SearchDialog getSearchDialog() {

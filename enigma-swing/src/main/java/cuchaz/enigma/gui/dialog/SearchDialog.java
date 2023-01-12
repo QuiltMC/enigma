@@ -27,6 +27,9 @@ import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.GuiController;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
+import cuchaz.enigma.gui.docker.Docker;
+import cuchaz.enigma.gui.panels.DeobfuscatedClassesPanel;
+import cuchaz.enigma.gui.panels.ObfuscatedClassesPanel;
 import cuchaz.enigma.gui.util.AbstractListCellRenderer;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
@@ -160,21 +163,25 @@ public class SearchDialog {
 		}
 	}
 
-	private void openEntry(SearchEntryImpl e) {
+	private void openEntry(SearchEntryImpl entryImpl) {
 		close();
-		su.hit(e);
-		parent.getController().navigateTo(e.obf);
-		if (e.obf instanceof ClassEntry) {
-			if (e.deobf != null) {
-				//parent.getDeobfPanel().deobfClasses.setSelectionClass((ClassEntry) e.deobf);
+		su.hit(entryImpl);
+		parent.getController().navigateTo(entryImpl.obf);
+		if (entryImpl.obf instanceof ClassEntry entry) {
+			if (entryImpl.deobf != null) {
+				DeobfuscatedClassesPanel deobfuscatedPanel = Docker.getDocker(DeobfuscatedClassesPanel.class);
+				deobfuscatedPanel.getClassSelector().setSelectionClass((ClassEntry) entryImpl.deobf);
 			} else {
-				parent.getObfPanel().obfClasses.setSelectionClass((ClassEntry) e.obf);
+				ObfuscatedClassesPanel obfuscatedPanel = Docker.getDocker(ObfuscatedClassesPanel.class);
+				obfuscatedPanel.getClassSelector().setSelectionClass(entry);
 			}
 		} else {
-			if (e.deobf != null) {
-				//parent.getDeobfPanel().deobfClasses.setSelectionClass((ClassEntry) e.deobf.getParent());
-			} else {
-				parent.getObfPanel().obfClasses.setSelectionClass((ClassEntry) e.obf.getParent());
+			if (entryImpl.deobf != null && entryImpl.deobf.getParent() != null) {
+				DeobfuscatedClassesPanel deobfuscatedPanel = Docker.getDocker(DeobfuscatedClassesPanel.class);
+				deobfuscatedPanel.getClassSelector().setSelectionClass((ClassEntry) entryImpl.deobf.getParent());
+			} else if (entryImpl.obf.getParent() != null) {
+				ObfuscatedClassesPanel obfuscatedPanel = Docker.getDocker(ObfuscatedClassesPanel.class);
+				obfuscatedPanel.getClassSelector().setSelectionClass((ClassEntry) entryImpl.obf.getParent());
 			}
 		}
 	}

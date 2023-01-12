@@ -20,20 +20,25 @@ public class ObfuscatedClassesPanel extends Docker {
 		return aName.compareTo(bName);
 	};
 
-	public final ClassSelector obfClasses;
+	private final ClassSelector classSelector;
 
 	public ObfuscatedClassesPanel(Gui gui) {
 		super(gui);
 
-		this.obfClasses = new ClassSelector(gui, obfuscatedClassComparator, false);
-		this.obfClasses.setSelectionListener(gui.getController()::navigateTo);
-		this.obfClasses.setRenameSelectionListener(gui::onRenameFromClassTree);
+		this.classSelector = new ClassSelector(gui, obfuscatedClassComparator, false);
+		this.classSelector.setSelectionListener(gui.getController()::navigateTo);
+		this.classSelector.setRenameSelectionListener(gui::onRenameFromClassTree);
 
 		this.add(this.title, BorderLayout.NORTH);
 		this.title.setConstraints(BorderLayout.NORTH);
-		this.add(new JScrollPane(this.obfClasses), BorderLayout.CENTER);
+		this.add(new JScrollPane(this.classSelector), BorderLayout.CENTER);
 	}
 
+	public ClassSelector getClassSelector() {
+		return this.classSelector;
+	}
+
+	@Override
 	public String getId() {
 		return Type.OBFUSCATED_CLASSES;
 	}

@@ -115,10 +115,6 @@ public class Main {
 
 			Gui gui = new Gui(parsedProfile, editables);
 			GuiController controller = gui.getController();
-			
-			if (options.has("single-class-tree")) {
-				gui.setSingleClassTree(true);
-			}
 
 			if (Boolean.parseBoolean(System.getProperty("enigma.catchExceptions", "true"))) {
 				// install a global exception handler to the event thread

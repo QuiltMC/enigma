@@ -377,11 +377,6 @@ public class GuiController implements ClientPacketHandler {
 				.filter(entry -> !entry.isInnerClass());
 
 		visibleClasses.forEach(entry -> {
-			if (gui.isSingleClassTree()) {
-				deobfClasses.add(entry);
-				return;
-			}
-
 			TranslateResult<ClassEntry> result = mapper.extendedDeobfuscate(entry);
 			ClassEntry deobfEntry = result.getValue();
 

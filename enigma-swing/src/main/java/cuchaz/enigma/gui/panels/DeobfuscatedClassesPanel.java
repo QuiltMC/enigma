@@ -14,47 +14,50 @@ import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.utils.I18n;
 
 public class DeobfuscatedClassesPanel extends Docker {
-	public final ClassSelector deobfClasses;
-	public final DeobfPanelPopupMenu deobfPanelPopupMenu;
+	private final ClassSelector classSelector;
+	private final DeobfPanelPopupMenu popupMenu;
 
 	public DeobfuscatedClassesPanel(Gui gui) {
 		super(gui);
 
-		this.deobfClasses = new ClassSelector(gui, ClassSelector.DEOBF_CLASS_COMPARATOR, true);
-		this.deobfClasses.setSelectionListener(gui.getController()::navigateTo);
-		this.deobfClasses.setRenameSelectionListener(gui::onRenameFromClassTree);
-		this.deobfPanelPopupMenu = new DeobfPanelPopupMenu(this);
+		this.classSelector = new ClassSelector(gui, ClassSelector.DEOBF_CLASS_COMPARATOR, true);
+		this.classSelector.setSelectionListener(gui.getController()::navigateTo);
+		this.classSelector.setRenameSelectionListener(gui::onRenameFromClassTree);
+		this.popupMenu = new DeobfPanelPopupMenu(this);
 
 		this.setLayout(new BorderLayout());
 		this.add(this.title, BorderLayout.NORTH);
 		this.title.setConstraints(BorderLayout.NORTH);
-		this.add(new JScrollPane(this.deobfClasses), BorderLayout.CENTER);
+		this.add(new JScrollPane(this.classSelector), BorderLayout.CENTER);
 
-		this.deobfClasses.addMouseListener(GuiUtil.onMousePress(this::onPress));
+		this.classSelector.addMouseListener(GuiUtil.onMousePress(this::onPress));
 
 		this.retranslateUi();
 	}
 
 	private void onPress(MouseEvent e) {
 		if (SwingUtilities.isRightMouseButton(e)) {
-			deobfClasses.setSelectionRow(deobfClasses.getClosestRowForLocation(e.getX(), e.getY()));
-			int i = deobfClasses.getRowForPath(deobfClasses.getSelectionPath());
+			classSelector.setSelectionRow(classSelector.getClosestRowForLocation(e.getX(), e.getY()));
+			int i = classSelector.getRowForPath(classSelector.getSelectionPath());
 			if (i != -1) {
-				deobfPanelPopupMenu.show(deobfClasses, e.getX(), e.getY());
+				popupMenu.show(classSelector, e.getX(), e.getY());
 			}
 		}
+	}
+
+	public ClassSelector getClassSelector() {
+		return this.classSelector;
 	}
 
 	@Override
 	public void retranslateUi() {
 		super.retranslateUi();
-		this.title.setText(I18n.translate(gui.isSingleClassTree() ? "info_panel.classes" : "info_panel.classes.deobfuscated"));
-		this.deobfPanelPopupMenu.retranslateUi();
+		this.title.setText(I18n.translate("info_panel.classes.deobfuscated"));
+		this.popupMenu.retranslateUi();
 	}
 
 	@Override
 	public String getId() {
-		// todo
 		return Type.DEOBFUSCATED_CLASSES;
 	}
 

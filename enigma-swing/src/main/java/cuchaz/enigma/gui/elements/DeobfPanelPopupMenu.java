@@ -25,7 +25,7 @@ public class DeobfPanelPopupMenu {
         this.ui.add(this.expandAll);
         this.ui.add(this.collapseAll);
 
-        ClassSelector deobfClasses = panel.deobfClasses;
+        ClassSelector deobfClasses = panel.getClassSelector();
 
         this.renamePackage.addActionListener(a -> {
             TreePath path;
