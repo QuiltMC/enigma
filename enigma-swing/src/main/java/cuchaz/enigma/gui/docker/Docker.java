@@ -15,6 +15,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+/**
+ * Represents a window that can be docked on the sides of the editor panel.
+ * <br> A docker is an instance of {@link JPanel} that uses a {@link BorderLayout} by default.
+ */
 public abstract class Docker extends JPanel {
 	private static final Map<Class<? extends Docker>, Docker> dockers = new LinkedHashMap<>();
 	private static final Map<String, Class<? extends Docker>> dockerClasses = new HashMap<>();
@@ -43,6 +47,8 @@ public abstract class Docker extends JPanel {
 				gui.openDocker(this.getClass(), true);
 			}
 		});
+
+		this.add(this.title, BorderLayout.NORTH);
 
 		// validate to prevent difficult-to-trace errors
 		if (this.getButtonPosition().verticalLocation == VerticalLocation.FULL) {
