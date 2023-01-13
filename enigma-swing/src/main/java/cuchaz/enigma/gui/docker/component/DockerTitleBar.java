@@ -27,9 +27,9 @@ public class DockerTitleBar extends JPanel {
 		// if we set the left and right margins to 4, the button lines up *really* cutely with the scroll bar in any JScrollPane underneath it
 		minimiseButton.setMargin(new Insets(0, 4, 0, 4));
 
+		// set up
 		this.add(this.label, BorderLayout.WEST);
 		this.add(minimiseButton, BorderLayout.EAST);
-
 		this.label.setConstraints(BorderLayout.WEST);
 	}
 

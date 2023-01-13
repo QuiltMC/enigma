@@ -215,10 +215,10 @@
 	"crash.exit": "終了",
 	"crash.exit.warning": "終了すると、未保存の変更は失われます",
 
-	"right_panel.structure.title": "構造",
-	"right_panel.inheritance.title": "継承",
-	"right_panel.implementations.title": "実装",
-	"right_panel.calls.title": "呼び出し関係",
-	"right_panel.collab.messages_title": "メッセージ",
-	"right_panel.collab.users_title": "ユーザー"
+	"docker.structure.title": "構造",
+	"docker.inheritance.title": "継承",
+	"docker.implementations.title": "実装",
+	"docker.calls.title": "呼び出し関係",
+	"docker.collab.messages_title": "メッセージ",
+	"docker.collab.users_title": "ユーザー"
 }

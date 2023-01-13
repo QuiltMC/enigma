@@ -1,7 +1,7 @@
 package cuchaz.enigma.gui.docker;
 
 import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.gui.docker.Docker;
+import cuchaz.enigma.gui.docker.component.DockerTitleBar;
 import cuchaz.enigma.network.packet.MessageC2SPacket;
 import cuchaz.enigma.utils.I18n;
 
@@ -17,19 +17,25 @@ import java.util.function.Supplier;
 
 public class CollabPanel extends Docker {
 	private final JLabel offlineLabel;
+	private final DockerTitleBar titleCopy;
+	private final JButton startServerButton;
+	private final JButton connectToServerButton;
 	private final JPanel whenOfflinePanel;
+
 	private final JPanel whenOnlinePanel;
 	private final JButton sendPendingMessageButton;
 	private final JScrollPane messageScrollPane;
 	private final JTextField pendingMessageBox;
 	private final JLabel usersTitle;
 	private final JLabel messagesTitle;
-	private final JLabel titleCopy;
 
-	private final Supplier<String> offlineTextProvider = () -> I18n.translate("right_panel.collab.offline_text");
-	private final Supplier<String> usersTitleProvider = () -> I18n.translate("right_panel.collab.users_title");
-	private final Supplier<String> messagesTitleProvider = () -> I18n.translate("right_panel.collab.messages_title");
-	private final Supplier<String> sendButtonTextProvider = () -> I18n.translate("right_panel.collab.send");
+	private static final Supplier<String> offlineTextProvider = () -> I18n.translate("docker.collab.offline_text");
+	private static final Supplier<String> startServerTextProvider = () -> I18n.translate("menu.collab.server.start");
+	private static final Supplier<String> connectToServerTextProvider = () -> I18n.translate("menu.collab.connect");
+
+	private static final Supplier<String> usersTitleProvider = () -> I18n.translate("docker.collab.users_title");
+	private static final Supplier<String> messagesTitleProvider = () -> I18n.translate("docker.collab.messages_title");
+	private static final Supplier<String> sendButtonTextProvider = () -> I18n.translate("docker.collab.send");
 
 	private JPanel panel;
 	private boolean offline;
@@ -39,14 +45,24 @@ public class CollabPanel extends Docker {
 
 		// offline panel
 		this.whenOfflinePanel = new JPanel(new BorderLayout());
-		this.offlineLabel = new JLabel(this.offlineTextProvider.get());
+		this.offlineLabel = new JLabel(offlineTextProvider.get());
 		JPanel offlineTopPanel = new JPanel(new BorderLayout());
 
-		// there are ghosts in my code
-		this.titleCopy = new JLabel(this.titleSupplier.get());
+		JPanel connectionButtonPanel = new JPanel(new BorderLayout());
+		this.startServerButton = new JButton(startServerTextProvider.get());
+		this.connectToServerButton = new JButton(connectToServerTextProvider.get());
+		connectionButtonPanel.add(this.startServerButton, BorderLayout.NORTH);
+		connectionButtonPanel.add(this.connectToServerButton, BorderLayout.SOUTH);
 
-		offlineTopPanel.add(this.offlineLabel, BorderLayout.SOUTH);
+		this.startServerButton.addActionListener(e -> this.gui.getMenuBar().onStartServerClicked());
+		this.connectToServerButton.addActionListener(e -> this.gui.getMenuBar().onConnectClicked());
+
+		// we make a copy of the title bar to avoid having to shuffle it around both panels
+		this.titleCopy = new DockerTitleBar(this, this.titleSupplier);
+
 		offlineTopPanel.add(this.titleCopy, BorderLayout.NORTH);
+		offlineTopPanel.add(this.offlineLabel, BorderLayout.CENTER);
+		offlineTopPanel.add(connectionButtonPanel, BorderLayout.SOUTH);
 		this.whenOfflinePanel.add(offlineTopPanel, BorderLayout.NORTH);
 
 		// online panel
@@ -57,7 +73,7 @@ public class CollabPanel extends Docker {
 		JPanel userListPanel = new JPanel(new BorderLayout());
 		JScrollPane userScrollPane = new JScrollPane(gui.getUsers());
 
-		this.usersTitle = new JLabel(this.usersTitleProvider.get());
+		this.usersTitle = new JLabel(usersTitleProvider.get());
 		userListPanel.add(this.usersTitle, BorderLayout.NORTH);
 		userListPanel.add(userScrollPane, BorderLayout.CENTER);
 
@@ -75,9 +91,9 @@ public class CollabPanel extends Docker {
 			}
 		};
 		this.pendingMessageBox.addActionListener(sendListener);
-		this.sendPendingMessageButton = new JButton(this.sendButtonTextProvider.get());
+		this.sendPendingMessageButton = new JButton(sendButtonTextProvider.get());
 		this.sendPendingMessageButton.setAction(sendListener);
-		this.messagesTitle = new JLabel(this.messagesTitleProvider.get());
+		this.messagesTitle = new JLabel(messagesTitleProvider.get());
 		JPanel chatPanel = new JPanel(new BorderLayout());
 		chatPanel.add(this.pendingMessageBox, BorderLayout.CENTER);
 		chatPanel.add(this.sendPendingMessageButton, BorderLayout.EAST);
@@ -127,11 +143,13 @@ public class CollabPanel extends Docker {
 	@Override
 	public void retranslateUi() {
 		super.retranslateUi();
-		this.offlineLabel.setText(this.offlineTextProvider.get());
-		this.sendPendingMessageButton.setText(this.sendButtonTextProvider.get());
-		this.usersTitle.setText(this.usersTitleProvider.get());
-		this.messagesTitle.setText(this.messagesTitleProvider.get());
-		this.titleCopy.setText(this.titleSupplier.get());
+		this.offlineLabel.setText(offlineTextProvider.get());
+		this.sendPendingMessageButton.setText(sendButtonTextProvider.get());
+		this.usersTitle.setText(usersTitleProvider.get());
+		this.messagesTitle.setText(messagesTitleProvider.get());
+		this.startServerButton.setText(startServerTextProvider.get());
+		this.connectToServerButton.setText(connectToServerTextProvider.get());
+		this.titleCopy.retranslateUi();
 	}
 
 	@Override

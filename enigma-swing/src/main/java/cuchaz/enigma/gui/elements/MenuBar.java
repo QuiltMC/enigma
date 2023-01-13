@@ -132,28 +132,28 @@ public class MenuBar {
 
 		setKeyBinds();
 
-		this.jarOpenItem.addActionListener(_e -> this.onOpenJarClicked());
-		this.jarCloseItem.addActionListener(_e -> this.gui.getController().closeJar());
-		this.saveMappingsItem.addActionListener(_e -> this.onSaveMappingsClicked());
-		this.closeMappingsItem.addActionListener(_e -> this.onCloseMappingsClicked());
-		this.dropMappingsItem.addActionListener(_e -> this.gui.getController().dropMappings());
-		this.reloadMappingsItem.addActionListener(_e -> this.onReloadMappingsClicked());
-		this.reloadAllItem.addActionListener(_e -> this.onReloadAllClicked());
-		this.exportSourceItem.addActionListener(_e -> this.onExportSourceClicked());
-		this.exportJarItem.addActionListener(_e -> this.onExportJarClicked());
-		this.statsItem.addActionListener(_e -> StatsDialog.show(this.gui));
-		this.configureKeyBindsItem.addActionListener(_e -> ConfigureKeyBindsDialog.show(this.gui));
-		this.exitItem.addActionListener(_e -> this.gui.close());
-		this.decompilerSettingsItem.addActionListener(_e -> DecompilerSettingsDialog.show(this.gui));
-		this.customScaleItem.addActionListener(_e -> this.onCustomScaleClicked());
-		this.fontItem.addActionListener(_e -> this.onFontClicked(this.gui));
-		this.searchClassItem.addActionListener(_e -> this.onSearchClicked(SearchDialog.Type.CLASS));
-		this.searchMethodItem.addActionListener(_e -> this.onSearchClicked(SearchDialog.Type.METHOD));
-		this.searchFieldItem.addActionListener(_e -> this.onSearchClicked(SearchDialog.Type.FIELD));
-		this.connectItem.addActionListener(_e -> this.onConnectClicked());
-		this.startServerItem.addActionListener(_e -> this.onStartServerClicked());
-		this.aboutItem.addActionListener(_e -> AboutDialog.show(this.gui.getFrame()));
-		this.githubItem.addActionListener(_e -> this.onGithubClicked());
+		this.jarOpenItem.addActionListener(e -> this.onOpenJarClicked());
+		this.jarCloseItem.addActionListener(e -> this.gui.getController().closeJar());
+		this.saveMappingsItem.addActionListener(e -> this.onSaveMappingsClicked());
+		this.closeMappingsItem.addActionListener(e -> this.onCloseMappingsClicked());
+		this.dropMappingsItem.addActionListener(e -> this.gui.getController().dropMappings());
+		this.reloadMappingsItem.addActionListener(e -> this.onReloadMappingsClicked());
+		this.reloadAllItem.addActionListener(e -> this.onReloadAllClicked());
+		this.exportSourceItem.addActionListener(e -> this.onExportSourceClicked());
+		this.exportJarItem.addActionListener(e -> this.onExportJarClicked());
+		this.statsItem.addActionListener(e -> StatsDialog.show(this.gui));
+		this.configureKeyBindsItem.addActionListener(e -> ConfigureKeyBindsDialog.show(this.gui));
+		this.exitItem.addActionListener(e -> this.gui.close());
+		this.decompilerSettingsItem.addActionListener(e -> DecompilerSettingsDialog.show(this.gui));
+		this.customScaleItem.addActionListener(e -> this.onCustomScaleClicked());
+		this.fontItem.addActionListener(e -> this.onFontClicked(this.gui));
+		this.searchClassItem.addActionListener(e -> this.onSearchClicked(SearchDialog.Type.CLASS));
+		this.searchMethodItem.addActionListener(e -> this.onSearchClicked(SearchDialog.Type.METHOD));
+		this.searchFieldItem.addActionListener(e -> this.onSearchClicked(SearchDialog.Type.FIELD));
+		this.connectItem.addActionListener(e -> this.onConnectClicked());
+		this.startServerItem.addActionListener(e -> this.onStartServerClicked());
+		this.aboutItem.addActionListener(e -> AboutDialog.show(this.gui.getFrame()));
+		this.githubItem.addActionListener(e -> this.onGithubClicked());
 	}
 
 	public void setKeyBinds() {
@@ -338,7 +338,7 @@ public class MenuBar {
 		}
 	}
 
-	private void onConnectClicked() {
+	public void onConnectClicked() {
 		if (this.gui.getController().getClient() != null) {
 			this.gui.getController().disconnectIfConnected(null);
 			return;
@@ -361,7 +361,7 @@ public class MenuBar {
 		Arrays.fill(result.getPassword(), (char) 0);
 	}
 
-	private void onStartServerClicked() {
+	public void onStartServerClicked() {
 		if (this.gui.getController().getServer() != null) {
 			this.gui.getController().disconnectIfConnected(null);
 			return;
@@ -454,7 +454,7 @@ public class MenuBar {
 			if (lookAndFeel.equals(UiConfig.getLookAndFeel())) {
 				themeButton.setSelected(true);
 			}
-			themeButton.addActionListener(_e -> {
+			themeButton.addActionListener(e -> {
 				UiConfig.setLookAndFeel(lookAndFeel);
 				UiConfig.save();
 				ChangeDialog.show(gui.getFrame());

@@ -263,13 +263,13 @@
 	"keybind.menu.mapping_stats": "Mapping stats",
 	"keybind.menu.save": "Save mappings",
 
-	"right_panel.collab.send": "Send",
-	"right_panel.collab.title": "Collab",
-	"right_panel.collab.messages_title": "Messages",
-	"right_panel.collab.users_title": "Users",
-	"right_panel.collab.offline_text": "Enigma is currently running offline.",
-	"right_panel.calls.title": "Calls",
-	"right_panel.structure.title": "Structure",
-	"right_panel.inheritance.title": "Inheritance",
-	"right_panel.implementations.title": "Implementations"
+	"docker.collab.send": "Send",
+	"docker.collab.title": "Collab",
+	"docker.collab.messages_title": "Messages",
+	"docker.collab.users_title": "Users",
+	"docker.collab.offline_text": "Enigma is currently running offline.",
+	"docker.calls.title": "Calls",
+	"docker.structure.title": "Structure",
+	"docker.inheritance.title": "Inheritance",
+	"docker.implementations.title": "Implementations"
 }

@@ -255,6 +255,10 @@ public class Gui {
 		}
 	}
 
+	public MenuBar getMenuBar() {
+		return this.menuBar;
+	}
+
 	public MainWindow getMainWindow() {
 		return this.mainWindow;
 	}
