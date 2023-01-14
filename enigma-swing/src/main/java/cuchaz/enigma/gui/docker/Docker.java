@@ -171,13 +171,13 @@ public abstract class Docker extends JPanel {
 		if (panel != null) {
 			return (T) dockers.get(clazz);
 		} else {
-			throw new IllegalArgumentException("no panel registered for class " + clazz);
+			throw new IllegalArgumentException("no docker registered for class " + clazz);
 		}
 	}
 
 	public static Docker getDocker(String id) {
 		if (!dockerClasses.containsKey(id)) {
-			throw new IllegalArgumentException("no panel registered for id " + id);
+			throw new IllegalArgumentException("no docker registered for id " + id);
 		}
 
 		return getDocker(dockerClasses.get(id));
@@ -185,10 +185,6 @@ public abstract class Docker extends JPanel {
 
 	public static Map<Class<? extends Docker>, Docker> getDockers() {
 		return dockers;
-	}
-
-	public static Map<String, Class<? extends Docker>> getDockerClasses() {
-		return dockerClasses;
 	}
 
 	/**

@@ -31,7 +31,7 @@ public class Dock extends JPanel {
 		docks.add(this);
 	}
 
-	public void setHostedDocker(Docker docker) {
+	public void setHostedDocker(Docker docker, Docker.VerticalLocation targetLocation) {
 		// remove old docker
 		this.removeHostedDocker();
 
@@ -39,7 +39,7 @@ public class Dock extends JPanel {
 		this.add(this.hostedDocker);
 
 		// add new docker
-		this.hostedDocker.dock(this, this.dockVerticalLocation);
+		this.hostedDocker.dock(this, targetLocation);
 
 		// revalidate to paint properly
 		this.revalidate();
@@ -53,8 +53,11 @@ public class Dock extends JPanel {
 			this.hostedDocker.undock();
 			this.hostedDocker = null;
 			this.repaint();
-			// todo revalidate side buttons
 		}
+	}
+
+	public Docker getHostedDocker() {
+		return this.hostedDocker;
 	}
 
 	public Docker.Side getSide() {

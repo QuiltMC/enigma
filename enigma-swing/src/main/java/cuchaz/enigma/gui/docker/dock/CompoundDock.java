@@ -1,5 +1,7 @@
 package cuchaz.enigma.gui.docker.dock;
 
+import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.docker.Docker;
 
 import javax.swing.JPanel;
@@ -10,39 +12,113 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 public class CompoundDock extends JPanel {
+	private final Gui gui;
 	private final JSplitPane splitPane;
 	private final Dock topDock;
 	private final Dock bottomDock;
+	private final Docker.Side side;
 
 	/**
 	 * Controls hover highlighting for this dock. A value of {@code null} represents no hover, otherwise it represents the currently hovered height.
 	 */
 	private Docker.VerticalLocation hovered;
 	private boolean isSplit;
+	private Dock unifiedDock;
 
 	@SuppressWarnings("SuspiciousNameCombination")
-	public CompoundDock(Dock topDock, Dock bottomDock) {
+	public CompoundDock(Gui gui, Docker.Side side, Dock topDock, Dock bottomDock) {
 		super(new BorderLayout());
-		// todo state restoration
 
 		this.topDock = topDock;
 		this.bottomDock = bottomDock;
 		this.splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, topDock, bottomDock);
+		this.side = side;
+		this.gui = gui;
 
 		this.topDock.setParentDock(this);
 		this.bottomDock.setParentDock(this);
 
 		this.isSplit = true;
+		this.unifiedDock = null;
 
 		this.add(this.splitPane);
 
 		Dock.COMPOUND_DOCKS.add(this);
 	}
 
-	public CompoundDock(Docker.Side side) {
-		this(new Dock(Docker.VerticalLocation.TOP, side), new Dock(Docker.VerticalLocation.BOTTOM, side));
+	public CompoundDock(Gui gui, Docker.Side side) {
+		this(gui, side, new Dock(Docker.VerticalLocation.TOP, side), new Dock(Docker.VerticalLocation.BOTTOM, side));
+	}
+
+	/**
+	 * Restores the state of this dock to the version saved in the config file.
+	 */
+	public void restoreState() {
+		// restore docker state
+		Optional<String[]> hostedDockers = UiConfig.getHostedDockers(this.side);
+		if (hostedDockers.isPresent()) {
+			for (String dockInfo : hostedDockers.get()) {
+				if (!dockInfo.isBlank()) {
+
+					System.out.println("reading: " + dockInfo);
+					String[] split = dockInfo.split(":");
+					Docker.VerticalLocation location = Docker.VerticalLocation.valueOf(split[1]);
+					Docker docker = Docker.getDocker(split[0]);
+
+					this.host(docker, location);
+				}
+			}
+		}
+
+		// restore vertical divider state
+		if (this.isSplit) {
+			this.splitPane.setDividerLocation(UiConfig.getVerticalDockDividerLocation(this.side));
+		}
+
+		// restore horizontal divider state
+		JSplitPane parentSplitPane = this.getParentSplitPane();
+		parentSplitPane.setDividerLocation(UiConfig.getDividerLocation(this.side));
+	}
+
+	/**
+	 * Saves the state of this dock to the config file.
+	 */
+	public void saveState() {
+		// save hosted dockers
+		UiConfig.setHostedDockers(this.side, this.encodeDockers());
+
+		// save vertical divider state
+		if (this.isSplit) {
+			UiConfig.setVerticalDockDividerLocation(this.side, this.splitPane.getDividerLocation());
+		}
+
+		// save horizontal divider state
+		JSplitPane parentSplitPane = this.getParentSplitPane();
+		UiConfig.setDividerLocation(this.side, parentSplitPane.getDividerLocation());
+	}
+
+	/**
+	 * @return the dockers hosted by this dock, in a config-file-friendly format.
+	 */
+	private String[] encodeDockers() {
+		String[] dockers = new String[]{"", ""};
+		Docker[] hostedDockers = new Docker[]{this.topDock.getHostedDocker(), this.bottomDock.getHostedDocker()};
+		for (int i = 0; i < hostedDockers.length; i++) {
+			Docker docker = hostedDockers[i];
+
+			if (docker != null) {
+				dockers[i] = (docker.getId() + ":" + docker.getCurrentVerticalLocation().name());
+				System.out.println("saving: " + dockers[i]);
+			}
+		}
+
+		return dockers;
 	}
 
 	public void receiveMouseEvent(MouseEvent e) {
@@ -71,14 +147,14 @@ public class CompoundDock extends JPanel {
 					this.split();
 				}
 
-				this.bottomDock.setHostedDocker(docker);
+				this.bottomDock.setHostedDocker(docker, verticalLocation);
 			}
 			case TOP -> {
 				if (!this.isSplit) {
 					this.split();
 				}
 
-				this.topDock.setHostedDocker(docker);
+				this.topDock.setHostedDocker(docker, verticalLocation);
 			}
 			case FULL -> {
 				// note: always uses top, since it doesn't matter
@@ -89,13 +165,7 @@ public class CompoundDock extends JPanel {
 				}
 
 				// we cannot assume top here, since it could be called on a unified side
-				if (this.bottomDock.isDisplayable()) {
-					this.bottomDock.setHostedDocker(docker);
-				} else if (this.topDock.isDisplayable()) {
-					this.topDock.setHostedDocker(docker);
-				} else {
-					throw new IllegalArgumentException();
-				}
+				this.unifiedDock.setHostedDocker(docker, verticalLocation);
 			}
 		}
 	}
@@ -106,19 +176,26 @@ public class CompoundDock extends JPanel {
 	}
 
 	public void split() {
+		this.saveState();
+
 		this.removeAll();
 		this.splitPane.setBottomComponent(this.bottomDock);
 		this.splitPane.setTopComponent(this.topDock);
 		this.add(this.splitPane);
 		this.isSplit = true;
+		this.unifiedDock = null;
 	}
 
 	public void unify(Docker.VerticalLocation keptLocation) {
+		this.saveState();
+
 		this.removeAll();
 		if (keptLocation == Docker.VerticalLocation.TOP) {
 			this.add(this.topDock);
+			this.unifiedDock = this.topDock;
 		} else if (keptLocation == Docker.VerticalLocation.BOTTOM) {
 			this.add(this.bottomDock);
+			this.unifiedDock = this.bottomDock;
 		} else {
 			throw new IllegalArgumentException("cannot keep nonexistent dock for location: " + keptLocation);
 		}
@@ -137,7 +214,6 @@ public class CompoundDock extends JPanel {
 	}
 
 	private Rectangle getHighlightBoundsFor(Point topLeft, Docker.VerticalLocation checkedLocation) {
-		// todo this isn't good
 		Rectangle bounds = this.getBoundsFor(topLeft, checkedLocation);
 		int height = switch (checkedLocation) {
 			case FULL -> bounds.height;
@@ -157,6 +233,10 @@ public class CompoundDock extends JPanel {
 			// full: 1/4 to 3/4 y
 			return new Rectangle(topLeft.x, topLeft.y + this.getHeight() / 4, this.getWidth(), this.getHeight() / 2);
 		}
+	}
+
+	private JSplitPane getParentSplitPane() {
+		return this.side == Docker.Side.RIGHT ? this.gui.getSplitRight() : this.gui.getSplitLeft();
 	}
 
 	private static boolean contains(Rectangle rectangle, Point point) {

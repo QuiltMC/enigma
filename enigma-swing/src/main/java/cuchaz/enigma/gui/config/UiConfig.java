@@ -17,9 +17,8 @@ public final class UiConfig {
 	public static final String GENERAL = "General";
 	public static final String LANGUAGE = "Language";
 	public static final String SCALE_FACTOR = "Scale Factor";
-	public static final String RIGHT_PANEL = "Right Panel";
-	public static final String RIGHT_PANEL_DIVIDER_LOCATIONS = "Right Panel Divider Locations";
-	public static final String DOCKER_DIVIDER_LOCATIONS = "Docker Divider Locations";
+	public static final String VERTICAL_DIVIDER_LOCATIONS = "Vertical Divider Locations";
+	public static final String HORIZONTAL_DIVIDER_LOCATIONS = "Horizontal Divider Locations";
 	public static final String HOSTED_DOCKERS = "Hosted Dockers";
 	public static final String LAYOUT = "Layout";
 	public static final String THEMES = "Themes";
@@ -123,30 +122,41 @@ public final class UiConfig {
 		swing.data().section(GENERAL).setDouble(SCALE_FACTOR, scale);
 	}
 
-	// todo save a map of docker locations and their active dockers
-
-	public static void setRightPanelDividerLocation(String id, int width) {
-		swing.data().section(RIGHT_PANEL_DIVIDER_LOCATIONS).setInt(id, width);
-	}
-
-	public static int getRightPanelDividerLocation(String id, int defaultLocation) {
-		return swing.data().section(RIGHT_PANEL_DIVIDER_LOCATIONS).setIfAbsentInt(id, defaultLocation);
-	}
-
 	public static void setDockerDividerLocation(Docker docker, int location) {
-		swing.data().section(DOCKER_DIVIDER_LOCATIONS).setInt(docker.getCurrentSide().name(), location);
-	}
-
-	public static int getDockerDividerLocation(Docker docker, int defaultLocation) {
-		return swing.data().section(RIGHT_PANEL_DIVIDER_LOCATIONS).setIfAbsentInt(docker.getCurrentSide().name(), defaultLocation);
+		swing.data().section(HORIZONTAL_DIVIDER_LOCATIONS).setInt(docker.getCurrentSide().name(), location);
 	}
 
 	public static void setDocker(Dock dock, Docker docker) {
 		swing.data().section(HOSTED_DOCKERS).setString(dock.getDockerLocation().toString(), docker == null ? null : docker.getId());
 	}
 
-	public static String getDocker(Dock dock) {
-		return swing.data().section(HOSTED_DOCKERS).setIfAbsentString(dock.getDockerLocation().toString(), null);
+	public static void setHostedDockers(Docker.Side side, String[] dockerData) {
+		swing.data().section(HOSTED_DOCKERS).setArray(side.name(), dockerData);
+	}
+
+	/**
+	 * @param side the side to get the hosted dockers for
+	 * @return the hosted dockers for the given side, or an empty array if none.
+	 * <br> the hosted dockers are stored in the format [docker id]:[vertical location]
+	 */
+	public static Optional<String[]> getHostedDockers(Docker.Side side) {
+		return swing.data().section(HOSTED_DOCKERS).getArray(side.name());
+	}
+
+	public static void setVerticalDockDividerLocation(Docker.Side side, int location) {
+		swing.data().section(VERTICAL_DIVIDER_LOCATIONS).setInt(side.name(), location);
+	}
+
+	public static int getVerticalDockDividerLocation(Docker.Side side) {
+		return swing.data().section(VERTICAL_DIVIDER_LOCATIONS).setIfAbsentInt(side.name(), 300);
+	}
+
+	public static void setDividerLocation(Docker.Side side, int location) {
+		swing.data().section(HORIZONTAL_DIVIDER_LOCATIONS).setInt(side.name(), location);
+	}
+
+	public static int getDividerLocation(Docker.Side side) {
+		return swing.data().section(HORIZONTAL_DIVIDER_LOCATIONS).setIfAbsentInt(side.name(), 300);
 	}
 
 	/**

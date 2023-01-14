@@ -90,8 +90,9 @@ public class Gui {
 	private final JPanel centerPanel = new JPanel(new BorderLayout());
 	private final CompoundDock rightDock;
 	private final CompoundDock leftDock;
+	// todo return to private
 	private final JSplitPane splitRight;
-	private final JSplitPane splitCenter;
+	private final JSplitPane splitLeft;
 
 	private final DefaultListModel<String> userModel = new DefaultListModel<>();
 	private final DefaultListModel<Message> messageModel = new DefaultListModel<>();
@@ -115,14 +116,10 @@ public class Gui {
 		this.menuBar = new MenuBar(this);
 		this.setupDockers();
 		this.editorTabbedPane = new EditorTabbedPane(this);
-		this.rightDock = new CompoundDock(Docker.Side.RIGHT);
-		this.leftDock = new CompoundDock(Docker.Side.LEFT);
+		this.rightDock = new CompoundDock(this, Docker.Side.RIGHT);
+		this.leftDock = new CompoundDock(this, Docker.Side.LEFT);
 		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightDock);
-		this.splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, leftDock, splitRight);
-
-		// todo bad
-		this.leftDock.host(Docker.getDocker(ObfuscatedClassesPanel.class), Docker.VerticalLocation.TOP);
-		this.leftDock.host(Docker.getDocker(DeobfuscatedClassesPanel.class), Docker.VerticalLocation.BOTTOM);
+		this.splitLeft = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, leftDock, splitRight);
 
 		this.setupUi();
 
@@ -181,18 +178,29 @@ public class Gui {
 
 		splitRight.setResizeWeight(1); // let the left side take all the slack
 		splitRight.resetToPreferredSizes();
-		splitCenter.setResizeWeight(0); // let the right side take all the slack
+		splitLeft.setResizeWeight(0); // let the right side take all the slack
 
-		workArea.add(splitCenter, BorderLayout.CENTER);
+		workArea.add(splitLeft, BorderLayout.CENTER);
 
 		// restore state
 		int[] layout = UiConfig.getLayout();
 		if (layout.length >= 3) {
-			this.splitCenter.setDividerLocation(layout[1]);
+			this.splitLeft.setDividerLocation(layout[1]);
 			this.splitRight.setDividerLocation(layout[2]);
 		}
 
 		this.mainWindow.getStatusBar().addPermanentComponent(this.connectionStatusLabel);
+
+		// apply docker config
+		if (UiConfig.getHostedDockers(Docker.Side.LEFT).isPresent() && UiConfig.getHostedDockers(Docker.Side.RIGHT).isPresent()) {
+			this.rightDock.restoreState();
+			this.leftDock.restoreState();
+		} else {
+			this.leftDock.host(Docker.getDocker(ObfuscatedClassesPanel.class), Docker.VerticalLocation.TOP);
+			this.leftDock.host(Docker.getDocker(DeobfuscatedClassesPanel.class), Docker.VerticalLocation.BOTTOM);
+
+			this.rightDock.host(Docker.getDocker(StructurePanel.class), Docker.VerticalLocation.FULL);
+		}
 
 		// init state
 		setConnectionState(ConnectionState.NOT_CONNECTED);
@@ -250,9 +258,17 @@ public class Gui {
 	}
 
 	private void saveDividerLocation(Docker docker) {
-		if (docker.isVisible()) {
-			UiConfig.setDockerDividerLocation(docker, docker.getCurrentSide() == Docker.Side.LEFT ? this.splitCenter.getDividerLocation() : this.splitRight.getDividerLocation());
+		if (docker.isDocked()) {
+			UiConfig.setDockerDividerLocation(docker, docker.getCurrentSide() == Docker.Side.LEFT ? this.splitLeft.getDividerLocation() : this.splitRight.getDividerLocation());
 		}
+	}
+
+	public JSplitPane getSplitLeft() {
+		return this.splitLeft;
+	}
+
+	public JSplitPane getSplitRight() {
+		return this.splitRight;
 	}
 
 	public MenuBar getMenuBar() {
@@ -490,12 +506,12 @@ public class Gui {
 	private void exit() {
 		UiConfig.setWindowPos(UiConfig.MAIN_WINDOW, this.mainWindow.getFrame().getLocationOnScreen());
 		UiConfig.setWindowSize(UiConfig.MAIN_WINDOW, this.mainWindow.getFrame().getSize());
-		UiConfig.setLayout(
-				// todo
-				0,
-				this.splitCenter.getDividerLocation(),
-				this.splitRight.getDividerLocation()
-		);
+
+		// save state for docker panels
+		// todo remove in favor of saving on apply!
+		this.rightDock.saveState();
+		this.leftDock.saveState();
+
 		UiConfig.save();
 
 		if (searchDialog != null) {
