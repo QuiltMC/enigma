@@ -48,6 +48,7 @@ public class Dock extends JPanel {
 		if (this.hostedDocker != null && this.hostedDocker.isDocked()) {
 			this.hostedDocker.undock();
 			this.hostedDocker = null;
+			this.parentDock.onDockRemoval();
 			this.repaint();
 		}
 	}

@@ -72,6 +72,22 @@ public class CompoundDock extends JPanel {
 			}
 		}
 
+		this.restoreDividerState();
+
+		if (this.isEmpty()) {
+			this.setVisible(false);
+		}
+	}
+
+	/**
+	 * Saves the state of this dock to the config file.
+	 */
+	public void saveState() {
+		UiConfig.setHostedDockers(this.side, this.encodeDockers());
+		this.saveDividerState();
+	}
+
+	public void restoreDividerState() {
 		// restore vertical divider state
 		if (this.isSplit) {
 			this.splitPane.setDividerLocation(UiConfig.getVerticalDockDividerLocation(this.side));
@@ -82,21 +98,17 @@ public class CompoundDock extends JPanel {
 		parentSplitPane.setDividerLocation(UiConfig.getDividerLocation(this.side));
 	}
 
-	/**
-	 * Saves the state of this dock to the config file.
-	 */
-	public void saveState() {
-		// save hosted dockers
-		UiConfig.setHostedDockers(this.side, this.encodeDockers());
+	public void saveDividerState() {
+		if (!this.isEmpty()) {
+			// save vertical divider state
+			if (this.isSplit) {
+				UiConfig.setVerticalDockDividerLocation(this.side, this.splitPane.getDividerLocation());
+			}
 
-		// save vertical divider state
-		if (this.isSplit) {
-			UiConfig.setVerticalDockDividerLocation(this.side, this.splitPane.getDividerLocation());
+			// save horizontal divider state
+			JSplitPane parentSplitPane = this.getParentSplitPane();
+			UiConfig.setDividerLocation(this.side, parentSplitPane.getDividerLocation());
 		}
-
-		// save horizontal divider state
-		JSplitPane parentSplitPane = this.getParentSplitPane();
-		UiConfig.setDividerLocation(this.side, parentSplitPane.getDividerLocation());
 	}
 
 	/**
@@ -164,12 +176,25 @@ public class CompoundDock extends JPanel {
 			}
 		}
 
+		this.restoreDividerState();
+		this.setVisible(true);
 		this.revalidate();
+	}
+
+	public void onDockRemoval() {
+		if (this.isEmpty()) {
+			this.saveDividerState();
+			this.setVisible(false);
+		}
 	}
 
 	public boolean containsMouse(MouseEvent e, Docker.VerticalLocation checkedLocation) {
 		Rectangle screenBounds = this.getBoundsFor(this.getLocationOnScreen(), checkedLocation);
 		return contains(screenBounds, e.getLocationOnScreen());
+	}
+
+	private boolean isEmpty() {
+		return this.topDock.getHostedDocker() == null && this.bottomDock.getHostedDocker() == null;
 	}
 
 	public void split() {
