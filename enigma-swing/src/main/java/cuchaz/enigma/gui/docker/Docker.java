@@ -192,6 +192,7 @@ public abstract class Docker extends JPanel {
 		public static final String CALLS = "calls";
 		public static final String IMPLEMENTATIONS = "implementations";
 		public static final String COLLAB = "collab";
+		public static final String ALL_CLASSES = "all_classes";
 		public static final String DEOBFUSCATED_CLASSES = "deobfuscated_classes";
 		public static final String OBFUSCATED_CLASSES = "obfuscated_classes";
 	}

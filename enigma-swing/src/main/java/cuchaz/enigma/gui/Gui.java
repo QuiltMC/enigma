@@ -25,10 +25,10 @@ import cuchaz.enigma.gui.elements.EditorTabbedPane;
 import cuchaz.enigma.gui.elements.MainWindow;
 import cuchaz.enigma.gui.elements.MenuBar;
 import cuchaz.enigma.gui.elements.ValidatableUi;
-import cuchaz.enigma.gui.panels.DeobfuscatedClassesPanel;
+import cuchaz.enigma.gui.docker.DeobfuscatedClassesDocker;
 import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.panels.IdentifierPanel;
-import cuchaz.enigma.gui.panels.ObfuscatedClassesPanel;
+import cuchaz.enigma.gui.docker.ObfuscatedClassesDocker;
 import cuchaz.enigma.gui.docker.CollabPanel;
 import cuchaz.enigma.gui.docker.StructurePanel;
 import cuchaz.enigma.gui.docker.CallsTree;
@@ -140,8 +140,8 @@ public class Gui {
 		// bottom panels
 		Docker.addDocker(new CollabPanel(this));
 
-		Docker.addDocker(new DeobfuscatedClassesPanel(this));
-		Docker.addDocker(new ObfuscatedClassesPanel(this));
+		Docker.addDocker(new DeobfuscatedClassesDocker(this));
+		Docker.addDocker(new ObfuscatedClassesDocker(this));
 
 		// set default sizes for right panels
 		for (Docker panel : Docker.getDockers().values()) {
@@ -196,8 +196,8 @@ public class Gui {
 			this.rightDock.restoreState();
 			this.leftDock.restoreState();
 		} else {
-			this.leftDock.host(Docker.getDocker(ObfuscatedClassesPanel.class), Docker.VerticalLocation.TOP);
-			this.leftDock.host(Docker.getDocker(DeobfuscatedClassesPanel.class), Docker.VerticalLocation.BOTTOM);
+			this.leftDock.host(Docker.getDocker(ObfuscatedClassesDocker.class), Docker.VerticalLocation.TOP);
+			this.leftDock.host(Docker.getDocker(DeobfuscatedClassesDocker.class), Docker.VerticalLocation.BOTTOM);
 
 			this.rightDock.host(Docker.getDocker(StructurePanel.class), Docker.VerticalLocation.FULL);
 		}
@@ -349,11 +349,11 @@ public class Gui {
 	}
 
 	public void setObfClasses(Collection<ClassEntry> obfClasses) {
-		Docker.getDocker(ObfuscatedClassesPanel.class).getClassSelector().setClasses(obfClasses);
+		Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector().setClasses(obfClasses);
 	}
 
 	public void setDeobfClasses(Collection<ClassEntry> deobfClasses) {
-		DeobfuscatedClassesPanel deobfuscatedPanel = Docker.getDocker(DeobfuscatedClassesPanel.class);
+		DeobfuscatedClassesDocker deobfuscatedPanel = Docker.getDocker(DeobfuscatedClassesDocker.class);
 		deobfuscatedPanel.getClassSelector().setClasses(deobfClasses);
 	}
 
@@ -541,7 +541,7 @@ public class Gui {
 			node.setUserObject(data);
 
 			// Ob package will never be modified, just reload deob view
-			DeobfuscatedClassesPanel deobfuscatedPanel = Docker.getDocker(DeobfuscatedClassesPanel.class);
+			DeobfuscatedClassesDocker deobfuscatedPanel = Docker.getDocker(DeobfuscatedClassesDocker.class);
 			deobfuscatedPanel.getClassSelector().reload();
 		} else if (data instanceof ClassEntry entry) {
 			// class rename
@@ -570,11 +570,11 @@ public class Gui {
 	// TODO: getExpansionState will *not* actually update itself based on name changes!
 	public void moveClassTree(Entry<?> obfEntry, boolean isOldOb, boolean isNewOb) {
 		ClassEntry classEntry = obfEntry.getContainingClass();
-		ObfuscatedClassesPanel obfuscatedClassesPanel = Docker.getDocker(ObfuscatedClassesPanel.class);
-		DeobfuscatedClassesPanel deobfuscatedClassesPanel = Docker.getDocker(DeobfuscatedClassesPanel.class);
+		ObfuscatedClassesDocker obfuscatedClassesDocker = Docker.getDocker(ObfuscatedClassesDocker.class);
+		DeobfuscatedClassesDocker deobfuscatedClassesDocker = Docker.getDocker(DeobfuscatedClassesDocker.class);
 
-		ClassSelector deobfuscatedClassSelector = deobfuscatedClassesPanel.getClassSelector();
-		ClassSelector obfuscatedClassSelector = obfuscatedClassesPanel.getClassSelector();
+		ClassSelector deobfuscatedClassSelector = deobfuscatedClassesDocker.getClassSelector();
+		ClassSelector obfuscatedClassSelector = obfuscatedClassesDocker.getClassSelector();
 
 		List<ClassSelector.StateEntry> deobfuscatedPanelExpansionState = deobfuscatedClassSelector.getExpansionState();
 		List<ClassSelector.StateEntry> obfuscatedPanelExpansionState = obfuscatedClassSelector.getExpansionState();

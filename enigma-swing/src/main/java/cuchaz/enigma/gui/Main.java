@@ -127,6 +127,11 @@ public class Main {
 				});
 			}
 
+			if (options.has("single-class-tree")) {
+				System.out.println("--single-class-tree is deprecated and will be removed in the next version! simply use the \"all classes\" docker instead.");
+				// todo open all classes docker!
+			}
+
 			if (options.has(jar)) {
 				Path jarPath = options.valueOf(jar);
 				controller.openJar(jarPath)

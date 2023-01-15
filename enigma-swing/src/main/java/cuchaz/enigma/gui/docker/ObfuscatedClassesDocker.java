@@ -1,4 +1,4 @@
-package cuchaz.enigma.gui.panels;
+package cuchaz.enigma.gui.docker;
 
 import java.awt.BorderLayout;
 import java.util.Comparator;
@@ -7,10 +7,9 @@ import javax.swing.JScrollPane;
 
 import cuchaz.enigma.gui.ClassSelector;
 import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
-public class ObfuscatedClassesPanel extends Docker {
+public class ObfuscatedClassesDocker extends Docker {
 	private static final Comparator<ClassEntry> obfuscatedClassComparator = (a, b) -> {
 		String aName = a.getFullName();
 		String bName = b.getFullName();
@@ -22,7 +21,7 @@ public class ObfuscatedClassesPanel extends Docker {
 
 	private final ClassSelector classSelector;
 
-	public ObfuscatedClassesPanel(Gui gui) {
+	public ObfuscatedClassesDocker(Gui gui) {
 		super(gui);
 
 		this.classSelector = new ClassSelector(gui, obfuscatedClassComparator, false);
