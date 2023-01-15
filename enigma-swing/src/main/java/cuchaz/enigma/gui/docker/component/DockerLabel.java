@@ -7,7 +7,9 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
@@ -16,9 +18,14 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
+/**
+ * A user-draggable label that is used for docker titles.
+ */
 public class DockerLabel extends JLabel {
 	private JComponent initialParent;
 	private Object constraints;
+	private boolean beingDragged;
+
 	private final Docker docker;
 
 	public DockerLabel(Docker docker, String text) {
@@ -38,6 +45,8 @@ public class DockerLabel extends JLabel {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
+				DockerLabel.this.beingDragged = true;
+
 				// save parent for re-addition after dragging is finished
 				DockerLabel.this.initialParent = (JComponent) DockerLabel.this.getParent();
 
@@ -46,7 +55,8 @@ public class DockerLabel extends JLabel {
 
 				// configure object to be on the glass pane instead of its former pane
 				DockerLabel.this.setVisible(false);
-				JPanel glassPane = (JPanel) SwingUtilities.getRootPane(DockerLabel.this).getGlassPane();
+				JRootPane rootPane = DockerLabel.this.getRootPane();
+				JPanel glassPane = (JPanel) rootPane.getGlassPane();
 				DockerLabel.this.initialParent.remove(DockerLabel.this);
 				glassPane.add(DockerLabel.this);
 
@@ -56,6 +66,8 @@ public class DockerLabel extends JLabel {
 				// set up glass pane to actually display elements
 				glassPane.setOpaque(false);
 				glassPane.setVisible(true);
+
+				DockerLabel.this.setMouse(Cursor.MOVE_CURSOR);
 			}
 
 			@Override
@@ -65,7 +77,7 @@ public class DockerLabel extends JLabel {
 				Dock.Util.receiveMouseEvent(e);
 
 				// remove from glass pane and repaint to display removal
-				JPanel glassPane = (JPanel) SwingUtilities.getRootPane(DockerLabel.this).getGlassPane();
+				JPanel glassPane = (JPanel) DockerLabel.this.getRootPane().getGlassPane();
 				glassPane.remove(DockerLabel.this);
 				glassPane.repaint();
 
@@ -79,16 +91,24 @@ public class DockerLabel extends JLabel {
 
 				DockerLabel.this.initialParent = null;
 				// constraints are not reset, we assume that the label will stay with the same parent
+
+				DockerLabel.this.setMouse(Cursor.DEFAULT_CURSOR);
+
+				DockerLabel.this.beingDragged = false;
 			}
 
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				// no-op
+				if (!DockerLabel.this.beingDragged) {
+					DockerLabel.this.setMouse(Cursor.HAND_CURSOR);
+				}
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				// no-op
+				if (!DockerLabel.this.beingDragged) {
+					DockerLabel.this.setMouse(Cursor.DEFAULT_CURSOR);
+				}
 			}
 
 		});
@@ -133,6 +153,11 @@ public class DockerLabel extends JLabel {
 	 */
 	public void setConstraints(Object constraints) {
 		this.constraints = constraints;
+	}
+
+	private void setMouse(int mouse) {
+		JRootPane rootPane = this.getRootPane();
+		rootPane.setCursor(Cursor.getPredefinedCursor(mouse));
 	}
 
 	/**
