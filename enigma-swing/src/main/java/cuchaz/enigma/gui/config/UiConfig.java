@@ -327,32 +327,16 @@ public final class UiConfig {
 		return getActiveFont(DEFAULT).orElseGet(() -> ScaleUtil.scaleFont(Font.decode(Font.DIALOG).deriveFont(Font.BOLD)));
 	}
 
-	public static void setDefaultFont(Font font) {
-		setFont(DEFAULT, font);
-	}
-
 	public static Font getDefault2Font() {
 		return getActiveFont(DEFAULT_2).orElseGet(() -> ScaleUtil.scaleFont(Font.decode(Font.DIALOG)));
-	}
-
-	public static void setDefault2Font(Font font) {
-		setFont(DEFAULT_2, font);
 	}
 
 	public static Font getSmallFont() {
 		return getActiveFont(SMALL).orElseGet(() -> ScaleUtil.scaleFont(Font.decode(Font.DIALOG)));
 	}
 
-	public static void setSmallFont(Font font) {
-		setFont(SMALL, font);
-	}
-
 	public static Font getEditorFont() {
 		return getActiveFont(EDITOR).orElseGet(UiConfig::getFallbackEditorFont);
-	}
-
-	public static void setEditorFont(Font font) {
-		setFont(EDITOR, font);
 	}
 
 	/**
