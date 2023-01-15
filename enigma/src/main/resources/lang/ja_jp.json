@@ -93,9 +93,6 @@
 	"editor.decompile_error": "デコンパイル中にエラーが発生しました",
 	"editor.remap_error": "リマッピング中にエラーが発生しました",
 
-	"info_panel.classes": "クラス一覧",
-	"info_panel.classes.obfuscated": "難読化されたクラス",
-	"info_panel.classes.deobfuscated": "難読化解除されたクラス",
 	"info_panel.identifier": "識別子情報",
 	"info_panel.identifier.none": "識別子が選択されていません",
 	"info_panel.identifier.variable": "変数",
@@ -220,5 +217,8 @@
 	"docker.implementations.title": "実装",
 	"docker.calls.title": "呼び出し関係",
 	"docker.collab.messages_title": "メッセージ",
-	"docker.collab.users_title": "ユーザー"
+	"docker.collab.users_title": "ユーザー",
+	"docker.all_classes.title": "クラス一覧",
+	"docker.obfuscated_classes.title": "難読化されたクラス",
+	"docker.deobfuscated_classes.title": "難読化解除されたクラス"
 }
