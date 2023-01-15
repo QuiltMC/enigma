@@ -12,9 +12,6 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 public class CompoundDock extends JPanel {
@@ -168,6 +165,8 @@ public class CompoundDock extends JPanel {
 				this.unifiedDock.setHostedDocker(docker, verticalLocation);
 			}
 		}
+
+		this.revalidate();
 	}
 
 	public boolean containsMouse(MouseEvent e, Docker.VerticalLocation checkedLocation) {

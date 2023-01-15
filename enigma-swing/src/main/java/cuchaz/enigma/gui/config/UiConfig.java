@@ -6,7 +6,6 @@ import java.util.OptionalInt;
 
 import cuchaz.enigma.config.ConfigContainer;
 import cuchaz.enigma.config.ConfigSection;
-import cuchaz.enigma.gui.docker.dock.Dock;
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
@@ -124,10 +123,6 @@ public final class UiConfig {
 
 	public static void setDockerDividerLocation(Docker docker, int location) {
 		swing.data().section(HORIZONTAL_DIVIDER_LOCATIONS).setInt(docker.getCurrentSide().name(), location);
-	}
-
-	public static void setDocker(Dock dock, Docker docker) {
-		swing.data().section(HOSTED_DOCKERS).setString(dock.getDockerLocation().toString(), docker == null ? null : docker.getId());
 	}
 
 	public static void setHostedDockers(Docker.Side side, String[] dockerData) {

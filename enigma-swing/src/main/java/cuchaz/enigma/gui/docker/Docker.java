@@ -138,10 +138,6 @@ public abstract class Docker extends JPanel {
 
 	@Override
 	public void setVisible(boolean visible) {
-		if (!visible) {
-			this.currentVerticalLocation = null;
-		}
-
 		this.getButton().setSelected(visible);
 	}
 

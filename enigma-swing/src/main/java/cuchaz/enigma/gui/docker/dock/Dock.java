@@ -1,6 +1,5 @@
 package cuchaz.enigma.gui.docker.dock;
 
-import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.docker.Docker;
 
 import javax.swing.JPanel;
@@ -42,14 +41,11 @@ public class Dock extends JPanel {
 		this.hostedDocker.dock(this, targetLocation);
 
 		// revalidate to paint properly
-		this.revalidate();
-
-		// save to config
-		UiConfig.setDocker(this, this.hostedDocker);
+		this.getParent().revalidate();
 	}
 
 	public void removeHostedDocker() {
-		if (this.hostedDocker != null) {
+		if (this.hostedDocker != null && this.hostedDocker.isDocked()) {
 			this.hostedDocker.undock();
 			this.hostedDocker = null;
 			this.repaint();
@@ -62,10 +58,6 @@ public class Dock extends JPanel {
 
 	public Docker.Side getSide() {
 		return this.side;
-	}
-
-	public Docker.VerticalLocation getDockerLocation() {
-		return this.dockVerticalLocation;
 	}
 
 	public void setParentDock(CompoundDock parentDock) {
