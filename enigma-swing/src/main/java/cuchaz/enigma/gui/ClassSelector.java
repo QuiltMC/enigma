@@ -160,19 +160,23 @@ public class ClassSelector extends JTree {
 		this.renameSelectionListener = renameSelectionListener;
 	}
 
+	public NestedPackages getPackageManager() {
+		return this.packageManager;
+	}
+
 	public void setClasses(Collection<ClassEntry> classEntries) {
-		List<StateEntry> state = getExpansionState();
+		List<StateEntry> state = this.getExpansionState();
 
 		if (classEntries == null) {
-			setModel(null);
+			this.setModel(null);
 			return;
 		}
 
 		// update the tree control
-		packageManager = new NestedPackages(classEntries, comparator, controller.project.getMapper());
-		setModel(new DefaultTreeModel(packageManager.getRoot()));
+		this.packageManager = new NestedPackages(classEntries, this.comparator, this.controller.project.getMapper());
+		this.setModel(new DefaultTreeModel(this.packageManager.getRoot()));
 
-		restoreExpansionState(state);
+		this.restoreExpansionState(state);
 	}
 
 	public ClassEntry getSelectedClass() {

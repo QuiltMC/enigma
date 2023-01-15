@@ -63,7 +63,6 @@ public class CompoundDock extends JPanel {
 			for (String dockInfo : hostedDockers.get()) {
 				if (!dockInfo.isBlank()) {
 
-					System.out.println("reading: " + dockInfo);
 					String[] split = dockInfo.split(":");
 					Docker.VerticalLocation location = Docker.VerticalLocation.valueOf(split[1]);
 					Docker docker = Docker.getDocker(split[0]);
@@ -109,9 +108,8 @@ public class CompoundDock extends JPanel {
 		for (int i = 0; i < hostedDockers.length; i++) {
 			Docker docker = hostedDockers[i];
 
-			if (docker != null) {
+			if (docker != null && docker.isDocked()) {
 				dockers[i] = (docker.getId() + ":" + docker.getCurrentVerticalLocation().name());
-				System.out.println("saving: " + dockers[i]);
 			}
 		}
 

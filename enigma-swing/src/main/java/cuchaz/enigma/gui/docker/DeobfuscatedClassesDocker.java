@@ -1,49 +1,33 @@
 package cuchaz.enigma.gui.docker;
 
-import java.awt.BorderLayout;
-import java.awt.event.MouseEvent;
-
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
-
 import cuchaz.enigma.gui.ClassSelector;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.elements.DeobfPanelPopupMenu;
 import cuchaz.enigma.gui.util.GuiUtil;
 
-public class DeobfuscatedClassesDocker extends Docker {
-	private final ClassSelector classSelector;
+import javax.swing.SwingUtilities;
+import java.awt.event.MouseEvent;
+
+public class DeobfuscatedClassesDocker extends ClassesDocker {
 	private final DeobfPanelPopupMenu popupMenu;
 
 	public DeobfuscatedClassesDocker(Gui gui) {
-		super(gui);
+		super(gui, new ClassSelector(gui, ClassSelector.DEOBF_CLASS_COMPARATOR, true));
 
-		this.classSelector = new ClassSelector(gui, ClassSelector.DEOBF_CLASS_COMPARATOR, true);
-		this.classSelector.setSelectionListener(gui.getController()::navigateTo);
-		this.classSelector.setRenameSelectionListener(gui::onRenameFromClassTree);
 		this.popupMenu = new DeobfPanelPopupMenu(this);
-
-		this.setLayout(new BorderLayout());
-		this.add(this.title, BorderLayout.NORTH);
-		this.add(new JScrollPane(this.classSelector), BorderLayout.CENTER);
-
-		this.classSelector.addMouseListener(GuiUtil.onMousePress(this::onPress));
+		this.selector.addMouseListener(GuiUtil.onMousePress(this::onPress));
 
 		this.retranslateUi();
 	}
 
 	private void onPress(MouseEvent e) {
 		if (SwingUtilities.isRightMouseButton(e)) {
-			classSelector.setSelectionRow(classSelector.getClosestRowForLocation(e.getX(), e.getY()));
-			int i = classSelector.getRowForPath(classSelector.getSelectionPath());
+			this.selector.setSelectionRow(this.selector.getClosestRowForLocation(e.getX(), e.getY()));
+			int i = this.selector.getRowForPath(this.selector.getSelectionPath());
 			if (i != -1) {
-				popupMenu.show(classSelector, e.getX(), e.getY());
+				popupMenu.show(this.selector, e.getX(), e.getY());
 			}
 		}
-	}
-
-	public ClassSelector getClassSelector() {
-		return this.classSelector;
 	}
 
 	@Override

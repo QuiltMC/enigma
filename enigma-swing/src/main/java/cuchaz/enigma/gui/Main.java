@@ -21,6 +21,8 @@ import java.util.Set;
 
 import com.google.common.io.MoreFiles;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
+import cuchaz.enigma.gui.docker.AllClassesDocker;
+import cuchaz.enigma.gui.docker.Docker;
 import joptsimple.*;
 
 import cuchaz.enigma.EnigmaProfile;
@@ -129,7 +131,7 @@ public class Main {
 
 			if (options.has("single-class-tree")) {
 				System.out.println("--single-class-tree is deprecated and will be removed in the next version! simply use the \"all classes\" docker instead.");
-				// todo open all classes docker!
+				gui.openDocker(AllClassesDocker.class, true);
 			}
 
 			if (options.has(jar)) {

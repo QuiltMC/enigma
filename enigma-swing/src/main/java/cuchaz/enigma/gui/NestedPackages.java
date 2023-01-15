@@ -104,6 +104,10 @@ public class NestedPackages {
 		}
 	}
 
+	public Collection<ClassEntry> getClassEntries() {
+		return classToNode.keySet();
+	}
+
 	public Collection<DefaultMutableTreeNode> getPackageNodes() {
 		return packageToNode.values();
 	}

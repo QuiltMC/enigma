@@ -18,6 +18,7 @@ import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.JavadocDialog;
 import cuchaz.enigma.gui.dialog.SearchDialog;
+import cuchaz.enigma.gui.docker.AllClassesDocker;
 import cuchaz.enigma.gui.docker.dock.CompoundDock;
 import cuchaz.enigma.gui.docker.dock.Dock;
 import cuchaz.enigma.gui.docker.Docker;
@@ -66,6 +67,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -140,8 +142,13 @@ public class Gui {
 		// bottom panels
 		Docker.addDocker(new CollabPanel(this));
 
-		Docker.addDocker(new DeobfuscatedClassesDocker(this));
+		// left panels
+		// top panels
 		Docker.addDocker(new ObfuscatedClassesDocker(this));
+		Docker.addDocker(new AllClassesDocker(this));
+
+		// bottom panels
+		Docker.addDocker(new DeobfuscatedClassesDocker(this));
 
 		// set default sizes for right panels
 		for (Docker panel : Docker.getDockers().values()) {
@@ -350,11 +357,30 @@ public class Gui {
 
 	public void setObfClasses(Collection<ClassEntry> obfClasses) {
 		Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector().setClasses(obfClasses);
+		this.updateAllClasses();
 	}
 
 	public void setDeobfClasses(Collection<ClassEntry> deobfClasses) {
-		DeobfuscatedClassesDocker deobfuscatedPanel = Docker.getDocker(DeobfuscatedClassesDocker.class);
-		deobfuscatedPanel.getClassSelector().setClasses(deobfClasses);
+		Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector().setClasses(deobfClasses);
+		this.updateAllClasses();
+	}
+
+	public void updateAllClasses() {
+		ClassSelector allClasses = Docker.getDocker(AllClassesDocker.class).getClassSelector();
+
+		List<ClassEntry> entries = new ArrayList<>();
+		NestedPackages obfuscatedPackages = Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector().getPackageManager();
+		NestedPackages deobfuscatedPackages = Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector().getPackageManager();
+
+		if (obfuscatedPackages != null) {
+			entries.addAll(obfuscatedPackages.getClassEntries());
+		}
+
+		if (deobfuscatedPackages != null) {
+			entries.addAll(deobfuscatedPackages.getClassEntries());
+		}
+
+		allClasses.setClasses(entries.isEmpty() ? null : entries);
 	}
 
 	public void setMappingsFile(Path path) {
@@ -599,6 +625,8 @@ public class Gui {
 
 		deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
 		obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
+
+		this.updateAllClasses();
 	}
 
 	public SearchDialog getSearchDialog() {
