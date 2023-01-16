@@ -1,11 +1,14 @@
 package cuchaz.enigma.gui.config;
 
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 
 import cuchaz.enigma.config.ConfigContainer;
 import cuchaz.enigma.config.ConfigSection;
+import cuchaz.enigma.gui.docker.Dock;
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
@@ -122,17 +125,43 @@ public final class UiConfig {
 		swing.data().section(GENERAL).setDouble(SCALE_FACTOR, scale);
 	}
 
-	public static void setHostedDockers(Docker.Side side, String[] dockerData) {
+	public static void setHostedDockers(Docker.Side side, Docker[] dockers) {
+		String[] dockerData = new String[dockers.length];
+		for (int i = 0; i < dockers.length; i++) {
+			Docker docker = dockers[i];
+
+			if (docker != null) {
+				Docker.Location location = Dock.Util.findLocation(docker);
+				if (location != null) {
+					dockerData[i] = (docker.getId() + ":" + location.verticalLocation());
+				}
+			}
+		}
+
 		swing.data().section(HOSTED_DOCKERS).setArray(side.name(), dockerData);
 	}
 
-	/**
-	 * @param side the side to get the hosted dockers for
-	 * @return the hosted dockers for the given side, or an empty array if none.
-	 * <br> the hosted dockers are stored in the format [docker id]:[vertical location]
-	 */
-	public static Optional<String[]> getHostedDockers(Docker.Side side) {
-		return swing.data().section(HOSTED_DOCKERS).getArray(side.name());
+	public static Map<Docker, Docker.VerticalLocation> getHostedDockers(Docker.Side side) {
+		Optional<String[]> hostedDockers = swing.data().section(HOSTED_DOCKERS).getArray(side.name());
+		Map<Docker, Docker.VerticalLocation> dockers = new HashMap<>();
+
+		if (hostedDockers.isPresent()) {
+			for (String dockInfo : hostedDockers.get()) {
+				if (!dockInfo.isBlank()) {
+					String[] split = dockInfo.split(":");
+					try {
+						Docker.VerticalLocation location = Docker.VerticalLocation.valueOf(split[1]);
+						Docker docker = Docker.getDocker(split[0]);
+
+						dockers.put(docker, location);
+					} catch (Exception e) {
+						System.err.println("failed to read docker state for " + dockInfo + ", ignoring!");
+					}
+				}
+			}
+		}
+
+		return dockers;
 	}
 
 	public static void setVerticalDockDividerLocation(Docker.Side side, int location) {

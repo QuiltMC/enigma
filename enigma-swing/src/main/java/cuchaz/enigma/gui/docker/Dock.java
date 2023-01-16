@@ -13,7 +13,7 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 public class Dock extends JPanel {
 	private static final List<Dock> instances = new ArrayList<>();
@@ -54,23 +54,8 @@ public class Dock extends JPanel {
 	 */
 	public void restoreState() {
 		// restore docker state
-		Optional<String[]> hostedDockers = UiConfig.getHostedDockers(this.side);
-		if (hostedDockers.isPresent()) {
-			for (String dockInfo : hostedDockers.get()) {
-				if (!dockInfo.isBlank()) {
-
-					String[] split = dockInfo.split(":");
-					try {
-						Docker.VerticalLocation location = Docker.VerticalLocation.valueOf(split[1]);
-						Docker docker = Docker.getDocker(split[0]);
-
-						this.host(docker, location);
-					} catch (Exception e) {
-						System.err.println("failed to restore docker state for " + dockInfo + ", ignoring!");
-					}
-				}
-			}
-		}
+		Map<Docker, Docker.VerticalLocation> hostedDockers = UiConfig.getHostedDockers(this.side);
+		hostedDockers.forEach((this::host));
 
 		this.restoreDividerState();
 
@@ -83,7 +68,7 @@ public class Dock extends JPanel {
 	 * Saves the state of this dock to the config file.
 	 */
 	public void saveState() {
-		UiConfig.setHostedDockers(this.side, this.encodeDockers());
+		UiConfig.setHostedDockers(this.side, this.getDockers());
 		this.saveDividerState();
 	}
 
@@ -107,27 +92,6 @@ public class Dock extends JPanel {
 		// save horizontal divider state
 		JSplitPane parentSplitPane = this.getParentSplitPane();
 		UiConfig.setHorizontalDividerLocation(this.side, parentSplitPane.getDividerLocation());
-		System.out.println("saving: " + parentSplitPane.getDividerLocation());
-	}
-
-	/**
-	 * @return the dockers hosted by this dock, in a config-file-friendly format.
-	 */
-	private String[] encodeDockers() {
-		String[] dockers = new String[]{"", ""};
-		for (int i = 0; i < this.getDockers().length; i++) {
-			Docker docker = this.getDockers()[i];
-
-			if (docker != null) {
-				Docker.Location location = Util.findLocation(docker);
-				if (location != null) {
-					dockers[i] = (docker.getId() + ":" + location.verticalLocation());
-					System.out.println("saving: " + dockers[i]);
-				}
-			}
-		}
-
-		return dockers;
 	}
 
 	public void receiveMouseEvent(MouseEvent e) {

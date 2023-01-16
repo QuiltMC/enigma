@@ -205,10 +205,12 @@ public class Gui {
 		this.mainWindow.getStatusBar().addPermanentComponent(this.connectionStatusLabel);
 
 		// apply docker config
-		if (UiConfig.getHostedDockers(Docker.Side.LEFT).isPresent() && UiConfig.getHostedDockers(Docker.Side.RIGHT).isPresent()) {
+		if (!UiConfig.getHostedDockers(Docker.Side.LEFT).isEmpty() && !UiConfig.getHostedDockers(Docker.Side.RIGHT).isEmpty()) {
+			// restore
 			this.rightDock.restoreState();
 			this.leftDock.restoreState();
 		} else {
+			// use default config
 			this.leftDock.host(Docker.getDocker(ObfuscatedClassesDocker.class), Docker.VerticalLocation.TOP);
 			this.leftDock.host(Docker.getDocker(DeobfuscatedClassesDocker.class), Docker.VerticalLocation.BOTTOM);
 
