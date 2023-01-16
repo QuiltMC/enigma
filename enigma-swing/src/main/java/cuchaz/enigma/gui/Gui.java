@@ -25,11 +25,11 @@ import cuchaz.enigma.gui.elements.ValidatableUi;
 import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.panels.IdentifierPanel;
 import cuchaz.enigma.gui.docker.ObfuscatedClassesDocker;
-import cuchaz.enigma.gui.docker.CollabPanel;
-import cuchaz.enigma.gui.docker.StructurePanel;
-import cuchaz.enigma.gui.docker.CallsTree;
-import cuchaz.enigma.gui.docker.ImplementationsTree;
-import cuchaz.enigma.gui.docker.InheritanceTree;
+import cuchaz.enigma.gui.docker.CollabDocker;
+import cuchaz.enigma.gui.docker.StructureDocker;
+import cuchaz.enigma.gui.docker.CallsTreeDocker;
+import cuchaz.enigma.gui.docker.ImplementationsTreeDocker;
+import cuchaz.enigma.gui.docker.InheritanceTreeDocker;
 import cuchaz.enigma.gui.docker.DeobfuscatedClassesDocker;
 import cuchaz.enigma.gui.docker.AllClassesDocker;
 import cuchaz.enigma.gui.docker.Dock;
@@ -142,13 +142,13 @@ public class Gui {
 	private void setupDockers() {
 		// right panels
 		// top panels
-		Docker.addDocker(new StructurePanel(this));
-		Docker.addDocker(new InheritanceTree(this));
-		Docker.addDocker(new ImplementationsTree(this));
-		Docker.addDocker(new CallsTree(this));
+		Docker.addDocker(new StructureDocker(this));
+		Docker.addDocker(new InheritanceTreeDocker(this));
+		Docker.addDocker(new ImplementationsTreeDocker(this));
+		Docker.addDocker(new CallsTreeDocker(this));
 
 		// bottom panels
-		Docker.addDocker(new CollabPanel(this));
+		Docker.addDocker(new CollabDocker(this));
 
 		// left panels
 		// top panels
@@ -214,7 +214,7 @@ public class Gui {
 			this.leftDock.host(Docker.getDocker(ObfuscatedClassesDocker.class), Docker.VerticalLocation.TOP);
 			this.leftDock.host(Docker.getDocker(DeobfuscatedClassesDocker.class), Docker.VerticalLocation.BOTTOM);
 
-			this.rightDock.host(Docker.getDocker(StructurePanel.class), Docker.VerticalLocation.FULL);
+			this.rightDock.host(Docker.getDocker(StructureDocker.class), Docker.VerticalLocation.FULL);
 		}
 
 		// init state
@@ -373,11 +373,11 @@ public class Gui {
 
 	public void showTokens(EditorPanel editor, List<Token> tokens) {
 		if (tokens.size() > 1) {
-			this.openDocker(CallsTree.class);
+			this.openDocker(CallsTreeDocker.class);
 			this.controller.setTokenHandle(editor.getClassHandle().copy());
-			Docker.getDocker(CallsTree.class).showTokens(tokens);
+			Docker.getDocker(CallsTreeDocker.class).showTokens(tokens);
 		} else {
-			Docker.getDocker(CallsTree.class).clearTokens();
+			Docker.getDocker(CallsTreeDocker.class).clearTokens();
 		}
 
 		// show the first token
@@ -411,7 +411,7 @@ public class Gui {
 	 * @param editor the editor to extract the new structure from
 	 */
 	public void updateStructure(EditorPanel editor) {
-		Docker.getDocker(StructurePanel.class).updateStructure(editor);
+		Docker.getDocker(StructureDocker.class).updateStructure(editor);
 	}
 
 	/**
@@ -419,7 +419,7 @@ public class Gui {
 	 * @param editor the editor to extract structure from
 	 */
 	public void showStructure(EditorPanel editor) {
-		this.openDocker(StructurePanel.class);
+		this.openDocker(StructureDocker.class);
 		this.updateStructure(editor);
 	}
 
@@ -431,8 +431,8 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.openDocker(InheritanceTree.class);
-		Docker.getDocker(InheritanceTree.class).display(cursorReference.entry);
+		this.openDocker(InheritanceTreeDocker.class);
+		Docker.getDocker(InheritanceTreeDocker.class).display(cursorReference.entry);
 	}
 
 	/**
@@ -443,8 +443,8 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.openDocker(ImplementationsTree.class);
-		Docker.getDocker(ImplementationsTree.class).display(cursorReference.entry);
+		this.openDocker(ImplementationsTreeDocker.class);
+		Docker.getDocker(ImplementationsTreeDocker.class).display(cursorReference.entry);
 	}
 
 	/**
@@ -455,8 +455,8 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.openDocker(CallsTree.class);
-		Docker.getDocker(CallsTree.class).showCalls(cursorReference.entry, recurse);
+		this.openDocker(CallsTreeDocker.class);
+		Docker.getDocker(CallsTreeDocker.class).showCalls(cursorReference.entry, recurse);
 	}
 
 	public void toggleMapping(EditorPanel editor) {
@@ -607,7 +607,7 @@ public class Gui {
 	}
 
 	public void addMessage(Message message) {
-		JScrollBar verticalScrollBar = Docker.getDocker(CollabPanel.class).getMessageScrollPane().getVerticalScrollBar();
+		JScrollBar verticalScrollBar = Docker.getDocker(CollabDocker.class).getMessageScrollPane().getVerticalScrollBar();
 		boolean isAtBottom = verticalScrollBar.getValue() >= verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent();
 		messageModel.addElement(message);
 
@@ -626,7 +626,7 @@ public class Gui {
 		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
 
 		// if we were previously offline, we need to reload multiplayer-restricted right panels (ex. messages) so they can be used
-		CollabPanel collabDocker = Docker.getDocker(CollabPanel.class);
+		CollabDocker collabDocker = Docker.getDocker(CollabDocker.class);
 		if (wasOffline && Dock.Util.isDocked(collabDocker)) {
 			collabDocker.setUp();
 		}

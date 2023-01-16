@@ -17,7 +17,6 @@ import javax.swing.tree.TreePath;
 import cuchaz.enigma.analysis.ReferenceTreeNode;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.TokenListCellRenderer;
-import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.renderer.CallsTreeCellRenderer;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
@@ -28,11 +27,11 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
-public class CallsTree extends Docker {
+public class CallsTreeDocker extends Docker {
 	private final JTree tree = new JTree();
 	private final JList<Token> tokens = new JList<>();
 
-	public CallsTree(Gui gui) {
+	public CallsTreeDocker(Gui gui) {
 		super(gui);
 		this.tree.setModel(null);
 		this.tree.setCellRenderer(new CallsTreeCellRenderer(gui));

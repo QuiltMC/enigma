@@ -15,7 +15,15 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.util.function.Supplier;
 
-public class CollabPanel extends Docker {
+public class CollabDocker extends Docker {
+	private static final Supplier<String> OFFLINE_TEXT_PROVIDER = () -> I18n.translate("docker.collab.offline_text");
+	private static final Supplier<String> START_SERVER_TEXT_PROVIDER = () -> I18n.translate("menu.collab.server.start");
+	private static final Supplier<String> CONNECT_TO_SERVER_TEXT_PROVIDER = () -> I18n.translate("menu.collab.connect");
+
+	private static final Supplier<String> USERS_TITLE_PROVIDER = () -> I18n.translate("docker.collab.users_title");
+	private static final Supplier<String> MESSAGES_TITLE_PROVIDER = () -> I18n.translate("docker.collab.messages_title");
+	private static final Supplier<String> SEND_BUTTON_TEXT_PROVIDER = () -> I18n.translate("docker.collab.send");
+
 	private final JLabel offlineLabel;
 	private final DockerTitleBar titleCopy;
 	private final JButton startServerButton;
@@ -29,28 +37,20 @@ public class CollabPanel extends Docker {
 	private final JLabel usersTitle;
 	private final JLabel messagesTitle;
 
-	private static final Supplier<String> offlineTextProvider = () -> I18n.translate("docker.collab.offline_text");
-	private static final Supplier<String> startServerTextProvider = () -> I18n.translate("menu.collab.server.start");
-	private static final Supplier<String> connectToServerTextProvider = () -> I18n.translate("menu.collab.connect");
-
-	private static final Supplier<String> usersTitleProvider = () -> I18n.translate("docker.collab.users_title");
-	private static final Supplier<String> messagesTitleProvider = () -> I18n.translate("docker.collab.messages_title");
-	private static final Supplier<String> sendButtonTextProvider = () -> I18n.translate("docker.collab.send");
-
 	private JPanel panel;
 	private boolean offline;
 
-	public CollabPanel(Gui gui) {
+	public CollabDocker(Gui gui) {
 		super(gui);
 
 		// offline panel
 		this.whenOfflinePanel = new JPanel(new BorderLayout());
-		this.offlineLabel = new JLabel(offlineTextProvider.get());
+		this.offlineLabel = new JLabel(OFFLINE_TEXT_PROVIDER.get());
 		JPanel offlineTopPanel = new JPanel(new BorderLayout());
 
 		JPanel connectionButtonPanel = new JPanel(new BorderLayout());
-		this.startServerButton = new JButton(startServerTextProvider.get());
-		this.connectToServerButton = new JButton(connectToServerTextProvider.get());
+		this.startServerButton = new JButton(START_SERVER_TEXT_PROVIDER.get());
+		this.connectToServerButton = new JButton(CONNECT_TO_SERVER_TEXT_PROVIDER.get());
 		connectionButtonPanel.add(this.startServerButton, BorderLayout.NORTH);
 		connectionButtonPanel.add(this.connectToServerButton, BorderLayout.SOUTH);
 
@@ -73,7 +73,7 @@ public class CollabPanel extends Docker {
 		JPanel userListPanel = new JPanel(new BorderLayout());
 		JScrollPane userScrollPane = new JScrollPane(gui.getUsers());
 
-		this.usersTitle = new JLabel(usersTitleProvider.get());
+		this.usersTitle = new JLabel(USERS_TITLE_PROVIDER.get());
 		userListPanel.add(this.usersTitle, BorderLayout.NORTH);
 		userListPanel.add(userScrollPane, BorderLayout.CENTER);
 
@@ -91,9 +91,9 @@ public class CollabPanel extends Docker {
 			}
 		};
 		this.pendingMessageBox.addActionListener(sendListener);
-		this.sendPendingMessageButton = new JButton(sendButtonTextProvider.get());
+		this.sendPendingMessageButton = new JButton(SEND_BUTTON_TEXT_PROVIDER.get());
 		this.sendPendingMessageButton.setAction(sendListener);
-		this.messagesTitle = new JLabel(messagesTitleProvider.get());
+		this.messagesTitle = new JLabel(MESSAGES_TITLE_PROVIDER.get());
 		JPanel chatPanel = new JPanel(new BorderLayout());
 		chatPanel.add(this.pendingMessageBox, BorderLayout.CENTER);
 		chatPanel.add(this.sendPendingMessageButton, BorderLayout.EAST);
@@ -143,12 +143,12 @@ public class CollabPanel extends Docker {
 	@Override
 	public void retranslateUi() {
 		super.retranslateUi();
-		this.offlineLabel.setText(offlineTextProvider.get());
-		this.sendPendingMessageButton.setText(sendButtonTextProvider.get());
-		this.usersTitle.setText(usersTitleProvider.get());
-		this.messagesTitle.setText(messagesTitleProvider.get());
-		this.startServerButton.setText(startServerTextProvider.get());
-		this.connectToServerButton.setText(connectToServerTextProvider.get());
+		this.offlineLabel.setText(OFFLINE_TEXT_PROVIDER.get());
+		this.sendPendingMessageButton.setText(SEND_BUTTON_TEXT_PROVIDER.get());
+		this.usersTitle.setText(USERS_TITLE_PROVIDER.get());
+		this.messagesTitle.setText(MESSAGES_TITLE_PROVIDER.get());
+		this.startServerButton.setText(START_SERVER_TEXT_PROVIDER.get());
+		this.connectToServerButton.setText(CONNECT_TO_SERVER_TEXT_PROVIDER.get());
 		this.titleCopy.retranslateUi();
 	}
 
