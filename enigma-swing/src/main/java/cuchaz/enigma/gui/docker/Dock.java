@@ -99,16 +99,15 @@ public class Dock extends JPanel {
 	}
 
 	public void saveDividerState() {
-		if (!this.isEmpty()) {
-			// save vertical divider state
-			if (this.isSplit) {
-				UiConfig.setVerticalDockDividerLocation(this.side, this.splitPane.getDividerLocation());
-			}
-
-			// save horizontal divider state
-			JSplitPane parentSplitPane = this.getParentSplitPane();
-			UiConfig.setHorizontalDividerLocation(this.side, parentSplitPane.getDividerLocation());
+		// save vertical divider state
+		if (this.isSplit) {
+			UiConfig.setVerticalDockDividerLocation(this.side, this.splitPane.getDividerLocation());
 		}
+
+		// save horizontal divider state
+		JSplitPane parentSplitPane = this.getParentSplitPane();
+		UiConfig.setHorizontalDividerLocation(this.side, parentSplitPane.getDividerLocation());
+		System.out.println("saving: " + parentSplitPane.getDividerLocation());
 	}
 
 	/**
@@ -181,7 +180,6 @@ public class Dock extends JPanel {
 			}
 		}
 
-		this.restoreDividerState();
 		this.updateVisibility();
 		this.revalidate();
 	}
@@ -195,6 +193,7 @@ public class Dock extends JPanel {
 			this.saveDividerState();
 			this.setVisible(false);
 		} else {
+			this.restoreDividerState();
 			this.setVisible(true);
 		}
 	}
