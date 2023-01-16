@@ -22,7 +22,6 @@ import java.util.Set;
 import com.google.common.io.MoreFiles;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.docker.AllClassesDocker;
-import cuchaz.enigma.gui.docker.Docker;
 import joptsimple.*;
 
 import cuchaz.enigma.EnigmaProfile;
