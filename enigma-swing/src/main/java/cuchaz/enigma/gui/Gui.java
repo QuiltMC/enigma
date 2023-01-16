@@ -239,36 +239,16 @@ public class Gui {
 	/**
 	 * Opens the given docker in its preferred location.
 	 * @param clazz the new panel's class
-	 * @param updateStateIfOpen if the docker is already present on the ui, this parameter determines whether to update the visibility of the panel
 	 */
-	public void openDocker(Class<? extends Docker> clazz, boolean updateStateIfOpen) {
+	public void openDocker(Class<? extends Docker> clazz) {
 		Docker newDocker = Docker.getDocker(clazz);
-		Docker.Location location = Dock.Util.findLocation(newDocker);
-
-		// update state if docker is shown
-		if (location != null && updateStateIfOpen) {
-			this.saveDividerLocation(location.side());
-
-			// swap visibility
-			Dock parent = Dock.Util.findDock(newDocker);
-			if (parent == null) {
-				Dock.Util.undock(newDocker);
-			} else {
-				parent.host(newDocker, location.verticalLocation());
-			}
-
-			return;
-		}
 
 		Dock dock = (newDocker.getPreferredLocation().side() == Docker.Side.LEFT ? this.leftDock : this.rightDock);
 		dock.host(newDocker, newDocker.getPreferredLocation().verticalLocation());
 
-		// repaint in case the panel was changing without clicking a button
+		// repaint in case the docker was opened from a source other than a button
+		// this prevents visual corruption in the docker selectors
 		this.mainWindow.getFrame().repaint();
-	}
-
-	private void saveDividerLocation(Docker.Side side) {
-		UiConfig.setHorizontalDividerLocation(side, side == Docker.Side.LEFT ? this.splitLeft.getDividerLocation() : this.splitRight.getDividerLocation());
 	}
 
 	public JSplitPane getSplitLeft() {
@@ -391,7 +371,7 @@ public class Gui {
 
 	public void showTokens(EditorPanel editor, List<Token> tokens) {
 		if (tokens.size() > 1) {
-			this.openDocker(CallsTree.class, false);
+			this.openDocker(CallsTree.class);
 			this.controller.setTokenHandle(editor.getClassHandle().copy());
 			Docker.getDocker(CallsTree.class).showTokens(tokens);
 		} else {
@@ -437,7 +417,7 @@ public class Gui {
 	 * @param editor the editor to extract structure from
 	 */
 	public void showStructure(EditorPanel editor) {
-		this.openDocker(StructurePanel.class, false);
+		this.openDocker(StructurePanel.class);
 		this.updateStructure(editor);
 	}
 
@@ -449,7 +429,7 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.openDocker(InheritanceTree.class, false);
+		this.openDocker(InheritanceTree.class);
 		Docker.getDocker(InheritanceTree.class).display(cursorReference.entry);
 	}
 
@@ -461,7 +441,7 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.openDocker(ImplementationsTree.class, false);
+		this.openDocker(ImplementationsTree.class);
 		Docker.getDocker(ImplementationsTree.class).display(cursorReference.entry);
 	}
 
@@ -473,7 +453,7 @@ public class Gui {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.openDocker(CallsTree.class, false);
+		this.openDocker(CallsTree.class);
 		Docker.getDocker(CallsTree.class).showCalls(cursorReference.entry, recurse);
 	}
 

@@ -38,7 +38,7 @@ public abstract class Docker extends JPanel {
 			if (Dock.Util.isDocked(docker)) {
 				Dock.Util.undock(docker);
 			} else {
-				gui.openDocker(this.getClass(), true);
+				gui.openDocker(this.getClass());
 			}
 		});
 

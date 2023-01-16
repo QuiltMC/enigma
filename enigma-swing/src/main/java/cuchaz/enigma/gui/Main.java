@@ -131,7 +131,7 @@ public class Main {
 
 			if (options.has("single-class-tree")) {
 				System.out.println("warning: --single-class-tree is deprecated and will be removed in the next minor version! simply use the \"all classes\" docker instead.");
-				gui.openDocker(AllClassesDocker.class, true);
+				gui.openDocker(AllClassesDocker.class);
 			}
 
 			if (options.has(jar)) {
