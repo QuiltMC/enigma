@@ -67,6 +67,7 @@ public final class UiConfig {
 	public static final String DEBUG_TOKEN_ALPHA = "Debug Token Alpha";
 	public static final String DEBUG_TOKEN_OUTLINE = "Debug Token Outline";
 	public static final String DEBUG_TOKEN_OUTLINE_ALPHA = "Debug Token Outline Alpha";
+	public static final String DOCK_HIGHLIGHT = "Dock Highlight";
 
 	private UiConfig() {
 	}
@@ -206,91 +207,95 @@ public final class UiConfig {
 	}
 
 	public static Color getObfuscatedColor() {
-		return getThemeColorRgba("Obfuscated");
+		return getThemeColorRgba(OBFUSCATED);
 	}
 
 	public static Color getObfuscatedOutlineColor() {
-		return getThemeColorRgba("Obfuscated Outline");
+		return getThemeColorRgba(OBFUSCATED_OUTLINE);
 	}
 
 	public static Color getProposedColor() {
-		return getThemeColorRgba("Proposed");
+		return getThemeColorRgba(PROPOSED);
 	}
 
 	public static Color getProposedOutlineColor() {
-		return getThemeColorRgba("Proposed Outline");
+		return getThemeColorRgba(PROPOSED_OUTLINE);
 	}
 
 	public static Color getDeobfuscatedColor() {
-		return getThemeColorRgba("Deobfuscated");
+		return getThemeColorRgba(DEOBFUSCATED);
 	}
 
 	public static Color getDeobfuscatedOutlineColor() {
-		return getThemeColorRgba("Deobfuscated Outline");
+		return getThemeColorRgba(DEOBFUSCATED_OUTLINE);
 	}
 
 	public static Color getDebugTokenColor() {
-		return getThemeColorRgba("Debug Token");
+		return getThemeColorRgba(DEBUG_TOKEN);
 	}
 
 	public static Color getDebugTokenOutlineColor() {
-		return getThemeColorRgba("Debug Token Outline");
+		return getThemeColorRgba(DEBUG_TOKEN_OUTLINE);
 	}
 
 	public static Color getEditorBackgroundColor() {
-		return getThemeColorRgb("Editor Background");
+		return getThemeColorRgb(EDITOR_BACKGROUND);
 	}
 
 	public static Color getHighlightColor() {
-		return getThemeColorRgb("Highlight");
+		return getThemeColorRgb(HIGHLIGHT);
 	}
 
 	public static Color getCaretColor() {
-		return getThemeColorRgb("Caret");
+		return getThemeColorRgb(CARET);
 	}
 
 	public static Color getSelectionHighlightColor() {
-		return getThemeColorRgb("Selection Highlight");
+		return getThemeColorRgb(SELECTION_HIGHLIGHT);
 	}
 
 	public static Color getStringColor() {
-		return getThemeColorRgb("String");
+		return getThemeColorRgb(STRING);
 	}
 
 	public static Color getNumberColor() {
-		return getThemeColorRgb("Number");
+		return getThemeColorRgb(NUMBER);
 	}
 
 	public static Color getOperatorColor() {
-		return getThemeColorRgb("Operator");
+		return getThemeColorRgb(OPERATOR);
 	}
 
 	public static Color getDelimiterColor() {
-		return getThemeColorRgb("Delimiter");
+		return getThemeColorRgb(DELIMITER);
 	}
 
 	public static Color getTypeColor() {
-		return getThemeColorRgb("Type");
+		return getThemeColorRgb(TYPE);
 	}
 
 	public static Color getIdentifierColor() {
-		return getThemeColorRgb("Identifier");
+		return getThemeColorRgb(IDENTIFIER);
 	}
 
 	public static Color getTextColor() {
-		return getThemeColorRgb("Text");
+		return getThemeColorRgb(TEXT);
 	}
 
 	public static Color getLineNumbersForegroundColor() {
-		return getThemeColorRgb("Line Numbers Foreground");
+		return getThemeColorRgb(LINE_NUMBERS_FOREGROUND);
 	}
 
 	public static Color getLineNumbersBackgroundColor() {
-		return getThemeColorRgb("Line Numbers Background");
+		return getThemeColorRgb(LINE_NUMBERS_BACKGROUND);
 	}
 
 	public static Color getLineNumbersSelectedColor() {
-		return getThemeColorRgb("Line Numbers Selected");
+		return getThemeColorRgb(LINE_NUMBERS_SELECTED);
+	}
+
+	public static Color getDockHighlightColor() {
+		return getThemeColorRgb(DOCK_HIGHLIGHT);
 	}
 
 	public static boolean useCustomFonts() {
@@ -433,6 +438,8 @@ public final class UiConfig {
 
 	public static void setLookAndFeelDefaults(LookAndFeel laf, boolean isDark) {
 		ConfigSection s = swing.data().section(THEMES).section(laf.name()).section(COLORS);
+
+		// theme-dependent colors
 		if (!isDark) {
 			// Defaults found here: https://github.com/Sciss/SyntaxPane/blob/122da367ff7a5d31627a70c62a48a9f0f4f85a0a/src/main/resources/de/sciss/syntaxpane/defaultsyntaxkit/config.properties#L139
 			s.setIfAbsentRgbColor(LINE_NUMBERS_FOREGROUND, 0x333300);
@@ -508,5 +515,8 @@ public final class UiConfig {
 			s.setIfAbsentRgbColor(DEBUG_TOKEN_OUTLINE, 0x701367);
 			s.setIfAbsentDouble(DEBUG_TOKEN_OUTLINE_ALPHA, 0.5);
 		}
+
+		// theme-independent colors
+		s.setIfAbsentRgbColor(DOCK_HIGHLIGHT, 0x0000FF);
 	}
 }

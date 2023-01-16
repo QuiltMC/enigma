@@ -303,8 +303,8 @@ public class CompoundDock extends JPanel {
 		if (this.hovered != null) {
 			Rectangle paintedBounds = this.getHighlightBoundsFor(new Point(0, 0), this.hovered);
 
-			Color color = new Color(0, 0, 255, 84);
-			graphics.setColor(color);
+			Color color = UiConfig.getDockHighlightColor();
+			graphics.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 100));
 			graphics.fillRect(paintedBounds.x, paintedBounds.y, paintedBounds.width, paintedBounds.height);
 			this.repaint();
 		}
