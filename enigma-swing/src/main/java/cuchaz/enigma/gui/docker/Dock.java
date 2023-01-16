@@ -213,6 +213,7 @@ public class Dock extends JPanel {
 		container.setHostedDocker(null);
 		this.updateVisibility();
 		this.revalidate();
+		this.repaint();
 	}
 
 	public boolean containsMouse(MouseEvent e, Docker.VerticalLocation checkedLocation) {
