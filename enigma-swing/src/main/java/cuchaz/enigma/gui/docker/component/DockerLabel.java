@@ -1,8 +1,7 @@
 package cuchaz.enigma.gui.docker.component;
 
 import cuchaz.enigma.gui.docker.Docker;
-import cuchaz.enigma.gui.docker.dock.CompoundDock;
-import cuchaz.enigma.gui.docker.dock.Dock;
+import cuchaz.enigma.gui.docker.Dock;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -75,7 +74,7 @@ public class DockerLabel extends JLabel {
 			public void mouseReleased(MouseEvent e) {
 				DockerLabel.this.ensureConfigured();
 
-				CompoundDock.Util.receiveMouseEvent(e);
+				Dock.Util.receiveMouseEvent(e);
 
 				// remove from glass pane and repaint to display removal
 				JPanel glassPane = (JPanel) DockerLabel.this.getRootPane().getGlassPane();
@@ -88,7 +87,7 @@ public class DockerLabel extends JLabel {
 				DockerLabel.this.initialParent.repaint();
 
 				// if dropped over a docker, snap into place
-				CompoundDock.Util.dropDocker(DockerLabel.this.docker, e);
+				Dock.Util.dropDocker(DockerLabel.this.docker, e);
 
 				DockerLabel.this.initialParent = null;
 				// constraints are not reset, we assume that the label will stay with the same parent
@@ -137,7 +136,7 @@ public class DockerLabel extends JLabel {
 				DockerLabel.this.setVisible(true);
 
 				// update dock highlighting
-				CompoundDock.Util.receiveMouseEvent(e);
+				Dock.Util.receiveMouseEvent(e);
 			}
 
 			@Override

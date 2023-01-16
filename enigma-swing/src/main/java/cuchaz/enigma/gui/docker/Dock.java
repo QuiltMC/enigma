@@ -1,8 +1,7 @@
-package cuchaz.enigma.gui.docker.dock;
+package cuchaz.enigma.gui.docker;
 
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.UiConfig;
-import cuchaz.enigma.gui.docker.Docker;
 
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
@@ -16,13 +15,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class CompoundDock extends JPanel {
-	private static final List<CompoundDock> instances = new ArrayList<>();
+public class Dock extends JPanel {
+	private static final List<Dock> instances = new ArrayList<>();
 
 	private final Gui gui;
 	private final JSplitPane splitPane;
-	private final Dock topDock;
-	private final Dock bottomDock;
+	private final DockerContainer topDock;
+	private final DockerContainer bottomDock;
 	private final Docker.Side side;
 
 	/**
@@ -30,20 +29,17 @@ public class CompoundDock extends JPanel {
 	 */
 	private Docker.VerticalLocation hovered;
 	private boolean isSplit;
-	private Dock unifiedDock;
+	private DockerContainer unifiedDock;
 
 	@SuppressWarnings("SuspiciousNameCombination")
-	public CompoundDock(Gui gui, Docker.Side side, Dock topDock, Dock bottomDock) {
+	public Dock(Gui gui, Docker.Side side) {
 		super(new BorderLayout());
 
-		this.topDock = topDock;
-		this.bottomDock = bottomDock;
+		this.topDock = new DockerContainer();
+		this.bottomDock = new DockerContainer();
 		this.splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, topDock, bottomDock);
 		this.side = side;
 		this.gui = gui;
-
-		this.topDock.setParentDock(this);
-		this.bottomDock.setParentDock(this);
 
 		this.isSplit = true;
 		this.unifiedDock = null;
@@ -51,10 +47,6 @@ public class CompoundDock extends JPanel {
 		this.add(this.splitPane);
 
 		instances.add(this);
-	}
-
-	public CompoundDock(Gui gui, Docker.Side side) {
-		this(gui, side, new Dock(), new Dock());
 	}
 
 	/**
@@ -124,14 +116,14 @@ public class CompoundDock extends JPanel {
 	 */
 	private String[] encodeDockers() {
 		String[] dockers = new String[]{"", ""};
-		Docker[] hostedDockers = new Docker[]{this.topDock.getHostedDocker(), this.bottomDock.getHostedDocker()};
-		for (int i = 0; i < hostedDockers.length; i++) {
-			Docker docker = hostedDockers[i];
+		for (int i = 0; i < this.getDockers().length; i++) {
+			Docker docker = this.getDockers()[i];
 
 			if (docker != null) {
 				Docker.Location location = Util.findLocation(docker);
 				if (location != null) {
 					dockers[i] = (docker.getId() + ":" + location.verticalLocation());
+					System.out.println("saving: " + dockers[i]);
 				}
 			}
 		}
@@ -159,6 +151,8 @@ public class CompoundDock extends JPanel {
 	}
 
 	public void host(Docker docker, Docker.VerticalLocation verticalLocation) {
+		Util.undock(docker);
+
 		switch (verticalLocation) {
 			case BOTTOM -> {
 				if (!this.isSplit) {
@@ -188,15 +182,37 @@ public class CompoundDock extends JPanel {
 		}
 
 		this.restoreDividerState();
-		this.setVisible(true);
+		this.updateVisibility();
 		this.revalidate();
 	}
 
-	public void onDockRemoval() {
+	public Docker[] getDockers() {
+		return new Docker[]{this.topDock.hostedDocker, this.bottomDock.hostedDocker};
+	}
+
+	public void updateVisibility() {
 		if (this.isEmpty()) {
 			this.saveDividerState();
 			this.setVisible(false);
+		} else {
+			this.setVisible(true);
 		}
+	}
+
+	public void removeDocker(Docker docker) {
+		Docker.Location location = Util.findLocation(docker);
+		if (location != null) {
+			this.removeDocker(location.verticalLocation());
+		} else {
+			throw new IllegalArgumentException("attempted to remove docker from dock for side " + this.side + " that is not added to that dock!");
+		}
+	}
+
+	public void removeDocker(Docker.VerticalLocation location) {
+		DockerContainer container = this.getDock(location);
+		container.setHostedDocker(null);
+		this.updateVisibility();
+		this.revalidate();
 	}
 
 	public boolean containsMouse(MouseEvent e, Docker.VerticalLocation checkedLocation) {
@@ -209,7 +225,7 @@ public class CompoundDock extends JPanel {
 	}
 
 	public void split(Docker.VerticalLocation toIntroduceDocker) {
-		this.saveState();
+		this.saveDividerState();
 
 		// convenience: if we're splitting a panel that has a docker, we should keep that docker and open it in the unoccupied slot
 		if (this.getDock(toIntroduceDocker).equals(this.unifiedDock)) {
@@ -226,7 +242,7 @@ public class CompoundDock extends JPanel {
 	}
 
 	public void unify(Docker.VerticalLocation keptLocation) {
-		this.saveState();
+		this.saveDividerState();
 
 		this.removeAll();
 		if (keptLocation == Docker.VerticalLocation.TOP) {
@@ -252,16 +268,12 @@ public class CompoundDock extends JPanel {
 		}
 	}
 
-	public Dock getDock(Docker.VerticalLocation verticalLocation) {
+	public DockerContainer getDock(Docker.VerticalLocation verticalLocation) {
 		 return switch (verticalLocation) {
 			case TOP -> this.topDock;
 			case BOTTOM -> this.bottomDock;
 			case FULL -> this.unifiedDock;
 		};
-	}
-
-	public Dock[] getDocks() {
-		return new Dock[]{this.topDock, this.bottomDock};
 	}
 
 	private Rectangle getHighlightBoundsFor(Point topLeft, Docker.VerticalLocation checkedLocation) {
@@ -310,13 +322,38 @@ public class CompoundDock extends JPanel {
 		}
 	}
 
+	private static class DockerContainer extends JPanel {
+		private Docker hostedDocker;
+
+		public DockerContainer() {
+			super(new BorderLayout());
+			this.hostedDocker = null;
+		}
+
+		public Docker getHostedDocker() {
+			return this.hostedDocker;
+		}
+
+		public void setHostedDocker(Docker hostedDocker) {
+			if (this.hostedDocker != null) {
+				this.remove(this.hostedDocker);
+			}
+
+			this.hostedDocker = hostedDocker;
+
+			if (this.hostedDocker != null) {
+				this.add(this.hostedDocker);
+			}
+		}
+	}
+
 	public static class Util {
 		/**
-		 * Calls {@link CompoundDock#receiveMouseEvent(MouseEvent)}} on all sides.
+		 * Calls {@link Dock#receiveMouseEvent(MouseEvent)}} on all sides.
 		 * @param event the mouse event to pass to the docks
 		 */
 		public static void receiveMouseEvent(MouseEvent event) {
-			for (CompoundDock dock : instances) {
+			for (Dock dock : instances) {
 				dock.receiveMouseEvent(event);
 			}
 		}
@@ -328,7 +365,7 @@ public class CompoundDock extends JPanel {
 		 * @param event an {@link MouseEvent} to use to check if the docker was held over a dock
 		 */
 		public static void dropDocker(Docker docker, MouseEvent event) {
-			for (CompoundDock dock : instances) {
+			for (Dock dock : instances) {
 				if (dock.isDisplayable()) {
 					dock.dropDockerFromMouse(docker, event);
 				}
@@ -339,15 +376,15 @@ public class CompoundDock extends JPanel {
 		 * @return the location of the provided docker, or {@code null} if it is not currently present on the screen.
 		 */
 		public static Docker.Location findLocation(Docker docker) {
-			for (CompoundDock dock : instances) {
-				for (Dock d : dock.getDocks()) {
-					if (d.getHostedDocker() != null && d.getHostedDocker().getId().equals(docker.getId())) {
-						if (d.equals(dock.topDock)) {
-							return new Docker.Location(dock.side, Docker.VerticalLocation.TOP);
-						} else if (d.equals(dock.bottomDock)) {
-							return new Docker.Location(dock.side, Docker.VerticalLocation.BOTTOM);
-						} else if (d.equals(dock.unifiedDock)) {
+			for (Dock dock : instances) {
+				for (Docker d : dock.getDockers()) {
+					if (d != null && d.getId().equals(docker.getId())) {
+						if (dock.unifiedDock != null && d.equals(dock.unifiedDock.getHostedDocker())) {
 							return new Docker.Location(dock.side, Docker.VerticalLocation.FULL);
+						} else if (d.equals(dock.topDock.getHostedDocker())) {
+							return new Docker.Location(dock.side, Docker.VerticalLocation.TOP);
+						} else if (d.equals(dock.bottomDock.getHostedDocker())) {
+							return new Docker.Location(dock.side, Docker.VerticalLocation.BOTTOM);
 						}
 					}
 				}
@@ -357,12 +394,12 @@ public class CompoundDock extends JPanel {
 		}
 
 		/**
-		 * @return the docker's parent {@link CompoundDock}, or {@code null} if it is not currently present on the screen.
+		 * @return the docker's parent {@link Dock}, or {@code null} if it is not currently present on the screen.
 		 */
-		public static CompoundDock findDock(Docker docker) {
-			for (CompoundDock dock : instances) {
-				for (Dock d : dock.getDocks()) {
-					if (d.getHostedDocker() != null && d.getHostedDocker().getId().equals(docker.getId())) {
+		public static Dock findDock(Docker docker) {
+			for (Dock dock : instances) {
+				for (Docker d : dock.getDockers()) {
+					if (d != null && d.getId().equals(docker.getId())) {
 						return dock;
 					}
 				}
@@ -375,10 +412,10 @@ public class CompoundDock extends JPanel {
 		 * Removes the docker from the screen.
 		 */
 		public static void undock(Docker docker) {
-			for (CompoundDock dock : instances) {
-				for (Dock d : dock.getDocks()) {
-					if (d.getHostedDocker() != null && d.getHostedDocker().getId().equals(docker.getId())) {
-						d.removeHostedDocker();
+			for (Dock dock : instances) {
+				for (Docker d : dock.getDockers()) {
+					if (d != null && d.getId().equals(docker.getId())) {
+						dock.removeDocker(d);
 					}
 				}
 			}

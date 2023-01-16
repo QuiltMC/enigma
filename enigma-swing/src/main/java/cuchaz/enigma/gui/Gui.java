@@ -19,7 +19,7 @@ import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.JavadocDialog;
 import cuchaz.enigma.gui.dialog.SearchDialog;
 import cuchaz.enigma.gui.docker.AllClassesDocker;
-import cuchaz.enigma.gui.docker.dock.CompoundDock;
+import cuchaz.enigma.gui.docker.Dock;
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.elements.EditorTabbedPane;
 import cuchaz.enigma.gui.elements.MainWindow;
@@ -88,8 +88,8 @@ public class Gui {
 	private final EditorTabbedPane editorTabbedPane;
 
 	private final JPanel centerPanel;
-	private final CompoundDock rightDock;
-	private final CompoundDock leftDock;
+	private final Dock rightDock;
+	private final Dock leftDock;
 	private final JSplitPane splitRight;
 	private final JSplitPane splitLeft;
 
@@ -120,8 +120,8 @@ public class Gui {
 		this.messages = new JList<>(this.messageModel);
 		this.setupDockers();
 		this.editorTabbedPane = new EditorTabbedPane(this);
-		this.rightDock = new CompoundDock(this, Docker.Side.RIGHT);
-		this.leftDock = new CompoundDock(this, Docker.Side.LEFT);
+		this.rightDock = new Dock(this, Docker.Side.RIGHT);
+		this.leftDock = new Dock(this, Docker.Side.LEFT);
 		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightDock);
 		this.splitLeft = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, leftDock, splitRight);
 		this.jarFileChooser = new JFileChooser();
@@ -243,16 +243,16 @@ public class Gui {
 	 */
 	public void openDocker(Class<? extends Docker> clazz, boolean updateStateIfOpen) {
 		Docker newDocker = Docker.getDocker(clazz);
-		Docker.Location location = CompoundDock.Util.findLocation(newDocker);
+		Docker.Location location = Dock.Util.findLocation(newDocker);
 
 		// update state if docker is shown
 		if (location != null && updateStateIfOpen) {
 			this.saveDividerLocation(location.side());
 
 			// swap visibility
-			CompoundDock parent = CompoundDock.Util.findDock(newDocker);
+			Dock parent = Dock.Util.findDock(newDocker);
 			if (parent == null) {
-				CompoundDock.Util.undock(newDocker);
+				Dock.Util.undock(newDocker);
 			} else {
 				parent.host(newDocker, location.verticalLocation());
 			}
@@ -260,7 +260,7 @@ public class Gui {
 			return;
 		}
 
-		CompoundDock dock = (newDocker.getPreferredLocation().side() == Docker.Side.LEFT ? this.leftDock : this.rightDock);
+		Dock dock = (newDocker.getPreferredLocation().side() == Docker.Side.LEFT ? this.leftDock : this.rightDock);
 		dock.host(newDocker, newDocker.getPreferredLocation().verticalLocation());
 
 		// repaint in case the panel was changing without clicking a button
@@ -529,7 +529,6 @@ public class Gui {
 		UiConfig.setWindowSize(UiConfig.MAIN_WINDOW, this.mainWindow.getFrame().getSize());
 
 		// save state for docker panels
-		// todo remove in favor of saving on apply!
 		this.rightDock.saveState();
 		this.leftDock.saveState();
 
@@ -646,7 +645,7 @@ public class Gui {
 
 		// if we were previously offline, we need to reload multiplayer-restricted right panels (ex. messages) so they can be used
 		CollabPanel collabDocker = Docker.getDocker(CollabPanel.class);
-		if (wasOffline && CompoundDock.Util.isDocked(collabDocker)) {
+		if (wasOffline && Dock.Util.isDocked(collabDocker)) {
 			collabDocker.setUp();
 		}
 	}

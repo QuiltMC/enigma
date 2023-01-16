@@ -2,7 +2,6 @@ package cuchaz.enigma.gui.docker;
 
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.docker.component.DockerTitleBar;
-import cuchaz.enigma.gui.docker.dock.CompoundDock;
 import cuchaz.enigma.utils.I18n;
 
 import javax.swing.JPanel;
@@ -36,8 +35,8 @@ public abstract class Docker extends JPanel {
 		this.button.addActionListener(e -> {
 			Docker docker = getDocker(this.getClass());
 
-			if (CompoundDock.Util.isDocked(docker)) {
-				CompoundDock.Util.undock(docker);
+			if (Dock.Util.isDocked(docker)) {
+				Dock.Util.undock(docker);
 			} else {
 				gui.openDocker(this.getClass(), true);
 			}
