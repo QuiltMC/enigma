@@ -121,10 +121,6 @@ public final class UiConfig {
 		swing.data().section(GENERAL).setDouble(SCALE_FACTOR, scale);
 	}
 
-	public static void setDockerDividerLocation(Docker docker, int location) {
-		swing.data().section(HORIZONTAL_DIVIDER_LOCATIONS).setInt(docker.getCurrentSide().name(), location);
-	}
-
 	public static void setHostedDockers(Docker.Side side, String[] dockerData) {
 		swing.data().section(HOSTED_DOCKERS).setArray(side.name(), dockerData);
 	}
@@ -146,11 +142,11 @@ public final class UiConfig {
 		return swing.data().section(VERTICAL_DIVIDER_LOCATIONS).setIfAbsentInt(side.name(), 300);
 	}
 
-	public static void setDividerLocation(Docker.Side side, int location) {
+	public static void setHorizontalDividerLocation(Docker.Side side, int location) {
 		swing.data().section(HORIZONTAL_DIVIDER_LOCATIONS).setInt(side.name(), location);
 	}
 
-	public static int getDividerLocation(Docker.Side side) {
+	public static int getHorizontalDividerLocation(Docker.Side side) {
 		return swing.data().section(HORIZONTAL_DIVIDER_LOCATIONS).setIfAbsentInt(side.name(), 300);
 	}
 

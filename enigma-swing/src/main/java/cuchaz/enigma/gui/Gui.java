@@ -20,7 +20,6 @@ import cuchaz.enigma.gui.dialog.JavadocDialog;
 import cuchaz.enigma.gui.dialog.SearchDialog;
 import cuchaz.enigma.gui.docker.AllClassesDocker;
 import cuchaz.enigma.gui.docker.dock.CompoundDock;
-import cuchaz.enigma.gui.docker.dock.Dock;
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.elements.EditorTabbedPane;
 import cuchaz.enigma.gui.elements.MainWindow;
@@ -70,7 +69,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -89,39 +87,49 @@ public class Gui {
 
 	private final EditorTabbedPane editorTabbedPane;
 
-	private final JPanel centerPanel = new JPanel(new BorderLayout());
+	private final JPanel centerPanel;
 	private final CompoundDock rightDock;
 	private final CompoundDock leftDock;
-	// todo return to private
 	private final JSplitPane splitRight;
 	private final JSplitPane splitLeft;
 
-	private final DefaultListModel<String> userModel = new DefaultListModel<>();
-	private final DefaultListModel<Message> messageModel = new DefaultListModel<>();
-	private final JList<String> users = new JList<>(this.userModel);
-	private final JList<Message> messages = new JList<>(this.messageModel);
+	private final DefaultListModel<String> userModel;
+	private final DefaultListModel<Message> messageModel;
+	private final JList<String> users;
+	private final JList<Message> messages;
 
-	private final JLabel connectionStatusLabel = new JLabel();
+	private final JLabel connectionStatusLabel;
 
-	public final JFileChooser jarFileChooser = new JFileChooser();
-	public final JFileChooser tinyMappingsFileChooser = new JFileChooser();
-	public final JFileChooser enigmaMappingsFileChooser = new JFileChooser();
-	public final JFileChooser exportSourceFileChooser = new JFileChooser();
-	public final JFileChooser exportJarFileChooser = new JFileChooser();
+	public final JFileChooser jarFileChooser;
+	public final JFileChooser tinyMappingsFileChooser;
+	public final JFileChooser enigmaMappingsFileChooser;
+	public final JFileChooser exportSourceFileChooser;
+	public final JFileChooser exportJarFileChooser;
 	public SearchDialog searchDialog;
 
 	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes) {
 		this.mainWindow = new MainWindow(Enigma.NAME);
+		this.centerPanel = new JPanel(new BorderLayout());
 		this.editableTypes = editableTypes;
 		this.controller = new GuiController(this, profile);
 		this.infoPanel = new IdentifierPanel(this);
 		this.menuBar = new MenuBar(this);
+		this.userModel = new DefaultListModel<>();
+		this.messageModel = new DefaultListModel<>();
+		this.users = new JList<>(this.userModel);
+		this.messages = new JList<>(this.messageModel);
 		this.setupDockers();
 		this.editorTabbedPane = new EditorTabbedPane(this);
 		this.rightDock = new CompoundDock(this, Docker.Side.RIGHT);
 		this.leftDock = new CompoundDock(this, Docker.Side.LEFT);
 		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightDock);
 		this.splitLeft = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, leftDock, splitRight);
+		this.jarFileChooser = new JFileChooser();
+		this.tinyMappingsFileChooser = new JFileChooser();
+		this.enigmaMappingsFileChooser = new JFileChooser();
+		this.exportSourceFileChooser = new JFileChooser();
+		this.exportJarFileChooser = new JFileChooser();
+		this.connectionStatusLabel = new JLabel();
 
 		this.setupUi();
 
@@ -158,8 +166,6 @@ public class Gui {
 		for (Docker.Side side : Docker.Side.values()) {
 			this.mainWindow.getDockerSelector(side).update();
 		}
-
-		// todo verify docker config here
 	}
 
 	private void setupUi() {
@@ -237,24 +243,21 @@ public class Gui {
 	 */
 	public void openDocker(Class<? extends Docker> clazz, boolean updateStateIfOpen) {
 		Docker newDocker = Docker.getDocker(clazz);
+		Docker.Location location = CompoundDock.Util.findLocation(newDocker);
 
 		// update state if docker is shown
-		for (Map.Entry<Dock, Docker> entry : Dock.Util.getActiveDockers().entrySet()) {
-			Docker docker = entry.getValue();
-			Dock dock = entry.getKey();
+		if (location != null && updateStateIfOpen) {
+			this.saveDividerLocation(location.side());
 
-			if (newDocker.getId().equals(docker.getId()) && updateStateIfOpen) {
-				this.saveDividerLocation(docker);
-
-				// swap visibility
-				if (docker.isVisible()) {
-					dock.removeHostedDocker();
-				} else {
-					dock.getParentDock().host(docker, docker.getCurrentVerticalLocation());
-				}
-
-				return;
+			// swap visibility
+			CompoundDock parent = CompoundDock.Util.findDock(newDocker);
+			if (parent == null) {
+				CompoundDock.Util.undock(newDocker);
+			} else {
+				parent.host(newDocker, location.verticalLocation());
 			}
+
+			return;
 		}
 
 		CompoundDock dock = (newDocker.getPreferredLocation().side() == Docker.Side.LEFT ? this.leftDock : this.rightDock);
@@ -264,10 +267,8 @@ public class Gui {
 		this.mainWindow.getFrame().repaint();
 	}
 
-	private void saveDividerLocation(Docker docker) {
-		if (docker.isDocked()) {
-			UiConfig.setDockerDividerLocation(docker, docker.getCurrentSide() == Docker.Side.LEFT ? this.splitLeft.getDividerLocation() : this.splitRight.getDividerLocation());
-		}
+	private void saveDividerLocation(Docker.Side side) {
+		UiConfig.setHorizontalDividerLocation(side, side == Docker.Side.LEFT ? this.splitLeft.getDividerLocation() : this.splitRight.getDividerLocation());
 	}
 
 	public JSplitPane getSplitLeft() {
@@ -403,12 +404,6 @@ public class Gui {
 
 	public void showCursorReference(EntryReference<Entry<?>, Entry<?>> reference) {
 		infoPanel.setReference(reference == null ? null : reference.entry);
-	}
-
-	@Nullable
-	public EntryReference<Entry<?>, Entry<?>> getCursorReference() {
-		EditorPanel activeEditor = this.editorTabbedPane.getActiveEditor();
-		return activeEditor == null ? null : activeEditor.getCursorReference();
 	}
 
 	public void startDocChange(EditorPanel editor) {
@@ -587,12 +582,6 @@ public class Gui {
 		}
 	}
 
-	public void moveClassTree(Entry<?> obfEntry, String newName) {
-		String oldEntry = obfEntry.getContainingClass().getPackageName();
-		String newEntry = new ClassEntry(newName).getPackageName();
-		moveClassTree(obfEntry, oldEntry == null, newEntry == null);
-	}
-
 	// TODO: getExpansionState will *not* actually update itself based on name changes!
 	public void moveClassTree(Entry<?> obfEntry, boolean isOldOb, boolean isNewOb) {
 		ClassEntry classEntry = obfEntry.getContainingClass();
@@ -657,7 +646,7 @@ public class Gui {
 
 		// if we were previously offline, we need to reload multiplayer-restricted right panels (ex. messages) so they can be used
 		CollabPanel collabDocker = Docker.getDocker(CollabPanel.class);
-		if (wasOffline && collabDocker.isDocked()) {
+		if (wasOffline && CompoundDock.Util.isDocked(collabDocker)) {
 			collabDocker.setUp();
 		}
 	}

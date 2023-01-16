@@ -1,7 +1,7 @@
 package cuchaz.enigma.gui.docker.component;
 
 import cuchaz.enigma.gui.docker.Docker;
-import cuchaz.enigma.gui.docker.dock.Dock;
+import cuchaz.enigma.gui.docker.dock.CompoundDock;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -21,7 +21,7 @@ public class DockerTitleBar extends JPanel {
 
 		minimiseButton.addActionListener(e -> {
 			Docker docker = Docker.getDocker(parent.getClass());
-			Dock.Util.undock(docker);
+			CompoundDock.Util.undock(docker);
 		});
 
 		// if we set the left and right margins to 4, the button lines up *really* cutely with the scroll bar in any JScrollPane underneath it

@@ -3,7 +3,6 @@ package cuchaz.enigma.gui.docker;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.docker.component.DockerTitleBar;
 import cuchaz.enigma.gui.docker.dock.CompoundDock;
-import cuchaz.enigma.gui.docker.dock.Dock;
 import cuchaz.enigma.utils.I18n;
 
 import javax.swing.JPanel;
@@ -28,10 +27,6 @@ public abstract class Docker extends JPanel {
 	protected final JToggleButton button;
 	protected final Gui gui;
 
-	protected VerticalLocation currentVerticalLocation = null;
-	protected Side side = null;
-	protected CompoundDock parentDock = null;
-
 	protected Docker(Gui gui) {
 		super(new BorderLayout());
 		this.gui = gui;
@@ -41,8 +36,8 @@ public abstract class Docker extends JPanel {
 		this.button.addActionListener(e -> {
 			Docker docker = getDocker(this.getClass());
 
-			if (docker.isDocked()) {
-				Dock.Util.undock(docker);
+			if (CompoundDock.Util.isDocked(docker)) {
+				CompoundDock.Util.undock(docker);
 			} else {
 				gui.openDocker(this.getClass(), true);
 			}
@@ -60,58 +55,6 @@ public abstract class Docker extends JPanel {
 		String translatedTitle = this.titleSupplier.get();
 		this.button.setText(translatedTitle);
 		this.title.retranslateUi();
-	}
-
-	/**
-	 * Docks the docker in the provided dock, with the provided vertical location. Should always be used when adding a docker to a dock.
-	 * @param parentDock the dock to place the docker in
-	 * @param verticalLocation the location to place the docker in
-	 */
-	public void dock(Dock parentDock, VerticalLocation verticalLocation) {
-		this.currentVerticalLocation = verticalLocation;
-		this.side = parentDock.getSide();
-		this.parentDock = parentDock.getParentDock();
-		this.setVisible(true);
-	}
-
-	/**
-	 * Undocks the docker from its parent dock. Should always be used when removing a docker from a dock.
-	 */
-	public void undock() {
-		// remove from parent
-		if (this.getParent() != null) {
-			this.getParent().remove(this);
-		}
-
-		this.setVisible(false);
-		// ensure that button is properly repainted with its new state
-		this.gui.getMainWindow().getDockerSelector(this.side).getPanel().repaint();
-
-		// reset fields
-		this.currentVerticalLocation = null;
-		this.side = null;
-		this.parentDock = null;
-	}
-
-	/**
-	 * @return the current vertical of the docker. null if not docked
-	 */
-	public VerticalLocation getCurrentVerticalLocation() {
-		return this.currentVerticalLocation;
-	}
-
-	/**
-	 * @return whether the docker is docked and visible on screen
-	 */
-	public boolean isDocked() {
-		return this.parentDock != null;
-	}
-
-	/**
-	 * @return which side of the screen this docker is currently located
-	 */
-	public Side getCurrentSide() {
-		return this.side;
 	}
 
 	/**
@@ -220,6 +163,14 @@ public abstract class Docker extends JPanel {
 	public enum VerticalLocation {
 		TOP,
 		BOTTOM,
-		FULL
+		FULL;
+
+		public VerticalLocation inverse() {
+			if (this == FULL) {
+				throw new IllegalStateException("cannot invert vertical location \"" + this.name() + "\"");
+			}
+
+			return this == TOP ? BOTTOM : TOP;
+		}
 	}
 }
