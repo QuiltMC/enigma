@@ -221,9 +221,11 @@ public class Dock extends JPanel {
 		if (keptLocation == Docker.VerticalLocation.TOP) {
 			this.add(this.topDock);
 			this.unifiedDock = this.topDock;
+			this.bottomDock.setHostedDocker(null);
 		} else if (keptLocation == Docker.VerticalLocation.BOTTOM) {
 			this.add(this.bottomDock);
 			this.unifiedDock = this.bottomDock;
+			this.topDock.setHostedDocker(null);
 		} else {
 			throw new IllegalArgumentException("cannot keep nonexistent dock for location: " + keptLocation);
 		}
