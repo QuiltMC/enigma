@@ -305,12 +305,14 @@ public class Dock extends JPanel {
 		public void setHostedDocker(Docker hostedDocker) {
 			if (this.hostedDocker != null) {
 				this.remove(this.hostedDocker);
+				this.hostedDocker.setVisible(false);
 			}
 
 			this.hostedDocker = hostedDocker;
 
 			if (this.hostedDocker != null) {
 				this.add(this.hostedDocker);
+				this.hostedDocker.setVisible(true);
 			}
 		}
 	}

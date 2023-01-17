@@ -18,8 +18,8 @@ import java.util.function.Supplier;
  * <br> A docker is an instance of {@link JPanel} that uses a {@link BorderLayout} by default.
  */
 public abstract class Docker extends JPanel {
-	private static final Map<Class<? extends Docker>, Docker> dockers = new LinkedHashMap<>();
-	private static final Map<String, Class<? extends Docker>> dockerClasses = new HashMap<>();
+	private static final Map<Class<? extends Docker>, Docker> DOCKERS = new LinkedHashMap<>();
+	private static final Map<String, Class<? extends Docker>> DOCKER_CLASSES = new HashMap<>();
 
 	protected final Supplier<String> titleSupplier = () -> I18n.translate("docker." + this.getId() + ".title");
 	protected final DockerTitleBar title;
@@ -80,6 +80,7 @@ public abstract class Docker extends JPanel {
 
 	@Override
 	public void setVisible(boolean visible) {
+		super.setVisible(visible);
 		this.getButton().setSelected(visible);
 	}
 
@@ -99,30 +100,30 @@ public abstract class Docker extends JPanel {
 	}
 
 	public static void addDocker(Docker panel) {
-		dockers.put(panel.getClass(), panel);
-		dockerClasses.put(panel.getId(), panel.getClass());
+		DOCKERS.put(panel.getClass(), panel);
+		DOCKER_CLASSES.put(panel.getId(), panel.getClass());
 	}
 
 	@SuppressWarnings("unchecked")
 	public static <T extends Docker> T getDocker(Class<T> clazz) {
-		Docker panel = dockers.get(clazz);
+		Docker panel = DOCKERS.get(clazz);
 		if (panel != null) {
-			return (T) dockers.get(clazz);
+			return (T) DOCKERS.get(clazz);
 		} else {
 			throw new IllegalArgumentException("no docker registered for class " + clazz);
 		}
 	}
 
 	public static Docker getDocker(String id) {
-		if (!dockerClasses.containsKey(id)) {
+		if (!DOCKER_CLASSES.containsKey(id)) {
 			throw new IllegalArgumentException("no docker registered for id " + id);
 		}
 
-		return getDocker(dockerClasses.get(id));
+		return getDocker(DOCKER_CLASSES.get(id));
 	}
 
 	public static Map<Class<? extends Docker>, Docker> getDockers() {
-		return dockers;
+		return DOCKERS;
 	}
 
 	/**
