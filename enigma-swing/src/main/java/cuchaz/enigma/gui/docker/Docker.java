@@ -51,8 +51,7 @@ public abstract class Docker extends JPanel {
 	}
 
 	public void retranslateUi() {
-		String translatedTitle = this.titleSupplier.get();
-		this.button.setText(translatedTitle);
+		this.button.setText(this.titleSupplier.get());
 		this.title.retranslateUi();
 	}
 

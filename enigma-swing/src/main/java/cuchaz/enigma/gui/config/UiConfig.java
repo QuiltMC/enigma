@@ -22,7 +22,6 @@ public final class UiConfig {
 	public static final String VERTICAL_DIVIDER_LOCATIONS = "Vertical Divider Locations";
 	public static final String HORIZONTAL_DIVIDER_LOCATIONS = "Horizontal Divider Locations";
 	public static final String HOSTED_DOCKERS = "Hosted Dockers";
-	public static final String LAYOUT = "Layout";
 	public static final String THEMES = "Themes";
 	public static final String COLORS = "Colors";
 	public static final String DECOMPILER = "Decompiler";
@@ -177,27 +176,7 @@ public final class UiConfig {
 	}
 
 	public static int getHorizontalDividerLocation(Docker.Side side) {
-		return swing.data().section(HORIZONTAL_DIVIDER_LOCATIONS).setIfAbsentInt(side.name(), 300);
-	}
-
-	/**
-	 * Gets the dimensions of the different panels of the GUI.
-	 * <p>These dimensions are used to determine the location of the separators between these panels.</p>
-	 *
-	 * <ul>
-	 *     <li>[0] - The height of the obfuscated classes panel</li>
-	 *     <li>[1] - The width of the classes panel</li>
-	 *     <li>[2] - The width of the center panel</li>
-	 * </ul>
-	 *
-	 * @return an integer array composed of these 3 dimensions
-	 */
-	public static int[] getLayout() {
-		return swing.data().section(MAIN_WINDOW).getIntArray(LAYOUT).orElseGet(() -> new int[] { -1, -1, -1 });
-	}
-
-	public static void setLayout(int leftV, int left, int right) {
-		swing.data().section(MAIN_WINDOW).setIntArray(LAYOUT, new int[] { leftV, left, right });
+		return swing.data().section(HORIZONTAL_DIVIDER_LOCATIONS).setIfAbsentInt(side.name(), 700);
 	}
 
 	public static LookAndFeel getLookAndFeel() {

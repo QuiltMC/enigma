@@ -15,6 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Handles the docking of {@link Docker}s.
+ */
 public class Dock extends JPanel {
 	private static final List<Dock> instances = new ArrayList<>();
 
@@ -290,6 +293,9 @@ public class Dock extends JPanel {
 		}
 	}
 
+	/**
+	 * Helper class to store a docker.
+	 */
 	private static class DockerContainer extends JPanel {
 		private Docker hostedDocker;
 

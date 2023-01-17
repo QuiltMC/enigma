@@ -184,25 +184,19 @@ public class Gui {
 		Container workArea = this.mainWindow.getWorkArea();
 		workArea.setLayout(new BorderLayout());
 
-		centerPanel.add(infoPanel.getUi(), BorderLayout.NORTH);
-		centerPanel.add(this.editorTabbedPane.getUi(), BorderLayout.CENTER);
+		this.centerPanel.add(this.infoPanel.getUi(), BorderLayout.NORTH);
+		this.centerPanel.add(this.editorTabbedPane.getUi(), BorderLayout.CENTER);
 
-		messages.setCellRenderer(new MessageListCellRenderer());
+		this.messages.setCellRenderer(new MessageListCellRenderer());
 
-		splitRight.setResizeWeight(1); // let the left side take all the slack
-		splitRight.resetToPreferredSizes();
-		splitLeft.setResizeWeight(0); // let the right side take all the slack
-
-		workArea.add(splitLeft, BorderLayout.CENTER);
-
-		// restore state
-		int[] layout = UiConfig.getLayout();
-		if (layout.length >= 3) {
-			this.splitLeft.setDividerLocation(layout[1]);
-			this.splitRight.setDividerLocation(layout[2]);
-		}
+		workArea.add(this.splitLeft, BorderLayout.CENTER);
 
 		this.mainWindow.getStatusBar().addPermanentComponent(this.connectionStatusLabel);
+
+		// ensure that the center panel gets all extra resize space
+		// this prevents the right and left panels from getting far too big occasionally
+		this.splitRight.setResizeWeight(1);
+		this.splitLeft.setResizeWeight(0);
 
 		// apply docker config
 		if (!UiConfig.getHostedDockers(Docker.Side.LEFT).isEmpty() && !UiConfig.getHostedDockers(Docker.Side.RIGHT).isEmpty()) {
@@ -218,8 +212,8 @@ public class Gui {
 		}
 
 		// init state
-		setConnectionState(ConnectionState.NOT_CONNECTED);
-		onCloseJar();
+		this.setConnectionState(ConnectionState.NOT_CONNECTED);
+		this.onCloseJar();
 
 		JFrame frame = this.mainWindow.getFrame();
 		frame.addWindowListener(GuiUtil.onWindowClose(e -> this.close()));
