@@ -176,7 +176,7 @@ public final class UiConfig {
 	}
 
 	public static int getHorizontalDividerLocation(Docker.Side side) {
-		return swing.data().section(HORIZONTAL_DIVIDER_LOCATIONS).setIfAbsentInt(side.name(), 700);
+		return swing.data().section(HORIZONTAL_DIVIDER_LOCATIONS).setIfAbsentInt(side.name(), side == Docker.Side.LEFT ? 300 : 700);
 	}
 
 	public static LookAndFeel getLookAndFeel() {
