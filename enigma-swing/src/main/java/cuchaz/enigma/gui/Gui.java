@@ -118,7 +118,6 @@ public class Gui {
 		this.messageModel = new DefaultListModel<>();
 		this.users = new JList<>(this.userModel);
 		this.messages = new JList<>(this.messageModel);
-		this.setupDockers();
 		this.editorTabbedPane = new EditorTabbedPane(this);
 		this.rightDock = new Dock(this, Docker.Side.RIGHT);
 		this.leftDock = new Dock(this, Docker.Side.LEFT);
@@ -164,11 +163,13 @@ public class Gui {
 		}
 
 		for (Docker.Side side : Docker.Side.values()) {
-			this.mainWindow.getDockerSelector(side).update();
+			this.mainWindow.getDockerSelector(side).configure();
 		}
 	}
 
 	private void setupUi() {
+		this.setupDockers();
+
 		this.jarFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		this.tinyMappingsFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
@@ -199,7 +200,7 @@ public class Gui {
 		this.splitLeft.setResizeWeight(0);
 
 		// apply docker config
-		if (!UiConfig.getHostedDockers(Docker.Side.LEFT).isEmpty() && !UiConfig.getHostedDockers(Docker.Side.RIGHT).isEmpty()) {
+		if (!UiConfig.getHostedDockers(Docker.Side.LEFT).isEmpty() || !UiConfig.getHostedDockers(Docker.Side.RIGHT).isEmpty()) {
 			// restore
 			this.rightDock.restoreState();
 			this.leftDock.restoreState();
@@ -585,7 +586,7 @@ public class Gui {
 			deobfuscatedClassSelector.reload();
 			obfuscatedClassSelector.reload();
 		} else {
-			// local move
+			// local move: deobfuscated -> deobfuscated
 			deobfuscatedClassSelector.moveClassIn(classEntry);
 			deobfuscatedClassSelector.reload();
 		}

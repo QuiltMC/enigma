@@ -27,7 +27,10 @@ public class DockerSelector {
 		this.panel.setUI(new RightAngleLayerUI(side == Docker.Side.RIGHT ? RightAngleLayerUI.Rotation.CLOCKWISE : RightAngleLayerUI.Rotation.COUNTERCLOCKWISE));
 	}
 
-	public void update() {
+	/**
+	 * Adds all buttons that match this selector's side to it. This method should be called after all dockers have been registered.
+	 */
+	public void configure() {
 		this.topSelector.removeAll();
 		this.bottomSelector.removeAll();
 

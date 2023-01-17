@@ -72,7 +72,9 @@ public class Dock extends JPanel {
 	 */
 	public void saveState() {
 		UiConfig.setHostedDockers(this.side, this.getDockers());
-		this.saveDividerState();
+		if (this.isVisible()) {
+			this.saveDividerState();
+		}
 	}
 
 	public void restoreDividerState() {
