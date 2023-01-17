@@ -126,7 +126,7 @@ public final class UiConfig {
 	}
 
 	public static void setHostedDockers(Docker.Side side, Docker[] dockers) {
-		String[] dockerData = new String[dockers.length];
+		String[] dockerData = new String[]{"", ""};
 		for (int i = 0; i < dockers.length; i++) {
 			Docker docker = dockers[i];
 

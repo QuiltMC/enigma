@@ -180,8 +180,12 @@ public class Dock extends JPanel {
 	}
 
 	public boolean containsMouse(MouseEvent e, Docker.VerticalLocation checkedLocation) {
-		Rectangle screenBounds = this.getBoundsFor(this.getLocationOnScreen(), checkedLocation);
-		return contains(screenBounds, e.getLocationOnScreen());
+		if (this.isVisible()) {
+			Rectangle screenBounds = this.getBoundsFor(this.getLocationOnScreen(), checkedLocation);
+			return contains(screenBounds, e.getLocationOnScreen());
+		}
+
+		return false;
 	}
 
 	private boolean isEmpty() {

@@ -286,7 +286,7 @@ public class Gui {
 	}
 
 	public void onStartOpenJar() {
-		redraw();
+		this.redraw();
 	}
 
 	public void onFinishOpenJar(String jarName) {
@@ -295,10 +295,13 @@ public class Gui {
 		this.editorTabbedPane.closeAllEditorTabs();
 
 		// update menu
-		isJarOpen = true;
+		this.isJarOpen = true;
 
-		updateUiState();
-		redraw();
+		// update classes in dockers
+		this.controller.refreshClasses();
+
+		this.updateUiState();
+		this.redraw();
 	}
 
 	public void onCloseJar() {
