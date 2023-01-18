@@ -139,29 +139,30 @@ public class Gui {
 	}
 
 	private void setupDockers() {
-		// right panels
-		// top panels
+		// right dockers
+		// top
 		Docker.addDocker(new StructureDocker(this));
 		Docker.addDocker(new InheritanceTreeDocker(this));
 		Docker.addDocker(new ImplementationsTreeDocker(this));
 		Docker.addDocker(new CallsTreeDocker(this));
 
-		// bottom panels
+		// bottom
 		Docker.addDocker(new CollabDocker(this));
 
-		// left panels
-		// top panels
+		// left dockers
+		// top
 		Docker.addDocker(new ObfuscatedClassesDocker(this));
 		Docker.addDocker(new AllClassesDocker(this));
 
-		// bottom panels
+		// bottom
 		Docker.addDocker(new DeobfuscatedClassesDocker(this));
 
-		// set default sizes for right panels
+		// set default docker sizes
 		for (Docker panel : Docker.getDockers().values()) {
 			panel.setPreferredSize(new Dimension(300, 100));
 		}
 
+		// set up selectors
 		for (Docker.Side side : Docker.Side.values()) {
 			this.mainWindow.getDockerSelector(side).configure();
 		}
@@ -405,7 +406,7 @@ public class Gui {
 	}
 
 	/**
-	 * Updates the structure right panel without opening it
+	 * Updates the Structure docker without opening it
 	 * @param editor the editor to extract the new structure from
 	 */
 	public void updateStructure(EditorPanel editor) {
@@ -413,7 +414,7 @@ public class Gui {
 	}
 
 	/**
-	 * Opens the Structure right panel and displays information for the provided editor
+	 * Opens the Structure docker and displays information for the provided editor
 	 * @param editor the editor to extract structure from
 	 */
 	public void showStructure(EditorPanel editor) {
@@ -422,7 +423,7 @@ public class Gui {
 	}
 
 	/**
-	 * Opens the Inheritance right panel and displays information for the provided editor's cursor reference.
+	 * Opens the Inheritance docker and displays information for the provided editor's cursor reference.
 	 * @param editor the editor to extract the reference from
 	 */
 	public void showInheritance(EditorPanel editor) {
@@ -434,7 +435,7 @@ public class Gui {
 	}
 
 	/**
-	 * Opens the Implementations right panel and displays information for the provided editor's cursor reference.
+	 * Opens the Implementations docker and displays information for the provided editor's cursor reference.
 	 * @param editor the editor to extract the reference from
 	 */
 	public void showImplementations(EditorPanel editor) {
@@ -446,7 +447,7 @@ public class Gui {
 	}
 
 	/**
-	 * Opens the Calls right panel and displays information for the provided editor's cursor reference.
+	 * Opens the Calls docker and displays information for the provided editor's cursor reference.
 	 * @param editor the editor to extract the reference from
 	 */
 	public void showCalls(EditorPanel editor, boolean recurse) {
@@ -623,7 +624,7 @@ public class Gui {
 		users.forEach(userModel::addElement);
 		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
 
-		// if we were previously offline, we need to reload multiplayer-restricted right panels (ex. messages) so they can be used
+		// if we were previously offline, we need to reload multiplayer-restricted dockers (only collab for now) so they can be used
 		CollabDocker collabDocker = Docker.getDocker(CollabDocker.class);
 		if (wasOffline && Dock.Util.isDocked(collabDocker)) {
 			collabDocker.setUp();

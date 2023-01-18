@@ -34,7 +34,7 @@ public class DockerSelector {
 		this.topSelector.removeAll();
 		this.bottomSelector.removeAll();
 
-		// create buttons from right panel options
+		// create buttons docker options
 		for (Docker docker : Docker.getDockers().values()) {
 			// only use buttons that match this selector's side
 			if (docker.getButtonPosition().side() == this.side) {
