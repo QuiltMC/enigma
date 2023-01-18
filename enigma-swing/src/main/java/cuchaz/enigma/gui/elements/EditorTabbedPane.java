@@ -6,6 +6,7 @@ import java.util.Iterator;
 
 import javax.annotation.Nullable;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import com.google.common.collect.HashBiMap;
@@ -22,7 +23,7 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 
 public class EditorTabbedPane {
-	private final JTabbedPane openFiles = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+	private final JTabbedPane openFiles = new JTabbedPane(SwingConstants.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 	private final HashBiMap<ClassEntry, EditorPanel> editors = HashBiMap.create();
 
 	private final EditorTabPopupMenu editorTabPopupMenu;
@@ -133,15 +134,15 @@ public class EditorTabbedPane {
 	}
 
 	private void onTabPressed(MouseEvent e) {
-		if (SwingUtilities.isRightMouseButton(e)) {
-			int i = this.openFiles.getUI().tabForCoordinate(this.openFiles, e.getX(), e.getY());
+		int i = this.openFiles.getUI().tabForCoordinate(this.openFiles, e.getX(), e.getY());
 
-			if (i != -1) {
+		if (i != -1) {
+			if (SwingUtilities.isRightMouseButton(e)) {
 				this.editorTabPopupMenu.show(this.openFiles, e.getX(), e.getY(), EditorPanel.byUi(this.openFiles.getComponentAt(i)));
 			}
-		}
 
-		this.gui.showStructure(this.getActiveEditor());
+			this.gui.showStructure(this.getActiveEditor());
+		}
 	}
 
 	public void retranslateUi() {
