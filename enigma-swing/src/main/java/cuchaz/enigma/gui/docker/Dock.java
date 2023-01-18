@@ -217,7 +217,6 @@ public class Dock extends JPanel {
 
 		for (Docker docker : this.getDockers()) {
 			if (docker != null) {
-				System.out.println("should save: " + docker);
 				this.toSave = docker;
 			}
 		}
