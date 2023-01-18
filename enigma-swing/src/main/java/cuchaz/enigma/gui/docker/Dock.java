@@ -19,7 +19,7 @@ import java.util.Map;
  * Handles the docking of {@link Docker}s.
  */
 public class Dock extends JPanel {
-	private static final List<Dock> instances = new ArrayList<>();
+	private static final List<Dock> INSTANCES = new ArrayList<>();
 
 	private final Gui gui;
 	private final JSplitPane splitPane;
@@ -40,16 +40,15 @@ public class Dock extends JPanel {
 
 		this.topDock = new DockerContainer();
 		this.bottomDock = new DockerContainer();
+		this.unifiedDock = null;
 		this.splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, topDock, bottomDock);
 		this.side = side;
 		this.gui = gui;
 
 		this.isSplit = true;
-		this.unifiedDock = null;
-
 		this.add(this.splitPane);
 
-		instances.add(this);
+		INSTANCES.add(this);
 	}
 
 	/**
@@ -327,7 +326,7 @@ public class Dock extends JPanel {
 		 * @param event the mouse event to pass to the docks
 		 */
 		public static void receiveMouseEvent(MouseEvent event) {
-			for (Dock dock : instances) {
+			for (Dock dock : INSTANCES) {
 				dock.receiveMouseEvent(event);
 			}
 		}
@@ -339,7 +338,7 @@ public class Dock extends JPanel {
 		 * @param event an {@link MouseEvent} to use to check if the docker was held over a dock
 		 */
 		public static void dropDocker(Docker docker, MouseEvent event) {
-			for (Dock dock : instances) {
+			for (Dock dock : INSTANCES) {
 				if (dock.isDisplayable()) {
 					dock.dropDockerFromMouse(docker, event);
 				}
@@ -350,7 +349,7 @@ public class Dock extends JPanel {
 		 * @return the location of the provided docker, or {@code null} if it is not currently present on the screen.
 		 */
 		public static Docker.Location findLocation(Docker docker) {
-			for (Dock dock : instances) {
+			for (Dock dock : INSTANCES) {
 				for (Docker d : dock.getDockers()) {
 					if (d != null && d.getId().equals(docker.getId())) {
 						if (dock.unifiedDock != null && d.equals(dock.unifiedDock.getHostedDocker())) {
@@ -371,7 +370,7 @@ public class Dock extends JPanel {
 		 * @return the docker's parent {@link Dock}, or {@code null} if it is not currently present on the screen.
 		 */
 		public static Dock findDock(Docker docker) {
-			for (Dock dock : instances) {
+			for (Dock dock : INSTANCES) {
 				for (Docker d : dock.getDockers()) {
 					if (d != null && d.getId().equals(docker.getId())) {
 						return dock;
@@ -386,7 +385,7 @@ public class Dock extends JPanel {
 		 * Removes the docker from the screen.
 		 */
 		public static void undock(Docker docker) {
-			for (Dock dock : instances) {
+			for (Dock dock : INSTANCES) {
 				for (Docker d : dock.getDockers()) {
 					if (d != null && d.getId().equals(docker.getId())) {
 						dock.removeDocker(d);
