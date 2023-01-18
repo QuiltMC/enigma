@@ -72,9 +72,7 @@ public class Dock extends JPanel {
 	 */
 	public void saveState() {
 		UiConfig.setHostedDockers(this.side, this.getDockers());
-		if (this.isVisible()) {
-			this.saveDividerState();
-		}
+		this.saveDividerState();
 	}
 
 	public void restoreDividerState() {
@@ -89,14 +87,16 @@ public class Dock extends JPanel {
 	}
 
 	public void saveDividerState() {
-		// save vertical divider state
-		if (this.isSplit) {
-			UiConfig.setVerticalDockDividerLocation(this.side, this.splitPane.getDividerLocation());
-		}
+		if (this.isVisible()) {
+			// save vertical divider state
+			if (this.isSplit) {
+				UiConfig.setVerticalDockDividerLocation(this.side, this.splitPane.getDividerLocation());
+			}
 
-		// save horizontal divider state
-		JSplitPane parentSplitPane = this.getParentSplitPane();
-		UiConfig.setHorizontalDividerLocation(this.side, parentSplitPane.getDividerLocation());
+			// save horizontal divider state
+			JSplitPane parentSplitPane = this.getParentSplitPane();
+			UiConfig.setHorizontalDividerLocation(this.side, parentSplitPane.getDividerLocation());
+		}
 	}
 
 	public void receiveMouseEvent(MouseEvent e) {
@@ -123,10 +123,6 @@ public class Dock extends JPanel {
 
 		switch (verticalLocation) {
 			case BOTTOM -> {
-				if (this.isSplit && this.topDock.getHostedDocker() == null) {
-					this.host(docker, Docker.VerticalLocation.FULL);
-				}
-
 				if (!this.isSplit) {
 					this.split();
 				}
@@ -134,10 +130,6 @@ public class Dock extends JPanel {
 				this.bottomDock.setHostedDocker(docker);
 			}
 			case TOP -> {
-				if (this.isSplit && this.bottomDock.getHostedDocker() == null) {
-					this.host(docker, Docker.VerticalLocation.FULL);
-				}
-
 				if (!this.isSplit) {
 					this.split();
 				}
@@ -219,9 +211,7 @@ public class Dock extends JPanel {
 	}
 
 	public void unify(Docker.VerticalLocation keptLocation) {
-		if (this.isVisible()) {
-			this.saveDividerState();
-		}
+		this.saveDividerState();
 
 		this.removeAll();
 		if (keptLocation == Docker.VerticalLocation.TOP) {
