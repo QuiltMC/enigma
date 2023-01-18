@@ -200,7 +200,7 @@ public class Dock extends JPanel {
 	}
 
 	private boolean isEmpty() {
-		return (!this.isSplit && this.unifiedDock.getHostedDocker() == null) ||(this.topDock.getHostedDocker() == null && this.bottomDock.getHostedDocker() == null);
+		return (!this.isSplit && this.unifiedDock.getHostedDocker() == null) || (this.topDock.getHostedDocker() == null && this.bottomDock.getHostedDocker() == null);
 	}
 
 	public void split(Docker.VerticalLocation toIntroduceDocker) {
