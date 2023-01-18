@@ -123,15 +123,23 @@ public class Dock extends JPanel {
 
 		switch (verticalLocation) {
 			case BOTTOM -> {
+				if (this.isSplit && this.topDock.getHostedDocker() == null) {
+					this.host(docker, Docker.VerticalLocation.FULL);
+				}
+
 				if (!this.isSplit) {
-					this.split(verticalLocation);
+					this.split();
 				}
 
 				this.bottomDock.setHostedDocker(docker);
 			}
 			case TOP -> {
+				if (this.isSplit && this.bottomDock.getHostedDocker() == null) {
+					this.host(docker, Docker.VerticalLocation.FULL);
+				}
+
 				if (!this.isSplit) {
-					this.split(verticalLocation);
+					this.split();
 				}
 
 				this.topDock.setHostedDocker(docker);
@@ -198,19 +206,9 @@ public class Dock extends JPanel {
 		return (!this.isSplit && this.unifiedDock.getHostedDocker() == null) || (this.topDock.getHostedDocker() == null && this.bottomDock.getHostedDocker() == null);
 	}
 
-	public void split(Docker.VerticalLocation toIntroduceDocker) {
+	public void split() {
 		this.saveDividerState();
 		this.removeAll();
-
-		// convenience: if we're splitting a panel that has a docker, we should keep that docker and open it in the unoccupied slot
-		if (toIntroduceDocker == Docker.VerticalLocation.TOP) {
-			System.out.println("running");
-			System.out.println(toIntroduceDocker);
-			System.out.println(this.topDock.getHostedDocker());
-			System.out.println(this.bottomDock.getHostedDocker());
-			System.out.println(this.unifiedDock.getHostedDocker());
-			this.bottomDock.setHostedDocker(this.topDock.getHostedDocker());
-		}
 
 		this.splitPane.setBottomComponent(this.bottomDock);
 		this.splitPane.setTopComponent(this.topDock);
