@@ -180,11 +180,6 @@ public class Dock extends JPanel {
 		DockerContainer container = this.getDock(location);
 		container.setHostedDocker(null);
 
-		// unify to avoid showing empty space
-		if (this.isSplit && this.getDock(location.inverse()).getHostedDocker() != null) {
-			this.unify(location);
-		}
-
 		this.updateVisibility();
 		this.revalidate();
 		this.repaint();
@@ -205,13 +200,18 @@ public class Dock extends JPanel {
 
 	public void split(Docker.VerticalLocation toIntroduceDocker) {
 		this.saveDividerState();
+		this.removeAll();
 
 		// convenience: if we're splitting a panel that has a docker, we should keep that docker and open it in the unoccupied slot
-		if (this.getDock(toIntroduceDocker).equals(this.unifiedDock)) {
-			this.getDock(toIntroduceDocker.inverse()).setHostedDocker(this.getDock(toIntroduceDocker).getHostedDocker());
+		if (toIntroduceDocker == Docker.VerticalLocation.TOP) {
+			System.out.println("running");
+			System.out.println(toIntroduceDocker);
+			System.out.println(this.topDock.getHostedDocker());
+			System.out.println(this.bottomDock.getHostedDocker());
+			System.out.println(this.unifiedDock.getHostedDocker());
+			this.bottomDock.setHostedDocker(this.topDock.getHostedDocker());
 		}
 
-		this.removeAll();
 		this.splitPane.setBottomComponent(this.bottomDock);
 		this.splitPane.setTopComponent(this.topDock);
 		this.add(this.splitPane);
@@ -229,15 +229,14 @@ public class Dock extends JPanel {
 		if (keptLocation == Docker.VerticalLocation.TOP) {
 			this.add(this.topDock);
 			this.unifiedDock = this.topDock;
-			this.bottomDock.setHostedDocker(null);
 		} else if (keptLocation == Docker.VerticalLocation.BOTTOM) {
 			this.add(this.bottomDock);
 			this.unifiedDock = this.bottomDock;
-			this.topDock.setHostedDocker(null);
 		} else {
 			throw new IllegalArgumentException("cannot keep nonexistent dock for location: " + keptLocation);
 		}
 
+		this.removeDocker(keptLocation.inverse());
 		this.isSplit = false;
 	}
 
