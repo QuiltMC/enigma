@@ -118,7 +118,11 @@ public class Dock extends JPanel {
 	}
 
 	public void host(Docker docker, Docker.VerticalLocation verticalLocation) {
-		Util.undock(docker);
+		// note: we cannot use Util#removeDocker here because it will cause a stack overflow when attempting to unify the containers to avoid wasted space
+		Dock dock = Util.findDock(docker);
+		if (dock != null) {
+			dock.baseRemoveDocker(verticalLocation);
+		}
 
 		switch (verticalLocation) {
 			case BOTTOM -> {
@@ -176,8 +180,20 @@ public class Dock extends JPanel {
 	}
 
 	public void removeDocker(Docker.VerticalLocation location) {
+		// do not leave empty dockers
+		if (location != Docker.VerticalLocation.FULL && this.getDock(location.inverse()).getHostedDocker() != null) {
+			this.host(this.getDock(location.inverse()).getHostedDocker(), Docker.VerticalLocation.FULL);
+			return;
+		}
+
+		this.baseRemoveDocker(location);
+	}
+
+	public void baseRemoveDocker(Docker.VerticalLocation location) {
 		DockerContainer container = this.getDock(location);
-		container.setHostedDocker(null);
+		if (container != null) {
+			container.setHostedDocker(null);
+		}
 
 		this.updateVisibility();
 		this.revalidate();
@@ -200,6 +216,8 @@ public class Dock extends JPanel {
 	public void split() {
 		this.saveDividerState();
 		this.removeAll();
+
+		// todo the GOSH DANG avoiding deleting the unified dock
 
 		this.splitPane.setBottomComponent(this.bottomDock);
 		this.splitPane.setTopComponent(this.topDock);
