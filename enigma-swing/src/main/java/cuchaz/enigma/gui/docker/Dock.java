@@ -179,6 +179,12 @@ public class Dock extends JPanel {
 	public void removeDocker(Docker.VerticalLocation location) {
 		DockerContainer container = this.getDock(location);
 		container.setHostedDocker(null);
+
+		// unify to avoid showing empty space
+		if (this.isSplit && this.getDock(location.inverse()).getHostedDocker() != null) {
+			this.unify(location);
+		}
+
 		this.updateVisibility();
 		this.revalidate();
 		this.repaint();
@@ -215,7 +221,9 @@ public class Dock extends JPanel {
 	}
 
 	public void unify(Docker.VerticalLocation keptLocation) {
-		this.saveDividerState();
+		if (this.isVisible()) {
+			this.saveDividerState();
+		}
 
 		this.removeAll();
 		if (keptLocation == Docker.VerticalLocation.TOP) {
