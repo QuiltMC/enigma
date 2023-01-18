@@ -229,12 +229,11 @@ public class Dock extends JPanel {
 	}
 
 	public void dropDockerFromMouse(Docker docker, MouseEvent event) {
-		if (this.containsMouse(event, Docker.VerticalLocation.TOP)) {
-			this.host(docker, Docker.VerticalLocation.TOP);
-		} else if (this.containsMouse(event, Docker.VerticalLocation.BOTTOM)) {
-			this.host(docker, Docker.VerticalLocation.BOTTOM);
-		} else if (this.containsMouse(event, Docker.VerticalLocation.FULL)) {
-			this.host(docker, Docker.VerticalLocation.FULL);
+		for (Docker.VerticalLocation verticalLocation : Docker.VerticalLocation.values()) {
+			if (this.containsMouse(event, verticalLocation)) {
+				this.host(docker, verticalLocation);
+				return;
+			}
 		}
 	}
 
