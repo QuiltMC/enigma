@@ -33,6 +33,7 @@ public class Dock extends JPanel {
 	private Docker.VerticalLocation hovered;
 	private boolean isSplit;
 	private DockerContainer unifiedDock;
+	private Docker toSave;
 
 	@SuppressWarnings("SuspiciousNameCombination")
 	public Dock(Gui gui, Docker.Side side) {
@@ -125,19 +126,16 @@ public class Dock extends JPanel {
 		}
 
 		switch (verticalLocation) {
-			case BOTTOM -> {
+			case BOTTOM, TOP -> {
 				if (!this.isSplit) {
 					this.split();
 				}
 
-				this.bottomDock.setHostedDocker(docker);
-			}
-			case TOP -> {
-				if (!this.isSplit) {
-					this.split();
+				this.getDock(verticalLocation).setHostedDocker(docker);
+				if (this.toSave != null && !this.toSave.equals(docker)) {
+					this.host(this.toSave, verticalLocation.inverse());
+					this.toSave = null;
 				}
-
-				this.topDock.setHostedDocker(docker);
 			}
 			case FULL -> {
 				// note: always uses top, since it doesn't matter
@@ -217,7 +215,12 @@ public class Dock extends JPanel {
 		this.saveDividerState();
 		this.removeAll();
 
-		// todo the GOSH DANG avoiding deleting the unified dock
+		for (Docker docker : this.getDockers()) {
+			if (docker != null) {
+				System.out.println("should save: " + docker);
+				this.toSave = docker;
+			}
+		}
 
 		this.splitPane.setBottomComponent(this.bottomDock);
 		this.splitPane.setTopComponent(this.topDock);
