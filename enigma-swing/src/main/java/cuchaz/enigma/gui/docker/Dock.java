@@ -389,11 +389,12 @@ public class Dock extends JPanel {
 			for (Dock dock : INSTANCES) {
 				for (Docker d : dock.getDockers()) {
 					if (d != null && d.getId().equals(docker.getId())) {
-						// note: we declare our array ourselves so that we can control the order
-						for (Docker.VerticalLocation verticalLocation : new Docker.VerticalLocation[]{Docker.VerticalLocation.FULL, Docker.VerticalLocation.TOP, Docker.VerticalLocation.BOTTOM}) {
-							if (dock.getDock(verticalLocation).getHostedDocker().equals(d)) {
-								return new Docker.Location(dock.side, verticalLocation);
-							}
+						if (dock.unifiedDock != null && d.equals(dock.unifiedDock.getHostedDocker())) {
+							return new Docker.Location(dock.side, Docker.VerticalLocation.FULL);
+						} else if (d.equals(dock.topDock.getHostedDocker())) {
+							return new Docker.Location(dock.side, Docker.VerticalLocation.TOP);
+						} else if (d.equals(dock.bottomDock.getHostedDocker())) {
+							return new Docker.Location(dock.side, Docker.VerticalLocation.BOTTOM);
 						}
 					}
 				}
