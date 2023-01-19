@@ -83,7 +83,16 @@ public class Dock extends JPanel {
 
 		// restore horizontal divider state
 		JSplitPane parentSplitPane = this.getParentSplitPane();
-		parentSplitPane.setDividerLocation(UiConfig.getHorizontalDividerLocation(this.side));
+		int location = UiConfig.getHorizontalDividerLocation(this.side);
+
+		// hack fix: if the right dock is closed while the left dock is open, the divider location is saved as if the left dock is open,
+		// thereby offsetting the divider location by the width of the left dock. which means, if the right dock is reopened while the left dock is closed,
+		// the divider location is too far to the left by the width of the left dock. so here we offset the location to avoid that.
+		if (this.side == Docker.Side.RIGHT && !this.gui.getSplitLeft().getLeftComponent().isVisible()) {
+			location += UiConfig.getHorizontalDividerLocation(Docker.Side.LEFT);
+		}
+
+		parentSplitPane.setDividerLocation(location);
 	}
 
 	public void saveDividerState() {
