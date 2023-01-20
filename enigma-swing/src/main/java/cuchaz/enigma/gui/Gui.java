@@ -201,7 +201,7 @@ public class Gui {
 		this.splitLeft.setResizeWeight(0);
 
 		// apply docker config
-		if (!UiConfig.getHostedDockers(Docker.Side.LEFT).isEmpty() || !UiConfig.getHostedDockers(Docker.Side.RIGHT).isEmpty()) {
+		if (UiConfig.getHostedDockers(Docker.Side.LEFT).isPresent() || UiConfig.getHostedDockers(Docker.Side.RIGHT).isPresent()) {
 			// restore
 			this.rightDock.restoreState();
 			this.leftDock.restoreState();

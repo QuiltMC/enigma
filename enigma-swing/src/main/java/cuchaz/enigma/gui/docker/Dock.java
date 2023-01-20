@@ -14,6 +14,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Handles the docking of {@link Docker}s.
@@ -58,8 +59,8 @@ public class Dock extends JPanel {
 	 */
 	public void restoreState() {
 		// restore docker state
-		Map<Docker, Docker.VerticalLocation> hostedDockers = UiConfig.getHostedDockers(this.side);
-		hostedDockers.forEach(this::host);
+		Optional<Map<Docker, Docker.VerticalLocation>> hostedDockers = UiConfig.getHostedDockers(this.side);
+		hostedDockers.ifPresent(m -> m.forEach(this::host));
 
 		this.restoreDividerState(true);
 

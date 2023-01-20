@@ -141,27 +141,30 @@ public final class UiConfig {
 		swing.data().section(HOSTED_DOCKERS).setArray(side.name(), dockerData);
 	}
 
-	public static Map<Docker, Docker.VerticalLocation> getHostedDockers(Docker.Side side) {
+	public static Optional<Map<Docker, Docker.VerticalLocation>> getHostedDockers(Docker.Side side) {
 		Optional<String[]> hostedDockers = swing.data().section(HOSTED_DOCKERS).getArray(side.name());
+
+		if (hostedDockers.isEmpty()) {
+			return Optional.empty();
+		}
+
 		Map<Docker, Docker.VerticalLocation> dockers = new HashMap<>();
 
-		if (hostedDockers.isPresent()) {
-			for (String dockInfo : hostedDockers.get()) {
-				if (!dockInfo.isBlank()) {
-					String[] split = dockInfo.split(":");
-					try {
-						Docker.VerticalLocation location = Docker.VerticalLocation.valueOf(split[1]);
-						Docker docker = Docker.getDocker(split[0]);
+		for (String dockInfo : hostedDockers.get()) {
+			if (!dockInfo.isBlank()) {
+				String[] split = dockInfo.split(":");
+				try {
+					Docker.VerticalLocation location = Docker.VerticalLocation.valueOf(split[1]);
+					Docker docker = Docker.getDocker(split[0]);
 
-						dockers.put(docker, location);
-					} catch (Exception e) {
-						System.err.println("failed to read docker state for " + dockInfo + ", ignoring! (" + e.getMessage() + ")");
-					}
+					dockers.put(docker, location);
+				} catch (Exception e) {
+					System.err.println("failed to read docker state for " + dockInfo + ", ignoring! (" + e.getMessage() + ")");
 				}
 			}
 		}
 
-		return dockers;
+		return Optional.of(dockers);
 	}
 
 	public static void setVerticalDockDividerLocation(Docker.Side side, int location) {
