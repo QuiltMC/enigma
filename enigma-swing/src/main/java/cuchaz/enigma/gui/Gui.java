@@ -243,10 +243,6 @@ public class Gui {
 
 		Dock dock = (newDocker.getPreferredLocation().side() == Docker.Side.LEFT ? this.leftDock : this.rightDock);
 		dock.host(newDocker, newDocker.getPreferredLocation().verticalLocation());
-
-		// repaint in case the docker was opened from a source other than a button
-		// this prevents visual corruption in the docker selectors
-		this.mainWindow.getFrame().repaint();
 	}
 
 	public JSplitPane getSplitLeft() {

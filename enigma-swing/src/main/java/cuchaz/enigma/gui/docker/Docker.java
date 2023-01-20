@@ -81,6 +81,8 @@ public abstract class Docker extends JPanel {
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
 		this.getButton().setSelected(visible);
+		// repaint to avoid corruption in the docker selectors
+		this.gui.getMainWindow().getFrame().getContentPane().repaint();
 	}
 
 	@Override
