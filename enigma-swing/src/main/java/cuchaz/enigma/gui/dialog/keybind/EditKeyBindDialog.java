@@ -28,131 +28,131 @@ public class EditKeyBindDialog extends JDialog {
     public EditKeyBindDialog(Frame owner, KeyBind bind) {
         super(owner, I18n.translate("menu.file.configure_keybinds.edit.title"), true);
         this.keyBind = bind;
-        this.combinations = new ArrayList<>(keyBind.combinations());
+        this.combinations = new ArrayList<>(this.keyBind.combinations());
 
-        Container contentPane = getContentPane();
+        Container contentPane = this.getContentPane();
         contentPane.setLayout(new BorderLayout());
 
         // Add buttons
         JPanel buttonsPanel = new JPanel(new GridLayout(0, 2));
         JButton addButton = new JButton(I18n.translate("menu.file.configure_keybinds.edit.add"));
-        addButton.addActionListener(e -> addCombination());
-        addButton.addMouseListener(mouseListener());
+        addButton.addActionListener(e -> this.addCombination());
+        addButton.addMouseListener(this.mouseListener());
         buttonsPanel.add(addButton);
         JButton clearButton = new JButton(I18n.translate("menu.file.configure_keybinds.edit.clear"));
-        clearButton.addActionListener(e -> clearCombinations());
-        clearButton.addMouseListener(mouseListener());
+        clearButton.addActionListener(e -> this.clearCombinations());
+        clearButton.addMouseListener(this.mouseListener());
         buttonsPanel.add(clearButton);
         JButton resetButton = new JButton(I18n.translate("menu.file.configure_keybinds.edit.reset"));
-        resetButton.addActionListener(e -> reset());
-        resetButton.addMouseListener(mouseListener());
+        resetButton.addActionListener(e -> this.reset());
+        resetButton.addMouseListener(this.mouseListener());
         buttonsPanel.add(resetButton);
         contentPane.add(buttonsPanel, BorderLayout.NORTH);
 
         // Add combinations panel
-        combinationsPanel = new JPanel(new GridLayout(0, 1, 5, 5));
-        combinationsPanel.setBorder(new EmptyBorder(ScaleUtil.scale(10), ScaleUtil.scale(10), ScaleUtil.scale(10), ScaleUtil.scale(10)));
-        combinationsPanel.addMouseListener(mouseListener());
-        for (KeyBind.Combination combination : keyBind.combinations()) {
+		this.combinationsPanel = new JPanel(new GridLayout(0, 1, 5, 5));
+		this.combinationsPanel.setBorder(new EmptyBorder(ScaleUtil.scale(10), ScaleUtil.scale(10), ScaleUtil.scale(10), ScaleUtil.scale(10)));
+		this.combinationsPanel.addMouseListener(this.mouseListener());
+        for (KeyBind.Combination combination : this.keyBind.combinations()) {
             CombinationPanel combinationPanel = new CombinationPanel(this, combination);
-            combinationPanel.addMouseListener(mouseListener());
-            combinationPanels.add(combinationPanel);
-            combinationsPanel.add(combinationPanel);
+            combinationPanel.addMouseListener(this.mouseListener());
+			this.combinationPanels.add(combinationPanel);
+			this.combinationsPanel.add(combinationPanel);
         }
-        contentPane.add(combinationsPanel, BorderLayout.CENTER);
+        contentPane.add(this.combinationsPanel, BorderLayout.CENTER);
 
         // Add confirmation buttons
         Container buttonContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, ScaleUtil.scale(4), ScaleUtil.scale(4)));
         JButton saveButton = new JButton(I18n.translate("menu.file.configure_keybinds.save"));
-        saveButton.addActionListener(event -> save());
+        saveButton.addActionListener(event -> this.save());
         buttonContainer.add(saveButton);
         JButton cancelButton = new JButton(I18n.translate("prompt.cancel"));
-        cancelButton.addActionListener(event -> cancel());
+        cancelButton.addActionListener(event -> this.cancel());
         buttonContainer.add(cancelButton);
         contentPane.add(buttonContainer, BorderLayout.SOUTH);
 
-        addMouseListener(mouseListener());
+		this.addMouseListener(this.mouseListener());
 
-        pack();
-        setLocationRelativeTo(owner);
+		this.pack();
+		this.setLocationRelativeTo(owner);
     }
 
     private void save() {
-        boolean modified = !combinations.equals(keyBind.combinations());
-        for (CombinationPanel combinationPanel : combinationPanels) {
+        boolean modified = !this.combinations.equals(this.keyBind.combinations());
+        for (CombinationPanel combinationPanel : this.combinationPanels) {
             if (combinationPanel.isModified() && combinationPanel.isCombinationValid()) {
                 modified = true;
                 KeyBind.Combination combination = combinationPanel.getResultCombination();
-                if (isNewCombination(combinationPanel)) {
-                    combinations.add(combination);
+                if (this.isNewCombination(combinationPanel)) {
+					this.combinations.add(combination);
                 } else {
-                    int index = combinations.indexOf(combinationPanel.getOriginalCombination());
+                    int index = this.combinations.indexOf(combinationPanel.getOriginalCombination());
                     if (index >= 0) {
-                        combinations.set(index, combination);
+						this.combinations.set(index, combination);
                     } else {
-                        combinations.add(combination);
+						this.combinations.add(combination);
                     }
                 }
             }
         }
 
         if (modified) {
-            keyBind.combinations().clear();
-            keyBind.combinations().addAll(combinations);
+			this.keyBind.combinations().clear();
+			this.keyBind.combinations().addAll(this.combinations);
         }
 
-        setVisible(false);
-        dispose();
+		this.setVisible(false);
+		this.dispose();
     }
 
     private void cancel() {
-        setVisible(false);
-        dispose();
+		this.setVisible(false);
+		this.dispose();
     }
 
     // Stop editing when the user clicks
     private MouseListener mouseListener() {
-        return GuiUtil.onMouseClick(e -> stopEditing(null));
+        return GuiUtil.onMouseClick(e -> this.stopEditing(null));
     }
 
     protected void removeCombination(CombinationPanel combinationPanel) {
-        combinations.remove(combinationPanel.getOriginalCombination());
-        combinationsPanel.remove(combinationPanel);
-        combinationPanels.remove(combinationPanel);
-        pack();
+		this.combinations.remove(combinationPanel.getOriginalCombination());
+		this.combinationsPanel.remove(combinationPanel);
+		this.combinationPanels.remove(combinationPanel);
+		this.pack();
     }
 
     private void addCombination() {
         CombinationPanel combinationPanel = CombinationPanel.createEmpty(this);
-        combinationPanel.addMouseListener(mouseListener());
-        combinationsPanel.add(combinationPanel);
-        combinationPanels.add(combinationPanel);
-        pack();
+        combinationPanel.addMouseListener(this.mouseListener());
+		this.combinationsPanel.add(combinationPanel);
+		this.combinationPanels.add(combinationPanel);
+		this.pack();
     }
 
     private void clearCombinations() {
-        for (CombinationPanel combinationPanel : combinationPanels) {
-            combinations.remove(combinationPanel.getOriginalCombination());
-            combinationsPanel.remove(combinationPanel);
+        for (CombinationPanel combinationPanel : this.combinationPanels) {
+			this.combinations.remove(combinationPanel.getOriginalCombination());
+			this.combinationsPanel.remove(combinationPanel);
         }
-        combinationPanels.clear();
-        pack();
+		this.combinationPanels.clear();
+		this.pack();
     }
 
     private void reset() {
-        combinations.clear();
-        combinationPanels.clear();
-        combinationsPanel.removeAll();
+		this.combinations.clear();
+		this.combinationPanels.clear();
+		this.combinationsPanel.removeAll();
 
-        KeyBinds.resetToDefault(keyBind);
-        combinations.addAll(keyBind.combinations());
-        for (KeyBind.Combination combination : combinations) {
+        KeyBinds.resetToDefault(this.keyBind);
+		this.combinations.addAll(this.keyBind.combinations());
+        for (KeyBind.Combination combination : this.combinations) {
             CombinationPanel combinationPanel = new CombinationPanel(this, combination);
-            combinationPanel.addMouseListener(mouseListener());
-            combinationPanels.add(combinationPanel);
-            combinationsPanel.add(combinationPanel);
+            combinationPanel.addMouseListener(this.mouseListener());
+			this.combinationPanels.add(combinationPanel);
+			this.combinationsPanel.add(combinationPanel);
         }
-        pack();
+		this.pack();
     }
 
     private boolean isNewCombination(CombinationPanel panel) {
@@ -161,7 +161,7 @@ public class EditKeyBindDialog extends JDialog {
 
     // Stop editing all combination panels but the excluded one
     protected void stopEditing(CombinationPanel excluded) {
-        for (CombinationPanel combinationPanel : combinationPanels) {
+        for (CombinationPanel combinationPanel : this.combinationPanels) {
             if (combinationPanel == excluded) continue;
             combinationPanel.stopEditing();
         }

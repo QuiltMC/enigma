@@ -28,7 +28,7 @@ public class RecafMappingsReader implements MappingsReader {
 	private static final Pattern CLASS_PATTERN = Pattern.compile("(.*?) (.*)");
 
 	@Override
-	public EntryTree<EntryMapping> read(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws MappingParseException, IOException {
+	public EntryTree<EntryMapping> read(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws IOException {
 		EntryTree<EntryMapping> mappings = new HashEntryTree<>();
 		List<String> lines = Files.readAllLines(path);
 

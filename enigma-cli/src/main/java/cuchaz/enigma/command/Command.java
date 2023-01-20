@@ -76,7 +76,7 @@ public abstract class Command {
 		throw exception;
 	}
 
-	protected static void writeMappings(EntryTree<EntryMapping> mappings, Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws Exception {
+	protected static void writeMappings(EntryTree<EntryMapping> mappings, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
 		List<Exception> suppressed = new ArrayList<>();
 		if ("zip".equalsIgnoreCase(MoreFiles.getFileExtension(path))) {
 			MappingFormat.ENIGMA_ZIP.write(mappings, path, progress, saveParameters);
@@ -142,7 +142,7 @@ public abstract class Command {
 		}
 		Path file = Paths.get(path).toAbsolutePath();
 		if (!Files.exists(file)) {
-			throw new IllegalArgumentException("Cannot find file: " + file.toString());
+			throw new IllegalArgumentException("Cannot find file: " + file);
 		}
 		return file;
 	}
@@ -197,8 +197,7 @@ public abstract class Command {
 	}
 
 	public static class ConsoleProgressListener implements ProgressListener {
-
-		private static final int ReportTime = 5000; // 5s
+		private static final int reportTime = 5000; // 5s
 
 		private int totalWork;
 		private long startTime;
@@ -216,16 +215,16 @@ public abstract class Command {
 		public void step(int numDone, String message) {
 			long now = System.currentTimeMillis();
 			boolean isLastUpdate = numDone == this.totalWork;
-			boolean shouldReport = isLastUpdate || now - this.lastReportTime > ReportTime;
+			boolean shouldReport = isLastUpdate || now - this.lastReportTime > reportTime;
 
 			if (shouldReport) {
 				int percent = numDone * 100 / this.totalWork;
-				System.out.println(String.format("\tProgress: %3d%%", percent));
+				System.out.printf("\tProgress: %3d%%%n", percent);
 				this.lastReportTime = now;
 			}
 			if (isLastUpdate) {
 				double elapsedSeconds = (now - this.startTime) / 1000.0;
-				System.out.println(String.format("Finished in %.1f seconds", elapsedSeconds));
+				System.out.printf("Finished in %.1f seconds%n", elapsedSeconds);
 			}
 		}
 	}

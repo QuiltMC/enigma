@@ -48,7 +48,7 @@ public class MethodImplementationsTreeNode extends AbstractMethodTreeNode {
 
 	@Override
 	public String toString() {
-		MethodEntry translatedEntry = translator.translate(entry);
+		MethodEntry translatedEntry = this.translator.translate(this.entry);
 		return translatedEntry.getFullName() + "()";
 	}
 
@@ -58,11 +58,11 @@ public class MethodImplementationsTreeNode extends AbstractMethodTreeNode {
 		EntryIndex entryIndex = index.getEntryIndex();
 		InheritanceIndex inheritanceIndex = index.getInheritanceIndex();
 
-		Collection<ClassEntry> descendants = inheritanceIndex.getDescendants(entry.getParent());
+		Collection<ClassEntry> descendants = inheritanceIndex.getDescendants(this.entry.getParent());
 		for (ClassEntry inheritor : descendants) {
-			MethodEntry methodEntry = entry.withParent(inheritor);
+			MethodEntry methodEntry = this.entry.withParent(inheritor);
 			if (entryIndex.hasMethod(methodEntry)) {
-				nodes.add(new MethodImplementationsTreeNode(translator, methodEntry));
+				nodes.add(new MethodImplementationsTreeNode(this.translator, methodEntry));
 			}
 		}
 

@@ -2,6 +2,7 @@ package cuchaz.enigma.gui.panels;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -92,7 +93,7 @@ public class EditorPanel {
 		this.editor.setSelectionColor(new Color(31, 46, 90));
 		this.editor.setCaret(new BrowserCaret());
 		this.editor.setFont(ScaleUtil.getFont(this.editor.getFont().getFontName(), Font.PLAIN, this.fontSize));
-		this.editor.addCaretListener(event -> onCaretMove(event.getDot(), this.mouseIsPressed));
+		this.editor.addCaretListener(event -> this.onCaretMove(event.getDot(), this.mouseIsPressed));
 		this.editor.setCaretColor(UiConfig.getCaretColor());
 		this.editor.setContentType("text/enigma-sources");
 		this.editor.setBackground(UiConfig.getEditorBackgroundColor());
@@ -123,17 +124,12 @@ public class EditorPanel {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				switch (e.getButton()) {
-					case MouseEvent.BUTTON3: // Right click
-						EditorPanel.this.editor.setCaretPosition(EditorPanel.this.editor.viewToModel(e.getPoint()));
-						break;
-
-					case 4: // Back navigation
-						gui.getController().openPreviousReference();
-						break;
-
-					case 5: // Forward navigation
-						gui.getController().openNextReference();
-						break;
+					case MouseEvent.BUTTON3 -> // Right click
+							EditorPanel.this.editor.setCaretPosition(EditorPanel.this.editor.viewToModel2D(e.getPoint()));
+					case 4 -> // Back navigation
+							gui.getController().openPreviousReference();
+					case 5 -> // Forward navigation
+							gui.getController().openNextReference();
 				}
 				EditorPanel.this.mouseIsPressed = false;
 			}
@@ -150,9 +146,9 @@ public class EditorPanel {
 				} else if (KeyBinds.EDITOR_QUICK_FIND.matches(event)) {
 					// prevent navigating on click when quick find activated
 				} else if (KeyBinds.EDITOR_ZOOM_IN.matches(event)) {
-					offsetEditorZoom(2);
+					EditorPanel.this.offsetEditorZoom(2);
 				} else if (KeyBinds.EDITOR_ZOOM_OUT.matches(event)) {
-					offsetEditorZoom(-2);
+					EditorPanel.this.offsetEditorZoom(-2);
 				} else if (event.isControlDown()) {
 					EditorPanel.this.shouldNavigateOnClick = true; // CTRL
 				}
@@ -170,7 +166,7 @@ public class EditorPanel {
 					Entry<?> entry = reference.getNameableEntry();
 
 					String name = String.valueOf(event.getKeyChar());
-					if (entry instanceof ClassEntry && ((ClassEntry) entry).getParent() == null) {
+					if (entry instanceof ClassEntry classEntry && classEntry.getParent() == null) {
 						String packageName = ((ClassEntry) entry).getPackageName();
 						if (packageName != null) {
 							name = packageName + "/" + name;
@@ -187,7 +183,7 @@ public class EditorPanel {
 			}
 		});
 
-		this.retryButton.addActionListener(_e -> redecompileClass());
+		this.retryButton.addActionListener(_e -> this.redecompileClass());
 
 		this.themeChangeListener = (laf, boxHighlightPainters) -> {
 			if ((this.editorLaf == null || this.editorLaf != laf)) {
@@ -222,24 +218,22 @@ public class EditorPanel {
 			old = this.classHandle.getRef();
 			this.classHandle.close();
 		}
-		setClassHandle0(old, handle);
+		this.setClassHandle0(old, handle);
 	}
 
 	private void setClassHandle0(ClassEntry old, ClassHandle handle) {
 		this.setDisplayMode(DisplayMode.IN_PROGRESS);
-		setCursorReference(null);
+		this.setCursorReference(null);
 
 		handle.addListener(new ClassHandleListener() {
 			@Override
 			public void onDeobfRefChanged(ClassHandle h, ClassEntry deobfRef) {
-				SwingUtilities.invokeLater(() -> {
-					EditorPanel.this.listeners.forEach(l -> l.onTitleChanged(EditorPanel.this, getFileName()));
-				});
+				SwingUtilities.invokeLater(() -> EditorPanel.this.listeners.forEach(l -> l.onTitleChanged(EditorPanel.this, EditorPanel.this.getFileName())));
 			}
 
 			@Override
 			public void onMappedSourceChanged(ClassHandle h, Result<DecompiledClassSource, ClassHandleError> res) {
-				handleDecompilerResult(res);
+				EditorPanel.this.handleDecompilerResult(res);
 			}
 
 			@Override
@@ -355,9 +349,9 @@ public class EditorPanel {
 		if (this.controller.project == null) return;
 
 		EntryRemapper mapper = this.controller.project.getMapper();
-		Token token = getToken(pos);
+		Token token = this.getToken(pos);
 
-		setCursorReference(getReference(token));
+		this.setCursorReference(this.getReference(token));
 
 		Entry<?> referenceEntry = this.cursorReference != null ? this.cursorReference.entry : null;
 
@@ -430,8 +424,8 @@ public class EditorPanel {
 			if (this.source != null) {
 				this.editor.setCaretPosition(newCaretPos);
 			}
-			setHighlightedTokens(source.getHighlightedTokens());
-			setCursorReference(getReference(getToken(this.editor.getCaretPosition())));
+			this.setHighlightedTokens(source.getHighlightedTokens());
+			this.setCursorReference(this.getReference(this.getToken(this.editor.getCaretPosition())));
 		} finally {
 			this.settingSource = false;
 		}
@@ -489,7 +483,7 @@ public class EditorPanel {
 
 	public void showReference(EntryReference<Entry<?>, Entry<?>> reference) {
 		if (this.mode == DisplayMode.SUCCESS) {
-			showReference0(reference);
+			this.showReference0(reference);
 		} else if (this.mode != DisplayMode.ERRORED) {
 			this.nextReference = reference;
 		}
@@ -505,7 +499,7 @@ public class EditorPanel {
 		List<Token> tokens = this.controller.getTokensForReference(this.source, reference);
 		if (tokens.isEmpty()) {
 			// DEBUG
-			System.err.println(String.format("WARNING: no tokens found for %s in %s", reference, this.classHandle.getRef()));
+			System.err.printf("WARNING: no tokens found for %s in %s%n", reference, this.classHandle.getRef());
 		} else {
 			this.gui.showTokens(this, tokens);
 		}
@@ -515,7 +509,7 @@ public class EditorPanel {
 		if (token == null) {
 			throw new IllegalArgumentException("Token cannot be null!");
 		}
-		navigateToToken(token, SelectionHighlightPainter.INSTANCE);
+		this.navigateToToken(token, SelectionHighlightPainter.INSTANCE);
 	}
 
 	private void navigateToToken(Token token, HighlightPainter highlightPainter) {
@@ -528,13 +522,14 @@ public class EditorPanel {
 
 		try {
 			// make sure the token is visible in the scroll window
-			Rectangle start = this.editor.modelToView(token.start);
-			Rectangle end = this.editor.modelToView(token.end);
+			Rectangle2D start = this.editor.modelToView2D(token.start);
+			Rectangle2D end = this.editor.modelToView2D(token.end);
 			if (start == null || end == null) {
 				return;
 			}
-			Rectangle show = start.union(end);
-			show.grow(start.width * 10, start.height * 6);
+			Rectangle show = new Rectangle();
+			Rectangle2D.union(start, end, show);
+			show.grow((int) (start.getWidth() * 10), (int) (start.getHeight() * 6));
 			SwingUtilities.invokeLater(() -> this.editor.scrollRectToVisible(show));
 		} catch (BadLocationException ex) {
 			if (!this.settingSource) {

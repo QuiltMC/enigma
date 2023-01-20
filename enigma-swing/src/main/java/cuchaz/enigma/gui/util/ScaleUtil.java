@@ -22,7 +22,7 @@ import cuchaz.enigma.gui.config.UiConfig;
 
 public class ScaleUtil {
 
-	private static List<ScaleChangeListener> listeners = new ArrayList<>();
+	private static final List<ScaleChangeListener> listeners = new ArrayList<>();
 
 	public static void setScaleFactor(float scaleFactor) {
 		float oldScale = UiConfig.getScaleFactor();

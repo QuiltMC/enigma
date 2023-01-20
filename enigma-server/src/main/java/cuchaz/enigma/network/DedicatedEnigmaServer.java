@@ -28,7 +28,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 	private final MappingFormat mappingFormat;
 	private final Path mappingsFile;
 	private final PrintWriter log;
-	private BlockingQueue<Runnable> tasks = new LinkedBlockingDeque<>();
+	private final BlockingQueue<Runnable> tasks = new LinkedBlockingDeque<>();
 
 	public DedicatedEnigmaServer(
 			byte[] jarChecksum,
@@ -49,13 +49,13 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 
 	@Override
 	protected void runOnThread(Runnable task) {
-		tasks.add(task);
+		this.tasks.add(task);
 	}
 
 	@Override
 	public void log(String message) {
 		super.log(message);
-		log.println(message);
+		this.log.println(message);
 	}
 
 	public static void main(String[] args) {
@@ -139,9 +139,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 			return;
 		}
 
-		// noinspection RedundantSuppression
-		// noinspection Convert2MethodRef - javac 8 bug
-		Executors.newScheduledThreadPool(1).scheduleAtFixedRate(() -> server.runOnThread(() -> server.saveMappings()), 0, 1, TimeUnit.MINUTES);
+		Executors.newScheduledThreadPool(1).scheduleAtFixedRate(() -> server.runOnThread(server::saveMappings), 0, 1, TimeUnit.MINUTES);
 		Runtime.getRuntime().addShutdownHook(new Thread(server::saveMappings));
 
 		while (true) {
@@ -160,8 +158,8 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 	}
 
 	private void saveMappings() {
-		mappingFormat.write(getMappings().getObfToDeobf(), getMappings().takeMappingDelta(), mappingsFile, ProgressListener.none(), profile.getMappingSaveParameters());
-		log.flush();
+		this.mappingFormat.write(this.getMappings().getObfToDeobf(), this.getMappings().takeMappingDelta(), this.mappingsFile, ProgressListener.none(), this.profile.getMappingSaveParameters());
+		this.log.flush();
 	}
 
 	public static class PathConverter implements ValueConverter<Path> {

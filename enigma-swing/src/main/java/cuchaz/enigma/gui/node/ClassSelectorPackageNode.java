@@ -24,34 +24,35 @@ public class ClassSelectorPackageNode extends DefaultMutableTreeNode {
 	}
 
 	public String getPackageName() {
-		return packageName;
+		return this.packageName;
 	}
 
 	@Override
 	public Object getUserObject() {
-		return packageName;
+		return this.packageName;
 	}
 
 	@Override
 	public void setUserObject(Object userObject) {
-		if (userObject instanceof String)
-			this.packageName = (String) userObject;
+		if (userObject instanceof String string) {
+			this.packageName = string;
+		}
 		super.setUserObject(userObject);
 	}
 
 	@Override
 	public String toString() {
-		return !packageName.equals("(none)") ? ClassEntry.getNameInPackage(this.packageName) : "(none)";
+		return !this.packageName.equals("(none)") ? ClassEntry.getNameInPackage(this.packageName) : "(none)";
 	}
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof ClassSelectorPackageNode && equals((ClassSelectorPackageNode) other);
+		return other instanceof ClassSelectorPackageNode && this.equals((ClassSelectorPackageNode) other);
 	}
 
 	@Override
 	public int hashCode() {
-		return packageName.hashCode();
+		return this.packageName.hashCode();
 	}
 
 	public boolean equals(ClassSelectorPackageNode other) {

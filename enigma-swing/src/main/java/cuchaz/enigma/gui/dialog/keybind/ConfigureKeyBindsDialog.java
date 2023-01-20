@@ -30,7 +30,7 @@ public class ConfigureKeyBindsDialog extends JDialog {
         this.gui = gui;
         JFrame owner = gui.getFrame();
 
-        Container contentPane = getContentPane();
+        Container contentPane = this.getContentPane();
         contentPane.setLayout(new BorderLayout());
 
         // Add categories
@@ -63,30 +63,30 @@ public class ConfigureKeyBindsDialog extends JDialog {
         // Add buttons
         Container buttonContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, ScaleUtil.scale(4), ScaleUtil.scale(4)));
         JButton saveButton = new JButton(I18n.translate("menu.file.configure_keybinds.save"));
-        saveButton.addActionListener(event -> save());
+        saveButton.addActionListener(event -> this.save());
         buttonContainer.add(saveButton);
         JButton cancelButton = new JButton(I18n.translate("prompt.cancel"));
-        cancelButton.addActionListener(event -> cancel());
+        cancelButton.addActionListener(event -> this.cancel());
         buttonContainer.add(cancelButton);
         contentPane.add(buttonContainer, BorderLayout.SOUTH);
 
-        addWindowListener(GuiUtil.onWindowClose(e -> KeyBinds.resetEditableKeyBinds()));
+		this.addWindowListener(GuiUtil.onWindowClose(e -> KeyBinds.resetEditableKeyBinds()));
 
-        pack();
-        setLocationRelativeTo(owner);
+		this.pack();
+		this.setLocationRelativeTo(owner);
     }
 
     private void save() {
         KeyBinds.saveConfig();
-        gui.reloadKeyBinds();
-        setVisible(false);
-        dispose();
+		this.gui.reloadKeyBinds();
+		this.setVisible(false);
+		this.dispose();
     }
 
     private void cancel() {
         KeyBinds.resetEditableKeyBinds();
-        setVisible(false);
-        dispose();
+		this.setVisible(false);
+		this.dispose();
     }
 
     public static void show(Gui gui) {

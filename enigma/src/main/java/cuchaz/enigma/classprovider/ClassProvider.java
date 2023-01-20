@@ -30,7 +30,7 @@ public interface ClassProvider {
 
         int depth = className.lastIndexOf('/');
         String finalClassName = className;
-        return getClassNames()
+        return this.getClassNames()
                 .stream()
                 .filter(s -> s.lastIndexOf('/') == depth && s.startsWith(finalClassName))
                 .toList();

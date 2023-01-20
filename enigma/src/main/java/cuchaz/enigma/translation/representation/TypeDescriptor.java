@@ -127,7 +127,7 @@ public class TypeDescriptor implements Translatable {
 	}
 
 	public Primitive getPrimitive() {
-		if (!isPrimitive()) {
+		if (!this.isPrimitive()) {
 			throw new IllegalStateException("not a primitive");
 		}
 		return Primitive.get(this.desc.charAt(0));
@@ -138,7 +138,7 @@ public class TypeDescriptor implements Translatable {
 	}
 
 	public ClassEntry getTypeEntry() {
-		if (isType()) {
+		if (this.isType()) {
 			String name = this.desc.substring(1, this.desc.length() - 1);
 
 			int pos = name.indexOf('<');
@@ -149,8 +149,8 @@ public class TypeDescriptor implements Translatable {
 
 			return new ClassEntry(name);
 
-		} else if (isArray() && getArrayType().isType()) {
-			return getArrayType().getTypeEntry();
+		} else if (this.isArray() && this.getArrayType().isType()) {
+			return this.getArrayType().getTypeEntry();
 		} else {
 			throw new IllegalStateException("desc doesn't have a class");
 		}
@@ -161,26 +161,26 @@ public class TypeDescriptor implements Translatable {
 	}
 
 	public int getArrayDimension() {
-		if (!isArray()) {
+		if (!this.isArray()) {
 			throw new IllegalStateException("not an array");
 		}
 		return countArrayDimension(this.desc);
 	}
 
 	public TypeDescriptor getArrayType() {
-		if (!isArray()) {
+		if (!this.isArray()) {
 			throw new IllegalStateException("not an array");
 		}
-		return new TypeDescriptor(this.desc.substring(getArrayDimension()));
+		return new TypeDescriptor(this.desc.substring(this.getArrayDimension()));
 	}
 
 	public boolean containsType() {
-		return isType() || (isArray() && getArrayType().containsType());
+		return this.isType() || (this.isArray() && this.getArrayType().containsType());
 	}
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof TypeDescriptor && equals((TypeDescriptor) other);
+		return other instanceof TypeDescriptor && this.equals((TypeDescriptor) other);
 	}
 
 	public boolean equals(TypeDescriptor other) {
@@ -194,7 +194,7 @@ public class TypeDescriptor implements Translatable {
 
 	public TypeDescriptor remap(Function<String, String> remapper) {
 		String desc = this.desc;
-		if (isType() || (isArray() && containsType())) {
+		if (this.isType() || (this.isArray() && this.containsType())) {
 			String replacedName = remapper.apply(this.getTypeEntry().getFullName());
 			if (replacedName != null) {
 				if (this.isType()) {
@@ -208,24 +208,21 @@ public class TypeDescriptor implements Translatable {
 	}
 
 	private static String getArrayPrefix(int dimension) {
-		StringBuilder buf = new StringBuilder();
-		for (int i = 0; i < dimension; i++) {
-			buf.append("[");
-		}
-		return buf.toString();
+		return "[".repeat(Math.max(0, dimension));
 	}
 
 	public int getSize() {
-		switch (desc.charAt(0)) {
-			case 'J':
-			case 'D':
-				if (desc.length() == 1) {
+		switch (this.desc.charAt(0)) {
+			case 'J', 'D' -> {
+				if (this.desc.length() == 1) {
 					return 2;
 				} else {
 					return 1;
 				}
-			default:
+			}
+			default -> {
 				return 1;
+			}
 		}
 	}
 
@@ -253,8 +250,8 @@ public class TypeDescriptor implements Translatable {
 			}
 		}
 
-		private char code;
-		private String keyword;
+		private final char code;
+		private final String keyword;
 
 		Primitive(char code, String keyword) {
 			this.code = code;

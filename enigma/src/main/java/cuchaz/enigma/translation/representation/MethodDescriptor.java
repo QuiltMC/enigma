@@ -28,7 +28,7 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
 public class MethodDescriptor implements Translatable {
 
-	private List<TypeDescriptor> argumentDescs;
+	private final List<TypeDescriptor> argumentDescs;
 	private TypeDescriptor returnDesc;
 
 	public MethodDescriptor(String desc) {
@@ -90,7 +90,7 @@ public class MethodDescriptor implements Translatable {
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof MethodDescriptor && equals((MethodDescriptor) other);
+		return other instanceof MethodDescriptor && this.equals((MethodDescriptor) other);
 	}
 
 	public boolean equals(MethodDescriptor other) {
@@ -103,7 +103,7 @@ public class MethodDescriptor implements Translatable {
 	}
 
 	public boolean hasClass(ClassEntry classEntry) {
-		for (TypeDescriptor desc : types()) {
+		for (TypeDescriptor desc : this.types()) {
 			if (desc.containsType() && desc.getTypeEntry().equals(classEntry)) {
 				return true;
 			}
@@ -116,19 +116,19 @@ public class MethodDescriptor implements Translatable {
 		for (TypeDescriptor desc : this.argumentDescs) {
 			argumentDescs.add(desc.remap(remapper));
 		}
-		return new MethodDescriptor(argumentDescs, returnDesc.remap(remapper));
+		return new MethodDescriptor(argumentDescs, this.returnDesc.remap(remapper));
 	}
 
 	@Override
 	public TranslateResult<MethodDescriptor> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
-		List<TypeDescriptor> translatedArguments = new ArrayList<>(argumentDescs.size());
-		for (TypeDescriptor argument : argumentDescs) {
+		List<TypeDescriptor> translatedArguments = new ArrayList<>(this.argumentDescs.size());
+		for (TypeDescriptor argument : this.argumentDescs) {
 			translatedArguments.add(translator.translate(argument));
 		}
-		return TranslateResult.ungrouped(new MethodDescriptor(translatedArguments, translator.translate(returnDesc)));
+		return TranslateResult.ungrouped(new MethodDescriptor(translatedArguments, translator.translate(this.returnDesc)));
 	}
 
 	public boolean canConflictWith(MethodDescriptor descriptor) {
-		return descriptor.argumentDescs.equals(argumentDescs);
+		return descriptor.argumentDescs.equals(this.argumentDescs);
 	}
 }

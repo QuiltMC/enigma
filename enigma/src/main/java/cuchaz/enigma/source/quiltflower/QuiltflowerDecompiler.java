@@ -18,6 +18,6 @@ public class QuiltflowerDecompiler implements Decompiler {
 
     @Override
     public Source getSource(String className, @Nullable EntryRemapper remapper) {
-        return new QuiltflowerSource(new EnigmaContextSource(classProvider, className), remapper, sourceSettings);
+        return new QuiltflowerSource(new EnigmaContextSource(this.classProvider, className), remapper, this.sourceSettings);
     }
 }

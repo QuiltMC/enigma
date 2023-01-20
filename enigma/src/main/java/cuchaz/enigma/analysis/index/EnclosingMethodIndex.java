@@ -17,10 +17,10 @@ public class EnclosingMethodIndex implements JarIndexer {
 
     @Nullable
     public EnclosingMethodData getEnclosingMethodData(ClassEntry entry) {
-        return enclosingMethodData.get(entry);
+        return this.enclosingMethodData.get(entry);
     }
 
     public boolean hasEnclosingMethod(ClassEntry entry) {
-        return getEnclosingMethodData(entry) != null;
+        return this.getEnclosingMethodData(entry) != null;
     }
 }

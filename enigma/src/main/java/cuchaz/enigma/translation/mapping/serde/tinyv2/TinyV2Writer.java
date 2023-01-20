@@ -42,12 +42,12 @@ public final class TinyV2Writer implements MappingsWriter {
 		List<EntryTreeNode<EntryMapping>> classes = StreamSupport.stream(mappings.spliterator(), false).filter(node -> node.getEntry() instanceof ClassEntry).toList();
 
 		try (PrintWriter writer = new LfPrintWriter(Files.newBufferedWriter(path))) {
-			writer.println("tiny\t2\t" + MINOR_VERSION + "\t" + obfHeader + "\t" + deobfHeader);
+			writer.println("tiny\t2\t" + MINOR_VERSION + "\t" + this.obfHeader + "\t" + this.deobfHeader);
 
 			// no escape names
 
 			for (EntryTreeNode<EntryMapping> node : classes) {
-				writeClass(writer, node, mappings);
+				this.writeClass(writer, node, mappings);
 			}
 		} catch (IOException ex) {
 			ex.printStackTrace(); // TODO add some better logging system
@@ -78,20 +78,20 @@ public final class TinyV2Writer implements MappingsWriter {
 
 		writer.println();
 
-		writeComment(writer, node.getValue(), 1);
+		this.writeComment(writer, node.getValue(), 1);
 
 		for (EntryTreeNode<EntryMapping> child : node.getChildNodes()) {
 			Entry<?> entry = child.getEntry();
 			if (entry instanceof FieldEntry) {
-				writeField(writer, child);
+				this.writeField(writer, child);
 			} else if (entry instanceof MethodEntry) {
-				writeMethod(writer, child);
+				this.writeMethod(writer, child);
 			}
 		}
 	}
 
 	private void writeMethod(PrintWriter writer, EntryTreeNode<EntryMapping> node) {
-		writer.print(indent(1));
+		writer.print(this.indent(1));
 		writer.print("m\t");
 		writer.print(((MethodEntry) node.getEntry()).getDesc().toString());
 		writer.print("\t");
@@ -109,12 +109,12 @@ public final class TinyV2Writer implements MappingsWriter {
 			writer.println(node.getEntry().getName()); // todo fix v2 name inference
 		}
 
-		writeComment(writer, mapping, 2);
+		this.writeComment(writer, mapping, 2);
 
 		for (EntryTreeNode<EntryMapping> child : node.getChildNodes()) {
 			Entry<?> entry = child.getEntry();
 			if (entry instanceof LocalVariableEntry) {
-				writeParameter(writer, child);
+				this.writeParameter(writer, child);
 			}
 			// TODO write actual local variables
 		}
@@ -124,7 +124,7 @@ public final class TinyV2Writer implements MappingsWriter {
 		if (node.getValue() == null || node.getValue().equals(EntryMapping.DEFAULT))
 			return; // Shortcut
 
-		writer.print(indent(1));
+		writer.print(this.indent(1));
 		writer.print("f\t");
 		writer.print(((FieldEntry) node.getEntry()).getDesc().toString());
 		writer.print("\t");
@@ -142,14 +142,14 @@ public final class TinyV2Writer implements MappingsWriter {
 			writer.println(node.getEntry().getName()); // todo fix v2 name inference
 		}
 
-		writeComment(writer, mapping, 2);
+		this.writeComment(writer, mapping, 2);
 	}
 
 	private void writeParameter(PrintWriter writer, EntryTreeNode<EntryMapping> node) {
 		if (node.getValue() == null || node.getValue().equals(EntryMapping.DEFAULT))
 			return; // Shortcut
 
-		writer.print(indent(2));
+		writer.print(this.indent(2));
 		writer.print("p\t");
 		writer.print(((LocalVariableEntry) node.getEntry()).getIndex());
 		writer.print("\t");
@@ -161,13 +161,13 @@ public final class TinyV2Writer implements MappingsWriter {
 		} else {
 			writer.println(mapping.targetName());
 
-			writeComment(writer, mapping, 3);
+			this.writeComment(writer, mapping, 3);
 		}
 	}
 
 	private void writeComment(PrintWriter writer, EntryMapping mapping, int indent) {
 		if (mapping != null && mapping.javadoc() != null) {
-			writer.print(indent(indent));
+			writer.print(this.indent(indent));
 			writer.print("c\t");
 			writer.print(MappingHelper.escape(mapping.javadoc()));
 			writer.println();

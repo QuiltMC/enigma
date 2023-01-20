@@ -31,91 +31,91 @@ import static org.hamcrest.Matchers.*;
 public class TestJarIndexConstructorReferences {
 
 	public static final Path JAR = Paths.get("build/test-obf/constructors.jar");
-	private JarIndex index;
+	private final JarIndex index;
 
-	private ClassEntry baseClass = newClass("a");
-	private ClassEntry subClass = newClass("d");
-	private ClassEntry subsubClass = newClass("e");
-	private ClassEntry defaultClass = newClass("c");
-	private ClassEntry callerClass = newClass("b");
+	private final ClassEntry baseClass = newClass("a");
+	private final ClassEntry subClass = newClass("d");
+	private final ClassEntry subsubClass = newClass("e");
+	private final ClassEntry defaultClass = newClass("c");
+	private final ClassEntry callerClass = newClass("b");
 
 	public TestJarIndexConstructorReferences() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
-		index = JarIndex.empty();
-		index.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.none());
+        this.index = JarIndex.empty();
+        this.index.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.none());
 	}
 
 	@Test
 	public void obfEntries() {
-		assertThat(index.getEntryIndex().getClasses(), containsInAnyOrder(newClass("cuchaz/enigma/inputs/Keep"), baseClass,
-				subClass, subsubClass, defaultClass, callerClass));
+		assertThat(this.index.getEntryIndex().getClasses(), containsInAnyOrder(newClass("cuchaz/enigma/inputs/Keep"), this.baseClass,
+                this.subClass, this.subsubClass, this.defaultClass, this.callerClass));
 	}
 
 	@Test
 	public void baseDefault() {
-		MethodEntry source = newMethod(baseClass, "<init>", "()V");
-		Collection<EntryReference<MethodEntry, MethodDefEntry>> references = index.getReferenceIndex().getReferencesToMethod(source);
+		MethodEntry source = newMethod(this.baseClass, "<init>", "()V");
+		Collection<EntryReference<MethodEntry, MethodDefEntry>> references = this.index.getReferenceIndex().getReferencesToMethod(source);
 		assertThat(references, containsInAnyOrder(
-				newBehaviorReferenceByMethod(source, callerClass.getName(), "a", "()V"),
-				newBehaviorReferenceByMethod(source, subClass.getName(), "<init>", "()V"),
-				newBehaviorReferenceByMethod(source, subClass.getName(), "<init>", "(III)V")
+				newBehaviorReferenceByMethod(source, this.callerClass.getName(), "a", "()V"),
+				newBehaviorReferenceByMethod(source, this.subClass.getName(), "<init>", "()V"),
+				newBehaviorReferenceByMethod(source, this.subClass.getName(), "<init>", "(III)V")
 		));
 	}
 
 	@Test
 	public void baseInt() {
-		MethodEntry source = newMethod(baseClass, "<init>", "(I)V");
-		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
-				newBehaviorReferenceByMethod(source, callerClass.getName(), "b", "()V")
+		MethodEntry source = newMethod(this.baseClass, "<init>", "(I)V");
+		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
+				newBehaviorReferenceByMethod(source, this.callerClass.getName(), "b", "()V")
 		));
 	}
 
 	@Test
 	public void subDefault() {
-		MethodEntry source = newMethod(subClass, "<init>", "()V");
-		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
-				newBehaviorReferenceByMethod(source, callerClass.getName(), "c", "()V"),
-				newBehaviorReferenceByMethod(source, subClass.getName(), "<init>", "(I)V")
+		MethodEntry source = newMethod(this.subClass, "<init>", "()V");
+		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
+				newBehaviorReferenceByMethod(source, this.callerClass.getName(), "c", "()V"),
+				newBehaviorReferenceByMethod(source, this.subClass.getName(), "<init>", "(I)V")
 		));
 	}
 
 	@Test
 	public void subInt() {
-		MethodEntry source = newMethod(subClass, "<init>", "(I)V");
-		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
-				newBehaviorReferenceByMethod(source, callerClass.getName(), "d", "()V"),
-				newBehaviorReferenceByMethod(source, subClass.getName(), "<init>", "(II)V"),
-				newBehaviorReferenceByMethod(source, subsubClass.getName(), "<init>", "(I)V")
+		MethodEntry source = newMethod(this.subClass, "<init>", "(I)V");
+		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
+				newBehaviorReferenceByMethod(source, this.callerClass.getName(), "d", "()V"),
+				newBehaviorReferenceByMethod(source, this.subClass.getName(), "<init>", "(II)V"),
+				newBehaviorReferenceByMethod(source, this.subsubClass.getName(), "<init>", "(I)V")
 		));
 	}
 
 	@Test
 	public void subIntInt() {
-		MethodEntry source = newMethod(subClass, "<init>", "(II)V");
-		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
-				newBehaviorReferenceByMethod(source, callerClass.getName(), "e", "()V")
+		MethodEntry source = newMethod(this.subClass, "<init>", "(II)V");
+		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
+				newBehaviorReferenceByMethod(source, this.callerClass.getName(), "e", "()V")
 		));
 	}
 
 	@Test
 	public void subIntIntInt() {
-		MethodEntry source = newMethod(subClass, "<init>", "(III)V");
-		assertThat(index.getReferenceIndex().getReferencesToMethod(source), is(empty()));
+		MethodEntry source = newMethod(this.subClass, "<init>", "(III)V");
+		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), is(empty()));
 	}
 
 	@Test
 	public void subsubInt() {
-		MethodEntry source = newMethod(subsubClass, "<init>", "(I)V");
-		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
-				newBehaviorReferenceByMethod(source, callerClass.getName(), "f", "()V")
+		MethodEntry source = newMethod(this.subsubClass, "<init>", "(I)V");
+		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
+				newBehaviorReferenceByMethod(source, this.callerClass.getName(), "f", "()V")
 		));
 	}
 
 	@Test
 	public void defaultConstructable() {
-		MethodEntry source = newMethod(defaultClass, "<init>", "()V");
-		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
-				newBehaviorReferenceByMethod(source, callerClass.getName(), "g", "()V")
+		MethodEntry source = newMethod(this.defaultClass, "<init>", "()V");
+		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
+				newBehaviorReferenceByMethod(source, this.callerClass.getName(), "g", "()V")
 		));
 	}
 }

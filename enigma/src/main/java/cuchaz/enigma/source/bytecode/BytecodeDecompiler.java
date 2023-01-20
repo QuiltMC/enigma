@@ -16,6 +16,6 @@ public class BytecodeDecompiler implements Decompiler {
 
     @Override
     public Source getSource(String className, @Nullable EntryRemapper remapper) {
-        return new BytecodeSource(classProvider.get(className), remapper);
+        return new BytecodeSource(this.classProvider.get(className), remapper);
     }
 }

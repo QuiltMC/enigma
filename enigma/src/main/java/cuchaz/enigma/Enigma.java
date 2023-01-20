@@ -69,17 +69,17 @@ public class Enigma {
 
 		JarIndex index = JarIndex.empty();
 		index.indexJar(scope, classProvider, progress);
-		services.get(JarIndexerService.TYPE).forEach(indexer -> indexer.acceptJar(scope, classProvider, index));
+		this.services.get(JarIndexerService.TYPE).forEach(indexer -> indexer.acceptJar(scope, classProvider, index));
 
 		return new EnigmaProject(this, path, classProvider, index, Utils.zipSha1(path));
 	}
 
 	public EnigmaProfile getProfile() {
-		return profile;
+		return this.profile;
 	}
 
 	public EnigmaServices getServices() {
-		return services;
+		return this.services;
 	}
 
 	public static class Builder {
@@ -102,13 +102,13 @@ public class Enigma {
 		}
 
 		public Enigma build() {
-			PluginContext pluginContext = new PluginContext(profile);
-			for (EnigmaPlugin plugin : plugins) {
+			PluginContext pluginContext = new PluginContext(this.profile);
+			for (EnigmaPlugin plugin : this.plugins) {
 				plugin.init(pluginContext);
 			}
 
 			EnigmaServices services = pluginContext.buildServices();
-			return new Enigma(profile, services);
+			return new Enigma(this.profile, services);
 		}
 	}
 
@@ -123,12 +123,12 @@ public class Enigma {
 
 		@Override
 		public <T extends EnigmaService> void registerService(String id, EnigmaServiceType<T> serviceType, EnigmaServiceFactory<T> factory) {
-			List<EnigmaProfile.Service> serviceProfiles = profile.getServiceProfiles(serviceType);
+			List<EnigmaProfile.Service> serviceProfiles = this.profile.getServiceProfiles(serviceType);
 
 			for (EnigmaProfile.Service serviceProfile : serviceProfiles) {
 				if (serviceProfile.matches(id)) {
-					T service = factory.create(getServiceContext(serviceProfile));
-					services.put(serviceType, service);
+					T service = factory.create(this.getServiceContext(serviceProfile));
+					this.services.put(serviceType, service);
 					break;
 				}
 			}
@@ -143,13 +143,13 @@ public class Enigma {
 
 				@Override
 				public Path getPath(String path) {
-					return profile.resolvePath(Path.of(path));
+					return PluginContext.this.profile.resolvePath(Path.of(path));
 				}
 			};
 		}
 
 		EnigmaServices buildServices() {
-			return new EnigmaServices(services.build());
+			return new EnigmaServices(this.services.build());
 		}
 	}
 

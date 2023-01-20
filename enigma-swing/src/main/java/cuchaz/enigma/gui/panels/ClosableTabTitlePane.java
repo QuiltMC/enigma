@@ -2,7 +2,6 @@ package cuchaz.enigma.gui.panels;
 
 import cuchaz.enigma.gui.util.GuiUtil;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Point;
@@ -10,13 +9,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.accessibility.AccessibleContext;
-import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 
 public class ClosableTabTitlePane {
-
 	private final JPanel ui;
 	private final JButton closeButton;
 	private final JLabel label;
@@ -43,7 +40,7 @@ public class ClosableTabTitlePane {
 		this.ui.add(this.closeButton);
 
 		// Use mouse listener here so that it also works for disabled buttons
-		closeButton.addMouseListener(GuiUtil.onMouseClick(e -> {
+		this.closeButton.addMouseListener(GuiUtil.onMouseClick(e -> {
 			if (SwingUtilities.isLeftMouseButton(e) || SwingUtilities.isMiddleMouseButton(e)) {
 				onClose.run();
 			}
@@ -62,11 +59,11 @@ public class ClosableTabTitlePane {
 				// for some reason registering a mouse listener on this makes
 				// events never go to the tabbed pane, so we have to redirect
 				// the event for tab selection and context menu to work
-				if (parent != null) {
+				if (ClosableTabTitlePane.this.parent != null) {
 					Point pt = new Point(e.getXOnScreen(), e.getYOnScreen());
-					SwingUtilities.convertPointFromScreen(pt, parent);
+					SwingUtilities.convertPointFromScreen(pt, ClosableTabTitlePane.this.parent);
 					MouseEvent e1 = new MouseEvent(
-							parent,
+							ClosableTabTitlePane.this.parent,
 							e.getID(),
 							e.getWhen(),
 							e.getModifiersEx(),
@@ -78,7 +75,7 @@ public class ClosableTabTitlePane {
 							e.isPopupTrigger(),
 							e.getButton()
 					);
-					parent.dispatchEvent(e1);
+					ClosableTabTitlePane.this.parent.dispatchEvent(e1);
 				}
 			}
 		});
@@ -88,12 +85,12 @@ public class ClosableTabTitlePane {
 
 	public void setTabbedPane(JTabbedPane pane) {
 		if (this.parent != null) {
-			pane.removeChangeListener(cachedChangeListener);
+			pane.removeChangeListener(this.cachedChangeListener);
 		}
 		if (pane != null) {
-			updateState(pane);
-			cachedChangeListener = e -> updateState(pane);
-			pane.addChangeListener(cachedChangeListener);
+			this.updateState(pane);
+			this.cachedChangeListener = e -> this.updateState(pane);
+			pane.addChangeListener(this.cachedChangeListener);
 		}
 		this.parent = pane;
 	}
@@ -115,18 +112,6 @@ public class ClosableTabTitlePane {
 	}
 
 	public JPanel getUi() {
-		return ui;
+		return this.ui;
 	}
-
-	@Nullable
-	public static ClosableTabTitlePane byUi(Component c) {
-		if (c instanceof JComponent) {
-			Object prop = ((JComponent) c).getClientProperty(ClosableTabTitlePane.class);
-			if (prop instanceof ClosableTabTitlePane) {
-				return (ClosableTabTitlePane) prop;
-			}
-		}
-		return null;
-	}
-
 }

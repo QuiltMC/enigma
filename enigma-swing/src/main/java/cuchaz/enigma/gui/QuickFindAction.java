@@ -26,8 +26,8 @@ public final class QuickFindAction extends DefaultSyntaxAction {
 
 		public static Data get(JTextComponent target) {
 			Object o = target.getDocument().getProperty(KEY);
-			if (o instanceof Data) {
-				return (Data) o;
+			if (o instanceof Data data) {
+				return data;
 			}
 
 			Data data = new Data();
@@ -36,10 +36,10 @@ public final class QuickFindAction extends DefaultSyntaxAction {
 		}
 
 		public void showFindDialog(JTextComponent target) {
-			if (findDialog == null) {
-				findDialog = new EnigmaQuickFindDialog(target);
+			if (this.findDialog == null) {
+				this.findDialog = new EnigmaQuickFindDialog(target);
 			}
-			findDialog.showFor(target);
+			this.findDialog.showFor(target);
 		}
 	}
 }

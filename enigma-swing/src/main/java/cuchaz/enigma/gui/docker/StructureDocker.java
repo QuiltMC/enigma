@@ -86,7 +86,7 @@ public class StructureDocker extends Docker {
 	}
 
 	public void updateStructure(EditorPanel editor) {
-		structureTree.setModel(null);
+		this.structureTree.setModel(null);
 
 		if (editor == null) {
 			this.optionsPanel.setVisible(false);
@@ -103,26 +103,26 @@ public class StructureDocker extends Docker {
 
 		// show the tree at the root
 		TreePath path = GuiUtil.getPathToRoot(node);
-		structureTree.setModel(new DefaultTreeModel((TreeNode) path.getPathComponent(0)));
-		structureTree.expandPath(path);
-		structureTree.setSelectionRow(structureTree.getRowForPath(path));
+		this.structureTree.setModel(new DefaultTreeModel((TreeNode) path.getPathComponent(0)));
+		this.structureTree.expandPath(path);
+		this.structureTree.setSelectionRow(this.structureTree.getRowForPath(path));
 	}
 
 	private void onKeyPress(KeyEvent e) {
 		if (KeyBinds.SELECT.matches(e)) {
-			navigateToSelectedNode();
+			this.navigateToSelectedNode();
 		}
 	}
 
 	private void onClick(MouseEvent event) {
 		if (event.getClickCount() >= 2 && event.getButton() == MouseEvent.BUTTON1) {
-			navigateToSelectedNode();
+			this.navigateToSelectedNode();
 		}
 	}
 
 	private void navigateToSelectedNode() {
 		// get the selected node
-		TreePath path = structureTree.getSelectionPath();
+		TreePath path = this.structureTree.getSelectionPath();
 		if (path == null) {
 			return;
 		}
@@ -181,7 +181,7 @@ public class StructureDocker extends Docker {
 			ParentedEntry<?> entry = ((StructureTreeNode) value).getEntry();
 
 			if (entry instanceof ClassEntry classEntry) {
-				this.setIcon(GuiUtil.getClassIcon(gui, classEntry));
+				this.setIcon(GuiUtil.getClassIcon(this.gui, classEntry));
 			} else if (entry instanceof MethodEntry methodEntry) {
 				this.setIcon(GuiUtil.getMethodIcon(methodEntry));
 			} else if (entry instanceof FieldEntry) {

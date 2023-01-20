@@ -3,11 +3,11 @@ package cuchaz.enigma.inputs.bridge;
 // a
 public class BaseClass {
     // a
-    private int x;
+    private final int x;
     // b
-    private int y;
+    private final int y;
     // c
-    private int z;
+    private final int z;
 
     // <init>(III)V
     public BaseClass(int x, int y, int z) {
@@ -44,7 +44,7 @@ public class BaseClass {
 
     // a(II)La;
     public BaseClass foo(int x, int y) {
-        return bar(1);
+        return this.bar(1);
     }
 
     // e()La;
@@ -54,7 +54,7 @@ public class BaseClass {
 
     // b(I)La;
     public BaseClass bar(int x) {
-        return baz(1, x);
+        return this.baz(1, x);
     }
 
     // c(I)La;
@@ -67,6 +67,6 @@ public class BaseClass {
         if (y == 0) {
             return this;
         }
-        return new BaseClass(getX(), y, xz);
+        return new BaseClass(this.getX(), y, xz);
     }
 }

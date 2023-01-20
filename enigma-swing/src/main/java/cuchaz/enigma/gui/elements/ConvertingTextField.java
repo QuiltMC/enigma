@@ -39,22 +39,22 @@ public class ConvertingTextField implements Validatable {
 		this.label = GuiUtil.unboldLabel(new JLabel(text));
 		this.label.setBorder(BorderFactory.createLoweredBevelBorder());
 
-		this.label.addMouseListener(GuiUtil.onMouseClick(e -> startEditing()));
+		this.label.addMouseListener(GuiUtil.onMouseClick(e -> this.startEditing()));
 
 		this.textField.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
-				if (!hasChanges()) {
-					stopEditing(true);
+				if (!ConvertingTextField.this.hasChanges()) {
+					ConvertingTextField.this.stopEditing(true);
 				}
 			}
 		});
 
 		this.textField.addKeyListener(GuiUtil.onKeyPress(e -> {
 			if (KeyBinds.EXIT.matches(e)) {
-				stopEditing(true);
+				this.stopEditing(true);
 			} else if (KeyBinds.DIALOG_SAVE.matches(e)) {
-				stopEditing(false);
+				this.stopEditing(false);
 			}
 		}));
 
@@ -75,9 +75,9 @@ public class ConvertingTextField implements Validatable {
 	}
 
 	public void stopEditing(boolean abort) {
-		if (!editing) return;
+		if (!this.editing) return;
 
-		if (!listeners.stream().allMatch(l -> l.tryStopEditing(this, abort))) return;
+		if (!this.listeners.stream().allMatch(l -> l.tryStopEditing(this, abort))) return;
 
 		if (abort) {
 			this.textField.setText(this.label.getText());
@@ -94,13 +94,13 @@ public class ConvertingTextField implements Validatable {
 	}
 
 	public void setText(String text) {
-		stopEditing(true);
+		this.stopEditing(true);
 		this.label.setText(text);
 		this.textField.setText(text);
 	}
 
 	public void setEditText(String text) {
-		if (!editing) return;
+		if (!this.editing) return;
 
 		this.textField.setText(text);
 	}
@@ -115,13 +115,13 @@ public class ConvertingTextField implements Validatable {
 	}
 
 	public void selectAll() {
-		if (!editing) return;
+		if (!this.editing) return;
 
 		this.textField.selectAll();
 	}
 
 	public void selectSubstring(int startIndex) {
-		if (!editing) return;
+		if (!this.editing) return;
 
 		Document doc = this.textField.getDocument();
 		if (doc != null) {
@@ -130,13 +130,13 @@ public class ConvertingTextField implements Validatable {
 	}
 
 	public void selectSubstring(int startIndex, int endIndex) {
-		if (!editing) return;
+		if (!this.editing) return;
 
 		this.textField.select(startIndex, endIndex);
 	}
 
 	public String getText() {
-		if (editing) {
+		if (this.editing) {
 			return this.textField.getText();
 		} else {
 			return this.label.getText();
@@ -148,18 +148,18 @@ public class ConvertingTextField implements Validatable {
 	}
 
 	public boolean hasChanges() {
-		if (!editing) return false;
+		if (!this.editing) return false;
 		return !this.textField.getText().equals(this.label.getText());
 	}
 
 	@Override
 	public void addMessage(ParameterizedMessage message) {
-		textField.addMessage(message);
+		this.textField.addMessage(message);
 	}
 
 	@Override
 	public void clearMessages() {
-		textField.clearMessages();
+		this.textField.clearMessages();
 	}
 
 	public void addListener(ConvertingTextFieldListener listener) {
@@ -171,7 +171,7 @@ public class ConvertingTextField implements Validatable {
 	}
 
 	public JPanel getUi() {
-		return ui;
+		return this.ui;
 	}
 
 }

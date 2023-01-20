@@ -12,16 +12,16 @@ public abstract class AbstractListCellRenderer<E> extends JPanel implements List
 
 	private Border noFocusBorder;
 
-	public AbstractListCellRenderer() {
-		setBorder(getNoFocusBorder());
+	protected AbstractListCellRenderer() {
+		this.setBorder(this.getNoFocusBorder());
 	}
 
 	protected Border getNoFocusBorder() {
-		if (noFocusBorder == null) {
+		if (this.noFocusBorder == null) {
 			Border border = UIManager.getLookAndFeel().getDefaults().getBorder("List.List.cellNoFocusBorder");
-			noFocusBorder = border != null ? border : NO_FOCUS_BORDER;
+			this.noFocusBorder = border != null ? border : NO_FOCUS_BORDER;
 		}
-		return noFocusBorder;
+		return this.noFocusBorder;
 	}
 
 	protected Border getBorder(boolean isSelected, boolean cellHasFocus) {
@@ -35,7 +35,7 @@ public abstract class AbstractListCellRenderer<E> extends JPanel implements List
 				b = defaults.getBorder("List.focusCellHighlightBorder");
 			}
 		} else {
-			b = getNoFocusBorder();
+			b = this.getNoFocusBorder();
 		}
 		return b;
 	}
@@ -44,34 +44,34 @@ public abstract class AbstractListCellRenderer<E> extends JPanel implements List
 
 	@Override
 	public Component getListCellRendererComponent(JList<? extends E> list, E value, int index, boolean isSelected, boolean cellHasFocus) {
-		updateUiForEntry(list, value, index, isSelected, cellHasFocus);
+		this.updateUiForEntry(list, value, index, isSelected, cellHasFocus);
 
 		if (isSelected) {
-			setBackground(list.getSelectionBackground());
-			setForeground(list.getSelectionForeground());
+			this.setBackground(list.getSelectionBackground());
+			this.setForeground(list.getSelectionForeground());
 		} else {
-			setBackground(list.getBackground());
-			setForeground(list.getForeground());
+			this.setBackground(list.getBackground());
+			this.setForeground(list.getForeground());
 		}
 
-		setEnabled(list.isEnabled());
-		setFont(list.getFont());
+		this.setEnabled(list.isEnabled());
+		this.setFont(list.getFont());
 
-		setBorder(getBorder(isSelected, cellHasFocus));
+		this.setBorder(this.getBorder(isSelected, cellHasFocus));
 
 		// This isn't the width of the cell, but it's close enough for where it's needed (getComponentAt in getToolTipText)
-		setSize(list.getWidth(), getPreferredSize().height);
+		this.setSize(list.getWidth(), this.getPreferredSize().height);
 
 		return this;
 	}
 
 	@Override
 	public String getToolTipText(MouseEvent event) {
-		Component c = getComponentAt(event.getPoint());
-		if (c instanceof JComponent) {
-			return ((JComponent) c).getToolTipText();
+		Component c = this.getComponentAt(event.getPoint());
+		if (c instanceof JComponent component) {
+			return component.getToolTipText();
 		}
-		return getToolTipText();
+		return this.getToolTipText();
 	}
 
 }

@@ -36,30 +36,30 @@ public class CfrSource implements Source {
 
     @Override
     public Source withJavadocs(EntryRemapper mapper) {
-        return new CfrSource(className, settings, options, classFileSource, mapper);
+        return new CfrSource(this.className, this.settings, this.options, this.classFileSource, mapper);
     }
 
     @Override
     public SourceIndex index() {
-        ensureDecompiled();
-        return index;
+        this.ensureDecompiled();
+        return this.index;
     }
 
     @Override
     public String asString() {
-        ensureDecompiled();
-        return index.getSource();
+        this.ensureDecompiled();
+        return this.index.getSource();
     }
 
     private void ensureDecompiled() {
-        if (index != null) {
+        if (this.index != null) {
             return;
         }
 
-        DCCommonState commonState = new DCCommonState(options, classFileSource);
-        ObfuscationMapping mapping = MappingFactory.get(options, commonState);
+        DCCommonState commonState = new DCCommonState(this.options, this.classFileSource);
+        ObfuscationMapping mapping = MappingFactory.get(this.options, commonState);
         DCCommonState state = new DCCommonState(commonState, mapping);
-        ClassFile tree = state.getClassFileMaybePath(className);
+        ClassFile tree = state.getClassFileMaybePath(this.className);
 
         state.configureWith(tree);
 
@@ -69,19 +69,19 @@ public class CfrSource implements Source {
         } catch (CannotLoadClassException ignored) {
         }
 
-        if (options.getOption(OptionsImpl.DECOMPILE_INNER_CLASSES)) {
+        if (this.options.getOption(OptionsImpl.DECOMPILE_INNER_CLASSES)) {
             tree.loadInnerClasses(state);
         }
 
-        if (options.getOption(OptionsImpl.RENAME_DUP_MEMBERS)) {
+        if (this.options.getOption(OptionsImpl.RENAME_DUP_MEMBERS)) {
             MemberNameResolver.resolveNames(state, ListFactory.newList(state.getClassCache().getLoadedTypes()));
         }
 
-        TypeUsageCollectingDumper typeUsageCollector = new TypeUsageCollectingDumper(options, tree);
+        TypeUsageCollectingDumper typeUsageCollector = new TypeUsageCollectingDumper(this.options, tree);
         tree.analyseTop(state, typeUsageCollector);
 
-        EnigmaDumper dumper = new EnigmaDumper(new StringBuilder(), settings, typeUsageCollector.getRealTypeUsageInformation(), options, mapper);
+        EnigmaDumper dumper = new EnigmaDumper(new StringBuilder(), this.settings, typeUsageCollector.getRealTypeUsageInformation(), this.options, this.mapper);
         tree.dump(state.getObfuscationMapping().wrap(dumper));
-        index = dumper.getIndex();
+        this.index = dumper.getIndex();
     }
 }

@@ -1,5 +1,6 @@
 package cuchaz.enigma.source;
 
+// todo make record
 public class SourceSettings {
     public final boolean removeImports;
     public final boolean removeVariableFinal;

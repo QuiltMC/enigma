@@ -1,9 +1,7 @@
 package cuchaz.enigma.command;
 
 import cuchaz.enigma.ProgressListener;
-import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.EntryMapping;
-import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.*;
 import cuchaz.enigma.translation.mapping.serde.enigma.EnigmaMappingsReader;
 import cuchaz.enigma.translation.mapping.serde.enigma.EnigmaMappingsWriter;
@@ -75,7 +73,9 @@ public final class MappingCommandsUtil {
 		MappingFormat format = null;
 		try {
 			format = MappingFormat.valueOf(type.toUpperCase());
-		} catch (IllegalArgumentException ignored) {}
+		} catch (IllegalArgumentException ignored) {
+
+		}
 
 		if (format != null) {
 			format.getWriter().write(mappings, path, ProgressListener.none(), saveParameters);

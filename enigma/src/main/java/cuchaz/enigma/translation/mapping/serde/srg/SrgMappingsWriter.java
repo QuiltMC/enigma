@@ -49,9 +49,9 @@ public enum SrgMappingsWriter implements MappingsWriter {
 		progress.init(rootEntries.size(), I18n.translate("progress.mappings.srg_file.generating"));
 
 		int steps = 0;
-		for (Entry<?> entry : sorted(rootEntries)) {
+		for (Entry<?> entry : this.sorted(rootEntries)) {
 			progress.step(steps++, entry.getName());
-			writeEntry(classLines, fieldLines, methodLines, mappings, entry);
+			this.writeEntry(classLines, fieldLines, methodLines, mappings, entry);
 		}
 
 		progress.init(3, I18n.translate("progress.mappings.srg_file.writing"));
@@ -75,15 +75,15 @@ public enum SrgMappingsWriter implements MappingsWriter {
 
 		Translator translator = new MappingTranslator(mappings, VoidEntryResolver.INSTANCE);
 		if (entry instanceof ClassEntry) {
-			classes.add(generateClassLine((ClassEntry) entry, translator));
+			classes.add(this.generateClassLine((ClassEntry) entry, translator));
 		} else if (entry instanceof FieldEntry) {
-			fields.add(generateFieldLine((FieldEntry) entry, translator));
+			fields.add(this.generateFieldLine((FieldEntry) entry, translator));
 		} else if (entry instanceof MethodEntry) {
-			methods.add(generateMethodLine((MethodEntry) entry, translator));
+			methods.add(this.generateMethodLine((MethodEntry) entry, translator));
 		}
 
-		for (Entry<?> child : sorted(node.getChildren())) {
-			writeEntry(classes, fields, methods, mappings, child);
+		for (Entry<?> child : this.sorted(node.getChildren())) {
+			this.writeEntry(classes, fields, methods, mappings, child);
 		}
 	}
 
@@ -94,7 +94,7 @@ public enum SrgMappingsWriter implements MappingsWriter {
 
 	private String generateMethodLine(MethodEntry sourceEntry, Translator translator) {
 		MethodEntry targetEntry = translator.translate(sourceEntry);
-		return "MD: " + describeMethod(sourceEntry) + " " + describeMethod(targetEntry);
+		return "MD: " + this.describeMethod(sourceEntry) + " " + this.describeMethod(targetEntry);
 	}
 
 	private String describeMethod(MethodEntry entry) {
@@ -103,7 +103,7 @@ public enum SrgMappingsWriter implements MappingsWriter {
 
 	private String generateFieldLine(FieldEntry sourceEntry, Translator translator) {
 		FieldEntry targetEntry = translator.translate(sourceEntry);
-		return "FD: " + describeField(sourceEntry) + " " + describeField(targetEntry);
+		return "FD: " + this.describeField(sourceEntry) + " " + this.describeField(targetEntry);
 	}
 
 	private String describeField(FieldEntry entry) {

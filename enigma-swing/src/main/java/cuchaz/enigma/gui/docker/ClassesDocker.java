@@ -13,7 +13,7 @@ public abstract class ClassesDocker extends Docker {
 		super(gui);
 		this.selector = selector;
 		this.selector.setSelectionListener(gui.getController()::navigateTo);
-		this.selector.setRenameSelectionListener(gui::onRenameFromClassTree);
+		this.selector.setRenameSelectionListener((context, previous, data, node) -> gui.onRenameFromClassTree(context, data, node));
 
 		this.add(new JScrollPane(this.selector), BorderLayout.CENTER);
 	}

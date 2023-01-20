@@ -15,7 +15,7 @@ public interface EntryMap<T> {
 	T get(Entry<?> entry);
 
 	default boolean contains(Entry<?> entry) {
-		return get(entry) != null;
+		return this.get(entry) != null;
 	}
 
 	Stream<Entry<?>> getAllEntries();

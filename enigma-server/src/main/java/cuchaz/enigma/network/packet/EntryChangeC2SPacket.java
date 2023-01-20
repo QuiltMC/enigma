@@ -29,7 +29,7 @@ public class EntryChangeC2SPacket implements Packet<ServerPacketHandler> {
 
 	@Override
 	public void write(DataOutput output) throws IOException {
-		PacketHelper.writeEntryChange(output, change);
+		PacketHelper.writeEntryChange(output, this.change);
 	}
 
 	@Override
@@ -37,29 +37,29 @@ public class EntryChangeC2SPacket implements Packet<ServerPacketHandler> {
 		ValidationContext vc = new ValidationContext();
 		vc.setActiveElement(PrintValidatable.INSTANCE);
 
-		boolean valid = handler.getServer().canModifyEntry(handler.getClient(), this.change.getTarget());
+		boolean valid = handler.server().canModifyEntry(handler.client(), this.change.getTarget());
 
 		if (valid) {
-			EntryUtil.applyChange(vc, handler.getServer().getMappings(), this.change);
+			EntryUtil.applyChange(vc, handler.server().getMappings(), this.change);
 			valid = vc.canProceed();
 		}
 
 		if (!valid) {
-			handler.getServer().sendCorrectMapping(handler.getClient(), this.change.getTarget(), true);
+			handler.server().sendCorrectMapping(handler.client(), this.change.getTarget(), true);
 			return;
 		}
 
-		int syncId = handler.getServer().lockEntry(handler.getClient(), this.change.getTarget());
-		handler.getServer().sendToAllExcept(handler.getClient(), new EntryChangeS2CPacket(syncId, this.change));
+		int syncId = handler.server().lockEntry(handler.client(), this.change.getTarget());
+		handler.server().sendToAllExcept(handler.client(), new EntryChangeS2CPacket(syncId, this.change));
 
 		if (this.change.getDeobfName().isSet()) {
-			handler.getServer().sendMessage(Message.rename(handler.getServer().getUsername(handler.getClient()), this.change.getTarget(), this.change.getDeobfName().getNewValue()));
+			handler.server().sendMessage(Message.rename(handler.server().getUsername(handler.client()), this.change.getTarget(), this.change.getDeobfName().getNewValue()));
 		} else if (this.change.getDeobfName().isReset()) {
-			handler.getServer().sendMessage(Message.removeMapping(handler.getServer().getUsername(handler.getClient()), this.change.getTarget()));
+			handler.server().sendMessage(Message.removeMapping(handler.server().getUsername(handler.client()), this.change.getTarget()));
 		}
 
 		if (!this.change.getJavadoc().isUnchanged()) {
-			handler.getServer().sendMessage(Message.editDocs(handler.getServer().getUsername(handler.getClient()), this.change.getTarget()));
+			handler.server().sendMessage(Message.editDocs(handler.server().getUsername(handler.client()), this.change.getTarget()));
 		}
 	}
 

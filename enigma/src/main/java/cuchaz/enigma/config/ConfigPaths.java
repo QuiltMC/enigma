@@ -14,18 +14,22 @@ public class ConfigPaths {
 
 	public static Path getConfigPathRoot() {
 		switch (Os.getOs()) {
-			case LINUX:
+			case LINUX -> {
 				String configHome = System.getenv("XDG_CONFIG_HOME");
 				if (configHome == null) {
 					return getUserHomeUnix().resolve(".config");
 				}
 				return Paths.get(configHome);
-			case MAC:
+			}
+			case MAC -> {
 				return getUserHomeUnix().resolve("Library").resolve("Application Support");
-			case WINDOWS:
+			}
+			case WINDOWS -> {
 				return Paths.get(System.getenv("LOCALAPPDATA"));
-			default:
+			}
+			default -> {
 				return Paths.get(System.getProperty("user.dir"));
+			}
 		}
 	}
 

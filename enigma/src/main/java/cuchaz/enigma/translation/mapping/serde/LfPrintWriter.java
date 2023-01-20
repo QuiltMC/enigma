@@ -11,6 +11,6 @@ public class LfPrintWriter extends PrintWriter {
     @Override
     public void println() {
         // https://stackoverflow.com/a/14749004
-        write('\n');
+        this.write('\n');
     }
 }

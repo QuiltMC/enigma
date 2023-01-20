@@ -18,9 +18,9 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
     private final List<NameProposalService> nameProposalServices;
     private final EntryRemapper mapper;
     private final ClassEntry parentEntry;
-    private final ParentedEntry entry;
+    private final ParentedEntry<?> entry;
 
-    public StructureTreeNode(EnigmaProject project, ClassEntry parentEntry, ParentedEntry entry) {
+    public StructureTreeNode(EnigmaProject project, ClassEntry parentEntry, ParentedEntry<?> entry) {
         this.nameProposalServices = project.getEnigma().getServices().get(NameProposalService.TYPE);
         this.mapper = project.getMapper();
         this.parentEntry = parentEntry;
@@ -30,12 +30,12 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
     /**
      * Returns the parented entry represented by this tree node.
      */
-    public ParentedEntry getEntry() {
+    public ParentedEntry<?> getEntry() {
         return this.entry;
     }
 
     public void load(EnigmaProject project, StructureTreeOptions options) {
-        Stream<ParentedEntry> children = project.getJarIndex().getChildrenByClass().get(this.parentEntry).stream();
+        Stream<ParentedEntry<?>> children = project.getJarIndex().getChildrenByClass().get(this.parentEntry).stream();
 
         children = switch (options.obfuscationVisibility()) {
             case ALL -> children;
@@ -72,8 +72,8 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
         for (ParentedEntry<?> child : children.toList()) {
             StructureTreeNode childNode = new StructureTreeNode(project, this.parentEntry, child);
 
-            if (child instanceof ClassEntry) {
-                childNode = new StructureTreeNode(project, (ClassEntry) child, child);
+            if (child instanceof ClassEntry classEntry) {
+                childNode = new StructureTreeNode(project, classEntry, child);
                 childNode.load(project, options);
             }
 
@@ -83,7 +83,7 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 
     @Override
     public String toString() {
-        TranslateResult<ParentedEntry> translateResult = this.mapper.extendedDeobfuscate(this.entry);
+        TranslateResult<ParentedEntry<?>> translateResult = this.mapper.extendedDeobfuscate(this.entry);
         String result = translateResult.getValue().getName();
 
         if (translateResult.isObfuscated()) {
@@ -144,19 +144,19 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
             }
         }
 
-        return "<i>" + String.join(" ", modifiers) + "</i> " + toString();
+        return "<i>" + String.join(" ", modifiers) + "</i> " + this;
     }
 
     private String parseArgs(List<TypeDescriptor> args) {
-        if (args.size() > 0) {
-            String result = "(";
+        if (!args.isEmpty()) {
+            StringBuilder result = new StringBuilder("(");
 
             for (int i = 0; i < args.size(); i++) {
                 if (i > 0) {
-                    result += ", ";
+                    result.append(", ");
                 }
 
-                result += this.parseDesc(args.get(i));
+                result.append(this.parseDesc(args.get(i)));
             }
 
             return result + ")";

@@ -13,15 +13,15 @@ public final class EnigmaServiceType<T extends EnigmaService> {
 
 	@Override
 	public int hashCode() {
-		return key.hashCode();
+		return this.key.hashCode();
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
 
-		if (obj instanceof EnigmaServiceType) {
-			return ((EnigmaServiceType) obj).key.equals(key);
+		if (obj instanceof EnigmaServiceType<?> serviceType) {
+			return serviceType.key.equals(this.key);
 		}
 
 		return false;

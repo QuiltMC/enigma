@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import javax.swing.*;
@@ -41,16 +42,14 @@ public class GuiUtil {
 
     public static void openUrl(String url) {
         try {
-            switch (Os.getOs()) {
-                case LINUX:
-                    new ProcessBuilder("/usr/bin/env", "xdg-open", url).start();
-                    break;
-                default:
-                    if (Desktop.isDesktopSupported()) {
-                        Desktop desktop = Desktop.getDesktop();
-                        desktop.browse(new URI(url));
-                    }
-            }
+			if (Objects.requireNonNull(Os.getOs()) == Os.LINUX) {
+				new ProcessBuilder("/usr/bin/env", "xdg-open", url).start();
+			} else {
+				if (Desktop.isDesktopSupported()) {
+					Desktop desktop = Desktop.getDesktop();
+					desktop.browse(new URI(url));
+				}
+			}
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         } catch (URISyntaxException ex) {
@@ -88,15 +87,6 @@ public class GuiUtil {
         Timer t = new Timer(1000, e -> p.hide());
         t.setRepeats(false);
         t.start();
-    }
-
-    public static void showToolTipNow(JComponent component) {
-        // HACKHACK: trick the tooltip manager into showing the tooltip right now
-        ToolTipManager manager = ToolTipManager.sharedInstance();
-        int oldDelay = manager.getInitialDelay();
-        manager.setInitialDelay(0);
-        manager.mouseMoved(new MouseEvent(component, MouseEvent.MOUSE_MOVED, System.currentTimeMillis(), 0, 0, 0, 0, false));
-        manager.setInitialDelay(oldDelay);
     }
 
     public static JLabel createLink(String text, Runnable action) {

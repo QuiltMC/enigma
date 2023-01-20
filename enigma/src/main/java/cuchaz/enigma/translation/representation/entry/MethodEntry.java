@@ -54,27 +54,27 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	}
 
 	public boolean isConstructor() {
-		return name.equals("<init>") || name.equals("<clinit>");
+		return this.name.equals("<init>") || this.name.equals("<clinit>");
 	}
 
 	@Override
 	protected TranslateResult<? extends MethodEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
-		String translatedName = mapping.targetName() != null ? mapping.targetName() : name;
+		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new MethodEntry(parent, translatedName, translator.translate(descriptor), docs)
+				new MethodEntry(this.parent, translatedName, translator.translate(this.descriptor), docs)
 		);
 	}
 
 	@Override
 	public MethodEntry withName(String name) {
-		return new MethodEntry(parent, name, descriptor, javadocs);
+		return new MethodEntry(this.parent, name, this.descriptor, this.javadocs);
 	}
 
 	@Override
 	public MethodEntry withParent(ClassEntry parent) {
-		return new MethodEntry(new ClassEntry(parent.getFullName()), name, descriptor, javadocs);
+		return new MethodEntry(new ClassEntry(parent.getFullName()), this.name, this.descriptor, this.javadocs);
 	}
 
 	@Override
@@ -84,7 +84,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof MethodEntry && equals((MethodEntry) other);
+		return other instanceof MethodEntry && this.equals((MethodEntry) other);
 	}
 
 	public boolean equals(MethodEntry other) {
@@ -93,9 +93,8 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 
 	@Override
 	public boolean canConflictWith(Entry<?> entry) {
-		if (entry instanceof MethodEntry) {
-			MethodEntry methodEntry = (MethodEntry) entry;
-			return methodEntry.parent.equals(parent) && methodEntry.descriptor.canConflictWith(descriptor);
+		if (entry instanceof MethodEntry methodEntry) {
+			return methodEntry.parent.equals(this.parent) && methodEntry.descriptor.canConflictWith(this.descriptor);
 		}
 		return false;
 	}
@@ -112,6 +111,6 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 
 	@Override
 	public int compareTo(MethodEntry entry) {
-		return (name + descriptor.toString()).compareTo(entry.name + entry.descriptor.toString());
+		return (this.name + this.descriptor.toString()).compareTo(entry.name + entry.descriptor.toString());
 	}
 }

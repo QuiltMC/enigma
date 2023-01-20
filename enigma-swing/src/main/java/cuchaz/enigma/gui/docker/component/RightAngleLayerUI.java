@@ -34,12 +34,12 @@ public class RightAngleLayerUI extends LayerUI<JComponent> {
 	@Override
 	public void paint(Graphics g, JComponent c) {
 		Graphics2D g2d = (Graphics2D) g;
-		if (rotation == Rotation.COUNTERCLOCKWISE) {
+		if (this.rotation == Rotation.COUNTERCLOCKWISE) {
 			g2d.translate(0, c.getHeight());
-		} else if (rotation == Rotation.CLOCKWISE) {
+		} else if (this.rotation == Rotation.CLOCKWISE) {
 			g2d.translate(c.getWidth(), 0);
 		}
-		g2d.rotate(-rotation.getAsInteger() * (Math.PI * 0.5));
+		g2d.rotate(-this.rotation.getAsInteger() * (Math.PI * 0.5));
 		super.paint(g2d, c);
 	}
 
@@ -116,13 +116,13 @@ public class RightAngleLayerUI extends LayerUI<JComponent> {
 			// The if discriminates between the generated and original event.
 			// Removing it will cause a stack overflow caused by the event being redispatched to this class.
 
-			if (!dispatchingMode) {
+			if (!this.dispatchingMode) {
 				// Process an original mouse event
-				dispatchingMode = true;
+				this.dispatchingMode = true;
 				try {
-					redispatchMouseEvent(mouseEvent, layer);
+					this.redispatchMouseEvent(mouseEvent, layer);
 				} finally {
-					dispatchingMode = false;
+					this.dispatchingMode = false;
 				}
 			} else {
 				// Process generated mouse events
@@ -149,47 +149,46 @@ public class RightAngleLayerUI extends LayerUI<JComponent> {
 			}
 			MouseEvent newEvent = null;
 
-			Point realPoint = transform(originalEvent.getX(), originalEvent.getY(), layer.getWidth(), layer.getHeight(), rotation);
-			Component realTarget = getTarget(layer, realPoint);
+			Point realPoint = transform(originalEvent.getX(), originalEvent.getY(), layer.getWidth(), layer.getHeight(), this.rotation);
+			Component realTarget = this.getTarget(layer, realPoint);
 
 			if (realTarget != null) {
-				realTarget = getListeningComponent(originalEvent, realTarget);
+				realTarget = this.getListeningComponent(originalEvent, realTarget);
 			}
 
 			switch (originalEvent.getID()) {
 				case MouseEvent.MOUSE_PRESSED -> {
-					newEvent = transformMouseEvent(layer, originalEvent, realTarget, realPoint);
+					newEvent = this.transformMouseEvent(layer, originalEvent, realTarget, realPoint);
 					if (newEvent != null) {
-						lastPressedTarget = newEvent.getComponent();
+						this.lastPressedTarget = newEvent.getComponent();
 					}
 				}
 				case MouseEvent.MOUSE_RELEASED -> {
-					newEvent = transformMouseEvent(layer, originalEvent, lastPressedTarget, realPoint);
-					lastPressedTarget = null;
+					newEvent = this.transformMouseEvent(layer, originalEvent, this.lastPressedTarget, realPoint);
+					this.lastPressedTarget = null;
 				}
 				case MouseEvent.MOUSE_CLICKED -> {
-					newEvent = transformMouseEvent(layer, originalEvent, realTarget, realPoint);
-					lastPressedTarget = null;
+					newEvent = this.transformMouseEvent(layer, originalEvent, realTarget, realPoint);
+					this.lastPressedTarget = null;
 				}
 				case MouseEvent.MOUSE_MOVED -> {
-					newEvent = transformMouseEvent(layer, originalEvent, realTarget, realPoint);
-					generateEnterExitEvents(layer, originalEvent, realTarget, realPoint);
+					newEvent = this.transformMouseEvent(layer, originalEvent, realTarget, realPoint);
+					this.generateEnterExitEvents(layer, originalEvent, realTarget, realPoint);
 				}
-				case MouseEvent.MOUSE_ENTERED, MouseEvent.MOUSE_EXITED ->
-						generateEnterExitEvents(layer, originalEvent, realTarget, realPoint);
+				case MouseEvent.MOUSE_ENTERED, MouseEvent.MOUSE_EXITED -> this.generateEnterExitEvents(layer, originalEvent, realTarget, realPoint);
 				case MouseEvent.MOUSE_DRAGGED -> {
-					newEvent = transformMouseEvent(layer, originalEvent, lastPressedTarget, realPoint);
-					generateEnterExitEvents(layer, originalEvent, realTarget, realPoint);
+					newEvent = this.transformMouseEvent(layer, originalEvent, this.lastPressedTarget, realPoint);
+					this.generateEnterExitEvents(layer, originalEvent, realTarget, realPoint);
 				}
 				case MouseEvent.MOUSE_WHEEL ->
-						newEvent = transformMouseWheelEvent(layer, (MouseWheelEvent) originalEvent, realTarget, realPoint);
+						newEvent = this.transformMouseWheelEvent(layer, (MouseWheelEvent) originalEvent, realTarget, realPoint);
 			}
-			dispatchMouseEvent(newEvent);
+			this.dispatchMouseEvent(newEvent);
 		}
 	}
 
 	private MouseEvent transformMouseEvent(JLayer<? extends JComponent> layer, MouseEvent mouseEvent, Component target, Point realPoint) {
-		return transformMouseEvent(layer, mouseEvent, target, realPoint, mouseEvent.getID());
+		return this.transformMouseEvent(layer, mouseEvent, target, realPoint, mouseEvent.getID());
 	}
 
 	/**
@@ -253,9 +252,9 @@ public class RightAngleLayerUI extends LayerUI<JComponent> {
 	private Component getListeningComponent(MouseEvent event, Component component) {
 		return switch (event.getID()) {
 			case MouseEvent.MOUSE_CLICKED, MouseEvent.MOUSE_ENTERED, MouseEvent.MOUSE_EXITED, MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_RELEASED ->
-					getMouseListeningComponent(component);
-			case MouseEvent.MOUSE_DRAGGED, MouseEvent.MOUSE_MOVED -> getMouseMotionListeningComponent(component);
-			case MouseEvent.MOUSE_WHEEL -> getMouseWheelListeningComponent(component);
+					this.getMouseListeningComponent(component);
+			case MouseEvent.MOUSE_DRAGGED, MouseEvent.MOUSE_MOVED -> this.getMouseMotionListeningComponent(component);
+			case MouseEvent.MOUSE_WHEEL -> this.getMouseWheelListeningComponent(component);
 			default -> null;
 		};
 	}
@@ -269,7 +268,7 @@ public class RightAngleLayerUI extends LayerUI<JComponent> {
 		} else {
 			Container parent = component.getParent();
 			if (parent != null) {
-				return getMouseListeningComponent(parent);
+				return this.getMouseListeningComponent(parent);
 			} else {
 				return null;
 			}
@@ -289,7 +288,7 @@ public class RightAngleLayerUI extends LayerUI<JComponent> {
 		} else {
 			Container parent = component.getParent();
 			if (parent != null) {
-				return getMouseMotionListeningComponent(parent);
+				return this.getMouseMotionListeningComponent(parent);
 			} else {
 				return null;
 			}
@@ -305,7 +304,7 @@ public class RightAngleLayerUI extends LayerUI<JComponent> {
 		} else {
 			Container parent = component.getParent();
 			if (parent != null) {
-				return getMouseWheelListeningComponent(parent);
+				return this.getMouseWheelListeningComponent(parent);
 			} else {
 				return null;
 			}
@@ -316,10 +315,10 @@ public class RightAngleLayerUI extends LayerUI<JComponent> {
 	 * Generate a {@code MOUSE_ENTERED} and {@code MOUSE_EXITED} event when the target component is changed
 	 */
 	private void generateEnterExitEvents(JLayer<? extends JComponent> layer, MouseEvent originalEvent, Component newTarget, Point realPoint) {
-		if (lastEnteredTarget != newTarget) {
-			dispatchMouseEvent(transformMouseEvent(layer, originalEvent, lastEnteredTarget, realPoint, MouseEvent.MOUSE_EXITED));
-			lastEnteredTarget = newTarget;
-			dispatchMouseEvent(transformMouseEvent(layer, originalEvent, lastEnteredTarget, realPoint, MouseEvent.MOUSE_ENTERED));
+		if (this.lastEnteredTarget != newTarget) {
+			this.dispatchMouseEvent(this.transformMouseEvent(layer, originalEvent, this.lastEnteredTarget, realPoint, MouseEvent.MOUSE_EXITED));
+			this.lastEnteredTarget = newTarget;
+			this.dispatchMouseEvent(this.transformMouseEvent(layer, originalEvent, this.lastEnteredTarget, realPoint, MouseEvent.MOUSE_ENTERED));
 		}
 	}
 
@@ -350,7 +349,7 @@ public class RightAngleLayerUI extends LayerUI<JComponent> {
 		}
 
 		public int getAsInteger() {
-			return asInteger;
+			return this.asInteger;
 		}
 	}
 }

@@ -53,20 +53,20 @@ public final class TristateChange<T> {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (o == null || this.getClass() != o.getClass()) return false;
 		TristateChange<?> that = (TristateChange<?>) o;
-		return type == that.type &&
-				Objects.equals(val, that.val);
+		return this.type == that.type &&
+				Objects.equals(this.val, that.val);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(type, val);
+		return Objects.hash(this.type, this.val);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("TristateChange { type: %s, val: %s }", type, val);
+		return String.format("TristateChange { type: %s, val: %s }", this.type, this.val);
 	}
 
 	public enum Type {

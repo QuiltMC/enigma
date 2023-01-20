@@ -21,7 +21,7 @@ public class Main {
 
 	private static final Map<String, Command> COMMANDS = new LinkedHashMap<>();
 
-	public static void main(String... args) throws Exception {
+	public static void main(String... args) {
 		try {
 			// process the command
 			if (args.length < 1)
@@ -46,7 +46,7 @@ public class Main {
 			}
 		} catch (CommandHelpException ex) {
 			ex.printStackTrace();
-			System.out.println(String.format("%s - %s", Enigma.NAME, Enigma.VERSION));
+			System.out.printf("%s - %s%n", Enigma.NAME, Enigma.VERSION);
 			System.out.println("Command " + ex.command.name + " has encountered an error! Usage:");
 			printHelp(ex.command);
 			System.exit(1);
@@ -58,7 +58,7 @@ public class Main {
 	}
 
 	private static void printHelp() {
-		System.out.println(String.format("%s - %s", Enigma.NAME, Enigma.VERSION));
+		System.out.printf("%s - %s%n", Enigma.NAME, Enigma.VERSION);
 		System.out.println("Usage:");
 		System.out.println("\tjava -cp enigma.jar cuchaz.enigma.command.CommandMain <command>");
 		System.out.println("\twhere <command> is one of:");

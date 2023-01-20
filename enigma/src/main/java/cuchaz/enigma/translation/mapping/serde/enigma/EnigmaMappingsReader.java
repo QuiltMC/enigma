@@ -178,23 +178,29 @@ public enum EnigmaMappingsReader implements MappingsReader {
 		Entry<?> parentEntry = parent == null ? null : parent.getEntry();
 
 		switch (keyToken) {
-			case EnigmaFormat.CLASS:
+			case EnigmaFormat.CLASS -> {
 				return parseClass(parentEntry, tokens);
-			case EnigmaFormat.FIELD:
+			}
+			case EnigmaFormat.FIELD -> {
 				return parseField(parentEntry, tokens);
-			case EnigmaFormat.METHOD:
+			}
+			case EnigmaFormat.METHOD -> {
 				return parseMethod(parentEntry, tokens);
-			case EnigmaFormat.PARAMETER:
+			}
+			case EnigmaFormat.PARAMETER -> {
 				return parseArgument(parentEntry, tokens);
-			case EnigmaFormat.COMMENT:
+			}
+			case EnigmaFormat.COMMENT -> {
 				readJavadoc(parent, tokens);
 				return null;
-			default:
+			}
+			default -> {
 				if (keyToken.equals("V1")) {
 					throw new RuntimeException("Unknown token '" + keyToken + "' (wrong mappings format?)");
 				} else {
 					throw new RuntimeException("Unknown token '" + keyToken + "'");
 				}
+			}
 		}
 	}
 
@@ -212,8 +218,8 @@ public enum EnigmaMappingsReader implements MappingsReader {
 	private static MappingPair<ClassEntry, RawEntryMapping> parseClass(@Nullable Entry<?> parent, String[] tokens) {
 		String obfuscatedName = ClassEntry.getInnerName(tokens[1]);
 		ClassEntry obfuscatedEntry;
-		if (parent instanceof ClassEntry) {
-			obfuscatedEntry = new ClassEntry((ClassEntry) parent, obfuscatedName);
+		if (parent instanceof ClassEntry classEntry) {
+			obfuscatedEntry = new ClassEntry(classEntry, obfuscatedName);
 		} else {
 			obfuscatedEntry = new ClassEntry(obfuscatedName);
 		}
@@ -238,11 +244,9 @@ public enum EnigmaMappingsReader implements MappingsReader {
 	}
 
 	private static MappingPair<FieldEntry, RawEntryMapping> parseField(@Nullable Entry<?> parent, String[] tokens) {
-		if (!(parent instanceof ClassEntry)) {
+		if (!(parent instanceof ClassEntry ownerEntry)) {
 			throw new RuntimeException("Field must be a child of a class!");
 		}
-
-		ClassEntry ownerEntry = (ClassEntry) parent;
 
 		String obfuscatedName = tokens[1];
 		String mapping = null;
@@ -273,11 +277,9 @@ public enum EnigmaMappingsReader implements MappingsReader {
 	}
 
 	private static MappingPair<MethodEntry, RawEntryMapping> parseMethod(@Nullable Entry<?> parent, String[] tokens) {
-		if (!(parent instanceof ClassEntry)) {
+		if (!(parent instanceof ClassEntry ownerEntry)) {
 			throw new RuntimeException("Method must be a child of a class!");
 		}
-
-		ClassEntry ownerEntry = (ClassEntry) parent;
 
 		String obfuscatedName = tokens[1];
 		String mapping = null;
@@ -309,11 +311,10 @@ public enum EnigmaMappingsReader implements MappingsReader {
 	}
 
 	private static MappingPair<LocalVariableEntry, RawEntryMapping> parseArgument(@Nullable Entry<?> parent, String[] tokens) {
-		if (!(parent instanceof MethodEntry)) {
+		if (!(parent instanceof MethodEntry ownerEntry)) {
 			throw new RuntimeException("Method arg must be a child of a method!");
 		}
 
-		MethodEntry ownerEntry = (MethodEntry) parent;
 		LocalVariableEntry obfuscatedEntry = new LocalVariableEntry(ownerEntry, Integer.parseInt(tokens[1]), "", true, null);
 		String mapping = tokens[2];
 

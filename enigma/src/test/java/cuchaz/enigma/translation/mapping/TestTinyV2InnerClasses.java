@@ -22,17 +22,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public final class TestTinyV2InnerClasses {
-	private Path jar;
-	private Path mappings;
+	private final Path jar;
+	private final Path mappings;
 
 	public TestTinyV2InnerClasses() throws Exception {
-		jar = Paths.get("build/test-obf/innerClasses.jar");
-		mappings = Paths.get(TestTinyV2InnerClasses.class.getResource("/tinyV2InnerClasses/").toURI());
+        this.jar = Paths.get("build/test-obf/innerClasses.jar");
+        this.mappings = Paths.get(TestTinyV2InnerClasses.class.getResource("/tinyV2InnerClasses/").toURI());
 	}
 
 	@Test
 	public void testMappings() throws Exception {
-		EnigmaProject project = Enigma.create().openJar(jar, new ClasspathClassProvider(), ProgressListener.none());
-		project.setMappings(EnigmaMappingsReader.DIRECTORY.read(mappings, ProgressListener.none(), project.getEnigma().getProfile().getMappingSaveParameters()));
+		EnigmaProject project = Enigma.create().openJar(this.jar, new ClasspathClassProvider(), ProgressListener.none());
+		project.setMappings(EnigmaMappingsReader.DIRECTORY.read(this.mappings, ProgressListener.none(), project.getEnigma().getProfile().getMappingSaveParameters()));
 	}
 }

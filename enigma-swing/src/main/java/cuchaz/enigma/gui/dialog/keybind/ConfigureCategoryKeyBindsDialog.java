@@ -12,7 +12,6 @@ import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.util.List;
@@ -21,7 +20,7 @@ public class ConfigureCategoryKeyBindsDialog extends JDialog {
     public ConfigureCategoryKeyBindsDialog(Frame owner, String category, List<KeyBind> keyBinds) {
         super(owner, I18n.translateFormatted("menu.file.configure_keybinds.category_title", I18n.translate("keybind.category." + category)), true);
 
-        Container contentPane = getContentPane();
+        Container contentPane = this.getContentPane();
         contentPane.setLayout(new BorderLayout());
 
         // Add keybinds
@@ -47,16 +46,16 @@ public class ConfigureCategoryKeyBindsDialog extends JDialog {
         // Add buttons
         Container buttonContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, ScaleUtil.scale(4), ScaleUtil.scale(4)));
         JButton okButton = new JButton(I18n.translate("prompt.ok"));
-        okButton.addActionListener(event -> close());
+        okButton.addActionListener(event -> this.close());
         buttonContainer.add(okButton);
         contentPane.add(buttonContainer, BorderLayout.SOUTH);
 
-        pack();
-        setLocationRelativeTo(owner);
+		this.pack();
+		this.setLocationRelativeTo(owner);
     }
 
     private void close() {
-        setVisible(false);
-        dispose();
+		this.setVisible(false);
+		this.dispose();
     }
 }

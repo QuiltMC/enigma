@@ -1,7 +1,6 @@
 package cuchaz.enigma.config;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Deque;
@@ -22,7 +21,7 @@ public class ConfigContainer {
 		if (this.configPath == null) throw new IllegalStateException("File has no config path set!");
 		try {
 			Files.createDirectories(this.configPath.getParent());
-			Files.write(this.configPath, this.serialize().getBytes(StandardCharsets.UTF_8));
+			Files.writeString(this.configPath, this.serialize());
 			this.existsOnDisk = true;
 		} catch (IOException e) {
 			e.printStackTrace();

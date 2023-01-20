@@ -32,9 +32,6 @@ public class DecompilerConfig {
         }
     }
 
-    public static void bootstrap() {
-    }
-
     static {
         QuiltflowerPreferences.OPTIONS.putAll(getQuiltflowerSection().values());
     }

@@ -21,7 +21,7 @@ public class JarClassProvider implements AutoCloseable, ClassProvider {
 
     public JarClassProvider(Path jarPath) throws IOException {
         this.fileSystem = FileSystems.newFileSystem(jarPath, (ClassLoader) null);
-        this.classNames = collectClassNames(fileSystem);
+        this.classNames = collectClassNames(this.fileSystem);
     }
 
     private static ImmutableSet<String> collectClassNames(FileSystem fileSystem) throws IOException {
@@ -41,18 +41,18 @@ public class JarClassProvider implements AutoCloseable, ClassProvider {
 
     @Override
     public Set<String> getClassNames() {
-        return classNames;
+        return this.classNames;
     }
 
     @Nullable
     @Override
     public ClassNode get(String name) {
-        if (!classNames.contains(name)) {
+        if (!this.classNames.contains(name)) {
             return null;
         }
 
         try {
-            return AsmUtil.bytesToNode(Files.readAllBytes(fileSystem.getPath(name + ".class")));
+            return AsmUtil.bytesToNode(Files.readAllBytes(this.fileSystem.getPath(name + ".class")));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -60,6 +60,6 @@ public class JarClassProvider implements AutoCloseable, ClassProvider {
 
     @Override
     public void close() throws Exception {
-        fileSystem.close();
+		this.fileSystem.close();
     }
 }

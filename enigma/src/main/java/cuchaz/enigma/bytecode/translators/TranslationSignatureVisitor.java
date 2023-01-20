@@ -1,7 +1,9 @@
 package cuchaz.enigma.bytecode.translators;
 
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import org.objectweb.asm.signature.SignatureVisitor;
 
@@ -11,9 +13,9 @@ public class TranslationSignatureVisitor extends SignatureVisitor {
 	private final Function<String, String> remapper;
 
 	private final SignatureVisitor sv;
-	private final Stack<String> classStack = new Stack<>();
+	private final Deque<String> classStack = new ArrayDeque<>();
 
-	public TranslationSignatureVisitor(Function<String, String> remapper, SignatureVisitor sv) {
+	public TranslationSignatureVisitor(UnaryOperator<String> remapper, SignatureVisitor sv) {
 		super(Enigma.ASM_VERSION);
 		this.remapper = remapper;
 		this.sv = sv;
@@ -21,23 +23,23 @@ public class TranslationSignatureVisitor extends SignatureVisitor {
 
 	@Override
 	public void visitClassType(String name) {
-		classStack.push(name);
+        this.classStack.push(name);
 		String translatedEntry = this.remapper.apply(name);
 		this.sv.visitClassType(translatedEntry);
 	}
 
 	@Override
 	public void visitInnerClassType(String name) {
-		String lastClass = classStack.pop();
-		if (!name.startsWith(lastClass+"$")){//todo see if there's a way to base this on whether there were type params or not
+		String lastClass = this.classStack.pop();
+		if (!name.startsWith(lastClass+"$")) { //todo see if there's a way to base this on whether there were type params or not
 			name = lastClass+"$"+name;
 		}
-		classStack.push(name);
+        this.classStack.push(name);
 		String translatedEntry = this.remapper.apply(name);
-		if (translatedEntry.contains("/")){
+		if (translatedEntry.contains("/")) {
 			translatedEntry = translatedEntry.substring(translatedEntry.lastIndexOf("/")+1);
 		}
-		if (translatedEntry.contains("$")){
+		if (translatedEntry.contains("$")) {
 			translatedEntry = translatedEntry.substring(translatedEntry.lastIndexOf("$")+1);
 		}
 		this.sv.visitInnerClassType(translatedEntry);
@@ -120,8 +122,9 @@ public class TranslationSignatureVisitor extends SignatureVisitor {
 	@Override
 	public void visitEnd() {
 		this.sv.visitEnd();
-		if (!classStack.empty())
-			classStack.pop();
+		if (!this.classStack.isEmpty()) {
+			this.classStack.pop();
+		}
 	}
 
 	@Override

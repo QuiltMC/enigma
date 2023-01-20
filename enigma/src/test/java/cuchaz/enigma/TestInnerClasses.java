@@ -43,47 +43,47 @@ public class TestInnerClasses {
 	public TestInnerClasses() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
 		CachingClassProvider classProvider = new CachingClassProvider(jcp);
-		index = JarIndex.empty();
-		index.indexJar(jcp.getClassNames(), classProvider, ProgressListener.none());
-		decompiler = Decompilers.CFR.create(classProvider, new SourceSettings(false, false));
+        this.index = JarIndex.empty();
+        this.index.indexJar(jcp.getClassNames(), classProvider, ProgressListener.none());
+        this.decompiler = Decompilers.CFR.create(classProvider, new SourceSettings(false, false));
 	}
 
 	@Test
 	public void simple() {
-		decompile(SimpleOuter);
+        this.decompile(SimpleOuter);
 	}
 
 	@Test
 	public void constructorArgs() {
-		decompile(ConstructorArgsOuter);
+        this.decompile(ConstructorArgsOuter);
 	}
 
 	@Test
 	public void classTree() {
 
 		// root level
-		assertTrue(index.getEntryIndex().hasClass(ClassTreeRoot));
+		assertTrue(this.index.getEntryIndex().hasClass(ClassTreeRoot));
 
 		// level 1
 		ClassEntry fullClassEntry = new ClassEntry(ClassTreeRoot.getName()
 			+ "$" + ClassTreeLevel1.getSimpleName());
-		assertTrue(index.getEntryIndex().hasClass(fullClassEntry));
+		assertTrue(this.index.getEntryIndex().hasClass(fullClassEntry));
 
 		// level 2
 		fullClassEntry = new ClassEntry(ClassTreeRoot.getName()
 			+ "$" + ClassTreeLevel1.getSimpleName()
 			+ "$" + ClassTreeLevel2.getSimpleName());
-		assertTrue(index.getEntryIndex().hasClass(fullClassEntry));
+		assertTrue(this.index.getEntryIndex().hasClass(fullClassEntry));
 
 		// level 3
 		fullClassEntry = new ClassEntry(ClassTreeRoot.getName()
 			+ "$" + ClassTreeLevel1.getSimpleName()
 			+ "$" + ClassTreeLevel2.getSimpleName()
 			+ "$" + ClassTreeLevel3.getSimpleName());
-		assertTrue(index.getEntryIndex().hasClass(fullClassEntry));
+		assertTrue(this.index.getEntryIndex().hasClass(fullClassEntry));
 	}
 
 	private void decompile(ClassEntry classEntry) {
-		decompiler.getSource(classEntry.getName());
+        this.decompiler.getSource(classEntry.getName());
 	}
 }

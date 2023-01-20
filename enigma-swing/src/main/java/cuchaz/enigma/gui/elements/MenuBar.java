@@ -130,7 +130,7 @@ public class MenuBar {
 		this.helpMenu.add(this.githubItem);
 		ui.add(this.helpMenu);
 
-		setKeyBinds();
+		this.setKeyBinds();
 
 		this.jarOpenItem.addActionListener(e -> this.onOpenJarClicked());
 		this.jarCloseItem.addActionListener(e -> this.gui.getController().closeJar());
@@ -233,7 +233,7 @@ public class MenuBar {
 		JFileChooser d = this.gui.jarFileChooser;
 		d.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
 		d.setVisible(true);
-		int result = d.showOpenDialog(gui.getFrame());
+		int result = d.showOpenDialog(this.gui.getFrame());
 
 		if (result != JFileChooser.APPROVE_OPTION) {
 			return;
@@ -270,15 +270,15 @@ public class MenuBar {
 	}
 
 	private void onCloseMappingsClicked() {
-		openMappingsDiscardPrompt(() -> this.gui.getController().closeMappings());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().closeMappings());
 	}
 
 	private void onReloadMappingsClicked() {
-		openMappingsDiscardPrompt(() -> this.gui.getController().reloadMappings());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().reloadMappings());
 	}
 
 	private void onReloadAllClicked() {
-		openMappingsDiscardPrompt(() -> this.gui.getController().reloadAll());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().reloadAll());
 	}
 
 	private void onExportSourceClicked() {
@@ -292,7 +292,7 @@ public class MenuBar {
 	private void onExportJarClicked() {
 		this.gui.exportJarFileChooser.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
 		this.gui.exportJarFileChooser.setVisible(true);
-		int result = this.gui.exportJarFileChooser.showSaveDialog(gui.getFrame());
+		int result = this.gui.exportJarFileChooser.showSaveDialog(this.gui.getFrame());
 
 		if (result != JFileChooser.APPROVE_OPTION) {
 			return;
@@ -319,16 +319,6 @@ public class MenuBar {
 	}
 
 	private void onFontClicked(Gui gui) {
-//		FontDialog fd = new FontDialog(gui.getFrame(), "Choose Font", true);
-//		fd.setLocationRelativeTo(gui.getFrame());
-//		fd.setSelectedFont(UiConfig.getEditorFont());
-//		fd.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-//		fd.setVisible(true);
-//
-//		if (!fd.isCancelSelected()) {
-//			UiConfig.setEditorFont(fd.getSelectedFont());
-//			UiConfig.save();
-//		}
 		FontDialog.display(gui.getFrame());
 	}
 
@@ -349,16 +339,16 @@ public class MenuBar {
 		}
 		this.gui.getController().disconnectIfConnected(null);
 		try {
-			this.gui.getController().createClient(result.getUsername(), result.getAddress().address, result.getAddress().port, result.getPassword());
-			NetConfig.setUsername(result.getUsername());
-			NetConfig.setRemoteAddress(result.getAddressStr());
-			NetConfig.setPassword(String.valueOf(result.getPassword()));
+			this.gui.getController().createClient(result.username(), result.address().address, result.address().port, result.password());
+			NetConfig.setUsername(result.username());
+			NetConfig.setRemoteAddress(result.addressStr());
+			NetConfig.setPassword(String.valueOf(result.password()));
 			NetConfig.save();
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), e.toString(), I18n.translate("menu.collab.connect.error"), JOptionPane.ERROR_MESSAGE);
 			this.gui.getController().disconnectIfConnected(null);
 		}
-		Arrays.fill(result.getPassword(), (char) 0);
+		Arrays.fill(result.password(), (char) 0);
 	}
 
 	public void onStartServerClicked() {
@@ -372,9 +362,9 @@ public class MenuBar {
 		}
 		this.gui.getController().disconnectIfConnected(null);
 		try {
-			this.gui.getController().createServer(result.getPort(), result.getPassword());
-			NetConfig.setServerPort(result.getPort());
-			NetConfig.setServerPassword(String.valueOf(result.getPassword()));
+			this.gui.getController().createServer(result.port(), result.password());
+			NetConfig.setServerPort(result.port());
+			NetConfig.setServerPassword(String.valueOf(result.password()));
 			NetConfig.save();
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), e.toString(), I18n.translate("menu.collab.server.start.error"), JOptionPane.ERROR_MESSAGE);

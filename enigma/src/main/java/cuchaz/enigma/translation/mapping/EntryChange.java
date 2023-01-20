@@ -76,8 +76,7 @@ public final class EntryChange<E extends Entry<?>> {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof EntryChange)) return false;
-		EntryChange<?> that = (EntryChange<?>) o;
+		if (!(o instanceof EntryChange<?> that)) return false;
 		return Objects.equals(this.target, that.target) &&
 				Objects.equals(this.deobfName, that.deobfName) &&
 				Objects.equals(this.javadoc, that.javadoc) &&

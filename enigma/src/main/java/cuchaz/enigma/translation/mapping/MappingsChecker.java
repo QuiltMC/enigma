@@ -41,7 +41,7 @@ public class MappingsChecker {
 		Dropped dropped = new Dropped();
 
 		// HashEntryTree#getAllEntries filters out empty classes
-		Stream<Entry<?>> allEntries = StreamSupport.stream(mappings.spliterator(), false).map(EntryTreeNode::getEntry);
+		Stream<Entry<?>> allEntries = StreamSupport.stream(this.mappings.spliterator(), false).map(EntryTreeNode::getEntry);
 		Collection<Entry<?>> obfEntries = allEntries
 				.filter(e -> e instanceof ClassEntry || e instanceof MethodEntry || e instanceof FieldEntry || e instanceof LocalVariableEntry)
 				.toList();
@@ -54,18 +54,18 @@ public class MappingsChecker {
 			dropper.accept(dropped, entry);
 		}
 
-		dropped.apply(mappings);
+		dropped.apply(this.mappings);
 
 		return dropped;
 	}
 
 	public Dropped dropBrokenMappings(ProgressListener progress) {
-		return dropMappings(progress, this::tryDropBrokenEntry);
+		return this.dropMappings(progress, this::tryDropBrokenEntry);
 	}
 
 	private void tryDropBrokenEntry(Dropped dropped, Entry<?> entry) {
-		if (shouldDropBrokenEntry(entry)) {
-			EntryMapping mapping = mappings.get(entry);
+		if (this.shouldDropBrokenEntry(entry)) {
+			EntryMapping mapping = this.mappings.get(entry);
 			if (mapping != null) {
 				dropped.drop(entry, mapping);
 			}
@@ -73,11 +73,11 @@ public class MappingsChecker {
 	}
 
 	private boolean shouldDropBrokenEntry(Entry<?> entry) {
-		if (!index.getEntryIndex().hasEntry(entry)) {
+		if (!this.index.getEntryIndex().hasEntry(entry)) {
 			return true;
 		}
 
-		Collection<Entry<?>> resolvedEntries = index.getEntryResolver().resolveEntry(entry, ResolutionStrategy.RESOLVE_ROOT);
+		Collection<Entry<?>> resolvedEntries = this.index.getEntryResolver().resolveEntry(entry, ResolutionStrategy.RESOLVE_ROOT);
 
 		if (resolvedEntries.isEmpty()) {
 			// Entry doesn't exist at all, drop it.
@@ -87,22 +87,19 @@ public class MappingsChecker {
 			return false;
 		}
 
-		if (entry instanceof MethodEntry && mappings.getChildren(entry).size() > 0) {
-			// Method entry has parameter names, keep it even though it's not the root.
-			return false;
-		}
+		// Method entry has parameter names, keep it even though it's not the root.
+		return !(entry instanceof MethodEntry) || this.mappings.getChildren(entry).isEmpty();
 
 		// Entry is not the root, and is not a method with params
-		return true;
 	}
 
 	public Dropped dropEmptyMappings(ProgressListener progress) {
-		return dropMappings(progress, this::tryDropEmptyEntry);
+		return this.dropMappings(progress, this::tryDropEmptyEntry);
 	}
 
 	private void tryDropEmptyEntry(Dropped dropped, Entry<?> entry) {
-		if (shouldDropEmptyMapping(entry)) {
-			EntryMapping mapping = mappings.get(entry);
+		if (this.shouldDropEmptyMapping(entry)) {
+			EntryMapping mapping = this.mappings.get(entry);
 			if (mapping != null) {
 				dropped.drop(entry, mapping);
 			}
@@ -110,11 +107,11 @@ public class MappingsChecker {
 	}
 
 	private boolean shouldDropEmptyMapping(Entry<?> entry) {
-		EntryMapping mapping = mappings.get(entry);
+		EntryMapping mapping = this.mappings.get(entry);
 		if (mapping != null) {
 			boolean isEmpty = mapping.targetName() == null && mapping.javadoc() == null && mapping.accessModifier() == AccessModifier.UNCHANGED;
 			if (isEmpty) {
-				return mappings.getChildren(entry).isEmpty();
+				return this.mappings.getChildren(entry).isEmpty();
 			}
 		}
 
@@ -125,11 +122,11 @@ public class MappingsChecker {
 		private final Map<Entry<?>, String> droppedMappings = new HashMap<>();
 
 		public void drop(Entry<?> entry, EntryMapping mapping) {
-			droppedMappings.put(entry, mapping.targetName() != null ? mapping.targetName() : entry.getName());
+			this.droppedMappings.put(entry, mapping.targetName() != null ? mapping.targetName() : entry.getName());
 		}
 
 		void apply(EntryTree<EntryMapping> mappings) {
-			for (Entry<?> entry : droppedMappings.keySet()) {
+			for (Entry<?> entry : this.droppedMappings.keySet()) {
 				EntryTreeNode<EntryMapping> node = mappings.findNode(entry);
 				if (node == null) {
 					continue;
@@ -142,7 +139,7 @@ public class MappingsChecker {
 		}
 
 		public Map<Entry<?>, String> getDroppedMappings() {
-			return droppedMappings;
+			return this.droppedMappings;
 		}
 	}
 }

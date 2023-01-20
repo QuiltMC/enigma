@@ -34,15 +34,15 @@ public class MappingDelta<T> implements Translatable {
 	}
 
 	public EntryTree<T> getBaseMappings() {
-		return baseMappings;
+		return this.baseMappings;
 	}
 
 	public EntryTree<?> getChanges() {
-		return changes;
+		return this.changes;
 	}
 
 	public Stream<Entry<?>> getChangedRoots() {
-		return changes.getRootNodes().map(EntryTreeNode::getEntry);
+		return this.changes.getRootNodes().map(EntryTreeNode::getEntry);
 	}
 
 	@Override
@@ -50,8 +50,8 @@ public class MappingDelta<T> implements Translatable {
 		// there's no concept of deobfuscated for this as far as I can see, so
 		// it will always be marked as obfuscated
 		return TranslateResult.ungrouped(new MappingDelta<>(
-				translator.translate(baseMappings),
-				translator.translate(changes)
+				translator.translate(this.baseMappings),
+				translator.translate(this.changes)
 		));
 	}
 }

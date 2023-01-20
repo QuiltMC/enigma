@@ -22,7 +22,7 @@ public class CombiningClassProvider implements ClassProvider {
     @Override
     @Nullable
     public ClassNode get(String name) {
-        for (ClassProvider cp : classProviders) {
+        for (ClassProvider cp : this.classProviders) {
             ClassNode node = cp.get(name);
 
             if (node != null) {
@@ -35,13 +35,13 @@ public class CombiningClassProvider implements ClassProvider {
 
     @Override
     public Collection<String> getClassNames() {
-        return Arrays.stream(classProviders).flatMap(c -> c.getClassNames().stream()).toList();
+        return Arrays.stream(this.classProviders).flatMap(c -> c.getClassNames().stream()).toList();
     }
 
     @Override
     public List<String> getClasses(String className) {
         List<String> classes = new ArrayList<>();
-        for (ClassProvider cp : classProviders) {
+        for (ClassProvider cp : this.classProviders) {
             classes.addAll(cp.getClasses(className));
         }
 

@@ -41,18 +41,18 @@ public class ProcyonDecompiler implements Decompiler {
 			return true;
 		};
 
-		metadataSystem = new MetadataSystem(typeLoader);
-		metadataSystem.setEagerMethodLoadingEnabled(true);
+        this.metadataSystem = new MetadataSystem(typeLoader);
+        this.metadataSystem.setEagerMethodLoadingEnabled(true);
 
-		decompilerSettings = DecompilerSettings.javaDefaults();
-		decompilerSettings.setMergeVariables(getSystemPropertyAsBoolean("enigma.mergeVariables", true));
-		decompilerSettings.setForceExplicitImports(getSystemPropertyAsBoolean("enigma.forceExplicitImports", true));
-		decompilerSettings.setForceExplicitTypeArguments(getSystemPropertyAsBoolean("enigma.forceExplicitTypeArguments", true));
-		decompilerSettings.setShowDebugLineNumbers(getSystemPropertyAsBoolean("enigma.showDebugLineNumbers", false));
-		decompilerSettings.setShowSyntheticMembers(getSystemPropertyAsBoolean("enigma.showSyntheticMembers", false));
-		decompilerSettings.setTypeLoader(typeLoader);
+        this.decompilerSettings = DecompilerSettings.javaDefaults();
+        this.decompilerSettings.setMergeVariables(getSystemPropertyAsBoolean("enigma.mergeVariables", true));
+        this.decompilerSettings.setForceExplicitImports(getSystemPropertyAsBoolean("enigma.forceExplicitImports", true));
+        this.decompilerSettings.setForceExplicitTypeArguments(getSystemPropertyAsBoolean("enigma.forceExplicitTypeArguments", true));
+        this.decompilerSettings.setShowDebugLineNumbers(getSystemPropertyAsBoolean("enigma.showDebugLineNumbers", false));
+        this.decompilerSettings.setShowSyntheticMembers(getSystemPropertyAsBoolean("enigma.showSyntheticMembers", false));
+        this.decompilerSettings.setTypeLoader(typeLoader);
 
-		JavaFormattingOptions formattingOptions = decompilerSettings.getJavaFormattingOptions();
+		JavaFormattingOptions formattingOptions = this.decompilerSettings.getJavaFormattingOptions();
 		formattingOptions.ClassBraceStyle = BraceStyle.EndOfLine;
 		formattingOptions.InterfaceBraceStyle = BraceStyle.EndOfLine;
 		formattingOptions.EnumBraceStyle = BraceStyle.EndOfLine;
@@ -62,7 +62,7 @@ public class ProcyonDecompiler implements Decompiler {
 
 	@Override
 	public Source getSource(String className, @Nullable EntryRemapper remapper) {
-		TypeReference type = metadataSystem.lookupType(className);
+		TypeReference type = this.metadataSystem.lookupType(className);
 		if (type == null) {
 			throw new Error(String.format("Unable to find desc: %s", className));
 		}
@@ -71,7 +71,7 @@ public class ProcyonDecompiler implements Decompiler {
 
 		DecompilerContext context = new DecompilerContext();
 		context.setCurrentType(resolvedType);
-		context.setSettings(decompilerSettings);
+		context.setSettings(this.decompilerSettings);
 
 		AstBuilder builder = new AstBuilder(context);
 		builder.addType(resolvedType);
@@ -83,15 +83,15 @@ public class ProcyonDecompiler implements Decompiler {
 		new RemoveObjectCasts(context).run(source);
 		new Java8Generics().run(source);
 		new InvalidIdentifierFix().run(source);
-		if (settings.removeImports) DropImportAstTransform.INSTANCE.run(source);
-		if (settings.removeVariableFinal) DropVarModifiersAstTransform.INSTANCE.run(source);
+		if (this.settings.removeImports) DropImportAstTransform.INSTANCE.run(source);
+		if (this.settings.removeVariableFinal) DropVarModifiersAstTransform.INSTANCE.run(source);
 		source.acceptVisitor(new InsertParenthesesVisitor(), null);
 
 		if (remapper != null) {
 			new AddJavadocsAstTransform(remapper).run(source);
 		}
 
-		return new ProcyonSource(source, decompilerSettings);
+		return new ProcyonSource(source, this.decompilerSettings);
 	}
 
 	private static boolean getSystemPropertyAsBoolean(String property, boolean defValue) {

@@ -54,7 +54,7 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public FieldEntry withName(String name) {
-		return new FieldEntry(parent, name, desc, null);
+		return new FieldEntry(this.parent, name, this.desc, null);
 	}
 
 	@Override
@@ -64,11 +64,11 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	protected TranslateResult<FieldEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
-		String translatedName = mapping.targetName() != null ? mapping.targetName() : name;
+		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new FieldEntry(parent, translatedName, translator.translate(desc), docs)
+				new FieldEntry(this.parent, translatedName, translator.translate(this.desc), docs)
 		);
 	}
 
@@ -79,11 +79,11 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof FieldEntry && equals((FieldEntry) other);
+		return other instanceof FieldEntry && this.equals((FieldEntry) other);
 	}
 
 	public boolean equals(FieldEntry other) {
-		return this.parent.equals(other.parent) && name.equals(other.name) && desc.equals(other.desc);
+		return this.parent.equals(other.parent) && this.name.equals(other.name) && this.desc.equals(other.desc);
 	}
 
 	@Override
@@ -103,6 +103,6 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public int compareTo(FieldEntry entry) {
-		return (name + desc.toString()).compareTo(entry.name + entry.desc.toString());
+		return (this.name + this.desc.toString()).compareTo(entry.name + entry.desc.toString());
 	}
 }

@@ -5,10 +5,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class ServerAddressTest {
-
+class ServerAddressTest {
 	@Test
-	public void validAddresses() {
+	void validAddresses() {
 		assertEquals(ServerAddress.of("127.0.0.1", 22), ServerAddress.from("127.0.0.1", 22));
 		assertEquals(ServerAddress.of("::1", 80), ServerAddress.from("[::1]:80", 22));
 		assertEquals(ServerAddress.of("dblsaiko.net", 22), ServerAddress.from("dblsaiko.net", 22));
@@ -19,10 +18,9 @@ public class ServerAddressTest {
 	}
 
 	@Test
-	public void invalidAddresses() {
+	void invalidAddresses() {
 		assertNull(ServerAddress.from("127.0.0.1:-72", 22));
 		assertNull(ServerAddress.from("127.0.0.1:100000000", 22));
 		assertNull(ServerAddress.from("127.0.0.1:lmao", 22));
 	}
-
 }

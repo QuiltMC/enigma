@@ -191,14 +191,11 @@ public final class ConfigSerializer {
 
 	public static Optional<Boolean> parseBool(String v) {
 		if (v == null) return Optional.empty();
-		switch (v) {
-			case "true":
-				return Optional.of(true);
-			case "false":
-				return Optional.of(false);
-			default:
-				return Optional.empty();
-		}
+		return switch (v) {
+			case "true" -> Optional.of(true);
+			case "false" -> Optional.of(false);
+			default -> Optional.empty();
+		};
 	}
 
 	public static OptionalInt parseInt(String v) {

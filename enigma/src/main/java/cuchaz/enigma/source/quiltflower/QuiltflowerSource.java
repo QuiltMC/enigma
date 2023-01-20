@@ -50,8 +50,8 @@ public class QuiltflowerSource implements Source {
 
     @Override
     public String asString() {
-        checkDecompiled();
-        return index.getSource();
+		this.checkDecompiled();
+        return this.index.getSource();
     }
 
     @Override
@@ -63,19 +63,19 @@ public class QuiltflowerSource implements Source {
 
     @Override
     public SourceIndex index() {
-        checkDecompiled();
-        return index;
+		this.checkDecompiled();
+        return this.index;
     }
 
     private void checkDecompiled() {
-        if (index != null) {
+        if (this.index != null) {
             return;
         }
 
-        index = new SourceIndex();
+		this.index = new SourceIndex();
 
-        IResultSaver saver = new EnigmaResultSaver(index);
-        Map<String, Object> options = getOptions(new EnigmaJavadocProvider(remapper), settings);
+        IResultSaver saver = new EnigmaResultSaver(this.index);
+        Map<String, Object> options = getOptions(new EnigmaJavadocProvider(this.remapper), this.settings);
         IFernflowerLogger logger = new EnigmaFernflowerLogger();
         BaseDecompiler decompiler = new BaseDecompiler(saver, options, logger);
 
@@ -84,15 +84,15 @@ public class QuiltflowerSource implements Source {
             tokenCollector.set(new EnigmaTextTokenCollector(next));
             return tokenCollector.get();
         });
-        decompiler.addSource(contextSource);
-        if (hasLibrarySource) decompiler.addLibrary(libraryContextSource);
+        decompiler.addSource(this.contextSource);
+        if (this.hasLibrarySource) decompiler.addLibrary(this.libraryContextSource);
 
         decompiler.decompileContext();
 
-        if (settings.removeImports) {
-            removePackageStatement(index, tokenCollector.get());
+        if (this.settings.removeImports) {
+            removePackageStatement(this.index, tokenCollector.get());
         } else {
-            tokenCollector.get().addTokensToIndex(index, token -> token);
+            tokenCollector.get().addTokensToIndex(this.index, token -> token);
         }
     }
 

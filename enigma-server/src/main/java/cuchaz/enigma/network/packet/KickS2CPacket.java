@@ -23,11 +23,11 @@ public class KickS2CPacket implements Packet<ClientPacketHandler> {
 
 	@Override
 	public void write(DataOutput output) throws IOException {
-		PacketHelper.writeString(output, reason);
+		PacketHelper.writeString(output, this.reason);
 	}
 
 	@Override
 	public void handle(ClientPacketHandler controller) {
-		controller.disconnectIfConnected(reason);
+		controller.disconnectIfConnected(this.reason);
 	}
 }

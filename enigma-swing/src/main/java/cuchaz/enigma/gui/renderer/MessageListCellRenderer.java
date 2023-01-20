@@ -16,7 +16,7 @@ public class MessageListCellRenderer extends DefaultListCellRenderer {
 		super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 		Message message = (Message) value;
 		if (message != null) {
-			setText(message.translate());
+			this.setText(message.translate());
 		}
 		return this;
 	}

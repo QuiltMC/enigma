@@ -12,14 +12,13 @@
 package cuchaz.enigma.inputs.loneClass;
 
 public class LoneClass {
-
-	private String name;
+	private final String name;
 
 	public LoneClass(String name) {
 		this.name = name;
 	}
 
 	public String getName() {
-		return name;
+		return this.name;
 	}
 }

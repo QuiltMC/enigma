@@ -58,7 +58,7 @@ public abstract class ReferenceTargetType {
         }
 
         public ClassEntry getEntry() {
-            return entry;
+            return this.entry;
         }
 
         @Override
@@ -68,7 +68,7 @@ public abstract class ReferenceTargetType {
 
         @Override
         public String toString() {
-            return entry.toString();
+            return this.entry.toString();
         }
     }
 }

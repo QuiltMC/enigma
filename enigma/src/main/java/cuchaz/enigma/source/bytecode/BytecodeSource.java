@@ -22,12 +22,12 @@ public class BytecodeSource implements Source {
 
     @Override
     public String asString() {
-        return index().getSource();
+        return this.index().getSource();
     }
 
     @Override
     public Source withJavadocs(EntryRemapper remapper) {
-        return new BytecodeSource(classNode, remapper);
+        return new BytecodeSource(this.classNode, remapper);
     }
 
     @Override
@@ -42,9 +42,9 @@ public class BytecodeSource implements Source {
 
         ClassNode node = this.classNode;
 
-        if (remapper != null) {
+        if (this.remapper != null) {
             ClassNode translatedNode = new ClassNode();
-            node.accept(new TranslationClassVisitor(remapper.getDeobfuscator(), Enigma.ASM_VERSION, translatedNode));
+            node.accept(new TranslationClassVisitor(this.remapper.getDeobfuscator(), Enigma.ASM_VERSION, translatedNode));
             node = translatedNode;
         }
 

@@ -6,7 +6,7 @@ public class SamePackageChild extends Base {
 		final int value;
 
 		Inner() {
-			value = SamePackageChild.this.make(); // no synthetic method
+            this.value = SamePackageChild.this.make(); // no synthetic method
 		}
 	}
 }

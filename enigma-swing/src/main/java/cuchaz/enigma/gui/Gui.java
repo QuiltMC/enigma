@@ -121,8 +121,8 @@ public class Gui {
 		this.editorTabbedPane = new EditorTabbedPane(this);
 		this.rightDock = new Dock(this, Docker.Side.RIGHT);
 		this.leftDock = new Dock(this, Docker.Side.LEFT);
-		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightDock);
-		this.splitLeft = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, leftDock, splitRight);
+		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.centerPanel, this.rightDock);
+		this.splitLeft = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.leftDock, this.splitRight);
 		this.jarFileChooser = new JFileChooser();
 		this.tinyMappingsFileChooser = new JFileChooser();
 		this.enigmaMappingsFileChooser = new JFileChooser();
@@ -299,16 +299,16 @@ public class Gui {
 	public void onCloseJar() {
 		// update gui
 		this.mainWindow.setTitle(Enigma.NAME);
-		setObfClasses(null);
-		setDeobfClasses(null);
+		this.setObfClasses(null);
+		this.setDeobfClasses(null);
 		this.editorTabbedPane.closeAllEditorTabs();
 
 		// update menu
-		isJarOpen = false;
-		setMappingsFile(null);
+		this.isJarOpen = false;
+		this.setMappingsFile(null);
 
-		updateUiState();
-		redraw();
+		this.updateUiState();
+		this.redraw();
 	}
 
 	public EditorPanel openClass(ClassEntry entry) {
@@ -363,7 +363,7 @@ public class Gui {
 
 	public void setMappingsFile(Path path) {
 		this.enigmaMappingsFileChooser.setSelectedFile(path != null ? path.toFile() : null);
-		updateUiState();
+		this.updateUiState();
 	}
 
 	public void showTokens(EditorPanel editor, List<Token> tokens) {
@@ -380,25 +380,25 @@ public class Gui {
 	}
 
 	public void showCursorReference(EntryReference<Entry<?>, Entry<?>> reference) {
-		infoPanel.setReference(reference == null ? null : reference.entry);
+		this.infoPanel.setReference(reference == null ? null : reference.entry);
 	}
 
 	public void startDocChange(EditorPanel editor) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null || !this.isEditable(EditableType.JAVADOC)) return;
-		JavadocDialog.show(mainWindow.getFrame(), getController(), cursorReference);
+		JavadocDialog.show(this.mainWindow.getFrame(), this.getController(), cursorReference);
 	}
 
 	public void startRename(EditorPanel editor, String text) {
 		if (editor != this.editorTabbedPane.getActiveEditor()) return;
 
-		infoPanel.startRenaming(text);
+		this.infoPanel.startRenaming(text);
 	}
 
 	public void startRename(EditorPanel editor) {
 		if (editor != this.editorTabbedPane.getActiveEditor()) return;
 
-		infoPanel.startRenaming();
+		this.infoPanel.startRenaming();
 	}
 
 	/**
@@ -459,14 +459,14 @@ public class Gui {
 		if (cursorReference == null) return;
 
 		Entry<?> obfEntry = cursorReference.getNameableEntry();
-		toggleMappingFromEntry(obfEntry);
+		this.toggleMappingFromEntry(obfEntry);
 	}
 
 	public void toggleMappingFromEntry(Entry<?> obfEntry) {
 		if (this.controller.project.getMapper().getDeobfMapping(obfEntry).targetName() != null) {
-			validateImmediateAction(vc -> this.controller.applyChange(vc, EntryChange.modify(obfEntry).clearDeobfName()));
+			this.validateImmediateAction(vc -> this.controller.applyChange(vc, EntryChange.modify(obfEntry).clearDeobfName()));
 		} else {
-			validateImmediateAction(vc -> this.controller.applyChange(vc, EntryChange.modify(obfEntry).withDefaultDeobfName(this.getController().project)));
+			this.validateImmediateAction(vc -> this.controller.applyChange(vc, EntryChange.modify(obfEntry).withDefaultDeobfName(this.getController().project)));
 		}
 	}
 
@@ -485,15 +485,15 @@ public class Gui {
 	public void close() {
 		if (!this.controller.isDirty()) {
 			// everything is saved, we can exit safely
-			exit();
+			this.exit();
 		} else {
 			// ask to save before closing
-			showDiscardDiag(response -> {
+			this.showDiscardDiag(response -> {
 				if (response == JOptionPane.YES_OPTION) {
 					this.saveMapping().thenRun(this::exit);
 					// do not join, as join waits on swing to clear events
 				} else if (response == JOptionPane.NO_OPTION) {
-					exit();
+					this.exit();
 				}
 
 				return null;
@@ -511,8 +511,8 @@ public class Gui {
 
 		UiConfig.save();
 
-		if (searchDialog != null) {
-			searchDialog.dispose();
+		if (this.searchDialog != null) {
+			this.searchDialog.dispose();
 		}
 		this.mainWindow.getFrame().dispose();
 		System.exit(0);
@@ -525,7 +525,7 @@ public class Gui {
 		frame.repaint();
 	}
 
-	public void onRenameFromClassTree(ValidationContext vc, Object prevData, Object data, DefaultMutableTreeNode node) {
+	public void onRenameFromClassTree(ValidationContext vc, Object data, DefaultMutableTreeNode node) {
 		if (data instanceof String) {
 			// package rename
 			for (int i = 0; i < node.getChildCount(); i++) {
@@ -533,7 +533,7 @@ public class Gui {
 				ClassEntry prevDataChild = (ClassEntry) childNode.getUserObject();
 				ClassEntry dataChild = new ClassEntry(data + "/" + prevDataChild.getSimpleName());
 
-				onRenameFromClassTree(vc, prevDataChild, dataChild, node);
+				this.onRenameFromClassTree(vc, dataChild, node);
 			}
 			node.setUserObject(data);
 
@@ -595,16 +595,16 @@ public class Gui {
 	}
 
 	public SearchDialog getSearchDialog() {
-		if (searchDialog == null) {
-			searchDialog = new SearchDialog(this);
+		if (this.searchDialog == null) {
+			this.searchDialog = new SearchDialog(this);
 		}
-		return searchDialog;
+		return this.searchDialog;
 	}
 
 	public void addMessage(Message message) {
 		JScrollBar verticalScrollBar = Docker.getDocker(CollabDocker.class).getMessageScrollPane().getVerticalScrollBar();
 		boolean isAtBottom = verticalScrollBar.getValue() >= verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent();
-		messageModel.addElement(message);
+		this.messageModel.addElement(message);
 
 		if (isAtBottom) {
 			SwingUtilities.invokeLater(() -> verticalScrollBar.setValue(verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent()));
@@ -616,9 +616,9 @@ public class Gui {
 	public void setUserList(List<String> users) {
 		boolean wasOffline = this.isOffline();
 
-		userModel.clear();
-		users.forEach(userModel::addElement);
-		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
+		this.userModel.clear();
+		users.forEach(this.userModel::addElement);
+		this.connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
 
 		// if we were previously offline, we need to reload multiplayer-restricted dockers (only collab for now) so they can be used
 		CollabDocker collabDocker = Docker.getDocker(CollabDocker.class);
@@ -637,8 +637,8 @@ public class Gui {
 	 * causing inconsistencies.
 	 */
 	public void updateUiState() {
-		menuBar.updateUiState();
-		this.connectionStatusLabel.setText(I18n.translate(connectionState == ConnectionState.NOT_CONNECTED ? "status.disconnected" : "status.connected"));
+		this.menuBar.updateUiState();
+		this.connectionStatusLabel.setText(I18n.translate(this.connectionState == ConnectionState.NOT_CONNECTED ? "status.disconnected" : "status.connected"));
 	}
 
 	public void retranslateUi() {
@@ -656,12 +656,12 @@ public class Gui {
 	}
 
 	public void setConnectionState(ConnectionState state) {
-		connectionState = state;
-		updateUiState();
+		this.connectionState = state;
+		this.updateUiState();
 	}
 
 	public boolean isJarOpen() {
-		return isJarOpen;
+		return this.isJarOpen;
 	}
 
 	public ConnectionState getConnectionState() {

@@ -15,7 +15,7 @@ package cuchaz.enigma.inputs.inheritanceTree;
 public abstract class BaseClass {
 
 	// a
-	private String name;
+	private final String name;
 
 	// <init>(Ljava/lang/String;)V
 	protected BaseClass(String name) {
@@ -24,7 +24,7 @@ public abstract class BaseClass {
 
 	// a()Ljava/lang/String;
 	public String getName() {
-		return name;
+		return this.name;
 	}
 
 	// a()V

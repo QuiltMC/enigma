@@ -12,8 +12,7 @@
 package cuchaz.enigma.source;
 
 public class Token implements Comparable<Token> {
-
-	public int start;
+	public final int start;
 	public int end;
 	public String text;
 
@@ -31,45 +30,45 @@ public class Token implements Comparable<Token> {
 		return to.length() - this.length();
 	}
 
-	public void rename(StringBuffer source, String to) {
+	public void rename(StringBuilder source, String to) {
 		int oldEnd = this.end;
 		this.text = to;
 		this.end = this.start + to.length();
 
-		source.replace(start, oldEnd, to);
+		source.replace(this.start, oldEnd, to);
 	}
 
 	public Token move(int offset) {
 		Token token = new Token(this.start + offset, this.end + offset, null);
-		token.text = text;
+		token.text = this.text;
 		return token;
 	}
 
 	public boolean contains(int pos) {
-		return pos >= start && pos <= end;
+		return pos >= this.start && pos <= this.end;
 	}
 
 	@Override
 	public int compareTo(Token other) {
-		return start - other.start;
+		return this.start - other.start;
 	}
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof Token && equals((Token) other);
+		return other instanceof Token token && this.equals(token);
 	}
 
 	@Override
 	public int hashCode() {
-		return start * 37 + end;
+		return this.start * 37 + this.end;
 	}
 
 	public boolean equals(Token other) {
-		return start == other.start && end == other.end && text.equals(other.text);
+		return this.start == other.start && this.end == other.end && this.text.equals(other.text);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("[%d,%d]", start, end);
+		return String.format("[%d,%d]", this.start, this.end);
 	}
 }

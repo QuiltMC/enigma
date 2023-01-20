@@ -37,7 +37,7 @@ public class EditorTabbedPane {
 	}
 
 	public EditorPanel openClass(ClassEntry entry) {
-		EditorPanel activeEditor = getActiveEditor();
+		EditorPanel activeEditor = this.getActiveEditor();
 		EditorPanel editorPanel = this.editors.computeIfAbsent(entry, e -> {
 			ClassHandle ch = this.gui.getController().getClassHandleProvider().openClass(entry);
 			if (ch == null) return null;
@@ -53,8 +53,8 @@ public class EditorTabbedPane {
 			ed.addListener(new EditorActionListener() {
 				@Override
 				public void onCursorReferenceChanged(EditorPanel editor, EntryReference<Entry<?>, Entry<?>> ref) {
-					if (editor == getActiveEditor()) {
-						gui.showCursorReference(ref);
+					if (editor == EditorTabbedPane.this.getActiveEditor()) {
+						EditorTabbedPane.this.gui.showCursorReference(ref);
 					}
 				}
 
@@ -72,7 +72,7 @@ public class EditorTabbedPane {
 
 			ed.getEditor().addKeyListener(GuiUtil.onKeyPress(keyEvent -> {
 				if (KeyBinds.EDITOR_CLOSE_TAB.matches(keyEvent)) {
-					closeEditor(ed);
+					this.closeEditor(ed);
 				}
 			}));
 
@@ -107,7 +107,7 @@ public class EditorTabbedPane {
 		int index = this.openFiles.indexOfComponent(ed.getUi());
 
 		for (int i = index - 1; i >= 0; i--) {
-			closeEditor(EditorPanel.byUi(this.openFiles.getComponentAt(i)));
+			this.closeEditor(EditorPanel.byUi(this.openFiles.getComponentAt(i)));
 		}
 	}
 
@@ -115,7 +115,7 @@ public class EditorTabbedPane {
 		int index = this.openFiles.indexOfComponent(ed.getUi());
 
 		for (int i = this.openFiles.getTabCount() - 1; i > index; i--) {
-			closeEditor(EditorPanel.byUi(this.openFiles.getComponentAt(i)));
+			this.closeEditor(EditorPanel.byUi(this.openFiles.getComponentAt(i)));
 		}
 	}
 
@@ -124,7 +124,7 @@ public class EditorTabbedPane {
 
 		for (int i = this.openFiles.getTabCount() - 1; i >= 0; i--) {
 			if (i == index) continue;
-			closeEditor(EditorPanel.byUi(this.openFiles.getComponentAt(i)));
+			this.closeEditor(EditorPanel.byUi(this.openFiles.getComponentAt(i)));
 		}
 	}
 
