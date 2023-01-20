@@ -31,7 +31,7 @@ public class TranslationClassVisitor extends ClassVisitor {
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        this.obfClassEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
+		this.obfClassEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
 
 		ClassDefEntry translatedEntry = this.translator.translate(this.obfClassEntry);
 		String translatedSuper = translatedEntry.getSuperClass() != null ? translatedEntry.getSuperClass().getFullName() : null;

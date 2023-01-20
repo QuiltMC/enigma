@@ -62,5 +62,4 @@ public class EntryChangeC2SPacket implements Packet<ServerPacketHandler> {
 			handler.server().sendMessage(Message.editDocs(handler.server().getUsername(handler.client()), this.change.getTarget()));
 		}
 	}
-
 }

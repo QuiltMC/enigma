@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ConfigTest {
-
 	@Test
 	void serialize() {
 		ConfigContainer cc = new ConfigContainer();
@@ -86,5 +85,4 @@ class ConfigTest {
 		assertEquals("", ConfigContainer.parse("[a]").serialize());
 		assertEquals("", ConfigContainer.parse("[a]\n[b]").serialize());
 	}
-
 }

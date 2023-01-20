@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma;
@@ -34,19 +34,18 @@ import static cuchaz.enigma.TestEntryFactory.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class TestJarIndexLoneClass {
-
+class TestJarIndexLoneClass {
 	public static final Path JAR = Paths.get("build/test-obf/loneClass.jar");
 	private final JarIndex index;
 
 	public TestJarIndexLoneClass() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
-        this.index = JarIndex.empty();
-        this.index.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.none());
+		this.index = JarIndex.empty();
+		this.index.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.none());
 	}
 
 	@Test
-	public void obfEntries() {
+	void obfEntries() {
 		assertThat(this.index.getEntryIndex().getClasses(), containsInAnyOrder(
 				newClass("cuchaz/enigma/inputs/Keep"),
 				newClass("a")
@@ -54,7 +53,7 @@ public class TestJarIndexLoneClass {
 	}
 
 	@Test
-	public void translationIndex() {
+	void translationIndex() {
 		InheritanceIndex inheritanceIndex = this.index.getInheritanceIndex();
 		assertThat(inheritanceIndex.getParents(new ClassEntry("a")), is(empty()));
 		assertThat(inheritanceIndex.getParents(new ClassEntry("cuchaz/enigma/inputs/Keep")), is(empty()));
@@ -65,7 +64,7 @@ public class TestJarIndexLoneClass {
 	}
 
 	@Test
-	public void access() {
+	void access() {
 		EntryIndex entryIndex = this.index.getEntryIndex();
 		assertThat(entryIndex.getFieldAccess(newField("a", "a", "Ljava/lang/String;")), is(AccessFlags.PRIVATE));
 		assertThat(entryIndex.getMethodAccess(newMethod("a", "a", "()Ljava/lang/String;")), is(AccessFlags.PUBLIC));
@@ -74,7 +73,7 @@ public class TestJarIndexLoneClass {
 	}
 
 	@Test
-	public void classInheritance() {
+	void classInheritance() {
 		IndexTreeBuilder treeBuilder = new IndexTreeBuilder(this.index);
 		ClassInheritanceTreeNode node = treeBuilder.buildClassInheritance(VoidTranslator.INSTANCE, newClass("a"));
 		assertThat(node, is(not(nullValue())));
@@ -83,7 +82,7 @@ public class TestJarIndexLoneClass {
 	}
 
 	@Test
-	public void methodInheritance() {
+	void methodInheritance() {
 		IndexTreeBuilder treeBuilder = new IndexTreeBuilder(this.index);
 		MethodEntry source = newMethod("a", "a", "()Ljava/lang/String;");
 		MethodInheritanceTreeNode node = treeBuilder.buildMethodInheritance(VoidTranslator.INSTANCE, source);
@@ -93,14 +92,14 @@ public class TestJarIndexLoneClass {
 	}
 
 	@Test
-	public void classImplementations() {
+	void classImplementations() {
 		IndexTreeBuilder treeBuilder = new IndexTreeBuilder(this.index);
 		ClassImplementationsTreeNode node = treeBuilder.buildClassImplementations(VoidTranslator.INSTANCE, newClass("a"));
 		assertThat(node, is(nullValue()));
 	}
 
 	@Test
-	public void methodImplementations() {
+	void methodImplementations() {
 		IndexTreeBuilder treeBuilder = new IndexTreeBuilder(this.index);
 		MethodEntry source = newMethod("a", "a", "()Ljava/lang/String;");
 
@@ -110,7 +109,7 @@ public class TestJarIndexLoneClass {
 	}
 
 	@Test
-	public void relatedMethodImplementations() {
+	void relatedMethodImplementations() {
 		Collection<MethodEntry> entries = this.index.getEntryResolver().resolveEquivalentMethods(newMethod("a", "a", "()Ljava/lang/String;"));
 		assertThat(entries, containsInAnyOrder(
 				newMethod("a", "a", "()Ljava/lang/String;")
@@ -118,7 +117,7 @@ public class TestJarIndexLoneClass {
 	}
 
 	@Test
-	public void fieldReferences() {
+	void fieldReferences() {
 		FieldEntry source = newField("a", "a", "Ljava/lang/String;");
 		Collection<EntryReference<FieldEntry, MethodDefEntry>> references = this.index.getReferenceIndex().getReferencesToField(source);
 		assertThat(references, containsInAnyOrder(
@@ -128,27 +127,27 @@ public class TestJarIndexLoneClass {
 	}
 
 	@Test
-	public void behaviorReferences() {
+	void behaviorReferences() {
 		assertThat(this.index.getReferenceIndex().getReferencesToMethod(newMethod("a", "a", "()Ljava/lang/String;")), is(empty()));
 	}
 
 	@Test
-	public void interfaces() {
+	void interfaces() {
 		assertThat(this.index.getInheritanceIndex().getParents(new ClassEntry("a")), is(empty()));
 	}
 
 	@Test
-	public void implementingClasses() {
+	void implementingClasses() {
 		assertThat(this.index.getInheritanceIndex().getChildren(new ClassEntry("a")), is(empty()));
 	}
 
 	@Test
-	public void isInterface() {
+	void isInterface() {
 		assertThat(this.index.getInheritanceIndex().isParent(new ClassEntry("a")), is(false));
 	}
 
 	@Test
-	public void testContains() {
+	void testContains() {
 		EntryIndex entryIndex = this.index.getEntryIndex();
 		assertThat(entryIndex.hasClass(newClass("a")), is(true));
 		assertThat(entryIndex.hasClass(newClass("b")), is(false));

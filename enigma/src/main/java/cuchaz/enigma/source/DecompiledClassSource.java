@@ -95,7 +95,6 @@ public class DecompiledClassSource {
 	@Nullable
 	private String generateDefaultName(Entry<?> entry) {
 		if (entry instanceof LocalVariableDefEntry localVariable) {
-
 			int index = localVariable.getIndex();
 			if (localVariable.isArgument()) {
 				List<TypeDescriptor> arguments = localVariable.getParent().getDesc().getArgumentDescs();

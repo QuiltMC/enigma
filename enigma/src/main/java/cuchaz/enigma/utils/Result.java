@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public final class Result<T, E> {
-
 	private final T ok;
 	private final E err;
 
@@ -104,5 +103,4 @@ public final class Result<T, E> {
 			return String.format("Result.Err(%s)", this.err);
 		}
 	}
-
 }

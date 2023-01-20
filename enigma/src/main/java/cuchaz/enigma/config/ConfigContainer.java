@@ -7,7 +7,6 @@ import java.util.Deque;
 import java.util.LinkedList;
 
 public class ConfigContainer {
-
 	private Path configPath;
 	private boolean existsOnDisk;
 
@@ -92,5 +91,4 @@ public class ConfigContainer {
 		});
 		return cc;
 	}
-
 }

@@ -6,7 +6,6 @@ import java.nio.file.Paths;
 import cuchaz.enigma.utils.Os;
 
 public class ConfigPaths {
-
 	public static Path getConfigFilePath(String name) {
 		String fileName = Os.getOs() == Os.LINUX ? String.format("%src", name) : String.format("%s.ini", name);
 		return getConfigPathRoot().resolve(fileName);
@@ -40,5 +39,4 @@ public class ConfigPaths {
 		}
 		return Paths.get(userHome);
 	}
-
 }

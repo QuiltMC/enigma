@@ -16,7 +16,6 @@ import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 
 public record Lambda(String invokedName, MethodDescriptor invokedType, MethodDescriptor samMethodType,
 					 ParentedEntry<?> implMethod, MethodDescriptor instantiatedMethodType) implements Translatable {
-
 	@Override
 	public TranslateResult<Lambda> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
 		MethodEntry samMethod = new MethodEntry(this.getInterface(), this.invokedName, this.samMethodType);

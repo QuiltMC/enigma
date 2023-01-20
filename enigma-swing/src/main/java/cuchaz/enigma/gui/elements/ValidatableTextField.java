@@ -14,7 +14,6 @@ import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.Validatable;
 
 public class ValidatableTextField extends JTextField implements Validatable {
-
 	private final List<ParameterizedMessage> messages = new ArrayList<>();
 	private String tooltipText = null;
 
@@ -77,14 +76,14 @@ public class ValidatableTextField extends JTextField implements Validatable {
 	public void clearMessages() {
 		this.messages.clear();
 		this.setToolTipText0();
-        this.repaint();
+		this.repaint();
 	}
 
 	@Override
 	public void addMessage(ParameterizedMessage message) {
-        this.messages.add(message);
-        this.setToolTipText0();
-        this.repaint();
+		this.messages.add(message);
+		this.setToolTipText0();
+		this.repaint();
 	}
 
 	@Override
@@ -92,5 +91,4 @@ public class ValidatableTextField extends JTextField implements Validatable {
 		super.paint(g);
 		ValidatableUi.drawMarker(this, g, this.messages);
 	}
-
 }

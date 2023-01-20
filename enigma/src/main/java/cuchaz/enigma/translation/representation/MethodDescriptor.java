@@ -27,7 +27,6 @@ import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
 public class MethodDescriptor implements Translatable {
-
 	private final List<TypeDescriptor> argumentDescs;
 	private TypeDescriptor returnDesc;
 

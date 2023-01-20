@@ -17,7 +17,6 @@ import cuchaz.enigma.utils.validation.ValidationContext;
 import javax.annotation.Nullable;
 
 public class MappingValidator {
-
 	private final EntryTree<EntryMapping> obfToDeobf;
 	private final Translator deobfuscator;
 	private final JarIndex index;

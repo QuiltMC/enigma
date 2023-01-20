@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma;
@@ -26,8 +26,7 @@ import java.nio.file.Paths;
 import static cuchaz.enigma.TestEntryFactory.newClass;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TestInnerClasses {
-
+class TestInnerClasses {
 	private static final ClassEntry SimpleOuter = newClass("d");
 	private static final ClassEntry SimpleInner = newClass("d$a");
 	private static final ClassEntry ConstructorArgsOuter = newClass("c");
@@ -43,24 +42,23 @@ public class TestInnerClasses {
 	public TestInnerClasses() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
 		CachingClassProvider classProvider = new CachingClassProvider(jcp);
-        this.index = JarIndex.empty();
-        this.index.indexJar(jcp.getClassNames(), classProvider, ProgressListener.none());
-        this.decompiler = Decompilers.CFR.create(classProvider, new SourceSettings(false, false));
+		this.index = JarIndex.empty();
+		this.index.indexJar(jcp.getClassNames(), classProvider, ProgressListener.none());
+		this.decompiler = Decompilers.CFR.create(classProvider, new SourceSettings(false, false));
 	}
 
 	@Test
-	public void simple() {
-        this.decompile(SimpleOuter);
+	void simple() {
+		this.decompile(SimpleOuter);
 	}
 
 	@Test
-	public void constructorArgs() {
-        this.decompile(ConstructorArgsOuter);
+	void constructorArgs() {
+		this.decompile(ConstructorArgsOuter);
 	}
 
 	@Test
-	public void classTree() {
-
+	void classTree() {
 		// root level
 		assertTrue(this.index.getEntryIndex().hasClass(ClassTreeRoot));
 
@@ -84,6 +82,6 @@ public class TestInnerClasses {
 	}
 
 	private void decompile(ClassEntry classEntry) {
-        this.decompiler.getSource(classEntry.getName());
+		this.decompiler.getSource(classEntry.getName());
 	}
 }

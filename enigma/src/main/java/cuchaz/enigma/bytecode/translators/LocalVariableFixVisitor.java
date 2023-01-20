@@ -23,7 +23,7 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        this.ownerEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
+		this.ownerEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
 		super.visit(version, access, name, signature, superName, interfaces);
 	}
 
@@ -48,16 +48,16 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 			List<TypeDescriptor> parameters = methodEntry.getDesc().getArgumentDescs();
 			for (int parameterIndex = 0; parameterIndex < parameters.size(); parameterIndex++) {
 				TypeDescriptor param = parameters.get(parameterIndex);
-                this.parameterIndices.put(lvIndex, parameterIndex);
+				this.parameterIndices.put(lvIndex, parameterIndex);
 				lvIndex += param.getSize();
 			}
 		}
 
 		@Override
 		public void visitParameter(String name, int access) {
-            this.hasParameterTable = true;
+			this.hasParameterTable = true;
 			super.visitParameter(this.fixParameterName(this.parameterIndex, name), this.fixParameterAccess(this.parameterIndex, access));
-            this.parameterIndex++;
+			this.parameterIndex++;
 		}
 
 		@Override
@@ -107,7 +107,7 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 				name = "ordinal";
 			}
 
-            this.parameterNames.put(index, name);
+			this.parameterNames.put(index, name);
 			return name;
 		}
 

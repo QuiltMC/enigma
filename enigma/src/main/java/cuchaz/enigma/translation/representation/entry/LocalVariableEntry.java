@@ -17,7 +17,6 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
  * 19/10/2016
  */
 public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Comparable<LocalVariableEntry> {
-
 	protected final int index;
 	protected final boolean parameter;
 

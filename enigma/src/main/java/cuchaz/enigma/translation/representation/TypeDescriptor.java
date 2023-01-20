@@ -26,7 +26,6 @@ import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
 public class TypeDescriptor implements Translatable {
-
 	protected final String desc;
 
 	public TypeDescriptor(String desc) {
@@ -42,7 +41,6 @@ public class TypeDescriptor implements Translatable {
 	}
 
 	public static String parseFirst(String in) {
-
 		if (in == null || in.length() <= 0) {
 			throw new IllegalArgumentException("No desc to parse, input is empty!");
 		}

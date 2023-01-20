@@ -6,14 +6,13 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.inputs.inheritanceTree;
 
 // c extends a
 public class SubclassB extends BaseClass {
-
 	// a
 	private final int numThings;
 
@@ -23,7 +22,7 @@ public class SubclassB extends BaseClass {
 		super("B");
 
 		// access to a
-        this.numThings = 4;
+		this.numThings = 4;
 	}
 
 	@Override

@@ -63,7 +63,6 @@ public class SearchDialog {
 
 		this.searchField = new JTextField();
 		this.searchField.getDocument().addDocumentListener(new DocumentListener() {
-
 			@Override
 			public void insertUpdate(DocumentEvent e) {
 				SearchDialog.this.updateList();

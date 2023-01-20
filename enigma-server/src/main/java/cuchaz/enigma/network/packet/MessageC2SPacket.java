@@ -20,7 +20,7 @@ public class MessageC2SPacket implements Packet<ServerPacketHandler> {
 
 	@Override
 	public void read(DataInput input) throws IOException {
-        this.message = PacketHelper.readString(input);
+		this.message = PacketHelper.readString(input);
 	}
 
 	@Override

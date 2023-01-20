@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma;
@@ -20,20 +20,20 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-public class TestDeobfuscator {
+class TestDeobfuscator {
 	private EnigmaProject openProject() throws IOException {
 		Enigma enigma = Enigma.create();
 		return enigma.openJar(Paths.get("build/test-obf/loneClass.jar"), new ClasspathClassProvider(), ProgressListener.none());
 	}
 
 	@Test
-	public void loadJar()
+	void loadJar()
 		throws Exception {
-        this.openProject();
+		this.openProject();
 	}
 
 	@Test
-	public void decompileClass() throws Exception {
+	void decompileClass() throws Exception {
 		EnigmaProject project = this.openProject();
 		Decompiler decompiler = Decompilers.CFR.create(project.getClassProvider(), new SourceSettings(false, false));
 

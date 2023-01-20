@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma;
@@ -18,7 +18,6 @@ import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 public class TestEntryFactory {
-
 	public static ClassEntry newClass(String name) {
 		return new ClassEntry(name);
 	}

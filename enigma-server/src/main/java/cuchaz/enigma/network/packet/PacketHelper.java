@@ -185,5 +185,4 @@ public class PacketHelper {
 			writeString(output, change.getJavadoc().getNewValue());
 		}
 	}
-
 }

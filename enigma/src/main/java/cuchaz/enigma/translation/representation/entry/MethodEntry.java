@@ -24,7 +24,6 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 
 public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable<MethodEntry> {
-
 	protected final MethodDescriptor descriptor;
 
 	public MethodEntry(ClassEntry parent, String name, MethodDescriptor descriptor) {

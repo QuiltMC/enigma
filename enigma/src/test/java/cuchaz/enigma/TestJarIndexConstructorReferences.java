@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma;
@@ -28,8 +28,7 @@ import static cuchaz.enigma.TestEntryFactory.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class TestJarIndexConstructorReferences {
-
+class TestJarIndexConstructorReferences {
 	public static final Path JAR = Paths.get("build/test-obf/constructors.jar");
 	private final JarIndex index;
 
@@ -41,18 +40,18 @@ public class TestJarIndexConstructorReferences {
 
 	public TestJarIndexConstructorReferences() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
-        this.index = JarIndex.empty();
-        this.index.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.none());
+		this.index = JarIndex.empty();
+		this.index.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.none());
 	}
 
 	@Test
-	public void obfEntries() {
+	void obfEntries() {
 		assertThat(this.index.getEntryIndex().getClasses(), containsInAnyOrder(newClass("cuchaz/enigma/inputs/Keep"), this.baseClass,
-                this.subClass, this.subsubClass, this.defaultClass, this.callerClass));
+				this.subClass, this.subsubClass, this.defaultClass, this.callerClass));
 	}
 
 	@Test
-	public void baseDefault() {
+	void baseDefault() {
 		MethodEntry source = newMethod(this.baseClass, "<init>", "()V");
 		Collection<EntryReference<MethodEntry, MethodDefEntry>> references = this.index.getReferenceIndex().getReferencesToMethod(source);
 		assertThat(references, containsInAnyOrder(
@@ -63,7 +62,7 @@ public class TestJarIndexConstructorReferences {
 	}
 
 	@Test
-	public void baseInt() {
+	void baseInt() {
 		MethodEntry source = newMethod(this.baseClass, "<init>", "(I)V");
 		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
 				newBehaviorReferenceByMethod(source, this.callerClass.getName(), "b", "()V")
@@ -71,7 +70,7 @@ public class TestJarIndexConstructorReferences {
 	}
 
 	@Test
-	public void subDefault() {
+	void subDefault() {
 		MethodEntry source = newMethod(this.subClass, "<init>", "()V");
 		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
 				newBehaviorReferenceByMethod(source, this.callerClass.getName(), "c", "()V"),
@@ -80,7 +79,7 @@ public class TestJarIndexConstructorReferences {
 	}
 
 	@Test
-	public void subInt() {
+	void subInt() {
 		MethodEntry source = newMethod(this.subClass, "<init>", "(I)V");
 		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
 				newBehaviorReferenceByMethod(source, this.callerClass.getName(), "d", "()V"),
@@ -90,7 +89,7 @@ public class TestJarIndexConstructorReferences {
 	}
 
 	@Test
-	public void subIntInt() {
+	void subIntInt() {
 		MethodEntry source = newMethod(this.subClass, "<init>", "(II)V");
 		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
 				newBehaviorReferenceByMethod(source, this.callerClass.getName(), "e", "()V")
@@ -98,13 +97,13 @@ public class TestJarIndexConstructorReferences {
 	}
 
 	@Test
-	public void subIntIntInt() {
+	void subIntIntInt() {
 		MethodEntry source = newMethod(this.subClass, "<init>", "(III)V");
 		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), is(empty()));
 	}
 
 	@Test
-	public void subsubInt() {
+	void subsubInt() {
 		MethodEntry source = newMethod(this.subsubClass, "<init>", "(I)V");
 		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
 				newBehaviorReferenceByMethod(source, this.callerClass.getName(), "f", "()V")
@@ -112,7 +111,7 @@ public class TestJarIndexConstructorReferences {
 	}
 
 	@Test
-	public void defaultConstructable() {
+	void defaultConstructable() {
 		MethodEntry source = newMethod(this.defaultClass, "<init>", "()V");
 		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
 				newBehaviorReferenceByMethod(source, this.callerClass.getName(), "g", "()V")

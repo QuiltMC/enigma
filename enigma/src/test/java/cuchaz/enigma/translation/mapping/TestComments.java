@@ -14,26 +14,25 @@ import cuchaz.enigma.translation.mapping.serde.tinyv2.TinyV2Writer;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import org.junit.jupiter.api.Test;
 
-public class TestComments {
-    private static final Path DIRECTORY;
+class TestComments {
+	private static final Path DIRECTORY;
 
-    static {
-        try {
-            DIRECTORY = Paths.get(TestTinyV2InnerClasses.class.getResource("/comments/").toURI());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
+	static {
+		try {
+			DIRECTORY = Paths.get(TestTinyV2InnerClasses.class.getResource("/comments/").toURI());
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-    @Test
-    public void testParseAndWrite() throws IOException, MappingParseException {
-        ProgressListener progressListener = ProgressListener.none();
-        MappingSaveParameters params = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
-        EntryTree<EntryMapping> mappings = EnigmaMappingsReader.DIRECTORY.read(
-                        DIRECTORY, progressListener, params);
+	@Test
+	void testParseAndWrite() throws IOException, MappingParseException {
+		ProgressListener progressListener = ProgressListener.none();
+		MappingSaveParameters params = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+		EntryTree<EntryMapping> mappings = EnigmaMappingsReader.DIRECTORY.read(
+						DIRECTORY, progressListener, params);
 
-        new TinyV2Writer("intermediary", "named")
-                        .write(mappings, DIRECTORY.resolve("convertedtiny.tiny"), progressListener, params);
-    }
-
+		new TinyV2Writer("intermediary", "named")
+						.write(mappings, DIRECTORY.resolve("convertedtiny.tiny"), progressListener, params);
+	}
 }

@@ -14,7 +14,6 @@ import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.Validatable;
 
 public class ValidatablePasswordField extends JPasswordField implements Validatable {
-
 	private final List<ParameterizedMessage> messages = new ArrayList<>();
 	private String tooltipText = null;
 
@@ -38,20 +37,20 @@ public class ValidatablePasswordField extends JPasswordField implements Validata
 	}
 
 	{
-        this.getDocument().addDocumentListener(new DocumentListener() {
+		this.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-                ValidatablePasswordField.this.clearMessages();
+				ValidatablePasswordField.this.clearMessages();
 			}
 
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-                ValidatablePasswordField.this.clearMessages();
+				ValidatablePasswordField.this.clearMessages();
 			}
 
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-                ValidatablePasswordField.this.clearMessages();
+				ValidatablePasswordField.this.clearMessages();
 			}
 		});
 	}
@@ -65,8 +64,8 @@ public class ValidatablePasswordField extends JPasswordField implements Validata
 
 	@Override
 	public void setToolTipText(String text) {
-        this.tooltipText = text;
-        this.setToolTipText0();
+		this.tooltipText = text;
+		this.setToolTipText0();
 	}
 
 	private void setToolTipText0() {
@@ -75,16 +74,16 @@ public class ValidatablePasswordField extends JPasswordField implements Validata
 
 	@Override
 	public void clearMessages() {
-        this.messages.clear();
-        this.setToolTipText0();
-        this.repaint();
+		this.messages.clear();
+		this.setToolTipText0();
+		this.repaint();
 	}
 
 	@Override
 	public void addMessage(ParameterizedMessage message) {
-        this.messages.add(message);
-        this.setToolTipText0();
-        this.repaint();
+		this.messages.add(message);
+		this.setToolTipText0();
+		this.repaint();
 	}
 
 	@Override
@@ -92,5 +91,4 @@ public class ValidatablePasswordField extends JPasswordField implements Validata
 		super.paint(g);
 		ValidatableUi.drawMarker(this, g, this.messages);
 	}
-
 }

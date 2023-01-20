@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.translation.mapping;
@@ -21,17 +21,17 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public final class TestTinyV2InnerClasses {
+final class TestTinyV2InnerClasses {
 	private final Path jar;
 	private final Path mappings;
 
 	public TestTinyV2InnerClasses() throws Exception {
-        this.jar = Paths.get("build/test-obf/innerClasses.jar");
-        this.mappings = Paths.get(TestTinyV2InnerClasses.class.getResource("/tinyV2InnerClasses/").toURI());
+		this.jar = Paths.get("build/test-obf/innerClasses.jar");
+		this.mappings = Paths.get(TestTinyV2InnerClasses.class.getResource("/tinyV2InnerClasses/").toURI());
 	}
 
 	@Test
-	public void testMappings() throws Exception {
+	void testMappings() throws Exception {
 		EnigmaProject project = Enigma.create().openJar(this.jar, new ClasspathClassProvider(), ProgressListener.none());
 		project.setMappings(EnigmaMappingsReader.DIRECTORY.read(this.mappings, ProgressListener.none(), project.getEnigma().getProfile().getMappingSaveParameters()));
 	}

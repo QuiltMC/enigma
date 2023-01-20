@@ -74,5 +74,4 @@ public class ServerAddress {
 	public String toString() {
 		return String.format("ServerAddress { address: '%s', port: %d }", this.address, this.port);
 	}
-
 }

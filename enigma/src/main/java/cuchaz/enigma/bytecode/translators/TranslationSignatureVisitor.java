@@ -23,7 +23,7 @@ public class TranslationSignatureVisitor extends SignatureVisitor {
 
 	@Override
 	public void visitClassType(String name) {
-        this.classStack.push(name);
+		this.classStack.push(name);
 		String translatedEntry = this.remapper.apply(name);
 		this.sv.visitClassType(translatedEntry);
 	}
@@ -34,7 +34,7 @@ public class TranslationSignatureVisitor extends SignatureVisitor {
 		if (!name.startsWith(lastClass+"$")) { //todo see if there's a way to base this on whether there were type params or not
 			name = lastClass+"$"+name;
 		}
-        this.classStack.push(name);
+		this.classStack.push(name);
 		String translatedEntry = this.remapper.apply(name);
 		if (translatedEntry.contains("/")) {
 			translatedEntry = translatedEntry.substring(translatedEntry.lastIndexOf("/")+1);

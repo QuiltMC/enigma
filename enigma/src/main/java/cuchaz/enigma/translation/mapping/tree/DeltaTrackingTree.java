@@ -29,19 +29,19 @@ public class DeltaTrackingTree<T> implements EntryTree<T> {
 
 	@Override
 	public void insert(Entry<?> entry, T value) {
-        this.trackChange(entry);
-        this.delegate.insert(entry, value);
+		this.trackChange(entry);
+		this.delegate.insert(entry, value);
 	}
 
 	@Nullable
 	@Override
 	public T remove(Entry<?> entry) {
-        this.trackChange(entry);
+		this.trackChange(entry);
 		return this.delegate.remove(entry);
 	}
 
 	public void trackChange(Entry<?> entry) {
-        this.changes.insert(entry, MappingDelta.PLACEHOLDER);
+		this.changes.insert(entry, MappingDelta.PLACEHOLDER);
 	}
 
 	@Nullable
@@ -95,13 +95,13 @@ public class DeltaTrackingTree<T> implements EntryTree<T> {
 
 	public MappingDelta<T> takeDelta() {
 		MappingDelta<T> delta = new MappingDelta<>(this.deltaReference, this.changes);
-        this.resetDelta();
+		this.resetDelta();
 		return delta;
 	}
 
 	private void resetDelta() {
-        this.deltaReference = new HashEntryTree<>(this.delegate);
-        this.changes = new HashEntryTree<>();
+		this.deltaReference = new HashEntryTree<>(this.delegate);
+		this.changes = new HashEntryTree<>();
 	}
 
 	public boolean isDirty() {

@@ -25,7 +25,6 @@ import java.util.Set;
 
 public class ClassReferenceTreeNode extends DefaultMutableTreeNode
 	implements ReferenceTreeNode<ClassEntry, MethodDefEntry> {
-
 	private final Translator deobfuscatingTranslator;
 	private final ClassEntry entry;
 	private final EntryReference<ClassEntry, MethodDefEntry> reference;
@@ -71,7 +70,6 @@ public class ClassReferenceTreeNode extends DefaultMutableTreeNode
 		if (recurse && this.children != null) {
 			for (Object child : this.children) {
 				if (child instanceof ClassReferenceTreeNode node) {
-
 					// don't recurse into ancestor
 					Set<Entry<?>> ancestors = Sets.newHashSet();
 					TreeNode n = node;

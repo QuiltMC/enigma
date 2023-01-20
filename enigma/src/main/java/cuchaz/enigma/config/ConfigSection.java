@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.function.Function;
 
 public class ConfigSection {
-
 	private final Map<String, String> values;
 	private final Map<String, ConfigSection> sections;
 
@@ -178,5 +177,4 @@ public class ConfigSection {
 	public String toString() {
 		return String.format("ConfigSection { values: %s, sections: %s }", this.values, this.sections);
 	}
-
 }

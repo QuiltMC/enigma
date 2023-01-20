@@ -16,7 +16,6 @@ import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 
 public class FontDialog extends JDialog {
-
 	private static final List<String> CATEGORIES = List.of(
 			"Default",
 			"Default 2",
@@ -121,5 +120,4 @@ public class FontDialog extends JDialog {
 			self.setEnabled(enabled);
 		}
 	}
-
 }

@@ -196,7 +196,6 @@ public class IdentifierPanel {
 	}
 
 	private static final class TableHelper {
-
 		private final Container c;
 		private final Entry<?> e;
 		private final Gui gui;

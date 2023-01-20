@@ -74,7 +74,6 @@ public final class MappingCommandsUtil {
 		try {
 			format = MappingFormat.valueOf(type.toUpperCase());
 		} catch (IllegalArgumentException ignored) {
-
 		}
 
 		if (format != null) {

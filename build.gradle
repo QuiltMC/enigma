@@ -1,95 +1,95 @@
 plugins {
-    id 'maven-publish'
+	id 'maven-publish'
 }
 
 subprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven-publish'
+	apply plugin: 'java'
+	apply plugin: 'maven-publish'
 
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
 
-    repositories {
-        mavenLocal()
-        mavenCentral()
+	repositories {
+		mavenLocal()
+		mavenCentral()
 
-        maven {
-            url = "https://maven.quiltmc.org/repository/release/"
-        }
-        maven {
-            url = "https://maven.quiltmc.org/repository/snapshot/"
-        }
-    }
+		maven {
+			url = "https://maven.quiltmc.org/repository/release/"
+		}
+		maven {
+			url = "https://maven.quiltmc.org/repository/snapshot/"
+		}
+	}
 
-    dependencies {
-        implementation libs.guava
-        implementation libs.gson
+	dependencies {
+		implementation libs.guava
+		implementation libs.gson
 
-        testImplementation libs.junit
-        testRuntimeOnly libs.junit.engine
-        testImplementation libs.hamcrest
-    }
+		testImplementation libs.junit
+		testRuntimeOnly libs.junit.engine
+		testImplementation libs.hamcrest
+	}
 
-    group = 'org.quiltmc'
-    version = '1.4.0'
+	group = 'org.quiltmc'
+	version = '1.4.0'
 
-    var ENV = System.getenv()
-    version = version + (ENV.GITHUB_ACTIONS ? (ENV.SNAPSHOTS_URL ? "-SNAPSHOT" : "") : "+local")
+	var ENV = System.getenv()
+	version = version + (ENV.GITHUB_ACTIONS ? (ENV.SNAPSHOTS_URL ? "-SNAPSHOT" : "") : "+local")
 
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
-    }
+	task sourcesJar(type: Jar, dependsOn: classes) {
+		classifier = 'sources'
+		from sourceSets.main.allSource
+	}
 
-    java {
-        withSourcesJar()
-    }
+	java {
+		withSourcesJar()
+	}
 
-    tasks.withType(JavaCompile).configureEach {
-        it.options.encoding = "UTF-8"
+	tasks.withType(JavaCompile).configureEach {
+		it.options.encoding = "UTF-8"
 
-        it.options.release = 17
-    }
+		it.options.release = 17
+	}
 
-    test {
-        useJUnitPlatform()
-    }
+	test {
+		useJUnitPlatform()
+	}
 
-//    publishing {
-//        publications {
-//            "$project.name"(MavenPublication) {
-//                groupId project.group
-//                artifactId project.name
-//                version project.version
-//                from components.java
-//            }
-//        }
-//    }
+//	publishing {
+//		publications {
+//			"$project.name"(MavenPublication) {
+//				groupId project.group
+//				artifactId project.name
+//				version project.version
+//				from components.java
+//			}
+//		}
+//	}
 }
 
 allprojects {
-    publishing {
-        repositories {
-            mavenLocal()
+	publishing {
+		repositories {
+			mavenLocal()
 
-            def ENV = System.getenv()
-            if (ENV.MAVEN_URL) {
-                maven {
-                    url ENV.MAVEN_URL
-                    credentials {
-                        username ENV.MAVEN_USERNAME
-                        password ENV.MAVEN_PASSWORD
-                    }
-                }
-            } else if (ENV.SNAPSHOTS_URL) {
-                maven {
-                    url ENV.SNAPSHOTS_URL
-                    credentials {
-                        username ENV.SNAPSHOTS_USERNAME
-                        password ENV.SNAPSHOTS_PASSWORD
-                    }
-                }
-            }
-        }
-    }
+			def ENV = System.getenv()
+			if (ENV.MAVEN_URL) {
+				maven {
+					url ENV.MAVEN_URL
+					credentials {
+						username ENV.MAVEN_USERNAME
+						password ENV.MAVEN_PASSWORD
+					}
+				}
+			} else if (ENV.SNAPSHOTS_URL) {
+				maven {
+					url ENV.SNAPSHOTS_URL
+					credentials {
+						username ENV.SNAPSHOTS_USERNAME
+						password ENV.SNAPSHOTS_PASSWORD
+					}
+				}
+			}
+		}
+	}
 }

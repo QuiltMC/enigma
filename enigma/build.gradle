@@ -1,17 +1,17 @@
 configurations {
-    proGuard
+	proGuard
 }
 
 dependencies {
-    implementation libs.bundles.asm
+	implementation libs.bundles.asm
 
-    implementation libs.quiltflower
-    implementation libs.cfr
-    implementation libs.procyon
+	implementation libs.quiltflower
+	implementation libs.cfr
+	implementation libs.procyon
 
-    proGuard libs.proguard
+	proGuard libs.proguard
 
-    testImplementation libs.jimfs
+	testImplementation libs.jimfs
 }
 
 // Generate "version.txt" file
@@ -19,17 +19,17 @@ dependencies {
 ext.genOutputDir = file("$buildDir/generated-resources")
 
 task generateVersionFile {
-    ext.outputFile = file("$genOutputDir/version.properties")
-    inputs.property("version", project.version)
-    inputs.property("quiltflower-version", libs.quiltflower.get().versionConstraint.displayName)
-    inputs.property("cfr-version", libs.cfr.get().versionConstraint.displayName)
-    inputs.property("procyon-version", libs.procyon.get().versionConstraint.displayName)
+	ext.outputFile = file("$genOutputDir/version.properties")
+	inputs.property("version", project.version)
+	inputs.property("quiltflower-version", libs.quiltflower.get().versionConstraint.displayName)
+	inputs.property("cfr-version", libs.cfr.get().versionConstraint.displayName)
+	inputs.property("procyon-version", libs.procyon.get().versionConstraint.displayName)
 
-    outputs.file(outputFile)
-    doLast {
-        outputFile.text = inputs.properties.entrySet()
-                .collect { "$it.key = $it.value" }.join("\n")
-    }
+	outputs.file(outputFile)
+	doLast {
+		outputFile.text = inputs.properties.entrySet()
+				.collect { "$it.key = $it.value" }.join("\n")
+	}
 }
 
 sourceSets.main.output.dir genOutputDir, builtBy: generateVersionFile
@@ -37,41 +37,41 @@ sourceSets.main.output.dir genOutputDir, builtBy: generateVersionFile
 // Generate obfuscated JARs for tests
 // If your test fails for class file version problem with proguard, run gradle with -Dorg.gradle.java.home="<older jdk>" flag
 def registerTestJarTasks(String name, String... input) {
-    def libraryJarsArg = "<java.home>/jmods"
+	def libraryJarsArg = "<java.home>/jmods"
 
-    tasks.register("${name}TestJar", Jar.class) {
-        group("test-setup")
-        from(sourceSets.test.output) {
-            include input
-        }
+	tasks.register("${name}TestJar", Jar.class) {
+		group("test-setup")
+		from(sourceSets.test.output) {
+			include input
+		}
 
-        archiveFileName = "${name}.jar"
-        destinationDirectory = file('build/test-inputs')
-    }
+		archiveFileName = "${name}.jar"
+		destinationDirectory = file('build/test-inputs')
+	}
 
-    var confFile = 'src/test/resources/proguard-test.conf'
-    if (file("src/test/resources/proguard-$name-test.conf").exists()) {
-        confFile = "src/test/resources/proguard-$name-test.conf"
-    }
+	var confFile = 'src/test/resources/proguard-test.conf'
+	if (file("src/test/resources/proguard-$name-test.conf").exists()) {
+		confFile = "src/test/resources/proguard-$name-test.conf"
+	}
 
-    tasks.register("${name}TestObf", JavaExec.class) {
-        group("test-setup")
-        dependsOn("${name}TestJar")
-        mainClass = 'proguard.ProGuard'
-        classpath configurations.proGuard
+	tasks.register("${name}TestObf", JavaExec.class) {
+		group("test-setup")
+		dependsOn("${name}TestJar")
+		mainClass = 'proguard.ProGuard'
+		classpath configurations.proGuard
 
-        args "@$confFile", '-injars', file("build/test-inputs/${name}.jar"),
-                '-libraryjars', libraryJarsArg,
-                '-outjars', file("build/test-obf/${name}.jar")
-                //'-printmapping', file("build/test-obf/${name}.txt")
-    }
+		args "@$confFile", '-injars', file("build/test-inputs/${name}.jar"),
+				'-libraryjars', libraryJarsArg,
+				'-outjars', file("build/test-obf/${name}.jar")
+				//'-printmapping', file("build/test-obf/${name}.txt")
+	}
 }
 
 file('src/test/java/cuchaz/enigma/inputs').listFiles().each { f ->
-    if (f.directory) {
-        registerTestJarTasks(f.name, "cuchaz/enigma/inputs/$f.name/**/*.class", "cuchaz/enigma/inputs/Keep.class")
-        test.dependsOn("${f.name}TestObf")
-    }
+	if (f.directory) {
+		registerTestJarTasks(f.name, "cuchaz/enigma/inputs/$f.name/**/*.class", "cuchaz/enigma/inputs/Keep.class")
+		test.dependsOn("${f.name}TestObf")
+	}
 }
 
 registerTestJarTasks("complete", "cuchaz/enigma/inputs/**/*.class")
@@ -79,12 +79,12 @@ registerTestJarTasks("complete", "cuchaz/enigma/inputs/**/*.class")
 test.dependsOn 'translationTestObf'
 
 publishing {
-    publications {
-        "$project.name"(MavenPublication) {
-            groupId project.group
-            artifactId project.name
-            version project.version
-            from components.java
-        }
-    }
+	publications {
+		"$project.name"(MavenPublication) {
+			groupId project.group
+			artifactId project.name
+			version project.version
+			from components.java
+		}
+	}
 }

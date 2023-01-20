@@ -22,9 +22,9 @@ public class UserListS2CPacket implements Packet<ClientPacketHandler> {
 	@Override
 	public void read(DataInput input) throws IOException {
 		int len = input.readUnsignedShort();
-        this.users = new ArrayList<>(len);
+		this.users = new ArrayList<>(len);
 		for (int i = 0; i < len; i++) {
-            this.users.add(input.readUTF());
+			this.users.add(input.readUTF());
 		}
 	}
 
@@ -40,5 +40,4 @@ public class UserListS2CPacket implements Packet<ClientPacketHandler> {
 	public void handle(ClientPacketHandler handler) {
 		handler.updateUserList(this.users);
 	}
-
 }

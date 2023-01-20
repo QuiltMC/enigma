@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma;
@@ -21,10 +21,9 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class TestTypeDescriptor {
-
+class TestTypeDescriptor {
 	@Test
-	public void isVoid() {
+	void isVoid() {
 		assertTrue(new TypeDescriptor("V").isVoid());
 		assertFalse(new TypeDescriptor("Z").isVoid());
 		assertFalse(new TypeDescriptor("B").isVoid());
@@ -38,7 +37,7 @@ public class TestTypeDescriptor {
 	}
 
 	@Test
-	public void isPrimitive() {
+	void isPrimitive() {
 		assertFalse(new TypeDescriptor("V").isPrimitive());
 		assertTrue(new TypeDescriptor("Z").isPrimitive());
 		assertTrue(new TypeDescriptor("B").isPrimitive());
@@ -52,7 +51,7 @@ public class TestTypeDescriptor {
 	}
 
 	@Test
-	public void getPrimitive() {
+	void getPrimitive() {
 		assertThat(new TypeDescriptor("Z").getPrimitive(), is(TypeDescriptor.Primitive.BOOLEAN));
 		assertThat(new TypeDescriptor("B").getPrimitive(), is(TypeDescriptor.Primitive.BYTE));
 		assertThat(new TypeDescriptor("C").getPrimitive(), is(TypeDescriptor.Primitive.CHARACTER));
@@ -63,7 +62,7 @@ public class TestTypeDescriptor {
 	}
 
 	@Test
-	public void isClass() {
+	void isClass() {
 		assertFalse(new TypeDescriptor("V").isType());
 		assertFalse(new TypeDescriptor("Z").isType());
 		assertFalse(new TypeDescriptor("B").isType());
@@ -77,19 +76,19 @@ public class TestTypeDescriptor {
 	}
 
 	@Test
-	public void getClassEntry() {
+	void getClassEntry() {
 		assertThat(new TypeDescriptor("LFoo;").getTypeEntry(), is(newClass("Foo")));
 		assertThat(new TypeDescriptor("Ljava/lang/String;").getTypeEntry(), is(newClass("java/lang/String")));
 	}
 
 	@Test
-	public void getArrayClassEntry() {
+	void getArrayClassEntry() {
 		assertThat(new TypeDescriptor("[LFoo;").getTypeEntry(), is(newClass("Foo")));
 		assertThat(new TypeDescriptor("[[[Ljava/lang/String;").getTypeEntry(), is(newClass("java/lang/String")));
 	}
 
 	@Test
-	public void isArray() {
+	void isArray() {
 		assertFalse(new TypeDescriptor("V").isArray());
 		assertFalse(new TypeDescriptor("Z").isArray());
 		assertFalse(new TypeDescriptor("B").isArray());
@@ -103,14 +102,14 @@ public class TestTypeDescriptor {
 	}
 
 	@Test
-	public void getArrayDimension() {
+	void getArrayDimension() {
 		assertThat(new TypeDescriptor("[I").getArrayDimension(), is(1));
 		assertThat(new TypeDescriptor("[[I").getArrayDimension(), is(2));
 		assertThat(new TypeDescriptor("[[[I").getArrayDimension(), is(3));
 	}
 
 	@Test
-	public void getArrayType() {
+	void getArrayType() {
 		assertThat(new TypeDescriptor("[I").getArrayType(), is(new TypeDescriptor("I")));
 		assertThat(new TypeDescriptor("[[I").getArrayType(), is(new TypeDescriptor("I")));
 		assertThat(new TypeDescriptor("[[[I").getArrayType(), is(new TypeDescriptor("I")));
@@ -118,7 +117,7 @@ public class TestTypeDescriptor {
 	}
 
 	@Test
-	public void hasClass() {
+	void hasClass() {
 		assertTrue(new TypeDescriptor("LFoo;").containsType());
 		assertTrue(new TypeDescriptor("Ljava/lang/String;").containsType());
 		assertTrue(new TypeDescriptor("[LBar;").containsType());
@@ -131,7 +130,7 @@ public class TestTypeDescriptor {
 	}
 
 	@Test
-	public void parseVoid() {
+	void parseVoid() {
 		final String answer = "V";
 		assertThat(TypeDescriptor.parseFirst("V"), is(answer));
 		assertThat(TypeDescriptor.parseFirst("VVV"), is(answer));
@@ -142,7 +141,7 @@ public class TestTypeDescriptor {
 	}
 
 	@Test
-	public void parsePrimitive() {
+	void parsePrimitive() {
 		final String answer = "I";
 		assertThat(TypeDescriptor.parseFirst("I"), is(answer));
 		assertThat(TypeDescriptor.parseFirst("III"), is(answer));
@@ -153,7 +152,7 @@ public class TestTypeDescriptor {
 	}
 
 	@Test
-	public void parseClass() {
+	void parseClass() {
 		{
 			final String answer = "LFoo;";
 			assertThat(TypeDescriptor.parseFirst("LFoo;"), is(answer));
@@ -175,7 +174,7 @@ public class TestTypeDescriptor {
 	}
 
 	@Test
-	public void parseArray() {
+	void parseArray() {
 		{
 			final String answer = "[I";
 			assertThat(TypeDescriptor.parseFirst("[I"), is(answer));
@@ -203,7 +202,7 @@ public class TestTypeDescriptor {
 	}
 
 	@Test
-	public void equals() {
+	void equals() {
 		assertThat(new TypeDescriptor("V"), is(new TypeDescriptor("V")));
 		assertThat(new TypeDescriptor("Z"), is(new TypeDescriptor("Z")));
 		assertThat(new TypeDescriptor("B"), is(new TypeDescriptor("B")));
@@ -228,7 +227,7 @@ public class TestTypeDescriptor {
 	}
 
 	@Test
-	public void testToString() {
+	void testToString() {
 		assertThat(new TypeDescriptor("V").toString(), is("V"));
 		assertThat(new TypeDescriptor("Z").toString(), is("Z"));
 		assertThat(new TypeDescriptor("B").toString(), is("B"));

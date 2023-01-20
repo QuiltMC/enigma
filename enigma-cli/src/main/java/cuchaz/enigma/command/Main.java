@@ -18,7 +18,6 @@ import java.util.Locale;
 import java.util.Map;
 
 public class Main {
-
 	private static final Map<String, Command> COMMANDS = new LinkedHashMap<>();
 
 	public static void main(String... args) {
@@ -92,7 +91,6 @@ public class Main {
 	}
 
 	private static final class CommandHelpException extends IllegalArgumentException {
-
 		final Command command;
 
 		CommandHelpException(Command command) {

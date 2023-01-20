@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma;
@@ -22,8 +22,7 @@ import static cuchaz.enigma.TestEntryFactory.newMethod;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class TestTokensConstructors extends TokenChecker {
-
+class TestTokensConstructors extends TokenChecker {
 	public TestTokensConstructors()
 			throws Exception {
 		super(Paths.get("build/test-obf/constructors.jar"),
@@ -31,13 +30,13 @@ public class TestTokensConstructors extends TokenChecker {
 	}
 
 	@Test
-	public void baseDeclarations() {
+	void baseDeclarations() {
 		assertThat(this.getDeclarationToken(newMethod("a", "<init>", "()V")), is("a"));
 		assertThat(this.getDeclarationToken(newMethod("a", "<init>", "(I)V")), is("a"));
 	}
 
 	@Test
-	public void subDeclarations() {
+	void subDeclarations() {
 		assertThat(this.getDeclarationToken(newMethod("d", "<init>", "()V")), is("d"));
 		assertThat(this.getDeclarationToken(newMethod("d", "<init>", "(I)V")), is("d"));
 		assertThat(this.getDeclarationToken(newMethod("d", "<init>", "(II)V")), is("d"));
@@ -45,56 +44,56 @@ public class TestTokensConstructors extends TokenChecker {
 	}
 
 	@Test
-	public void subsubDeclarations() {
+	void subsubDeclarations() {
 		assertThat(this.getDeclarationToken(newMethod("e", "<init>", "(I)V")), is("e"));
 	}
 
 	@Test
-	public void defaultDeclarations() {
+	void defaultDeclarations() {
 		assertThat(this.getDeclarationToken(newMethod("c", "<init>", "()V")), nullValue());
 	}
 
 	@Test
-	public void baseDefaultReferences() {
+	void baseDefaultReferences() {
 		MethodEntry source = newMethod("a", "<init>", "()V");
 		assertThat(
-                this.getReferenceTokens(newBehaviorReferenceByMethod(source, "b", "a", "()V")),
+				this.getReferenceTokens(newBehaviorReferenceByMethod(source, "b", "a", "()V")),
 				containsInAnyOrder("a")
 		);
 		assertThat(
-                this.getReferenceTokens(newBehaviorReferenceByMethod(source, "d", "<init>", "()V")),
+				this.getReferenceTokens(newBehaviorReferenceByMethod(source, "d", "<init>", "()V")),
 				is(empty()) // implicit call, not decompiled to token
 		);
 		assertThat(
-                this.getReferenceTokens(newBehaviorReferenceByMethod(source, "d", "<init>", "(III)V")),
+				this.getReferenceTokens(newBehaviorReferenceByMethod(source, "d", "<init>", "(III)V")),
 				is(empty()) // implicit call, not decompiled to token
 		);
 	}
 
 	@Test
-	public void baseIntReferences() {
+	void baseIntReferences() {
 		MethodEntry source = newMethod("a", "<init>", "(I)V");
 		assertThat(
-                this.getReferenceTokens(newBehaviorReferenceByMethod(source, "b", "b", "()V")),
+				this.getReferenceTokens(newBehaviorReferenceByMethod(source, "b", "b", "()V")),
 				containsInAnyOrder("a")
 		);
 	}
 
 	@Test
-	public void subDefaultReferences() {
+	void subDefaultReferences() {
 		MethodEntry source = newMethod("d", "<init>", "()V");
 		assertThat(
-                this.getReferenceTokens(newBehaviorReferenceByMethod(source, "b", "c", "()V")),
+				this.getReferenceTokens(newBehaviorReferenceByMethod(source, "b", "c", "()V")),
 				containsInAnyOrder("d")
 		);
 		assertThat(
-                this.getReferenceTokens(newBehaviorReferenceByMethod(source, "d", "<init>", "(I)V")),
+				this.getReferenceTokens(newBehaviorReferenceByMethod(source, "d", "<init>", "(I)V")),
 				containsInAnyOrder("this")
 		);
 	}
 
 	@Test
-	public void subIntReferences() {
+	void subIntReferences() {
 		MethodEntry source = newMethod("d", "<init>", "(I)V");
 		assertThat(this.getReferenceTokens(
 				newBehaviorReferenceByMethod(source, "b", "d", "()V")),
@@ -111,28 +110,28 @@ public class TestTokensConstructors extends TokenChecker {
 	}
 
 	@Test
-	public void subIntIntReferences() {
+	void subIntIntReferences() {
 		MethodEntry source = newMethod("d", "<init>", "(II)V");
 		assertThat(
-                this.getReferenceTokens(newBehaviorReferenceByMethod(source, "b", "e", "()V")),
+				this.getReferenceTokens(newBehaviorReferenceByMethod(source, "b", "e", "()V")),
 				containsInAnyOrder("d")
 		);
 	}
 
 	@Test
-	public void subsubIntReferences() {
+	void subsubIntReferences() {
 		MethodEntry source = newMethod("e", "<init>", "(I)V");
 		assertThat(
-                this.getReferenceTokens(newBehaviorReferenceByMethod(source, "b", "f", "()V")),
+				this.getReferenceTokens(newBehaviorReferenceByMethod(source, "b", "f", "()V")),
 				containsInAnyOrder("e")
 		);
 	}
 
 	@Test
-	public void defaultConstructableReferences() {
+	void defaultConstructableReferences() {
 		MethodEntry source = newMethod("c", "<init>", "()V");
 		assertThat(
-                this.getReferenceTokens(newBehaviorReferenceByMethod(source, "b", "g", "()V")),
+				this.getReferenceTokens(newBehaviorReferenceByMethod(source, "b", "g", "()V")),
 				containsInAnyOrder("c")
 		);
 	}

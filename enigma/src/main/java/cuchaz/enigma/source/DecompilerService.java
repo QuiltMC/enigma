@@ -5,7 +5,7 @@ import cuchaz.enigma.api.service.EnigmaService;
 import cuchaz.enigma.api.service.EnigmaServiceType;
 
 public interface DecompilerService extends EnigmaService {
-    EnigmaServiceType<DecompilerService> TYPE = EnigmaServiceType.create("decompiler");
+	EnigmaServiceType<DecompilerService> TYPE = EnigmaServiceType.create("decompiler");
 
-    Decompiler create(ClassProvider classProvider, SourceSettings settings);
+	Decompiler create(ClassProvider classProvider, SourceSettings settings);
 }

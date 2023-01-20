@@ -21,7 +21,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RecafMappingsReader implements MappingsReader {
-
 	public static final RecafMappingsReader INSTANCE = new RecafMappingsReader();
 	private static final Pattern METHOD_PATTERN = Pattern.compile("(.*?)\\.(.*?)(\\(.*?) (.*)");
 	private static final Pattern FIELD_PATTERN = Pattern.compile("(.*?)\\.(.*?) (.*?) (.*)");

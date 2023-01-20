@@ -54,5 +54,4 @@ public class PacketRegistry {
 		Supplier<? extends Packet<ClientPacketHandler>> creator = s2cPacketCreators.get(id);
 		return creator == null ? null : creator.get();
 	}
-
 }

@@ -18,7 +18,6 @@ import javax.swing.plaf.basic.BasicToolTipUI;
  * @author Zafir Anjum
  */
 public class JMultiLineToolTip extends JToolTip {
-
 	@Serial
 	private static final long serialVersionUID = 7813662474312183098L;
 
@@ -57,7 +56,6 @@ public class JMultiLineToolTip extends JToolTip {
  * UI for multi line tool tip
  */
 class MultiLineToolTipUI extends BasicToolTipUI {
-
 	private static final MultiLineToolTipUI sharedInstance = new MultiLineToolTipUI();
 	protected CellRendererPane rendererPane;
 

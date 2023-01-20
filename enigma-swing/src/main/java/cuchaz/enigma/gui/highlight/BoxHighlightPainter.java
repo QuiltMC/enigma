@@ -69,5 +69,4 @@ public class BoxHighlightPainter implements Highlighter.HighlightPainter {
 		g.setColor(this.borderColor);
 		g.drawRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 4, 4);
 	}
-
 }

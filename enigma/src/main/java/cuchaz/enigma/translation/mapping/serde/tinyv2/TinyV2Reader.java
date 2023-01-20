@@ -25,7 +25,6 @@ import java.util.BitSet;
 import java.util.List;
 
 public final class TinyV2Reader implements MappingsReader {
-
 	private static final String MINOR_VERSION = "0";
 	// 0 indent
 	private static final int IN_HEADER = 0;

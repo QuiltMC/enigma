@@ -18,7 +18,6 @@ import java.io.StringReader;
 import java.util.List;
 
 public class SignatureUpdater {
-
 	public static String update(String signature, ClassNameUpdater updater) {
 		try {
 			StringBuilder buf = new StringBuilder();

@@ -21,7 +21,6 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public class FieldReferenceTreeNode extends DefaultMutableTreeNode implements ReferenceTreeNode<FieldEntry, MethodDefEntry> {
-
 	private final Translator translator;
 	private final FieldEntry entry;
 	private final EntryReference<FieldEntry, MethodDefEntry> reference;
@@ -62,11 +61,11 @@ public class FieldReferenceTreeNode extends DefaultMutableTreeNode implements Re
 		// get all the child nodes
 		if (this.reference == null) {
 			for (EntryReference<FieldEntry, MethodDefEntry> reference : referenceIndex.getReferencesToField(this.entry)) {
-                this.add(new FieldReferenceTreeNode(this.translator, reference));
+				this.add(new FieldReferenceTreeNode(this.translator, reference));
 			}
 		} else {
 			for (EntryReference<MethodEntry, MethodDefEntry> reference : referenceIndex.getReferencesToMethod(this.reference.context)) {
-                this.add(new MethodReferenceTreeNode(this.translator, reference));
+				this.add(new MethodReferenceTreeNode(this.translator, reference));
 			}
 		}
 

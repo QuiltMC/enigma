@@ -18,7 +18,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 public final class AddJavadocsAstTransform implements IAstTransform {
-
 	private final EntryRemapper remapper;
 
 	public AddJavadocsAstTransform(EntryRemapper remapper) {
@@ -31,7 +30,6 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 	}
 
 	static class Visitor extends DepthFirstAstVisitor<Void, Void> {
-
 		private final EntryRemapper remapper;
 
 		Visitor(EntryRemapper remapper) {

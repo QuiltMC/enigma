@@ -6,18 +6,17 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.inputs.innerClasses;
 
 public class E_AnonymousWithOuterAccess {
-
 	// reproduction of error case documented at:
 	// https://bitbucket.org/cuchaz/enigma/issue/61/stackoverflowerror-when-deobfuscating
 
 	public Object makeInner() {
-        this.outerMethod();
+		this.outerMethod();
 		return new Object() {
 			@Override
 			public String toString() {

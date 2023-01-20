@@ -16,7 +16,6 @@ import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.source.RenamableTokenType;
 
 public class Themes {
-
 	private static final Set<ThemeChangeListener> listeners = new HashSet<>();
 
 	// Calling this after the UI is initialized (e.g. when the user changes
@@ -102,5 +101,4 @@ public class Themes {
 	public static void removeListener(ThemeChangeListener listener) {
 		listeners.remove(listener);
 	}
-
 }

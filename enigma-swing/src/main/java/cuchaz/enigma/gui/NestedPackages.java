@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class NestedPackages {
-
 	private final DefaultMutableTreeNode root = new DefaultMutableTreeNode();
 	private final Map<String, DefaultMutableTreeNode> packageToNode = new HashMap<>();
 	private final Map<ClassEntry, ClassSelectorClassNode> classToNode = new HashMap<>();

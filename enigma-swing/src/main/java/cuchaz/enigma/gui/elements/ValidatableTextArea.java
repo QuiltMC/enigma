@@ -14,7 +14,6 @@ import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.Validatable;
 
 public class ValidatableTextArea extends JTextArea implements Validatable {
-
 	private final List<ParameterizedMessage> messages = new ArrayList<>();
 	private String tooltipText = null;
 
@@ -42,20 +41,20 @@ public class ValidatableTextArea extends JTextArea implements Validatable {
 	}
 
 	{
-        this.getDocument().addDocumentListener(new DocumentListener() {
+		this.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-                ValidatableTextArea.this.clearMessages();
+				ValidatableTextArea.this.clearMessages();
 			}
 
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-                ValidatableTextArea.this.clearMessages();
+				ValidatableTextArea.this.clearMessages();
 			}
 
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-                ValidatableTextArea.this.clearMessages();
+				ValidatableTextArea.this.clearMessages();
 			}
 		});
 	}
@@ -69,8 +68,8 @@ public class ValidatableTextArea extends JTextArea implements Validatable {
 
 	@Override
 	public void setToolTipText(String text) {
-        this.tooltipText = text;
-        this.setToolTipText0();
+		this.tooltipText = text;
+		this.setToolTipText0();
 	}
 
 	private void setToolTipText0() {
@@ -79,16 +78,16 @@ public class ValidatableTextArea extends JTextArea implements Validatable {
 
 	@Override
 	public void clearMessages() {
-        this.messages.clear();
-        this.setToolTipText0();
-        this.repaint();
+		this.messages.clear();
+		this.setToolTipText0();
+		this.repaint();
 	}
 
 	@Override
 	public void addMessage(ParameterizedMessage message) {
-        this.messages.add(message);
-        this.setToolTipText0();
-        this.repaint();
+		this.messages.add(message);
+		this.setToolTipText0();
+		this.repaint();
 	}
 
 	@Override
@@ -96,5 +95,4 @@ public class ValidatableTextArea extends JTextArea implements Validatable {
 		super.paint(g);
 		ValidatableUi.drawMarker(this, g, this.messages);
 	}
-
 }

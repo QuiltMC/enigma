@@ -269,5 +269,4 @@ public abstract class EnigmaServer {
 		this.log(String.format("[MSG] %s", message.translate()));
 		this.sendToAll(new MessageS2CPacket(message));
 	}
-
 }

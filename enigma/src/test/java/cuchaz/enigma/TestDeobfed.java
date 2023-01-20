@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma;
@@ -44,7 +44,7 @@ public class TestDeobfed {
 	}
 
 	@Test
-	public void obfEntries() {
+	void obfEntries() {
 		assertThat(deobfProject.getJarIndex().getEntryIndex().getClasses(), containsInAnyOrder(
 			newClass("cuchaz/enigma/inputs/Keep"),
 			newClass("a"),
@@ -73,7 +73,7 @@ public class TestDeobfed {
 	}
 
 	@Test
-	public void decompile() {
+	void decompile() {
 		Decompiler decompiler = Decompilers.CFR.create(deobfProject.getClassProvider(), new SourceSettings(false, false));
 
 		decompiler.getSource("a");

@@ -11,14 +11,14 @@ Strings, see below.
 
 ## Login protocol
 ```
-Client     Server
-|               |
-|     Login     |
+Client	 Server
+|			   |
+|	 Login	 |
 | >>>>>>>>>>>>> |
-|               |
+|			   |
 | SyncMappings  |
 | <<<<<<<<<<<<< |
-|               |
+|			   |
 | ConfirmChange |
 | >>>>>>>>>>>>> |
 ```
@@ -29,7 +29,7 @@ Client     Server
    has received the mappings and is in sync with the server. Once the server receives this packet, the client will be
    allowed to modify mappings.
 
-The server will not accept any other packets from the client until this entire exchange has been completed. 
+The server will not accept any other packets from the client until this entire exchange has been completed.
 
 ## Kicking clients
 When the server kicks a client, it may optionally send a `Kick` packet immediately before closing the connection, which
@@ -39,16 +39,16 @@ the server may simply terminate the connection.
 ## Changing mappings
 This section uses the example of renaming, but the same pattern applies to all mapping changes.
 ```
-Client A   Server    Client B
-|           |               |
-| RenameC2S |               |
-| >>>>>>>>> |               |
-|           |               |
-|           |   RenameS2C   |
-|           | >>>>>>>>>>>>> |
-|           |               |
-|           | ConfirmChange |
-|           | <<<<<<<<<<<<< |
+Client A   Server	Client B
+|		   |			   |
+| RenameC2S |			   |
+| >>>>>>>>> |			   |
+|		   |			   |
+|		   |   RenameS2C   |
+|		   | >>>>>>>>>>>>> |
+|		   |			   |
+|		   | ConfirmChange |
+|		   | <<<<<<<<<<<<< |
 ```
 
 1. Client A validates the name and updates the mapping client-side to give the impression there is no latency >:)
@@ -68,8 +68,8 @@ Client A   Server    Client B
 ## Packets
 ```c
 struct Packet {
-    unsigned short packet_id;
-    data[]; // depends on packet_id
+	unsigned short packet_id;
+	data[]; // depends on packet_id
 }
 ```
 The IDs for client-to-server packets are as follows:
@@ -88,42 +88,42 @@ The IDs for server-to-client packets are as follows:
 ### The utf struct
 ```c
 struct utf {
-    unsigned short length;
-    byte data[length];
+	unsigned short length;
+	byte data[length];
 }
 ```
 - `length`: The number of bytes in the UTF-8 encoding of the string. Note, this may not be the same as the number of
-            Unicode characters in the string.
-- `data`: A standard UTF-8 encoded byte array representing the string. 
+			Unicode characters in the string.
+- `data`: A standard UTF-8 encoded byte array representing the string.
 
 ### The Entry struct
 ```c
 enum EntryType {
-    ENTRY_CLASS = 0, ENTRY_FIELD = 1, ENTRY_METHOD = 2, ENTRY_LOCAL_VAR = 3;
+	ENTRY_CLASS = 0, ENTRY_FIELD = 1, ENTRY_METHOD = 2, ENTRY_LOCAL_VAR = 3;
 }
 struct Entry {
-    unsigned byte type;
-    boolean has_parent;
-    if<has_parent> {
-        Entry parent;
-    }
-    utf name;
-    boolean has_javadoc;
-    if<has_javadoc> {
-        utf javadoc;
-    }
-    if<type == ENTRY_FIELD || type == ENTRY_METHOD> {
-        utf descriptor;
-    }
-    if<type == ENTRY_LOCAL_VAR> {
-        unsigned short index;
-        boolean parameter;
-    }
+	unsigned byte type;
+	boolean has_parent;
+	if<has_parent> {
+		Entry parent;
+	}
+	utf name;
+	boolean has_javadoc;
+	if<has_javadoc> {
+		utf javadoc;
+	}
+	if<type == ENTRY_FIELD || type == ENTRY_METHOD> {
+		utf descriptor;
+	}
+	if<type == ENTRY_LOCAL_VAR> {
+		unsigned short index;
+		boolean parameter;
+	}
 }
 ```
 - `type`: The type of entry this is. One of `ENTRY_CLASS`, `ENTRY_FIELD`, `ENTRY_METHOD` or `ENTRY_LOCAL_VAR`.
 - `parent`: The parent entry. Only class entries may have no parent. fields, methods and inner classes must have their
-            containing class as their parent. Local variables have a method as a parent.
+			containing class as their parent. Local variables have a method as a parent.
 - `name`: The class/field/method/variable name.
 - `javadoc`: The javadoc of an entry, if present.
 - `descriptor`: The field/method descriptor.
@@ -133,51 +133,51 @@ struct Entry {
 ### The Message struct
 ```c
 enum MessageType {
-    MESSAGE_CHAT = 0,
-    MESSAGE_CONNECT = 1,
-    MESSAGE_DISCONNECT = 2,
-    MESSAGE_EDIT_DOCS = 3,
-    MESSAGE_MARK_DEOBF = 4,
-    MESSAGE_REMOVE_MAPPING = 5,
-    MESSAGE_RENAME = 6
+	MESSAGE_CHAT = 0,
+	MESSAGE_CONNECT = 1,
+	MESSAGE_DISCONNECT = 2,
+	MESSAGE_EDIT_DOCS = 3,
+	MESSAGE_MARK_DEOBF = 4,
+	MESSAGE_REMOVE_MAPPING = 5,
+	MESSAGE_RENAME = 6
 };
 typedef unsigned byte message_type_t;
 
 struct Message {
-    message_type_t type;
-    union { // Note that the size of this varies depending on type, it is not constant size
-        struct {
-            utf user;
-            utf message;
-        } chat;
-        struct {
-            utf user;
-        } connect;
-        struct {
-            utf user;
-        } disconnect;
-        struct {
-            utf user;
-            Entry entry;
-        } edit_docs;
-        struct {
-            utf user;
-            Entry entry;
-        } mark_deobf;
-        struct {
-            utf user;
-            Entry entry;
-        } remove_mapping;
-        struct {
-            utf user;
-            Entry entry;
-            utf new_name;
-        } rename;
-    } data;
+	message_type_t type;
+	union { // Note that the size of this varies depending on type, it is not constant size
+		struct {
+			utf user;
+			utf message;
+		} chat;
+		struct {
+			utf user;
+		} connect;
+		struct {
+			utf user;
+		} disconnect;
+		struct {
+			utf user;
+			Entry entry;
+		} edit_docs;
+		struct {
+			utf user;
+			Entry entry;
+		} mark_deobf;
+		struct {
+			utf user;
+			Entry entry;
+		} remove_mapping;
+		struct {
+			utf user;
+			Entry entry;
+			utf new_name;
+		} rename;
+	} data;
 };
 ```
 - `type`: The type of message this is. One of `MESSAGE_CHAT`, `MESSAGE_CONNECT`, `MESSAGE_DISCONNECT`,
-    `MESSAGE_EDIT_DOCS`, `MESSAGE_MARK_DEOBF`, `MESSAGE_REMOVE_MAPPING`, `MESSAGE_RENAME`.
+	`MESSAGE_EDIT_DOCS`, `MESSAGE_MARK_DEOBF`, `MESSAGE_REMOVE_MAPPING`, `MESSAGE_RENAME`.
 - `chat`: Chat message. Use in case `type` is `MESSAGE_CHAT`
 - `connect`: Sent when a user connects. Use in case `type` is `MESSAGE_CONNECT`
 - `disconnect`: Sent when a user disconnects. Use in case `type` is `MESSAGE_DISCONNECT`
@@ -193,16 +193,16 @@ struct Message {
 ### The entry_change struct
 ```c
 typedef enum tristate_change {
-    TRISTATE_CHANGE_UNCHANGED = 0,
-    TRISTATE_CHANGE_RESET = 1,
-    TRISTATE_CHANGE_SET = 2
+	TRISTATE_CHANGE_UNCHANGED = 0,
+	TRISTATE_CHANGE_RESET = 1,
+	TRISTATE_CHANGE_SET = 2
 } tristate_change_t;
 
 typedef enum access_modifier {
-    ACCESS_MODIFIER_UNCHANGED = 0,
-    ACCESS_MODIFIER_PUBLIC = 1,
-    ACCESS_MODIFIER_PROTECTED = 2,
-    ACCESS_MODIFIER_PRIVATE = 3
+	ACCESS_MODIFIER_UNCHANGED = 0,
+	ACCESS_MODIFIER_PUBLIC = 1,
+	ACCESS_MODIFIER_PROTECTED = 2,
+	ACCESS_MODIFIER_PRIVATE = 3
 } access_modifier_t;
 
 // Contains 4 packed values:
@@ -214,14 +214,14 @@ typedef enum access_modifier {
 typedef uint8_t entry_change_flags;
 
 struct entry_change {
-    Entry entry;
-    entry_change_flags flags;
-    if <deobf_name_change == TRISTATE_CHANGE_SET> {
-        utf deobf_name;
-    }
-    if <javadoc_change == TRISTATE_CHANGE_SET> {
-        utf javadoc;
-    }
+	Entry entry;
+	entry_change_flags flags;
+	if <deobf_name_change == TRISTATE_CHANGE_SET> {
+		utf deobf_name;
+	}
+	if <javadoc_change == TRISTATE_CHANGE_SET> {
+		utf javadoc;
+	}
 }
 ```
 - `entry`: The entry this change gets applied to.
@@ -233,25 +233,25 @@ struct entry_change {
 ### Login (client-to-server)
 ```c
 struct LoginC2SPacket {
-    unsigned short protocol_version;
-    byte checksum[20];
-    unsigned byte password_length;
-    char password[password_length];
-    utf username;
+	unsigned short protocol_version;
+	byte checksum[20];
+	unsigned byte password_length;
+	char password[password_length];
+	utf username;
 }
 ```
 - `protocol_version`: the version of the protocol. If the version does not match on the server, then the client will be
-                      kicked immediately. Currently always equal to 0.
+					  kicked immediately. Currently always equal to 0.
 - `checksum`: the SHA-1 hash of the JAR file the client has open. If this does not match the SHA-1 hash of the JAR file
-              the server has open, the client will be kicked.
+			  the server has open, the client will be kicked.
 - `password`: the password needed to log into the server. Note that each `char` is 2 bytes, as per the Java data type.
-              If this password is incorrect, the client will be kicked.
+			  If this password is incorrect, the client will be kicked.
 - `username`: the username of the user logging in. If the username is not unique, the client will be kicked.
 
 ### ConfirmChange (client-to-server)
 ```c
 struct ConfirmChangeC2SPacket {
-    unsigned short sync_id;
+	unsigned short sync_id;
 }
 ```
 - `sync_id`: the sync ID to confirm.
@@ -259,7 +259,7 @@ struct ConfirmChangeC2SPacket {
 ### Message (client-to-server)
 ```c
 struct MessageC2SPacket {
-    utf message;
+	utf message;
 }
 ```
 - `message`: The text message the user sent.
@@ -267,7 +267,7 @@ struct MessageC2SPacket {
 ### EntryChange (client-to-server)
 ```c
 struct EntryChangeC2SPacket {
-    entry_change change;
+	entry_change change;
 }
 ```
 - `change`: The change to apply.
@@ -275,7 +275,7 @@ struct EntryChangeC2SPacket {
 ### Kick (server-to-client)
 ```c
 struct KickS2CPacket {
-    utf reason;
+	utf reason;
 }
 ```
 - `reason`: the reason for the kick, may or may not be a translation key for the client to display to the user.
@@ -283,16 +283,16 @@ struct KickS2CPacket {
 ### SyncMappings (server-to-client)
 ```c
 struct SyncMappingsS2CPacket {
-    int num_roots;
-    MappingNode roots[num_roots];
+	int num_roots;
+	MappingNode roots[num_roots];
 }
 struct MappingNode {
-    NoParentEntry obf_entry;
-    boolean is_named;
-    utf name;
-    utf javadoc;
-    unsigned short children_count;
-    MappingNode children[children_count];
+	NoParentEntry obf_entry;
+	boolean is_named;
+	utf name;
+	utf javadoc;
+	unsigned short children_count;
+	MappingNode children[children_count];
 }
 typedef { Entry but without the has_parent or parent fields } NoParentEntry;
 ```
@@ -305,23 +305,23 @@ typedef { Entry but without the has_parent or parent fields } NoParentEntry;
 ### Message (server-to-client)
 ```c
 struct MessageS2CPacket {
-    Message message;
+	Message message;
 }
 ```
 
 ### UserList (server-to-client)
 ```c
 struct UserListS2CPacket {
-    unsigned short len;
-    utf user[len];
+	unsigned short len;
+	utf user[len];
 }
 ```
 
 ### EntryChange (server-to-client)
 ```c
 struct EntryChangeS2CPacket {
-    uint16_t sync_id;
-    entry_change change;
+	uint16_t sync_id;
+	entry_change change;
 }
 ```
 - `sync_id`: The sync ID of the change for locking purposes.

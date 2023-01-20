@@ -7,7 +7,6 @@ import javax.swing.*;
 import javax.swing.border.Border;
 
 public abstract class AbstractListCellRenderer<E> extends JPanel implements ListCellRenderer<E> {
-
 	private static final Border NO_FOCUS_BORDER = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 
 	private Border noFocusBorder;
@@ -73,5 +72,4 @@ public abstract class AbstractListCellRenderer<E> extends JPanel implements List
 		}
 		return this.getToolTipText();
 	}
-
 }

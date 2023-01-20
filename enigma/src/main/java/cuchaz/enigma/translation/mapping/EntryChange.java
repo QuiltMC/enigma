@@ -11,7 +11,6 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.TristateChange;
 
 public final class EntryChange<E extends Entry<?>> {
-
 	private final E target;
 	private final TristateChange<String> deobfName;
 	private final TristateChange<String> javadoc;
@@ -92,5 +91,4 @@ public final class EntryChange<E extends Entry<?>> {
 	public String toString() {
 		return String.format("EntryChange { target: %s, deobfName: %s, javadoc: %s, access: %s }", this.target, this.deobfName, this.javadoc, this.access);
 	}
-
 }

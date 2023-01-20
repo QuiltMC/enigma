@@ -15,7 +15,6 @@ import cuchaz.enigma.utils.validation.Message.Type;
  * multiple errors and displaying them to the user at the same time.
  */
 public class ValidationContext {
-
 	private Validatable activeElement = null;
 	private final Set<Validatable> elements = new HashSet<>();
 	private final List<ParameterizedMessage> messages = new ArrayList<>();
@@ -38,7 +37,7 @@ public class ValidationContext {
 	 * that element about the message.
 	 *
 	 * @param message the message to raise
-	 * @param args    the arguments used when formatting the message text
+	 * @param args	the arguments used when formatting the message text
 	 */
 	public void raise(Message message, Object... args) {
 		ParameterizedMessage pm = new ParameterizedMessage(message, args, this.activeElement);
@@ -90,5 +89,4 @@ public class ValidationContext {
 		this.elements.clear();
 		this.messages.clear();
 	}
-
 }

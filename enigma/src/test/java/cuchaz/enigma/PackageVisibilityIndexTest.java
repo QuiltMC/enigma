@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma;
@@ -25,7 +25,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
-public class PackageVisibilityIndexTest {
+class PackageVisibilityIndexTest {
 	public static final Path JAR = Paths.get("build/test-obf/packageAccess.jar");
 	private static final ClassEntry KEEP = newClass("cuchaz/enigma/inputs/Keep");
 	private static final ClassEntry BASE = newClass("a");
@@ -37,12 +37,12 @@ public class PackageVisibilityIndexTest {
 
 	public PackageVisibilityIndexTest() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
-        this.jarIndex = JarIndex.empty();
-        this.jarIndex.indexJar(jcp.getClassNames(), jcp, ProgressListener.none());
+		this.jarIndex = JarIndex.empty();
+		this.jarIndex.indexJar(jcp.getClassNames(), jcp, ProgressListener.none());
 	}
 
 	@Test
-	public void test() {
+	void test() {
 		PackageVisibilityIndex visibilityIndex = this.jarIndex.getPackageVisibilityIndex();
 		assertThat(visibilityIndex.getPartition(BASE), containsInAnyOrder(BASE, SAME_PACKAGE_CHILD, SAME_PACKAGE_CHILD_INNER));
 		System.out.println(visibilityIndex.getPartitions());

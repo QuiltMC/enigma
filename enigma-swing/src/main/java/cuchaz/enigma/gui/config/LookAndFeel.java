@@ -66,5 +66,4 @@ public enum LookAndFeel {
 		int b = (int) (0.3 * c.getRed() + 0.59 * c.getGreen() + 0.11 * c.getBlue());
 		return b < 85;
 	}
-
 }

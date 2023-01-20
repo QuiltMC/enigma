@@ -3,7 +3,6 @@ package cuchaz.enigma.source;
 import java.util.*;
 
 public final class TokenStore {
-
 	private static final TokenStore EMPTY = new TokenStore(Collections.emptyNavigableSet(), Collections.emptyMap(), null);
 
 	private final NavigableSet<Token> tokens;
@@ -67,5 +66,4 @@ public final class TokenStore {
 	public Map<RenamableTokenType, NavigableSet<Token>> getByType() {
 		return this.byType;
 	}
-
 }

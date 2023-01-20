@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 public final class StatsResult {
-
 	private final int total;
 	private final int unmapped;
 	private final Tree<Integer> tree;
@@ -61,7 +60,7 @@ public final class StatsResult {
 		}
 
 		public Tree() {
-            this.root = new Node<>("", null);
+			this.root = new Node<>("", null);
 		}
 
 		public Node<T> getNode(String name) {
@@ -82,7 +81,7 @@ public final class StatsResult {
 					node = child;
 				}
 
-                this.nodes.put(name, node);
+				this.nodes.put(name, node);
 			}
 
 			return node;
@@ -97,9 +96,8 @@ public final class StatsResult {
 			}
 
 			for (Node<T> child : node.children) {
-                this.collapse(child);
+				this.collapse(child);
 			}
 		}
 	}
-
 }

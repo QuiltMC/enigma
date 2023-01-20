@@ -35,7 +35,6 @@ import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 public class JavadocDialog {
-
 	private final JDialog ui;
 	private final GuiController controller;
 	private final Entry<?> entry;
@@ -198,5 +197,4 @@ public class JavadocDialog {
 			return this.inline;
 		}
 	}
-
 }

@@ -88,7 +88,6 @@ public class VarargsFixer implements IAstTransform {
 					arrayArg.isNull() ||
 					!(arrayArg instanceof final ArrayCreationExpression newArray &&
 							node.getTarget() instanceof final MemberReferenceExpression target)) {
-
 				return null;
 			}
 
@@ -170,7 +169,6 @@ public class VarargsFixer implements IAstTransform {
 			if (c2.isFailure() ||
 					c2.isAmbiguous() ||
 					!StringUtilities.equals(c2.getMethod().getErasedSignature(), c1.getMethod().getErasedSignature())) {
-
 				return null;
 			}
 

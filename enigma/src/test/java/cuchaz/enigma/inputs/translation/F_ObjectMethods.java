@@ -6,26 +6,25 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.inputs.translation;
 
 @SuppressWarnings("FinalizeCalledExplicitly")
 public class F_ObjectMethods {
-
 	public void callEmAll()
 		throws Throwable {
-        this.clone();
-        this.equals(this);
-        this.finalize();
-        this.getClass();
-        this.hashCode();
-        this.notify();
-        this.notifyAll();
-        this.toString();
-        this.wait();
-        this.wait(0);
-        this.wait(0, 0);
+		this.clone();
+		this.equals(this);
+		this.finalize();
+		this.getClass();
+		this.hashCode();
+		this.notify();
+		this.notifyAll();
+		this.toString();
+		this.wait();
+		this.wait(0);
+		this.wait(0, 0);
 	}
 }

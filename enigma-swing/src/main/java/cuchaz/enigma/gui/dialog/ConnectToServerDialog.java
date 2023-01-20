@@ -84,6 +84,5 @@ public class ConnectToServerDialog extends AbstractDialog {
 	}
 
 	public record Result(String username, String addressStr, ServerAddress address, char[] password) {
-
 	}
 }

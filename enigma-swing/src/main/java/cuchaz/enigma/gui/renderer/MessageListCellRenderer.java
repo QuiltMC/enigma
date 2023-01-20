@@ -10,7 +10,6 @@ import cuchaz.enigma.network.Message;
 // For now, just render the translated text.
 // TODO: Icons or something later?
 public class MessageListCellRenderer extends DefaultListCellRenderer {
-
 	@Override
 	public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 		super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -20,5 +19,4 @@ public class MessageListCellRenderer extends DefaultListCellRenderer {
 		}
 		return this;
 	}
-
 }

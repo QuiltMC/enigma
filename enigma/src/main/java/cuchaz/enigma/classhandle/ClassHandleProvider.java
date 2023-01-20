@@ -23,7 +23,6 @@ import cuchaz.enigma.utils.Result;
 import static cuchaz.enigma.utils.Utils.withLock;
 
 public final class ClassHandleProvider {
-
 	private final EnigmaProject project;
 
 	private final ExecutorService pool = Executors.newWorkStealingPool();
@@ -168,7 +167,6 @@ public final class ClassHandleProvider {
 	}
 
 	private static final class Entry {
-
 		private final ClassHandleProvider p;
 		private final ClassEntry entry;
 		private ClassEntry deobfRef;
@@ -322,7 +320,6 @@ public final class ClassHandleProvider {
 	}
 
 	private static final class ClassHandleImpl implements ClassHandle {
-
 		private final Entry entry;
 
 		private boolean valid = true;
@@ -428,5 +425,4 @@ public final class ClassHandleProvider {
 		}
 
 	}
-
 }

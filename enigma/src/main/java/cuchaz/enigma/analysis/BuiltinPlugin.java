@@ -78,7 +78,6 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 	}
 
 	private static final class EnumFieldNameFindingVisitor extends ClassVisitor {
-
 		private ClassEntry clazz;
 		private String className;
 		private final Map<Entry<?>, String> mappings;
@@ -146,7 +145,6 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 							&& this.enumFields.contains(new Pair<>(((FieldInsnNode) instr2).name, ((FieldInsnNode) instr2).desc))
 							&& instr1.getOpcode() == Opcodes.INVOKESPECIAL
 							&& "<init>".equals(((MethodInsnNode) instr1).name)) {
-
 						for (int j = 0; j < frames[i - 1].getStackSize(); j++) {
 							SourceValue sv = frames[i - 1].getStack(j);
 							for (AbstractInsnNode ci : sv.insns) {

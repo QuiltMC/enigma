@@ -74,5 +74,4 @@ public class EnigmaClient {
 			this.controller.disconnectIfConnected(e.toString());
 		}
 	}
-
 }

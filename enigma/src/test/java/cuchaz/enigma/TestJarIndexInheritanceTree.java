@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma;
@@ -35,8 +35,7 @@ import static cuchaz.enigma.TestEntryFactory.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class TestJarIndexInheritanceTree {
-
+class TestJarIndexInheritanceTree {
 	public static final Path JAR = Paths.get("build/test-obf/inheritanceTree.jar");
 	private final JarIndex index;
 
@@ -49,8 +48,8 @@ public class TestJarIndexInheritanceTree {
 
 	public TestJarIndexInheritanceTree() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
-        this.index = JarIndex.empty();
-        this.index.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.none());
+		this.index = JarIndex.empty();
+		this.index.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.none());
 	}
 
 	@Test
@@ -62,7 +61,6 @@ public class TestJarIndexInheritanceTree {
 
 	@Test
 	public void translationIndex() {
-
 		InheritanceIndex index = this.index.getInheritanceIndex();
 
 		// base class
@@ -95,7 +93,6 @@ public class TestJarIndexInheritanceTree {
 
 	@Test
 	public void relatedMethodImplementations() {
-
 		Collection<MethodEntry> entries;
 
 		EntryResolver resolver = new IndexEntryResolver(this.index);
@@ -157,7 +154,6 @@ public class TestJarIndexInheritanceTree {
 
 	@Test
 	public void behaviorReferences() {
-
 		MethodEntry source;
 		Collection<EntryReference<MethodEntry, MethodDefEntry>> references;
 

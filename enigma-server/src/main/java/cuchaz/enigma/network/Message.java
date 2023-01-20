@@ -389,5 +389,4 @@ public abstract class Message {
 		}
 
 	}
-
 }

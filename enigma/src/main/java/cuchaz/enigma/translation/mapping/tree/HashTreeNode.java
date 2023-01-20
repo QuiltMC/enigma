@@ -39,7 +39,7 @@ public class HashTreeNode<T> implements EntryTreeNode<T>, Iterable<HashTreeNode<
 	}
 
 	void remove(Entry<?> entry) {
-        this.children.remove(entry);
+		this.children.remove(entry);
 	}
 
 	@Override

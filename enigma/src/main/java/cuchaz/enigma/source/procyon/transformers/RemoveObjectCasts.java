@@ -14,7 +14,7 @@ public class RemoveObjectCasts implements IAstTransform {
 	private final DecompilerContext context;
 
 	public RemoveObjectCasts(DecompilerContext context) {
-        this.context = context;
+		this.context = context;
 	}
 
 	@Override
@@ -23,7 +23,6 @@ public class RemoveObjectCasts implements IAstTransform {
 	}
 
 	private static final class Visitor extends ContextTrackingVisitor<Void> {
-
 		private Visitor(DecompilerContext context) {
 			super(context);
 		}

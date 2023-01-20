@@ -6,14 +6,13 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.inputs.constructors;
 
 // e extends d
 public class SubSubClass extends SubClass {
-
 	// <init>(I)V
 	public SubSubClass(int i) {
 		// c.<init>(I)V

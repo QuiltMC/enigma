@@ -30,7 +30,6 @@ import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Pair;
 
 public class MenuBar {
-
 	private final JMenu fileMenu = new JMenu();
 	private final JMenuItem jarOpenItem = new JMenuItem();
 	private final JMenuItem jarCloseItem = new JMenuItem();
@@ -499,5 +498,4 @@ public class MenuBar {
 			}
 		});
 	}
-
 }

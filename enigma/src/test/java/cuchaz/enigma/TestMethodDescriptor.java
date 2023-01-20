@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma;
@@ -18,17 +18,16 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class TestMethodDescriptor {
-
+class TestMethodDescriptor {
 	@Test
-	public void easiest() {
+	void easiest() {
 		final MethodDescriptor sig = new MethodDescriptor("()V");
 		assertThat(sig.getArgumentDescs(), is(empty()));
 		assertThat(sig.getReturnDesc(), is(new TypeDescriptor("V")));
 	}
 
 	@Test
-	public void primitives() {
+	void primitives() {
 		{
 			final MethodDescriptor sig = new MethodDescriptor("(I)V");
 			assertThat(sig.getArgumentDescs(), contains(
@@ -56,7 +55,7 @@ public class TestMethodDescriptor {
 	}
 
 	@Test
-	public void classes() {
+	void classes() {
 		{
 			final MethodDescriptor sig = new MethodDescriptor("([LFoo;)V");
 			assertThat(sig.getArgumentDescs().size(), is(1));
@@ -82,7 +81,7 @@ public class TestMethodDescriptor {
 	}
 
 	@Test
-	public void arrays() {
+	void arrays() {
 		{
 			final MethodDescriptor sig = new MethodDescriptor("([I)V");
 			assertThat(sig.getArgumentDescs(), contains(
@@ -109,7 +108,7 @@ public class TestMethodDescriptor {
 	}
 
 	@Test
-	public void mixed() {
+	void mixed() {
 		{
 			final MethodDescriptor sig = new MethodDescriptor("(I[JLFoo;)Z");
 			assertThat(sig.getArgumentDescs(), contains(
@@ -131,7 +130,7 @@ public class TestMethodDescriptor {
 	}
 
 	@Test
-	public void replaceClasses() {
+	void replaceClasses() {
 		{
 			final MethodDescriptor oldSig = new MethodDescriptor("()V");
 			final MethodDescriptor sig = oldSig.remap(s -> null);
@@ -179,7 +178,7 @@ public class TestMethodDescriptor {
 	}
 
 	@Test
-	public void replaceArrayClasses() {
+	void replaceArrayClasses() {
 		{
 			final MethodDescriptor oldSig = new MethodDescriptor("([LFoo;)[[[LBar;");
 			final MethodDescriptor sig = oldSig.remap(s -> {
@@ -198,8 +197,7 @@ public class TestMethodDescriptor {
 	}
 
 	@Test
-	public void equals() {
-
+	void equals() {
 		// base
 		assertThat(new MethodDescriptor("()V"), is(new MethodDescriptor("()V")));
 
@@ -235,7 +233,7 @@ public class TestMethodDescriptor {
 	}
 
 	@Test
-	public void testToString() {
+	void testToString() {
 		assertThat(new MethodDescriptor("()V").toString(), is("()V"));
 		assertThat(new MethodDescriptor("(I)V").toString(), is("(I)V"));
 		assertThat(new MethodDescriptor("(ZIZ)V").toString(), is("(ZIZ)V"));

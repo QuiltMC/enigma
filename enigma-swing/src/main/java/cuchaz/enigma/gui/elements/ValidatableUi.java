@@ -13,7 +13,6 @@ import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 
 public final class ValidatableUi {
-
 	private ValidatableUi() {
 	}
 
@@ -98,5 +97,4 @@ public final class ValidatableUi {
 			case ERROR -> 3;
 		};
 	}
-
 }

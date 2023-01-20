@@ -75,6 +75,5 @@ public class CreateServerDialog extends AbstractDialog {
 	}
 
 	public record Result(int port, char[] password) {
-
 	}
 }

@@ -19,7 +19,6 @@ import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 
 public class StatsDialog {
-
 	public static void show(Gui gui) {
 		ProgressDialog.runOffThread(gui.getFrame(), listener -> {
 			final StatsGenerator statsGenerator = new StatsGenerator(gui.getController().project);

@@ -28,7 +28,6 @@ public class Java8Generics implements IAstTransform {
 	}
 
 	static class Visitor extends DepthFirstAstVisitor<Void,Void>{
-
 		@Override
 		public Void visitInvocationExpression(InvocationExpression node, Void data) {
 			super.visitInvocationExpression(node, data);

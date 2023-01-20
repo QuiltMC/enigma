@@ -96,5 +96,4 @@ public class Signature implements Translatable {
 	public TranslateResult<Signature> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
 		return TranslateResult.ungrouped(this.remap(name -> translator.translate(new ClassEntry(name)).getFullName()));
 	}
-
 }
