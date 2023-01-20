@@ -37,6 +37,7 @@ public final class UiConfig {
 	public static final String DEFAULT_2 = "Default 2";
 	public static final String SMALL = "Small";
 	public static final String EDITOR = "Editor";
+	public static final String SAVED_WITH_LEFT_OPEN = "Saved With Left Open";
 	public static final String TOP_LEVEL_PACKAGE = "Top Level Package";
 	public static final String SYNTHETIC_PARAMETERS = "Synthetic Parameters";
 	public static final String LINE_NUMBERS_FOREGROUND = "Line Numbers Foreground";
@@ -177,6 +178,14 @@ public final class UiConfig {
 
 	public static int getHorizontalDividerLocation(Docker.Side side) {
 		return swing.data().section(HORIZONTAL_DIVIDER_LOCATIONS).setIfAbsentInt(side.name(), side == Docker.Side.LEFT ? 300 : 700);
+	}
+
+	public static void setSavedWithLeftOpen(boolean open) {
+		swing.data().section(GENERAL).setBool(SAVED_WITH_LEFT_OPEN, open);
+	}
+
+	public static boolean getSavedWithLeftOpen() {
+		return swing.data().section(GENERAL).setIfAbsentBool(SAVED_WITH_LEFT_OPEN, false);
 	}
 
 	public static LookAndFeel getLookAndFeel() {
