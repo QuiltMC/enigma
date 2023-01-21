@@ -83,7 +83,8 @@ public class DockerLabel extends JLabel {
 
 				// return label to old position
 				DockerLabel.this.initialParent.add(DockerLabel.this, DockerLabel.this.constraints);
-				DockerLabel.this.initialParent.validate();
+				DockerLabel.this.setVisible(true);
+				DockerLabel.this.initialParent.revalidate();
 				DockerLabel.this.initialParent.repaint();
 
 				// if dropped over a docker, snap into place
@@ -110,7 +111,6 @@ public class DockerLabel extends JLabel {
 					DockerLabel.this.setMouse(Cursor.DEFAULT_CURSOR);
 				}
 			}
-
 		});
 
 		this.addMouseMotionListener(new MouseMotionListener() {
