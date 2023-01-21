@@ -135,17 +135,20 @@ public class Dock extends JPanel {
 	}
 
 	public void host(Docker docker, Docker.VerticalLocation verticalLocation) {
-		// note: we cannot use Util#removeDocker here because it will cause a stack overflow when attempting to unify the containers to avoid wasted space
+		this.host(docker, verticalLocation, true);
+	}
+
+	private void host(Docker docker, Docker.VerticalLocation verticalLocation, boolean avoidEmptySpace) {
 		Dock dock = Util.findDock(docker);
 		if (dock != null) {
-			dock.baseRemoveDocker(verticalLocation);
+			dock.removeDocker(verticalLocation, avoidEmptySpace);
 		}
 
 		switch (verticalLocation) {
 			case BOTTOM, TOP -> {
 				// if we'd be leaving empty space via opening, we want to host the docker as the full panel
 				// this is to avoid wasting space
-				if ((this.isSplit && this.getDock(verticalLocation.inverse()).getHostedDocker() == null)
+				if (avoidEmptySpace && (this.isSplit && this.getDock(verticalLocation.inverse()).getHostedDocker() == null)
 					|| (!this.isSplit && this.unifiedDock.getHostedDocker() == null)) {
 					this.host(docker, Docker.VerticalLocation.FULL);
 					return;
@@ -202,16 +205,16 @@ public class Dock extends JPanel {
 	}
 
 	public void removeDocker(Docker.VerticalLocation location) {
+		this.removeDocker(location, true);
+	}
+
+	private void removeDocker(Docker.VerticalLocation location, boolean avoidEmptySpace) {
 		// do not leave empty dockers
-		if (location != Docker.VerticalLocation.FULL && this.getDock(location.inverse()).getHostedDocker() != null) {
-			this.host(this.getDock(location.inverse()).getHostedDocker(), Docker.VerticalLocation.FULL);
+		if (avoidEmptySpace && location != Docker.VerticalLocation.FULL && this.getDock(location.inverse()).getHostedDocker() != null) {
+			this.host(this.getDock(location.inverse()).getHostedDocker(), Docker.VerticalLocation.FULL, false);
 			return;
 		}
 
-		this.baseRemoveDocker(location);
-	}
-
-	public void baseRemoveDocker(Docker.VerticalLocation location) {
 		DockerContainer container = this.getDock(location);
 		if (container != null) {
 			container.setHostedDocker(null);
