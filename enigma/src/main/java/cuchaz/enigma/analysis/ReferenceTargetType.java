@@ -2,31 +2,30 @@ package cuchaz.enigma.analysis;
 
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
-public abstract class ReferenceTargetType {
-	private static final None NONE = new None();
-	private static final Uninitialized UNINITIALIZED = new Uninitialized();
+public interface ReferenceTargetType {
+	Kind getKind();
 
-	public abstract Kind getKind();
-
-	public static None none() {
-		return NONE;
+	static None none() {
+		return None.NONE;
 	}
 
-	public static Uninitialized uninitialized() {
-		return UNINITIALIZED;
+	static Uninitialized uninitialized() {
+		return Uninitialized.UNINITIALIZED;
 	}
 
-	public static ClassType classType(ClassEntry name) {
+	static ClassType classType(ClassEntry name) {
 		return new ClassType(name);
 	}
 
-	public enum Kind {
+	enum Kind {
 		NONE,
 		UNINITIALIZED,
 		CLASS_TYPE
 	}
 
-	public static class None extends ReferenceTargetType {
+	class None implements ReferenceTargetType {
+		private static final None NONE = new None();
+
 		@Override
 		public Kind getKind() {
 			return Kind.NONE;
@@ -38,7 +37,9 @@ public abstract class ReferenceTargetType {
 		}
 	}
 
-	public static class Uninitialized extends ReferenceTargetType {
+	class Uninitialized implements ReferenceTargetType {
+		private static final Uninitialized UNINITIALIZED = new Uninitialized();
+
 		@Override
 		public Kind getKind() {
 			return Kind.UNINITIALIZED;
@@ -50,7 +51,7 @@ public abstract class ReferenceTargetType {
 		}
 	}
 
-	public static class ClassType extends ReferenceTargetType {
+	class ClassType implements ReferenceTargetType {
 		private final ClassEntry entry;
 
 		private ClassType(ClassEntry entry) {

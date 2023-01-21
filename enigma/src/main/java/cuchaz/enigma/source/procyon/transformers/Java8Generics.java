@@ -27,12 +27,12 @@ public class Java8Generics implements IAstTransform {
 		compilationUnit.acceptVisitor(new Visitor(), null);
 	}
 
-	static class Visitor extends DepthFirstAstVisitor<Void,Void>{
+	static class Visitor extends DepthFirstAstVisitor<Void,Void> {
 		@Override
 		public Void visitInvocationExpression(InvocationExpression node, Void data) {
 			super.visitInvocationExpression(node, data);
 			if (node.getTarget() instanceof MemberReferenceExpression referenceExpression) {
-				if (referenceExpression.getTypeArguments().stream().map(t->{
+				if (referenceExpression.getTypeArguments().stream().map(t -> {
 					TypeReference tr = t.toTypeReference();
 					if (tr.getDeclaringType() != null) { //ensure that inner types are resolved so we can get the TypeDefinition below
 						TypeReference resolved = tr.resolve();

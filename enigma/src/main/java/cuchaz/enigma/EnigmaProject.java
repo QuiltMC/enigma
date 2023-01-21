@@ -133,10 +133,8 @@ public class EnigmaProject {
 	}
 
 	public boolean isNavigable(Entry<?> obfEntry) {
-		if (obfEntry instanceof ClassEntry classEntry) {
-			if (this.isAnonymousOrLocal(classEntry)) {
-				return false;
-			}
+		if (obfEntry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
+			return false;
 		}
 
 		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);
@@ -173,19 +171,16 @@ public class EnigmaProject {
 			} else {
 				ClassDefEntry parent = this.jarIndex.getEntryIndex().getDefinition(obfMethodEntry.getParent());
 				if (parent != null && parent.isEnum()) {
-					if (name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";")) {
-						return false;
-					} else if (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")) {
+					if ((name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";"))
+							|| (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";"))) {
 						return false;
 					}
 				}
 			}
-		} else if (obfEntry instanceof LocalVariableEntry && !((LocalVariableEntry) obfEntry).isArgument()) {
+		} else if (obfEntry instanceof LocalVariableEntry variableEntry && ! variableEntry.isArgument()) {
 			return false;
-		} else if (obfEntry instanceof ClassEntry classEntry) {
-			if (this.isAnonymousOrLocal(classEntry)) {
-				return false;
-			}
+		} else if (obfEntry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
+			return false;
 		}
 
 		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);
@@ -314,13 +309,13 @@ public class EnigmaProject {
 						String source = null;
 						try {
 							source = this.decompileClass(translatedNode, decompiler);
-						} catch (Throwable throwable) {
+						} catch (Exception exception) {
 							switch (errorStrategy) {
-								case PROPAGATE: throw throwable;
+								case PROPAGATE: throw exception;
 								case IGNORE: break;
 								case TRACE_AS_SOURCE: {
 									StringWriter writer = new StringWriter();
-									throwable.printStackTrace(new PrintWriter(writer));
+									exception.printStackTrace(new PrintWriter(writer));
 									source = writer.toString();
 									break;
 								}

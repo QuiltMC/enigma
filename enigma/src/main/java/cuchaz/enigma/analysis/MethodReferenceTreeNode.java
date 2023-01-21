@@ -65,8 +65,8 @@ public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements R
 		// get all the child nodes
 		Collection<EntryReference<MethodEntry, MethodDefEntry>> references = this.getReferences(index, recurseMethod);
 
-		for (EntryReference<MethodEntry, MethodDefEntry> reference : references) {
-			this.add(new MethodReferenceTreeNode(this.translator, reference));
+		for (EntryReference<MethodEntry, MethodDefEntry> entryReference : references) {
+			this.add(new MethodReferenceTreeNode(this.translator, entryReference));
 		}
 
 		if (recurse && this.children != null) {
@@ -77,8 +77,8 @@ public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements R
 					TreeNode n = node;
 					while (n.getParent() != null) {
 						n = n.getParent();
-						if (n instanceof MethodReferenceTreeNode) {
-							ancestors.add(((MethodReferenceTreeNode) n).getEntry());
+						if (n instanceof MethodReferenceTreeNode treeNode) {
+							ancestors.add(treeNode.getEntry());
 						}
 					}
 					if (ancestors.contains(node.getEntry())) {

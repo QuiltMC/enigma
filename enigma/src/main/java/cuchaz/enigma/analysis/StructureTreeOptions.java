@@ -1,9 +1,6 @@
 package cuchaz.enigma.analysis;
 
-public record StructureTreeOptions(
-		ObfuscationVisibility obfuscationVisibility,
-		DocumentationVisibility documentationVisibility,
-		SortingOrder sortingOrder) {
+public record StructureTreeOptions(ObfuscationVisibility obfuscationVisibility, DocumentationVisibility documentationVisibility, SortingOrder sortingOrder) {
 	public enum ObfuscationVisibility implements Option {
 		ALL("structure.options.obfuscation.all"),
 		OBFUSCATED("structure.options.obfuscation.obfuscated"),

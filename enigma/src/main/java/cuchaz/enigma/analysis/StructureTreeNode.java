@@ -12,6 +12,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class StructureTreeNode extends DefaultMutableTreeNode {
@@ -86,12 +87,11 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 		TranslateResult<ParentedEntry<?>> translateResult = this.mapper.extendedDeobfuscate(this.entry);
 		String result = translateResult.getValue().getName();
 
-		if (translateResult.isObfuscated()) {
-			if (!this.nameProposalServices.isEmpty()) {
-				for (NameProposalService service : this.nameProposalServices) {
-					if (service.proposeName(this.entry, this.mapper).isPresent()) {
-						result = service.proposeName(this.entry, this.mapper).get();
-					}
+		if (translateResult.isObfuscated() && !this.nameProposalServices.isEmpty()) {
+			for (NameProposalService service : this.nameProposalServices) {
+				Optional<String> proposedName = service.proposeName(this.entry, this.mapper);
+				if (proposedName.isPresent()) {
+					result = proposedName.get();
 				}
 			}
 		}
@@ -123,8 +123,8 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 			AccessFlags access = defEntry.getAccess();
 			boolean isInterfaceMethod = false;
 
-			if (this.entry instanceof MethodEntry && this.entry.getParent() instanceof ClassDefEntry parent) {
-				isInterfaceMethod = parent.getAccess().isInterface();
+			if (this.entry instanceof MethodEntry && this.entry.getParent() instanceof ClassDefEntry classDefEntry) {
+				isInterfaceMethod = classDefEntry.getAccess().isInterface();
 			}
 
 			if (access.isStatic() && !access.isEnum()) {

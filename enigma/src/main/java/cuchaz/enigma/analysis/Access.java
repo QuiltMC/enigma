@@ -33,9 +33,10 @@ public enum Access {
 			return PROTECTED;
 		} else if (!isPublic && !isProtected && isPrivate) {
 			return PRIVATE;
-		} else if (!isPublic && !isProtected && !isPrivate) {
+		} else if (!isPublic && !isProtected) {
 			return PACKAGE;
 		}
+
 		// assume public by default
 		return PUBLIC;
 	}
