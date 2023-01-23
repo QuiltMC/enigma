@@ -149,7 +149,8 @@ public class Dock extends JPanel {
 				// if we'd be leaving empty space via opening, we want to host the docker as the full panel
 				// this is to avoid wasting space
 				if (avoidEmptySpace && (this.isSplit && this.getDock(verticalLocation.inverse()).getHostedDocker() == null)
-					|| (!this.isSplit && this.unifiedDock.getHostedDocker() == null)) {
+						|| (!this.isSplit && this.unifiedDock.getHostedDocker() == null)
+						|| (!this.isSplit && this.unifiedDock.getHostedDocker().getId().equals(docker.getId()))) {
 					this.host(docker, Docker.VerticalLocation.FULL);
 					return;
 				}
