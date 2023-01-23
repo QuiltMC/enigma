@@ -4,7 +4,6 @@ import java.io.PrintStream;
 import java.util.Arrays;
 
 public class PrintValidatable implements Validatable {
-
 	public static final PrintValidatable INSTANCE = new PrintValidatable();
 
 	@Override
@@ -20,6 +19,7 @@ public class PrintValidatable implements Validatable {
 			case WARNING -> "warning";
 			case ERROR -> "error";
 		};
+		// todo ick use normal logging
 		w.printf("%s: %s\n", type, text);
 
 		if (!longText.isEmpty()) {
@@ -29,6 +29,6 @@ public class PrintValidatable implements Validatable {
 
 	@Override
 	public void clearMessages() {
+		// no-op
 	}
-
 }

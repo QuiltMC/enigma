@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 
 import com.google.common.io.MoreFiles;
+import org.tinylog.Logger;
 
 public abstract class Command {
 	public final String name;
@@ -41,11 +42,11 @@ public abstract class Command {
 
 		Enigma enigma = Enigma.create();
 
-		System.out.println("Reading jar...");
+		Logger.info("Reading jar...");
 		EnigmaProject project = enigma.openJar(fileJarIn, new ClasspathClassProvider(), progress);
 
 		if (fileMappings != null) {
-			System.out.println("Reading mappings...");
+			Logger.info("Reading mappings...");
 
 			MappingSaveParameters saveParameters = enigma.getProfile().getMappingSaveParameters();
 			EntryTree<EntryMapping> mappings = readMappings(fileMappings, progress, saveParameters);
@@ -193,7 +194,7 @@ public abstract class Command {
 			}
 		}
 
-		System.out.println("Wrote debug output to " + debugOutput.toAbsolutePath());
+		Logger.info("Wrote debug output to " + debugOutput.toAbsolutePath());
 	}
 
 	public static class ConsoleProgressListener implements ProgressListener {
@@ -209,7 +210,7 @@ public abstract class Command {
 			this.totalWork = totalWork;
 			this.startTime = System.currentTimeMillis();
 			this.lastReportTime = this.startTime;
-			System.out.println(title);
+			Logger.info(title);
 		}
 
 		@Override
@@ -220,12 +221,12 @@ public abstract class Command {
 
 			if (shouldReport) {
 				int percent = numDone * 100 / this.totalWork;
-				System.out.println(String.format("\tProgress: %3d%%", percent));
+				Logger.info("\tProgress: %3d%%", percent);
 				this.lastReportTime = now;
 			}
 			if (isLastUpdate) {
 				double elapsedSeconds = (now - this.startTime) / 1000.0;
-				System.out.println(String.format("Finished in %.1f seconds", elapsedSeconds));
+				Logger.info("Finished in %.1f seconds", elapsedSeconds);
 			}
 		}
 	}

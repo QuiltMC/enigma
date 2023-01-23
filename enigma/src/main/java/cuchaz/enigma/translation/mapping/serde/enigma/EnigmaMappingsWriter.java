@@ -38,6 +38,7 @@ import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTreeNode;
 import cuchaz.enigma.translation.representation.entry.*;
 import cuchaz.enigma.utils.I18n;
+import org.tinylog.Logger;
 
 public enum EnigmaMappingsWriter implements MappingsWriter {
 	FILE {
@@ -95,7 +96,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 						writeRoot(writer, mappings, classEntry);
 					}
 				} catch (Throwable t) {
-					System.err.println("Failed to write class '" + classEntry.getFullName() + "'");
+					Logger.error("Failed to write class '" + classEntry.getFullName() + "'");
 					t.printStackTrace();
 				}
 			});
@@ -117,7 +118,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 				try {
 					Files.deleteIfExists(resolve(root, classEntry));
 				} catch (IOException e) {
-					System.err.println("Failed to delete deleted class '" + classEntry + "'");
+					Logger.error("Failed to delete deleted class '" + classEntry + "'");
 					e.printStackTrace();
 				}
 			}
@@ -129,7 +130,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 					try {
 						deleteDeadPackages(root, packagePath);
 					} catch (IOException e) {
-						System.err.println("Failed to delete dead package '" + packageName + "'");
+						Logger.error("Failed to delete dead package '" + packageName + "'");
 						e.printStackTrace();
 					}
 				}

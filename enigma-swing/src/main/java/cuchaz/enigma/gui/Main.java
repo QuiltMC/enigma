@@ -30,6 +30,7 @@ import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.CrashDialog;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.utils.I18n;
+import org.tinylog.Logger;
 
 public class Main {
 	public static void main(String[] args) throws IOException {
@@ -91,11 +92,11 @@ public class Main {
 						case "no-edit-parameters" -> editables.remove(EditableType.PARAMETER);
 						case "edit-locals" -> {
 							editables.add(EditableType.LOCAL_VARIABLE);
-							System.err.println("warning: --edit-locals has no effect as local variables are currently not editable");
+							Logger.warn("--edit-locals has no effect as local variables are currently not editable");
 						}
 						case "no-edit-locals" -> {
 							editables.remove(EditableType.LOCAL_VARIABLE);
-							System.err.println("warning: --no-edit-locals has no effect as local variables are currently not editable");
+							Logger.warn("warning: --no-edit-locals has no effect as local variables are currently not editable");
 						}
 						case "edit-javadocs" -> editables.add(EditableType.JAVADOC);
 						case "no-edit-javadocs" -> editables.remove(EditableType.JAVADOC);

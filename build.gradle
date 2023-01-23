@@ -25,6 +25,8 @@ subprojects {
         implementation libs.guava
         implementation libs.gson
 
+		implementation libs.bundles.tinylog
+
         testImplementation libs.junit
         testRuntimeOnly libs.junit.engine
         testImplementation libs.hamcrest

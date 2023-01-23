@@ -68,6 +68,7 @@ import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Utils;
 import cuchaz.enigma.utils.validation.PrintValidatable;
 import cuchaz.enigma.utils.validation.ValidationContext;
+import org.tinylog.Logger;
 
 public class GuiController implements ClientPacketHandler {
 	private final Gui gui;
@@ -423,7 +424,7 @@ public class GuiController implements ClientPacketHandler {
 			return null;
 		}
 		if (rootNodes.size() > 1) {
-			System.err.println("WARNING: Method " + entry + " implements multiple interfaces. Only showing first one.");
+			Logger.warn("Method " + entry + " implements multiple interfaces. Only showing first one.");
 		}
 		return MethodImplementationsTreeNode.findNode(rootNodes.get(0), entry);
 	}

@@ -12,9 +12,9 @@ import cuchaz.enigma.translation.mapping.EntryChange;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.Entry;
+import org.tinylog.Logger;
 
 public abstract class EnigmaServer {
-
 	// https://discordapp.com/channels/507304429255393322/566418023372816394/700292322918793347
 	public static final int DEFAULT_PORT = 34712;
 	public static final int PROTOCOL_VERSION = 1;
@@ -55,7 +55,7 @@ public abstract class EnigmaServer {
 					acceptClient();
 				}
 			} catch (SocketException e) {
-				System.out.println("Server closed");
+				Logger.info("Server closed");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -106,7 +106,7 @@ public abstract class EnigmaServer {
 				try {
 					socket.close();
 				} catch (IOException e) {
-					System.err.println("Failed to close server socket");
+					Logger.error("Failed to close server socket");
 					e.printStackTrace();
 				}
 			}
@@ -126,12 +126,11 @@ public abstract class EnigmaServer {
 		try {
 			client.close();
 		} catch (IOException e) {
-			System.err.println("Failed to close server client socket");
-			e.printStackTrace();
+			Logger.error("Failed to close server client socket!", e);
 		}
 
 		if (username != null) {
-			System.out.println("Kicked " + username + " because " + reason);
+			Logger.info("Kicked " + username + " because " + reason);
 			sendMessage(Message.disconnect(username));
 		}
 		sendUsernamePacket();
