@@ -12,6 +12,7 @@
 package cuchaz.enigma.command;
 
 import cuchaz.enigma.Enigma;
+import org.tinylog.Logger;
 
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -46,8 +47,8 @@ public class Main {
 			}
 		} catch (CommandHelpException ex) {
 			ex.printStackTrace();
-			System.out.println(String.format("%s - %s", Enigma.NAME, Enigma.VERSION));
-			System.out.println("Command " + ex.command.name + " has encountered an error! Usage:");
+			Logger.info("%s - %s", Enigma.NAME, Enigma.VERSION);
+			Logger.info("Command " + ex.command.name + " has encountered an error! Usage:");
 			printHelp(ex.command);
 			System.exit(1);
 		} catch (IllegalArgumentException ex) {
@@ -58,10 +59,11 @@ public class Main {
 	}
 
 	private static void printHelp() {
-		System.out.println(String.format("%s - %s", Enigma.NAME, Enigma.VERSION));
-		System.out.println("Usage:");
-		System.out.println("\tjava -cp enigma.jar cuchaz.enigma.command.CommandMain <command>");
-		System.out.println("\twhere <command> is one of:");
+		// todo clean things like this up
+		Logger.info("%s - %s", Enigma.NAME, Enigma.VERSION);
+		Logger.info("Usage:");
+		Logger.info("\tjava -cp enigma.jar cuchaz.enigma.command.CommandMain <command>");
+		Logger.info("\twhere <command> is one of:");
 
 		for (Command command : COMMANDS.values()) {
 			printHelp(command);
@@ -69,13 +71,13 @@ public class Main {
 	}
 
 	private static void printHelp(Command command) {
-		System.out.println("\t\t" + command.name + " " + command.getUsage());
+		Logger.info("\t\t" + command.name + " " + command.getUsage());
 	}
 
 	private static void register(Command command) {
 		Command old = COMMANDS.put(command.name, command);
 		if (old != null) {
-			System.err.println("Command " + old + " with name " + command.name + " has been substituted by " + command);
+			Logger.error("Command " + old + " with name " + command.name + " has been substituted by " + command);
 		}
 	}
 

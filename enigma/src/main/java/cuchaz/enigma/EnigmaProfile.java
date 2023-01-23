@@ -13,6 +13,7 @@ import com.google.gson.reflect.TypeToken;
 import cuchaz.enigma.api.service.EnigmaServiceType;
 import cuchaz.enigma.translation.mapping.serde.MappingFileNameFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
+import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
@@ -60,7 +61,7 @@ public final class EnigmaProfile {
 			try (BufferedReader reader = new BufferedReader(new InputStreamReader(EnigmaProfile.class.getResourceAsStream("/profile.json"), StandardCharsets.UTF_8))) {
 				return EnigmaProfile.parse(reader);
 			} catch (IOException ex) {
-				System.err.println("Failed to load default profile, will use empty profile: " + ex.getMessage());
+				Logger.error("Failed to load default profile, will use empty profile: " + ex.getMessage());
 				return EnigmaProfile.EMPTY;
 			}
 		}

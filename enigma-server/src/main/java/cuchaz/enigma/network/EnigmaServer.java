@@ -245,7 +245,8 @@ public abstract class EnigmaServer {
 	protected abstract void runOnThread(Runnable task);
 
 	public void log(String message) {
-		System.out.println(message);
+		// todo indicate that this is a server log
+		Logger.info(message);
 	}
 
 	protected boolean isRunning() {

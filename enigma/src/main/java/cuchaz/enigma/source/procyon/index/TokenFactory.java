@@ -7,6 +7,7 @@ import com.strobel.decompiler.languages.java.ast.Identifier;
 import com.strobel.decompiler.languages.java.ast.TypeDeclaration;
 import cuchaz.enigma.source.Token;
 import cuchaz.enigma.source.SourceIndex;
+import org.tinylog.Logger;
 
 import java.util.regex.Pattern;
 
@@ -18,7 +19,7 @@ public class TokenFactory {
         Region region = node.getRegion();
 
         if (region.getBeginLine() == 0) {
-            System.err.println("Got bad region from Procyon for node " + node);
+            Logger.error("Got bad region from Procyon for node " + node);
             return null;
         }
 

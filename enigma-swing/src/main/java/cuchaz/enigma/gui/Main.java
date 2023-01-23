@@ -122,7 +122,7 @@ public class Main {
 				// install a global exception handler to the event thread
 				CrashDialog.init(gui.getFrame());
 				Thread.setDefaultUncaughtExceptionHandler((thread, t) -> {
-					t.printStackTrace(System.err);
+					Logger.error(t, "Uncaught exception in thread {}", thread);
 					if (!ExceptionIgnorer.shouldIgnore(t)) {
 						CrashDialog.show(t);
 					}
@@ -130,7 +130,7 @@ public class Main {
 			}
 
 			if (options.has("single-class-tree")) {
-				System.out.println("warning: --single-class-tree is deprecated and will be removed in the next minor version! simply use the \"all classes\" docker instead.");
+				Logger.warn("--single-class-tree is deprecated and will be removed in the next minor version! simply use the \"all classes\" docker instead.");
 				gui.openDocker(AllClassesDocker.class);
 			}
 
@@ -151,8 +151,7 @@ public class Main {
 						});
 			}
 		} catch (OptionException e) {
-			System.out.println("Invalid arguments: " + e.getMessage());
-			System.out.println();
+			Logger.error("Invalid arguments: " + e.getMessage());
 			parser.printHelpOn(System.out);
 		}
 	}
