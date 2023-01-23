@@ -233,7 +233,7 @@ public class GuiController implements ClientPacketHandler {
 						try {
 							source.writeTo(source.resolvePath(path));
 						} catch (IOException e) {
-							e.printStackTrace();
+							Logger.error(e);
 						}
 					});
 		});

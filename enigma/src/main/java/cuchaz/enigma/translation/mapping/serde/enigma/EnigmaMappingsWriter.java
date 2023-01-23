@@ -58,7 +58,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 					writeRoot(writer, mappings, classEntry);
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				Logger.error(e, "Error while writing mappings to file {}", path);
 			}
 		}
 	},
@@ -95,9 +95,8 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 					try (PrintWriter writer = new LfPrintWriter(Files.newBufferedWriter(classPath))) {
 						writeRoot(writer, mappings, classEntry);
 					}
-				} catch (Throwable t) {
-					Logger.error("Failed to write class '" + classEntry.getFullName() + "'");
-					t.printStackTrace();
+				} catch (Exception e) {
+					Logger.error(e, "Failed to write class '" + classEntry.getFullName() + "'");
 				}
 			});
 		}
@@ -118,8 +117,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 				try {
 					Files.deleteIfExists(resolve(root, classEntry));
 				} catch (IOException e) {
-					Logger.error("Failed to delete deleted class '" + classEntry + "'");
-					e.printStackTrace();
+					Logger.error(e, "Failed to delete deleted class '" + classEntry + "'");
 				}
 			}
 
@@ -130,8 +128,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 					try {
 						deleteDeadPackages(root, packagePath);
 					} catch (IOException e) {
-						Logger.error("Failed to delete dead package '" + packageName + "'");
-						e.printStackTrace();
+						Logger.error(e, "Failed to delete dead package '" + packageName + "'");
 					}
 				}
 			}
@@ -165,7 +162,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 			try (FileSystem fs = FileSystems.newFileSystem(new URI("jar:file", null, zip.toUri().getPath(), ""), Collections.singletonMap("create", "true"))) {
 				DIRECTORY.write(mappings, delta, fs.getPath("/"), progress, saveParameters);
 			} catch (IOException e) {
-				e.printStackTrace();
+				Logger.error(e, "Failed to write mappings to zip file '" + zip + "'");
 			} catch (URISyntaxException e) {
 				throw new RuntimeException("Unexpected error creating URI for " + zip, e);
 			}

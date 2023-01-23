@@ -91,8 +91,7 @@ public class TokenChecker {
 			Files.writeString(path, SourceTestUtil.toHtml(source, name));
 			Logger.info("Debug file created:" + path.toUri());
 		} catch (Exception e) {
-			Logger.error("Failed to create debug source file for " + classEntry);
-			e.printStackTrace();
+			Logger.error(e, "Failed to create debug source file for " + classEntry);
 		}
 	}
 }

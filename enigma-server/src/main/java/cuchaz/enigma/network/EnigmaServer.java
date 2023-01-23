@@ -57,7 +57,7 @@ public abstract class EnigmaServer {
 			} catch (SocketException e) {
 				Logger.info("Server closed");
 			} catch (IOException e) {
-				e.printStackTrace();
+				Logger.error("Failed to accept client!", e);
 			}
 		});
 		thread.setName("Server client listener");
@@ -87,7 +87,7 @@ public abstract class EnigmaServer {
 				}
 			} catch (IOException e) {
 				kick(client, e.toString());
-				e.printStackTrace();
+				Logger.error("Failed to read packet from client!", e);
 				return;
 			}
 			kick(client, "disconnect.disconnected");
@@ -106,8 +106,7 @@ public abstract class EnigmaServer {
 				try {
 					socket.close();
 				} catch (IOException e) {
-					Logger.error("Failed to close server socket");
-					e.printStackTrace();
+					Logger.error(e, "Failed to close server socket!");
 				}
 			}
 		});
@@ -165,7 +164,7 @@ public abstract class EnigmaServer {
 			} catch (IOException e) {
 				if (!(packet instanceof KickS2CPacket)) {
 					kick(client, e.toString());
-					e.printStackTrace();
+					Logger.error("Failed to send packet to client!", e);
 				}
 			}
 		}
@@ -245,8 +244,7 @@ public abstract class EnigmaServer {
 	protected abstract void runOnThread(Runnable task);
 
 	public void log(String message) {
-		// todo indicate that this is a server log
-		Logger.info(message);
+		Logger.info("[server]\t%s", message);
 	}
 
 	protected boolean isRunning() {
@@ -266,7 +264,7 @@ public abstract class EnigmaServer {
 	}
 
 	public void sendMessage(Message message) {
-		log(String.format("[MSG] %s", message.translate()));
+		Logger.info("[chat]\t\t%s", message.translate());
 		sendToAll(new MessageS2CPacket(message));
 	}
 

@@ -88,7 +88,6 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 		OptionSpec<Path> logFileOpt = parser.accepts("log", "The log file to write to")
 				.withRequiredArg()
 				.withValuesConvertedBy(PathConverter.INSTANCE)
-				// todo use tinylog default log file
 				.defaultsTo(Paths.get("log.txt"));
 
 		OptionSet parsedArgs = parser.parse(args);
@@ -135,8 +134,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 			server.start();
 			Logger.info("Server started");
 		} catch (IOException | MappingParseException e) {
-			Logger.info("Error starting server!");
-			e.printStackTrace();
+			Logger.info(e, "Error starting server!");
 			System.exit(1);
 			return;
 		}

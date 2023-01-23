@@ -59,9 +59,8 @@ public class EnigmaClient {
 		if (socket != null && !socket.isClosed()) {
 			try {
 				socket.close();
-			} catch (IOException e1) {
-				Logger.error("Failed to close socket");
-				e1.printStackTrace();
+			} catch (IOException e) {
+				Logger.error(e, "Failed to close socket!");
 			}
 		}
 	}

@@ -46,13 +46,13 @@ public class Main {
 				throw new CommandHelpException(cmd, ex);
 			}
 		} catch (CommandHelpException ex) {
-			ex.printStackTrace();
-			Logger.info("%s - %s", Enigma.NAME, Enigma.VERSION);
+			Logger.error(ex);
+			logEnigmaInfo();
 			Logger.info("Command " + ex.command.name + " has encountered an error! Usage:");
 			printHelp(ex.command);
 			System.exit(1);
 		} catch (IllegalArgumentException ex) {
-			ex.printStackTrace();
+			Logger.error(ex);
 			printHelp();
 			System.exit(1);
 		}
@@ -60,10 +60,11 @@ public class Main {
 
 	private static void printHelp() {
 		// todo clean things like this up
-		Logger.info("%s - %s", Enigma.NAME, Enigma.VERSION);
-		Logger.info("Usage:");
-		Logger.info("\tjava -cp enigma.jar cuchaz.enigma.command.CommandMain <command>");
-		Logger.info("\twhere <command> is one of:");
+		logEnigmaInfo();
+		Logger.info("""
+				Usage:
+				\tjava -cp enigma.jar cuchaz.enigma.command.CommandMain <command> <args>
+				\twhere <command> is one of:""");
 
 		for (Command command : COMMANDS.values()) {
 			printHelp(command);
@@ -79,6 +80,10 @@ public class Main {
 		if (old != null) {
 			Logger.error("Command " + old + " with name " + command.name + " has been substituted by " + command);
 		}
+	}
+
+	private static void logEnigmaInfo() {
+		Logger.info("%s - %s", Enigma.NAME, Enigma.VERSION);
 	}
 
 	static {
