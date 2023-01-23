@@ -56,8 +56,6 @@
 	"popup_menu.mark_deobfuscated": "标记为已反混淆",
 	"popup_menu.reset_obfuscated": "重置混淆",
 
-	"info_panel.classes.obfuscated": "混淆类",
-	"info_panel.classes.deobfuscated": "反混淆类",
 	"info_panel.identifier": "标识符信息",
 	"info_panel.identifier.none": "未选择标识符",
 	"info_panel.identifier.variable": "变量",
@@ -114,7 +112,9 @@
 	"crash.exit": "退出",
 	"crash.exit.warning": "如果选择退出，将丢失所有未保存的工作。",
 
-	"right_panel.inheritance.title": "继承",
-	"right_panel.implementations.title": "实现",
-	"right_panel.calls.title": "调用图"
+	"docker.inheritance.title": "继承",
+	"docker.implementations.title": "实现",
+	"docker.calls.title": "调用图",
+	"docker.obfuscated_classes.title": "混淆类",
+	"docker.deobfuscated_classes.title": "反混淆类"
 }

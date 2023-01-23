@@ -22,16 +22,18 @@ import cuchaz.enigma.gui.elements.EditorTabbedPane;
 import cuchaz.enigma.gui.elements.MainWindow;
 import cuchaz.enigma.gui.elements.MenuBar;
 import cuchaz.enigma.gui.elements.ValidatableUi;
-import cuchaz.enigma.gui.panels.DeobfPanel;
 import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.panels.IdentifierPanel;
-import cuchaz.enigma.gui.panels.ObfPanel;
-import cuchaz.enigma.gui.panels.right.CollabPanel;
-import cuchaz.enigma.gui.panels.right.RightPanel;
-import cuchaz.enigma.gui.panels.right.StructurePanel;
-import cuchaz.enigma.gui.panels.right.CallsTree;
-import cuchaz.enigma.gui.panels.right.ImplementationsTree;
-import cuchaz.enigma.gui.panels.right.InheritanceTree;
+import cuchaz.enigma.gui.docker.ObfuscatedClassesDocker;
+import cuchaz.enigma.gui.docker.CollabDocker;
+import cuchaz.enigma.gui.docker.StructureDocker;
+import cuchaz.enigma.gui.docker.CallsTreeDocker;
+import cuchaz.enigma.gui.docker.ImplementationsTreeDocker;
+import cuchaz.enigma.gui.docker.InheritanceTreeDocker;
+import cuchaz.enigma.gui.docker.DeobfuscatedClassesDocker;
+import cuchaz.enigma.gui.docker.AllClassesDocker;
+import cuchaz.enigma.gui.docker.Dock;
+import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.renderer.MessageListCellRenderer;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.LanguageUtil;
@@ -64,6 +66,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -78,50 +81,54 @@ public class Gui {
 	private ConnectionState connectionState;
 	private boolean isJarOpen;
 	private final Set<EditableType> editableTypes;
-	private boolean singleClassTree;
 
 	private final MenuBar menuBar;
-	private final ObfPanel obfPanel;
-	private final DeobfPanel deobfPanel;
 	private final IdentifierPanel infoPanel;
 
 	private final EditorTabbedPane editorTabbedPane;
 
-	private final JPanel classesPanel = new JPanel(new BorderLayout());
-	private final JSplitPane splitClasses;
-	private final JPanel centerPanel = new JPanel(new BorderLayout());
-	private RightPanel rightPanel;
+	private final JPanel centerPanel;
+	private final Dock rightDock;
+	private final Dock leftDock;
 	private final JSplitPane splitRight;
-	private final JSplitPane splitCenter;
+	private final JSplitPane splitLeft;
 
-	private final DefaultListModel<String> userModel = new DefaultListModel<>();
-	private final DefaultListModel<Message> messageModel = new DefaultListModel<>();
-	private final JList<String> users = new JList<>(this.userModel);
-	private final JList<Message> messages = new JList<>(this.messageModel);
+	private final DefaultListModel<String> userModel;
+	private final DefaultListModel<Message> messageModel;
+	private final JList<String> users;
+	private final JList<Message> messages;
 
-	private final JLabel connectionStatusLabel = new JLabel();
+	private final JLabel connectionStatusLabel;
 
-	public final JFileChooser jarFileChooser = new JFileChooser();
-	public final JFileChooser tinyMappingsFileChooser = new JFileChooser();
-	public final JFileChooser enigmaMappingsFileChooser = new JFileChooser();
-	public final JFileChooser exportSourceFileChooser = new JFileChooser();
-	public final JFileChooser exportJarFileChooser = new JFileChooser();
+	public final JFileChooser jarFileChooser;
+	public final JFileChooser tinyMappingsFileChooser;
+	public final JFileChooser enigmaMappingsFileChooser;
+	public final JFileChooser exportSourceFileChooser;
+	public final JFileChooser exportJarFileChooser;
 	public SearchDialog searchDialog;
 
 	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes) {
 		this.mainWindow = new MainWindow(Enigma.NAME);
+		this.centerPanel = new JPanel(new BorderLayout());
 		this.editableTypes = editableTypes;
 		this.controller = new GuiController(this, profile);
-		this.deobfPanel = new DeobfPanel(this);
 		this.infoPanel = new IdentifierPanel(this);
-		this.obfPanel = new ObfPanel(this);
 		this.menuBar = new MenuBar(this);
-		this.setupRightPanels();
+		this.userModel = new DefaultListModel<>();
+		this.messageModel = new DefaultListModel<>();
+		this.users = new JList<>(this.userModel);
+		this.messages = new JList<>(this.messageModel);
 		this.editorTabbedPane = new EditorTabbedPane(this);
-		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, this.obfPanel, this.deobfPanel);
-		this.rightPanel = RightPanel.getPanel(UiConfig.getSelectedRightPanel());
-		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightPanel);
-		this.splitCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.classesPanel, splitRight);
+		this.rightDock = new Dock(this, Docker.Side.RIGHT);
+		this.leftDock = new Dock(this, Docker.Side.LEFT);
+		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, centerPanel, rightDock);
+		this.splitLeft = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, leftDock, splitRight);
+		this.jarFileChooser = new JFileChooser();
+		this.tinyMappingsFileChooser = new JFileChooser();
+		this.enigmaMappingsFileChooser = new JFileChooser();
+		this.exportSourceFileChooser = new JFileChooser();
+		this.exportJarFileChooser = new JFileChooser();
+		this.connectionStatusLabel = new JLabel();
 
 		this.setupUi();
 
@@ -131,33 +138,39 @@ public class Gui {
 		this.mainWindow.setVisible(true);
 	}
 
-	private void setupRightPanels() {
-		// right panels
-		// top panels
-		RightPanel.addPanel(new StructurePanel(this));
-		RightPanel.addPanel(new InheritanceTree(this));
-		RightPanel.addPanel(new ImplementationsTree(this));
-		RightPanel.addPanel(new CallsTree(this));
+	private void setupDockers() {
+		// right dockers
+		// top
+		Docker.addDocker(new StructureDocker(this));
+		Docker.addDocker(new InheritanceTreeDocker(this));
+		Docker.addDocker(new ImplementationsTreeDocker(this));
+		Docker.addDocker(new CallsTreeDocker(this));
 
-		// bottom panels
-		RightPanel.addPanel(new CollabPanel(this));
+		// bottom
+		Docker.addDocker(new CollabDocker(this));
 
-		// set default sizes for right panels
-		for (RightPanel panel : RightPanel.getRightPanels().values()) {
+		// left dockers
+		// top
+		Docker.addDocker(new ObfuscatedClassesDocker(this));
+		Docker.addDocker(new AllClassesDocker(this));
+
+		// bottom
+		Docker.addDocker(new DeobfuscatedClassesDocker(this));
+
+		// set default docker sizes
+		for (Docker panel : Docker.getDockers().values()) {
 			panel.setPreferredSize(new Dimension(300, 100));
 		}
 
-		this.mainWindow.updateRightPanelSelector();
-
-		// verify the user has a valid panel id saved in their config
-		if (!RightPanel.getPanelClasses().containsKey(UiConfig.getSelectedRightPanel())) {
-			UiConfig.setSelectedRightPanel(RightPanel.DEFAULT);
-			// todo change with introduction of better logging!
-			System.out.println("invalid right panel id in config, resetting to default (" + RightPanel.DEFAULT + ")!");
+		// set up selectors
+		for (Docker.Side side : Docker.Side.values()) {
+			this.mainWindow.getDockerSelector(side).configure();
 		}
 	}
 
 	private void setupUi() {
+		this.setupDockers();
+
 		this.jarFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		this.tinyMappingsFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
@@ -169,42 +182,40 @@ public class Gui {
 
 		this.exportJarFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-		this.splitClasses.setResizeWeight(0.3);
-		this.classesPanel.setPreferredSize(ScaleUtil.getDimension(250, 0));
-
 		// layout controls
 		Container workArea = this.mainWindow.getWorkArea();
 		workArea.setLayout(new BorderLayout());
 
-		centerPanel.add(infoPanel.getUi(), BorderLayout.NORTH);
-		centerPanel.add(this.editorTabbedPane.getUi(), BorderLayout.CENTER);
+		this.centerPanel.add(this.infoPanel.getUi(), BorderLayout.NORTH);
+		this.centerPanel.add(this.editorTabbedPane.getUi(), BorderLayout.CENTER);
 
-		messages.setCellRenderer(new MessageListCellRenderer());
+		this.messages.setCellRenderer(new MessageListCellRenderer());
 
-		splitRight.setResizeWeight(1); // let the left side take all the slack
-		splitRight.resetToPreferredSizes();
-		splitCenter.setResizeWeight(0); // let the right side take all the slack
-
-		workArea.add(splitCenter, BorderLayout.CENTER);
-
-		// restore state
-		int[] layout = UiConfig.getLayout();
-		if (layout.length >= 3) {
-			this.splitClasses.setDividerLocation(layout[0]);
-			this.splitCenter.setDividerLocation(layout[1]);
-			this.splitRight.setDividerLocation(layout[2]);
-		}
+		workArea.add(this.splitLeft, BorderLayout.CENTER);
 
 		this.mainWindow.getStatusBar().addPermanentComponent(this.connectionStatusLabel);
 
-		// init state
-		setConnectionState(ConnectionState.NOT_CONNECTED);
-		onCloseJar();
+		// ensure that the center panel gets all extra resize space
+		// this prevents the right and left panels from getting far too big occasionally
+		this.splitRight.setResizeWeight(1);
+		this.splitLeft.setResizeWeight(0);
 
-		// select correct right panel button
-		this.rightPanel.getButton().setSelected(true);
-		// configure selected right panel
-		this.splitRight.setDividerLocation(UiConfig.getRightPanelDividerLocation(this.getRightPanel().getId(), this.splitRight.getDividerLocation()));
+		// apply docker config
+		if (UiConfig.getHostedDockers(Docker.Side.LEFT).isPresent() || UiConfig.getHostedDockers(Docker.Side.RIGHT).isPresent()) {
+			// restore
+			this.rightDock.restoreState();
+			this.leftDock.restoreState();
+		} else {
+			// use default config
+			this.leftDock.host(Docker.getDocker(ObfuscatedClassesDocker.class), Docker.VerticalLocation.TOP);
+			this.leftDock.host(Docker.getDocker(DeobfuscatedClassesDocker.class), Docker.VerticalLocation.BOTTOM);
+
+			this.rightDock.host(Docker.getDocker(StructureDocker.class), Docker.VerticalLocation.FULL);
+		}
+
+		// init state
+		this.setConnectionState(ConnectionState.NOT_CONNECTED);
+		this.onCloseJar();
 
 		JFrame frame = this.mainWindow.getFrame();
 		frame.addWindowListener(GuiUtil.onWindowClose(e -> this.close()));
@@ -223,50 +234,27 @@ public class Gui {
 		this.retranslateUi();
 	}
 
-	public RightPanel getRightPanel() {
-		return this.rightPanel;
-	}
-
 	/**
-	 * Sets the right panel to the given panel.
+	 * Opens the given docker in its preferred location.
 	 * @param clazz the new panel's class
-	 * @param updateStateIfCurrent if the provided id is equal to the current id, this parameter determines whether to update the visibility of the panel
 	 */
-	public void setRightPanel(Class<? extends RightPanel> clazz, boolean updateStateIfCurrent) {
-		RightPanel newPanel = RightPanel.getPanel(clazz);
+	public void openDocker(Class<? extends Docker> clazz) {
+		Docker newDocker = Docker.getDocker(clazz);
 
-		if (newPanel.getId().equals(this.rightPanel.getId())) {
-			if (updateStateIfCurrent) {
-				this.saveRightPanelDividerLocation();
-
-				// swap visibility
-				this.rightPanel.setVisible(!this.rightPanel.isVisible());
-			}
-		} else {
-			// save divider location and hide
-			this.saveRightPanelDividerLocation();
-			this.rightPanel.setVisible(false);
-
-			// set panel
-			this.rightPanel = newPanel;
-			this.rightPanel.setVisible(true);
-
-			// show and save new data
-			this.splitRight.setRightComponent(this.rightPanel);
-			UiConfig.setSelectedRightPanel(newPanel.getId());
-		}
-
-		// we call getHeight on the right panel selector here since it's rotated, meaning its height is actually its width
-		this.splitRight.setDividerLocation(UiConfig.getRightPanelDividerLocation(newPanel.getId(), this.splitRight.getDividerLocation()));
-
-		// repaint in case the panel was changing without clicking a button
-		this.mainWindow.getFrame().repaint();
+		Dock dock = (newDocker.getPreferredLocation().side() == Docker.Side.LEFT ? this.leftDock : this.rightDock);
+		dock.host(newDocker, newDocker.getPreferredLocation().verticalLocation());
 	}
 
-	private void saveRightPanelDividerLocation() {
-		if (this.rightPanel.isVisible()) {
-			UiConfig.setRightPanelDividerLocation(this.rightPanel.getId(), this.splitRight.getDividerLocation());
-		}
+	public JSplitPane getSplitLeft() {
+		return this.splitLeft;
+	}
+
+	public JSplitPane getSplitRight() {
+		return this.splitRight;
+	}
+
+	public MenuBar getMenuBar() {
+		return this.menuBar;
 	}
 
 	public MainWindow getMainWindow() {
@@ -289,35 +277,23 @@ public class Gui {
 		return this.controller;
 	}
 
-	public void setSingleClassTree(boolean singleClassTree) {
-		this.singleClassTree = singleClassTree;
-		this.classesPanel.removeAll();
-		this.classesPanel.add(isSingleClassTree() ? deobfPanel : splitClasses);
-		getController().refreshClasses();
-		retranslateUi();
-	}
-
-	public boolean isSingleClassTree() {
-		return singleClassTree;
-	}
-
 	public void onStartOpenJar() {
-		this.classesPanel.removeAll();
-		redraw();
+		this.redraw();
 	}
 
 	public void onFinishOpenJar(String jarName) {
 		// update gui
 		this.mainWindow.setTitle(Enigma.NAME + " - " + jarName);
-		this.classesPanel.removeAll();
-		this.classesPanel.add(isSingleClassTree() ? deobfPanel : splitClasses);
 		this.editorTabbedPane.closeAllEditorTabs();
 
 		// update menu
-		isJarOpen = true;
+		this.isJarOpen = true;
 
-		updateUiState();
-		redraw();
+		// update classes in dockers
+		this.controller.refreshClasses();
+
+		this.updateUiState();
+		this.redraw();
 	}
 
 	public void onCloseJar() {
@@ -326,7 +302,6 @@ public class Gui {
 		setObfClasses(null);
 		setDeobfClasses(null);
 		this.editorTabbedPane.closeAllEditorTabs();
-		this.classesPanel.removeAll();
 
 		// update menu
 		isJarOpen = false;
@@ -359,11 +334,31 @@ public class Gui {
 	}
 
 	public void setObfClasses(Collection<ClassEntry> obfClasses) {
-		this.obfPanel.obfClasses.setClasses(obfClasses);
+		Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector().setClasses(obfClasses);
+		this.updateAllClasses();
 	}
 
 	public void setDeobfClasses(Collection<ClassEntry> deobfClasses) {
-		this.deobfPanel.deobfClasses.setClasses(deobfClasses);
+		Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector().setClasses(deobfClasses);
+		this.updateAllClasses();
+	}
+
+	public void updateAllClasses() {
+		ClassSelector allClasses = Docker.getDocker(AllClassesDocker.class).getClassSelector();
+
+		List<ClassEntry> entries = new ArrayList<>();
+		NestedPackages obfuscatedPackages = Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector().getPackageManager();
+		NestedPackages deobfuscatedPackages = Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector().getPackageManager();
+
+		if (obfuscatedPackages != null) {
+			entries.addAll(obfuscatedPackages.getClassEntries());
+		}
+
+		if (deobfuscatedPackages != null) {
+			entries.addAll(deobfuscatedPackages.getClassEntries());
+		}
+
+		allClasses.setClasses(entries.isEmpty() ? null : entries);
 	}
 
 	public void setMappingsFile(Path path) {
@@ -373,11 +368,11 @@ public class Gui {
 
 	public void showTokens(EditorPanel editor, List<Token> tokens) {
 		if (tokens.size() > 1) {
-			this.setRightPanel(CallsTree.class, false);
+			this.openDocker(CallsTreeDocker.class);
 			this.controller.setTokenHandle(editor.getClassHandle().copy());
-			RightPanel.getPanel(CallsTree.class).showTokens(tokens);
+			Docker.getDocker(CallsTreeDocker.class).showTokens(tokens);
 		} else {
-			RightPanel.getPanel(CallsTree.class).clearTokens();
+			Docker.getDocker(CallsTreeDocker.class).clearTokens();
 		}
 
 		// show the first token
@@ -386,12 +381,6 @@ public class Gui {
 
 	public void showCursorReference(EntryReference<Entry<?>, Entry<?>> reference) {
 		infoPanel.setReference(reference == null ? null : reference.entry);
-	}
-
-	@Nullable
-	public EntryReference<Entry<?>, Entry<?>> getCursorReference() {
-		EditorPanel activeEditor = this.editorTabbedPane.getActiveEditor();
-		return activeEditor == null ? null : activeEditor.getCursorReference();
 	}
 
 	public void startDocChange(EditorPanel editor) {
@@ -413,56 +402,56 @@ public class Gui {
 	}
 
 	/**
-	 * Updates the structure right panel without opening it
+	 * Updates the Structure docker without opening it
 	 * @param editor the editor to extract the new structure from
 	 */
 	public void updateStructure(EditorPanel editor) {
-		RightPanel.getPanel(StructurePanel.class).updateStructure(editor);
+		Docker.getDocker(StructureDocker.class).updateStructure(editor);
 	}
 
 	/**
-	 * Opens the Structure right panel and displays information for the provided editor
+	 * Opens the Structure docker and displays information for the provided editor
 	 * @param editor the editor to extract structure from
 	 */
 	public void showStructure(EditorPanel editor) {
-		this.setRightPanel(StructurePanel.class, false);
+		this.openDocker(StructureDocker.class);
 		this.updateStructure(editor);
 	}
 
 	/**
-	 * Opens the Inheritance right panel and displays information for the provided editor's cursor reference.
+	 * Opens the Inheritance docker and displays information for the provided editor's cursor reference.
 	 * @param editor the editor to extract the reference from
 	 */
 	public void showInheritance(EditorPanel editor) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.setRightPanel(InheritanceTree.class, false);
-		RightPanel.getPanel(InheritanceTree.class).display(cursorReference.entry);
+		this.openDocker(InheritanceTreeDocker.class);
+		Docker.getDocker(InheritanceTreeDocker.class).display(cursorReference.entry);
 	}
 
 	/**
-	 * Opens the Implementations right panel and displays information for the provided editor's cursor reference.
+	 * Opens the Implementations docker and displays information for the provided editor's cursor reference.
 	 * @param editor the editor to extract the reference from
 	 */
 	public void showImplementations(EditorPanel editor) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.setRightPanel(ImplementationsTree.class, false);
-		RightPanel.getPanel(ImplementationsTree.class).display(cursorReference.entry);
+		this.openDocker(ImplementationsTreeDocker.class);
+		Docker.getDocker(ImplementationsTreeDocker.class).display(cursorReference.entry);
 	}
 
 	/**
-	 * Opens the Calls right panel and displays information for the provided editor's cursor reference.
+	 * Opens the Calls docker and displays information for the provided editor's cursor reference.
 	 * @param editor the editor to extract the reference from
 	 */
 	public void showCalls(EditorPanel editor, boolean recurse) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
 		if (cursorReference == null) return;
 
-		this.setRightPanel(CallsTree.class, false);
-		RightPanel.getPanel(CallsTree.class).showCalls(cursorReference.entry, recurse);
+		this.openDocker(CallsTreeDocker.class);
+		Docker.getDocker(CallsTreeDocker.class).showCalls(cursorReference.entry, recurse);
 	}
 
 	public void toggleMapping(EditorPanel editor) {
@@ -515,11 +504,11 @@ public class Gui {
 	private void exit() {
 		UiConfig.setWindowPos(UiConfig.MAIN_WINDOW, this.mainWindow.getFrame().getLocationOnScreen());
 		UiConfig.setWindowSize(UiConfig.MAIN_WINDOW, this.mainWindow.getFrame().getSize());
-		UiConfig.setLayout(
-				this.splitClasses.getDividerLocation(),
-				this.splitCenter.getDividerLocation(),
-				this.splitRight.getDividerLocation()
-		);
+
+		// save state for docker panels
+		this.rightDock.saveState();
+		this.leftDock.saveState();
+
 		UiConfig.save();
 
 		if (searchDialog != null) {
@@ -547,8 +536,10 @@ public class Gui {
 				onRenameFromClassTree(vc, prevDataChild, dataChild, node);
 			}
 			node.setUserObject(data);
+
 			// Ob package will never be modified, just reload deob view
-			this.deobfPanel.deobfClasses.reload();
+			DeobfuscatedClassesDocker deobfuscatedPanel = Docker.getDocker(DeobfuscatedClassesDocker.class);
+			deobfuscatedPanel.getClassSelector().reload();
 		} else if (data instanceof ClassEntry entry) {
 			// class rename
 
@@ -567,52 +558,40 @@ public class Gui {
 		}
 	}
 
-	public void moveClassTree(Entry<?> obfEntry, String newName) {
-		String oldEntry = obfEntry.getContainingClass().getPackageName();
-		String newEntry = new ClassEntry(newName).getPackageName();
-		moveClassTree(obfEntry, oldEntry == null, newEntry == null);
-	}
-
 	// TODO: getExpansionState will *not* actually update itself based on name changes!
 	public void moveClassTree(Entry<?> obfEntry, boolean isOldOb, boolean isNewOb) {
 		ClassEntry classEntry = obfEntry.getContainingClass();
+		ObfuscatedClassesDocker obfuscatedClassesDocker = Docker.getDocker(ObfuscatedClassesDocker.class);
+		DeobfuscatedClassesDocker deobfuscatedClassesDocker = Docker.getDocker(DeobfuscatedClassesDocker.class);
 
-		List<ClassSelector.StateEntry> stateDeobf = this.deobfPanel.deobfClasses.getExpansionState();
-		List<ClassSelector.StateEntry> stateObf = this.obfPanel.obfClasses.getExpansionState();
+		ClassSelector deobfuscatedClassSelector = deobfuscatedClassesDocker.getClassSelector();
+		ClassSelector obfuscatedClassSelector = obfuscatedClassesDocker.getClassSelector();
 
-		// Ob -> deob
+		List<ClassSelector.StateEntry> deobfuscatedPanelExpansionState = deobfuscatedClassSelector.getExpansionState();
+		List<ClassSelector.StateEntry> obfuscatedPanelExpansionState = obfuscatedClassSelector.getExpansionState();
+
 		if (!isNewOb) {
-			this.deobfPanel.deobfClasses.moveClassIn(classEntry);
-			this.obfPanel.obfClasses.removeEntry(classEntry);
-			this.deobfPanel.deobfClasses.reload();
-			this.obfPanel.obfClasses.reload();
-		}
-		// Deob -> ob
-		else if (!isOldOb) {
-			this.obfPanel.obfClasses.moveClassIn(classEntry);
-			this.deobfPanel.deobfClasses.removeEntry(classEntry);
-			this.deobfPanel.deobfClasses.reload();
-			this.obfPanel.obfClasses.reload();
-		}
-		// Local move
-		else if (isOldOb) {
-			this.obfPanel.obfClasses.moveClassIn(classEntry);
-			this.obfPanel.obfClasses.reload();
+			// obfuscated -> deobfuscated
+			deobfuscatedClassSelector.moveClassIn(classEntry);
+			obfuscatedClassSelector.removeEntry(classEntry);
+			deobfuscatedClassSelector.reload();
+			obfuscatedClassSelector.reload();
+		} else if (!isOldOb) {
+			// deobfuscated -> obfuscated
+			obfuscatedClassSelector.moveClassIn(classEntry);
+			deobfuscatedClassSelector.removeEntry(classEntry);
+			deobfuscatedClassSelector.reload();
+			obfuscatedClassSelector.reload();
 		} else {
-			this.deobfPanel.deobfClasses.moveClassIn(classEntry);
-			this.deobfPanel.deobfClasses.reload();
+			// local move: deobfuscated -> deobfuscated
+			deobfuscatedClassSelector.moveClassIn(classEntry);
+			deobfuscatedClassSelector.reload();
 		}
 
-		this.deobfPanel.deobfClasses.restoreExpansionState(stateDeobf);
-		this.obfPanel.obfClasses.restoreExpansionState(stateObf);
-	}
+		deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
+		obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
 
-	public ObfPanel getObfPanel() {
-		return obfPanel;
-	}
-
-	public DeobfPanel getDeobfPanel() {
-		return deobfPanel;
+		this.updateAllClasses();
 	}
 
 	public SearchDialog getSearchDialog() {
@@ -623,7 +602,7 @@ public class Gui {
 	}
 
 	public void addMessage(Message message) {
-		JScrollBar verticalScrollBar = RightPanel.getPanel(CollabPanel.class).getMessageScrollPane().getVerticalScrollBar();
+		JScrollBar verticalScrollBar = Docker.getDocker(CollabDocker.class).getMessageScrollPane().getVerticalScrollBar();
 		boolean isAtBottom = verticalScrollBar.getValue() >= verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent();
 		messageModel.addElement(message);
 
@@ -641,9 +620,10 @@ public class Gui {
 		users.forEach(userModel::addElement);
 		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
 
-		// if we were previously offline, we need to reload multiplayer-restricted right panels (ex. messages) so they can be used
-		if (wasOffline && this.getRightPanel() instanceof CollabPanel collabPanel) {
-			collabPanel.setUp();
+		// if we were previously offline, we need to reload multiplayer-restricted dockers (only collab for now) so they can be used
+		CollabDocker collabDocker = Docker.getDocker(CollabDocker.class);
+		if (wasOffline && Dock.Util.isDocked(collabDocker)) {
+			collabDocker.setUp();
 		}
 	}
 
@@ -668,11 +648,9 @@ public class Gui {
 		this.updateUiState();
 
 		this.menuBar.retranslateUi();
-		this.obfPanel.retranslateUi();
-		this.deobfPanel.retranslateUi();
 		this.infoPanel.retranslateUi();
 		this.editorTabbedPane.retranslateUi();
-		for (RightPanel panel : RightPanel.getRightPanels().values()) {
+		for (Docker panel : Docker.getDockers().values()) {
 			panel.retranslateUi();
 		}
 	}

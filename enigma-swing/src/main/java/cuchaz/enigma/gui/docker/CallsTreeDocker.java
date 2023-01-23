@@ -1,4 +1,4 @@
-package cuchaz.enigma.gui.panels.right;
+package cuchaz.enigma.gui.docker;
 
 import java.awt.BorderLayout;
 import java.awt.event.MouseEvent;
@@ -27,11 +27,11 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
-public class CallsTree extends RightPanel {
+public class CallsTreeDocker extends Docker {
 	private final JTree tree = new JTree();
 	private final JList<Token> tokens = new JList<>();
 
-	public CallsTree(Gui gui) {
+	public CallsTreeDocker(Gui gui) {
 		super(gui);
 		this.tree.setModel(null);
 		this.tree.setCellRenderer(new CallsTreeCellRenderer(gui));
@@ -115,8 +115,13 @@ public class CallsTree extends RightPanel {
 	}
 
 	@Override
-	public ButtonPosition getButtonPosition() {
-		return ButtonPosition.TOP;
+	public Location getButtonPosition() {
+		return new Location(Side.RIGHT, VerticalLocation.TOP);
+	}
+
+	@Override
+	public Location getPreferredLocation() {
+		return new Location(Side.RIGHT, VerticalLocation.FULL);
 	}
 
 	@Override

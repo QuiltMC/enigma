@@ -1,12 +1,15 @@
 package cuchaz.enigma.gui.config;
 
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 
 import cuchaz.enigma.config.ConfigContainer;
 import cuchaz.enigma.config.ConfigSection;
-import cuchaz.enigma.gui.panels.right.RightPanel;
+import cuchaz.enigma.gui.docker.Dock;
+import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 
@@ -16,9 +19,9 @@ public final class UiConfig {
 	public static final String GENERAL = "General";
 	public static final String LANGUAGE = "Language";
 	public static final String SCALE_FACTOR = "Scale Factor";
-	public static final String RIGHT_PANEL = "Right Panel";
-	public static final String RIGHT_PANEL_DIVIDER_LOCATIONS = "Right Panel Divider Locations";
-	public static final String LAYOUT = "Layout";
+	public static final String VERTICAL_DIVIDER_LOCATIONS = "Vertical Divider Locations";
+	public static final String HORIZONTAL_DIVIDER_LOCATIONS = "Horizontal Divider Locations";
+	public static final String HOSTED_DOCKERS = "Hosted Dockers";
 	public static final String THEMES = "Themes";
 	public static final String COLORS = "Colors";
 	public static final String DECOMPILER = "Decompiler";
@@ -34,6 +37,7 @@ public final class UiConfig {
 	public static final String DEFAULT_2 = "Default 2";
 	public static final String SMALL = "Small";
 	public static final String EDITOR = "Editor";
+	public static final String SAVED_WITH_LEFT_OPEN = "Saved With Left Open";
 	public static final String TOP_LEVEL_PACKAGE = "Top Level Package";
 	public static final String SYNTHETIC_PARAMETERS = "Synthetic Parameters";
 	public static final String LINE_NUMBERS_FOREGROUND = "Line Numbers Foreground";
@@ -66,6 +70,7 @@ public final class UiConfig {
 	public static final String DEBUG_TOKEN_ALPHA = "Debug Token Alpha";
 	public static final String DEBUG_TOKEN_OUTLINE = "Debug Token Outline";
 	public static final String DEBUG_TOKEN_OUTLINE_ALPHA = "Debug Token Outline Alpha";
+	public static final String DOCK_HIGHLIGHT = "Dock Highlight";
 
 	private UiConfig() {
 	}
@@ -120,40 +125,70 @@ public final class UiConfig {
 		swing.data().section(GENERAL).setDouble(SCALE_FACTOR, scale);
 	}
 
-	public static void setSelectedRightPanel(String id) {
-		swing.data().section(GENERAL).setString(RIGHT_PANEL, id);
+	public static void setHostedDockers(Docker.Side side, Docker[] dockers) {
+		String[] dockerData = new String[]{"", ""};
+		for (int i = 0; i < dockers.length; i++) {
+			Docker docker = dockers[i];
+
+			if (docker != null) {
+				Docker.Location location = Dock.Util.findLocation(docker);
+				if (location != null) {
+					dockerData[i] = (docker.getId() + ":" + location.verticalLocation());
+				}
+			}
+		}
+
+		swing.data().section(HOSTED_DOCKERS).setArray(side.name(), dockerData);
 	}
 
-	public static String getSelectedRightPanel() {
-		return swing.data().section(GENERAL).setIfAbsentString(RIGHT_PANEL, RightPanel.DEFAULT);
+	public static Optional<Map<Docker, Docker.VerticalLocation>> getHostedDockers(Docker.Side side) {
+		Optional<String[]> hostedDockers = swing.data().section(HOSTED_DOCKERS).getArray(side.name());
+
+		if (hostedDockers.isEmpty()) {
+			return Optional.empty();
+		}
+
+		Map<Docker, Docker.VerticalLocation> dockers = new HashMap<>();
+
+		for (String dockInfo : hostedDockers.get()) {
+			if (!dockInfo.isBlank()) {
+				String[] split = dockInfo.split(":");
+				try {
+					Docker.VerticalLocation location = Docker.VerticalLocation.valueOf(split[1]);
+					Docker docker = Docker.getDocker(split[0]);
+
+					dockers.put(docker, location);
+				} catch (Exception e) {
+					System.err.println("failed to read docker state for " + dockInfo + ", ignoring! (" + e.getMessage() + ")");
+				}
+			}
+		}
+
+		return Optional.of(dockers);
 	}
 
-	public static void setRightPanelDividerLocation(String id, int width) {
-		swing.data().section(RIGHT_PANEL_DIVIDER_LOCATIONS).setInt(id, width);
+	public static void setVerticalDockDividerLocation(Docker.Side side, int location) {
+		swing.data().section(VERTICAL_DIVIDER_LOCATIONS).setInt(side.name(), location);
 	}
 
-	public static int getRightPanelDividerLocation(String id, int defaultLocation) {
-		return swing.data().section(RIGHT_PANEL_DIVIDER_LOCATIONS).setIfAbsentInt(id, defaultLocation);
+	public static int getVerticalDockDividerLocation(Docker.Side side) {
+		return swing.data().section(VERTICAL_DIVIDER_LOCATIONS).setIfAbsentInt(side.name(), 300);
 	}
 
-	/**
-	 * Gets the dimensions of the different panels of the GUI.
-	 * <p>These dimensions are used to determine the location of the separators between these panels.</p>
-	 *
-	 * <ul>
-	 *     <li>[0] - The height of the obfuscated classes panel</li>
-	 *     <li>[1] - The width of the classes panel</li>
-	 *     <li>[2] - The width of the center panel</li>
-	 * </ul>
-	 *
-	 * @return an integer array composed of these 3 dimensions
-	 */
-	public static int[] getLayout() {
-		return swing.data().section(MAIN_WINDOW).getIntArray(LAYOUT).orElseGet(() -> new int[] { -1, -1, -1 });
+	public static void setHorizontalDividerLocation(Docker.Side side, int location) {
+		swing.data().section(HORIZONTAL_DIVIDER_LOCATIONS).setInt(side.name(), location);
 	}
 
-	public static void setLayout(int leftV, int left, int right) {
-		swing.data().section(MAIN_WINDOW).setIntArray(LAYOUT, new int[] { leftV, left, right });
+	public static int getHorizontalDividerLocation(Docker.Side side) {
+		return swing.data().section(HORIZONTAL_DIVIDER_LOCATIONS).setIfAbsentInt(side.name(), side == Docker.Side.LEFT ? 300 : 700);
+	}
+
+	public static void setSavedWithLeftOpen(boolean open) {
+		swing.data().section(GENERAL).setBool(SAVED_WITH_LEFT_OPEN, open);
+	}
+
+	public static boolean getSavedWithLeftOpen() {
+		return swing.data().section(GENERAL).setIfAbsentBool(SAVED_WITH_LEFT_OPEN, false);
 	}
 
 	public static LookAndFeel getLookAndFeel() {
@@ -192,91 +227,95 @@ public final class UiConfig {
 	}
 
 	public static Color getObfuscatedColor() {
-		return getThemeColorRgba("Obfuscated");
+		return getThemeColorRgba(OBFUSCATED);
 	}
 
 	public static Color getObfuscatedOutlineColor() {
-		return getThemeColorRgba("Obfuscated Outline");
+		return getThemeColorRgba(OBFUSCATED_OUTLINE);
 	}
 
 	public static Color getProposedColor() {
-		return getThemeColorRgba("Proposed");
+		return getThemeColorRgba(PROPOSED);
 	}
 
 	public static Color getProposedOutlineColor() {
-		return getThemeColorRgba("Proposed Outline");
+		return getThemeColorRgba(PROPOSED_OUTLINE);
 	}
 
 	public static Color getDeobfuscatedColor() {
-		return getThemeColorRgba("Deobfuscated");
+		return getThemeColorRgba(DEOBFUSCATED);
 	}
 
 	public static Color getDeobfuscatedOutlineColor() {
-		return getThemeColorRgba("Deobfuscated Outline");
+		return getThemeColorRgba(DEOBFUSCATED_OUTLINE);
 	}
 
 	public static Color getDebugTokenColor() {
-		return getThemeColorRgba("Debug Token");
+		return getThemeColorRgba(DEBUG_TOKEN);
 	}
 
 	public static Color getDebugTokenOutlineColor() {
-		return getThemeColorRgba("Debug Token Outline");
+		return getThemeColorRgba(DEBUG_TOKEN_OUTLINE);
 	}
 
 	public static Color getEditorBackgroundColor() {
-		return getThemeColorRgb("Editor Background");
+		return getThemeColorRgb(EDITOR_BACKGROUND);
 	}
 
 	public static Color getHighlightColor() {
-		return getThemeColorRgb("Highlight");
+		return getThemeColorRgb(HIGHLIGHT);
 	}
 
 	public static Color getCaretColor() {
-		return getThemeColorRgb("Caret");
+		return getThemeColorRgb(CARET);
 	}
 
 	public static Color getSelectionHighlightColor() {
-		return getThemeColorRgb("Selection Highlight");
+		return getThemeColorRgb(SELECTION_HIGHLIGHT);
 	}
 
 	public static Color getStringColor() {
-		return getThemeColorRgb("String");
+		return getThemeColorRgb(STRING);
 	}
 
 	public static Color getNumberColor() {
-		return getThemeColorRgb("Number");
+		return getThemeColorRgb(NUMBER);
 	}
 
 	public static Color getOperatorColor() {
-		return getThemeColorRgb("Operator");
+		return getThemeColorRgb(OPERATOR);
 	}
 
 	public static Color getDelimiterColor() {
-		return getThemeColorRgb("Delimiter");
+		return getThemeColorRgb(DELIMITER);
 	}
 
 	public static Color getTypeColor() {
-		return getThemeColorRgb("Type");
+		return getThemeColorRgb(TYPE);
 	}
 
 	public static Color getIdentifierColor() {
-		return getThemeColorRgb("Identifier");
+		return getThemeColorRgb(IDENTIFIER);
 	}
 
 	public static Color getTextColor() {
-		return getThemeColorRgb("Text");
+		return getThemeColorRgb(TEXT);
 	}
 
 	public static Color getLineNumbersForegroundColor() {
-		return getThemeColorRgb("Line Numbers Foreground");
+		return getThemeColorRgb(LINE_NUMBERS_FOREGROUND);
 	}
 
 	public static Color getLineNumbersBackgroundColor() {
-		return getThemeColorRgb("Line Numbers Background");
+		return getThemeColorRgb(LINE_NUMBERS_BACKGROUND);
 	}
 
 	public static Color getLineNumbersSelectedColor() {
-		return getThemeColorRgb("Line Numbers Selected");
+		return getThemeColorRgb(LINE_NUMBERS_SELECTED);
+	}
+
+	public static Color getDockHighlightColor() {
+		return getThemeColorRgb(DOCK_HIGHLIGHT);
 	}
 
 	public static boolean useCustomFonts() {
@@ -309,32 +348,16 @@ public final class UiConfig {
 		return getActiveFont(DEFAULT).orElseGet(() -> ScaleUtil.scaleFont(Font.decode(Font.DIALOG).deriveFont(Font.BOLD)));
 	}
 
-	public static void setDefaultFont(Font font) {
-		setFont(DEFAULT, font);
-	}
-
 	public static Font getDefault2Font() {
 		return getActiveFont(DEFAULT_2).orElseGet(() -> ScaleUtil.scaleFont(Font.decode(Font.DIALOG)));
-	}
-
-	public static void setDefault2Font(Font font) {
-		setFont(DEFAULT_2, font);
 	}
 
 	public static Font getSmallFont() {
 		return getActiveFont(SMALL).orElseGet(() -> ScaleUtil.scaleFont(Font.decode(Font.DIALOG)));
 	}
 
-	public static void setSmallFont(Font font) {
-		setFont(SMALL, font);
-	}
-
 	public static Font getEditorFont() {
 		return getActiveFont(EDITOR).orElseGet(UiConfig::getFallbackEditorFont);
-	}
-
-	public static void setEditorFont(Font font) {
-		setFont(EDITOR, font);
 	}
 
 	/**
@@ -435,6 +458,8 @@ public final class UiConfig {
 
 	public static void setLookAndFeelDefaults(LookAndFeel laf, boolean isDark) {
 		ConfigSection s = swing.data().section(THEMES).section(laf.name()).section(COLORS);
+
+		// theme-dependent colors
 		if (!isDark) {
 			// Defaults found here: https://github.com/Sciss/SyntaxPane/blob/122da367ff7a5d31627a70c62a48a9f0f4f85a0a/src/main/resources/de/sciss/syntaxpane/defaultsyntaxkit/config.properties#L139
 			s.setIfAbsentRgbColor(LINE_NUMBERS_FOREGROUND, 0x333300);
@@ -510,5 +535,8 @@ public final class UiConfig {
 			s.setIfAbsentRgbColor(DEBUG_TOKEN_OUTLINE, 0x701367);
 			s.setIfAbsentDouble(DEBUG_TOKEN_OUTLINE_ALPHA, 0.5);
 		}
+
+		// theme-independent colors
+		s.setIfAbsentRgbColor(DOCK_HIGHLIGHT, 0x0000FF);
 	}
 }

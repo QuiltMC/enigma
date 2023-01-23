@@ -21,6 +21,7 @@ import java.util.Set;
 
 import com.google.common.io.MoreFiles;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
+import cuchaz.enigma.gui.docker.AllClassesDocker;
 import joptsimple.*;
 
 import cuchaz.enigma.EnigmaProfile;
@@ -115,10 +116,6 @@ public class Main {
 
 			Gui gui = new Gui(parsedProfile, editables);
 			GuiController controller = gui.getController();
-			
-			if (options.has("single-class-tree")) {
-				gui.setSingleClassTree(true);
-			}
 
 			if (Boolean.parseBoolean(System.getProperty("enigma.catchExceptions", "true"))) {
 				// install a global exception handler to the event thread
@@ -129,6 +126,11 @@ public class Main {
 						CrashDialog.show(t);
 					}
 				});
+			}
+
+			if (options.has("single-class-tree")) {
+				System.out.println("warning: --single-class-tree is deprecated and will be removed in the next minor version! simply use the \"all classes\" docker instead.");
+				gui.openDocker(AllClassesDocker.class);
 			}
 
 			if (options.has(jar)) {

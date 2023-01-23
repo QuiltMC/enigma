@@ -88,8 +88,8 @@ public class ClassSelector extends JTree {
 			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
-				if (leaf && value instanceof ClassSelectorClassNode) {
-					setIcon(GuiUtil.getClassIcon(gui, ((ClassSelectorClassNode) value).getObfEntry()));
+				if (leaf && value instanceof ClassSelectorClassNode node) {
+					setIcon(GuiUtil.getClassIcon(gui, node.getObfEntry()));
 				}
 
 				return this;
@@ -160,19 +160,23 @@ public class ClassSelector extends JTree {
 		this.renameSelectionListener = renameSelectionListener;
 	}
 
+	public NestedPackages getPackageManager() {
+		return this.packageManager;
+	}
+
 	public void setClasses(Collection<ClassEntry> classEntries) {
-		List<StateEntry> state = getExpansionState();
+		List<StateEntry> state = this.getExpansionState();
 
 		if (classEntries == null) {
-			setModel(null);
+			this.setModel(null);
 			return;
 		}
 
 		// update the tree control
-		packageManager = new NestedPackages(classEntries, comparator, controller.project.getMapper());
-		setModel(new DefaultTreeModel(packageManager.getRoot()));
+		this.packageManager = new NestedPackages(classEntries, this.comparator, this.controller.project.getMapper());
+		this.setModel(new DefaultTreeModel(this.packageManager.getRoot()));
 
-		restoreExpansionState(state);
+		this.restoreExpansionState(state);
 	}
 
 	public ClassEntry getSelectedClass() {
@@ -211,12 +215,13 @@ public class ClassSelector extends JTree {
 	}
 
 	public void restoreExpansionState(List<StateEntry> expansionState) {
-		clearSelection();
+		this.clearSelection();
 
 		for (StateEntry entry : expansionState) {
-			switch (entry.state) {
-				case SELECTED -> addSelectionPath(entry.path);
-				case EXPANDED -> expandPath(entry.path);
+			if (entry.state() == State.EXPANDED) {
+				this.expandPath(entry.path());
+			} else if (entry.state() == State.SELECTED) {
+				this.addSelectionPath(entry.path());
 			}
 		}
 	}

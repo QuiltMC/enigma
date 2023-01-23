@@ -1,4 +1,4 @@
-package cuchaz.enigma.gui.panels.right;
+package cuchaz.enigma.gui.docker;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -29,7 +29,7 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.I18n;
 
-public class StructurePanel extends RightPanel {
+public class StructureDocker extends Docker {
 	private final JPanel optionsPanel;
 
 	private final JLabel obfuscationVisibilityLabel = new JLabel();
@@ -42,7 +42,7 @@ public class StructurePanel extends RightPanel {
 
 	private final JTree structureTree;
 
-	public StructurePanel(Gui gui) {
+	public StructureDocker(Gui gui) {
 		super(gui);
 		this.optionsPanel = new JPanel(new GridBagLayout());
 		this.optionsPanel.setVisible(false);
@@ -154,13 +154,18 @@ public class StructurePanel extends RightPanel {
 	}
 
 	@Override
-	public ButtonPosition getButtonPosition() {
-		return ButtonPosition.TOP;
+	public Location getButtonPosition() {
+		return new Location(Side.RIGHT, VerticalLocation.TOP);
 	}
 
 	@Override
 	public String getId() {
 		return Type.STRUCTURE;
+	}
+
+	@Override
+	public Location getPreferredLocation() {
+		return new Location(Side.RIGHT, VerticalLocation.FULL);
 	}
 
 	private static class StructureTreeCellRenderer extends DefaultTreeCellRenderer {

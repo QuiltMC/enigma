@@ -112,9 +112,6 @@
 	"editor.decompile_error": "An error was encountered while decompiling.",
 	"editor.remap_error": "An error was encountered while remapping.",
 
-	"info_panel.classes": "Classes",
-	"info_panel.classes.obfuscated": "Obfuscated Classes",
-	"info_panel.classes.deobfuscated": "De-obfuscated Classes",
 	"info_panel.identifier": "Identifier Info",
 	"info_panel.identifier.none": "No identifier selected",
 	"info_panel.identifier.variable": "Variable",
@@ -263,13 +260,16 @@
 	"keybind.menu.mapping_stats": "Mapping stats",
 	"keybind.menu.save": "Save mappings",
 
-	"right_panel.collab.send": "Send",
-	"right_panel.collab.title": "Collab",
-	"right_panel.collab.messages_title": "Messages",
-	"right_panel.collab.users_title": "Users",
-	"right_panel.collab.offline_text": "Enigma is currently running offline.",
-	"right_panel.calls.title": "Calls",
-	"right_panel.structure.title": "Structure",
-	"right_panel.inheritance.title": "Inheritance",
-	"right_panel.implementations.title": "Implementations"
+	"docker.collab.send": "Send",
+	"docker.collab.title": "Collab",
+	"docker.collab.messages_title": "Messages",
+	"docker.collab.users_title": "Users",
+	"docker.collab.offline_text": "Enigma is currently running offline.",
+	"docker.calls.title": "Calls",
+	"docker.structure.title": "Structure",
+	"docker.inheritance.title": "Inheritance",
+	"docker.implementations.title": "Implementations",
+	"docker.all_classes.title": "Classes",
+	"docker.obfuscated_classes.title": "Obfuscated Classes",
+	"docker.deobfuscated_classes.title": "Deobfuscated Classes"
 }

@@ -1,4 +1,4 @@
-package cuchaz.enigma.gui.panels.right;
+package cuchaz.enigma.gui.docker;
 
 import cuchaz.enigma.analysis.AbstractClassTreeNode;
 import cuchaz.enigma.analysis.AbstractMethodTreeNode;
@@ -17,10 +17,10 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.event.MouseEvent;
 
-public abstract class AbstractInheritanceTree extends RightPanel {
+public abstract class AbstractInheritanceTreeDocker extends Docker {
 	private final JTree tree = new JTree();
 
-	protected AbstractInheritanceTree(Gui gui, TreeCellRenderer cellRenderer) {
+	protected AbstractInheritanceTreeDocker(Gui gui, TreeCellRenderer cellRenderer) {
 		super(gui);
 
 		this.tree.setModel(null);
@@ -69,7 +69,7 @@ public abstract class AbstractInheritanceTree extends RightPanel {
 	protected abstract DefaultMutableTreeNode getNodeFor(Entry<?> entry);
 
 	@Override
-	public ButtonPosition getButtonPosition() {
-		return ButtonPosition.TOP;
+	public Location getButtonPosition() {
+		return new Location(Side.RIGHT, VerticalLocation.TOP);
 	}
 }
