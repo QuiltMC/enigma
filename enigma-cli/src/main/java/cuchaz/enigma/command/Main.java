@@ -59,7 +59,6 @@ public class Main {
 	}
 
 	private static void printHelp() {
-		// todo clean things like this up
 		logEnigmaInfo();
 		Logger.info("""
 				Usage:
