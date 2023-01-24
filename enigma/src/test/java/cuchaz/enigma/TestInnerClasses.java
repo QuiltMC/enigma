@@ -43,47 +43,47 @@ public class TestInnerClasses {
 	public TestInnerClasses() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
 		CachingClassProvider classProvider = new CachingClassProvider(jcp);
-		this.index = JarIndex.empty();
-		this.index.indexJar(jcp.getClassNames(), classProvider, ProgressListener.none());
-		this.decompiler = Decompilers.CFR.create(classProvider, new SourceSettings(false, false));
+		index = JarIndex.empty();
+		index.indexJar(jcp.getClassNames(), classProvider, ProgressListener.none());
+		decompiler = Decompilers.CFR.create(classProvider, new SourceSettings(false, false));
 	}
 
 	@Test
 	public void simple() {
-		this.decompile(SimpleOuter);
+		decompile(SimpleOuter);
 	}
 
 	@Test
 	public void constructorArgs() {
-		this.decompile(ConstructorArgsOuter);
+		decompile(ConstructorArgsOuter);
 	}
 
 	@Test
 	public void classTree() {
 
 		// root level
-		assertTrue(this.index.getEntryIndex().hasClass(ClassTreeRoot));
+		assertTrue(index.getEntryIndex().hasClass(ClassTreeRoot));
 
 		// level 1
 		ClassEntry fullClassEntry = new ClassEntry(ClassTreeRoot.getName()
 			+ "$" + ClassTreeLevel1.getSimpleName());
-		assertTrue(this.index.getEntryIndex().hasClass(fullClassEntry));
+		assertTrue(index.getEntryIndex().hasClass(fullClassEntry));
 
 		// level 2
 		fullClassEntry = new ClassEntry(ClassTreeRoot.getName()
 			+ "$" + ClassTreeLevel1.getSimpleName()
 			+ "$" + ClassTreeLevel2.getSimpleName());
-		assertTrue(this.index.getEntryIndex().hasClass(fullClassEntry));
+		assertTrue(index.getEntryIndex().hasClass(fullClassEntry));
 
 		// level 3
 		fullClassEntry = new ClassEntry(ClassTreeRoot.getName()
 			+ "$" + ClassTreeLevel1.getSimpleName()
 			+ "$" + ClassTreeLevel2.getSimpleName()
 			+ "$" + ClassTreeLevel3.getSimpleName());
-		assertTrue(this.index.getEntryIndex().hasClass(fullClassEntry));
+		assertTrue(index.getEntryIndex().hasClass(fullClassEntry));
 	}
 
 	private void decompile(ClassEntry classEntry) {
-		this.decompiler.getSource(classEntry.getName());
+		decompiler.getSource(classEntry.getName());
 	}
 }

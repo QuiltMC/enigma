@@ -15,7 +15,7 @@ import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import org.junit.jupiter.api.Test;
 
 public class TestComments {
-    private static final Path DIRECTORY;
+    private static Path DIRECTORY;
 
     static {
         try {

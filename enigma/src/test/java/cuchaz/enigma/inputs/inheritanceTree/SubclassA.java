@@ -9,22 +9,14 @@
  *     Jeff Martin - initial API and implementation
  ******************************************************************************/
 
-package cuchaz.enigma.inputs.inner_classes;
+package cuchaz.enigma.inputs.inheritanceTree;
 
-public class F_ClassTree {
+// b extends a
+public abstract class SubclassA extends BaseClass {
 
-	public class Level1 {
-
-		public int f1;
-
-		public class Level2 {
-
-			public int f2;
-
-			public class Level3 {
-
-				public int f3;
-			}
-		}
+	// <init>(Ljava/lang/String;)V
+	protected SubclassA(String name) {
+		// call to a.<init>(Ljava/lang/String)V
+		super(name);
 	}
 }

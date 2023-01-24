@@ -29,12 +29,12 @@ public class TestDeobfuscator {
 	@Test
 	public void loadJar()
 		throws Exception {
-		this.openProject();
+		openProject();
 	}
 
 	@Test
 	public void decompileClass() throws Exception {
-		EnigmaProject project = this.openProject();
+		EnigmaProject project = openProject();
 		Decompiler decompiler = Decompilers.CFR.create(project.getClassProvider(), new SourceSettings(false, false));
 
 		decompiler.getSource("a").asString();

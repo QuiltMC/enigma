@@ -9,17 +9,27 @@
  *     Jeff Martin - initial API and implementation
  ******************************************************************************/
 
-package cuchaz.enigma.inputs.lone_class;
+package cuchaz.enigma.inputs.inheritanceTree;
 
-public class LoneClass {
+// d extends b
+public class SubsubclassAA extends SubclassA {
 
-	private final String name;
-
-	public LoneClass(String name) {
-		this.name = name;
+	protected SubsubclassAA() {
+		// call to b.<init>(Ljava/lang/String;)V
+		super("AA");
 	}
 
+	@Override
+	// a()Ljava/lang/String;
 	public String getName() {
-		return this.name;
+		// call to b.a()Ljava/lang/String;
+		return "subsub" + super.getName();
+	}
+
+	@Override
+	// a()V
+	public void doBaseThings() {
+		// call to d.a()Ljava/lang/String;
+		System.out.println("Base things by " + getName());
 	}
 }

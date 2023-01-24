@@ -22,7 +22,7 @@ public class TestRecaf {
     @Test
     public void testIntegrity() throws Exception {
         Set<String> contents;
-        try (InputStream in = this.getClass().getResourceAsStream("/recaf.mappings")) {
+        try (InputStream in = getClass().getResourceAsStream("/recaf.mappings")) {
             contents = new String(in.readAllBytes(), StandardCharsets.UTF_8).lines().collect(Collectors.toSet());
         }
 

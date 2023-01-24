@@ -42,13 +42,13 @@ public class TokenChecker {
 	}
 
 	protected TokenChecker(Path path, DecompilerService decompilerService, ClassProvider classProvider) {
-		this.decompiler = decompilerService.create(classProvider, new SourceSettings(false, false));
-		this.shownFiles = ALL_SHOWN_FILES.computeIfAbsent(new Pair<>(decompilerService, path), p -> new HashSet<>());
+		decompiler = decompilerService.create(classProvider, new SourceSettings(false, false));
+		shownFiles = ALL_SHOWN_FILES.computeIfAbsent(new Pair<>(decompilerService, path), p -> new HashSet<>());
 	}
 
 	protected String getDeclarationToken(Entry<?> entry) {
 		// decompile the class
-		Source source = this.decompiler.getSource(entry.getContainingClass().getFullName());
+		Source source = decompiler.getSource(entry.getContainingClass().getFullName());
 		// DEBUG
 		// createDebugFile(source, entry.getContainingClass());
 		String string = source.asString();
@@ -65,7 +65,7 @@ public class TokenChecker {
 	@SuppressWarnings("unchecked")
 	protected Collection<String> getReferenceTokens(EntryReference<? extends Entry<?>, ? extends Entry<?>> reference) {
 		// decompile the class
-		Source source = this.decompiler.getSource(reference.context.getContainingClass().getFullName());
+		Source source = decompiler.getSource(reference.context.getContainingClass().getFullName());
 		String string = source.asString();
 		SourceIndex index = source.index();
 		// DEBUG
@@ -80,7 +80,7 @@ public class TokenChecker {
 	}
 
 	private void createDebugFile(Source source, ClassEntry classEntry) {
-		if (!this.shownFiles.add(classEntry.getFullName())) {
+		if (!shownFiles.add(classEntry.getFullName())) {
 			return;
 		}
 

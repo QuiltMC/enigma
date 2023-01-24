@@ -9,23 +9,17 @@
  *     Jeff Martin - initial API and implementation
  ******************************************************************************/
 
-package cuchaz.enigma.inputs.translation;
+package cuchaz.enigma.inputs.innerClasses;
 
-@SuppressWarnings("FinalizeCalledExplicitly")
-public class F_ObjectMethods {
+public class A_Anonymous {
 
-	public void callEmAll()
-		throws Throwable {
-		clone();
-		equals(this);
-		finalize();
-		getClass();
-		hashCode();
-		notify();
-		notifyAll();
-		toString();
-		wait();
-		wait(0);
-		wait(0, 0);
+	public void foo() {
+		Runnable runnable = new Runnable() {
+			@Override
+			public void run() {
+				// don't care
+			}
+		};
+		runnable.run();
 	}
 }

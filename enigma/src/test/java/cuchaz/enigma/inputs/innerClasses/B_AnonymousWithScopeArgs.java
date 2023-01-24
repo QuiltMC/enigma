@@ -9,24 +9,16 @@
  *     Jeff Martin - initial API and implementation
  ******************************************************************************/
 
-package cuchaz.enigma.inputs.inner_classes;
+package cuchaz.enigma.inputs.innerClasses;
 
-public class E_AnonymousWithOuterAccess {
+public class B_AnonymousWithScopeArgs {
 
-	// reproduction of error case documented at:
-	// https://bitbucket.org/cuchaz/enigma/issue/61/stackoverflowerror-when-deobfuscating
-
-	public Object makeInner() {
-		this.outerMethod();
-		return new Object() {
+	public static void foo(final D_Simple arg) {
+		System.out.println(new Object() {
 			@Override
 			public String toString() {
-				return E_AnonymousWithOuterAccess.this.outerMethod();
+				return arg.toString();
 			}
-		};
-	}
-
-	private String outerMethod() {
-		return "foo";
+		});
 	}
 }
