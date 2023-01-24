@@ -9,24 +9,14 @@
  *     Jeff Martin - initial API and implementation
  ******************************************************************************/
 
-package cuchaz.enigma.inputs.inheritanceTree;
+package cuchaz.enigma.inputs.inner_classes;
 
-// a
-public abstract class BaseClass {
+public class A_Anonymous {
 
-	// a
-	private String name;
-
-	// <init>(Ljava/lang/String;)V
-	protected BaseClass(String name) {
-		this.name = name;
+	public void foo() {
+		Runnable runnable = () -> {
+			// don't care
+		};
+		runnable.run();
 	}
-
-	// a()Ljava/lang/String;
-	public String getName() {
-		return name;
-	}
-
-	// a()V
-	public abstract void doBaseThings();
 }

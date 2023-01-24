@@ -9,7 +9,7 @@
  *     Jeff Martin - initial API and implementation
  ******************************************************************************/
 
-package cuchaz.enigma.inputs.innerClasses;
+package cuchaz.enigma.inputs.inner_classes;
 
 @SuppressWarnings("unused")
 public class C_ConstructorArgs {
@@ -17,12 +17,12 @@ public class C_ConstructorArgs {
 	Inner i;
 
 	public void foo() {
-		i = new Inner(5);
+		this.i = new Inner(5);
 	}
 
 	class Inner {
 
-		private int a;
+		private final int a;
 
 		public Inner(int a) {
 			this.a = a;

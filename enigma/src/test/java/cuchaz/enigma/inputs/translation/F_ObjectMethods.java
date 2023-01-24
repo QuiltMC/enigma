@@ -16,16 +16,16 @@ public class F_ObjectMethods {
 
 	public void callEmAll()
 		throws Throwable {
-		clone();
-		equals(this);
-		finalize();
-		getClass();
-		hashCode();
-		notify();
-		notifyAll();
-		toString();
-		wait();
-		wait(0);
-		wait(0, 0);
+        this.clone();
+        this.equals(this);
+        this.finalize();
+        this.getClass();
+        this.hashCode();
+        this.notify();
+        this.notifyAll();
+        this.toString();
+        this.wait();
+        this.wait(0);
+        this.wait(0, 0);
 	}
 }

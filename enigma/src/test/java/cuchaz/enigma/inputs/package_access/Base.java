@@ -1,4 +1,4 @@
-package cuchaz.enigma.inputs.packageAccess;
+package cuchaz.enigma.inputs.package_access;
 
 public class Base {
 	protected int make() {

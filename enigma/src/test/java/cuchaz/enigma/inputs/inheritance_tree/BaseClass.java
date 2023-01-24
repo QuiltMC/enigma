@@ -9,33 +9,24 @@
  *     Jeff Martin - initial API and implementation
  ******************************************************************************/
 
-package cuchaz.enigma.inputs.inheritanceTree;
+package cuchaz.enigma.inputs.inheritance_tree;
 
-// c extends a
-public class SubclassB extends BaseClass {
+// a
+public abstract class BaseClass {
 
 	// a
-	private int numThings;
+	private final String name;
 
-	// <init>()V
-	protected SubclassB() {
-		// a.<init>(Ljava/lang/String;)V
-		super("B");
-
-		// access to a
-		numThings = 4;
+	// <init>(Ljava/lang/String;)V
+	protected BaseClass(String name) {
+		this.name = name;
 	}
 
-	@Override
+	// a()Ljava/lang/String;
+	public String getName() {
+		return this.name;
+	}
+
 	// a()V
-	public void doBaseThings() {
-		// call to a.a()Ljava/lang/String;
-		System.out.println("Base things by B! " + getName());
-	}
-
-	// b()V
-	public void doBThings() {
-		// access to a
-		System.out.println("" + numThings + " B things!");
-	}
+	public abstract void doBaseThings();
 }
