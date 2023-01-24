@@ -1,7 +1,7 @@
 name: Release
 on: [workflow_dispatch] # Manual trigger
 jobs:
-  release:
+  build:
     runs-on: ubuntu-22.04
     container:
       image: eclipse-temurin:19-jdk
