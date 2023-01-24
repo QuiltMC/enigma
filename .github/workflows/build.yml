@@ -1,17 +1,18 @@
 name: Build
 on: [push, pull_request]
 jobs:
-  strategy:
-    matrix:
-      java: [17-jdk, 19-jdk]
-  runs-on: ubuntu-22.04
-  container:
-    image: eclipse-temurin:${{ matrix.java }}
-    options: --user root
-  steps:
-    - uses: actions/checkout@v3
-    - run: ./gradlew build publish --stacktrace --warning-mode fail
-      env:
-        SNAPSHOTS_URL: ${{ secrets.SNAPSHOTS_URL }}
-        SNAPSHOTS_USERNAME: ${{ secrets.SNAPSHOTS_USERNAME }}
-        SNAPSHOTS_PASSWORD: ${{ secrets.SNAPSHOTS_PASSWORD }}
+  build:
+    strategy:
+      matrix:
+        java: [17-jdk, 19-jdk]
+    runs-on: ubuntu-22.04
+    container:
+      image: eclipse-temurin:${{ matrix.java }}
+      options: --user root
+    steps:
+      - uses: actions/checkout@v3
+      - run: ./gradlew build publish --stacktrace --warning-mode fail
+        env:
+          SNAPSHOTS_URL: ${{ secrets.SNAPSHOTS_URL }}
+          SNAPSHOTS_USERNAME: ${{ secrets.SNAPSHOTS_USERNAME }}
+          SNAPSHOTS_PASSWORD: ${{ secrets.SNAPSHOTS_PASSWORD }}
