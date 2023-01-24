@@ -21,8 +21,8 @@ import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
 
 public class BoxHighlightPainter implements Highlighter.HighlightPainter {
-	private Color fillColor;
-	private Color borderColor;
+	private final Color fillColor;
+	private final Color borderColor;
 
 	protected BoxHighlightPainter(Color fillColor, Color borderColor) {
 		this.fillColor = fillColor;

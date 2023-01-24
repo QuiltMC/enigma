@@ -113,8 +113,7 @@ public class PacketHelper {
 			writeString(output, ((FieldEntry) entry).getDesc().toString());
 		} else if (entry instanceof MethodEntry) {
 			writeString(output, ((MethodEntry) entry).getDesc().toString());
-		} else if (entry instanceof LocalVariableEntry) {
-			LocalVariableEntry localVar = (LocalVariableEntry) entry;
+		} else if (entry instanceof LocalVariableEntry localVar) {
 			output.writeShort(localVar.getIndex());
 			output.writeBoolean(localVar.isArgument());
 		}

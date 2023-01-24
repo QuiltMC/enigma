@@ -13,10 +13,10 @@ public class ServerPacketHandler {
 	}
 
 	public Socket getClient() {
-		return client;
+		return this.client;
 	}
 
 	public EnigmaServer getServer() {
-		return server;
+		return this.server;
 	}
 }

@@ -13,16 +13,16 @@ public record KeyBind(String name, String category, List<Combination> combinatio
         public static final Combination EMPTY = new Combination(-1, 0);
 
         public boolean matches(KeyEvent e) {
-            return e.getKeyCode() == keyCode && e.getModifiersEx() == keyModifiers;
+            return e.getKeyCode() == this.keyCode && e.getModifiersEx() == this.keyModifiers;
         }
 
         public KeyStroke toKeyStroke(int modifiers) {
-            modifiers = keyModifiers | modifiers;
-            return KeyStroke.getKeyStroke(keyCode, modifiers);
+            modifiers = this.keyModifiers | modifiers;
+            return KeyStroke.getKeyStroke(this.keyCode, modifiers);
         }
 
         public String serialize() {
-            return keyCode + ";" + Integer.toString(keyModifiers, 16);
+            return this.keyCode + ";" + Integer.toString(this.keyModifiers, 16);
         }
 
         public static Combination deserialize(String str) {
@@ -32,7 +32,7 @@ public record KeyBind(String name, String category, List<Combination> combinatio
 
         @Override
         public String toString() {
-            return "Combination[keyCode=" + keyCode + ", keyModifiers=0x" + Integer.toString(keyModifiers, 16).toUpperCase(Locale.ROOT) + "]";
+            return "Combination[keyCode=" + this.keyCode + ", keyModifiers=0x" + Integer.toString(this.keyModifiers, 16).toUpperCase(Locale.ROOT) + "]";
         }
     }
 
@@ -42,58 +42,58 @@ public record KeyBind(String name, String category, List<Combination> combinatio
     }
 
     public boolean matches(KeyEvent e) {
-        return combinations.stream().anyMatch(c -> c.matches(e));
+        return this.combinations.stream().anyMatch(c -> c.matches(e));
     }
 
     public KeyStroke toKeyStroke(int modifiers) {
-        return isEmpty() ? null : combinations.get(0).toKeyStroke(modifiers);
+        return this.isEmpty() ? null : this.combinations.get(0).toKeyStroke(modifiers);
     }
 
     public KeyStroke toKeyStroke() {
-        return toKeyStroke(0);
+        return this.toKeyStroke(0);
     }
 
     public int getKeyCode() {
-        return isEmpty() ? -1 : combinations.get(0).keyCode;
+        return this.isEmpty() ? -1 : this.combinations.get(0).keyCode;
     }
 
     public boolean isEmpty() {
-        return combinations.isEmpty();
+        return this.combinations.isEmpty();
     }
 
     public String[] serializeCombinations() {
-        return combinations.stream().map(Combination::serialize).toArray(String[]::new);
+        return this.combinations.stream().map(Combination::serialize).toArray(String[]::new);
     }
 
     public void deserializeCombinations(String[] serialized) {
-        combinations.clear();
+		this.combinations.clear();
         for (String serializedCombination : serialized) {
             if (!serializedCombination.isEmpty()) {
-                combinations.add(Combination.deserialize(serializedCombination));
+				this.combinations.add(Combination.deserialize(serializedCombination));
             } else {
-                System.out.println("warning: empty combination deserialized for keybind " + (category.isEmpty() ? "" : category + ".") + name);
+                System.out.println("warning: empty combination deserialized for keybind " + (this.category.isEmpty() ? "" : this.category + ".") + this.name);
             }
         }
     }
 
     private String getTranslationKey() {
-        return "keybind." + (category.isEmpty() ? "" : category + ".") + this.name;
+        return "keybind." + (this.category.isEmpty() ? "" : this.category + ".") + this.name;
     }
 
     public String getTranslatedName() {
-        return I18n.translate(getTranslationKey());
+        return I18n.translate(this.getTranslationKey());
     }
 
     public KeyBind copy() {
-        return new KeyBind(name, category, new ArrayList<>(combinations));
+        return new KeyBind(this.name, this.category, new ArrayList<>(this.combinations));
     }
 
     public KeyBind toImmutable() {
-        return new KeyBind(name, category, List.copyOf(combinations));
+        return new KeyBind(this.name, this.category, List.copyOf(this.combinations));
     }
 
     public boolean isSameKeyBind(KeyBind other) {
-        return name.equals(other.name) && category.equals(other.category);
+        return this.name.equals(other.name) && this.category.equals(other.category);
     }
 
     public static Builder builder(String name) {
@@ -121,21 +121,21 @@ public record KeyBind(String name, String category, List<Combination> combinatio
         }
 
         public KeyBind build() {
-            return new KeyBind(name, category, combinations);
+            return new KeyBind(this.name, this.category, this.combinations);
         }
 
         public Builder key(int keyCode, int keyModifiers) {
-            combinations.add(new Combination(keyCode, keyModifiers | modifiers));
+			this.combinations.add(new Combination(keyCode, keyModifiers | this.modifiers));
             return this;
         }
 
         public Builder key(int keyCode) {
-            return key(keyCode, 0);
+            return this.key(keyCode, 0);
         }
 
         public Builder keys(int... keyCodes) {
             for (int keyCode : keyCodes) {
-                key(keyCode);
+				this.key(keyCode);
             }
             return this;
         }

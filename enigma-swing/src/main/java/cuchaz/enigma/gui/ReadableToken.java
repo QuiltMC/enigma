@@ -25,6 +25,6 @@ public class ReadableToken {
 
 	@Override
 	public String toString() {
-		return "line " + line + " columns " + startColumn + "-" + endColumn;
+		return "line " + this.line + " columns " + this.startColumn + "-" + this.endColumn;
 	}
 }

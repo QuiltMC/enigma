@@ -29,10 +29,10 @@ public class LoginC2SPacket implements Packet<ServerPacketHandler> {
 			throw new IOException("Mismatching protocol");
 		}
 		this.jarChecksum = new byte[EnigmaServer.CHECKSUM_SIZE];
-		input.readFully(jarChecksum);
+		input.readFully(this.jarChecksum);
 		this.password = new char[input.readUnsignedByte()];
-		for (int i = 0; i < password.length; i++) {
-			password[i] = input.readChar();
+		for (int i = 0; i < this.password.length; i++) {
+            this.password[i] = input.readChar();
 		}
 		this.username = PacketHelper.readString(input);
 	}
@@ -40,21 +40,21 @@ public class LoginC2SPacket implements Packet<ServerPacketHandler> {
 	@Override
 	public void write(DataOutput output) throws IOException {
 		output.writeShort(EnigmaServer.PROTOCOL_VERSION);
-		output.write(jarChecksum);
-		output.writeByte(password.length);
-		for (char c : password) {
+		output.write(this.jarChecksum);
+		output.writeByte(this.password.length);
+		for (char c : this.password) {
 			output.writeChar(c);
 		}
-		PacketHelper.writeString(output, username);
+		PacketHelper.writeString(output, this.username);
 	}
 
 	@Override
 	public void handle(ServerPacketHandler handler) {
-		boolean usernameTaken = handler.getServer().isUsernameTaken(username);
-		handler.getServer().setUsername(handler.getClient(), username);
-		handler.getServer().log(username + " logged in with IP " + handler.getClient().getInetAddress().toString() + ":" + handler.getClient().getPort());
+		boolean usernameTaken = handler.getServer().isUsernameTaken(this.username);
+		handler.getServer().setUsername(handler.getClient(), this.username);
+		handler.getServer().log(this.username + " logged in with IP " + handler.getClient().getInetAddress().toString() + ":" + handler.getClient().getPort());
 
-		if (!Arrays.equals(password, handler.getServer().getPassword())) {
+		if (!Arrays.equals(this.password, handler.getServer().getPassword())) {
 			handler.getServer().kick(handler.getClient(), "disconnect.wrong_password");
 			return;
 		}
@@ -64,12 +64,12 @@ public class LoginC2SPacket implements Packet<ServerPacketHandler> {
 			return;
 		}
 
-		if (!Arrays.equals(jarChecksum, handler.getServer().getJarChecksum())) {
+		if (!Arrays.equals(this.jarChecksum, handler.getServer().getJarChecksum())) {
 			handler.getServer().kick(handler.getClient(), "disconnect.wrong_jar");
 			return;
 		}
 
 		handler.getServer().sendPacket(handler.getClient(), new SyncMappingsS2CPacket(handler.getServer().getMappings().getObfToDeobf()));
-		handler.getServer().sendMessage(Message.connect(username));
+		handler.getServer().sendMessage(Message.connect(this.username));
 	}
 }

@@ -36,10 +36,10 @@ public final class QuickFindAction extends DefaultSyntaxAction {
 		}
 
 		public void showFindDialog(JTextComponent target) {
-			if (findDialog == null) {
-				findDialog = new EnigmaQuickFindDialog(target);
+			if (this.findDialog == null) {
+				this.findDialog = new EnigmaQuickFindDialog(target);
 			}
-			findDialog.showFor(target);
+			this.findDialog.showFor(target);
 		}
 	}
 }

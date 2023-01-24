@@ -23,18 +23,18 @@ public abstract class EnigmaServer {
 
 	private final int port;
 	private ServerSocket socket;
-	private List<Socket> clients = new CopyOnWriteArrayList<>();
-	private Map<Socket, String> usernames = new HashMap<>();
-	private Set<Socket> unapprovedClients = new HashSet<>();
+	private final List<Socket> clients = new CopyOnWriteArrayList<>();
+	private final Map<Socket, String> usernames = new HashMap<>();
+	private final Set<Socket> unapprovedClients = new HashSet<>();
 
 	private final byte[] jarChecksum;
 	private final char[] password;
 
 	public static final int DUMMY_SYNC_ID = 0;
 	private final EntryRemapper mappings;
-	private Map<Entry<?>, Integer> syncIds = new HashMap<>();
-	private Map<Integer, Entry<?>> inverseSyncIds = new HashMap<>();
-	private Map<Integer, Set<Socket>> clientsNeedingConfirmation = new HashMap<>();
+	private final Map<Entry<?>, Integer> syncIds = new HashMap<>();
+	private final Map<Integer, Entry<?>> inverseSyncIds = new HashMap<>();
+	private final Map<Integer, Set<Socket>> clientsNeedingConfirmation = new HashMap<>();
 	private int nextSyncId = DUMMY_SYNC_ID + 1;
 
 	private static int nextIoId = 0;
@@ -47,12 +47,12 @@ public abstract class EnigmaServer {
 	}
 
 	public void start() throws IOException {
-		socket = new ServerSocket(port);
-		log("Server started on " + socket.getInetAddress() + ":" + port);
+		this.socket = new ServerSocket(this.port);
+		this.log("Server started on " + this.socket.getInetAddress() + ":" + this.port);
 		Thread thread = new Thread(() -> {
 			try {
-				while (!socket.isClosed()) {
-					acceptClient();
+				while (!this.socket.isClosed()) {
+					this.acceptClient();
 				}
 			} catch (SocketException e) {
 				System.out.println("Server closed");
@@ -66,8 +66,8 @@ public abstract class EnigmaServer {
 	}
 
 	private void acceptClient() throws IOException {
-		Socket client = socket.accept();
-		clients.add(client);
+		Socket client = this.socket.accept();
+		this.clients.add(client);
 		Thread thread = new Thread(() -> {
 			try {
 				DataInput input = new DataInputStream(client.getInputStream());
@@ -83,14 +83,14 @@ public abstract class EnigmaServer {
 						throw new IOException("Received invalid packet id " + packetId);
 					}
 					packet.read(input);
-					runOnThread(() -> packet.handle(new ServerPacketHandler(client, this)));
+					this.runOnThread(() -> packet.handle(new ServerPacketHandler(client, this)));
 				}
 			} catch (IOException e) {
-				kick(client, e.toString());
+				this.kick(client, e.toString());
 				e.printStackTrace();
 				return;
 			}
-			kick(client, "disconnect.disconnected");
+			this.kick(client, "disconnect.disconnected");
 		});
 		thread.setName("Server I/O thread #" + (nextIoId++));
 		thread.setDaemon(true);
@@ -98,13 +98,13 @@ public abstract class EnigmaServer {
 	}
 
 	public void stop() {
-		runOnThread(() -> {
-			if (socket != null && !socket.isClosed()) {
-				for (Socket client : clients) {
-					kick(client, "disconnect.server_closed");
+		this.runOnThread(() -> {
+			if (this.socket != null && !this.socket.isClosed()) {
+				for (Socket client : this.clients) {
+					this.kick(client, "disconnect.server_closed");
 				}
 				try {
-					socket.close();
+					this.socket.close();
 				} catch (IOException e) {
 					System.err.println("Failed to close server socket");
 					e.printStackTrace();
@@ -114,15 +114,15 @@ public abstract class EnigmaServer {
 	}
 
 	public void kick(Socket client, String reason) {
-		if (!clients.remove(client)) return;
+		if (!this.clients.remove(client)) return;
 
-		sendPacket(client, new KickS2CPacket(reason));
+		this.sendPacket(client, new KickS2CPacket(reason));
 
-		clientsNeedingConfirmation.values().removeIf(list -> {
+		this.clientsNeedingConfirmation.values().removeIf(list -> {
 			list.remove(client);
 			return list.isEmpty();
 		});
-		String username = usernames.remove(client);
+		String username = this.usernames.remove(client);
 		try {
 			client.close();
 		} catch (IOException e) {
@@ -132,28 +132,28 @@ public abstract class EnigmaServer {
 
 		if (username != null) {
 			System.out.println("Kicked " + username + " because " + reason);
-			sendMessage(Message.disconnect(username));
+			this.sendMessage(Message.disconnect(username));
 		}
-		sendUsernamePacket();
+		this.sendUsernamePacket();
 	}
 
 	public boolean isUsernameTaken(String username) {
-		return usernames.containsValue(username);
+		return this.usernames.containsValue(username);
 	}
 
 	public void setUsername(Socket client, String username) {
-		usernames.put(client, username);
-		sendUsernamePacket();
+		this.usernames.put(client, username);
+		this.sendUsernamePacket();
 	}
 
 	private void sendUsernamePacket() {
 		List<String> usernames = new ArrayList<>(this.usernames.values());
 		Collections.sort(usernames);
-		sendToAll(new UserListS2CPacket(usernames));
+		this.sendToAll(new UserListS2CPacket(usernames));
 	}
 
 	public String getUsername(Socket client) {
-		return usernames.get(client);
+		return this.usernames.get(client);
 	}
 
 	public void sendPacket(Socket client, Packet<ClientPacketHandler> packet) {
@@ -165,7 +165,7 @@ public abstract class EnigmaServer {
 				packet.write(output);
 			} catch (IOException e) {
 				if (!(packet instanceof KickS2CPacket)) {
-					kick(client, e.toString());
+					this.kick(client, e.toString());
 					e.printStackTrace();
 				}
 			}
@@ -173,73 +173,73 @@ public abstract class EnigmaServer {
 	}
 
 	public void sendToAll(Packet<ClientPacketHandler> packet) {
-		for (Socket client : clients) {
-			sendPacket(client, packet);
+		for (Socket client : this.clients) {
+			this.sendPacket(client, packet);
 		}
 	}
 
 	public void sendToAllExcept(Socket excluded, Packet<ClientPacketHandler> packet) {
-		for (Socket client : clients) {
+		for (Socket client : this.clients) {
 			if (client != excluded) {
-				sendPacket(client, packet);
+				this.sendPacket(client, packet);
 			}
 		}
 	}
 
 	public boolean canModifyEntry(Socket client, Entry<?> entry) {
-		if (unapprovedClients.contains(client)) {
+		if (this.unapprovedClients.contains(client)) {
 			return false;
 		}
 
-		Integer syncId = syncIds.get(entry);
+		Integer syncId = this.syncIds.get(entry);
 		if (syncId == null) {
 			return true;
 		}
-		Set<Socket> clients = clientsNeedingConfirmation.get(syncId);
+		Set<Socket> clients = this.clientsNeedingConfirmation.get(syncId);
 		return clients == null || !clients.contains(client);
 	}
 
 	public int lockEntry(Socket exception, Entry<?> entry) {
-		int syncId = nextSyncId;
-		nextSyncId++;
+		int syncId = this.nextSyncId;
+		this.nextSyncId++;
 		// sync id is sent as an unsigned short, can't have more than 65536
-		if (nextSyncId == 65536) {
-			nextSyncId = DUMMY_SYNC_ID + 1;
+		if (this.nextSyncId == 65536) {
+			this.nextSyncId = DUMMY_SYNC_ID + 1;
 		}
-		Integer oldSyncId = syncIds.get(entry);
+		Integer oldSyncId = this.syncIds.get(entry);
 		if (oldSyncId != null) {
-			clientsNeedingConfirmation.remove(oldSyncId);
+			this.clientsNeedingConfirmation.remove(oldSyncId);
 		}
-		syncIds.put(entry, syncId);
-		inverseSyncIds.put(syncId, entry);
+		this.syncIds.put(entry, syncId);
+		this.inverseSyncIds.put(syncId, entry);
 		Set<Socket> clients = new HashSet<>(this.clients);
 		clients.remove(exception);
-		clientsNeedingConfirmation.put(syncId, clients);
+		this.clientsNeedingConfirmation.put(syncId, clients);
 		return syncId;
 	}
 
 	public void confirmChange(Socket client, int syncId) {
-		if (usernames.containsKey(client)) {
-			unapprovedClients.remove(client);
+		if (this.usernames.containsKey(client)) {
+			this.unapprovedClients.remove(client);
 		}
 
-		Set<Socket> clients = clientsNeedingConfirmation.get(syncId);
+		Set<Socket> clients = this.clientsNeedingConfirmation.get(syncId);
 		if (clients != null) {
 			clients.remove(client);
 			if (clients.isEmpty()) {
-				clientsNeedingConfirmation.remove(syncId);
-				syncIds.remove(inverseSyncIds.remove(syncId));
+				this.clientsNeedingConfirmation.remove(syncId);
+				this.syncIds.remove(this.inverseSyncIds.remove(syncId));
 			}
 		}
 	}
 
 	public void sendCorrectMapping(Socket client, Entry<?> entry, boolean refreshClassTree) {
-		EntryMapping oldMapping = mappings.getDeobfMapping(entry);
+		EntryMapping oldMapping = this.mappings.getDeobfMapping(entry);
 		String oldName = oldMapping.targetName();
 		if (oldName == null) {
-			sendPacket(client, new EntryChangeS2CPacket(DUMMY_SYNC_ID, EntryChange.modify(entry).clearDeobfName()));
+			this.sendPacket(client, new EntryChangeS2CPacket(DUMMY_SYNC_ID, EntryChange.modify(entry).clearDeobfName()));
 		} else {
-			sendPacket(client, new EntryChangeS2CPacket(0, EntryChange.modify(entry).withDeobfName(oldName)));
+			this.sendPacket(client, new EntryChangeS2CPacket(0, EntryChange.modify(entry).withDeobfName(oldName)));
 		}
 	}
 
@@ -250,24 +250,24 @@ public abstract class EnigmaServer {
 	}
 
 	protected boolean isRunning() {
-		return !socket.isClosed();
+		return !this.socket.isClosed();
 	}
 
 	public byte[] getJarChecksum() {
-		return jarChecksum;
+		return this.jarChecksum;
 	}
 
 	public char[] getPassword() {
-		return password;
+		return this.password;
 	}
 
 	public EntryRemapper getMappings() {
-		return mappings;
+		return this.mappings;
 	}
 
 	public void sendMessage(Message message) {
-		log(String.format("[MSG] %s", message.translate()));
-		sendToAll(new MessageS2CPacket(message));
+		this.log(String.format("[MSG] %s", message.translate()));
+		this.sendToAll(new MessageS2CPacket(message));
 	}
 
 }

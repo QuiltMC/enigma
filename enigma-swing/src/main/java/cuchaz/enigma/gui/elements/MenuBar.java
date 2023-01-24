@@ -130,7 +130,7 @@ public class MenuBar {
 		this.helpMenu.add(this.githubItem);
 		ui.add(this.helpMenu);
 
-		setKeyBinds();
+		this.setKeyBinds();
 
 		this.jarOpenItem.addActionListener(e -> this.onOpenJarClicked());
 		this.jarCloseItem.addActionListener(e -> this.gui.getController().closeJar());
@@ -233,7 +233,7 @@ public class MenuBar {
 		JFileChooser d = this.gui.jarFileChooser;
 		d.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
 		d.setVisible(true);
-		int result = d.showOpenDialog(gui.getFrame());
+		int result = d.showOpenDialog(this.gui.getFrame());
 
 		if (result != JFileChooser.APPROVE_OPTION) {
 			return;
@@ -270,15 +270,15 @@ public class MenuBar {
 	}
 
 	private void onCloseMappingsClicked() {
-		openMappingsDiscardPrompt(() -> this.gui.getController().closeMappings());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().closeMappings());
 	}
 
 	private void onReloadMappingsClicked() {
-		openMappingsDiscardPrompt(() -> this.gui.getController().reloadMappings());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().reloadMappings());
 	}
 
 	private void onReloadAllClicked() {
-		openMappingsDiscardPrompt(() -> this.gui.getController().reloadAll());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().reloadAll());
 	}
 
 	private void onExportSourceClicked() {
@@ -292,7 +292,7 @@ public class MenuBar {
 	private void onExportJarClicked() {
 		this.gui.exportJarFileChooser.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
 		this.gui.exportJarFileChooser.setVisible(true);
-		int result = this.gui.exportJarFileChooser.showSaveDialog(gui.getFrame());
+		int result = this.gui.exportJarFileChooser.showSaveDialog(this.gui.getFrame());
 
 		if (result != JFileChooser.APPROVE_OPTION) {
 			return;

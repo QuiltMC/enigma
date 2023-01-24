@@ -31,95 +31,95 @@ public class CombinationPanel extends JPanel {
         this.parent = parent;
         this.originalCombination = combination;
         this.editingCombination = MutableCombination.fromCombination(combination);
-        this.lastCombination = editingCombination.copy();
+        this.lastCombination = this.editingCombination.copy();
 
-        setLayout(new FlowLayout(FlowLayout.RIGHT));
-        setBorder(new EmptyBorder(0, ScaleUtil.scale(15), 0, ScaleUtil.scale(15)));
+		this.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		this.setBorder(new EmptyBorder(0, ScaleUtil.scale(15), 0, ScaleUtil.scale(15)));
 
         JButton removeButton = new JButton(I18n.translate("menu.file.configure_keybinds.edit.remove"));
         removeButton.addActionListener(e -> this.parent.removeCombination(this));
-        removeButton.addMouseListener(mouseListener());
-        add(removeButton);
+        removeButton.addMouseListener(this.mouseListener());
+		this.add(removeButton);
 
-        button = new JButton(getButtonText());
-        defaultButtonFg = button.getForeground();
-        button.addActionListener(e -> onButtonPressed());
-        button.addMouseListener(mouseListener());
-        button.addKeyListener(GuiUtil.onKeyPress(this::onKeyPressed));
-        add(button);
+		this.button = new JButton(this.getButtonText());
+		this.defaultButtonFg = this.button.getForeground();
+		this.button.addActionListener(e -> this.onButtonPressed());
+		this.button.addMouseListener(this.mouseListener());
+		this.button.addKeyListener(GuiUtil.onKeyPress(this::onKeyPressed));
+		this.add(this.button);
     }
 
     private String getButtonText() {
-        return editingCombination.toString();
+        return this.editingCombination.toString();
     }
 
     private void onButtonPressed() {
-        if (editing) {
-            stopEditing();
+        if (this.editing) {
+			this.stopEditing();
         } else {
-            startEditing();
+			this.startEditing();
         }
     }
 
     protected void stopEditing() {
-        if (editing) {
-            editing = false;
-            button.setForeground(defaultButtonFg);
+        if (this.editing) {
+			this.editing = false;
+			this.button.setForeground(this.defaultButtonFg);
 
-            if (!editingCombination.isEmpty() && !editingCombination.isValid()) {
+            if (!this.editingCombination.isEmpty() && !this.editingCombination.isValid()) {
                 // Reset combination to last one if invalid
-                editingCombination.setFrom(lastCombination);
-                update();
+				this.editingCombination.setFrom(this.lastCombination);
+				this.update();
             } else {
-                lastCombination.setFrom(editingCombination);
+				this.lastCombination.setFrom(this.editingCombination);
             }
         }
     }
 
     private void startEditing() {
-        if (!editing) {
-            editing = true;
-            button.setForeground(EDITING_BUTTON_FOREGROUND);
+        if (!this.editing) {
+			this.editing = true;
+			this.button.setForeground(EDITING_BUTTON_FOREGROUND);
         }
     }
 
     private void update() {
-        button.setText(getButtonText());
-        parent.pack();
+		this.button.setText(this.getButtonText());
+		this.parent.pack();
     }
 
     private void onKeyPressed(KeyEvent e) {
-        if (editing) {
+        if (this.editing) {
             if (MODIFIER_KEYS.contains(e.getKeyCode())) {
                 int modifierIndex = MODIFIER_KEYS.indexOf(e.getKeyCode());
                 int modifier = MODIFIER_FLAGS.get(modifierIndex);
-                editingCombination.setKeyModifiers(editingCombination.keyModifiers | modifier);
+				this.editingCombination.setKeyModifiers(this.editingCombination.keyModifiers | modifier);
             } else {
-                editingCombination.setKeyCode(e.getKeyCode());
+				this.editingCombination.setKeyCode(e.getKeyCode());
             }
-            update();
+			this.update();
         }
     }
 
     // Stop editing other CombinationPanels when clicking on this panel
     private MouseListener mouseListener() {
-        return GuiUtil.onMouseClick(e -> parent.stopEditing(CombinationPanel.this));
+        return GuiUtil.onMouseClick(e -> this.parent.stopEditing(CombinationPanel.this));
     }
 
     public boolean isModified() {
-        return !editingCombination.isSameCombination(originalCombination);
+        return !this.editingCombination.isSameCombination(this.originalCombination);
     }
 
     public boolean isCombinationValid() {
-        return editingCombination.isValid();
+        return this.editingCombination.isValid();
     }
 
     public KeyBind.Combination getOriginalCombination() {
-        return originalCombination;
+        return this.originalCombination;
     }
 
     public KeyBind.Combination getResultCombination() {
-        return new KeyBind.Combination(editingCombination.keyCode, editingCombination.keyModifiers);
+        return new KeyBind.Combination(this.editingCombination.keyCode, this.editingCombination.keyModifiers);
     }
 
     public static CombinationPanel createEmpty(EditKeyBindDialog parent) {
@@ -140,7 +140,7 @@ public class CombinationPanel extends JPanel {
         }
 
         public void setFrom(MutableCombination combination) {
-            set(combination.getKeyCode(), combination.getKeyModifiers());
+			this.set(combination.getKeyCode(), combination.getKeyModifiers());
         }
 
         public void set(int keyCode, int keyModifiers) {
@@ -165,13 +165,13 @@ public class CombinationPanel extends JPanel {
         }
 
         public MutableCombination copy() {
-            return new MutableCombination(keyCode, keyModifiers);
+            return new MutableCombination(this.keyCode, this.keyModifiers);
         }
 
         @Override
         public String toString() {
-            String modifiers = modifiersToString();
-            String key = keyToString();
+            String modifiers = this.modifiersToString();
+            String key = this.keyToString();
             if (!modifiers.isEmpty()) {
                 return modifiers + "+" + key;
             }
@@ -179,32 +179,32 @@ public class CombinationPanel extends JPanel {
         }
 
         private String modifiersToString() {
-            if (keyModifiers == 0) {
+            if (this.keyModifiers == 0) {
                 return "";
             }
-            return InputEvent.getModifiersExText(keyModifiers);
+            return InputEvent.getModifiersExText(this.keyModifiers);
         }
 
         private String keyToString() {
-            if (keyCode == -1) {
+            if (this.keyCode == -1) {
                 return I18n.translate("menu.file.configure_keybinds.edit.empty");
             }
-            return KeyEvent.getKeyText(keyCode);
+            return KeyEvent.getKeyText(this.keyCode);
         }
 
         public boolean isEmpty() {
-            return keyCode == -1 && keyModifiers == 0;
+            return this.keyCode == -1 && this.keyModifiers == 0;
         }
 
         public boolean isValid() {
-            return keyCode != -1;
+            return this.keyCode != -1;
         }
 
         public boolean isSameCombination(Object obj) {
             if (obj instanceof KeyBind.Combination combination) {
-                return combination.keyCode() == keyCode && combination.keyModifiers() == keyModifiers;
+                return combination.keyCode() == this.keyCode && combination.keyModifiers() == this.keyModifiers;
             } else if (obj instanceof MutableCombination mutableCombination) {
-                return mutableCombination.keyCode == keyCode && mutableCombination.keyModifiers == keyModifiers;
+                return mutableCombination.keyCode == this.keyCode && mutableCombination.keyModifiers == this.keyModifiers;
             }
             return false;
         }

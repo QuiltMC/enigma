@@ -16,7 +16,7 @@ public class EnigmaSyntaxKit extends JavaSyntaxKit {
 	@Override
 	public Configuration getConfig() {
 		if (configuration == null) {
-			initConfig(DefaultSyntaxKit.getConfig(JavaSyntaxKit.class));
+			this.initConfig(DefaultSyntaxKit.getConfig(JavaSyntaxKit.class));
 		}
 		return configuration;
 	}

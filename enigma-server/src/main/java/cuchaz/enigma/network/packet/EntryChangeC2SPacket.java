@@ -29,7 +29,7 @@ public class EntryChangeC2SPacket implements Packet<ServerPacketHandler> {
 
 	@Override
 	public void write(DataOutput output) throws IOException {
-		PacketHelper.writeEntryChange(output, change);
+		PacketHelper.writeEntryChange(output, this.change);
 	}
 
 	@Override

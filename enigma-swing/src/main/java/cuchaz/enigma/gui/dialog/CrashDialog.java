@@ -28,13 +28,13 @@ public class CrashDialog {
 
 	private static CrashDialog instance = null;
 
-	private JFrame frame;
-	private JTextArea text;
+	private final JFrame frame;
+	private final JTextArea text;
 
 	private CrashDialog(JFrame parent) {
 		// init frame
-		frame = new JFrame(String.format(I18n.translate("crash.title"), Enigma.NAME));
-		final Container pane = frame.getContentPane();
+		this.frame = new JFrame(String.format(I18n.translate("crash.title"), Enigma.NAME));
+		final Container pane = this.frame.getContentPane();
 		pane.setLayout(new BorderLayout());
 
 		JLabel label = new JLabel(String.format(I18n.translate("crash.summary"), Enigma.NAME));
@@ -42,9 +42,9 @@ public class CrashDialog {
 		pane.add(label, BorderLayout.NORTH);
 
 		// report panel
-		text = new JTextArea();
-		text.setTabSize(2);
-		pane.add(new JScrollPane(text), BorderLayout.CENTER);
+		this.text = new JTextArea();
+		this.text.setTabSize(2);
+		pane.add(new JScrollPane(this.text), BorderLayout.CENTER);
 
 		// buttons panel
 		JPanel buttonsPanel = new JPanel();
@@ -70,7 +70,7 @@ public class CrashDialog {
 		JButton ignoreButton = new JButton(I18n.translate("crash.ignore"));
 		ignoreButton.addActionListener(event -> {
 			// close (hide) the dialog
-			frame.setVisible(false);
+			this.frame.setVisible(false);
 		});
 		buttonsPanel.add(ignoreButton);
 		JButton exitButton = new JButton(I18n.translate("crash.exit"));
@@ -82,9 +82,9 @@ public class CrashDialog {
 		pane.add(buttonsPanel, BorderLayout.SOUTH);
 
 		// show the frame
-		frame.setSize(ScaleUtil.getDimension(600, 400));
-		frame.setLocationRelativeTo(parent);
-		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		this.frame.setSize(ScaleUtil.getDimension(600, 400));
+		this.frame.setLocationRelativeTo(parent);
+		this.frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 	}
 
 	public static void init(JFrame parent) {

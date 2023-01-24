@@ -15,7 +15,7 @@ import cuchaz.enigma.utils.validation.Validatable;
 
 public class ValidatableTextArea extends JTextArea implements Validatable {
 
-	private List<ParameterizedMessage> messages = new ArrayList<>();
+	private final List<ParameterizedMessage> messages = new ArrayList<>();
 	private String tooltipText = null;
 
 	public ValidatableTextArea() {
@@ -42,20 +42,20 @@ public class ValidatableTextArea extends JTextArea implements Validatable {
 	}
 
 	{
-		getDocument().addDocumentListener(new DocumentListener() {
+		this.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				clearMessages();
+				ValidatableTextArea.this.clearMessages();
 			}
 
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				clearMessages();
+				ValidatableTextArea.this.clearMessages();
 			}
 
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-				clearMessages();
+				ValidatableTextArea.this.clearMessages();
 			}
 		});
 	}
@@ -69,32 +69,32 @@ public class ValidatableTextArea extends JTextArea implements Validatable {
 
 	@Override
 	public void setToolTipText(String text) {
-		tooltipText = text;
-		setToolTipText0();
+		this.tooltipText = text;
+		this.setToolTipText0();
 	}
 
 	private void setToolTipText0() {
-		super.setToolTipText(ValidatableUi.getTooltipText(tooltipText, messages));
+		super.setToolTipText(ValidatableUi.getTooltipText(this.tooltipText, this.messages));
 	}
 
 	@Override
 	public void clearMessages() {
-		messages.clear();
-		setToolTipText0();
-		repaint();
+		this.messages.clear();
+		this.setToolTipText0();
+		this.repaint();
 	}
 
 	@Override
 	public void addMessage(ParameterizedMessage message) {
-		messages.add(message);
-		setToolTipText0();
-		repaint();
+		this.messages.add(message);
+		this.setToolTipText0();
+		this.repaint();
 	}
 
 	@Override
 	public void paint(Graphics g) {
 		super.paint(g);
-		ValidatableUi.drawMarker(this, g, messages);
+		ValidatableUi.drawMarker(this, g, this.messages);
 	}
 
 }

@@ -197,7 +197,7 @@ public class EditorPopupMenu {
 	}
 
 	public JPopupMenu getUi() {
-		return ui;
+		return this.ui;
 	}
 
 }

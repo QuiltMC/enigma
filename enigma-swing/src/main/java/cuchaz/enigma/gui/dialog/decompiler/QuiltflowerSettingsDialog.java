@@ -31,7 +31,7 @@ public class QuiltflowerSettingsDialog extends JDialog {
 
     public QuiltflowerSettingsDialog(Gui gui, JDialog parent) {
         super(parent, I18n.translate("menu.decompiler.settings.quiltflower"), true);
-        Container pane = getContentPane();
+        Container pane = this.getContentPane();
         pane.setLayout(new BorderLayout());
 
         JPanel preferencesPanel = new JPanel();
@@ -56,9 +56,9 @@ public class QuiltflowerSettingsDialog extends JDialog {
                     c.addActionListener(e -> {
                         String newValue = c.isSelected() ? "1" : "0";
                         if (newValue != QuiltflowerPreferences.DEFAULTS.get(key)) {
-                            options.put(key, newValue);
+							this.options.put(key, newValue);
                         } else {
-                            options.remove(key);
+							this.options.remove(key);
                         }
                     });
                     yield c;
@@ -69,9 +69,9 @@ public class QuiltflowerSettingsDialog extends JDialog {
                     t.addActionListener(e -> {
                         String newValue = t.getText();
                         if (newValue != QuiltflowerPreferences.DEFAULTS.get(key)) {
-                            options.put(key, newValue);
+							this.options.put(key, newValue);
                         } else {
-                            options.remove(key);
+							this.options.remove(key);
                         }
                     });
                     yield t;
@@ -82,9 +82,9 @@ public class QuiltflowerSettingsDialog extends JDialog {
                     spinner.addChangeListener(e -> {
                         Object newValue = spinner.getValue();
                         if (newValue != QuiltflowerPreferences.DEFAULTS.get(key)) {
-                            options.put(key, newValue);
+							this.options.put(key, newValue);
                         } else {
-                            options.remove(key);
+							this.options.remove(key);
                         }
                     });
                     yield spinner;
@@ -109,17 +109,17 @@ public class QuiltflowerSettingsDialog extends JDialog {
 
         Container buttonContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, ScaleUtil.scale(4), ScaleUtil.scale(4)));
         JButton saveButton = new JButton(I18n.translate("prompt.save"));
-        saveButton.addActionListener(event -> save());
+        saveButton.addActionListener(event -> this.save());
         buttonContainer.add(saveButton);
         JButton cancelButton = new JButton(I18n.translate("prompt.cancel"));
-        cancelButton.addActionListener(event -> dispose());
+        cancelButton.addActionListener(event -> this.dispose());
         buttonContainer.add(cancelButton);
         pane.add(buttonContainer, BorderLayout.SOUTH);
 
-        pack();
-        setLocationRelativeTo(gui.getFrame());
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setVisible(true);
+		this.pack();
+		this.setLocationRelativeTo(gui.getFrame());
+		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		this.setVisible(true);
     }
 
     private static int toInt(Object val) {
@@ -136,10 +136,10 @@ public class QuiltflowerSettingsDialog extends JDialog {
 
     private void save() {
         QuiltflowerPreferences.OPTIONS.clear();
-        QuiltflowerPreferences.OPTIONS.putAll(options);
+        QuiltflowerPreferences.OPTIONS.putAll(this.options);
 
         DecompilerConfig.updateQuiltflowerValues(QuiltflowerPreferences.OPTIONS);
         DecompilerConfig.save();
-        dispose();
+		this.dispose();
     }
 }

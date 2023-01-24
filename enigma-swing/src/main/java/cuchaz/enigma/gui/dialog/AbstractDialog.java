@@ -23,10 +23,10 @@ public abstract class AbstractDialog extends JDialog {
 	public AbstractDialog(Frame owner, String title, String confirmAction, String cancelAction) {
 		super(owner, I18n.translate(title), true);
 
-		Container contentPane = getContentPane();
+		Container contentPane = this.getContentPane();
 		contentPane.setLayout(new BorderLayout());
 		Container inputContainer = new JPanel(new GridBagLayout());
-		List<Pair<String, Component>> components = createComponents();
+		List<Pair<String, Component>> components = this.createComponents();
 
 		for (int i = 0; i < components.size(); i += 1) {
 			Pair<String, Component> entry = components.get(i);
@@ -41,35 +41,35 @@ public abstract class AbstractDialog extends JDialog {
 		contentPane.add(inputContainer, BorderLayout.CENTER);
 		Container buttonContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, ScaleUtil.scale(4), ScaleUtil.scale(4)));
 		JButton connectButton = new JButton(I18n.translate(confirmAction));
-		connectButton.addActionListener(event -> confirm());
+		connectButton.addActionListener(event -> this.confirm());
 		buttonContainer.add(connectButton);
 		JButton abortButton = new JButton(I18n.translate(cancelAction));
-		abortButton.addActionListener(event -> cancel());
+		abortButton.addActionListener(event -> this.cancel());
 		buttonContainer.add(abortButton);
 		contentPane.add(buttonContainer, BorderLayout.SOUTH);
 
-		pack();
-		setLocationRelativeTo(owner);
+		this.pack();
+		this.setLocationRelativeTo(owner);
 	}
 
 	protected abstract List<Pair<String, Component>> createComponents();
 
 	protected void confirm() {
-		vc.reset();
-		validateInputs();
-		if (vc.canProceed()) {
-			actionConfirm = true;
-			setVisible(false);
+		this.vc.reset();
+		this.validateInputs();
+		if (this.vc.canProceed()) {
+			this.actionConfirm = true;
+			this.setVisible(false);
 		}
 	}
 
 	protected void cancel() {
-		actionConfirm = false;
-		setVisible(false);
+		this.actionConfirm = false;
+		this.setVisible(false);
 	}
 
 	public boolean isActionConfirm() {
-		return actionConfirm;
+		return this.actionConfirm;
 	}
 
 	public void validateInputs() {

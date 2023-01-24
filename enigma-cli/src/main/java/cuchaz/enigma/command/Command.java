@@ -142,7 +142,7 @@ public abstract class Command {
 		}
 		Path file = Paths.get(path).toAbsolutePath();
 		if (!Files.exists(file)) {
-			throw new IllegalArgumentException("Cannot find file: " + file.toString());
+			throw new IllegalArgumentException("Cannot find file: " + file);
 		}
 		return file;
 	}
@@ -220,12 +220,12 @@ public abstract class Command {
 
 			if (shouldReport) {
 				int percent = numDone * 100 / this.totalWork;
-				System.out.println(String.format("\tProgress: %3d%%", percent));
+				System.out.printf("\tProgress: %3d%%%n", percent);
 				this.lastReportTime = now;
 			}
 			if (isLastUpdate) {
 				double elapsedSeconds = (now - this.startTime) / 1000.0;
-				System.out.println(String.format("Finished in %.1f seconds", elapsedSeconds));
+				System.out.printf("Finished in %.1f seconds%n", elapsedSeconds);
 			}
 		}
 	}

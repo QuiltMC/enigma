@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import javax.swing.*;
@@ -41,16 +42,14 @@ public class GuiUtil {
 
     public static void openUrl(String url) {
         try {
-            switch (Os.getOs()) {
-                case LINUX:
-                    new ProcessBuilder("/usr/bin/env", "xdg-open", url).start();
-                    break;
-                default:
-                    if (Desktop.isDesktopSupported()) {
-                        Desktop desktop = Desktop.getDesktop();
-                        desktop.browse(new URI(url));
-                    }
-            }
+			if (Objects.requireNonNull(Os.getOs()) == Os.LINUX) {
+				new ProcessBuilder("/usr/bin/env", "xdg-open", url).start();
+			} else {
+				if (Desktop.isDesktopSupported()) {
+					Desktop desktop = Desktop.getDesktop();
+					desktop.browse(new URI(url));
+				}
+			}
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         } catch (URISyntaxException ex) {

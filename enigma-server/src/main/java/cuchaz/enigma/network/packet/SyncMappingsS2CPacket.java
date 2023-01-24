@@ -26,10 +26,10 @@ public class SyncMappingsS2CPacket implements Packet<ClientPacketHandler> {
 
 	@Override
 	public void read(DataInput input) throws IOException {
-		mappings = new HashEntryTree<>();
+		this.mappings = new HashEntryTree<>();
 		int size = input.readInt();
 		for (int i = 0; i < size; i++) {
-			readEntryTreeNode(input, null);
+			this.readEntryTreeNode(input, null);
 		}
 	}
 
@@ -38,16 +38,16 @@ public class SyncMappingsS2CPacket implements Packet<ClientPacketHandler> {
 		String name = PacketHelper.readString(input);
 		String javadoc = PacketHelper.readString(input);
 		EntryMapping mapping = new EntryMapping(!name.isEmpty() ? name : null, !javadoc.isEmpty() ? javadoc : null);
-		mappings.insert(entry, mapping);
+		this.mappings.insert(entry, mapping);
 		int size = input.readUnsignedShort();
 		for (int i = 0; i < size; i++) {
-			readEntryTreeNode(input, entry);
+			this.readEntryTreeNode(input, entry);
 		}
 	}
 
 	@Override
 	public void write(DataOutput output) throws IOException {
-		List<EntryTreeNode<EntryMapping>> roots = mappings.getRootNodes().toList();
+		List<EntryTreeNode<EntryMapping>> roots = this.mappings.getRootNodes().toList();
 		output.writeInt(roots.size());
 		for (EntryTreeNode<EntryMapping> node : roots) {
 			writeEntryTreeNode(output, node);
@@ -70,7 +70,7 @@ public class SyncMappingsS2CPacket implements Packet<ClientPacketHandler> {
 
 	@Override
 	public void handle(ClientPacketHandler controller) {
-		controller.openMappings(mappings);
+		controller.openMappings(this.mappings);
 		controller.sendPacket(new ConfirmChangeC2SPacket(EnigmaServer.DUMMY_SYNC_ID));
 	}
 }
