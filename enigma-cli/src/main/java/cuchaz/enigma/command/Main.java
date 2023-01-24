@@ -82,7 +82,7 @@ public class Main {
 	}
 
 	private static void logEnigmaInfo() {
-		Logger.info("%s - %s", Enigma.NAME, Enigma.VERSION);
+		Logger.info("{} - {}", Enigma.NAME, Enigma.VERSION);
 	}
 
 	static {

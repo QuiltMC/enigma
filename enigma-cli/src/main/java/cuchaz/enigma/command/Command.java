@@ -221,12 +221,12 @@ public abstract class Command {
 
 			if (shouldReport) {
 				int percent = numDone * 100 / this.totalWork;
-				Logger.info("\tProgress: %3d%%", percent);
+				Logger.info("\tProgress: {}%", percent);
 				this.lastReportTime = now;
 			}
 			if (isLastUpdate) {
 				double elapsedSeconds = (now - this.startTime) / 1000.0;
-				Logger.info("Finished in %.1f seconds", elapsedSeconds);
+				Logger.info("Finished in {} seconds", elapsedSeconds);
 			}
 		}
 	}

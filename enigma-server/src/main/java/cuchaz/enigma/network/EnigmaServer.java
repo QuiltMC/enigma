@@ -244,7 +244,7 @@ public abstract class EnigmaServer {
 	protected abstract void runOnThread(Runnable task);
 
 	public void log(String message) {
-		Logger.info("[server]\t%s", message);
+		Logger.info("[server]\t{}", message);
 	}
 
 	protected boolean isRunning() {
@@ -264,7 +264,7 @@ public abstract class EnigmaServer {
 	}
 
 	public void sendMessage(Message message) {
-		Logger.info("[chat]\t\t%s", message.translate());
+		Logger.info("[chat]\t\t{}", message.translate());
 		sendToAll(new MessageS2CPacket(message));
 	}
 

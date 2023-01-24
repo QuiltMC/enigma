@@ -506,7 +506,7 @@ public class EditorPanel {
 		List<Token> tokens = this.controller.getTokensForReference(this.source, reference);
 		if (tokens.isEmpty()) {
 			// DEBUG
-			Logger.error("No tokens found for %s in %s", reference, this.classHandle.getRef());
+			Logger.error("No tokens found for {} in {}", reference, this.classHandle.getRef());
 		} else {
 			this.gui.showTokens(this, tokens);
 		}

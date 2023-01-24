@@ -23,10 +23,10 @@ public class PrintValidatable implements Validatable {
 			case ERROR -> "error";
 		};
 
-		log(level, "%s: %s\n", type, text);
+		log(level, "{}: {}\n", type, text);
 
 		if (!longText.isEmpty()) {
-			Arrays.stream(longText.split("\n")).forEach(s -> log(level, "  %s\n", s));
+			Arrays.stream(longText.split("\n")).forEach(s -> log(level, "  {}\n", s));
 		}
 	}
 
