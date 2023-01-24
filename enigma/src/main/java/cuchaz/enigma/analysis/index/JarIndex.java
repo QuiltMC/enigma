@@ -62,7 +62,7 @@ public class JarIndex implements JarIndexer {
 	}
 
 	public void indexJar(Set<String> classNames, ClassProvider classProvider, ProgressListener progress) {
-		indexedClasses.addAll(classNames);
+		this.indexedClasses.addAll(classNames);
 		progress.init(4, I18n.translate("progress.jar.indexing"));
 
 		progress.step(1, I18n.translate("progress.jar.indexing.entries"));
@@ -75,22 +75,22 @@ public class JarIndex implements JarIndexer {
 
 		for (String className : classNames) {
 			try {
-				classProvider.get(className).accept(new IndexReferenceVisitor(this, entryIndex, inheritanceIndex, Enigma.ASM_VERSION));
+				classProvider.get(className).accept(new IndexReferenceVisitor(this, this.entryIndex, this.inheritanceIndex, Enigma.ASM_VERSION));
 			} catch (Exception e) {
 				throw new RuntimeException("Exception while indexing class: " + className, e);
 			}
 		}
 
 		progress.step(3, I18n.translate("progress.jar.indexing.methods"));
-		bridgeMethodIndex.findBridgeMethods();
+		this.bridgeMethodIndex.findBridgeMethods();
 
 		progress.step(4, I18n.translate("progress.jar.indexing.process"));
-		processIndex(this);
+		this.processIndex(this);
 	}
 
 	@Override
 	public void processIndex(JarIndex index) {
-		indexers.forEach(indexer -> indexer.processIndex(index));
+		this.indexers.forEach(indexer -> indexer.processIndex(index));
 	}
 
 	@Override
@@ -105,9 +105,9 @@ public class JarIndex implements JarIndexer {
 			}
 		}
 
-		indexers.forEach(indexer -> indexer.indexClass(classEntry));
+		this.indexers.forEach(indexer -> indexer.indexClass(classEntry));
 		if (classEntry.isInnerClass() && !classEntry.getAccess().isSynthetic()) {
-			childrenByClass.put(classEntry.getParent(), classEntry);
+			this.childrenByClass.put(classEntry.getParent(), classEntry);
 		}
 	}
 
@@ -117,9 +117,9 @@ public class JarIndex implements JarIndexer {
 			return;
 		}
 
-		indexers.forEach(indexer -> indexer.indexField(fieldEntry));
+		this.indexers.forEach(indexer -> indexer.indexField(fieldEntry));
 		if (!fieldEntry.getAccess().isSynthetic()) {
-			childrenByClass.put(fieldEntry.getParent(), fieldEntry);
+			this.childrenByClass.put(fieldEntry.getParent(), fieldEntry);
 		}
 	}
 
@@ -129,13 +129,13 @@ public class JarIndex implements JarIndexer {
 			return;
 		}
 
-		indexers.forEach(indexer -> indexer.indexMethod(methodEntry));
+		this.indexers.forEach(indexer -> indexer.indexMethod(methodEntry));
 		if (!methodEntry.getAccess().isSynthetic() && !methodEntry.getName().equals("<clinit>")) {
-			childrenByClass.put(methodEntry.getParent(), methodEntry);
+			this.childrenByClass.put(methodEntry.getParent(), methodEntry);
 		}
 
 		if (!methodEntry.isConstructor()) {
-			methodImplementations.put(methodEntry.getParent().getFullName(), methodEntry);
+			this.methodImplementations.put(methodEntry.getParent().getFullName(), methodEntry);
 		}
 	}
 
@@ -145,7 +145,7 @@ public class JarIndex implements JarIndexer {
 			return;
 		}
 
-		indexers.forEach(indexer -> indexer.indexMethodReference(callerEntry, referencedEntry, targetType));
+		this.indexers.forEach(indexer -> indexer.indexMethodReference(callerEntry, referencedEntry, targetType));
 	}
 
 	@Override
@@ -154,7 +154,7 @@ public class JarIndex implements JarIndexer {
 			return;
 		}
 
-		indexers.forEach(indexer -> indexer.indexFieldReference(callerEntry, referencedEntry, targetType));
+		this.indexers.forEach(indexer -> indexer.indexFieldReference(callerEntry, referencedEntry, targetType));
 	}
 
 	@Override
@@ -163,7 +163,7 @@ public class JarIndex implements JarIndexer {
 			return;
 		}
 
-		indexers.forEach(indexer -> indexer.indexLambda(callerEntry, lambda, targetType));
+		this.indexers.forEach(indexer -> indexer.indexLambda(callerEntry, lambda, targetType));
 	}
 
 	@Override
@@ -172,11 +172,11 @@ public class JarIndex implements JarIndexer {
 			return;
 		}
 
-		indexers.forEach(indexer -> indexer.indexEnclosingMethod(classEntry, enclosingMethodData));
+		this.indexers.forEach(indexer -> indexer.indexEnclosingMethod(classEntry, enclosingMethodData));
 	}
 
 	public EntryIndex getEntryIndex() {
-		return entryIndex;
+		return this.entryIndex;
 	}
 
 	public InheritanceIndex getInheritanceIndex() {
@@ -184,23 +184,23 @@ public class JarIndex implements JarIndexer {
 	}
 
 	public ReferenceIndex getReferenceIndex() {
-		return referenceIndex;
+		return this.referenceIndex;
 	}
 
 	public BridgeMethodIndex getBridgeMethodIndex() {
-		return bridgeMethodIndex;
+		return this.bridgeMethodIndex;
 	}
 
 	public PackageVisibilityIndex getPackageVisibilityIndex() {
-		return packageVisibilityIndex;
+		return this.packageVisibilityIndex;
 	}
 
 	public EnclosingMethodIndex getEnclosingMethodIndex() {
-		return enclosingMethodIndex;
+		return this.enclosingMethodIndex;
 	}
 
 	public EntryResolver getEntryResolver() {
-		return entryResolver;
+		return this.entryResolver;
 	}
 
 	public ListMultimap<ClassEntry, ParentedEntry> getChildrenByClass() {
@@ -208,6 +208,6 @@ public class JarIndex implements JarIndexer {
 	}
 
 	public boolean isIndexed(String internalName) {
-		return indexedClasses.contains(internalName);
+		return this.indexedClasses.contains(internalName);
 	}
 }

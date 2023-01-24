@@ -19,15 +19,15 @@ public class TranslationFieldVisitor extends FieldVisitor {
 
 	@Override
 	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-		TypeDescriptor typeDesc = translator.translate(new TypeDescriptor(desc));
+		TypeDescriptor typeDesc = this.translator.translate(new TypeDescriptor(desc));
 		AnnotationVisitor av = super.visitAnnotation(typeDesc.toString(), visible);
-		return new TranslationAnnotationVisitor(translator, typeDesc.getTypeEntry(), api, av);
+		return new TranslationAnnotationVisitor(this.translator, typeDesc.getTypeEntry(), this.api, av);
 	}
 
 	@Override
 	public AnnotationVisitor visitTypeAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
-		TypeDescriptor typeDesc = translator.translate(new TypeDescriptor(desc));
+		TypeDescriptor typeDesc = this.translator.translate(new TypeDescriptor(desc));
 		AnnotationVisitor av = super.visitAnnotation(typeDesc.toString(), visible);
-		return new TranslationAnnotationVisitor(translator, typeDesc.getTypeEntry(), api, av);
+		return new TranslationAnnotationVisitor(this.translator, typeDesc.getTypeEntry(), this.api, av);
 	}
 }

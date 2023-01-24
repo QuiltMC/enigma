@@ -51,30 +51,30 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
     }
 
     private Token getToken(TextRange range) {
-        return new Token(range.start, range.start + range.length, content.substring(range.start, range.start + range.length));
+        return new Token(range.start, range.start + range.length, this.content.substring(range.start, range.start + range.length));
     }
 
     private void addDeclaration(Token token, Entry<?> entry) {
-        declarations.put(token, entry);
-        tokens.put(token, true);
+        this.declarations.put(token, entry);
+        this.tokens.put(token, true);
     }
 
     private void addReference(Token token, Entry<?> entry, Entry<?> context) {
-        references.put(token, new Pair<>(entry, context));
-        tokens.put(token, false);
+        this.references.put(token, new Pair<>(entry, context));
+        this.tokens.put(token, false);
     }
 
     public void addTokensToIndex(SourceIndex index, Function<Token, Token> tokenProcessor) {
-        for (Token token : tokens.keySet()) {
+        for (Token token : this.tokens.keySet()) {
             Token newToken = tokenProcessor.apply(token);
             if (newToken == null) {
                 continue;
             }
 
-            if (tokens.get(token)) {
-                index.addDeclaration(newToken, declarations.get(token));
+            if (this.tokens.get(token)) {
+                index.addDeclaration(newToken, this.declarations.get(token));
             } else {
-                Pair<Entry<?>, Entry<?>> ref = references.get(token);
+                Pair<Entry<?>, Entry<?>> ref = this.references.get(token);
                 index.addReference(newToken, ref.a, ref.b);
             }
         }
@@ -89,31 +89,31 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
     @Override
     public void visitClass(TextRange range, boolean declaration, String name) {
         super.visitClass(range, declaration, name);
-        Token token = getToken(range);
+        Token token = this.getToken(range);
 
         if (declaration) {
-            addDeclaration(token, getClassEntry(name));
+            this.addDeclaration(token, getClassEntry(name));
         } else {
-            addReference(token, getClassEntry(name), currentMethod);
+            this.addReference(token, getClassEntry(name), this.currentMethod);
         }
     }
 
     @Override
     public void visitField(TextRange range, boolean declaration, String className, String name, FieldDescriptor descriptor) {
         super.visitField(range, declaration, className, name, descriptor);
-        Token token = getToken(range);
+        Token token = this.getToken(range);
 
         if (declaration) {
-            addDeclaration(token, getFieldEntry(className, name, descriptor));
+            this.addDeclaration(token, getFieldEntry(className, name, descriptor));
         } else {
-            addReference(token, getFieldEntry(className, name, descriptor), currentMethod);
+            this.addReference(token, getFieldEntry(className, name, descriptor), this.currentMethod);
         }
     }
 
     @Override
     public void visitMethod(TextRange range, boolean declaration, String className, String name, MethodDescriptor descriptor) {
         super.visitMethod(range, declaration, className, name, descriptor);
-        Token token = getToken(range);
+        Token token = this.getToken(range);
         MethodEntry entry = getMethodEntry(className, name, descriptor);
 
         if (token.text.equals("new")) {
@@ -121,36 +121,36 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
         }
 
         if (declaration) {
-            addDeclaration(token, entry);
-            currentMethod = entry;
+            this.addDeclaration(token, entry);
+            this.currentMethod = entry;
         } else {
-            addReference(token, entry, currentMethod);
+            this.addReference(token, entry, this.currentMethod);
         }
     }
 
     @Override
     public void visitParameter(TextRange range, boolean declaration, String className, String methodName, MethodDescriptor methodDescriptor, int idx, String name) {
         super.visitParameter(range, declaration, className, methodName, methodDescriptor, idx, name);
-        Token token = getToken(range);
+        Token token = this.getToken(range);
         MethodEntry parent = getMethodEntry(className, methodName, methodDescriptor);
 
         if (declaration) {
-            addDeclaration(token, getParameterEntry(parent, idx, name));
+            this.addDeclaration(token, getParameterEntry(parent, idx, name));
         } else {
-            addReference(token, getParameterEntry(parent, idx, name), currentMethod);
+            this.addReference(token, getParameterEntry(parent, idx, name), this.currentMethod);
         }
     }
 
     @Override
     public void visitLocal(TextRange range, boolean declaration, String className, String methodName, MethodDescriptor methodDescriptor, int idx, String name) {
         super.visitLocal(range, declaration, className, methodName, methodDescriptor, idx, name);
-        Token token = getToken(range);
+        Token token = this.getToken(range);
         MethodEntry parent = getMethodEntry(className, methodName, methodDescriptor);
 
         if (declaration) {
-            addDeclaration(token, getVariableEntry(parent, idx, name));
+            this.addDeclaration(token, getVariableEntry(parent, idx, name));
         } else {
-            addReference(token, getVariableEntry(parent, idx, name), currentMethod);
+            this.addReference(token, getVariableEntry(parent, idx, name), this.currentMethod);
         }
     }
 }

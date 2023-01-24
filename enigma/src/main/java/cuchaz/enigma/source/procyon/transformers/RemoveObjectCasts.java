@@ -14,17 +14,17 @@ public class RemoveObjectCasts implements IAstTransform {
 	private final DecompilerContext _context;
 
 	public RemoveObjectCasts(DecompilerContext context) {
-		_context = context;
+		this._context = context;
 	}
 
 	@Override
 	public void run(AstNode compilationUnit) {
-		compilationUnit.acceptVisitor(new Visitor(_context), null);
+		compilationUnit.acceptVisitor(new Visitor(this._context), null);
 	}
 
 	private final static class Visitor extends ContextTrackingVisitor<Void>{
 
-		protected Visitor(DecompilerContext context) {
+		private Visitor(DecompilerContext context) {
 			super(context);
 		}
 

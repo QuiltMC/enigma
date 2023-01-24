@@ -45,33 +45,33 @@ public class MethodDefEntry extends MethodEntry implements DefEntry<ClassEntry> 
 
 	@Override
 	public AccessFlags getAccess() {
-		return access;
+		return this.access;
 	}
 
 	public Signature getSignature() {
-		return signature;
+		return this.signature;
 	}
 
 	@Override
 	protected TranslateResult<MethodDefEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
-		MethodDescriptor translatedDesc = translator.translate(descriptor);
-		Signature translatedSignature = translator.translate(signature);
-		String translatedName = mapping.targetName() != null ? mapping.targetName() : name;
-		AccessFlags translatedAccess = mapping.accessModifier().transform(access);
+		MethodDescriptor translatedDesc = translator.translate(this.descriptor);
+		Signature translatedSignature = translator.translate(this.signature);
+		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
+		AccessFlags translatedAccess = mapping.accessModifier().transform(this.access);
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new MethodDefEntry(parent, translatedName, translatedDesc, translatedSignature, translatedAccess, docs)
+				new MethodDefEntry(this.parent, translatedName, translatedDesc, translatedSignature, translatedAccess, docs)
 		);
 	}
 
 	@Override
 	public MethodDefEntry withName(String name) {
-		return new MethodDefEntry(parent, name, descriptor, signature, access, javadocs);
+		return new MethodDefEntry(this.parent, name, this.descriptor, this.signature, this.access, this.javadocs);
 	}
 
 	@Override
 	public MethodDefEntry withParent(ClassEntry parent) {
-		return new MethodDefEntry(new ClassEntry(parent.getFullName()), name, descriptor, signature, access, javadocs);
+		return new MethodDefEntry(new ClassEntry(parent.getFullName()), this.name, this.descriptor, this.signature, this.access, this.javadocs);
 	}
 }

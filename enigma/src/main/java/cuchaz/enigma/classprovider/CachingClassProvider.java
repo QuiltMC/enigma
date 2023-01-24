@@ -29,7 +29,7 @@ public class CachingClassProvider implements ClassProvider {
     @Nullable
     public ClassNode get(String name) {
         try {
-            return cache.get(name, () -> Optional.ofNullable(classProvider.get(name))).orElse(null);
+            return this.cache.get(name, () -> Optional.ofNullable(this.classProvider.get(name))).orElse(null);
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
         }
@@ -37,11 +37,11 @@ public class CachingClassProvider implements ClassProvider {
 
     @Override
     public Collection<String> getClassNames() {
-        return classProvider.getClassNames();
+        return this.classProvider.getClassNames();
     }
 
     @Override
     public Collection<String> getClasses(String className) {
-        return classProvider.getClasses(className);
+        return this.classProvider.getClasses(className);
     }
 }

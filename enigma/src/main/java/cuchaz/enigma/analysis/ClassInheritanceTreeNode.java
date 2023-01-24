@@ -43,7 +43,7 @@ public class ClassInheritanceTreeNode extends AbstractClassTreeNode {
 		// get all the child nodes
 		List<ClassInheritanceTreeNode> nodes = Lists.newArrayList();
 		for (ClassEntry inheritor : ancestries.getChildren(this.entry)) {
-			nodes.add(new ClassInheritanceTreeNode(translator, inheritor.getFullName()));
+			nodes.add(new ClassInheritanceTreeNode(this.translator, inheritor.getFullName()));
 		}
 
 		// add them to this node

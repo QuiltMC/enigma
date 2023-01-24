@@ -58,52 +58,52 @@ public class ClassDefEntry extends ClassEntry implements DefEntry<ClassEntry> {
 	}
 
 	public Signature getSignature() {
-		return signature;
+		return this.signature;
 	}
 
 	@Override
 	public AccessFlags getAccess() {
-		return access;
+		return this.access;
 	}
 
 	@Nullable
 	public ClassEntry getSuperClass() {
-		return superClass;
+		return this.superClass;
 	}
 
 	public ClassEntry[] getInterfaces() {
-		return interfaces;
+		return this.interfaces;
 	}
 
 	public boolean isEnum() {
-		return superClass.getName().equals("java/lang/Enum");
+		return this.superClass.getName().equals("java/lang/Enum");
 	}
 
 	public boolean isRecord() {
-		return superClass.getName().equals("java/lang/Record");
+		return this.superClass.getName().equals("java/lang/Record");
 	}
 
 	@Override
 	public TranslateResult<ClassDefEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
-		Signature translatedSignature = translator.translate(signature);
-		String translatedName = mapping.targetName() != null ? mapping.targetName() : name;
-		AccessFlags translatedAccess = mapping.accessModifier().transform(access);
-		ClassEntry translatedSuper = translator.translate(superClass);
-		ClassEntry[] translatedInterfaces = Arrays.stream(interfaces).map(translator::translate).toArray(ClassEntry[]::new);
+		Signature translatedSignature = translator.translate(this.signature);
+		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
+		AccessFlags translatedAccess = mapping.accessModifier().transform(this.access);
+		ClassEntry translatedSuper = translator.translate(this.superClass);
+		ClassEntry[] translatedInterfaces = Arrays.stream(this.interfaces).map(translator::translate).toArray(ClassEntry[]::new);
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new ClassDefEntry(parent, translatedName, translatedSignature, translatedAccess, translatedSuper, translatedInterfaces, docs)
+				new ClassDefEntry(this.parent, translatedName, translatedSignature, translatedAccess, translatedSuper, translatedInterfaces, docs)
 		);
 	}
 
 	@Override
 	public ClassDefEntry withName(String name) {
-		return new ClassDefEntry(parent, name, signature, access, superClass, interfaces, javadocs);
+		return new ClassDefEntry(this.parent, name, this.signature, this.access, this.superClass, this.interfaces, this.javadocs);
 	}
 
 	@Override
 	public ClassDefEntry withParent(ClassEntry parent) {
-		return new ClassDefEntry(parent, name, signature, access, superClass, interfaces, javadocs);
+		return new ClassDefEntry(parent, this.name, this.signature, this.access, this.superClass, this.interfaces, this.javadocs);
 	}
 }

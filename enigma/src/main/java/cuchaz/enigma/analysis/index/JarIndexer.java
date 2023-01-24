@@ -31,7 +31,7 @@ public interface JarIndexer {
 
 	record EnclosingMethodData(String owner, String name, String descriptor) {
 		public MethodEntry getMethod() {
-			return MethodEntry.parse(owner, name, descriptor);
+			return MethodEntry.parse(this.owner, this.name, this.descriptor);
 		}
 	}
 }

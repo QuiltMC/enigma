@@ -32,7 +32,7 @@ public class CfrDecompiler implements Decompiler {
 
     @Override
     public Source getSource(String className, @Nullable EntryRemapper mapper) {
-        return new CfrSource(className, settings, this.options, this.classFileSource, mapper);
+        return new CfrSource(className, this.settings, this.options, this.classFileSource, mapper);
     }
 
     private record ClassFileSource(ClassProvider classProvider) implements ClassFileSource2 {
@@ -57,7 +57,7 @@ public class CfrDecompiler implements Decompiler {
 
         @Override
         public Pair<byte[], String> getClassFileContent(String path) {
-            ClassNode node = classProvider.get(path.substring(0, path.lastIndexOf('.')));
+            ClassNode node = this.classProvider.get(path.substring(0, path.lastIndexOf('.')));
 
             if (node == null) {
                 return null;

@@ -27,7 +27,7 @@ public enum TinyMappingsReader implements MappingsReader {
 
 	@Override
 	public EntryTree<EntryMapping> read(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws IOException, MappingParseException {
-		return read(path, Files.readAllLines(path, Charsets.UTF_8), progress);
+		return this.read(path, Files.readAllLines(path, Charsets.UTF_8), progress);
 	}
 
 	private EntryTree<EntryMapping> read(Path path, List<String> lines, ProgressListener progress) throws MappingParseException {
@@ -46,7 +46,7 @@ public enum TinyMappingsReader implements MappingsReader {
 			}
 
 			try {
-				MappingPair<?, EntryMapping> mapping = parseLine(line);
+				MappingPair<?, EntryMapping> mapping = this.parseLine(line);
 				mappings.insert(mapping.getEntry(), mapping.getMapping());
 			} catch (Throwable t) {
 				throw new MappingParseException(path, lineNumber, t);
@@ -62,13 +62,13 @@ public enum TinyMappingsReader implements MappingsReader {
 		String key = tokens[0];
 		switch (key) {
 			case "CLASS":
-				return parseClass(tokens);
+				return this.parseClass(tokens);
 			case "FIELD":
-				return parseField(tokens);
+				return this.parseField(tokens);
 			case "METHOD":
-				return parseMethod(tokens);
+				return this.parseMethod(tokens);
 			case "MTH-ARG":
-				return parseArgument(tokens);
+				return this.parseArgument(tokens);
 			default:
 				throw new RuntimeException("Unknown token '" + key + "'!");
 		}

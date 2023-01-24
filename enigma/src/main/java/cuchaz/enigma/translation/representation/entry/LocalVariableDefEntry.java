@@ -26,28 +26,28 @@ public class LocalVariableDefEntry extends LocalVariableEntry {
 	}
 
 	public TypeDescriptor getDesc() {
-		return desc;
+		return this.desc;
 	}
 
 	@Override
 	protected TranslateResult<LocalVariableEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
-		TypeDescriptor translatedDesc = translator.translate(desc);
-		String translatedName = mapping.targetName() != null ? mapping.targetName() : name;
+		TypeDescriptor translatedDesc = translator.translate(this.desc);
+		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 		String javadoc = mapping.javadoc();
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new LocalVariableDefEntry(parent, index, translatedName, parameter, translatedDesc, javadoc)
+				new LocalVariableDefEntry(this.parent, this.index, translatedName, this.parameter, translatedDesc, javadoc)
 		);
 	}
 
 	@Override
 	public LocalVariableDefEntry withName(String name) {
-		return new LocalVariableDefEntry(parent, index, name, parameter, desc, javadocs);
+		return new LocalVariableDefEntry(this.parent, this.index, name, this.parameter, this.desc, this.javadocs);
 	}
 
 	@Override
 	public LocalVariableDefEntry withParent(MethodEntry entry) {
-		return new LocalVariableDefEntry(entry, index, name, parameter, desc, javadocs);
+		return new LocalVariableDefEntry(entry, this.index, this.name, this.parameter, this.desc, this.javadocs);
 	}
 
 	@Override

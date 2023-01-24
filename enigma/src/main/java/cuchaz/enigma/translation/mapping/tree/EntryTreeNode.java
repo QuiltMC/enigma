@@ -22,19 +22,19 @@ public interface EntryTreeNode<T> {
 	default Collection<? extends EntryTreeNode<T>> getNodesRecursively() {
 		Collection<EntryTreeNode<T>> nodes = new ArrayList<>();
 		nodes.add(this);
-		for (EntryTreeNode<T> node : getChildNodes()) {
+		for (EntryTreeNode<T> node : this.getChildNodes()) {
 			nodes.addAll(node.getNodesRecursively());
 		}
 		return nodes;
 	}
 
 	default List<? extends Entry<?>> getChildrenRecursively() {
-		return getNodesRecursively().stream()
+		return this.getNodesRecursively().stream()
 				.map(EntryTreeNode::getEntry)
 				.toList();
 	}
 
 	default boolean hasValue() {
-		return getValue() != null;
+		return this.getValue() != null;
 	}
 }

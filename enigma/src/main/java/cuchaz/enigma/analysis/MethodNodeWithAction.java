@@ -14,6 +14,6 @@ public class MethodNodeWithAction extends MethodNode {
 
     @Override
     public void visitEnd() {
-        action.accept(this);
+        this.action.accept(this);
     }
 }

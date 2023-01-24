@@ -43,8 +43,7 @@ public class Java8Generics implements IAstTransform {
 		@Override
 		public Void visitInvocationExpression(InvocationExpression node, Void data) {
 			super.visitInvocationExpression(node, data);
-			if (node.getTarget() instanceof MemberReferenceExpression){
-				MemberReferenceExpression referenceExpression = (MemberReferenceExpression) node.getTarget();
+			if (node.getTarget() instanceof MemberReferenceExpression referenceExpression){
 				if (referenceExpression.getTypeArguments().stream().map(t->{
 					TypeReference tr = t.toTypeReference();
 					if (tr.getDeclaringType() != null){//ensure that inner types are resolved so we can get the TypeDefinition below
@@ -68,8 +67,7 @@ public class Java8Generics implements IAstTransform {
 		public Void visitObjectCreationExpression(ObjectCreationExpression node, Void data) {
 			super.visitObjectCreationExpression(node, data);
 			AstType type = node.getType();
-			if (type instanceof SimpleType && !((SimpleType) type).getTypeArguments().isEmpty()){
-				SimpleType simpleType = (SimpleType) type;
+			if (type instanceof SimpleType simpleType && !((SimpleType) type).getTypeArguments().isEmpty()){
 				AstNodeCollection<AstType> typeArguments = simpleType.getTypeArguments();
 				if (typeArguments.size() == 1 && typeArguments.firstOrNullObject().toTypeReference().equals(CommonTypeReferences.Object)){
 					//all are <Object>, thereby redundant and/or bad
@@ -89,8 +87,7 @@ public class Java8Generics implements IAstTransform {
 				Expression target = node.getExpression();
 				if (typeReference instanceof IGenericInstance && ((IGenericInstance)typeReference).getTypeArguments().stream().anyMatch(t->t.isWildcardType())){
 					doReplace = true;
-				} else if (target instanceof InvocationExpression) {
-					InvocationExpression invocationExpression = (InvocationExpression)target;
+				} else if (target instanceof InvocationExpression invocationExpression) {
 					if (invocationExpression.getTarget() instanceof MemberReferenceExpression && !((MemberReferenceExpression) invocationExpression.getTarget()).getTypeArguments().isEmpty()) {
 						((MemberReferenceExpression) invocationExpression.getTarget()).getTypeArguments().clear();
 						doReplace = true;

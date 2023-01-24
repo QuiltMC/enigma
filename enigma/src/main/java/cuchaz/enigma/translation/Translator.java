@@ -48,7 +48,7 @@ public interface Translator {
 	default <T extends Translatable, V> Map<T, V> translateKeys(Map<T, V> translatable) {
 		Map<T, V> result = new HashMap<>(translatable.size());
 		for (Map.Entry<T, V> entry : translatable.entrySet()) {
-			result.put(translate(entry.getKey()), entry.getValue());
+			result.put(this.translate(entry.getKey()), entry.getValue());
 		}
 		return result;
 	}
@@ -56,7 +56,7 @@ public interface Translator {
 	default <K extends Translatable, V extends Translatable> Map<K, V> translate(Map<K, V> translatable) {
 		Map<K, V> result = new HashMap<>(translatable.size());
 		for (Map.Entry<K, V> entry : translatable.entrySet()) {
-			result.put(translate(entry.getKey()), translate(entry.getValue()));
+			result.put(this.translate(entry.getKey()), this.translate(entry.getValue()));
 		}
 		return result;
 	}
@@ -64,7 +64,7 @@ public interface Translator {
 	default <K extends Translatable, V extends Translatable> Multimap<K, V> translate(Multimap<K, V> translatable) {
 		Multimap<K, V> result = HashMultimap.create(translatable.size(), 1);
 		for (Map.Entry<K, Collection<V>> entry : translatable.asMap().entrySet()) {
-			result.putAll(translate(entry.getKey()), translate(entry.getValue()));
+			result.putAll(this.translate(entry.getKey()), this.translate(entry.getValue()));
 		}
 		return result;
 	}

@@ -60,12 +60,12 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
     private final DecompilerContext _context;
 
     public ObfuscatedEnumSwitchRewriterTransform(final DecompilerContext context) {
-        _context = VerifyArgument.notNull(context, "context");
+		this._context = VerifyArgument.notNull(context, "context");
     }
 
     @Override
     public void run(final AstNode compilationUnit) {
-        compilationUnit.acceptVisitor(new Visitor(_context), null);
+        compilationUnit.acceptVisitor(new Visitor(this._context), null);
     }
 
     private final static class Visitor extends ContextTrackingVisitor<Void> {
@@ -84,38 +84,38 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
         private final Map<String, SwitchMapInfo> _switchMaps = new LinkedHashMap<>();
         private boolean _isSwitchMapWrapper;
 
-        protected Visitor(final DecompilerContext context) {
+        private Visitor(final DecompilerContext context) {
             super(context);
         }
 
         @Override
         public Void visitTypeDeclarationOverride(final TypeDeclaration typeDeclaration, final Void p) {
-            final boolean oldIsSwitchMapWrapper = _isSwitchMapWrapper;
+            final boolean oldIsSwitchMapWrapper = this._isSwitchMapWrapper;
             final TypeDefinition typeDefinition = typeDeclaration.getUserData(Keys.TYPE_DEFINITION);
             final boolean isSwitchMapWrapper = isSwitchMapWrapper(typeDefinition);
 
             if (isSwitchMapWrapper) {
                 final String internalName = typeDefinition.getInternalName();
 
-                SwitchMapInfo info = _switchMaps.get(internalName);
+                SwitchMapInfo info = this._switchMaps.get(internalName);
 
                 if (info == null) {
-                    _switchMaps.put(internalName, info = new SwitchMapInfo(internalName));
+					this._switchMaps.put(internalName, info = new SwitchMapInfo(internalName));
                 }
 
                 info.enclosingTypeDeclaration = typeDeclaration;
             }
 
-            _isSwitchMapWrapper = isSwitchMapWrapper;
+			this._isSwitchMapWrapper = isSwitchMapWrapper;
 
             try {
                 super.visitTypeDeclarationOverride(typeDeclaration, p);
             }
             finally {
-                _isSwitchMapWrapper = oldIsSwitchMapWrapper;
+				this._isSwitchMapWrapper = oldIsSwitchMapWrapper;
             }
 
-            rewrite();
+			this.rewrite();
 
             return null;
         }
@@ -124,57 +124,51 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
         public Void visitSwitchStatement(final SwitchStatement node, final Void data) {
             final Expression test = node.getExpression();
 
-            if (test instanceof IndexerExpression) {
-                final IndexerExpression indexer = (IndexerExpression) test;
-                final Expression array = indexer.getTarget();
+            if (test instanceof final IndexerExpression indexer) {
+				final Expression array = indexer.getTarget();
                 final Expression argument = indexer.getArgument();
 
-                if (!(array instanceof MemberReferenceExpression)) {
+                if (!(array instanceof final MemberReferenceExpression arrayAccess)) {
                     return super.visitSwitchStatement(node, data);
                 }
 
-                final MemberReferenceExpression arrayAccess = (MemberReferenceExpression) array;
-                final Expression arrayOwner = arrayAccess.getTarget();
+				final Expression arrayOwner = arrayAccess.getTarget();
                 final String mapName = arrayAccess.getMemberName();
 
-                if (mapName == null || mapName.startsWith("$SwitchMap$") || !(arrayOwner instanceof TypeReferenceExpression)) {
+                if (mapName == null || mapName.startsWith("$SwitchMap$") || !(arrayOwner instanceof final TypeReferenceExpression enclosingTypeExpression)) {
                     return super.visitSwitchStatement(node, data);
                 }
 
-                final TypeReferenceExpression enclosingTypeExpression = (TypeReferenceExpression) arrayOwner;
-                final TypeReference enclosingType = enclosingTypeExpression.getType().getUserData(Keys.TYPE_REFERENCE);
+				final TypeReference enclosingType = enclosingTypeExpression.getType().getUserData(Keys.TYPE_REFERENCE);
 
-                if (!isSwitchMapWrapper(enclosingType) || !(argument instanceof InvocationExpression)) {
+                if (!isSwitchMapWrapper(enclosingType) || !(argument instanceof final InvocationExpression invocation)) {
                     return super.visitSwitchStatement(node, data);
                 }
 
-                final InvocationExpression invocation = (InvocationExpression) argument;
-                final Expression invocationTarget = invocation.getTarget();
+				final Expression invocationTarget = invocation.getTarget();
 
-                if (!(invocationTarget instanceof MemberReferenceExpression)) {
+                if (!(invocationTarget instanceof final MemberReferenceExpression memberReference)) {
                     return super.visitSwitchStatement(node, data);
                 }
 
-                final MemberReferenceExpression memberReference = (MemberReferenceExpression) invocationTarget;
-
-                if (!"ordinal".equals(memberReference.getMemberName())) {
+				if (!"ordinal".equals(memberReference.getMemberName())) {
                     return super.visitSwitchStatement(node, data);
                 }
 
                 final String enclosingTypeName = enclosingType.getInternalName();
 
-                SwitchMapInfo info = _switchMaps.get(enclosingTypeName);
+                SwitchMapInfo info = this._switchMaps.get(enclosingTypeName);
 
                 if (info == null) {
-                    _switchMaps.put(enclosingTypeName, info = new SwitchMapInfo(enclosingTypeName));
+					this._switchMaps.put(enclosingTypeName, info = new SwitchMapInfo(enclosingTypeName));
 
                     final TypeDefinition resolvedType = enclosingType.resolve();
 
                     if (resolvedType != null) {
-                        AstBuilder astBuilder = context.getUserData(Keys.AST_BUILDER);
+                        AstBuilder astBuilder = this.context.getUserData(Keys.AST_BUILDER);
 
                         if (astBuilder == null) {
-                            astBuilder = new AstBuilder(context);
+                            astBuilder = new AstBuilder(this.context);
                         }
 
                         try (final SafeCloseable importSuppression = astBuilder.suppressImports()) {
@@ -199,10 +193,10 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
 
         @Override
         public Void visitAssignmentExpression(final AssignmentExpression node, final Void data) {
-            final TypeDefinition currentType = context.getCurrentType();
-            final MethodDefinition currentMethod = context.getCurrentMethod();
+            final TypeDefinition currentType = this.context.getCurrentType();
+            final MethodDefinition currentMethod = this.context.getCurrentMethod();
 
-            if (_isSwitchMapWrapper &&
+            if (this._isSwitchMapWrapper &&
                 currentType != null &&
                 currentMethod != null &&
                 currentMethod.isTypeInitializer()) {
@@ -211,7 +205,7 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
                 final Expression right = node.getRight();
 
                 if (left instanceof IndexerExpression &&
-                    right instanceof PrimitiveExpression) {
+						right instanceof final PrimitiveExpression value) {
 
                     String mapName = null;
 
@@ -229,26 +223,23 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
                         return super.visitAssignmentExpression(node, data);
                     }
 
-                    if (!(argument instanceof InvocationExpression)) {
+                    if (!(argument instanceof final InvocationExpression invocation)) {
                         return super.visitAssignmentExpression(node, data);
                     }
 
-                    final InvocationExpression invocation = (InvocationExpression) argument;
-                    final Expression invocationTarget = invocation.getTarget();
+					final Expression invocationTarget = invocation.getTarget();
 
-                    if (!(invocationTarget instanceof MemberReferenceExpression)) {
+                    if (!(invocationTarget instanceof final MemberReferenceExpression memberReference)) {
                         return super.visitAssignmentExpression(node, data);
                     }
 
-                    final MemberReferenceExpression memberReference = (MemberReferenceExpression) invocationTarget;
-                    final Expression memberTarget = memberReference.getTarget();
+					final Expression memberTarget = memberReference.getTarget();
 
-                    if (!(memberTarget instanceof MemberReferenceExpression) || !"ordinal".equals(memberReference.getMemberName())) {
+                    if (!(memberTarget instanceof final MemberReferenceExpression outerMemberReference) || !"ordinal".equals(memberReference.getMemberName())) {
                         return super.visitAssignmentExpression(node, data);
                     }
 
-                    final MemberReferenceExpression outerMemberReference = (MemberReferenceExpression) memberTarget;
-                    final Expression outerMemberTarget = outerMemberReference.getTarget();
+					final Expression outerMemberTarget = outerMemberReference.getTarget();
 
                     if (!(outerMemberTarget instanceof TypeReferenceExpression)) {
                         return super.visitAssignmentExpression(node, data);
@@ -256,23 +247,21 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
 
                     final String enclosingType = currentType.getInternalName();
 
-                    SwitchMapInfo info = _switchMaps.get(enclosingType);
+                    SwitchMapInfo info = this._switchMaps.get(enclosingType);
 
                     if (info == null) {
-                        _switchMaps.put(enclosingType, info = new SwitchMapInfo(enclosingType));
+						this._switchMaps.put(enclosingType, info = new SwitchMapInfo(enclosingType));
 
-                        AstBuilder astBuilder = context.getUserData(Keys.AST_BUILDER);
+                        AstBuilder astBuilder = this.context.getUserData(Keys.AST_BUILDER);
 
                         if (astBuilder == null) {
-                            astBuilder = new AstBuilder(context);
+                            astBuilder = new AstBuilder(this.context);
                         }
 
                         info.enclosingTypeDeclaration = astBuilder.createType(currentType);
                     }
 
-                    final PrimitiveExpression value = (PrimitiveExpression) right;
-
-                    assert value.getValue() instanceof Integer;
+					assert value.getValue() instanceof Integer;
 
                     Map<Integer, Expression> mapping = info.mappings.get(mapName);
 
@@ -292,12 +281,12 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
         }
 
         private void rewrite() {
-            if (_switchMaps.isEmpty()) {
+            if (this._switchMaps.isEmpty()) {
                 return;
             }
 
-            for (final SwitchMapInfo info : _switchMaps.values()) {
-                rewrite(info);
+            for (final SwitchMapInfo info : this._switchMaps.values()) {
+				this.rewrite(info);
             }
 
             //
@@ -305,7 +294,7 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
             //
 
         outer:
-            for (final SwitchMapInfo info : _switchMaps.values()) {
+            for (final SwitchMapInfo info : this._switchMaps.values()) {
                 for (final String mapName : info.switches.keySet()) {
                     final List<SwitchStatement> switches = info.switches.get(mapName);
 
@@ -333,7 +322,7 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
 
                 if (switches != null && mappings != null) {
                     for (int i = 0; i < switches.size(); i++) {
-                        if (rewriteSwitch(switches.get(i), mappings)) {
+                        if (this.rewriteSwitch(switches.get(i), mappings)) {
                             switches.remove(i--);
                         }
                     }

@@ -32,11 +32,11 @@ public class Message {
 	}
 
 	public String format(Object[] args) {
-		return I18n.translateFormatted(textKey, args);
+		return I18n.translateFormatted(this.textKey, args);
 	}
 
 	public String formatDetails(Object[] args) {
-		return I18n.translateOrEmpty(longTextKey, args);
+		return I18n.translateOrEmpty(this.longTextKey, args);
 	}
 
 	public static Message create(Type type, String name) {

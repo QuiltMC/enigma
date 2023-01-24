@@ -28,7 +28,7 @@ public abstract class AbstractClassTreeNode extends DefaultMutableTreeNode {
 
     @Override
     public String toString() {
-        TranslateResult<ClassEntry> translated = translator.extendedTranslate(entry);
+        TranslateResult<ClassEntry> translated = this.translator.extendedTranslate(this.entry);
         return translated != null ? translated.getValue().toString() : "invalid class";
     }
 }

@@ -42,30 +42,30 @@ public class ObfuscationFixClassProvider implements ClassProvider {
     @Override
     @Nullable
     public ClassNode get(String name) {
-        ClassNode node = classProvider.get(name);
+        ClassNode node = this.classProvider.get(name);
 
-        if (!jarIndex.isIndexed(name)) {
+        if (!this.jarIndex.isIndexed(name)) {
             return node;
         }
 
         ClassNode fixedNode = new ClassNode();
         ClassVisitor visitor = fixedNode;
         visitor = new LocalVariableFixVisitor(Enigma.ASM_VERSION, visitor);
-        visitor = new SourceFixVisitor(Enigma.ASM_VERSION, visitor, jarIndex);
+        visitor = new SourceFixVisitor(Enigma.ASM_VERSION, visitor, this.jarIndex);
         node.accept(visitor);
-        removeRedundantClassCalls(fixedNode);
+        this.removeRedundantClassCalls(fixedNode);
 
         return fixedNode;
     }
 
     @Override
     public Collection<String> getClassNames() {
-        return classProvider.getClassNames();
+        return this.classProvider.getClassNames();
     }
 
     @Override
     public Collection<String> getClasses(String className) {
-        return classProvider.getClasses(className);
+        return this.classProvider.getClasses(className);
     }
 
     private void removeRedundantClassCalls(ClassNode node) {

@@ -87,7 +87,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	String getJavadocs();
 
 	default String getSourceRemapName() {
-		return getName();
+		return this.getName();
 	}
 
 	/**
@@ -136,7 +136,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	}
 
 	default List<Entry<?>> getAncestry() {
-		P parent = getParent();
+		P parent = this.getParent();
 		List<Entry<?>> entries = new ArrayList<>();
 		if (parent != null) {
 			entries.addAll(parent.getAncestry());
@@ -148,7 +148,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	@Nullable
 	@SuppressWarnings("unchecked")
 	default <E extends Entry<?>> E findAncestor(Class<E> type) {
-		List<Entry<?>> ancestry = getAncestry();
+		List<Entry<?>> ancestry = this.getAncestry();
 		for (int i = ancestry.size() - 1; i >= 0; i--) {
 			Entry<?> ancestor = ancestry.get(i);
 			if (type.isAssignableFrom(ancestor.getClass())) {
@@ -164,16 +164,16 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 			return this;
 		}
 
-		if (equals(target)) {
+		if (this.equals(target)) {
 			return (Entry<P>) replacement;
 		}
 
-		P parent = getParent();
+		P parent = this.getParent();
 		if (parent == null) {
 			return this;
 		}
 
-		return withParent((P) parent.replaceAncestor(target, replacement));
+		return this.withParent((P) parent.replaceAncestor(target, replacement));
 	}
 
 	default void validateName(ValidationContext vc, String name) {
@@ -183,7 +183,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	@SuppressWarnings("unchecked")
 	@Nullable
 	default <C extends Entry<?>> Entry<C> castParent(Class<C> parentType) {
-		if (parentType.equals(getParentType())) {
+		if (parentType.equals(this.getParentType())) {
 			return (Entry<C>) this;
 		}
 		return null;

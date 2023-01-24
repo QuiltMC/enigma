@@ -41,7 +41,7 @@ public final class TinyV2Reader implements MappingsReader {
 
 	@Override
 	public EntryTree<EntryMapping> read(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws IOException, MappingParseException {
-		return read(path, Files.readAllLines(path, StandardCharsets.UTF_8), progress);
+		return this.read(path, Files.readAllLines(path, StandardCharsets.UTF_8), progress);
 	}
 
 	private EntryTree<EntryMapping> read(Path path, List<String> lines, ProgressListener progress) throws MappingParseException {
@@ -93,10 +93,10 @@ public final class TinyV2Reader implements MappingsReader {
 								break;
 							case "c": // class
 								state.set(IN_CLASS);
-								holds[IN_CLASS] = parseClass(parts, escapeNames);
+								holds[IN_CLASS] = this.parseClass(parts, escapeNames);
 								break;
 							default:
-								unsupportKey(parts);
+								this.unsupportKey(parts);
 						}
 
 						break;
@@ -113,66 +113,62 @@ public final class TinyV2Reader implements MappingsReader {
 							switch (parts[0]) {
 								case "m": // method
 									state.set(IN_METHOD);
-									holds[IN_METHOD] = parseMethod(holds[IN_CLASS], parts, escapeNames);
+									holds[IN_METHOD] = this.parseMethod(holds[IN_CLASS], parts, escapeNames);
 									break;
 								case "f": // field
 									state.set(IN_FIELD);
-									holds[IN_FIELD] = parseField(holds[IN_CLASS], parts, escapeNames);
+									holds[IN_FIELD] = this.parseField(holds[IN_CLASS], parts, escapeNames);
 									break;
 								case "c": // class javadoc
-									addJavadoc(holds[IN_CLASS], parts);
+									this.addJavadoc(holds[IN_CLASS], parts);
 									break;
 								default:
-									unsupportKey(parts);
+									this.unsupportKey(parts);
 							}
 							break;
 						}
 
-						unsupportKey(parts);
+						this.unsupportKey(parts);
 					case 2:
 						if (state.get(IN_METHOD)) {
 							switch (parts[0]) {
 								case "p": // parameter
 									state.set(IN_PARAMETER);
-									holds[IN_PARAMETER] = parseArgument(holds[IN_METHOD], parts, escapeNames);
+									holds[IN_PARAMETER] = this.parseArgument(holds[IN_METHOD], parts, escapeNames);
 									break;
 								case "v": // local variable
 									// TODO add local var mapping
 									break;
 								case "c": // method javadoc
-									addJavadoc(holds[IN_METHOD], parts);
+									this.addJavadoc(holds[IN_METHOD], parts);
 									break;
 								default:
-									unsupportKey(parts);
+									this.unsupportKey(parts);
 							}
 							break;
 						}
 
 						if (state.get(IN_FIELD)) {
-							switch (parts[0]) {
-								case "c": // field javadoc
-									addJavadoc(holds[IN_FIELD], parts);
-									break;
-								default:
-									unsupportKey(parts);
+							if (parts[0].equals("c")) { // field javadoc
+								this.addJavadoc(holds[IN_FIELD], parts);
+							} else {
+								this.unsupportKey(parts);
 							}
 							break;
 						}
-						unsupportKey(parts);
+						this.unsupportKey(parts);
 					case 3:
 						if (state.get(IN_PARAMETER)) {
-							switch (parts[0]) {
-								case "c":
-									addJavadoc(holds[IN_PARAMETER], parts);
-									break;
-								default:
-									unsupportKey(parts);
+							if (parts[0].equals("c")) {
+								this.addJavadoc(holds[IN_PARAMETER], parts);
+							} else {
+								this.unsupportKey(parts);
 							}
 							break;
 						}
-						unsupportKey(parts);
+						this.unsupportKey(parts);
 					default:
-						unsupportKey(parts);
+						this.unsupportKey(parts);
 				}
 
 			} catch (Throwable t) {
@@ -209,7 +205,7 @@ public final class TinyV2Reader implements MappingsReader {
 			throw new IllegalArgumentException("Invalid javadoc declaration");
 		}
 
-		addJavadoc(pair, parts[1]);
+		this.addJavadoc(pair, parts[1]);
 	}
 
 	private MappingPair<ClassEntry, RawEntryMapping> parseClass(String[] tokens, boolean escapeNames) {

@@ -28,9 +28,9 @@ public class ValidationContext {
 	 */
 	public void setActiveElement(@Nullable Validatable v) {
 		if (v != null) {
-			elements.add(v);
+			this.elements.add(v);
 		}
-		activeElement = v;
+		this.activeElement = v;
 	}
 
 	/**
@@ -43,10 +43,10 @@ public class ValidationContext {
 	public void raise(Message message, Object... args) {
 		ParameterizedMessage pm = new ParameterizedMessage(message, args, this.activeElement);
 		if (!this.messages.contains(pm)) {
-			if (activeElement != null) {
-				activeElement.addMessage(pm);
+			if (this.activeElement != null) {
+				this.activeElement.addMessage(pm);
 			}
-			messages.add(pm);
+			this.messages.add(pm);
 		}
 	}
 
@@ -59,7 +59,7 @@ public class ValidationContext {
 	 */
 	public boolean canProceed() {
 		// TODO on warnings, wait until user confirms
-		return messages.stream().noneMatch(m -> m.message.type == Type.ERROR);
+		return this.messages.stream().noneMatch(m -> m.message.type == Type.ERROR);
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class ValidationContext {
 	}
 
 	public List<ParameterizedMessage> getMessages() {
-		return Collections.unmodifiableList(messages);
+		return Collections.unmodifiableList(this.messages);
 	}
 
 	/**
@@ -85,10 +85,10 @@ public class ValidationContext {
 	 * interface starts getting validated, to get rid of old messages.
 	 */
 	public void reset() {
-		activeElement = null;
-		elements.forEach(Validatable::clearMessages);
-		elements.clear();
-		messages.clear();
+		this.activeElement = null;
+		this.elements.forEach(Validatable::clearMessages);
+		this.elements.clear();
+		this.messages.clear();
 	}
 
 }

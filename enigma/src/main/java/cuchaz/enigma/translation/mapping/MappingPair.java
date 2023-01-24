@@ -18,12 +18,12 @@ public class MappingPair<E extends Entry<?>, M> {
 	}
 
 	public E getEntry() {
-		return entry;
+		return this.entry;
 	}
 
 	@Nullable
 	public M getMapping() {
-		return mapping;
+		return this.mapping;
 	}
 
 	public void setMapping(M mapping) {

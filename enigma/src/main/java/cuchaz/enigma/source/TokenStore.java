@@ -65,7 +65,7 @@ public final class TokenStore {
 	}
 
 	public Map<RenamableTokenType, NavigableSet<Token>> getByType() {
-		return byType;
+		return this.byType;
 	}
 
 }

@@ -70,40 +70,40 @@ public class EnigmaProject {
 
 	public void setMappings(EntryTree<EntryMapping> mappings) {
 		if (mappings != null) {
-			mapper = EntryRemapper.mapped(jarIndex, mappings);
+			this.mapper = EntryRemapper.mapped(this.jarIndex, mappings);
 		} else {
-			mapper = EntryRemapper.empty(jarIndex);
+			this.mapper = EntryRemapper.empty(this.jarIndex);
 		}
 	}
 
 	public Enigma getEnigma() {
-		return enigma;
+		return this.enigma;
 	}
 
 	public Path getJarPath() {
-		return jarPath;
+		return this.jarPath;
 	}
 
 	public ClassProvider getClassProvider() {
-		return classProvider;
+		return this.classProvider;
 	}
 
 	public JarIndex getJarIndex() {
-		return jarIndex;
+		return this.jarIndex;
 	}
 
 	public byte[] getJarChecksum() {
-		return jarChecksum;
+		return this.jarChecksum;
 	}
 
 	public EntryRemapper getMapper() {
-		return mapper;
+		return this.mapper;
 	}
 
 	public void dropMappings(ProgressListener progress) {
-		DeltaTrackingTree<EntryMapping> mappings = mapper.getObfToDeobf();
+		DeltaTrackingTree<EntryMapping> mappings = this.mapper.getObfToDeobf();
 
-		Collection<Entry<?>> dropped = dropMappings(mappings, progress);
+		Collection<Entry<?>> dropped = this.dropMappings(mappings, progress);
 		for (Entry<?> entry : dropped) {
 			mappings.trackChange(entry);
 		}
@@ -111,7 +111,7 @@ public class EnigmaProject {
 
 	private Collection<Entry<?>> dropMappings(EntryTree<EntryMapping> mappings, ProgressListener progress) {
 		// drop mappings that don't match the jar
-		MappingsChecker checker = new MappingsChecker(jarIndex, mappings);
+		MappingsChecker checker = new MappingsChecker(this.jarIndex, mappings);
 		MappingsChecker.Dropped droppedBroken = checker.dropBrokenMappings(progress);
 
 		Map<Entry<?>, String> droppedBrokenMappings = droppedBroken.getDroppedMappings();
@@ -134,7 +134,7 @@ public class EnigmaProject {
 
 	public boolean isNavigable(Entry<?> obfEntry) {
 		if (obfEntry instanceof ClassEntry classEntry) {
-			if (isAnonymousOrLocal(classEntry)) {
+			if (this.isAnonymousOrLocal(classEntry)) {
 				return false;
 			}
 		}
@@ -171,7 +171,7 @@ public class EnigmaProject {
 			} else if (name.equals("wait") && sig.equals("(JI)V")) {
 				return false;
 			} else {
-				ClassDefEntry parent = jarIndex.getEntryIndex().getDefinition(obfMethodEntry.getParent());
+				ClassDefEntry parent = this.jarIndex.getEntryIndex().getDefinition(obfMethodEntry.getParent());
 				if (parent != null && parent.isEnum()) {
 					if (name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";")) {
 						return false;
@@ -183,7 +183,7 @@ public class EnigmaProject {
 		} else if (obfEntry instanceof LocalVariableEntry && !((LocalVariableEntry) obfEntry).isArgument()) {
 			return false;
 		} else if (obfEntry instanceof ClassEntry classEntry) {
-			if (isAnonymousOrLocal(classEntry)) {
+			if (this.isAnonymousOrLocal(classEntry)) {
 				return false;
 			}
 		}
@@ -192,7 +192,7 @@ public class EnigmaProject {
 	}
 
 	public boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {
-		return obfReference.isNamed() && isRenamable(obfReference.getNameableEntry());
+		return obfReference.isNamed() && this.isRenamable(obfReference.getNameableEntry());
 	}
 
 	public boolean isObfuscated(Entry<?> entry) {
@@ -210,32 +210,32 @@ public class EnigmaProject {
 		List<NameProposalService> nameProposalServices = this.getEnigma().getServices().get(NameProposalService.TYPE);
 		if (!nameProposalServices.isEmpty()) {
 			for (NameProposalService service : nameProposalServices) {
-				if (service.proposeName(entry, mapper).isPresent()) {
+				if (service.proposeName(entry, this.mapper).isPresent()) {
 					return false;
 				}
 			}
 		}
 
-		String mappedName = mapper.deobfuscate(entry).getName();
+		String mappedName = this.mapper.deobfuscate(entry).getName();
 		return mappedName == null || mappedName.isEmpty() || mappedName.equals(name);
 	}
 
 	public boolean isSynthetic(Entry<?> entry) {
-		return jarIndex.getEntryIndex().hasEntry(entry) && jarIndex.getEntryIndex().getEntryAccess(entry).isSynthetic();
+		return this.jarIndex.getEntryIndex().hasEntry(entry) && this.jarIndex.getEntryIndex().getEntryAccess(entry).isSynthetic();
 	}
 
 	public boolean isAnonymousOrLocal(ClassEntry classEntry) {
-		EnclosingMethodIndex enclosingMethodIndex = jarIndex.getEnclosingMethodIndex();
+		EnclosingMethodIndex enclosingMethodIndex = this.jarIndex.getEnclosingMethodIndex();
 		// Only local and anonymous classes may have the EnclosingMethod attribute
 		return enclosingMethodIndex.hasEnclosingMethod(classEntry);
 	}
 
 	public JarExport exportRemappedJar(ProgressListener progress) {
-		Collection<ClassEntry> classEntries = jarIndex.getEntryIndex().getClasses();
-		ClassProvider fixingClassProvider = new ObfuscationFixClassProvider(classProvider, jarIndex);
+		Collection<ClassEntry> classEntries = this.jarIndex.getEntryIndex().getClasses();
+		ClassProvider fixingClassProvider = new ObfuscationFixClassProvider(this.classProvider, this.jarIndex);
 
-		NameProposalService[] nameProposalServices = getEnigma().getServices().get(NameProposalService.TYPE).toArray(new NameProposalService[0]);
-		Translator deobfuscator = nameProposalServices.length == 0 ? mapper.getDeobfuscator() : new ProposingTranslator(mapper, nameProposalServices);
+		NameProposalService[] nameProposalServices = this.getEnigma().getServices().get(NameProposalService.TYPE).toArray(new NameProposalService[0]);
+		Translator deobfuscator = nameProposalServices.length == 0 ? this.mapper.getDeobfuscator() : new ProposingTranslator(this.mapper, nameProposalServices);
 
 		AtomicInteger count = new AtomicInteger();
 		progress.init(classEntries.size(), I18n.translate("progress.classes.deobfuscating"));
@@ -257,7 +257,7 @@ public class EnigmaProject {
 				.filter(Objects::nonNull)
 				.collect(Collectors.toMap(n -> n.name, Functions.identity()));
 
-		return new JarExport(mapper, compiled);
+		return new JarExport(this.mapper, compiled);
 	}
 
 	public static final class JarExport {
@@ -303,7 +303,7 @@ public class EnigmaProject {
 			progress.init(classes.size(), I18n.translate("progress.classes.decompiling"));
 
 			//create a common instance outside the loop as mappings shouldn't be changing while this is happening
-			Decompiler decompiler = decompilerService.create(ClassProvider.fromMap(compiled), new SourceSettings(false, false));
+			Decompiler decompiler = decompilerService.create(ClassProvider.fromMap(this.compiled), new SourceSettings(false, false));
 
 			AtomicInteger count = new AtomicInteger();
 
@@ -313,7 +313,7 @@ public class EnigmaProject {
 
 						String source = null;
 						try {
-							source = decompileClass(translatedNode, decompiler);
+							source = this.decompileClass(translatedNode, decompiler);
 						} catch (Throwable throwable) {
 							switch (errorStrategy) {
 								case PROPAGATE: throw throwable;
@@ -337,7 +337,7 @@ public class EnigmaProject {
 		}
 
 		private String decompileClass(ClassNode translatedNode, Decompiler decompiler) {
-			return decompiler.getSource(translatedNode.name, mapper).asString();
+			return decompiler.getSource(translatedNode.name, this.mapper).asString();
 		}
 	}
 
@@ -349,10 +349,10 @@ public class EnigmaProject {
 		}
 
 		public void write(Path path, ProgressListener progress) throws IOException {
-			progress.init(decompiled.size(), I18n.translate("progress.sources.writing"));
+			progress.init(this.decompiled.size(), I18n.translate("progress.sources.writing"));
 
 			int count = 0;
-			for (ClassSource source : decompiled) {
+			for (ClassSource source : this.decompiled) {
 				progress.step(count++, source.name);
 
 				Path sourcePath = source.resolvePath(path);
@@ -373,12 +373,12 @@ public class EnigmaProject {
 		public void writeTo(Path path) throws IOException {
 			Files.createDirectories(path.getParent());
 			try (BufferedWriter writer = Files.newBufferedWriter(path)) {
-				writer.write(source);
+				writer.write(this.source);
 			}
 		}
 
 		public Path resolvePath(Path root) {
-			return root.resolve(name.replace('.', '/') + ".java");
+			return root.resolve(this.name.replace('.', '/') + ".java");
 		}
 	}
 

@@ -13,7 +13,7 @@ public final class EnigmaServiceType<T extends EnigmaService> {
 
 	@Override
 	public int hashCode() {
-		return key.hashCode();
+		return this.key.hashCode();
 	}
 
 	@Override
@@ -21,7 +21,7 @@ public final class EnigmaServiceType<T extends EnigmaService> {
 		if (obj == this) return true;
 
 		if (obj instanceof EnigmaServiceType) {
-			return ((EnigmaServiceType) obj).key.equals(key);
+			return ((EnigmaServiceType) obj).key.equals(this.key);
 		}
 
 		return false;

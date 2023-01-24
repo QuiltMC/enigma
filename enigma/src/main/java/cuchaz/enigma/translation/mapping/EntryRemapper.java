@@ -37,10 +37,10 @@ public class EntryRemapper {
 
 		this.obfResolver = jarIndex.getEntryResolver();
 
-		this.deobfuscator = new MappingTranslator(obfToDeobf, obfResolver);
+		this.deobfuscator = new MappingTranslator(obfToDeobf, this.obfResolver);
 		this.jarIndex = jarIndex;
 
-		this.validator = new MappingValidator(obfToDeobf, deobfuscator, jarIndex);
+		this.validator = new MappingValidator(obfToDeobf, this.deobfuscator, jarIndex);
 	}
 
 	public static EntryRemapper mapped(JarIndex index, EntryTree<EntryMapping> obfToDeobf) {
@@ -52,29 +52,28 @@ public class EntryRemapper {
 	}
 
 	public void validatePutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping) {
-		doPutMapping(vc, obfuscatedEntry, deobfMapping, true);
+		this.doPutMapping(vc, obfuscatedEntry, deobfMapping, true);
 	}
 
 	public void putMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping) {
-		doPutMapping(vc, obfuscatedEntry, deobfMapping, false);
+		this.doPutMapping(vc, obfuscatedEntry, deobfMapping, false);
 	}
 
 	private void doPutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping, boolean validateOnly) {
-		if (obfuscatedEntry instanceof FieldEntry) {
-			FieldEntry fieldEntry = (FieldEntry) obfuscatedEntry;
+		if (obfuscatedEntry instanceof FieldEntry fieldEntry) {
 			ClassEntry classEntry = fieldEntry.getParent();
 
 			// TODO: Update this to work with hashed mojmap
 			// mapRecordComponentGetter(vc, classEntry, fieldEntry, deobfMapping);
 		}
 
-		boolean renaming = !Objects.equals(getDeobfMapping(obfuscatedEntry).targetName(), deobfMapping.targetName());
+		boolean renaming = !Objects.equals(this.getDeobfMapping(obfuscatedEntry).targetName(), deobfMapping.targetName());
 
-		Collection<Entry<?>> resolvedEntries = obfResolver.resolveEntry(obfuscatedEntry, renaming ? ResolutionStrategy.RESOLVE_ROOT : ResolutionStrategy.RESOLVE_CLOSEST);
+		Collection<Entry<?>> resolvedEntries = this.obfResolver.resolveEntry(obfuscatedEntry, renaming ? ResolutionStrategy.RESOLVE_ROOT : ResolutionStrategy.RESOLVE_CLOSEST);
 
 		if (renaming && deobfMapping.targetName() != null) {
 			for (Entry<?> resolvedEntry : resolvedEntries) {
-				validator.validateRename(vc, resolvedEntry, deobfMapping.targetName());
+				this.validator.validateRename(vc, resolvedEntry, deobfMapping.targetName());
 			}
 		}
 
@@ -82,21 +81,21 @@ public class EntryRemapper {
 
 		for (Entry<?> resolvedEntry : resolvedEntries) {
 			if (deobfMapping.equals(EntryMapping.DEFAULT)) {
-				obfToDeobf.insert(resolvedEntry, null);
+				this.obfToDeobf.insert(resolvedEntry, null);
 			} else {
-				obfToDeobf.insert(resolvedEntry, deobfMapping);
+				this.obfToDeobf.insert(resolvedEntry, deobfMapping);
 			}
 		}
 	}
 
 	// A little bit of a hack to also map the getter method for record fields.
 	private void mapRecordComponentGetter(ValidationContext vc, ClassEntry classEntry, FieldEntry fieldEntry, EntryMapping fieldMapping) {
-		if (!jarIndex.getEntryIndex().getDefinition(classEntry).isRecord() || jarIndex.getEntryIndex().getFieldAccess(fieldEntry).isStatic()) {
+		if (!this.jarIndex.getEntryIndex().getDefinition(classEntry).isRecord() || this.jarIndex.getEntryIndex().getFieldAccess(fieldEntry).isStatic()) {
 			return;
 		}
 
 		// Find all the methods in this record class
-		List<MethodEntry> classMethods = jarIndex.getEntryIndex().getMethods().stream()
+		List<MethodEntry> classMethods = this.jarIndex.getEntryIndex().getMethods().stream()
 				.filter(entry -> classEntry.equals(entry.getParent()))
 				.toList();
 
@@ -116,56 +115,56 @@ public class EntryRemapper {
 		}
 
 		// Also remap the associated method, without the javadoc.
-		doPutMapping(vc, methodEntry, new EntryMapping(fieldMapping.targetName()), false);
+		this.doPutMapping(vc, methodEntry, new EntryMapping(fieldMapping.targetName()), false);
 	}
 
 	@Nonnull
 	public EntryMapping getDeobfMapping(Entry<?> entry) {
-		EntryMapping entryMapping = obfToDeobf.get(entry);
+		EntryMapping entryMapping = this.obfToDeobf.get(entry);
 		return entryMapping == null ? EntryMapping.DEFAULT : entryMapping;
 	}
 
 	public <T extends Translatable> TranslateResult<T> extendedDeobfuscate(T translatable) {
-		return deobfuscator.extendedTranslate(translatable);
+		return this.deobfuscator.extendedTranslate(translatable);
 	}
 
 	public <T extends Translatable> T deobfuscate(T translatable) {
-		return deobfuscator.translate(translatable);
+		return this.deobfuscator.translate(translatable);
 	}
 
 	public Translator getDeobfuscator() {
-		return deobfuscator;
+		return this.deobfuscator;
 	}
 
 	public Stream<Entry<?>> getObfEntries() {
-		return obfToDeobf.getAllEntries();
+		return this.obfToDeobf.getAllEntries();
 	}
 
 	public Collection<Entry<?>> getObfChildren(Entry<?> obfuscatedEntry) {
-		return obfToDeobf.getChildren(obfuscatedEntry);
+		return this.obfToDeobf.getChildren(obfuscatedEntry);
 	}
 
 	public DeltaTrackingTree<EntryMapping> getObfToDeobf() {
-		return obfToDeobf;
+		return this.obfToDeobf;
 	}
 
 	public MappingDelta<EntryMapping> takeMappingDelta() {
-		return obfToDeobf.takeDelta();
+		return this.obfToDeobf.takeDelta();
 	}
 
 	public boolean isDirty() {
-		return obfToDeobf.isDirty();
+		return this.obfToDeobf.isDirty();
 	}
 
 	public EntryResolver getObfResolver() {
-		return obfResolver;
+		return this.obfResolver;
 	}
 
 	public MappingValidator getValidator() {
-		return validator;
+		return this.validator;
 	}
 
 	public JarIndex getJarIndex() {
-		return jarIndex;
+		return this.jarIndex;
 	}
 }

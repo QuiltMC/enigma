@@ -36,7 +36,7 @@ public class RecafMappingsWriter implements MappingsWriter {
 			Lists.newArrayList(mappings)
 					.stream()
 					.map(EntryTreeNode::getEntry)
-					.forEach(entry -> writeEntry(writer, mappings, entry));
+					.forEach(entry -> this.writeEntry(writer, mappings, entry));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -80,6 +80,6 @@ public class RecafMappingsWriter implements MappingsWriter {
 			e.printStackTrace();
 		}
 
-		node.getChildren().forEach(child -> writeEntry(writer, mappings, child));
+		node.getChildren().forEach(child -> this.writeEntry(writer, mappings, child));
 	}
 }

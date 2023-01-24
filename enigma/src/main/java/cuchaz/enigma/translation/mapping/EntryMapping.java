@@ -33,14 +33,14 @@ public record EntryMapping(
 	}
 
 	public EntryMapping withName(String newName) {
-		return new EntryMapping(newName, accessModifier, javadoc);
+		return new EntryMapping(newName, this.accessModifier, this.javadoc);
 	}
 
 	public EntryMapping withModifier(AccessModifier newModifier) {
-		return new EntryMapping(targetName, newModifier, javadoc);
+		return new EntryMapping(this.targetName, newModifier, this.javadoc);
 	}
 
 	public EntryMapping withDocs(String newDocs) {
-		return new EntryMapping(targetName, accessModifier, newDocs);
+		return new EntryMapping(this.targetName, this.accessModifier, newDocs);
 	}
 }

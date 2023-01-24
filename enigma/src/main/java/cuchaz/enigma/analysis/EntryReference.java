@@ -73,10 +73,10 @@ public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements T
 	}
 
 	public ClassEntry getLocationClassEntry() {
-		if (context != null) {
-			return context.getContainingClass();
+		if (this.context != null) {
+			return this.context.getContainingClass();
 		}
-		return entry.getContainingClass();
+		return this.entry.getContainingClass();
 	}
 
 	public boolean isNamed() {
@@ -91,55 +91,55 @@ public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements T
 	}
 
 	public Entry<?> getNameableEntry() {
-		if (entry instanceof MethodEntry method && method.isConstructor()) {
+		if (this.entry instanceof MethodEntry method && method.isConstructor()) {
 			// renaming a constructor really means renaming the class
-			return entry.getContainingClass();
+			return this.entry.getContainingClass();
 		}
-		return entry;
+		return this.entry;
 	}
 
 	public String getNameableName() {
-		return getNameableEntry().getName();
+		return this.getNameableEntry().getName();
 	}
 
 	@Override
 	public int hashCode() {
-		if (context != null) {
-			return Objects.hash(entry.hashCode(), context.hashCode());
+		if (this.context != null) {
+			return Objects.hash(this.entry.hashCode(), this.context.hashCode());
 		}
-		return entry.hashCode() ^ Boolean.hashCode(this.declaration);
+		return this.entry.hashCode() ^ Boolean.hashCode(this.declaration);
 	}
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof EntryReference reference && equals(reference);
+		return other instanceof EntryReference reference && this.equals(reference);
 	}
 
 	public boolean equals(EntryReference<?, ?> other) {
 		return other != null
-				&& Objects.equals(entry, other.entry)
-				&& Objects.equals(context, other.context)
-				&& declaration == other.declaration;
+				&& Objects.equals(this.entry, other.entry)
+				&& Objects.equals(this.context, other.context)
+				&& this.declaration == other.declaration;
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder buf = new StringBuilder();
-		buf.append(entry);
+		buf.append(this.entry);
 
-		if (declaration) {
+		if (this.declaration) {
 			buf.append("'s declaration");
 			return buf.toString();
 		}
 
-		if (context != null) {
+		if (this.context != null) {
 			buf.append(" called from ");
-			buf.append(context);
+			buf.append(this.context);
 		}
 
-		if (targetType != null && targetType.getKind() != ReferenceTargetType.Kind.NONE) {
+		if (this.targetType != null && this.targetType.getKind() != ReferenceTargetType.Kind.NONE) {
 			buf.append(" on target of type ");
-			buf.append(targetType);
+			buf.append(this.targetType);
 		}
 
 		return buf.toString();
@@ -147,7 +147,7 @@ public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements T
 
 	@Override
 	public TranslateResult<EntryReference<E, C>> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
-		return translator.extendedTranslate(this.entry).map(e -> new EntryReference<>(e, translator.translate(context), this));
+		return translator.extendedTranslate(this.entry).map(e -> new EntryReference<>(e, translator.translate(this.context), this));
 	}
 
 }

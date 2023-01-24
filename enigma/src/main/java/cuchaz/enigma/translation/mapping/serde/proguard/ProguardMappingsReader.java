@@ -63,7 +63,7 @@ public class ProguardMappingsReader implements MappingsReader {
                     throw new MappingParseException(path, lineNumber, "field mapping not inside class: " + line);
                 }
 
-                mappings.insert(new FieldEntry(currentClass, name, new TypeDescriptor(getDescriptor(type))), new EntryMapping(targetName));
+                mappings.insert(new FieldEntry(currentClass, name, new TypeDescriptor(this.getDescriptor(type))), new EntryMapping(targetName));
             } else if (methodMatcher.matches()) {
                 String returnType = methodMatcher.group(1);
                 String name = methodMatcher.group(2);
@@ -74,7 +74,7 @@ public class ProguardMappingsReader implements MappingsReader {
                     throw new MappingParseException(path, lineNumber, "method mapping not inside class: " + line);
                 }
 
-                mappings.insert(new MethodEntry(currentClass, name, new MethodDescriptor(getDescriptor(returnType, parameterTypes))), new EntryMapping(targetName));
+                mappings.insert(new MethodEntry(currentClass, name, new MethodDescriptor(this.getDescriptor(returnType, parameterTypes))), new EntryMapping(targetName));
             } else {
                 throw new MappingParseException(path, lineNumber, "invalid mapping line: " + line);
             }
@@ -124,11 +124,11 @@ public class ProguardMappingsReader implements MappingsReader {
         descriptor.append('(');
 
         for (String parameterType : parameterTypes) {
-            descriptor.append(getDescriptor(parameterType));
+            descriptor.append(this.getDescriptor(parameterType));
         }
 
         descriptor.append(')');
-        descriptor.append(getDescriptor(returnType));
+        descriptor.append(this.getDescriptor(returnType));
 
         return descriptor.toString();
     }

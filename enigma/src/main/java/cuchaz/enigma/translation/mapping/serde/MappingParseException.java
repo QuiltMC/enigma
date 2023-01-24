@@ -38,6 +38,6 @@ public class MappingParseException extends Exception {
 
 	@Override
 	public String getMessage() {
-		return "Line " + line + ": " + message + " in file " + filePath.toString();
+		return "Line " + this.line + ": " + this.message + " in file " + this.filePath.toString();
 	}
 }

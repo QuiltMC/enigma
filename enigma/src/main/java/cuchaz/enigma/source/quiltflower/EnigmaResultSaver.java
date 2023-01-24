@@ -14,7 +14,7 @@ public class EnigmaResultSaver implements IResultSaver {
 
     @Override
     public void saveClassFile(String path, String qualifiedName, String entryName, String content, int[] mapping) {
-        index.setSource(content);
+        this.index.setSource(content);
     }
 
     @Override

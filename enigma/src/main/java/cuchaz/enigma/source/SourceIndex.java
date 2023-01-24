@@ -22,36 +22,36 @@ public class SourceIndex {
     private final Map<Entry<?>, Token> declarationToToken;
 
     public SourceIndex() {
-        tokenToReference = new TreeMap<>();
-        referenceToTokens = HashMultimap.create();
-        declarationToToken = Maps.newHashMap();
+        this.tokenToReference = new TreeMap<>();
+        this.referenceToTokens = HashMultimap.create();
+        this.declarationToToken = Maps.newHashMap();
     }
 
     public SourceIndex(String source) {
         this();
-        setSource(source);
+        this.setSource(source);
     }
 
     public void setSource(String source) {
         this.source = source;
-        lineOffsets = Lists.newArrayList();
-        lineOffsets.add(0);
+        this.lineOffsets = Lists.newArrayList();
+        this.lineOffsets.add(0);
 
         for (int i = 0; i < this.source.length(); i++) {
             if (this.source.charAt(i) == '\n') {
-                lineOffsets.add(i + 1);
+                this.lineOffsets.add(i + 1);
             }
         }
     }
 
     public String getSource() {
-        return source;
+        return this.source;
     }
 
     public int getLineNumber(int position) {
         int line = 0;
 
-        for (int offset : lineOffsets) {
+        for (int offset : this.lineOffsets) {
             if (offset > position) {
                 break;
             }
@@ -63,37 +63,37 @@ public class SourceIndex {
     }
 
     public int getColumnNumber(int position) {
-        return position - lineOffsets.get(getLineNumber(position) - 1) + 1;
+        return position - this.lineOffsets.get(this.getLineNumber(position) - 1) + 1;
     }
 
     public int getPosition(int line, int column) {
-        return lineOffsets.get(line - 1) + column - 1;
+        return this.lineOffsets.get(line - 1) + column - 1;
     }
 
     public Iterable<Entry<?>> declarations() {
-        return declarationToToken.keySet();
+        return this.declarationToToken.keySet();
     }
 
     public Iterable<Token> declarationTokens() {
-        return declarationToToken.values();
+        return this.declarationToToken.values();
     }
 
     public Token getDeclarationToken(Entry<?> entry) {
-        return declarationToToken.get(entry);
+        return this.declarationToToken.get(entry);
     }
 
     public void addDeclaration(Token token, Entry<?> deobfEntry) {
         if (token != null) {
             EntryReference<Entry<?>, Entry<?>> reference = new EntryReference<>(deobfEntry, token.text);
-            tokenToReference.put(token, reference);
-            referenceToTokens.put(reference, token);
-            referenceToTokens.put(EntryReference.declaration(deobfEntry, token.text), token);
-            declarationToToken.put(deobfEntry, token);
+            this.tokenToReference.put(token, reference);
+            this.referenceToTokens.put(reference, token);
+            this.referenceToTokens.put(EntryReference.declaration(deobfEntry, token.text), token);
+            this.declarationToToken.put(deobfEntry, token);
         }
     }
 
     public Iterable<EntryReference<Entry<?>, Entry<?>>> references() {
-        return referenceToTokens.keySet();
+        return this.referenceToTokens.keySet();
     }
 
     public EntryReference<Entry<?>, Entry<?>> getReference(Token token) {
@@ -101,15 +101,15 @@ public class SourceIndex {
             return null;
         }
 
-        return tokenToReference.get(token);
+        return this.tokenToReference.get(token);
     }
 
     public Iterable<Token> referenceTokens() {
-        return tokenToReference.keySet();
+        return this.tokenToReference.keySet();
     }
 
     public Token getReferenceToken(int pos) {
-        Token token = tokenToReference.floorKey(new Token(pos, pos, null));
+        Token token = this.tokenToReference.floorKey(new Token(pos, pos, null));
 
         if (token != null && token.contains(pos)) {
             return token;
@@ -119,39 +119,39 @@ public class SourceIndex {
     }
 
     public Collection<Token> getReferenceTokens(EntryReference<Entry<?>, Entry<?>> deobfReference) {
-        return referenceToTokens.get(deobfReference);
+        return this.referenceToTokens.get(deobfReference);
     }
 
     public void addReference(Token token, Entry<?> deobfEntry, Entry<?> deobfContext) {
         if (token != null) {
             EntryReference<Entry<?>, Entry<?>> deobfReference = new EntryReference<>(deobfEntry, token.text, deobfContext);
-            tokenToReference.put(token, deobfReference);
-            referenceToTokens.put(deobfReference, token);
+            this.tokenToReference.put(token, deobfReference);
+            this.referenceToTokens.put(deobfReference, token);
         }
     }
 
     public void resolveReferences(EntryResolver resolver) {
         // resolve all the classes in the source references
-        for (Token token : Lists.newArrayList(referenceToTokens.values())) {
-            EntryReference<Entry<?>, Entry<?>> reference = tokenToReference.get(token);
+        for (Token token : Lists.newArrayList(this.referenceToTokens.values())) {
+            EntryReference<Entry<?>, Entry<?>> reference = this.tokenToReference.get(token);
             EntryReference<Entry<?>, Entry<?>> resolvedReference = resolver.resolveFirstReference(reference, ResolutionStrategy.RESOLVE_CLOSEST);
 
             // replace the reference
-            tokenToReference.replace(token, resolvedReference);
+            this.tokenToReference.replace(token, resolvedReference);
 
-            Collection<Token> tokens = referenceToTokens.removeAll(reference);
-            referenceToTokens.putAll(resolvedReference, tokens);
+            Collection<Token> tokens = this.referenceToTokens.removeAll(reference);
+            this.referenceToTokens.putAll(resolvedReference, tokens);
         }
     }
 
     public SourceIndex remapTo(SourceRemapper.Result result) {
         SourceIndex remapped = new SourceIndex(result.getSource());
 
-        for (Map.Entry<Entry<?>, Token> entry : declarationToToken.entrySet()) {
+        for (Map.Entry<Entry<?>, Token> entry : this.declarationToToken.entrySet()) {
             remapped.declarationToToken.put(entry.getKey(), result.getRemappedToken(entry.getValue()));
         }
 
-        for (Map.Entry<EntryReference<Entry<?>, Entry<?>>, Collection<Token>> entry : referenceToTokens.asMap().entrySet()) {
+        for (Map.Entry<EntryReference<Entry<?>, Entry<?>>, Collection<Token>> entry : this.referenceToTokens.asMap().entrySet()) {
             EntryReference<Entry<?>, Entry<?>> reference = entry.getKey();
             Collection<Token> oldTokens = entry.getValue();
 
@@ -163,7 +163,7 @@ public class SourceIndex {
             remapped.referenceToTokens.putAll(reference, newTokens);
         }
 
-        for (Map.Entry<Token, EntryReference<Entry<?>, Entry<?>>> entry : tokenToReference.entrySet()) {
+        for (Map.Entry<Token, EntryReference<Entry<?>, Entry<?>>> entry : this.tokenToReference.entrySet()) {
             remapped.tokenToReference.put(result.getRemappedToken(entry.getKey()), entry.getValue());
         }
 

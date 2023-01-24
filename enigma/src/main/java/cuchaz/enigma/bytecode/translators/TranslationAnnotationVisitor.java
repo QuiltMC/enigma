@@ -18,34 +18,34 @@ public class TranslationAnnotationVisitor extends AnnotationVisitor {
 
 	@Override
 	public void visit(String name, Object value) {
-		super.visit(name, AsmObjectTranslator.translateValue(translator, value));
+		super.visit(name, AsmObjectTranslator.translateValue(this.translator, value));
 	}
 
 	@Override
 	public AnnotationVisitor visitArray(String name) {
-		return new TranslationAnnotationVisitor(translator, annotationEntry, api, super.visitArray(name));
+		return new TranslationAnnotationVisitor(this.translator, this.annotationEntry, this.api, super.visitArray(name));
 	}
 
 	@Override
 	public AnnotationVisitor visitAnnotation(String name, String desc) {
 		TypeDescriptor type = new TypeDescriptor(desc);
 		if (name != null) {
-			FieldEntry annotationField = translator.translate(new FieldEntry(annotationEntry, name, type));
+			FieldEntry annotationField = this.translator.translate(new FieldEntry(this.annotationEntry, name, type));
 			return super.visitAnnotation(annotationField.getName(), annotationField.getDesc().toString());
 		} else {
-			return super.visitAnnotation(null, translator.translate(type).toString());
+			return super.visitAnnotation(null, this.translator.translate(type).toString());
 		}
 	}
 
 	@Override
 	public void visitEnum(String name, String desc, String value) {
 		TypeDescriptor type = new TypeDescriptor(desc);
-		FieldEntry enumField = translator.translate(new FieldEntry(type.getTypeEntry(), value, type));
+		FieldEntry enumField = this.translator.translate(new FieldEntry(type.getTypeEntry(), value, type));
 		if (name != null) {
-			FieldEntry annotationField = translator.translate(new FieldEntry(annotationEntry, name, type));
+			FieldEntry annotationField = this.translator.translate(new FieldEntry(this.annotationEntry, name, type));
 			super.visitEnum(annotationField.getName(), annotationField.getDesc().toString(), enumField.getName());
 		} else {
-			super.visitEnum(null, translator.translate(type).toString(), enumField.getName());
+			super.visitEnum(null, this.translator.translate(type).toString(), enumField.getName());
 		}
 	}
 }

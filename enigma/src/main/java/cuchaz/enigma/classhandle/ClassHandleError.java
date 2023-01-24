@@ -17,10 +17,10 @@ public final class ClassHandleError {
 
 	@Nullable
 	public String getStackTrace() {
-		if (cause == null) return null;
+		if (this.cause == null) return null;
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		PrintStream ps = new PrintStream(os);
-		cause.printStackTrace(ps);
+		this.cause.printStackTrace(ps);
 		return os.toString();
 	}
 

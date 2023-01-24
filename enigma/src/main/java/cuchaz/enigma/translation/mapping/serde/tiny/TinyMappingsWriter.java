@@ -54,11 +54,11 @@ public class TinyMappingsWriter implements MappingsWriter {
         }
 
         try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-            writeLine(writer, new String[]{VERSION_CONSTANT, nameObf, nameDeobf});
+			this.writeLine(writer, new String[]{VERSION_CONSTANT, this.nameObf, this.nameDeobf});
 
             Lists.newArrayList(mappings).stream()
                     .map(EntryTreeNode::getEntry).sorted(Comparator.comparing(Object::toString))
-                    .forEach(entry -> writeEntry(writer, mappings, entry));
+                    .forEach(entry -> this.writeEntry(writer, mappings, entry));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -78,29 +78,29 @@ public class TinyMappingsWriter implements MappingsWriter {
         // support comments anyway
 		if (mapping != null && mapping.targetName() != null) {
             if (entry instanceof ClassEntry) {
-                writeClass(writer, (ClassEntry) entry, translator);
+				this.writeClass(writer, (ClassEntry) entry, translator);
             } else if (entry instanceof FieldEntry) {
-				writeLine(writer, serializeEntry(entry, mapping.targetName()));
+				this.writeLine(writer, this.serializeEntry(entry, mapping.targetName()));
             } else if (entry instanceof MethodEntry) {
-				writeLine(writer, serializeEntry(entry, mapping.targetName()));
+				this.writeLine(writer, this.serializeEntry(entry, mapping.targetName()));
             }
         }
 
-        writeChildren(writer, mappings, node);
+		this.writeChildren(writer, mappings, node);
     }
 
     private void writeChildren(Writer writer, EntryTree<EntryMapping> mappings, EntryTreeNode<EntryMapping> node) {
         node.getChildren().stream()
                 .filter(e -> e instanceof FieldEntry).sorted()
-                .forEach(child -> writeEntry(writer, mappings, child));
+                .forEach(child -> this.writeEntry(writer, mappings, child));
 
         node.getChildren().stream()
                 .filter(e -> e instanceof MethodEntry).sorted()
-                .forEach(child -> writeEntry(writer, mappings, child));
+                .forEach(child -> this.writeEntry(writer, mappings, child));
 
         node.getChildren().stream()
                 .filter(e -> e instanceof ClassEntry).sorted()
-                .forEach(child -> writeEntry(writer, mappings, child));
+                .forEach(child -> this.writeEntry(writer, mappings, child));
     }
 
     private void writeClass(Writer writer, ClassEntry entry, Translator translator) {
@@ -108,13 +108,13 @@ public class TinyMappingsWriter implements MappingsWriter {
 
         String obfClassName = entry.getFullName();
         String deobfClassName = translatedEntry.getFullName();
-        writeLine(writer, new String[]{"CLASS", obfClassName, deobfClassName});
+		this.writeLine(writer, new String[]{"CLASS", obfClassName, deobfClassName});
     }
 
     private void writeLine(Writer writer, String[] data) {
         try {
             String line = TAB_JOINER.join(data) + "\n";
-            if (writtenLines.add(line)) {
+            if (this.writtenLines.add(line)) {
                 writer.write(line);
             }
         } catch (IOException e) {
@@ -140,7 +140,7 @@ public class TinyMappingsWriter implements MappingsWriter {
         } else if (entry instanceof ClassEntry) {
             data = new String[2 + extraFields.length];
             data[0] = "CLASS";
-            data[1] = ((ClassEntry) entry).getFullName();
+            data[1] = entry.getFullName();
         }
 
         if (data != null) {

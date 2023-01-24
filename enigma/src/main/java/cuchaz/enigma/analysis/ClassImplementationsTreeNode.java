@@ -47,9 +47,9 @@ public class ClassImplementationsTreeNode extends AbstractClassTreeNode {
 		List<ClassImplementationsTreeNode> nodes = Lists.newArrayList();
 		InheritanceIndex inheritanceIndex = index.getInheritanceIndex();
 
-		Collection<ClassEntry> inheritors = inheritanceIndex.getChildren(entry);
+		Collection<ClassEntry> inheritors = inheritanceIndex.getChildren(this.entry);
 		for (ClassEntry inheritor : inheritors) {
-			nodes.add(new ClassImplementationsTreeNode(translator, inheritor));
+			nodes.add(new ClassImplementationsTreeNode(this.translator, inheritor));
 		}
 
 		// add them to this node

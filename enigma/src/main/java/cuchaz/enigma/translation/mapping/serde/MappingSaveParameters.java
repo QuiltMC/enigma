@@ -11,6 +11,6 @@ public class MappingSaveParameters {
 	}
 
 	public MappingFileNameFormat getFileNameFormat() {
-		return fileNameFormat;
+		return this.fileNameFormat;
 	}
 }

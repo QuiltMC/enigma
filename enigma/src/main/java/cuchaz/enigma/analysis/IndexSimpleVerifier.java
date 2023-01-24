@@ -38,10 +38,10 @@ public class IndexSimpleVerifier extends SimpleVerifier {
                 if (type.equals(NULL_TYPE)) {
                     return true;
                 } else if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
-                    if (isAssignableFrom(expectedType, type)) {
+                    if (this.isAssignableFrom(expectedType, type)) {
                         return true;
-                    } else if (isInterface(expectedType)) {
-                        return isAssignableFrom(OBJECT_TYPE, type);
+                    } else if (this.isInterface(expectedType)) {
+                        return this.isAssignableFrom(OBJECT_TYPE, type);
                     } else {
                         return false;
                     }
@@ -55,12 +55,12 @@ public class IndexSimpleVerifier extends SimpleVerifier {
 
     @Override
     protected boolean isInterface(Type type) {
-        AccessFlags classAccess = entryIndex.getClassAccess(new ClassEntry(type.getInternalName()));
+        AccessFlags classAccess = this.entryIndex.getClassAccess(new ClassEntry(type.getInternalName()));
         if (classAccess != null) {
             return classAccess.isInterface();
         }
 
-        Class<?> clazz = getClass(type);
+        Class<?> clazz = this.getClass(type);
         if (clazz != null) {
             return clazz.isInterface();
         }
@@ -70,12 +70,12 @@ public class IndexSimpleVerifier extends SimpleVerifier {
 
     @Override
     protected Type getSuperClass(Type type) {
-        ClassDefEntry definition = entryIndex.getDefinition(new ClassEntry(type.getInternalName()));
+        ClassDefEntry definition = this.entryIndex.getDefinition(new ClassEntry(type.getInternalName()));
         if (definition != null) {
             return Type.getType('L' + definition.getSuperClass().getFullName() + ';');
         }
 
-        Class<?> clazz = getClass(type);
+        Class<?> clazz = this.getClass(type);
         if (clazz != null) {
             return Type.getType(clazz.getSuperclass());
         }
@@ -94,7 +94,7 @@ public class IndexSimpleVerifier extends SimpleVerifier {
         }
 
         if (type1.getSort() == Type.ARRAY) {
-            return type2.getSort() == Type.ARRAY && isAssignableFrom(Type.getType(type1.getDescriptor().substring(1)), Type.getType(type2.getDescriptor().substring(1)));
+            return type2.getSort() == Type.ARRAY && this.isAssignableFrom(Type.getType(type1.getDescriptor().substring(1)), Type.getType(type2.getDescriptor().substring(1)));
         }
 
         if (type2.getSort() == Type.ARRAY) {
@@ -109,12 +109,12 @@ public class IndexSimpleVerifier extends SimpleVerifier {
             ClassEntry class1 = new ClassEntry(type1.getInternalName());
             ClassEntry class2 = new ClassEntry(type2.getInternalName());
 
-            if (entryIndex.hasClass(class1) && entryIndex.hasClass(class2)) {
-                return inheritanceIndex.getAncestors(class2).contains(class1);
+            if (this.entryIndex.hasClass(class1) && this.entryIndex.hasClass(class2)) {
+                return this.inheritanceIndex.getAncestors(class2).contains(class1);
             }
 
-            Class<?> class1Class = getClass(Type.getType('L' + class1.getFullName() + ';'));
-            Class<?> class2Class = getClass(Type.getType('L' + class2.getFullName() + ';'));
+            Class<?> class1Class = this.getClass(Type.getType('L' + class1.getFullName() + ';'));
+            Class<?> class2Class = this.getClass(Type.getType('L' + class2.getFullName() + ';'));
 
             if (class1Class == null) {
                 return true; // missing classes to find out
@@ -124,11 +124,11 @@ public class IndexSimpleVerifier extends SimpleVerifier {
                 return class1Class.isAssignableFrom(class2Class);
             }
 
-            if (entryIndex.hasClass(class2)) {
-                Set<ClassEntry> ancestors = inheritanceIndex.getAncestors(class2);
+            if (this.entryIndex.hasClass(class2)) {
+                Set<ClassEntry> ancestors = this.inheritanceIndex.getAncestors(class2);
 
                 for (ClassEntry ancestorEntry : ancestors) {
-                    Class<?> ancestor = getClass(Type.getType('L' + ancestorEntry.getFullName() + ';'));
+                    Class<?> ancestor = this.getClass(Type.getType('L' + ancestorEntry.getFullName() + ';'));
                     if (ancestor == null || class1Class.isAssignableFrom(ancestor)) {
                         return true; // assignable, or missing classes to find out
                     }

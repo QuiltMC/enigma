@@ -74,11 +74,11 @@ public class EnigmaDumper extends StringStreamDumper {
 
         MethodDescriptor desc = new MethodDescriptor(method.getOriginalDescriptor());
 
-        return new MethodEntry(getClassEntry(method.getOwner()), method.getName(), desc);
+        return new MethodEntry(this.getClassEntry(method.getOwner()), method.getName(), desc);
     }
 
     private LocalVariableEntry getParameterEntry(MethodPrototype method, int parameterIndex, String name) {
-        MethodEntry owner = getMethodEntry(method);
+        MethodEntry owner = this.getMethodEntry(method);
         // params may be not computed if cfr creates a lambda expression fallback, e.g. in PointOfInterestSet
         if (owner == null || !method.parametersComputed()) {
             return null;
@@ -90,7 +90,7 @@ public class EnigmaDumper extends StringStreamDumper {
     }
 
     private FieldEntry getFieldEntry(JavaTypeInstance owner, String name, String desc) {
-        return new FieldEntry(getClassEntry(owner), name, new TypeDescriptor(desc));
+        return new FieldEntry(this.getClassEntry(owner), name, new TypeDescriptor(desc));
     }
 
     private ClassEntry getClassEntry(JavaTypeInstance type) {
@@ -99,7 +99,7 @@ public class EnigmaDumper extends StringStreamDumper {
 
     @Override
     public Dumper packageName(JavaRefTypeInstance t) {
-        if (sourceSettings.removeImports) {
+        if (this.sourceSettings.removeImports) {
             return this;
         }
         return super.packageName(t);
@@ -107,8 +107,8 @@ public class EnigmaDumper extends StringStreamDumper {
 
     @Override
     public Dumper keyword(String s) {
-        if (sourceSettings.removeImports && s.startsWith("import")) {
-            muteLine = true;
+        if (this.sourceSettings.removeImports && s.startsWith("import")) {
+			this.muteLine = true;
             return this;
         }
         return super.keyword(s);
@@ -116,8 +116,8 @@ public class EnigmaDumper extends StringStreamDumper {
 
     @Override
     public Dumper endCodeln() {
-        if (muteLine) {
-            muteLine = false;
+        if (this.muteLine) {
+			this.muteLine = false;
             return this;
         }
         return super.endCodeln();
@@ -125,7 +125,7 @@ public class EnigmaDumper extends StringStreamDumper {
 
     @Override
     public Dumper print(String s) {
-        if (muteLine) {
+        if (this.muteLine) {
             return this;
         }
         return super.print(s);
@@ -133,17 +133,17 @@ public class EnigmaDumper extends StringStreamDumper {
 
     @Override
     public Dumper dumpClassDoc(JavaTypeInstance owner) {
-        if (mapper != null) {
+        if (this.mapper != null) {
             List<String> recordComponentDocs = new LinkedList<>();
 
-            if (isRecord(owner)) {
+            if (this.isRecord(owner)) {
                 ClassFile classFile = ((JavaRefTypeInstance) owner).getClassFile();
                 for (ClassFileField field : classFile.getFields()) {
                     if (field.getField().testAccessFlag(AccessFlag.ACC_STATIC)) {
                         continue;
                     }
 
-                    EntryMapping mapping = mapper.getDeobfMapping(getFieldEntry(owner, field.getFieldName(), field.getField().getDescriptor()));
+                    EntryMapping mapping = this.mapper.getDeobfMapping(this.getFieldEntry(owner, field.getFieldName(), field.getField().getDescriptor()));
                     if (mapping == null) {
                         continue;
                     }
@@ -155,7 +155,7 @@ public class EnigmaDumper extends StringStreamDumper {
                 }
             }
 
-            EntryMapping mapping = mapper.getDeobfMapping(getClassEntry(owner));
+            EntryMapping mapping = this.mapper.getDeobfMapping(this.getClassEntry(owner));
 
             String javadoc = null;
             if (mapping != null) {
@@ -163,22 +163,22 @@ public class EnigmaDumper extends StringStreamDumper {
             }
 
             if (javadoc != null || !recordComponentDocs.isEmpty()) {
-                print("/**").newln();
+				this.print("/**").newln();
                 if (javadoc != null) {
                     for (String line : javadoc.split("\\R")) {
-                        print(" * ").print(line).newln();
+						this.print(" * ").print(line).newln();
                     }
 
                     if (!recordComponentDocs.isEmpty()) {
-                        print(" * ").newln();
+						this.print(" * ").newln();
                     }
                 }
 
                 for (String componentDoc : recordComponentDocs) {
-                    print(" * ").print(componentDoc).newln();
+					this.print(" * ").print(componentDoc).newln();
                 }
 
-                print(" */").newln();
+				this.print(" */").newln();
             }
         }
         return this;
@@ -186,10 +186,10 @@ public class EnigmaDumper extends StringStreamDumper {
 
     @Override
     public Dumper dumpMethodDoc(MethodPrototype method) {
-        if (mapper != null) {
+        if (this.mapper != null) {
             List<String> lines = new ArrayList<>();
-            MethodEntry methodEntry = getMethodEntry(method);
-            EntryMapping mapping = mapper.getDeobfMapping(methodEntry);
+            MethodEntry methodEntry = this.getMethodEntry(method);
+            EntryMapping mapping = this.mapper.getDeobfMapping(methodEntry);
             if (mapping != null) {
                 String javadoc = mapping.javadoc();
                 if (javadoc != null) {
@@ -197,12 +197,12 @@ public class EnigmaDumper extends StringStreamDumper {
                 }
             }
 
-            Collection<Entry<?>> children = mapper.getObfChildren(methodEntry);
+            Collection<Entry<?>> children = this.mapper.getObfChildren(methodEntry);
 
             if (children != null && !children.isEmpty()) {
                 for (Entry<?> each : children) {
                     if (each instanceof LocalVariableEntry) {
-                        EntryMapping paramMapping = mapper.getDeobfMapping(each);
+                        EntryMapping paramMapping = this.mapper.getDeobfMapping(each);
                         if (paramMapping != null) {
                             String javadoc = paramMapping.javadoc();
                             if (javadoc != null) {
@@ -214,11 +214,11 @@ public class EnigmaDumper extends StringStreamDumper {
             }
 
             if (!lines.isEmpty()) {
-                print("/**").newln();
+				this.print("/**").newln();
                 for (String line : lines) {
-                    print(" * ").print(line).newln();
+					this.print(" * ").print(line).newln();
                 }
-                print(" */").newln();
+				this.print(" */").newln();
             }
         }
         return this;
@@ -226,17 +226,17 @@ public class EnigmaDumper extends StringStreamDumper {
 
     @Override
     public Dumper dumpFieldDoc(Field field, JavaTypeInstance owner) {
-        boolean recordComponent = isRecord(owner) && !field.testAccessFlag(AccessFlag.ACC_STATIC);
-        if (mapper != null && !recordComponent) {
-            EntryMapping mapping = mapper.getDeobfMapping(getFieldEntry(owner, field.getFieldName(), field.getDescriptor()));
+        boolean recordComponent = this.isRecord(owner) && !field.testAccessFlag(AccessFlag.ACC_STATIC);
+        if (this.mapper != null && !recordComponent) {
+            EntryMapping mapping = this.mapper.getDeobfMapping(this.getFieldEntry(owner, field.getFieldName(), field.getDescriptor()));
             if (mapping != null) {
                 String javadoc = mapping.javadoc();
                 if (javadoc != null) {
-                    print("/**").newln();
+					this.print("/**").newln();
                     for (String line : javadoc.split("\\R")) {
-                        print(" * ").print(line).newln();
+						this.print(" * ").print(line).newln();
                     }
-                    print(" */").newln();
+					this.print(" */").newln();
                 }
             }
         }
@@ -245,17 +245,17 @@ public class EnigmaDumper extends StringStreamDumper {
 
     @Override
     public Dumper methodName(String name, MethodPrototype method, boolean special, boolean defines) {
-        Entry<?> entry = getMethodEntry(method);
+        Entry<?> entry = this.getMethodEntry(method);
         super.methodName(name, method, special, defines);
-        int now = sb.length();
+        int now = this.sb.length();
         Token token = new Token(now - name.length(), now, name);
 
         // Skip constructor references
         if (entry != null && !name.equals("new")) {
             if (defines) {
-                index.addDeclaration(token, entry); // override as cfr reuses local vars
+				this.index.addDeclaration(token, entry); // override as cfr reuses local vars
             } else {
-                index.addReference(token, entry, contextMethod);
+				this.index.addReference(token, entry, this.contextMethod);
             }
         }
 
@@ -265,20 +265,20 @@ public class EnigmaDumper extends StringStreamDumper {
     @Override
     public Dumper parameterName(String name, Object ref, MethodPrototype method, int index, boolean defines) {
         super.parameterName(name, ref, method, index, defines);
-        int now = sb.length();
+        int now = this.sb.length();
         Token token = new Token(now - name.length(), now, name);
         Entry<?> entry;
         if (defines) {
-            refs.put(ref, entry = getParameterEntry(method, index, name));
+			this.refs.put(ref, entry = this.getParameterEntry(method, index, name));
         } else {
-            entry = refs.get(ref);
+            entry = this.refs.get(ref);
         }
 
         if (entry != null) {
             if (defines) {
                 this.index.addDeclaration(token, entry);
             } else {
-                this.index.addReference(token, entry, contextMethod);
+                this.index.addReference(token, entry, this.contextMethod);
             }
         }
 
@@ -296,30 +296,30 @@ public class EnigmaDumper extends StringStreamDumper {
         super.identifier(name, ref, defines);
         Entry<?> entry;
         if (defines) {
-            refs.remove(ref);
+			this.refs.remove(ref);
             return this;
         }
-        if ((entry = refs.get(ref)) == null) {
+        if ((entry = this.refs.get(ref)) == null) {
             return this;
         }
-        int now = sb.length();
+        int now = this.sb.length();
         Token token = new Token(now - name.length(), now, name);
-        index.addReference(token, entry, contextMethod);
+		this.index.addReference(token, entry, this.contextMethod);
         return this;
     }
 
     @Override
     public Dumper fieldName(String name, String descriptor, JavaTypeInstance owner, boolean hiddenDeclaration, boolean isStatic, boolean defines) {
         super.fieldName(name, descriptor, owner, hiddenDeclaration, isStatic, defines);
-        int now = sb.length();
+        int now = this.sb.length();
         Token token = new Token(now - name.length(), now, name);
         if (descriptor != null) {
-            Entry<?> entry = getFieldEntry(owner, name, descriptor);
+            Entry<?> entry = this.getFieldEntry(owner, name, descriptor);
 
             if (defines) {
-                index.addDeclaration(token, entry);
+				this.index.addDeclaration(token, entry);
             } else {
-                index.addReference(token, entry, contextMethod);
+				this.index.addReference(token, entry, this.contextMethod);
             }
         }
 
@@ -328,38 +328,38 @@ public class EnigmaDumper extends StringStreamDumper {
 
     @Override
     public Dumper dump(JavaTypeInstance type) {
-        dumpClass(TypeContext.None, type, false);
+		this.dumpClass(TypeContext.None, type, false);
         return this;
     }
 
     @Override
     public Dumper dump(JavaTypeInstance type, boolean defines) {
-        dumpClass(TypeContext.None, type, defines);
+		this.dumpClass(TypeContext.None, type, defines);
         return this;
     }
 
     @Override
     public Dumper dump(JavaTypeInstance type, TypeContext context) {
-        dumpClass(context, type, false);
+		this.dumpClass(context, type, false);
         return this;
     }
 
     private void dumpClass(TypeContext context, JavaTypeInstance type, boolean defines) {
         if (type instanceof JavaRefTypeInstance) {
-            type.dumpInto(this, typeUsage, context);
-            String name = typeUsage.getName(type, context); // the actually used name, dump will indent
-            int now = sb.length();
+            type.dumpInto(this, this.typeUsage, context);
+            String name = this.typeUsage.getName(type, context); // the actually used name, dump will indent
+            int now = this.sb.length();
             Token token = new Token(now - name.length(), now, name);
 
             if (defines) {
-                index.addDeclaration(token, getClassEntry(type));
+				this.index.addDeclaration(token, this.getClassEntry(type));
             } else {
-                index.addReference(token, getClassEntry(type), contextMethod);
+				this.index.addReference(token, this.getClassEntry(type), this.contextMethod);
             }
             return;
         }
 
-        type.dumpInto(this, typeUsage, context);
+        type.dumpInto(this, this.typeUsage, context);
     }
 
     /**
@@ -370,24 +370,24 @@ public class EnigmaDumper extends StringStreamDumper {
      */
     @Override
     public Dumper withTypeUsageInformation(TypeUsageInformation innerclassTypeUsageInformation) {
-        return new EnigmaDumper(this.sb, sourceSettings, innerclassTypeUsageInformation, options, mapper, index, dumperContext);
+        return new EnigmaDumper(this.sb, this.sourceSettings, innerclassTypeUsageInformation, this.options, this.mapper, this.index, this.dumperContext);
     }
 
     @Override
     public void informBytecodeLoc(HasByteCodeLoc loc) {
         Collection<Method> methods = loc.getLoc().getMethods();
         if (!methods.isEmpty()) {
-            this.contextMethod = getMethodEntry(methods.iterator().next().getMethodPrototype());
+            this.contextMethod = this.getMethodEntry(methods.iterator().next().getMethodPrototype());
         }
     }
 
     public SourceIndex getIndex() {
-        index.setSource(getString());
-        return index;
+		this.index.setSource(this.getString());
+        return this.index;
     }
 
     public String getString() {
-        return sb.toString();
+        return this.sb.toString();
     }
 
     private boolean isRecord(JavaTypeInstance javaTypeInstance) {

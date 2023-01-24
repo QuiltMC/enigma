@@ -144,7 +144,7 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
             }
         }
 
-        return "<i>" + String.join(" ", modifiers) + "</i> " + toString();
+        return "<i>" + String.join(" ", modifiers) + "</i> " + this.toString();
     }
 
     private String parseArgs(List<TypeDescriptor> args) {
