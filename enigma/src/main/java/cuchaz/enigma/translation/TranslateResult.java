@@ -6,7 +6,6 @@ import java.util.function.Function;
 import cuchaz.enigma.source.RenamableTokenType;
 
 public final class TranslateResult<T> {
-
 	private final RenamableTokenType type;
 	private final T value;
 
@@ -81,5 +80,4 @@ public final class TranslateResult<T> {
 	public String toString() {
 		return String.format("TranslateResult { type: %s, value: %s }", this.type, this.value);
 	}
-
 }

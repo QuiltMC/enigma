@@ -13,7 +13,6 @@ package cuchaz.enigma.inputs.constructors;
 
 // b
 public class Caller {
-
 	// a()V
 	public void callBaseDefault() {
 		// a.<init>()V

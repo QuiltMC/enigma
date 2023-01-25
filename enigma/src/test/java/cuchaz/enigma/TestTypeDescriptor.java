@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class TestTypeDescriptor {
-
 	@Test
 	public void isVoid() {
 		assertTrue(new TypeDescriptor("V").isVoid());

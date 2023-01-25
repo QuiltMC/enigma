@@ -5,10 +5,12 @@ public interface ProgressListener {
 		return new ProgressListener() {
 			@Override
 			public void init(int totalWork, String title) {
+				// none
 			}
 
 			@Override
 			public void step(int numDone, String message) {
+				// none
 			}
 		};
 	}

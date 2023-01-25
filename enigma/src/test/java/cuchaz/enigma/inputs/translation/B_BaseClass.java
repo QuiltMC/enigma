@@ -12,7 +12,6 @@
 package cuchaz.enigma.inputs.translation;
 
 public class B_BaseClass {
-
 	public int f1;
 	public char f2;
 

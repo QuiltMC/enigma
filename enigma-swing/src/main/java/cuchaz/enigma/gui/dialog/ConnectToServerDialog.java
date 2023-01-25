@@ -20,7 +20,6 @@ import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.StandardValidation;
 
 public class ConnectToServerDialog extends AbstractDialog {
-
 	private JTextField usernameField;
 	private ValidatableTextField ipField;
 	private JPasswordField passwordField;
@@ -55,10 +54,8 @@ public class ConnectToServerDialog extends AbstractDialog {
 	@Override
 	public void validateInputs() {
 		this.vc.setActiveElement(this.ipField);
-		if (StandardValidation.notBlank(this.vc, this.ipField.getText())) {
-			if (ServerAddress.from(this.ipField.getText(), EnigmaServer.DEFAULT_PORT) == null) {
-				this.vc.raise(Message.INVALID_IP);
-			}
+		if (StandardValidation.notBlank(this.vc, this.ipField.getText()) && ServerAddress.from(this.ipField.getText(), EnigmaServer.DEFAULT_PORT) == null) {
+			this.vc.raise(Message.INVALID_IP);
 		}
 	}
 
@@ -85,34 +82,6 @@ public class ConnectToServerDialog extends AbstractDialog {
 		return r;
 	}
 
-	public static class Result {
-		private final String username;
-		private final String addressStr;
-		private final ServerAddress address;
-		private final char[] password;
-
-		public Result(String username, String addressStr, ServerAddress address, char[] password) {
-			this.username = username;
-			this.addressStr = addressStr;
-			this.address = address;
-			this.password = password;
-		}
-
-		public String getUsername() {
-			return this.username;
-		}
-
-		public String getAddressStr() {
-			return this.addressStr;
-		}
-
-		public ServerAddress getAddress() {
-			return this.address;
-		}
-
-		public char[] getPassword() {
-			return this.password;
-		}
+	public record Result(String username, String addressStr, ServerAddress address, char[] password) {
 	}
-
 }

@@ -8,7 +8,6 @@ import cuchaz.enigma.network.ClientPacketHandler;
 import cuchaz.enigma.network.Message;
 
 public class MessageS2CPacket implements Packet<ClientPacketHandler> {
-
 	private Message message;
 
 	MessageS2CPacket() {

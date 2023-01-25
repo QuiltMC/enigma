@@ -24,7 +24,6 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 
 public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable<MethodEntry> {
-
 	protected final MethodDescriptor descriptor;
 
 	public MethodEntry(ClassEntry parent, String name, MethodDescriptor descriptor) {
@@ -84,7 +83,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof MethodEntry && this.equals((MethodEntry) other);
+		return other instanceof MethodEntry methodEntry && this.equals(methodEntry);
 	}
 
 	public boolean equals(MethodEntry other) {

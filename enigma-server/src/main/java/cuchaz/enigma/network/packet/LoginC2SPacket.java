@@ -50,26 +50,26 @@ public class LoginC2SPacket implements Packet<ServerPacketHandler> {
 
 	@Override
 	public void handle(ServerPacketHandler handler) {
-		boolean usernameTaken = handler.getServer().isUsernameTaken(this.username);
-		handler.getServer().setUsername(handler.getClient(), this.username);
-		handler.getServer().log(this.username + " logged in with IP " + handler.getClient().getInetAddress().toString() + ":" + handler.getClient().getPort());
+		boolean usernameTaken = handler.server().isUsernameTaken(this.username);
+		handler.server().setUsername(handler.client(), this.username);
+		handler.server().log(this.username + " logged in with IP " + handler.client().getInetAddress().toString() + ":" + handler.client().getPort());
 
-		if (!Arrays.equals(this.password, handler.getServer().getPassword())) {
-			handler.getServer().kick(handler.getClient(), "disconnect.wrong_password");
+		if (!Arrays.equals(this.password, handler.server().getPassword())) {
+			handler.server().kick(handler.client(), "disconnect.wrong_password");
 			return;
 		}
 
 		if (usernameTaken) {
-			handler.getServer().kick(handler.getClient(), "disconnect.username_taken");
+			handler.server().kick(handler.client(), "disconnect.username_taken");
 			return;
 		}
 
-		if (!Arrays.equals(this.jarChecksum, handler.getServer().getJarChecksum())) {
-			handler.getServer().kick(handler.getClient(), "disconnect.wrong_jar");
+		if (!Arrays.equals(this.jarChecksum, handler.server().getJarChecksum())) {
+			handler.server().kick(handler.client(), "disconnect.wrong_jar");
 			return;
 		}
 
-		handler.getServer().sendPacket(handler.getClient(), new SyncMappingsS2CPacket(handler.getServer().getMappings().getObfToDeobf()));
-		handler.getServer().sendMessage(Message.connect(this.username));
+		handler.server().sendPacket(handler.client(), new SyncMappingsS2CPacket(handler.server().getMappings().getObfToDeobf()));
+		handler.server().sendMessage(Message.connect(this.username));
 	}
 }

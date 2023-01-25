@@ -7,16 +7,16 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
-import cuchaz.enigma.utils.Pair;
 import org.jetbrains.java.decompiler.main.extern.TextTokenVisitor;
 import org.jetbrains.java.decompiler.struct.gen.FieldDescriptor;
 import org.jetbrains.java.decompiler.struct.gen.MethodDescriptor;
+import org.jetbrains.java.decompiler.util.Pair;
 import org.jetbrains.java.decompiler.util.token.TextRange;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 public class EnigmaTextTokenCollector extends TextTokenVisitor {
     private String content;
@@ -60,11 +60,11 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
     }
 
     private void addReference(Token token, Entry<?> entry, Entry<?> context) {
-        this.references.put(token, new Pair<>(entry, context));
+        this.references.put(token, Pair.of(entry, context));
         this.tokens.put(token, false);
     }
 
-    public void addTokensToIndex(SourceIndex index, Function<Token, Token> tokenProcessor) {
+    public void addTokensToIndex(SourceIndex index, UnaryOperator<Token> tokenProcessor) {
         for (Token token : this.tokens.keySet()) {
             Token newToken = tokenProcessor.apply(token);
             if (newToken == null) {

@@ -123,17 +123,12 @@ public class EditorPanel {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				switch (e.getButton()) {
-					case MouseEvent.BUTTON3: // Right click
-						EditorPanel.this.editor.setCaretPosition(EditorPanel.this.editor.viewToModel(e.getPoint()));
-						break;
-
-					case 4: // Back navigation
-						gui.getController().openPreviousReference();
-						break;
-
-					case 5: // Forward navigation
-						gui.getController().openNextReference();
-						break;
+					case MouseEvent.BUTTON3 -> // Right click
+							EditorPanel.this.editor.setCaretPosition(EditorPanel.this.editor.viewToModel(e.getPoint()));
+					case 4 -> // Back navigation
+							gui.getController().openPreviousReference();
+					case 5 -> // Forward navigation
+							gui.getController().openNextReference();
 				}
 				EditorPanel.this.mouseIsPressed = false;
 			}
@@ -170,8 +165,8 @@ public class EditorPanel {
 					Entry<?> entry = reference.getNameableEntry();
 
 					String name = String.valueOf(event.getKeyChar());
-					if (entry instanceof ClassEntry && ((ClassEntry) entry).getParent() == null) {
-						String packageName = ((ClassEntry) entry).getPackageName();
+					if (entry instanceof ClassEntry classEntry && classEntry.getParent() == null) {
+						String packageName = classEntry.getPackageName();
 						if (packageName != null) {
 							name = packageName + "/" + name;
 						}
@@ -187,7 +182,7 @@ public class EditorPanel {
 			}
 		});
 
-		this.retryButton.addActionListener(_e -> this.redecompileClass());
+		this.retryButton.addActionListener(e -> this.redecompileClass());
 
 		this.themeChangeListener = (laf, boxHighlightPainters) -> {
 			if ((this.editorLaf == null || this.editorLaf != laf)) {
@@ -207,10 +202,10 @@ public class EditorPanel {
 
 	@Nullable
 	public static EditorPanel byUi(Component ui) {
-		if (ui instanceof JComponent) {
-			Object prop = ((JComponent) ui).getClientProperty(EditorPanel.class);
-			if (prop instanceof EditorPanel) {
-				return (EditorPanel) prop;
+		if (ui instanceof JComponent component) {
+			Object prop = component.getClientProperty(EditorPanel.class);
+			if (prop instanceof EditorPanel panel) {
+				return panel;
 			}
 		}
 		return null;
@@ -232,9 +227,7 @@ public class EditorPanel {
 		handle.addListener(new ClassHandleListener() {
 			@Override
 			public void onDeobfRefChanged(ClassHandle h, ClassEntry deobfRef) {
-				SwingUtilities.invokeLater(() -> {
-					EditorPanel.this.listeners.forEach(l -> l.onTitleChanged(EditorPanel.this, EditorPanel.this.getFileName()));
-				});
+				SwingUtilities.invokeLater(() -> EditorPanel.this.listeners.forEach(l -> l.onTitleChanged(EditorPanel.this, EditorPanel.this.getFileName())));
 			}
 
 			@Override

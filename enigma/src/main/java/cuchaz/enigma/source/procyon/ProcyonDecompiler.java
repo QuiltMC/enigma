@@ -83,8 +83,8 @@ public class ProcyonDecompiler implements Decompiler {
 		new RemoveObjectCasts(context).run(source);
 		new Java8Generics().run(source);
 		new InvalidIdentifierFix().run(source);
-		if (this.settings.removeImports) DropImportAstTransform.INSTANCE.run(source);
-		if (this.settings.removeVariableFinal) DropVarModifiersAstTransform.INSTANCE.run(source);
+		if (this.settings.removeImports()) DropImportAstTransform.INSTANCE.run(source);
+		if (this.settings.removeVariableFinal()) DropVarModifiersAstTransform.INSTANCE.run(source);
 		source.acceptVisitor(new InsertParenthesesVisitor(), null);
 
 		if (remapper != null) {

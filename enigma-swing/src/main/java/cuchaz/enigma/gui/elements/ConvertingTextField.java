@@ -22,7 +22,6 @@ import cuchaz.enigma.utils.validation.Validatable;
  * A label that converts into an editable text field when you click it.
  */
 public class ConvertingTextField implements Validatable {
-
 	private final JPanel ui;
 	private final ValidatableTextField textField;
 	private final JLabel label;
@@ -173,5 +172,4 @@ public class ConvertingTextField implements Validatable {
 	public JPanel getUi() {
 		return this.ui;
 	}
-
 }

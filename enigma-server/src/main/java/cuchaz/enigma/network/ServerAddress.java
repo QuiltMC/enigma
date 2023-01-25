@@ -5,7 +5,6 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 public class ServerAddress {
-
 	public final String address;
 	public final int port;
 
@@ -74,5 +73,4 @@ public class ServerAddress {
 	public String toString() {
 		return String.format("ServerAddress { address: '%s', port: %d }", this.address, this.port);
 	}
-
 }

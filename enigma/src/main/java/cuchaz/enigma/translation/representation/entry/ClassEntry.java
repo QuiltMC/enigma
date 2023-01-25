@@ -107,7 +107,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof ClassEntry && this.equals((ClassEntry) other);
+		return other instanceof ClassEntry entry && this.equals(entry);
 	}
 
 	public boolean equals(ClassEntry other) {
@@ -249,11 +249,13 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public int compareTo(ClassEntry entry) {
-		String fullName = this.getFullName();
+		String name = this.getFullName();
 		String otherFullName = entry.getFullName();
-		if (fullName.length() != otherFullName.length()) {
-			return fullName.length() - otherFullName.length();
+
+		if (name.length() != otherFullName.length()) {
+			return name.length() - otherFullName.length();
 		}
-		return fullName.compareTo(otherFullName);
+
+		return name.compareTo(otherFullName);
 	}
 }

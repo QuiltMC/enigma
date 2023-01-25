@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 import cuchaz.enigma.utils.Pair;
 
 public class SearchUtil<T extends SearchEntry> {
-
 	private final Map<T, Entry<T>> entries = new HashMap<>();
 	private final Map<String, Integer> hitCount = new HashMap<>();
 	private final Executor searchExecutor = Executors.newWorkStealingPool();
@@ -47,9 +46,9 @@ public class SearchUtil<T extends SearchEntry> {
 	public Stream<T> search(String term) {
 		return this.entries.values().parallelStream()
 				.map(e -> new Pair<>(e, e.getScore(term, this.hitCount.getOrDefault(e.searchEntry.getIdentifier(), 0))))
-				.filter(e -> e.b > 0)
-				.sorted(Comparator.comparingDouble(o -> -o.b))
-				.map(e -> e.a.searchEntry)
+				.filter(e -> e.b() > 0)
+				.sorted(Comparator.comparingDouble(o -> -o.b()))
+				.map(e -> e.a().searchEntry)
 				.sequential();
 	}
 
@@ -113,7 +112,6 @@ public class SearchUtil<T extends SearchEntry> {
 	}
 
 	public static final class Entry<T extends SearchEntry> {
-
 		public final T searchEntry;
 		private final String[][] components;
 
@@ -264,5 +262,4 @@ public class SearchUtil<T extends SearchEntry> {
 
 		float getProgress();
 	}
-
 }

@@ -14,7 +14,6 @@ package cuchaz.enigma.gui;
 import javax.swing.text.DefaultCaret;
 
 public class BrowserCaret extends DefaultCaret {
-
 	@Override
 	public boolean isSelectionVisible() {
 		return true;
@@ -24,5 +23,4 @@ public class BrowserCaret extends DefaultCaret {
 	public boolean isVisible() {
 		return true;
 	}
-
 }

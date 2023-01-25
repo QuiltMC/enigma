@@ -29,5 +29,4 @@ public enum Os {
 		}
 		return os;
 	}
-
 }

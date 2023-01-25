@@ -27,30 +27,27 @@ public class IndexSimpleVerifier extends SimpleVerifier {
     protected boolean isSubTypeOf(BasicValue value, BasicValue expected) {
         Type expectedType = expected.getType();
         Type type = value.getType();
-        switch (expectedType.getSort()) {
-            case Type.INT:
-            case Type.FLOAT:
-            case Type.LONG:
-            case Type.DOUBLE:
-                return type.equals(expectedType);
-            case Type.ARRAY:
-            case Type.OBJECT:
-                if (type.equals(NULL_TYPE)) {
-                    return true;
-                } else if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
-                    if (this.isAssignableFrom(expectedType, type)) {
-                        return true;
-                    } else if (this.isInterface(expectedType)) {
-                        return this.isAssignableFrom(OBJECT_TYPE, type);
-                    } else {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
-            default:
-                throw new AssertionError();
-        }
+		switch (expectedType.getSort()) {
+			case Type.INT, Type.FLOAT, Type.LONG, Type.DOUBLE -> {
+				return type.equals(expectedType);
+			}
+			case Type.ARRAY, Type.OBJECT -> {
+				if (type.equals(NULL_TYPE)) {
+					return true;
+				} else if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
+					if (this.isAssignableFrom(expectedType, type)) {
+						return true;
+					} else if (this.isInterface(expectedType)) {
+						return this.isAssignableFrom(OBJECT_TYPE, type);
+					} else {
+						return false;
+					}
+				} else {
+					return false;
+				}
+			}
+			default -> throw new AssertionError();
+		}
     }
 
     @Override

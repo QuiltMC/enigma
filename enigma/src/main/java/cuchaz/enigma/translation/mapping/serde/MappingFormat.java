@@ -29,7 +29,6 @@ public enum MappingFormat {
 	PROGUARD(null, ProguardMappingsReader.INSTANCE),
 	RECAF(RecafMappingsWriter.INSTANCE, RecafMappingsReader.INSTANCE);
 
-
 	private final MappingsWriter writer;
 	private final MappingsReader reader;
 

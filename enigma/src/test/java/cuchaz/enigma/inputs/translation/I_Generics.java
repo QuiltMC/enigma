@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 public class I_Generics {
-
 	public List<Integer> f1;
 	public List<A_Type> f2;
 	public Map<A_Type, A_Type> f3;

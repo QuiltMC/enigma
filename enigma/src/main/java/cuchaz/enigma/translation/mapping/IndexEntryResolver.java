@@ -84,8 +84,8 @@ public class IndexEntryResolver implements EntryResolver {
 	private Set<Entry<ClassEntry>> resolveChildEntry(Entry<ClassEntry> entry, ResolutionStrategy strategy) {
 		ClassEntry ownerClass = entry.getParent();
 
-		if (entry instanceof MethodEntry) {
-			MethodEntry bridgeMethod = this.bridgeMethodIndex.getBridgeFromSpecialized((MethodEntry) entry);
+		if (entry instanceof MethodEntry methodEntry) {
+			MethodEntry bridgeMethod = this.bridgeMethodIndex.getBridgeFromSpecialized(methodEntry);
 			if (bridgeMethod != null && ownerClass.equals(bridgeMethod.getParent())) {
 				Set<Entry<ClassEntry>> resolvedBridge = this.resolveChildEntry(bridgeMethod, strategy);
 				if (!resolvedBridge.isEmpty()) {

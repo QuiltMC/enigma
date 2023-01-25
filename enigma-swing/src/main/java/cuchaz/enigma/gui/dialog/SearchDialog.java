@@ -42,7 +42,6 @@ import cuchaz.enigma.gui.search.SearchEntry;
 import cuchaz.enigma.gui.search.SearchUtil;
 
 public class SearchDialog {
-
 	private final JTextField searchField;
 	private DefaultListModel<SearchEntryImpl> classListModel;
 	private final JList<SearchEntryImpl> classList;
@@ -64,7 +63,6 @@ public class SearchDialog {
 
 		this.searchField = new JTextField();
 		this.searchField.getDocument().addDocumentListener(new DocumentListener() {
-
 			@Override
 			public void insertUpdate(DocumentEvent e) {
 				SearchDialog.this.updateList();
@@ -243,16 +241,7 @@ public class SearchDialog {
 		}
 	}
 
-	private static final class SearchEntryImpl implements SearchEntry {
-
-		public final ParentedEntry<?> obf;
-		public final ParentedEntry<?> deobf;
-
-		private SearchEntryImpl(ParentedEntry<?> obf, ParentedEntry<?> deobf) {
-			this.obf = obf;
-			this.deobf = deobf;
-		}
-
+	private record SearchEntryImpl(ParentedEntry<?> obf, ParentedEntry<?> deobf) implements SearchEntry {
 		@Override
 		public List<String> getSearchableNames() {
 			if (this.deobf != null) {
@@ -277,7 +266,6 @@ public class SearchDialog {
 			if (deobf.equals(e)) deobf = null;
 			return new SearchEntryImpl(e, deobf);
 		}
-
 	}
 
 	private static final class ListCellRendererImpl extends AbstractListCellRenderer<SearchEntryImpl> {

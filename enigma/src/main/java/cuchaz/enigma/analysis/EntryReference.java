@@ -26,7 +26,6 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements Translatable {
-
 	private static final List<String> CONSTRUCTOR_NON_NAMES = Arrays.asList("this", "super", "static");
 	public final E entry;
 	public final C context;
@@ -112,7 +111,7 @@ public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements T
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof EntryReference reference && this.equals(reference);
+		return other instanceof EntryReference<?, ?> reference && this.equals(reference);
 	}
 
 	public boolean equals(EntryReference<?, ?> other) {
@@ -149,5 +148,4 @@ public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements T
 	public TranslateResult<EntryReference<E, C>> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
 		return translator.extendedTranslate(this.entry).map(e -> new EntryReference<>(e, translator.translate(this.context), this));
 	}
-
 }

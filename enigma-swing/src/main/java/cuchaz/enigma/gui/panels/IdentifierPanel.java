@@ -29,7 +29,6 @@ import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 public class IdentifierPanel {
-
 	private final Gui gui;
 
 	private final JPanel ui = new JPanel();
@@ -198,7 +197,6 @@ public class IdentifierPanel {
 	}
 
 	private static final class TableHelper {
-
 		private final Container c;
 		private final Entry<?> e;
 		private final Gui gui;
@@ -301,5 +299,4 @@ public class IdentifierPanel {
 		}
 
 	}
-
 }

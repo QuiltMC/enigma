@@ -11,7 +11,6 @@
 
 package cuchaz.enigma;
 
-import com.google.common.collect.Lists;
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.classprovider.CachingClassProvider;
 import cuchaz.enigma.classprovider.ClassProvider;
@@ -24,6 +23,7 @@ import cuchaz.enigma.utils.Pair;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,7 +72,7 @@ public class TokenChecker {
 		// createDebugFile(source, reference.context.getContainingClass());
 
 		// get the token values
-		List<String> values = Lists.newArrayList();
+		List<String> values = new ArrayList<>();
 		for (Token token : index.getReferenceTokens((EntryReference<Entry<?>, Entry<?>>) reference)) {
 			values.add(string.substring(token.start, token.end));
 		}

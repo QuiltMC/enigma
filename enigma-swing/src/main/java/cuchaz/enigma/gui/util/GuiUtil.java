@@ -9,6 +9,7 @@ import java.awt.font.TextAttribute;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,6 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
-import com.google.common.collect.Lists;
 
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.gui.Gui;
@@ -150,7 +150,7 @@ public class GuiUtil {
     }
 
     public static TreePath getPathToRoot(TreeNode node) {
-        List<TreeNode> nodes = Lists.newArrayList();
+        List<TreeNode> nodes = new ArrayList<>();
         TreeNode n = node;
 
         do {

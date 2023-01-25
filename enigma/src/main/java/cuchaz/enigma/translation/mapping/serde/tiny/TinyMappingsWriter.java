@@ -77,8 +77,8 @@ public class TinyMappingsWriter implements MappingsWriter {
         // Do not write mappings without deobfuscated name since tiny v1 doesn't
         // support comments anyway
 		if (mapping != null && mapping.targetName() != null) {
-            if (entry instanceof ClassEntry) {
-				this.writeClass(writer, (ClassEntry) entry, translator);
+            if (entry instanceof ClassEntry classEntry) {
+				this.writeClass(writer, classEntry, translator);
             } else if (entry instanceof FieldEntry) {
 				this.writeLine(writer, this.serializeEntry(entry, mapping.targetName()));
             } else if (entry instanceof MethodEntry) {
@@ -91,15 +91,15 @@ public class TinyMappingsWriter implements MappingsWriter {
 
     private void writeChildren(Writer writer, EntryTree<EntryMapping> mappings, EntryTreeNode<EntryMapping> node) {
         node.getChildren().stream()
-                .filter(e -> e instanceof FieldEntry).sorted()
+                .filter(FieldEntry.class::isInstance).sorted()
                 .forEach(child -> this.writeEntry(writer, mappings, child));
 
         node.getChildren().stream()
-                .filter(e -> e instanceof MethodEntry).sorted()
+                .filter(MethodEntry.class::isInstance).sorted()
                 .forEach(child -> this.writeEntry(writer, mappings, child));
 
         node.getChildren().stream()
-                .filter(e -> e instanceof ClassEntry).sorted()
+                .filter(ClassEntry.class::isInstance).sorted()
                 .forEach(child -> this.writeEntry(writer, mappings, child));
     }
 
@@ -125,17 +125,17 @@ public class TinyMappingsWriter implements MappingsWriter {
     private String[] serializeEntry(Entry<?> entry, String... extraFields) {
         String[] data = null;
 
-        if (entry instanceof FieldEntry) {
+        if (entry instanceof FieldEntry fieldEntry) {
             data = new String[4 + extraFields.length];
             data[0] = "FIELD";
             data[1] = entry.getContainingClass().getFullName();
-            data[2] = ((FieldEntry) entry).getDesc().toString();
+            data[2] = fieldEntry.getDesc().toString();
             data[3] = entry.getName();
-        } else if (entry instanceof MethodEntry) {
+        } else if (entry instanceof MethodEntry methodEntry) {
             data = new String[4 + extraFields.length];
             data[0] = "METHOD";
             data[1] = entry.getContainingClass().getFullName();
-            data[2] = ((MethodEntry) entry).getDesc().toString();
+            data[2] = methodEntry.getDesc().toString();
             data[3] = entry.getName();
         } else if (entry instanceof ClassEntry) {
             data = new String[2 + extraFields.length];

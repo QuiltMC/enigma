@@ -41,7 +41,7 @@ public class QuiltflowerSource implements Source {
         Map<String, Object> options = QuiltflowerPreferences.getEffectiveOptions();
         options.put(IFabricJavadocProvider.PROPERTY_NAME, javadocProvider);
 
-        if (settings.removeImports) {
+        if (settings.removeImports()) {
             options.put(IFernflowerPreferences.REMOVE_IMPORTS, "1");
         }
 
@@ -89,7 +89,7 @@ public class QuiltflowerSource implements Source {
 
         decompiler.decompileContext();
 
-        if (this.settings.removeImports) {
+        if (this.settings.removeImports()) {
             removePackageStatement(this.index, tokenCollector.get());
         } else {
             tokenCollector.get().addTokensToIndex(this.index, token -> token);

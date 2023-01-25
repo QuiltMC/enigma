@@ -13,7 +13,6 @@ package cuchaz.enigma.inputs.inheritanceTree;
 
 // c extends a
 public class SubclassB extends BaseClass {
-
 	// a
 	private int numThings;
 

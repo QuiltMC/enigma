@@ -1,7 +1,6 @@
 package cuchaz.enigma.gui.elements;
 
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.io.Serial;
 
@@ -19,7 +18,6 @@ import javax.swing.plaf.basic.BasicToolTipUI;
  * @author Zafir Anjum
  */
 public class JMultiLineToolTip extends JToolTip {
-
 	@Serial
 	private static final long serialVersionUID = 7813662474312183098L;
 
@@ -58,9 +56,7 @@ public class JMultiLineToolTip extends JToolTip {
  * UI for multi line tool tip
  */
 class MultiLineToolTipUI extends BasicToolTipUI {
-
-	static MultiLineToolTipUI sharedInstance = new MultiLineToolTipUI();
-	Font smallFont;
+	static final MultiLineToolTipUI sharedInstance = new MultiLineToolTipUI();
 	static JToolTip tip;
 	protected CellRendererPane rendererPane;
 
@@ -74,6 +70,7 @@ class MultiLineToolTipUI extends BasicToolTipUI {
 		super();
 	}
 
+	@Override
 	public void installUI(JComponent c) {
 		super.installUI(c);
 		tip = (JToolTip) c;
@@ -81,6 +78,7 @@ class MultiLineToolTipUI extends BasicToolTipUI {
 		c.add(this.rendererPane);
 	}
 
+	@Override
 	public void uninstallUI(JComponent c) {
 		super.uninstallUI(c);
 
@@ -88,12 +86,14 @@ class MultiLineToolTipUI extends BasicToolTipUI {
 		this.rendererPane = null;
 	}
 
+	@Override
 	public void paint(Graphics g, JComponent c) {
 		Dimension size = c.getSize();
 		textArea.setBackground(c.getBackground());
 		this.rendererPane.paintComponent(g, textArea, c, 1, 1, size.width - 1, size.height - 1, true);
 	}
 
+	@Override
 	public Dimension getPreferredSize(JComponent c) {
 		String tipText = ((JToolTip) c).getTipText();
 		if (tipText == null) return new Dimension(0, 0);
@@ -125,10 +125,12 @@ class MultiLineToolTipUI extends BasicToolTipUI {
 		return dim;
 	}
 
+	@Override
 	public Dimension getMinimumSize(JComponent c) {
 		return this.getPreferredSize(c);
 	}
 
+	@Override
 	public Dimension getMaximumSize(JComponent c) {
 		return this.getPreferredSize(c);
 	}

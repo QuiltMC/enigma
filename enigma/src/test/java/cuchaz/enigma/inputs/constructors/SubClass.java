@@ -13,7 +13,6 @@ package cuchaz.enigma.inputs.constructors;
 
 // d extends a
 public class SubClass extends BaseClass {
-
 	// <init>()V
 	public SubClass() {
 		// a.<init>()V

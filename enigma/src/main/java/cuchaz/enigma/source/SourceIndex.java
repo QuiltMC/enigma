@@ -1,7 +1,6 @@
 package cuchaz.enigma.source;
 
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import cuchaz.enigma.analysis.EntryReference;
@@ -9,6 +8,7 @@ import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
 import cuchaz.enigma.translation.representation.entry.Entry;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +34,7 @@ public class SourceIndex {
 
     public void setSource(String source) {
         this.source = source;
-        this.lineOffsets = Lists.newArrayList();
+        this.lineOffsets = new ArrayList<>();
         this.lineOffsets.add(0);
 
         for (int i = 0; i < this.source.length(); i++) {
@@ -132,7 +132,7 @@ public class SourceIndex {
 
     public void resolveReferences(EntryResolver resolver) {
         // resolve all the classes in the source references
-        for (Token token : Lists.newArrayList(this.referenceToTokens.values())) {
+        for (Token token : new ArrayList<>(this.referenceToTokens.values())) {
             EntryReference<Entry<?>, Entry<?>> reference = this.tokenToReference.get(token);
             EntryReference<Entry<?>, Entry<?>> resolvedReference = resolver.resolveFirstReference(reference, ResolutionStrategy.RESOLVE_CLOSEST);
 

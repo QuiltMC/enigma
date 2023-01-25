@@ -1,6 +1,6 @@
 package cuchaz.enigma.translation.representation;
 
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
 import org.objectweb.asm.signature.SignatureReader;
@@ -53,7 +53,7 @@ public class Signature implements Translatable {
 		return this.isType;
 	}
 
-	public Signature remap(Function<String, String> remapper) {
+	public Signature remap(UnaryOperator<String> remapper) {
 		if (this.signature == null) {
 			return this;
 		}
@@ -96,5 +96,4 @@ public class Signature implements Translatable {
 	public TranslateResult<Signature> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
 		return TranslateResult.ungrouped(this.remap(name -> translator.translate(new ClassEntry(name)).getFullName()));
 	}
-
 }

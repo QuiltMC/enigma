@@ -9,7 +9,6 @@ import cuchaz.enigma.gui.docker.DeobfuscatedClassesDocker;
 import cuchaz.enigma.utils.I18n;
 
 public class DeobfPanelPopupMenu {
-
     private final JPopupMenu ui;
     private final JMenuItem renamePackage = new JMenuItem();
     private final JMenuItem renameClass = new JMenuItem();

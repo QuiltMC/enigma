@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public final class ParameterizedMessage {
-
 	public final Message message;
 	private final Object[] params;
 	private final Validatable target;
@@ -43,5 +42,4 @@ public final class ParameterizedMessage {
 	public String toString() {
 		return String.format("ParameterizedMessage { message: %s, params: %s, target: %s }", this.message, Arrays.toString(this.params), this.target);
 	}
-
 }

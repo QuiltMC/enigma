@@ -12,7 +12,6 @@
 package cuchaz.enigma.translation;
 
 public enum TranslationDirection {
-
 	DEOBFUSCATING {
 		@Override
 		public <T> T choose(T deobfChoice, T obfChoice) {

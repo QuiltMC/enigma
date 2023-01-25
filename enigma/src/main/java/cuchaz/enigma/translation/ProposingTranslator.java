@@ -21,6 +21,7 @@ public class ProposingTranslator implements Translator {
 
 	@Nullable
 	@Override
+	@SuppressWarnings("unchecked")
 	public <T extends Translatable> TranslateResult<T> extendedTranslate(T translatable) {
 		if (translatable == null) {
 			return null;
@@ -28,7 +29,7 @@ public class ProposingTranslator implements Translator {
 
 		TranslateResult<T> deobfuscated = this.mapper.extendedDeobfuscate(translatable);
 
-		if (translatable instanceof Entry && ((Entry) deobfuscated.getValue()).getName().equals(((Entry<?>) translatable).getName())) {
+		if (translatable instanceof Entry && ((Entry<?>) deobfuscated.getValue()).getName().equals(((Entry<?>) translatable).getName())) {
 			return this.mapper.getObfResolver()
 					.resolveEntry((Entry<?>) translatable, ResolutionStrategy.RESOLVE_ROOT)
 					.stream()
@@ -36,7 +37,7 @@ public class ProposingTranslator implements Translator {
 					.filter(Optional::isPresent)
 					.map(Optional::get)
 					.findFirst()
-					.map(newName -> TranslateResult.proposed((T) ((Entry) deobfuscated.getValue()).withName(newName)))
+					.map(newName -> TranslateResult.proposed((T) ((Entry<?>) deobfuscated.getValue()).withName(newName)))
 					.orElse(deobfuscated);
 		}
 

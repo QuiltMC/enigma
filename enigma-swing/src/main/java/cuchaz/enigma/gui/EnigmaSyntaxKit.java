@@ -10,7 +10,6 @@ import de.sciss.syntaxpane.util.Configuration;
 import cuchaz.enigma.gui.config.UiConfig;
 
 public class EnigmaSyntaxKit extends JavaSyntaxKit {
-
 	private static Configuration configuration = null;
 
 	@Override
@@ -81,5 +80,4 @@ public class EnigmaSyntaxKit extends JavaSyntaxKit {
 	public static void invalidate() {
 		configuration = null;
 	}
-
 }

@@ -75,15 +75,15 @@ public class ReferenceIndex implements JarIndexer {
 
 	@Override
 	public void indexLambda(MethodDefEntry callerEntry, Lambda lambda, ReferenceTargetType targetType) {
-		if (lambda.getImplMethod() instanceof MethodEntry) {
-			this.indexMethodReference(callerEntry, (MethodEntry) lambda.getImplMethod(), targetType);
+		if (lambda.implMethod() instanceof MethodEntry) {
+			this.indexMethodReference(callerEntry, (MethodEntry) lambda.implMethod(), targetType);
 		} else {
-			this.indexFieldReference(callerEntry, (FieldEntry) lambda.getImplMethod(), targetType);
+			this.indexFieldReference(callerEntry, (FieldEntry) lambda.implMethod(), targetType);
 		}
 
-		this.indexMethodDescriptor(callerEntry, lambda.getInvokedType());
-		this.indexMethodDescriptor(callerEntry, lambda.getSamMethodType());
-		this.indexMethodDescriptor(callerEntry, lambda.getInstantiatedMethodType());
+		this.indexMethodDescriptor(callerEntry, lambda.invokedType());
+		this.indexMethodDescriptor(callerEntry, lambda.samMethodType());
+		this.indexMethodDescriptor(callerEntry, lambda.instantiatedMethodType());
 	}
 
 	@Override

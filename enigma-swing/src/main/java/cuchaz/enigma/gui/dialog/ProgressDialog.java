@@ -27,7 +27,6 @@ import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 
 public class ProgressDialog implements ProgressListener, AutoCloseable {
-
 	private final JDialog dialog;
 	private final JLabel labelTitle = new JLabel();
 	private final JLabel labelText = GuiUtil.unboldLabel(new JLabel());

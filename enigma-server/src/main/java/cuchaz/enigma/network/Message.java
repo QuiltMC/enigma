@@ -10,7 +10,6 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
 
 public abstract class Message {
-
 	public final String user;
 
 	public static Chat chat(String user, String message) {
@@ -111,7 +110,6 @@ public abstract class Message {
 	}
 
 	public static final class Chat extends Message {
-
 		public final String message;
 
 		private Chat(String user, String message) {
@@ -157,7 +155,6 @@ public abstract class Message {
 	}
 
 	public static final class Connect extends Message {
-
 		private Connect(String user) {
 			super(user);
 		}
@@ -180,7 +177,6 @@ public abstract class Message {
 	}
 
 	public static final class Disconnect extends Message {
-
 		private Disconnect(String user) {
 			super(user);
 		}
@@ -203,7 +199,6 @@ public abstract class Message {
 	}
 
 	public static  final class EditDocs extends Message {
-
 		public final Entry<?> entry;
 
 		private EditDocs(String user, Entry<?> entry) {
@@ -249,7 +244,6 @@ public abstract class Message {
 	}
 
 	public static final class MarkDeobf extends Message {
-
 		public final Entry<?> entry;
 
 		private MarkDeobf(String user, Entry<?> entry) {
@@ -295,7 +289,6 @@ public abstract class Message {
 	}
 
 	public static final class RemoveMapping extends Message {
-
 		public final Entry<?> entry;
 
 		private RemoveMapping(String user, Entry<?> entry) {
@@ -341,7 +334,6 @@ public abstract class Message {
 	}
 
 	public static final class Rename extends Message {
-
 		public final Entry<?> entry;
 		public final String newName;
 
@@ -389,5 +381,4 @@ public abstract class Message {
 		}
 
 	}
-
 }

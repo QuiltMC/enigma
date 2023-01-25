@@ -99,7 +99,7 @@ public class AccessFlags {
 
 	@Override
 	public boolean equals(Object obj) {
-		return obj instanceof AccessFlags && ((AccessFlags) obj).flags == this.flags;
+		return obj instanceof AccessFlags flags && flags.flags == this.flags;
 	}
 
 	@Override

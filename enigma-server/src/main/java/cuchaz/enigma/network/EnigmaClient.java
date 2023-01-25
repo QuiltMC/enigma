@@ -9,7 +9,6 @@ import java.net.Socket;
 import java.net.SocketException;
 
 public class EnigmaClient {
-
 	private final ClientPacketHandler controller;
 
 	private final String ip;
@@ -74,5 +73,4 @@ public class EnigmaClient {
 			this.controller.disconnectIfConnected(e.toString());
 		}
 	}
-
 }

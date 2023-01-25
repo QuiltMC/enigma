@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public final class EnigmaProfile {
-	public static final EnigmaProfile EMPTY = new EnigmaProfile(new ServiceContainer(ImmutableMap.of()));
+	public static final EnigmaProfile EMPTY = new EnigmaProfile(new ServiceContainer(Map.of()));
 
 	private static final MappingSaveParameters DEFAULT_MAPPING_SAVE_PARAMETERS = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
 	private static final Gson GSON = new GsonBuilder()

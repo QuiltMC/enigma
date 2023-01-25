@@ -12,7 +12,6 @@
 package cuchaz.enigma.source;
 
 public class Token implements Comparable<Token> {
-
 	public int start;
 	public int end;
 	public String text;

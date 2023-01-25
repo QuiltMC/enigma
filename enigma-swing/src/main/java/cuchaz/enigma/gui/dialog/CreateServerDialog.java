@@ -16,7 +16,6 @@ import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.StandardValidation;
 
 public class CreateServerDialog extends AbstractDialog {
-
 	private ValidatableTextField portField;
 	private ValidatablePasswordField passwordField;
 
@@ -75,22 +74,6 @@ public class CreateServerDialog extends AbstractDialog {
 		return r;
 	}
 
-	public static class Result {
-		private final int port;
-		private final char[] password;
-
-		public Result(int port, char[] password) {
-			this.port = port;
-			this.password = password;
-		}
-
-		public int getPort() {
-			return this.port;
-		}
-
-		public char[] getPassword() {
-			return this.password;
-		}
+	public record Result(int port, char[] password) {
 	}
-
 }

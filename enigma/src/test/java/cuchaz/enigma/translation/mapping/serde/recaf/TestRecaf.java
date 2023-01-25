@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestRecaf {
-
     @Test
     public void testIntegrity() throws Exception {
         Set<String> contents;

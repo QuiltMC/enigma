@@ -13,7 +13,6 @@ package cuchaz.enigma.inputs.translation;
 
 @SuppressWarnings("FinalizeCalledExplicitly")
 public class F_ObjectMethods {
-
 	public void callEmAll()
 		throws Throwable {
 		clone();

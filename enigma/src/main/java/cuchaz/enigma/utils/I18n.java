@@ -76,8 +76,8 @@ public class I18n {
 		translations = load(language);
 	}
 
-	public static ArrayList<String> getAvailableLanguages() {
-		ArrayList<String> list = new ArrayList<String>();
+	public static List<String> getAvailableLanguages() {
+		ArrayList<String> list = new ArrayList<>();
 
 		try {
 			ImmutableList<ResourceInfo> resources = ClassPath.from(Thread.currentThread().getContextClassLoader()).getResources().asList();

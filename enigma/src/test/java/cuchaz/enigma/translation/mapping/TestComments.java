@@ -35,5 +35,4 @@ public class TestComments {
         new TinyV2Writer("intermediary", "named")
                         .write(mappings, DIRECTORY.resolve("convertedtiny.tiny"), progressListener, params);
     }
-
 }

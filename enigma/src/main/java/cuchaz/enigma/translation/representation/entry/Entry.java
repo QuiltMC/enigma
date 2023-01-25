@@ -114,8 +114,8 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 		ClassEntry last = null;
 		Entry<?> current = this;
 		while (current != null) {
-			if (current instanceof ClassEntry) {
-				last = (ClassEntry) current;
+			if (current instanceof ClassEntry classEntry) {
+				last = classEntry;
 				break;
 			}
 			current = current.getParent();
@@ -127,8 +127,8 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 		ClassEntry last = null;
 		Entry<?> current = this;
 		while (current != null) {
-			if (current instanceof ClassEntry) {
-				last = (ClassEntry) current;
+			if (current instanceof ClassEntry classEntry) {
+				last = classEntry;
 			}
 			current = current.getParent();
 		}
@@ -186,6 +186,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 		if (parentType.equals(this.getParentType())) {
 			return (Entry<C>) this;
 		}
+
 		return null;
 	}
 }

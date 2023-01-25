@@ -18,7 +18,6 @@ import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 public class TestEntryFactory {
-
 	public static ClassEntry newClass(String name) {
 		return new ClassEntry(name);
 	}

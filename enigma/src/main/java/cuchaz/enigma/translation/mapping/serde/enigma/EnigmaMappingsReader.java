@@ -1,12 +1,11 @@
 package cuchaz.enigma.translation.mapping.serde.enigma;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 
 import javax.annotation.Nullable;
-
-import com.google.common.base.Charsets;
 
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.mapping.AccessModifier;
@@ -99,7 +98,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 	}
 
 	private static void readFile(Path path, EntryTree<EntryMapping> mappings) throws IOException, MappingParseException {
-		List<String> lines = Files.readAllLines(path, Charsets.UTF_8);
+		List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
 		Deque<MappingPair<?, RawEntryMapping>> mappingStack = new ArrayDeque<>();
 
 		for (int lineNumber = 0; lineNumber < lines.size(); lineNumber++) {
@@ -118,8 +117,8 @@ public enum EnigmaMappingsReader implements MappingsReader {
 				if (pair != null) {
 					mappingStack.push(pair);
 				}
-			} catch (Throwable t) {
-				throw new MappingParseException(path, lineNumber, t);
+			} catch (Exception e) {
+				throw new MappingParseException(path, lineNumber, e);
 			}
 		}
 
@@ -178,23 +177,29 @@ public enum EnigmaMappingsReader implements MappingsReader {
 		Entry<?> parentEntry = parent == null ? null : parent.getEntry();
 
 		switch (keyToken) {
-			case EnigmaFormat.CLASS:
+			case EnigmaFormat.CLASS -> {
 				return parseClass(parentEntry, tokens);
-			case EnigmaFormat.FIELD:
+			}
+			case EnigmaFormat.FIELD -> {
 				return parseField(parentEntry, tokens);
-			case EnigmaFormat.METHOD:
+			}
+			case EnigmaFormat.METHOD -> {
 				return parseMethod(parentEntry, tokens);
-			case EnigmaFormat.PARAMETER:
+			}
+			case EnigmaFormat.PARAMETER -> {
 				return parseArgument(parentEntry, tokens);
-			case EnigmaFormat.COMMENT:
+			}
+			case EnigmaFormat.COMMENT -> {
 				readJavadoc(parent, tokens);
 				return null;
-			default:
+			}
+			default -> {
 				if (keyToken.equals("V1")) {
 					throw new RuntimeException("Unknown token '" + keyToken + "' (wrong mappings format?)");
 				} else {
 					throw new RuntimeException("Unknown token '" + keyToken + "'");
 				}
+			}
 		}
 	}
 
@@ -212,8 +217,8 @@ public enum EnigmaMappingsReader implements MappingsReader {
 	private static MappingPair<ClassEntry, RawEntryMapping> parseClass(@Nullable Entry<?> parent, String[] tokens) {
 		String obfuscatedName = ClassEntry.getInnerName(tokens[1]);
 		ClassEntry obfuscatedEntry;
-		if (parent instanceof ClassEntry) {
-			obfuscatedEntry = new ClassEntry((ClassEntry) parent, obfuscatedName);
+		if (parent instanceof ClassEntry classEntry) {
+			obfuscatedEntry = new ClassEntry(classEntry, obfuscatedName);
 		} else {
 			obfuscatedEntry = new ClassEntry(obfuscatedName);
 		}

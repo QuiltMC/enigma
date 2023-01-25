@@ -11,7 +11,6 @@ public class MessageC2SPacket implements Packet<ServerPacketHandler> {
 	private String message;
 
 	MessageC2SPacket() {
-
 	}
 
 	public MessageC2SPacket(String message) {
@@ -32,7 +31,7 @@ public class MessageC2SPacket implements Packet<ServerPacketHandler> {
 	public void handle(ServerPacketHandler handler) {
 		String trimmedMessage = this.message.trim();
 		if (!trimmedMessage.isEmpty()) {
-			handler.getServer().sendMessage(Message.chat(handler.getServer().getUsername(handler.getClient()), trimmedMessage));
+			handler.server().sendMessage(Message.chat(handler.server().getUsername(handler.client()), trimmedMessage));
 		}
 	}
 }

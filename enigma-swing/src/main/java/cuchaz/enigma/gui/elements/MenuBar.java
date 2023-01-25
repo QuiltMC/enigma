@@ -30,7 +30,6 @@ import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Pair;
 
 public class MenuBar {
-
 	private final JMenu fileMenu = new JMenu();
 	private final JMenuItem jarOpenItem = new JMenuItem();
 	private final JMenuItem jarCloseItem = new JMenuItem();
@@ -319,16 +318,6 @@ public class MenuBar {
 	}
 
 	private void onFontClicked(Gui gui) {
-//		FontDialog fd = new FontDialog(gui.getFrame(), "Choose Font", true);
-//		fd.setLocationRelativeTo(gui.getFrame());
-//		fd.setSelectedFont(UiConfig.getEditorFont());
-//		fd.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-//		fd.setVisible(true);
-//
-//		if (!fd.isCancelSelected()) {
-//			UiConfig.setEditorFont(fd.getSelectedFont());
-//			UiConfig.save();
-//		}
 		FontDialog.display(gui.getFrame());
 	}
 
@@ -349,16 +338,16 @@ public class MenuBar {
 		}
 		this.gui.getController().disconnectIfConnected(null);
 		try {
-			this.gui.getController().createClient(result.getUsername(), result.getAddress().address, result.getAddress().port, result.getPassword());
-			NetConfig.setUsername(result.getUsername());
-			NetConfig.setRemoteAddress(result.getAddressStr());
-			NetConfig.setPassword(String.valueOf(result.getPassword()));
+			this.gui.getController().createClient(result.username(), result.address().address, result.address().port, result.password());
+			NetConfig.setUsername(result.username());
+			NetConfig.setRemoteAddress(result.addressStr());
+			NetConfig.setPassword(String.valueOf(result.password()));
 			NetConfig.save();
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), e.toString(), I18n.translate("menu.collab.connect.error"), JOptionPane.ERROR_MESSAGE);
 			this.gui.getController().disconnectIfConnected(null);
 		}
-		Arrays.fill(result.getPassword(), (char) 0);
+		Arrays.fill(result.password(), (char) 0);
 	}
 
 	public void onStartServerClicked() {
@@ -372,9 +361,9 @@ public class MenuBar {
 		}
 		this.gui.getController().disconnectIfConnected(null);
 		try {
-			this.gui.getController().createServer(result.getPort(), result.getPassword());
-			NetConfig.setServerPort(result.getPort());
-			NetConfig.setServerPassword(String.valueOf(result.getPassword()));
+			this.gui.getController().createServer(result.port(), result.password());
+			NetConfig.setServerPort(result.port());
+			NetConfig.setServerPassword(String.valueOf(result.password()));
 			NetConfig.save();
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), e.toString(), I18n.translate("menu.collab.server.start.error"), JOptionPane.ERROR_MESSAGE);
@@ -493,7 +482,7 @@ public class MenuBar {
 					scaleMenu.add(menuItem);
 					return new Pair<>(realScaleFactor, menuItem);
 				})
-				.collect(Collectors.toMap(x -> x.a, x -> x.b));
+				.collect(Collectors.toMap(Pair::a, Pair::b));
 
 		JRadioButtonMenuItem currentScaleButton = scaleButtons.get(UiConfig.getScaleFactor());
 		if (currentScaleButton != null) {
@@ -509,5 +498,4 @@ public class MenuBar {
 			}
 		});
 	}
-
 }

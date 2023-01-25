@@ -13,7 +13,6 @@ package cuchaz.enigma.inputs.constructors;
 
 // a
 public class BaseClass {
-
 	// <init>()V
 	public BaseClass() {
 		System.out.println("Default constructor");

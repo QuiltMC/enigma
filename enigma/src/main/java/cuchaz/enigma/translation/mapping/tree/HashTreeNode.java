@@ -23,9 +23,9 @@ public class HashTreeNode<T> implements EntryTreeNode<T>, Iterable<HashTreeNode<
 	}
 
 	T removeValue() {
-		T value = this.value;
+		T oldValue = this.value;
 		this.value = null;
-		return value;
+		return oldValue;
 	}
 
 	@Nullable

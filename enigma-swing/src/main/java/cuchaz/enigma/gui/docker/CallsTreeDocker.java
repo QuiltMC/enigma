@@ -83,7 +83,6 @@ public class CallsTreeDocker extends Docker {
 		this.tokens.setListData(new Vector<>());
 	}
 
-	@SuppressWarnings("unchecked")
 	private void onTreeClicked(MouseEvent event) {
 		if (event.getClickCount() >= 2 && event.getButton() == MouseEvent.BUTTON1) {
 			// get the selected node
@@ -95,9 +94,9 @@ public class CallsTreeDocker extends Docker {
 
 			Object node = path.getLastPathComponent();
 
-			if (node instanceof ReferenceTreeNode referenceNode) {
+			if (node instanceof ReferenceTreeNode<?, ?> referenceNode) {
 				if (referenceNode.getReference() != null) {
-					this.gui.getController().navigateTo(referenceNode.getReference());
+					this.gui.getController().navigateTo((Entry<?>) referenceNode.getReference());
 				} else {
 					this.gui.getController().navigateTo(referenceNode.getEntry());
 				}

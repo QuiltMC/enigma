@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class ServerAddressTest {
-
 	@Test
 	public void validAddresses() {
 		assertEquals(ServerAddress.of("127.0.0.1", 22), ServerAddress.from("127.0.0.1", 22));

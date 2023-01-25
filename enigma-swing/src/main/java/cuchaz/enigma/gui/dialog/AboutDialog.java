@@ -24,7 +24,6 @@ import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.utils.I18n;
 
 public class AboutDialog {
-
 	public static void show(JFrame parent) {
 		JDialog frame = new JDialog(parent, String.format(I18n.translate("menu.help.about.title"), Enigma.NAME), true);
 		Container pane = frame.getContentPane();
@@ -56,5 +55,4 @@ public class AboutDialog {
 		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		frame.setVisible(true);
 	}
-
 }

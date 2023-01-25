@@ -23,7 +23,6 @@ import cuchaz.enigma.utils.Result;
 import static cuchaz.enigma.utils.Utils.withLock;
 
 public final class ClassHandleProvider {
-
 	private final EnigmaProject project;
 
 	private final ExecutorService pool = Executors.newWorkStealingPool();
@@ -72,9 +71,7 @@ public final class ClassHandleProvider {
 
 		this.ds = ds;
 		this.decompiler = this.createDecompiler();
-		withLock(this.lock.readLock(), () -> {
-			this.handles.values().forEach(Entry::invalidate);
-		});
+		withLock(this.lock.readLock(), () -> this.handles.values().forEach(Entry::invalidate));
 	}
 
 	/**
@@ -95,9 +92,7 @@ public final class ClassHandleProvider {
 	 * re-remapped.
 	 */
 	public void invalidateMapped() {
-		withLock(this.lock.readLock(), () -> {
-			this.handles.values().forEach(Entry::invalidateMapped);
-		});
+		withLock(this.lock.readLock(), () -> this.handles.values().forEach(Entry::invalidateMapped));
 	}
 
 	/**
@@ -122,9 +117,7 @@ public final class ClassHandleProvider {
 	 * re-remapped.
 	 */
 	public void invalidateJavadoc() {
-		withLock(this.lock.readLock(), () -> {
-			this.handles.values().forEach(Entry::invalidateJavadoc);
-		});
+		withLock(this.lock.readLock(), () -> this.handles.values().forEach(Entry::invalidateJavadoc));
 	}
 
 	/**
@@ -147,9 +140,7 @@ public final class ClassHandleProvider {
 	}
 
 	private void deleteEntry(Entry entry) {
-		withLock(this.lock.writeLock(), () -> {
-			this.handles.remove(entry.entry);
-		});
+		withLock(this.lock.writeLock(), () -> this.handles.remove(entry.entry));
 	}
 
 	/**
@@ -176,7 +167,6 @@ public final class ClassHandleProvider {
 	}
 
 	private static final class Entry {
-
 		private final ClassHandleProvider p;
 		private final ClassEntry entry;
 		private ClassEntry deobfRef;
@@ -203,9 +193,7 @@ public final class ClassHandleProvider {
 
 		public ClassHandleImpl createHandle() {
 			ClassHandleImpl handle = new ClassHandleImpl(this);
-			withLock(this.lock.writeLock(), () -> {
-				this.handles.add(handle);
-			});
+			withLock(this.lock.writeLock(), () -> this.handles.add(handle));
 			return handle;
 		}
 
@@ -332,7 +320,6 @@ public final class ClassHandleProvider {
 	}
 
 	private static final class ClassHandleImpl implements ClassHandle {
-
 		private final Entry entry;
 
 		private boolean valid = true;
@@ -438,5 +425,4 @@ public final class ClassHandleProvider {
 		}
 
 	}
-
 }

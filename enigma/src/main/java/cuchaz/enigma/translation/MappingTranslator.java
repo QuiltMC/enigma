@@ -24,5 +24,4 @@ public class MappingTranslator implements Translator {
 		}
 		return (TranslateResult<T>) translatable.extendedTranslate(this, this.resolver, this.mappings);
 	}
-
 }

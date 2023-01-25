@@ -18,7 +18,6 @@ import cuchaz.enigma.utils.validation.StandardValidation;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 public final class IdentifierValidation {
-
 	private IdentifierValidation() {
 	}
 
@@ -82,5 +81,4 @@ public final class IdentifierValidation {
 	public static boolean isReservedMethodName(String name) {
 		return ILLEGAL_IDENTIFIERS.contains(name);
 	}
-
 }

@@ -3,7 +3,6 @@ package cuchaz.enigma.gui.search;
 import java.util.List;
 
 public interface SearchEntry {
-
 	List<String> getSearchableNames();
 
 	/**

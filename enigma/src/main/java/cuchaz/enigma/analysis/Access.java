@@ -16,7 +16,6 @@ import cuchaz.enigma.translation.representation.AccessFlags;
 import java.lang.reflect.Modifier;
 
 public enum Access {
-
 	PUBLIC, PROTECTED, PACKAGE, PRIVATE;
 
 	public static Access get(AccessFlags flags) {

@@ -26,7 +26,6 @@ import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
 public class TypeDescriptor implements Translatable {
-
 	protected final String desc;
 
 	public TypeDescriptor(String desc) {
@@ -42,7 +41,6 @@ public class TypeDescriptor implements Translatable {
 	}
 
 	public static String parseFirst(String in) {
-
 		if (in == null || in.length() <= 0) {
 			throw new IllegalArgumentException("No desc to parse, input is empty!");
 		}
@@ -209,23 +207,22 @@ public class TypeDescriptor implements Translatable {
 
 	private static String getArrayPrefix(int dimension) {
 		StringBuilder buf = new StringBuilder();
-		for (int i = 0; i < dimension; i++) {
-			buf.append("[");
-		}
+		buf.append("[".repeat(Math.max(0, dimension)));
 		return buf.toString();
 	}
 
 	public int getSize() {
 		switch (this.desc.charAt(0)) {
-			case 'J':
-			case 'D':
+			case 'J', 'D' -> {
 				if (this.desc.length() == 1) {
 					return 2;
 				} else {
 					return 1;
 				}
-			default:
+			}
+			default -> {
 				return 1;
+			}
 		}
 	}
 

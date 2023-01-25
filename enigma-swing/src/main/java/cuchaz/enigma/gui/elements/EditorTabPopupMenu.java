@@ -1,7 +1,6 @@
 package cuchaz.enigma.gui.elements;
 
 import java.awt.Component;
-import java.awt.event.KeyEvent;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -11,7 +10,6 @@ import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.utils.I18n;
 
 public class EditorTabPopupMenu {
-
 	private final JPopupMenu ui;
 	private final JMenuItem close;
 	private final JMenuItem closeAll;

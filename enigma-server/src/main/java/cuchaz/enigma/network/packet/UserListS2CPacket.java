@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserListS2CPacket implements Packet<ClientPacketHandler> {
-
 	private List<String> users;
 
 	UserListS2CPacket() {
@@ -40,5 +39,4 @@ public class UserListS2CPacket implements Packet<ClientPacketHandler> {
 	public void handle(ClientPacketHandler handler) {
 		handler.updateUserList(this.users);
 	}
-
 }

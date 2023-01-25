@@ -12,7 +12,6 @@
 package cuchaz.enigma.inputs.translation;
 
 public class A_Basic {
-
 	public int one;
 	public float two;
 	public String three;

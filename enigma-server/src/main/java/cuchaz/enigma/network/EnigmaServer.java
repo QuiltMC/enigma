@@ -14,7 +14,6 @@ import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.Entry;
 
 public abstract class EnigmaServer {
-
 	// https://discordapp.com/channels/507304429255393322/566418023372816394/700292322918793347
 	public static final int DEFAULT_PORT = 34712;
 	public static final int PROTOCOL_VERSION = 1;
@@ -269,5 +268,4 @@ public abstract class EnigmaServer {
 		this.log(String.format("[MSG] %s", message.translate()));
 		this.sendToAll(new MessageS2CPacket(message));
 	}
-
 }

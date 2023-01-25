@@ -13,7 +13,6 @@ import cuchaz.enigma.translation.representation.entry.*;
 import cuchaz.enigma.utils.TristateChange;
 
 public class PacketHelper {
-
 	private static final int ENTRY_CLASS = 0, ENTRY_FIELD = 1, ENTRY_METHOD = 2, ENTRY_LOCAL_VAR = 3;
 	private static final int MAX_STRING_LENGTH = 65535;
 
@@ -36,14 +35,14 @@ public class PacketHelper {
 		}
 
 		switch (type) {
-			case ENTRY_CLASS: {
+			case ENTRY_CLASS -> {
 				if (parent != null && !(parent instanceof ClassEntry)) {
 					throw new IOException("Class requires class parent");
 				}
 
 				return new ClassEntry((ClassEntry) parent, name, javadocs);
 			}
-			case ENTRY_FIELD: {
+			case ENTRY_FIELD -> {
 				if (!(parent instanceof ClassEntry parentClass)) {
 					throw new IOException("Field requires class parent");
 				}
@@ -51,7 +50,7 @@ public class PacketHelper {
 				TypeDescriptor desc = new TypeDescriptor(readString(input));
 				return new FieldEntry(parentClass, name, desc, javadocs);
 			}
-			case ENTRY_METHOD: {
+			case ENTRY_METHOD -> {
 				if (!(parent instanceof ClassEntry parentClass)) {
 					throw new IOException("Method requires class parent");
 				}
@@ -59,7 +58,7 @@ public class PacketHelper {
 				MethodDescriptor desc = new MethodDescriptor(readString(input));
 				return new MethodEntry(parentClass, name, desc, javadocs);
 			}
-			case ENTRY_LOCAL_VAR: {
+			case ENTRY_LOCAL_VAR -> {
 				if (!(parent instanceof MethodEntry parentMethod)) {
 					throw new IOException("Local variable requires method parent");
 				}
@@ -68,8 +67,7 @@ public class PacketHelper {
 				boolean parameter = input.readBoolean();
 				return new LocalVariableEntry(parentMethod, index, name, parameter, javadocs);
 			}
-			default:
-				throw new IOException("Received unknown entry type " + type);
+			default -> throw new IOException("Received unknown entry type " + type);
 		}
 	}
 
@@ -109,10 +107,10 @@ public class PacketHelper {
 		}
 
 		// type-specific stuff
-		if (entry instanceof FieldEntry) {
-			writeString(output, ((FieldEntry) entry).getDesc().toString());
-		} else if (entry instanceof MethodEntry) {
-			writeString(output, ((MethodEntry) entry).getDesc().toString());
+		if (entry instanceof FieldEntry fieldEntry) {
+			writeString(output, fieldEntry.getDesc().toString());
+		} else if (entry instanceof MethodEntry methodEntry) {
+			writeString(output, methodEntry.getDesc().toString());
 		} else if (entry instanceof LocalVariableEntry localVar) {
 			output.writeShort(localVar.getIndex());
 			output.writeBoolean(localVar.isArgument());
@@ -145,31 +143,21 @@ public class PacketHelper {
 		TristateChange.Type javadocT = TristateChange.Type.values()[flags >> 4 & 0x3];
 
 		switch (deobfNameT) {
-			case RESET:
-				change = change.clearDeobfName();
-				break;
-			case SET:
-				change = change.withDeobfName(readString(input));
-				break;
+			case RESET -> change = change.clearDeobfName();
+			case SET -> change = change.withDeobfName(readString(input));
 		}
 
-		switch (accessT) {
-			case RESET:
-				change = change.clearAccess();
-				break;
-			case SET:
-				change = change.withAccess(AccessModifier.values()[flags >> 6 & 0x3]);
-				break;
-		}
+		change = switch (accessT) {
+			case RESET -> change.clearAccess();
+			case SET -> change.withAccess(AccessModifier.values()[flags >> 6 & 0x3]);
+			default -> change;
+		};
 
-		switch (javadocT) {
-			case RESET:
-				change = change.clearJavadoc();
-				break;
-			case SET:
-				change = change.withJavadoc(readString(input));
-				break;
-		}
+		change = switch (javadocT) {
+			case RESET -> change.clearJavadoc();
+			case SET -> change.withJavadoc(readString(input));
+			default -> change;
+		};
 
 		return change;
 	}

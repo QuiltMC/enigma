@@ -11,7 +11,10 @@
 
 package cuchaz.enigma.analysis.index;
 
-import com.google.common.collect.*;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.analysis.ReferenceTargetType;
@@ -37,7 +40,7 @@ public class JarIndex implements JarIndexer {
 	private final Collection<JarIndexer> indexers;
 
 	private final Multimap<String, MethodDefEntry> methodImplementations = HashMultimap.create();
-	private final ListMultimap<ClassEntry, ParentedEntry> childrenByClass;
+	private final ListMultimap<ClassEntry, ParentedEntry<?>> childrenByClass;
 
 	public JarIndex(EntryIndex entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex, BridgeMethodIndex bridgeMethodIndex, PackageVisibilityIndex packageVisibilityIndex, EnclosingMethodIndex enclosingMethodIndex) {
 		this.entryIndex = entryIndex;
@@ -203,7 +206,7 @@ public class JarIndex implements JarIndexer {
 		return this.entryResolver;
 	}
 
-	public ListMultimap<ClassEntry, ParentedEntry> getChildrenByClass() {
+	public ListMultimap<ClassEntry, ParentedEntry<?>> getChildrenByClass() {
 		return this.childrenByClass;
 	}
 

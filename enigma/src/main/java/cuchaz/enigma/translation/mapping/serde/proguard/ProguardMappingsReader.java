@@ -30,8 +30,6 @@ public class ProguardMappingsReader implements MappingsReader {
     private static final Pattern FIELD = Pattern.compile(" {4}(" + TYPE + ") (" + NAME + ") -> (" + NAME + ")");
     private static final Pattern METHOD = Pattern.compile(" {4}(?:[0-9]+:[0-9]+:)?(" + TYPE + ") (" + NAME + ")\\((" + TYPE_LIST + ")\\) -> (" + NAME + ")");
 
-    public ProguardMappingsReader() {}
-
     @Override
     public EntryTree<EntryMapping> read(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws MappingParseException, IOException {
         EntryTree<EntryMapping> mappings = new HashEntryTree<>();
@@ -53,7 +51,8 @@ public class ProguardMappingsReader implements MappingsReader {
                 String name = classMatcher.group(1);
                 String targetName = classMatcher.group(2);
 
-                mappings.insert(currentClass = new ClassEntry(name.replace('.', '/')), new EntryMapping(ClassEntry.getInnerName(targetName.replace('.', '/'))));
+				currentClass = new ClassEntry(name.replace('.', '/'));
+                mappings.insert(currentClass, new EntryMapping(ClassEntry.getInnerName(targetName.replace('.', '/'))));
             } else if (fieldMatcher.matches()) {
                 String type = fieldMatcher.group(1);
                 String name = fieldMatcher.group(2);
@@ -91,26 +90,35 @@ public class ProguardMappingsReader implements MappingsReader {
             type = type.substring(0, type.length() - 2);
         }
 
-        switch (type) {
-            case "byte":
-                return descriptor + "B";
-            case "char":
-                return descriptor + "C";
-            case "short":
-                return descriptor + "S";
-            case "int":
-                return descriptor + "I";
-            case "long":
-                return descriptor + "J";
-            case "float":
-                return descriptor + "F";
-            case "double":
-                return descriptor + "D";
-            case "boolean":
-                return descriptor + "Z";
-            case "void":
-                return descriptor + "V";
-        }
+		switch (type) {
+			case "byte" -> {
+				return descriptor + "B";
+			}
+			case "char" -> {
+				return descriptor + "C";
+			}
+			case "short" -> {
+				return descriptor + "S";
+			}
+			case "int" -> {
+				return descriptor + "I";
+			}
+			case "long" -> {
+				return descriptor + "J";
+			}
+			case "float" -> {
+				return descriptor + "F";
+			}
+			case "double" -> {
+				return descriptor + "D";
+			}
+			case "boolean" -> {
+				return descriptor + "Z";
+			}
+			case "void" -> {
+				return descriptor + "V";
+			}
+		}
 
         descriptor.append("L");
         descriptor.append(type.replace('.', '/'));

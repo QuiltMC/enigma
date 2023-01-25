@@ -165,7 +165,7 @@ public class Enigma {
 			qf = properties.getProperty("quiltflower-version");
 			cfr = properties.getProperty("cfr-version");
 			procyon = properties.getProperty("procyon-version");
-		} catch (Throwable t) {
+		} catch (Exception ignored) {
 			version = qf = cfr = procyon = "Unknown Version";
 		}
 

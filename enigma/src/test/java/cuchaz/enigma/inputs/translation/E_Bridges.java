@@ -14,7 +14,6 @@ package cuchaz.enigma.inputs.translation;
 import java.util.Iterator;
 
 public class E_Bridges implements Iterator<Object> {
-
 	@Override
 	public boolean hasNext() {
 		return false;

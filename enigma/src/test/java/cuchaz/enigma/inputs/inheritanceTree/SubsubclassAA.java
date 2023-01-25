@@ -13,7 +13,6 @@ package cuchaz.enigma.inputs.inheritanceTree;
 
 // d extends b
 public class SubsubclassAA extends SubclassA {
-
 	protected SubsubclassAA() {
 		// call to b.<init>(Ljava/lang/String;)V
 		super("AA");

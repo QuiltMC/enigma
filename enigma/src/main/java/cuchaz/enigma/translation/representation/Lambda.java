@@ -14,21 +14,8 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 
-public class Lambda implements Translatable {
-	private final String invokedName;
-	private final MethodDescriptor invokedType;
-	private final MethodDescriptor samMethodType;
-	private final ParentedEntry<?> implMethod;
-	private final MethodDescriptor instantiatedMethodType;
-
-	public Lambda(String invokedName, MethodDescriptor invokedType, MethodDescriptor samMethodType, ParentedEntry<?> implMethod, MethodDescriptor instantiatedMethodType) {
-		this.invokedName = invokedName;
-		this.invokedType = invokedType;
-		this.samMethodType = samMethodType;
-		this.implMethod = implMethod;
-		this.instantiatedMethodType = instantiatedMethodType;
-	}
-
+public record Lambda(String invokedName, MethodDescriptor invokedType, MethodDescriptor samMethodType,
+					 ParentedEntry<?> implMethod, MethodDescriptor instantiatedMethodType) implements Translatable {
 	@Override
 	public TranslateResult<Lambda> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
 		MethodEntry samMethod = new MethodEntry(this.getInterface(), this.invokedName, this.samMethodType);
@@ -60,25 +47,6 @@ public class Lambda implements Translatable {
 		return this.invokedType.getReturnDesc().getTypeEntry();
 	}
 
-	public String getInvokedName() {
-		return this.invokedName;
-	}
-
-	public MethodDescriptor getInvokedType() {
-		return this.invokedType;
-	}
-
-	public MethodDescriptor getSamMethodType() {
-		return this.samMethodType;
-	}
-
-	public ParentedEntry<?> getImplMethod() {
-		return this.implMethod;
-	}
-
-	public MethodDescriptor getInstantiatedMethodType() {
-		return this.instantiatedMethodType;
-	}
 
 	@Override
 	public boolean equals(Object o) {
@@ -90,11 +58,6 @@ public class Lambda implements Translatable {
 				Objects.equals(this.samMethodType, lambda.samMethodType) &&
 				Objects.equals(this.implMethod, lambda.implMethod) &&
 				Objects.equals(this.instantiatedMethodType, lambda.instantiatedMethodType);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(this.invokedName, this.invokedType, this.samMethodType, this.implMethod, this.instantiatedMethodType);
 	}
 
 	@Override

@@ -20,7 +20,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class RecafMappingsWriter implements MappingsWriter {
-
 	public static final RecafMappingsWriter INSTANCE = new RecafMappingsWriter();
 
 	@Override
@@ -53,13 +52,11 @@ public class RecafMappingsWriter implements MappingsWriter {
 		try {
 			if (mapping != null && mapping.targetName() != null) {
 				if (entry instanceof ClassEntry classEntry) {
-
 					writer.write(classEntry.getFullName());
 					writer.write(" ");
 					writer.write(mapping.targetName());
 
 				} else if (entry instanceof FieldEntry fieldEntry) {
-
 					writer.write(fieldEntry.getFullName());
 					writer.write(" ");
 					writer.write(fieldEntry.getDesc().toString());
@@ -67,7 +64,6 @@ public class RecafMappingsWriter implements MappingsWriter {
 					writer.write(mapping.targetName());
 
 				} else if (entry instanceof MethodEntry methodEntry) {
-
 					writer.write(methodEntry.getFullName());
 					writer.write(methodEntry.getDesc().toString());
 					writer.write(" ");

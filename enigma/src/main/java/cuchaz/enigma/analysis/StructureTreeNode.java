@@ -12,15 +12,16 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class StructureTreeNode extends DefaultMutableTreeNode {
     private final List<NameProposalService> nameProposalServices;
     private final EntryRemapper mapper;
     private final ClassEntry parentEntry;
-    private final ParentedEntry entry;
+    private final ParentedEntry<?> entry;
 
-    public StructureTreeNode(EnigmaProject project, ClassEntry parentEntry, ParentedEntry entry) {
+    public StructureTreeNode(EnigmaProject project, ClassEntry parentEntry, ParentedEntry<?> entry) {
         this.nameProposalServices = project.getEnigma().getServices().get(NameProposalService.TYPE);
         this.mapper = project.getMapper();
         this.parentEntry = parentEntry;
@@ -30,12 +31,12 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
     /**
      * Returns the parented entry represented by this tree node.
      */
-    public ParentedEntry getEntry() {
+    public ParentedEntry<?> getEntry() {
         return this.entry;
     }
 
     public void load(EnigmaProject project, StructureTreeOptions options) {
-        Stream<ParentedEntry> children = project.getJarIndex().getChildrenByClass().get(this.parentEntry).stream();
+        Stream<ParentedEntry<?>> children = project.getJarIndex().getChildrenByClass().get(this.parentEntry).stream();
 
         children = switch (options.obfuscationVisibility()) {
             case ALL -> children;
@@ -83,17 +84,17 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 
     @Override
     public String toString() {
-        TranslateResult<ParentedEntry> translateResult = this.mapper.extendedDeobfuscate(this.entry);
+        TranslateResult<ParentedEntry<?>> translateResult = this.mapper.extendedDeobfuscate(this.entry);
         String result = translateResult.getValue().getName();
 
-        if (translateResult.isObfuscated()) {
-            if (!this.nameProposalServices.isEmpty()) {
-                for (NameProposalService service : this.nameProposalServices) {
-                    if (service.proposeName(this.entry, this.mapper).isPresent()) {
-                        result = service.proposeName(this.entry, this.mapper).get();
-                    }
-                }
-            }
+        if (translateResult.isObfuscated() && !this.nameProposalServices.isEmpty()) {
+			for (NameProposalService service : this.nameProposalServices) {
+				Optional<String> proposedName = service.proposeName(this.entry, this.mapper);
+
+				if (proposedName.isPresent()) {
+					result = proposedName.get();
+				}
+			}
         }
 
         if (this.entry instanceof FieldDefEntry) {
@@ -148,15 +149,15 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
     }
 
     private String parseArgs(List<TypeDescriptor> args) {
-        if (args.size() > 0) {
-            String result = "(";
+        if (!args.isEmpty()) {
+            StringBuilder result = new StringBuilder("(");
 
             for (int i = 0; i < args.size(); i++) {
                 if (i > 0) {
-                    result += ", ";
+                    result.append(", ");
                 }
 
-                result += this.parseDesc(args.get(i));
+                result.append(this.parseDesc(args.get(i)));
             }
 
             return result + ")";

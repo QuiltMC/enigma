@@ -20,8 +20,8 @@ public final class EnigmaServiceType<T extends EnigmaService> {
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
 
-		if (obj instanceof EnigmaServiceType) {
-			return ((EnigmaServiceType) obj).key.equals(this.key);
+		if (obj instanceof EnigmaServiceType<?> serviceType) {
+			return serviceType.key.equals(this.key);
 		}
 
 		return false;

@@ -111,7 +111,6 @@ public class IndexReferenceVisitor extends ClassVisitor {
 
 			if (insn.getOpcode() == Opcodes.INVOKEDYNAMIC) {
 				InvokeDynamicInsnNode invokeDynamicInsn = (InvokeDynamicInsnNode) insn;
-				List<AbstractInsnNode> args = values.stream().map(v -> v.right.insns.stream().findFirst().orElseThrow(AssertionError::new)).toList();
 
 				if ("java/lang/invoke/LambdaMetafactory".equals(invokeDynamicInsn.bsm.getOwner()) && "metafactory".equals(invokeDynamicInsn.bsm.getName())) {
 					Type samMethodType = (Type) invokeDynamicInsn.bsmArgs[0];
@@ -143,15 +142,15 @@ public class IndexReferenceVisitor extends ClassVisitor {
 		}
 
 		private ReferenceTargetType getReferenceTargetType(PairValue<BasicValue, SourceValue> target, AbstractInsnNode insn) throws AnalyzerException {
-			if (target.left == BasicValue.UNINITIALIZED_VALUE) {
+			if (target.left() == BasicValue.UNINITIALIZED_VALUE) {
 				return ReferenceTargetType.uninitialized();
 			}
 
-			if (target.left.getType().getSort() == Type.OBJECT) {
-				return ReferenceTargetType.classType(new ClassEntry(target.left.getType().getInternalName()));
+			if (target.left().getType().getSort() == Type.OBJECT) {
+				return ReferenceTargetType.classType(new ClassEntry(target.left().getType().getInternalName()));
 			}
 
-			if (target.left.getType().getSort() == Type.ARRAY) {
+			if (target.left().getType().getSort() == Type.ARRAY) {
 				return ReferenceTargetType.classType(new ClassEntry("java/lang/Object"));
 			}
 
@@ -160,17 +159,12 @@ public class IndexReferenceVisitor extends ClassVisitor {
 
 		private static ParentedEntry<?> getHandleEntry(Handle handle) {
 			switch (handle.getTag()) {
-				case Opcodes.H_GETFIELD:
-				case Opcodes.H_GETSTATIC:
-				case Opcodes.H_PUTFIELD:
-				case Opcodes.H_PUTSTATIC:
+				case Opcodes.H_GETFIELD, Opcodes.H_GETSTATIC, Opcodes.H_PUTFIELD, Opcodes.H_PUTSTATIC -> {
 					return FieldEntry.parse(handle.getOwner(), handle.getName(), handle.getDesc());
-				case Opcodes.H_INVOKEINTERFACE:
-				case Opcodes.H_INVOKESPECIAL:
-				case Opcodes.H_INVOKESTATIC:
-				case Opcodes.H_INVOKEVIRTUAL:
-				case Opcodes.H_NEWINVOKESPECIAL:
+				}
+				case Opcodes.H_INVOKEINTERFACE, Opcodes.H_INVOKESPECIAL, Opcodes.H_INVOKESTATIC, Opcodes.H_INVOKEVIRTUAL, Opcodes.H_NEWINVOKESPECIAL -> {
 					return MethodEntry.parse(handle.getOwner(), handle.getName(), handle.getDesc());
+				}
 			}
 
 			throw new RuntimeException("Invalid handle tag " + handle.getTag());

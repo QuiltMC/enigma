@@ -23,7 +23,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public class TestTokensConstructors extends TokenChecker {
-
 	public TestTokensConstructors()
 			throws Exception {
 		super(Paths.get("build/test-obf/constructors.jar"),

@@ -13,7 +13,6 @@ package cuchaz.enigma.inputs.inheritanceTree;
 
 // a
 public abstract class BaseClass {
-
 	// a
 	private String name;
 

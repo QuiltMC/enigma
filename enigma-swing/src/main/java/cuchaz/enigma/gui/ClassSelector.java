@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.*;
 
 public class ClassSelector extends JTree {
-
 	public static final Comparator<ClassEntry> DEOBF_CLASS_COMPARATOR = Comparator.comparing(ClassEntry::getFullName);
 
 	private final Comparator<ClassEntry> comparator;

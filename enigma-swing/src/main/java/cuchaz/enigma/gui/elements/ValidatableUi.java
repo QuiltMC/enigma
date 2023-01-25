@@ -13,7 +13,6 @@ import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 
 public final class ValidatableUi {
-
 	private ValidatableUi() {
 	}
 
@@ -80,28 +79,27 @@ public final class ValidatableUi {
 				.max().orElse(0);
 
 		switch (level) {
-			case 0:
+			case 0 -> {
 				return null;
-			case 1:
+			}
+			case 1 -> {
 				return Color.BLUE;
-			case 2:
+			}
+			case 2 -> {
 				return Color.ORANGE;
-			case 3:
+			}
+			case 3 -> {
 				return Color.RED;
+			}
 		}
 		throw new IllegalStateException("unreachable");
 	}
 
 	private static int getMessageLevel(ParameterizedMessage message) {
-		switch (message.message.type) {
-			case INFO:
-				return 1;
-			case WARNING:
-				return 2;
-			case ERROR:
-				return 3;
-		}
-		throw new IllegalStateException("unreachable");
+		return switch (message.message.type) {
+			case INFO -> 1;
+			case WARNING -> 2;
+			case ERROR -> 3;
+		};
 	}
-
 }

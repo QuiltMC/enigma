@@ -88,7 +88,7 @@ public class MappingsChecker {
 		}
 
 		// Method entry has parameter names, keep it even though it's not the root.
-		return !(entry instanceof MethodEntry) || this.mappings.getChildren(entry).size() <= 0;
+		return !(entry instanceof MethodEntry) || this.mappings.getChildren(entry).isEmpty();
 
 		// Entry is not the root, and is not a method with params
 	}

@@ -1,7 +1,6 @@
 package cuchaz.enigma.utils.validation;
 
 public class StandardValidation {
-
 	public static boolean notBlank(ValidationContext vc, String value) {
 		if (value.trim().isEmpty()) {
 			vc.raise(Message.EMPTY_FIELD);
@@ -30,5 +29,4 @@ public class StandardValidation {
 		}
 		return true;
 	}
-
 }

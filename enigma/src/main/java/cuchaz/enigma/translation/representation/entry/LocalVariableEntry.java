@@ -11,13 +11,7 @@ import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 
-/**
- * TypeDescriptor...
- * Created by Thog
- * 19/10/2016
- */
 public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Comparable<LocalVariableEntry> {
-
 	protected final int index;
 	protected final boolean parameter;
 
@@ -76,7 +70,7 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof LocalVariableEntry && this.equals((LocalVariableEntry) other);
+		return other instanceof LocalVariableEntry localVariableEntry && this.equals(localVariableEntry);
 	}
 
 	public boolean equals(LocalVariableEntry other) {
@@ -85,7 +79,7 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 
 	@Override
 	public boolean canConflictWith(Entry<?> entry) {
-		return entry instanceof LocalVariableEntry && ((LocalVariableEntry) entry).parent.equals(this.parent);
+		return entry instanceof LocalVariableEntry localVariableEntry && localVariableEntry.parent.equals(this.parent);
 	}
 
 	@Override

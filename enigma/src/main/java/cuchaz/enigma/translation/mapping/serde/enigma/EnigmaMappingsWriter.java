@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
@@ -65,13 +64,13 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 		@Override
 		public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
 			Collection<ClassEntry> changedClasses = delta.getChangedRoots()
-					.filter(entry -> entry instanceof ClassEntry)
-					.map(entry -> (ClassEntry) entry)
+					.filter(ClassEntry.class::isInstance)
+					.map(ClassEntry.class::cast)
 					.toList();
 
-			this.applyDeletions(path, changedClasses, mappings, delta.getBaseMappings(), saveParameters.getFileNameFormat());
+			this.applyDeletions(path, changedClasses, mappings, delta.getBaseMappings(), saveParameters.fileNameFormat());
 
-			changedClasses = changedClasses.stream().filter(entry -> !this.isClassEmpty(mappings, entry)).collect(Collectors.toList());
+			changedClasses = changedClasses.stream().filter(entry -> !this.isClassEmpty(mappings, entry)).toList();
 
 			progress.init(changedClasses.size(), I18n.translate("progress.mappings.enigma_directory.writing"));
 
@@ -83,7 +82,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 
 				try {
 					ClassEntry fileEntry = classEntry;
-					if (saveParameters.getFileNameFormat() == MappingFileNameFormat.BY_DEOBF) {
+					if (saveParameters.fileNameFormat() == MappingFileNameFormat.BY_DEOBF) {
 						fileEntry = translator.translate(fileEntry);
 					}
 
@@ -94,9 +93,9 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 					try (PrintWriter writer = new LfPrintWriter(Files.newBufferedWriter(classPath))) {
 						this.writeRoot(writer, mappings, classEntry);
 					}
-				} catch (Throwable t) {
+				} catch (Exception e) {
 					System.err.println("Failed to write class '" + classEntry.getFullName() + "'");
-					t.printStackTrace();
+					e.printStackTrace();
 				}
 			});
 		}
@@ -239,22 +238,22 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 	private Collection<Entry<?>> groupChildren(Collection<Entry<?>> children) {
 		Collection<Entry<?>> result = new ArrayList<>(children.size());
 
-		children.stream().filter(e -> e instanceof FieldEntry)
+		children.stream().filter(FieldEntry.class::isInstance)
 				.map(e -> (FieldEntry) e)
 				.sorted()
 				.forEach(result::add);
 
-		children.stream().filter(e -> e instanceof MethodEntry)
+		children.stream().filter(MethodEntry.class::isInstance)
 				.map(e -> (MethodEntry) e)
 				.sorted()
 				.forEach(result::add);
 
-		children.stream().filter(e -> e instanceof LocalVariableEntry)
+		children.stream().filter(LocalVariableEntry.class::isInstance)
 				.map(e -> (LocalVariableEntry) e)
 				.sorted()
 				.forEach(result::add);
 
-		children.stream().filter(e -> e instanceof ClassEntry)
+		children.stream().filter(ClassEntry.class::isInstance)
 				.map(e -> (ClassEntry) e)
 				.sorted()
 				.forEach(result::add);
@@ -306,9 +305,8 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 	}
 
 	private String indent(String line, int depth) {
-		String builder = "\t".repeat(Math.max(0, depth)) +
+		return "\t".repeat(Math.max(0, depth)) +
 				line.trim();
-		return builder;
 	}
 
 	protected boolean isClassEmpty(EntryTree<EntryMapping> mappings, ClassEntry classEntry) {

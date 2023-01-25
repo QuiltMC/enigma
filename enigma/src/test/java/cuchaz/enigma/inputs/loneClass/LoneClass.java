@@ -12,7 +12,6 @@
 package cuchaz.enigma.inputs.loneClass;
 
 public class LoneClass {
-
 	private String name;
 
 	public LoneClass(String name) {

@@ -16,7 +16,6 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public class ClassSelectorPackageNode extends DefaultMutableTreeNode {
-
 	private String packageName;
 
 	public ClassSelectorPackageNode(String packageName) {

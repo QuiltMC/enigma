@@ -19,7 +19,6 @@ import javax.swing.text.JTextComponent;
 import cuchaz.enigma.gui.config.UiConfig;
 
 public class SelectionHighlightPainter implements Highlighter.HighlightPainter {
-
 	public static final SelectionHighlightPainter INSTANCE = new SelectionHighlightPainter();
 
 	@Override
@@ -31,5 +30,4 @@ public class SelectionHighlightPainter implements Highlighter.HighlightPainter {
 		g2d.setStroke(new BasicStroke(2.0f));
 		g2d.drawRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 4, 4);
 	}
-
 }

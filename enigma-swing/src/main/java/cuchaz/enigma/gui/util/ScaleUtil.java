@@ -21,7 +21,6 @@ import de.sciss.syntaxpane.DefaultSyntaxKit;
 import cuchaz.enigma.gui.config.UiConfig;
 
 public class ScaleUtil {
-
 	private static final List<ScaleChangeListener> listeners = new ArrayList<>();
 
 	public static void setScaleFactor(float scaleFactor) {

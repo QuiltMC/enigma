@@ -15,12 +15,11 @@ import cuchaz.enigma.utils.Pair;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 public abstract class AbstractDialog extends JDialog {
-
 	protected final ValidationContext vc = new ValidationContext();
 
 	private boolean actionConfirm = false;
 
-	public AbstractDialog(Frame owner, String title, String confirmAction, String cancelAction) {
+	protected AbstractDialog(Frame owner, String title, String confirmAction, String cancelAction) {
 		super(owner, I18n.translate(title), true);
 
 		Container contentPane = this.getContentPane();
@@ -30,8 +29,8 @@ public abstract class AbstractDialog extends JDialog {
 
 		for (int i = 0; i < components.size(); i += 1) {
 			Pair<String, Component> entry = components.get(i);
-			JLabel label = new JLabel(I18n.translate(entry.a));
-			Component component = entry.b;
+			JLabel label = new JLabel(I18n.translate(entry.a()));
+			Component component = entry.b();
 
 			GridBagConstraintsBuilder cb = GridBagConstraintsBuilder.create().insets(2);
 
@@ -74,5 +73,4 @@ public abstract class AbstractDialog extends JDialog {
 
 	public void validateInputs() {
 	}
-
 }

@@ -78,12 +78,12 @@ public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 
 	@Override
 	public TranslateResult<? extends ParentedEntry<P>> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
-		P parent = this.getParent();
 		EntryMapping mapping = this.resolveMapping(resolver, mappings);
-		if (parent == null) {
+		if (this.getParent() == null) {
 			return this.extendedTranslate(translator, mapping);
 		}
-		P translatedParent = translator.translate(parent);
+
+		P translatedParent = translator.translate(this.getParent());
 		return this.withParent(translatedParent).extendedTranslate(translator, mapping);
 	}
 

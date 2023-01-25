@@ -23,7 +23,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 public class DedicatedEnigmaServer extends EnigmaServer {
-
 	private final EnigmaProfile profile;
 	private final MappingFormat mappingFormat;
 	private final Path mappingsFile;

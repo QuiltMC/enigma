@@ -1,7 +1,6 @@
 package cuchaz.enigma.analysis.index;
 
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import cuchaz.enigma.analysis.EntryReference;
@@ -12,7 +11,7 @@ import cuchaz.enigma.translation.representation.entry.*;
 import java.util.*;
 
 public class PackageVisibilityIndex implements JarIndexer {
-	private static boolean requiresSamePackage(AccessFlags entryAcc, EntryReference ref, InheritanceIndex inheritanceIndex) {
+	private static boolean requiresSamePackage(AccessFlags entryAcc, EntryReference<?, ?> ref, InheritanceIndex inheritanceIndex) {
 		if (entryAcc.isPublic()) {
 			return false;
 		}
@@ -39,7 +38,7 @@ public class PackageVisibilityIndex implements JarIndexer {
 	}
 
 	private final HashMultimap<ClassEntry, ClassEntry> connections = HashMultimap.create();
-	private final List<Set<ClassEntry>> partitions = Lists.newArrayList();
+	private final List<Set<ClassEntry>> partitions = new ArrayList<>();
 	private final Map<ClassEntry, Set<ClassEntry>> classPartitions = Maps.newHashMap();
 
 	private void addConnection(ClassEntry classA, ClassEntry classB) {

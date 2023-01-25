@@ -2,11 +2,11 @@ package cuchaz.enigma.gui.config;
 
 import java.awt.Font;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.UIManager;
 
-import com.google.common.collect.ImmutableMap;
 import de.sciss.syntaxpane.DefaultSyntaxKit;
 
 import cuchaz.enigma.gui.EnigmaSyntaxKit;
@@ -16,7 +16,6 @@ import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.source.RenamableTokenType;
 
 public class Themes {
-
 	private static final Set<ThemeChangeListener> listeners = new HashSet<>();
 
 	// Calling this after the UI is initialized (e.g. when the user changes
@@ -31,7 +30,7 @@ public class Themes {
 		EnigmaSyntaxKit.invalidate();
 		DefaultSyntaxKit.initKit();
 		DefaultSyntaxKit.registerContentType("text/enigma-sources", EnigmaSyntaxKit.class.getName());
-		ImmutableMap<RenamableTokenType, BoxHighlightPainter> boxHighlightPainters = getBoxHighlightPainters();
+		Map<RenamableTokenType, BoxHighlightPainter> boxHighlightPainters = getBoxHighlightPainters();
 		listeners.forEach(l -> l.onThemeChanged(laf, boxHighlightPainters));
 		ScaleUtil.applyScaling();
 		UiConfig.save();
@@ -86,8 +85,8 @@ public class Themes {
 		}
 	}
 
-	public static ImmutableMap<RenamableTokenType, BoxHighlightPainter> getBoxHighlightPainters() {
-		return ImmutableMap.of(
+	public static Map<RenamableTokenType, BoxHighlightPainter> getBoxHighlightPainters() {
+		return Map.of(
 				RenamableTokenType.OBFUSCATED, BoxHighlightPainter.create(UiConfig.getObfuscatedColor(), UiConfig.getObfuscatedOutlineColor()),
 				RenamableTokenType.PROPOSED, BoxHighlightPainter.create(UiConfig.getProposedColor(), UiConfig.getProposedOutlineColor()),
 				RenamableTokenType.DEOBFUSCATED, BoxHighlightPainter.create(UiConfig.getDeobfuscatedColor(), UiConfig.getDeobfuscatedOutlineColor()),
@@ -102,5 +101,4 @@ public class Themes {
 	public static void removeListener(ThemeChangeListener listener) {
 		listeners.remove(listener);
 	}
-
 }

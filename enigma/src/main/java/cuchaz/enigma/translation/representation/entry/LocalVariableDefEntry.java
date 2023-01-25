@@ -10,11 +10,6 @@ import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 
-/**
- * TypeDescriptor...
- * Created by Thog
- * 19/10/2016
- */
 public class LocalVariableDefEntry extends LocalVariableEntry {
 	protected final TypeDescriptor desc;
 

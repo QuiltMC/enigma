@@ -16,7 +16,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 
 public class ClosableTabTitlePane {
-
 	private final JPanel ui;
 	private final JButton closeButton;
 	private final JLabel label;
@@ -128,5 +127,4 @@ public class ClosableTabTitlePane {
 		}
 		return null;
 	}
-
 }

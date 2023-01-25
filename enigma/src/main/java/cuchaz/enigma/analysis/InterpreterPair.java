@@ -71,8 +71,8 @@ public class InterpreterPair<V extends Value, W extends Value> extends Interpret
     @Override
     public PairValue<V, W> naryOperation(AbstractInsnNode insn, List<? extends PairValue<V, W>> values) throws AnalyzerException {
         return this.pair(
-				this.left.naryOperation(insn, values.stream().map(v -> v.left).toList()),
-				this.right.naryOperation(insn, values.stream().map(v -> v.right).toList())
+				this.left.naryOperation(insn, values.stream().map(PairValue::left).toList()),
+				this.right.naryOperation(insn, values.stream().map(PairValue::right).toList())
         );
     }
 
@@ -98,32 +98,21 @@ public class InterpreterPair<V extends Value, W extends Value> extends Interpret
         return new PairValue<>(left, right);
     }
 
-    public static final class PairValue<V extends Value, W extends Value> implements Value {
-        public final V left;
-        public final W right;
+	public record PairValue<V extends Value, W extends Value>(V left, W right) implements Value {
+		public PairValue {
+			if (left == null && right == null) {
+				throw new IllegalArgumentException("should use null rather than pair of nulls");
+			}
+		}
 
-        public PairValue(V left, W right) {
-            if (left == null && right == null) {
-                throw new IllegalArgumentException("should use null rather than pair of nulls");
-            }
+		@Override
+		public boolean equals(Object o) {
+			return o instanceof InterpreterPair.PairValue<? extends Value, ? extends Value> pairValue && Objects.equals(this.left, pairValue.left) && Objects.equals(this.right, pairValue.right);
+		}
 
-            this.left = left;
-            this.right = right;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return o instanceof InterpreterPair.PairValue pairValue && Objects.equals(this.left, pairValue.left) && Objects.equals(this.right, pairValue.right);
-        }
-
-        @Override
-        public int hashCode() {
-            return this.left.hashCode() * 31 + this.right.hashCode();
-        }
-
-        @Override
-        public int getSize() {
-            return (this.left == null ? this.right : this.left).getSize();
-        }
-    }
+		@Override
+		public int getSize() {
+			return (this.left == null ? this.right : this.left).getSize();
+		}
+	}
 }

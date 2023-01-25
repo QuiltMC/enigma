@@ -3,7 +3,6 @@ package cuchaz.enigma.utils;
 import java.util.Objects;
 
 public final class TristateChange<T> {
-
 	private static final TristateChange<?> UNCHANGED = new TristateChange<>(Type.UNCHANGED, null);
 	private static final TristateChange<?> RESET = new TristateChange<>(Type.RESET, null);
 
@@ -74,5 +73,4 @@ public final class TristateChange<T> {
 		RESET,
 		SET,
 	}
-
 }

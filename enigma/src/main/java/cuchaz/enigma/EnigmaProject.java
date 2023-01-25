@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -23,6 +24,7 @@ import cuchaz.enigma.analysis.index.EnclosingMethodIndex;
 import cuchaz.enigma.api.service.ObfuscationTestService;
 import cuchaz.enigma.classprovider.ObfuscationFixClassProvider;
 import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
+import cuchaz.enigma.utils.Pair;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
@@ -48,6 +50,22 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
 
 public class EnigmaProject {
+	private static final List<Pair<String, String>> NON_RENAMABLE_METHODS = new ArrayList<>();
+
+	static {
+		NON_RENAMABLE_METHODS.add(new Pair<>("hashCode", "()I"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("clone", "()Ljava/lang/Object;"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("equals", "(Ljava/lang/Object;)Z"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("finalize", "()V"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("getClass", "()Ljava/lang/Class;"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("notify", "()V"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("notifyAll", "()V"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("toString", "()Ljava/lang/String;"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("wait", "()V"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("wait", "(J)V"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("wait", "(JI)V"));
+	}
+
 	private final Enigma enigma;
 
 	private final Path jarPath;
@@ -133,10 +151,8 @@ public class EnigmaProject {
 	}
 
 	public boolean isNavigable(Entry<?> obfEntry) {
-		if (obfEntry instanceof ClassEntry classEntry) {
-			if (this.isAnonymousOrLocal(classEntry)) {
-				return false;
-			}
+		if (obfEntry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
+			return false;
 		}
 
 		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);
@@ -147,45 +163,25 @@ public class EnigmaProject {
 			// HACKHACK: Object methods are not obfuscated identifiers
 			String name = obfMethodEntry.getName();
 			String sig = obfMethodEntry.getDesc().toString();
-			//TODO replace with a map or check if declaring class is java.lang.Object
-			if (name.equals("clone") && sig.equals("()Ljava/lang/Object;")) {
-				return false;
-			} else if (name.equals("equals") && sig.equals("(Ljava/lang/Object;)Z")) {
-				return false;
-			} else if (name.equals("finalize") && sig.equals("()V")) {
-				return false;
-			} else if (name.equals("getClass") && sig.equals("()Ljava/lang/Class;")) {
-				return false;
-			} else if (name.equals("hashCode") && sig.equals("()I")) {
-				return false;
-			} else if (name.equals("notify") && sig.equals("()V")) {
-				return false;
-			} else if (name.equals("notifyAll") && sig.equals("()V")) {
-				return false;
-			} else if (name.equals("toString") && sig.equals("()Ljava/lang/String;")) {
-				return false;
-			} else if (name.equals("wait") && sig.equals("()V")) {
-				return false;
-			} else if (name.equals("wait") && sig.equals("(J)V")) {
-				return false;
-			} else if (name.equals("wait") && sig.equals("(JI)V")) {
-				return false;
-			} else {
-				ClassDefEntry parent = this.jarIndex.getEntryIndex().getDefinition(obfMethodEntry.getParent());
-				if (parent != null && parent.isEnum()) {
-					if (name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";")) {
-						return false;
-					} else if (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")) {
-						return false;
-					}
+
+			// todo change this to a check if the method is declared in java.lang.Object or java.lang.Record
+
+			for (Pair<String, String> pair : NON_RENAMABLE_METHODS) {
+				if (pair.a().equals(name) && pair.b().equals(sig)) {
+					return false;
 				}
 			}
-		} else if (obfEntry instanceof LocalVariableEntry && !((LocalVariableEntry) obfEntry).isArgument()) {
-			return false;
-		} else if (obfEntry instanceof ClassEntry classEntry) {
-			if (this.isAnonymousOrLocal(classEntry)) {
+
+			ClassDefEntry parent = this.jarIndex.getEntryIndex().getDefinition(obfMethodEntry.getParent());
+			if (parent != null && parent.isEnum()
+					&& ((name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";"))
+					|| (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")))) {
 				return false;
 			}
+		} else if (obfEntry instanceof LocalVariableEntry localEntry && !localEntry.isArgument()) {
+			return false;
+		} else if (obfEntry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
+			return false;
 		}
 
 		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);
@@ -314,13 +310,13 @@ public class EnigmaProject {
 						String source = null;
 						try {
 							source = this.decompileClass(translatedNode, decompiler);
-						} catch (Throwable throwable) {
+						} catch (Exception e) {
 							switch (errorStrategy) {
-								case PROPAGATE: throw throwable;
+								case PROPAGATE: throw e;
 								case IGNORE: break;
 								case TRACE_AS_SOURCE: {
 									StringWriter writer = new StringWriter();
-									throwable.printStackTrace(new PrintWriter(writer));
+									e.printStackTrace(new PrintWriter(writer));
 									source = writer.toString();
 									break;
 								}

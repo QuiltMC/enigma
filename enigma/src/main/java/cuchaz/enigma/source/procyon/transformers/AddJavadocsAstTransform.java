@@ -1,6 +1,5 @@
 package cuchaz.enigma.source.procyon.transformers;
 
-import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.strobel.assembler.metadata.ParameterDefinition;
 import com.strobel.decompiler.languages.java.ast.*;
@@ -15,10 +14,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public final class AddJavadocsAstTransform implements IAstTransform {
-
 	private final EntryRemapper remapper;
 
 	public AddJavadocsAstTransform(EntryRemapper remapper) {
@@ -31,7 +30,6 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 	}
 
 	static class Visitor extends DepthFirstAstVisitor<Void, Void> {
-
 		private final EntryRemapper remapper;
 
 		Visitor(EntryRemapper remapper) {
@@ -69,14 +67,14 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 
 		private void visitMethod(AstNode node) {
 			final MethodDefEntry methodDefEntry = EntryParser.parse(node.getUserData(Keys.METHOD_DEFINITION));
-			final Comment[] baseComments = this.getComments(node, $ -> methodDefEntry);
+			final Comment[] baseComments = this.getComments(node, obj -> methodDefEntry);
 			List<Comment> comments = new ArrayList<>();
 			if (baseComments != null)
 				Collections.addAll(comments, baseComments);
 
 			for (ParameterDeclaration dec : node.getChildrenByRole(Roles.PARAMETER)) {
 				ParameterDefinition def = dec.getUserData(Keys.PARAMETER_DEFINITION);
-				final Comment[] paramComments = this.getParameterComments(dec, $ -> new LocalVariableDefEntry(methodDefEntry, def.getSlot(), def.getName(),
+				final Comment[] paramComments = this.getParameterComments(dec, obj -> new LocalVariableDefEntry(methodDefEntry, def.getSlot(), def.getName(),
 						true,
 						EntryParser.parseTypeDescriptor(def.getParameterType()), null));
 				if (paramComments != null)

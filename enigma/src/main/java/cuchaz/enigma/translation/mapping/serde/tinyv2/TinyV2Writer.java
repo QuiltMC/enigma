@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.stream.StreamSupport;
 
 public final class TinyV2Writer implements MappingsWriter {
-
 	private static final String MINOR_VERSION = "0";
 	private final String obfHeader;
 	private final String deobfHeader;
@@ -177,5 +176,4 @@ public final class TinyV2Writer implements MappingsWriter {
 	private String indent(int level) {
 		return Strings.repeat("\t", level);
 	}
-
 }

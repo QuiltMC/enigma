@@ -6,7 +6,6 @@ import java.io.PrintStream;
 import javax.annotation.Nullable;
 
 public final class ClassHandleError {
-
 	public final Type type;
 	public final Throwable cause;
 
@@ -36,5 +35,4 @@ public final class ClassHandleError {
 		DECOMPILE,
 		REMAP,
 	}
-
 }

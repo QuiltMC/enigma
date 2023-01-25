@@ -11,7 +11,6 @@
 
 package cuchaz.enigma.analysis;
 
-import com.google.common.collect.Lists;
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.analysis.index.InheritanceIndex;
 import cuchaz.enigma.analysis.index.JarIndex;
@@ -19,6 +18,7 @@ import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -54,7 +54,7 @@ public class MethodImplementationsTreeNode extends AbstractMethodTreeNode {
 
 	public void load(JarIndex index) {
 		// get all method implementations
-		List<MethodImplementationsTreeNode> nodes = Lists.newArrayList();
+		List<MethodImplementationsTreeNode> nodes = new ArrayList<>();
 		EntryIndex entryIndex = index.getEntryIndex();
 		InheritanceIndex inheritanceIndex = index.getInheritanceIndex();
 

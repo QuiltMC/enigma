@@ -28,6 +28,6 @@ public class ConfirmChangeC2SPacket implements Packet<ServerPacketHandler> {
 
 	@Override
 	public void handle(ServerPacketHandler handler) {
-		handler.getServer().confirmChange(handler.getClient(), this.syncId);
+		handler.server().confirmChange(handler.client(), this.syncId);
 	}
 }

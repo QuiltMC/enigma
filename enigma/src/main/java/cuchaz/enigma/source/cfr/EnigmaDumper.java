@@ -99,7 +99,7 @@ public class EnigmaDumper extends StringStreamDumper {
 
     @Override
     public Dumper packageName(JavaRefTypeInstance t) {
-        if (this.sourceSettings.removeImports) {
+        if (this.sourceSettings.removeImports()) {
             return this;
         }
         return super.packageName(t);
@@ -107,7 +107,7 @@ public class EnigmaDumper extends StringStreamDumper {
 
     @Override
     public Dumper keyword(String s) {
-        if (this.sourceSettings.removeImports && s.startsWith("import")) {
+        if (this.sourceSettings.removeImports() && s.startsWith("import")) {
 			this.muteLine = true;
             return this;
         }
@@ -391,12 +391,11 @@ public class EnigmaDumper extends StringStreamDumper {
     }
 
     private boolean isRecord(JavaTypeInstance javaTypeInstance) {
-        if (javaTypeInstance instanceof JavaRefTypeInstance) {
-            ClassFile classFile = ((JavaRefTypeInstance) javaTypeInstance).getClassFile();
+        if (javaTypeInstance instanceof JavaRefTypeInstance refTypeInstance) {
+            ClassFile classFile = refTypeInstance.getClassFile();
             return classFile.getClassSignature().getSuperClass().getRawName().equals("java.lang.Record");
         }
 
         return false;
     }
-
 }

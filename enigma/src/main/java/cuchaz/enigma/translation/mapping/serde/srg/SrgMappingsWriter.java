@@ -74,12 +74,12 @@ public enum SrgMappingsWriter implements MappingsWriter {
 		}
 
 		Translator translator = new MappingTranslator(mappings, VoidEntryResolver.INSTANCE);
-		if (entry instanceof ClassEntry) {
-			classes.add(this.generateClassLine((ClassEntry) entry, translator));
-		} else if (entry instanceof FieldEntry) {
-			fields.add(this.generateFieldLine((FieldEntry) entry, translator));
-		} else if (entry instanceof MethodEntry) {
-			methods.add(this.generateMethodLine((MethodEntry) entry, translator));
+		if (entry instanceof ClassEntry classEntry) {
+			classes.add(this.generateClassLine(classEntry, translator));
+		} else if (entry instanceof FieldEntry fieldEntry) {
+			fields.add(this.generateFieldLine(fieldEntry, translator));
+		} else if (entry instanceof MethodEntry methodEntry) {
+			methods.add(this.generateMethodLine(methodEntry, translator));
 		}
 
 		for (Entry<?> child : this.sorted(node.getChildren())) {

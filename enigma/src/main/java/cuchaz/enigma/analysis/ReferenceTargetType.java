@@ -3,17 +3,14 @@ package cuchaz.enigma.analysis;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
 public abstract class ReferenceTargetType {
-    private static final None NONE = new None();
-    private static final Uninitialized UNINITIALIZED = new Uninitialized();
-
     public abstract Kind getKind();
 
     public static None none() {
-        return NONE;
+        return None.NONE;
     }
 
     public static Uninitialized uninitialized() {
-        return UNINITIALIZED;
+        return Uninitialized.UNINITIALIZED;
     }
 
     public static ClassType classType(ClassEntry name) {
@@ -27,6 +24,8 @@ public abstract class ReferenceTargetType {
     }
 
     public static class None extends ReferenceTargetType {
+		private static final None NONE = new None();
+
         @Override
         public Kind getKind() {
             return Kind.NONE;
@@ -39,6 +38,8 @@ public abstract class ReferenceTargetType {
     }
 
     public static class Uninitialized extends ReferenceTargetType {
+		private static final Uninitialized UNINITIALIZED = new Uninitialized();
+
         @Override
         public Kind getKind() {
             return Kind.UNINITIALIZED;

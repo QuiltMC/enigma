@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 public final class StatsResult {
-
 	private final int total;
 	private final int unmapped;
 	private final Tree<Integer> tree;
@@ -101,5 +100,4 @@ public final class StatsResult {
 			}
 		}
 	}
-
 }
