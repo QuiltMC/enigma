@@ -40,17 +40,17 @@ public class InheritanceIndex implements JarIndexer {
 
 		ClassEntry superClass = classEntry.getSuperClass();
 		if (superClass != null && !superClass.getName().equals("java/lang/Object")) {
-            this.indexParent(classEntry, superClass);
+			this.indexParent(classEntry, superClass);
 		}
 
 		for (ClassEntry interfaceEntry : classEntry.getInterfaces()) {
-            this.indexParent(classEntry, interfaceEntry);
+			this.indexParent(classEntry, interfaceEntry);
 		}
 	}
 
 	private void indexParent(ClassEntry childEntry, ClassEntry parentEntry) {
-        this.classParents.put(childEntry, parentEntry);
-        this.classChildren.put(parentEntry, childEntry);
+		this.classParents.put(childEntry, parentEntry);
+		this.classChildren.put(parentEntry, childEntry);
 	}
 
 	public Collection<ClassEntry> getParents(ClassEntry classEntry) {

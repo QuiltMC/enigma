@@ -37,7 +37,7 @@ public class ValidationContext {
 	 * that element about the message.
 	 *
 	 * @param message the message to raise
-	 * @param args    the arguments used when formatting the message text
+	 * @param args	the arguments used when formatting the message text
 	 */
 	public void raise(Message message, Object... args) {
 		ParameterizedMessage pm = new ParameterizedMessage(message, args, this.activeElement);

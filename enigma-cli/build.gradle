@@ -1,10 +1,10 @@
 plugins {
-    id 'application'
-    alias(libs.plugins.shadow)
+	id 'application'
+	alias(libs.plugins.shadow)
 }
 
 dependencies {
-    implementation project(':enigma')
+	implementation project(':enigma')
 }
 
 mainClassName = 'cuchaz.enigma.command.Main'
@@ -12,12 +12,12 @@ mainClassName = 'cuchaz.enigma.command.Main'
 jar.manifest.attributes 'Main-Class': mainClassName
 
 publishing {
-    publications {
-        "$project.name"(MavenPublication) {
-            groupId project.group
-            artifactId project.name
-            version project.version
-            from components.java
-        }
-    }
+	publications {
+		"$project.name"(MavenPublication) {
+			groupId project.group
+			artifactId project.name
+			version project.version
+			from components.java
+		}
+	}
 }

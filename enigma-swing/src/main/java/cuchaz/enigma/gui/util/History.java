@@ -10,7 +10,7 @@ public class History<T> {
 	private T current;
 
 	public History(T initial) {
-        this.current = initial;
+		this.current = initial;
 	}
 
 	public T getCurrent() {
@@ -18,13 +18,13 @@ public class History<T> {
 	}
 
 	public void push(T value) {
-        this.previous.addLast(this.current);
-        this.current = value;
-        this.next.clear();
+		this.previous.addLast(this.current);
+		this.current = value;
+		this.next.clear();
 	}
 
 	public void replace(T value) {
-        this.current = value;
+		this.current = value;
 	}
 
 	public boolean canGoBack() {
@@ -32,8 +32,8 @@ public class History<T> {
 	}
 
 	public T goBack() {
-        this.next.addFirst(this.current);
-        this.current = this.previous.removeLast();
+		this.next.addFirst(this.current);
+		this.current = this.previous.removeLast();
 		return this.current;
 	}
 
@@ -42,8 +42,8 @@ public class History<T> {
 	}
 
 	public T goForward() {
-        this.previous.addLast(this.current);
-        this.current = this.next.removeFirst();
+		this.previous.addLast(this.current);
+		this.current = this.next.removeFirst();
 		return this.current;
 	}
 }

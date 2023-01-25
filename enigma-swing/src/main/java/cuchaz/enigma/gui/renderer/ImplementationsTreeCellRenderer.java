@@ -11,24 +11,24 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
 
 public class ImplementationsTreeCellRenderer extends DefaultTreeCellRenderer {
-    private final Gui gui;
+	private final Gui gui;
 
-    public ImplementationsTreeCellRenderer(Gui gui) {
-        this.gui = gui;
-    }
+	public ImplementationsTreeCellRenderer(Gui gui) {
+		this.gui = gui;
+	}
 
-    @Override
-    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-        Component c = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+	@Override
+	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+		Component c = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
-        this.setForeground(UiConfig.getTextColor());
+		this.setForeground(UiConfig.getTextColor());
 
-        if (value instanceof ClassImplementationsTreeNode node) {
-            this.setIcon(GuiUtil.getClassIcon(this.gui, node.getClassEntry()));
-        } else if (value instanceof MethodImplementationsTreeNode node) {
-            this.setIcon(GuiUtil.getMethodIcon(node.getMethodEntry()));
-        }
+		if (value instanceof ClassImplementationsTreeNode node) {
+			this.setIcon(GuiUtil.getClassIcon(this.gui, node.getClassEntry()));
+		} else if (value instanceof MethodImplementationsTreeNode node) {
+			this.setIcon(GuiUtil.getMethodIcon(node.getMethodEntry()));
+		}
 
-        return c;
-    }
+		return c;
+	}
 }

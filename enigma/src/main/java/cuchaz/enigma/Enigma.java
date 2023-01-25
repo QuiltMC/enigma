@@ -38,15 +38,15 @@ import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.utils.Utils;
 
 public class Enigma {
-    public static final String NAME = "Enigma";
+	public static final String NAME = "Enigma";
 	public static final String VERSION;
 	public static final String QUILTFLOWER_VERSION;
 	public static final String CFR_VERSION;
 	public static final String PROCYON_VERSION;
 	public static final String URL = "https://quiltmc.org";
-    public static final int ASM_VERSION = Opcodes.ASM9;
+	public static final int ASM_VERSION = Opcodes.ASM9;
 
-    private final EnigmaProfile profile;
+	private final EnigmaProfile profile;
 	private final EnigmaServices services;
 
 	private Enigma(EnigmaProfile profile, EnigmaServices services) {

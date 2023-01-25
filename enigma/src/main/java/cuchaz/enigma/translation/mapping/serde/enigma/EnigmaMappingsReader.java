@@ -73,10 +73,10 @@ public enum EnigmaMappingsReader implements MappingsReader {
 	 * Reads multiple Enigma mapping files.
 	 *
 	 * @param progress the progress listener
-	 * @param paths    the Enigma files to read; cannot be empty
+	 * @param paths	the Enigma files to read; cannot be empty
 	 * @return the parsed mappings
-	 * @throws MappingParseException    if a mapping file cannot be parsed
-	 * @throws IOException              if an IO error occurs
+	 * @throws MappingParseException	if a mapping file cannot be parsed
+	 * @throws IOException			  if an IO error occurs
 	 * @throws IllegalArgumentException if there are no paths to read
 	 */
 	public static EntryTree<EntryMapping> readFiles(ProgressListener progress, Path... paths) throws MappingParseException, IOException {

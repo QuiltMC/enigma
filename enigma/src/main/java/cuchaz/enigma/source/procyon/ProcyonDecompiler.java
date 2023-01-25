@@ -41,16 +41,16 @@ public class ProcyonDecompiler implements Decompiler {
 			return true;
 		};
 
-        this.metadataSystem = new MetadataSystem(typeLoader);
-        this.metadataSystem.setEagerMethodLoadingEnabled(true);
+		this.metadataSystem = new MetadataSystem(typeLoader);
+		this.metadataSystem.setEagerMethodLoadingEnabled(true);
 
-        this.decompilerSettings = DecompilerSettings.javaDefaults();
-        this.decompilerSettings.setMergeVariables(getSystemPropertyAsBoolean("enigma.mergeVariables", true));
-        this.decompilerSettings.setForceExplicitImports(getSystemPropertyAsBoolean("enigma.forceExplicitImports", true));
-        this.decompilerSettings.setForceExplicitTypeArguments(getSystemPropertyAsBoolean("enigma.forceExplicitTypeArguments", true));
-        this.decompilerSettings.setShowDebugLineNumbers(getSystemPropertyAsBoolean("enigma.showDebugLineNumbers", false));
-        this.decompilerSettings.setShowSyntheticMembers(getSystemPropertyAsBoolean("enigma.showSyntheticMembers", false));
-        this.decompilerSettings.setTypeLoader(typeLoader);
+		this.decompilerSettings = DecompilerSettings.javaDefaults();
+		this.decompilerSettings.setMergeVariables(getSystemPropertyAsBoolean("enigma.mergeVariables", true));
+		this.decompilerSettings.setForceExplicitImports(getSystemPropertyAsBoolean("enigma.forceExplicitImports", true));
+		this.decompilerSettings.setForceExplicitTypeArguments(getSystemPropertyAsBoolean("enigma.forceExplicitTypeArguments", true));
+		this.decompilerSettings.setShowDebugLineNumbers(getSystemPropertyAsBoolean("enigma.showDebugLineNumbers", false));
+		this.decompilerSettings.setShowSyntheticMembers(getSystemPropertyAsBoolean("enigma.showSyntheticMembers", false));
+		this.decompilerSettings.setTypeLoader(typeLoader);
 
 		JavaFormattingOptions formattingOptions = this.decompilerSettings.getJavaFormattingOptions();
 		formattingOptions.ClassBraceStyle = BraceStyle.EndOfLine;

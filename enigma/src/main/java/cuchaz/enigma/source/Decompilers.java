@@ -6,8 +6,8 @@ import cuchaz.enigma.source.procyon.ProcyonDecompiler;
 import cuchaz.enigma.source.quiltflower.QuiltflowerDecompiler;
 
 public class Decompilers {
-    public static final DecompilerService QUILTFLOWER = QuiltflowerDecompiler::new;
-    public static final DecompilerService PROCYON = ProcyonDecompiler::new;
-    public static final DecompilerService CFR = CfrDecompiler::new;
-    public static final DecompilerService BYTECODE = BytecodeDecompiler::new;
+	public static final DecompilerService QUILTFLOWER = QuiltflowerDecompiler::new;
+	public static final DecompilerService PROCYON = ProcyonDecompiler::new;
+	public static final DecompilerService CFR = CfrDecompiler::new;
+	public static final DecompilerService BYTECODE = BytecodeDecompiler::new;
 }

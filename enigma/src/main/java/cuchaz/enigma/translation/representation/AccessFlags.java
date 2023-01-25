@@ -75,7 +75,7 @@ public class AccessFlags {
 	}
 
 	public AccessFlags setBridge() {
-        this.flags |= Opcodes.ACC_BRIDGE;
+		this.flags |= Opcodes.ACC_BRIDGE;
 		return this;
 	}
 

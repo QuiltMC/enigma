@@ -38,14 +38,14 @@ public enum MappingFormat {
 	}
 
 	public void write(EntryTree<EntryMapping> mappings, Path path, ProgressListener progressListener, MappingSaveParameters saveParameters)  {
-        this.write(mappings, MappingDelta.added(mappings), path, progressListener, saveParameters);
+		this.write(mappings, MappingDelta.added(mappings), path, progressListener, saveParameters);
 	}
 
 	public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progressListener, MappingSaveParameters saveParameters)  {
 		if (this.writer == null) {
 			throw new IllegalStateException(this.name() + " does not support writing");
 		}
-        this.writer.write(mappings, delta, path, progressListener, saveParameters);
+		this.writer.write(mappings, delta, path, progressListener, saveParameters);
 	}
 
 	public EntryTree<EntryMapping> read(Path path, ProgressListener progressListener, MappingSaveParameters saveParameters) throws IOException, MappingParseException {

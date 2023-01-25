@@ -21,7 +21,7 @@ public class HashEntryTree<T> implements EntryTree<T> {
 
 	public HashEntryTree(EntryTree<T> tree) {
 		for (EntryTreeNode<T> node : tree) {
-            this.insert(node.getEntry(), node.getValue());
+			this.insert(node.getEntry(), node.getValue());
 		}
 	}
 
@@ -30,7 +30,7 @@ public class HashEntryTree<T> implements EntryTree<T> {
 		List<HashTreeNode<T>> path = this.computePath(entry, true);
 		path.get(path.size() - 1).putValue(value);
 		if (value == null) {
-            this.removeDeadAlong(path);
+			this.removeDeadAlong(path);
 		}
 	}
 
@@ -44,7 +44,7 @@ public class HashEntryTree<T> implements EntryTree<T> {
 
 		T value = path.get(path.size() - 1).removeValue();
 
-        this.removeDeadAlong(path);
+		this.removeDeadAlong(path);
 
 		return value;
 	}
@@ -144,7 +144,7 @@ public class HashEntryTree<T> implements EntryTree<T> {
 					HashTreeNode<T> parentNode = path.get(i - 1);
 					parentNode.remove(node.getEntry());
 				} else {
-                    this.root.remove(node.getEntry());
+					this.root.remove(node.getEntry());
 				}
 			} else {
 				break;

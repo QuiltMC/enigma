@@ -12,49 +12,49 @@
    version="1.1"
    id="svg8">
   <defs
-     id="defs2">
-    <linearGradient
-       id="linearGradient940">
-      <stop
-         style="stop-color:#44a8f3;stop-opacity:1"
-         offset="0"
-         id="stop936" />
-      <stop
-         style="stop-color:#2196f3;stop-opacity:1"
-         offset="0.49936226"
-         id="stop944" />
-      <stop
-         style="stop-color:#44a8f3;stop-opacity:1"
-         offset="1"
-         id="stop938" />
-    </linearGradient>
-    <linearGradient
-       xlink:href="#linearGradient940"
-       id="linearGradient942"
-       x1="2.1166666"
-       y1="0.26458332"
-       x2="2.1166666"
-       y2="3.9687498"
-       gradientUnits="userSpaceOnUse" />
-    <filter
-       style="color-interpolation-filters:sRGB;"
-       id="filter1135">
-      <feFlood
-         flood-opacity="0.498039"
-         flood-color="rgb(0,0,0)"
-         result="flood"
-         id="feFlood1125" />
-      <feComposite
-         in="flood"
-         in2="SourceGraphic"
-         operator="in"
-         result="composite1"
-         id="feComposite1127" />
-      <feGaussianBlur
-         in="composite1"
-         stdDeviation="0.1"
-         result="blur"
-         id="feGaussianBlur1129" />
+	 id="defs2">
+	<linearGradient
+	   id="linearGradient940">
+	  <stop
+		 style="stop-color:#44a8f3;stop-opacity:1"
+		 offset="0"
+		 id="stop936" />
+	  <stop
+		 style="stop-color:#2196f3;stop-opacity:1"
+		 offset="0.49936226"
+		 id="stop944" />
+	  <stop
+		 style="stop-color:#44a8f3;stop-opacity:1"
+		 offset="1"
+		 id="stop938" />
+	</linearGradient>
+	<linearGradient
+	   xlink:href="#linearGradient940"
+	   id="linearGradient942"
+	   x1="2.1166666"
+	   y1="0.26458332"
+	   x2="2.1166666"
+	   y2="3.9687498"
+	   gradientUnits="userSpaceOnUse" />
+	<filter
+	   style="color-interpolation-filters:sRGB;"
+	   id="filter1135">
+	  <feFlood
+		 flood-opacity="0.498039"
+		 flood-color="rgb(0,0,0)"
+		 result="flood"
+		 id="feFlood1125" />
+	  <feComposite
+		 in="flood"
+		 in2="SourceGraphic"
+		 operator="in"
+		 result="composite1"
+		 id="feComposite1127" />
+	  <feGaussianBlur
+		 in="composite1"
+		 stdDeviation="0.1"
+		 result="blur"
+		 id="feGaussianBlur1129" />
       <feOffset
          dx="0"
          dy="0.2"
