@@ -134,7 +134,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 			server.start();
 			Logger.info("Server started");
 		} catch (IOException | MappingParseException e) {
-			Logger.info(e, "Error starting server!");
+			Logger.error(e, "Error starting server!");
 			System.exit(1);
 			return;
 		}
