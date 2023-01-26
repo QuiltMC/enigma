@@ -43,7 +43,7 @@ public class DropInvalidMappingsCommand extends Command {
 
 	public static void run(Path jarIn, Path mappingsIn, Path mappingsOut) throws Exception {
 		if (mappingsIn == null) {
-			Logger.info("No mappings input specified, skipping.");
+			Logger.warn("No mappings input specified, skipping.");
 			return;
 		}
 
