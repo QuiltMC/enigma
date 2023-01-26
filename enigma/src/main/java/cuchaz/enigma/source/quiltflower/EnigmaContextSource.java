@@ -29,7 +29,7 @@ public class EnigmaContextSource implements IContextSource {
 
     @Override
     public String getName() {
-        return "class " + name;
+        return name;
     }
 
     private void collectClassNames() {
