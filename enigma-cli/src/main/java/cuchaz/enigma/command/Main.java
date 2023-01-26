@@ -77,7 +77,7 @@ public class Main {
 	private static void register(Command command) {
 		Command old = COMMANDS.put(command.name, command);
 		if (old != null) {
-			Logger.error("Command " + old + " with name " + command.name + " has been substituted by " + command);
+			Logger.warn("Command " + old + " with name " + command.name + " has been substituted by " + command);
 		}
 	}
 
