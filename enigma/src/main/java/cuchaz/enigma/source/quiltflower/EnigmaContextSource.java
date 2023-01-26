@@ -40,7 +40,7 @@ public class EnigmaContextSource implements IContextSource {
         classNames = new ArrayList<>();
         String root = name.contains("$") ? name.substring(0, name.indexOf("$")) : name;
         classNames.add(root);
-        classNames.addAll(classProvider.getClasses(root));
+        classNames.addAll(classProvider.getClasses(root).stream().filter(s -> s.contains("$")).toList());
     }
 
     @Override
