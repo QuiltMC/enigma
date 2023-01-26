@@ -91,8 +91,11 @@ public class IdentifierPanel {
 					// Get the parent of the method if it is a constructor.
 					final ClassEntry parent = ((MethodEntry) this.deobfEntry).getParent();
 
-					// Default to <???> if the method has no parent... for some reason.
-					name = parent == null ? "<???>" : parent.isInnerClass() ? parent.getName() : parent.getFullName();
+					if (parent == null) {
+						throw new IllegalStateException("Constructor has no parent?");
+					}
+
+					name = parent.isInnerClass() ? parent.getName() : parent.getFullName();
 				} else if (this.deobfEntry instanceof ClassEntry && !((ClassEntry) this.deobfEntry).isInnerClass()) {
 					name = deobfEntry.getFullName();
 				} else {
