@@ -6,19 +6,15 @@ import org.jetbrains.java.decompiler.main.extern.IResultSaver;
 import java.util.jar.Manifest;
 
 public class EnigmaResultSaver implements IResultSaver {
-	private final String requestedClass;
     private final SourceIndex index;
 
-    public EnigmaResultSaver(String requestedClass, SourceIndex index) {
-		this.requestedClass = requestedClass;
+    public EnigmaResultSaver(SourceIndex index) {
         this.index = index;
     }
 
     @Override
     public void saveClassFile(String path, String qualifiedName, String entryName, String content, int[] mapping) {
-        if (requestedClass.equals(qualifiedName)) {
-			index.setSource(content);
-		}
+        index.setSource(content);
     }
 
     @Override

@@ -74,7 +74,7 @@ public class QuiltflowerSource implements Source {
 
         index = new SourceIndex();
 
-        IResultSaver saver = new EnigmaResultSaver(contextSource.getName(), index);
+        IResultSaver saver = new EnigmaResultSaver(index);
         Map<String, Object> options = getOptions(new EnigmaJavadocProvider(remapper), settings);
         IFernflowerLogger logger = new EnigmaFernflowerLogger();
         BaseDecompiler decompiler = new BaseDecompiler(saver, options, logger);
