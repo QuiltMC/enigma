@@ -96,7 +96,7 @@ public class Main {
 						}
 						case "no-edit-locals" -> {
 							editables.remove(EditableType.LOCAL_VARIABLE);
-							Logger.warn("warning: --no-edit-locals has no effect as local variables are currently not editable");
+							Logger.warn("--no-edit-locals has no effect as local variables are currently not editable");
 						}
 						case "edit-javadocs" -> editables.add(EditableType.JAVADOC);
 						case "no-edit-javadocs" -> editables.remove(EditableType.JAVADOC);
