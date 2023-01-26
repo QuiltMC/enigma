@@ -194,7 +194,7 @@ public abstract class Command {
 			}
 		}
 
-		Logger.info("Wrote debug output to " + debugOutput.toAbsolutePath());
+		Logger.debug("Wrote debug output to " + debugOutput.toAbsolutePath());
 	}
 
 	public static class ConsoleProgressListener implements ProgressListener {
