@@ -87,17 +87,17 @@ public class IdentifierPanel {
 				final String name;
 
 				// Find what to set the name to.
-				if (this.deobfEntry instanceof MethodEntry && ((MethodEntry) this.deobfEntry).isConstructor()) {
+				if (this.deobfEntry instanceof MethodEntry methodEntry && methodEntry.isConstructor()) {
 					// Get the parent of the method if it is a constructor.
-					final ClassEntry parent = ((MethodEntry) this.deobfEntry).getParent();
+					final ClassEntry parent = methodEntry.getParent();
 
 					if (parent == null) {
-						throw new IllegalStateException("Constructor has no parent?");
+						throw new IllegalStateException("constructor method entry to render has no parent!");
 					}
 
 					name = parent.isInnerClass() ? parent.getName() : parent.getFullName();
-				} else if (this.deobfEntry instanceof ClassEntry && !((ClassEntry) this.deobfEntry).isInnerClass()) {
-					name = deobfEntry.getFullName();
+				} else if (this.deobfEntry instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
+					name = classEntry.getFullName();
 				} else {
 					name = deobfEntry.getName();
 				}
