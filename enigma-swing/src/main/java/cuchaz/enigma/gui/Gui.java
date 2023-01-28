@@ -99,6 +99,7 @@ public class Gui {
 	private final JList<Message> messages;
 
 	private final JLabel connectionStatusLabel;
+	private final NotificationManager notificationManager;
 
 	public final JFileChooser jarFileChooser;
 	public final JFileChooser tinyMappingsFileChooser;
@@ -129,6 +130,7 @@ public class Gui {
 		this.exportSourceFileChooser = new JFileChooser();
 		this.exportJarFileChooser = new JFileChooser();
 		this.connectionStatusLabel = new JLabel();
+		this.notificationManager = new NotificationManager(this);
 
 		this.setupUi();
 
@@ -243,6 +245,10 @@ public class Gui {
 
 		Dock dock = (newDocker.getPreferredLocation().side() == Docker.Side.LEFT ? this.leftDock : this.rightDock);
 		dock.host(newDocker, newDocker.getPreferredLocation().verticalLocation());
+	}
+
+	public NotificationManager getNotificationManager() {
+		return this.notificationManager;
 	}
 
 	public JSplitPane getSplitLeft() {

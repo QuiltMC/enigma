@@ -477,6 +477,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	private void applyChange0(ValidationContext vc, EntryChange<?> change) {
+		vc.setNotifier(this.gui.getNotificationManager());
 		validateChange(vc, change);
 		if (!vc.canProceed()) return;
 

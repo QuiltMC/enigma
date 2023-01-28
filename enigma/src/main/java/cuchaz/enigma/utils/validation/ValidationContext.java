@@ -19,6 +19,11 @@ public class ValidationContext {
 	private Validatable activeElement = null;
 	private final Set<Validatable> elements = new HashSet<>();
 	private final List<ParameterizedMessage> messages = new ArrayList<>();
+	private Notifier notifier;
+
+	public void setNotifier(Notifier notifier) {
+		this.notifier = notifier;
+	}
 
 	/**
 	 * Sets the currently active element (such as an input field). Any messages
@@ -48,6 +53,8 @@ public class ValidationContext {
 			}
 			messages.add(pm);
 		}
+
+		this.notifier.notify(message.textKey, message.longTextKey);
 	}
 
 	/**
@@ -60,20 +67,6 @@ public class ValidationContext {
 	public boolean canProceed() {
 		// TODO on warnings, wait until user confirms
 		return messages.stream().noneMatch(m -> m.message.type == Type.ERROR);
-	}
-
-	/**
-	 * If this validation context has at least one error, throw an exception.
-	 *
-	 * @throws IllegalStateException if errors are present
-	 */
-	public void throwOnError() {
-		if (!this.canProceed()) {
-			for (ParameterizedMessage message : this.messages) {
-				PrintValidatable.formatMessage(System.err, message);
-			}
-			throw new IllegalStateException("Errors encountered; cannot continue! Check error log for details.");
-		}
 	}
 
 	public List<ParameterizedMessage> getMessages() {
@@ -91,4 +84,7 @@ public class ValidationContext {
 		messages.clear();
 	}
 
+	public interface Notifier {
+		void notify(String title, String message);
+	}
 }
