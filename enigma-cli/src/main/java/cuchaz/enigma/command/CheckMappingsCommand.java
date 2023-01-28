@@ -63,7 +63,7 @@ public class CheckMappingsCommand extends Command {
 					.count();
 			if (packages > 1) {
 				error = true;
-				Logger.error("Must be in one package:\n" + partition.stream()
+				Logger.error("Must be in one package:\n{}", () -> partition.stream()
 						.map(project.getMapper()::deobfuscate)
 						.map(ClassEntry::toString)
 						.sorted()

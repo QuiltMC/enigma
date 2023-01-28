@@ -89,9 +89,9 @@ public class TokenChecker {
 			String name = classEntry.getContextualName();
 			Path path = Files.createTempFile("class-" + name.replace("$", "_") + "-", ".html");
 			Files.writeString(path, SourceTestUtil.toHtml(source, name));
-			Logger.info("Debug file created:" + path.toUri());
+			Logger.info("Debug file created: {}", path.toUri());
 		} catch (Exception e) {
-			Logger.error(e, "Failed to create debug source file for " + classEntry);
+			Logger.error(e, "Failed to create debug source file for {}", classEntry);
 		}
 	}
 }

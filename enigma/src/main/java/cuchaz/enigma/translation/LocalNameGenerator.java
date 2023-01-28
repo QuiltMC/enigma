@@ -38,7 +38,7 @@ public class LocalNameGenerator {
 			typeName = typeName.substring(0, 1).toLowerCase(Locale.ROOT) + typeName.substring(1);
 			return typeName;
 		} else {
-			Logger.error("Encountered invalid argument type descriptor " + desc);
+			Logger.error("Encountered invalid argument type descriptor {}", desc);
 			return "var";
 		}
 	}

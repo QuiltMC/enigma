@@ -19,7 +19,7 @@ public class TokenFactory {
         Region region = node.getRegion();
 
         if (region.getBeginLine() == 0) {
-            Logger.error("Got bad region from Procyon for node " + node);
+            Logger.error("Got bad region from Procyon for node {}", node);
             return null;
         }
 

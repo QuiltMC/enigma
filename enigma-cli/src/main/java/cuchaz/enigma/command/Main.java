@@ -48,7 +48,7 @@ public class Main {
 		} catch (CommandHelpException ex) {
 			Logger.error(ex);
 			logEnigmaInfo();
-			Logger.info("Command " + ex.command.name + " has encountered an error! Usage:");
+			Logger.info("Command {} has encountered an error! Usage:", ex.command.name);
 			printHelp(ex.command);
 			System.exit(1);
 		} catch (IllegalArgumentException ex) {
@@ -71,13 +71,13 @@ public class Main {
 	}
 
 	private static void printHelp(Command command) {
-		Logger.info("\t\t" + command.name + " " + command.getUsage());
+		Logger.info("\t\t{} {}", command.name, command.getUsage());
 	}
 
 	private static void register(Command command) {
 		Command old = COMMANDS.put(command.name, command);
 		if (old != null) {
-			Logger.warn("Command " + old + " with name " + command.name + " has been substituted by " + command);
+			Logger.warn("Command {} with name {} has been substituted by {}", old, command.name, command);
 		}
 	}
 

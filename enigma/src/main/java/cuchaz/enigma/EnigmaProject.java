@@ -117,14 +117,14 @@ public class EnigmaProject {
 
 		Map<Entry<?>, String> droppedBrokenMappings = droppedBroken.getDroppedMappings();
 		for (Map.Entry<Entry<?>, String> mapping : droppedBrokenMappings.entrySet()) {
-			Logger.warn("Couldn't find " + mapping.getKey() + " (" + mapping.getValue() + ") in jar. Mapping was dropped.");
+			Logger.warn("Couldn't find {} ({}) in jar. Mapping was dropped.", mapping.getKey(), mapping.getValue());
 		}
 
 		MappingsChecker.Dropped droppedEmpty = checker.dropEmptyMappings(progress);
 
 		Map<Entry<?>, String> droppedEmptyMappings = droppedEmpty.getDroppedMappings();
 		for (Map.Entry<Entry<?>, String> mapping : droppedEmptyMappings.entrySet()) {
-			Logger.warn(mapping.getKey() + " (" + mapping.getValue() + ") was empty. Mapping was dropped.");
+			Logger.warn("{} ({}) was empty. Mapping was dropped.", mapping.getKey(), mapping.getValue());
 		}
 
 		Collection<Entry<?>> droppedMappings = new HashSet<>();

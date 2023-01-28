@@ -97,7 +97,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 		int port = parsedArgs.valueOf(portOpt);
 		char[] password = parsedArgs.valueOf(passwordOpt).toCharArray();
 		if (password.length > EnigmaServer.MAX_PASSWORD_LENGTH) {
-			Logger.error("Password too long, must be at most " + EnigmaServer.MAX_PASSWORD_LENGTH + " characters");
+			Logger.error("Password too long, must be at most {} characters", EnigmaServer.MAX_PASSWORD_LENGTH);
 			System.exit(1);
 		}
 		Path logFile = parsedArgs.valueOf(logFileOpt);

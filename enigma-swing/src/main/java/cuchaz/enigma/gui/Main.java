@@ -151,7 +151,7 @@ public class Main {
 						});
 			}
 		} catch (OptionException e) {
-			Logger.error("Invalid arguments: " + e.getMessage() + "\n");
+			Logger.error("Invalid arguments: {}\n", e.getMessage());
 			parser.printHelpOn(System.out);
 		}
 	}

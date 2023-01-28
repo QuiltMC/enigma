@@ -96,7 +96,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 						writeRoot(writer, mappings, classEntry);
 					}
 				} catch (Exception e) {
-					Logger.error(e, "Failed to write class '" + classEntry.getFullName() + "'");
+					Logger.error(e, "Failed to write class '{}'", classEntry.getFullName());
 				}
 			});
 		}
@@ -117,7 +117,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 				try {
 					Files.deleteIfExists(resolve(root, classEntry));
 				} catch (IOException e) {
-					Logger.error(e, "Failed to delete deleted class '" + classEntry + "'");
+					Logger.error(e, "Failed to delete deleted class '{}'", classEntry);
 				}
 			}
 
@@ -128,7 +128,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 					try {
 						deleteDeadPackages(root, packagePath);
 					} catch (IOException e) {
-						Logger.error(e, "Failed to delete dead package '" + packageName + "'");
+						Logger.error(e, "Failed to delete dead package '{}'", packageName);
 					}
 				}
 			}
@@ -162,7 +162,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 			try (FileSystem fs = FileSystems.newFileSystem(new URI("jar:file", null, zip.toUri().getPath(), ""), Collections.singletonMap("create", "true"))) {
 				DIRECTORY.write(mappings, delta, fs.getPath("/"), progress, saveParameters);
 			} catch (IOException e) {
-				Logger.error(e, "Failed to write mappings to zip file '" + zip + "'");
+				Logger.error(e, "Failed to write mappings to zip file '{}'", zip);
 			} catch (URISyntaxException e) {
 				throw new RuntimeException("Unexpected error creating URI for " + zip, e);
 			}

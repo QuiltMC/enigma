@@ -160,7 +160,7 @@ public final class UiConfig {
 
 					dockers.put(docker, location);
 				} catch (Exception e) {
-					Logger.error("failed to read docker state for " + dockInfo + ", ignoring! (" + e.getMessage() + ")");
+					Logger.error("failed to read docker state for {}, ignoring! ({})", dockInfo, e.getMessage());
 				}
 			}
 		}

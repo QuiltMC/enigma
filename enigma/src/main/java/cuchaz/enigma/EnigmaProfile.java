@@ -61,7 +61,7 @@ public final class EnigmaProfile {
 			try (BufferedReader reader = new BufferedReader(new InputStreamReader(EnigmaProfile.class.getResourceAsStream("/profile.json"), StandardCharsets.UTF_8))) {
 				return EnigmaProfile.parse(reader);
 			} catch (IOException ex) {
-				Logger.warn("Failed to load default profile, will use empty profile: " + ex.getMessage());
+				Logger.warn("Failed to load default profile, will use empty profile: {}", ex.getMessage());
 				return EnigmaProfile.EMPTY;
 			}
 		}

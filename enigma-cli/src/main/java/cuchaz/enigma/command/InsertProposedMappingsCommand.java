@@ -126,7 +126,7 @@ public class InsertProposedMappingsCommand extends Command {
 			}
 		}
 
-		Logger.info("Proposed names for " + classes + " classes, " + fields + " fields, " + methods + " methods, " + parameters + " parameters");
+		Logger.info("Proposed names for {} classes, {} fields, {} methods, {} parameters!", classes, fields, methods, parameters);
 
 		Utils.delete(output);
 		MappingCommandsUtil.write(mappings, resultFormat, output, saveParameters);

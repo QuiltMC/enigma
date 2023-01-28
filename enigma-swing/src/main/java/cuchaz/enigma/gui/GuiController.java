@@ -424,7 +424,7 @@ public class GuiController implements ClientPacketHandler {
 			return null;
 		}
 		if (rootNodes.size() > 1) {
-			Logger.warn("Method " + entry + " implements multiple interfaces. Only showing first one.");
+			Logger.warn("Method {} implements multiple interfaces. Only showing first one.", entry);
 		}
 		return MethodImplementationsTreeNode.findNode(rootNodes.get(0), entry);
 	}
