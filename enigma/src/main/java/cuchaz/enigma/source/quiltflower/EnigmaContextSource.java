@@ -73,7 +73,9 @@ public class EnigmaContextSource implements IContextSource {
 
             @Override
             public void acceptClass(String qualifiedName, String fileName, String content, int[] mapping) {
-                saver.saveClassFile("", qualifiedName, fileName, content, mapping);
+				if (qualifiedName.equals(name)) {
+					saver.saveClassFile("", qualifiedName, fileName, content, mapping);
+				}
             }
 
             @Override
