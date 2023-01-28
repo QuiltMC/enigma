@@ -9,7 +9,7 @@ flatlaf = "2.6"
 syntaxpane = "1.2.1"
 swing_dpi = "0.10"
 fontchooser = "2.5.2"
-tinylog = "2.5.0"
+tinylog = "2.6.0"
 
 quiltflower = "1.10.0-20221215.220929-25"
 cfr = "0.0.6"
