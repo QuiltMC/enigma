@@ -166,6 +166,7 @@ public class JavadocDialog {
 	}
 
 	public static void show(JFrame parent, GuiController controller, EntryReference<Entry<?>, Entry<?>> entry) {
+		// todo send in gui instead of jframe to create validation context with correct notifier
 		EntryMapping mapping = controller.project.getMapper().getDeobfMapping(entry.entry);
 		String text = Strings.nullToEmpty(mapping.javadoc());
 

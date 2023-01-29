@@ -15,10 +15,18 @@ import cuchaz.enigma.utils.validation.Message.Type;
  * multiple errors and displaying them to the user at the same time.
  */
 public class ValidationContext {
+	public ValidationContext() {
+		// todo this should not be allowed
+	}
+
+	public ValidationContext(Notifier notifier) {
+		this.notifier = notifier;
+	}
 
 	private Validatable activeElement = null;
 	private final Set<Validatable> elements = new HashSet<>();
 	private final List<ParameterizedMessage> messages = new ArrayList<>();
+	// todo make final
 	private Notifier notifier;
 
 	public void setNotifier(Notifier notifier) {

@@ -39,10 +39,11 @@ public class IdentifierPanel {
 
 	private ConvertingTextField nameField;
 
-	private final ValidationContext vc = new ValidationContext();
+	private final ValidationContext vc;
 
 	public IdentifierPanel(Gui gui) {
 		this.gui = gui;
+		this.vc = new ValidationContext(this.gui.getNotificationManager());
 
 		this.ui.setLayout(new GridBagLayout());
 		this.ui.setPreferredSize(ScaleUtil.getDimension(0, 150));
@@ -151,6 +152,7 @@ public class IdentifierPanel {
 					if (abort) return true;
 					vc.reset();
 					vc.setActiveElement(field);
+					vc.setNotifier(IdentifierPanel.this.gui.getNotificationManager());
 					validateRename(field.getText());
 					return vc.canProceed();
 				}

@@ -675,7 +675,7 @@ public class Gui {
 	}
 
 	public boolean validateImmediateAction(Consumer<ValidationContext> op) {
-		ValidationContext vc = new ValidationContext();
+		ValidationContext vc = new ValidationContext(this.getNotificationManager());
 		op.accept(vc);
 		if (!vc.canProceed()) {
 			List<ParameterizedMessage> parameterizedMessages = vc.getMessages();
