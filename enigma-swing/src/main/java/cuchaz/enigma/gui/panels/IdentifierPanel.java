@@ -34,6 +34,7 @@ public class IdentifierPanel {
 
 	private final JPanel ui = new JPanel();
 
+	private Entry<?> lastEntry;
 	private Entry<?> entry;
 	private Entry<?> deobfEntry;
 
@@ -79,6 +80,36 @@ public class IdentifierPanel {
 	public void refreshReference() {
 		this.deobfEntry = entry == null ? null : gui.getController().project.getMapper().deobfuscate(this.entry);
 
+		// Prevent IdentifierPanel from being rebuilt if you didn't click off.
+		if (this.lastEntry == this.entry && this.nameField != null) {
+			if (!this.nameField.hasChanges()) {
+
+				final String name;
+
+				// Find what to set the name to.
+				if (this.deobfEntry instanceof MethodEntry methodEntry && methodEntry.isConstructor()) {
+					// Get the parent of the method if it is a constructor.
+					final ClassEntry parent = methodEntry.getParent();
+
+					if (parent == null) {
+						throw new IllegalStateException("constructor method entry to render has no parent!");
+					}
+
+					name = parent.isInnerClass() ? parent.getName() : parent.getFullName();
+				} else if (this.deobfEntry instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
+					name = classEntry.getFullName();
+				} else {
+					name = deobfEntry.getName();
+				}
+
+				this.nameField.setReferenceText(name);
+			}
+
+			return;
+		}
+
+		this.lastEntry = entry;
+
 		this.nameField = null;
 
 		TableHelper th = new TableHelper(this.ui, this.entry, this.gui);
@@ -88,21 +119,18 @@ public class IdentifierPanel {
 		} else {
 			this.ui.setEnabled(true);
 
-			if (deobfEntry instanceof ClassEntry) {
-				ClassEntry ce = (ClassEntry) deobfEntry;
+			if (deobfEntry instanceof ClassEntry ce) {
 				String name = ce.isInnerClass() ? ce.getName() : ce.getFullName();
 				this.nameField = th.addRenameTextField(EditableType.CLASS, name);
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), entry.getName());
 				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.CLASS, this::onModifierChanged);
-			} else if (deobfEntry instanceof FieldEntry) {
-				FieldEntry fe = (FieldEntry) deobfEntry;
+			} else if (deobfEntry instanceof FieldEntry fe) {
 				this.nameField = th.addRenameTextField(EditableType.FIELD, fe.getName());
 				th.addStringRow(I18n.translate("info_panel.identifier.class"), fe.getParent().getFullName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.type_descriptor"), fe.getDesc().toString());
 				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.FIELD, this::onModifierChanged);
-			} else if (deobfEntry instanceof MethodEntry) {
-				MethodEntry me = (MethodEntry) deobfEntry;
+			} else if (deobfEntry instanceof MethodEntry me) {
 				if (me.isConstructor()) {
 					ClassEntry ce = me.getParent();
 					if (ce != null) {
@@ -116,8 +144,7 @@ public class IdentifierPanel {
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method_descriptor"), me.getDesc().toString());
 				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.METHOD, this::onModifierChanged);
-			} else if (deobfEntry instanceof LocalVariableEntry) {
-				LocalVariableEntry lve = (LocalVariableEntry) deobfEntry;
+			} else if (deobfEntry instanceof LocalVariableEntry lve) {
 				EditableType type;
 
 				if (lve.isArgument()) {
