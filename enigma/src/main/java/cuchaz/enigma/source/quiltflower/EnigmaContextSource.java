@@ -40,7 +40,7 @@ public class EnigmaContextSource implements IContextSource {
         classNames = new ArrayList<>();
         String root = name.contains("$") ? name.substring(0, name.indexOf("$")) : name;
         classNames.add(root);
-        classNames.addAll(classProvider.getClasses(root));
+        classNames.addAll(classProvider.getClasses(root).stream().filter(s -> s.contains("$")).toList());
     }
 
     @Override
@@ -73,7 +73,9 @@ public class EnigmaContextSource implements IContextSource {
 
             @Override
             public void acceptClass(String qualifiedName, String fileName, String content, int[] mapping) {
-                saver.saveClassFile("", qualifiedName, fileName, content, mapping);
+				if (qualifiedName.equals(name)) {
+					saver.saveClassFile("", qualifiedName, fileName, content, mapping);
+				}
             }
 
             @Override
