@@ -33,6 +33,7 @@ public class IdentifierPanel {
 
 	private final JPanel ui = new JPanel();
 
+	private Entry<?> lastEntry;
 	private Entry<?> entry;
 	private Entry<?> deobfEntry;
 
@@ -77,6 +78,36 @@ public class IdentifierPanel {
 
 	public void refreshReference() {
 		this.deobfEntry = this.entry == null ? null : this.gui.getController().project.getMapper().deobfuscate(this.entry);
+
+		// Prevent IdentifierPanel from being rebuilt if you didn't click off.
+		if (this.lastEntry == this.entry && this.nameField != null) {
+			if (!this.nameField.hasChanges()) {
+
+				final String name;
+
+				// Find what to set the name to.
+				if (this.deobfEntry instanceof MethodEntry methodEntry && methodEntry.isConstructor()) {
+					// Get the parent of the method if it is a constructor.
+					final ClassEntry parent = methodEntry.getParent();
+
+					if (parent == null) {
+						throw new IllegalStateException("constructor method entry to render has no parent!");
+					}
+
+					name = parent.isInnerClass() ? parent.getName() : parent.getFullName();
+				} else if (this.deobfEntry instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
+					name = classEntry.getFullName();
+				} else {
+					name = deobfEntry.getName();
+				}
+
+				this.nameField.setReferenceText(name);
+			}
+
+			return;
+		}
+
+		this.lastEntry = entry;
 
 		this.nameField = null;
 
