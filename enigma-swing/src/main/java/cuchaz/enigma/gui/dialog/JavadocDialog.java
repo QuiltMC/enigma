@@ -42,13 +42,14 @@ public class JavadocDialog {
 
 	private final ValidatableTextArea text;
 
-	private final ValidationContext vc = new ValidationContext();
+	private final ValidationContext vc;
 
 	private JavadocDialog(JFrame parent, GuiController controller, Entry<?> entry, String preset) {
 		this.ui = new JDialog(parent, I18n.translate("javadocs.edit"));
 		this.controller = controller;
 		this.entry = entry;
 		this.text = new ValidatableTextArea(10, 40);
+		this.vc = new ValidationContext(controller.getGui().getNotificationManager());
 
 		// set up dialog
 		Container contentPane = ui.getContentPane();
@@ -150,14 +151,10 @@ public class JavadocDialog {
 	}
 
 	public void validate() {
-		vc.setActiveElement(text);
-
 		controller.validateChange(vc, getEntryChange());
 	}
 
 	public void save() {
-		vc.setActiveElement(text);
-
 		controller.applyChange(vc, getEntryChange());
 	}
 
@@ -166,12 +163,10 @@ public class JavadocDialog {
 	}
 
 	public static void show(JFrame parent, GuiController controller, EntryReference<Entry<?>, Entry<?>> entry) {
-		// todo send in gui instead of jframe to create validation context with correct notifier
 		EntryMapping mapping = controller.project.getMapper().getDeobfMapping(entry.entry);
 		String text = Strings.nullToEmpty(mapping.javadoc());
 
 		JavadocDialog dialog = new JavadocDialog(parent, controller, entry.entry, text);
-		//dialog.ui.doLayout();
 		dialog.ui.setVisible(true);
 		dialog.text.grabFocus();
 	}

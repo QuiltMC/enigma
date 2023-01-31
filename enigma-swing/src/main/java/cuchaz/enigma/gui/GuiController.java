@@ -451,8 +451,7 @@ public class GuiController implements ClientPacketHandler {
 
 	@Override
 	public boolean applyChangeFromServer(EntryChange<?> change) {
-		ValidationContext vc = new ValidationContext();
-		vc.setActiveElement(PrintValidatable.INSTANCE);
+		ValidationContext vc = new ValidationContext(this.gui.getNotificationManager());
 		this.applyChange0(vc, change);
 		this.gui.updateStructure(this.gui.getActiveEditor());
 
@@ -477,7 +476,6 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	private void applyChange0(ValidationContext vc, EntryChange<?> change) {
-		vc.setNotifier(this.gui.getNotificationManager());
 		validateChange(vc, change);
 		if (!vc.canProceed()) return;
 
@@ -594,5 +592,9 @@ public class GuiController implements ClientPacketHandler {
 	@Override
 	public void updateUserList(List<String> users) {
 		this.gui.setUserList(users);
+	}
+
+	public Gui getGui() {
+		return this.gui;
 	}
 }

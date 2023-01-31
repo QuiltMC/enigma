@@ -10,6 +10,7 @@ import java.util.Objects;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.NetConfig;
 import cuchaz.enigma.gui.elements.ValidatableTextField;
 import cuchaz.enigma.gui.util.ScaleUtil;
@@ -25,8 +26,8 @@ public class ConnectToServerDialog extends AbstractDialog {
 	private ValidatableTextField ipField;
 	private JPasswordField passwordField;
 
-	public ConnectToServerDialog(Frame owner) {
-		super(owner, "prompt.connect.title", "prompt.connect.confirm", "prompt.cancel");
+	public ConnectToServerDialog(Frame owner, Gui gui) {
+		super(owner, gui, "prompt.connect.title", "prompt.connect.confirm", "prompt.cancel");
 
 		Dimension preferredSize = getPreferredSize();
 		preferredSize.width = ScaleUtil.scale(400);
@@ -54,7 +55,6 @@ public class ConnectToServerDialog extends AbstractDialog {
 
 	@Override
 	public void validateInputs() {
-		vc.setActiveElement(ipField);
 		if (StandardValidation.notBlank(vc, ipField.getText())) {
 			if (ServerAddress.from(ipField.getText(), EnigmaServer.DEFAULT_PORT) == null) {
 				vc.raise(Message.INVALID_IP);
@@ -75,8 +75,8 @@ public class ConnectToServerDialog extends AbstractDialog {
 		);
 	}
 
-	public static Result show(Frame parent) {
-		ConnectToServerDialog d = new ConnectToServerDialog(parent);
+	public static Result show(Gui gui) {
+		ConnectToServerDialog d = new ConnectToServerDialog(gui.getFrame(), gui);
 
 		d.setVisible(true);
 		Result r = d.getResult();

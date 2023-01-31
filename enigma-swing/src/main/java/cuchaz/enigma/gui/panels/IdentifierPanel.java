@@ -150,9 +150,9 @@ public class IdentifierPanel {
 				@Override
 				public boolean tryStopEditing(ConvertingTextField field, boolean abort) {
 					if (abort) return true;
+
+					IdentifierPanel.this.vc.setNotifier(IdentifierPanel.this.gui.getNotificationManager());
 					vc.reset();
-					vc.setActiveElement(field);
-					vc.setNotifier(IdentifierPanel.this.gui.getNotificationManager());
 					validateRename(field.getText());
 					return vc.canProceed();
 				}
@@ -160,8 +160,8 @@ public class IdentifierPanel {
 				@Override
 				public void onStopEditing(ConvertingTextField field, boolean abort) {
 					if (!abort) {
+						IdentifierPanel.this.vc.setNotifier(IdentifierPanel.this.gui.getNotificationManager());
 						vc.reset();
-						vc.setActiveElement(field);
 						doRename(field.getText());
 					}
 

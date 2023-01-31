@@ -343,7 +343,7 @@ public class MenuBar {
 			this.gui.getController().disconnectIfConnected(null);
 			return;
 		}
-		ConnectToServerDialog.Result result = ConnectToServerDialog.show(this.gui.getFrame());
+		ConnectToServerDialog.Result result = ConnectToServerDialog.show(this.gui);
 		if (result == null) {
 			return;
 		}
@@ -366,7 +366,7 @@ public class MenuBar {
 			this.gui.getController().disconnectIfConnected(null);
 			return;
 		}
-		CreateServerDialog.Result result = CreateServerDialog.show(this.gui.getFrame());
+		CreateServerDialog.Result result = CreateServerDialog.show(this.gui);
 		if (result == null) {
 			return;
 		}

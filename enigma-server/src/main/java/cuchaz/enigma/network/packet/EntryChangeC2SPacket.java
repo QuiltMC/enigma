@@ -8,7 +8,6 @@ import cuchaz.enigma.network.Message;
 import cuchaz.enigma.network.ServerPacketHandler;
 import cuchaz.enigma.translation.mapping.EntryChange;
 import cuchaz.enigma.translation.mapping.EntryUtil;
-import cuchaz.enigma.utils.validation.PrintValidatable;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 public class EntryChangeC2SPacket implements Packet<ServerPacketHandler> {
@@ -34,8 +33,7 @@ public class EntryChangeC2SPacket implements Packet<ServerPacketHandler> {
 
 	@Override
 	public void handle(ServerPacketHandler handler) {
-		ValidationContext vc = new ValidationContext();
-		vc.setActiveElement(PrintValidatable.INSTANCE);
+		ValidationContext vc = new ValidationContext(null);
 
 		boolean valid = handler.getServer().canModifyEntry(handler.getClient(), this.change.getTarget());
 

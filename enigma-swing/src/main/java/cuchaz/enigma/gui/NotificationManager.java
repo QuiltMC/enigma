@@ -2,6 +2,7 @@ package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.docker.NotificationsDocker;
+import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 import javax.swing.BorderFactory;
@@ -87,8 +88,8 @@ public class NotificationManager implements ValidationContext.Notifier {
 		return height;
 	}
 
-	public void notify(String title, String message) {
-		Notification notificationPanel = new Notification(this.gui, title, message, false);
+	public void notify(ParameterizedMessage message) {
+		Notification notificationPanel = new Notification(this.gui, message.getText(), message.getLongText(), false);
 
 		JPanel glass = (JPanel) this.gui.getFrame().getGlassPane();
 		this.glassPane = glass;

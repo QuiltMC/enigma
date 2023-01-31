@@ -3,7 +3,6 @@ package cuchaz.enigma.utils.validation;
 import cuchaz.enigma.utils.I18n;
 
 public class Message {
-
 	public static final Message EMPTY_FIELD = create(Type.ERROR, "empty_field");
 	public static final Message INVALID_IP = create(Type.ERROR, "invalid_ip");
 	public static final Message NOT_INT = create(Type.ERROR, "not_int");
@@ -32,11 +31,11 @@ public class Message {
 	}
 
 	public String format(Object[] args) {
-		return I18n.translateFormatted(textKey, args);
+		return I18n.translateFormatted(this.textKey, args);
 	}
 
 	public String formatDetails(Object[] args) {
-		return I18n.translateOrEmpty(longTextKey, args);
+		return I18n.translateOrEmpty(this.longTextKey, args);
 	}
 
 	public static Message create(Type type, String name) {
@@ -48,5 +47,4 @@ public class Message {
 		WARNING,
 		ERROR,
 	}
-
 }

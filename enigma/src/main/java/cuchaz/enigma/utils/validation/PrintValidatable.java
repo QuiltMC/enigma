@@ -3,13 +3,17 @@ package cuchaz.enigma.utils.validation;
 import java.io.PrintStream;
 import java.util.Arrays;
 
-public class PrintValidatable implements Validatable {
-
+public class PrintValidatable implements Validatable, ValidationContext.Notifier {
 	public static final PrintValidatable INSTANCE = new PrintValidatable();
 
 	@Override
 	public void addMessage(ParameterizedMessage message) {
 		formatMessage(System.out, message);
+	}
+
+	@Override
+	public void notify(ParameterizedMessage message) {
+		this.addMessage(message);
 	}
 
 	public static void formatMessage(PrintStream w, ParameterizedMessage message) {
@@ -30,5 +34,4 @@ public class PrintValidatable implements Validatable {
 	@Override
 	public void clearMessages() {
 	}
-
 }

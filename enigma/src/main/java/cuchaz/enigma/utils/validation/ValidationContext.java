@@ -1,8 +1,8 @@
 package cuchaz.enigma.utils.validation;
 
-import java.util.*;
-
-import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import cuchaz.enigma.utils.validation.Message.Type;
 
@@ -15,35 +15,19 @@ import cuchaz.enigma.utils.validation.Message.Type;
  * multiple errors and displaying them to the user at the same time.
  */
 public class ValidationContext {
-	public ValidationContext() {
-		// todo this should not be allowed
-	}
-
 	public ValidationContext(Notifier notifier) {
-		this.notifier = notifier;
+		if (notifier == null) {
+			this.notifier = new PrintValidatable();
+		} else {
+			this.notifier = notifier;
+		}
 	}
 
-	private Validatable activeElement = null;
-	private final Set<Validatable> elements = new HashSet<>();
 	private final List<ParameterizedMessage> messages = new ArrayList<>();
-	// todo make final
 	private Notifier notifier;
 
 	public void setNotifier(Notifier notifier) {
 		this.notifier = notifier;
-	}
-
-	/**
-	 * Sets the currently active element (such as an input field). Any messages
-	 * raised while this is set get displayed on this element.
-	 *
-	 * @param v the active element to set, or {@code null} to unset
-	 */
-	public void setActiveElement(@Nullable Validatable v) {
-		if (v != null) {
-			elements.add(v);
-		}
-		activeElement = v;
 	}
 
 	/**
@@ -54,15 +38,12 @@ public class ValidationContext {
 	 * @param args    the arguments used when formatting the message text
 	 */
 	public void raise(Message message, Object... args) {
-		ParameterizedMessage pm = new ParameterizedMessage(message, args, this.activeElement);
+		ParameterizedMessage pm = new ParameterizedMessage(message, args);
 		if (!this.messages.contains(pm)) {
-			if (activeElement != null) {
-				activeElement.addMessage(pm);
-			}
-			messages.add(pm);
+			this.messages.add(pm);
 		}
 
-		this.notifier.notify(message.textKey, message.longTextKey);
+		this.notifier.notify(pm);
 	}
 
 	/**
@@ -74,11 +55,11 @@ public class ValidationContext {
 	 */
 	public boolean canProceed() {
 		// TODO on warnings, wait until user confirms
-		return messages.stream().noneMatch(m -> m.message.type == Type.ERROR);
+		return this.messages.stream().noneMatch(m -> m.message.type == Type.ERROR);
 	}
 
 	public List<ParameterizedMessage> getMessages() {
-		return Collections.unmodifiableList(messages);
+		return Collections.unmodifiableList(this.messages);
 	}
 
 	/**
@@ -86,13 +67,10 @@ public class ValidationContext {
 	 * interface starts getting validated, to get rid of old messages.
 	 */
 	public void reset() {
-		activeElement = null;
-		elements.forEach(Validatable::clearMessages);
-		elements.clear();
-		messages.clear();
+		this.messages.clear();
 	}
 
 	public interface Notifier {
-		void notify(String title, String message);
+		void notify(ParameterizedMessage message);
 	}
 }
