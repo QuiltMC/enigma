@@ -68,18 +68,26 @@ public class VerticalFlowLayout implements LayoutManager2 {
 	}
 
 	@Override
-	public Dimension minimumLayoutSize(Container parent) {
-		return new Dimension(0,0);
+	public Dimension preferredLayoutSize(Container target) {
+		int height = 0;
+		for (Component c : this.components) {
+			if (c.isVisible()) {
+				Dimension d = c.getSize();
+				height += d.height + this.verticalGap;
+			}
+		}
+
+		return new Dimension(300, height);
 	}
 
 	@Override
-	public Dimension preferredLayoutSize(Container parent) {
-		return new Dimension(200,200);
+	public Dimension minimumLayoutSize(Container target) {
+		return this.preferredLayoutSize(target);
 	}
 
 	@Override
 	public Dimension maximumLayoutSize(Container target) {
-		return new Dimension(1000000000,100000000);
+		return this.preferredLayoutSize(target);
 	}
 
 	@Override

@@ -22,8 +22,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class NotificationManager implements ValidationContext.Notifier {
-	private static final int REMOVE_CHECK_INTERVAL_MILLISECONDS = 5;
-	private static final int TIMEOUT_MILLISECONDS = 10000;
+	public static final int REMOVE_CHECK_INTERVAL_MILLISECONDS = 5;
+	public static final int TIMEOUT_MILLISECONDS = 10000;
+	public static final int VERTICAL_GAP = 20;
 
 	private final Gui gui;
 	private JPanel glassPane;
@@ -72,14 +73,14 @@ public class NotificationManager implements ValidationContext.Notifier {
 
 	private int getHeightFor(Notification notification) {
 		// neatly orders notifications by their remaining time
-		int height = this.glassPane.getHeight() - notification.getHeight() - notification.getHeight() / 4;
+		int height = this.glassPane.getHeight() - notification.getHeight() - VERTICAL_GAP;
 
 		if (!this.activeNotifications.isEmpty()) {
 			List<Notification> sortedNotifications = this.activeNotifications.keySet().stream().sorted((a, b) -> Integer.compare(this.activeNotifications.get(b), this.activeNotifications.get(a))).toList();
 			int index = sortedNotifications.indexOf(notification);
 
 			for (int i = index; i < sortedNotifications.size() - 1; i ++) {
-				height -= sortedNotifications.get(i).getHeight() + sortedNotifications.get(i).getHeight() / 4;
+				height -= sortedNotifications.get(i).getHeight() + VERTICAL_GAP;
 			}
 		}
 
