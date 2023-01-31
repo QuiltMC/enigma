@@ -32,7 +32,7 @@ public class NotificationsDocker extends Docker {
 		List<NotificationManager.Notification> notifications = this.getNotifications();
 
 		if (!notifications.contains(notification)) {
-			this.notificationPanel.add(new NotificationManager.Notification(this.gui, notification.getTitle(), notification.getMessage(), true));
+			this.notificationPanel.add(new NotificationManager.Notification(this.gui, notification.getTitle(), notification.getMessage(), false));
 		}
 	}
 

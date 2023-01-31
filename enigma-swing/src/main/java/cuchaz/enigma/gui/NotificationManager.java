@@ -89,7 +89,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 	}
 
 	public void notify(ParameterizedMessage message) {
-		Notification notificationPanel = new Notification(this.gui, message.getText(), message.getLongText(), false);
+		Notification notificationPanel = new Notification(this.gui, message.getText(), message.getLongText(), true);
 
 		JPanel glass = (JPanel) this.gui.getFrame().getGlassPane();
 		this.glassPane = glass;
@@ -157,7 +157,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 			JButton dismissButton = new JButton("x");
 			dismissButton.addActionListener(e -> {
 				activeManager.removeNotification(this);
-				if (floating) {
+				if (!floating) {
 					notificationsDocker.removeNotification(this);
 				}
 			});
@@ -170,7 +170,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 			this.add(messagePanel, BorderLayout.CENTER);
 			this.add(topBar, BorderLayout.NORTH);
 
-			if (!floating) {
+			if (floating) {
 				this.progressBar = new JProgressBar(0, TIMEOUT_MILLISECONDS);
 				this.progressBar.setValue(TIMEOUT_MILLISECONDS);
 				this.add(this.progressBar, BorderLayout.SOUTH);
