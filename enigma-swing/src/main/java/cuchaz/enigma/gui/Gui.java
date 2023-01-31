@@ -18,6 +18,7 @@ import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.JavadocDialog;
 import cuchaz.enigma.gui.dialog.SearchDialog;
+import cuchaz.enigma.gui.docker.NotificationsDocker;
 import cuchaz.enigma.gui.elements.EditorTabbedPane;
 import cuchaz.enigma.gui.elements.MainWindow;
 import cuchaz.enigma.gui.elements.MenuBar;
@@ -150,6 +151,7 @@ public class Gui {
 
 		// bottom
 		Docker.addDocker(new CollabDocker(this));
+		Docker.addDocker(new NotificationsDocker(this));
 
 		// left dockers
 		// top
