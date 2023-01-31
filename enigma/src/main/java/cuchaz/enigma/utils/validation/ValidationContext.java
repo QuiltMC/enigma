@@ -8,7 +8,7 @@ import cuchaz.enigma.utils.validation.Message.Type;
 
 /**
  * A context for user input validation. Handles collecting error messages and
- * displaying the errors on the relevant input fields. UIs using validation
+ * displaying the errors. UIs using validation
  * often have two stages of applying changes: validating all the input fields,
  * then checking if there's any errors or unconfirmed warnings, and if not,
  * then actually applying the changes. This allows for easily collecting
@@ -38,7 +38,7 @@ public class ValidationContext {
 	 * @param args    the arguments used when formatting the message text
 	 */
 	public void raise(Message message, Object... args) {
-		ParameterizedMessage pm = new ParameterizedMessage(message, args);
+		ParameterizedMessage pm = new ParameterizedMessage(message.getType(), message, args);
 		if (!this.messages.contains(pm)) {
 			this.messages.add(pm);
 		}
@@ -55,7 +55,7 @@ public class ValidationContext {
 	 */
 	public boolean canProceed() {
 		// TODO on warnings, wait until user confirms
-		return this.messages.stream().noneMatch(m -> m.message.type == Type.ERROR);
+		return this.messages.stream().noneMatch(m -> m.message().getType() == Type.ERROR);
 	}
 
 	public List<ParameterizedMessage> getMessages() {

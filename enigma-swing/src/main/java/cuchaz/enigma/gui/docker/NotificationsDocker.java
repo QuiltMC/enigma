@@ -32,7 +32,8 @@ public class NotificationsDocker extends Docker {
 		List<NotificationManager.Notification> notifications = this.getNotifications();
 
 		if (!notifications.contains(notification)) {
-			this.notificationPanel.add(new NotificationManager.Notification(this.gui, notification.getTitle(), notification.getMessage(), false));
+			// todo notifications are displaying too small :waaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:
+			this.notificationPanel.add(new NotificationManager.Notification(this.gui, notification.getType(), notification.getTitle(), notification.getMessage(), false));
 		}
 	}
 

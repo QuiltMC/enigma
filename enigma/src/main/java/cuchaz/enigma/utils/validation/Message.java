@@ -20,14 +20,18 @@ public class Message {
 	public static final Message SHADOWED_NAME_CLASS = create(Type.WARNING, "shadowed_name_class");
 	public static final Message SHADOWED_NAME = create(Type.WARNING, "shadowed_name");
 
-	public final Type type;
-	public final String textKey;
-	public final String longTextKey;
+	private final Type type;
+	private final String textKey;
+	private final String longTextKey;
 
 	private Message(Type type, String textKey, String longTextKey) {
 		this.type = type;
 		this.textKey = textKey;
 		this.longTextKey = longTextKey;
+	}
+
+	public Type getType() {
+		return this.type;
 	}
 
 	public String format(Object[] args) {

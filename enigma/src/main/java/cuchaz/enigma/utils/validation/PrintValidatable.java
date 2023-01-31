@@ -19,7 +19,7 @@ public class PrintValidatable implements Validatable, ValidationContext.Notifier
 	public static void formatMessage(PrintStream w, ParameterizedMessage message) {
 		String text = message.getText();
 		String longText = message.getLongText();
-		String type = switch (message.message.type) {
+		String type = switch (message.message().getType()) {
 			case INFO -> "info";
 			case WARNING -> "warning";
 			case ERROR -> "error";

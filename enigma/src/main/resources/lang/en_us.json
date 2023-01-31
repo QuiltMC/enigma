@@ -271,5 +271,10 @@
 	"docker.implementations.title": "Implementations",
 	"docker.all_classes.title": "Classes",
 	"docker.obfuscated_classes.title": "Obfuscated Classes",
-	"docker.deobfuscated_classes.title": "Deobfuscated Classes"
+	"docker.deobfuscated_classes.title": "Deobfuscated Classes",
+	"docker.notifications.title": "Notifications",
+
+	"notification.type.error": "Error",
+  	"notification.type.warning": "Warning",
+  	"notification.type.info": "Info"
 }

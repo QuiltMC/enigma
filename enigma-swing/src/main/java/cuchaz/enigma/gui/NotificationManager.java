@@ -2,6 +2,8 @@ package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.docker.NotificationsDocker;
+import cuchaz.enigma.utils.I18n;
+import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
@@ -89,7 +91,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 	}
 
 	public void notify(ParameterizedMessage message) {
-		Notification notificationPanel = new Notification(this.gui, message.getText(), message.getLongText(), true);
+		Notification notificationPanel = new Notification(this.gui, message.type(), message.getText(), message.getLongText(), true);
 
 		JPanel glass = (JPanel) this.gui.getFrame().getGlassPane();
 		this.glassPane = glass;
@@ -119,13 +121,15 @@ public class NotificationManager implements ValidationContext.Notifier {
 
 	public static class Notification extends JPanel {
 		private final int id;
+		private final Message.Type type;
 		private final String title;
 		private final String message;
 		private final JProgressBar progressBar;
 
-		public Notification(Gui gui, String title, String message, boolean floating) {
+		public Notification(Gui gui, Message.Type type, String title, String message, boolean floating) {
 			super(new BorderLayout());
 
+			this.type = type;
 			this.title = title;
 			this.message = message;
 
@@ -164,7 +168,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 			dismissButton.setMargin(new Insets(0, 4, 0, 4));
 
 			topBar.add(dismissButton, BorderLayout.EAST);
-			topBar.add(new JLabel(this.id + ""), BorderLayout.WEST);
+			topBar.add(new JLabel(I18n.translate("notification.type." + type.name().toLowerCase()) + "!"), BorderLayout.WEST);
 			topBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK));
 
 			this.add(messagePanel, BorderLayout.CENTER);
@@ -177,6 +181,10 @@ public class NotificationManager implements ValidationContext.Notifier {
 			} else {
 				this.progressBar = null;
 			}
+		}
+
+		public Message.Type getType() {
+			return this.type;
 		}
 
 		public String getTitle() {

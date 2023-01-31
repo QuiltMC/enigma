@@ -93,15 +93,11 @@ public final class ValidatableUi {
 	}
 
 	private static int getMessageLevel(ParameterizedMessage message) {
-		switch (message.message.type) {
-			case INFO:
-				return 1;
-			case WARNING:
-				return 2;
-			case ERROR:
-				return 3;
-		}
-		throw new IllegalStateException("unreachable");
+		return switch (message.message().getType()) {
+			case INFO -> 1;
+			case WARNING -> 2;
+			case ERROR -> 3;
+		};
 	}
 
 }
