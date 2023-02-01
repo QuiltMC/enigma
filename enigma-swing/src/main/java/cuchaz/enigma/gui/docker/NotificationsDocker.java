@@ -6,7 +6,6 @@ import cuchaz.enigma.gui.docker.component.VerticalFlowLayout;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +19,6 @@ public class NotificationsDocker extends Docker {
 		this.notificationPanel = new JPanel(new VerticalFlowLayout(NotificationManager.VERTICAL_GAP));
 
 		JScrollPane scrollPane = new JScrollPane(this.notificationPanel);
-		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		this.add(scrollPane);
 	}
 
