@@ -12,9 +12,11 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Insets;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -159,11 +161,17 @@ public class NotificationManager implements ValidationContext.Notifier {
 				messagePanel.add(new JLabel(title), BorderLayout.CENTER);
 				messagePanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 			} else {
-				// add whitespace to the end of the message to ensure the title is never cut off
-				String whitespace = " ".repeat((title.length() - message.length()) * 2);
-
 				messagePanel.setBorder(BorderFactory.createTitledBorder(title));
-				messagePanel.add(new JLabel(message + whitespace), BorderLayout.CENTER);
+
+				JTextArea text = new JTextArea(message);
+				text.setOpaque(false);
+				text.setEditable(false);
+				text.setLineWrap(true);
+				text.setWrapStyleWord(true);
+				text.setFont(text.getFont().deriveFont(Font.BOLD));
+				text.setMargin(new Insets(0, 0, 0, 0));
+				text.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+				messagePanel.add(text, BorderLayout.CENTER);
 			}
 
 			JPanel topBar = new JPanel(new BorderLayout());
@@ -177,7 +185,9 @@ public class NotificationManager implements ValidationContext.Notifier {
 			dismissButton.setMargin(new Insets(0, 4, 0, 4));
 
 			topBar.add(dismissButton, BorderLayout.EAST);
-			topBar.add(new JLabel(I18n.translate("notification.type." + type.name().toLowerCase()) + "!"), BorderLayout.WEST);
+
+			String whitespace = " ".repeat(title.length() > message.length() ? (title.length() - message.length()) * 3 : 0);
+			topBar.add(new JLabel(I18n.translate("notification.type." + type.name().toLowerCase()) + "!" + whitespace), BorderLayout.WEST);
 			topBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK));
 
 			this.add(messagePanel, BorderLayout.CENTER);
