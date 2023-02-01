@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Insets;
@@ -154,8 +155,16 @@ public class NotificationManager implements ValidationContext.Notifier {
 			this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
 			JPanel messagePanel = new JPanel(new BorderLayout());
-			messagePanel.setBorder(BorderFactory.createTitledBorder(title));
-			messagePanel.add(new JLabel(message), BorderLayout.CENTER);
+			if (message.isEmpty()) {
+				messagePanel.add(new JLabel(title), BorderLayout.CENTER);
+				messagePanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+			} else {
+				// add whitespace to the end of the message to ensure the title is never cut off
+				String whitespace = " ".repeat((title.length() - message.length()) * 2);
+
+				messagePanel.setBorder(BorderFactory.createTitledBorder(title));
+				messagePanel.add(new JLabel(message + whitespace), BorderLayout.CENTER);
+			}
 
 			JPanel topBar = new JPanel(new BorderLayout());
 			JButton dismissButton = new JButton("x");
