@@ -66,7 +66,6 @@ import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Utils;
-import cuchaz.enigma.utils.validation.PrintValidatable;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 public class GuiController implements ClientPacketHandler {
@@ -585,7 +584,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	@Override
-	public void addMessage(Message message) {
+	public void addMessage(ServerMessage message) {
 		this.gui.addMessage(message);
 	}
 

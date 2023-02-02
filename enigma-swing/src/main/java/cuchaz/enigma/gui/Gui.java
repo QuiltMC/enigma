@@ -11,9 +11,11 @@
 
 package cuchaz.enigma.gui;
 
+import com.google.common.collect.Lists;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.analysis.EntryReference;
+import cuchaz.enigma.gui.config.NetConfig;
 import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.JavadocDialog;
@@ -39,13 +41,14 @@ import cuchaz.enigma.gui.renderer.MessageListCellRenderer;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.LanguageUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
-import cuchaz.enigma.network.Message;
+import cuchaz.enigma.network.ServerMessage;
 import cuchaz.enigma.source.Token;
 import cuchaz.enigma.translation.mapping.EntryChange;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
+import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
@@ -95,9 +98,9 @@ public class Gui {
 	private final JSplitPane splitLeft;
 
 	private final DefaultListModel<String> userModel;
-	private final DefaultListModel<Message> messageModel;
+	private final DefaultListModel<ServerMessage> messageModel;
 	private final JList<String> users;
-	private final JList<Message> messages;
+	private final JList<ServerMessage> messages;
 
 	private final JLabel connectionStatusLabel;
 	private final NotificationManager notificationManager;
@@ -269,7 +272,7 @@ public class Gui {
 		return this.mainWindow;
 	}
 
-	public JList<Message> getMessages() {
+	public JList<ServerMessage> getMessages() {
 		return this.messages;
 	}
 
@@ -609,13 +612,24 @@ public class Gui {
 		return searchDialog;
 	}
 
-	public void addMessage(Message message) {
+	public void addMessage(ServerMessage message) {
 		JScrollBar verticalScrollBar = Docker.getDocker(CollabDocker.class).getMessageScrollPane().getVerticalScrollBar();
 		boolean isAtBottom = verticalScrollBar.getValue() >= verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent();
-		messageModel.addElement(message);
+		this.messageModel.addElement(message);
 
 		if (isAtBottom) {
 			SwingUtilities.invokeLater(() -> verticalScrollBar.setValue(verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent()));
+		}
+
+		// popup notifications
+		switch (message.getType()) {
+			case CHAT -> {
+				if (message.getType().equals(ServerMessage.Type.CHAT) && !message.user.equals(NetConfig.getUsername())) {
+					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_CHAT, message.translate()));
+				}
+			}
+			case CONNECT -> this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_USER_CONNECTED, message.translate()));
+			case DISCONNECT -> this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_USER_LEFT, message.translate()));
 		}
 
 		this.mainWindow.getStatusBar().showMessage(message.translate(), 5000);
@@ -624,9 +638,27 @@ public class Gui {
 	public void setUserList(List<String> users) {
 		boolean wasOffline = this.isOffline();
 
+		List<String> previouslyConnectedUsers = Lists.newArrayList(this.userModel.elements().asIterator());
+
 		userModel.clear();
 		users.forEach(userModel::addElement);
 		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
+
+		// display notification for newly connected users or removed users
+		List<String> newlyConnectedUsers = new ArrayList<>();
+		List<String> removedUsers = new ArrayList<>();
+
+		for (String user : previouslyConnectedUsers) {
+			if (!users.contains(user)) {
+				removedUsers.add(user);
+			} else if (!previouslyConnectedUsers.contains(user)) {
+				newlyConnectedUsers.add(user);
+			}
+		}
+
+		if (!newlyConnectedUsers.isEmpty()) {
+			this.getNotificationManager().notify(new ParameterizedMessage(Message.MULTIPLAYER_CHAT));
+		}
 
 		// if we were previously offline, we need to reload multiplayer-restricted dockers (only collab for now) so they can be used
 		CollabDocker collabDocker = Docker.getDocker(CollabDocker.class);

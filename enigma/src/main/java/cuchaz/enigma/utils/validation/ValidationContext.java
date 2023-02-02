@@ -38,7 +38,7 @@ public class ValidationContext {
 	 * @param args    the arguments used when formatting the message text
 	 */
 	public void raise(Message message, Object... args) {
-		ParameterizedMessage pm = new ParameterizedMessage(message.getType(), message, args);
+		ParameterizedMessage pm = new ParameterizedMessage(message, args);
 		if (!this.messages.contains(pm)) {
 			this.messages.add(pm);
 		}

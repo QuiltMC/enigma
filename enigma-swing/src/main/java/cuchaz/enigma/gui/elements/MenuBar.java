@@ -28,6 +28,8 @@ import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Pair;
+import cuchaz.enigma.utils.validation.Message;
+import cuchaz.enigma.utils.validation.ParameterizedMessage;
 
 public class MenuBar {
 
@@ -350,6 +352,7 @@ public class MenuBar {
 		this.gui.getController().disconnectIfConnected(null);
 		try {
 			this.gui.getController().createClient(result.getUsername(), result.getAddress().address, result.getAddress().port, result.getPassword());
+			this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.CONNECTED_TO_SERVER, result.getAddressStr()));
 			NetConfig.setUsername(result.getUsername());
 			NetConfig.setRemoteAddress(result.getAddressStr());
 			NetConfig.setPassword(String.valueOf(result.getPassword()));
@@ -373,6 +376,7 @@ public class MenuBar {
 		this.gui.getController().disconnectIfConnected(null);
 		try {
 			this.gui.getController().createServer(result.getPort(), result.getPassword());
+			this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.SERVER_STARTED, result.getPort()));
 			NetConfig.setServerPort(result.getPort());
 			NetConfig.setServerPassword(String.valueOf(result.getPassword()));
 			NetConfig.save();

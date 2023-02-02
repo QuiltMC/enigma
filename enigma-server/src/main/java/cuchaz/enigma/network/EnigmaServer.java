@@ -132,7 +132,7 @@ public abstract class EnigmaServer {
 
 		if (username != null) {
 			System.out.println("Kicked " + username + " because " + reason);
-			sendMessage(Message.disconnect(username));
+			sendMessage(ServerMessage.disconnect(username));
 		}
 		sendUsernamePacket();
 	}
@@ -265,7 +265,7 @@ public abstract class EnigmaServer {
 		return mappings;
 	}
 
-	public void sendMessage(Message message) {
+	public void sendMessage(ServerMessage message) {
 		log(String.format("[MSG] %s", message.translate()));
 		sendToAll(new MessageS2CPacket(message));
 	}
