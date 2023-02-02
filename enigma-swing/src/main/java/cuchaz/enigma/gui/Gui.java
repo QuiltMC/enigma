@@ -638,27 +638,9 @@ public class Gui {
 	public void setUserList(List<String> users) {
 		boolean wasOffline = this.isOffline();
 
-		List<String> previouslyConnectedUsers = Lists.newArrayList(this.userModel.elements().asIterator());
-
 		userModel.clear();
 		users.forEach(userModel::addElement);
 		connectionStatusLabel.setText(String.format(I18n.translate("status.connected_user_count"), users.size()));
-
-		// display notification for newly connected users or removed users
-		List<String> newlyConnectedUsers = new ArrayList<>();
-		List<String> removedUsers = new ArrayList<>();
-
-		for (String user : previouslyConnectedUsers) {
-			if (!users.contains(user)) {
-				removedUsers.add(user);
-			} else if (!previouslyConnectedUsers.contains(user)) {
-				newlyConnectedUsers.add(user);
-			}
-		}
-
-		if (!newlyConnectedUsers.isEmpty()) {
-			this.getNotificationManager().notify(new ParameterizedMessage(Message.MULTIPLAYER_CHAT));
-		}
 
 		// if we were previously offline, we need to reload multiplayer-restricted dockers (only collab for now) so they can be used
 		CollabDocker collabDocker = Docker.getDocker(CollabDocker.class);
