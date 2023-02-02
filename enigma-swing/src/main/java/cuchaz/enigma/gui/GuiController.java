@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -40,6 +41,8 @@ import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.gui.config.NetConfig;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.ProgressDialog;
+import cuchaz.enigma.gui.docker.CollabDocker;
+import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.newabstraction.EntryValidation;
 import cuchaz.enigma.gui.stats.StatsGenerator;
 import cuchaz.enigma.gui.stats.StatsMember;
@@ -66,6 +69,8 @@ import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Utils;
+import cuchaz.enigma.utils.validation.Message;
+import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 public class GuiController implements ClientPacketHandler {
@@ -574,6 +579,10 @@ public class GuiController implements ClientPacketHandler {
 			}
 			this.gui.setConnectionState(ConnectionState.NOT_CONNECTED);
 		});
+
+		this.gui.setUserList(new ArrayList<>());
+		this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.LEFT_SERVER));
+		Docker.getDocker(CollabDocker.class).setUp();
 	}
 
 	@Override

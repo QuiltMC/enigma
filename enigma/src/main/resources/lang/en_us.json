@@ -228,6 +228,7 @@
 	"validation.message.shadowed_name": "Name '%s' shadows another entry.",
   	"validation.message.server_started": "Server started on port %s!",
   	"validation.message.connected_to_server": "Connected to server with address %s!",
+  	"validation.message.left_server": "Left server.",
   	"validation.message.user_connected": "User joined server: %s",
   	"validation.message.user_left_server": "User left server: %s",
 

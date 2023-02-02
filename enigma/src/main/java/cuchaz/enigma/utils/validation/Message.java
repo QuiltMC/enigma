@@ -20,6 +20,7 @@ public class Message {
 
 	public static final Message SERVER_STARTED = create(Type.INFO, "server_started");
 	public static final Message CONNECTED_TO_SERVER = create(Type.INFO, "connected_to_server");
+	public static final Message LEFT_SERVER = create(Type.INFO, "left_server");
 	public static final Message MULTIPLAYER_USER_CONNECTED = create(Type.INFO, "user_connected");
 	public static final Message MULTIPLAYER_USER_LEFT = create(Type.INFO, "user_left_server");
 	public static final Message MULTIPLAYER_CHAT = new Message(Type.INFO, "", "");
