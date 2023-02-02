@@ -37,9 +37,6 @@ public class NotificationManager implements ValidationContext.Notifier {
 	private final Map<Notification, Integer> activeNotifications = new HashMap<>();
 
 	public NotificationManager(Gui gui) {
-		// todo more notifications:
-		// server start, join, stop
-
 		this.gui = gui;
 
 		new Timer().schedule(new TimerTask() {
