@@ -70,14 +70,19 @@ public class VerticalFlowLayout implements LayoutManager2 {
 	@Override
 	public Dimension preferredLayoutSize(Container target) {
 		int height = 0;
+		int width = target.getWidth();
 		for (Component c : this.components) {
 			if (c.isVisible()) {
 				Dimension d = c.getSize();
 				height += d.height + this.verticalGap;
+
+				if (c.getWidth() > width || width == target.getWidth()) {
+					width = c.getWidth();
+				}
 			}
 		}
 
-		return new Dimension(300, height);
+		return new Dimension(width, height);
 	}
 
 	@Override
