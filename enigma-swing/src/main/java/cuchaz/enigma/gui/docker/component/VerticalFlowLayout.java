@@ -53,14 +53,14 @@ public class VerticalFlowLayout implements LayoutManager2 {
 			if (c.isVisible()) {
 				Dimension d = c.getPreferredSize();
 
-				if (parent.getWidth() > c.getWidth()) {
-					x = (parent.getWidth() - c.getWidth()) / 2;
+				if (parent.getWidth() > d.getWidth()) {
+					x = (int) ((parent.getWidth() - d.getWidth()) / 2);
 				} else {
 					x = 0;
 				}
 
 				c.setBounds(x, y, (int) d.getWidth(), (int) d.getHeight());
-				y += d.height + this.verticalGap;
+				y += d.getHeight() + this.verticalGap;
 			}
 		}
 	}
@@ -68,15 +68,13 @@ public class VerticalFlowLayout implements LayoutManager2 {
 	@Override
 	public Dimension preferredLayoutSize(Container target) {
 		int height = 0;
-		int width = target.getWidth();
+		int width = 0;
 		for (Component c : this.components) {
 			if (c.isVisible()) {
 				Dimension d = c.getPreferredSize();
-				height += d.height + this.verticalGap;
+				height += d.getHeight() + this.verticalGap;
 
-				if (c.getWidth() > width) {
-					width = c.getWidth();
-				}
+				width = Math.max(width, (int) d.getWidth());
 			}
 		}
 
