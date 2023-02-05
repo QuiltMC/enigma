@@ -4,11 +4,11 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager2;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class VerticalFlowLayout implements LayoutManager2 {
-	private final Set<Component> components = new LinkedHashSet<>();
+	private final List<Component> components = new ArrayList<>();
 	private final int verticalGap;
 
 	public VerticalFlowLayout(int verticalGap) {
