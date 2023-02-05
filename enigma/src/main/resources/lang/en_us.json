@@ -51,6 +51,7 @@
 	"menu.decompiler.settings": "Decompiler Settings",
 	"menu.decompiler.settings.quiltflower": "Quiltflower Settings",
 	"menu.view": "View",
+  	"menu.view.notifications": "Server Notifications",
 	"menu.view.themes": "Themes",
 	"menu.view.themes.default": "Default",
 	"menu.view.themes.darcula": "Darcula",
@@ -281,5 +282,8 @@
 
 	"notification.type.error": "Error",
   	"notification.type.warning": "Warning",
-  	"notification.type.info": "Info"
+  	"notification.type.info": "Info",
+  	"notification.level.none": "No server notifications",
+  	"notification.level.no_chat": "No chat messages",
+  	"notification.level.full": "All server notifications"
 }

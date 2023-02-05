@@ -119,6 +119,16 @@ public class NotificationManager implements ValidationContext.Notifier {
 		return this.activeNotifications;
 	}
 
+	public enum ServerNotificationLevel {
+		NONE,
+		NO_CHAT,
+		FULL;
+
+		public String getText() {
+			return I18n.translate("notification.level." + this.name().toLowerCase());
+		}
+	}
+
 	public static class Notification extends JPanel {
 		private final int id;
 		private final Message.Type type;

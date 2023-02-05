@@ -581,7 +581,9 @@ public class GuiController implements ClientPacketHandler {
 		});
 
 		this.gui.setUserList(new ArrayList<>());
-		this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.LEFT_SERVER));
+		if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+			this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.LEFT_SERVER));
+		}
 		Docker.getDocker(CollabDocker.class).setUp();
 	}
 

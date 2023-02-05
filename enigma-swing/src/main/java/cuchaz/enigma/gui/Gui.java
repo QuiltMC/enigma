@@ -624,15 +624,23 @@ public class Gui {
 		// popup notifications
 		switch (message.getType()) {
 			case CHAT -> {
-				if (message.getType().equals(ServerMessage.Type.CHAT) && !message.user.equals(NetConfig.getUsername())) {
+				if (UiConfig.getServerNotificationLevel().equals(NotificationManager.ServerNotificationLevel.FULL) && !message.user.equals(NetConfig.getUsername())) {
 					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_CHAT, message.translate()));
 				}
 			}
-			case CONNECT -> this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_USER_CONNECTED, message.translate()));
-			case DISCONNECT -> this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_USER_LEFT, message.translate()));
+			case CONNECT -> {
+				if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_USER_CONNECTED, message.translate()));
+				}
+			}
+			case DISCONNECT -> {
+				if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_USER_LEFT, message.translate()));
+				}
+			}
 		}
 
-		this.mainWindow.getStatusBar().showMessage(message.translate(), 5000);
+		this.mainWindow.getStatusBar().showMessage(message.translate(), NotificationManager.TIMEOUT_MILLISECONDS);
 	}
 
 	public void setUserList(List<String> users) {
