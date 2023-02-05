@@ -3,6 +3,7 @@ package cuchaz.enigma.utils.validation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import cuchaz.enigma.utils.validation.Message.Type;
 
@@ -16,11 +17,7 @@ import cuchaz.enigma.utils.validation.Message.Type;
  */
 public class ValidationContext {
 	public ValidationContext(Notifier notifier) {
-		if (notifier == null) {
-			this.notifier = new PrintValidatable();
-		} else {
-			this.notifier = notifier;
-		}
+		this.notifier = Objects.requireNonNullElse(notifier, PrintNotifier.INSTANCE);
 	}
 
 	private final List<ParameterizedMessage> messages = new ArrayList<>();

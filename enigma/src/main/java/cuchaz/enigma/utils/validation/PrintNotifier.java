@@ -3,17 +3,12 @@ package cuchaz.enigma.utils.validation;
 import java.io.PrintStream;
 import java.util.Arrays;
 
-public class PrintValidatable implements Validatable, ValidationContext.Notifier {
-	public static final PrintValidatable INSTANCE = new PrintValidatable();
-
-	@Override
-	public void addMessage(ParameterizedMessage message) {
-		formatMessage(System.out, message);
-	}
+public class PrintNotifier implements ValidationContext.Notifier {
+	public static final PrintNotifier INSTANCE = new PrintNotifier();
 
 	@Override
 	public void notify(ParameterizedMessage message) {
-		this.addMessage(message);
+		formatMessage(System.out, message);
 	}
 
 	public static void formatMessage(PrintStream w, ParameterizedMessage message) {
@@ -29,9 +24,5 @@ public class PrintValidatable implements Validatable, ValidationContext.Notifier
 		if (!longText.isEmpty()) {
 			Arrays.stream(longText.split("\n")).forEach(s -> w.printf("  %s\n", s));
 		}
-	}
-
-	@Override
-	public void clearMessages() {
 	}
 }

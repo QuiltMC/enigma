@@ -12,7 +12,6 @@ import javax.swing.JTextField;
 
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.NetConfig;
-import cuchaz.enigma.gui.elements.ValidatableTextField;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.network.EnigmaServer;
 import cuchaz.enigma.network.ServerAddress;
@@ -23,7 +22,7 @@ import cuchaz.enigma.utils.validation.StandardValidation;
 public class ConnectToServerDialog extends AbstractDialog {
 
 	private JTextField usernameField;
-	private ValidatableTextField ipField;
+	private JTextField ipField;
 	private JPasswordField passwordField;
 
 	public ConnectToServerDialog(Frame owner, Gui gui) {
@@ -39,7 +38,7 @@ public class ConnectToServerDialog extends AbstractDialog {
 	@Override
 	protected List<Pair<String, Component>> createComponents() {
 		usernameField = new JTextField(NetConfig.getUsername());
-		ipField = new ValidatableTextField(NetConfig.getRemoteAddress());
+		ipField = new JTextField(NetConfig.getRemoteAddress());
 		passwordField = new JPasswordField(NetConfig.getPassword());
 
 		usernameField.addActionListener(event -> confirm());

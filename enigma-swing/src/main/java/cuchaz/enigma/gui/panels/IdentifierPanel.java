@@ -74,7 +74,7 @@ public class IdentifierPanel {
 	}
 
 	private void onModifierChanged(AccessModifier modifier) {
-		gui.validateImmediateAction(vc -> this.gui.getController().applyChange(vc, EntryChange.modify(entry).withAccess(modifier)));
+		this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(this.entry).withAccess(modifier));
 	}
 
 	public void refreshReference() {

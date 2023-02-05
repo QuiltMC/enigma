@@ -8,18 +8,19 @@ import java.util.List;
 
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.NetConfig;
-import cuchaz.enigma.gui.elements.ValidatablePasswordField;
-import cuchaz.enigma.gui.elements.ValidatableTextField;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.network.EnigmaServer;
 import cuchaz.enigma.utils.Pair;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.StandardValidation;
 
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
 public class CreateServerDialog extends AbstractDialog {
 
-	private ValidatableTextField portField;
-	private ValidatablePasswordField passwordField;
+	private JTextField portField;
+	private JPasswordField passwordField;
 
 	public CreateServerDialog(Frame owner, Gui gui) {
 		super(owner, gui, "prompt.create_server.title", "prompt.create_server.confirm", "prompt.cancel");
@@ -33,8 +34,8 @@ public class CreateServerDialog extends AbstractDialog {
 
 	@Override
 	protected List<Pair<String, Component>> createComponents() {
-		portField = new ValidatableTextField(Integer.toString(NetConfig.getServerPort()));
-		passwordField = new ValidatablePasswordField(NetConfig.getServerPassword());
+		portField = new JTextField(Integer.toString(NetConfig.getServerPort()));
+		passwordField = new JPasswordField(NetConfig.getServerPassword());
 
 		portField.addActionListener(event -> confirm());
 		passwordField.addActionListener(event -> confirm());

@@ -11,7 +11,6 @@
 
 package cuchaz.enigma.gui;
 
-import com.google.common.collect.Lists;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.analysis.EntryReference;
@@ -24,7 +23,6 @@ import cuchaz.enigma.gui.docker.NotificationsDocker;
 import cuchaz.enigma.gui.elements.EditorTabbedPane;
 import cuchaz.enigma.gui.elements.MainWindow;
 import cuchaz.enigma.gui.elements.MenuBar;
-import cuchaz.enigma.gui.elements.ValidatableUi;
 import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.panels.IdentifierPanel;
 import cuchaz.enigma.gui.docker.ObfuscatedClassesDocker;
@@ -475,9 +473,9 @@ public class Gui {
 
 	public void toggleMappingFromEntry(Entry<?> obfEntry) {
 		if (this.controller.project.getMapper().getDeobfMapping(obfEntry).targetName() != null) {
-			validateImmediateAction(vc -> this.controller.applyChange(vc, EntryChange.modify(obfEntry).clearDeobfName()));
+			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).clearDeobfName());
 		} else {
-			validateImmediateAction(vc -> this.controller.applyChange(vc, EntryChange.modify(obfEntry).withDefaultDeobfName(this.getController().project)));
+			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).withDefaultDeobfName(this.getController().project));
 		}
 	}
 
@@ -696,17 +694,6 @@ public class Gui {
 
 	public ConnectionState getConnectionState() {
 		return this.connectionState;
-	}
-
-	public boolean validateImmediateAction(Consumer<ValidationContext> op) {
-		ValidationContext vc = new ValidationContext(this.getNotificationManager());
-		op.accept(vc);
-		if (!vc.canProceed()) {
-			List<ParameterizedMessage> parameterizedMessages = vc.getMessages();
-			String text = ValidatableUi.formatMessages(parameterizedMessages);
-			JOptionPane.showMessageDialog(this.getFrame(), text, String.format("%d message(s)", parameterizedMessages.size()), JOptionPane.ERROR_MESSAGE);
-		}
-		return vc.canProceed();
 	}
 
 	public boolean isEditable(EditableType t) {
