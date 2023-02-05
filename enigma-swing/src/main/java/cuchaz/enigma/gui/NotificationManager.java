@@ -106,7 +106,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 
 		// set up notification panel
 		notificationPanel.revalidate();
-		notificationPanel.setSize(300, 100);
+		notificationPanel.setBounds(notificationPanel.getX(), notificationPanel.getY(), notificationPanel.getPreferredSize().width, notificationPanel.getPreferredSize().height);
 
 		this.activeNotifications.put(notificationPanel, TIMEOUT_MILLISECONDS);
 		Docker.getDocker(NotificationsDocker.class).addNotification(notificationPanel);
@@ -178,6 +178,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 				text.setFont(text.getFont().deriveFont(Font.BOLD));
 				text.setMargin(new Insets(0, 0, 0, 0));
 				text.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+				text.setSize(Math.max(text.getPreferredSize().width, 300), text.getPreferredSize().height);
 				messagePanel.add(text, BorderLayout.CENTER);
 			}
 
