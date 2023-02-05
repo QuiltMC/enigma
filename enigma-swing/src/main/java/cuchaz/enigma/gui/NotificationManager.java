@@ -83,7 +83,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 			int index = sortedNotifications.indexOf(notification);
 
 			for (int i = index; i < sortedNotifications.size() - 1; i ++) {
-				height -= sortedNotifications.get(i).getHeight() + VERTICAL_GAP;
+				height -= sortedNotifications.get(i + 1).getHeight() + VERTICAL_GAP;
 			}
 		}
 
