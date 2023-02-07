@@ -11,6 +11,7 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import joptsimple.ValueConverter;
+import org.tinylog.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -96,19 +97,19 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 		int port = parsedArgs.valueOf(portOpt);
 		char[] password = parsedArgs.valueOf(passwordOpt).toCharArray();
 		if (password.length > EnigmaServer.MAX_PASSWORD_LENGTH) {
-			System.err.println("Password too long, must be at most " + EnigmaServer.MAX_PASSWORD_LENGTH + " characters");
+			Logger.error("Password too long, must be at most {} characters", EnigmaServer.MAX_PASSWORD_LENGTH);
 			System.exit(1);
 		}
 		Path logFile = parsedArgs.valueOf(logFileOpt);
 
-		System.out.println("Starting Enigma server");
+		Logger.info("Starting Enigma server");
 		DedicatedEnigmaServer server;
 		try {
 			byte[] checksum = Utils.zipSha1(parsedArgs.valueOf(jarOpt));
 
 			EnigmaProfile profile = EnigmaProfile.read(profileFile);
 			Enigma enigma = Enigma.builder().setProfile(profile).build();
-			System.out.println("Indexing Jar...");
+			Logger.info("Indexing Jar...");
 			EnigmaProject project = enigma.openJar(jar, new ClasspathClassProvider(), ProgressListener.none());
 
 			MappingFormat mappingFormat = MappingFormat.ENIGMA_DIRECTORY;
@@ -116,7 +117,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 			if (!Files.exists(mappingsFile)) {
 				mappings = EntryRemapper.empty(project.getJarIndex());
 			} else {
-				System.out.println("Reading mappings...");
+				Logger.info("Reading mappings...");
 				if (Files.isDirectory(mappingsFile)) {
 					mappingFormat = MappingFormat.ENIGMA_DIRECTORY;
 				} else if ("zip".equalsIgnoreCase(MoreFiles.getFileExtension(mappingsFile))) {
@@ -131,10 +132,9 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 
 			server = new DedicatedEnigmaServer(checksum, password, profile, mappingFormat, mappingsFile, log, mappings, port);
 			server.start();
-			System.out.println("Server started");
+			Logger.info("Server started");
 		} catch (IOException | MappingParseException e) {
-			System.err.println("Error starting server!");
-			e.printStackTrace();
+			Logger.error(e, "Error starting server!");
 			System.exit(1);
 			return;
 		}

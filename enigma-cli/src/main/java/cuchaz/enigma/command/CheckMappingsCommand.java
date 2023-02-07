@@ -9,6 +9,7 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import org.tinylog.Logger;
 
 import java.nio.file.Path;
 import java.util.Set;
@@ -39,11 +40,11 @@ public class CheckMappingsCommand extends Command {
 	public static void run(Path fileJarIn, Path fileMappings) throws Exception {
 		Enigma enigma = Enigma.create();
 
-		System.out.println("Reading JAR...");
+		Logger.info("Reading JAR...");
 
 		EnigmaProject project = enigma.openJar(fileJarIn, new ClasspathClassProvider(), ProgressListener.none());
 
-		System.out.println("Reading mappings...");
+		Logger.info("Reading mappings...");
 
 		MappingSaveParameters saveParameters = enigma.getProfile().getMappingSaveParameters();
 
@@ -62,7 +63,7 @@ public class CheckMappingsCommand extends Command {
 					.count();
 			if (packages > 1) {
 				error = true;
-				System.err.println("ERROR: Must be in one package:\n" + partition.stream()
+				Logger.error("Must be in one package:\n{}", () -> partition.stream()
 						.map(project.getMapper()::deobfuscate)
 						.map(ClassEntry::toString)
 						.sorted()
@@ -72,7 +73,7 @@ public class CheckMappingsCommand extends Command {
 		}
 
 		if (error) {
-			throw new IllegalStateException("Errors in package visibility detected, see SysErr above");
+			throw new IllegalStateException("Errors in package visibility detected, see error logged above!");
 		}
 	}
 }

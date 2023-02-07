@@ -1,5 +1,7 @@
 package cuchaz.enigma.config;
 
+import org.tinylog.Logger;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -25,7 +27,7 @@ public class ConfigContainer {
 			Files.write(this.configPath, this.serialize().getBytes(StandardCharsets.UTF_8));
 			this.existsOnDisk = true;
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger.error(e, "Failed to save config file!");
 		}
 	}
 
@@ -59,7 +61,7 @@ public class ConfigContainer {
 				cc.existsOnDisk = true;
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger.error(e, "Failed to create config container!");
 		}
 
 		if (cc == null) {
