@@ -30,6 +30,7 @@ import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.CrashDialog;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.utils.I18n;
+import org.tinylog.Logger;
 
 public class Main {
 	public static void main(String[] args) throws IOException {
@@ -91,11 +92,11 @@ public class Main {
 						case "no-edit-parameters" -> editables.remove(EditableType.PARAMETER);
 						case "edit-locals" -> {
 							editables.add(EditableType.LOCAL_VARIABLE);
-							System.err.println("warning: --edit-locals has no effect as local variables are currently not editable");
+							Logger.warn("--edit-locals has no effect as local variables are currently not editable");
 						}
 						case "no-edit-locals" -> {
 							editables.remove(EditableType.LOCAL_VARIABLE);
-							System.err.println("warning: --no-edit-locals has no effect as local variables are currently not editable");
+							Logger.warn("--no-edit-locals has no effect as local variables are currently not editable");
 						}
 						case "edit-javadocs" -> editables.add(EditableType.JAVADOC);
 						case "no-edit-javadocs" -> editables.remove(EditableType.JAVADOC);
@@ -121,7 +122,7 @@ public class Main {
 				// install a global exception handler to the event thread
 				CrashDialog.init(gui.getFrame());
 				Thread.setDefaultUncaughtExceptionHandler((thread, t) -> {
-					t.printStackTrace(System.err);
+					Logger.error(t, "Uncaught exception in thread {}", thread);
 					if (!ExceptionIgnorer.shouldIgnore(t)) {
 						CrashDialog.show(t);
 					}
@@ -129,7 +130,7 @@ public class Main {
 			}
 
 			if (options.has("single-class-tree")) {
-				System.out.println("warning: --single-class-tree is deprecated and will be removed in the next minor version! simply use the \"all classes\" docker instead.");
+				Logger.warn("--single-class-tree is deprecated and will be removed in the next minor version! simply use the \"all classes\" docker instead.");
 				gui.openDocker(AllClassesDocker.class);
 			}
 
@@ -150,8 +151,7 @@ public class Main {
 						});
 			}
 		} catch (OptionException e) {
-			System.out.println("Invalid arguments: " + e.getMessage());
-			System.out.println();
+			Logger.error("Invalid arguments: {}\n", e.getMessage());
 			parser.printHelpOn(System.out);
 		}
 	}

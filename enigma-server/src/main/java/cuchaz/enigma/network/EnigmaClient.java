@@ -2,6 +2,7 @@ package cuchaz.enigma.network;
 
 import cuchaz.enigma.network.packet.Packet;
 import cuchaz.enigma.network.packet.PacketRegistry;
+import org.tinylog.Logger;
 
 import javax.swing.*;
 import java.io.*;
@@ -58,9 +59,8 @@ public class EnigmaClient {
 		if (socket != null && !socket.isClosed()) {
 			try {
 				socket.close();
-			} catch (IOException e1) {
-				System.err.println("Failed to close socket");
-				e1.printStackTrace();
+			} catch (IOException e) {
+				Logger.error(e, "Failed to close socket!");
 			}
 		}
 	}

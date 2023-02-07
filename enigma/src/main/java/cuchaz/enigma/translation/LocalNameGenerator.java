@@ -5,6 +5,7 @@ import java.util.Locale;
 
 import cuchaz.enigma.translation.mapping.IdentifierValidation;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
+import org.tinylog.Logger;
 
 public class LocalNameGenerator {
 	public static String generateArgumentName(int index, TypeDescriptor desc, Collection<TypeDescriptor> arguments) {
@@ -37,7 +38,7 @@ public class LocalNameGenerator {
 			typeName = typeName.substring(0, 1).toLowerCase(Locale.ROOT) + typeName.substring(1);
 			return typeName;
 		} else {
-			System.err.println("Encountered invalid argument type descriptor " + desc.toString());
+			Logger.error("Encountered invalid argument type descriptor {}", desc);
 			return "var";
 		}
 	}

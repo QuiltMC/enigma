@@ -5,6 +5,7 @@ import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.EnigmaProject.DecompileErrorStrategy;
 import cuchaz.enigma.source.DecompilerService;
 import cuchaz.enigma.source.Decompilers;
+import org.tinylog.Logger;
 
 import java.lang.reflect.Field;
 import java.nio.file.Path;
@@ -42,7 +43,7 @@ public class DecompileCommand extends Command {
 			Field decompilerField = Decompilers.class.getField(decompilerName.toUpperCase(Locale.ROOT));
 			decompilerService = (DecompilerService) decompilerField.get(null);
 		} catch (NoSuchFieldException e) {
-			System.err.println("Decompiler not found.");
+			Logger.error("Decompiler not found.");
 			return;
 		}
 

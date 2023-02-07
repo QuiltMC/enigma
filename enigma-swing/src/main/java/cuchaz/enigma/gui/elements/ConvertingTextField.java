@@ -99,6 +99,21 @@ public class ConvertingTextField implements Validatable {
 		this.textField.setText(text);
 	}
 
+	/**
+	 * Sets the visible text without aborting.
+	 * <p>
+	 * The text in the {@link #textField} is not replaced if it has been edited,
+	 * allowing the user to continue editing their entry without interference.
+	 *
+	 * @param text The text to set the label and text field to.
+	 */
+	public void setReferenceText(String text) {
+		if (!this.hasChanges()) {
+			this.textField.setText(text);
+		}
+		this.label.setText(text);
+	}
+
 	public void setEditText(String text) {
 		if (!editing) return;
 
