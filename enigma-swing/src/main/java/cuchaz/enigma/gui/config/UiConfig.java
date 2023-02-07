@@ -198,7 +198,7 @@ public final class UiConfig {
 		return swing.data().section(GENERAL).setIfAbsentBool(SAVED_WITH_LEFT_OPEN, false);
 	}
 
-	public static void addRecentFile(File file) {
+	public static void addRecentMappingsFile(File file) {
 		System.out.println("saving recent file: " + file.toString());
 		for (int i = 1; i < MAX_RECENT_FILES; i ++) {
 			Optional<String> previousValue = swing.data().section(RECENT_FILES).getString((i - 1) + "");
@@ -210,7 +210,11 @@ public final class UiConfig {
 		ui.data().section(RECENT_FILES).setString(0 + "", file.toString());
 	}
 
-	public static File[] getRecentFiles() {
+	public static File getMostRecentMappingsFile() {
+		return getRecentMappingsFiles()[0];
+	}
+
+	public static File[] getRecentMappingsFiles() {
 		List<File> files = new ArrayList<>();
 
 		for (int index = 0; index < MAX_RECENT_FILES; index ++) {

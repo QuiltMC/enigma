@@ -688,7 +688,7 @@ public class Gui {
 		this.editorTabbedPane.reloadKeyBinds();
 	}
 
-	public void openMostRecentFiles() {
-		// todo todo!
+	public void openMostRecentMappings() {
+		this.controller.openMappings(UiConfig.getMostRecentMappingsFile().toPath());
 	}
 }

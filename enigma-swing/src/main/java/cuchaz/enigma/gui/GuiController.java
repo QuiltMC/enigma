@@ -15,6 +15,7 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
@@ -29,6 +30,7 @@ import javax.swing.SwingUtilities;
 
 import com.google.common.collect.Lists;
 
+import com.google.common.io.MoreFiles;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.EnigmaProject;
@@ -120,11 +122,22 @@ public class GuiController implements ClientPacketHandler {
 		this.gui.onCloseJar();
 	}
 
+	public void openMappings(Path path) {
+		if (Files.isDirectory(path)) {
+			this.openMappings(MappingFormat.ENIGMA_DIRECTORY, path);
+		} else if ("zip".equalsIgnoreCase(MoreFiles.getFileExtension(path))) {
+			this.openMappings(MappingFormat.ENIGMA_ZIP, path);
+		} else {
+			this.openMappings(MappingFormat.ENIGMA_FILE, path);
+		}
+	}
+
 	public CompletableFuture<Void> openMappings(MappingFormat format, Path path) {
 		if (this.project == null) return CompletableFuture.completedFuture(null);
 
 		this.gui.setMappingsFile(path);
-		UiConfig.addRecentFile(new File(path.toUri()));
+		// todo add jar here too
+		UiConfig.addRecentMappingsFile(new File(path.toUri()));
 
 		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
 			try {

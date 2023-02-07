@@ -12,14 +12,12 @@
 package cuchaz.enigma.gui;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.io.MoreFiles;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.docker.AllClassesDocker;
 import joptsimple.*;
@@ -28,7 +26,6 @@ import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.CrashDialog;
-import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.utils.I18n;
 
 public class Main {
@@ -139,17 +136,11 @@ public class Main {
 						.whenComplete((v, t) -> {
 							if (options.has(mappings)) {
 								Path mappingsPath = options.valueOf(mappings);
-								if (Files.isDirectory(mappingsPath)) {
-									controller.openMappings(MappingFormat.ENIGMA_DIRECTORY, mappingsPath);
-								} else if ("zip".equalsIgnoreCase(MoreFiles.getFileExtension(mappingsPath))) {
-									controller.openMappings(MappingFormat.ENIGMA_ZIP, mappingsPath);
-								} else {
-									controller.openMappings(MappingFormat.ENIGMA_FILE, mappingsPath);
-								}
+								gui.getController().openMappings(mappingsPath);
+							} else {
+								gui.openMostRecentMappings();
 							}
 						});
-			} else {
-				gui.openMostRecentFiles();
 			}
 		} catch (OptionException e) {
 			System.out.println("Invalid arguments: " + e.getMessage());
