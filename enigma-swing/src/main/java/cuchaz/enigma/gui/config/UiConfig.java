@@ -1,7 +1,10 @@
 package cuchaz.enigma.gui.config;
 
 import java.awt.*;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -28,6 +31,8 @@ public final class UiConfig {
 	public static final String FONTS = "Fonts";
 	public static final String FILE_DIALOG = "File Dialog";
 	public static final String MAPPING_STATS = "Mapping Stats";
+	// todo make this a field and save as array
+	public static final String RECENT_FILES = "Recent Files";
 
 	// fields
 	public static final String CURRENT = "Current";
@@ -71,6 +76,8 @@ public final class UiConfig {
 	public static final String DEBUG_TOKEN_OUTLINE = "Debug Token Outline";
 	public static final String DEBUG_TOKEN_OUTLINE_ALPHA = "Debug Token Outline Alpha";
 	public static final String DOCK_HIGHLIGHT = "Dock Highlight";
+
+	private static final int MAX_RECENT_FILES = 5;
 
 	private UiConfig() {
 	}
@@ -189,6 +196,32 @@ public final class UiConfig {
 
 	public static boolean getSavedWithLeftOpen() {
 		return swing.data().section(GENERAL).setIfAbsentBool(SAVED_WITH_LEFT_OPEN, false);
+	}
+
+	public static void addRecentFile(File file) {
+		System.out.println("saving recent file: " + file.toString());
+		for (int i = 1; i < MAX_RECENT_FILES; i ++) {
+			Optional<String> previousValue = swing.data().section(RECENT_FILES).getString((i - 1) + "");
+			if (previousValue.isPresent()) {
+				ui.data().section(RECENT_FILES).setString(i + "", previousValue.get());
+			}
+		}
+
+		ui.data().section(RECENT_FILES).setString(0 + "", file.toString());
+	}
+
+	public static File[] getRecentFiles() {
+		List<File> files = new ArrayList<>();
+
+		for (int index = 0; index < MAX_RECENT_FILES; index ++) {
+			Optional<String> fileName = ui.data().section(RECENT_FILES).getString(index + "");
+
+			if (fileName.isPresent() && !fileName.get().isBlank()) {
+				files.add(new File(fileName.get()));
+			}
+		}
+
+		return files.toArray(new File[MAX_RECENT_FILES]);
 	}
 
 	public static LookAndFeel getLookAndFeel() {

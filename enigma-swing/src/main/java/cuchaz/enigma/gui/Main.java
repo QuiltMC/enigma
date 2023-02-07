@@ -148,6 +148,8 @@ public class Main {
 								}
 							}
 						});
+			} else {
+				gui.openMostRecentFiles();
 			}
 		} catch (OptionException e) {
 			System.out.println("Invalid arguments: " + e.getMessage());

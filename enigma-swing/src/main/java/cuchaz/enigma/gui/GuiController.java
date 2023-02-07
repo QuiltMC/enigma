@@ -124,6 +124,7 @@ public class GuiController implements ClientPacketHandler {
 		if (this.project == null) return CompletableFuture.completedFuture(null);
 
 		this.gui.setMappingsFile(path);
+		UiConfig.addRecentFile(new File(path.toUri()));
 
 		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
 			try {

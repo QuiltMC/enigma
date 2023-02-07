@@ -687,4 +687,8 @@ public class Gui {
 		this.menuBar.setKeyBinds();
 		this.editorTabbedPane.reloadKeyBinds();
 	}
+
+	public void openMostRecentFiles() {
+		// todo todo!
+	}
 }
