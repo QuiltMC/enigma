@@ -47,6 +47,7 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
+import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import javax.swing.DefaultListModel;
@@ -73,11 +74,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
-import java.util.logging.Logger;
 
 public class Gui {
-	public static final Logger LOGGER = Logger.getLogger("enigma_gui");
-
 	private final MainWindow mainWindow;
 	private final GuiController controller;
 
@@ -691,7 +689,12 @@ public class Gui {
 		this.editorTabbedPane.reloadKeyBinds();
 	}
 
-	public void openMostRecentMappings() {
-		this.controller.openMappings(UiConfig.getMostRecentMappingsFile().toPath());
+	public void openMostRecentFiles() {
+		var pair = UiConfig.getMostRecentFilePair();
+
+		if (pair != null) {
+			Logger.info("no mappings arguments, opening most recent jar [{}] with most recent mappings [{}]", pair.a, pair.b);
+			this.controller.openJar(pair.a).whenComplete((v, t) -> this.controller.openMappings(pair.b));
+		}
 	}
 }

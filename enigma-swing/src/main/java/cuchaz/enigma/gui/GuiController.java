@@ -67,6 +67,7 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
+import cuchaz.enigma.utils.Pair;
 import cuchaz.enigma.utils.Utils;
 import cuchaz.enigma.utils.validation.PrintValidatable;
 import cuchaz.enigma.utils.validation.ValidationContext;
@@ -133,14 +134,15 @@ public class GuiController implements ClientPacketHandler {
 		}
 	}
 
-	public CompletableFuture<Void> openMappings(MappingFormat format, Path path) {
-		if (this.project == null) return CompletableFuture.completedFuture(null);
+	public void openMappings(MappingFormat format, Path path) {
+		if (this.project == null) {
+			return;
+		}
 
 		this.gui.setMappingsFile(path);
-		// todo add jar here too
-		UiConfig.addRecentMappingsFile(new File(path.toUri()));
+		UiConfig.addRecentFilePair(this.project.getJarPath(), path);
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
+		ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
 			try {
 				MappingSaveParameters saveParameters = this.enigma.getProfile().getMappingSaveParameters();
 

@@ -139,9 +139,11 @@ public class Main {
 								Path mappingsPath = options.valueOf(mappings);
 								gui.getController().openMappings(mappingsPath);
 							} else {
-								gui.openMostRecentMappings();
+								gui.openMostRecentFiles();
 							}
 						});
+			} else {
+				gui.openMostRecentFiles();
 			}
 		} catch (OptionException e) {
 			Logger.error("Invalid arguments: {}\n", e.getMessage());

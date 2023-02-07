@@ -1,7 +1,8 @@
 package cuchaz.enigma.gui.config;
 
 import java.awt.*;
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,7 @@ import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 import org.tinylog.Logger;
+import cuchaz.enigma.utils.Pair;
 
 public final class UiConfig {
 	// sections
@@ -79,6 +81,7 @@ public final class UiConfig {
 	public static final String DOCK_HIGHLIGHT = "Dock Highlight";
 
 	private static final int MAX_RECENT_FILES = 5;
+	private static final String PAIR_SEPARATOR = ":";
 
 	private UiConfig() {
 	}
@@ -141,7 +144,7 @@ public final class UiConfig {
 			if (docker != null) {
 				Docker.Location location = Dock.Util.findLocation(docker);
 				if (location != null) {
-					dockerData[i] = (docker.getId() + ":" + location.verticalLocation());
+					dockerData[i] = (docker.getId() + PAIR_SEPARATOR + location.verticalLocation());
 				}
 			}
 		}
@@ -160,7 +163,7 @@ public final class UiConfig {
 
 		for (String dockInfo : hostedDockers.get()) {
 			if (!dockInfo.isBlank()) {
-				String[] split = dockInfo.split(":");
+				String[] split = dockInfo.split(PAIR_SEPARATOR);
 				try {
 					Docker.VerticalLocation location = Docker.VerticalLocation.valueOf(split[1]);
 					Docker docker = Docker.getDocker(split[0]);
@@ -199,8 +202,7 @@ public final class UiConfig {
 		return swing.data().section(GENERAL).setIfAbsentBool(SAVED_WITH_LEFT_OPEN, false);
 	}
 
-	public static void addRecentMappingsFile(File file) {
-		System.out.println("saving recent file: " + file.toString());
+	public static void addRecentFilePair(Path jar, Path mappings) {
 		for (int i = 1; i < MAX_RECENT_FILES; i ++) {
 			Optional<String> previousValue = swing.data().section(RECENT_FILES).getString((i - 1) + "");
 			if (previousValue.isPresent()) {
@@ -208,25 +210,40 @@ public final class UiConfig {
 			}
 		}
 
-		ui.data().section(RECENT_FILES).setString(0 + "", file.toString());
+		ui.data().section(RECENT_FILES).setString(0 + "", jar + PAIR_SEPARATOR + mappings);
 	}
 
-	public static File getMostRecentMappingsFile() {
+	/**
+	 * todo
+	 * @return jar, mappings
+	 */
+	public static Pair<Path, Path> getMostRecentFilePair() {
+		if (getRecentMappingsFiles().length == 0) return null;
+
 		return getRecentMappingsFiles()[0];
 	}
 
-	public static File[] getRecentMappingsFiles() {
-		List<File> files = new ArrayList<>();
+	@SuppressWarnings("unchecked")
+	public static Pair<Path, Path>[] getRecentMappingsFiles() {
+		List<Pair<Path, Path>> pairs = new ArrayList<>();
 
 		for (int index = 0; index < MAX_RECENT_FILES; index ++) {
-			Optional<String> fileName = ui.data().section(RECENT_FILES).getString(index + "");
+			Optional<String> filePair = ui.data().section(RECENT_FILES).getString(index + "");
 
-			if (fileName.isPresent() && !fileName.get().isBlank()) {
-				files.add(new File(fileName.get()));
+			if (filePair.isPresent() && !filePair.get().isBlank()) {
+				String[] split = filePair.get().split(PAIR_SEPARATOR);
+				if (split.length != 2) {
+					Logger.error("failed to read recent file state for {}, ignoring!", filePair.get());
+					continue;
+				}
+
+				String jar = split[0];
+				String mappings = split[1];
+				pairs.add(new Pair<>(Paths.get(jar), Paths.get(mappings)));
 			}
 		}
 
-		return files.toArray(new File[MAX_RECENT_FILES]);
+		return pairs.toArray((Pair<Path, Path>[]) new Pair[0]);
 	}
 
 	public static LookAndFeel getLookAndFeel() {
