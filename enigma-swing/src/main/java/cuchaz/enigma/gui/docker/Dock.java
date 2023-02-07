@@ -14,6 +14,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -138,7 +139,7 @@ public class Dock extends JPanel {
 		this.host(docker, verticalLocation, true);
 	}
 
-	private void host(Docker docker, Docker.VerticalLocation verticalLocation, boolean avoidEmptySpace) {
+	public void host(Docker docker, Docker.VerticalLocation verticalLocation, boolean avoidEmptySpace) {
 		Dock dock = Util.findDock(docker);
 		if (dock != null) {
 			dock.removeDocker(verticalLocation, avoidEmptySpace);
@@ -148,9 +149,9 @@ public class Dock extends JPanel {
 			case BOTTOM, TOP -> {
 				// if we'd be leaving empty space via opening, we want to host the docker as the full panel
 				// this is to avoid wasting space
-				if (avoidEmptySpace && (this.isSplit && this.getDock(verticalLocation.inverse()).getHostedDocker() == null)
+				if (avoidEmptySpace && ((this.isSplit && this.getDock(verticalLocation.inverse()).getHostedDocker() == null)
 						|| (!this.isSplit && this.unifiedDock.getHostedDocker() == null)
-						|| (!this.isSplit && this.unifiedDock.getHostedDocker().getId().equals(docker.getId()))) {
+						|| (!this.isSplit && this.unifiedDock.getHostedDocker().getId().equals(docker.getId())))) {
 					this.host(docker, Docker.VerticalLocation.FULL);
 					return;
 				}
@@ -364,6 +365,9 @@ public class Dock extends JPanel {
 			if (this.hostedDocker != null) {
 				this.add(this.hostedDocker);
 				this.hostedDocker.setVisible(true);
+
+				// since the docker is being hosted, we know that findLocation will succeed
+				this.hostedDocker.getTitleBar().updateResizeButton(Objects.requireNonNull(Util.findLocation(hostedDocker)).verticalLocation());
 			}
 		}
 	}
