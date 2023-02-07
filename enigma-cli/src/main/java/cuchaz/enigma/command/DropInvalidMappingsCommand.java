@@ -7,6 +7,7 @@ import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
+import org.tinylog.Logger;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -42,30 +43,30 @@ public class DropInvalidMappingsCommand extends Command {
 
 	public static void run(Path jarIn, Path mappingsIn, Path mappingsOut) throws Exception {
 		if (mappingsIn == null) {
-			System.out.println("No mappings input specified, skipping.");
+			Logger.warn("No mappings input specified, skipping.");
 			return;
 		}
 
 		Enigma enigma = Enigma.create();
 
-		System.out.println("Reading JAR...");
+		Logger.info("Reading JAR...");
 
 		EnigmaProject project = enigma.openJar(jarIn, new ClasspathClassProvider(), ProgressListener.none());
 
-		System.out.println("Reading mappings...");
+		Logger.info("Reading mappings...");
 
 		MappingSaveParameters saveParameters = enigma.getProfile().getMappingSaveParameters();
 		EntryTree<EntryMapping> mappings = readMappings(mappingsIn, ProgressListener.none(), saveParameters);
 		project.setMappings(mappings);
 
-		System.out.println("Dropping invalid mappings...");
+		Logger.info("Dropping invalid mappings...");
 
 		project.dropMappings(ProgressListener.none());
 
-		System.out.println("Writing mappings...");
+		Logger.info("Writing mappings...");
 
 		if (mappingsOut == mappingsIn) {
-			System.out.println("Overwriting input mappings");
+			Logger.info("Overwriting input mappings");
 			Files.walkFileTree(mappingsIn, new SimpleFileVisitor<>() {
 				@Override
 				public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {

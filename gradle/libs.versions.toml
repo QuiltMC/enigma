@@ -9,6 +9,7 @@ flatlaf = "2.6"
 syntaxpane = "1.2.1"
 swing_dpi = "0.10"
 fontchooser = "2.5.2"
+tinylog = "2.6.0"
 
 quiltflower = "1.10.0-20221215.220929-25"
 cfr = "0.0.6"
@@ -27,6 +28,9 @@ asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
 asm_commons = { module = "org.ow2.asm:asm-commons", version.ref = "asm" }
 asm_tree = { module = "org.ow2.asm:asm-tree", version.ref = "asm" }
 asm_util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
+
+tinylog_api = { module = "org.tinylog:tinylog-api", version.ref = "tinylog" }
+tinylog_impl = { module = "org.tinylog:tinylog-impl", version.ref = "tinylog" }
 
 jopt = { module = "net.sf.jopt-simple:jopt-simple", version.ref = "jopt" }
 flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }
@@ -47,6 +51,7 @@ jimfs = { module = "com.google.jimfs:jimfs", version.ref = "jimfs" }
 
 [bundles]
 asm = ["asm", "asm_commons", "asm_tree", "asm_util"]
+tinylog = ["tinylog_api", "tinylog_impl"]
 
 [plugins]
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }

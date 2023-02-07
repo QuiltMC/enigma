@@ -45,6 +45,7 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Result;
+import org.tinylog.Logger;
 
 public class EditorPanel {
 	private final JPanel ui = new JPanel();
@@ -505,7 +506,7 @@ public class EditorPanel {
 		List<Token> tokens = this.controller.getTokensForReference(this.source, reference);
 		if (tokens.isEmpty()) {
 			// DEBUG
-			System.err.println(String.format("WARNING: no tokens found for %s in %s", reference, this.classHandle.getRef()));
+			Logger.warn("No tokens found for {} in {}", reference, this.classHandle.getRef());
 		} else {
 			this.gui.showTokens(this, tokens);
 		}

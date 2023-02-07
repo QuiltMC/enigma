@@ -16,6 +16,7 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import org.tinylog.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -42,7 +43,7 @@ public final class TinyV2Writer implements MappingsWriter {
 		List<EntryTreeNode<EntryMapping>> classes = StreamSupport.stream(mappings.spliterator(), false).filter(node -> node.getEntry() instanceof ClassEntry).toList();
 
 		try (PrintWriter writer = new LfPrintWriter(Files.newBufferedWriter(path))) {
-			writer.println("tiny\t2\t" + MINOR_VERSION + "\t" + obfHeader + "\t" + deobfHeader);
+			writer.println("tiny\t2\t" + MINOR_VERSION + "\t" + this.obfHeader + "\t" + this.deobfHeader);
 
 			// no escape names
 
@@ -50,7 +51,7 @@ public final class TinyV2Writer implements MappingsWriter {
 				writeClass(writer, node, mappings);
 			}
 		} catch (IOException ex) {
-			ex.printStackTrace(); // TODO add some better logging system
+			Logger.error(ex, "Failed to write mappings to {}", path);
 		}
 	}
 

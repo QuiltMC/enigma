@@ -12,6 +12,7 @@
 package cuchaz.enigma.command;
 
 import cuchaz.enigma.Enigma;
+import org.tinylog.Logger;
 
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -45,23 +46,24 @@ public class Main {
 				throw new CommandHelpException(cmd, ex);
 			}
 		} catch (CommandHelpException ex) {
-			ex.printStackTrace();
-			System.out.println(String.format("%s - %s", Enigma.NAME, Enigma.VERSION));
-			System.out.println("Command " + ex.command.name + " has encountered an error! Usage:");
+			Logger.error(ex);
+			logEnigmaInfo();
+			Logger.info("Command {} has encountered an error! Usage:", ex.command.name);
 			printHelp(ex.command);
 			System.exit(1);
 		} catch (IllegalArgumentException ex) {
-			ex.printStackTrace();
+			Logger.error(ex);
 			printHelp();
 			System.exit(1);
 		}
 	}
 
 	private static void printHelp() {
-		System.out.println(String.format("%s - %s", Enigma.NAME, Enigma.VERSION));
-		System.out.println("Usage:");
-		System.out.println("\tjava -cp enigma.jar cuchaz.enigma.command.CommandMain <command>");
-		System.out.println("\twhere <command> is one of:");
+		logEnigmaInfo();
+		Logger.info("""
+				Usage:
+				\tjava -cp enigma.jar cuchaz.enigma.command.CommandMain <command> <args>
+				\twhere <command> is one of:""");
 
 		for (Command command : COMMANDS.values()) {
 			printHelp(command);
@@ -69,14 +71,18 @@ public class Main {
 	}
 
 	private static void printHelp(Command command) {
-		System.out.println("\t\t" + command.name + " " + command.getUsage());
+		Logger.info("\t\t{} {}", command.name, command.getUsage());
 	}
 
 	private static void register(Command command) {
 		Command old = COMMANDS.put(command.name, command);
 		if (old != null) {
-			System.err.println("Command " + old + " with name " + command.name + " has been substituted by " + command);
+			Logger.warn("Command {} with name {} has been substituted by {}", old, command.name, command);
 		}
+	}
+
+	private static void logEnigmaInfo() {
+		Logger.info("{} - {}", Enigma.NAME, Enigma.VERSION);
 	}
 
 	static {

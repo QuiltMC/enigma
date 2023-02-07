@@ -22,6 +22,7 @@ import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.Utils;
+import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
@@ -68,15 +69,15 @@ public class InsertProposedMappingsCommand extends Command {
 
 		NameProposalService[] nameProposalServices = enigma.getServices().get(NameProposalService.TYPE).toArray(new NameProposalService[0]);
 		if (nameProposalServices.length == 0) {
-			System.err.println("No name proposal service found");
+			Logger.error("No name proposal service found");
 			return;
 		}
 
-		System.out.println("Reading JAR...");
+		Logger.info("Reading JAR...");
 
 		EnigmaProject project = enigma.openJar(inJar, new ClasspathClassProvider(), ProgressListener.none());
 
-		System.out.println("Reading mappings...");
+		Logger.info("Reading mappings...");
 
 		MappingSaveParameters saveParameters = enigma.getProfile().getMappingSaveParameters();
 
@@ -91,7 +92,7 @@ public class InsertProposedMappingsCommand extends Command {
 		Translator translator = new ProposingTranslator(mapper, nameProposalServices);
 		EntryIndex index = project.getJarIndex().getEntryIndex();
 
-		System.out.println("Proposing class names...");
+		Logger.info("Proposing class names...");
 		int classes = 0;
 		for (ClassEntry clazz : index.getClasses()) {
 			if (insertMapping(clazz, mappings, mapper, translator)) {
@@ -99,7 +100,7 @@ public class InsertProposedMappingsCommand extends Command {
 			}
 		}
 
-		System.out.println("Proposing field names...");
+		Logger.info("Proposing field names...");
 		int fields = 0;
 		for (FieldEntry field : index.getFields()) {
 			if (insertMapping(field, mappings, mapper, translator)) {
@@ -107,7 +108,7 @@ public class InsertProposedMappingsCommand extends Command {
 			}
 		}
 
-		System.out.println("Proposing method and parameter names...");
+		Logger.info("Proposing method and parameter names...");
 		int methods = 0;
 		int parameters = 0;
 		for (MethodEntry method : index.getMethods()) {
@@ -125,7 +126,7 @@ public class InsertProposedMappingsCommand extends Command {
 			}
 		}
 
-		System.out.println("Proposed names for " + classes + " classes, " + fields + " fields, " + methods + " methods, " + parameters + " parameters");
+		Logger.info("Proposed names for {} classes, {} fields, {} methods, {} parameters!", classes, fields, methods, parameters);
 
 		Utils.delete(output);
 		MappingCommandsUtil.write(mappings, resultFormat, output, saveParameters);

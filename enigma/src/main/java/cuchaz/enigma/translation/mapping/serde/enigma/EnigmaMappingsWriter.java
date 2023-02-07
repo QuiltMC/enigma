@@ -38,6 +38,7 @@ import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTreeNode;
 import cuchaz.enigma.translation.representation.entry.*;
 import cuchaz.enigma.utils.I18n;
+import org.tinylog.Logger;
 
 public enum EnigmaMappingsWriter implements MappingsWriter {
 	FILE {
@@ -57,7 +58,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 					writeRoot(writer, mappings, classEntry);
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				Logger.error(e, "Error while writing mappings to file {}", path);
 			}
 		}
 	},
@@ -94,9 +95,8 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 					try (PrintWriter writer = new LfPrintWriter(Files.newBufferedWriter(classPath))) {
 						writeRoot(writer, mappings, classEntry);
 					}
-				} catch (Throwable t) {
-					System.err.println("Failed to write class '" + classEntry.getFullName() + "'");
-					t.printStackTrace();
+				} catch (Exception e) {
+					Logger.error(e, "Failed to write class '{}'", classEntry.getFullName());
 				}
 			});
 		}
@@ -117,8 +117,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 				try {
 					Files.deleteIfExists(resolve(root, classEntry));
 				} catch (IOException e) {
-					System.err.println("Failed to delete deleted class '" + classEntry + "'");
-					e.printStackTrace();
+					Logger.error(e, "Failed to delete deleted class '{}'", classEntry);
 				}
 			}
 
@@ -129,8 +128,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 					try {
 						deleteDeadPackages(root, packagePath);
 					} catch (IOException e) {
-						System.err.println("Failed to delete dead package '" + packageName + "'");
-						e.printStackTrace();
+						Logger.error(e, "Failed to delete dead package '{}'", packageName);
 					}
 				}
 			}
@@ -164,7 +162,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 			try (FileSystem fs = FileSystems.newFileSystem(new URI("jar:file", null, zip.toUri().getPath(), ""), Collections.singletonMap("create", "true"))) {
 				DIRECTORY.write(mappings, delta, fs.getPath("/"), progress, saveParameters);
 			} catch (IOException e) {
-				e.printStackTrace();
+				Logger.error(e, "Failed to write mappings to zip file '{}'", zip);
 			} catch (URISyntaxException e) {
 				throw new RuntimeException("Unexpected error creating URI for " + zip, e);
 			}
