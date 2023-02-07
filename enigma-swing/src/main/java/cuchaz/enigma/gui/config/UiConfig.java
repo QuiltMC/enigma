@@ -214,11 +214,11 @@ public final class UiConfig {
 	}
 
 	public static NotificationManager.ServerNotificationLevel getServerNotificationLevel() {
-		return ui.data().section(GENERAL).setIfAbsentEnum(NotificationManager.ServerNotificationLevel::valueOf, SERVER_NOTIFICATION_LEVEL, NotificationManager.ServerNotificationLevel.FULL);
+		return swing.data().section(GENERAL).setIfAbsentEnum(NotificationManager.ServerNotificationLevel::valueOf, SERVER_NOTIFICATION_LEVEL, NotificationManager.ServerNotificationLevel.FULL);
 	}
 
 	public static void setServerNotificationLevel(NotificationManager.ServerNotificationLevel level) {
-		ui.data().section(GENERAL).setEnum(SERVER_NOTIFICATION_LEVEL, level);
+		swing.data().section(GENERAL).setEnum(SERVER_NOTIFICATION_LEVEL, level);
 	}
 
 	private static Color fromComponents(int rgb, double alpha) {
