@@ -17,6 +17,7 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
+import org.tinylog.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -36,7 +37,7 @@ public enum SrgMappingsWriter implements MappingsWriter {
 			Files.deleteIfExists(path);
 			Files.createFile(path);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger.error(e, "Failed to create file {}", path);
 		}
 
 		List<String> classLines = new ArrayList<>();
@@ -63,7 +64,7 @@ public enum SrgMappingsWriter implements MappingsWriter {
 			progress.step(2, I18n.translate("type.methods"));
 			methodLines.forEach(writer::println);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger.error(e, "Failed to write to file {}", path);
 		}
 	}
 

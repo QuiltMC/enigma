@@ -16,6 +16,7 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import org.tinylog.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -49,7 +50,7 @@ public final class TinyV2Writer implements MappingsWriter {
 				this.writeClass(writer, node, mappings);
 			}
 		} catch (IOException ex) {
-			ex.printStackTrace(); // TODO add some better logging system
+			Logger.error(ex, "Failed to write mappings to {}", path);
 		}
 	}
 

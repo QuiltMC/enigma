@@ -87,7 +87,7 @@ public class ClassSelector extends JTree {
 			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
-				if (leaf && value instanceof ClassSelectorClassNode node) {
+				if (gui.getController().project != null && leaf && value instanceof ClassSelectorClassNode node) {
 					this.setIcon(GuiUtil.getClassIcon(gui, node.getObfEntry()));
 				}
 
@@ -168,6 +168,7 @@ public class ClassSelector extends JTree {
 
 		if (classEntries == null) {
 			this.setModel(null);
+			this.packageManager = null;
 			return;
 		}
 

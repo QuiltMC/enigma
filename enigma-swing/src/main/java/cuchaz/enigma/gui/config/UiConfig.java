@@ -12,6 +12,7 @@ import cuchaz.enigma.gui.docker.Dock;
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
+import org.tinylog.Logger;
 
 public final class UiConfig {
 	// sections
@@ -159,7 +160,7 @@ public final class UiConfig {
 
 					dockers.put(docker, location);
 				} catch (Exception e) {
-					System.err.println("failed to read docker state for " + dockInfo + ", ignoring! (" + e.getMessage() + ")");
+					Logger.error("failed to read docker state for {}, ignoring! ({})", dockInfo, e.getMessage());
 				}
 			}
 		}

@@ -55,6 +55,10 @@ public abstract class Docker extends JPanel {
 		this.title.retranslateUi();
 	}
 
+	public DockerTitleBar getTitleBar() {
+		return this.title;
+	}
+
 	/**
 	 * @return the side panel button that opens and closes this docker
 	 */

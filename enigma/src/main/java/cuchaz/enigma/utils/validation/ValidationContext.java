@@ -5,6 +5,7 @@ import java.util.*;
 import javax.annotation.Nullable;
 
 import cuchaz.enigma.utils.validation.Message.Type;
+import org.tinylog.Level;
 
 /**
  * A context for user input validation. Handles collecting error messages and
@@ -69,7 +70,7 @@ public class ValidationContext {
 	public void throwOnError() {
 		if (!this.canProceed()) {
 			for (ParameterizedMessage message : this.messages) {
-				PrintValidatable.formatMessage(System.err, message);
+				PrintValidatable.formatMessage(Level.ERROR, message);
 			}
 			throw new IllegalStateException("Errors encountered; cannot continue! Check error log for details.");
 		}

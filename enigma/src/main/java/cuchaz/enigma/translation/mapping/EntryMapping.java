@@ -1,5 +1,7 @@
 package cuchaz.enigma.translation.mapping;
 
+import org.tinylog.Logger;
+
 import java.util.Arrays;
 
 import javax.annotation.Nonnull;
@@ -15,8 +17,8 @@ public record EntryMapping(
 	public EntryMapping {
 		if (accessModifier == null) {
 			accessModifier = AccessModifier.UNCHANGED;
-			System.err.println("EntryMapping initialized with 'null' accessModifier, assuming UNCHANGED. Please fix.");
-			Arrays.stream(new Exception().getStackTrace()).skip(1).map("\tat %s"::formatted).forEach(System.err::println);
+			Logger.error("EntryMapping initialized with 'null' accessModifier, assuming UNCHANGED. Please fix.");
+			Arrays.stream(new Exception().getStackTrace()).skip(1).map("\tat %s"::formatted).forEach(Logger::error);
 		}
 	}
 

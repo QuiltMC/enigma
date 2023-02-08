@@ -19,6 +19,7 @@ import cuchaz.enigma.source.*;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.Pair;
+import org.tinylog.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -88,10 +89,9 @@ public class TokenChecker {
 			String name = classEntry.getContextualName();
 			Path path = Files.createTempFile("class-" + name.replace("$", "_") + "-", ".html");
 			Files.writeString(path, SourceTestUtil.toHtml(source, name));
-			System.out.println(path.toUri());
+			Logger.info("Debug file created: {}", path.toUri());
 		} catch (Exception e) {
-			System.err.println("Failed to create debug source file for " + classEntry);
-			e.printStackTrace();
+			Logger.error(e, "Failed to create debug source file for {}", classEntry);
 		}
 	}
 }
