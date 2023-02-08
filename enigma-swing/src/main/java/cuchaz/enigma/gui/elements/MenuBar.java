@@ -35,6 +35,7 @@ public class MenuBar {
 	private final JMenuItem jarOpenItem = new JMenuItem();
 	private final JMenuItem jarCloseItem = new JMenuItem();
 	private final JMenu openMenu = new JMenu();
+	private final JMenu openRecentMenu = new JMenu();
 	private final JMenuItem saveMappingsItem = new JMenuItem();
 	private final JMenu saveMappingsAsMenu = new JMenu();
 	private final JMenuItem closeMappingsItem = new JMenuItem();
@@ -80,6 +81,7 @@ public class MenuBar {
 		this.retranslateUi();
 
 		prepareOpenMenu(this.openMenu, gui);
+		prepareOpenRecentMenu(this.openRecentMenu, gui);
 		prepareSaveMappingsAsMenu(this.saveMappingsAsMenu, this.saveMappingsItem, gui);
 		prepareDecompilerMenu(this.decompilerMenu, this.decompilerSettingsItem, gui);
 		prepareThemesMenu(this.themesMenu, gui);
@@ -88,6 +90,8 @@ public class MenuBar {
 
 		this.fileMenu.add(this.jarOpenItem);
 		this.fileMenu.add(this.jarCloseItem);
+		this.fileMenu.addSeparator();
+		this.fileMenu.add(this.openRecentMenu);
 		this.fileMenu.addSeparator();
 		this.fileMenu.add(this.openMenu);
 		this.fileMenu.add(this.saveMappingsItem);
@@ -192,6 +196,7 @@ public class MenuBar {
 		this.fileMenu.setText(I18n.translate("menu.file"));
 		this.jarOpenItem.setText(I18n.translate("menu.file.jar.open"));
 		this.jarCloseItem.setText(I18n.translate("menu.file.jar.close"));
+		this.openRecentMenu.setText(I18n.translate("menu.file.open_recent_project"));
 		this.openMenu.setText(I18n.translate("menu.file.mappings.open"));
 		this.saveMappingsItem.setText(I18n.translate("menu.file.mappings.save"));
 		this.saveMappingsAsMenu.setText(I18n.translate("menu.file.mappings.save_as"));
@@ -403,6 +408,14 @@ public class MenuBar {
 		}
 	}
 
+	private static void prepareOpenRecentMenu(JMenu openRecentMenu, Gui gui) {
+		for (Pair<Path, Path> recent : UiConfig.getRecentFilePairs()) {
+			JMenuItem item = new JMenuItem(recent.a + " -> " + recent.b);
+			item.addActionListener(event -> gui.getController().openJar(recent.a).whenComplete((v, t) -> gui.getController().openMappings(recent.b)));
+			openRecentMenu.add(item);
+		}
+	}
+
 	private static void prepareSaveMappingsAsMenu(JMenu saveMappingsAsMenu, JMenuItem saveMappingsItem, Gui gui) {
 		for (MappingFormat format : MappingFormat.values()) {
 			if (format.getWriter() != null) {
@@ -500,7 +513,7 @@ public class MenuBar {
 			currentScaleButton.setSelected(true);
 		}
 
-		ScaleUtil.addListener((newScale, _oldScale) -> {
+		ScaleUtil.addListener((newScale, oldScale) -> {
 			JRadioButtonMenuItem mi = scaleButtons.get(newScale);
 			if (mi != null) {
 				mi.setSelected(true);

@@ -4,11 +4,13 @@ import java.awt.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.stream.Collectors;
 
 import cuchaz.enigma.config.ConfigContainer;
 import cuchaz.enigma.config.ConfigSection;
@@ -203,47 +205,62 @@ public final class UiConfig {
 	}
 
 	public static void addRecentFilePair(Path jar, Path mappings) {
+		if (getRecentFilePairs().contains(new Pair<>(jar, mappings))) {
+			return;
+		}
+
 		for (int i = 1; i < MAX_RECENT_FILES; i ++) {
-			Optional<String> previousValue = swing.data().section(RECENT_FILES).getString((i - 1) + "");
+			Optional<String> previousValue = ui.data().section(RECENT_FILES).getString(String.valueOf(i - 1));
 			if (previousValue.isPresent()) {
-				ui.data().section(RECENT_FILES).setString(i + "", previousValue.get());
+				ui.data().section(RECENT_FILES).setString(String.valueOf(i), previousValue.get());
 			}
 		}
 
-		ui.data().section(RECENT_FILES).setString(0 + "", jar + PAIR_SEPARATOR + mappings);
+		ui.data().section(RECENT_FILES).setString(String.valueOf(0), jar + PAIR_SEPARATOR + mappings);
 	}
 
 	/**
 	 * todo
 	 * @return jar, mappings
 	 */
-	public static Pair<Path, Path> getMostRecentFilePair() {
-		if (getRecentMappingsFiles().length == 0) return null;
+	public static Optional<Pair<Path, Path>> getMostRecentFilePair() {
+		var recentFilePairs = getRecentFilePairs();
+		if (recentFilePairs.isEmpty()) {
+			return Optional.empty();
+		}
 
-		return getRecentMappingsFiles()[0];
+		return Optional.of(recentFilePairs.get(0));
 	}
 
-	@SuppressWarnings("unchecked")
-	public static Pair<Path, Path>[] getRecentMappingsFiles() {
+	public static List<Pair<Path, Path>> getRecentFilePairs() {
 		List<Pair<Path, Path>> pairs = new ArrayList<>();
 
 		for (int index = 0; index < MAX_RECENT_FILES; index ++) {
-			Optional<String> filePair = ui.data().section(RECENT_FILES).getString(index + "");
+			Optional<String> filePair = ui.data().section(RECENT_FILES).getString(String.valueOf(index));
 
 			if (filePair.isPresent() && !filePair.get().isBlank()) {
-				String[] split = filePair.get().split(PAIR_SEPARATOR);
-				if (split.length != 2) {
-					Logger.error("failed to read recent file state for {}, ignoring!", filePair.get());
-					continue;
-				}
+				var pairOptional = parseFilePair(filePair.get());
 
-				String jar = split[0];
-				String mappings = split[1];
-				pairs.add(new Pair<>(Paths.get(jar), Paths.get(mappings)));
+				if (pairOptional.isPresent()) {
+					pairs.add(pairOptional.get());
+				} else {
+					Logger.error("failed to read recent file state for {}, ignoring!", filePair.get());
+				}
 			}
 		}
 
-		return pairs.toArray((Pair<Path, Path>[]) new Pair[0]);
+		return pairs;
+	}
+
+	private static Optional<Pair<Path, Path>> parseFilePair(String pair) {
+		String[] split = pair.split(PAIR_SEPARATOR);
+		if (split.length != 2) {
+			return Optional.empty();
+		}
+
+		String jar = split[0];
+		String mappings = split[1];
+		return Optional.of(new Pair<>(Paths.get(jar), Paths.get(mappings)));
 	}
 
 	public static LookAndFeel getLookAndFeel() {
