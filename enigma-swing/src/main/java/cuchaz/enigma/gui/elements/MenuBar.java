@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -134,7 +135,7 @@ public class MenuBar {
 		this.helpMenu.add(this.githubItem);
 		ui.add(this.helpMenu);
 
-		setKeyBinds();
+		this.setKeyBinds();
 
 		this.jarOpenItem.addActionListener(e -> this.onOpenJarClicked());
 		this.jarCloseItem.addActionListener(e -> this.gui.getController().closeJar());
@@ -238,7 +239,7 @@ public class MenuBar {
 		JFileChooser d = this.gui.jarFileChooser;
 		d.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
 		d.setVisible(true);
-		int result = d.showOpenDialog(gui.getFrame());
+		int result = d.showOpenDialog(this.gui.getFrame());
 
 		if (result != JFileChooser.APPROVE_OPTION) {
 			return;
@@ -275,15 +276,15 @@ public class MenuBar {
 	}
 
 	private void onCloseMappingsClicked() {
-		openMappingsDiscardPrompt(() -> this.gui.getController().closeMappings());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().closeMappings());
 	}
 
 	private void onReloadMappingsClicked() {
-		openMappingsDiscardPrompt(() -> this.gui.getController().reloadMappings());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().reloadMappings());
 	}
 
 	private void onReloadAllClicked() {
-		openMappingsDiscardPrompt(() -> this.gui.getController().reloadAll());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().reloadAll());
 	}
 
 	private void onExportSourceClicked() {
@@ -297,7 +298,7 @@ public class MenuBar {
 	private void onExportJarClicked() {
 		this.gui.exportJarFileChooser.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
 		this.gui.exportJarFileChooser.setVisible(true);
-		int result = this.gui.exportJarFileChooser.showSaveDialog(gui.getFrame());
+		int result = this.gui.exportJarFileChooser.showSaveDialog(this.gui.getFrame());
 
 		if (result != JFileChooser.APPROVE_OPTION) {
 			return;
@@ -324,16 +325,6 @@ public class MenuBar {
 	}
 
 	private void onFontClicked(Gui gui) {
-//		FontDialog fd = new FontDialog(gui.getFrame(), "Choose Font", true);
-//		fd.setLocationRelativeTo(gui.getFrame());
-//		fd.setSelectedFont(UiConfig.getEditorFont());
-//		fd.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-//		fd.setVisible(true);
-//
-//		if (!fd.isCancelSelected()) {
-//			UiConfig.setEditorFont(fd.getSelectedFont());
-//			UiConfig.save();
-//		}
 		FontDialog.display(gui.getFrame());
 	}
 
@@ -409,11 +400,57 @@ public class MenuBar {
 	}
 
 	private static void prepareOpenRecentMenu(JMenu openRecentMenu, Gui gui) {
-		for (Pair<Path, Path> recent : UiConfig.getRecentFilePairs()) {
-			JMenuItem item = new JMenuItem(recent.a + " -> " + recent.b);
+		List<Pair<Path, Path>> recentFilePairs = UiConfig.getRecentFilePairs();
+
+		// find the longest common prefix among all mappings files
+		// this is to clear the "/home/user/wherever-you-store-your-mappings-projects/" part of the path and only show relevant information
+		String prefix = null;
+		for (Pair<Path, Path> recent : recentFilePairs) {
+			for (Pair<Path, Path> other : recentFilePairs) {
+				if (recent.equals(other)) {
+					continue;
+				}
+
+				String commonPrefix = findCommonPrefix(recent.b.toString(), other.b.toString());
+
+				if (commonPrefix != null && (prefix == null || (commonPrefix.length() > prefix.length() && verifyCommonPrefix(commonPrefix, recentFilePairs)))) {
+					prefix = commonPrefix;
+				}
+			}
+		}
+
+		for (Pair<Path, Path> recent : recentFilePairs) {
+			String jarName = recent.a.getFileName().toString();
+			assert prefix != null;
+			String mappingsName = recent.b.toString().split(prefix)[1];
+
+			JMenuItem item = new JMenuItem(jarName + " -> " + mappingsName);
 			item.addActionListener(event -> gui.getController().openJar(recent.a).whenComplete((v, t) -> gui.getController().openMappings(recent.b)));
 			openRecentMenu.add(item);
 		}
+	}
+
+	private static boolean verifyCommonPrefix(String prefix, List<Pair<Path, Path>> filePairs) {
+		for (Pair<Path, Path> pair : filePairs) {
+			if (!pair.b.toString().startsWith(prefix)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private static String findCommonPrefix(String a, String b) {
+		String[] splitA = a.split("/");
+		String[] splitB = b.split("/");
+
+		for (int i = 0; i < splitA.length; i++) {
+			if (!splitA[i].equals(splitB[i])) {
+				return String.join("/", Arrays.copyOfRange(splitA, 0, i));
+			}
+		}
+
+		return null;
 	}
 
 	private static void prepareSaveMappingsAsMenu(JMenu saveMappingsAsMenu, JMenuItem saveMappingsItem, Gui gui) {
