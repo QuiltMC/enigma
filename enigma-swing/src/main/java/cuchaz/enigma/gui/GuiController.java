@@ -139,6 +139,7 @@ public class GuiController implements ClientPacketHandler {
 		}
 
 		this.gui.setMappingsFile(path);
+		// todo there's most likely a better time to save recent mappings projects
 		UiConfig.addRecentFilePair(this.project.getJarPath(), path);
 
 		ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {

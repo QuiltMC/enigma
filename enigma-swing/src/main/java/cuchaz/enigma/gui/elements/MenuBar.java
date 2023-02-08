@@ -36,6 +36,7 @@ public class MenuBar {
 	private final JMenuItem jarOpenItem = new JMenuItem();
 	private final JMenuItem jarCloseItem = new JMenuItem();
 	private final JMenu openMenu = new JMenu();
+	// todo reload open recent when a new file is opened
 	private final JMenu openRecentMenu = new JMenu();
 	private final JMenuItem saveMappingsItem = new JMenuItem();
 	private final JMenu saveMappingsAsMenu = new JMenu();
