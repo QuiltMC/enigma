@@ -1,6 +1,7 @@
 package cuchaz.enigma.gui.config.keybind;
 
 import cuchaz.enigma.utils.I18n;
+import org.tinylog.Logger;
 
 import javax.swing.KeyStroke;
 import java.awt.event.KeyEvent;
@@ -71,7 +72,7 @@ public record KeyBind(String name, String category, List<Combination> combinatio
             if (!serializedCombination.isEmpty()) {
                 combinations.add(Combination.deserialize(serializedCombination));
             } else {
-                System.out.println("warning: empty combination deserialized for keybind " + (category.isEmpty() ? "" : category + ".") + name);
+                Logger.warn("empty combination deserialized for keybind " + (category.isEmpty() ? "" : category + ".") + name);
             }
         }
     }

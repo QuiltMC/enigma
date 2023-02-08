@@ -15,6 +15,7 @@ import cuchaz.enigma.Enigma;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.gui.util.ScaleUtil;
+import org.tinylog.Logger;
 
 import javax.swing.*;
 import java.awt.*;
@@ -60,7 +61,7 @@ public class CrashDialog {
 					writer.write(instance.text.getText());
 					writer.close();
 				} catch (IOException ex) {
-					ex.printStackTrace();
+					Logger.error(ex, "Failed to export crash report");
 				}
 			}
 		});

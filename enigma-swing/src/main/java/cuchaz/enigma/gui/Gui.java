@@ -75,8 +75,11 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
+import java.util.logging.Logger;
 
 public class Gui {
+	public static final Logger LOGGER = Logger.getLogger("enigma_gui");
+
 	private final MainWindow mainWindow;
 	private final GuiController controller;
 

@@ -16,6 +16,7 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import org.tinylog.Logger;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -50,7 +51,7 @@ public class TinyMappingsWriter implements MappingsWriter {
             Files.deleteIfExists(path);
             Files.createFile(path);
         } catch (IOException e) {
-            e.printStackTrace();
+			Logger.error(e, "Failed to create file: {}", path);
         }
 
         try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
@@ -60,7 +61,7 @@ public class TinyMappingsWriter implements MappingsWriter {
                     .map(EntryTreeNode::getEntry).sorted(Comparator.comparing(Object::toString))
                     .forEach(entry -> writeEntry(writer, mappings, entry));
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.error(e, "Failed to write mappings to file: {}", path);
         }
     }
 
