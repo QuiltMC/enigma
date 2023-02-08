@@ -36,7 +36,6 @@ public class MenuBar {
 	private final JMenuItem jarOpenItem = new JMenuItem();
 	private final JMenuItem jarCloseItem = new JMenuItem();
 	private final JMenu openMenu = new JMenu();
-	// todo reload open recent when a new file is opened
 	private final JMenu openRecentMenu = new JMenu();
 	private final JMenuItem saveMappingsItem = new JMenuItem();
 	private final JMenu saveMappingsAsMenu = new JMenu();
@@ -83,7 +82,7 @@ public class MenuBar {
 		this.retranslateUi();
 
 		prepareOpenMenu(this.openMenu, gui);
-		prepareOpenRecentMenu(this.openRecentMenu, gui);
+		this.reloadOpenRecentMenu(gui);
 		prepareSaveMappingsAsMenu(this.saveMappingsAsMenu, this.saveMappingsItem, gui);
 		prepareDecompilerMenu(this.decompilerMenu, this.decompilerSettingsItem, gui);
 		prepareThemesMenu(this.themesMenu, gui);
@@ -400,7 +399,7 @@ public class MenuBar {
 		}
 	}
 
-	private static void prepareOpenRecentMenu(JMenu openRecentMenu, Gui gui) {
+	public void reloadOpenRecentMenu(Gui gui) {
 		List<Pair<Path, Path>> recentFilePairs = UiConfig.getRecentFilePairs();
 
 		// find the longest common prefix among all mappings files
@@ -427,7 +426,7 @@ public class MenuBar {
 
 			JMenuItem item = new JMenuItem(jarName + " -> " + mappingsName);
 			item.addActionListener(event -> gui.getController().openJar(recent.a).whenComplete((v, t) -> gui.getController().openMappings(recent.b)));
-			openRecentMenu.add(item);
+			this.openRecentMenu.add(item);
 		}
 	}
 
