@@ -131,16 +131,12 @@ public class Main {
 				gui.openDocker(AllClassesDocker.class);
 			}
 
-			if (options.has(jar)) {
+			if (options.has(jar) && options.has(mappings)) {
 				Path jarPath = options.valueOf(jar);
 				controller.openJar(jarPath)
 						.whenComplete((v, t) -> {
-							if (options.has(mappings)) {
-								Path mappingsPath = options.valueOf(mappings);
-								gui.getController().openMappings(mappingsPath);
-							} else {
-								gui.openMostRecentFiles();
-							}
+							Path mappingsPath = options.valueOf(mappings);
+							gui.getController().openMappings(mappingsPath);
 						});
 			} else {
 				gui.openMostRecentFiles();

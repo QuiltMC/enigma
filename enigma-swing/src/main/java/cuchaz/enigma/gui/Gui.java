@@ -693,7 +693,7 @@ public class Gui {
 		var pair = UiConfig.getMostRecentFilePair();
 
 		if (pair != null) {
-			Logger.info("no mappings arguments, opening most recent jar [{}] with most recent mappings [{}]", pair.a, pair.b);
+			Logger.info("missing -jar and/or -mappings arguments, opening most recent jar [{}] with most recent mappings [{}]", pair.a, pair.b);
 			this.controller.openJar(pair.a).whenComplete((v, t) -> this.controller.openMappings(pair.b));
 		}
 	}
