@@ -34,8 +34,6 @@ public final class UiConfig {
 	public static final String FONTS = "Fonts";
 	public static final String FILE_DIALOG = "File Dialog";
 	public static final String MAPPING_STATS = "Mapping Stats";
-	// todo make this a field and save as array
-	public static final String RECENT_FILES = "Recent Files";
 
 	// fields
 	public static final String CURRENT = "Current";
@@ -79,6 +77,7 @@ public final class UiConfig {
 	public static final String DEBUG_TOKEN_OUTLINE = "Debug Token Outline";
 	public static final String DEBUG_TOKEN_OUTLINE_ALPHA = "Debug Token Outline Alpha";
 	public static final String DOCK_HIGHLIGHT = "Dock Highlight";
+	public static final String RECENT_FILES = "Recent Files";
 
 	private static final int MAX_RECENT_FILES = 5;
 	private static final String PAIR_SEPARATOR = ":";
@@ -202,20 +201,24 @@ public final class UiConfig {
 		return swing.data().section(GENERAL).setIfAbsentBool(SAVED_WITH_LEFT_OPEN, false);
 	}
 
+	/**
+	 * Adds a new file pair first in the recent files list, limiting the new list's size to {@link #MAX_RECENT_FILES}. If the pair is already in the list, moves it to the top.
+	 * @param jar a path to the jar being mapped
+	 * @param mappings a path to the mappings save location
+	 */
 	public static void addRecentFilePair(Path jar, Path mappings) {
 		var pairs = getRecentFilePairs();
-		if (!pairs.isEmpty() && pairs.contains(new Pair<>(jar, mappings))) {
-			return;
-		}
+		var pair = new Pair<>(jar, mappings);
 
-		pairs.add(0, new Pair<>(jar, mappings));
+		pairs.remove(pair);
+		pairs.add(0, pair);
 
-		ui.data().setArray(RECENT_FILES, pairs.stream().limit(MAX_RECENT_FILES).map(pair -> pair.a.toString() + PAIR_SEPARATOR + pair.b.toString()).toArray(String[]::new));
+		ui.data().setArray(RECENT_FILES, pairs.stream().limit(MAX_RECENT_FILES).map(p -> p.a.toString() + PAIR_SEPARATOR + p.b.toString()).toArray(String[]::new));
 	}
 
 	/**
-	 * todo
-	 * @return jar, mappings
+	 * Returns the most recently accessed project.
+	 * @return A pair containing the jar path as its left element and the mappings path as its right element.
 	 */
 	public static Optional<Pair<Path, Path>> getMostRecentFilePair() {
 		var recentFilePairs = getRecentFilePairs();
@@ -226,6 +229,10 @@ public final class UiConfig {
 		return Optional.of(recentFilePairs.get(0));
 	}
 
+	/**
+	 * Returns all recently accessed projects, up to a limit of {@link #MAX_RECENT_FILES}.
+	 * @return a list of pairs containing the jar path as their left element and the mappings path as their right element.
+	 */
 	public static List<Pair<Path, Path>> getRecentFilePairs() {
 		List<Pair<Path, Path>> pairs = new ArrayList<>();
 
