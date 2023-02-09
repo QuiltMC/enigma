@@ -400,29 +400,39 @@ public class MenuBar {
 	}
 
 	public void reloadOpenRecentMenu(Gui gui) {
+		this.openRecentMenu.removeAll();
 		List<Pair<Path, Path>> recentFilePairs = UiConfig.getRecentFilePairs();
 
 		// find the longest common prefix among all mappings files
 		// this is to clear the "/home/user/wherever-you-store-your-mappings-projects/" part of the path and only show relevant information
-		String prefix = null;
-		for (Pair<Path, Path> recent : recentFilePairs) {
-			for (Pair<Path, Path> other : recentFilePairs) {
-				if (recent.equals(other)) {
-					continue;
-				}
+		String prefix = recentFilePairs.size() == 1 ? "" : null;
 
-				String commonPrefix = findCommonPrefix(recent.b.toString(), other.b.toString());
+		if (prefix == null) {
+			for (Pair<Path, Path> recent : recentFilePairs) {
+				for (Pair<Path, Path> other : recentFilePairs) {
+					if (recent.equals(other)) {
+						continue;
+					}
 
-				if (commonPrefix != null && (prefix == null || (commonPrefix.length() > prefix.length() && verifyCommonPrefix(commonPrefix, recentFilePairs)))) {
-					prefix = commonPrefix;
+					String commonPrefix = findCommonPrefix(recent.b.toString(), other.b.toString());
+
+					if (commonPrefix != null && (prefix == null || (commonPrefix.length() > prefix.length() && verifyCommonPrefix(commonPrefix, recentFilePairs)))) {
+						prefix = commonPrefix;
+					}
 				}
 			}
 		}
 
 		for (Pair<Path, Path> recent : recentFilePairs) {
 			String jarName = recent.a.getFileName().toString();
-			assert prefix != null;
-			String mappingsName = recent.b.toString().split(prefix)[1];
+
+			// if there's no common prefix, just show the last directory in the tree
+			String mappingsName;
+			if (prefix != null && !prefix.isBlank()) {
+				mappingsName = recent.b.toString().split(prefix)[1];
+			} else {
+				mappingsName = recent.b.toString().substring(recent.b.toString().lastIndexOf("/"));
+			}
 
 			JMenuItem item = new JMenuItem(jarName + " -> " + mappingsName);
 			item.addActionListener(event -> gui.getController().openJar(recent.a).whenComplete((v, t) -> gui.getController().openMappings(recent.b)));

@@ -4,13 +4,11 @@ import java.awt.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.stream.Collectors;
 
 import cuchaz.enigma.config.ConfigContainer;
 import cuchaz.enigma.config.ConfigSection;
@@ -205,18 +203,14 @@ public final class UiConfig {
 	}
 
 	public static void addRecentFilePair(Path jar, Path mappings) {
-		if (getRecentFilePairs().contains(new Pair<>(jar, mappings))) {
+		var pairs = getRecentFilePairs();
+		if (!pairs.isEmpty() && pairs.contains(new Pair<>(jar, mappings))) {
 			return;
 		}
 
-		for (int i = 1; i < MAX_RECENT_FILES; i ++) {
-			Optional<String> previousValue = ui.data().section(RECENT_FILES).getString(String.valueOf(i - 1));
-			if (previousValue.isPresent()) {
-				ui.data().section(RECENT_FILES).setString(String.valueOf(i), previousValue.get());
-			}
-		}
+		pairs.add(0, new Pair<>(jar, mappings));
 
-		ui.data().section(RECENT_FILES).setString(String.valueOf(0), jar + PAIR_SEPARATOR + mappings);
+		ui.data().setArray(RECENT_FILES, pairs.stream().limit(MAX_RECENT_FILES).map(pair -> pair.a.toString() + PAIR_SEPARATOR + pair.b.toString()).toArray(String[]::new));
 	}
 
 	/**
@@ -235,16 +229,16 @@ public final class UiConfig {
 	public static List<Pair<Path, Path>> getRecentFilePairs() {
 		List<Pair<Path, Path>> pairs = new ArrayList<>();
 
-		for (int index = 0; index < MAX_RECENT_FILES; index ++) {
-			Optional<String> filePair = ui.data().section(RECENT_FILES).getString(String.valueOf(index));
+		String[] pairsArray = ui.data().getArray(RECENT_FILES).orElse(new String[0]);
 
-			if (filePair.isPresent() && !filePair.get().isBlank()) {
-				var pairOptional = parseFilePair(filePair.get());
+		for (String filePair : pairsArray) {
+			if (!filePair.isBlank()) {
+				var pairOptional = parseFilePair(filePair);
 
 				if (pairOptional.isPresent()) {
 					pairs.add(pairOptional.get());
 				} else {
-					Logger.error("failed to read recent file state for {}, ignoring!", filePair.get());
+					Logger.error("failed to read recent file state for {}, ignoring!", filePair);
 				}
 			}
 		}
