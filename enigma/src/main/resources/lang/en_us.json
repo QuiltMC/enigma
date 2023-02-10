@@ -18,6 +18,7 @@
 	"menu.file.jar.open": "Open Jar...",
 	"menu.file.jar.close": "Close Jar",
   	"menu.file.open_recent_project": "Open Recent Project",
+  	"menu.file.max_recent_projects": "Max Recent Projects",
 	"menu.file.mappings.open": "Open Mappings...",
 	"menu.file.mappings.save": "Save Mappings",
 	"menu.file.mappings.save_as": "Save Mappings As...",

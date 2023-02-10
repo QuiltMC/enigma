@@ -78,8 +78,8 @@ public final class UiConfig {
 	public static final String DEBUG_TOKEN_OUTLINE_ALPHA = "Debug Token Outline Alpha";
 	public static final String DOCK_HIGHLIGHT = "Dock Highlight";
 	public static final String RECENT_FILES = "Recent Files";
+	public static final String MAX_RECENT_FILES = "Max Recent Files";
 
-	private static final int MAX_RECENT_FILES = 5;
 	private static final String PAIR_SEPARATOR = ":";
 
 	private UiConfig() {
@@ -201,6 +201,14 @@ public final class UiConfig {
 		return swing.data().section(GENERAL).setIfAbsentBool(SAVED_WITH_LEFT_OPEN, false);
 	}
 
+	public static void setMaxRecentFiles(int max) {
+		ui.data().setInt(MAX_RECENT_FILES, max);
+	}
+
+	public static int getMaxRecentFiles() {
+		return ui.data().setIfAbsentInt(MAX_RECENT_FILES, 10);
+	}
+
 	/**
 	 * Adds a new file pair first in the recent files list, limiting the new list's size to {@link #MAX_RECENT_FILES}. If the pair is already in the list, moves it to the top.
 	 * @param jar a path to the jar being mapped
@@ -213,7 +221,7 @@ public final class UiConfig {
 		pairs.remove(pair);
 		pairs.add(0, pair);
 
-		ui.data().setArray(RECENT_FILES, pairs.stream().limit(MAX_RECENT_FILES).map(p -> p.a.toString() + PAIR_SEPARATOR + p.b.toString()).toArray(String[]::new));
+		ui.data().setArray(RECENT_FILES, pairs.stream().limit(getMaxRecentFiles()).map(p -> p.a.toString() + PAIR_SEPARATOR + p.b.toString()).toArray(String[]::new));
 	}
 
 	/**
