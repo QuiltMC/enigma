@@ -37,7 +37,7 @@ public class MenuBar {
 	private final JMenuItem jarCloseItem = new JMenuItem();
 	private final JMenu openMenu = new JMenu();
 	private final JMenu openRecentMenu = new JMenu();
-	private final JMenu maxRecentFilesMenu = new JMenu();
+	private final JMenuItem maxRecentFilesItem = new JMenuItem();
 	private final JMenuItem saveMappingsItem = new JMenuItem();
 	private final JMenu saveMappingsAsMenu = new JMenu();
 	private final JMenuItem closeMappingsItem = new JMenuItem();
@@ -84,7 +84,6 @@ public class MenuBar {
 
 		prepareOpenMenu(this.openMenu, gui);
 		this.reloadOpenRecentMenu(gui);
-		prepareMaxRecentFilesMenu(this.maxRecentFilesMenu);
 		prepareSaveMappingsAsMenu(this.saveMappingsAsMenu, this.saveMappingsItem, gui);
 		prepareDecompilerMenu(this.decompilerMenu, this.decompilerSettingsItem, gui);
 		prepareThemesMenu(this.themesMenu, gui);
@@ -95,7 +94,7 @@ public class MenuBar {
 		this.fileMenu.add(this.jarCloseItem);
 		this.fileMenu.addSeparator();
 		this.fileMenu.add(this.openRecentMenu);
-		this.fileMenu.add(this.maxRecentFilesMenu);
+		this.fileMenu.add(this.maxRecentFilesItem);
 		this.fileMenu.addSeparator();
 		this.fileMenu.add(this.openMenu);
 		this.fileMenu.add(this.saveMappingsItem);
@@ -142,6 +141,7 @@ public class MenuBar {
 
 		this.jarOpenItem.addActionListener(e -> this.onOpenJarClicked());
 		this.jarCloseItem.addActionListener(e -> this.gui.getController().closeJar());
+		this.maxRecentFilesItem.addActionListener(e -> this.onMaxRecentFilesClicked());
 		this.saveMappingsItem.addActionListener(e -> this.onSaveMappingsClicked());
 		this.closeMappingsItem.addActionListener(e -> this.onCloseMappingsClicked());
 		this.dropMappingsItem.addActionListener(e -> this.gui.getController().dropMappings());
@@ -201,7 +201,7 @@ public class MenuBar {
 		this.jarOpenItem.setText(I18n.translate("menu.file.jar.open"));
 		this.jarCloseItem.setText(I18n.translate("menu.file.jar.close"));
 		this.openRecentMenu.setText(I18n.translate("menu.file.open_recent_project"));
-		this.maxRecentFilesMenu.setText(I18n.translate("menu.file.max_recent_projects"));
+		this.maxRecentFilesItem.setText(I18n.translate("menu.file.max_recent_projects"));
 		this.openMenu.setText(I18n.translate("menu.file.mappings.open"));
 		this.saveMappingsItem.setText(I18n.translate("menu.file.mappings.save"));
 		this.saveMappingsAsMenu.setText(I18n.translate("menu.file.mappings.save_as"));
@@ -258,6 +258,23 @@ public class MenuBar {
 				this.gui.getController().openJar(path);
 			}
 			UiConfig.setLastSelectedDir(d.getCurrentDirectory().getAbsolutePath());
+		}
+	}
+
+	private void onMaxRecentFilesClicked() {
+		String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("menu.file.dialog.max_recent_projects.set"), UiConfig.getMaxRecentFiles());
+
+		if (input != null) {
+			try {
+				int max = Integer.parseInt(input);
+				if (max < 0) {
+					throw new NumberFormatException();
+				}
+
+				UiConfig.setMaxRecentFiles(max);
+			} catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(this.gui.getFrame(), I18n.translate("menu.file.dialog.max_recent_projects.invalid"), I18n.translate("menu.file.dialog.error"), JOptionPane.ERROR_MESSAGE);
+			}
 		}
 	}
 
@@ -400,23 +417,6 @@ public class MenuBar {
 				});
 				openMenu.add(item);
 			}
-		}
-	}
-
-	private static void prepareMaxRecentFilesMenu(JMenu maxRecentFilesMenu) {
-		ButtonGroup group = new ButtonGroup();
-
-		for (int i = 5; i <= 30; i += 5) {
-			JRadioButtonMenuItem item = new JRadioButtonMenuItem(Integer.toString(i));
-			group.add(item);
-
-			if (UiConfig.getMaxRecentFiles() == i) {
-				item.setSelected(true);
-			}
-
-			int finalI = i;
-			item.addActionListener(event -> UiConfig.setMaxRecentFiles(finalI));
-			maxRecentFilesMenu.add(item);
 		}
 	}
 
