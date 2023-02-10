@@ -131,12 +131,25 @@ public class Main {
 				gui.openDocker(AllClassesDocker.class);
 			}
 
-			if (options.has(jar) && options.has(mappings)) {
+			if (options.has(jar)) {
 				Path jarPath = options.valueOf(jar);
 				controller.openJar(jarPath)
 						.whenComplete((v, t) -> {
-							Path mappingsPath = options.valueOf(mappings);
-							gui.getController().openMappings(mappingsPath);
+							if (options.has(mappings)) {
+								Path mappingsPath = options.valueOf(mappings);
+								gui.getController().openMappings(mappingsPath);
+							} else {
+								// search for mappings that are associated with the jar
+								for (var pair : UiConfig.getRecentFilePairs()) {
+									if (pair.a.equals(jarPath)) {
+										Logger.info("found mappings recently used with jar, opening! ({} -> {})", pair.a, pair.b);
+										gui.getController().openMappings(pair.b);
+										break;
+									}
+								}
+
+								Logger.info("no mappings found for jar, opening without mappings!");
+							}
 						});
 			} else {
 				gui.openMostRecentFiles();
