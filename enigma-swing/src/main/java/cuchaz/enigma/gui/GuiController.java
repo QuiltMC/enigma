@@ -126,10 +126,15 @@ public class GuiController implements ClientPacketHandler {
 	public void openMappings(Path path) {
 		if (Files.isDirectory(path)) {
 			this.openMappings(MappingFormat.ENIGMA_DIRECTORY, path);
-		} else if ("zip".equalsIgnoreCase(MoreFiles.getFileExtension(path))) {
-			this.openMappings(MappingFormat.ENIGMA_ZIP, path);
 		} else {
-			this.openMappings(MappingFormat.ENIGMA_FILE, path);
+			String extension = MoreFiles.getFileExtension(path).toLowerCase();
+
+			switch (extension) {
+				case "zip" -> this.openMappings(MappingFormat.ENIGMA_ZIP, path);
+				case "tiny" -> this.openMappings(MappingFormat.TINY_FILE, path);
+				case "tinyv2" -> this.openMappings(MappingFormat.TINY_V2, path);
+				default -> this.openMappings(MappingFormat.ENIGMA_FILE, path);
+			}
 		}
 	}
 
