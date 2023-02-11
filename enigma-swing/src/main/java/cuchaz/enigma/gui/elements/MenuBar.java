@@ -14,6 +14,7 @@ import javax.swing.*;
 
 import cuchaz.enigma.gui.ConnectionState;
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.NotificationManager;
 import cuchaz.enigma.gui.config.Decompiler;
 import cuchaz.enigma.gui.config.LookAndFeel;
 import cuchaz.enigma.gui.config.NetConfig;
@@ -28,6 +29,8 @@ import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Pair;
+import cuchaz.enigma.utils.validation.Message;
+import cuchaz.enigma.utils.validation.ParameterizedMessage;
 
 public class MenuBar {
 
@@ -54,6 +57,7 @@ public class MenuBar {
 	private final JMenu themesMenu = new JMenu();
 	private final JMenu languagesMenu = new JMenu();
 	private final JMenu scaleMenu = new JMenu();
+	private final JMenu notificationsMenu = new JMenu();
 	private final JMenuItem fontItem = new JMenuItem();
 	private final JMenuItem customScaleItem = new JMenuItem();
 
@@ -85,6 +89,7 @@ public class MenuBar {
 		prepareThemesMenu(this.themesMenu, gui);
 		prepareLanguagesMenu(this.languagesMenu);
 		prepareScaleMenu(this.scaleMenu, gui);
+		prepareNotificationsMenu(this.notificationsMenu);
 
 		this.fileMenu.add(this.jarOpenItem);
 		this.fileMenu.add(this.jarCloseItem);
@@ -112,6 +117,7 @@ public class MenuBar {
 
 		this.viewMenu.add(this.themesMenu);
 		this.viewMenu.add(this.languagesMenu);
+		this.viewMenu.add(this.notificationsMenu);
 		this.scaleMenu.add(this.customScaleItem);
 		this.viewMenu.add(this.scaleMenu);
 		this.viewMenu.add(this.fontItem);
@@ -210,6 +216,7 @@ public class MenuBar {
 
 		this.viewMenu.setText(I18n.translate("menu.view"));
 		this.themesMenu.setText(I18n.translate("menu.view.themes"));
+		this.notificationsMenu.setText(I18n.translate("menu.view.notifications"));
 		this.languagesMenu.setText(I18n.translate("menu.view.languages"));
 		this.scaleMenu.setText(I18n.translate("menu.view.scale"));
 		this.fontItem.setText(I18n.translate("menu.view.font"));
@@ -319,16 +326,6 @@ public class MenuBar {
 	}
 
 	private void onFontClicked(Gui gui) {
-//		FontDialog fd = new FontDialog(gui.getFrame(), "Choose Font", true);
-//		fd.setLocationRelativeTo(gui.getFrame());
-//		fd.setSelectedFont(UiConfig.getEditorFont());
-//		fd.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-//		fd.setVisible(true);
-//
-//		if (!fd.isCancelSelected()) {
-//			UiConfig.setEditorFont(fd.getSelectedFont());
-//			UiConfig.save();
-//		}
 		FontDialog.display(gui.getFrame());
 	}
 
@@ -343,13 +340,16 @@ public class MenuBar {
 			this.gui.getController().disconnectIfConnected(null);
 			return;
 		}
-		ConnectToServerDialog.Result result = ConnectToServerDialog.show(this.gui.getFrame());
+		ConnectToServerDialog.Result result = ConnectToServerDialog.show(this.gui);
 		if (result == null) {
 			return;
 		}
 		this.gui.getController().disconnectIfConnected(null);
 		try {
 			this.gui.getController().createClient(result.getUsername(), result.getAddress().address, result.getAddress().port, result.getPassword());
+			if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.CONNECTED_TO_SERVER, result.getAddressStr()));
+			}
 			NetConfig.setUsername(result.getUsername());
 			NetConfig.setRemoteAddress(result.getAddressStr());
 			NetConfig.setPassword(String.valueOf(result.getPassword()));
@@ -366,13 +366,16 @@ public class MenuBar {
 			this.gui.getController().disconnectIfConnected(null);
 			return;
 		}
-		CreateServerDialog.Result result = CreateServerDialog.show(this.gui.getFrame());
+		CreateServerDialog.Result result = CreateServerDialog.show(this.gui);
 		if (result == null) {
 			return;
 		}
 		this.gui.getController().disconnectIfConnected(null);
 		try {
 			this.gui.getController().createServer(result.getPort(), result.getPassword());
+			if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.SERVER_STARTED, result.getPort()));
+			}
 			NetConfig.setServerPort(result.getPort());
 			NetConfig.setServerPassword(String.valueOf(result.getPassword()));
 			NetConfig.save();
@@ -510,4 +513,20 @@ public class MenuBar {
 		});
 	}
 
+	private static void prepareNotificationsMenu(JMenu notificationsMenu) {
+		ButtonGroup notificationsGroup = new ButtonGroup();
+
+		for (NotificationManager.ServerNotificationLevel level : NotificationManager.ServerNotificationLevel.values()) {
+			JRadioButtonMenuItem notificationsButton = new JRadioButtonMenuItem(level.getText());
+			notificationsGroup.add(notificationsButton);
+
+			if (level.equals(UiConfig.getServerNotificationLevel())) {
+				notificationsButton.setSelected(true);
+			}
+
+			notificationsButton.addActionListener(event -> UiConfig.setServerNotificationLevel(level));
+
+			notificationsMenu.add(notificationsButton);
+		}
+	}
 }

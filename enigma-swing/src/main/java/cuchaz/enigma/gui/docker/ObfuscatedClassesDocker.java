@@ -22,7 +22,7 @@ public class ObfuscatedClassesDocker extends ClassesDocker {
 
 	@Override
 	public String getId() {
-		return Type.OBFUSCATED_CLASSES;
+		return "obfuscated_classes";
 	}
 
 	@Override

@@ -4,11 +4,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import cuchaz.enigma.network.Message;
+import cuchaz.enigma.network.ServerMessage;
 import cuchaz.enigma.network.ServerPacketHandler;
 import cuchaz.enigma.translation.mapping.EntryChange;
 import cuchaz.enigma.translation.mapping.EntryUtil;
-import cuchaz.enigma.utils.validation.PrintValidatable;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 public class EntryChangeC2SPacket implements Packet<ServerPacketHandler> {
@@ -34,8 +33,7 @@ public class EntryChangeC2SPacket implements Packet<ServerPacketHandler> {
 
 	@Override
 	public void handle(ServerPacketHandler handler) {
-		ValidationContext vc = new ValidationContext();
-		vc.setActiveElement(PrintValidatable.INSTANCE);
+		ValidationContext vc = new ValidationContext(null);
 
 		boolean valid = handler.getServer().canModifyEntry(handler.getClient(), this.change.getTarget());
 
@@ -53,13 +51,13 @@ public class EntryChangeC2SPacket implements Packet<ServerPacketHandler> {
 		handler.getServer().sendToAllExcept(handler.getClient(), new EntryChangeS2CPacket(syncId, this.change));
 
 		if (this.change.getDeobfName().isSet()) {
-			handler.getServer().sendMessage(Message.rename(handler.getServer().getUsername(handler.getClient()), this.change.getTarget(), this.change.getDeobfName().getNewValue()));
+			handler.getServer().sendMessage(ServerMessage.rename(handler.getServer().getUsername(handler.getClient()), this.change.getTarget(), this.change.getDeobfName().getNewValue()));
 		} else if (this.change.getDeobfName().isReset()) {
-			handler.getServer().sendMessage(Message.removeMapping(handler.getServer().getUsername(handler.getClient()), this.change.getTarget()));
+			handler.getServer().sendMessage(ServerMessage.removeMapping(handler.getServer().getUsername(handler.getClient()), this.change.getTarget()));
 		}
 
 		if (!this.change.getJavadoc().isUnchanged()) {
-			handler.getServer().sendMessage(Message.editDocs(handler.getServer().getUsername(handler.getClient()), this.change.getTarget()));
+			handler.getServer().sendMessage(ServerMessage.editDocs(handler.getServer().getUsername(handler.getClient()), this.change.getTarget()));
 		}
 	}
 

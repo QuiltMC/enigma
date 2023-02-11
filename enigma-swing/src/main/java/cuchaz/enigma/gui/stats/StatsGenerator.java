@@ -68,7 +68,9 @@ public class StatsGenerator {
                         .orElseThrow(AssertionError::new);
 
                 ClassEntry clazz = root.getParent();
-                if (root == method && this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackageSlash)) {
+				String deobfuscatedPackageName = this.mapper.deobfuscate(clazz).getPackageName();
+
+                if (root == method && (topLevelPackageSlash.isBlank() || (deobfuscatedPackageName != null && deobfuscatedPackageName.startsWith(topLevelPackageSlash)))) {
                     if (includedMembers.contains(StatsMember.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
                         update(counts, method);
                         totalMappable++;
@@ -90,7 +92,9 @@ public class StatsGenerator {
             for (FieldEntry field : entryIndex.getFields()) {
                 progress.step(numDone++, I18n.translate("type.fields"));
                 ClassEntry clazz = field.getParent();
-                if (!((FieldDefEntry) field).getAccess().isSynthetic() && this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackageSlash)) {
+				String deobfuscatedPackageName = this.mapper.deobfuscate(clazz).getPackageName();
+
+                if (!((FieldDefEntry) field).getAccess().isSynthetic() && (topLevelPackageSlash.isBlank() || (deobfuscatedPackageName != null && deobfuscatedPackageName.startsWith(topLevelPackageSlash)))) {
                     update(counts, field);
                     totalMappable++;
                 }
@@ -100,7 +104,10 @@ public class StatsGenerator {
         if (includedMembers.contains(StatsMember.CLASSES)) {
             for (ClassEntry clazz : entryIndex.getClasses()) {
                 progress.step(numDone++, I18n.translate("type.classes"));
-                if (this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackageSlash)) {
+
+				String deobfuscatedPackageName = this.mapper.deobfuscate(clazz).getPackageName();
+
+                if (topLevelPackageSlash.isBlank() || (deobfuscatedPackageName != null && deobfuscatedPackageName.startsWith(topLevelPackageSlash))) {
                     update(counts, clazz);
                     totalMappable++;
                 }
