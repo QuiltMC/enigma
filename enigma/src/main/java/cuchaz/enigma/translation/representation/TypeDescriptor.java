@@ -178,7 +178,7 @@ public class TypeDescriptor implements Translatable {
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof TypeDescriptor && this.equals((TypeDescriptor) other);
+		return other instanceof TypeDescriptor descriptor && this.equals(descriptor);
 	}
 
 	public boolean equals(TypeDescriptor other) {
@@ -206,9 +206,7 @@ public class TypeDescriptor implements Translatable {
 	}
 
 	private static String getArrayPrefix(int dimension) {
-		StringBuilder buf = new StringBuilder();
-		buf.append("[".repeat(Math.max(0, dimension)));
-		return buf.toString();
+		return "[".repeat(Math.max(0, dimension));
 	}
 
 	public int getSize() {

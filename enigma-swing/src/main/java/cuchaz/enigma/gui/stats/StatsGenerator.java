@@ -72,7 +72,7 @@ public class StatsGenerator {
 
                 if (root == method && (topLevelPackageSlash.isBlank() || (deobfuscatedPackageName != null && deobfuscatedPackageName.startsWith(topLevelPackageSlash)))) {
                     if (includedMembers.contains(StatsMember.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
-                        update(counts, method);
+						this.update(counts, method);
                         totalMappable++;
                     }
 
@@ -89,26 +89,26 @@ public class StatsGenerator {
 		}
 
         if (includedMembers.contains(StatsMember.FIELDS)) {
-            for (FieldEntry field : entryIndex.getFields()) {
+            for (FieldEntry field : this.entryIndex.getFields()) {
                 progress.step(numDone++, I18n.translate("type.fields"));
                 ClassEntry clazz = field.getParent();
 				String deobfuscatedPackageName = this.mapper.deobfuscate(clazz).getPackageName();
 
                 if (!((FieldDefEntry) field).getAccess().isSynthetic() && (topLevelPackageSlash.isBlank() || (deobfuscatedPackageName != null && deobfuscatedPackageName.startsWith(topLevelPackageSlash)))) {
-                    update(counts, field);
+					this.update(counts, field);
                     totalMappable++;
                 }
             }
         }
 
         if (includedMembers.contains(StatsMember.CLASSES)) {
-            for (ClassEntry clazz : entryIndex.getClasses()) {
+            for (ClassEntry clazz : this.entryIndex.getClasses()) {
                 progress.step(numDone++, I18n.translate("type.classes"));
 
 				String deobfuscatedPackageName = this.mapper.deobfuscate(clazz).getPackageName();
 
                 if (topLevelPackageSlash.isBlank() || (deobfuscatedPackageName != null && deobfuscatedPackageName.startsWith(topLevelPackageSlash))) {
-                    update(counts, clazz);
+					this.update(counts, clazz);
                     totalMappable++;
                 }
             }

@@ -28,6 +28,6 @@ public class PrintNotifier implements ValidationContext.Notifier {
 			case WARNING -> Logger.warn(message, args);
 			case ERROR -> Logger.error(message, args);
 			default -> Logger.info(message, args);
-		};
+		}
 	}
 }

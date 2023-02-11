@@ -99,7 +99,7 @@ public class IdentifierPanel {
 				} else if (this.deobfEntry instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
 					name = classEntry.getFullName();
 				} else {
-					name = deobfEntry.getName();
+					name = this.deobfEntry.getName();
 				}
 
 				this.nameField.setReferenceText(name);
@@ -108,7 +108,7 @@ public class IdentifierPanel {
 			return;
 		}
 
-		this.lastEntry = entry;
+		this.lastEntry = this.entry;
 
 		this.nameField = null;
 
@@ -180,7 +180,7 @@ public class IdentifierPanel {
 					IdentifierPanel.this.vc.setNotifier(IdentifierPanel.this.gui.getNotificationManager());
 					IdentifierPanel.this.vc.reset();
 					IdentifierPanel.this.validateRename(field.getText());
-					return vc.canProceed();
+					return IdentifierPanel.this.vc.canProceed();
 				}
 
 				@Override

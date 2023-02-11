@@ -6,7 +6,7 @@ public record ParameterizedMessage(Message.Type type, Message message, Object[] 
 	}
 
 	public String getText() {
-		return message.format(params);
+		return this.message.format(this.params);
 	}
 
 	public String getLongText() {

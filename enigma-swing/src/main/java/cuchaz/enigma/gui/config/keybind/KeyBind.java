@@ -72,7 +72,7 @@ public record KeyBind(String name, String category, List<Combination> combinatio
 			if (!serializedCombination.isEmpty()) {
 				this.combinations.add(Combination.deserialize(serializedCombination));
 			} else {
-				Logger.warn("empty combination deserialized for keybind " + (category.isEmpty() ? "" : category + ".") + name);
+				Logger.warn("empty combination deserialized for keybind " + (this.category.isEmpty() ? "" : this.category + ".") + this.name);
 			}
 		}
 	}

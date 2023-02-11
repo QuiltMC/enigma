@@ -113,7 +113,7 @@ public class JavadocDialog {
 		}
 
 		// add html tags
-		JComboBox<String> htmlList = new JComboBox<String>();
+		JComboBox<String> htmlList = new JComboBox<>();
 		htmlList.setPreferredSize(new Dimension());
 		for (HTML.Tag htmlTag : HTML.getAllTags()) {
 			htmlList.addItem(htmlTag.toString());
@@ -149,11 +149,11 @@ public class JavadocDialog {
 	}
 
 	public void validate() {
-		controller.validateChange(vc, getEntryChange());
+		this.controller.validateChange(this.vc, this.getEntryChange());
 	}
 
 	public void save() {
-		controller.applyChange(vc, getEntryChange());
+		this.controller.applyChange(this.vc, this.getEntryChange());
 	}
 
 	private EntryChange<?> getEntryChange() {
