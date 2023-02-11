@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,6 +39,8 @@ public class MenuBar {
 	private final JMenuItem jarOpenItem = new JMenuItem();
 	private final JMenuItem jarCloseItem = new JMenuItem();
 	private final JMenu openMenu = new JMenu();
+	private final JMenu openRecentMenu = new JMenu();
+	private final JMenuItem maxRecentFilesItem = new JMenuItem();
 	private final JMenuItem saveMappingsItem = new JMenuItem();
 	private final JMenu saveMappingsAsMenu = new JMenu();
 	private final JMenuItem closeMappingsItem = new JMenuItem();
@@ -84,6 +87,7 @@ public class MenuBar {
 		this.retranslateUi();
 
 		prepareOpenMenu(this.openMenu, gui);
+		this.reloadOpenRecentMenu(gui);
 		prepareSaveMappingsAsMenu(this.saveMappingsAsMenu, this.saveMappingsItem, gui);
 		prepareDecompilerMenu(this.decompilerMenu, this.decompilerSettingsItem, gui);
 		prepareThemesMenu(this.themesMenu, gui);
@@ -93,6 +97,9 @@ public class MenuBar {
 
 		this.fileMenu.add(this.jarOpenItem);
 		this.fileMenu.add(this.jarCloseItem);
+		this.fileMenu.addSeparator();
+		this.fileMenu.add(this.openRecentMenu);
+		this.fileMenu.add(this.maxRecentFilesItem);
 		this.fileMenu.addSeparator();
 		this.fileMenu.add(this.openMenu);
 		this.fileMenu.add(this.saveMappingsItem);
@@ -136,10 +143,11 @@ public class MenuBar {
 		this.helpMenu.add(this.githubItem);
 		ui.add(this.helpMenu);
 
-		setKeyBinds();
+		this.setKeyBinds();
 
 		this.jarOpenItem.addActionListener(e -> this.onOpenJarClicked());
 		this.jarCloseItem.addActionListener(e -> this.gui.getController().closeJar());
+		this.maxRecentFilesItem.addActionListener(e -> this.onMaxRecentFilesClicked());
 		this.saveMappingsItem.addActionListener(e -> this.onSaveMappingsClicked());
 		this.closeMappingsItem.addActionListener(e -> this.onCloseMappingsClicked());
 		this.dropMappingsItem.addActionListener(e -> this.gui.getController().dropMappings());
@@ -198,6 +206,8 @@ public class MenuBar {
 		this.fileMenu.setText(I18n.translate("menu.file"));
 		this.jarOpenItem.setText(I18n.translate("menu.file.jar.open"));
 		this.jarCloseItem.setText(I18n.translate("menu.file.jar.close"));
+		this.openRecentMenu.setText(I18n.translate("menu.file.open_recent_project"));
+		this.maxRecentFilesItem.setText(I18n.translate("menu.file.max_recent_projects"));
 		this.openMenu.setText(I18n.translate("menu.file.mappings.open"));
 		this.saveMappingsItem.setText(I18n.translate("menu.file.mappings.save"));
 		this.saveMappingsAsMenu.setText(I18n.translate("menu.file.mappings.save_as"));
@@ -240,7 +250,7 @@ public class MenuBar {
 		JFileChooser d = this.gui.jarFileChooser;
 		d.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
 		d.setVisible(true);
-		int result = d.showOpenDialog(gui.getFrame());
+		int result = d.showOpenDialog(this.gui.getFrame());
 
 		if (result != JFileChooser.APPROVE_OPTION) {
 			return;
@@ -255,6 +265,23 @@ public class MenuBar {
 				this.gui.getController().openJar(path);
 			}
 			UiConfig.setLastSelectedDir(d.getCurrentDirectory().getAbsolutePath());
+		}
+	}
+
+	private void onMaxRecentFilesClicked() {
+		String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("menu.file.dialog.max_recent_projects.set"), UiConfig.getMaxRecentFiles());
+
+		if (input != null) {
+			try {
+				int max = Integer.parseInt(input);
+				if (max < 0) {
+					throw new NumberFormatException();
+				}
+
+				UiConfig.setMaxRecentFiles(max);
+			} catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(this.gui.getFrame(), I18n.translate("menu.file.dialog.max_recent_projects.invalid"), I18n.translate("menu.file.dialog.error"), JOptionPane.ERROR_MESSAGE);
+			}
 		}
 	}
 
@@ -277,15 +304,15 @@ public class MenuBar {
 	}
 
 	private void onCloseMappingsClicked() {
-		openMappingsDiscardPrompt(() -> this.gui.getController().closeMappings());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().closeMappings());
 	}
 
 	private void onReloadMappingsClicked() {
-		openMappingsDiscardPrompt(() -> this.gui.getController().reloadMappings());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().reloadMappings());
 	}
 
 	private void onReloadAllClicked() {
-		openMappingsDiscardPrompt(() -> this.gui.getController().reloadAll());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().reloadAll());
 	}
 
 	private void onExportSourceClicked() {
@@ -299,7 +326,7 @@ public class MenuBar {
 	private void onExportJarClicked() {
 		this.gui.exportJarFileChooser.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
 		this.gui.exportJarFileChooser.setVisible(true);
-		int result = this.gui.exportJarFileChooser.showSaveDialog(gui.getFrame());
+		int result = this.gui.exportJarFileChooser.showSaveDialog(this.gui.getFrame());
 
 		if (result != JFileChooser.APPROVE_OPTION) {
 			return;
@@ -406,6 +433,70 @@ public class MenuBar {
 		}
 	}
 
+	public void reloadOpenRecentMenu(Gui gui) {
+		this.openRecentMenu.removeAll();
+		List<Pair<Path, Path>> recentFilePairs = UiConfig.getRecentFilePairs();
+
+		// find the longest common prefix among all mappings files
+		// this is to clear the "/home/user/wherever-you-store-your-mappings-projects/" part of the path and only show relevant information
+		String prefix = recentFilePairs.size() == 1 ? "" : null;
+
+		if (prefix == null) {
+			for (Pair<Path, Path> recent : recentFilePairs) {
+				for (Pair<Path, Path> other : recentFilePairs) {
+					if (recent.equals(other)) {
+						continue;
+					}
+
+					String commonPrefix = findCommonPrefix(recent.b.toString(), other.b.toString());
+
+					if (commonPrefix != null && (prefix == null || (commonPrefix.length() > prefix.length() && verifyCommonPrefix(commonPrefix, recentFilePairs)))) {
+						prefix = commonPrefix;
+					}
+				}
+			}
+		}
+
+		for (Pair<Path, Path> recent : recentFilePairs) {
+			String jarName = recent.a.getFileName().toString();
+
+			// if there's no common prefix, just show the last directory in the tree
+			String mappingsName;
+			if (prefix != null && !prefix.isBlank()) {
+				mappingsName = recent.b.toString().split(prefix)[1];
+			} else {
+				mappingsName = recent.b.toString().substring(recent.b.toString().lastIndexOf("/"));
+			}
+
+			JMenuItem item = new JMenuItem(jarName + " -> " + mappingsName);
+			item.addActionListener(event -> gui.getController().openJar(recent.a).whenComplete((v, t) -> gui.getController().openMappings(recent.b)));
+			this.openRecentMenu.add(item);
+		}
+	}
+
+	private static boolean verifyCommonPrefix(String prefix, List<Pair<Path, Path>> filePairs) {
+		for (Pair<Path, Path> pair : filePairs) {
+			if (!pair.b.toString().startsWith(prefix)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private static String findCommonPrefix(String a, String b) {
+		String[] splitA = a.split("/");
+		String[] splitB = b.split("/");
+
+		for (int i = 0; i < splitA.length; i++) {
+			if (!splitA[i].equals(splitB[i])) {
+				return String.join("/", Arrays.copyOfRange(splitA, 0, i));
+			}
+		}
+
+		return null;
+	}
+
 	private static void prepareSaveMappingsAsMenu(JMenu saveMappingsAsMenu, JMenuItem saveMappingsItem, Gui gui) {
 		for (MappingFormat format : MappingFormat.values()) {
 			if (format.getWriter() != null) {
@@ -503,7 +594,7 @@ public class MenuBar {
 			currentScaleButton.setSelected(true);
 		}
 
-		ScaleUtil.addListener((newScale, _oldScale) -> {
+		ScaleUtil.addListener((newScale, oldScale) -> {
 			JRadioButtonMenuItem mi = scaleButtons.get(newScale);
 			if (mi != null) {
 				mi.setSelected(true);
