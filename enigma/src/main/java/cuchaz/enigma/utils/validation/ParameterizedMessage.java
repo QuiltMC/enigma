@@ -5,6 +5,10 @@ public record ParameterizedMessage(Message.Type type, Message message, Object[] 
 		this(message.getType(), message, params);
 	}
 
+	public static ParameterizedMessage openedProject(String jar, String mappings) {
+		return new ParameterizedMessage(Message.OPENED_PROJECT, jar.substring(jar.lastIndexOf("/")), mappings.substring(jar.lastIndexOf("/")));
+	}
+
 	public String getText() {
 		return this.message.format(this.params);
 	}

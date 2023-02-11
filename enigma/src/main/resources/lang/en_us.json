@@ -237,6 +237,8 @@
   	"validation.message.left_server": "Left server.",
   	"validation.message.user_connected": "User joined server: %s",
   	"validation.message.user_left_server": "User left server: %s",
+  	"validation.message.opened_project": "Opened project: (%s -> %s)",
+  	"validation.message.opened_jar": "Opened jar: %s",
 
 	"crash.title": "%s - Crash Report",
 	"crash.summary": "%s has crashed! =(",

@@ -20,6 +20,8 @@ import java.util.Set;
 
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.docker.AllClassesDocker;
+import cuchaz.enigma.utils.validation.Message;
+import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import joptsimple.*;
 
 import cuchaz.enigma.EnigmaProfile;
@@ -138,17 +140,18 @@ public class Main {
 							if (options.has(mappings)) {
 								Path mappingsPath = options.valueOf(mappings);
 								gui.getController().openMappings(mappingsPath);
+								gui.getNotificationManager().notify(ParameterizedMessage.openedProject(jarPath.toString(), mappingsPath.toString()));
 							} else {
 								// search for mappings that are associated with the jar
 								for (var pair : UiConfig.getRecentFilePairs()) {
 									if (pair.a.equals(jarPath)) {
-										Logger.info("found mappings recently used with jar, opening! ({} -> {})", pair.a, pair.b);
+										gui.getNotificationManager().notify(ParameterizedMessage.openedProject(pair.a.toString(), pair.b.toString()));
 										gui.getController().openMappings(pair.b);
 										break;
 									}
 								}
 
-								Logger.info("no mappings found for jar, opening without mappings!");
+								gui.getNotificationManager().notify(new ParameterizedMessage(Message.OPENED_JAR, jarPath.toString().substring(jarPath.toString().lastIndexOf("/"))));
 							}
 						});
 			} else {

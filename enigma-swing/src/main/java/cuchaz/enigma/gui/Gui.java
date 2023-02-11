@@ -49,7 +49,6 @@ import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
-import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import javax.swing.DefaultListModel;
@@ -74,7 +73,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.function.IntFunction;
 
 public class Gui {
@@ -711,7 +709,7 @@ public class Gui {
 		var pair = UiConfig.getMostRecentFilePair();
 
 		if (pair.isPresent()) {
-			Logger.info("missing -jar and/or -mappings arguments, opening most recent jar [{}] with most recent mappings [{}]", pair.get().a, pair.get().b);
+			this.getNotificationManager().notify(ParameterizedMessage.openedProject(pair.get().a.toString(), pair.get().b.toString()));
 			this.controller.openJar(pair.get().a).whenComplete((v, t) -> this.controller.openMappings(pair.get().b));
 		}
 	}
