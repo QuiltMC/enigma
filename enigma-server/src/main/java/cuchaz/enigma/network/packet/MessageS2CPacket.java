@@ -5,22 +5,22 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import cuchaz.enigma.network.ClientPacketHandler;
-import cuchaz.enigma.network.Message;
+import cuchaz.enigma.network.ServerMessage;
 
 public class MessageS2CPacket implements Packet<ClientPacketHandler> {
 
-	private Message message;
+	private ServerMessage message;
 
 	MessageS2CPacket() {
 	}
 
-	public MessageS2CPacket(Message message) {
+	public MessageS2CPacket(ServerMessage message) {
 		this.message = message;
 	}
 
 	@Override
 	public void read(DataInput input) throws IOException {
-		message = Message.read(input);
+		this.message = ServerMessage.read(input);
 	}
 
 	@Override

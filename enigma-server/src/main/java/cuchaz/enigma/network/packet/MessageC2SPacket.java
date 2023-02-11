@@ -5,7 +5,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import cuchaz.enigma.network.ServerPacketHandler;
-import cuchaz.enigma.network.Message;
+import cuchaz.enigma.network.ServerMessage;
 
 public class MessageC2SPacket implements Packet<ServerPacketHandler> {
 	private String message;
@@ -32,7 +32,7 @@ public class MessageC2SPacket implements Packet<ServerPacketHandler> {
 	public void handle(ServerPacketHandler handler) {
 		String trimmedMessage = this.message.trim();
 		if (!trimmedMessage.isEmpty()) {
-			handler.getServer().sendMessage(Message.chat(handler.getServer().getUsername(handler.getClient()), trimmedMessage));
+			handler.getServer().sendMessage(ServerMessage.chat(handler.getServer().getUsername(handler.getClient()), trimmedMessage));
 		}
 	}
 }

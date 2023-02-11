@@ -12,6 +12,7 @@ import java.util.OptionalInt;
 
 import cuchaz.enigma.config.ConfigContainer;
 import cuchaz.enigma.config.ConfigSection;
+import cuchaz.enigma.gui.NotificationManager;
 import cuchaz.enigma.gui.docker.Dock;
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.util.ScaleUtil;
@@ -77,6 +78,7 @@ public final class UiConfig {
 	public static final String DEBUG_TOKEN_OUTLINE = "Debug Token Outline";
 	public static final String DEBUG_TOKEN_OUTLINE_ALPHA = "Debug Token Outline Alpha";
 	public static final String DOCK_HIGHLIGHT = "Dock Highlight";
+	public static final String SERVER_NOTIFICATION_LEVEL = "Server Notification Level";
 	public static final String RECENT_FILES = "Recent Files";
 	public static final String MAX_RECENT_FILES = "Max Recent Files";
 
@@ -290,6 +292,14 @@ public final class UiConfig {
 
 	public static void setDecompiler(Decompiler d) {
 		ui.data().section(DECOMPILER).setEnum(CURRENT, d);
+	}
+
+	public static NotificationManager.ServerNotificationLevel getServerNotificationLevel() {
+		return swing.data().section(GENERAL).setIfAbsentEnum(NotificationManager.ServerNotificationLevel::valueOf, SERVER_NOTIFICATION_LEVEL, NotificationManager.ServerNotificationLevel.FULL);
+	}
+
+	public static void setServerNotificationLevel(NotificationManager.ServerNotificationLevel level) {
+		swing.data().section(GENERAL).setEnum(SERVER_NOTIFICATION_LEVEL, level);
 	}
 
 	private static Color fromComponents(int rgb, double alpha) {

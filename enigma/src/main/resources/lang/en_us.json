@@ -56,6 +56,7 @@
 	"menu.decompiler.settings": "Decompiler Settings",
 	"menu.decompiler.settings.quiltflower": "Quiltflower Settings",
 	"menu.view": "View",
+  	"menu.view.notifications": "Server Notifications",
 	"menu.view.themes": "Themes",
 	"menu.view.themes.default": "Default",
 	"menu.view.themes.darcula": "Darcula",
@@ -231,6 +232,11 @@
 	"validation.message.unknown_record_getter": "Could not find a matching record component getter for %s",
 	"validation.message.shadowed_name_class": "Name '%s' shadows another in '%s'.",
 	"validation.message.shadowed_name": "Name '%s' shadows another entry.",
+  	"validation.message.server_started": "Server started on port %s!",
+  	"validation.message.connected_to_server": "Connected to server with address %s!",
+  	"validation.message.left_server": "Left server.",
+  	"validation.message.user_connected": "User joined server: %s",
+  	"validation.message.user_left_server": "User left server: %s",
 
 	"crash.title": "%s - Crash Report",
 	"crash.summary": "%s has crashed! =(",
@@ -276,5 +282,13 @@
 	"docker.implementations.title": "Implementations",
 	"docker.all_classes.title": "Classes",
 	"docker.obfuscated_classes.title": "Obfuscated Classes",
-	"docker.deobfuscated_classes.title": "Deobfuscated Classes"
+	"docker.deobfuscated_classes.title": "Deobfuscated Classes",
+	"docker.notifications.title": "Notifications",
+
+	"notification.type.error": "Error",
+  	"notification.type.warning": "Warning",
+  	"notification.type.info": "Info",
+  	"notification.level.none": "No server notifications",
+  	"notification.level.no_chat": "No chat messages",
+  	"notification.level.full": "All server notifications"
 }
