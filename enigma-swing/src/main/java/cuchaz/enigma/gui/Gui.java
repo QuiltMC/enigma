@@ -73,13 +73,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.function.IntFunction;
-import java.util.logging.Logger;
 
 public class Gui {
-	public static final Logger LOGGER = Logger.getLogger("enigma_gui");
-
 	private final MainWindow mainWindow;
 	private final GuiController controller;
 
@@ -707,5 +703,14 @@ public class Gui {
 	public void reloadKeyBinds() {
 		this.menuBar.setKeyBinds();
 		this.editorTabbedPane.reloadKeyBinds();
+	}
+
+	public void openMostRecentFiles() {
+		var pair = UiConfig.getMostRecentFilePair();
+
+		if (pair.isPresent()) {
+			this.getNotificationManager().notify(ParameterizedMessage.openedProject(pair.get().a.toString(), pair.get().b.toString()));
+			this.controller.openJar(pair.get().a).whenComplete((v, t) -> this.controller.openMappings(pair.get().b));
+		}
 	}
 }

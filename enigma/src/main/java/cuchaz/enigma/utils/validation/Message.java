@@ -25,6 +25,9 @@ public class Message {
 	public static final Message MULTIPLAYER_USER_LEFT = create(Type.INFO, "user_left_server");
 	public static final Message MULTIPLAYER_CHAT = new Message(Type.INFO, "", "");
 
+	public static final Message OPENED_PROJECT = create(Type.INFO, "opened_project");
+	public static final Message OPENED_JAR = create(Type.INFO, "opened_jar");
+
 	private final Type type;
 	private final String textKey;
 	private final String longTextKey;
