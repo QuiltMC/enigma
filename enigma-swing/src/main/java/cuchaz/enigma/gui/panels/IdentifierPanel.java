@@ -40,10 +40,11 @@ public class IdentifierPanel {
 
 	private ConvertingTextField nameField;
 
-	private final ValidationContext vc = new ValidationContext();
+	private final ValidationContext vc;
 
 	public IdentifierPanel(Gui gui) {
 		this.gui = gui;
+		this.vc = new ValidationContext(this.gui.getNotificationManager());
 
 		this.ui.setLayout(new GridBagLayout());
 		this.ui.setPreferredSize(ScaleUtil.getDimension(0, 150));
@@ -74,7 +75,7 @@ public class IdentifierPanel {
 	}
 
 	private void onModifierChanged(AccessModifier modifier) {
-		gui.validateImmediateAction(vc -> this.gui.getController().applyChange(vc, EntryChange.modify(entry).withAccess(modifier)));
+		this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(this.entry).withAccess(modifier));
 	}
 
 	public void refreshReference() {
@@ -176,8 +177,9 @@ public class IdentifierPanel {
 				@Override
 				public boolean tryStopEditing(ConvertingTextField field, boolean abort) {
 					if (abort) return true;
+
+					IdentifierPanel.this.vc.setNotifier(IdentifierPanel.this.gui.getNotificationManager());
 					vc.reset();
-					vc.setActiveElement(field);
 					validateRename(field.getText());
 					return vc.canProceed();
 				}
@@ -185,8 +187,8 @@ public class IdentifierPanel {
 				@Override
 				public void onStopEditing(ConvertingTextField field, boolean abort) {
 					if (!abort) {
+						IdentifierPanel.this.vc.setNotifier(IdentifierPanel.this.gui.getNotificationManager());
 						vc.reset();
-						vc.setActiveElement(field);
 						doRename(field.getText());
 					}
 

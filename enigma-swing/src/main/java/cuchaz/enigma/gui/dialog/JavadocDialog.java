@@ -25,7 +25,6 @@ import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.gui.GuiController;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
-import cuchaz.enigma.gui.elements.ValidatableTextArea;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.translation.mapping.EntryChange;
@@ -40,15 +39,16 @@ public class JavadocDialog {
 	private final GuiController controller;
 	private final Entry<?> entry;
 
-	private final ValidatableTextArea text;
+	private final JTextArea text;
 
-	private final ValidationContext vc = new ValidationContext();
+	private final ValidationContext vc;
 
 	private JavadocDialog(JFrame parent, GuiController controller, Entry<?> entry, String preset) {
 		this.ui = new JDialog(parent, I18n.translate("javadocs.edit"));
 		this.controller = controller;
 		this.entry = entry;
-		this.text = new ValidatableTextArea(10, 40);
+		this.text = new JTextArea(10, 40);
+		this.vc = new ValidationContext(controller.getGui().getNotificationManager());
 
 		// set up dialog
 		Container contentPane = ui.getContentPane();
@@ -150,14 +150,10 @@ public class JavadocDialog {
 	}
 
 	public void validate() {
-		vc.setActiveElement(text);
-
 		controller.validateChange(vc, getEntryChange());
 	}
 
 	public void save() {
-		vc.setActiveElement(text);
-
 		controller.applyChange(vc, getEntryChange());
 	}
 
@@ -170,7 +166,6 @@ public class JavadocDialog {
 		String text = Strings.nullToEmpty(mapping.javadoc());
 
 		JavadocDialog dialog = new JavadocDialog(parent, controller, entry.entry, text);
-		//dialog.ui.doLayout();
 		dialog.ui.setVisible(true);
 		dialog.text.grabFocus();
 	}

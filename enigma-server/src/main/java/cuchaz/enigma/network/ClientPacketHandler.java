@@ -16,7 +16,7 @@ public interface ClientPacketHandler {
 
     void sendPacket(Packet<ServerPacketHandler> packet);
 
-    void addMessage(Message message);
+    void addMessage(ServerMessage message);
 
     void updateUserList(List<String> users);
 }

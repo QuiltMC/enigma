@@ -28,7 +28,7 @@ public class ImplementationsTreeDocker extends AbstractInheritanceTreeDocker {
 
 	@Override
 	public String getId() {
-		return Type.IMPLEMENTATIONS;
+		return "implementations";
 	}
 
 	@Override
