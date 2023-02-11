@@ -14,14 +14,15 @@ package cuchaz.enigma.gui;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.analysis.EntryReference;
+import cuchaz.enigma.gui.config.NetConfig;
 import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.JavadocDialog;
 import cuchaz.enigma.gui.dialog.SearchDialog;
+import cuchaz.enigma.gui.docker.NotificationsDocker;
 import cuchaz.enigma.gui.elements.EditorTabbedPane;
 import cuchaz.enigma.gui.elements.MainWindow;
 import cuchaz.enigma.gui.elements.MenuBar;
-import cuchaz.enigma.gui.elements.ValidatableUi;
 import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.panels.IdentifierPanel;
 import cuchaz.enigma.gui.docker.ObfuscatedClassesDocker;
@@ -38,13 +39,14 @@ import cuchaz.enigma.gui.renderer.MessageListCellRenderer;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.LanguageUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
-import cuchaz.enigma.network.Message;
+import cuchaz.enigma.network.ServerMessage;
 import cuchaz.enigma.source.Token;
 import cuchaz.enigma.translation.mapping.EntryChange;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
+import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
@@ -97,11 +99,12 @@ public class Gui {
 	private final JSplitPane splitLeft;
 
 	private final DefaultListModel<String> userModel;
-	private final DefaultListModel<Message> messageModel;
+	private final DefaultListModel<ServerMessage> messageModel;
 	private final JList<String> users;
-	private final JList<Message> messages;
+	private final JList<ServerMessage> messages;
 
 	private final JLabel connectionStatusLabel;
+	private final NotificationManager notificationManager;
 
 	public final JFileChooser jarFileChooser;
 	public final JFileChooser tinyMappingsFileChooser;
@@ -132,6 +135,7 @@ public class Gui {
 		this.exportSourceFileChooser = new JFileChooser();
 		this.exportJarFileChooser = new JFileChooser();
 		this.connectionStatusLabel = new JLabel();
+		this.notificationManager = new NotificationManager(this);
 
 		this.setupUi();
 
@@ -151,6 +155,7 @@ public class Gui {
 
 		// bottom
 		Docker.addDocker(new CollabDocker(this));
+		Docker.addDocker(new NotificationsDocker(this));
 
 		// left dockers
 		// top
@@ -248,6 +253,10 @@ public class Gui {
 		dock.host(newDocker, newDocker.getPreferredLocation().verticalLocation());
 	}
 
+	public NotificationManager getNotificationManager() {
+		return this.notificationManager;
+	}
+
 	public JSplitPane getSplitLeft() {
 		return this.splitLeft;
 	}
@@ -264,7 +273,7 @@ public class Gui {
 		return this.mainWindow;
 	}
 
-	public JList<Message> getMessages() {
+	public JList<ServerMessage> getMessages() {
 		return this.messages;
 	}
 
@@ -467,9 +476,9 @@ public class Gui {
 
 	public void toggleMappingFromEntry(Entry<?> obfEntry) {
 		if (this.controller.project.getMapper().getDeobfMapping(obfEntry).targetName() != null) {
-			this.validateImmediateAction(vc -> this.controller.applyChange(vc, EntryChange.modify(obfEntry).clearDeobfName()));
+			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).clearDeobfName());
 		} else {
-			this.validateImmediateAction(vc -> this.controller.applyChange(vc, EntryChange.modify(obfEntry).withDefaultDeobfName(this.getController().project)));
+			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).withDefaultDeobfName(this.getController().project));
 		}
 	}
 
@@ -564,11 +573,10 @@ public class Gui {
 	// TODO: getExpansionState will *not* actually update itself based on name changes!
 	public void moveClassTree(Entry<?> obfEntry, boolean isOldOb, boolean isNewOb) {
 		ClassEntry classEntry = obfEntry.getContainingClass();
-		ObfuscatedClassesDocker obfuscatedClassesDocker = Docker.getDocker(ObfuscatedClassesDocker.class);
-		DeobfuscatedClassesDocker deobfuscatedClassesDocker = Docker.getDocker(DeobfuscatedClassesDocker.class);
 
-		ClassSelector deobfuscatedClassSelector = deobfuscatedClassesDocker.getClassSelector();
-		ClassSelector obfuscatedClassSelector = obfuscatedClassesDocker.getClassSelector();
+		ClassSelector deobfuscatedClassSelector = Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector();
+		ClassSelector obfuscatedClassSelector = Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector();
+		ClassSelector allClassesClassSelector = Docker.getDocker(AllClassesDocker.class).getClassSelector();
 
 		List<ClassSelector.StateEntry> deobfuscatedPanelExpansionState = deobfuscatedClassSelector.getExpansionState();
 		List<ClassSelector.StateEntry> obfuscatedPanelExpansionState = obfuscatedClassSelector.getExpansionState();
@@ -591,10 +599,12 @@ public class Gui {
 			deobfuscatedClassSelector.reload();
 		}
 
+		allClassesClassSelector.removeEntry(classEntry);
+		allClassesClassSelector.moveClassIn(classEntry);
+		allClassesClassSelector.reload();
+
 		deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
 		obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
-
-		this.updateAllClasses();
 	}
 
 	public SearchDialog getSearchDialog() {
@@ -604,7 +614,7 @@ public class Gui {
 		return this.searchDialog;
 	}
 
-	public void addMessage(Message message) {
+	public void addMessage(ServerMessage message) {
 		JScrollBar verticalScrollBar = Docker.getDocker(CollabDocker.class).getMessageScrollPane().getVerticalScrollBar();
 		boolean isAtBottom = verticalScrollBar.getValue() >= verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent();
 		this.messageModel.addElement(message);
@@ -613,7 +623,26 @@ public class Gui {
 			SwingUtilities.invokeLater(() -> verticalScrollBar.setValue(verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent()));
 		}
 
-		this.mainWindow.getStatusBar().showMessage(message.translate(), 5000);
+		// popup notifications
+		switch (message.getType()) {
+			case CHAT -> {
+				if (UiConfig.getServerNotificationLevel().equals(NotificationManager.ServerNotificationLevel.FULL) && !message.user.equals(NetConfig.getUsername())) {
+					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_CHAT, message.translate()));
+				}
+			}
+			case CONNECT -> {
+				if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_USER_CONNECTED, message.translate()));
+				}
+			}
+			case DISCONNECT -> {
+				if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_USER_LEFT, message.translate()));
+				}
+			}
+		}
+
+		this.mainWindow.getStatusBar().showMessage(message.translate(), NotificationManager.TIMEOUT_MILLISECONDS);
 	}
 
 	public void setUserList(List<String> users) {
@@ -669,17 +698,6 @@ public class Gui {
 
 	public ConnectionState getConnectionState() {
 		return this.connectionState;
-	}
-
-	public boolean validateImmediateAction(Consumer<ValidationContext> op) {
-		ValidationContext vc = new ValidationContext();
-		op.accept(vc);
-		if (!vc.canProceed()) {
-			List<ParameterizedMessage> parameterizedMessages = vc.getMessages();
-			String text = ValidatableUi.formatMessages(parameterizedMessages);
-			JOptionPane.showMessageDialog(this.getFrame(), text, String.format("%d message(s)", parameterizedMessages.size()), JOptionPane.ERROR_MESSAGE);
-		}
-		return vc.canProceed();
 	}
 
 	public boolean isEditable(EditableType t) {

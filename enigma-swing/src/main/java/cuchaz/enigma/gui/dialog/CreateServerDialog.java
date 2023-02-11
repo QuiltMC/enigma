@@ -6,21 +6,23 @@ import java.awt.Frame;
 import java.util.Arrays;
 import java.util.List;
 
+import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.NetConfig;
-import cuchaz.enigma.gui.elements.ValidatablePasswordField;
-import cuchaz.enigma.gui.elements.ValidatableTextField;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.network.EnigmaServer;
 import cuchaz.enigma.utils.Pair;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.StandardValidation;
 
-public class CreateServerDialog extends AbstractDialog {
-	private ValidatableTextField portField;
-	private ValidatablePasswordField passwordField;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
-	public CreateServerDialog(Frame owner) {
-		super(owner, "prompt.create_server.title", "prompt.create_server.confirm", "prompt.cancel");
+public class CreateServerDialog extends AbstractDialog {
+	private JTextField portField;
+	private JPasswordField passwordField;
+
+	public CreateServerDialog(Frame owner, Gui gui) {
+		super(owner, gui, "prompt.create_server.title", "prompt.create_server.confirm", "prompt.cancel");
 
 		Dimension preferredSize = this.getPreferredSize();
 		preferredSize.width = ScaleUtil.scale(400);
@@ -31,8 +33,8 @@ public class CreateServerDialog extends AbstractDialog {
 
 	@Override
 	protected List<Pair<String, Component>> createComponents() {
-		this.portField = new ValidatableTextField(Integer.toString(NetConfig.getServerPort()));
-		this.passwordField = new ValidatablePasswordField(NetConfig.getServerPassword());
+		this.portField = new JTextField(Integer.toString(NetConfig.getServerPort()));
+		this.passwordField = new JPasswordField(NetConfig.getServerPassword());
 
 		this.portField.addActionListener(event -> this.confirm());
 		this.passwordField.addActionListener(event -> this.confirm());
@@ -45,9 +47,7 @@ public class CreateServerDialog extends AbstractDialog {
 
 	@Override
 	public void validateInputs() {
-		this.vc.setActiveElement(this.portField);
 		StandardValidation.isIntInRange(this.vc, this.portField.getText(), 0, 65535);
-		this.vc.setActiveElement(this.passwordField);
 		if (this.passwordField.getPassword().length > EnigmaServer.MAX_PASSWORD_LENGTH) {
 			this.vc.raise(Message.FIELD_LENGTH_OUT_OF_RANGE, EnigmaServer.MAX_PASSWORD_LENGTH);
 		}
@@ -64,8 +64,8 @@ public class CreateServerDialog extends AbstractDialog {
 		);
 	}
 
-	public static Result show(Frame parent) {
-		CreateServerDialog d = new CreateServerDialog(parent);
+	public static Result show(Gui gui) {
+		CreateServerDialog d = new CreateServerDialog(gui.getFrame(), gui);
 
 		d.setVisible(true);
 		Result r = d.getResult();

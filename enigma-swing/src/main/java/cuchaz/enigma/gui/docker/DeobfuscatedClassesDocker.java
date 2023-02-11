@@ -38,7 +38,7 @@ public class DeobfuscatedClassesDocker extends ClassesDocker {
 
 	@Override
 	public String getId() {
-		return Type.DEOBFUSCATED_CLASSES;
+		return "deobfuscated_classes";
 	}
 
 	@Override

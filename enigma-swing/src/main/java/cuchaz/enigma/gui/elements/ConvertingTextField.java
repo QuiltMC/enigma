@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.text.Document;
 
 import com.formdev.flatlaf.FlatClientProperties;
@@ -16,14 +17,14 @@ import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.events.ConvertingTextFieldListener;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
-import cuchaz.enigma.utils.validation.Validatable;
 
 /**
  * A label that converts into an editable text field when you click it.
  */
-public class ConvertingTextField implements Validatable {
+public class ConvertingTextField {
+
 	private final JPanel ui;
-	private final ValidatableTextField textField;
+	private final JTextField textField;
 	private final JLabel label;
 	private boolean editing = false;
 	private boolean editable = true;
@@ -33,7 +34,7 @@ public class ConvertingTextField implements Validatable {
 	public ConvertingTextField(String text) {
 		this.ui = new JPanel();
 		this.ui.setLayout(new GridLayout(1, 1, 0, 0));
-		this.textField = new ValidatableTextField(text);
+		this.textField = new JTextField(text);
 		this.textField.putClientProperty(FlatClientProperties.SELECT_ALL_ON_FOCUS_POLICY, FlatClientProperties.SELECT_ALL_ON_FOCUS_POLICY_NEVER);
 		this.label = GuiUtil.unboldLabel(new JLabel(text));
 		this.label.setBorder(BorderFactory.createLoweredBevelBorder());

@@ -131,7 +131,7 @@ public abstract class EnigmaServer {
 
 		if (username != null) {
 			Logger.info("Kicked " + username + " because " + reason);
-			this.sendMessage(Message.disconnect(username));
+			this.sendMessage(ServerMessage.disconnect(username));
 		}
 		this.sendUsernamePacket();
 	}
@@ -264,7 +264,7 @@ public abstract class EnigmaServer {
 		return this.mappings;
 	}
 
-	public void sendMessage(Message message) {
+	public void sendMessage(ServerMessage message) {
 		Logger.info("[chat] {}", message.translate());
 		this.sendToAll(new MessageS2CPacket(message));
 	}

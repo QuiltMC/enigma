@@ -120,7 +120,7 @@ public class CollabDocker extends Docker {
 
 	@Override
 	public String getId() {
-		return Type.COLLAB;
+		return "collab";
 	}
 
 	private void sendPendingMessage() {

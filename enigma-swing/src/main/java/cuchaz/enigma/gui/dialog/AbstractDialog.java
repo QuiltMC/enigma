@@ -8,6 +8,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
@@ -15,12 +16,14 @@ import cuchaz.enigma.utils.Pair;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 public abstract class AbstractDialog extends JDialog {
-	protected final ValidationContext vc = new ValidationContext();
+	protected final ValidationContext vc;
+	private boolean actionConfirm;
 
-	private boolean actionConfirm = false;
-
-	protected AbstractDialog(Frame owner, String title, String confirmAction, String cancelAction) {
+	protected AbstractDialog(Frame owner, Gui gui, String title, String confirmAction, String cancelAction) {
 		super(owner, I18n.translate(title), true);
+
+		this.vc = new ValidationContext(gui.getNotificationManager());
+		this.actionConfirm = false;
 
 		Container contentPane = this.getContentPane();
 		contentPane.setLayout(new BorderLayout());

@@ -127,14 +127,14 @@ public class ClassSelector extends JTree {
 					if (allowEdit && ClassSelector.this.renameSelectionListener != null) {
 						Object prevData = node.getUserObject();
 						Object objectData = node.getUserObject() instanceof ClassEntry ? new ClassEntry(((ClassEntry) prevData).getPackageName() + "/" + data) : data;
-						gui.validateImmediateAction(vc -> {
-							ClassSelector.this.renameSelectionListener.onSelectionRename(vc, node.getUserObject(), objectData, node);
-							if (vc.canProceed()) {
-								node.setUserObject(objectData); // Make sure that it's modified
-							} else {
-								editor.cancelCellEditing();
-							}
-						});
+
+						ValidationContext context = new ValidationContext(null);
+						ClassSelector.this.renameSelectionListener.onSelectionRename(context, node.getUserObject(), objectData, node);
+						if (context.canProceed()) {
+							node.setUserObject(objectData); // Make sure that it's modified
+						} else {
+							editor.cancelCellEditing();
+						}
 					} else {
 						editor.cancelCellEditing();
 					}

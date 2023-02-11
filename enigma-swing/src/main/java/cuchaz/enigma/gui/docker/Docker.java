@@ -132,20 +132,6 @@ public abstract class Docker extends JPanel {
 	}
 
 	/**
-	 * Contains the IDs for all existing dockers.
-	 */
-	public static final class Type {
-		public static final String STRUCTURE = "structure";
-		public static final String INHERITANCE = "inheritance";
-		public static final String CALLS = "calls";
-		public static final String IMPLEMENTATIONS = "implementations";
-		public static final String COLLAB = "collab";
-		public static final String ALL_CLASSES = "all_classes";
-		public static final String DEOBFUSCATED_CLASSES = "deobfuscated_classes";
-		public static final String OBFUSCATED_CLASSES = "obfuscated_classes";
-	}
-
-	/**
 	 * Represents the location of a docker on the screen.
 	 * @param side the side of the screen, either right or left
 	 * @param verticalLocation the vertical location of the docker, being full, top or bottom

@@ -10,8 +10,8 @@ import java.util.Objects;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.NetConfig;
-import cuchaz.enigma.gui.elements.ValidatableTextField;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.network.EnigmaServer;
 import cuchaz.enigma.network.ServerAddress;
@@ -21,11 +21,11 @@ import cuchaz.enigma.utils.validation.StandardValidation;
 
 public class ConnectToServerDialog extends AbstractDialog {
 	private JTextField usernameField;
-	private ValidatableTextField ipField;
+	private JTextField ipField;
 	private JPasswordField passwordField;
 
-	public ConnectToServerDialog(Frame owner) {
-		super(owner, "prompt.connect.title", "prompt.connect.confirm", "prompt.cancel");
+	public ConnectToServerDialog(Frame owner, Gui gui) {
+		super(owner, gui, "prompt.connect.title", "prompt.connect.confirm", "prompt.cancel");
 
 		Dimension preferredSize = this.getPreferredSize();
 		preferredSize.width = ScaleUtil.scale(400);
@@ -37,7 +37,7 @@ public class ConnectToServerDialog extends AbstractDialog {
 	@Override
 	protected List<Pair<String, Component>> createComponents() {
 		this.usernameField = new JTextField(NetConfig.getUsername());
-		this.ipField = new ValidatableTextField(NetConfig.getRemoteAddress());
+		this.ipField = new JTextField(NetConfig.getRemoteAddress());
 		this.passwordField = new JPasswordField(NetConfig.getPassword());
 
 		this.usernameField.addActionListener(event -> this.confirm());
@@ -72,8 +72,8 @@ public class ConnectToServerDialog extends AbstractDialog {
 		);
 	}
 
-	public static Result show(Frame parent) {
-		ConnectToServerDialog d = new ConnectToServerDialog(parent);
+	public static Result show(Gui gui) {
+		ConnectToServerDialog d = new ConnectToServerDialog(gui.getFrame(), gui);
 
 		d.setVisible(true);
 		Result r = d.getResult();

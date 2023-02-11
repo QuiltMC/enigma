@@ -9,7 +9,8 @@ import cuchaz.enigma.network.packet.PacketHelper;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
 
-public abstract class Message {
+public abstract class ServerMessage {
+
 	public final String user;
 
 	public static Chat chat(String user, String message) {
@@ -44,7 +45,7 @@ public abstract class Message {
 
 	public abstract Type getType();
 
-	public static Message read(DataInput input) throws IOException {
+	public static ServerMessage read(DataInput input) throws IOException {
 		byte typeId = input.readByte();
 		if (typeId < 0 || typeId >= Type.values().length) {
 			throw new IOException(String.format("Invalid message type ID %d", typeId));
@@ -82,7 +83,7 @@ public abstract class Message {
 		PacketHelper.writeString(output, this.user);
 	}
 
-	private Message(String user) {
+	private ServerMessage(String user) {
 		this.user = user;
 	}
 
@@ -90,7 +91,7 @@ public abstract class Message {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || this.getClass() != o.getClass()) return false;
-		Message message = (Message) o;
+		ServerMessage message = (ServerMessage) o;
 		return Objects.equals(this.user, message.user);
 	}
 
@@ -109,7 +110,7 @@ public abstract class Message {
 		RENAME,
 	}
 
-	public static final class Chat extends Message {
+	public static final class Chat extends ServerMessage {
 		public final String message;
 
 		private Chat(String user, String message) {
@@ -154,7 +155,7 @@ public abstract class Message {
 
 	}
 
-	public static final class Connect extends Message {
+	public static final class Connect extends ServerMessage {
 		private Connect(String user) {
 			super(user);
 		}
@@ -176,7 +177,7 @@ public abstract class Message {
 
 	}
 
-	public static final class Disconnect extends Message {
+	public static final class Disconnect extends ServerMessage {
 		private Disconnect(String user) {
 			super(user);
 		}
@@ -198,7 +199,7 @@ public abstract class Message {
 
 	}
 
-	public static  final class EditDocs extends Message {
+	public static  final class EditDocs extends ServerMessage {
 		public final Entry<?> entry;
 
 		private EditDocs(String user, Entry<?> entry) {
@@ -243,7 +244,7 @@ public abstract class Message {
 
 	}
 
-	public static final class MarkDeobf extends Message {
+	public static final class MarkDeobf extends ServerMessage {
 		public final Entry<?> entry;
 
 		private MarkDeobf(String user, Entry<?> entry) {
@@ -288,7 +289,7 @@ public abstract class Message {
 
 	}
 
-	public static final class RemoveMapping extends Message {
+	public static final class RemoveMapping extends ServerMessage {
 		public final Entry<?> entry;
 
 		private RemoveMapping(String user, Entry<?> entry) {
@@ -333,7 +334,7 @@ public abstract class Message {
 
 	}
 
-	public static final class Rename extends Message {
+	public static final class Rename extends ServerMessage {
 		public final Entry<?> entry;
 		public final String newName;
 

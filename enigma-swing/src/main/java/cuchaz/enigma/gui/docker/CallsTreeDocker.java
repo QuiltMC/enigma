@@ -125,6 +125,6 @@ public class CallsTreeDocker extends Docker {
 
 	@Override
 	public String getId() {
-		return Type.CALLS;
+		return "calls";
 	}
 }

@@ -39,6 +39,8 @@ import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.gui.config.NetConfig;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.ProgressDialog;
+import cuchaz.enigma.gui.docker.CollabDocker;
+import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.newabstraction.EntryValidation;
 import cuchaz.enigma.gui.stats.StatsGenerator;
 import cuchaz.enigma.gui.stats.StatsMember;
@@ -65,7 +67,8 @@ import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Utils;
-import cuchaz.enigma.utils.validation.PrintValidatable;
+import cuchaz.enigma.utils.validation.Message;
+import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
 import org.tinylog.Logger;
 
@@ -451,8 +454,7 @@ public class GuiController implements ClientPacketHandler {
 
 	@Override
 	public boolean applyChangeFromServer(EntryChange<?> change) {
-		ValidationContext vc = new ValidationContext();
-		vc.setActiveElement(PrintValidatable.INSTANCE);
+		ValidationContext vc = new ValidationContext(this.gui.getNotificationManager());
 		this.applyChange0(vc, change);
 		this.gui.updateStructure(this.gui.getActiveEditor());
 
@@ -576,6 +578,12 @@ public class GuiController implements ClientPacketHandler {
 			}
 			this.gui.setConnectionState(ConnectionState.NOT_CONNECTED);
 		});
+
+		this.gui.setUserList(new ArrayList<>());
+		if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+			this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.LEFT_SERVER));
+		}
+		Docker.getDocker(CollabDocker.class).setUp();
 	}
 
 	@Override
@@ -586,12 +594,16 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	@Override
-	public void addMessage(Message message) {
+	public void addMessage(ServerMessage message) {
 		this.gui.addMessage(message);
 	}
 
 	@Override
 	public void updateUserList(List<String> users) {
 		this.gui.setUserList(users);
+	}
+
+	public Gui getGui() {
+		return this.gui;
 	}
 }

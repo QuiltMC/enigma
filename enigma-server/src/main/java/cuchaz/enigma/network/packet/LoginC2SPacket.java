@@ -2,7 +2,7 @@ package cuchaz.enigma.network.packet;
 
 import cuchaz.enigma.network.EnigmaServer;
 import cuchaz.enigma.network.ServerPacketHandler;
-import cuchaz.enigma.network.Message;
+import cuchaz.enigma.network.ServerMessage;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -70,6 +70,6 @@ public class LoginC2SPacket implements Packet<ServerPacketHandler> {
 		}
 
 		handler.server().sendPacket(handler.client(), new SyncMappingsS2CPacket(handler.server().getMappings().getObfToDeobf()));
-		handler.server().sendMessage(Message.connect(this.username));
+		handler.server().sendMessage(ServerMessage.connect(this.username));
 	}
 }

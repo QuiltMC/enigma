@@ -10,7 +10,7 @@ public class AllClassesDocker extends ClassesDocker {
 
 	@Override
 	public String getId() {
-		return Type.ALL_CLASSES;
+		return "all_classes";
 	}
 
 	@Override

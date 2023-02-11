@@ -160,7 +160,7 @@ public class StructureDocker extends Docker {
 
 	@Override
 	public String getId() {
-		return Type.STRUCTURE;
+		return "structure";
 	}
 
 	@Override

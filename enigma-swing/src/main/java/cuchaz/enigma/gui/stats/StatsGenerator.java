@@ -67,12 +67,14 @@ public class StatsGenerator {
 						.findFirst()
 						.orElseThrow(AssertionError::new);
 
-				ClassEntry clazz = root.getParent();
-				if (root == method && this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackageSlash)) {
-					if (includedMembers.contains(StatsMember.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
-						this.update(counts, method);
-						totalMappable++;
-					}
+                ClassEntry clazz = root.getParent();
+				String deobfuscatedPackageName = this.mapper.deobfuscate(clazz).getPackageName();
+
+                if (root == method && (topLevelPackageSlash.isBlank() || (deobfuscatedPackageName != null && deobfuscatedPackageName.startsWith(topLevelPackageSlash)))) {
+                    if (includedMembers.contains(StatsMember.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
+                        update(counts, method);
+                        totalMappable++;
+                    }
 
 					if (includedMembers.contains(StatsMember.PARAMETERS) && (!((MethodDefEntry) method).getAccess().isSynthetic() || includeSynthetic)) {
 						int index = ((MethodDefEntry) method).getAccess().isStatic() ? 0 : 1;
@@ -86,26 +88,31 @@ public class StatsGenerator {
 			}
 		}
 
-		if (includedMembers.contains(StatsMember.FIELDS)) {
-			for (FieldEntry field : this.entryIndex.getFields()) {
-				progress.step(numDone++, I18n.translate("type.fields"));
-				ClassEntry clazz = field.getParent();
-				if (!((FieldDefEntry) field).getAccess().isSynthetic() && this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackageSlash)) {
-					this.update(counts, field);
-					totalMappable++;
-				}
-			}
-		}
+        if (includedMembers.contains(StatsMember.FIELDS)) {
+            for (FieldEntry field : entryIndex.getFields()) {
+                progress.step(numDone++, I18n.translate("type.fields"));
+                ClassEntry clazz = field.getParent();
+				String deobfuscatedPackageName = this.mapper.deobfuscate(clazz).getPackageName();
 
-		if (includedMembers.contains(StatsMember.CLASSES)) {
-			for (ClassEntry clazz : this.entryIndex.getClasses()) {
-				progress.step(numDone++, I18n.translate("type.classes"));
-				if (this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackageSlash)) {
-					this.update(counts, clazz);
-					totalMappable++;
-				}
-			}
-		}
+                if (!((FieldDefEntry) field).getAccess().isSynthetic() && (topLevelPackageSlash.isBlank() || (deobfuscatedPackageName != null && deobfuscatedPackageName.startsWith(topLevelPackageSlash)))) {
+                    update(counts, field);
+                    totalMappable++;
+                }
+            }
+        }
+
+        if (includedMembers.contains(StatsMember.CLASSES)) {
+            for (ClassEntry clazz : entryIndex.getClasses()) {
+                progress.step(numDone++, I18n.translate("type.classes"));
+
+				String deobfuscatedPackageName = this.mapper.deobfuscate(clazz).getPackageName();
+
+                if (topLevelPackageSlash.isBlank() || (deobfuscatedPackageName != null && deobfuscatedPackageName.startsWith(topLevelPackageSlash))) {
+                    update(counts, clazz);
+                    totalMappable++;
+                }
+            }
+        }
 
 		progress.step(-1, I18n.translate("progress.stats.data"));
 
