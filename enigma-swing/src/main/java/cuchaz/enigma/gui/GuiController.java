@@ -15,6 +15,7 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,6 +29,7 @@ import java.util.stream.Stream;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import com.google.common.io.MoreFiles;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.EnigmaProject;
@@ -123,12 +125,31 @@ public class GuiController implements ClientPacketHandler {
 		this.gui.onCloseJar();
 	}
 
-	public CompletableFuture<Void> openMappings(MappingFormat format, Path path) {
-		if (this.project == null) return CompletableFuture.completedFuture(null);
+	public void openMappings(Path path) {
+		if (Files.isDirectory(path)) {
+			this.openMappings(MappingFormat.ENIGMA_DIRECTORY, path);
+		} else {
+			String extension = MoreFiles.getFileExtension(path).toLowerCase();
+
+			switch (extension) {
+				case "zip" -> this.openMappings(MappingFormat.ENIGMA_ZIP, path);
+				case "tiny" -> this.openMappings(MappingFormat.TINY_FILE, path);
+				case "tinyv2" -> this.openMappings(MappingFormat.TINY_V2, path);
+				default -> this.openMappings(MappingFormat.ENIGMA_FILE, path);
+			}
+		}
+	}
+
+	public void openMappings(MappingFormat format, Path path) {
+		if (this.project == null) {
+			return;
+		}
 
 		this.gui.setMappingsFile(path);
+		UiConfig.addRecentFilePair(this.project.getJarPath(), path);
+		this.gui.getMenuBar().reloadOpenRecentMenu(this.gui);
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
+		ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
 			try {
 				MappingSaveParameters saveParameters = this.enigma.getProfile().getMappingSaveParameters();
 

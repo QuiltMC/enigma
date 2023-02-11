@@ -194,7 +194,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 
 			topBar.add(dismissButton, BorderLayout.EAST);
 
-			String whitespace = " ".repeat(title.length() > message.length() ? (title.length() - message.length()) * 3 : 0);
+			String whitespace = " ".repeat(title.length() > message.length() ? (int) ((title.length() - message.length()) * 2f) : 0);
 			topBar.add(new JLabel(I18n.translate("notification.type." + type.name().toLowerCase()) + "!" + whitespace), BorderLayout.WEST);
 			topBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK));
 
