@@ -18,28 +18,27 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestRecaf {
+	@Test
+	public void testIntegrity() throws Exception {
+		Set<String> contents;
+		try (InputStream in = getClass().getResourceAsStream("/recaf.mappings")) {
+			contents = new String(in.readAllBytes(), StandardCharsets.UTF_8).lines().collect(Collectors.toSet());
+		}
 
-    @Test
-    public void testIntegrity() throws Exception {
-        Set<String> contents;
-        try (InputStream in = getClass().getResourceAsStream("/recaf.mappings")) {
-            contents = new String(in.readAllBytes(), StandardCharsets.UTF_8).lines().collect(Collectors.toSet());
-        }
+		try (FileSystem fs = Jimfs.newFileSystem()) {
+			Path path = fs.getPath("recaf.mappings");
+			Files.write(path, contents);
 
-        try (FileSystem fs = Jimfs.newFileSystem()) {
-            Path path = fs.getPath("recaf.mappings");
-            Files.write(path, contents);
+			RecafMappingsWriter writer = RecafMappingsWriter.INSTANCE;
+			RecafMappingsReader reader = RecafMappingsReader.INSTANCE;
 
-            RecafMappingsWriter writer = RecafMappingsWriter.INSTANCE;
-            RecafMappingsReader reader = RecafMappingsReader.INSTANCE;
+			EntryTree<EntryMapping> mappings = reader.read(path, ProgressListener.none(), null);
+			writer.write(mappings, path, ProgressListener.none(), null);
 
-            EntryTree<EntryMapping> mappings = reader.read(path, ProgressListener.none(), null);
-            writer.write(mappings, path, ProgressListener.none(), null);
+			reader.read(path, ProgressListener.none(), null);
+			Set<String> newContents = new HashSet<>(Files.readAllLines(path));
 
-            reader.read(path, ProgressListener.none(), null);
-            Set<String> newContents = new HashSet<>(Files.readAllLines(path));
-
-            assertEquals(contents, newContents);
-        }
-    }
+			assertEquals(contents, newContents);
+		}
+	}
 }

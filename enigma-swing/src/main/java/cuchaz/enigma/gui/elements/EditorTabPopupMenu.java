@@ -1,7 +1,6 @@
 package cuchaz.enigma.gui.elements;
 
 import java.awt.Component;
-import java.awt.event.KeyEvent;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -11,7 +10,6 @@ import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.utils.I18n;
 
 public class EditorTabPopupMenu {
-
 	private final JPopupMenu ui;
 	private final JMenuItem close;
 	private final JMenuItem closeAll;
@@ -26,7 +24,7 @@ public class EditorTabPopupMenu {
 
 		this.close = new JMenuItem();
 		this.close.setAccelerator(KeyBinds.EDITOR_CLOSE_TAB.toKeyStroke());
-		this.close.addActionListener(a -> pane.closeEditor(editor));
+		this.close.addActionListener(a -> pane.closeEditor(this.editor));
 		this.ui.add(this.close);
 
 		this.closeAll = new JMenuItem();
@@ -34,15 +32,15 @@ public class EditorTabPopupMenu {
 		this.ui.add(this.closeAll);
 
 		this.closeOthers = new JMenuItem();
-		this.closeOthers.addActionListener(a -> pane.closeTabsExcept(editor));
+		this.closeOthers.addActionListener(a -> pane.closeTabsExcept(this.editor));
 		this.ui.add(this.closeOthers);
 
 		this.closeLeft = new JMenuItem();
-		this.closeLeft.addActionListener(a -> pane.closeTabsLeftOf(editor));
+		this.closeLeft.addActionListener(a -> pane.closeTabsLeftOf(this.editor));
 		this.ui.add(this.closeLeft);
 
 		this.closeRight = new JMenuItem();
-		this.closeRight.addActionListener(a -> pane.closeTabsRightOf(editor));
+		this.closeRight.addActionListener(a -> pane.closeTabsRightOf(this.editor));
 		this.ui.add(this.closeRight);
 
 		this.retranslateUi();
@@ -50,7 +48,7 @@ public class EditorTabPopupMenu {
 
 	public void show(Component invoker, int x, int y, EditorPanel editorPanel) {
 		this.editor = editorPanel;
-		ui.show(invoker, x, y);
+		this.ui.show(invoker, x, y);
 	}
 
 	public void retranslateUi() {

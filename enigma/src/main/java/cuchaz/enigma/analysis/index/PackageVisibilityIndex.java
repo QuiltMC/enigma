@@ -1,7 +1,6 @@
 package cuchaz.enigma.analysis.index;
 
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import cuchaz.enigma.analysis.EntryReference;
@@ -12,7 +11,7 @@ import cuchaz.enigma.translation.representation.entry.*;
 import java.util.*;
 
 public class PackageVisibilityIndex implements JarIndexer {
-	private static boolean requiresSamePackage(AccessFlags entryAcc, EntryReference ref, InheritanceIndex inheritanceIndex) {
+	private static boolean requiresSamePackage(AccessFlags entryAcc, EntryReference<?, ?> ref, InheritanceIndex inheritanceIndex) {
 		if (entryAcc.isPublic()) {
 			return false;
 		}
@@ -39,21 +38,21 @@ public class PackageVisibilityIndex implements JarIndexer {
 	}
 
 	private final HashMultimap<ClassEntry, ClassEntry> connections = HashMultimap.create();
-	private final List<Set<ClassEntry>> partitions = Lists.newArrayList();
+	private final List<Set<ClassEntry>> partitions = new ArrayList<>();
 	private final Map<ClassEntry, Set<ClassEntry>> classPartitions = Maps.newHashMap();
 
 	private void addConnection(ClassEntry classA, ClassEntry classB) {
 		if (classA != classB) {
-			connections.put(classA, classB);
-			connections.put(classB, classA);
+			this.connections.put(classA, classB);
+			this.connections.put(classB, classA);
 		}
 	}
 
 	private void buildPartition(Set<ClassEntry> unassignedClasses, Set<ClassEntry> partition, ClassEntry member) {
-		for (ClassEntry connected : connections.get(member)) {
+		for (ClassEntry connected : this.connections.get(member)) {
 			if (unassignedClasses.remove(connected)) {
 				partition.add(connected);
-				buildPartition(unassignedClasses, partition, connected);
+				this.buildPartition(unassignedClasses, partition, connected);
 			}
 		}
 	}
@@ -64,7 +63,7 @@ public class PackageVisibilityIndex implements JarIndexer {
 			if (!entryAcc.isPublic() && !entryAcc.isPrivate()) {
 				for (EntryReference<FieldEntry, MethodDefEntry> ref : referenceIndex.getReferencesToField(entry)) {
 					if (requiresSamePackage(entryAcc, ref, inheritanceIndex)) {
-						addConnection(ref.entry.getContainingClass(), ref.context.getContainingClass());
+						this.addConnection(ref.entry.getContainingClass(), ref.context.getContainingClass());
 					}
 				}
 			}
@@ -75,7 +74,7 @@ public class PackageVisibilityIndex implements JarIndexer {
 			if (!entryAcc.isPublic() && !entryAcc.isPrivate()) {
 				for (EntryReference<MethodEntry, MethodDefEntry> ref : referenceIndex.getReferencesToMethod(entry)) {
 					if (requiresSamePackage(entryAcc, ref, inheritanceIndex)) {
-						addConnection(ref.entry.getContainingClass(), ref.context.getContainingClass());
+						this.addConnection(ref.entry.getContainingClass(), ref.context.getContainingClass());
 					}
 				}
 			}
@@ -86,13 +85,13 @@ public class PackageVisibilityIndex implements JarIndexer {
 			if (!entryAcc.isPublic() && !entryAcc.isPrivate()) {
 				for (EntryReference<ClassEntry, FieldDefEntry> ref : referenceIndex.getFieldTypeReferencesToClass(entry)) {
 					if (requiresSamePackage(entryAcc, ref, inheritanceIndex)) {
-						addConnection(ref.entry.getContainingClass(), ref.context.getContainingClass());
+						this.addConnection(ref.entry.getContainingClass(), ref.context.getContainingClass());
 					}
 				}
 
 				for (EntryReference<ClassEntry, MethodDefEntry> ref : referenceIndex.getMethodTypeReferencesToClass(entry)) {
 					if (requiresSamePackage(entryAcc, ref, inheritanceIndex)) {
-						addConnection(ref.entry.getContainingClass(), ref.context.getContainingClass());
+						this.addConnection(ref.entry.getContainingClass(), ref.context.getContainingClass());
 					}
 				}
 			}
@@ -100,13 +99,13 @@ public class PackageVisibilityIndex implements JarIndexer {
 			for (ClassEntry parent : inheritanceIndex.getParents(entry)) {
 				AccessFlags parentAcc = entryIndex.getClassAccess(parent);
 				if (parentAcc != null && !parentAcc.isPublic() && !parentAcc.isPrivate()) {
-					addConnection(entry, parent);
+					this.addConnection(entry, parent);
 				}
 			}
 
 			ClassEntry outerClass = entry.getOuterClass();
 			if (outerClass != null) {
-				addConnection(entry, outerClass);
+				this.addConnection(entry, outerClass);
 			}
 		}
 	}
@@ -120,20 +119,20 @@ public class PackageVisibilityIndex implements JarIndexer {
 
 			HashSet<ClassEntry> partition = Sets.newHashSet();
 			partition.add(initialEntry);
-			buildPartition(unassignedClasses, partition, initialEntry);
-			partitions.add(partition);
+			this.buildPartition(unassignedClasses, partition, initialEntry);
+			this.partitions.add(partition);
 			for (ClassEntry entry : partition) {
-				classPartitions.put(entry, partition);
+				this.classPartitions.put(entry, partition);
 			}
 		}
 	}
 
 	public Collection<Set<ClassEntry>> getPartitions() {
-		return partitions;
+		return this.partitions;
 	}
 
 	public Set<ClassEntry> getPartition(ClassEntry classEntry) {
-		return classPartitions.get(classEntry);
+		return this.classPartitions.get(classEntry);
 	}
 
 	@Override
@@ -141,7 +140,7 @@ public class PackageVisibilityIndex implements JarIndexer {
 		EntryIndex entryIndex = index.getEntryIndex();
 		ReferenceIndex referenceIndex = index.getReferenceIndex();
 		InheritanceIndex inheritanceIndex = index.getInheritanceIndex();
-		addConnections(entryIndex, referenceIndex, inheritanceIndex);
-		addPartitions(entryIndex);
+		this.addConnections(entryIndex, referenceIndex, inheritanceIndex);
+		this.addPartitions(entryIndex);
 	}
 }

@@ -6,7 +6,6 @@ import java.nio.file.Paths;
 import cuchaz.enigma.utils.Os;
 
 public class ConfigPaths {
-
 	public static Path getConfigFilePath(String name) {
 		String fileName = Os.getOs() == Os.LINUX ? String.format("%src", name) : String.format("%s.ini", name);
 		return getConfigPathRoot().resolve(fileName);
@@ -14,18 +13,22 @@ public class ConfigPaths {
 
 	public static Path getConfigPathRoot() {
 		switch (Os.getOs()) {
-			case LINUX:
+			case LINUX -> {
 				String configHome = System.getenv("XDG_CONFIG_HOME");
 				if (configHome == null) {
 					return getUserHomeUnix().resolve(".config");
 				}
 				return Paths.get(configHome);
-			case MAC:
+			}
+			case MAC -> {
 				return getUserHomeUnix().resolve("Library").resolve("Application Support");
-			case WINDOWS:
+			}
+			case WINDOWS -> {
 				return Paths.get(System.getenv("LOCALAPPDATA"));
-			default:
+			}
+			default -> {
 				return Paths.get(System.getProperty("user.dir"));
+			}
 		}
 	}
 
@@ -36,5 +39,4 @@ public class ConfigPaths {
 		}
 		return Paths.get(userHome);
 	}
-
 }

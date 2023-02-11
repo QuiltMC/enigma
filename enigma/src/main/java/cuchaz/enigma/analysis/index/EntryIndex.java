@@ -9,48 +9,48 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EntryIndex implements JarIndexer {
-	private Map<ClassEntry, AccessFlags> classes = new HashMap<>();
-	private Map<FieldEntry, AccessFlags> fields = new HashMap<>();
-	private Map<MethodEntry, AccessFlags> methods = new HashMap<>();
-	private Map<ClassEntry, ClassDefEntry> definitions = new HashMap<>();
+	private final Map<ClassEntry, AccessFlags> classes = new HashMap<>();
+	private final Map<FieldEntry, AccessFlags> fields = new HashMap<>();
+	private final Map<MethodEntry, AccessFlags> methods = new HashMap<>();
+	private final Map<ClassEntry, ClassDefEntry> definitions = new HashMap<>();
 
 	@Override
 	public void indexClass(ClassDefEntry classEntry) {
-		definitions.put(classEntry, classEntry);
-		classes.put(classEntry, classEntry.getAccess());
+		this.definitions.put(classEntry, classEntry);
+		this.classes.put(classEntry, classEntry.getAccess());
 	}
 
 	@Override
 	public void indexMethod(MethodDefEntry methodEntry) {
-		methods.put(methodEntry, methodEntry.getAccess());
+		this.methods.put(methodEntry, methodEntry.getAccess());
 	}
 
 	@Override
 	public void indexField(FieldDefEntry fieldEntry) {
-		fields.put(fieldEntry, fieldEntry.getAccess());
+		this.fields.put(fieldEntry, fieldEntry.getAccess());
 	}
 
 	public boolean hasClass(ClassEntry entry) {
-		return classes.containsKey(entry);
+		return this.classes.containsKey(entry);
 	}
 
 	public boolean hasMethod(MethodEntry entry) {
-		return methods.containsKey(entry);
+		return this.methods.containsKey(entry);
 	}
 
 	public boolean hasField(FieldEntry entry) {
-		return fields.containsKey(entry);
+		return this.fields.containsKey(entry);
 	}
 
 	public boolean hasEntry(Entry<?> entry) {
 		if (entry instanceof ClassEntry classEntry) {
-			return hasClass(classEntry);
+			return this.hasClass(classEntry);
 		} else if (entry instanceof MethodEntry methodEntry) {
-			return hasMethod(methodEntry);
+			return this.hasMethod(methodEntry);
 		} else if (entry instanceof FieldEntry fieldEntry) {
-			return hasField(fieldEntry);
+			return this.hasField(fieldEntry);
 		} else if (entry instanceof LocalVariableEntry localVariableEntry) {
-			return hasMethod(localVariableEntry.getParent());
+			return this.hasMethod(localVariableEntry.getParent());
 		}
 
 		return false;
@@ -58,47 +58,47 @@ public class EntryIndex implements JarIndexer {
 
 	@Nullable
 	public AccessFlags getMethodAccess(MethodEntry entry) {
-		return methods.get(entry);
+		return this.methods.get(entry);
 	}
 
 	@Nullable
 	public AccessFlags getFieldAccess(FieldEntry entry) {
-		return fields.get(entry);
+		return this.fields.get(entry);
 	}
 
 	@Nullable
 	public AccessFlags getClassAccess(ClassEntry entry) {
-		return classes.get(entry);
+		return this.classes.get(entry);
 	}
 
 	@Nullable
 	public AccessFlags getEntryAccess(Entry<?> entry) {
 		if (entry instanceof MethodEntry methodEntry) {
-			return getMethodAccess(methodEntry);
+			return this.getMethodAccess(methodEntry);
 		} else if (entry instanceof FieldEntry fieldEntry) {
-			return getFieldAccess(fieldEntry);
+			return this.getFieldAccess(fieldEntry);
 		} else if (entry instanceof LocalVariableEntry localVariableEntry) {
-			return getMethodAccess(localVariableEntry.getParent());
+			return this.getMethodAccess(localVariableEntry.getParent());
 		} else if (entry instanceof ClassEntry classEntry) {
-			return getClassAccess(classEntry);
+			return this.getClassAccess(classEntry);
 		}
 
 		return null;
 	}
 
 	public ClassDefEntry getDefinition(ClassEntry entry) {
-		return definitions.get(entry);
+		return this.definitions.get(entry);
 	}
 
 	public Collection<ClassEntry> getClasses() {
-		return classes.keySet();
+		return this.classes.keySet();
 	}
 
 	public Collection<MethodEntry> getMethods() {
-		return methods.keySet();
+		return this.methods.keySet();
 	}
 
 	public Collection<FieldEntry> getFields() {
-		return fields.keySet();
+		return this.fields.keySet();
 	}
 }

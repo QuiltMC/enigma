@@ -30,9 +30,9 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 *
 	 * <br><p>Examples:</p>
 	 * <ul>
-	 *     <li>Outer class: "domain.name.ClassA"</li>
-	 *     <li>Inner class: "ClassB"</li>
-	 *     <li>Method: "methodC"</li>
+	 *	 <li>Outer class: "domain.name.ClassA"</li>
+	 *	 <li>Inner class: "ClassB"</li>
+	 *	 <li>Method: "methodC"</li>
 	 * </ul>
 	 */
 	String getName();
@@ -45,9 +45,9 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 *
 	 * <br><p>Examples:</p>
 	 * <ul>
-	 *     <li>Outer class: "ClassA"</li>
-	 *     <li>Inner class: "ClassB"</li>
-	 *     <li>Method: "methodC"</li>
+	 *	 <li>Outer class: "ClassA"</li>
+	 *	 <li>Inner class: "ClassB"</li>
+	 *	 <li>Method: "methodC"</li>
 	 * </ul>
 	 */
 	String getSimpleName();
@@ -61,9 +61,9 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 *
 	 * <br><p>Examples:</p>
 	 * <ul>
-	 *     <li>Outer class: "domain.name.ClassA"</li>
-	 *     <li>Inner class: "domain.name.ClassA$ClassB"</li>
-	 *     <li>Method: "domain.name.ClassA.methodC"</li>
+	 *	 <li>Outer class: "domain.name.ClassA"</li>
+	 *	 <li>Inner class: "domain.name.ClassA$ClassB"</li>
+	 *	 <li>Method: "domain.name.ClassA.methodC"</li>
 	 * </ul>
 	 */
 	String getFullName();
@@ -77,9 +77,9 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 *
 	 * <br><p>Examples:</p>
 	 * <ul>
-	 *     <li>Outer class: "ClassA"</li>
-	 *     <li>Inner class: "ClassA$ClassB"</li>
-	 *     <li>Method: "ClassA.methodC"</li>
+	 *	 <li>Outer class: "ClassA"</li>
+	 *	 <li>Inner class: "ClassA$ClassB"</li>
+	 *	 <li>Method: "ClassA.methodC"</li>
 	 * </ul>
 	 */
 	String getContextualName();
@@ -87,7 +87,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	String getJavadocs();
 
 	default String getSourceRemapName() {
-		return getName();
+		return this.getName();
 	}
 
 	/**
@@ -114,8 +114,8 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 		ClassEntry last = null;
 		Entry<?> current = this;
 		while (current != null) {
-			if (current instanceof ClassEntry) {
-				last = (ClassEntry) current;
+			if (current instanceof ClassEntry classEntry) {
+				last = classEntry;
 				break;
 			}
 			current = current.getParent();
@@ -127,8 +127,8 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 		ClassEntry last = null;
 		Entry<?> current = this;
 		while (current != null) {
-			if (current instanceof ClassEntry) {
-				last = (ClassEntry) current;
+			if (current instanceof ClassEntry classEntry) {
+				last = classEntry;
 			}
 			current = current.getParent();
 		}
@@ -136,7 +136,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	}
 
 	default List<Entry<?>> getAncestry() {
-		P parent = getParent();
+		P parent = this.getParent();
 		List<Entry<?>> entries = new ArrayList<>();
 		if (parent != null) {
 			entries.addAll(parent.getAncestry());
@@ -148,7 +148,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	@Nullable
 	@SuppressWarnings("unchecked")
 	default <E extends Entry<?>> E findAncestor(Class<E> type) {
-		List<Entry<?>> ancestry = getAncestry();
+		List<Entry<?>> ancestry = this.getAncestry();
 		for (int i = ancestry.size() - 1; i >= 0; i--) {
 			Entry<?> ancestor = ancestry.get(i);
 			if (type.isAssignableFrom(ancestor.getClass())) {
@@ -164,16 +164,16 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 			return this;
 		}
 
-		if (equals(target)) {
+		if (this.equals(target)) {
 			return (Entry<P>) replacement;
 		}
 
-		P parent = getParent();
+		P parent = this.getParent();
 		if (parent == null) {
 			return this;
 		}
 
-		return withParent((P) parent.replaceAncestor(target, replacement));
+		return this.withParent((P) parent.replaceAncestor(target, replacement));
 	}
 
 	default void validateName(ValidationContext vc, String name) {
@@ -183,9 +183,10 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	@SuppressWarnings("unchecked")
 	@Nullable
 	default <C extends Entry<?>> Entry<C> castParent(Class<C> parentType) {
-		if (parentType.equals(getParentType())) {
+		if (parentType.equals(this.getParentType())) {
 			return (Entry<C>) this;
 		}
+
 		return null;
 	}
 }

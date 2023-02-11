@@ -12,10 +12,9 @@
 package cuchaz.enigma.gui;
 
 public class ReadableToken {
-
-	public int line;
-	public int startColumn;
-	public int endColumn;
+	public final int line;
+	public final int startColumn;
+	public final int endColumn;
 
 	public ReadableToken(int line, int startColumn, int endColumn) {
 		this.line = line;
@@ -25,6 +24,6 @@ public class ReadableToken {
 
 	@Override
 	public String toString() {
-		return "line " + line + " columns " + startColumn + "-" + endColumn;
+		return "line " + this.line + " columns " + this.startColumn + "-" + this.endColumn;
 	}
 }

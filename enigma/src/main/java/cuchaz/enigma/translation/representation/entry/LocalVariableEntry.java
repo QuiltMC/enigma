@@ -11,13 +11,7 @@ import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 
-/**
- * TypeDescriptor...
- * Created by Thog
- * 19/10/2016
- */
 public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Comparable<LocalVariableEntry> {
-
 	protected final int index;
 	protected final boolean parameter;
 
@@ -41,7 +35,7 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 	}
 
 	public int getIndex() {
-		return index;
+		return this.index;
 	}
 
 	@Override
@@ -51,22 +45,22 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 
 	@Override
 	protected TranslateResult<LocalVariableEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
-		String translatedName = mapping.targetName() != null ? mapping.targetName() : name;
+		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 		String javadoc = mapping.javadoc();
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new LocalVariableEntry(parent, index, translatedName, parameter, javadoc)
+				new LocalVariableEntry(this.parent, this.index, translatedName, this.parameter, javadoc)
 		);
 	}
 
 	@Override
 	public LocalVariableEntry withName(String name) {
-		return new LocalVariableEntry(parent, index, name, parameter, javadocs);
+		return new LocalVariableEntry(this.parent, this.index, name, this.parameter, this.javadocs);
 	}
 
 	@Override
 	public LocalVariableEntry withParent(MethodEntry parent) {
-		return new LocalVariableEntry(parent, index, name, parameter, javadocs);
+		return new LocalVariableEntry(parent, this.index, this.name, this.parameter, this.javadocs);
 	}
 
 	@Override
@@ -76,7 +70,7 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof LocalVariableEntry && equals((LocalVariableEntry) other);
+		return other instanceof LocalVariableEntry localVariableEntry && this.equals(localVariableEntry);
 	}
 
 	public boolean equals(LocalVariableEntry other) {
@@ -85,7 +79,7 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 
 	@Override
 	public boolean canConflictWith(Entry<?> entry) {
-		return entry instanceof LocalVariableEntry && ((LocalVariableEntry) entry).parent.equals(parent);
+		return entry instanceof LocalVariableEntry localVariableEntry && localVariableEntry.parent.equals(this.parent);
 	}
 
 	@Override
@@ -100,6 +94,6 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 
 	@Override
 	public int compareTo(LocalVariableEntry entry) {
-		return Integer.compare(index, entry.index);
+		return Integer.compare(this.index, entry.index);
 	}
 }

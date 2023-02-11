@@ -6,14 +6,13 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.inputs.inheritanceTree;
 
 // a
 public abstract class BaseClass {
-
 	// a
 	private String name;
 

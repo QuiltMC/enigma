@@ -17,110 +17,110 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class QuiltflowerSource implements Source {
-    private final IContextSource contextSource;
-    private final IContextSource libraryContextSource;
-    private final boolean hasLibrarySource;
-    private EntryRemapper remapper;
-    private final SourceSettings settings;
+	private final IContextSource contextSource;
+	private final IContextSource libraryContextSource;
+	private final boolean hasLibrarySource;
+	private EntryRemapper remapper;
+	private final SourceSettings settings;
 
-    private SourceIndex index;
+	private SourceIndex index;
 
-    public QuiltflowerSource(EnigmaContextSource contextSource, EntryRemapper remapper, SourceSettings settings) {
-        this(contextSource, contextSource.getExternalSource(), remapper, settings);
-    }
+	public QuiltflowerSource(EnigmaContextSource contextSource, EntryRemapper remapper, SourceSettings settings) {
+		this(contextSource, contextSource.getExternalSource(), remapper, settings);
+	}
 
-    public QuiltflowerSource(IContextSource contextSource, @Nullable IContextSource libraryContextSource, EntryRemapper remapper, SourceSettings settings) {
-        this.contextSource = contextSource;
-        this.libraryContextSource = libraryContextSource;
-        this.hasLibrarySource = libraryContextSource != null;
-        this.remapper = remapper;
-        this.settings = settings;
-    }
+	public QuiltflowerSource(IContextSource contextSource, @Nullable IContextSource libraryContextSource, EntryRemapper remapper, SourceSettings settings) {
+		this.contextSource = contextSource;
+		this.libraryContextSource = libraryContextSource;
+		this.hasLibrarySource = libraryContextSource != null;
+		this.remapper = remapper;
+		this.settings = settings;
+	}
 
-    private static Map<String, Object> getOptions(IFabricJavadocProvider javadocProvider, SourceSettings settings) {
-        Map<String, Object> options = QuiltflowerPreferences.getEffectiveOptions();
-        options.put(IFabricJavadocProvider.PROPERTY_NAME, javadocProvider);
+	private static Map<String, Object> getOptions(IFabricJavadocProvider javadocProvider, SourceSettings settings) {
+		Map<String, Object> options = QuiltflowerPreferences.getEffectiveOptions();
+		options.put(IFabricJavadocProvider.PROPERTY_NAME, javadocProvider);
 
-        if (settings.removeImports) {
-            options.put(IFernflowerPreferences.REMOVE_IMPORTS, "1");
-        }
+		if (settings.removeImports()) {
+			options.put(IFernflowerPreferences.REMOVE_IMPORTS, "1");
+		}
 
-        return options;
-    }
+		return options;
+	}
 
-    @Override
-    public String asString() {
-        checkDecompiled();
-        return index.getSource();
-    }
+	@Override
+	public String asString() {
+		this.checkDecompiled();
+		return this.index.getSource();
+	}
 
-    @Override
-    public Source withJavadocs(EntryRemapper remapper) {
-        this.remapper = remapper;
-        this.index = null;
-        return this;
-    }
+	@Override
+	public Source withJavadocs(EntryRemapper remapper) {
+		this.remapper = remapper;
+		this.index = null;
+		return this;
+	}
 
-    @Override
-    public SourceIndex index() {
-        checkDecompiled();
-        return index;
-    }
+	@Override
+	public SourceIndex index() {
+		this.checkDecompiled();
+		return this.index;
+	}
 
-    private void checkDecompiled() {
-        if (index != null) {
-            return;
-        }
+	private void checkDecompiled() {
+		if (this.index != null) {
+			return;
+		}
 
-        index = new SourceIndex();
+		this.index = new SourceIndex();
 
-        IResultSaver saver = new EnigmaResultSaver(index);
-        Map<String, Object> options = getOptions(new EnigmaJavadocProvider(remapper), settings);
-        IFernflowerLogger logger = new EnigmaFernflowerLogger();
-        BaseDecompiler decompiler = new BaseDecompiler(saver, options, logger);
+		IResultSaver saver = new EnigmaResultSaver(this.index);
+		Map<String, Object> options = getOptions(new EnigmaJavadocProvider(this.remapper), this.settings);
+		IFernflowerLogger logger = new EnigmaFernflowerLogger();
+		BaseDecompiler decompiler = new BaseDecompiler(saver, options, logger);
 
-        AtomicReference<EnigmaTextTokenCollector> tokenCollector = new AtomicReference<>();
-        TextTokenVisitor.addVisitor(next -> {
-            tokenCollector.set(new EnigmaTextTokenCollector(next));
-            return tokenCollector.get();
-        });
-        decompiler.addSource(contextSource);
-        if (hasLibrarySource) decompiler.addLibrary(libraryContextSource);
+		AtomicReference<EnigmaTextTokenCollector> tokenCollector = new AtomicReference<>();
+		TextTokenVisitor.addVisitor(next -> {
+			tokenCollector.set(new EnigmaTextTokenCollector(next));
+			return tokenCollector.get();
+		});
+		decompiler.addSource(this.contextSource);
+		if (this.hasLibrarySource) decompiler.addLibrary(this.libraryContextSource);
 
-        decompiler.decompileContext();
+		decompiler.decompileContext();
 
-        if (settings.removeImports) {
-            removePackageStatement(index, tokenCollector.get());
-        } else {
-            tokenCollector.get().addTokensToIndex(index, token -> token);
-        }
-    }
+		if (this.settings.removeImports()) {
+			removePackageStatement(this.index, tokenCollector.get());
+		} else {
+			tokenCollector.get().addTokensToIndex(this.index, token -> token);
+		}
+	}
 
-    private static void removePackageStatement(SourceIndex index, EnigmaTextTokenCollector tokenCollector) {
-        if (tokenCollector == null) {
-            throw new IllegalStateException("No token collector");
-        }
+	private static void removePackageStatement(SourceIndex index, EnigmaTextTokenCollector tokenCollector) {
+		if (tokenCollector == null) {
+			throw new IllegalStateException("No token collector");
+		}
 
-        String source = index.getSource();
-        int start = source.indexOf("package");
-        if (start < 0) {
-            tokenCollector.addTokensToIndex(index, token -> token);
-            return;
-        }
+		String source = index.getSource();
+		int start = source.indexOf("package");
+		if (start < 0) {
+			tokenCollector.addTokensToIndex(index, token -> token);
+			return;
+		}
 
-        int end = index.getPosition(index.getLineNumber(start) + 1, 1);
-        int offset = -(end - start) - 1;
+		int end = index.getPosition(index.getLineNumber(start) + 1, 1);
+		int offset = -(end - start) - 1;
 
-        String newSource = source.substring(0, start) + source.substring(end + 1);
-        index.setSource(newSource);
-        tokenCollector.addTokensToIndex(index, token -> {
-            if (token.start > end) {
-                return token.move(offset);
-            } else if (token.end <= start) {
-                return token;
-            } else {
-                return null;
-            }
-        });
-    }
+		String newSource = source.substring(0, start) + source.substring(end + 1);
+		index.setSource(newSource);
+		tokenCollector.addTokensToIndex(index, token -> {
+			if (token.start > end) {
+				return token.move(offset);
+			} else if (token.end <= start) {
+				return token;
+			} else {
+				return null;
+			}
+		});
+	}
 }

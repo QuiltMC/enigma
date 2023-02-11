@@ -23,53 +23,53 @@ public class HashTreeNode<T> implements EntryTreeNode<T>, Iterable<HashTreeNode<
 	}
 
 	T removeValue() {
-		T value = this.value;
+		T oldValue = this.value;
 		this.value = null;
-		return value;
+		return oldValue;
 	}
 
 	@Nullable
 	HashTreeNode<T> getChild(Entry<?> entry) {
-		return children.get(entry);
+		return this.children.get(entry);
 	}
 
 	@Nonnull
 	HashTreeNode<T> computeChild(Entry<?> entry) {
-		return children.computeIfAbsent(entry, HashTreeNode::new);
+		return this.children.computeIfAbsent(entry, HashTreeNode::new);
 	}
 
 	void remove(Entry<?> entry) {
-		children.remove(entry);
+		this.children.remove(entry);
 	}
 
 	@Override
 	@Nullable
 	public T getValue() {
-		return value;
+		return this.value;
 	}
 
 	@Override
 	public Entry<?> getEntry() {
-		return entry;
+		return this.entry;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return children.isEmpty() && value == null;
+		return this.children.isEmpty() && this.value == null;
 	}
 
 	@Override
 	public Collection<Entry<?>> getChildren() {
-		return children.keySet();
+		return this.children.keySet();
 	}
 
 	@Override
 	public Collection<? extends EntryTreeNode<T>> getChildNodes() {
-		return children.values();
+		return this.children.values();
 	}
 
 	@Override
 	public Iterator<HashTreeNode<T>> iterator() {
-		return children.values().iterator();
+		return this.children.values().iterator();
 	}
 }

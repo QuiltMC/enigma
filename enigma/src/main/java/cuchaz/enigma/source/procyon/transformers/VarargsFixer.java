@@ -16,7 +16,6 @@ import com.strobel.decompiler.languages.java.ast.AstNode;
 import com.strobel.decompiler.languages.java.ast.AstNodeCollection;
 import com.strobel.decompiler.languages.java.ast.CastExpression;
 import com.strobel.decompiler.languages.java.ast.ContextTrackingVisitor;
-import com.strobel.decompiler.languages.java.ast.DepthFirstAstVisitor;
 import com.strobel.decompiler.languages.java.ast.Expression;
 import com.strobel.decompiler.languages.java.ast.InvocationExpression;
 import com.strobel.decompiler.languages.java.ast.JavaResolver;
@@ -33,22 +32,22 @@ import java.util.List;
  * Created by Thiakil on 12/07/2018.
  */
 public class VarargsFixer implements IAstTransform {
-	private final DecompilerContext _context;
+	private final DecompilerContext context;
 
 	public VarargsFixer(final DecompilerContext context) {
-		_context = VerifyArgument.notNull(context, "context");
+		this.context = VerifyArgument.notNull(context, "context");
 	}
 
 	@Override
 	public void run(AstNode compilationUnit) {
-		compilationUnit.acceptVisitor(new Visitor(_context), null);
+		compilationUnit.acceptVisitor(new Visitor(this.context), null);
 	}
 
-	class Visitor extends ContextTrackingVisitor<Void> {
-		private final JavaResolver _resolver;
+	static class Visitor extends ContextTrackingVisitor<Void> {
+		private final JavaResolver resolver;
 		protected Visitor(DecompilerContext context) {
 			super(context);
-			_resolver = new JavaResolver(context);
+			this.resolver = new JavaResolver(context);
 		}
 
 		//remove `new Object[0]` on varagrs as the normal tranformer doesnt do them
@@ -56,15 +55,14 @@ public class VarargsFixer implements IAstTransform {
 		public Void visitInvocationExpression(InvocationExpression node, Void data) {
 			super.visitInvocationExpression(node, data);
 			MemberReference definition = node.getUserData(Keys.MEMBER_REFERENCE);
-			if (definition instanceof MethodDefinition && ((MethodDefinition) definition).isVarArgs()){
+			if (definition instanceof MethodDefinition methodDefinition && methodDefinition.isVarArgs()) {
 				AstNodeCollection<Expression> arguments = node.getArguments();
 				Expression lastParam = arguments.lastOrNullObject();
-				if (!lastParam.isNull() && lastParam instanceof ArrayCreationExpression){
-					ArrayCreationExpression varargArray = (ArrayCreationExpression)lastParam;
-					if (varargArray.getInitializer().isNull() || varargArray.getInitializer().getElements().isEmpty()){
+				if (!lastParam.isNull() && lastParam instanceof ArrayCreationExpression varargArray) {
+					if (varargArray.getInitializer().isNull() || varargArray.getInitializer().getElements().isEmpty()) {
 						lastParam.remove();
 					} else {
-						for (Expression e : varargArray.getInitializer().getElements()){
+						for (Expression e : varargArray.getInitializer().getElements()) {
 							arguments.insertBefore(varargArray, e.clone());
 						}
 						varargArray.remove();
@@ -83,19 +81,15 @@ public class VarargsFixer implements IAstTransform {
 
 			Expression arrayArg = lastArgument;
 
-			if (arrayArg instanceof CastExpression)
-				arrayArg = ((CastExpression) arrayArg).getExpression();
+			if (arrayArg instanceof CastExpression castExpression)
+				arrayArg = castExpression.getExpression();
 
 			if (arrayArg == null ||
 					arrayArg.isNull() ||
-					!(arrayArg instanceof ArrayCreationExpression &&
-							node.getTarget() instanceof MemberReferenceExpression)) {
-
+					!(arrayArg instanceof final ArrayCreationExpression newArray &&
+							node.getTarget() instanceof final MemberReferenceExpression target)) {
 				return null;
 			}
-
-			final ArrayCreationExpression newArray = (ArrayCreationExpression) arrayArg;
-			final MemberReferenceExpression target = (MemberReferenceExpression) node.getTarget();
 
 			if (!newArray.getAdditionalArraySpecifiers().hasSingleElement()) {
 				return null;
@@ -118,12 +112,12 @@ public class VarargsFixer implements IAstTransform {
 
 			if (invocationTarget == null || invocationTarget.isNull()) {
 				candidates = MetadataHelper.findMethods(
-						context.getCurrentType(),
+						this.context.getCurrentType(),
 						MetadataFilters.matchName(resolved.getName())
 				);
 			}
 			else {
-				final ResolveResult targetResult = _resolver.apply(invocationTarget);
+				final ResolveResult targetResult = this.resolver.apply(invocationTarget);
 
 				if (targetResult == null || targetResult.getType() == null) {
 					return null;
@@ -138,7 +132,7 @@ public class VarargsFixer implements IAstTransform {
 			final List<TypeReference> argTypes = new ArrayList<>();
 
 			for (final Expression argument : arguments) {
-				final ResolveResult argResult = _resolver.apply(argument);
+				final ResolveResult argResult = this.resolver.apply(argument);
 
 				if (argResult == null || argResult.getType() == null) {
 					return null;
@@ -160,7 +154,7 @@ public class VarargsFixer implements IAstTransform {
 
 			if (hasElements) {
 				for (final Expression argument : initializer.getElements()) {
-					final ResolveResult argResult = _resolver.apply(argument);
+					final ResolveResult argResult = this.resolver.apply(argument);
 
 					if (argResult == null || argResult.getType() == null) {
 						return null;
@@ -175,7 +169,6 @@ public class VarargsFixer implements IAstTransform {
 			if (c2.isFailure() ||
 					c2.isAmbiguous() ||
 					!StringUtilities.equals(c2.getMethod().getErasedSignature(), c1.getMethod().getErasedSignature())) {
-
 				return null;
 			}
 

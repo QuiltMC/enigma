@@ -25,7 +25,7 @@ public class DeobfuscatedClassesDocker extends ClassesDocker {
 			this.selector.setSelectionRow(this.selector.getClosestRowForLocation(e.getX(), e.getY()));
 			int i = this.selector.getRowForPath(this.selector.getSelectionPath());
 			if (i != -1) {
-				popupMenu.show(this.selector, e.getX(), e.getY());
+				this.popupMenu.show(this.selector, e.getX(), e.getY());
 			}
 		}
 	}

@@ -13,38 +13,38 @@ import java.util.List;
  * until one can provide the class.
  */
 public class CombiningClassProvider implements ClassProvider {
-    private final ClassProvider[] classProviders;
+	private final ClassProvider[] classProviders;
 
-    public CombiningClassProvider(ClassProvider... classProviders) {
-        this.classProviders = classProviders;
-    }
+	public CombiningClassProvider(ClassProvider... classProviders) {
+		this.classProviders = classProviders;
+	}
 
-    @Override
-    @Nullable
-    public ClassNode get(String name) {
-        for (ClassProvider cp : classProviders) {
-            ClassNode node = cp.get(name);
+	@Override
+	@Nullable
+	public ClassNode get(String name) {
+		for (ClassProvider cp : this.classProviders) {
+			ClassNode node = cp.get(name);
 
-            if (node != null) {
-                return node;
-            }
-        }
+			if (node != null) {
+				return node;
+			}
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    @Override
-    public Collection<String> getClassNames() {
-        return Arrays.stream(classProviders).flatMap(c -> c.getClassNames().stream()).toList();
-    }
+	@Override
+	public Collection<String> getClassNames() {
+		return Arrays.stream(this.classProviders).flatMap(c -> c.getClassNames().stream()).toList();
+	}
 
-    @Override
-    public List<String> getClasses(String className) {
-        List<String> classes = new ArrayList<>();
-        for (ClassProvider cp : classProviders) {
-            classes.addAll(cp.getClasses(className));
-        }
+	@Override
+	public List<String> getClasses(String className) {
+		List<String> classes = new ArrayList<>();
+		for (ClassProvider cp : this.classProviders) {
+			classes.addAll(cp.getClasses(className));
+		}
 
-        return classes;
-    }
+		return classes;
+	}
 }

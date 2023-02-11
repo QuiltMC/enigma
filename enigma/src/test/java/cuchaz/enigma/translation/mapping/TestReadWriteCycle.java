@@ -23,7 +23,6 @@ import java.io.IOException;
  * Javadoc skipped for Tiny (v1) as it doesn't support them.
  */
 public class TestReadWriteCycle {
-
 	private final MappingSaveParameters parameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
 
 	private final Pair<ClassEntry, EntryMapping> testClazz = new Pair<>(
@@ -51,8 +50,8 @@ public class TestReadWriteCycle {
 			new EntryMapping("mapped4", "this is method 2")
 	);
 
-	private void insertMapping(EntryTree<EntryMapping> mappings, Pair<? extends Entry<?>, EntryMapping> mappingPair){
-		mappings.insert(mappingPair.a, mappingPair.b);
+	private void insertMapping(EntryTree<EntryMapping> mappings, Pair<? extends Entry<?>, EntryMapping> mappingPair) {
+		mappings.insert(mappingPair.a(), mappingPair.b());
 	}
 
 	private void testReadWriteCycle(MappingFormat mappingFormat, boolean supportsJavadoc, String tmpNameSuffix) throws IOException, MappingParseException {
@@ -64,11 +63,11 @@ public class TestReadWriteCycle {
 		insertMapping(testMappings, testMethod1);
 		insertMapping(testMappings, testMethod2);
 
-		Assertions.assertTrue(testMappings.contains(testClazz.a), "Test mapping insertion failed: testClazz");
-		Assertions.assertTrue(testMappings.contains(testField1.a), "Test mapping insertion failed: testField1");
-		Assertions.assertTrue(testMappings.contains(testField2.a), "Test mapping insertion failed: testField2");
-		Assertions.assertTrue(testMappings.contains(testMethod1.a), "Test mapping insertion failed: testMethod1");
-		Assertions.assertTrue(testMappings.contains(testMethod2.a), "Test mapping insertion failed: testMethod2");
+		Assertions.assertTrue(testMappings.contains(testClazz.a()), "Test mapping insertion failed: testClazz");
+		Assertions.assertTrue(testMappings.contains(testField1.a()), "Test mapping insertion failed: testField1");
+		Assertions.assertTrue(testMappings.contains(testField2.a()), "Test mapping insertion failed: testField2");
+		Assertions.assertTrue(testMappings.contains(testMethod1.a()), "Test mapping insertion failed: testMethod1");
+		Assertions.assertTrue(testMappings.contains(testMethod2.a()), "Test mapping insertion failed: testMethod2");
 
 		File tempFile = File.createTempFile("readWriteCycle", tmpNameSuffix);
 		tempFile.delete();//remove the auto created file
@@ -79,24 +78,24 @@ public class TestReadWriteCycle {
 
 		EntryTree<EntryMapping> loadedMappings = mappingFormat.read(tempFile.toPath(), ProgressListener.none(), parameters);
 
-		Assertions.assertTrue(loadedMappings.contains(testClazz.a), "Loaded mappings don't contain testClazz");
-		Assertions.assertTrue(loadedMappings.contains(testField1.a), "Loaded mappings don't contain testField1");
-		Assertions.assertTrue(loadedMappings.contains(testField2.a), "Loaded mappings don't contain testField2");
-		Assertions.assertTrue(loadedMappings.contains(testMethod1.a), "Loaded mappings don't contain testMethod1");
-		Assertions.assertTrue(loadedMappings.contains(testMethod2.a), "Loaded mappings don't contain testMethod2");
+		Assertions.assertTrue(loadedMappings.contains(testClazz.a()), "Loaded mappings don't contain testClazz");
+		Assertions.assertTrue(loadedMappings.contains(testField1.a()), "Loaded mappings don't contain testField1");
+		Assertions.assertTrue(loadedMappings.contains(testField2.a()), "Loaded mappings don't contain testField2");
+		Assertions.assertTrue(loadedMappings.contains(testMethod1.a()), "Loaded mappings don't contain testMethod1");
+		Assertions.assertTrue(loadedMappings.contains(testMethod2.a()), "Loaded mappings don't contain testMethod2");
 
-		Assertions.assertEquals(testClazz.b.targetName(), loadedMappings.get(testClazz.a).targetName(), "Incorrect mapping: testClazz");
-		Assertions.assertEquals(testField1.b.targetName(), loadedMappings.get(testField1.a).targetName(), "Incorrect mapping: testField1");
-		Assertions.assertEquals(testField2.b.targetName(), loadedMappings.get(testField2.a).targetName(), "Incorrect mapping: testField2");
-		Assertions.assertEquals(testMethod1.b.targetName(), loadedMappings.get(testMethod1.a).targetName(), "Incorrect mapping: testMethod1");
-		Assertions.assertEquals(testMethod2.b.targetName(), loadedMappings.get(testMethod2.a).targetName(), "Incorrect mapping: testMethod2");
+		Assertions.assertEquals(testClazz.b().targetName(), loadedMappings.get(testClazz.a()).targetName(), "Incorrect mapping: testClazz");
+		Assertions.assertEquals(testField1.b().targetName(), loadedMappings.get(testField1.a()).targetName(), "Incorrect mapping: testField1");
+		Assertions.assertEquals(testField2.b().targetName(), loadedMappings.get(testField2.a()).targetName(), "Incorrect mapping: testField2");
+		Assertions.assertEquals(testMethod1.b().targetName(), loadedMappings.get(testMethod1.a()).targetName(), "Incorrect mapping: testMethod1");
+		Assertions.assertEquals(testMethod2.b().targetName(), loadedMappings.get(testMethod2.a()).targetName(), "Incorrect mapping: testMethod2");
 
 		if (supportsJavadoc) {
-			Assertions.assertEquals(testClazz.b.javadoc(), loadedMappings.get(testClazz.a).javadoc(), "Incorrect javadoc: testClazz");
-			Assertions.assertEquals(testField1.b.javadoc(), loadedMappings.get(testField1.a).javadoc(), "Incorrect javadoc: testField1");
-			Assertions.assertEquals(testField2.b.javadoc(), loadedMappings.get(testField2.a).javadoc(), "Incorrect javadoc: testField2");
-			Assertions.assertEquals(testMethod1.b.javadoc(), loadedMappings.get(testMethod1.a).javadoc(), "Incorrect javadoc: testMethod1");
-			Assertions.assertEquals(testMethod2.b.javadoc(), loadedMappings.get(testMethod2.a).javadoc(), "Incorrect javadoc: testMethod2");
+			Assertions.assertEquals(testClazz.b().javadoc(), loadedMappings.get(testClazz.a()).javadoc(), "Incorrect javadoc: testClazz");
+			Assertions.assertEquals(testField1.b().javadoc(), loadedMappings.get(testField1.a()).javadoc(), "Incorrect javadoc: testField1");
+			Assertions.assertEquals(testField2.b().javadoc(), loadedMappings.get(testField2.a()).javadoc(), "Incorrect javadoc: testField2");
+			Assertions.assertEquals(testMethod1.b().javadoc(), loadedMappings.get(testMethod1.a()).javadoc(), "Incorrect javadoc: testMethod1");
+			Assertions.assertEquals(testMethod2.b().javadoc(), loadedMappings.get(testMethod2.a()).javadoc(), "Incorrect javadoc: testMethod2");
 		}
 
 		tempFile.delete();

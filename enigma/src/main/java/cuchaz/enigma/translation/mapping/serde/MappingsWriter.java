@@ -11,6 +11,6 @@ public interface MappingsWriter {
 	void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters);
 
 	default void write(EntryTree<EntryMapping> mappings, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
-		write(mappings, MappingDelta.added(mappings), path, progress, saveParameters);
+		this.write(mappings, MappingDelta.added(mappings), path, progress, saveParameters);
 	}
 }

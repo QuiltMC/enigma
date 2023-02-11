@@ -22,7 +22,7 @@ import cuchaz.enigma.source.procyon.EntryParser;
 import cuchaz.enigma.translation.representation.entry.*;
 
 public class SourceIndexClassVisitor extends SourceIndexVisitor {
-	private ClassDefEntry classEntry;
+	private final ClassDefEntry classEntry;
 
 	public SourceIndexClassVisitor(ClassDefEntry classEntry) {
 		this.classEntry = classEntry;
@@ -39,7 +39,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 			return node.acceptVisitor(new SourceIndexClassVisitor(classEntry), index);
 		}
 
-		return visitChildren(node, index);
+		return this.visitChildren(node, index);
 	}
 
 	@Override
@@ -50,7 +50,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 			index.addReference(TokenFactory.createToken(index, node.getIdentifierToken()), classEntry, this.classEntry);
 		}
 
-		return visitChildren(node, index);
+		return this.visitChildren(node, index);
 	}
 
 	@Override
@@ -81,7 +81,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 		assert (node.getVariables().size() == 1);
 		VariableInitializer variable = node.getVariables().firstOrNullObject();
 		index.addDeclaration(TokenFactory.createToken(index, variable.getNameToken()), fieldEntry);
-		return visitChildren(node, index);
+		return this.visitChildren(node, index);
 	}
 
 	@Override
@@ -90,6 +90,6 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 		FieldDefinition def = node.getUserData(Keys.FIELD_DEFINITION);
 		FieldDefEntry fieldEntry = EntryParser.parse(def);
 		index.addDeclaration(TokenFactory.createToken(index, node.getNameToken()), fieldEntry);
-		return visitChildren(node, index);
+		return this.visitChildren(node, index);
 	}
 }

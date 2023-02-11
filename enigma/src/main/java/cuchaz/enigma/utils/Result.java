@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public final class Result<T, E> {
-
 	private final T ok;
 	private final E err;
 
@@ -85,15 +84,15 @@ public final class Result<T, E> {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (o == null || this.getClass() != o.getClass()) return false;
 		Result<?, ?> result = (Result<?, ?>) o;
-		return Objects.equals(ok, result.ok) &&
-				Objects.equals(err, result.err);
+		return Objects.equals(this.ok, result.ok) &&
+				Objects.equals(this.err, result.err);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(ok, err);
+		return Objects.hash(this.ok, this.err);
 	}
 
 	@Override
@@ -104,5 +103,4 @@ public final class Result<T, E> {
 			return String.format("Result.Err(%s)", this.err);
 		}
 	}
-
 }

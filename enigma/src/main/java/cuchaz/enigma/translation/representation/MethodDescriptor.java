@@ -14,9 +14,7 @@ package cuchaz.enigma.translation.representation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
-
-import com.google.common.collect.Lists;
+import java.util.function.UnaryOperator;
 
 import cuchaz.enigma.translation.Translatable;
 import cuchaz.enigma.translation.TranslateResult;
@@ -27,13 +25,12 @@ import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
 public class MethodDescriptor implements Translatable {
-
-	private List<TypeDescriptor> argumentDescs;
+	private final List<TypeDescriptor> argumentDescs;
 	private TypeDescriptor returnDesc;
 
 	public MethodDescriptor(String desc) {
 		try {
-			this.argumentDescs = Lists.newArrayList();
+			this.argumentDescs = new ArrayList<>();
 			int i = 0;
 			while (i < desc.length()) {
 				char c = desc.charAt(i);
@@ -82,15 +79,14 @@ public class MethodDescriptor implements Translatable {
 	}
 
 	public Iterable<TypeDescriptor> types() {
-		List<TypeDescriptor> descs = Lists.newArrayList();
-		descs.addAll(this.argumentDescs);
+		List<TypeDescriptor> descs = new ArrayList<>(this.argumentDescs);
 		descs.add(this.returnDesc);
 		return descs;
 	}
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof MethodDescriptor && equals((MethodDescriptor) other);
+		return other instanceof MethodDescriptor descriptor && this.equals(descriptor);
 	}
 
 	public boolean equals(MethodDescriptor other) {
@@ -103,7 +99,7 @@ public class MethodDescriptor implements Translatable {
 	}
 
 	public boolean hasClass(ClassEntry classEntry) {
-		for (TypeDescriptor desc : types()) {
+		for (TypeDescriptor desc : this.types()) {
 			if (desc.containsType() && desc.getTypeEntry().equals(classEntry)) {
 				return true;
 			}
@@ -111,24 +107,24 @@ public class MethodDescriptor implements Translatable {
 		return false;
 	}
 
-	public MethodDescriptor remap(Function<String, String> remapper) {
-		List<TypeDescriptor> argumentDescs = new ArrayList<>(this.argumentDescs.size());
+	public MethodDescriptor remap(UnaryOperator<String> remapper) {
+		List<TypeDescriptor> argumentDescriptors = new ArrayList<>(this.argumentDescs.size());
 		for (TypeDescriptor desc : this.argumentDescs) {
-			argumentDescs.add(desc.remap(remapper));
+			argumentDescriptors.add(desc.remap(remapper));
 		}
-		return new MethodDescriptor(argumentDescs, returnDesc.remap(remapper));
+		return new MethodDescriptor(argumentDescriptors, this.returnDesc.remap(remapper));
 	}
 
 	@Override
 	public TranslateResult<MethodDescriptor> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
-		List<TypeDescriptor> translatedArguments = new ArrayList<>(argumentDescs.size());
-		for (TypeDescriptor argument : argumentDescs) {
+		List<TypeDescriptor> translatedArguments = new ArrayList<>(this.argumentDescs.size());
+		for (TypeDescriptor argument : this.argumentDescs) {
 			translatedArguments.add(translator.translate(argument));
 		}
-		return TranslateResult.ungrouped(new MethodDescriptor(translatedArguments, translator.translate(returnDesc)));
+		return TranslateResult.ungrouped(new MethodDescriptor(translatedArguments, translator.translate(this.returnDesc)));
 	}
 
 	public boolean canConflictWith(MethodDescriptor descriptor) {
-		return descriptor.argumentDescs.equals(argumentDescs);
+		return descriptor.argumentDescs.equals(this.argumentDescs);
 	}
 }

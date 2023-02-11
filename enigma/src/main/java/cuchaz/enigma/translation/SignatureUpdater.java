@@ -11,14 +11,12 @@
 
 package cuchaz.enigma.translation;
 
-import com.google.common.collect.Lists;
-
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SignatureUpdater {
-
 	public static String update(String signature, ClassNameUpdater updater) {
 		try {
 			StringBuilder buf = new StringBuilder();
@@ -78,7 +76,7 @@ public class SignatureUpdater {
 	}
 
 	public static List<String> getClasses(String signature) {
-		final List<String> classNames = Lists.newArrayList();
+		final List<String> classNames = new ArrayList<>();
 		update(signature, className -> {
 			classNames.add(className);
 			return className;

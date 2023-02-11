@@ -17,103 +17,103 @@ import org.objectweb.asm.Opcodes;
 import java.util.Collection;
 
 public class EnigmaJavadocProvider implements IFabricJavadocProvider {
-    private final EntryRemapper remapper;
+	private final EntryRemapper remapper;
 
-    public EnigmaJavadocProvider(EntryRemapper remapper) {
-        this.remapper = remapper;
-    }
+	public EnigmaJavadocProvider(EntryRemapper remapper) {
+		this.remapper = remapper;
+	}
 
-    private static ClassEntry getClassEntry(StructClass structClass) {
-        return new ClassEntry(structClass.qualifiedName);
-    }
+	private static ClassEntry getClassEntry(StructClass structClass) {
+		return new ClassEntry(structClass.qualifiedName);
+	}
 
-    private static FieldEntry getFieldEntry(StructClass structClass, StructField field) {
-        return FieldEntry.parse(structClass.qualifiedName, field.getName(), field.getDescriptor());
-    }
+	private static FieldEntry getFieldEntry(StructClass structClass, StructField field) {
+		return FieldEntry.parse(structClass.qualifiedName, field.getName(), field.getDescriptor());
+	}
 
-    private static MethodEntry getMethodEntry(StructClass structClass, StructMethod method) {
-        return MethodEntry.parse(structClass.qualifiedName, method.getName(), method.getDescriptor());
-    }
+	private static MethodEntry getMethodEntry(StructClass structClass, StructMethod method) {
+		return MethodEntry.parse(structClass.qualifiedName, method.getName(), method.getDescriptor());
+	}
 
-    private static boolean isRecord(StructClass structClass) {
-        return structClass.getRecordComponents() != null;
-    }
+	private static boolean isRecord(StructClass structClass) {
+		return structClass.getRecordComponents() != null;
+	}
 
-    @Override
-    public String getClassDoc(StructClass structClass) {
-        if (remapper != null) {
-            EntryMapping mapping = remapper.getDeobfMapping(getClassEntry(structClass));
-            StringBuilder builder = new StringBuilder();
+	@Override
+	public String getClassDoc(StructClass structClass) {
+		if (this.remapper != null) {
+			EntryMapping mapping = this.remapper.getDeobfMapping(getClassEntry(structClass));
+			StringBuilder builder = new StringBuilder();
 
-            if (mapping.javadoc() != null) {
-                builder.append(mapping.javadoc());
-            }
+			if (mapping.javadoc() != null) {
+				builder.append(mapping.javadoc());
+			}
 
-            builder.append('\n');
+			builder.append('\n');
 
-            if (isRecord(structClass)) {
-                for (StructRecordComponent component : structClass.getRecordComponents()) {
-                    EntryMapping componentMapping = remapper.getDeobfMapping(getFieldEntry(structClass, component));
+			if (isRecord(structClass)) {
+				for (StructRecordComponent component : structClass.getRecordComponents()) {
+					EntryMapping componentMapping = this.remapper.getDeobfMapping(getFieldEntry(structClass, component));
 
-                    if (componentMapping.javadoc() != null) {
-                        builder.append("\n@param ").append(mapping.targetName()).append(' ').append(componentMapping.javadoc());
-                    }
-                }
-            }
+					if (componentMapping.javadoc() != null) {
+						builder.append("\n@param ").append(mapping.targetName()).append(' ').append(componentMapping.javadoc());
+					}
+				}
+			}
 
-            String javadoc = builder.toString();
-            if (!javadoc.isBlank()) {
-                return javadoc.trim();
-            }
-        }
+			String javadoc = builder.toString();
+			if (!javadoc.isBlank()) {
+				return javadoc.trim();
+			}
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    @Override
-    public String getFieldDoc(StructClass structClass, StructField structField) {
-        boolean component = isRecord(structClass) && !structField.hasModifier(Opcodes.ACC_STATIC);
-        if (remapper != null && !component) {
-            EntryMapping mapping = remapper.getDeobfMapping(getFieldEntry(structClass, structField));
-            return mapping.javadoc();
-        }
+	@Override
+	public String getFieldDoc(StructClass structClass, StructField structField) {
+		boolean component = isRecord(structClass) && !structField.hasModifier(Opcodes.ACC_STATIC);
+		if (this.remapper != null && !component) {
+			EntryMapping mapping = this.remapper.getDeobfMapping(getFieldEntry(structClass, structField));
+			return mapping.javadoc();
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    @Override
-    public String getMethodDoc(StructClass structClass, StructMethod structMethod) {
-        if (remapper != null) {
-            MethodEntry entry = getMethodEntry(structClass, structMethod);
-            EntryMapping mapping = remapper.getDeobfMapping(entry);
-            StringBuilder builder = new StringBuilder();
+	@Override
+	public String getMethodDoc(StructClass structClass, StructMethod structMethod) {
+		if (this.remapper != null) {
+			MethodEntry entry = getMethodEntry(structClass, structMethod);
+			EntryMapping mapping = this.remapper.getDeobfMapping(entry);
+			StringBuilder builder = new StringBuilder();
 
-            if (mapping.javadoc() != null) {
-                builder.append(mapping.javadoc());
-            }
+			if (mapping.javadoc() != null) {
+				builder.append(mapping.javadoc());
+			}
 
-            builder.append('\n');
+			builder.append('\n');
 
-            Collection<Entry<?>> children = remapper.getObfChildren(entry);
+			Collection<Entry<?>> children = this.remapper.getObfChildren(entry);
 
-            if (children != null && !children.isEmpty()) {
-                for (Entry<?> child : children) {
-                    if (child instanceof LocalVariableEntry) {
-                        EntryMapping paramMapping = remapper.getDeobfMapping(child);
+			if (children != null && !children.isEmpty()) {
+				for (Entry<?> child : children) {
+					if (child instanceof LocalVariableEntry) {
+						EntryMapping paramMapping = this.remapper.getDeobfMapping(child);
 
-                        if (paramMapping.javadoc() != null) {
-                            builder.append("\n@param ").append(paramMapping.targetName()).append(' ').append(paramMapping.javadoc());
-                        }
-                    }
-                }
-            }
+						if (paramMapping.javadoc() != null) {
+							builder.append("\n@param ").append(paramMapping.targetName()).append(' ').append(paramMapping.javadoc());
+						}
+					}
+				}
+			}
 
-            String javadoc = builder.toString();
-            if (!javadoc.isBlank()) {
-                return javadoc.trim();
-            }
-        }
+			String javadoc = builder.toString();
+			if (!javadoc.isBlank()) {
+				return javadoc.trim();
+			}
+		}
 
-        return null;
-    }
+		return null;
+	}
 }

@@ -5,7 +5,6 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 public class ServerAddress {
-
 	public final String address;
 	public final int port;
 
@@ -59,20 +58,19 @@ public class ServerAddress {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (o == null || this.getClass() != o.getClass()) return false;
 		ServerAddress that = (ServerAddress) o;
-		return port == that.port &&
-				Objects.equals(address, that.address);
+		return this.port == that.port &&
+				Objects.equals(this.address, that.address);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(address, port);
+		return Objects.hash(this.address, this.port);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("ServerAddress { address: '%s', port: %d }", address, port);
+		return String.format("ServerAddress { address: '%s', port: %d }", this.address, this.port);
 	}
-
 }

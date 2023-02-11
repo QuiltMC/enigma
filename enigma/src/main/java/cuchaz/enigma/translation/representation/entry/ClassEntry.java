@@ -38,9 +38,9 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	public ClassEntry(@Nullable ClassEntry parent, String className, @Nullable String javadocs) {
 		super(parent, className, javadocs);
 		if (parent != null) {
-			fullName = parent.getFullName() + "$" + name;
+			this.fullName = parent.getFullName() + "$" + this.name;
 		} else {
-			fullName = name;
+			this.fullName = this.name;
 		}
 
 		if (parent == null && className.indexOf('.') >= 0) {
@@ -60,11 +60,11 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public String getSimpleName() {
-		int packagePos = name.lastIndexOf('/');
+		int packagePos = this.name.lastIndexOf('/');
 		if (packagePos > 0) {
-			return name.substring(packagePos + 1);
+			return this.name.substring(packagePos + 1);
 		}
-		return name;
+		return this.name;
 	}
 
 	@Override
@@ -82,16 +82,16 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public TranslateResult<? extends ClassEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
-		if (name.charAt(0) == '[') {
-			TranslateResult<TypeDescriptor> translatedName = translator.extendedTranslate(new TypeDescriptor(name));
-			return translatedName.map(desc -> new ClassEntry(parent, desc.toString()));
+		if (this.name.charAt(0) == '[') {
+			TranslateResult<TypeDescriptor> translatedName = translator.extendedTranslate(new TypeDescriptor(this.name));
+			return translatedName.map(desc -> new ClassEntry(this.parent, desc.toString()));
 		}
 
-		String translatedName = mapping.targetName() != null ? mapping.targetName() : name;
+		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new ClassEntry(parent, translatedName, docs)
+				new ClassEntry(this.parent, translatedName, docs)
 		);
 	}
 
@@ -102,16 +102,16 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public int hashCode() {
-		return fullName.hashCode();
+		return this.fullName.hashCode();
 	}
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof ClassEntry && equals((ClassEntry) other);
+		return other instanceof ClassEntry entry && this.equals(entry);
 	}
 
 	public boolean equals(ClassEntry other) {
-		return other != null && Objects.equals(parent, other.parent) && this.name.equals(other.name);
+		return other != null && Objects.equals(this.parent, other.parent) && this.name.equals(other.name);
 	}
 
 	@Override
@@ -131,41 +131,41 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public ClassEntry withName(String name) {
-		return new ClassEntry(parent, name, javadocs);
+		return new ClassEntry(this.parent, name, this.javadocs);
 	}
 
 	@Override
 	public ClassEntry withParent(ClassEntry parent) {
-		return new ClassEntry(parent, name, javadocs);
+		return new ClassEntry(parent, this.name, this.javadocs);
 	}
 
 	@Override
 	public String toString() {
-		return getFullName();
+		return this.getFullName();
 	}
 
 	public String getPackageName() {
-		return getParentPackage(fullName);
+		return getParentPackage(this.fullName);
 	}
 
 	/**
 	 * Returns whether this class entry has a parent, and therefore is an inner class.
 	 */
 	public boolean isInnerClass() {
-		return parent != null;
+		return this.parent != null;
 	}
 
 	@Nullable
 	public ClassEntry getOuterClass() {
-		return parent;
+		return this.parent;
 	}
 
 	@Nonnull
 	public ClassEntry getOutermostClass() {
-		if (parent == null) {
+		if (this.parent == null) {
 			return this;
 		}
-		return parent.getOutermostClass();
+		return this.parent.getOutermostClass();
 	}
 
 	public ClassEntry buildClassEntry(List<ClassEntry> classChain) {
@@ -187,7 +187,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	public boolean isJre() {
-		String packageName = getPackageName();
+		String packageName = this.getPackageName();
 		return packageName != null && (packageName.startsWith("java/") || packageName.startsWith("javax/"));
 	}
 
@@ -240,20 +240,22 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public String getSourceRemapName() {
-		ClassEntry outerClass = getOuterClass();
+		ClassEntry outerClass = this.getOuterClass();
 		if (outerClass != null) {
-			return outerClass.getSourceRemapName() + "." + name;
+			return outerClass.getSourceRemapName() + "." + this.name;
 		}
-		return getSimpleName();
+		return this.getSimpleName();
 	}
 
 	@Override
 	public int compareTo(ClassEntry entry) {
-		String fullName = getFullName();
+		String name = this.getFullName();
 		String otherFullName = entry.getFullName();
-		if (fullName.length() != otherFullName.length()) {
-			return fullName.length() - otherFullName.length();
+
+		if (name.length() != otherFullName.length()) {
+			return name.length() - otherFullName.length();
 		}
-		return fullName.compareTo(otherFullName);
+
+		return name.compareTo(otherFullName);
 	}
 }

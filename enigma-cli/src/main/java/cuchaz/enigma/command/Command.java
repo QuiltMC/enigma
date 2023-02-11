@@ -143,7 +143,7 @@ public abstract class Command {
 		}
 		Path file = Paths.get(path).toAbsolutePath();
 		if (!Files.exists(file)) {
-			throw new IllegalArgumentException("Cannot find file: " + file.toString());
+			throw new IllegalArgumentException("Cannot find file: " + file);
 		}
 		return file;
 	}

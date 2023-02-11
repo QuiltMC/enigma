@@ -21,10 +21,9 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public class FieldReferenceTreeNode extends DefaultMutableTreeNode implements ReferenceTreeNode<FieldEntry, MethodDefEntry> {
-
 	private final Translator translator;
-	private FieldEntry entry;
-	private EntryReference<FieldEntry, MethodDefEntry> reference;
+	private final FieldEntry entry;
+	private final EntryReference<FieldEntry, MethodDefEntry> reference;
 
 	public FieldReferenceTreeNode(Translator translator, FieldEntry entry) {
 		this.translator = translator;
@@ -51,9 +50,9 @@ public class FieldReferenceTreeNode extends DefaultMutableTreeNode implements Re
 	@Override
 	public String toString() {
 		if (this.reference != null) {
-			return String.format("%s", translator.translate(this.reference.context));
+			return String.format("%s", this.translator.translate(this.reference.context));
 		}
-		return translator.translate(entry).toString();
+		return this.translator.translate(this.entry).toString();
 	}
 
 	public void load(JarIndex index, boolean recurse) {
@@ -62,16 +61,16 @@ public class FieldReferenceTreeNode extends DefaultMutableTreeNode implements Re
 		// get all the child nodes
 		if (this.reference == null) {
 			for (EntryReference<FieldEntry, MethodDefEntry> reference : referenceIndex.getReferencesToField(this.entry)) {
-				add(new FieldReferenceTreeNode(translator, reference));
+				this.add(new FieldReferenceTreeNode(this.translator, reference));
 			}
 		} else {
 			for (EntryReference<MethodEntry, MethodDefEntry> reference : referenceIndex.getReferencesToMethod(this.reference.context)) {
-				add(new MethodReferenceTreeNode(translator, reference));
+				this.add(new MethodReferenceTreeNode(this.translator, reference));
 			}
 		}
 
-		if (recurse && children != null) {
-			for (Object node : children) {
+		if (recurse && this.children != null) {
+			for (Object node : this.children) {
 				if (node instanceof MethodReferenceTreeNode methodNode) {
 					methodNode.load(index, true, false);
 				} else if (node instanceof FieldReferenceTreeNode fieldNode) {

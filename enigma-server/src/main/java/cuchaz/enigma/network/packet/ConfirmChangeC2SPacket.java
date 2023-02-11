@@ -23,11 +23,11 @@ public class ConfirmChangeC2SPacket implements Packet<ServerPacketHandler> {
 
 	@Override
 	public void write(DataOutput output) throws IOException {
-		output.writeShort(syncId);
+		output.writeShort(this.syncId);
 	}
 
 	@Override
 	public void handle(ServerPacketHandler handler) {
-		handler.getServer().confirmChange(handler.getClient(), syncId);
+		handler.server().confirmChange(handler.client(), this.syncId);
 	}
 }

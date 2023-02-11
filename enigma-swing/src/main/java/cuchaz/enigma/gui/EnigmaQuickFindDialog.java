@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License
- *       at http://www.apache.org/licenses/LICENSE-2.0
+ *	   at http://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -67,7 +67,7 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 
 	private final Markers.SimpleMarker marker = new Markers.SimpleMarker(Color.PINK);
 	private WeakReference<JTextComponent> target;
-	private WeakReference<DocumentSearchData> searchData;
+	private final WeakReference<DocumentSearchData> searchData;
 	private int prevCaretPos;
 
 	private JToolBar toolBar;
@@ -87,7 +87,7 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 	public EnigmaQuickFindDialog(JTextComponent target, DocumentSearchData searchData) {
 		super(SwingUtilities.getWindowAncestor(target), ModalityType.MODELESS);
 
-		initComponents();
+		this.initComponents();
 		SwingUtils.addEscapeListener(this);
 		this.searchData = new WeakReference<>(searchData);
 	}
@@ -100,223 +100,223 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 	}
 
 	public void showFor(JTextComponent target) {
-		prevCaretPos = target.getCaretPosition();
+		this.prevCaretPos = target.getCaretPosition();
 
 		Container view = target.getParent();
-		Dimension size = getSize();
+		Dimension size = this.getSize();
 
 		// Set the width of the dialog to the width of the target
 		size.width = target.getVisibleRect().width;
-		setSize(size);
+		this.setSize(size);
 
 		// Put the dialog at the bottom of the target
 		Point loc = new Point(0, view.getHeight() - size.height);
-		setLocationRelativeTo(view);
+		this.setLocationRelativeTo(view);
 		SwingUtilities.convertPointToScreen(loc, view);
-		setLocation(loc);
+		this.setLocation(loc);
 
-		searchField.setFont(target.getFont());
-		searchField.getDocument().addDocumentListener(this);
+		this.searchField.setFont(target.getFont());
+		this.searchField.getDocument().addDocumentListener(this);
 
 		// Close the dialog when clicking outside it
 		WindowFocusListener focusListener = new WindowAdapter() {
 			@Override
 			public void windowLostFocus(WindowEvent e) {
-				setVisible(false);
+				EnigmaQuickFindDialog.this.setVisible(false);
 				target.getDocument().removeDocumentListener(EnigmaQuickFindDialog.this);
-				Markers.removeMarkers(target, marker);
-				removeWindowListener(this);
+				Markers.removeMarkers(target, EnigmaQuickFindDialog.this.marker);
+				EnigmaQuickFindDialog.this.removeWindowListener(this);
 			}
 		};
-		addWindowFocusListener(focusListener);
+		this.addWindowFocusListener(focusListener);
 
 		this.target = new WeakReference<>(target);
 
 		DocumentSearchData searchData = this.searchData.get();
-		wrapCheckBox.setSelected(searchData.isWrap());
+		this.wrapCheckBox.setSelected(searchData.isWrap());
 
 		// Set the search field to the current selection
 		String selectedText = target.getSelectedText();
 		if (selectedText != null) {
-			searchField.setText(selectedText);
+			this.searchField.setText(selectedText);
 		} else {
 			Pattern pattern = searchData.getPattern();
 			if (pattern != null) {
-				searchField.setText(pattern.pattern());
+				this.searchField.setText(pattern.pattern());
 			}
 		}
-		searchField.selectAll();
+		this.searchField.selectAll();
 
-		setVisible(true);
+		this.setVisible(true);
 	}
 
 	private void initComponents() {
-		toolBar = new JToolBar();
-		statusLabel = new JLabel();
-		label = new JLabel();
-		searchField = new JTextField();
-		prevButton = new JButton();
-		nextButton = new JButton();
-		ignoreCaseCheckBox = new JCheckBox();
-		regexCheckBox = new JCheckBox();
-		wrapCheckBox = new JCheckBox();
+		this.toolBar = new JToolBar();
+		this.statusLabel = new JLabel();
+		this.label = new JLabel();
+		this.searchField = new JTextField();
+		this.prevButton = new JButton();
+		this.nextButton = new JButton();
+		this.ignoreCaseCheckBox = new JCheckBox();
+		this.regexCheckBox = new JCheckBox();
+		this.wrapCheckBox = new JCheckBox();
 
-		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		setBackground(Color.DARK_GRAY);
-		setName("QuickFindDialog");
-		setResizable(false);
-		setUndecorated(true);
+		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		this.setBackground(Color.DARK_GRAY);
+		this.setName("QuickFindDialog");
+		this.setResizable(false);
+		this.setUndecorated(true);
 
-		toolBar.setBorder(BorderFactory.createEtchedBorder());
-		toolBar.setFloatable(false);
-		toolBar.setRollover(true);
-		toolBar.addSeparator();
+		this.toolBar.setBorder(BorderFactory.createEtchedBorder());
+		this.toolBar.setFloatable(false);
+		this.toolBar.setRollover(true);
+		this.toolBar.addSeparator();
 
-		label.setLabelFor(searchField);
+		this.label.setLabelFor(this.searchField);
 		ResourceBundle bundle = ResourceBundle.getBundle("de/sciss/syntaxpane/Bundle");
-		label.setText(bundle.getString("QuickFindDialog.jLabel1.text"));
-		toolBar.add(label);
-		toolBar.addSeparator();
+		this.label.setText(bundle.getString("QuickFindDialog.jLabel1.text"));
+		this.toolBar.add(this.label);
+		this.toolBar.addSeparator();
 
-		searchField.setColumns(30);
-		searchField.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-		searchField.setMaximumSize(new Dimension(SEARCH_FIELD_MAX_WIDTH, SEARCH_FIELD_MAX_HEIGHT));
-		searchField.setMinimumSize(new Dimension(SEARCH_FIELD_MIN_WIDTH, SEARCH_FIELD_MIN_HEIGHT));
-		searchField.addKeyListener(GuiUtil.onKeyPress(e -> {
+		this.searchField.setColumns(30);
+		this.searchField.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+		this.searchField.setMaximumSize(new Dimension(SEARCH_FIELD_MAX_WIDTH, SEARCH_FIELD_MAX_HEIGHT));
+		this.searchField.setMinimumSize(new Dimension(SEARCH_FIELD_MIN_WIDTH, SEARCH_FIELD_MIN_HEIGHT));
+		this.searchField.addKeyListener(GuiUtil.onKeyPress(e -> {
 			if (KeyBinds.QUICK_FIND_DIALOG_PREVIOUS.matches(e)) {
-				prevButton.doClick();
+				this.prevButton.doClick();
 			} else if (KeyBinds.QUICK_FIND_DIALOG_NEXT.matches(e)) {
-				nextButton.doClick();
+				this.nextButton.doClick();
 			}
 		}));
-		toolBar.add(searchField);
-		toolBar.addSeparator();
+		this.toolBar.add(this.searchField);
+		this.toolBar.addSeparator();
 
-		setButtonIcon(prevButton, "go-up.png");
-		prevButton.setHorizontalTextPosition(SwingConstants.CENTER);
-		prevButton.setFocusable(false);
-		prevButton.setOpaque(false);
-		prevButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-		prevButton.addActionListener(this::prevButtonActionPerformed);
-		toolBar.add(prevButton);
+		setButtonIcon(this.prevButton, "go-up.png");
+		this.prevButton.setHorizontalTextPosition(SwingConstants.CENTER);
+		this.prevButton.setFocusable(false);
+		this.prevButton.setOpaque(false);
+		this.prevButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+		this.prevButton.addActionListener(this::prevButtonActionPerformed);
+		this.toolBar.add(this.prevButton);
 
-		setButtonIcon(nextButton, "go-down.png");
-		nextButton.setHorizontalTextPosition(SwingConstants.CENTER);
-		nextButton.setMargin(new Insets(2, 2, 2, 2));
-		nextButton.setFocusable(false);
-		nextButton.setOpaque(false);
-		nextButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-		nextButton.addActionListener(this::nextButtonActionPerformed);
-		toolBar.add(nextButton);
+		setButtonIcon(this.nextButton, "go-down.png");
+		this.nextButton.setHorizontalTextPosition(SwingConstants.CENTER);
+		this.nextButton.setMargin(new Insets(2, 2, 2, 2));
+		this.nextButton.setFocusable(false);
+		this.nextButton.setOpaque(false);
+		this.nextButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+		this.nextButton.addActionListener(this::nextButtonActionPerformed);
+		this.toolBar.add(this.nextButton);
 
-		ignoreCaseCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_IGNORE_CASE.getKeyCode());
-		ignoreCaseCheckBox.setText(bundle.getString("QuickFindDialog.jChkIgnoreCase.text"));
-		ignoreCaseCheckBox.setFocusable(false);
-		ignoreCaseCheckBox.setOpaque(false);
-		ignoreCaseCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
-		ignoreCaseCheckBox.addActionListener(this);
-		toolBar.add(ignoreCaseCheckBox);
+		this.ignoreCaseCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_IGNORE_CASE.getKeyCode());
+		this.ignoreCaseCheckBox.setText(bundle.getString("QuickFindDialog.jChkIgnoreCase.text"));
+		this.ignoreCaseCheckBox.setFocusable(false);
+		this.ignoreCaseCheckBox.setOpaque(false);
+		this.ignoreCaseCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
+		this.ignoreCaseCheckBox.addActionListener(this);
+		this.toolBar.add(this.ignoreCaseCheckBox);
 
-		regexCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_REGEX.getKeyCode());
-		regexCheckBox.setText(bundle.getString("QuickFindDialog.jChkRegExp.text"));
-		regexCheckBox.setFocusable(false);
-		regexCheckBox.setOpaque(false);
-		regexCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
-		regexCheckBox.addActionListener(this);
-		toolBar.add(regexCheckBox);
+		this.regexCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_REGEX.getKeyCode());
+		this.regexCheckBox.setText(bundle.getString("QuickFindDialog.jChkRegExp.text"));
+		this.regexCheckBox.setFocusable(false);
+		this.regexCheckBox.setOpaque(false);
+		this.regexCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
+		this.regexCheckBox.addActionListener(this);
+		this.toolBar.add(this.regexCheckBox);
 
-		wrapCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_WRAP.getKeyCode());
-		wrapCheckBox.setText(bundle.getString("QuickFindDialog.jChkWrap.text"));
-		wrapCheckBox.setFocusable(false);
-		wrapCheckBox.setOpaque(false);
-		wrapCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
-		wrapCheckBox.addActionListener(this);
-		toolBar.add(wrapCheckBox);
+		this.wrapCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_WRAP.getKeyCode());
+		this.wrapCheckBox.setText(bundle.getString("QuickFindDialog.jChkWrap.text"));
+		this.wrapCheckBox.setFocusable(false);
+		this.wrapCheckBox.setOpaque(false);
+		this.wrapCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
+		this.wrapCheckBox.addActionListener(this);
+		this.toolBar.add(this.wrapCheckBox);
 
-		toolBar.addSeparator();
+		this.toolBar.addSeparator();
 
-		statusLabel.setFont(statusLabel.getFont().deriveFont(statusLabel.getFont().getStyle() | Font.BOLD, statusLabel.getFont().getSize() - 2));
-		statusLabel.setForeground(Color.RED);
-		toolBar.add(statusLabel);
+		this.statusLabel.setFont(this.statusLabel.getFont().deriveFont(this.statusLabel.getFont().getStyle() | Font.BOLD, this.statusLabel.getFont().getSize() - 2));
+		this.statusLabel.setForeground(Color.RED);
+		this.toolBar.add(this.statusLabel);
 
-		GroupLayout layout = new GroupLayout(getContentPane());
-		getContentPane().setLayout(layout);
+		GroupLayout layout = new GroupLayout(this.getContentPane());
+		this.getContentPane().setLayout(layout);
 		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(toolBar, GroupLayout.DEFAULT_SIZE, PREFERRED_TOOLBAR_WIDTH, Short.MAX_VALUE));
+				.addComponent(this.toolBar, GroupLayout.DEFAULT_SIZE, PREFERRED_TOOLBAR_WIDTH, Short.MAX_VALUE));
 		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(toolBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
+				.addComponent(this.toolBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
 
-		pack();
+		this.pack();
 	}
 
 	private void prevButtonActionPerformed(ActionEvent e) {
-		if (searchData.get().doFindPrev(target.get())) {
-			statusLabel.setText(null);
+		if (this.searchData.get().doFindPrev(this.target.get())) {
+			this.statusLabel.setText(null);
 		} else {
-			statusLabel.setText(ResourceBundle.getBundle("de/sciss/syntaxpane/Bundle").getString("QuickFindDialog.NotFound"));
+			this.statusLabel.setText(ResourceBundle.getBundle("de/sciss/syntaxpane/Bundle").getString("QuickFindDialog.NotFound"));
 		}
 	}
 
 	private void nextButtonActionPerformed(ActionEvent e) {
-		if (searchData.get().doFindNext(target.get())) {
-			statusLabel.setText(null);
+		if (this.searchData.get().doFindNext(this.target.get())) {
+			this.statusLabel.setText(null);
 		} else {
-			statusLabel.setText(ResourceBundle.getBundle("de/sciss/syntaxpane/Bundle").getString("QuickFindDialog.NotFound"));
+			this.statusLabel.setText(ResourceBundle.getBundle("de/sciss/syntaxpane/Bundle").getString("QuickFindDialog.NotFound"));
 		}
 	}
 
 	@Override
 	public void insertUpdate(DocumentEvent e) {
-		updateFind();
+		this.updateFind();
 	}
 
 	@Override
 	public void removeUpdate(DocumentEvent e) {
-		updateFind();
+		this.updateFind();
 	}
 
 	@Override
 	public void changedUpdate(DocumentEvent e) {
-		updateFind();
+		this.updateFind();
 	}
 
 	private void updateFind() {
 		JTextComponent target = this.target.get();
 		DocumentSearchData searchData = this.searchData.get();
-		String searchText = searchField.getText();
+		String searchText = this.searchField.getText();
 
 		if (searchText == null || searchText.isEmpty()) {
-			statusLabel.setText(null);
+			this.statusLabel.setText(null);
 			return;
 		}
 
 		try {
-			searchData.setWrap(wrapCheckBox.isSelected());
-			searchData.setPattern(searchText, regexCheckBox.isSelected(), ignoreCaseCheckBox.isSelected());
-			statusLabel.setText(null);
+			searchData.setWrap(this.wrapCheckBox.isSelected());
+			searchData.setPattern(searchText, this.regexCheckBox.isSelected(), this.ignoreCaseCheckBox.isSelected());
+			this.statusLabel.setText(null);
 
 			// The DocumentSearchData doFindNext will always find from current pos,
 			// so we need to relocate to our saved pos before we call doFindNext
-			target.setCaretPosition(prevCaretPos);
+			target.setCaretPosition(this.prevCaretPos);
 			if (!searchData.doFindNext(target)) {
-				statusLabel.setText(ResourceBundle.getBundle("de/sciss/syntaxpane/Bundle").getString("QuickFindDialog.NotFound"));
+				this.statusLabel.setText(ResourceBundle.getBundle("de/sciss/syntaxpane/Bundle").getString("QuickFindDialog.NotFound"));
 			} else {
-				statusLabel.setText(null);
+				this.statusLabel.setText(null);
 			}
 		} catch (PatternSyntaxException e) {
-			statusLabel.setText(e.getDescription());
+			this.statusLabel.setText(e.getDescription());
 		}
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() instanceof JCheckBox) {
-			updateFind();
+			this.updateFind();
 		}
 	}
 
 	@Override
 	public void escapePressed() {
-		setVisible(false);
+		this.setVisible(false);
 	}
 }

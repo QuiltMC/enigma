@@ -11,13 +11,13 @@
 
 package cuchaz.enigma.analysis;
 
-import com.google.common.collect.Lists;
 import cuchaz.enigma.analysis.index.InheritanceIndex;
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -44,12 +44,12 @@ public class ClassImplementationsTreeNode extends AbstractClassTreeNode {
 
 	public void load(JarIndex index) {
 		// get all method implementations
-		List<ClassImplementationsTreeNode> nodes = Lists.newArrayList();
+		List<ClassImplementationsTreeNode> nodes = new ArrayList<>();
 		InheritanceIndex inheritanceIndex = index.getInheritanceIndex();
 
-		Collection<ClassEntry> inheritors = inheritanceIndex.getChildren(entry);
+		Collection<ClassEntry> inheritors = inheritanceIndex.getChildren(this.entry);
 		for (ClassEntry inheritor : inheritors) {
-			nodes.add(new ClassImplementationsTreeNode(translator, inheritor));
+			nodes.add(new ClassImplementationsTreeNode(this.translator, inheritor));
 		}
 
 		// add them to this node

@@ -137,7 +137,6 @@ public abstract class Docker extends JPanel {
 	 * @param verticalLocation the vertical location of the docker, being full, top or bottom
 	 */
 	public record Location(Side side, VerticalLocation verticalLocation) {
-
 	}
 
 	/**

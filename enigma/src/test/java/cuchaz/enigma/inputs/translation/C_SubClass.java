@@ -6,13 +6,12 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.inputs.translation;
 
 public class C_SubClass extends B_BaseClass {
-
 	public char f2; // shadows B_BaseClass.f2
 	public int f3;
 	public int f4;

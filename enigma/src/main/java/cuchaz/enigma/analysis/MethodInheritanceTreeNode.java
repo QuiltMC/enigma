@@ -19,7 +19,7 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 public class MethodInheritanceTreeNode extends AbstractMethodTreeNode {
-	private boolean implemented;
+	private final boolean implemented;
 
 	public MethodInheritanceTreeNode(Translator translator, MethodEntry entry, boolean implemented) {
 		super(translator, entry);
@@ -48,7 +48,7 @@ public class MethodInheritanceTreeNode extends AbstractMethodTreeNode {
 
 	@Override
 	public String toString() {
-		MethodEntry translatedEntry = translator.translate(entry);
+		MethodEntry translatedEntry = this.translator.translate(this.entry);
 
 		if (!this.implemented) {
 			return translatedEntry.getParent().getFullName();
@@ -69,7 +69,7 @@ public class MethodInheritanceTreeNode extends AbstractMethodTreeNode {
 		for (ClassEntry inheritorEntry : inheritanceIndex.getChildren(this.entry.getParent())) {
 			MethodEntry methodEntry = new MethodEntry(inheritorEntry, this.entry.getName(), this.entry.getDesc());
 
-			MethodInheritanceTreeNode node = new MethodInheritanceTreeNode(translator, methodEntry, entryIndex.hasMethod(methodEntry));
+			MethodInheritanceTreeNode node = new MethodInheritanceTreeNode(this.translator, methodEntry, entryIndex.hasMethod(methodEntry));
 			boolean childOverride = node.load(index);
 
 			if (childOverride || node.implemented) {

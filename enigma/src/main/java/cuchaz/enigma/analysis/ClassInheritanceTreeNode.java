@@ -11,11 +11,11 @@
 
 package cuchaz.enigma.analysis;
 
-import com.google.common.collect.Lists;
 import cuchaz.enigma.analysis.index.InheritanceIndex;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ClassInheritanceTreeNode extends AbstractClassTreeNode {
@@ -41,9 +41,9 @@ public class ClassInheritanceTreeNode extends AbstractClassTreeNode {
 
 	public void load(InheritanceIndex ancestries, boolean recurse) {
 		// get all the child nodes
-		List<ClassInheritanceTreeNode> nodes = Lists.newArrayList();
+		List<ClassInheritanceTreeNode> nodes = new ArrayList<>();
 		for (ClassEntry inheritor : ancestries.getChildren(this.entry)) {
-			nodes.add(new ClassInheritanceTreeNode(translator, inheritor.getFullName()));
+			nodes.add(new ClassInheritanceTreeNode(this.translator, inheritor.getFullName()));
 		}
 
 		// add them to this node

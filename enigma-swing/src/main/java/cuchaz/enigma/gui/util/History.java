@@ -10,40 +10,40 @@ public class History<T> {
 	private T current;
 
 	public History(T initial) {
-		current = initial;
+		this.current = initial;
 	}
 
 	public T getCurrent() {
-		return current;
+		return this.current;
 	}
 
 	public void push(T value) {
-		previous.addLast(current);
-		current = value;
-		next.clear();
+		this.previous.addLast(this.current);
+		this.current = value;
+		this.next.clear();
 	}
 
 	public void replace(T value) {
-		current = value;
+		this.current = value;
 	}
 
 	public boolean canGoBack() {
-		return !previous.isEmpty();
+		return !this.previous.isEmpty();
 	}
 
 	public T goBack() {
-		next.addFirst(current);
-		current = previous.removeLast();
-		return current;
+		this.next.addFirst(this.current);
+		this.current = this.previous.removeLast();
+		return this.current;
 	}
 
 	public boolean canGoForward() {
-		return !next.isEmpty();
+		return !this.next.isEmpty();
 	}
 
 	public T goForward() {
-		previous.addLast(current);
-		current = next.removeFirst();
-		return current;
+		this.previous.addLast(this.current);
+		this.current = this.next.removeFirst();
+		return this.current;
 	}
 }

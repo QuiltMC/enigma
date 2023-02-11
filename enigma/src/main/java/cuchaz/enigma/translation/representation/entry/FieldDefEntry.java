@@ -45,34 +45,34 @@ public class FieldDefEntry extends FieldEntry implements DefEntry<ClassEntry> {
 
 	@Override
 	public AccessFlags getAccess() {
-		return access;
+		return this.access;
 	}
 
 	public Signature getSignature() {
-		return signature;
+		return this.signature;
 	}
 
 	@Override
 	protected TranslateResult<FieldEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
-		TypeDescriptor translatedDesc = translator.translate(desc);
-		Signature translatedSignature = translator.translate(signature);
-		String translatedName = mapping.targetName() != null ? mapping.targetName() : name;
-		AccessFlags translatedAccess = mapping.accessModifier().transform(access);
+		TypeDescriptor translatedDesc = translator.translate(this.desc);
+		Signature translatedSignature = translator.translate(this.signature);
+		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
+		AccessFlags translatedAccess = mapping.accessModifier().transform(this.access);
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new FieldDefEntry(parent, translatedName, translatedDesc, translatedSignature, translatedAccess, docs)
+				new FieldDefEntry(this.parent, translatedName, translatedDesc, translatedSignature, translatedAccess, docs)
 		);
 	}
 
 
 	@Override
 	public FieldDefEntry withName(String name) {
-		return new FieldDefEntry(parent, name, desc, signature, access, javadocs);
+		return new FieldDefEntry(this.parent, name, this.desc, this.signature, this.access, this.javadocs);
 	}
 
 	@Override
 	public FieldDefEntry withParent(ClassEntry owner) {
-		return new FieldDefEntry(owner, this.name, this.desc, signature, access, javadocs);
+		return new FieldDefEntry(owner, this.name, this.desc, this.signature, this.access, this.javadocs);
 	}
 }

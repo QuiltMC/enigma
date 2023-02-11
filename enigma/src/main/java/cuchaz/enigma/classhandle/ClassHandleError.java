@@ -6,7 +6,6 @@ import java.io.PrintStream;
 import javax.annotation.Nullable;
 
 public final class ClassHandleError {
-
 	public final Type type;
 	public final Throwable cause;
 
@@ -17,10 +16,10 @@ public final class ClassHandleError {
 
 	@Nullable
 	public String getStackTrace() {
-		if (cause == null) return null;
+		if (this.cause == null) return null;
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		PrintStream ps = new PrintStream(os);
-		cause.printStackTrace(ps);
+		this.cause.printStackTrace(ps);
 		return os.toString();
 	}
 
@@ -36,5 +35,4 @@ public final class ClassHandleError {
 		DECOMPILE,
 		REMAP,
 	}
-
 }

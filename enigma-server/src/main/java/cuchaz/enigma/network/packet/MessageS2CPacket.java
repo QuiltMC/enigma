@@ -8,7 +8,6 @@ import cuchaz.enigma.network.ClientPacketHandler;
 import cuchaz.enigma.network.ServerMessage;
 
 public class MessageS2CPacket implements Packet<ClientPacketHandler> {
-
 	private ServerMessage message;
 
 	MessageS2CPacket() {
@@ -25,12 +24,12 @@ public class MessageS2CPacket implements Packet<ClientPacketHandler> {
 
 	@Override
 	public void write(DataOutput output) throws IOException {
-		message.write(output);
+		this.message.write(output);
 	}
 
 	@Override
 	public void handle(ClientPacketHandler handler) {
-		handler.addMessage(message);
+		handler.addMessage(this.message);
 	}
 
 }

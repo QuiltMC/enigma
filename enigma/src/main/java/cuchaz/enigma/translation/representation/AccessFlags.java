@@ -36,27 +36,27 @@ public class AccessFlags {
 	}
 
 	public boolean isEnum() {
-		return (flags & Opcodes.ACC_ENUM) != 0;
+		return (this.flags & Opcodes.ACC_ENUM) != 0;
 	}
 
 	public boolean isBridge() {
-		return (flags & Opcodes.ACC_BRIDGE) != 0;
+		return (this.flags & Opcodes.ACC_BRIDGE) != 0;
 	}
 
 	public boolean isFinal() {
-		return (flags & Opcodes.ACC_FINAL) != 0;
+		return (this.flags & Opcodes.ACC_FINAL) != 0;
 	}
 
 	public boolean isInterface() {
-		return (flags & Opcodes.ACC_INTERFACE) != 0;
+		return (this.flags & Opcodes.ACC_INTERFACE) != 0;
 	}
 
 	public boolean isAbstract() {
-		return (flags & Opcodes.ACC_ABSTRACT) != 0;
+		return (this.flags & Opcodes.ACC_ABSTRACT) != 0;
 	}
 
 	public boolean isAnnotation() {
-		return (flags & Opcodes.ACC_ANNOTATION) != 0;
+		return (this.flags & Opcodes.ACC_ANNOTATION) != 0;
 	}
 
 	public AccessFlags setPrivate() {
@@ -75,13 +75,13 @@ public class AccessFlags {
 	}
 
 	public AccessFlags setBridge() {
-		flags |= Opcodes.ACC_BRIDGE;
+		this.flags |= Opcodes.ACC_BRIDGE;
 		return this;
 	}
 
 	@Deprecated
 	public AccessFlags setBridged() {
-		return setBridge();
+		return this.setBridge();
 	}
 
 	public void setVisibility(int visibility) {
@@ -99,24 +99,24 @@ public class AccessFlags {
 
 	@Override
 	public boolean equals(Object obj) {
-		return obj instanceof AccessFlags && ((AccessFlags) obj).flags == flags;
+		return obj instanceof AccessFlags flags && flags.flags == this.flags;
 	}
 
 	@Override
 	public int hashCode() {
-		return flags;
+		return this.flags;
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(Access.get(this).toString().toLowerCase());
-		if (isStatic()) {
+		if (this.isStatic()) {
 			builder.append(" static");
 		}
-		if (isSynthetic()) {
+		if (this.isSynthetic()) {
 			builder.append(" synthetic");
 		}
-		if (isBridge()) {
+		if (this.isBridge()) {
 			builder.append(" bridge");
 		}
 		return builder.toString();

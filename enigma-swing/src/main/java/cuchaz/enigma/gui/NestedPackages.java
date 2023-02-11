@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class NestedPackages {
-
 	private final DefaultMutableTreeNode root = new DefaultMutableTreeNode();
 	private final Map<String, DefaultMutableTreeNode> packageToNode = new HashMap<>();
 	private final Map<ClassEntry, ClassSelectorClassNode> classToNode = new HashMap<>();
@@ -43,48 +42,48 @@ public class NestedPackages {
 		};
 
 		for (var entry : entries) {
-			addEntry(entry);
+			this.addEntry(entry);
 		}
 	}
 
 	public void addEntry(ClassEntry entry) {
-		var translated = remapper.deobfuscate(entry);
+		var translated = this.remapper.deobfuscate(entry);
 		var me = new ClassSelectorClassNode(entry, translated);
-		classToNode.put(entry, me);
-		insert(getPackage(translated.getPackageName()), me);
+		this.classToNode.put(entry, me);
+		this.insert(this.getPackage(translated.getPackageName()), me);
 	}
 
 	public DefaultMutableTreeNode getPackage(String packageName) {
-		var node = packageToNode.get(packageName);
+		var node = this.packageToNode.get(packageName);
 
 		if (packageName == null) {
-			return root;
+			return this.root;
 		}
 
 		if (node == null) {
 			node = new ClassSelectorPackageNode(packageName);
-			insert(getPackage(ClassEntry.getParentPackage(packageName)), node);
-			packageToNode.put(packageName, node);
+			this.insert(this.getPackage(ClassEntry.getParentPackage(packageName)), node);
+			this.packageToNode.put(packageName, node);
 		}
 
 		return node;
 	}
 
 	public DefaultMutableTreeNode getRoot() {
-		return root;
+		return this.root;
 	}
 
 	public TreePath getPackagePath(String packageName) {
-		var node = packageToNode.getOrDefault(packageName, root);
+		var node = this.packageToNode.getOrDefault(packageName, this.root);
 		return new TreePath(node.getPath());
 	}
 
 	public ClassSelectorClassNode getClassNode(ClassEntry entry) {
-		return classToNode.get(entry);
+		return this.classToNode.get(entry);
 	}
 
 	public void removeClassNode(ClassEntry entry) {
-		var node = classToNode.remove(entry);
+		var node = this.classToNode.remove(entry);
 
 		if (node != null) {
 			var parent = node.getParent();
@@ -98,18 +97,18 @@ public class NestedPackages {
 				theNode.removeFromParent();
 
 				if (theNode instanceof ClassSelectorPackageNode pn) {
-					packageToNode.remove(pn.getPackageName());
+					this.packageToNode.remove(pn.getPackageName());
 				}
 			}
 		}
 	}
 
 	public Collection<ClassEntry> getClassEntries() {
-		return classToNode.keySet();
+		return this.classToNode.keySet();
 	}
 
 	public Collection<DefaultMutableTreeNode> getPackageNodes() {
-		return packageToNode.values();
+		return this.packageToNode.values();
 	}
 
 	private void insert(DefaultMutableTreeNode parent, MutableTreeNode child) {
@@ -117,7 +116,7 @@ public class NestedPackages {
 		var children = parent.children();
 
 		while (children.hasMoreElements()) {
-			if (comparator.compare(children.nextElement(), child) < 0) {
+			if (this.comparator.compare(children.nextElement(), child) < 0) {
 				index++;
 			} else {
 				break;

@@ -21,30 +21,30 @@ public class HashEntryTree<T> implements EntryTree<T> {
 
 	public HashEntryTree(EntryTree<T> tree) {
 		for (EntryTreeNode<T> node : tree) {
-			insert(node.getEntry(), node.getValue());
+			this.insert(node.getEntry(), node.getValue());
 		}
 	}
 
 	@Override
 	public void insert(Entry<?> entry, T value) {
-		List<HashTreeNode<T>> path = computePath(entry, true);
+		List<HashTreeNode<T>> path = this.computePath(entry, true);
 		path.get(path.size() - 1).putValue(value);
 		if (value == null) {
-			removeDeadAlong(path);
+			this.removeDeadAlong(path);
 		}
 	}
 
 	@Override
 	@Nullable
 	public T remove(Entry<?> entry) {
-		List<HashTreeNode<T>> path = computePath(entry, false);
+		List<HashTreeNode<T>> path = this.computePath(entry, false);
 		if (path.isEmpty()) {
 			return null;
 		}
 
 		T value = path.get(path.size() - 1).removeValue();
 
-		removeDeadAlong(path);
+		this.removeDeadAlong(path);
 
 		return value;
 	}
@@ -52,7 +52,7 @@ public class HashEntryTree<T> implements EntryTree<T> {
 	@Override
 	@Nullable
 	public T get(Entry<?> entry) {
-		HashTreeNode<T> node = findNode(entry);
+		HashTreeNode<T> node = this.findNode(entry);
 		if (node == null) {
 			return null;
 		}
@@ -61,12 +61,12 @@ public class HashEntryTree<T> implements EntryTree<T> {
 
 	@Override
 	public boolean contains(Entry<?> entry) {
-		return get(entry) != null;
+		return this.get(entry) != null;
 	}
 
 	@Override
 	public Collection<Entry<?>> getChildren(Entry<?> entry) {
-		HashTreeNode<T> leaf = findNode(entry);
+		HashTreeNode<T> leaf = this.findNode(entry);
 		if (leaf == null) {
 			return Collections.emptyList();
 		}
@@ -77,9 +77,9 @@ public class HashEntryTree<T> implements EntryTree<T> {
 	public Collection<Entry<?>> getSiblings(Entry<?> entry) {
 		Entry<?> parent = entry.getParent();
 		if (parent == null) {
-			return getSiblings(entry, root.keySet());
+			return this.getSiblings(entry, this.root.keySet());
 		}
-		return getSiblings(entry, getChildren(parent));
+		return this.getSiblings(entry, this.getChildren(parent));
 	}
 
 	private Collection<Entry<?>> getSiblings(Entry<?> entry, Collection<Entry<?>> generation) {
@@ -96,7 +96,7 @@ public class HashEntryTree<T> implements EntryTree<T> {
 			return null;
 		}
 
-		HashTreeNode<T> node = root.get(parentChain.get(0));
+		HashTreeNode<T> node = this.root.get(parentChain.get(0));
 		for (int i = 1; i < parentChain.size(); i++) {
 			if (node == null) {
 				return null;
@@ -116,7 +116,7 @@ public class HashEntryTree<T> implements EntryTree<T> {
 		List<HashTreeNode<T>> path = new ArrayList<>(ancestry.size());
 
 		Entry<?> rootEntry = ancestry.get(0);
-		HashTreeNode<T> node = make ? root.computeIfAbsent(rootEntry, HashTreeNode::new) : root.get(rootEntry);
+		HashTreeNode<T> node = make ? this.root.computeIfAbsent(rootEntry, HashTreeNode::new) : this.root.get(rootEntry);
 		if (node == null) {
 			return Collections.emptyList();
 		}
@@ -144,7 +144,7 @@ public class HashEntryTree<T> implements EntryTree<T> {
 					HashTreeNode<T> parentNode = path.get(i - 1);
 					parentNode.remove(node.getEntry());
 				} else {
-					root.remove(node.getEntry());
+					this.root.remove(node.getEntry());
 				}
 			} else {
 				break;
@@ -156,7 +156,7 @@ public class HashEntryTree<T> implements EntryTree<T> {
 	@Nonnull
 	public Iterator<EntryTreeNode<T>> iterator() {
 		Collection<EntryTreeNode<T>> nodes = new ArrayList<>();
-		for (EntryTreeNode<T> node : root.values()) {
+		for (EntryTreeNode<T> node : this.root.values()) {
 			nodes.addAll(node.getNodesRecursively());
 		}
 		return nodes.iterator();
@@ -164,19 +164,19 @@ public class HashEntryTree<T> implements EntryTree<T> {
 
 	@Override
 	public Stream<Entry<?>> getAllEntries() {
-		return StreamSupport.stream(spliterator(), false)
+		return StreamSupport.stream(this.spliterator(), false)
 				.filter(EntryTreeNode::hasValue)
 				.map(EntryTreeNode::getEntry);
 	}
 
 	@Override
 	public Stream<EntryTreeNode<T>> getRootNodes() {
-		return root.values().stream().map(Function.identity());
+		return this.root.values().stream().map(Function.identity());
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return root.isEmpty();
+		return this.root.isEmpty();
 	}
 
 	@Override

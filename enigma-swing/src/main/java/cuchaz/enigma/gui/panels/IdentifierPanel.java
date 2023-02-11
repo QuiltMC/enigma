@@ -29,7 +29,6 @@ import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 public class IdentifierPanel {
-
 	private final Gui gui;
 
 	private final JPanel ui = new JPanel();
@@ -54,7 +53,7 @@ public class IdentifierPanel {
 
 	public void setReference(Entry<?> entry) {
 		this.entry = entry;
-		refreshReference();
+		this.refreshReference();
 	}
 
 	public boolean startRenaming() {
@@ -79,7 +78,7 @@ public class IdentifierPanel {
 	}
 
 	public void refreshReference() {
-		this.deobfEntry = entry == null ? null : gui.getController().project.getMapper().deobfuscate(this.entry);
+		this.deobfEntry = this.entry == null ? null : this.gui.getController().project.getMapper().deobfuscate(this.entry);
 
 		// Prevent IdentifierPanel from being rebuilt if you didn't click off.
 		if (this.lastEntry == this.entry && this.nameField != null) {
@@ -100,7 +99,7 @@ public class IdentifierPanel {
 				} else if (this.deobfEntry instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
 					name = classEntry.getFullName();
 				} else {
-					name = deobfEntry.getName();
+					name = this.deobfEntry.getName();
 				}
 
 				this.nameField.setReferenceText(name);
@@ -109,7 +108,7 @@ public class IdentifierPanel {
 			return;
 		}
 
-		this.lastEntry = entry;
+		this.lastEntry = this.entry;
 
 		this.nameField = null;
 
@@ -120,18 +119,18 @@ public class IdentifierPanel {
 		} else {
 			this.ui.setEnabled(true);
 
-			if (deobfEntry instanceof ClassEntry ce) {
+			if (this.deobfEntry instanceof ClassEntry ce) {
 				String name = ce.isInnerClass() ? ce.getName() : ce.getFullName();
 				this.nameField = th.addRenameTextField(EditableType.CLASS, name);
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), entry.getName());
+				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
 				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.CLASS, this::onModifierChanged);
-			} else if (deobfEntry instanceof FieldEntry fe) {
+			} else if (this.deobfEntry instanceof FieldEntry fe) {
 				this.nameField = th.addRenameTextField(EditableType.FIELD, fe.getName());
 				th.addStringRow(I18n.translate("info_panel.identifier.class"), fe.getParent().getFullName());
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), entry.getName());
+				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.type_descriptor"), fe.getDesc().toString());
 				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.FIELD, this::onModifierChanged);
-			} else if (deobfEntry instanceof MethodEntry me) {
+			} else if (this.deobfEntry instanceof MethodEntry me) {
 				if (me.isConstructor()) {
 					ClassEntry ce = me.getParent();
 					if (ce != null) {
@@ -142,10 +141,10 @@ public class IdentifierPanel {
 					this.nameField = th.addRenameTextField(EditableType.METHOD, me.getName());
 					th.addStringRow(I18n.translate("info_panel.identifier.class"), me.getParent().getFullName());
 				}
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), entry.getName());
+				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method_descriptor"), me.getDesc().toString());
 				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.METHOD, this::onModifierChanged);
-			} else if (deobfEntry instanceof LocalVariableEntry lve) {
+			} else if (this.deobfEntry instanceof LocalVariableEntry lve) {
 				EditableType type;
 
 				if (lve.isArgument()) {
@@ -179,20 +178,20 @@ public class IdentifierPanel {
 					if (abort) return true;
 
 					IdentifierPanel.this.vc.setNotifier(IdentifierPanel.this.gui.getNotificationManager());
-					vc.reset();
-					validateRename(field.getText());
-					return vc.canProceed();
+					IdentifierPanel.this.vc.reset();
+					IdentifierPanel.this.validateRename(field.getText());
+					return IdentifierPanel.this.vc.canProceed();
 				}
 
 				@Override
 				public void onStopEditing(ConvertingTextField field, boolean abort) {
 					if (!abort) {
 						IdentifierPanel.this.vc.setNotifier(IdentifierPanel.this.gui.getNotificationManager());
-						vc.reset();
-						doRename(field.getText());
+						IdentifierPanel.this.vc.reset();
+						IdentifierPanel.this.doRename(field.getText());
 					}
 
-					EditorPanel e = gui.getActiveEditor();
+					EditorPanel e = IdentifierPanel.this.gui.getActiveEditor();
 					if (e != null) {
 						e.getEditor().requestFocusInWindow();
 					}
@@ -205,11 +204,11 @@ public class IdentifierPanel {
 	}
 
 	private void validateRename(String newName) {
-		gui.getController().validateChange(vc, getRename(newName));
+		this.gui.getController().validateChange(this.vc, this.getRename(newName));
 	}
 
 	private void doRename(String newName) {
-		gui.getController().applyChange(vc, getRename(newName));
+		this.gui.getController().applyChange(this.vc, this.getRename(newName));
 	}
 
 	private EntryChange<? extends Entry<?>> getRename(String newName) {
@@ -227,11 +226,10 @@ public class IdentifierPanel {
 	}
 
 	public JPanel getUi() {
-		return ui;
+		return this.ui;
 	}
 
 	private static final class TableHelper {
-
 		private final Container c;
 		private final Entry<?> e;
 		private final Gui gui;
@@ -244,16 +242,16 @@ public class IdentifierPanel {
 		}
 
 		public void begin() {
-			c.removeAll();
-			c.setLayout(new GridBagLayout());
+			this.c.removeAll();
+			this.c.setLayout(new GridBagLayout());
 		}
 
 		public void addRow(Component c1, Component c2) {
 			GridBagConstraintsBuilder cb = GridBagConstraintsBuilder.create()
 					.insets(2)
 					.anchor(GridBagConstraints.WEST);
-			c.add(c1, cb.pos(0, this.row).build());
-			c.add(c2, cb.pos(1, this.row).weightX(1.0).fill(GridBagConstraints.HORIZONTAL).build());
+			this.c.add(c1, cb.pos(0, this.row).build());
+			this.c.add(c2, cb.pos(1, this.row).weightX(1.0).fill(GridBagConstraints.HORIZONTAL).build());
 
 			this.row += 1;
 		}
@@ -265,12 +263,12 @@ public class IdentifierPanel {
 					GuiUtil.showPopup(c2, I18n.translate("popup.copied"), e.getXOnScreen(), e.getYOnScreen());
 				}
 			}));
-			addRow(c1, c2);
+			this.addRow(c1, c2);
 		}
 
 		public ConvertingTextField addConvertingTextField(String c1, String c2) {
 			ConvertingTextField textField = new ConvertingTextField(c2);
-			addRow(new JLabel(c1), textField.getUi());
+			this.addRow(new JLabel(c1), textField.getUi());
 			return textField;
 		}
 
@@ -283,33 +281,33 @@ public class IdentifierPanel {
 				default -> throw new IllegalStateException("Unexpected value: " + type);
 			};
 
-			if (this.gui.getController().project.isRenamable(e)) {
-				ConvertingTextField field = addConvertingTextField(description, c2);
+			if (this.gui.getController().project.isRenamable(this.e)) {
+				ConvertingTextField field = this.addConvertingTextField(description, c2);
 				field.setEditable(this.gui.isEditable(type));
 				return field;
 			} else {
-				addStringRow(description, c2);
+				this.addStringRow(description, c2);
 				return null;
 			}
 		}
 
 		public void addStringRow(String c1, String c2) {
-			addRow(new JLabel(c1), GuiUtil.unboldLabel(new JLabel(c2)));
+			this.addRow(new JLabel(c1), GuiUtil.unboldLabel(new JLabel(c2)));
 		}
 
 		public void addCopiableStringRow(String c1, String c2) {
-			addCopiableRow(new JLabel(c1), GuiUtil.unboldLabel(new JLabel(c2)));
+			this.addCopiableRow(new JLabel(c1), GuiUtil.unboldLabel(new JLabel(c2)));
 		}
 
 		public JComboBox<AccessModifier> addModifierRow(String c1, EditableType type, Consumer<AccessModifier> changeListener) {
 			EnigmaProject project = this.gui.getController().project;
 
-			if (!project.isRenamable(e)) {
+			if (!project.isRenamable(this.e)) {
 				return null;
 			}
 
 			JComboBox<AccessModifier> combo = new JComboBox<>(AccessModifier.values());
-			EntryMapping mapping = project.getMapper().getDeobfMapping(e);
+			EntryMapping mapping = project.getMapper().getDeobfMapping(this.e);
 			combo.setSelectedIndex(mapping.accessModifier().ordinal());
 
 			if (this.gui.isEditable(type)) {
@@ -323,16 +321,15 @@ public class IdentifierPanel {
 				combo.setEnabled(false);
 			}
 
-			addRow(new JLabel(c1), combo);
+			this.addRow(new JLabel(c1), combo);
 
 			return combo;
 		}
 
 		public void end() {
 			// Add an empty panel with y-weight=1 so that all the other elements get placed at the top edge
-			c.add(new JPanel(), GridBagConstraintsBuilder.create().pos(0, row).weight(0.0, 1.0).build());
+			this.c.add(new JPanel(), GridBagConstraintsBuilder.create().pos(0, this.row).weight(0.0, 1.0).build());
 		}
 
 	}
-
 }

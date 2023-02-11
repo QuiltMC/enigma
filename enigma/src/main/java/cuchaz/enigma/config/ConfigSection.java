@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.function.Function;
 
 public class ConfigSection {
-
 	private final Map<String, String> values;
 	private final Map<String, ConfigSection> sections;
 
@@ -164,20 +163,18 @@ public class ConfigSection {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof ConfigSection)) return false;
-		ConfigSection that = (ConfigSection) o;
-		return values.equals(that.values) &&
-				sections.equals(that.sections);
+		if (!(o instanceof ConfigSection that)) return false;
+		return this.values.equals(that.values) &&
+				this.sections.equals(that.sections);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(values, sections);
+		return Objects.hash(this.values, this.sections);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("ConfigSection { values: %s, sections: %s }", values, sections);
+		return String.format("ConfigSection { values: %s, sections: %s }", this.values, this.sections);
 	}
-
 }

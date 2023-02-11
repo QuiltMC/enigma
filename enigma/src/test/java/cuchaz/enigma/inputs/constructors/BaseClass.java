@@ -6,14 +6,13 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.inputs.constructors;
 
 // a
 public class BaseClass {
-
 	// <init>()V
 	public BaseClass() {
 		System.out.println("Default constructor");

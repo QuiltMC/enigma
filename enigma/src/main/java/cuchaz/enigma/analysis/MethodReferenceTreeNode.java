@@ -27,10 +27,9 @@ import java.util.Collection;
 import java.util.Set;
 
 public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements ReferenceTreeNode<MethodEntry, MethodDefEntry> {
-
 	private final Translator translator;
-	private MethodEntry entry;
-	private EntryReference<MethodEntry, MethodDefEntry> reference;
+	private final MethodEntry entry;
+	private final EntryReference<MethodEntry, MethodDefEntry> reference;
 
 	public MethodReferenceTreeNode(Translator translator, MethodEntry entry) {
 		this.translator = translator;
@@ -57,23 +56,22 @@ public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements R
 	@Override
 	public String toString() {
 		if (this.reference != null) {
-			return String.format("%s", translator.translate(this.reference.context));
+			return String.format("%s", this.translator.translate(this.reference.context));
 		}
-		return translator.translate(this.entry).getName();
+		return this.translator.translate(this.entry).getName();
 	}
 
 	public void load(JarIndex index, boolean recurse, boolean recurseMethod) {
 		// get all the child nodes
-		Collection<EntryReference<MethodEntry, MethodDefEntry>> references = getReferences(index, recurseMethod);
+		Collection<EntryReference<MethodEntry, MethodDefEntry>> references = this.getReferences(index, recurseMethod);
 
 		for (EntryReference<MethodEntry, MethodDefEntry> reference : references) {
-			add(new MethodReferenceTreeNode(translator, reference));
+			this.add(new MethodReferenceTreeNode(this.translator, reference));
 		}
 
 		if (recurse && this.children != null) {
 			for (Object child : this.children) {
 				if (child instanceof MethodReferenceTreeNode node) {
-
 					// don't recurse into ancestor
 					Set<Entry<?>> ancestors = Sets.newHashSet();
 					TreeNode n = node;
@@ -100,13 +98,13 @@ public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements R
 			Collection<EntryReference<MethodEntry, MethodDefEntry>> references = new ArrayList<>();
 
 			EntryResolver entryResolver = index.getEntryResolver();
-			for (MethodEntry methodEntry : entryResolver.resolveEquivalentMethods(entry)) {
+			for (MethodEntry methodEntry : entryResolver.resolveEquivalentMethods(this.entry)) {
 				references.addAll(referenceIndex.getReferencesToMethod(methodEntry));
 			}
 
 			return references;
 		} else {
-			return referenceIndex.getReferencesToMethod(entry);
+			return referenceIndex.getReferencesToMethod(this.entry);
 		}
 	}
 }

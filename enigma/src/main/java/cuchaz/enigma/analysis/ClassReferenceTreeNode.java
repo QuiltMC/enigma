@@ -25,10 +25,9 @@ import java.util.Set;
 
 public class ClassReferenceTreeNode extends DefaultMutableTreeNode
 	implements ReferenceTreeNode<ClassEntry, MethodDefEntry> {
-
-	private Translator deobfuscatingTranslator;
-	private ClassEntry entry;
-	private EntryReference<ClassEntry, MethodDefEntry> reference;
+	private final Translator deobfuscatingTranslator;
+	private final ClassEntry entry;
+	private final EntryReference<ClassEntry, MethodDefEntry> reference;
 
 	public ClassReferenceTreeNode(Translator deobfuscatingTranslator, ClassEntry entry) {
 		this.deobfuscatingTranslator = deobfuscatingTranslator;
@@ -65,13 +64,12 @@ public class ClassReferenceTreeNode extends DefaultMutableTreeNode
 
 		// get all the child nodes
 		for (EntryReference<ClassEntry, MethodDefEntry> reference : referenceIndex.getReferencesToClass(this.entry)) {
-			add(new ClassReferenceTreeNode(this.deobfuscatingTranslator, reference));
+			this.add(new ClassReferenceTreeNode(this.deobfuscatingTranslator, reference));
 		}
 
 		if (recurse && this.children != null) {
 			for (Object child : this.children) {
 				if (child instanceof ClassReferenceTreeNode node) {
-
 					// don't recurse into ancestor
 					Set<Entry<?>> ancestors = Sets.newHashSet();
 					TreeNode n = node;

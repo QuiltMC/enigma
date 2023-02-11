@@ -6,14 +6,13 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.inputs.innerClasses;
 
 @SuppressWarnings("unused")
 public class C_ConstructorArgs {
-
 	Inner i;
 
 	public void foo() {
@@ -21,7 +20,6 @@ public class C_ConstructorArgs {
 	}
 
 	class Inner {
-
 		private int a;
 
 		public Inner(int a) {

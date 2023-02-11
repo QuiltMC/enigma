@@ -1,6 +1,7 @@
 package cuchaz.enigma.translation.mapping.serde.tinyv2;
 
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.translation.mapping.serde.MappingHelper;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingPair;
@@ -25,7 +26,6 @@ import java.util.BitSet;
 import java.util.List;
 
 public final class TinyV2Reader implements MappingsReader {
-
 	private static final String MINOR_VERSION = "0";
 	// 0 indent
 	private static final int IN_HEADER = 0;
@@ -41,7 +41,7 @@ public final class TinyV2Reader implements MappingsReader {
 
 	@Override
 	public EntryTree<EntryMapping> read(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws IOException, MappingParseException {
-		return read(path, Files.readAllLines(path, StandardCharsets.UTF_8), progress);
+		return this.read(path, Files.readAllLines(path, StandardCharsets.UTF_8), progress);
 	}
 
 	private EntryTree<EntryMapping> read(Path path, List<String> lines, ProgressListener progress) throws MappingParseException {
@@ -50,7 +50,7 @@ public final class TinyV2Reader implements MappingsReader {
 		progress.init(lines.size(), "progress.mappings.tiny_v2.loading");
 
 		BitSet state = new BitSet(STATE_SIZE);
-		@SuppressWarnings({"unchecked", "rawtypes"})
+		@SuppressWarnings("unchecked")
 		MappingPair<? extends Entry<?>, RawEntryMapping>[] holds = new MappingPair[STATE_SIZE];
 		boolean escapeNames = false;
 
@@ -79,7 +79,7 @@ public final class TinyV2Reader implements MappingsReader {
 				switch (indent) {
 					case 0:
 						switch (parts[0]) {
-							case "tiny": // header
+							case "tiny" -> { // header
 								if (lineNumber != 0) {
 									throw new IllegalArgumentException("Header can only be on the first line");
 								}
@@ -90,13 +90,12 @@ public final class TinyV2Reader implements MappingsReader {
 									throw new IllegalArgumentException("Unsupported TinyV2 version, requires major " + "2" + " and minor " + MINOR_VERSION + "");
 								}
 								state.set(IN_HEADER);
-								break;
-							case "c": // class
+							}
+							case "c" -> { // class
 								state.set(IN_CLASS);
-								holds[IN_CLASS] = parseClass(parts, escapeNames);
-								break;
-							default:
-								unsupportKey(parts);
+								holds[IN_CLASS] = this.parseClass(parts, escapeNames);
+							}
+							default -> this.unsupportKey(parts);
 						}
 
 						break;
@@ -111,72 +110,66 @@ public final class TinyV2Reader implements MappingsReader {
 
 						if (state.get(IN_CLASS)) {
 							switch (parts[0]) {
-								case "m": // method
+								case "m" -> { // method
 									state.set(IN_METHOD);
-									holds[IN_METHOD] = parseMethod(holds[IN_CLASS], parts, escapeNames);
-									break;
-								case "f": // field
+									holds[IN_METHOD] = this.parseMethod(holds[IN_CLASS], parts, escapeNames);
+								}
+								case "f" -> { // field
 									state.set(IN_FIELD);
-									holds[IN_FIELD] = parseField(holds[IN_CLASS], parts, escapeNames);
-									break;
-								case "c": // class javadoc
-									addJavadoc(holds[IN_CLASS], parts);
-									break;
-								default:
-									unsupportKey(parts);
+									holds[IN_FIELD] = this.parseField(holds[IN_CLASS], parts, escapeNames);
+								}
+								case "c" -> // class javadoc
+										this.addJavadoc(holds[IN_CLASS], parts);
+								default -> this.unsupportKey(parts);
 							}
 							break;
 						}
 
-						unsupportKey(parts);
+						this.unsupportKey(parts);
 					case 2:
 						if (state.get(IN_METHOD)) {
 							switch (parts[0]) {
 								case "p": // parameter
 									state.set(IN_PARAMETER);
-									holds[IN_PARAMETER] = parseArgument(holds[IN_METHOD], parts, escapeNames);
+									holds[IN_PARAMETER] = this.parseArgument(holds[IN_METHOD], parts, escapeNames);
 									break;
 								case "v": // local variable
 									// TODO add local var mapping
 									break;
 								case "c": // method javadoc
-									addJavadoc(holds[IN_METHOD], parts);
+									this.addJavadoc(holds[IN_METHOD], parts);
 									break;
 								default:
-									unsupportKey(parts);
+									this.unsupportKey(parts);
 							}
 							break;
 						}
 
 						if (state.get(IN_FIELD)) {
-							switch (parts[0]) {
-								case "c": // field javadoc
-									addJavadoc(holds[IN_FIELD], parts);
-									break;
-								default:
-									unsupportKey(parts);
+							if (parts[0].equals("c")) { // field javadoc
+								this.addJavadoc(holds[IN_FIELD], parts);
+							} else {
+								this.unsupportKey(parts);
 							}
 							break;
 						}
-						unsupportKey(parts);
+						this.unsupportKey(parts);
 					case 3:
 						if (state.get(IN_PARAMETER)) {
-							switch (parts[0]) {
-								case "c":
-									addJavadoc(holds[IN_PARAMETER], parts);
-									break;
-								default:
-									unsupportKey(parts);
+							if (parts[0].equals("c")) {
+								this.addJavadoc(holds[IN_PARAMETER], parts);
+							} else {
+								this.unsupportKey(parts);
 							}
 							break;
 						}
-						unsupportKey(parts);
+						this.unsupportKey(parts);
 					default:
-						unsupportKey(parts);
+						this.unsupportKey(parts);
 				}
 
-			} catch (Throwable t) {
-				throw new MappingParseException(path, lineNumber + 1, t);
+			} catch (Exception e) {
+				throw new MappingParseException(path, lineNumber + 1, e);
 			}
 		}
 
@@ -194,9 +187,7 @@ public final class TinyV2Reader implements MappingsReader {
 		RawEntryMapping mapping = hold2.getMapping();
 		if (mapping != null) {
 			EntryMapping baked = mapping.bake();
-			if (baked != null) {
-				mappings.insert(hold2.getEntry(), baked);
-			}
+			mappings.insert(hold2.getEntry(), baked);
 		}
 	}
 
@@ -204,12 +195,12 @@ public final class TinyV2Reader implements MappingsReader {
 		throw new IllegalArgumentException("Unsupported key " + parts[0]);
 	}
 
-	private void addJavadoc(MappingPair<? extends Entry, RawEntryMapping> pair, String[] parts) {
+	private void addJavadoc(MappingPair<? extends Entry<?>, RawEntryMapping> pair, String[] parts) {
 		if (parts.length != 2) {
 			throw new IllegalArgumentException("Invalid javadoc declaration");
 		}
 
-		addJavadoc(pair, parts[1]);
+		this.addJavadoc(pair, parts[1]);
 	}
 
 	private MappingPair<ClassEntry, RawEntryMapping> parseClass(String[] tokens, boolean escapeNames) {
@@ -221,7 +212,7 @@ public final class TinyV2Reader implements MappingsReader {
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
 	}
 
-	private MappingPair<FieldEntry, RawEntryMapping> parseField(MappingPair<? extends Entry, RawEntryMapping> parent, String[] tokens, boolean escapeNames) {
+	private MappingPair<FieldEntry, RawEntryMapping> parseField(MappingPair<? extends Entry<?>, RawEntryMapping> parent, String[] tokens, boolean escapeNames) {
 		ClassEntry ownerClass = (ClassEntry) parent.getEntry();
 		TypeDescriptor descriptor = new TypeDescriptor(unescapeOpt(tokens[1], escapeNames));
 
@@ -232,7 +223,7 @@ public final class TinyV2Reader implements MappingsReader {
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
 	}
 
-	private MappingPair<MethodEntry, RawEntryMapping> parseMethod(MappingPair<? extends Entry, RawEntryMapping> parent, String[] tokens, boolean escapeNames) {
+	private MappingPair<MethodEntry, RawEntryMapping> parseMethod(MappingPair<? extends Entry<?>, RawEntryMapping> parent, String[] tokens, boolean escapeNames) {
 		ClassEntry ownerClass = (ClassEntry) parent.getEntry();
 		MethodDescriptor descriptor = new MethodDescriptor(unescapeOpt(tokens[1], escapeNames));
 
@@ -243,19 +234,15 @@ public final class TinyV2Reader implements MappingsReader {
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
 	}
 
-
-
-	private void addJavadoc(MappingPair<? extends Entry, RawEntryMapping> pair, String javadoc) {
+	private void addJavadoc(MappingPair<? extends Entry<?>, RawEntryMapping> pair, String javadoc) {
 		RawEntryMapping mapping = pair.getMapping();
 		if (mapping == null) {
 			throw new IllegalArgumentException("Javadoc requires a mapping in enigma!");
 		}
-		mapping.addJavadocLine(unescape(javadoc));
+		mapping.addJavadocLine(MappingHelper.unescape(javadoc));
 	}
 
-
-
-	private MappingPair<LocalVariableEntry, RawEntryMapping> parseArgument(MappingPair<? extends Entry, RawEntryMapping> parent, String[] tokens, boolean escapeNames) {
+	private MappingPair<LocalVariableEntry, RawEntryMapping> parseArgument(MappingPair<? extends Entry<?>, RawEntryMapping> parent, String[] tokens, boolean escapeNames) {
 		MethodEntry ownerMethod = (MethodEntry) parent.getEntry();
 		int variableIndex = Integer.parseInt(tokens[1]);
 
@@ -268,39 +255,7 @@ public final class TinyV2Reader implements MappingsReader {
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
 	}
 
-	private static final String TO_ESCAPE = "\\\n\r\0\t";
-	private static final String ESCAPED = "\\nr0t";
-
 	private static String unescapeOpt(String raw, boolean escapedStrings) {
-		return escapedStrings ? unescape(raw) : raw;
-	}
-
-	private static String unescape(String str) {
-		// copied from matcher, lazy!
-		int pos = str.indexOf('\\');
-		if (pos < 0) return str;
-
-		StringBuilder ret = new StringBuilder(str.length() - 1);
-		int start = 0;
-
-		do {
-			ret.append(str, start, pos);
-			pos++;
-			int type;
-
-			if (pos >= str.length()) {
-				throw new RuntimeException("incomplete escape sequence at the end");
-			} else if ((type = ESCAPED.indexOf(str.charAt(pos))) < 0) {
-				throw new RuntimeException("invalid escape character: \\" + str.charAt(pos));
-			} else {
-				ret.append(TO_ESCAPE.charAt(type));
-			}
-
-			start = pos + 1;
-		} while ((pos = str.indexOf('\\', start)) >= 0);
-
-		ret.append(str, start, str.length());
-
-		return ret.toString();
+		return escapedStrings ? MappingHelper.unescape(raw) : raw;
 	}
 }

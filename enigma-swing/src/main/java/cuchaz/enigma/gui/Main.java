@@ -144,9 +144,9 @@ public class Main {
 							} else {
 								// search for mappings that are associated with the jar
 								for (var pair : UiConfig.getRecentFilePairs()) {
-									if (pair.a.equals(jarPath)) {
-										gui.getNotificationManager().notify(ParameterizedMessage.openedProject(pair.a.toString(), pair.b.toString()));
-										gui.getController().openMappings(pair.b);
+									if (pair.a().equals(jarPath)) {
+										gui.getNotificationManager().notify(ParameterizedMessage.openedProject(pair.a().toString(), pair.b().toString()));
+										gui.getController().openMappings(pair.b());
 										break;
 									}
 								}

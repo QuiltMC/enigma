@@ -23,74 +23,74 @@ import java.util.List;
 import java.util.Map;
 
 public class ConfigureKeyBindsDialog extends JDialog {
-    private final Gui gui;
+	private final Gui gui;
 
-    public ConfigureKeyBindsDialog(Gui gui) {
-        super(gui.getFrame(), I18n.translate("menu.file.configure_keybinds.title"), true);
-        this.gui = gui;
-        JFrame owner = gui.getFrame();
+	public ConfigureKeyBindsDialog(Gui gui) {
+		super(gui.getFrame(), I18n.translate("menu.file.configure_keybinds.title"), true);
+		this.gui = gui;
+		JFrame owner = gui.getFrame();
 
-        Container contentPane = getContentPane();
-        contentPane.setLayout(new BorderLayout());
+		Container contentPane = this.getContentPane();
+		contentPane.setLayout(new BorderLayout());
 
-        // Add categories
-        JPanel categoriesPanel = new JPanel(new GridBagLayout());
-        categoriesPanel.setBorder(new EmptyBorder(ScaleUtil.scale(10), ScaleUtil.scale(10), ScaleUtil.scale(10), ScaleUtil.scale(10)));
-        Map<String, List<KeyBind>> keyBinds = KeyBinds.getEditableKeyBindsByCategory();
-        int i = 0;
-        for (Map.Entry<String, List<KeyBind>> entry : keyBinds.entrySet()) {
-            String category = entry.getKey();
-            if (category.isEmpty()) {
-                // keys in the empty category can't be configured
-                continue;
-            }
+		// Add categories
+		JPanel categoriesPanel = new JPanel(new GridBagLayout());
+		categoriesPanel.setBorder(new EmptyBorder(ScaleUtil.scale(10), ScaleUtil.scale(10), ScaleUtil.scale(10), ScaleUtil.scale(10)));
+		Map<String, List<KeyBind>> keyBinds = KeyBinds.getEditableKeyBindsByCategory();
+		int i = 0;
+		for (Map.Entry<String, List<KeyBind>> entry : keyBinds.entrySet()) {
+			String category = entry.getKey();
+			if (category.isEmpty()) {
+				// keys in the empty category can't be configured
+				continue;
+			}
 
-            JLabel label = new JLabel(I18n.translate("keybind.category." + category));
-            JButton button = new JButton(I18n.translate("menu.file.configure_keybinds.edit"));
-            button.addActionListener(e -> {
-                ConfigureCategoryKeyBindsDialog dialog = new ConfigureCategoryKeyBindsDialog(owner, category, entry.getValue());
-                dialog.setVisible(true);
-            });
+			JLabel label = new JLabel(I18n.translate("keybind.category." + category));
+			JButton button = new JButton(I18n.translate("menu.file.configure_keybinds.edit"));
+			button.addActionListener(e -> {
+				ConfigureCategoryKeyBindsDialog dialog = new ConfigureCategoryKeyBindsDialog(owner, category, entry.getValue());
+				dialog.setVisible(true);
+			});
 
-            GridBagConstraintsBuilder cb = GridBagConstraintsBuilder.create().insets(2);
+			GridBagConstraintsBuilder cb = GridBagConstraintsBuilder.create().insets(2);
 
-            categoriesPanel.add(label, cb.pos(0, i).weightX(0.0).anchor(GridBagConstraints.LINE_END).fill(GridBagConstraints.NONE).build());
-            categoriesPanel.add(button, cb.pos(1, i).weightX(1.0).anchor(GridBagConstraints.LINE_END).fill(GridBagConstraints.HORIZONTAL).build());
-            i++;
-        }
-        contentPane.add(categoriesPanel, BorderLayout.CENTER);
+			categoriesPanel.add(label, cb.pos(0, i).weightX(0.0).anchor(GridBagConstraints.LINE_END).fill(GridBagConstraints.NONE).build());
+			categoriesPanel.add(button, cb.pos(1, i).weightX(1.0).anchor(GridBagConstraints.LINE_END).fill(GridBagConstraints.HORIZONTAL).build());
+			i++;
+		}
+		contentPane.add(categoriesPanel, BorderLayout.CENTER);
 
-        // Add buttons
-        Container buttonContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, ScaleUtil.scale(4), ScaleUtil.scale(4)));
-        JButton saveButton = new JButton(I18n.translate("menu.file.configure_keybinds.save"));
-        saveButton.addActionListener(event -> save());
-        buttonContainer.add(saveButton);
-        JButton cancelButton = new JButton(I18n.translate("prompt.cancel"));
-        cancelButton.addActionListener(event -> cancel());
-        buttonContainer.add(cancelButton);
-        contentPane.add(buttonContainer, BorderLayout.SOUTH);
+		// Add buttons
+		Container buttonContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, ScaleUtil.scale(4), ScaleUtil.scale(4)));
+		JButton saveButton = new JButton(I18n.translate("menu.file.configure_keybinds.save"));
+		saveButton.addActionListener(event -> this.save());
+		buttonContainer.add(saveButton);
+		JButton cancelButton = new JButton(I18n.translate("prompt.cancel"));
+		cancelButton.addActionListener(event -> this.cancel());
+		buttonContainer.add(cancelButton);
+		contentPane.add(buttonContainer, BorderLayout.SOUTH);
 
-        addWindowListener(GuiUtil.onWindowClose(e -> KeyBinds.resetEditableKeyBinds()));
+		this.addWindowListener(GuiUtil.onWindowClose(e -> KeyBinds.resetEditableKeyBinds()));
 
-        pack();
-        setLocationRelativeTo(owner);
-    }
+		this.pack();
+		this.setLocationRelativeTo(owner);
+	}
 
-    private void save() {
-        KeyBinds.saveConfig();
-        gui.reloadKeyBinds();
-        setVisible(false);
-        dispose();
-    }
+	private void save() {
+		KeyBinds.saveConfig();
+		this.gui.reloadKeyBinds();
+		this.setVisible(false);
+		this.dispose();
+	}
 
-    private void cancel() {
-        KeyBinds.resetEditableKeyBinds();
-        setVisible(false);
-        dispose();
-    }
+	private void cancel() {
+		KeyBinds.resetEditableKeyBinds();
+		this.setVisible(false);
+		this.dispose();
+	}
 
-    public static void show(Gui gui) {
-        ConfigureKeyBindsDialog dialog = new ConfigureKeyBindsDialog(gui);
-        dialog.setVisible(true);
-    }
+	public static void show(Gui gui) {
+		ConfigureKeyBindsDialog dialog = new ConfigureKeyBindsDialog(gui);
+		dialog.setVisible(true);
+	}
 }

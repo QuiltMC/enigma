@@ -8,15 +8,15 @@ import cuchaz.enigma.network.packet.Packet;
 import java.util.List;
 
 public interface ClientPacketHandler {
-    void openMappings(EntryTree<EntryMapping> mappings);
+	void openMappings(EntryTree<EntryMapping> mappings);
 
-    boolean applyChangeFromServer(EntryChange<?> change);
+	boolean applyChangeFromServer(EntryChange<?> change);
 
-    void disconnectIfConnected(String reason);
+	void disconnectIfConnected(String reason);
 
-    void sendPacket(Packet<ServerPacketHandler> packet);
+	void sendPacket(Packet<ServerPacketHandler> packet);
 
-    void addMessage(ServerMessage message);
+	void addMessage(ServerMessage message);
 
-    void updateUserList(List<String> users);
+	void updateUserList(List<String> users);
 }

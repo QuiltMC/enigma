@@ -16,7 +16,6 @@ import com.formdev.flatlaf.FlatClientProperties;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.events.ConvertingTextFieldListener;
 import cuchaz.enigma.gui.util.GuiUtil;
-import cuchaz.enigma.utils.validation.ParameterizedMessage;
 
 /**
  * A label that converts into an editable text field when you click it.
@@ -39,22 +38,22 @@ public class ConvertingTextField {
 		this.label = GuiUtil.unboldLabel(new JLabel(text));
 		this.label.setBorder(BorderFactory.createLoweredBevelBorder());
 
-		this.label.addMouseListener(GuiUtil.onMouseClick(e -> startEditing()));
+		this.label.addMouseListener(GuiUtil.onMouseClick(e -> this.startEditing()));
 
 		this.textField.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
-				if (!hasChanges()) {
-					stopEditing(true);
+				if (!ConvertingTextField.this.hasChanges()) {
+					ConvertingTextField.this.stopEditing(true);
 				}
 			}
 		});
 
 		this.textField.addKeyListener(GuiUtil.onKeyPress(e -> {
 			if (KeyBinds.EXIT.matches(e)) {
-				stopEditing(true);
+				this.stopEditing(true);
 			} else if (KeyBinds.DIALOG_SAVE.matches(e)) {
-				stopEditing(false);
+				this.stopEditing(false);
 			}
 		}));
 
@@ -75,9 +74,9 @@ public class ConvertingTextField {
 	}
 
 	public void stopEditing(boolean abort) {
-		if (!editing) return;
+		if (!this.editing) return;
 
-		if (!listeners.stream().allMatch(l -> l.tryStopEditing(this, abort))) return;
+		if (!this.listeners.stream().allMatch(l -> l.tryStopEditing(this, abort))) return;
 
 		if (abort) {
 			this.textField.setText(this.label.getText());
@@ -94,7 +93,7 @@ public class ConvertingTextField {
 	}
 
 	public void setText(String text) {
-		stopEditing(true);
+		this.stopEditing(true);
 		this.label.setText(text);
 		this.textField.setText(text);
 	}
@@ -115,7 +114,7 @@ public class ConvertingTextField {
 	}
 
 	public void setEditText(String text) {
-		if (!editing) return;
+		if (!this.editing) return;
 
 		this.textField.setText(text);
 	}
@@ -130,13 +129,13 @@ public class ConvertingTextField {
 	}
 
 	public void selectAll() {
-		if (!editing) return;
+		if (!this.editing) return;
 
 		this.textField.selectAll();
 	}
 
 	public void selectSubstring(int startIndex) {
-		if (!editing) return;
+		if (!this.editing) return;
 
 		Document doc = this.textField.getDocument();
 		if (doc != null) {
@@ -145,13 +144,13 @@ public class ConvertingTextField {
 	}
 
 	public void selectSubstring(int startIndex, int endIndex) {
-		if (!editing) return;
+		if (!this.editing) return;
 
 		this.textField.select(startIndex, endIndex);
 	}
 
 	public String getText() {
-		if (editing) {
+		if (this.editing) {
 			return this.textField.getText();
 		} else {
 			return this.label.getText();
@@ -163,7 +162,7 @@ public class ConvertingTextField {
 	}
 
 	public boolean hasChanges() {
-		if (!editing) return false;
+		if (!this.editing) return false;
 		return !this.textField.getText().equals(this.label.getText());
 	}
 
@@ -176,7 +175,6 @@ public class ConvertingTextField {
 	}
 
 	public JPanel getUi() {
-		return ui;
+		return this.ui;
 	}
-
 }

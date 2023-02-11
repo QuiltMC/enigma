@@ -6,13 +6,12 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.inputs.loneClass;
 
 public class LoneClass {
-
 	private String name;
 
 	public LoneClass(String name) {

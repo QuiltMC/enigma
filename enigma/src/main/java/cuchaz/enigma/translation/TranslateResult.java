@@ -6,7 +6,6 @@ import java.util.function.Function;
 import cuchaz.enigma.source.RenamableTokenType;
 
 public final class TranslateResult<T> {
-
 	private final RenamableTokenType type;
 	private final T value;
 
@@ -40,11 +39,11 @@ public final class TranslateResult<T> {
 	}
 
 	public RenamableTokenType getType() {
-		return type;
+		return this.type;
 	}
 
 	public T getValue() {
-		return value;
+		return this.value;
 	}
 
 	public <R> TranslateResult<R> map(Function<T, R> op) {
@@ -66,20 +65,19 @@ public final class TranslateResult<T> {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (o == null || this.getClass() != o.getClass()) return false;
 		TranslateResult<?> that = (TranslateResult<?>) o;
-		return type == that.type &&
-				Objects.equals(value, that.value);
+		return this.type == that.type &&
+				Objects.equals(this.value, that.value);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(type, value);
+		return Objects.hash(this.type, this.value);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("TranslateResult { type: %s, value: %s }", type, value);
+		return String.format("TranslateResult { type: %s, value: %s }", this.type, this.value);
 	}
-
 }

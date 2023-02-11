@@ -1,6 +1,6 @@
 package cuchaz.enigma.translation.representation;
 
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
 import org.objectweb.asm.signature.SignatureReader;
@@ -46,33 +46,32 @@ public class Signature implements Translatable {
 	}
 
 	public String getSignature() {
-		return signature;
+		return this.signature;
 	}
 
 	public boolean isType() {
-		return isType;
+		return this.isType;
 	}
 
-	public Signature remap(Function<String, String> remapper) {
-		if (signature == null) {
+	public Signature remap(UnaryOperator<String> remapper) {
+		if (this.signature == null) {
 			return this;
 		}
 		SignatureWriter writer = new SignatureWriter();
 		SignatureVisitor visitor = new TranslationSignatureVisitor(remapper, writer);
-		if (isType) {
-			new SignatureReader(signature).acceptType(visitor);
+		if (this.isType) {
+			new SignatureReader(this.signature).acceptType(visitor);
 		} else {
-			new SignatureReader(signature).accept(visitor);
+			new SignatureReader(this.signature).accept(visitor);
 		}
-		return new Signature(writer.toString(), isType);
+		return new Signature(writer.toString(), this.isType);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof Signature) {
-			Signature other = (Signature) obj;
-			return (other.signature == null && signature == null || other.signature != null
-					&& signature != null && other.signature.equals(signature))
+		if (obj instanceof Signature other) {
+			return (other.signature == null && this.signature == null || other.signature != null
+					&& this.signature != null && other.signature.equals(this.signature))
 					&& other.isType == this.isType;
 		}
 		return false;
@@ -80,9 +79,9 @@ public class Signature implements Translatable {
 
 	@Override
 	public int hashCode() {
-		int hash = (isType ? 1 : 0) << 16;
-		if (signature != null) {
-			hash |= signature.hashCode();
+		int hash = (this.isType ? 1 : 0) << 16;
+		if (this.signature != null) {
+			hash |= this.signature.hashCode();
 		}
 
 		return hash;
@@ -90,12 +89,11 @@ public class Signature implements Translatable {
 
 	@Override
 	public String toString() {
-		return signature;
+		return this.signature;
 	}
 
 	@Override
 	public TranslateResult<Signature> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
 		return TranslateResult.ungrouped(this.remap(name -> translator.translate(new ClassEntry(name)).getFullName()));
 	}
-
 }

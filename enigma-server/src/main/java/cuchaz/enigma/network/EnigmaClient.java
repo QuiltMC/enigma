@@ -10,7 +10,6 @@ import java.net.Socket;
 import java.net.SocketException;
 
 public class EnigmaClient {
-
 	private final ClientPacketHandler controller;
 
 	private final String ip;
@@ -25,11 +24,11 @@ public class EnigmaClient {
 	}
 
 	public void connect() throws IOException {
-		socket = new Socket(ip, port);
-		output = new DataOutputStream(socket.getOutputStream());
+		this.socket = new Socket(this.ip, this.port);
+		this.output = new DataOutputStream(this.socket.getOutputStream());
 		Thread thread = new Thread(() -> {
 			try {
-				DataInput input = new DataInputStream(socket.getInputStream());
+				DataInput input = new DataInputStream(this.socket.getInputStream());
 				while (true) {
 					int packetId;
 					try {
@@ -42,13 +41,13 @@ public class EnigmaClient {
 						throw new IOException("Received invalid packet id " + packetId);
 					}
 					packet.read(input);
-					SwingUtilities.invokeLater(() -> packet.handle(controller));
+					SwingUtilities.invokeLater(() -> packet.handle(this.controller));
 				}
 			} catch (IOException e) {
-				controller.disconnectIfConnected(e.toString());
+				this.controller.disconnectIfConnected(e.toString());
 				return;
 			}
-			controller.disconnectIfConnected("Disconnected");
+			this.controller.disconnectIfConnected("Disconnected");
 		});
 		thread.setName("Client I/O thread");
 		thread.setDaemon(true);
@@ -56,9 +55,9 @@ public class EnigmaClient {
 	}
 
 	public synchronized void disconnect() {
-		if (socket != null && !socket.isClosed()) {
+		if (this.socket != null && !this.socket.isClosed()) {
 			try {
-				socket.close();
+				this.socket.close();
 			} catch (IOException e) {
 				Logger.error(e, "Failed to close socket!");
 			}
@@ -68,11 +67,10 @@ public class EnigmaClient {
 
 	public void sendPacket(Packet<ServerPacketHandler> packet) {
 		try {
-			output.writeByte(PacketRegistry.getC2SId(packet));
-			packet.write(output);
+			this.output.writeByte(PacketRegistry.getC2SId(packet));
+			packet.write(this.output);
 		} catch (IOException e) {
-			controller.disconnectIfConnected(e.toString());
+			this.controller.disconnectIfConnected(e.toString());
 		}
 	}
-
 }

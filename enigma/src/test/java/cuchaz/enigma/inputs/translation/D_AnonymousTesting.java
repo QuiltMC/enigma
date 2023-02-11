@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.inputs.translation;
@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class D_AnonymousTesting {
-
 	public List<Object> getObjs() {
 		List<Object> objs = new ArrayList<Object>();
 		objs.add(new Object() {

@@ -6,13 +6,12 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.inputs.translation;
 
 public class A_Basic {
-
 	public int one;
 	public float two;
 	public String three;

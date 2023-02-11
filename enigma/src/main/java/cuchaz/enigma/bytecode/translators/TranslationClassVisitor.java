@@ -31,9 +31,9 @@ public class TranslationClassVisitor extends ClassVisitor {
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-		obfClassEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
+		this.obfClassEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
 
-		ClassDefEntry translatedEntry = translator.translate(obfClassEntry);
+		ClassDefEntry translatedEntry = this.translator.translate(this.obfClassEntry);
 		String translatedSuper = translatedEntry.getSuperClass() != null ? translatedEntry.getSuperClass().getFullName() : null;
 		String[] translatedInterfaces = Arrays.stream(translatedEntry.getInterfaces()).map(ClassEntry::getFullName).toArray(String[]::new);
 
@@ -42,28 +42,28 @@ public class TranslationClassVisitor extends ClassVisitor {
 
 	@Override
 	public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-		FieldDefEntry entry = FieldDefEntry.parse(obfClassEntry, access, name, desc, signature);
-		FieldDefEntry translatedEntry = translator.translate(entry);
+		FieldDefEntry entry = FieldDefEntry.parse(this.obfClassEntry, access, name, desc, signature);
+		FieldDefEntry translatedEntry = this.translator.translate(entry);
 		FieldVisitor fv = super.visitField(translatedEntry.getAccess().getFlags(), translatedEntry.getName(), translatedEntry.getDesc().toString(), translatedEntry.getSignature().toString(), value);
-		return new TranslationFieldVisitor(translator, translatedEntry, api, fv);
+		return new TranslationFieldVisitor(this.translator, translatedEntry, this.api, fv);
 	}
 
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-		MethodDefEntry entry = MethodDefEntry.parse(obfClassEntry, access, name, desc, signature);
-		MethodDefEntry translatedEntry = translator.translate(entry);
+		MethodDefEntry entry = MethodDefEntry.parse(this.obfClassEntry, access, name, desc, signature);
+		MethodDefEntry translatedEntry = this.translator.translate(entry);
 		String[] translatedExceptions = new String[exceptions.length];
 		for (int i = 0; i < exceptions.length; i++) {
-			translatedExceptions[i] = translator.translate(new ClassEntry(exceptions[i])).getFullName();
+			translatedExceptions[i] = this.translator.translate(new ClassEntry(exceptions[i])).getFullName();
 		}
 		MethodVisitor mv = super.visitMethod(translatedEntry.getAccess().getFlags(), translatedEntry.getName(), translatedEntry.getDesc().toString(), translatedEntry.getSignature().toString(), translatedExceptions);
-		return new TranslationMethodVisitor(translator, obfClassEntry, entry, api, mv);
+		return new TranslationMethodVisitor(this.translator, this.obfClassEntry, entry, this.api, mv);
 	}
 
 	@Override
 	public void visitInnerClass(String name, String outerName, String innerName, int access) {
-		ClassDefEntry classEntry = ClassDefEntry.parse(access, name, obfClassEntry.getSignature().toString(), null, new String[0]);
-		ClassDefEntry translatedEntry = translator.translate(classEntry);
+		ClassDefEntry classEntry = ClassDefEntry.parse(access, name, this.obfClassEntry.getSignature().toString(), null, new String[0]);
+		ClassDefEntry translatedEntry = this.translator.translate(classEntry);
 		ClassEntry translatedOuterClass = translatedEntry.getOuterClass();
 		if (translatedOuterClass == null) {
 			throw new IllegalStateException("Translated inner class did not have outer class");
@@ -79,7 +79,7 @@ public class TranslationClassVisitor extends ClassVisitor {
 	@Override
 	public void visitOuterClass(String owner, String name, String desc) {
 		if (desc != null) {
-			MethodEntry translatedEntry = translator.translate(new MethodEntry(new ClassEntry(owner), name, new MethodDescriptor(desc)));
+			MethodEntry translatedEntry = this.translator.translate(new MethodEntry(new ClassEntry(owner), name, new MethodDescriptor(desc)));
 			super.visitOuterClass(translatedEntry.getParent().getFullName(), translatedEntry.getName(), translatedEntry.getDesc().toString());
 		} else {
 			super.visitOuterClass(owner, name, desc);
@@ -88,24 +88,24 @@ public class TranslationClassVisitor extends ClassVisitor {
 
 	@Override
 	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-		TypeDescriptor translatedDesc = translator.translate(new TypeDescriptor(desc));
+		TypeDescriptor translatedDesc = this.translator.translate(new TypeDescriptor(desc));
 		AnnotationVisitor av = super.visitAnnotation(translatedDesc.toString(), visible);
-		return new TranslationAnnotationVisitor(translator, translatedDesc.getTypeEntry(), api, av);
+		return new TranslationAnnotationVisitor(this.translator, translatedDesc.getTypeEntry(), this.api, av);
 	}
 
 	@Override
 	public AnnotationVisitor visitTypeAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
-		TypeDescriptor translatedDesc = translator.translate(new TypeDescriptor(desc));
+		TypeDescriptor translatedDesc = this.translator.translate(new TypeDescriptor(desc));
 		AnnotationVisitor av = super.visitTypeAnnotation(typeRef, typePath, translatedDesc.toString(), visible);
-		return new TranslationAnnotationVisitor(translator, translatedDesc.getTypeEntry(), api, av);
+		return new TranslationAnnotationVisitor(this.translator, translatedDesc.getTypeEntry(), this.api, av);
 	}
 
 	@Override
 	public RecordComponentVisitor visitRecordComponent(String name, String desc, String signature) {
 		// Record component names are remapped via the field mapping.
-		FieldDefEntry entry = FieldDefEntry.parse(obfClassEntry, 0, name, desc, signature);
-		FieldDefEntry translatedEntry = translator.translate(entry);
+		FieldDefEntry entry = FieldDefEntry.parse(this.obfClassEntry, 0, name, desc, signature);
+		FieldDefEntry translatedEntry = this.translator.translate(entry);
 		RecordComponentVisitor fv = super.visitRecordComponent(translatedEntry.getName(), translatedEntry.getDesc().toString(), translatedEntry.getSignature().toString());
-		return new TranslationRecordComponentVisitor(translator, api, fv);
+		return new TranslationRecordComponentVisitor(this.translator, this.api, fv);
 	}
 }

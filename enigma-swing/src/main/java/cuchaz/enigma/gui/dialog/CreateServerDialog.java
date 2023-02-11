@@ -18,50 +18,49 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 public class CreateServerDialog extends AbstractDialog {
-
 	private JTextField portField;
 	private JPasswordField passwordField;
 
 	public CreateServerDialog(Frame owner, Gui gui) {
 		super(owner, gui, "prompt.create_server.title", "prompt.create_server.confirm", "prompt.cancel");
 
-		Dimension preferredSize = getPreferredSize();
+		Dimension preferredSize = this.getPreferredSize();
 		preferredSize.width = ScaleUtil.scale(400);
-		setPreferredSize(preferredSize);
-		pack();
-		setLocationRelativeTo(owner);
+		this.setPreferredSize(preferredSize);
+		this.pack();
+		this.setLocationRelativeTo(owner);
 	}
 
 	@Override
 	protected List<Pair<String, Component>> createComponents() {
-		portField = new JTextField(Integer.toString(NetConfig.getServerPort()));
-		passwordField = new JPasswordField(NetConfig.getServerPassword());
+		this.portField = new JTextField(Integer.toString(NetConfig.getServerPort()));
+		this.passwordField = new JPasswordField(NetConfig.getServerPassword());
 
-		portField.addActionListener(event -> confirm());
-		passwordField.addActionListener(event -> confirm());
+		this.portField.addActionListener(event -> this.confirm());
+		this.passwordField.addActionListener(event -> this.confirm());
 
 		return Arrays.asList(
-				new Pair<>("prompt.create_server.port", portField),
-				new Pair<>("prompt.password", passwordField)
+				new Pair<>("prompt.create_server.port", this.portField),
+				new Pair<>("prompt.password", this.passwordField)
 		);
 	}
 
 	@Override
 	public void validateInputs() {
-		StandardValidation.isIntInRange(vc, portField.getText(), 0, 65535);
-		if (passwordField.getPassword().length > EnigmaServer.MAX_PASSWORD_LENGTH) {
-			vc.raise(Message.FIELD_LENGTH_OUT_OF_RANGE, EnigmaServer.MAX_PASSWORD_LENGTH);
+		StandardValidation.isIntInRange(this.vc, this.portField.getText(), 0, 65535);
+		if (this.passwordField.getPassword().length > EnigmaServer.MAX_PASSWORD_LENGTH) {
+			this.vc.raise(Message.FIELD_LENGTH_OUT_OF_RANGE, EnigmaServer.MAX_PASSWORD_LENGTH);
 		}
 	}
 
 	public Result getResult() {
-		if (!isActionConfirm()) return null;
-		vc.reset();
-		validateInputs();
-		if (!vc.canProceed()) return null;
+		if (!this.isActionConfirm()) return null;
+		this.vc.reset();
+		this.validateInputs();
+		if (!this.vc.canProceed()) return null;
 		return new Result(
-				Integer.parseInt(portField.getText()),
-				passwordField.getPassword()
+				Integer.parseInt(this.portField.getText()),
+				this.passwordField.getPassword()
 		);
 	}
 
@@ -75,22 +74,6 @@ public class CreateServerDialog extends AbstractDialog {
 		return r;
 	}
 
-	public static class Result {
-		private final int port;
-		private final char[] password;
-
-		public Result(int port, char[] password) {
-			this.port = port;
-			this.password = password;
-		}
-
-		public int getPort() {
-			return port;
-		}
-
-		public char[] getPassword() {
-			return password;
-		}
+	public record Result(int port, char[] password) {
 	}
-
 }

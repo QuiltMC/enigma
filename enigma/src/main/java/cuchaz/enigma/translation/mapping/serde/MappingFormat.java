@@ -29,7 +29,6 @@ public enum MappingFormat {
 	PROGUARD(null, ProguardMappingsReader.INSTANCE),
 	RECAF(RecafMappingsWriter.INSTANCE, RecafMappingsReader.INSTANCE);
 
-
 	private final MappingsWriter writer;
 	private final MappingsReader reader;
 
@@ -39,31 +38,31 @@ public enum MappingFormat {
 	}
 
 	public void write(EntryTree<EntryMapping> mappings, Path path, ProgressListener progressListener, MappingSaveParameters saveParameters)  {
-		write(mappings, MappingDelta.added(mappings), path, progressListener, saveParameters);
+		this.write(mappings, MappingDelta.added(mappings), path, progressListener, saveParameters);
 	}
 
 	public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progressListener, MappingSaveParameters saveParameters)  {
-		if (writer == null) {
-			throw new IllegalStateException(name() + " does not support writing");
+		if (this.writer == null) {
+			throw new IllegalStateException(this.name() + " does not support writing");
 		}
-		writer.write(mappings, delta, path, progressListener, saveParameters);
+		this.writer.write(mappings, delta, path, progressListener, saveParameters);
 	}
 
 	public EntryTree<EntryMapping> read(Path path, ProgressListener progressListener, MappingSaveParameters saveParameters) throws IOException, MappingParseException {
-		if (reader == null) {
-			throw new IllegalStateException(name() + " does not support reading");
+		if (this.reader == null) {
+			throw new IllegalStateException(this.name() + " does not support reading");
 		}
-		return reader.read(path, progressListener, saveParameters);
+		return this.reader.read(path, progressListener, saveParameters);
 	}
 
 	@Nullable
 	public MappingsWriter getWriter() {
-		return writer;
+		return this.writer;
 	}
 
 	@Nullable
 	public MappingsReader getReader() {
-		return reader;
+		return this.reader;
 	}
 
 	public static MappingFormat[] getReadableFormats() {

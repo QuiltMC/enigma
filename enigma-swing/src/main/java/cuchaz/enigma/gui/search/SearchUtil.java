@@ -14,18 +14,17 @@ import java.util.stream.Stream;
 import cuchaz.enigma.utils.Pair;
 
 public class SearchUtil<T extends SearchEntry> {
-
 	private final Map<T, Entry<T>> entries = new HashMap<>();
 	private final Map<String, Integer> hitCount = new HashMap<>();
 	private final Executor searchExecutor = Executors.newWorkStealingPool();
 
 	public void add(T entry) {
 		Entry<T> e = Entry.from(entry);
-		entries.put(entry, e);
+		this.entries.put(entry, e);
 	}
 
 	public void add(Entry<T> entry) {
-		entries.put(entry.searchEntry, entry);
+		this.entries.put(entry.searchEntry, entry);
 	}
 
 	public void addAll(Collection<T> entries) {
@@ -33,23 +32,23 @@ public class SearchUtil<T extends SearchEntry> {
 	}
 
 	public void remove(T entry) {
-		entries.remove(entry);
+		this.entries.remove(entry);
 	}
 
 	public void clear() {
-		entries.clear();
+		this.entries.clear();
 	}
 
 	public void clearHits() {
-		hitCount.clear();
+		this.hitCount.clear();
 	}
 
 	public Stream<T> search(String term) {
-		return entries.values().parallelStream()
-				.map(e -> new Pair<>(e, e.getScore(term, hitCount.getOrDefault(e.searchEntry.getIdentifier(), 0))))
-				.filter(e -> e.b > 0)
-				.sorted(Comparator.comparingDouble(o -> -o.b))
-				.map(e -> e.a.searchEntry)
+		return this.entries.values().parallelStream()
+				.map(e -> new Pair<>(e, e.getScore(term, this.hitCount.getOrDefault(e.searchEntry.getIdentifier(), 0))))
+				.filter(e -> e.b() > 0)
+				.sorted(Comparator.comparingDouble(o -> -o.b()))
+				.map(e -> e.a().searchEntry)
 				.sequential();
 	}
 
@@ -62,7 +61,7 @@ public class SearchUtil<T extends SearchEntry> {
 		AtomicBoolean control = new AtomicBoolean(false);
 		AtomicInteger elapsed = new AtomicInteger();
 		for (Entry<T> value : entries.values()) {
-			searchExecutor.execute(() -> {
+			this.searchExecutor.execute(() -> {
 				try {
 					if (control.get()) return;
 					float score = value.getScore(term, hitCount.getOrDefault(value.searchEntry.getIdentifier(), 0));
@@ -107,13 +106,12 @@ public class SearchUtil<T extends SearchEntry> {
 	}
 
 	public void hit(T entry) {
-		if (entries.containsKey(entry)) {
-			hitCount.compute(entry.getIdentifier(), (_id, i) -> i == null ? 1 : i + 1);
+		if (this.entries.containsKey(entry)) {
+			this.hitCount.compute(entry.getIdentifier(), (_id, i) -> i == null ? 1 : i + 1);
 		}
 	}
 
 	public static final class Entry<T extends SearchEntry> {
-
 		public final T searchEntry;
 		private final String[][] components;
 
@@ -124,7 +122,7 @@ public class SearchUtil<T extends SearchEntry> {
 
 		public float getScore(String term, int hits) {
 			String ucTerm = term.toUpperCase(Locale.ROOT);
-			float maxScore = (float) Arrays.stream(components)
+			float maxScore = (float) Arrays.stream(this.components)
 					.mapToDouble(name -> getScoreFor(ucTerm, name))
 					.max().orElse(0.0);
 			return maxScore * (hits + 1);
@@ -264,5 +262,4 @@ public class SearchUtil<T extends SearchEntry> {
 
 		float getProgress();
 	}
-
 }

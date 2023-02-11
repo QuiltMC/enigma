@@ -6,13 +6,12 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.inputs.innerClasses;
 
 public class B_AnonymousWithScopeArgs {
-
 	public static void foo(final D_Simple arg) {
 		System.out.println(new Object() {
 			@Override

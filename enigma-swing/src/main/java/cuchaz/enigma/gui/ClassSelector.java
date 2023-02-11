@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.*;
 
 public class ClassSelector extends JTree {
-
 	public static final Comparator<ClassEntry> DEOBF_CLASS_COMPARATOR = Comparator.comparing(ClassEntry::getFullName);
 
 	private final Comparator<ClassEntry> comparator;
@@ -42,23 +41,23 @@ public class ClassSelector extends JTree {
 		this.controller = gui.getController();
 
 		// configure the tree control
-		setEditable(true);
-		setRootVisible(false);
-		setShowsRootHandles(false);
-		setModel(null);
+		this.setEditable(true);
+		this.setRootVisible(false);
+		this.setShowsRootHandles(false);
+		this.setModel(null);
 
 		// hook events
-		addMouseListener(GuiUtil.onMouseClick(event -> {
-				if (selectionListener != null && event.getClickCount() == 2) {
+		this.addMouseListener(GuiUtil.onMouseClick(event -> {
+				if (this.selectionListener != null && event.getClickCount() == 2) {
 					// get the selected node
-					TreePath path = getSelectionPath();
+					TreePath path = this.getSelectionPath();
 					if (path != null && path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
-						selectionListener.onSelectClass(node.getObfEntry());
+						this.selectionListener.onSelectClass(node.getObfEntry());
 					}
 				}
 			}));
-		addKeyListener(GuiUtil.onKeyPress(e -> {
-			TreePath[] paths = getSelectionPaths();
+		this.addKeyListener(GuiUtil.onKeyPress(e -> {
+			TreePath[] paths = this.getSelectionPaths();
 
 			if (paths != null) {
 				if (KeyBinds.EDITOR_TOGGLE_MAPPING.matches(e)) {
@@ -69,10 +68,10 @@ public class ClassSelector extends JTree {
 					}
 				}
 
-				if (selectionListener != null && KeyBinds.SELECT.matches(e)) {
+				if (this.selectionListener != null && KeyBinds.SELECT.matches(e)) {
 					for (TreePath path : paths) {
 						if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
-							selectionListener.onSelectClass(node.getObfEntry());
+							this.selectionListener.onSelectClass(node.getObfEntry());
 						}
 					}
 				}
@@ -81,7 +80,7 @@ public class ClassSelector extends JTree {
 
 		final DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
 			{
-				setLeafIcon(GuiUtil.CLASS_ICON);
+				this.setLeafIcon(GuiUtil.CLASS_ICON);
 			}
 
 			@Override
@@ -89,13 +88,13 @@ public class ClassSelector extends JTree {
 				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
 				if (gui.getController().project != null && leaf && value instanceof ClassSelectorClassNode node) {
-					setIcon(GuiUtil.getClassIcon(gui, node.getObfEntry()));
+					this.setIcon(GuiUtil.getClassIcon(gui, node.getObfEntry()));
 				}
 
 				return this;
 			}
 		};
-		setCellRenderer(renderer);
+		this.setCellRenderer(renderer);
 
 		final JTree tree = this;
 
@@ -110,7 +109,7 @@ public class ClassSelector extends JTree {
 			@Override
 			public void editingStopped(ChangeEvent e) {
 				String data = editor.getCellEditorValue().toString();
-				TreePath path = getSelectionPath();
+				TreePath path = ClassSelector.this.getSelectionPath();
 
 				Object realPath = path.getLastPathComponent();
 				if (realPath instanceof DefaultMutableTreeNode node && data != null) {
@@ -125,7 +124,7 @@ public class ClassSelector extends JTree {
 							break;
 						}
 					}
-					if (allowEdit && renameSelectionListener != null) {
+					if (allowEdit && ClassSelector.this.renameSelectionListener != null) {
 						Object prevData = node.getUserObject();
 						Object objectData = node.getUserObject() instanceof ClassEntry ? new ClassEntry(((ClassEntry) prevData).getPackageName() + "/" + data) : data;
 
@@ -181,8 +180,8 @@ public class ClassSelector extends JTree {
 	}
 
 	public ClassEntry getSelectedClass() {
-		if (!isSelectionEmpty()) {
-			Object selectedNode = getSelectionPath().getLastPathComponent();
+		if (!this.isSelectionEmpty()) {
+			Object selectedNode = this.getSelectionPath().getLastPathComponent();
 
 			if (selectedNode instanceof ClassSelectorClassNode classNode) {
 				return classNode.getClassEntry();
@@ -202,13 +201,13 @@ public class ClassSelector extends JTree {
 
 	public List<StateEntry> getExpansionState() {
 		List<StateEntry> state = new ArrayList<>();
-		int rowCount = getRowCount();
+		int rowCount = this.getRowCount();
 		for (int i = 0; i < rowCount; i++) {
-			TreePath path = getPathForRow(i);
-			if (isPathSelected(path)) {
+			TreePath path = this.getPathForRow(i);
+			if (this.isPathSelected(path)) {
 				state.add(new StateEntry(State.SELECTED, path));
 			}
-			if (isExpanded(path)) {
+			if (this.isExpanded(path)) {
 				state.add(new StateEntry(State.EXPANDED, path));
 			}
 		}
@@ -232,44 +231,44 @@ public class ClassSelector extends JTree {
 			return;
 		}
 
-		expandPath(packageManager.getPackagePath(packageName));
+		this.expandPath(this.packageManager.getPackagePath(packageName));
 	}
 
 	public void expandAll() {
-		for (DefaultMutableTreeNode packageNode : packageManager.getPackageNodes()) {
-			expandPath(new TreePath(packageNode.getPath()));
+		for (DefaultMutableTreeNode packageNode : this.packageManager.getPackageNodes()) {
+			this.expandPath(new TreePath(packageNode.getPath()));
 		}
 	}
 
 	public void collapseAll() {
-		for (DefaultMutableTreeNode packageNode : packageManager.getPackageNodes()) {
-			collapsePath(new TreePath(packageNode.getPath()));
+		for (DefaultMutableTreeNode packageNode : this.packageManager.getPackageNodes()) {
+			this.collapsePath(new TreePath(packageNode.getPath()));
 		}
 	}
 
 	public void setSelectionClass(ClassEntry classEntry) {
-		expandPackage(classEntry.getPackageName());
-		ClassSelectorClassNode node = packageManager.getClassNode(classEntry);
+		this.expandPackage(classEntry.getPackageName());
+		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
 
 		if (node != null) {
 			TreePath path = new TreePath(node.getPath());
-			setSelectionPath(path);
-			scrollPathToVisible(path);
+			this.setSelectionPath(path);
+			this.scrollPathToVisible(path);
 		}
 	}
 
 	public void moveClassIn(ClassEntry classEntry) {
-		removeEntry(classEntry);
-		packageManager.addEntry(classEntry);
+		this.removeEntry(classEntry);
+		this.packageManager.addEntry(classEntry);
 	}
 
 	public void removeEntry(ClassEntry classEntry) {
-		packageManager.removeClassNode(classEntry);
+		this.packageManager.removeClassNode(classEntry);
 	}
 
 	public void reload() {
-		DefaultTreeModel model = (DefaultTreeModel) getModel();
-		model.reload(packageManager.getRoot());
+		DefaultTreeModel model = (DefaultTreeModel) this.getModel();
+		model.reload(this.packageManager.getRoot());
 	}
 
 	public interface ClassSelectionListener {

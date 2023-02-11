@@ -34,7 +34,6 @@ import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 
 public class MenuBar {
-
 	private final JMenu fileMenu = new JMenu();
 	private final JMenuItem jarOpenItem = new JMenuItem();
 	private final JMenuItem jarCloseItem = new JMenuItem();
@@ -373,19 +372,19 @@ public class MenuBar {
 		}
 		this.gui.getController().disconnectIfConnected(null);
 		try {
-			this.gui.getController().createClient(result.getUsername(), result.getAddress().address, result.getAddress().port, result.getPassword());
+			this.gui.getController().createClient(result.username(), result.address().address, result.address().port, result.password());
 			if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
-				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.CONNECTED_TO_SERVER, result.getAddressStr()));
+				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.CONNECTED_TO_SERVER, result.addressStr()));
 			}
-			NetConfig.setUsername(result.getUsername());
-			NetConfig.setRemoteAddress(result.getAddressStr());
-			NetConfig.setPassword(String.valueOf(result.getPassword()));
+			NetConfig.setUsername(result.username());
+			NetConfig.setRemoteAddress(result.addressStr());
+			NetConfig.setPassword(String.valueOf(result.password()));
 			NetConfig.save();
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), e.toString(), I18n.translate("menu.collab.connect.error"), JOptionPane.ERROR_MESSAGE);
 			this.gui.getController().disconnectIfConnected(null);
 		}
-		Arrays.fill(result.getPassword(), (char) 0);
+		Arrays.fill(result.password(), (char) 0);
 	}
 
 	public void onStartServerClicked() {
@@ -399,12 +398,12 @@ public class MenuBar {
 		}
 		this.gui.getController().disconnectIfConnected(null);
 		try {
-			this.gui.getController().createServer(result.getPort(), result.getPassword());
+			this.gui.getController().createServer(result.port(), result.password());
 			if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
-				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.SERVER_STARTED, result.getPort()));
+				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.SERVER_STARTED, result.port()));
 			}
-			NetConfig.setServerPort(result.getPort());
-			NetConfig.setServerPassword(String.valueOf(result.getPassword()));
+			NetConfig.setServerPort(result.port());
+			NetConfig.setServerPassword(String.valueOf(result.password()));
 			NetConfig.save();
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), e.toString(), I18n.translate("menu.collab.server.start.error"), JOptionPane.ERROR_MESSAGE);
@@ -448,7 +447,7 @@ public class MenuBar {
 						continue;
 					}
 
-					String commonPrefix = findCommonPrefix(recent.b.toString(), other.b.toString());
+					String commonPrefix = findCommonPrefix(recent.b().toString(), other.b().toString());
 
 					if (commonPrefix != null && (prefix == null || (commonPrefix.length() > prefix.length() && verifyCommonPrefix(commonPrefix, recentFilePairs)))) {
 						prefix = commonPrefix;
@@ -458,25 +457,25 @@ public class MenuBar {
 		}
 
 		for (Pair<Path, Path> recent : recentFilePairs) {
-			String jarName = recent.a.getFileName().toString();
+			String jarName = recent.a().getFileName().toString();
 
 			// if there's no common prefix, just show the last directory in the tree
 			String mappingsName;
 			if (prefix != null && !prefix.isBlank()) {
-				mappingsName = recent.b.toString().split(prefix)[1];
+				mappingsName = recent.b().toString().split(prefix)[1];
 			} else {
-				mappingsName = recent.b.toString().substring(recent.b.toString().lastIndexOf("/"));
+				mappingsName = recent.b().toString().substring(recent.b().toString().lastIndexOf("/"));
 			}
 
 			JMenuItem item = new JMenuItem(jarName + " -> " + mappingsName);
-			item.addActionListener(event -> gui.getController().openJar(recent.a).whenComplete((v, t) -> gui.getController().openMappings(recent.b)));
+			item.addActionListener(event -> gui.getController().openJar(recent.a()).whenComplete((v, t) -> gui.getController().openMappings(recent.b())));
 			this.openRecentMenu.add(item);
 		}
 	}
 
 	private static boolean verifyCommonPrefix(String prefix, List<Pair<Path, Path>> filePairs) {
 		for (Pair<Path, Path> pair : filePairs) {
-			if (!pair.b.toString().startsWith(prefix)) {
+			if (!pair.b().toString().startsWith(prefix)) {
 				return false;
 			}
 		}
@@ -587,7 +586,7 @@ public class MenuBar {
 					scaleMenu.add(menuItem);
 					return new Pair<>(realScaleFactor, menuItem);
 				})
-				.collect(Collectors.toMap(x -> x.a, x -> x.b));
+				.collect(Collectors.toMap(Pair::a, Pair::b));
 
 		JRadioButtonMenuItem currentScaleButton = scaleButtons.get(UiConfig.getScaleFactor());
 		if (currentScaleButton != null) {

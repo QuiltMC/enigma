@@ -11,7 +11,6 @@ public class MessageC2SPacket implements Packet<ServerPacketHandler> {
 	private String message;
 
 	MessageC2SPacket() {
-
 	}
 
 	public MessageC2SPacket(String message) {
@@ -20,19 +19,19 @@ public class MessageC2SPacket implements Packet<ServerPacketHandler> {
 
 	@Override
 	public void read(DataInput input) throws IOException {
-		message = PacketHelper.readString(input);
+		this.message = PacketHelper.readString(input);
 	}
 
 	@Override
 	public void write(DataOutput output) throws IOException {
-		PacketHelper.writeString(output, message);
+		PacketHelper.writeString(output, this.message);
 	}
 
 	@Override
 	public void handle(ServerPacketHandler handler) {
 		String trimmedMessage = this.message.trim();
 		if (!trimmedMessage.isEmpty()) {
-			handler.getServer().sendMessage(ServerMessage.chat(handler.getServer().getUsername(handler.getClient()), trimmedMessage));
+			handler.server().sendMessage(ServerMessage.chat(handler.server().getUsername(handler.client()), trimmedMessage));
 		}
 	}
 }

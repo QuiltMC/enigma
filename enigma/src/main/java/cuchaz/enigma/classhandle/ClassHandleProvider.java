@@ -23,7 +23,6 @@ import cuchaz.enigma.utils.Result;
 import static cuchaz.enigma.utils.Utils.withLock;
 
 public final class ClassHandleProvider {
-
 	private final EnigmaProject project;
 
 	private final ExecutorService pool = Executors.newWorkStealingPool();
@@ -37,7 +36,7 @@ public final class ClassHandleProvider {
 	public ClassHandleProvider(EnigmaProject project, DecompilerService ds) {
 		this.project = project;
 		this.ds = ds;
-		this.decompiler = createDecompiler();
+		this.decompiler = this.createDecompiler();
 	}
 
 	/**
@@ -50,10 +49,10 @@ public final class ClassHandleProvider {
 	 */
 	@Nullable
 	public ClassHandle openClass(ClassEntry entry) {
-		if (!project.getJarIndex().getEntryIndex().hasClass(entry)) return null;
+		if (!this.project.getJarIndex().getEntryIndex().hasClass(entry)) return null;
 
-		return withLock(lock.writeLock(), () -> {
-			Entry e = handles.computeIfAbsent(entry, entry1 -> new Entry(this, entry1));
+		return withLock(this.lock.writeLock(), () -> {
+			Entry e = this.handles.computeIfAbsent(entry, entry1 -> new Entry(this, entry1));
 			return e.createHandle();
 		});
 	}
@@ -71,10 +70,8 @@ public final class ClassHandleProvider {
 		if (this.ds.equals(ds)) return;
 
 		this.ds = ds;
-		this.decompiler = createDecompiler();
-		withLock(lock.readLock(), () -> {
-			handles.values().forEach(Entry::invalidate);
-		});
+		this.decompiler = this.createDecompiler();
+		withLock(this.lock.readLock(), () -> this.handles.values().forEach(Entry::invalidate));
 	}
 
 	/**
@@ -83,11 +80,11 @@ public final class ClassHandleProvider {
 	 * @return the current decompiler service
 	 */
 	public DecompilerService getDecompilerService() {
-		return ds;
+		return this.ds;
 	}
 
 	private Decompiler createDecompiler() {
-		return ds.create(new CachingClassProvider(new ObfuscationFixClassProvider(project.getClassProvider(), project.getJarIndex())), new SourceSettings(true, true));
+		return this.ds.create(new CachingClassProvider(new ObfuscationFixClassProvider(this.project.getClassProvider(), this.project.getJarIndex())), new SourceSettings(true, true));
 	}
 
 	/**
@@ -95,9 +92,7 @@ public final class ClassHandleProvider {
 	 * re-remapped.
 	 */
 	public void invalidateMapped() {
-		withLock(lock.readLock(), () -> {
-			handles.values().forEach(Entry::invalidateMapped);
-		});
+		withLock(this.lock.readLock(), () -> this.handles.values().forEach(Entry::invalidateMapped));
 	}
 
 	/**
@@ -109,8 +104,8 @@ public final class ClassHandleProvider {
 	 * @param entry the class entry to invalidate
 	 */
 	public void invalidateMapped(ClassEntry entry) {
-		withLock(lock.readLock(), () -> {
-			Entry e = handles.get(entry);
+		withLock(this.lock.readLock(), () -> {
+			Entry e = this.handles.get(entry);
 			if (e != null) {
 				e.invalidateMapped();
 			}
@@ -122,9 +117,7 @@ public final class ClassHandleProvider {
 	 * re-remapped.
 	 */
 	public void invalidateJavadoc() {
-		withLock(lock.readLock(), () -> {
-			handles.values().forEach(Entry::invalidateJavadoc);
-		});
+		withLock(this.lock.readLock(), () -> this.handles.values().forEach(Entry::invalidateJavadoc));
 	}
 
 	/**
@@ -134,8 +127,8 @@ public final class ClassHandleProvider {
 	 * @param entry the class entry to invalidate
 	 */
 	public void invalidateJavadoc(ClassEntry entry) {
-		withLock(lock.readLock(), () -> {
-			Entry e = handles.get(entry);
+		withLock(this.lock.readLock(), () -> {
+			Entry e = this.handles.get(entry);
 			if (e != null) {
 				e.invalidateJavadoc();
 			}
@@ -147,9 +140,7 @@ public final class ClassHandleProvider {
 	}
 
 	private void deleteEntry(Entry entry) {
-		withLock(lock.writeLock(), () -> {
-			handles.remove(entry.entry);
-		});
+		withLock(this.lock.writeLock(), () -> this.handles.remove(entry.entry));
 	}
 
 	/**
@@ -162,21 +153,20 @@ public final class ClassHandleProvider {
 	 * be used.
 	 */
 	public void destroy() {
-		pool.shutdown();
+		this.pool.shutdown();
 		try {
-			pool.awaitTermination(30, TimeUnit.SECONDS);
+			this.pool.awaitTermination(30, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
 
-		withLock(lock.writeLock(), () -> {
-			handles.values().forEach(Entry::destroy);
-			handles.clear();
+		withLock(this.lock.writeLock(), () -> {
+			this.handles.values().forEach(Entry::destroy);
+			this.handles.clear();
 		});
 	}
 
 	private static final class Entry {
-
 		private final ClassHandleProvider p;
 		private final ClassEntry entry;
 		private ClassEntry deobfRef;
@@ -198,141 +188,138 @@ public final class ClassHandleProvider {
 			this.p = p;
 			this.entry = entry;
 			this.deobfRef = p.project.getMapper().deobfuscate(entry);
-			invalidate();
+			this.invalidate();
 		}
 
 		public ClassHandleImpl createHandle() {
 			ClassHandleImpl handle = new ClassHandleImpl(this);
-			withLock(lock.writeLock(), () -> {
-				handles.add(handle);
-			});
+			withLock(this.lock.writeLock(), () -> this.handles.add(handle));
 			return handle;
 		}
 
 		@Nullable
 		public ClassEntry getDeobfRef() {
-			return deobfRef;
+			return this.deobfRef;
 		}
 
 		private void checkDeobfRefForUpdate() {
-			ClassEntry newDeobf = p.project.getMapper().deobfuscate(entry);
-			if (!Objects.equals(deobfRef, newDeobf)) {
-				deobfRef = newDeobf;
+			ClassEntry newDeobf = this.p.project.getMapper().deobfuscate(this.entry);
+			if (!Objects.equals(this.deobfRef, newDeobf)) {
+				this.deobfRef = newDeobf;
 				// copy the list so we don't call event listener code with the lock active
-				withLock(lock.readLock(), () -> new ArrayList<>(handles)).forEach(h -> h.onDeobfRefChanged(newDeobf));
+				withLock(this.lock.readLock(), () -> new ArrayList<>(this.handles)).forEach(h -> h.onDeobfRefChanged(newDeobf));
 			}
 		}
 
 		public void invalidate() {
-			checkDeobfRefForUpdate();
-			withLock(lock.readLock(), () -> new ArrayList<>(handles)).forEach(h -> h.onInvalidate(InvalidationType.FULL));
-			continueMapSource(continueIndexSource(continueInsertJavadoc(decompile())));
+			this.checkDeobfRefForUpdate();
+			withLock(this.lock.readLock(), () -> new ArrayList<>(this.handles)).forEach(h -> h.onInvalidate(InvalidationType.FULL));
+			this.continueMapSource(this.continueIndexSource(this.continueInsertJavadoc(this.decompile())));
 		}
 
 		public void invalidateJavadoc() {
-			checkDeobfRefForUpdate();
-			withLock(lock.readLock(), () -> new ArrayList<>(handles)).forEach(h -> h.onInvalidate(InvalidationType.JAVADOC));
-			continueMapSource(continueIndexSource(continueInsertJavadoc(CompletableFuture.completedFuture(uncommentedSource))));
+			this.checkDeobfRefForUpdate();
+			withLock(this.lock.readLock(), () -> new ArrayList<>(this.handles)).forEach(h -> h.onInvalidate(InvalidationType.JAVADOC));
+			this.continueMapSource(this.continueIndexSource(this.continueInsertJavadoc(CompletableFuture.completedFuture(this.uncommentedSource))));
 		}
 
 		public void invalidateMapped() {
-			checkDeobfRefForUpdate();
-			withLock(lock.readLock(), () -> new ArrayList<>(handles)).forEach(h -> h.onInvalidate(InvalidationType.MAPPINGS));
-			continueMapSource(CompletableFuture.completedFuture(source));
+			this.checkDeobfRefForUpdate();
+			withLock(this.lock.readLock(), () -> new ArrayList<>(this.handles)).forEach(h -> h.onInvalidate(InvalidationType.MAPPINGS));
+			this.continueMapSource(CompletableFuture.completedFuture(this.source));
 		}
 
 		private CompletableFuture<Result<Source, ClassHandleError>> decompile() {
-			int v = decompileVersion.incrementAndGet();
+			int v = this.decompileVersion.incrementAndGet();
 			return CompletableFuture.supplyAsync(() -> {
-				if (decompileVersion.get() != v) return null;
+				if (this.decompileVersion.get() != v) return null;
 
-				Result<Source, ClassHandleError> uncommentedSource = Result.ok(p.decompiler.getSource(entry.getFullName()));
+				Result<Source, ClassHandleError> uncommentedSource = Result.ok(this.p.decompiler.getSource(this.entry.getFullName()));
 				Entry.this.uncommentedSource = uncommentedSource;
 				Entry.this.waitingUncommentedSources.forEach(f -> f.complete(uncommentedSource));
 				Entry.this.waitingUncommentedSources.clear();
-				withLock(lock.readLock(), () -> new ArrayList<>(handles)).forEach(h -> h.onUncommentedSourceChanged(uncommentedSource));
+				withLock(this.lock.readLock(), () -> new ArrayList<>(this.handles)).forEach(h -> h.onUncommentedSourceChanged(uncommentedSource));
 				return uncommentedSource;
-			}, p.pool);
+			}, this.p.pool);
 		}
 
 		private CompletableFuture<Result<Source, ClassHandleError>> continueInsertJavadoc(CompletableFuture<Result<Source, ClassHandleError>> f) {
-			int v = javadocVersion.incrementAndGet();
+			int v = this.javadocVersion.incrementAndGet();
 			return f.thenApplyAsync(res -> {
-				if (res == null || javadocVersion.get() != v) return null;
-				Result<Source, ClassHandleError> jdSource = res.map(s -> s.withJavadocs(p.project.getMapper()));
-				withLock(lock.readLock(), () -> new ArrayList<>(handles)).forEach(h -> h.onDocsChanged(jdSource));
+				if (res == null || this.javadocVersion.get() != v) return null;
+				Result<Source, ClassHandleError> jdSource = res.map(s -> s.withJavadocs(this.p.project.getMapper()));
+				withLock(this.lock.readLock(), () -> new ArrayList<>(this.handles)).forEach(h -> h.onDocsChanged(jdSource));
 				return jdSource;
-			}, p.pool);
+			}, this.p.pool);
 		}
 
 		private CompletableFuture<Result<DecompiledClassSource, ClassHandleError>> continueIndexSource(CompletableFuture<Result<Source, ClassHandleError>> f) {
-			int v = indexVersion.incrementAndGet();
+			int v = this.indexVersion.incrementAndGet();
 			return f.thenApplyAsync(res -> {
-				if (res == null || indexVersion.get() != v) return null;
+				if (res == null || this.indexVersion.get() != v) return null;
 				return res.andThen(jdSource -> {
 					SourceIndex index = jdSource.index();
-					index.resolveReferences(p.project.getMapper().getObfResolver());
-					DecompiledClassSource source = new DecompiledClassSource(entry, index);
+					index.resolveReferences(this.p.project.getMapper().getObfResolver());
+					DecompiledClassSource source = new DecompiledClassSource(this.entry, index);
 					return Result.ok(source);
 				});
-			}, p.pool).exceptionally(e -> Result.err(ClassHandleError.decompile(e)));
+			}, this.p.pool).exceptionally(e -> Result.err(ClassHandleError.decompile(e)));
 		}
 
 		private void continueMapSource(CompletableFuture<Result<DecompiledClassSource, ClassHandleError>> f) {
-			int v = mappedVersion.incrementAndGet();
+			int v = this.mappedVersion.incrementAndGet();
 			f.thenApplyAsync(res -> {
-				if (res == null || mappedVersion.get() != v) return null;
-				return res.andThen(source -> Result.ok(source.remapSource(p.project, p.project.getMapper().getDeobfuscator())));
-			}, p.pool).whenComplete((res, e) -> {
+				if (res == null || this.mappedVersion.get() != v) return null;
+				return res.andThen(source -> Result.ok(source.remapSource(this.p.project, this.p.project.getMapper().getDeobfuscator())));
+			}, this.p.pool).whenComplete((res, e) -> {
 				if (e != null) res = Result.err(ClassHandleError.remap(e));
 				if (res == null) return;
 				Entry.this.source = res;
-				Entry.this.waitingSources.forEach(s -> s.complete(source));
+				Entry.this.waitingSources.forEach(s -> s.complete(this.source));
 				Entry.this.waitingSources.clear();
-				withLock(lock.readLock(), () -> new ArrayList<>(handles)).forEach(h -> h.onMappedSourceChanged(source));
+				withLock(this.lock.readLock(), () -> new ArrayList<>(this.handles)).forEach(h -> h.onMappedSourceChanged(this.source));
 			});
 		}
 
 		public void closeHandle(ClassHandleImpl classHandle) {
 			classHandle.destroy();
-			withLock(lock.writeLock(), () -> {
-				handles.remove(classHandle);
-				if (handles.isEmpty()) {
-					p.deleteEntry(this);
+			withLock(this.lock.writeLock(), () -> {
+				this.handles.remove(classHandle);
+				if (this.handles.isEmpty()) {
+					this.p.deleteEntry(this);
 				}
 			});
 		}
 
 		public void destroy() {
-			withLock(lock.writeLock(), () -> {
-				handles.forEach(ClassHandleImpl::destroy);
-				handles.clear();
+			withLock(this.lock.writeLock(), () -> {
+				this.handles.forEach(ClassHandleImpl::destroy);
+				this.handles.clear();
 			});
 		}
 
 		public CompletableFuture<Result<Source, ClassHandleError>> getUncommentedSourceAsync() {
-			if (uncommentedSource != null) {
-				return CompletableFuture.completedFuture(uncommentedSource);
+			if (this.uncommentedSource != null) {
+				return CompletableFuture.completedFuture(this.uncommentedSource);
 			} else {
 				CompletableFuture<Result<Source, ClassHandleError>> f = new CompletableFuture<>();
-				waitingUncommentedSources.add(f);
+				this.waitingUncommentedSources.add(f);
 				return f;
 			}
 		}
 
 		public CompletableFuture<Result<DecompiledClassSource, ClassHandleError>> getSourceAsync() {
-			if (source != null) {
-				return CompletableFuture.completedFuture(source);
+			if (this.source != null) {
+				return CompletableFuture.completedFuture(this.source);
 			} else {
 				CompletableFuture<Result<DecompiledClassSource, ClassHandleError>> f = new CompletableFuture<>();
-				waitingSources.add(f);
+				this.waitingSources.add(f);
 				return f;
 			}
 		}
 	}
 
 	private static final class ClassHandleImpl implements ClassHandle {
-
 		private final Entry entry;
 
 		private boolean valid = true;
@@ -345,98 +332,97 @@ public final class ClassHandleProvider {
 
 		@Override
 		public ClassEntry getRef() {
-			checkValid();
-			return entry.entry;
+			this.checkValid();
+			return this.entry.entry;
 		}
 
 		@Nullable
 		@Override
 		public ClassEntry getDeobfRef() {
-			checkValid();
+			this.checkValid();
 			// cache this?
-			return entry.getDeobfRef();
+			return this.entry.getDeobfRef();
 		}
 
 		@Override
 		public CompletableFuture<Result<DecompiledClassSource, ClassHandleError>> getSource() {
-			checkValid();
-			return entry.getSourceAsync();
+			this.checkValid();
+			return this.entry.getSourceAsync();
 		}
 
 		@Override
 		public CompletableFuture<Result<Source, ClassHandleError>> getUncommentedSource() {
-			checkValid();
-			return entry.getUncommentedSourceAsync();
+			this.checkValid();
+			return this.entry.getUncommentedSourceAsync();
 		}
 
 		@Override
 		public void invalidate() {
-			checkValid();
+			this.checkValid();
 			this.entry.invalidate();
 		}
 
 		@Override
 		public void invalidateMapped() {
-			checkValid();
+			this.checkValid();
 			this.entry.invalidateMapped();
 		}
 
 		@Override
 		public void invalidateJavadoc() {
-			checkValid();
+			this.checkValid();
 			this.entry.invalidateJavadoc();
 		}
 
 		public void onUncommentedSourceChanged(Result<Source, ClassHandleError> source) {
-			listeners.forEach(l -> l.onUncommentedSourceChanged(this, source));
+			this.listeners.forEach(l -> l.onUncommentedSourceChanged(this, source));
 		}
 
 		public void onDocsChanged(Result<Source, ClassHandleError> source) {
-			listeners.forEach(l -> l.onDocsChanged(this, source));
+			this.listeners.forEach(l -> l.onDocsChanged(this, source));
 		}
 
 		public void onMappedSourceChanged(Result<DecompiledClassSource, ClassHandleError> source) {
-			listeners.forEach(l -> l.onMappedSourceChanged(this, source));
+			this.listeners.forEach(l -> l.onMappedSourceChanged(this, source));
 		}
 
 		public void onInvalidate(InvalidationType t) {
-			listeners.forEach(l -> l.onInvalidate(this, t));
+			this.listeners.forEach(l -> l.onInvalidate(this, t));
 		}
 
 		public void onDeobfRefChanged(ClassEntry newDeobf) {
-			listeners.forEach(l -> l.onDeobfRefChanged(this, newDeobf));
+			this.listeners.forEach(l -> l.onDeobfRefChanged(this, newDeobf));
 		}
 
 		@Override
 		public void addListener(ClassHandleListener listener) {
-			listeners.add(listener);
+			this.listeners.add(listener);
 		}
 
 		@Override
 		public void removeListener(ClassHandleListener listener) {
-			listeners.remove(listener);
+			this.listeners.remove(listener);
 		}
 
 		@Override
 		public ClassHandle copy() {
-			checkValid();
-			return entry.createHandle();
+			this.checkValid();
+			return this.entry.createHandle();
 		}
 
 		@Override
 		public void close() {
-			if (valid) entry.closeHandle(this);
+			if (this.valid) this.entry.closeHandle(this);
 		}
 
 		private void checkValid() {
-			if (!valid) throw new IllegalStateException("Class handle no longer valid");
+			if (!this.valid) throw new IllegalStateException("Class handle no longer valid");
 		}
 
 		public void destroy() {
-			listeners.forEach(l -> l.onDeleted(this));
-			valid = false;
+			this.listeners.forEach(l -> l.onDeleted(this));
+			this.valid = false;
 		}
 
 	}
-
 }

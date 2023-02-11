@@ -8,14 +8,14 @@ import cuchaz.enigma.translation.mapping.EntryRemapper;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class BytecodeDecompiler implements Decompiler {
-    private final ClassProvider classProvider;
+	private final ClassProvider classProvider;
 
-    public BytecodeDecompiler(ClassProvider classProvider, SourceSettings settings) {
-        this.classProvider = classProvider;
-    }
+	public BytecodeDecompiler(ClassProvider classProvider, SourceSettings settings) {
+		this.classProvider = classProvider;
+	}
 
-    @Override
-    public Source getSource(String className, @Nullable EntryRemapper remapper) {
-        return new BytecodeSource(classProvider.get(className), remapper);
-    }
+	@Override
+	public Source getSource(String className, @Nullable EntryRemapper remapper) {
+		return new BytecodeSource(this.classProvider.get(className), remapper);
+	}
 }

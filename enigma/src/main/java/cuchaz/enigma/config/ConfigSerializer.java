@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public final class ConfigSerializer {
-
 	private static final Pattern FULL_RGB_COLOR = Pattern.compile("#[0-9A-Fa-f]{6}");
 	private static final Pattern MIN_RGB_COLOR = Pattern.compile("#[0-9A-Fa-f]{3}");
 
@@ -191,14 +190,11 @@ public final class ConfigSerializer {
 
 	public static Optional<Boolean> parseBool(String v) {
 		if (v == null) return Optional.empty();
-		switch (v) {
-			case "true":
-				return Optional.of(true);
-			case "false":
-				return Optional.of(false);
-			default:
-				return Optional.empty();
-		}
+		return switch (v) {
+			case "true" -> Optional.of(true);
+			case "false" -> Optional.of(false);
+			default -> Optional.empty();
+		};
 	}
 
 	public static OptionalInt parseInt(String v) {
@@ -299,5 +295,4 @@ public final class ConfigSerializer {
 		if (v2 == -1) return v1;
 		return Math.min(v1, v2);
 	}
-
 }

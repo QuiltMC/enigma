@@ -39,9 +39,9 @@ public class IndexEntryResolver implements EntryResolver {
 			return Collections.emptySet();
 		}
 
-		Entry<ClassEntry> classChild = getClassChild(entry);
+		Entry<ClassEntry> classChild = this.getClassChild(entry);
 		if (classChild != null && !(classChild instanceof ClassEntry)) {
-			AccessFlags access = entryIndex.getEntryAccess(classChild);
+			AccessFlags access = this.entryIndex.getEntryAccess(classChild);
 
 			// If we're looking for the closest and this entry exists, we're done looking
 			if (strategy == ResolutionStrategy.RESOLVE_CLOSEST && access != null) {
@@ -49,7 +49,7 @@ public class IndexEntryResolver implements EntryResolver {
 			}
 
 			if (access == null || (!access.isPrivate() && !access.isStatic())) {
-				Collection<Entry<ClassEntry>> resolvedChildren = resolveChildEntry(classChild, strategy);
+				Collection<Entry<ClassEntry>> resolvedChildren = this.resolveChildEntry(classChild, strategy);
 				if (!resolvedChildren.isEmpty()) {
 					return resolvedChildren.stream()
 							.map(resolvedChild -> (E) entry.replaceAncestor(classChild, resolvedChild))
@@ -84,10 +84,10 @@ public class IndexEntryResolver implements EntryResolver {
 	private Set<Entry<ClassEntry>> resolveChildEntry(Entry<ClassEntry> entry, ResolutionStrategy strategy) {
 		ClassEntry ownerClass = entry.getParent();
 
-		if (entry instanceof MethodEntry) {
-			MethodEntry bridgeMethod = bridgeMethodIndex.getBridgeFromSpecialized((MethodEntry) entry);
+		if (entry instanceof MethodEntry methodEntry) {
+			MethodEntry bridgeMethod = this.bridgeMethodIndex.getBridgeFromSpecialized(methodEntry);
 			if (bridgeMethod != null && ownerClass.equals(bridgeMethod.getParent())) {
-				Set<Entry<ClassEntry>> resolvedBridge = resolveChildEntry(bridgeMethod, strategy);
+				Set<Entry<ClassEntry>> resolvedBridge = this.resolveChildEntry(bridgeMethod, strategy);
 				if (!resolvedBridge.isEmpty()) {
 					return resolvedBridge;
 				} else {
@@ -98,13 +98,13 @@ public class IndexEntryResolver implements EntryResolver {
 
 		Set<Entry<ClassEntry>> resolvedEntries = new HashSet<>();
 
-		for (ClassEntry parentClass : inheritanceIndex.getParents(ownerClass)) {
+		for (ClassEntry parentClass : this.inheritanceIndex.getParents(ownerClass)) {
 			Entry<ClassEntry> parentEntry = entry.withParent(parentClass);
 
 			if (strategy == ResolutionStrategy.RESOLVE_ROOT) {
-				resolvedEntries.addAll(resolveRoot(parentEntry, strategy));
+				resolvedEntries.addAll(this.resolveRoot(parentEntry, strategy));
 			} else {
-				resolvedEntries.addAll(resolveClosest(parentEntry, strategy));
+				resolvedEntries.addAll(this.resolveClosest(parentEntry, strategy));
 			}
 		}
 
@@ -113,10 +113,10 @@ public class IndexEntryResolver implements EntryResolver {
 
 	private Collection<Entry<ClassEntry>> resolveRoot(Entry<ClassEntry> entry, ResolutionStrategy strategy) {
 		// When resolving root, we want to first look for the lowest entry before returning ourselves
-		Set<Entry<ClassEntry>> parentResolution = resolveChildEntry(entry, strategy);
+		Set<Entry<ClassEntry>> parentResolution = this.resolveChildEntry(entry, strategy);
 
 		if (parentResolution.isEmpty()) {
-			AccessFlags parentAccess = entryIndex.getEntryAccess(entry);
+			AccessFlags parentAccess = this.entryIndex.getEntryAccess(entry);
 			if (parentAccess != null && !parentAccess.isPrivate()) {
 				return Collections.singleton(entry);
 			}
@@ -127,22 +127,22 @@ public class IndexEntryResolver implements EntryResolver {
 
 	private Collection<Entry<ClassEntry>> resolveClosest(Entry<ClassEntry> entry, ResolutionStrategy strategy) {
 		// When resolving closest, we want to first check if we exist before looking further down
-		AccessFlags parentAccess = entryIndex.getEntryAccess(entry);
+		AccessFlags parentAccess = this.entryIndex.getEntryAccess(entry);
 		if (parentAccess != null && !parentAccess.isPrivate()) {
 			return Collections.singleton(entry);
 		} else {
-			return resolveChildEntry(entry, strategy);
+			return this.resolveChildEntry(entry, strategy);
 		}
 	}
 
 	@Override
 	public Set<Entry<?>> resolveEquivalentEntries(Entry<?> entry) {
 		MethodEntry relevantMethod = entry.findAncestor(MethodEntry.class);
-		if (relevantMethod == null || !entryIndex.hasMethod(relevantMethod)) {
+		if (relevantMethod == null || !this.entryIndex.hasMethod(relevantMethod)) {
 			return Collections.singleton(entry);
 		}
 
-		Set<MethodEntry> equivalentMethods = resolveEquivalentMethods(relevantMethod);
+		Set<MethodEntry> equivalentMethods = this.resolveEquivalentMethods(relevantMethod);
 		Set<Entry<?>> equivalentEntries = new HashSet<>(equivalentMethods.size());
 
 		for (MethodEntry equivalentMethod : equivalentMethods) {
@@ -156,22 +156,22 @@ public class IndexEntryResolver implements EntryResolver {
 	@Override
 	public Set<MethodEntry> resolveEquivalentMethods(MethodEntry methodEntry) {
 		Set<MethodEntry> set = new HashSet<>();
-		resolveEquivalentMethods(set, methodEntry);
+		this.resolveEquivalentMethods(set, methodEntry);
 		return set;
 	}
 
 	private void resolveEquivalentMethods(Set<MethodEntry> methodEntries, MethodEntry methodEntry) {
-		AccessFlags access = entryIndex.getMethodAccess(methodEntry);
+		AccessFlags access = this.entryIndex.getMethodAccess(methodEntry);
 		if (access == null) {
 			throw new IllegalArgumentException("Could not find method " + methodEntry);
 		}
 
-		if (!canInherit(methodEntry, access)) {
+		if (!this.canInherit(methodEntry, access)) {
 			methodEntries.add(methodEntry);
 			return;
 		}
 
-		resolveEquivalentMethods(methodEntries, treeBuilder.buildMethodInheritance(VoidTranslator.INSTANCE, methodEntry));
+		this.resolveEquivalentMethods(methodEntries, this.treeBuilder.buildMethodInheritance(VoidTranslator.INSTANCE, methodEntry));
 	}
 
 	private void resolveEquivalentMethods(Set<MethodEntry> methodEntries, MethodInheritanceTreeNode node) {
@@ -180,48 +180,48 @@ public class IndexEntryResolver implements EntryResolver {
 			return;
 		}
 
-		AccessFlags flags = entryIndex.getMethodAccess(methodEntry);
-		if (flags != null && canInherit(methodEntry, flags)) {
+		AccessFlags flags = this.entryIndex.getMethodAccess(methodEntry);
+		if (flags != null && this.canInherit(methodEntry, flags)) {
 			// collect the entry
 			methodEntries.add(methodEntry);
 		}
 
 		// look at bridge methods!
-		MethodEntry bridgedMethod = bridgeMethodIndex.getBridgeFromSpecialized(methodEntry);
+		MethodEntry bridgedMethod = this.bridgeMethodIndex.getBridgeFromSpecialized(methodEntry);
 		while (bridgedMethod != null) {
-			resolveEquivalentMethods(methodEntries, bridgedMethod);
-			bridgedMethod = bridgeMethodIndex.getBridgeFromSpecialized(bridgedMethod);
+			this.resolveEquivalentMethods(methodEntries, bridgedMethod);
+			bridgedMethod = this.bridgeMethodIndex.getBridgeFromSpecialized(bridgedMethod);
 		}
 
 		// look at interface methods too
-		for (MethodImplementationsTreeNode implementationsNode : treeBuilder.buildMethodImplementations(VoidTranslator.INSTANCE, methodEntry)) {
-			resolveEquivalentMethods(methodEntries, implementationsNode);
+		for (MethodImplementationsTreeNode implementationsNode : this.treeBuilder.buildMethodImplementations(VoidTranslator.INSTANCE, methodEntry)) {
+			this.resolveEquivalentMethods(methodEntries, implementationsNode);
 		}
 
 		// recurse
 		for (int i = 0; i < node.getChildCount(); i++) {
-			resolveEquivalentMethods(methodEntries, (MethodInheritanceTreeNode) node.getChildAt(i));
+			this.resolveEquivalentMethods(methodEntries, (MethodInheritanceTreeNode) node.getChildAt(i));
 		}
 	}
 
 	private void resolveEquivalentMethods(Set<MethodEntry> methodEntries, MethodImplementationsTreeNode node) {
 		MethodEntry methodEntry = node.getMethodEntry();
-		AccessFlags flags = entryIndex.getMethodAccess(methodEntry);
+		AccessFlags flags = this.entryIndex.getMethodAccess(methodEntry);
 		if (flags != null && !flags.isPrivate() && !flags.isStatic()) {
 			// collect the entry
 			methodEntries.add(methodEntry);
 		}
 
 		// look at bridge methods!
-		MethodEntry bridgedMethod = bridgeMethodIndex.getBridgeFromSpecialized(methodEntry);
+		MethodEntry bridgedMethod = this.bridgeMethodIndex.getBridgeFromSpecialized(methodEntry);
 		while (bridgedMethod != null) {
-			resolveEquivalentMethods(methodEntries, bridgedMethod);
-			bridgedMethod = bridgeMethodIndex.getBridgeFromSpecialized(bridgedMethod);
+			this.resolveEquivalentMethods(methodEntries, bridgedMethod);
+			bridgedMethod = this.bridgeMethodIndex.getBridgeFromSpecialized(bridgedMethod);
 		}
 
 		// recurse
 		for (int i = 0; i < node.getChildCount(); i++) {
-			resolveEquivalentMethods(methodEntries, (MethodImplementationsTreeNode) node.getChildAt(i));
+			this.resolveEquivalentMethods(methodEntries, (MethodImplementationsTreeNode) node.getChildAt(i));
 		}
 	}
 

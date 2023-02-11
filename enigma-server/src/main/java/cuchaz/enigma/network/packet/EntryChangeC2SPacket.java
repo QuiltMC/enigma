@@ -11,7 +11,6 @@ import cuchaz.enigma.translation.mapping.EntryUtil;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 public class EntryChangeC2SPacket implements Packet<ServerPacketHandler> {
-
 	private EntryChange<?> change;
 
 	EntryChangeC2SPacket() {
@@ -28,37 +27,36 @@ public class EntryChangeC2SPacket implements Packet<ServerPacketHandler> {
 
 	@Override
 	public void write(DataOutput output) throws IOException {
-		PacketHelper.writeEntryChange(output, change);
+		PacketHelper.writeEntryChange(output, this.change);
 	}
 
 	@Override
 	public void handle(ServerPacketHandler handler) {
 		ValidationContext vc = new ValidationContext(null);
 
-		boolean valid = handler.getServer().canModifyEntry(handler.getClient(), this.change.getTarget());
+		boolean valid = handler.server().canModifyEntry(handler.client(), this.change.getTarget());
 
 		if (valid) {
-			EntryUtil.applyChange(vc, handler.getServer().getMappings(), this.change);
+			EntryUtil.applyChange(vc, handler.server().getMappings(), this.change);
 			valid = vc.canProceed();
 		}
 
 		if (!valid) {
-			handler.getServer().sendCorrectMapping(handler.getClient(), this.change.getTarget(), true);
+			handler.server().sendCorrectMapping(handler.client(), this.change.getTarget(), true);
 			return;
 		}
 
-		int syncId = handler.getServer().lockEntry(handler.getClient(), this.change.getTarget());
-		handler.getServer().sendToAllExcept(handler.getClient(), new EntryChangeS2CPacket(syncId, this.change));
+		int syncId = handler.server().lockEntry(handler.client(), this.change.getTarget());
+		handler.server().sendToAllExcept(handler.client(), new EntryChangeS2CPacket(syncId, this.change));
 
 		if (this.change.getDeobfName().isSet()) {
-			handler.getServer().sendMessage(ServerMessage.rename(handler.getServer().getUsername(handler.getClient()), this.change.getTarget(), this.change.getDeobfName().getNewValue()));
+			handler.server().sendMessage(ServerMessage.rename(handler.server().getUsername(handler.client()), this.change.getTarget(), this.change.getDeobfName().getNewValue()));
 		} else if (this.change.getDeobfName().isReset()) {
-			handler.getServer().sendMessage(ServerMessage.removeMapping(handler.getServer().getUsername(handler.getClient()), this.change.getTarget()));
+			handler.server().sendMessage(ServerMessage.removeMapping(handler.server().getUsername(handler.client()), this.change.getTarget()));
 		}
 
 		if (!this.change.getJavadoc().isUnchanged()) {
-			handler.getServer().sendMessage(ServerMessage.editDocs(handler.getServer().getUsername(handler.getClient()), this.change.getTarget()));
+			handler.server().sendMessage(ServerMessage.editDocs(handler.server().getUsername(handler.client()), this.change.getTarget()));
 		}
 	}
-
 }

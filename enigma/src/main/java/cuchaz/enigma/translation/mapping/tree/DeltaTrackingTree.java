@@ -29,82 +29,82 @@ public class DeltaTrackingTree<T> implements EntryTree<T> {
 
 	@Override
 	public void insert(Entry<?> entry, T value) {
-		trackChange(entry);
-		delegate.insert(entry, value);
+		this.trackChange(entry);
+		this.delegate.insert(entry, value);
 	}
 
 	@Nullable
 	@Override
 	public T remove(Entry<?> entry) {
-		trackChange(entry);
-		return delegate.remove(entry);
+		this.trackChange(entry);
+		return this.delegate.remove(entry);
 	}
 
 	public void trackChange(Entry<?> entry) {
-		changes.insert(entry, MappingDelta.PLACEHOLDER);
+		this.changes.insert(entry, MappingDelta.PLACEHOLDER);
 	}
 
 	@Nullable
 	@Override
 	public T get(Entry<?> entry) {
-		return delegate.get(entry);
+		return this.delegate.get(entry);
 	}
 
 	@Override
 	public Collection<Entry<?>> getChildren(Entry<?> entry) {
-		return delegate.getChildren(entry);
+		return this.delegate.getChildren(entry);
 	}
 
 	@Override
 	public Collection<Entry<?>> getSiblings(Entry<?> entry) {
-		return delegate.getSiblings(entry);
+		return this.delegate.getSiblings(entry);
 	}
 
 	@Nullable
 	@Override
 	public EntryTreeNode<T> findNode(Entry<?> entry) {
-		return delegate.findNode(entry);
+		return this.delegate.findNode(entry);
 	}
 
 	@Override
 	public Stream<EntryTreeNode<T>> getRootNodes() {
-		return delegate.getRootNodes();
+		return this.delegate.getRootNodes();
 	}
 
 	@Override
 	public DeltaTrackingTree<T> translate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
-		DeltaTrackingTree<T> translatedTree = new DeltaTrackingTree<>(delegate.translate(translator, resolver, mappings));
-		translatedTree.changes = changes.translate(translator, resolver, mappings);
+		DeltaTrackingTree<T> translatedTree = new DeltaTrackingTree<>(this.delegate.translate(translator, resolver, mappings));
+		translatedTree.changes = this.changes.translate(translator, resolver, mappings);
 		return translatedTree;
 	}
 
 	@Override
 	public Stream<Entry<?>> getAllEntries() {
-		return delegate.getAllEntries();
+		return this.delegate.getAllEntries();
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return delegate.isEmpty();
+		return this.delegate.isEmpty();
 	}
 
 	@Override
 	public Iterator<EntryTreeNode<T>> iterator() {
-		return delegate.iterator();
+		return this.delegate.iterator();
 	}
 
 	public MappingDelta<T> takeDelta() {
-		MappingDelta<T> delta = new MappingDelta<>(deltaReference, changes);
-		resetDelta();
+		MappingDelta<T> delta = new MappingDelta<>(this.deltaReference, this.changes);
+		this.resetDelta();
 		return delta;
 	}
 
 	private void resetDelta() {
-		deltaReference = new HashEntryTree<>(delegate);
-		changes = new HashEntryTree<>();
+		this.deltaReference = new HashEntryTree<>(this.delegate);
+		this.changes = new HashEntryTree<>();
 	}
 
 	public boolean isDirty() {
-		return !changes.isEmpty();
+		return !this.changes.isEmpty();
 	}
 }

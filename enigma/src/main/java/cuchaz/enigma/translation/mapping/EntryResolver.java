@@ -12,13 +12,13 @@ public interface EntryResolver {
 	<E extends Entry<?>> Collection<E> resolveEntry(E entry, ResolutionStrategy strategy);
 
 	default <E extends Entry<?>> E resolveFirstEntry(E entry, ResolutionStrategy strategy) {
-		return resolveEntry(entry, strategy).stream().findFirst().orElse(entry);
+		return this.resolveEntry(entry, strategy).stream().findFirst().orElse(entry);
 	}
 
 	default <E extends Entry<?>, C extends Entry<?>> Collection<EntryReference<E, C>> resolveReference(EntryReference<E, C> reference, ResolutionStrategy strategy) {
-		Collection<E> entry = resolveEntry(reference.entry, strategy);
+		Collection<E> entry = this.resolveEntry(reference.entry, strategy);
 		if (reference.context != null) {
-			Collection<C> context = resolveEntry(reference.context, strategy);
+			Collection<C> context = this.resolveEntry(reference.context, strategy);
 			return Streams.zip(entry.stream(), context.stream(), (e, c) -> new EntryReference<>(e, c, reference))
 					.toList();
 		} else {
@@ -29,8 +29,8 @@ public interface EntryResolver {
 	}
 
 	default <E extends Entry<?>, C extends Entry<?>> EntryReference<E, C> resolveFirstReference(EntryReference<E, C> reference, ResolutionStrategy strategy) {
-		E entry = resolveFirstEntry(reference.entry, strategy);
-		C context = resolveFirstEntry(reference.context, strategy);
+		E entry = this.resolveFirstEntry(reference.entry, strategy);
+		C context = this.resolveFirstEntry(reference.context, strategy);
 		return new EntryReference<>(entry, context, reference);
 	}
 

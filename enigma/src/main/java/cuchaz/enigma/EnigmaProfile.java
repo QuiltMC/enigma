@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public final class EnigmaProfile {
-	public static final EnigmaProfile EMPTY = new EnigmaProfile(new ServiceContainer(ImmutableMap.of()));
+	public static final EnigmaProfile EMPTY = new EnigmaProfile(new ServiceContainer(Map.of()));
 
 	private static final MappingSaveParameters DEFAULT_MAPPING_SAVE_PARAMETERS = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
 	private static final Gson GSON = new GsonBuilder()
@@ -95,12 +95,12 @@ public final class EnigmaProfile {
 	}
 
 	public List<Service> getServiceProfiles(EnigmaServiceType<?> serviceType) {
-		return serviceProfiles.get(serviceType.key);
+		return this.serviceProfiles.get(serviceType.key);
 	}
 
 	public MappingSaveParameters getMappingSaveParameters() {
 		//noinspection ConstantConditions
-		return mappingSaveParameters == null ? EnigmaProfile.DEFAULT_MAPPING_SAVE_PARAMETERS : mappingSaveParameters;
+		return this.mappingSaveParameters == null ? EnigmaProfile.DEFAULT_MAPPING_SAVE_PARAMETERS : this.mappingSaveParameters;
 	}
 
 	private EnigmaProfile withSourcePath(Path sourcePath) {
@@ -109,11 +109,11 @@ public final class EnigmaProfile {
 	}
 
 	public Path resolvePath(Path path) {
-		if (sourcePath == null) {
+		if (this.sourcePath == null) {
 			return path;
 		}
 
-		return sourcePath.getParent().resolve(path);
+		return this.sourcePath.getParent().resolve(path);
 	}
 
 	public static class Service {
@@ -130,7 +130,7 @@ public final class EnigmaProfile {
 		}
 
 		public Optional<String> getArgument(String key) {
-			return args != null ? Optional.ofNullable(args.get(key)) : Optional.empty();
+			return this.args != null ? Optional.ofNullable(this.args.get(key)) : Optional.empty();
 		}
 	}
 
@@ -142,7 +142,7 @@ public final class EnigmaProfile {
 		}
 
 		List<Service> get(String key) {
-			return services.getOrDefault(key, Collections.emptyList());
+			return this.services.getOrDefault(key, Collections.emptyList());
 		}
 	}
 }

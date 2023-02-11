@@ -6,19 +6,15 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.inputs.innerClasses;
 
 public class A_Anonymous {
-
 	public void foo() {
-		Runnable runnable = new Runnable() {
-			@Override
-			public void run() {
-				// don't care
-			}
+		Runnable runnable = () -> {
+			// don't care
 		};
 		runnable.run();
 	}

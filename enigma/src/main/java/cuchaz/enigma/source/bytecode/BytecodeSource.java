@@ -12,45 +12,45 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 public class BytecodeSource implements Source {
-    private final ClassNode classNode;
-    private final EntryRemapper remapper;
+	private final ClassNode classNode;
+	private final EntryRemapper remapper;
 
-    public BytecodeSource(ClassNode classNode, EntryRemapper remapper) {
-        this.classNode = classNode;
-        this.remapper = remapper;
-    }
+	public BytecodeSource(ClassNode classNode, EntryRemapper remapper) {
+		this.classNode = classNode;
+		this.remapper = remapper;
+	}
 
-    @Override
-    public String asString() {
-        return index().getSource();
-    }
+	@Override
+	public String asString() {
+		return this.index().getSource();
+	}
 
-    @Override
-    public Source withJavadocs(EntryRemapper remapper) {
-        return new BytecodeSource(classNode, remapper);
-    }
+	@Override
+	public Source withJavadocs(EntryRemapper remapper) {
+		return new BytecodeSource(this.classNode, remapper);
+	}
 
-    @Override
-    public SourceIndex index() {
-        SourceIndex index = new SourceIndex();
+	@Override
+	public SourceIndex index() {
+		SourceIndex index = new SourceIndex();
 
-        EnigmaTextifier textifier = new EnigmaTextifier(index);
-        StringWriter out = new StringWriter();
-        PrintWriter writer = new PrintWriter(out);
+		EnigmaTextifier textifier = new EnigmaTextifier(index);
+		StringWriter out = new StringWriter();
+		PrintWriter writer = new PrintWriter(out);
 
-        TraceClassVisitor traceClassVisitor = new TraceClassVisitor(null, textifier, writer);
+		TraceClassVisitor traceClassVisitor = new TraceClassVisitor(null, textifier, writer);
 
-        ClassNode node = this.classNode;
+		ClassNode node = this.classNode;
 
-        if (remapper != null) {
-            ClassNode translatedNode = new ClassNode();
-            node.accept(new TranslationClassVisitor(remapper.getDeobfuscator(), Enigma.ASM_VERSION, translatedNode));
-            node = translatedNode;
-        }
+		if (this.remapper != null) {
+			ClassNode translatedNode = new ClassNode();
+			node.accept(new TranslationClassVisitor(this.remapper.getDeobfuscator(), Enigma.ASM_VERSION, translatedNode));
+			node = translatedNode;
+		}
 
-        node.accept(traceClassVisitor);
-        index.setSource(out.toString());
+		node.accept(traceClassVisitor);
+		index.setSource(out.toString());
 
-        return index;
-    }
+		return index;
+	}
 }

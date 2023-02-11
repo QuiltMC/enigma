@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma;
@@ -27,7 +27,6 @@ import static cuchaz.enigma.TestEntryFactory.newClass;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestInnerClasses {
-
 	private static final ClassEntry SimpleOuter = newClass("d");
 	private static final ClassEntry SimpleInner = newClass("d$a");
 	private static final ClassEntry ConstructorArgsOuter = newClass("c");
@@ -60,7 +59,6 @@ public class TestInnerClasses {
 
 	@Test
 	public void classTree() {
-
 		// root level
 		assertTrue(index.getEntryIndex().hasClass(ClassTreeRoot));
 

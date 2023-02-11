@@ -19,7 +19,6 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
 
 public class EditorPopupMenu {
-
 	private final JPopupMenu ui = new JPopupMenu();
 
 	private final JMenuItem renameItem = new JMenuItem();
@@ -197,7 +196,6 @@ public class EditorPopupMenu {
 	}
 
 	public JPopupMenu getUi() {
-		return ui;
+		return this.ui;
 	}
-
 }

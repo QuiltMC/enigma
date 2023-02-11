@@ -44,16 +44,16 @@ public class DecompiledClassSource {
 	}
 
 	public DecompiledClassSource remapSource(EnigmaProject project, Translator translator) {
-		SourceRemapper remapper = new SourceRemapper(obfuscatedIndex.getSource(), obfuscatedIndex.referenceTokens());
+		SourceRemapper remapper = new SourceRemapper(this.obfuscatedIndex.getSource(), this.obfuscatedIndex.referenceTokens());
 
 		TokenStore tokenStore = TokenStore.create(this.obfuscatedIndex);
-		SourceRemapper.Result remapResult = remapper.remap((token, movedToken) -> remapToken(tokenStore, project, token, movedToken, translator));
-		SourceIndex remappedIndex = obfuscatedIndex.remapTo(remapResult);
+		SourceRemapper.Result remapResult = remapper.remap((token, movedToken) -> this.remapToken(tokenStore, project, token, movedToken, translator));
+		SourceIndex remappedIndex = this.obfuscatedIndex.remapTo(remapResult);
 		return new DecompiledClassSource(this.classEntry, this.obfuscatedIndex, remappedIndex, tokenStore);
 	}
 
 	private String remapToken(TokenStore target, EnigmaProject project, Token token, Token movedToken, Translator translator) {
-		EntryReference<Entry<?>, Entry<?>> reference = obfuscatedIndex.getReference(token);
+		EntryReference<Entry<?>, Entry<?>> reference = this.obfuscatedIndex.getReference(token);
 
 		Entry<?> entry = reference.getNameableEntry();
 		TranslateResult<Entry<?>> translatedEntry = translator.extendedTranslate(entry);
@@ -75,12 +75,8 @@ public class DecompiledClassSource {
 			target.add(RenamableTokenType.DEBUG, movedToken);
 		}
 
-		String defaultName = generateDefaultName(translatedEntry.getValue());
-		if (defaultName != null) {
-			return defaultName;
-		}
-
-		return null;
+		String defaultName = this.generateDefaultName(translatedEntry.getValue());
+		return defaultName;
 	}
 
 	public static Optional<String> proposeName(EnigmaProject project, Entry<?> entry) {
@@ -99,9 +95,7 @@ public class DecompiledClassSource {
 
 	@Nullable
 	private String generateDefaultName(Entry<?> entry) {
-		if (entry instanceof LocalVariableDefEntry) {
-			LocalVariableDefEntry localVariable = (LocalVariableDefEntry) entry;
-
+		if (entry instanceof LocalVariableDefEntry localVariable) {
 			int index = localVariable.getIndex();
 			if (localVariable.isArgument()) {
 				List<TypeDescriptor> arguments = localVariable.getParent().getDesc().getArgumentDescs();
@@ -115,11 +109,11 @@ public class DecompiledClassSource {
 	}
 
 	public ClassEntry getEntry() {
-		return classEntry;
+		return this.classEntry;
 	}
 
 	public SourceIndex getIndex() {
-		return remappedIndex;
+		return this.remappedIndex;
 	}
 
 	public TokenStore getTokenStore() {
@@ -131,11 +125,11 @@ public class DecompiledClassSource {
 	}
 
 	public int getObfuscatedOffset(int deobfOffset) {
-		return getOffset(remappedIndex, obfuscatedIndex, deobfOffset);
+		return getOffset(this.remappedIndex, this.obfuscatedIndex, deobfOffset);
 	}
 
 	public int getDeobfuscatedOffset(int obfOffset) {
-		return getOffset(obfuscatedIndex, remappedIndex, obfOffset);
+		return getOffset(this.obfuscatedIndex, this.remappedIndex, obfOffset);
 	}
 
 	private static int getOffset(SourceIndex fromIndex, SourceIndex toIndex, int fromOffset) {
@@ -158,6 +152,6 @@ public class DecompiledClassSource {
 
 	@Override
 	public String toString() {
-		return remappedIndex.getSource();
+		return this.remappedIndex.getSource();
 	}
 }

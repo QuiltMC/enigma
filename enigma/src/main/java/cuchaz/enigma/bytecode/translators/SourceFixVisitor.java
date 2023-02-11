@@ -20,13 +20,13 @@ public class SourceFixVisitor extends ClassVisitor {
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-		ownerEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
+		this.ownerEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
 		super.visit(version, access, name, signature, superName, interfaces);
 	}
 
 	@Override
 	public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
-		if (ownerEntry.isRecord() && (access & Opcodes.ACC_STATIC) == 0) {
+		if (this.ownerEntry.isRecord() && (access & Opcodes.ACC_STATIC) == 0) {
 			access |= Opcodes.ACC_PRIVATE;
 		}
 
@@ -35,9 +35,9 @@ public class SourceFixVisitor extends ClassVisitor {
 
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-		MethodDefEntry methodEntry = MethodDefEntry.parse(ownerEntry, access, name, descriptor, signature);
+		MethodDefEntry methodEntry = MethodDefEntry.parse(this.ownerEntry, access, name, descriptor, signature);
 
-		BridgeMethodIndex bridgeIndex = index.getBridgeMethodIndex();
+		BridgeMethodIndex bridgeIndex = this.index.getBridgeMethodIndex();
 		if (bridgeIndex.isBridgeMethod(methodEntry)) {
 			access |= Opcodes.ACC_BRIDGE;
 		}

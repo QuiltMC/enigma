@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.inputs.translation;
@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 public class I_Generics {
-
 	public List<Integer> f1;
 	public List<A_Type> f2;
 	public Map<A_Type, A_Type> f3;

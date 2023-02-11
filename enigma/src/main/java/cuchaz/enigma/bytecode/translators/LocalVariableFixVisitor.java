@@ -23,14 +23,14 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-		ownerEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
+		this.ownerEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
 		super.visit(version, access, name, signature, superName, interfaces);
 	}
 
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-		MethodDefEntry methodEntry = MethodDefEntry.parse(ownerEntry, access, name, descriptor, signature);
-		return new Method(api, methodEntry, super.visitMethod(access, name, descriptor, signature, exceptions));
+		MethodDefEntry methodEntry = MethodDefEntry.parse(this.ownerEntry, access, name, descriptor, signature);
+		return new Method(this.api, methodEntry, super.visitMethod(access, name, descriptor, signature, exceptions));
 	}
 
 	private class Method extends MethodVisitor {
@@ -48,25 +48,25 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 			List<TypeDescriptor> parameters = methodEntry.getDesc().getArgumentDescs();
 			for (int parameterIndex = 0; parameterIndex < parameters.size(); parameterIndex++) {
 				TypeDescriptor param = parameters.get(parameterIndex);
-				parameterIndices.put(lvIndex, parameterIndex);
+				this.parameterIndices.put(lvIndex, parameterIndex);
 				lvIndex += param.getSize();
 			}
 		}
 
 		@Override
 		public void visitParameter(String name, int access) {
-			hasParameterTable = true;
-			super.visitParameter(fixParameterName(parameterIndex, name), fixParameterAccess(parameterIndex, access));
-			parameterIndex++;
+			this.hasParameterTable = true;
+			super.visitParameter(this.fixParameterName(this.parameterIndex, name), this.fixParameterAccess(this.parameterIndex, access));
+			this.parameterIndex++;
 		}
 
 		@Override
 		public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
-			if (index == 0 && !methodEntry.getAccess().isStatic()) {
+			if (index == 0 && !this.methodEntry.getAccess().isStatic()) {
 				name = "this";
-			} else if (parameterIndices.containsKey(index)) {
-				name = fixParameterName(parameterIndices.get(index), name);
-			} else if (isInvalidName(name)) {
+			} else if (this.parameterIndices.containsKey(index)) {
+				name = this.fixParameterName(this.parameterIndices.get(index), name);
+			} else if (this.isInvalidName(name)) {
 				name = LocalNameGenerator.generateLocalVariableName(index, new TypeDescriptor(desc));
 			}
 
@@ -79,10 +79,10 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 
 		@Override
 		public void visitEnd() {
-			if (!hasParameterTable) {
-				List<TypeDescriptor> arguments = methodEntry.getDesc().getArgumentDescs();
+			if (!this.hasParameterTable) {
+				List<TypeDescriptor> arguments = this.methodEntry.getDesc().getArgumentDescs();
 				for (int argumentIndex = 0; argumentIndex < arguments.size(); argumentIndex++) {
-					super.visitParameter(fixParameterName(argumentIndex, null), fixParameterAccess(argumentIndex, 0));
+					super.visitParameter(this.fixParameterName(argumentIndex, null), this.fixParameterAccess(argumentIndex, 0));
 				}
 			}
 
@@ -90,33 +90,33 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 		}
 
 		private String fixParameterName(int index, String name) {
-			if (parameterNames.get(index) != null) {
-				return parameterNames.get(index); // to make sure that LVT names are consistent with parameter table names
+			if (this.parameterNames.get(index) != null) {
+				return this.parameterNames.get(index); // to make sure that LVT names are consistent with parameter table names
 			}
 
-			if (isInvalidName(name)) {
-				List<TypeDescriptor> arguments = methodEntry.getDesc().getArgumentDescs();
+			if (this.isInvalidName(name)) {
+				List<TypeDescriptor> arguments = this.methodEntry.getDesc().getArgumentDescs();
 				name = LocalNameGenerator.generateArgumentName(index, arguments.get(index), arguments);
 			}
 
-			if (index == 0 && ownerEntry.getAccess().isEnum() && methodEntry.getName().equals("<init>")) {
+			if (index == 0 && LocalVariableFixVisitor.this.ownerEntry.getAccess().isEnum() && this.methodEntry.getName().equals("<init>")) {
 				name = "name";
 			}
 
-			if (index == 1 && ownerEntry.getAccess().isEnum() && methodEntry.getName().equals("<init>")) {
+			if (index == 1 && LocalVariableFixVisitor.this.ownerEntry.getAccess().isEnum() && this.methodEntry.getName().equals("<init>")) {
 				name = "ordinal";
 			}
 
-			parameterNames.put(index, name);
+			this.parameterNames.put(index, name);
 			return name;
 		}
 
 		private int fixParameterAccess(int index, int access) {
-			if (index == 0 && ownerEntry.getAccess().isEnum() && methodEntry.getName().equals("<init>")) {
+			if (index == 0 && LocalVariableFixVisitor.this.ownerEntry.getAccess().isEnum() && this.methodEntry.getName().equals("<init>")) {
 				access |= Opcodes.ACC_SYNTHETIC;
 			}
 
-			if (index == 1 && ownerEntry.getAccess().isEnum() && methodEntry.getName().equals("<init>")) {
+			if (index == 1 && LocalVariableFixVisitor.this.ownerEntry.getAccess().isEnum() && this.methodEntry.getName().equals("<init>")) {
 				access |= Opcodes.ACC_SYNTHETIC;
 			}
 

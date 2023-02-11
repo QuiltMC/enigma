@@ -16,7 +16,6 @@ import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 
 public class FontDialog extends JDialog {
-
 	private static final List<String> CATEGORIES = List.of(
 			"Default",
 			"Default 2",
@@ -46,11 +45,11 @@ public class FontDialog extends JDialog {
 
 		this.entries.setPreferredSize(ScaleUtil.getDimension(100, 0));
 
-		this.entries.addListSelectionListener(_e -> this.categoryChanged());
-		this.chooser.addChangeListener(_e -> this.selectedFontChanged());
-		this.customCheckBox.addActionListener(_e -> this.customFontsClicked());
-		this.okButton.addActionListener(_e -> this.apply());
-		this.cancelButton.addActionListener(_e -> this.cancel());
+		this.entries.addListSelectionListener(e -> this.categoryChanged());
+		this.chooser.addChangeListener(e -> this.selectedFontChanged());
+		this.customCheckBox.addActionListener(e -> this.customFontsClicked());
+		this.okButton.addActionListener(e -> this.apply());
+		this.cancelButton.addActionListener(e -> this.cancel());
 
 		Container contentPane = this.getContentPane();
 		contentPane.setLayout(new GridBagLayout());
@@ -114,12 +113,11 @@ public class FontDialog extends JDialog {
 	}
 
 	private static void recursiveSetEnabled(Component self, boolean enabled) {
-		if (self instanceof Container) {
-			for (Component component : ((Container) self).getComponents()) {
+		if (self instanceof Container container) {
+			for (Component component : container.getComponents()) {
 				recursiveSetEnabled(component, enabled);
 			}
 			self.setEnabled(enabled);
 		}
 	}
-
 }

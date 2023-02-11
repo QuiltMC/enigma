@@ -13,11 +13,11 @@ public class SourceRemapper {
 	}
 
 	public Result remap(Remapper remapper) {
-		StringBuffer remappedSource = new StringBuffer(source);
+		StringBuffer remappedSource = new StringBuffer(this.source);
 		Map<Token, Token> remappedTokens = new HashMap<>();
 
 		int accumulatedOffset = 0;
-		for (Token token : tokens) {
+		for (Token token : this.tokens) {
 			Token movedToken = token.move(accumulatedOffset);
 
 			String remappedName = remapper.remap(token, movedToken);
@@ -44,15 +44,15 @@ public class SourceRemapper {
 		}
 
 		public String getSource() {
-			return remappedSource;
+			return this.remappedSource;
 		}
 
 		public Token getRemappedToken(Token token) {
-			return remappedTokens.getOrDefault(token, token);
+			return this.remappedTokens.getOrDefault(token, token);
 		}
 
 		public boolean isEmpty() {
-			return remappedTokens.isEmpty();
+			return this.remappedTokens.isEmpty();
 		}
 	}
 

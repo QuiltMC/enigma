@@ -14,7 +14,7 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.translation.representation.entry.ParentedEntry;
-import cuchaz.enigma.utils.Pair;
+import org.jetbrains.java.decompiler.util.Pair;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -39,15 +39,11 @@ import java.util.Optional;
 import java.util.Set;
 
 public final class BuiltinPlugin implements EnigmaPlugin {
-
-	public BuiltinPlugin() {
-	}
-
 	@Override
 	public void init(EnigmaPluginContext ctx) {
-		registerEnumNamingService(ctx);
-		registerSpecializedMethodNamingService(ctx);
-		registerDecompilerServices(ctx);
+		this.registerEnumNamingService(ctx);
+		this.registerSpecializedMethodNamingService(ctx);
+		this.registerDecompilerServices(ctx);
 	}
 
 	private void registerEnumNamingService(EnigmaPluginContext ctx) {
@@ -82,11 +78,10 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 	}
 
 	private static final class EnumFieldNameFindingVisitor extends ClassVisitor {
-
 		private ClassEntry clazz;
 		private String className;
 		private final Map<Entry<?>, String> mappings;
-		private final Set<Pair<String, String>> enumFields = new HashSet<>();
+		private final Set<org.jetbrains.java.decompiler.util.Pair<String, String>> enumFields = new HashSet<>();
 		private final List<MethodNode> classInits = new ArrayList<>();
 
 		EnumFieldNameFindingVisitor(Map<Entry<?>, String> mappings) {
@@ -105,19 +100,19 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 
 		@Override
 		public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
-			if ((access & Opcodes.ACC_ENUM) != 0) {
-				if (!enumFields.add(new Pair<>(name, descriptor))) {
-					throw new IllegalArgumentException("Found two enum fields with the same name \"" + name + "\" and desc \"" + descriptor + "\"!");
-				}
+			if ((access & Opcodes.ACC_ENUM) != 0
+					&& !this.enumFields.add(Pair.of(name, descriptor))) {
+				throw new IllegalArgumentException("Found two enum fields with the same name \"" + name + "\" and desc \"" + descriptor + "\"!");
 			}
+
 			return super.visitField(access, name, descriptor, signature, value);
 		}
 
 		@Override
 		public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
 			if ("<clinit>".equals(name)) {
-				MethodNode node = new MethodNode(api, access, name, descriptor, signature, exceptions);
-				classInits.add(node);
+				MethodNode node = new MethodNode(this.api, access, name, descriptor, signature, exceptions);
+				this.classInits.add(node);
 				return node;
 			}
 			return super.visitMethod(access, name, descriptor, signature, exceptions);
@@ -127,18 +122,18 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 		public void visitEnd() {
 			super.visitEnd();
 			try {
-				collectResults();
+				this.collectResults();
 			} catch (Exception ex) {
 				throw new RuntimeException(ex);
 			}
 		}
 
 		private void collectResults() throws Exception {
-			String owner = className;
+			String owner = this.className;
 			Analyzer<SourceValue> analyzer = new Analyzer<>(new SourceInterpreter());
 
-			for (MethodNode mn : classInits) {
-				Frame<SourceValue>[] frames = analyzer.analyze(className, mn);
+			for (MethodNode mn : this.classInits) {
+				Frame<SourceValue>[] frames = analyzer.analyze(this.className, mn);
 
 				InsnList instrs = mn.instructions;
 				for (int i = 1; i < instrs.size(); i++) {
@@ -148,26 +143,21 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 
 					if (instr2.getOpcode() == Opcodes.PUTSTATIC
 							&& ((FieldInsnNode) instr2).owner.equals(owner)
-							&& enumFields.contains(new Pair<>(((FieldInsnNode) instr2).name, ((FieldInsnNode) instr2).desc))
+							&& this.enumFields.contains(Pair.of(((FieldInsnNode) instr2).name, ((FieldInsnNode) instr2).desc))
 							&& instr1.getOpcode() == Opcodes.INVOKESPECIAL
 							&& "<init>".equals(((MethodInsnNode) instr1).name)) {
-
 						for (int j = 0; j < frames[i - 1].getStackSize(); j++) {
 							SourceValue sv = frames[i - 1].getStack(j);
 							for (AbstractInsnNode ci : sv.insns) {
-								if (ci instanceof LdcInsnNode && ((LdcInsnNode) ci).cst instanceof String) {
-									//if (s == null || !s.equals(((LdcInsnNode) ci).cst)) {
-									if (s == null) {
-										s = (String) (((LdcInsnNode) ci).cst);
-										// stringsFound++;
-									}
+								if (ci instanceof LdcInsnNode insnNode && insnNode.cst instanceof String && s == null) {
+									s = (String) (insnNode.cst);
 								}
 							}
 						}
 					}
 
 					if (s != null) {
-						mappings.put(new FieldEntry(clazz, ((FieldInsnNode) instr2).name, new TypeDescriptor(((FieldInsnNode) instr2).desc)), s);
+						this.mappings.put(new FieldEntry(this.clazz, ((FieldInsnNode) instr2).name, new TypeDescriptor(((FieldInsnNode) instr2).desc)), s);
 					}
 					// report otherwise?
 				}

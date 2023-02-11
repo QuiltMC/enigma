@@ -21,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class RecafMappingsWriter implements MappingsWriter {
-
 	public static final RecafMappingsWriter INSTANCE = new RecafMappingsWriter();
 
 	@Override
@@ -37,7 +36,7 @@ public class RecafMappingsWriter implements MappingsWriter {
 			Lists.newArrayList(mappings)
 					.stream()
 					.map(EntryTreeNode::getEntry)
-					.forEach(entry -> writeEntry(writer, mappings, entry));
+					.forEach(entry -> this.writeEntry(writer, mappings, entry));
 		} catch (IOException e) {
 			Logger.error(e, "Failed to write to file {}", path);
 		}
@@ -54,13 +53,11 @@ public class RecafMappingsWriter implements MappingsWriter {
 		try {
 			if (mapping != null && mapping.targetName() != null) {
 				if (entry instanceof ClassEntry classEntry) {
-
 					writer.write(classEntry.getFullName());
 					writer.write(" ");
 					writer.write(mapping.targetName());
 
 				} else if (entry instanceof FieldEntry fieldEntry) {
-
 					writer.write(fieldEntry.getFullName());
 					writer.write(" ");
 					writer.write(fieldEntry.getDesc().toString());
@@ -68,7 +65,6 @@ public class RecafMappingsWriter implements MappingsWriter {
 					writer.write(mapping.targetName());
 
 				} else if (entry instanceof MethodEntry methodEntry) {
-
 					writer.write(methodEntry.getFullName());
 					writer.write(methodEntry.getDesc().toString());
 					writer.write(" ");
@@ -81,6 +77,6 @@ public class RecafMappingsWriter implements MappingsWriter {
 			Logger.error(e, "Failed to write to file");
 		}
 
-		node.getChildren().forEach(child -> writeEntry(writer, mappings, child));
+		node.getChildren().forEach(child -> this.writeEntry(writer, mappings, child));
 	}
 }

@@ -21,10 +21,10 @@ public final class RawEntryMapping {
 	}
 
 	public void addJavadocLine(String line) {
-		javadocs.add(line);
+		this.javadocs.add(line);
 	}
 
 	public EntryMapping bake() {
-		return new EntryMapping(targetName, access, javadocs.isEmpty() ? null : String.join("\n", javadocs));
+		return new EntryMapping(this.targetName, this.access, this.javadocs.isEmpty() ? null : String.join("\n", this.javadocs));
 	}
 }

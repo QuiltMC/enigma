@@ -18,8 +18,8 @@ public class IndexClassVisitor extends ClassVisitor {
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-		classEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
-		indexer.indexClass(classEntry);
+		this.classEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
+		this.indexer.indexClass(this.classEntry);
 
 		super.visit(version, access, name, signature, superName, interfaces);
 	}
@@ -27,21 +27,21 @@ public class IndexClassVisitor extends ClassVisitor {
 	// ASM calls the EnclosingMethod attribute "OuterClass"
 	@Override
 	public void visitOuterClass(String owner, String name, String descriptor) {
-		indexer.indexEnclosingMethod(classEntry, new JarIndexer.EnclosingMethodData(owner, name, descriptor));
+		this.indexer.indexEnclosingMethod(this.classEntry, new JarIndexer.EnclosingMethodData(owner, name, descriptor));
 
 		super.visitOuterClass(owner, name, descriptor);
 	}
 
 	@Override
 	public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-		indexer.indexField(FieldDefEntry.parse(classEntry, access, name, desc, signature));
+		this.indexer.indexField(FieldDefEntry.parse(this.classEntry, access, name, desc, signature));
 
 		return super.visitField(access, name, desc, signature, value);
 	}
 
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-		indexer.indexMethod(MethodDefEntry.parse(classEntry, access, name, desc, signature));
+		this.indexer.indexMethod(MethodDefEntry.parse(this.classEntry, access, name, desc, signature));
 
 		return super.visitMethod(access, name, desc, signature, exceptions);
 	}

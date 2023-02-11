@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 public final class StatsResult {
-
 	private final int total;
 	private final int unmapped;
 	private final Tree<Integer> tree;
@@ -20,28 +19,28 @@ public final class StatsResult {
 	}
 
 	public int getTotal() {
-		return total;
+		return this.total;
 	}
 
 	public int getUnmapped() {
-		return unmapped;
+		return this.unmapped;
 	}
 
 	public int getMapped() {
-		return total - unmapped;
+		return this.total - this.unmapped;
 	}
 
 	public double getPercentage() {
-		return (getMapped() * 100.0f) / total;
+		return (this.getMapped() * 100.0f) / this.total;
 	}
 
 	public String getTreeJson() {
-		return new GsonBuilder().setPrettyPrinting().create().toJson(tree.root);
+		return new GsonBuilder().setPrettyPrinting().create().toJson(this.tree.root);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("%s/%s %.1f%%", getMapped(), total, getPercentage());
+		return String.format("%s/%s %.1f%%", this.getMapped(), this.total, this.getPercentage());
 	}
 
 	public static class Tree<T> {
@@ -61,14 +60,14 @@ public final class StatsResult {
 		}
 
 		public Tree() {
-			root = new Node<>("", null);
+			this.root = new Node<>("", null);
 		}
 
 		public Node<T> getNode(String name) {
-			Node<T> node = nodes.get(name);
+			Node<T> node = this.nodes.get(name);
 
 			if (node == null) {
-				node = root;
+				node = this.root;
 
 				for (String part : name.split("\\.")) {
 					Node<T> child = node.namedChildren.get(part);
@@ -82,7 +81,7 @@ public final class StatsResult {
 					node = child;
 				}
 
-				nodes.put(name, node);
+				this.nodes.put(name, node);
 			}
 
 			return node;
@@ -97,9 +96,8 @@ public final class StatsResult {
 			}
 
 			for (Node<T> child : node.children) {
-				collapse(child);
+				this.collapse(child);
 			}
 		}
 	}
-
 }

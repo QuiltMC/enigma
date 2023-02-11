@@ -11,67 +11,67 @@
    version="1.1"
    id="svg8">
   <defs
-     id="defs2">
-    <filter
-       style="color-interpolation-filters:sRGB;"
-       id="filter1135">
-      <feFlood
-         flood-opacity="0.498039"
-         flood-color="rgb(0,0,0)"
-         result="flood"
-         id="feFlood1125" />
-      <feComposite
-         in="flood"
-         in2="SourceGraphic"
-         operator="in"
-         result="composite1"
-         id="feComposite1127" />
-      <feGaussianBlur
-         in="composite1"
-         stdDeviation="0.1"
-         result="blur"
-         id="feGaussianBlur1129" />
-      <feOffset
-         dx="0"
-         dy="0.2"
-         result="offset"
-         id="feOffset1131" />
-      <feComposite
-         in="SourceGraphic"
-         in2="offset"
-         operator="over"
-         result="composite2"
-         id="feComposite1133" />
-    </filter>
+	 id="defs2">
+	<filter
+	   style="color-interpolation-filters:sRGB;"
+	   id="filter1135">
+	  <feFlood
+		 flood-opacity="0.498039"
+		 flood-color="rgb(0,0,0)"
+		 result="flood"
+		 id="feFlood1125" />
+	  <feComposite
+		 in="flood"
+		 in2="SourceGraphic"
+		 operator="in"
+		 result="composite1"
+		 id="feComposite1127" />
+	  <feGaussianBlur
+		 in="composite1"
+		 stdDeviation="0.1"
+		 result="blur"
+		 id="feGaussianBlur1129" />
+	  <feOffset
+		 dx="0"
+		 dy="0.2"
+		 result="offset"
+		 id="feOffset1131" />
+	  <feComposite
+		 in="SourceGraphic"
+		 in2="offset"
+		 operator="over"
+		 result="composite2"
+		 id="feComposite1133" />
+	</filter>
   </defs>
   <metadata
-     id="metadata5">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
-      </cc:Work>
-    </rdf:RDF>
+	 id="metadata5">
+	<rdf:RDF>
+	  <cc:Work
+		 rdf:about="">
+		<dc:format>image/svg+xml</dc:format>
+		<dc:type
+		   rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+		<dc:title></dc:title>
+	  </cc:Work>
+	</rdf:RDF>
   </metadata>
   <g
-     id="layer1">
-    <rect
-       style="fill:#bc245d;fill-opacity:1;fill-rule:evenodd;stroke-width:0.264583;stroke-miterlimit:4;stroke-dasharray:none"
-       id="rect18"
-       width="4.2333331"
-       height="4.2333331"
-       x="0"
-       y="0"
-       ry="1.0583333" />
-    <rect
-       style="fill:#de3e80;fill-opacity:1;stroke:none;stroke-width:0.30868;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect847"
-       width="3.7041664"
-       height="3.7041664"
-       x="0.26458332"
+	 id="layer1">
+	<rect
+	   style="fill:#bc245d;fill-opacity:1;fill-rule:evenodd;stroke-width:0.264583;stroke-miterlimit:4;stroke-dasharray:none"
+	   id="rect18"
+	   width="4.2333331"
+	   height="4.2333331"
+	   x="0"
+	   y="0"
+	   ry="1.0583333" />
+	<rect
+	   style="fill:#de3e80;fill-opacity:1;stroke:none;stroke-width:0.30868;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+	   id="rect847"
+	   width="3.7041664"
+	   height="3.7041664"
+	   x="0.26458332"
        y="0.26458332"
        ry="1.0583333" />
     <g

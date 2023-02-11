@@ -16,7 +16,6 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public class ClassSelectorClassNode extends DefaultMutableTreeNode {
-
 	private final ClassEntry obfEntry;
 	private ClassEntry classEntry;
 
@@ -27,7 +26,7 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 	}
 
 	public ClassEntry getObfEntry() {
-		return obfEntry;
+		return this.obfEntry;
 	}
 
 	public ClassEntry getClassEntry() {
@@ -41,29 +40,29 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof ClassSelectorClassNode && equals((ClassSelectorClassNode) other);
+		return other instanceof ClassSelectorClassNode && this.equals((ClassSelectorClassNode) other);
 	}
 
 	@Override
 	public int hashCode() {
-		return 17 + (classEntry != null ? classEntry.hashCode() : 0);
+		return 17 + (this.classEntry != null ? this.classEntry.hashCode() : 0);
 	}
 
 	@Override
 	public Object getUserObject() {
-		return classEntry;
+		return this.classEntry;
 	}
 
 	@Override
 	public void setUserObject(Object userObject) {
 		String packageName = "";
-		if (classEntry.getPackageName() != null)
-			packageName = classEntry.getPackageName() + "/";
+		if (this.classEntry.getPackageName() != null)
+			packageName = this.classEntry.getPackageName() + "/";
 		if (userObject instanceof String)
 			this.classEntry = new ClassEntry(packageName + userObject);
 		else if (userObject instanceof ClassEntry)
 			this.classEntry = (ClassEntry) userObject;
-		super.setUserObject(classEntry);
+		super.setUserObject(this.classEntry);
 	}
 
 	public boolean equals(ClassSelectorClassNode other) {

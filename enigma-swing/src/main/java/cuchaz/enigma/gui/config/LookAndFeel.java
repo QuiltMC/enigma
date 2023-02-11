@@ -30,7 +30,7 @@ public enum LookAndFeel {
 	public boolean needsScaling() {
 		// FlatLaf-based LaFs do their own scaling so we don't have to do it.
 		// Running swing-dpi for FlatLaf actually breaks fonts, so we let it scale the GUI.
-		return needsScaling;
+		return this.needsScaling;
 	}
 
 	public void setGlobalLAF() {
@@ -66,5 +66,4 @@ public enum LookAndFeel {
 		int b = (int) (0.3 * c.getRed() + 0.59 * c.getGreen() + 0.11 * c.getBlue());
 		return b < 85;
 	}
-
 }

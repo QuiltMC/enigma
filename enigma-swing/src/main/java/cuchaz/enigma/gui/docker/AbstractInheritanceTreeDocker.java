@@ -35,16 +35,16 @@ public abstract class AbstractInheritanceTreeDocker extends Docker {
 	private void onClick(MouseEvent event) {
 		if (event.getClickCount() >= 2 && event.getButton() == MouseEvent.BUTTON1) {
 			// get the selected node
-			TreePath path = tree.getSelectionPath();
+			TreePath path = this.tree.getSelectionPath();
 			if (path == null) {
 				return;
 			}
 
 			Object node = path.getLastPathComponent();
 			if (node instanceof AbstractClassTreeNode classNode) {
-				gui.getController().navigateTo(classNode.getClassEntry());
+				this.gui.getController().navigateTo(classNode.getClassEntry());
 			} else if (node instanceof AbstractMethodTreeNode methodNode) {
-				gui.getController().navigateTo(methodNode.getMethodEntry());
+				this.gui.getController().navigateTo(methodNode.getMethodEntry());
 			}
 		}
 	}

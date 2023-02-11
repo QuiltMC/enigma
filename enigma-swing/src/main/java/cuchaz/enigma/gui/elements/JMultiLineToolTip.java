@@ -1,7 +1,6 @@
 package cuchaz.enigma.gui.elements;
 
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.io.Serial;
 
@@ -19,17 +18,16 @@ import javax.swing.plaf.basic.BasicToolTipUI;
  * @author Zafir Anjum
  */
 public class JMultiLineToolTip extends JToolTip {
-
 	@Serial
 	private static final long serialVersionUID = 7813662474312183098L;
 
 	public JMultiLineToolTip() {
-		updateUI();
+		this.updateUI();
 	}
 
 	@Override
 	public void updateUI() {
-		setUI(MultiLineToolTipUI.createUI(this));
+		this.setUI(MultiLineToolTipUI.createUI(this));
 	}
 
 	public void setColumns(int columns) {
@@ -38,7 +36,7 @@ public class JMultiLineToolTip extends JToolTip {
 	}
 
 	public int getColumns() {
-		return columns;
+		return this.columns;
 	}
 
 	public void setFixedWidth(int width) {
@@ -47,7 +45,7 @@ public class JMultiLineToolTip extends JToolTip {
 	}
 
 	public int getFixedWidth() {
-		return fixedwidth;
+		return this.fixedwidth;
 	}
 
 	protected int columns = 0;
@@ -58,9 +56,7 @@ public class JMultiLineToolTip extends JToolTip {
  * UI for multi line tool tip
  */
 class MultiLineToolTipUI extends BasicToolTipUI {
-
-	static MultiLineToolTipUI sharedInstance = new MultiLineToolTipUI();
-	Font smallFont;
+	static final MultiLineToolTipUI sharedInstance = new MultiLineToolTipUI();
 	static JToolTip tip;
 	protected CellRendererPane rendererPane;
 
@@ -74,32 +70,36 @@ class MultiLineToolTipUI extends BasicToolTipUI {
 		super();
 	}
 
+	@Override
 	public void installUI(JComponent c) {
 		super.installUI(c);
 		tip = (JToolTip) c;
-		rendererPane = new CellRendererPane();
-		c.add(rendererPane);
+		this.rendererPane = new CellRendererPane();
+		c.add(this.rendererPane);
 	}
 
+	@Override
 	public void uninstallUI(JComponent c) {
 		super.uninstallUI(c);
 
-		c.remove(rendererPane);
-		rendererPane = null;
+		c.remove(this.rendererPane);
+		this.rendererPane = null;
 	}
 
+	@Override
 	public void paint(Graphics g, JComponent c) {
 		Dimension size = c.getSize();
 		textArea.setBackground(c.getBackground());
-		rendererPane.paintComponent(g, textArea, c, 1, 1, size.width - 1, size.height - 1, true);
+		this.rendererPane.paintComponent(g, textArea, c, 1, 1, size.width - 1, size.height - 1, true);
 	}
 
+	@Override
 	public Dimension getPreferredSize(JComponent c) {
 		String tipText = ((JToolTip) c).getTipText();
 		if (tipText == null) return new Dimension(0, 0);
 		textArea = new JTextArea(tipText);
-		rendererPane.removeAll();
-		rendererPane.add(textArea);
+		this.rendererPane.removeAll();
+		this.rendererPane.add(textArea);
 		textArea.setWrapStyleWord(true);
 		int width = ((JMultiLineToolTip) c).getFixedWidth();
 		int columns = ((JMultiLineToolTip) c).getColumns();
@@ -125,11 +125,13 @@ class MultiLineToolTipUI extends BasicToolTipUI {
 		return dim;
 	}
 
+	@Override
 	public Dimension getMinimumSize(JComponent c) {
-		return getPreferredSize(c);
+		return this.getPreferredSize(c);
 	}
 
+	@Override
 	public Dimension getMaximumSize(JComponent c) {
-		return getPreferredSize(c);
+		return this.getPreferredSize(c);
 	}
 }

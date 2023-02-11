@@ -30,8 +30,8 @@ import java.util.Map;
 public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 	private final MethodDefEntry methodEntry;
 
-	private Multimap<String, Identifier> unmatchedIdentifier = HashMultimap.create();
-	private Map<String, Entry<?>> identifierEntryCache = new HashMap<>();
+	private final Multimap<String, Identifier> unmatchedIdentifier = HashMultimap.create();
+	private final Map<String, Entry<?>> identifierEntryCache = new HashMap<>();
 
 	public SourceIndexMethodVisitor(MethodDefEntry methodEntry) {
 		this.methodEntry = methodEntry;
@@ -67,7 +67,7 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 		// Check for identifier
 		node.getArguments().stream().filter(expression -> expression instanceof IdentifierExpression)
 				.forEach(expression -> this.checkIdentifier((IdentifierExpression) expression, index));
-		return visitChildren(node, index);
+		return this.visitChildren(node, index);
 	}
 
 	@Override
@@ -85,7 +85,7 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 			index.addReference(TokenFactory.createToken(index, node.getMemberNameToken()), fieldEntry, this.methodEntry);
 		}
 
-		return visitChildren(node, index);
+		return this.visitChildren(node, index);
 	}
 
 	@Override
@@ -96,7 +96,7 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 			index.addReference(TokenFactory.createToken(index, node.getIdentifierToken()), classEntry, this.methodEntry);
 		}
 
-		return visitChildren(node, index);
+		return this.visitChildren(node, index);
 	}
 
 	@Override
@@ -105,7 +105,7 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 		int parameterIndex = def.getSlot();
 
 		if (parameterIndex >= 0) {
-			MethodDefEntry ownerMethod = methodEntry;
+			MethodDefEntry ownerMethod = this.methodEntry;
 			if (def.getMethod() instanceof MethodDefinition) {
 				ownerMethod = EntryParser.parse((MethodDefinition) def.getMethod());
 			}
@@ -114,11 +114,11 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 			LocalVariableDefEntry localVariableEntry = new LocalVariableDefEntry(ownerMethod, parameterIndex, node.getName(), true, parameterType, null);
 			Identifier identifier = node.getNameToken();
 			// cache the argument entry and the identifier
-			identifierEntryCache.put(identifier.getName(), localVariableEntry);
+			this.identifierEntryCache.put(identifier.getName(), localVariableEntry);
 			index.addDeclaration(TokenFactory.createToken(index, identifier), localVariableEntry);
 		}
 
-		return visitChildren(node, index);
+		return this.visitChildren(node, index);
 	}
 
 	@Override
@@ -130,38 +130,37 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 			index.addReference(TokenFactory.createToken(index, node.getIdentifierToken()), fieldEntry, this.methodEntry);
 		} else
 			this.checkIdentifier(node, index);
-		return visitChildren(node, index);
+		return this.visitChildren(node, index);
 	}
 
 	private void checkIdentifier(IdentifierExpression node, SourceIndex index) {
-		if (identifierEntryCache.containsKey(node.getIdentifier())) // If it's in the argument cache, create a token!
-			index.addDeclaration(TokenFactory.createToken(index, node.getIdentifierToken()), identifierEntryCache.get(node.getIdentifier()));
+		if (this.identifierEntryCache.containsKey(node.getIdentifier())) // If it's in the argument cache, create a token!
+			index.addDeclaration(TokenFactory.createToken(index, node.getIdentifierToken()), this.identifierEntryCache.get(node.getIdentifier()));
 		else
-			unmatchedIdentifier.put(node.getIdentifier(), node.getIdentifierToken()); // Not matched actually, put it!
+			this.unmatchedIdentifier.put(node.getIdentifier(), node.getIdentifierToken()); // Not matched actually, put it!
 	}
 
 	private void addDeclarationToUnmatched(String key, SourceIndex index) {
-		Entry<?> entry = identifierEntryCache.get(key);
+		Entry<?> entry = this.identifierEntryCache.get(key);
 
 		// This cannot happened in theory
 		if (entry == null)
 			return;
-		for (Identifier identifier : unmatchedIdentifier.get(key))
+		for (Identifier identifier : this.unmatchedIdentifier.get(key))
 			index.addDeclaration(TokenFactory.createToken(index, identifier), entry);
-		unmatchedIdentifier.removeAll(key);
+		this.unmatchedIdentifier.removeAll(key);
 	}
 
 	@Override
 	public Void visitObjectCreationExpression(ObjectCreationExpression node, SourceIndex index) {
 		MemberReference ref = node.getUserData(Keys.MEMBER_REFERENCE);
-		if (ref != null && node.getType() instanceof SimpleType) {
-			SimpleType simpleTypeNode = (SimpleType) node.getType();
+		if (ref != null && node.getType() instanceof SimpleType simpleTypeNode) {
 			ClassEntry classEntry = new ClassEntry(ref.getDeclaringType().getInternalName());
 			MethodEntry constructorEntry = new MethodEntry(classEntry, "<init>", new MethodDescriptor(ref.getErasedSignature()));
 			index.addReference(TokenFactory.createToken(index, simpleTypeNode.getIdentifierToken()), constructorEntry, this.methodEntry);
 		}
 
-		return visitChildren(node, index);
+		return this.visitChildren(node, index);
 	}
 
 	@Override
@@ -182,15 +181,15 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 							MethodDefEntry ownerMethod = EntryParser.parse(originalVariable.getDeclaringMethod());
 							TypeDescriptor variableType = EntryParser.parseTypeDescriptor(originalVariable.getVariableType());
 							LocalVariableDefEntry localVariableEntry = new LocalVariableDefEntry(ownerMethod, variableIndex, initializer.getName(), false, variableType, null);
-							identifierEntryCache.put(identifier.getName(), localVariableEntry);
-							addDeclarationToUnmatched(identifier.getName(), index);
+							this.identifierEntryCache.put(identifier.getName(), localVariableEntry);
+							this.addDeclarationToUnmatched(identifier.getName(), index);
 							index.addDeclaration(TokenFactory.createToken(index, identifier), localVariableEntry);
 						}
 					}
 				}
 			}
 		}
-		return visitChildren(node, index);
+		return this.visitChildren(node, index);
 	}
 
 	@Override
@@ -215,6 +214,6 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 			}
 		}
 
-		return visitChildren(node, index);
+		return this.visitChildren(node, index);
 	}
 }

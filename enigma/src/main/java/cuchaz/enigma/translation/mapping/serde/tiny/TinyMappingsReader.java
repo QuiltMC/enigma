@@ -1,6 +1,5 @@
 package cuchaz.enigma.translation.mapping.serde.tiny;
 
-import com.google.common.base.Charsets;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.EntryMapping;
@@ -18,6 +17,7 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -27,7 +27,7 @@ public enum TinyMappingsReader implements MappingsReader {
 
 	@Override
 	public EntryTree<EntryMapping> read(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws IOException, MappingParseException {
-		return read(path, Files.readAllLines(path, Charsets.UTF_8), progress);
+		return this.read(path, Files.readAllLines(path, StandardCharsets.UTF_8), progress);
 	}
 
 	private EntryTree<EntryMapping> read(Path path, List<String> lines, ProgressListener progress) throws MappingParseException {
@@ -46,10 +46,10 @@ public enum TinyMappingsReader implements MappingsReader {
 			}
 
 			try {
-				MappingPair<?, EntryMapping> mapping = parseLine(line);
+				MappingPair<?, EntryMapping> mapping = this.parseLine(line);
 				mappings.insert(mapping.getEntry(), mapping.getMapping());
-			} catch (Throwable t) {
-				throw new MappingParseException(path, lineNumber, t);
+			} catch (Exception e) {
+				throw new MappingParseException(path, lineNumber, e);
 			}
 		}
 
@@ -60,18 +60,13 @@ public enum TinyMappingsReader implements MappingsReader {
 		String[] tokens = line.split("\t");
 
 		String key = tokens[0];
-		switch (key) {
-			case "CLASS":
-				return parseClass(tokens);
-			case "FIELD":
-				return parseField(tokens);
-			case "METHOD":
-				return parseMethod(tokens);
-			case "MTH-ARG":
-				return parseArgument(tokens);
-			default:
-				throw new RuntimeException("Unknown token '" + key + "'!");
-		}
+		return switch (key) {
+			case "CLASS" -> this.parseClass(tokens);
+			case "FIELD" -> this.parseField(tokens);
+			case "METHOD" -> this.parseMethod(tokens);
+			case "MTH-ARG" -> this.parseArgument(tokens);
+			default -> throw new RuntimeException("Unknown token '" + key + "'!");
+		};
 	}
 
 	private MappingPair<ClassEntry, EntryMapping> parseClass(String[] tokens) {

@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.inputs.translation;
@@ -14,7 +14,6 @@ package cuchaz.enigma.inputs.translation;
 import java.util.Iterator;
 
 public class E_Bridges implements Iterator<Object> {
-
 	@Override
 	public boolean hasNext() {
 		return false;

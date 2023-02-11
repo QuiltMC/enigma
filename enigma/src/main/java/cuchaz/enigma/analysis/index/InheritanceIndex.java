@@ -25,8 +25,8 @@ import java.util.Set;
 public class InheritanceIndex implements JarIndexer {
 	private final EntryIndex entryIndex;
 
-	private Multimap<ClassEntry, ClassEntry> classParents = HashMultimap.create();
-	private Multimap<ClassEntry, ClassEntry> classChildren = HashMultimap.create();
+	private final Multimap<ClassEntry, ClassEntry> classParents = HashMultimap.create();
+	private final Multimap<ClassEntry, ClassEntry> classChildren = HashMultimap.create();
 
 	public InheritanceIndex(EntryIndex entryIndex) {
 		this.entryIndex = entryIndex;
@@ -40,25 +40,25 @@ public class InheritanceIndex implements JarIndexer {
 
 		ClassEntry superClass = classEntry.getSuperClass();
 		if (superClass != null && !superClass.getName().equals("java/lang/Object")) {
-			indexParent(classEntry, superClass);
+			this.indexParent(classEntry, superClass);
 		}
 
 		for (ClassEntry interfaceEntry : classEntry.getInterfaces()) {
-			indexParent(classEntry, interfaceEntry);
+			this.indexParent(classEntry, interfaceEntry);
 		}
 	}
 
 	private void indexParent(ClassEntry childEntry, ClassEntry parentEntry) {
-		classParents.put(childEntry, parentEntry);
-		classChildren.put(parentEntry, childEntry);
+		this.classParents.put(childEntry, parentEntry);
+		this.classChildren.put(parentEntry, childEntry);
 	}
 
 	public Collection<ClassEntry> getParents(ClassEntry classEntry) {
-		return classParents.get(classEntry);
+		return this.classParents.get(classEntry);
 	}
 
 	public Collection<ClassEntry> getChildren(ClassEntry classEntry) {
-		return classChildren.get(classEntry);
+		return this.classChildren.get(classEntry);
 	}
 
 	public Collection<ClassEntry> getDescendants(ClassEntry classEntry) {
@@ -69,7 +69,7 @@ public class InheritanceIndex implements JarIndexer {
 
 		while (!descendantQueue.isEmpty()) {
 			ClassEntry descendant = descendantQueue.pop();
-			Collection<ClassEntry> children = getChildren(descendant);
+			Collection<ClassEntry> children = this.getChildren(descendant);
 
 			children.forEach(descendantQueue::push);
 			descendants.addAll(children);
@@ -86,7 +86,7 @@ public class InheritanceIndex implements JarIndexer {
 
 		while (!ancestorQueue.isEmpty()) {
 			ClassEntry ancestor = ancestorQueue.pop();
-			Collection<ClassEntry> parents = getParents(ancestor);
+			Collection<ClassEntry> parents = this.getParents(ancestor);
 
 			parents.forEach(ancestorQueue::push);
 			ancestors.addAll(parents);
@@ -97,12 +97,12 @@ public class InheritanceIndex implements JarIndexer {
 
 	public Relation computeClassRelation(ClassEntry classEntry, ClassEntry potentialAncestor) {
 		if (potentialAncestor.getName().equals("java/lang/Object")) return Relation.RELATED;
-		if (!entryIndex.hasClass(classEntry)) return Relation.UNKNOWN;
+		if (!this.entryIndex.hasClass(classEntry)) return Relation.UNKNOWN;
 
-		for (ClassEntry ancestor : getAncestors(classEntry)) {
+		for (ClassEntry ancestor : this.getAncestors(classEntry)) {
 			if (potentialAncestor.equals(ancestor)) {
 				return Relation.RELATED;
-			} else if (!entryIndex.hasClass(ancestor)) {
+			} else if (!this.entryIndex.hasClass(ancestor)) {
 				return Relation.UNKNOWN;
 			}
 		}
@@ -111,11 +111,11 @@ public class InheritanceIndex implements JarIndexer {
 	}
 
 	public boolean isParent(ClassEntry classEntry) {
-		return classChildren.containsKey(classEntry);
+		return this.classChildren.containsKey(classEntry);
 	}
 
 	public boolean hasParents(ClassEntry classEntry) {
-		Collection<ClassEntry> parents = classParents.get(classEntry);
+		Collection<ClassEntry> parents = this.classParents.get(classEntry);
 		return parents != null && !parents.isEmpty();
 	}
 

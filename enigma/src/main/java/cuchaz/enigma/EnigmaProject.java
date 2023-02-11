@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -23,6 +24,7 @@ import cuchaz.enigma.analysis.index.EnclosingMethodIndex;
 import cuchaz.enigma.api.service.ObfuscationTestService;
 import cuchaz.enigma.classprovider.ObfuscationFixClassProvider;
 import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
+import cuchaz.enigma.utils.Pair;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
@@ -49,6 +51,22 @@ import cuchaz.enigma.utils.I18n;
 import org.tinylog.Logger;
 
 public class EnigmaProject {
+	private static final List<Pair<String, String>> NON_RENAMABLE_METHODS = new ArrayList<>();
+
+	static {
+		NON_RENAMABLE_METHODS.add(new Pair<>("hashCode", "()I"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("clone", "()Ljava/lang/Object;"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("equals", "(Ljava/lang/Object;)Z"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("finalize", "()V"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("getClass", "()Ljava/lang/Class;"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("notify", "()V"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("notifyAll", "()V"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("toString", "()Ljava/lang/String;"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("wait", "()V"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("wait", "(J)V"));
+		NON_RENAMABLE_METHODS.add(new Pair<>("wait", "(JI)V"));
+	}
+
 	private final Enigma enigma;
 
 	private final Path jarPath;
@@ -71,40 +89,40 @@ public class EnigmaProject {
 
 	public void setMappings(EntryTree<EntryMapping> mappings) {
 		if (mappings != null) {
-			mapper = EntryRemapper.mapped(jarIndex, mappings);
+			this.mapper = EntryRemapper.mapped(this.jarIndex, mappings);
 		} else {
-			mapper = EntryRemapper.empty(jarIndex);
+			this.mapper = EntryRemapper.empty(this.jarIndex);
 		}
 	}
 
 	public Enigma getEnigma() {
-		return enigma;
+		return this.enigma;
 	}
 
 	public Path getJarPath() {
-		return jarPath;
+		return this.jarPath;
 	}
 
 	public ClassProvider getClassProvider() {
-		return classProvider;
+		return this.classProvider;
 	}
 
 	public JarIndex getJarIndex() {
-		return jarIndex;
+		return this.jarIndex;
 	}
 
 	public byte[] getJarChecksum() {
-		return jarChecksum;
+		return this.jarChecksum;
 	}
 
 	public EntryRemapper getMapper() {
-		return mapper;
+		return this.mapper;
 	}
 
 	public void dropMappings(ProgressListener progress) {
-		DeltaTrackingTree<EntryMapping> mappings = mapper.getObfToDeobf();
+		DeltaTrackingTree<EntryMapping> mappings = this.mapper.getObfToDeobf();
 
-		Collection<Entry<?>> dropped = dropMappings(mappings, progress);
+		Collection<Entry<?>> dropped = this.dropMappings(mappings, progress);
 		for (Entry<?> entry : dropped) {
 			mappings.trackChange(entry);
 		}
@@ -112,7 +130,7 @@ public class EnigmaProject {
 
 	private Collection<Entry<?>> dropMappings(EntryTree<EntryMapping> mappings, ProgressListener progress) {
 		// drop mappings that don't match the jar
-		MappingsChecker checker = new MappingsChecker(jarIndex, mappings);
+		MappingsChecker checker = new MappingsChecker(this.jarIndex, mappings);
 		MappingsChecker.Dropped droppedBroken = checker.dropBrokenMappings(progress);
 
 		Map<Entry<?>, String> droppedBrokenMappings = droppedBroken.getDroppedMappings();
@@ -134,10 +152,8 @@ public class EnigmaProject {
 	}
 
 	public boolean isNavigable(Entry<?> obfEntry) {
-		if (obfEntry instanceof ClassEntry classEntry) {
-			if (isAnonymousOrLocal(classEntry)) {
-				return false;
-			}
+		if (obfEntry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
+			return false;
 		}
 
 		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);
@@ -148,52 +164,32 @@ public class EnigmaProject {
 			// HACKHACK: Object methods are not obfuscated identifiers
 			String name = obfMethodEntry.getName();
 			String sig = obfMethodEntry.getDesc().toString();
-			//TODO replace with a map or check if declaring class is java.lang.Object
-			if (name.equals("clone") && sig.equals("()Ljava/lang/Object;")) {
-				return false;
-			} else if (name.equals("equals") && sig.equals("(Ljava/lang/Object;)Z")) {
-				return false;
-			} else if (name.equals("finalize") && sig.equals("()V")) {
-				return false;
-			} else if (name.equals("getClass") && sig.equals("()Ljava/lang/Class;")) {
-				return false;
-			} else if (name.equals("hashCode") && sig.equals("()I")) {
-				return false;
-			} else if (name.equals("notify") && sig.equals("()V")) {
-				return false;
-			} else if (name.equals("notifyAll") && sig.equals("()V")) {
-				return false;
-			} else if (name.equals("toString") && sig.equals("()Ljava/lang/String;")) {
-				return false;
-			} else if (name.equals("wait") && sig.equals("()V")) {
-				return false;
-			} else if (name.equals("wait") && sig.equals("(J)V")) {
-				return false;
-			} else if (name.equals("wait") && sig.equals("(JI)V")) {
-				return false;
-			} else {
-				ClassDefEntry parent = jarIndex.getEntryIndex().getDefinition(obfMethodEntry.getParent());
-				if (parent != null && parent.isEnum()) {
-					if (name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";")) {
-						return false;
-					} else if (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")) {
-						return false;
-					}
+
+			// todo change this to a check if the method is declared in java.lang.Object or java.lang.Record
+
+			for (Pair<String, String> pair : NON_RENAMABLE_METHODS) {
+				if (pair.a().equals(name) && pair.b().equals(sig)) {
+					return false;
 				}
 			}
-		} else if (obfEntry instanceof LocalVariableEntry && !((LocalVariableEntry) obfEntry).isArgument()) {
-			return false;
-		} else if (obfEntry instanceof ClassEntry classEntry) {
-			if (isAnonymousOrLocal(classEntry)) {
+
+			ClassDefEntry parent = this.jarIndex.getEntryIndex().getDefinition(obfMethodEntry.getParent());
+			if (parent != null && parent.isEnum()
+					&& ((name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";"))
+					|| (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")))) {
 				return false;
 			}
+		} else if (obfEntry instanceof LocalVariableEntry localEntry && !localEntry.isArgument()) {
+			return false;
+		} else if (obfEntry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
+			return false;
 		}
 
 		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);
 	}
 
 	public boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {
-		return obfReference.isNamed() && isRenamable(obfReference.getNameableEntry());
+		return obfReference.isNamed() && this.isRenamable(obfReference.getNameableEntry());
 	}
 
 	public boolean isObfuscated(Entry<?> entry) {
@@ -211,32 +207,32 @@ public class EnigmaProject {
 		List<NameProposalService> nameProposalServices = this.getEnigma().getServices().get(NameProposalService.TYPE);
 		if (!nameProposalServices.isEmpty()) {
 			for (NameProposalService service : nameProposalServices) {
-				if (service.proposeName(entry, mapper).isPresent()) {
+				if (service.proposeName(entry, this.mapper).isPresent()) {
 					return false;
 				}
 			}
 		}
 
-		String mappedName = mapper.deobfuscate(entry).getName();
+		String mappedName = this.mapper.deobfuscate(entry).getName();
 		return mappedName == null || mappedName.isEmpty() || mappedName.equals(name);
 	}
 
 	public boolean isSynthetic(Entry<?> entry) {
-		return jarIndex.getEntryIndex().hasEntry(entry) && jarIndex.getEntryIndex().getEntryAccess(entry).isSynthetic();
+		return this.jarIndex.getEntryIndex().hasEntry(entry) && this.jarIndex.getEntryIndex().getEntryAccess(entry).isSynthetic();
 	}
 
 	public boolean isAnonymousOrLocal(ClassEntry classEntry) {
-		EnclosingMethodIndex enclosingMethodIndex = jarIndex.getEnclosingMethodIndex();
+		EnclosingMethodIndex enclosingMethodIndex = this.jarIndex.getEnclosingMethodIndex();
 		// Only local and anonymous classes may have the EnclosingMethod attribute
 		return enclosingMethodIndex.hasEnclosingMethod(classEntry);
 	}
 
 	public JarExport exportRemappedJar(ProgressListener progress) {
-		Collection<ClassEntry> classEntries = jarIndex.getEntryIndex().getClasses();
-		ClassProvider fixingClassProvider = new ObfuscationFixClassProvider(classProvider, jarIndex);
+		Collection<ClassEntry> classEntries = this.jarIndex.getEntryIndex().getClasses();
+		ClassProvider fixingClassProvider = new ObfuscationFixClassProvider(this.classProvider, this.jarIndex);
 
-		NameProposalService[] nameProposalServices = getEnigma().getServices().get(NameProposalService.TYPE).toArray(new NameProposalService[0]);
-		Translator deobfuscator = nameProposalServices.length == 0 ? mapper.getDeobfuscator() : new ProposingTranslator(mapper, nameProposalServices);
+		NameProposalService[] nameProposalServices = this.getEnigma().getServices().get(NameProposalService.TYPE).toArray(new NameProposalService[0]);
+		Translator deobfuscator = nameProposalServices.length == 0 ? this.mapper.getDeobfuscator() : new ProposingTranslator(this.mapper, nameProposalServices);
 
 		AtomicInteger count = new AtomicInteger();
 		progress.init(classEntries.size(), I18n.translate("progress.classes.deobfuscating"));
@@ -258,7 +254,7 @@ public class EnigmaProject {
 				.filter(Objects::nonNull)
 				.collect(Collectors.toMap(n -> n.name, Functions.identity()));
 
-		return new JarExport(mapper, compiled);
+		return new JarExport(this.mapper, compiled);
 	}
 
 	public static final class JarExport {
@@ -304,7 +300,7 @@ public class EnigmaProject {
 			progress.init(classes.size(), I18n.translate("progress.classes.decompiling"));
 
 			//create a common instance outside the loop as mappings shouldn't be changing while this is happening
-			Decompiler decompiler = decompilerService.create(ClassProvider.fromMap(compiled), new SourceSettings(false, false));
+			Decompiler decompiler = decompilerService.create(ClassProvider.fromMap(this.compiled), new SourceSettings(false, false));
 
 			AtomicInteger count = new AtomicInteger();
 
@@ -314,14 +310,14 @@ public class EnigmaProject {
 
 						String source = null;
 						try {
-							source = decompileClass(translatedNode, decompiler);
-						} catch (Throwable throwable) {
+							source = this.decompileClass(translatedNode, decompiler);
+						} catch (Exception e) {
 							switch (errorStrategy) {
-								case PROPAGATE: throw throwable;
+								case PROPAGATE: throw e;
 								case IGNORE: break;
 								case TRACE_AS_SOURCE: {
 									StringWriter writer = new StringWriter();
-									throwable.printStackTrace(new PrintWriter(writer));
+									e.printStackTrace(new PrintWriter(writer));
 									source = writer.toString();
 									break;
 								}
@@ -338,7 +334,7 @@ public class EnigmaProject {
 		}
 
 		private String decompileClass(ClassNode translatedNode, Decompiler decompiler) {
-			return decompiler.getSource(translatedNode.name, mapper).asString();
+			return decompiler.getSource(translatedNode.name, this.mapper).asString();
 		}
 	}
 
@@ -350,10 +346,10 @@ public class EnigmaProject {
 		}
 
 		public void write(Path path, ProgressListener progress) throws IOException {
-			progress.init(decompiled.size(), I18n.translate("progress.sources.writing"));
+			progress.init(this.decompiled.size(), I18n.translate("progress.sources.writing"));
 
 			int count = 0;
-			for (ClassSource source : decompiled) {
+			for (ClassSource source : this.decompiled) {
 				progress.step(count++, source.name);
 
 				Path sourcePath = source.resolvePath(path);
@@ -374,12 +370,12 @@ public class EnigmaProject {
 		public void writeTo(Path path) throws IOException {
 			Files.createDirectories(path.getParent());
 			try (BufferedWriter writer = Files.newBufferedWriter(path)) {
-				writer.write(source);
+				writer.write(this.source);
 			}
 		}
 
 		public Path resolvePath(Path root) {
-			return root.resolve(name.replace('.', '/') + ".java");
+			return root.resolve(this.name.replace('.', '/') + ".java");
 		}
 	}
 

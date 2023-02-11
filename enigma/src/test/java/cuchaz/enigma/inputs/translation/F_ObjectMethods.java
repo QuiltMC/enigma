@@ -6,14 +6,13 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma.inputs.translation;
 
 @SuppressWarnings("FinalizeCalledExplicitly")
 public class F_ObjectMethods {
-
 	public void callEmAll()
 		throws Throwable {
 		clone();
