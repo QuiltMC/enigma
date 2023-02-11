@@ -12,7 +12,7 @@
 package cuchaz.enigma.translation.representation;
 
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
@@ -190,7 +190,7 @@ public class TypeDescriptor implements Translatable {
 		return this.desc.hashCode();
 	}
 
-	public TypeDescriptor remap(Function<String, String> remapper) {
+	public TypeDescriptor remap(UnaryOperator<String> remapper) {
 		String desc = this.desc;
 		if (this.isType() || (this.isArray() && this.containsType())) {
 			String replacedName = remapper.apply(this.getTypeEntry().getFullName());
