@@ -564,11 +564,10 @@ public class Gui {
 	// TODO: getExpansionState will *not* actually update itself based on name changes!
 	public void moveClassTree(Entry<?> obfEntry, boolean isOldOb, boolean isNewOb) {
 		ClassEntry classEntry = obfEntry.getContainingClass();
-		ObfuscatedClassesDocker obfuscatedClassesDocker = Docker.getDocker(ObfuscatedClassesDocker.class);
-		DeobfuscatedClassesDocker deobfuscatedClassesDocker = Docker.getDocker(DeobfuscatedClassesDocker.class);
 
-		ClassSelector deobfuscatedClassSelector = deobfuscatedClassesDocker.getClassSelector();
-		ClassSelector obfuscatedClassSelector = obfuscatedClassesDocker.getClassSelector();
+		ClassSelector deobfuscatedClassSelector = Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector();
+		ClassSelector obfuscatedClassSelector = Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector();
+		ClassSelector allClassesClassSelector = Docker.getDocker(AllClassesDocker.class).getClassSelector();
 
 		List<ClassSelector.StateEntry> deobfuscatedPanelExpansionState = deobfuscatedClassSelector.getExpansionState();
 		List<ClassSelector.StateEntry> obfuscatedPanelExpansionState = obfuscatedClassSelector.getExpansionState();
@@ -591,10 +590,12 @@ public class Gui {
 			deobfuscatedClassSelector.reload();
 		}
 
+		allClassesClassSelector.removeEntry(classEntry);
+		allClassesClassSelector.moveClassIn(classEntry);
+		allClassesClassSelector.reload();
+
 		deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
 		obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
-
-		this.updateAllClasses();
 	}
 
 	public SearchDialog getSearchDialog() {
