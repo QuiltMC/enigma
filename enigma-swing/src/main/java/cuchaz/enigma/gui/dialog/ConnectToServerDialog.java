@@ -53,7 +53,6 @@ public class ConnectToServerDialog extends AbstractDialog {
 
 	@Override
 	public void validateInputs() {
-		this.vc.setActiveElement(this.ipField);
 		if (StandardValidation.notBlank(this.vc, this.ipField.getText()) && ServerAddress.from(this.ipField.getText(), EnigmaServer.DEFAULT_PORT) == null) {
 			this.vc.raise(Message.INVALID_IP);
 		}

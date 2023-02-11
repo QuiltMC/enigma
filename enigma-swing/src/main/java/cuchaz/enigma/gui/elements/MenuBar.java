@@ -374,7 +374,7 @@ public class MenuBar {
 		try {
 			this.gui.getController().createClient(result.username(), result.address().address, result.address().port, result.password());
 			if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
-				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.CONNECTED_TO_SERVER, result.getAddressStr()));
+				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.CONNECTED_TO_SERVER, result.addressStr()));
 			}
 			NetConfig.setUsername(result.username());
 			NetConfig.setRemoteAddress(result.addressStr());
@@ -447,7 +447,7 @@ public class MenuBar {
 						continue;
 					}
 
-					String commonPrefix = findCommonPrefix(recent.b.toString(), other.b.toString());
+					String commonPrefix = findCommonPrefix(recent.b().toString(), other.b().toString());
 
 					if (commonPrefix != null && (prefix == null || (commonPrefix.length() > prefix.length() && verifyCommonPrefix(commonPrefix, recentFilePairs)))) {
 						prefix = commonPrefix;
@@ -457,25 +457,25 @@ public class MenuBar {
 		}
 
 		for (Pair<Path, Path> recent : recentFilePairs) {
-			String jarName = recent.a.getFileName().toString();
+			String jarName = recent.a().getFileName().toString();
 
 			// if there's no common prefix, just show the last directory in the tree
 			String mappingsName;
 			if (prefix != null && !prefix.isBlank()) {
-				mappingsName = recent.b.toString().split(prefix)[1];
+				mappingsName = recent.b().toString().split(prefix)[1];
 			} else {
-				mappingsName = recent.b.toString().substring(recent.b.toString().lastIndexOf("/"));
+				mappingsName = recent.b().toString().substring(recent.b().toString().lastIndexOf("/"));
 			}
 
 			JMenuItem item = new JMenuItem(jarName + " -> " + mappingsName);
-			item.addActionListener(event -> gui.getController().openJar(recent.a).whenComplete((v, t) -> gui.getController().openMappings(recent.b)));
+			item.addActionListener(event -> gui.getController().openJar(recent.a()).whenComplete((v, t) -> gui.getController().openMappings(recent.b())));
 			this.openRecentMenu.add(item);
 		}
 	}
 
 	private static boolean verifyCommonPrefix(String prefix, List<Pair<Path, Path>> filePairs) {
 		for (Pair<Path, Path> pair : filePairs) {
-			if (!pair.b.toString().startsWith(prefix)) {
+			if (!pair.b().toString().startsWith(prefix)) {
 				return false;
 			}
 		}

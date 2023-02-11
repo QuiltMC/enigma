@@ -16,7 +16,6 @@ import com.formdev.flatlaf.FlatClientProperties;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.events.ConvertingTextFieldListener;
 import cuchaz.enigma.gui.util.GuiUtil;
-import cuchaz.enigma.utils.validation.ParameterizedMessage;
 
 /**
  * A label that converts into an editable text field when you click it.
@@ -165,16 +164,6 @@ public class ConvertingTextField {
 	public boolean hasChanges() {
 		if (!this.editing) return false;
 		return !this.textField.getText().equals(this.label.getText());
-	}
-
-	@Override
-	public void addMessage(ParameterizedMessage message) {
-		this.textField.addMessage(message);
-	}
-
-	@Override
-	public void clearMessages() {
-		this.textField.clearMessages();
 	}
 
 	public void addListener(ConvertingTextFieldListener listener) {

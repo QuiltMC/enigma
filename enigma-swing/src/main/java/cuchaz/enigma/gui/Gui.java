@@ -709,8 +709,8 @@ public class Gui {
 		var pair = UiConfig.getMostRecentFilePair();
 
 		if (pair.isPresent()) {
-			this.getNotificationManager().notify(ParameterizedMessage.openedProject(pair.get().a.toString(), pair.get().b.toString()));
-			this.controller.openJar(pair.get().a).whenComplete((v, t) -> this.controller.openMappings(pair.get().b));
+			this.getNotificationManager().notify(ParameterizedMessage.openedProject(pair.get().a().toString(), pair.get().b().toString()));
+			this.controller.openJar(pair.get().a()).whenComplete((v, t) -> this.controller.openMappings(pair.get().b()));
 		}
 	}
 }

@@ -223,7 +223,7 @@ public final class UiConfig {
 		pairs.remove(pair);
 		pairs.add(0, pair);
 
-		ui.data().setArray(RECENT_FILES, pairs.stream().limit(getMaxRecentFiles()).map(p -> p.a.toString() + PAIR_SEPARATOR + p.b.toString()).toArray(String[]::new));
+		ui.data().setArray(RECENT_FILES, pairs.stream().limit(getMaxRecentFiles()).map(p -> p.a().toString() + PAIR_SEPARATOR + p.b().toString()).toArray(String[]::new));
 	}
 
 	/**
