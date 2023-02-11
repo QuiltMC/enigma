@@ -533,15 +533,14 @@ public class Gui {
 		frame.repaint();
 	}
 
-	public void onRenameFromClassTree(ValidationContext vc, Object prevData, Object data, DefaultMutableTreeNode node) {
+	public void onRenameFromClassTree(ValidationContext vc, Object data, DefaultMutableTreeNode node) {
 		if (data instanceof String) {
 			// package rename
 			for (int i = 0; i < node.getChildCount(); i++) {
 				DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) node.getChildAt(i);
 				ClassEntry prevDataChild = (ClassEntry) childNode.getUserObject();
-				ClassEntry dataChild = new ClassEntry(data + "/" + prevDataChild.getSimpleName());
 
-				this.onRenameFromClassTree(vc, prevDataChild, dataChild, node);
+				this.onRenameFromClassTree(vc, prevDataChild, node);
 			}
 			node.setUserObject(data);
 
