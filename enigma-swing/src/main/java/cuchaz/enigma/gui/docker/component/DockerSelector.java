@@ -16,15 +16,14 @@ public class DockerSelector {
 
 	public DockerSelector(Docker.Side side) {
 		JPanel mainPanel = new JPanel(new BorderLayout());
-		this.bottomSelector = new JPanel(new FlowLayout());
-		this.topSelector = new JPanel(new FlowLayout());
+		this.bottomSelector = new JPanel(new VerticalFlowLayout(5));
+		this.topSelector = new JPanel(new VerticalFlowLayout(5));
 		this.side = side;
 
-		mainPanel.add(this.topSelector, side == Docker.Side.RIGHT ? BorderLayout.WEST : BorderLayout.EAST);
-		mainPanel.add(this.bottomSelector, side == Docker.Side.RIGHT ? BorderLayout.EAST : BorderLayout.WEST);
+		mainPanel.add(this.topSelector, BorderLayout.NORTH);
+		mainPanel.add(this.bottomSelector, BorderLayout.SOUTH);
 
 		this.panel = new JLayer<>(mainPanel);
-		this.panel.setUI(new RightAngleLayerUI(side == Docker.Side.RIGHT ? RightAngleLayerUI.Rotation.CLOCKWISE : RightAngleLayerUI.Rotation.COUNTERCLOCKWISE));
 	}
 
 	/**
@@ -38,7 +37,7 @@ public class DockerSelector {
 		for (Docker docker : Docker.getDockers().values()) {
 			// only use buttons that match this selector's side
 			if (docker.getButtonPosition().side() == this.side) {
-				JToggleButton button = docker.getButton();
+				DockerButton button = docker.getButton();
 
 				if (docker.getButtonPosition().verticalLocation() == Docker.VerticalLocation.TOP) {
 					this.topSelector.add(button);

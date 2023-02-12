@@ -1,11 +1,11 @@
 package cuchaz.enigma.gui.docker;
 
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.docker.component.DockerButton;
 import cuchaz.enigma.gui.docker.component.DockerTitleBar;
 import cuchaz.enigma.utils.I18n;
 
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
 import java.awt.BorderLayout;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -23,14 +23,14 @@ public abstract class Docker extends JPanel {
 
 	protected final Supplier<String> titleSupplier = () -> I18n.translate("docker." + this.getId() + ".title");
 	protected final DockerTitleBar title;
-	protected final JToggleButton button;
+	protected final DockerButton button;
 	protected final Gui gui;
 
 	protected Docker(Gui gui) {
 		super(new BorderLayout());
 		this.gui = gui;
 		this.title = new DockerTitleBar(this, this.titleSupplier);
-		this.button = new JToggleButton(this.titleSupplier.get());
+		this.button = new DockerButton(this.titleSupplier.get());
 		// add action listener to open and close the docker when its button is pressed
 		this.button.addActionListener(e -> {
 			Docker docker = getDocker(this.getClass());
@@ -51,7 +51,7 @@ public abstract class Docker extends JPanel {
 	}
 
 	public void retranslateUi() {
-		this.button.setText(this.titleSupplier.get());
+		//this.button.setText(this.titleSupplier.get());
 		this.title.retranslateUi();
 	}
 
@@ -62,7 +62,7 @@ public abstract class Docker extends JPanel {
 	/**
 	 * @return the side panel button that opens and closes this docker
 	 */
-	public JToggleButton getButton() {
+	public DockerButton getButton() {
 		return this.button;
 	}
 
