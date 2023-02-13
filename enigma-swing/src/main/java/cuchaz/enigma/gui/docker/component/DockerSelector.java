@@ -4,9 +4,7 @@ import cuchaz.enigma.gui.docker.Docker;
 
 import javax.swing.JLayer;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 
 public class DockerSelector {
 	private final JLayer<JPanel> panel;
@@ -38,6 +36,7 @@ public class DockerSelector {
 			// only use buttons that match this selector's side
 			if (docker.getButtonPosition().side() == this.side) {
 				DockerButton button = docker.getButton();
+				button.setConstraints("");
 
 				if (docker.getButtonPosition().verticalLocation() == Docker.VerticalLocation.TOP) {
 					this.topSelector.add(button);

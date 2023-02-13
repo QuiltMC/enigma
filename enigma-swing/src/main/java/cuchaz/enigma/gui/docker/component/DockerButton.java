@@ -3,14 +3,19 @@ package cuchaz.enigma.gui.docker.component;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.docker.Docker;
 
+import javax.swing.JComponent;
 import javax.swing.JToggleButton;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.MouseEvent;
 
-public class DockerButton extends JToggleButton {
+public class DockerButton extends JToggleButton implements Draggable {
+	private JComponent initialParent;
+	private Object constraints;
+	private boolean inInitialPosition;
 	private String text;
 	private Docker.Side side;
 
@@ -18,11 +23,59 @@ public class DockerButton extends JToggleButton {
 		super("");
 		this.text = text;
 		this.side = side;
+
+		this.addMouseListener(this.getMouseListener());
+		this.addMouseMotionListener(this.getMouseMotionListener());
 	}
 
 	public void setSide(Docker.Side side) {
 		this.side = side;
 		this.repaint();
+	}
+
+	@Override
+	public boolean inInitialPosition() {
+		return this.inInitialPosition;
+	}
+
+	@Override
+	public void setInInitialPosition(boolean inInitialPosition) {
+		this.inInitialPosition = inInitialPosition;
+	}
+
+	@Override
+	public JComponent getInitialParent() {
+		return this.initialParent;
+	}
+
+	@Override
+	public void setInitialParent(JComponent parent) {
+		this.initialParent = parent;
+	}
+
+	@Override
+	public Object getConstraints() {
+		return this.constraints;
+	}
+
+	@Override
+	public void setConstraints(Object constraints) {
+		this.constraints = constraints;
+	}
+
+	@Override
+	public JComponent get() {
+		return this;
+	}
+
+	@Override
+	public void drop(MouseEvent e) {
+		// todo
+	}
+
+	@Override
+	public void broadcastMouseEvent(MouseEvent e) {
+		// todo
 	}
 
 	@Override
