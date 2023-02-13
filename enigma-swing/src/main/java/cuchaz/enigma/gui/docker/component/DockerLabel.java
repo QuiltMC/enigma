@@ -13,7 +13,8 @@ import java.awt.event.MouseEvent;
 public class DockerLabel extends JLabel implements Draggable {
 	private JComponent initialParent;
 	private Object constraints;
-	private boolean inInitialPosition;
+	private boolean cancelEvents;
+	private boolean mousePressed;
 
 	private final Docker docker;
 
@@ -31,13 +32,23 @@ public class DockerLabel extends JLabel implements Draggable {
 	}
 
 	@Override
-	public boolean inInitialPosition() {
-		return this.inInitialPosition;
+	public boolean mousePressed() {
+		return this.mousePressed;
 	}
 
 	@Override
-	public void setInInitialPosition(boolean inInitialPosition) {
-		this.inInitialPosition = inInitialPosition;
+	public void setMousePressed(boolean mousePressed) {
+		this.mousePressed = mousePressed;
+	}
+
+	@Override
+	public boolean cancelEvents() {
+		return this.cancelEvents;
+	}
+
+	@Override
+	public void setCancelEvents(boolean cancelEvents) {
+		this.cancelEvents = cancelEvents;
 	}
 
 	@Override
@@ -63,6 +74,11 @@ public class DockerLabel extends JLabel implements Draggable {
 	@Override
 	public JComponent get() {
 		return this;
+	}
+
+	@Override
+	public int getDragDelay() {
+		return 0;
 	}
 
 	@Override

@@ -15,7 +15,8 @@ import java.awt.event.MouseEvent;
 public class DockerButton extends JToggleButton implements Draggable {
 	private JComponent initialParent;
 	private Object constraints;
-	private boolean inInitialPosition;
+	private boolean cancelEvents;
+	private boolean mousePressed;
 	private String text;
 	private Docker.Side side;
 
@@ -34,13 +35,23 @@ public class DockerButton extends JToggleButton implements Draggable {
 	}
 
 	@Override
-	public boolean inInitialPosition() {
-		return this.inInitialPosition;
+	public boolean mousePressed() {
+		return this.mousePressed;
 	}
 
 	@Override
-	public void setInInitialPosition(boolean inInitialPosition) {
-		this.inInitialPosition = inInitialPosition;
+	public void setMousePressed(boolean mousePressed) {
+		this.mousePressed = mousePressed;
+	}
+
+	@Override
+	public boolean cancelEvents() {
+		return this.cancelEvents;
+	}
+
+	@Override
+	public void setCancelEvents(boolean cancelEvents) {
+		this.cancelEvents = cancelEvents;
 	}
 
 	@Override
@@ -66,6 +77,11 @@ public class DockerButton extends JToggleButton implements Draggable {
 	@Override
 	public JComponent get() {
 		return this;
+	}
+
+	@Override
+	public int getDragDelay() {
+		return 500;
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package cuchaz.enigma.gui.docker;
 
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.gui.docker.component.Draggable;
 
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
@@ -230,7 +231,7 @@ public class Dock extends JPanel {
 	public boolean containsMouse(MouseEvent e, Docker.VerticalLocation checkedLocation) {
 		if (this.isVisible()) {
 			Rectangle screenBounds = this.getBoundsFor(this.getLocationOnScreen(), checkedLocation);
-			return contains(screenBounds, e.getLocationOnScreen());
+			return Draggable.contains(screenBounds, e.getLocationOnScreen());
 		}
 
 		return false;
@@ -323,11 +324,6 @@ public class Dock extends JPanel {
 
 	private JSplitPane getParentSplitPane() {
 		return this.side == Docker.Side.RIGHT ? this.gui.getSplitRight() : this.gui.getSplitLeft();
-	}
-
-	private static boolean contains(Rectangle rectangle, Point point) {
-		return (point.x >= rectangle.x && point.x <= rectangle.x + rectangle.width)
-				&& (point.y >= rectangle.y && point.y <= rectangle.y + rectangle.height);
 	}
 
 	@Override
