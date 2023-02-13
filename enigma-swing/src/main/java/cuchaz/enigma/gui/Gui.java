@@ -245,8 +245,8 @@ public class Gui {
 	public void openDocker(Class<? extends Docker> clazz) {
 		Docker newDocker = Docker.getDocker(clazz);
 
-		Dock dock = (newDocker.getPreferredLocation().side() == Docker.Side.LEFT ? this.leftDock : this.rightDock);
-		dock.host(newDocker, newDocker.getPreferredLocation().verticalLocation());
+		Dock dock = (newDocker.getButtonLocation().side() == Docker.Side.LEFT ? this.leftDock : this.rightDock);
+		dock.host(newDocker, newDocker.getButtonLocation().verticalLocation());
 	}
 
 	public NotificationManager getNotificationManager() {

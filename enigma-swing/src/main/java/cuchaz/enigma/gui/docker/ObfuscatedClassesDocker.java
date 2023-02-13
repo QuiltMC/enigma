@@ -26,12 +26,7 @@ public class ObfuscatedClassesDocker extends ClassesDocker {
 	}
 
 	@Override
-	public Location getButtonPosition() {
-		return new Location(Side.LEFT, VerticalLocation.TOP);
-	}
-
-	@Override
-	public Location getPreferredLocation() {
+	public Location getPreferredButtonLocation() {
 		return new Location(Side.LEFT, VerticalLocation.TOP);
 	}
 }

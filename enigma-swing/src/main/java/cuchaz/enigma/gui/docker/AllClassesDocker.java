@@ -14,12 +14,7 @@ public class AllClassesDocker extends ClassesDocker {
 	}
 
 	@Override
-	public Location getButtonPosition() {
+	public Location getPreferredButtonLocation() {
 		return new Location(Side.LEFT, VerticalLocation.TOP);
-	}
-
-	@Override
-	public Location getPreferredLocation() {
-		return new Location(Side.LEFT, VerticalLocation.FULL);
 	}
 }

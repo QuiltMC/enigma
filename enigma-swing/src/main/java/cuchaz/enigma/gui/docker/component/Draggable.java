@@ -22,6 +22,7 @@ public interface Draggable {
 	Object getConstraints();
 	void setConstraints(Object constraints);
 	JComponent get();
+	// todo click timeouts!!!
 
 	/**
 	 * Drops the draggable in its new position if possible.

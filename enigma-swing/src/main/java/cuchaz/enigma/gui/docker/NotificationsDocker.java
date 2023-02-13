@@ -55,12 +55,7 @@ public class NotificationsDocker extends Docker {
 	}
 
 	@Override
-	public Location getButtonPosition() {
-		return new Location(Side.RIGHT, VerticalLocation.BOTTOM);
-	}
-
-	@Override
-	public Location getPreferredLocation() {
+	public Location getPreferredButtonLocation() {
 		return new Location(Side.RIGHT, VerticalLocation.BOTTOM);
 	}
 }

@@ -109,13 +109,8 @@ public class CollabDocker extends Docker {
 	}
 
 	@Override
-	public Location getButtonPosition() {
+	public Location getPreferredButtonLocation() {
 		return new Location(Side.RIGHT, VerticalLocation.BOTTOM);
-	}
-
-	@Override
-	public Location getPreferredLocation() {
-		return new Location(Side.RIGHT, VerticalLocation.FULL);
 	}
 
 	@Override

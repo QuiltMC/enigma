@@ -30,9 +30,4 @@ public class ImplementationsTreeDocker extends AbstractInheritanceTreeDocker {
 	public String getId() {
 		return "implementations";
 	}
-
-	@Override
-	public Location getPreferredLocation() {
-		return new Location(Side.RIGHT, VerticalLocation.FULL);
-	}
 }

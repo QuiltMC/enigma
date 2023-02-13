@@ -154,18 +154,13 @@ public class StructureDocker extends Docker {
 	}
 
 	@Override
-	public Location getButtonPosition() {
+	public Location getPreferredButtonLocation() {
 		return new Location(Side.RIGHT, VerticalLocation.TOP);
 	}
 
 	@Override
 	public String getId() {
 		return "structure";
-	}
-
-	@Override
-	public Location getPreferredLocation() {
-		return new Location(Side.RIGHT, VerticalLocation.FULL);
 	}
 
 	private static class StructureTreeCellRenderer extends DefaultTreeCellRenderer {

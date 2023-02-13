@@ -34,11 +34,11 @@ public class DockerSelector {
 		// create buttons docker options
 		for (Docker docker : Docker.getDockers().values()) {
 			// only use buttons that match this selector's side
-			if (docker.getButtonPosition().side() == this.side) {
+			if (docker.getButtonLocation().side() == this.side) {
 				DockerButton button = docker.getButton();
 				button.setConstraints("");
 
-				if (docker.getButtonPosition().verticalLocation() == Docker.VerticalLocation.TOP) {
+				if (docker.getButtonLocation().verticalLocation() == Docker.VerticalLocation.TOP) {
 					this.topSelector.add(button);
 				} else {
 					this.bottomSelector.add(button);
