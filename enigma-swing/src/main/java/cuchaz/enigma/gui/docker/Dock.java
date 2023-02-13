@@ -276,13 +276,19 @@ public class Dock extends JPanel {
 		this.isSplit = false;
 	}
 
-	public void dropDockerFromMouse(Docker docker, MouseEvent event) {
+	/**
+	 * Drops the docker from the given mouse position, if it is within the bounds of this dock.
+	 * @return whether the docker was successfully positioned
+	 */
+	public boolean dropDockerFromMouse(Docker docker, MouseEvent event) {
 		for (Docker.VerticalLocation verticalLocation : Docker.VerticalLocation.values()) {
 			if (this.containsMouse(event, verticalLocation)) {
 				this.host(docker, verticalLocation);
-				return;
+				return true;
 			}
 		}
+
+		return false;
 	}
 
 	public DockerContainer getDock(Docker.VerticalLocation verticalLocation) {
@@ -391,8 +397,8 @@ public class Dock extends JPanel {
 		 */
 		public static void dropDocker(Docker docker, MouseEvent event) {
 			for (Dock dock : INSTANCES) {
-				if (dock.isDisplayable()) {
-					dock.dropDockerFromMouse(docker, event);
+				if (dock.isDisplayable() && dock.dropDockerFromMouse(docker, event)) {
+					return;
 				}
 			}
 		}
