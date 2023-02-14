@@ -34,6 +34,14 @@ public class DockerSelector extends JPanel {
 		INSTANCES.add(this);
 	}
 
+	public JPanel getTopSelector() {
+		return this.topSelector;
+	}
+
+	public JPanel getBottomSelector() {
+		return this.bottomSelector;
+	}
+
 	/**
 	 * Adds all buttons that match this selector's side to it. This method should be called after all dockers have been registered.
 	 */
@@ -85,6 +93,7 @@ public class DockerSelector extends JPanel {
 		JPanel hoveredPanel = this.getHoveredPanel(event);
 		if (hoveredPanel != null) {
 			hoveredPanel.add(button);
+			button.setSide(this.side);
 			UiConfig.setDockerButtonLocation(button.getDocker(), new Docker.Location(this.side, hoveredPanel.equals(this.bottomSelector) ? Docker.VerticalLocation.BOTTOM : Docker.VerticalLocation.TOP));
 			return true;
 		}

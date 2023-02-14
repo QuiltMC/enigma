@@ -2,12 +2,15 @@ package cuchaz.enigma.gui.docker;
 
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.gui.docker.component.DockerButton;
+import cuchaz.enigma.gui.docker.component.DockerSelector;
 import cuchaz.enigma.gui.docker.component.Draggable;
 
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -141,6 +144,8 @@ public class Dock extends JPanel {
 	}
 
 	public void host(Docker docker, Docker.VerticalLocation verticalLocation, boolean avoidEmptySpace) {
+		Docker.Location previousLocation = Util.findLocation(docker);
+
 		Dock dock = Util.findDock(docker);
 		if (dock != null) {
 			dock.removeDocker(verticalLocation, avoidEmptySpace);
@@ -165,6 +170,23 @@ public class Dock extends JPanel {
 				if (this.toSave != null && !this.toSave.equals(docker)) {
 					this.host(this.toSave, verticalLocation.inverse());
 					this.toSave = null;
+				}
+
+				// make button follow docker from side to side
+				if (previousLocation != null && previousLocation.side() != this.side) {
+					DockerButton button = docker.getButton();
+					DockerSelector selector = this.gui.getMainWindow().getDockerSelector(this.side);
+					Container parent = button.getParent();
+
+					parent.remove(button);
+					(verticalLocation == Docker.VerticalLocation.TOP ? selector.getTopSelector() : selector.getBottomSelector()).add(button);
+					button.setSide(this.side);
+					UiConfig.setDockerButtonLocation(docker, new Docker.Location(this.side, verticalLocation));
+
+					button.getParent().revalidate();
+					button.getParent().repaint();
+					selector.revalidate();
+					selector.repaint();
 				}
 			}
 			case FULL -> {
