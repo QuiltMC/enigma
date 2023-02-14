@@ -1,5 +1,6 @@
 package cuchaz.enigma.gui.docker.component;
 
+import cuchaz.enigma.gui.config.LookAndFeel;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.docker.Docker;
 
@@ -116,7 +117,10 @@ public class DockerButton extends JToggleButton implements Draggable {
 		g2d.rotate(-(this.side == Docker.Side.RIGHT ? 3 : 1) * (Math.PI * 0.5));
 
 		// setup text
-		Font font = UiConfig.getDefault2Font().deriveFont(Font.BOLD);
+		Font font = UiConfig.getDefault2Font();
+		if (UiConfig.getLookAndFeel().equals(LookAndFeel.SYSTEM)) {
+			font = font.deriveFont(Font.BOLD);
+		}
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setFont(font);
 
