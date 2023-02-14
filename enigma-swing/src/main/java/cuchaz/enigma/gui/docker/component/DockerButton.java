@@ -13,6 +13,8 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 
 public class DockerButton extends JToggleButton implements Draggable {
+	private final Docker docker;
+
 	private JComponent initialParent;
 	private Object constraints;
 	private boolean cancelEvents;
@@ -20,8 +22,9 @@ public class DockerButton extends JToggleButton implements Draggable {
 	private String text;
 	private Docker.Side side;
 
-	public DockerButton(String text, Docker.Side side) {
+	public DockerButton(Docker docker, String text, Docker.Side side) {
 		super("");
+		this.docker = docker;
 		this.text = text;
 		this.side = side;
 
@@ -32,6 +35,10 @@ public class DockerButton extends JToggleButton implements Draggable {
 	public void setSide(Docker.Side side) {
 		this.side = side;
 		this.repaint();
+	}
+
+	public Docker getDocker() {
+		return this.docker;
 	}
 
 	@Override
@@ -85,13 +92,13 @@ public class DockerButton extends JToggleButton implements Draggable {
 	}
 
 	@Override
-	public void drop(MouseEvent e) {
-		// todo
+	public boolean drop(MouseEvent e) {
+		return DockerSelector.Util.dropButton(this, e);
 	}
 
 	@Override
 	public void broadcastMouseEvent(MouseEvent e) {
-		// todo
+		DockerSelector.Util.receiveMouseEvent(e);
 	}
 
 	@Override

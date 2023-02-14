@@ -30,8 +30,8 @@ public class MainWindow {
 		contentPane.setLayout(new BorderLayout());
 		contentPane.add(this.workArea, BorderLayout.CENTER);
 		contentPane.add(this.statusBar.getUi(), BorderLayout.SOUTH);
-		contentPane.add(this.rightDockerSelector.getPanel(), BorderLayout.EAST);
-		contentPane.add(this.leftDockerSelector.getPanel(), BorderLayout.WEST);
+		contentPane.add(this.rightDockerSelector, BorderLayout.EAST);
+		contentPane.add(this.leftDockerSelector, BorderLayout.WEST);
 	}
 
 	public void setVisible(boolean visible) {

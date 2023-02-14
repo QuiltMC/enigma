@@ -40,8 +40,9 @@ public interface Draggable {
 	/**
 	 * Drops the draggable in its new position if possible.
 	 * @param e the mouse event that triggered the drop, provides position information
+	 * @return whether to return the component to its original position
 	 */
-	void drop(MouseEvent e);
+	boolean drop(MouseEvent e);
 
 	/**
 	 * Broadcasts a mouse event to be used for highlighting.
@@ -106,9 +107,9 @@ public interface Draggable {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				Draggable.this.setMousePressed(false);
+				Draggable.this.broadcastMouseEvent(e);
 
 				if (Draggable.this.getInitialParent() != null) {
-					Draggable.this.broadcastMouseEvent(e);
 					Draggable.this.setMouse(Cursor.DEFAULT_CURSOR);
 
 					// remove from glass pane and repaint to display removal
@@ -116,9 +117,11 @@ public interface Draggable {
 					glassPane.remove(Draggable.this.get());
 					glassPane.repaint();
 
-					Draggable.this.drop(e);
-					// return label to old position
-					Draggable.this.getInitialParent().add(Draggable.this.get(), Draggable.this.getConstraints());
+					if (!Draggable.this.drop(e)) {
+						// return label to old position
+						Draggable.this.getInitialParent().add(Draggable.this.get(), Draggable.this.getConstraints());
+					}
+
 					Draggable.this.get().setVisible(true);
 					Draggable.this.getInitialParent().revalidate();
 					Draggable.this.getInitialParent().repaint();
@@ -169,7 +172,6 @@ public interface Draggable {
 					Draggable.this.get().setLocation(mouseFrameX, mouseFrameY);
 					Draggable.this.get().setVisible(true);
 
-					// update dock highlighting
 					Draggable.this.broadcastMouseEvent(e);
 				}
 			}

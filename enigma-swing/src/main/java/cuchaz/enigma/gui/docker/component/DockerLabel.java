@@ -82,8 +82,9 @@ public class DockerLabel extends JLabel implements Draggable {
 	}
 
 	@Override
-	public void drop(MouseEvent e) {
+	public boolean drop(MouseEvent e) {
 		Dock.Util.dropDocker(this.docker, e);
+		return false;
 	}
 
 	@Override
