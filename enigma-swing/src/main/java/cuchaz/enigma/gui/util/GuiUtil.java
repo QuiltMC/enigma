@@ -23,10 +23,12 @@ import javax.swing.tree.TreePath;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
+import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.Os;
 
@@ -39,6 +41,10 @@ public class GuiUtil {
 	public static final Icon METHOD_ICON = loadIcon("method");
 	public static final Icon FIELD_ICON = loadIcon("field");
 	public static final Icon CONSTRUCTOR_ICON = loadIcon("constructor");
+
+	public static final Icon OBFUSCATED_ICON = loadIcon("obfuscated");
+	public static final Icon PARTIALLY_DEOBFUSCATED_ICON = loadIcon("partially_deobfuscated");
+	public static final Icon DEOBFUSCATED_ICON = loadIcon("deobfuscated");
 
 	public static void openUrl(String url) {
 		try {
@@ -140,6 +146,16 @@ public class GuiUtil {
 		}
 
 		return CLASS_ICON;
+	}
+
+	public static Icon getDeobfuscationIcon(EnigmaProject project, Entry<?> entry) {
+		if (project.isFullyDeobfuscated(entry)) {
+			return DEOBFUSCATED_ICON;
+		} else if (project.isAtLeastPartiallyDeobfuscated(entry)) {
+			return PARTIALLY_DEOBFUSCATED_ICON;
+		} else {
+			return OBFUSCATED_ICON;
+		}
 	}
 
 	public static Icon getMethodIcon(MethodEntry entry) {

@@ -23,7 +23,10 @@ import com.google.common.base.Preconditions;
 import cuchaz.enigma.analysis.index.EnclosingMethodIndex;
 import cuchaz.enigma.api.service.ObfuscationTestService;
 import cuchaz.enigma.classprovider.ObfuscationFixClassProvider;
+import cuchaz.enigma.translation.TranslateResult;
+import cuchaz.enigma.translation.mapping.ResolutionStrategy;
 import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
+import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.Pair;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
@@ -190,6 +193,106 @@ public class EnigmaProject {
 
 	public boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {
 		return obfReference.isNamed() && this.isRenamable(obfReference.getNameableEntry());
+	}
+
+	/**
+	 * Checks whether the provided entry or some of its potential children
+	 * are deobfuscated. Local variables are not being considered.
+	 */
+	public boolean isAtLeastPartiallyDeobfuscated(Entry<?> entry) {
+		// todo!
+		return testDeobfuscated(entry, false);
+	}
+
+	/**
+	 * Checks whether the provided entry and all of its potential children
+	 * are deobfuscated. Local variables are not being considered.
+	 */
+	public boolean isFullyDeobfuscated(Entry<?> entry) {
+		// todo!
+		return testDeobfuscated(entry, true);
+	}
+
+	private boolean testDeobfuscated(Entry<?> entry, boolean mustBeFullyDeobf) {
+		// todo!
+		boolean obfuscationDetected = false;
+
+		// Target name check
+		TranslateResult<Entry<?>> targetName = mapper.extendedDeobfuscate(entry);
+
+		if (targetName != null && !targetName.isObfuscated()) {
+			if (!mustBeFullyDeobf) {
+				return true;
+			}
+		} else {
+			obfuscationDetected = true;
+
+			if (mustBeFullyDeobf) {
+				return false;
+			}
+		}
+
+		// Name Proposal check
+		List<NameProposalService> nameProposalServices = this.getEnigma().getServices().get(NameProposalService.TYPE);
+
+		if (!mustBeFullyDeobf && !nameProposalServices.isEmpty()) {
+			for (NameProposalService service : nameProposalServices) {
+				if (service.proposeName(entry, mapper).isPresent()) {
+					return true;
+				}
+			}
+		}
+
+		// Obfuscation Test Services check
+		List<ObfuscationTestService> obfuscationTestServices = this.getEnigma().getServices().get(ObfuscationTestService.TYPE);
+
+		if (!obfuscationTestServices.isEmpty()) {
+			for (ObfuscationTestService service : obfuscationTestServices) {
+				if (service.testDeobfuscated(entry)) {
+					if (!mustBeFullyDeobf) {
+						return true;
+					}
+				} else {
+					obfuscationDetected = true;
+				}
+
+				if (mustBeFullyDeobf && obfuscationDetected) {
+					return false;
+				}
+			}
+		}
+
+		// Obfuscated children check
+		List<? extends ParentedEntry<?>> renamableChildren = jarIndex.getChildrenByClass().entries()
+				.stream()
+				.filter(item -> item.getKey().equals(entry))
+				.map(Map.Entry::getValue)
+				.filter(item -> isRenamable(item)
+						// No constructors
+						&& !item.getName().equals("<init>")
+						&& !item.getName().equals("<clinit>")
+						// Don't check inherited members
+						&& jarIndex.getEntryResolver().resolveFirstEntry(item, ResolutionStrategy.RESOLVE_ROOT).getParent().equals(entry))
+				.toList();
+		for (ParentedEntry<?> child : renamableChildren) {
+			if (isAtLeastPartiallyDeobfuscated(child)) {
+				if (!mustBeFullyDeobf) {
+					return true;
+				}
+			} else {
+				obfuscationDetected = true;
+			}
+
+			if (mustBeFullyDeobf && obfuscationDetected) {
+				return false;
+			}
+		}
+
+		if (mustBeFullyDeobf) {
+			return !obfuscationDetected;
+		} else {
+			return false;
+		}
 	}
 
 	public boolean isObfuscated(Entry<?> entry) {
