@@ -1,7 +1,6 @@
 package cuchaz.enigma.utils.validation;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -51,12 +50,13 @@ public class ValidationContext {
 	 * valid state
 	 */
 	public boolean canProceed() {
-		// TODO on warnings, wait until user confirms
-		return this.messages.stream().noneMatch(m -> m.message().getType() == Type.ERROR);
-	}
+		for (ParameterizedMessage m : this.messages) {
+			if (m.getType() == Type.WARNING && !this.notifier.verifyWarning(m)) {
+				return false;
+			}
+		}
 
-	public List<ParameterizedMessage> getMessages() {
-		return Collections.unmodifiableList(this.messages);
+		return this.messages.stream().noneMatch(m -> m.message().getType() == Type.ERROR);
 	}
 
 	/**
@@ -69,5 +69,7 @@ public class ValidationContext {
 
 	public interface Notifier {
 		void notify(ParameterizedMessage message);
+
+		boolean verifyWarning(ParameterizedMessage message);
 	}
 }

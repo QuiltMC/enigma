@@ -10,6 +10,7 @@ import cuchaz.enigma.utils.validation.ValidationContext;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextArea;
@@ -91,7 +92,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 	}
 
 	public void notify(ParameterizedMessage message) {
-		Notification notificationPanel = new Notification(this.gui, message.type(), message.getText(), message.getLongText(), true);
+		Notification notificationPanel = new Notification(this.gui, message.getType(), message.getText(), message.getLongText(), true);
 
 		JPanel glass = (JPanel) this.gui.getFrame().getGlassPane();
 		this.glassPane = glass;
@@ -115,8 +116,18 @@ public class NotificationManager implements ValidationContext.Notifier {
 		notificationPanel.setVisible(true);
 	}
 
+	@Override
+	public boolean verifyWarning(ParameterizedMessage message) {
+		String text = message.getText() + (message.getLongText().length() > 0 ? "\n\n" + message.getLongText() : "");
+		return JOptionPane.showConfirmDialog(this.gui.getFrame(), text, translateType(message.getType()), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION;
+	}
+
 	public Map<Notification, Integer> getActiveNotifications() {
 		return this.activeNotifications;
+	}
+
+	private static String translateType(Message.Type type) {
+		return I18n.translate("notification.type." + type.name().toLowerCase());
 	}
 
 	public enum ServerNotificationLevel {
@@ -195,7 +206,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 			topBar.add(dismissButton, BorderLayout.EAST);
 
 			String whitespace = " ".repeat(title.length() > message.length() ? (int) ((title.length() - message.length()) * 2f) : 0);
-			topBar.add(new JLabel(I18n.translate("notification.type." + type.name().toLowerCase()) + "!" + whitespace), BorderLayout.WEST);
+			topBar.add(new JLabel(translateType(type) + "!" + whitespace), BorderLayout.WEST);
 			topBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK));
 
 			this.add(messagePanel, BorderLayout.CENTER);
