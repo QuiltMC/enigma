@@ -40,7 +40,7 @@ public class MappingValidator {
 	}
 
 	/**
-	 * @return whether an error or warning was raised
+	 * @return whether an error was raised
 	 */
 	private boolean validateUnique(ValidationContext vc, Entry<?> entry, String name) {
 		ClassEntry containingClass = entry.getContainingClass();
@@ -78,8 +78,6 @@ public class MappingValidator {
 				} else {
 					vc.raise(Message.SHADOWED_NAME, name);
 				}
-
-				return true;
 			}
 		}
 
