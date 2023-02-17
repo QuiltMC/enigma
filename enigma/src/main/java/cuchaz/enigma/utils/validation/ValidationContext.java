@@ -38,9 +38,8 @@ public class ValidationContext {
 		ParameterizedMessage pm = new ParameterizedMessage(message, args);
 		if (!this.messages.contains(pm)) {
 			this.messages.add(pm);
+			this.notifier.notify(pm);
 		}
-
-		this.notifier.notify(pm);
 	}
 
 	/**

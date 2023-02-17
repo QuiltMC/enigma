@@ -60,12 +60,10 @@ public class EntryRemapper {
 	}
 
 	private void doPutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping, boolean validateOnly) {
-		if (obfuscatedEntry instanceof FieldEntry fieldEntry) {
-			ClassEntry classEntry = fieldEntry.getParent();
-
-			// TODO: Update this to work with hashed mojmap
-			// mapRecordComponentGetter(vc, classEntry, fieldEntry, deobfMapping);
-		}
+		// todo this needs to be fixed!
+//		if (obfuscatedEntry instanceof FieldEntry fieldEntry) {
+//			mapRecordComponentGetter(vc, fieldEntry.getParent(), fieldEntry, deobfMapping);
+//		}
 
 		boolean renaming = !Objects.equals(this.getDeobfMapping(obfuscatedEntry).targetName(), deobfMapping.targetName());
 
@@ -88,7 +86,9 @@ public class EntryRemapper {
 		}
 	}
 
-	// A little bit of a hack to also map the getter method for record fields.
+	// todo this needs to be fixed for hashed mappings!
+	// note: just supressing warnings until it's fixed
+	@SuppressWarnings("all")
 	private void mapRecordComponentGetter(ValidationContext vc, ClassEntry classEntry, FieldEntry fieldEntry, EntryMapping fieldMapping) {
 		if (!this.jarIndex.getEntryIndex().getDefinition(classEntry).isRecord() || this.jarIndex.getEntryIndex().getFieldAccess(fieldEntry).isStatic()) {
 			return;

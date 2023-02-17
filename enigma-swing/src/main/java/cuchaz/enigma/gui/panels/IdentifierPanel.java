@@ -179,7 +179,6 @@ public class IdentifierPanel {
 
 					IdentifierPanel.this.vc.setNotifier(IdentifierPanel.this.gui.getNotificationManager());
 					IdentifierPanel.this.vc.reset();
-					IdentifierPanel.this.validateRename(field.getText());
 					return IdentifierPanel.this.vc.canProceed();
 				}
 
@@ -201,10 +200,6 @@ public class IdentifierPanel {
 
 		this.ui.validate();
 		this.ui.repaint();
-	}
-
-	private void validateRename(String newName) {
-		this.gui.getController().validateChange(this.vc, this.getRename(newName));
 	}
 
 	private void doRename(String newName) {
@@ -257,10 +252,10 @@ public class IdentifierPanel {
 		}
 
 		public void addCopiableRow(JLabel c1, JLabel c2) {
-			c2.addMouseListener(GuiUtil.onMouseClick(e -> {
-				if (e.getButton() == MouseEvent.BUTTON1) {
+			c2.addMouseListener(GuiUtil.onMouseClick(event -> {
+				if (event.getButton() == MouseEvent.BUTTON1) {
 					GuiUtil.copyToClipboard(c2.getText());
-					GuiUtil.showPopup(c2, I18n.translate("popup.copied"), e.getXOnScreen(), e.getYOnScreen());
+					GuiUtil.showPopup(c2, I18n.translate("popup.copied"), event.getXOnScreen(), event.getYOnScreen());
 				}
 			}));
 			this.addRow(c1, c2);

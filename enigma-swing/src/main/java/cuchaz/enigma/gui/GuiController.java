@@ -482,11 +482,7 @@ public class GuiController implements ClientPacketHandler {
 		return vc.canProceed();
 	}
 
-	public void validateChange(ValidationContext vc, EntryChange<?> change) {
-		if (change.getDeobfName().isSet()) {
-			EntryValidation.validateRename(vc, this.project, change.getTarget(), change.getDeobfName().getNewValue());
-		}
-
+	public void validateJavadocChange(ValidationContext vc, EntryChange<?> change) {
 		if (change.getJavadoc().isSet()) {
 			EntryValidation.validateJavadoc(vc, change.getJavadoc().getNewValue());
 		}
@@ -500,9 +496,6 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	private void applyChange0(ValidationContext vc, EntryChange<?> change) {
-		this.validateChange(vc, change);
-		if (!vc.canProceed()) return;
-
 		Entry<?> target = change.getTarget();
 		EntryMapping prev = this.project.getMapper().getDeobfMapping(target);
 		EntryMapping mapping = EntryUtil.applyChange(vc, this.project.getMapper(), change);

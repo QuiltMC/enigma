@@ -27,21 +27,25 @@ public class MappingValidator {
 		this.index = index;
 	}
 
-	public boolean validateRename(ValidationContext vc, Entry<?> entry, String name) {
+	public void validateRename(ValidationContext vc, Entry<?> entry, String name) {
 		Collection<Entry<?>> equivalentEntries = this.index.getEntryResolver().resolveEquivalentEntries(entry);
-		boolean error = false;
+		boolean uniquenessIssue = false;
+
 		for (Entry<?> equivalentEntry : equivalentEntries) {
 			equivalentEntry.validateName(vc, name);
-			error |= this.validateUnique(vc, equivalentEntry, name);
+			if (!uniquenessIssue) {
+				uniquenessIssue = this.validateUnique(vc, equivalentEntry, name);
+			}
 		}
-		return error;
 	}
 
+	/**
+	 * @return whether an error or warning was raised
+	 */
 	private boolean validateUnique(ValidationContext vc, Entry<?> entry, String name) {
 		ClassEntry containingClass = entry.getContainingClass();
 		Collection<ClassEntry> relatedClasses = this.getRelatedClasses(containingClass);
 
-		boolean error = false;
 		Entry<?> shadowedEntry;
 
 		for (ClassEntry relatedClass : relatedClasses) {
@@ -65,7 +69,8 @@ public class MappingValidator {
 				} else {
 					vc.raise(Message.NONUNIQUE_NAME, name);
 				}
-				error = true;
+
+				return true;
 			} else if ((shadowedEntry = this.getShadowedEntry(translatedEntry, translatedSiblings, name)) != null) {
 				Entry<?> parent = shadowedEntry.getParent();
 				if (parent != null) {
@@ -73,10 +78,12 @@ public class MappingValidator {
 				} else {
 					vc.raise(Message.SHADOWED_NAME, name);
 				}
+
+				return true;
 			}
 		}
 
-		return error;
+		return false;
 	}
 
 	private Collection<ClassEntry> getRelatedClasses(ClassEntry classEntry) {
