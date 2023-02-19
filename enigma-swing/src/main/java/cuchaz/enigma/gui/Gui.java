@@ -594,6 +594,7 @@ public class Gui {
 			deobfuscatedClassSelector.reload();
 		}
 
+		// all classes docker contains every class, so it always has to reload
 		allClassesClassSelector.reloadEntry(classEntry);
 		allClassesClassSelector.reload();
 
