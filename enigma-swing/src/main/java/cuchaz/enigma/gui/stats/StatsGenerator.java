@@ -142,7 +142,6 @@ public class StatsGenerator {
 		boolean renamable = this.project.isRenamable(entry);
 
 		if (this.project.isObfuscated(entry) && renamable && !this.project.isSynthetic(entry)) {
-			System.out.println("unmapped! " + entry);
 			String parent = this.mapper.deobfuscate(entry.getAncestry().get(0)).getName().replace('/', '.');
 			counts.put(parent, counts.getOrDefault(parent, 0) + 1);
 		}
