@@ -27,7 +27,7 @@ public final class StatsResult {
 	}
 
 	public int getMapped() {
-		return this.total - this.unmapped;
+		return this.getTotal() - this.getUnmapped();
 	}
 
 	public double getPercentage() {
@@ -51,7 +51,7 @@ public final class StatsResult {
 			public String name;
 			public T value;
 			public List<Node<T>> children = new ArrayList<>();
-			private final transient Map<String, Node<T>> namedChildren = new HashMap<>();
+			private final Map<String, Node<T>> namedChildren = new HashMap<>();
 
 			public Node(String name, T value) {
 				this.name = name;

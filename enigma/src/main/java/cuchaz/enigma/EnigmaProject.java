@@ -1,5 +1,36 @@
 package cuchaz.enigma;
 
+import com.google.common.base.Functions;
+import com.google.common.base.Preconditions;
+import cuchaz.enigma.analysis.EntryReference;
+import cuchaz.enigma.analysis.index.EnclosingMethodIndex;
+import cuchaz.enigma.analysis.index.JarIndex;
+import cuchaz.enigma.api.service.NameProposalService;
+import cuchaz.enigma.api.service.ObfuscationTestService;
+import cuchaz.enigma.bytecode.translators.TranslationClassVisitor;
+import cuchaz.enigma.classprovider.ClassProvider;
+import cuchaz.enigma.classprovider.ObfuscationFixClassProvider;
+import cuchaz.enigma.source.Decompiler;
+import cuchaz.enigma.source.DecompilerService;
+import cuchaz.enigma.source.SourceSettings;
+import cuchaz.enigma.translation.ProposingTranslator;
+import cuchaz.enigma.translation.Translator;
+import cuchaz.enigma.translation.mapping.EntryMapping;
+import cuchaz.enigma.translation.mapping.EntryRemapper;
+import cuchaz.enigma.translation.mapping.MappingsChecker;
+import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
+import cuchaz.enigma.translation.mapping.tree.EntryTree;
+import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.utils.I18n;
+import cuchaz.enigma.utils.Pair;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.tree.ClassNode;
+import org.tinylog.Logger;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -17,41 +48,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.google.common.base.Functions;
-import com.google.common.base.Preconditions;
-import cuchaz.enigma.analysis.index.EnclosingMethodIndex;
-import cuchaz.enigma.api.service.ObfuscationTestService;
-import cuchaz.enigma.classprovider.ObfuscationFixClassProvider;
-import cuchaz.enigma.translation.TranslateResult;
-import cuchaz.enigma.translation.mapping.ResolutionStrategy;
-import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
-import cuchaz.enigma.translation.representation.entry.ParentedEntry;
-import cuchaz.enigma.utils.Pair;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.tree.ClassNode;
-
-import cuchaz.enigma.analysis.EntryReference;
-import cuchaz.enigma.analysis.index.JarIndex;
-import cuchaz.enigma.api.service.NameProposalService;
-import cuchaz.enigma.bytecode.translators.TranslationClassVisitor;
-import cuchaz.enigma.classprovider.ClassProvider;
-import cuchaz.enigma.source.Decompiler;
-import cuchaz.enigma.source.DecompilerService;
-import cuchaz.enigma.source.SourceSettings;
-import cuchaz.enigma.translation.ProposingTranslator;
-import cuchaz.enigma.translation.Translator;
-import cuchaz.enigma.translation.mapping.EntryMapping;
-import cuchaz.enigma.translation.mapping.EntryRemapper;
-import cuchaz.enigma.translation.mapping.MappingsChecker;
-import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
-import cuchaz.enigma.translation.mapping.tree.EntryTree;
-import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
-import cuchaz.enigma.translation.representation.entry.MethodEntry;
-import cuchaz.enigma.utils.I18n;
-import org.tinylog.Logger;
 
 public class EnigmaProject {
 	private static final List<Pair<String, String>> NON_RENAMABLE_METHODS = new ArrayList<>();
@@ -164,6 +160,11 @@ public class EnigmaProject {
 
 	public boolean isRenamable(Entry<?> obfEntry) {
 		if (obfEntry instanceof MethodEntry obfMethodEntry) {
+			// constructors are not renamable!
+			if (obfMethodEntry.isConstructor()) {
+				return false;
+			}
+
 			// HACKHACK: Object methods are not obfuscated identifiers
 			String name = obfMethodEntry.getName();
 			String sig = obfMethodEntry.getDesc().toString();
@@ -193,102 +194,6 @@ public class EnigmaProject {
 
 	public boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {
 		return obfReference.isNamed() && this.isRenamable(obfReference.getNameableEntry());
-	}
-
-	/**
-	 * Checks whether the provided entry or some of its potential children
-	 * are deobfuscated. Local variables are not considered.
-	 */
-	public boolean isPartiallyDeobfuscated(Entry<?> entry) {
-		return testDeobfuscation(entry, false);
-	}
-
-	/**
-	 * Checks whether the provided entry and all of its potential children
-	 * are deobfuscated. Local variables are not considered.
-	 */
-	public boolean isFullyDeobfuscated(Entry<?> entry) {
-		return testDeobfuscation(entry, true);
-	}
-
-	/**
-	 * @author NebelNidas
-	 */
-	private boolean testDeobfuscation(Entry<?> entry, boolean mustBeFullyDeobf) {
-		boolean obfuscationDetected = false;
-
-		// Target name check
-		TranslateResult<Entry<?>> targetName = mapper.extendedDeobfuscate(entry);
-
-		if (targetName != null && !targetName.isObfuscated()) {
-			if (!mustBeFullyDeobf) {
-				return true;
-			}
-		} else {
-			obfuscationDetected = true;
-
-			if (mustBeFullyDeobf) {
-				return false;
-			}
-		}
-
-		// Name Proposal check
-		List<NameProposalService> nameProposalServices = this.getEnigma().getServices().get(NameProposalService.TYPE);
-
-		if (!mustBeFullyDeobf && !nameProposalServices.isEmpty()) {
-			for (NameProposalService service : nameProposalServices) {
-				if (service.proposeName(entry, mapper).isPresent()) {
-					return true;
-				}
-			}
-		}
-
-		// Obfuscation Test Services check
-		List<ObfuscationTestService> obfuscationTestServices = this.getEnigma().getServices().get(ObfuscationTestService.TYPE);
-
-		if (!obfuscationTestServices.isEmpty()) {
-			for (ObfuscationTestService service : obfuscationTestServices) {
-				if (service.testDeobfuscated(entry)) {
-					if (!mustBeFullyDeobf) {
-						return true;
-					}
-				} else {
-					obfuscationDetected = true;
-				}
-
-				if (mustBeFullyDeobf && obfuscationDetected) {
-					return false;
-				}
-			}
-		}
-
-		// Obfuscated children check
-		List<? extends ParentedEntry<?>> renamableChildren = jarIndex.getChildrenByClass().entries()
-				.stream()
-				.filter(item -> item.getKey().equals(entry))
-				.map(Map.Entry::getValue)
-				.filter(item -> isRenamable(item)
-						// No constructors
-						&& !item.getName().equals("<init>")
-						&& !item.getName().equals("<clinit>")
-						// Don't check inherited members
-						&& jarIndex.getEntryResolver().resolveFirstEntry(item, ResolutionStrategy.RESOLVE_ROOT).getParent().equals(entry))
-				.toList();
-		for (ParentedEntry<?> child : renamableChildren) {
-			if (isPartiallyDeobfuscated(child)) {
-				if (!mustBeFullyDeobf) {
-					return true;
-				}
-			} else {
-				obfuscationDetected = true;
-			}
-
-			if (mustBeFullyDeobf && obfuscationDetected) {
-				return false;
-			}
-		}
-
-		return mustBeFullyDeobf;
 	}
 
 	public boolean isObfuscated(Entry<?> entry) {

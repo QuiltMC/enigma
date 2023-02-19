@@ -34,7 +34,15 @@ public class StatsGenerator {
 		this.entryResolver = project.getJarIndex().getEntryResolver();
 	}
 
+	public StatsResult generate(ProgressListener progress, ClassEntry entry, boolean includeSynthetic) {
+		return generate(progress, EnumSet.allOf(StatsMember.class), entry.getFullName(), true, includeSynthetic);
+	}
+
 	public StatsResult generate(ProgressListener progress, Set<StatsMember> includedMembers, String topLevelPackage, boolean includeSynthetic) {
+		return generate(progress, includedMembers, topLevelPackage, false, includeSynthetic);
+	}
+
+	public StatsResult generate(ProgressListener progress, Set<StatsMember> includedMembers, String topLevelPackage, boolean singleClass, boolean includeSynthetic) {
 		includedMembers = EnumSet.copyOf(includedMembers);
 		int totalWork = 0;
 		int totalMappable = 0;
@@ -61,6 +69,12 @@ public class StatsGenerator {
 		if (includedMembers.contains(StatsMember.METHODS) || includedMembers.contains(StatsMember.PARAMETERS)) {
 			for (MethodEntry method : this.entryIndex.getMethods()) {
 				progress.step(numDone++, I18n.translate("type.methods"));
+
+				// we don't want constructors to show as a mapped method!
+				if (method.isConstructor()) {
+					continue;
+				}
+
 				MethodEntry root = this.entryResolver
 						.resolveEntry(method, ResolutionStrategy.RESOLVE_ROOT)
 						.stream()
@@ -68,9 +82,8 @@ public class StatsGenerator {
 						.orElseThrow(AssertionError::new);
 
                 ClassEntry clazz = root.getParent();
-				String deobfuscatedPackageName = this.mapper.deobfuscate(clazz).getPackageName();
 
-                if (root == method && (topLevelPackageSlash.isBlank() || (deobfuscatedPackageName != null && deobfuscatedPackageName.startsWith(topLevelPackageSlash)))) {
+                if (root == method && checkPackage(clazz, topLevelPackageSlash, singleClass)) {
                     if (includedMembers.contains(StatsMember.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
 						this.update(counts, method);
                         totalMappable++;
@@ -92,9 +105,8 @@ public class StatsGenerator {
             for (FieldEntry field : this.entryIndex.getFields()) {
                 progress.step(numDone++, I18n.translate("type.fields"));
                 ClassEntry clazz = field.getParent();
-				String deobfuscatedPackageName = this.mapper.deobfuscate(clazz).getPackageName();
 
-                if (!((FieldDefEntry) field).getAccess().isSynthetic() && (topLevelPackageSlash.isBlank() || (deobfuscatedPackageName != null && deobfuscatedPackageName.startsWith(topLevelPackageSlash)))) {
+                if (!((FieldDefEntry) field).getAccess().isSynthetic() && checkPackage(clazz, topLevelPackageSlash, singleClass)) {
 					this.update(counts, field);
                     totalMappable++;
                 }
@@ -105,9 +117,7 @@ public class StatsGenerator {
             for (ClassEntry clazz : this.entryIndex.getClasses()) {
                 progress.step(numDone++, I18n.translate("type.classes"));
 
-				String deobfuscatedPackageName = this.mapper.deobfuscate(clazz).getPackageName();
-
-                if (topLevelPackageSlash.isBlank() || (deobfuscatedPackageName != null && deobfuscatedPackageName.startsWith(topLevelPackageSlash))) {
+                if (checkPackage(clazz, topLevelPackageSlash, singleClass)) {
 					this.update(counts, clazz);
                     totalMappable++;
                 }
@@ -128,10 +138,23 @@ public class StatsGenerator {
 		return new StatsResult(totalMappable, counts.values().stream().mapToInt(i -> i).sum(), tree);
 	}
 
+	private boolean checkPackage(ClassEntry clazz, String topLevelPackage, boolean singleClass) {
+		String deobfuscatedName = this.mapper.deobfuscate(clazz).getPackageName();
+		if (singleClass) {
+			return (deobfuscatedName != null && deobfuscatedName.equals(topLevelPackage)) || clazz.getFullName().equals(topLevelPackage);
+		}
+
+		return topLevelPackage.isBlank() || (deobfuscatedName != null && deobfuscatedName.startsWith(topLevelPackage));
+	}
+
 	private void update(Map<String, Integer> counts, Entry<?> entry) {
 		if (this.project.isObfuscated(entry) && this.project.isRenamable(entry) && !this.project.isSynthetic(entry)) {
+			System.out.println("unmapped! " + entry);
 			String parent = this.mapper.deobfuscate(entry.getAncestry().get(0)).getName().replace('/', '.');
 			counts.put(parent, counts.getOrDefault(parent, 0) + 1);
+			return;
 		}
+
+		System.out.println("mapped! " + entry);
 	}
 }

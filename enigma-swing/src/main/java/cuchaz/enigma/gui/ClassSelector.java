@@ -93,7 +93,7 @@ public class ClassSelector extends JTree {
 					panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 					panel.add(new JLabel(GuiUtil.getClassIcon(gui, node.getObfEntry())));
 
-					this.setIcon(GuiUtil.getDeobfuscationIcon(gui.getController().project, node.getObfEntry()));
+					this.setIcon(GuiUtil.getDeobfuscationIcon(gui, node.getObfEntry()));
 					panel.add(this);
 
 					return panel;

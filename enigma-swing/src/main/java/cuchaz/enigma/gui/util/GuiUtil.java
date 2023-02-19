@@ -1,10 +1,43 @@
 package cuchaz.enigma.gui.util;
 
-import java.awt.*;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
+import cuchaz.enigma.EnigmaProject;
+import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.analysis.index.EntryIndex;
+import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.stats.StatsGenerator;
+import cuchaz.enigma.gui.stats.StatsResult;
+import cuchaz.enigma.translation.representation.AccessFlags;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.utils.Os;
+
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JToolTip;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
+import javax.swing.Timer;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.font.TextAttribute;
 import java.io.IOException;
 import java.net.URI;
@@ -16,21 +49,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Consumer;
-
-import javax.swing.*;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
-import com.formdev.flatlaf.extras.FlatSVGIcon;
-
-import cuchaz.enigma.EnigmaProject;
-import cuchaz.enigma.analysis.index.EntryIndex;
-import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.translation.representation.AccessFlags;
-import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.translation.representation.entry.MethodEntry;
-import cuchaz.enigma.utils.Os;
 
 public class GuiUtil {
 	public static final Icon CLASS_ICON = loadIcon("class");
@@ -140,10 +158,13 @@ public class GuiUtil {
 		return CLASS_ICON;
 	}
 
-	public static Icon getDeobfuscationIcon(EnigmaProject project, Entry<?> entry) {
-		if (project.isFullyDeobfuscated(entry)) {
+	public static Icon getDeobfuscationIcon(Gui gui, ClassEntry entry) {
+		EnigmaProject project = gui.getController().project;
+		StatsResult result = new StatsGenerator(project).generate(ProgressListener.none(), entry, false);
+
+		if (result.getPercentage() == 100d) {
 			return DEOBFUSCATED_ICON;
-		} else if (project.isPartiallyDeobfuscated(entry)) {
+		} else if (result.getPercentage() > 0) {
 			return PARTIALLY_DEOBFUSCATED_ICON;
 		} else {
 			return OBFUSCATED_ICON;
