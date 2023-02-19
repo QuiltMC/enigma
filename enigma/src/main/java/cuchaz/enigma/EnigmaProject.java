@@ -197,24 +197,24 @@ public class EnigmaProject {
 
 	/**
 	 * Checks whether the provided entry or some of its potential children
-	 * are deobfuscated. Local variables are not being considered.
+	 * are deobfuscated. Local variables are not considered.
 	 */
-	public boolean isAtLeastPartiallyDeobfuscated(Entry<?> entry) {
-		// todo!
-		return testDeobfuscated(entry, false);
+	public boolean isPartiallyDeobfuscated(Entry<?> entry) {
+		return testDeobfuscation(entry, false);
 	}
 
 	/**
 	 * Checks whether the provided entry and all of its potential children
-	 * are deobfuscated. Local variables are not being considered.
+	 * are deobfuscated. Local variables are not considered.
 	 */
 	public boolean isFullyDeobfuscated(Entry<?> entry) {
-		// todo!
-		return testDeobfuscated(entry, true);
+		return testDeobfuscation(entry, true);
 	}
 
-	private boolean testDeobfuscated(Entry<?> entry, boolean mustBeFullyDeobf) {
-		// todo!
+	/**
+	 * @author NebelNidas
+	 */
+	private boolean testDeobfuscation(Entry<?> entry, boolean mustBeFullyDeobf) {
 		boolean obfuscationDetected = false;
 
 		// Target name check
@@ -275,7 +275,7 @@ public class EnigmaProject {
 						&& jarIndex.getEntryResolver().resolveFirstEntry(item, ResolutionStrategy.RESOLVE_ROOT).getParent().equals(entry))
 				.toList();
 		for (ParentedEntry<?> child : renamableChildren) {
-			if (isAtLeastPartiallyDeobfuscated(child)) {
+			if (isPartiallyDeobfuscated(child)) {
 				if (!mustBeFullyDeobf) {
 					return true;
 				}
@@ -288,11 +288,7 @@ public class EnigmaProject {
 			}
 		}
 
-		if (mustBeFullyDeobf) {
-			return !obfuscationDetected;
-		} else {
-			return false;
-		}
+		return mustBeFullyDeobf;
 	}
 
 	public boolean isObfuscated(Entry<?> entry) {

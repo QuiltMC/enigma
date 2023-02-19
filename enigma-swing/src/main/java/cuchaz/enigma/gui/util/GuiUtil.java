@@ -143,7 +143,7 @@ public class GuiUtil {
 	public static Icon getDeobfuscationIcon(EnigmaProject project, Entry<?> entry) {
 		if (project.isFullyDeobfuscated(entry)) {
 			return DEOBFUSCATED_ICON;
-		} else if (project.isAtLeastPartiallyDeobfuscated(entry)) {
+		} else if (project.isPartiallyDeobfuscated(entry)) {
 			return PARTIALLY_DEOBFUSCATED_ICON;
 		} else {
 			return OBFUSCATED_ICON;
