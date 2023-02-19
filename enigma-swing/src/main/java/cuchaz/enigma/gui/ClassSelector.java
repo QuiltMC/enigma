@@ -88,15 +88,13 @@ public class ClassSelector extends JTree {
 				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
 				if (gui.getController().project != null && leaf && value instanceof ClassSelectorClassNode node) {
-					// todo!
 					JPanel panel = new JPanel();
 					panel.setOpaque(false);
 					panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 					panel.add(new JLabel(GuiUtil.getClassIcon(gui, node.getObfEntry())));
-					JLabel textLabel = new JLabel(node.getObfEntry().getSimpleName());
 
-					textLabel.setIcon(GuiUtil.getDeobfuscationIcon(gui.getController().project, node.getObfEntry()));
-					panel.add(textLabel);
+					this.setIcon(GuiUtil.getDeobfuscationIcon(gui.getController().project, node.getObfEntry()));
+					panel.add(this);
 
 					return panel;
 				}

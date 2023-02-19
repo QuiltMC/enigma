@@ -42,6 +42,7 @@ public class GuiUtil {
 	public static final Icon FIELD_ICON = loadIcon("field");
 	public static final Icon CONSTRUCTOR_ICON = loadIcon("constructor");
 
+	// icons sourced from https://github.com/primer/octicons
 	public static final Icon OBFUSCATED_ICON = loadIcon("obfuscated");
 	public static final Icon PARTIALLY_DEOBFUSCATED_ICON = loadIcon("partially_deobfuscated");
 	public static final Icon DEOBFUSCATED_ICON = loadIcon("deobfuscated");
@@ -93,15 +94,6 @@ public class GuiUtil {
 		Timer t = new Timer(1000, e -> p.hide());
 		t.setRepeats(false);
 		t.start();
-	}
-
-	public static void showToolTipNow(JComponent component) {
-		// HACKHACK: trick the tooltip manager into showing the tooltip right now
-		ToolTipManager manager = ToolTipManager.sharedInstance();
-		int oldDelay = manager.getInitialDelay();
-		manager.setInitialDelay(0);
-		manager.mouseMoved(new MouseEvent(component, MouseEvent.MOUSE_MOVED, System.currentTimeMillis(), 0, 0, 0, 0, false));
-		manager.setInitialDelay(oldDelay);
 	}
 
 	public static JLabel createLink(String text, Runnable action) {
