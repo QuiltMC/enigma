@@ -595,6 +595,7 @@ public class Gui {
 		}
 
 		allClassesClassSelector.reloadEntry(classEntry);
+		allClassesClassSelector.reload();
 
 		deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
 		obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
