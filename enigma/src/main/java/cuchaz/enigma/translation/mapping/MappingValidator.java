@@ -3,6 +3,8 @@ package cuchaz.enigma.translation.mapping;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import cuchaz.enigma.analysis.index.InheritanceIndex;
 import cuchaz.enigma.analysis.index.JarIndex;
@@ -57,21 +59,28 @@ public class MappingValidator {
 			Entry<?> relatedEntry = entry.replaceAncestor(containingClass, relatedClass);
 			Entry<?> translatedEntry = this.deobfuscator.translate(relatedEntry);
 
-			List<? extends Entry<?>> translatedSiblings = this.obfToDeobf.getSiblings(relatedEntry).stream()
-					.filter(e -> !e.equals(entry)) // If the entry is a class, this could contain itself
-					.map(this.deobfuscator::translate)
-					.toList();
+			Stream<Entry<?>> filteredRelatedEntries = this.obfToDeobf.getSiblings(relatedEntry).stream()
+					.filter(e -> !e.equals(entry)); // if the entry is a class, this could contain itself
 
-			if (!this.isUnique(translatedEntry, translatedSiblings, name)) {
-				Entry<?> parent = translatedEntry.getParent();
-				if (parent != null) {
-					vc.raise(Message.NONUNIQUE_NAME_CLASS, name, parent);
-				} else {
-					vc.raise(Message.NONUNIQUE_NAME, name);
+			var siblings = filteredRelatedEntries.collect(Collectors.toList());
+			siblings.addAll(
+					siblings.stream()
+					.map(this.deobfuscator::translate)
+					.toList()
+			);
+
+			if (!this.isUnique(translatedEntry, siblings, name)) {
+				if (translatedEntry != null) {
+					Entry<?> parent = translatedEntry.getParent();
+					if (parent != null) {
+						vc.raise(Message.NONUNIQUE_NAME_CLASS, name, parent);
+						return true;
+					}
 				}
 
+				vc.raise(Message.NONUNIQUE_NAME, name);
 				return true;
-			} else if ((shadowedEntry = this.getShadowedEntry(translatedEntry, translatedSiblings, name)) != null) {
+			} else if ((shadowedEntry = this.getShadowedEntry(translatedEntry, siblings, name)) != null) {
 				Entry<?> parent = shadowedEntry.getParent();
 				if (parent != null) {
 					vc.raise(Message.SHADOWED_NAME_CLASS, name, parent);
