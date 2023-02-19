@@ -594,12 +594,16 @@ public class Gui {
 			deobfuscatedClassSelector.reload();
 		}
 
-		allClassesClassSelector.removeEntry(classEntry);
-		allClassesClassSelector.moveClassIn(classEntry);
-		allClassesClassSelector.reload();
+		allClassesClassSelector.reloadEntry(classEntry);
 
 		deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
 		obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
+	}
+
+	public void reloadClassEntry(ClassEntry classEntry) {
+		Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector().reloadEntry(classEntry);
+		Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector().reloadEntry(classEntry);
+		Docker.getDocker(AllClassesDocker.class).getClassSelector().reloadEntry(classEntry);
 	}
 
 	public SearchDialog getSearchDialog() {

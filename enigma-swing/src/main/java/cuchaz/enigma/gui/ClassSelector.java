@@ -274,6 +274,17 @@ public class ClassSelector extends JTree {
 		this.packageManager.removeClassNode(classEntry);
 	}
 
+	public void reloadEntry(ClassEntry classEntry) {
+		this.removeEntry(classEntry);
+		this.moveClassIn(classEntry);
+		this.reload(classEntry);
+	}
+
+	public void reload(ClassEntry classEntry) {
+		DefaultTreeModel model = (DefaultTreeModel) this.getModel();
+		model.reload(this.packageManager.getClassNode(classEntry));
+	}
+
 	public void reload() {
 		DefaultTreeModel model = (DefaultTreeModel) this.getModel();
 		model.reload(this.packageManager.getRoot());

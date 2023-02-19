@@ -522,6 +522,7 @@ public class GuiController implements ClientPacketHandler {
 		}
 
 		this.gui.updateStructure(this.gui.getActiveEditor());
+		this.gui.reloadClassEntry(change.getTarget().getTopLevelClass());
 	}
 
 	public void openStats(Set<StatsMember> includedMembers, String topLevelPackage, boolean includeSynthetic) {
