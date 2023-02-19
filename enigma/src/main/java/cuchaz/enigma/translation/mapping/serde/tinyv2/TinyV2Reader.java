@@ -208,7 +208,7 @@ public final class TinyV2Reader implements MappingsReader {
 		if (tokens.length <= 2)
 			return new MappingPair<>(obfuscatedEntry);
 		String token2 = unescapeOpt(tokens[2], escapeNames);
-		String mapping = token2.substring(token2.lastIndexOf('$') + 1);
+		String mapping = ClassEntry.getInnerName(token2);
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
 	}
 

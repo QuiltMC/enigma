@@ -215,10 +215,15 @@ public enum EnigmaMappingsReader implements MappingsReader {
 	}
 
 	private static MappingPair<ClassEntry, RawEntryMapping> parseClass(@Nullable Entry<?> parent, String[] tokens) {
-		String obfuscatedName = ClassEntry.getInnerName(tokens[1]);
+		String fullObfuscatedName = tokens[1];
+		if (parent != null) {
+			fullObfuscatedName = parent.getFullName() + "$" + fullObfuscatedName;
+		}
+		String localPrefix = ClassEntry.getLocalPrefix(fullObfuscatedName);
+		String obfuscatedName = ClassEntry.getInnerName(fullObfuscatedName);
 		ClassEntry obfuscatedEntry;
 		if (parent instanceof ClassEntry classEntry) {
-			obfuscatedEntry = new ClassEntry(classEntry, obfuscatedName);
+			obfuscatedEntry = new ClassEntry(classEntry, localPrefix, obfuscatedName);
 		} else {
 			obfuscatedEntry = new ClassEntry(obfuscatedName);
 		}

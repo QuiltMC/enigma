@@ -25,20 +25,24 @@ import java.util.List;
 import java.util.Objects;
 
 public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<ClassEntry> {
-	private final String fullName;
 
-	public ClassEntry(String className) {
-		this(getOuterClass(className), getInnerName(className), null);
+	protected final String localPrefix;
+	protected final String fullName;
+
+	public ClassEntry(String fullName) {
+		this(getOuterClass(fullName), getLocalPrefix(fullName), getInnerName(fullName), null);
 	}
 
-	public ClassEntry(@Nullable ClassEntry parent, String className) {
-		this(parent, className, null);
+	public ClassEntry(@Nullable ClassEntry parent, String localPrefix, String className) {
+		this(parent, localPrefix, className, null);
 	}
 
-	public ClassEntry(@Nullable ClassEntry parent, String className, @Nullable String javadocs) {
+	public ClassEntry(@Nullable ClassEntry parent, String localPrefix, String className, @Nullable String javadocs) {
 		super(parent, className, javadocs);
+
+		this.localPrefix = localPrefix;
 		if (parent != null) {
-			this.fullName = parent.getFullName() + "$" + this.name;
+			this.fullName = parent.getFullName() + "$" + this.localPrefix + this.name;
 		} else {
 			this.fullName = this.name;
 		}
@@ -84,14 +88,14 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	public TranslateResult<? extends ClassEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
 		if (this.name.charAt(0) == '[') {
 			TranslateResult<TypeDescriptor> translatedName = translator.extendedTranslate(new TypeDescriptor(this.name));
-			return translatedName.map(desc -> new ClassEntry(this.parent, desc.toString()));
+			return translatedName.map(desc -> new ClassEntry(this.parent, this.localPrefix, desc.toString()));
 		}
 
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new ClassEntry(this.parent, translatedName, docs)
+				new ClassEntry(this.parent, this.localPrefix, translatedName, docs)
 		);
 	}
 
@@ -131,12 +135,12 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public ClassEntry withName(String name) {
-		return new ClassEntry(this.parent, name, this.javadocs);
+		return new ClassEntry(this.parent, this.localPrefix, name, this.javadocs);
 	}
 
 	@Override
 	public ClassEntry withParent(ClassEntry parent) {
-		return new ClassEntry(parent, this.name, this.javadocs);
+		return new ClassEntry(parent, this.localPrefix, this.name, this.javadocs);
 	}
 
 	@Override
@@ -148,11 +152,24 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		return getParentPackage(this.fullName);
 	}
 
+	public String getLocalPrefix() {
+		return this.localPrefix;
+	}
+
 	/**
 	 * Returns whether this class entry has a parent, and therefore is an inner class.
 	 */
 	public boolean isInnerClass() {
 		return this.parent != null;
+	}
+
+	/**
+	 * 
+	 * Returns whether this class entry is a local inner class (i.e. an inner class
+	 * that is nested inside a method).
+	 */
+	public boolean isLocalClass() {
+		return this.parent != null && !this.localPrefix.isBlank();
 	}
 
 	@Nullable
@@ -226,16 +243,53 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		return null;
 	}
 
+	public static String getLocalPrefix(String name) {
+		int from = name.lastIndexOf('$') + 1;
+		int to = getInnerNameIndex(name);
+
+		return (to < 0) ? "" : name.substring(from, to);
+	}
+
 	public static String getInnerName(String name) {
+		int index = getInnerNameIndex(name);
+		return (index < 0) ? name : name.substring(index);
+	}
+
+	/**
+	 * Given a class' full name, returns the index within
+	 * that name where the inner name starts. Local classes
+	 * make this trickier than simply testing for the last
+	 * occurrence of $ as they have a number prefix that is
+	 * not part of the inner name.
+	 * 
+	 * @return the index within the string of the class' inner name
+	 *         if the class is a nested class, otherwise -1
+	 */
+	private static int getInnerNameIndex(String name) {
 		if (name.charAt(0) == '[') {
-			return name;
+			return -1;
 		}
 
-		int innerClassPos = name.lastIndexOf('$');
-		if (innerClassPos > 0) {
-			return name.substring(innerClassPos + 1);
+		int index = name.lastIndexOf('$');
+
+		if (index < 0) {
+			return -1;
 		}
-		return name;
+
+		// fallback index if the class is anonymous
+		// because then the entire inner name is digits
+		int fallback = index + 1;
+
+		// local classes have a number prefix, skip past it
+		for (index++; index < name.length(); index++) {
+			char chr = name.charAt(index);
+
+			if (!Character.isDigit(chr)) {
+				break;
+			}
+		}
+
+		return (index == name.length()) ? fallback : index;
 	}
 
 	@Override

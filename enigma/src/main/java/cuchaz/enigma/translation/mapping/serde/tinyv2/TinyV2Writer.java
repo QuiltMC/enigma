@@ -63,9 +63,9 @@ public final class TinyV2Writer implements MappingsWriter {
 		do {
 			EntryMapping mapping = tree.get(classEntry);
 			if (mapping != null && mapping.targetName() != null) {
-				parts.addFirst(mapping.targetName());
+				parts.addFirst(classEntry.getLocalPrefix() + mapping.targetName());
 			} else {
-				parts.addFirst(classEntry.getName());
+				parts.addFirst(classEntry.getLocalPrefix() + classEntry.getName());
 			}
 			classEntry = classEntry.getOuterClass();
 		} while (classEntry != null);

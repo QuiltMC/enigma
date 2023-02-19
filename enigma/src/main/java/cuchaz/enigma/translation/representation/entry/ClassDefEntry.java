@@ -32,16 +32,16 @@ public class ClassDefEntry extends ClassEntry implements DefEntry<ClassEntry> {
 	private final ClassEntry[] interfaces;
 
 	public ClassDefEntry(String className, Signature signature, AccessFlags access, @Nullable ClassEntry superClass, ClassEntry[] interfaces) {
-		this(getOuterClass(className), getInnerName(className), signature, access, superClass, interfaces, null);
+		this(getOuterClass(className), getLocalPrefix(className), getInnerName(className), signature, access, superClass, interfaces, null);
 	}
 
-	public ClassDefEntry(ClassEntry parent, String className, Signature signature, AccessFlags access, @Nullable ClassEntry superClass, ClassEntry[] interfaces) {
-		this(parent, className, signature, access, superClass, interfaces, null);
+	public ClassDefEntry(ClassEntry parent, String localPrefix, String className, Signature signature, AccessFlags access, @Nullable ClassEntry superClass, ClassEntry[] interfaces) {
+		this(parent, localPrefix, className, signature, access, superClass, interfaces, null);
 	}
 
-	public ClassDefEntry(ClassEntry parent, String className, Signature signature, AccessFlags access, @Nullable ClassEntry superClass,
+	public ClassDefEntry(ClassEntry parent, String localPrefix, String className, Signature signature, AccessFlags access, @Nullable ClassEntry superClass,
 						 ClassEntry[] interfaces, String javadocs) {
-		super(parent, className, javadocs);
+		super(parent, localPrefix, className, javadocs);
 		Preconditions.checkNotNull(signature, "Class signature cannot be null");
 		Preconditions.checkNotNull(access, "Class access cannot be null");
 
@@ -93,17 +93,17 @@ public class ClassDefEntry extends ClassEntry implements DefEntry<ClassEntry> {
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new ClassDefEntry(this.parent, translatedName, translatedSignature, translatedAccess, translatedSuper, translatedInterfaces, docs)
+				new ClassDefEntry(this.parent, this.localPrefix, translatedName, translatedSignature, translatedAccess, translatedSuper, translatedInterfaces, docs)
 		);
 	}
 
 	@Override
 	public ClassDefEntry withName(String name) {
-		return new ClassDefEntry(this.parent, name, this.signature, this.access, this.superClass, this.interfaces, this.javadocs);
+		return new ClassDefEntry(this.parent, this.localPrefix, name, this.signature, this.access, this.superClass, this.interfaces, this.javadocs);
 	}
 
 	@Override
 	public ClassDefEntry withParent(ClassEntry parent) {
-		return new ClassDefEntry(parent, this.name, this.signature, this.access, this.superClass, this.interfaces, this.javadocs);
+		return new ClassDefEntry(parent, this.localPrefix, this.name, this.signature, this.access, this.superClass, this.interfaces, this.javadocs);
 	}
 }

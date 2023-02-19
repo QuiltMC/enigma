@@ -40,7 +40,8 @@ public class PacketHelper {
 					throw new IOException("Class requires class parent");
 				}
 
-				return new ClassEntry((ClassEntry) parent, name, javadocs);
+				String localPrefix = input.readBoolean() ? readString(input) : "";
+				return new ClassEntry((ClassEntry) parent, localPrefix, name, javadocs);
 			}
 			case ENTRY_FIELD -> {
 				if (!(parent instanceof ClassEntry parentClass)) {
@@ -107,7 +108,12 @@ public class PacketHelper {
 		}
 
 		// type-specific stuff
-		if (entry instanceof FieldEntry fieldEntry) {
+		if (entry instanceof ClassEntry classEntry) {
+			output.writeBoolean(classEntry.isLocalClass());
+			if (classEntry.isLocalClass()) {
+				writeString(output, classEntry.getLocalPrefix());
+			}
+		} else if (entry instanceof FieldEntry fieldEntry) {
 			writeString(output, fieldEntry.getDesc().toString());
 		} else if (entry instanceof MethodEntry methodEntry) {
 			writeString(output, methodEntry.getDesc().toString());
