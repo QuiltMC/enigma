@@ -461,7 +461,7 @@ public class MenuBar {
 
 			// if there's no common prefix, just show the last directory in the tree
 			String mappingsName;
-			if (prefix != null && !prefix.isBlank()) {
+			if (prefix != null && !prefix.isBlank() && recent.b().toString().contains(prefix)) {
 				mappingsName = recent.b().toString().split(prefix)[1];
 			} else {
 				mappingsName = recent.b().toString().substring(recent.b().toString().lastIndexOf("/"));
