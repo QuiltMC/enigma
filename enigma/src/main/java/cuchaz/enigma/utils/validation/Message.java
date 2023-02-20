@@ -15,6 +15,9 @@ public class Message {
 	public static final Message ILLEGAL_DOC_COMMENT_END = create(Type.ERROR, "illegal_doc_comment_end");
 	public static final Message UNKNOWN_RECORD_GETTER = create(Type.ERROR, "unknown_record_getter");
 
+	public static final Message SHADOWED_NAME_CLASS = create(Type.WARNING, "shadowed_name_class");
+	public static final Message SHADOWED_NAME = create(Type.WARNING, "shadowed_name");
+
 	public static final Message SERVER_STARTED = create(Type.INFO, "server_started");
 	public static final Message CONNECTED_TO_SERVER = create(Type.INFO, "connected_to_server");
 	public static final Message LEFT_SERVER = create(Type.INFO, "left_server");

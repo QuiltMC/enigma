@@ -14,6 +14,8 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
+import javax.annotation.Nullable;
+
 public class MappingValidator {
 	private final EntryTree<EntryMapping> obfToDeobf;
 	private final Translator deobfuscator;
@@ -40,6 +42,7 @@ public class MappingValidator {
 		Collection<ClassEntry> relatedClasses = this.getRelatedClasses(containingClass);
 
 		boolean error = false;
+		Entry<?> shadowedEntry;
 
 		for (ClassEntry relatedClass : relatedClasses) {
 			if (this.isStatic(entry) && relatedClass != containingClass) {
@@ -63,6 +66,13 @@ public class MappingValidator {
 					vc.raise(Message.NONUNIQUE_NAME, name);
 				}
 				error = true;
+			} else if ((shadowedEntry = this.getShadowedEntry(translatedEntry, translatedSiblings, name)) != null) {
+				Entry<?> parent = shadowedEntry.getParent();
+				if (parent != null) {
+					vc.raise(Message.SHADOWED_NAME_CLASS, name, parent);
+				} else {
+					vc.raise(Message.SHADOWED_NAME, name);
+				}
 			}
 		}
 
@@ -91,6 +101,20 @@ public class MappingValidator {
 
 	private boolean canConflict(Entry<?> entry, Entry<?> sibling) {
 		return entry.canConflictWith(sibling);
+	}
+
+	@Nullable
+	private Entry<?> getShadowedEntry(Entry<?> entry, List<? extends Entry<?>> siblings, String name) {
+		for (Entry<?> sibling : siblings) {
+			if (this.canShadow(entry, sibling) && sibling.getName().equals(name)) {
+				return sibling;
+			}
+		}
+		return null;
+	}
+
+	private boolean canShadow(Entry<?> entry, Entry<?> sibling) {
+		return entry.canShadow(sibling);
 	}
 
 	private boolean isStatic(Entry<?> entry) {
