@@ -110,21 +110,21 @@ public class TestMappingValidator {
 		// assertValid(vc);
 	}
 
-	@Test // FIXME
+	@Test
 	public void nonUniqueFields() {
 		remapper.putMapping(newVC(), newField("a", "a", "I"), new EntryMapping("field01"));
 
 		ValidationContext vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newField("a", "b", "I"), new EntryMapping("field01"));
 
-		// assertErrorMessages(vc, Message.NONUNIQUE_NAME_CLASS);
+		assertErrorMessages(vc, Message.NONUNIQUE_NAME_CLASS);
 
 		remapper.putMapping(newVC(), newField("a", "c", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
 
 		vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newField("a", "a", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
 
-		// assertErrorMessages(vc, Message.NONUNIQUE_NAME_CLASS);
+		assertErrorMessages(vc, Message.NONUNIQUE_NAME_CLASS);
 	}
 
 	@Test

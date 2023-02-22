@@ -88,7 +88,7 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public boolean canConflictWith(Entry<?> entry) {
-		return false;
+		return entry instanceof FieldEntry field && this.getParent().equals(field.getParent());
 	}
 
 	@Override
