@@ -21,21 +21,21 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static cuchaz.enigma.TestEntryFactory.newClass;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestInnerClasses {
-	private static final ClassEntry SimpleOuter = newClass("d");
-	private static final ClassEntry SimpleInner = newClass("d$a");
-	private static final ClassEntry ConstructorArgsOuter = newClass("c");
-	private static final ClassEntry ConstructorArgsInner = newClass("c$a");
-	private static final ClassEntry ClassTreeRoot = newClass("f");
-	private static final ClassEntry ClassTreeLevel1 = newClass("f$a");
-	private static final ClassEntry ClassTreeLevel2 = newClass("f$a$a");
-	private static final ClassEntry ClassTreeLevel3 = newClass("f$a$a$a");
-	public static final Path JAR = Paths.get("build/test-obf/innerClasses.jar");
+	private static final ClassEntry SIMPLE_OUTER = newClass("d");
+	private static final ClassEntry SIMPLE_INNER = newClass("d$a");
+	private static final ClassEntry CONSTRUCTOR_ARGS_OUTER = newClass("c");
+	private static final ClassEntry CONSTRUCTOR_ARGS_INNER = newClass("c$a");
+	private static final ClassEntry CLASS_TREE_ROOT = newClass("f");
+	private static final ClassEntry CLASS_TREE_LEVEL_1 = newClass("f$a");
+	private static final ClassEntry CLASS_TREE_LEVEL_2 = newClass("f$a$a");
+	private static final ClassEntry CLASS_TREE_LEVEL_3 = newClass("f$a$a$a");
+
+	public static final Path JAR = TestUtil.obfJar("innerClasses");
 	private final JarIndex index;
 	private final Decompiler decompiler;
 
@@ -49,35 +49,35 @@ public class TestInnerClasses {
 
 	@Test
 	public void simple() {
-		decompile(SimpleOuter);
+		decompile(SIMPLE_OUTER);
 	}
 
 	@Test
 	public void constructorArgs() {
-		decompile(ConstructorArgsOuter);
+		decompile(CONSTRUCTOR_ARGS_OUTER);
 	}
 
 	@Test
 	public void classTree() {
 		// root level
-		assertTrue(index.getEntryIndex().hasClass(ClassTreeRoot));
+		assertTrue(index.getEntryIndex().hasClass(CLASS_TREE_ROOT));
 
 		// level 1
-		ClassEntry fullClassEntry = new ClassEntry(ClassTreeRoot.getName()
-			+ "$" + ClassTreeLevel1.getSimpleName());
+		ClassEntry fullClassEntry = new ClassEntry(CLASS_TREE_ROOT.getName()
+			+ "$" + CLASS_TREE_LEVEL_1.getSimpleName());
 		assertTrue(index.getEntryIndex().hasClass(fullClassEntry));
 
 		// level 2
-		fullClassEntry = new ClassEntry(ClassTreeRoot.getName()
-			+ "$" + ClassTreeLevel1.getSimpleName()
-			+ "$" + ClassTreeLevel2.getSimpleName());
+		fullClassEntry = new ClassEntry(CLASS_TREE_ROOT.getName()
+			+ "$" + CLASS_TREE_LEVEL_1.getSimpleName()
+			+ "$" + CLASS_TREE_LEVEL_2.getSimpleName());
 		assertTrue(index.getEntryIndex().hasClass(fullClassEntry));
 
 		// level 3
-		fullClassEntry = new ClassEntry(ClassTreeRoot.getName()
-			+ "$" + ClassTreeLevel1.getSimpleName()
-			+ "$" + ClassTreeLevel2.getSimpleName()
-			+ "$" + ClassTreeLevel3.getSimpleName());
+		fullClassEntry = new ClassEntry(CLASS_TREE_ROOT.getName()
+			+ "$" + CLASS_TREE_LEVEL_1.getSimpleName()
+			+ "$" + CLASS_TREE_LEVEL_2.getSimpleName()
+			+ "$" + CLASS_TREE_LEVEL_3.getSimpleName());
 		assertTrue(index.getEntryIndex().hasClass(fullClassEntry));
 	}
 

@@ -26,7 +26,6 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 
@@ -35,8 +34,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public class TestJarIndexLoneClass {
-	public static final Path JAR = Paths.get("build/test-obf/loneClass.jar");
-	private JarIndex index;
+	public static final Path JAR = TestUtil.obfJar("loneClass");
+	private final JarIndex index;
 
 	public TestJarIndexLoneClass() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);

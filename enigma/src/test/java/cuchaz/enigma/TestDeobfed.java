@@ -11,25 +11,23 @@
 
 package cuchaz.enigma;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import org.junit.jupiter.api.BeforeAll;
-
 import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.source.Decompiler;
 import cuchaz.enigma.source.Decompilers;
 import cuchaz.enigma.source.SourceSettings;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static cuchaz.enigma.TestEntryFactory.newClass;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
 public class TestDeobfed {
-	public static final Path OBF = Paths.get("build/test-obf/translation.jar");
-	public static final Path DEOBF = Paths.get("build/test-deobf/translation.jar");
+	public static final Path OBF = TestUtil.obfJar("translation");
+	public static final Path DEOBF = TestUtil.deobfJar("translation");
 	private static EnigmaProject deobfProject;
 
 	@BeforeAll
