@@ -81,10 +81,10 @@ public class TestMappingValidator {
 		assertValid(vc);
 
 		// default fields
-		remapper.putMapping(newVC(), newField("b", "b", "I"), new EntryMapping("field05"));
+		remapper.putMapping(newVC(), newField("b", "b", "Z"), new EntryMapping("field05"));
 
 		vc = new ValidationContext(notifier());
-		remapper.validatePutMapping(vc, newField("a", "b", "I"), new EntryMapping("field05"));
+		remapper.validatePutMapping(vc, newField("a", "a", "Z"), new EntryMapping("field05"));
 
 		// TODO: warning
 		assertValid(vc);
