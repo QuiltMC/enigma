@@ -295,12 +295,6 @@ public class ClassSelector extends JTree {
 		this.moveClassIn(classEntry);
 		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
 		node.reloadStats(controller.getGui(), this, true);
-
-		this.reload(classEntry);
-	}
-
-	public void reload(ClassEntry classEntry) {
-		this.reload(this.packageManager.getClassNode(classEntry));
 	}
 
 	public void reload(TreeNode node) {
