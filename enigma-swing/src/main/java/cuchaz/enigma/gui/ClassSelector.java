@@ -21,7 +21,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
-import javax.swing.SwingWorker;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -108,25 +107,7 @@ public class ClassSelector extends JTree {
 					if (node.getStats() == null) {
 						// calculate stats on a separate thread for performance reasons
 						this.setIcon(GuiUtil.PENDING_STATUS_ICON);
-						DefaultTreeCellRenderer renderer = this;
-
-						SwingWorker<ClassSelectorClassNode, Void> iconUpdateWorker = new SwingWorker<>() {
-							@Override
-							protected ClassSelectorClassNode doInBackground() {
-								if (node.getStats() == null) {
-									node.updateStats(gui);
-								}
-								return node;
-							}
-
-							@Override
-							public void done() {
-								renderer.setIcon(GuiUtil.getDeobfuscationIcon(node.getStats()));
-								ClassSelector.this.reload(node);
-							}
-						};
-
-						iconUpdateWorker.execute();
+						node.reloadStats(gui, ClassSelector.this, false);
 					} else {
 						this.setIcon(GuiUtil.getDeobfuscationIcon(node.getStats()));
 					}
@@ -155,8 +136,7 @@ public class ClassSelector extends JTree {
 				String data = editor.getCellEditorValue().toString();
 				TreePath path = ClassSelector.this.getSelectionPath();
 
-				Object realPath = path.getLastPathComponent();
-				if (realPath instanceof DefaultMutableTreeNode node && data != null) {
+				if (path != null && path.getLastPathComponent() instanceof DefaultMutableTreeNode node && data != null) {
 					TreeNode parentNode = node.getParent();
 					if (parentNode == null)
 						return;
@@ -224,7 +204,7 @@ public class ClassSelector extends JTree {
 	}
 
 	public ClassEntry getSelectedClass() {
-		if (!this.isSelectionEmpty()) {
+		if (!this.isSelectionEmpty() && this.getSelectionPath() != null) {
 			Object selectedNode = this.getSelectionPath().getLastPathComponent();
 
 			if (selectedNode instanceof ClassSelectorClassNode classNode) {
@@ -314,7 +294,7 @@ public class ClassSelector extends JTree {
 		this.removeEntry(classEntry);
 		this.moveClassIn(classEntry);
 		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
-		node.updateStats(controller.getGui());
+		node.reloadStats(controller.getGui(), this, true);
 
 		this.reload(classEntry);
 	}

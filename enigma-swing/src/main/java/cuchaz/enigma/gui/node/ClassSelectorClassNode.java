@@ -12,12 +12,16 @@
 package cuchaz.enigma.gui.node;
 
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.gui.ClassSelector;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.stats.StatsGenerator;
 import cuchaz.enigma.gui.stats.StatsResult;
+import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
+import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 
 public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 	private final ClassEntry obfEntry;
@@ -47,9 +51,32 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 		this.stats = stats;
 	}
 
-	public void updateStats(Gui gui) {
-		StatsResult newStats = new StatsGenerator(gui.getController().project).generate(ProgressListener.none(), this.getObfEntry(), false);
-		this.setStats(newStats);
+	/**
+	 * Reloads the stats for this class node and updates the icon in the provided class selector.
+	 * @param gui the current gui instance
+	 * @param selector the class selector to reload on
+	 * @param updateIfPresent whether to update the stats if they have already been generated for this node
+	 */
+	public void reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent) {
+		SwingWorker<ClassSelectorClassNode, Void> iconUpdateWorker = new SwingWorker<>() {
+			@Override
+			protected ClassSelectorClassNode doInBackground() {
+				if (ClassSelectorClassNode.this.getStats() == null || updateIfPresent) {
+					StatsResult newStats = new StatsGenerator(gui.getController().project).generate(ProgressListener.none(), ClassSelectorClassNode.this.getObfEntry(), false);
+					ClassSelectorClassNode.this.setStats(newStats);
+				}
+
+				return ClassSelectorClassNode.this;
+			}
+
+			@Override
+			public void done() {
+				((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(ClassSelectorClassNode.this.getStats()));
+				selector.reload(ClassSelectorClassNode.this);
+			}
+		};
+
+		iconUpdateWorker.execute();
 	}
 
 	@Override
