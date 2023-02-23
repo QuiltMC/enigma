@@ -83,8 +83,9 @@ public final class UiConfig {
 	public static final String RECENT_FILES = "Recent Files";
 	public static final String MAX_RECENT_FILES = "Max Recent Files";
 
-	public static final String PAIR_SEPARATOR = ":";
-
+	private static final String PAIR_SEPARATOR = ";";
+	@Deprecated
+	private static final String OLD_PAIR_SEPARATOR = ":";
 	private UiConfig() {
 	}
 
@@ -165,7 +166,8 @@ public final class UiConfig {
 
 		for (String dockInfo : hostedDockers.get()) {
 			if (!dockInfo.isBlank()) {
-				String[] split = dockInfo.split(PAIR_SEPARATOR);
+				String[] split = dockInfo.split(dockInfo.contains(PAIR_SEPARATOR) ? PAIR_SEPARATOR : OLD_PAIR_SEPARATOR);
+
 				try {
 					Docker.VerticalLocation location = Docker.VerticalLocation.valueOf(split[1]);
 					Docker docker = Docker.getDocker(split[0]);
@@ -281,7 +283,8 @@ public final class UiConfig {
 	}
 
 	private static Optional<Pair<Path, Path>> parseFilePair(String pair) {
-		String[] split = pair.split(PAIR_SEPARATOR);
+		String[] split = pair.split(pair.contains(PAIR_SEPARATOR) ? PAIR_SEPARATOR : OLD_PAIR_SEPARATOR);
+
 		if (split.length != 2) {
 			return Optional.empty();
 		}

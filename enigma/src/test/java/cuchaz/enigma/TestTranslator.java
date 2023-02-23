@@ -28,7 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public class TestTranslator {
-	public static final Path JAR = Path.of("build/test-obf/translation.jar");
+	public static final Path JAR = TestUtil.obfJar("translation");
 
 	private static Enigma enigma;
 	private static EnigmaProject project;
@@ -40,7 +40,7 @@ public class TestTranslator {
 		enigma = Enigma.create();
 		project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
 		mappings = MappingFormat.ENIGMA_FILE.read(
-				Path.of(TestTranslator.class.getResource("/translation.mappings").toURI()),
+				TestUtil.getResource("/translation.mappings"),
 				ProgressListener.none(), enigma.getProfile().getMappingSaveParameters());
 		project.setMappings(mappings);
 		deobfuscator = project.getMapper().getDeobfuscator();

@@ -22,7 +22,7 @@ import static org.hamcrest.Matchers.*;
  * Tests to reproduce <a href="https://github.com/QuiltMC/enigma/issues/9">issue #9</a>
  */
 public class TestJarIndexBridgeMethods {
-	public static final Path JAR = Path.of("build/test-obf/bridge.jar");
+	public static final Path JAR = TestUtil.obfJar("bridge");
 
 	private final CachingClassProvider classProvider;
 	private final JarIndex index;

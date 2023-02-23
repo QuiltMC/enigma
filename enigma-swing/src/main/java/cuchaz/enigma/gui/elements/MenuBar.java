@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 
 import cuchaz.enigma.gui.ConnectionState;
@@ -438,21 +439,18 @@ public class MenuBar {
 
 		// find the longest common prefix among all mappings files
 		// this is to clear the "/home/user/wherever-you-store-your-mappings-projects/" part of the path and only show relevant information
-		String prefix = recentFilePairs.size() == 1 ? "" : null;
+		Path prefix = null;
 
-		if (prefix == null) {
-			for (Pair<Path, Path> recent : recentFilePairs) {
-				for (Pair<Path, Path> other : recentFilePairs) {
-					if (recent.equals(other)) {
-						continue;
-					}
+		if (recentFilePairs.size() > 1) {
+			List<Path> recentFiles = recentFilePairs.stream().map(Pair::b).sorted().toList();
+			prefix = recentFiles.get(0);
 
-					String commonPrefix = findCommonPrefix(recent.b().toString(), other.b().toString());
-
-					if (commonPrefix != null && (prefix == null || (commonPrefix.length() > prefix.length() && verifyCommonPrefix(commonPrefix, recentFilePairs)))) {
-						prefix = commonPrefix;
-					}
+			for (int i = 1; i < recentFiles.size(); i++) {
+				if (prefix == null) {
+					break;
 				}
+
+				prefix = findCommonPath(prefix, recentFiles.get(i));
 			}
 		}
 
@@ -461,10 +459,10 @@ public class MenuBar {
 
 			// if there's no common prefix, just show the last directory in the tree
 			String mappingsName;
-			if (prefix != null && !prefix.isBlank()) {
-				mappingsName = recent.b().toString().split(prefix)[1];
+			if (prefix != null) {
+				mappingsName = prefix.relativize(recent.b()).toString();
 			} else {
-				mappingsName = recent.b().toString().substring(recent.b().toString().lastIndexOf("/"));
+				mappingsName = recent.b().getFileName().toString();
 			}
 
 			JMenuItem item = new JMenuItem(jarName + " -> " + mappingsName);
@@ -473,27 +471,22 @@ public class MenuBar {
 		}
 	}
 
-	private static boolean verifyCommonPrefix(String prefix, List<Pair<Path, Path>> filePairs) {
-		for (Pair<Path, Path> pair : filePairs) {
-			if (!pair.b().toString().startsWith(prefix)) {
-				return false;
+	/**
+	 * Find the longest common path between two absolute(!!) paths
+	 */
+	@Nullable
+	private static Path findCommonPath(Path a, Path b) {
+		int i = 0;
+		for (; i < Math.min(a.getNameCount(), b.getNameCount()); i++) {
+			Path nameA = a.getName(i);
+			Path nameB = b.getName(i);
+
+			if (!nameA.equals(nameB)) {
+				break;
 			}
 		}
 
-		return true;
-	}
-
-	private static String findCommonPrefix(String a, String b) {
-		String[] splitA = a.split("/");
-		String[] splitB = b.split("/");
-
-		for (int i = 0; i < splitA.length; i++) {
-			if (!splitA[i].equals(splitB[i])) {
-				return String.join("/", Arrays.copyOfRange(splitA, 0, i));
-			}
-		}
-
-		return null;
+		return i != 0 ? a.getRoot().resolve(a.subpath(0, i)) : null;
 	}
 
 	private static void prepareSaveMappingsAsMenu(JMenu saveMappingsAsMenu, JMenuItem saveMappingsItem, Gui gui) {
