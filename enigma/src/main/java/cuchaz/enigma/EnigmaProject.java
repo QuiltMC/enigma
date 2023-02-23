@@ -197,8 +197,6 @@ public class EnigmaProject {
 	}
 
 	public boolean isObfuscated(Entry<?> entry) {
-		String name = entry.getName();
-
 		List<ObfuscationTestService> obfuscationTestServices = this.getEnigma().getServices().get(ObfuscationTestService.TYPE);
 		if (!obfuscationTestServices.isEmpty()) {
 			for (ObfuscationTestService service : obfuscationTestServices) {
@@ -217,8 +215,8 @@ public class EnigmaProject {
 			}
 		}
 
-		String mappedName = this.mapper.deobfuscate(entry).getName();
-		return mappedName == null || mappedName.isEmpty() || mappedName.equals(name);
+		EntryMapping mapping = this.mapper.getDeobfMapping(entry);
+		return mapping.targetName() == null;
 	}
 
 	public boolean isSynthetic(Entry<?> entry) {
