@@ -31,7 +31,7 @@ public abstract class Docker extends JPanel {
 		super(new BorderLayout());
 		this.gui = gui;
 		this.title = new DockerTitleBar(this, this.titleSupplier);
-		this.button = new DockerButton(this, this.titleSupplier.get(), this.getButtonLocation().side);
+		this.button = new DockerButton(this, this.titleSupplier, this.getButtonLocation().side);
 		// add action listener to open and close the docker when its button is pressed
 		this.button.addActionListener(e -> {
 			Docker docker = getDocker(this.getClass());
@@ -52,7 +52,6 @@ public abstract class Docker extends JPanel {
 	}
 
 	public void retranslateUi() {
-		//this.button.setText(this.titleSupplier.get());
 		this.title.retranslateUi();
 	}
 
