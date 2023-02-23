@@ -52,6 +52,7 @@ public abstract class Docker extends JPanel {
 	}
 
 	public void retranslateUi() {
+		this.button.repaint();
 		this.title.retranslateUi();
 	}
 
