@@ -21,6 +21,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
+import javax.swing.SwingWorker;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -36,15 +37,12 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.EventObject;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class ClassSelector extends JTree {
 	public static final Comparator<ClassEntry> DEOBF_CLASS_COMPARATOR = Comparator.comparing(ClassEntry::getFullName);
 
 	private final Comparator<ClassEntry> comparator;
 	private final GuiController controller;
-	private final Executor statusGenerator;
 
 	private NestedPackages packageManager;
 	private ClassSelectionListener selectionListener;
@@ -92,8 +90,6 @@ public class ClassSelector extends JTree {
 			}
 		}));
 
-		this.statusGenerator = Executors.newSingleThreadExecutor();
-
 		final DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
 			{
 				this.setLeafIcon(GuiUtil.CLASS_ICON);
@@ -112,16 +108,28 @@ public class ClassSelector extends JTree {
 					if (node.getStats() == null) {
 						// calculate stats on a separate thread for performance reasons
 						this.setIcon(GuiUtil.PENDING_STATUS_ICON);
-						ClassSelector.this.statusGenerator.execute(() -> {
-							node.updateStats(gui);
-							this.setIcon(GuiUtil.getDeobfuscationIcon(node.getStats()));
-						});
+						DefaultTreeCellRenderer thisComponent = this;
+
+						SwingWorker<ClassSelectorClassNode, Void> iconUpdateWorker = new SwingWorker<>() {
+							@Override
+							protected ClassSelectorClassNode doInBackground() {
+								node.updateStats(gui);
+								return node;
+							}
+
+							@Override
+							public void done() {
+								thisComponent.setIcon(GuiUtil.getDeobfuscationIcon(node.getStats()));
+								ClassSelector.this.reload(node);
+							}
+						};
+
+						iconUpdateWorker.execute();
 					} else {
 						this.setIcon(GuiUtil.getDeobfuscationIcon(node.getStats()));
 					}
 
 					panel.add(this);
-					// todo some sort of repainting here!
 					return panel;
 				}
 
@@ -310,13 +318,16 @@ public class ClassSelector extends JTree {
 	}
 
 	public void reload(ClassEntry classEntry) {
+		this.reload(this.packageManager.getClassNode(classEntry));
+	}
+
+	public void reload(TreeNode node) {
 		DefaultTreeModel model = (DefaultTreeModel) this.getModel();
-		model.reload(this.packageManager.getClassNode(classEntry));
+		model.reload(node);
 	}
 
 	public void reload() {
-		DefaultTreeModel model = (DefaultTreeModel) this.getModel();
-		model.reload(this.packageManager.getRoot());
+		this.reload(this.packageManager.getRoot());
 	}
 
 	public interface ClassSelectionListener {
