@@ -11,6 +11,10 @@
 
 package cuchaz.enigma.gui.node;
 
+import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.stats.StatsGenerator;
+import cuchaz.enigma.gui.stats.StatsResult;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -18,10 +22,12 @@ import javax.swing.tree.DefaultMutableTreeNode;
 public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 	private final ClassEntry obfEntry;
 	private ClassEntry classEntry;
+	private StatsResult stats;
 
 	public ClassSelectorClassNode(ClassEntry obfEntry, ClassEntry classEntry) {
 		this.obfEntry = obfEntry;
 		this.classEntry = classEntry;
+		this.stats = null;
 		this.setUserObject(classEntry);
 	}
 
@@ -33,6 +39,19 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 		return this.classEntry;
 	}
 
+	public StatsResult getStats() {
+		return this.stats;
+	}
+
+	public void setStats(StatsResult stats) {
+		this.stats = stats;
+	}
+
+	public void updateStats(Gui gui) {
+		StatsResult newStats = new StatsGenerator(gui.getController().project).generate(ProgressListener.none(), this.getObfEntry(), false);
+		this.setStats(newStats);
+	}
+
 	@Override
 	public String toString() {
 		return this.classEntry.getSimpleName();
@@ -40,7 +59,7 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof ClassSelectorClassNode && this.equals((ClassSelectorClassNode) other);
+		return other instanceof ClassSelectorClassNode node && this.equals(node);
 	}
 
 	@Override
@@ -60,8 +79,8 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 			packageName = this.classEntry.getPackageName() + "/";
 		if (userObject instanceof String)
 			this.classEntry = new ClassEntry(packageName + userObject);
-		else if (userObject instanceof ClassEntry)
-			this.classEntry = (ClassEntry) userObject;
+		else if (userObject instanceof ClassEntry entry)
+			this.classEntry = entry;
 		super.setUserObject(this.classEntry);
 	}
 

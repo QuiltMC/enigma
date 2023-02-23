@@ -64,6 +64,7 @@ public class GuiUtil {
 	public static final Icon OBFUSCATED_ICON = loadIcon("obfuscated");
 	public static final Icon PARTIALLY_DEOBFUSCATED_ICON = loadIcon("partially_deobfuscated");
 	public static final Icon DEOBFUSCATED_ICON = loadIcon("deobfuscated");
+	public static final Icon PENDING_STATUS_ICON = loadIcon("pending_status");
 
 	public static void openUrl(String url) {
 		try {
@@ -158,13 +159,10 @@ public class GuiUtil {
 		return CLASS_ICON;
 	}
 
-	public static Icon getDeobfuscationIcon(Gui gui, ClassEntry entry) {
-		EnigmaProject project = gui.getController().project;
-		StatsResult result = new StatsGenerator(project).generate(ProgressListener.none(), entry, false);
-
-		if (result.getPercentage() == 100d) {
+	public static Icon getDeobfuscationIcon(StatsResult stats) {
+		if (stats.getPercentage() == 100d) {
 			return DEOBFUSCATED_ICON;
-		} else if (result.getPercentage() > 0) {
+		} else if (stats.getPercentage() > 0) {
 			return PARTIALLY_DEOBFUSCATED_ICON;
 		} else {
 			return OBFUSCATED_ICON;

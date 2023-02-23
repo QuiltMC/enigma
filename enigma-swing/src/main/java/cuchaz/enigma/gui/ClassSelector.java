@@ -17,20 +17,34 @@ import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
-import javax.swing.*;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTree;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
-import javax.swing.tree.*;
-import java.awt.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellEditor;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.Component;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.EventObject;
 import java.util.List;
-import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class ClassSelector extends JTree {
 	public static final Comparator<ClassEntry> DEOBF_CLASS_COMPARATOR = Comparator.comparing(ClassEntry::getFullName);
 
 	private final Comparator<ClassEntry> comparator;
 	private final GuiController controller;
+	private final Executor statusGenerator;
 
 	private NestedPackages packageManager;
 	private ClassSelectionListener selectionListener;
@@ -78,6 +92,8 @@ public class ClassSelector extends JTree {
 			}
 		}));
 
+		this.statusGenerator = Executors.newSingleThreadExecutor();
+
 		final DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
 			{
 				this.setLeafIcon(GuiUtil.CLASS_ICON);
@@ -93,9 +109,19 @@ public class ClassSelector extends JTree {
 					panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 					panel.add(new JLabel(GuiUtil.getClassIcon(gui, node.getObfEntry())));
 
-					this.setIcon(GuiUtil.getDeobfuscationIcon(gui, node.getObfEntry()));
-					panel.add(this);
+					if (node.getStats() == null) {
+						// calculate stats on a separate thread for performance reasons
+						this.setIcon(GuiUtil.PENDING_STATUS_ICON);
+						ClassSelector.this.statusGenerator.execute(() -> {
+							node.updateStats(gui);
+							this.setIcon(GuiUtil.getDeobfuscationIcon(node.getStats()));
+						});
+					} else {
+						this.setIcon(GuiUtil.getDeobfuscationIcon(node.getStats()));
+					}
 
+					panel.add(this);
+					// todo some sort of repainting here!
 					return panel;
 				}
 
@@ -277,6 +303,9 @@ public class ClassSelector extends JTree {
 	public void reloadEntry(ClassEntry classEntry) {
 		this.removeEntry(classEntry);
 		this.moveClassIn(classEntry);
+		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
+		node.updateStats(controller.getGui());
+
 		this.reload(classEntry);
 	}
 
