@@ -108,18 +108,20 @@ public class ClassSelector extends JTree {
 					if (node.getStats() == null) {
 						// calculate stats on a separate thread for performance reasons
 						this.setIcon(GuiUtil.PENDING_STATUS_ICON);
-						DefaultTreeCellRenderer thisComponent = this;
+						DefaultTreeCellRenderer renderer = this;
 
 						SwingWorker<ClassSelectorClassNode, Void> iconUpdateWorker = new SwingWorker<>() {
 							@Override
 							protected ClassSelectorClassNode doInBackground() {
-								node.updateStats(gui);
+								if (node.getStats() == null) {
+									node.updateStats(gui);
+								}
 								return node;
 							}
 
 							@Override
 							public void done() {
-								thisComponent.setIcon(GuiUtil.getDeobfuscationIcon(node.getStats()));
+								renderer.setIcon(GuiUtil.getDeobfuscationIcon(node.getStats()));
 								ClassSelector.this.reload(node);
 							}
 						};
