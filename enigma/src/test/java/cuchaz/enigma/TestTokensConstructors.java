@@ -15,7 +15,7 @@ import cuchaz.enigma.source.Decompilers;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 import static cuchaz.enigma.TestEntryFactory.newBehaviorReferenceByMethod;
 import static cuchaz.enigma.TestEntryFactory.newMethod;
@@ -23,10 +23,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public class TestTokensConstructors extends TokenChecker {
-	public TestTokensConstructors()
-			throws Exception {
-		super(Paths.get("build/test-obf/constructors.jar"),
-				Decompilers.PROCYON); // Procyon is the only one that indexes constructor invocations
+	private static final Path JAR = TestUtil.obfJar("constructors");
+
+	public TestTokensConstructors() throws Exception {
+		super(JAR, Decompilers.PROCYON); // Procyon is the only one that indexes constructor invocations
 	}
 
 	@Test

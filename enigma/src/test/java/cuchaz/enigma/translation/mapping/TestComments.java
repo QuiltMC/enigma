@@ -1,11 +1,10 @@
 package cuchaz.enigma.translation.mapping;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.TestUtil;
 import cuchaz.enigma.translation.mapping.serde.MappingFileNameFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
@@ -15,15 +14,7 @@ import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import org.junit.jupiter.api.Test;
 
 public class TestComments {
-	private static Path DIRECTORY;
-
-	static {
-		try {
-			DIRECTORY = Paths.get(TestTinyV2InnerClasses.class.getResource("/comments/").toURI());
-		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
-		}
-	}
+	private static final Path DIRECTORY = TestUtil.getResource("/comments/");
 
 	@Test
 	public void testParseAndWrite() throws IOException, MappingParseException {
