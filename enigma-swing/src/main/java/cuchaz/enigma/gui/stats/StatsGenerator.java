@@ -70,6 +70,11 @@ public class StatsGenerator {
 			for (MethodEntry method : this.entryIndex.getMethods()) {
 				progress.step(numDone++, I18n.translate("type.methods"));
 
+				// we don't want constructors or otherwise non-mappable things to show as a mapped method!
+				if (!project.isRenamable(method)) {
+					continue;
+				}
+
 				MethodEntry root = this.entryResolver
 						.resolveEntry(method, ResolutionStrategy.RESOLVE_ROOT)
 						.stream()
@@ -80,14 +85,16 @@ public class StatsGenerator {
 
                 if (root == method && checkPackage(clazz, topLevelPackageSlash, singleClass)) {
                     if (includedMembers.contains(StatsMember.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
-						totalMappable += this.update(counts, method);
+						this.update(counts, method);
+                        totalMappable++;
                     }
 
 					if (includedMembers.contains(StatsMember.PARAMETERS) && (!((MethodDefEntry) method).getAccess().isSynthetic() || includeSynthetic)) {
 						int index = ((MethodDefEntry) method).getAccess().isStatic() ? 0 : 1;
 						for (TypeDescriptor argument : method.getDesc().getArgumentDescs()) {
-							totalMappable += this.update(counts, new LocalVariableEntry(method, index, "", true, null));
+							this.update(counts, new LocalVariableEntry(method, index, "", true, null));
 							index += argument.getSize();
+							totalMappable++;
 						}
 					}
 				}
@@ -100,7 +107,8 @@ public class StatsGenerator {
                 ClassEntry clazz = field.getParent();
 
                 if (!((FieldDefEntry) field).getAccess().isSynthetic() && checkPackage(clazz, topLevelPackageSlash, singleClass)) {
-					totalMappable += this.update(counts, field);
+					this.update(counts, field);
+                    totalMappable++;
                 }
             }
         }
@@ -110,7 +118,8 @@ public class StatsGenerator {
                 progress.step(numDone++, I18n.translate("type.classes"));
 
                 if (checkPackage(clazz, topLevelPackageSlash, singleClass)) {
-					totalMappable += this.update(counts, clazz);
+					this.update(counts, clazz);
+                    totalMappable++;
                 }
             }
         }
@@ -138,18 +147,10 @@ public class StatsGenerator {
 		return topLevelPackage.isBlank() || (deobfuscatedName != null && deobfuscatedName.startsWith(topLevelPackage));
 	}
 
-	private int update(Map<String, Integer> counts, Entry<?> entry) {
-		boolean renamable = this.project.isRenamable(entry);
-
-		if (this.project.isObfuscated(entry) && renamable && !this.project.isSynthetic(entry)) {
+	private void update(Map<String, Integer> counts, Entry<?> entry) {
+		if (this.project.isObfuscated(entry) && this.project.isRenamable(entry) && !this.project.isSynthetic(entry)) {
 			String parent = this.mapper.deobfuscate(entry.getAncestry().get(0)).getName().replace('/', '.');
 			counts.put(parent, counts.getOrDefault(parent, 0) + 1);
-		}
-
-		if (renamable) {
-			return 1;
-		} else {
-			return 0;
 		}
 	}
 }
