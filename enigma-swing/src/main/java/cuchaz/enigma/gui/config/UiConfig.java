@@ -83,7 +83,7 @@ public final class UiConfig {
 	public static final String RECENT_FILES = "Recent Files";
 	public static final String MAX_RECENT_FILES = "Max Recent Files";
 
-	private static final String PAIR_SEPARATOR = ";";
+	public static final String PAIR_SEPARATOR = ";";
 	@Deprecated
 	private static final String OLD_PAIR_SEPARATOR = ":";
 	private UiConfig() {
