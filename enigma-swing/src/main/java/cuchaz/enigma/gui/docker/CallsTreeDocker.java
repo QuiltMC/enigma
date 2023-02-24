@@ -14,6 +14,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.analysis.ReferenceTreeNode;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.TokenListCellRenderer;
@@ -83,6 +84,7 @@ public class CallsTreeDocker extends Docker {
 		this.tokens.setListData(new Vector<>());
 	}
 
+	@SuppressWarnings("unchecked")
 	private void onTreeClicked(MouseEvent event) {
 		if (event.getClickCount() >= 2 && event.getButton() == MouseEvent.BUTTON1) {
 			// get the selected node
@@ -96,7 +98,7 @@ public class CallsTreeDocker extends Docker {
 
 			if (node instanceof ReferenceTreeNode<?, ?> referenceNode) {
 				if (referenceNode.getReference() != null) {
-					this.gui.getController().navigateTo((Entry<?>) referenceNode.getReference());
+					this.gui.getController().navigateTo((EntryReference<Entry<?>, Entry<?>>) referenceNode.getReference());
 				} else {
 					this.gui.getController().navigateTo(referenceNode.getEntry());
 				}

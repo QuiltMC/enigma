@@ -369,6 +369,7 @@ public class GuiController implements ClientPacketHandler {
 			// entry is not in the jar. Ignore it
 			return;
 		}
+
 		this.openDeclaration(entry);
 	}
 
@@ -376,6 +377,7 @@ public class GuiController implements ClientPacketHandler {
 		if (!this.project.isNavigable(reference.getLocationClassEntry())) {
 			return;
 		}
+
 		this.openReference(reference);
 	}
 
