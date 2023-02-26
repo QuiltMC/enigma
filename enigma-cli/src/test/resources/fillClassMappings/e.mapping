@@ -1,0 +1,2 @@
+CLASS e
+	METHOD a outerMethod ()Ljava/lang/String;
