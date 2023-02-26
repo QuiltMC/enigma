@@ -1,20 +1,20 @@
 package cuchaz.enigma.command;
 
-import cuchaz.enigma.Enigma;
-import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.analysis.index.JarIndex;
-import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.translation.mapping.EntryMapping;
+import cuchaz.enigma.translation.mapping.serde.MappingFileNameFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTreeNode;
+import cuchaz.enigma.translation.mapping.tree.HashEntryTree;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.Utils;
 import org.tinylog.Logger;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -47,38 +47,41 @@ public class FillClassMappingsCommand extends Command {
 
 	public static void run(Path jar, Path source, Path result, String resultFormat) throws Exception {
 		boolean debug = shouldDebug(NAME);
-
-		Logger.info("Reading JAR...");
-		Enigma enigma = Enigma.create();
-		EnigmaProject project = enigma.openJar(jar, new ClasspathClassProvider(), ProgressListener.none());
+		JarIndex jarIndex = loadJar(jar);
 
 		Logger.info("Reading mappings...");
-		MappingSaveParameters saveParameters = enigma.getProfile().getMappingSaveParameters();
-		EntryTree<EntryMapping> mappings = readMappings(source, ProgressListener.none(), saveParameters);
-		project.setMappings(mappings);
+		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+		EntryTree<EntryMapping> sourceMappings = readMappings(source, ProgressListener.none(), saveParameters);
+
+		EntryTree<EntryMapping> resultMappings = run(jarIndex, sourceMappings, debug);
+
+		Logger.info("Writing mappings...");
+		Utils.delete(result);
+		MappingCommandsUtil.write(resultMappings, resultFormat, result, saveParameters);
 
 		if (debug) {
-			mappings = new DeltaTrackingTree<>(mappings);
+			writeDebugDelta((DeltaTrackingTree<EntryMapping>) resultMappings, result);
+		}
+	}
+
+	public static EntryTree<EntryMapping> run(JarIndex jarIndex, EntryTree<EntryMapping> source, boolean trackDelta) throws IOException {
+		EntryTree<EntryMapping> result = new HashEntryTree<>(source);
+
+		if (trackDelta) {
+			result = new DeltaTrackingTree<>(result);
 		}
 
 		Logger.info("Adding mappings...");
-		JarIndex index = project.getJarIndex();
-		List<ClassEntry> rootEntries = mappings.getRootNodes().map(EntryTreeNode::getEntry)
+		List<ClassEntry> rootEntries = source.getRootNodes().map(EntryTreeNode::getEntry)
 				.filter(entry -> entry instanceof ClassEntry)
 				.map(entry -> (ClassEntry) entry)
 				.toList();
 		for (ClassEntry rootEntry : rootEntries) {
 			// These entries already have a mapping tree node
-			recursiveAddMappings(mappings, index, rootEntry, false);
+			recursiveAddMappings(result, jarIndex, rootEntry, false);
 		}
 
-		Logger.info("Writing mappings...");
-		Utils.delete(result);
-		MappingCommandsUtil.write(mappings, resultFormat, result, saveParameters);
-
-		if (debug) {
-			writeDebugDelta((DeltaTrackingTree<EntryMapping>) mappings, result);
-		}
+		return result;
 	}
 
 	private static void recursiveAddMappings(EntryTree<EntryMapping> mappings, JarIndex index, ClassEntry entry, boolean addMapping) {

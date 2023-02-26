@@ -17,6 +17,7 @@ import java.nio.file.Path;
 public final class MappingCommandsUtil {
 	private MappingCommandsUtil() {}
 
+	// TODO: Merge with methods in Command
 	public static EntryTree<EntryMapping> read(String type, Path path, MappingSaveParameters saveParameters) throws MappingParseException, IOException {
 		if (type.equals("enigma")) {
 			return (Files.isDirectory(path) ? EnigmaMappingsReader.DIRECTORY : EnigmaMappingsReader.ZIP).read(path, ProgressListener.none(), saveParameters);

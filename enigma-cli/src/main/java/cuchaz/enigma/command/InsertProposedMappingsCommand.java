@@ -3,11 +3,9 @@ package cuchaz.enigma.command;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.EnigmaProject;
-import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.api.EnigmaPlugin;
 import cuchaz.enigma.api.service.NameProposalService;
-import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.translation.ProposingTranslator;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
@@ -15,6 +13,7 @@ import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
+import cuchaz.enigma.translation.mapping.tree.HashEntryTree;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
@@ -56,35 +55,36 @@ public class InsertProposedMappingsCommand extends Command {
 	}
 
 	public static void run(Path inJar, Path source, Path output, String resultFormat, @Nullable Path profilePath, @Nullable Iterable<EnigmaPlugin> plugins) throws Exception {
-		boolean debug = shouldDebug(NAME);
-
 		EnigmaProfile profile = EnigmaProfile.read(profilePath);
-		Enigma.Builder builder = Enigma.builder().setProfile(profile);
+		Enigma enigma = createEnigma(profile, plugins);
 
-		if (plugins != null) {
-			builder.setPlugins(plugins);
-		}
+		run(inJar, source, output, resultFormat, enigma);
+	}
 
-		Enigma enigma = builder.build();
-
+	public static void run(Path inJar, Path source, Path output, String resultFormat, Enigma enigma) throws Exception {
+		boolean debug = shouldDebug(NAME);
 		NameProposalService[] nameProposalServices = enigma.getServices().get(NameProposalService.TYPE).toArray(new NameProposalService[0]);
 		if (nameProposalServices.length == 0) {
 			Logger.error("No name proposal service found");
 			return;
 		}
 
-		Logger.info("Reading JAR...");
+		EnigmaProject project = openProject(inJar, source, enigma);
+		EntryTree<EntryMapping> mappings = run(nameProposalServices, project, debug);
 
-		EnigmaProject project = enigma.openJar(inJar, new ClasspathClassProvider(), ProgressListener.none());
-
-		Logger.info("Reading mappings...");
-
+		Utils.delete(output);
 		MappingSaveParameters saveParameters = enigma.getProfile().getMappingSaveParameters();
-
-		EntryTree<EntryMapping> mappings = readMappings(source, ProgressListener.none(), saveParameters);
-		project.setMappings(mappings);
+		MappingCommandsUtil.write(mappings, resultFormat, output, saveParameters);
 
 		if (debug) {
+			writeDebugDelta((DeltaTrackingTree<EntryMapping>) mappings, output);
+		}
+	}
+
+	public static EntryTree<EntryMapping> run(NameProposalService[] nameProposalServices, EnigmaProject project, boolean trackDelta) {
+		EntryTree<EntryMapping> mappings = new HashEntryTree<>(project.getMapper().getObfToDeobf());
+
+		if (trackDelta) {
 			mappings = new DeltaTrackingTree<>(mappings);
 		}
 
@@ -127,13 +127,7 @@ public class InsertProposedMappingsCommand extends Command {
 		}
 
 		Logger.info("Proposed names for {} classes, {} fields, {} methods, {} parameters!", classes, fields, methods, parameters);
-
-		Utils.delete(output);
-		MappingCommandsUtil.write(mappings, resultFormat, output, saveParameters);
-
-		if (debug) {
-			writeDebugDelta((DeltaTrackingTree<EntryMapping>) mappings, output);
-		}
+		return mappings;
 	}
 
 	private static <T extends Entry<?>> boolean insertMapping(T entry, EntryTree<EntryMapping> mappings, EntryRemapper mapper, Translator translator) {

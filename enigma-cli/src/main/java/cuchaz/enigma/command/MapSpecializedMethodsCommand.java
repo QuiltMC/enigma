@@ -1,10 +1,7 @@
 package cuchaz.enigma.command;
 
-import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.analysis.index.BridgeMethodIndex;
 import cuchaz.enigma.analysis.index.JarIndex;
-import cuchaz.enigma.classprovider.CachingClassProvider;
-import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.translation.MappingTranslator;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
@@ -52,14 +49,23 @@ public class MapSpecializedMethodsCommand extends Command {
 
 	public static void run(Path jar, String sourceFormat, Path sourcePath, String resultFormat, Path output) throws IOException, MappingParseException {
 		boolean debug = shouldDebug(NAME);
+		JarIndex jarIndex = loadJar(jar);
 
 		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
 		EntryTree<EntryMapping> source = MappingCommandsUtil.read(sourceFormat, sourcePath, saveParameters);
-		EntryTree<EntryMapping> result = new HashEntryTree<>();
 
-		JarClassProvider jcp = new JarClassProvider(jar);
-		JarIndex jarIndex = JarIndex.empty();
-		jarIndex.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.none());
+		EntryTree<EntryMapping> result = run(jarIndex, source, debug);
+
+		Utils.delete(output);
+		MappingCommandsUtil.write(result, resultFormat, output, saveParameters);
+
+		if (debug) {
+			writeDebugDelta((DeltaTrackingTree<EntryMapping>) result, output);
+		}
+	}
+
+	public static EntryTree<EntryMapping> run(JarIndex jarIndex, EntryTree<EntryMapping> source, boolean trackDelta) throws IOException, MappingParseException {
+		EntryTree<EntryMapping> result = new HashEntryTree<>();
 
 		BridgeMethodIndex bridgeMethodIndex = jarIndex.getBridgeMethodIndex();
 		Translator translator = new MappingTranslator(source, jarIndex.getEntryResolver());
@@ -71,7 +77,7 @@ public class MapSpecializedMethodsCommand extends Command {
 			}
 		}
 
-		if (debug) {
+		if (trackDelta) {
 			result = new DeltaTrackingTree<>(result);
 		}
 
@@ -83,11 +89,6 @@ public class MapSpecializedMethodsCommand extends Command {
 			result.insert(specialized, new EntryMapping(name));
 		}
 
-		Utils.delete(output);
-		MappingCommandsUtil.write(result, resultFormat, output, saveParameters);
-
-		if (debug) {
-			writeDebugDelta((DeltaTrackingTree<EntryMapping>) result, output);
-		}
+		return result;
 	}
 }
