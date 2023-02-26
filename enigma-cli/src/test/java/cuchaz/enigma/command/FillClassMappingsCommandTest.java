@@ -7,12 +7,10 @@ import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import org.junit.jupiter.api.Test;
 
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -20,9 +18,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class FillClassMappingsCommandTest {
-	private static final Path JAR = Path.of("../enigma/build/test-obf/innerClasses.jar");
-	private static final Path MAPPINGS;
+public class FillClassMappingsCommandTest extends CommandTest {
+	private static final Path JAR = obfJar("innerClasses");
+	private static final Path MAPPINGS = getResource("/fillClassMappings/");
 
 	private static final ClassEntry A = new ClassEntry("a");
 	private static final MethodEntry A_METHOD = MethodEntry.parse("a", "a", "()V");
@@ -93,22 +91,5 @@ public class FillClassMappingsCommandTest {
 		assertNotNull(result.findNode(F_LEVEL_3));
 		assertNull(getName(result, F_LEVEL_3));
 		assertNull(getName(result, F_LEVEL_3_FIELD));
-	}
-
-	private static String getName(EntryTree<EntryMapping> mappings, Entry<?> entry) {
-		if (!mappings.contains(entry)) {
-			return null;
-		}
-
-		EntryMapping mapping = mappings.get(entry);
-		return mapping != null ? mapping.targetName() : null;
-	}
-
-	static {
-		try {
-			MAPPINGS = Path.of(FillClassMappingsCommandTest.class.getResource("/fillClassMappings/").toURI());
-		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
-		}
 	}
 }
