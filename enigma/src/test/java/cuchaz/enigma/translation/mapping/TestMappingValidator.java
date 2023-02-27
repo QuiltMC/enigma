@@ -47,7 +47,7 @@ public class TestMappingValidator {
 		// static fields
 		remapper.putMapping(newVC(), newField("b", "a", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = new ValidationContext(null);
 		remapper.validatePutMapping(vc, newField("a", "c", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
 
 		assertValid(vc);
@@ -55,7 +55,7 @@ public class TestMappingValidator {
 		// final fields
 		remapper.putMapping(newVC(), newField("b", "a", "I"), new EntryMapping("field01"));
 
-		vc = new ValidationContext(notifier());
+		vc = new ValidationContext(null);
 		remapper.validatePutMapping(vc, newField("a", "a", "I"), new EntryMapping("field01"));
 
 		assertValid(vc);
@@ -63,7 +63,7 @@ public class TestMappingValidator {
 		// instance fields
 		remapper.putMapping(newVC(), newField("b", "b", "I"), new EntryMapping("field02"));
 
-		vc = new ValidationContext(notifier());
+		vc = new ValidationContext(null);
 		remapper.validatePutMapping(vc, newField("a", "b", "I"), new EntryMapping("field02"));
 
 		assertValid(vc);
@@ -74,7 +74,7 @@ public class TestMappingValidator {
 		// static fields
 		remapper.putMapping(newVC(), newField("b", "b", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = new ValidationContext(null);
 		remapper.validatePutMapping(vc, newField("a", "a", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
 
 		// TODO: warning
@@ -83,7 +83,7 @@ public class TestMappingValidator {
 		// default fields
 		remapper.putMapping(newVC(), newField("b", "b", "Z"), new EntryMapping("field05"));
 
-		vc = new ValidationContext(notifier());
+		vc = new ValidationContext(null);
 		remapper.validatePutMapping(vc, newField("a", "a", "Z"), new EntryMapping("field05"));
 
 		// TODO: warning
@@ -95,7 +95,7 @@ public class TestMappingValidator {
 		// static methods
 		remapper.putMapping(newVC(), newMethod("b", "c", "()V"), new EntryMapping("method01"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = new ValidationContext(null);
 		remapper.validatePutMapping(vc, newMethod("a", "a", "()V"), new EntryMapping("method01"));
 
 		assertValid(vc);
@@ -103,7 +103,7 @@ public class TestMappingValidator {
 		// private methods
 		remapper.putMapping(newVC(), newMethod("b", "a", "()V"), new EntryMapping("method02"));
 
-		vc = new ValidationContext(notifier());
+		vc = new ValidationContext(null);
 		remapper.validatePutMapping(vc, newMethod("a", "d", "()V"), new EntryMapping("method02"));
 
 		// TODO: shouldn't be an error
@@ -114,14 +114,14 @@ public class TestMappingValidator {
 	public void nonUniqueFields() {
 		remapper.putMapping(newVC(), newField("a", "a", "I"), new EntryMapping("field01"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = new ValidationContext(null);
 		remapper.validatePutMapping(vc, newField("a", "b", "I"), new EntryMapping("field01"));
 
 		assertErrorMessages(vc, Message.NONUNIQUE_NAME_CLASS);
 
 		remapper.putMapping(newVC(), newField("a", "c", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
 
-		vc = new ValidationContext(notifier());
+		vc = new ValidationContext(null);
 		remapper.validatePutMapping(vc, newField("a", "a", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
 
 		assertErrorMessages(vc, Message.NONUNIQUE_NAME_CLASS);
@@ -131,12 +131,12 @@ public class TestMappingValidator {
 	public void nonUniqueMethods() {
 		remapper.putMapping(newVC(), newMethod("a", "a", "()V"), new EntryMapping("method01"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = new ValidationContext(null);
 		remapper.validatePutMapping(vc, newMethod("a", "b", "()V"), new EntryMapping("method01"));
 
 		assertErrorMessages(vc, Message.NONUNIQUE_NAME_CLASS);
 
-		vc = new ValidationContext(notifier());
+		vc = new ValidationContext(null);
 		remapper.validatePutMapping(vc, newMethod("a", "d", "()V"), new EntryMapping("method01"));
 
 		assertErrorMessages(vc, Message.NONUNIQUE_NAME_CLASS);
@@ -157,16 +157,11 @@ public class TestMappingValidator {
 		assertThat(vc.getMessages().size(), is(messages.length));
 		for (int i = 0; i < messages.length; i++) {
 			ParameterizedMessage msg = vc.getMessages().get(i);
-			assertThat(msg.type(), is(messages[i].getType()));
 			assertThat(msg.message(), is(messages[i]));
 		}
 	}
 
 	private static ValidationContext newVC() {
-		return new ValidationContext(notifier());
-	}
-
-	private static ValidationContext.Notifier notifier() {
-		return m -> {};
+		return new ValidationContext(null);
 	}
 }

@@ -7,6 +7,8 @@ import java.util.Objects;
 
 import cuchaz.enigma.utils.validation.Message.Type;
 
+import javax.annotation.Nullable;
+
 /**
  * A context for user input validation. Handles collecting error messages and
  * displaying the errors. UIs using validation
@@ -16,12 +18,13 @@ import cuchaz.enigma.utils.validation.Message.Type;
  * multiple errors and displaying them to the user at the same time.
  */
 public class ValidationContext {
+	private final List<ParameterizedMessage> messages = new ArrayList<>();
+	@Nullable
+	private Notifier notifier;
+
 	public ValidationContext(Notifier notifier) {
 		this.notifier = Objects.requireNonNullElse(notifier, PrintNotifier.INSTANCE);
 	}
-
-	private final List<ParameterizedMessage> messages = new ArrayList<>();
-	private Notifier notifier;
 
 	public void setNotifier(Notifier notifier) {
 		this.notifier = notifier;
@@ -38,7 +41,9 @@ public class ValidationContext {
 		ParameterizedMessage pm = new ParameterizedMessage(message, args);
 		if (!this.messages.contains(pm)) {
 			this.messages.add(pm);
-			this.notifier.notify(pm);
+			if (this.notifier != null) {
+				this.notifier.notify(pm);
+			}
 		}
 	}
 
@@ -51,7 +56,7 @@ public class ValidationContext {
 	 */
 	public boolean canProceed() {
 		for (ParameterizedMessage m : this.messages) {
-			if (m.getType() == Type.WARNING && !this.notifier.verifyWarning(m)) {
+			if (this.notifier != null && m.getType() == Type.WARNING && !this.notifier.verifyWarning(m)) {
 				return false;
 			}
 		}
