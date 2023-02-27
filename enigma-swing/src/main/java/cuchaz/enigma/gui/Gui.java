@@ -593,6 +593,8 @@ public class Gui {
 			deobfuscatedClassSelector.reload();
 		}
 
+		this.reloadClassEntry(classEntry);
+
 		deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
 		obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
 	}

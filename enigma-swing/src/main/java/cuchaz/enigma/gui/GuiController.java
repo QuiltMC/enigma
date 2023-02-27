@@ -510,10 +510,7 @@ public class GuiController implements ClientPacketHandler {
 		EntryMapping mapping = EntryUtil.applyChange(vc, this.project.getMapper(), change);
 
 		boolean renamed = !change.getDeobfName().isUnchanged();
-
-		if (renamed && target instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
-			this.gui.moveClassTree(target, prev.targetName() == null, mapping.targetName() == null);
-		}
+		this.gui.updateStructure(this.gui.getActiveEditor());
 
 		if (!Objects.equals(prev.targetName(), mapping.targetName())) {
 			this.chp.invalidateMapped();
@@ -523,7 +520,11 @@ public class GuiController implements ClientPacketHandler {
 			this.chp.invalidateJavadoc(target.getTopLevelClass());
 		}
 
-		this.gui.updateStructure(this.gui.getActiveEditor());
+		if (renamed && target instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
+			this.gui.moveClassTree(target, prev.targetName() == null, mapping.targetName() == null);
+			return;
+		}
+
 		this.gui.reloadClassEntry(change.getTarget().getTopLevelClass());
 	}
 
