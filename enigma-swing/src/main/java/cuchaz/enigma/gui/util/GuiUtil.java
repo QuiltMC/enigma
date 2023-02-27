@@ -1,10 +1,43 @@
 package cuchaz.enigma.gui.util;
 
-import java.awt.*;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
+import cuchaz.enigma.EnigmaProject;
+import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.analysis.index.EntryIndex;
+import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.stats.StatsGenerator;
+import cuchaz.enigma.gui.stats.StatsResult;
+import cuchaz.enigma.translation.representation.AccessFlags;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.utils.Os;
+
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JToolTip;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
+import javax.swing.Timer;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.font.TextAttribute;
 import java.io.IOException;
 import java.net.URI;
@@ -17,19 +50,6 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import javax.swing.*;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
-import com.formdev.flatlaf.extras.FlatSVGIcon;
-
-import cuchaz.enigma.analysis.index.EntryIndex;
-import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.translation.representation.AccessFlags;
-import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.MethodEntry;
-import cuchaz.enigma.utils.Os;
-
 public class GuiUtil {
 	public static final Icon CLASS_ICON = loadIcon("class");
 	public static final Icon INTERFACE_ICON = loadIcon("interface");
@@ -39,6 +59,12 @@ public class GuiUtil {
 	public static final Icon METHOD_ICON = loadIcon("method");
 	public static final Icon FIELD_ICON = loadIcon("field");
 	public static final Icon CONSTRUCTOR_ICON = loadIcon("constructor");
+
+	// icons sourced from https://github.com/primer/octicons
+	public static final Icon OBFUSCATED_ICON = loadIcon("obfuscated");
+	public static final Icon PARTIALLY_DEOBFUSCATED_ICON = loadIcon("partially_deobfuscated");
+	public static final Icon DEOBFUSCATED_ICON = loadIcon("deobfuscated");
+	public static final Icon PENDING_STATUS_ICON = loadIcon("pending_status");
 
 	public static void openUrl(String url) {
 		try {
@@ -89,15 +115,6 @@ public class GuiUtil {
 		t.start();
 	}
 
-	public static void showToolTipNow(JComponent component) {
-		// HACKHACK: trick the tooltip manager into showing the tooltip right now
-		ToolTipManager manager = ToolTipManager.sharedInstance();
-		int oldDelay = manager.getInitialDelay();
-		manager.setInitialDelay(0);
-		manager.mouseMoved(new MouseEvent(component, MouseEvent.MOUSE_MOVED, System.currentTimeMillis(), 0, 0, 0, 0, false));
-		manager.setInitialDelay(oldDelay);
-	}
-
 	public static JLabel createLink(String text, Runnable action) {
 		JLabel link = new JLabel(text);
 		link.setForeground(Color.BLUE.darker());
@@ -140,6 +157,16 @@ public class GuiUtil {
 		}
 
 		return CLASS_ICON;
+	}
+
+	public static Icon getDeobfuscationIcon(StatsResult stats) {
+		if (stats.getPercentage() == 100d) {
+			return DEOBFUSCATED_ICON;
+		} else if (stats.getPercentage() > 0) {
+			return PARTIALLY_DEOBFUSCATED_ICON;
+		} else {
+			return OBFUSCATED_ICON;
+		}
 	}
 
 	public static Icon getMethodIcon(MethodEntry entry) {
