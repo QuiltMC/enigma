@@ -65,7 +65,7 @@ public class MappingValidator {
 					.toList()
 			);
 
-			if (!this.isUnique(translatedEntry, siblings, name)) {
+			if (!this.isUnique(entry, siblings, name)) {
 				if (translatedEntry != null) {
 					Entry<?> parent = translatedEntry.getParent();
 					if (parent != null) {
