@@ -1,6 +1,7 @@
 package cuchaz.enigma.utils.validation;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -56,6 +57,10 @@ public class ValidationContext {
 		}
 
 		return this.messages.stream().noneMatch(m -> m.message().getType() == Type.ERROR);
+	}
+
+	public List<ParameterizedMessage> getMessages() {
+		return Collections.unmodifiableList(this.messages);
 	}
 
 	/**
