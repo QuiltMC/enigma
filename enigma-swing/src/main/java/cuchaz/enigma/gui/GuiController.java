@@ -43,7 +43,6 @@ import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.ProgressDialog;
 import cuchaz.enigma.gui.docker.CollabDocker;
 import cuchaz.enigma.gui.docker.Docker;
-import cuchaz.enigma.gui.newabstraction.EntryValidation;
 import cuchaz.enigma.gui.stats.StatsGenerator;
 import cuchaz.enigma.gui.stats.StatsMember;
 import cuchaz.enigma.gui.util.History;
@@ -68,6 +67,7 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
+import cuchaz.enigma.utils.TristateChange;
 import cuchaz.enigma.utils.Utils;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
@@ -484,13 +484,11 @@ public class GuiController implements ClientPacketHandler {
 		return vc.canProceed();
 	}
 
-	public void validateChange(ValidationContext vc, EntryChange<?> change) {
-		if (change.getDeobfName().isSet()) {
-			EntryValidation.validateRename(vc, this.project, change.getTarget(), change.getDeobfName().getNewValue());
-		}
+	public void validateJavadocChange(ValidationContext vc, EntryChange<?> change) {
+		TristateChange<String> javadoc = change.getJavadoc();
 
-		if (change.getJavadoc().isSet()) {
-			EntryValidation.validateJavadoc(vc, change.getJavadoc().getNewValue());
+		if (javadoc.isSet() && javadoc.getNewValue().contains("*/")) {
+			vc.raise(Message.ILLEGAL_DOC_COMMENT_END);
 		}
 	}
 
@@ -502,9 +500,6 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	private void applyChange0(ValidationContext vc, EntryChange<?> change) {
-		this.validateChange(vc, change);
-		if (!vc.canProceed()) return;
-
 		Entry<?> target = change.getTarget();
 		EntryMapping prev = this.project.getMapper().getDeobfMapping(target);
 		EntryMapping mapping = EntryUtil.applyChange(vc, this.project.getMapper(), change);
