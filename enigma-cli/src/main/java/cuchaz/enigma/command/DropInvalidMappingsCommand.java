@@ -1,12 +1,8 @@
 package cuchaz.enigma.command;
 
-import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.ProgressListener;
-import cuchaz.enigma.classprovider.ClasspathClassProvider;
-import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
-import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import org.tinylog.Logger;
 
 import java.io.IOException;
@@ -47,17 +43,7 @@ public class DropInvalidMappingsCommand extends Command {
 			return;
 		}
 
-		Enigma enigma = Enigma.create();
-
-		Logger.info("Reading JAR...");
-
-		EnigmaProject project = enigma.openJar(jarIn, new ClasspathClassProvider(), ProgressListener.none());
-
-		Logger.info("Reading mappings...");
-
-		MappingSaveParameters saveParameters = enigma.getProfile().getMappingSaveParameters();
-		EntryTree<EntryMapping> mappings = readMappings(mappingsIn, ProgressListener.none(), saveParameters);
-		project.setMappings(mappings);
+		EnigmaProject project = openProject(jarIn, mappingsIn);
 
 		Logger.info("Dropping invalid mappings...");
 
@@ -84,6 +70,7 @@ public class DropInvalidMappingsCommand extends Command {
 			Files.deleteIfExists(mappingsIn);
 		}
 
+		MappingSaveParameters saveParameters = project.getEnigma().getProfile().getMappingSaveParameters();
 		writeMappings(project.getMapper().getObfToDeobf(), mappingsOut, ProgressListener.none(), saveParameters);
 	}
 }

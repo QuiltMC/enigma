@@ -18,17 +18,18 @@ import cuchaz.enigma.source.SourceSettings;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 public class TestDeobfuscator {
+	private static final Path JAR = TestUtil.obfJar("loneClass");
+
 	private EnigmaProject openProject() throws IOException {
 		Enigma enigma = Enigma.create();
-		return enigma.openJar(Paths.get("build/test-obf/loneClass.jar"), new ClasspathClassProvider(), ProgressListener.none());
+		return enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
 	}
 
 	@Test
-	public void loadJar()
-		throws Exception {
+	public void loadJar() throws Exception {
 		openProject();
 	}
 
