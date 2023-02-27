@@ -34,7 +34,7 @@ public class StatsGenerator {
 		this.entryResolver = project.getJarIndex().getEntryResolver();
 	}
 
-	public StatsResult generate(ProgressListener progress, ClassEntry entry, boolean includeSynthetic) {
+	public StatsResult generateForClassTree(ProgressListener progress, ClassEntry entry, boolean includeSynthetic) {
 		return generate(progress, EnumSet.allOf(StatsMember.class), entry.getFullName(), true, includeSynthetic);
 	}
 
@@ -42,7 +42,16 @@ public class StatsGenerator {
 		return generate(progress, includedMembers, topLevelPackage, false, includeSynthetic);
 	}
 
-	public StatsResult generate(ProgressListener progress, Set<StatsMember> includedMembers, String topLevelPackage, boolean singleClass, boolean includeSynthetic) {
+	/**
+	 * Generates stats for the given package or class.
+	 * @param progress a listener to update with current progress
+	 * @param includedMembers the types of entry to include in the stats
+	 * @param topLevelPackage the package or class to generate stats for
+	 * @param forClassTree if true, the stats will be generated for the class tree - this means that non-mappable obfuscated entries will be ignored for correctness
+	 * @param includeSynthetic whether to include synthetic methods
+	 * @return the generated {@link StatsResult} for the provided class or package.
+	 */
+	public StatsResult generate(ProgressListener progress, Set<StatsMember> includedMembers, String topLevelPackage, boolean forClassTree, boolean includeSynthetic) {
 		includedMembers = EnumSet.copyOf(includedMembers);
 		int totalWork = 0;
 		int totalMappable = 0;
@@ -83,18 +92,16 @@ public class StatsGenerator {
 
                 ClassEntry clazz = root.getParent();
 
-                if (root == method && checkPackage(clazz, topLevelPackageSlash, singleClass)) {
+                if (root == method && checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
                     if (includedMembers.contains(StatsMember.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
-						this.update(counts, method);
-                        totalMappable++;
+						totalMappable += this.update(counts, method, forClassTree);
                     }
 
 					if (includedMembers.contains(StatsMember.PARAMETERS) && (!((MethodDefEntry) method).getAccess().isSynthetic() || includeSynthetic)) {
 						int index = ((MethodDefEntry) method).getAccess().isStatic() ? 0 : 1;
 						for (TypeDescriptor argument : method.getDesc().getArgumentDescs()) {
-							this.update(counts, new LocalVariableEntry(method, index, "", true, null));
+							totalMappable += this.update(counts, new LocalVariableEntry(method, index, "", true, null), forClassTree);
 							index += argument.getSize();
-							totalMappable++;
 						}
 					}
 				}
@@ -106,9 +113,8 @@ public class StatsGenerator {
                 progress.step(numDone++, I18n.translate("type.fields"));
                 ClassEntry clazz = field.getParent();
 
-                if (!((FieldDefEntry) field).getAccess().isSynthetic() && checkPackage(clazz, topLevelPackageSlash, singleClass)) {
-					this.update(counts, field);
-                    totalMappable++;
+                if (!((FieldDefEntry) field).getAccess().isSynthetic() && checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
+					totalMappable += this.update(counts, field, forClassTree);
                 }
             }
         }
@@ -117,9 +123,8 @@ public class StatsGenerator {
             for (ClassEntry clazz : this.entryIndex.getClasses()) {
                 progress.step(numDone++, I18n.translate("type.classes"));
 
-                if (checkPackage(clazz, topLevelPackageSlash, singleClass)) {
-					this.update(counts, clazz);
-                    totalMappable++;
+                if (checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
+					totalMappable += this.update(counts, clazz, forClassTree);
                 }
             }
         }
@@ -147,10 +152,24 @@ public class StatsGenerator {
 		return topLevelPackage.isBlank() || (deobfuscatedName != null && deobfuscatedName.startsWith(topLevelPackage));
 	}
 
-	private void update(Map<String, Integer> counts, Entry<?> entry) {
-		if (this.project.isObfuscated(entry) && this.project.isRenamable(entry) && !this.project.isSynthetic(entry)) {
+	/**
+	 * @return whether to increment the total mappable entry count - 0 if no, 1 if yes
+	 */
+	private int update(Map<String, Integer> counts, Entry<?> entry, boolean forClassTree) {
+		boolean obfuscated = this.project.isObfuscated(entry);
+		boolean renamable = this.project.isRenamable(entry);
+		boolean synthetic = this.project.isSynthetic(entry);
+
+		if (forClassTree && obfuscated && !renamable) {
+			return 0;
+		}
+
+		if (obfuscated && renamable && !synthetic) {
 			String parent = this.mapper.deobfuscate(entry.getAncestry().get(0)).getName().replace('/', '.');
 			counts.put(parent, counts.getOrDefault(parent, 0) + 1);
+			return 1;
 		}
+
+		return 1;
 	}
 }
