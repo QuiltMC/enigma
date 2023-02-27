@@ -54,15 +54,15 @@ public abstract class Command {
 		return index;
 	}
 
-	protected static Enigma createEnigma() {
+	public static Enigma createEnigma() {
 		return Enigma.create();
 	}
 
-	protected static Enigma createEnigma(EnigmaProfile profile) {
+	public static Enigma createEnigma(EnigmaProfile profile) {
 		return createEnigma(profile, null);
 	}
 
-	protected static Enigma createEnigma(EnigmaProfile profile, @Nullable Iterable<EnigmaPlugin> plugins) {
+	public static Enigma createEnigma(EnigmaProfile profile, @Nullable Iterable<EnigmaPlugin> plugins) {
 		Enigma.Builder builder = Enigma.builder().setProfile(profile);
 
 		if (plugins != null) {
@@ -84,7 +84,7 @@ public abstract class Command {
 		return openProject(fileJarIn, fileMappings, createEnigma(profile, plugins));
 	}
 
-	protected static EnigmaProject openProject(Path fileJarIn, Path fileMappings, Enigma enigma) throws Exception {
+	public static EnigmaProject openProject(Path fileJarIn, Path fileMappings, Enigma enigma) throws Exception {
 		ProgressListener progress = new ConsoleProgressListener();
 
 		Logger.info("Reading JAR...");
