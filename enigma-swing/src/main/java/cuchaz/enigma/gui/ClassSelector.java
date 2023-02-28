@@ -17,14 +17,25 @@ import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
-import javax.swing.*;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTree;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
-import javax.swing.tree.*;
-import java.awt.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellEditor;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.Component;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.EventObject;
 import java.util.List;
-import java.util.*;
 
 public class ClassSelector extends JTree {
 	public static final Comparator<ClassEntry> DEOBF_CLASS_COMPARATOR = Comparator.comparing(ClassEntry::getFullName);
@@ -88,7 +99,21 @@ public class ClassSelector extends JTree {
 				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
 				if (gui.getController().project != null && leaf && value instanceof ClassSelectorClassNode node) {
-					this.setIcon(GuiUtil.getClassIcon(gui, node.getObfEntry()));
+					JPanel panel = new JPanel();
+					panel.setOpaque(false);
+					panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+					panel.add(new JLabel(GuiUtil.getClassIcon(gui, node.getObfEntry())));
+
+					if (node.getStats() == null) {
+						// calculate stats on a separate thread for performance reasons
+						this.setIcon(GuiUtil.PENDING_STATUS_ICON);
+						node.reloadStats(gui, ClassSelector.this, false);
+					} else {
+						this.setIcon(GuiUtil.getDeobfuscationIcon(node.getStats()));
+					}
+
+					panel.add(this);
+					return panel;
 				}
 
 				return this;
@@ -111,8 +136,7 @@ public class ClassSelector extends JTree {
 				String data = editor.getCellEditorValue().toString();
 				TreePath path = ClassSelector.this.getSelectionPath();
 
-				Object realPath = path.getLastPathComponent();
-				if (realPath instanceof DefaultMutableTreeNode node && data != null) {
+				if (path != null && path.getLastPathComponent() instanceof DefaultMutableTreeNode node && data != null) {
 					TreeNode parentNode = node.getParent();
 					if (parentNode == null)
 						return;
@@ -180,7 +204,7 @@ public class ClassSelector extends JTree {
 	}
 
 	public ClassEntry getSelectedClass() {
-		if (!this.isSelectionEmpty()) {
+		if (!this.isSelectionEmpty() && this.getSelectionPath() != null) {
 			Object selectedNode = this.getSelectionPath().getLastPathComponent();
 
 			if (selectedNode instanceof ClassSelectorClassNode classNode) {
@@ -266,9 +290,20 @@ public class ClassSelector extends JTree {
 		this.packageManager.removeClassNode(classEntry);
 	}
 
-	public void reload() {
+	public void reloadEntry(ClassEntry classEntry) {
+		this.removeEntry(classEntry);
+		this.moveClassIn(classEntry);
+		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
+		node.reloadStats(controller.getGui(), this, true);
+	}
+
+	public void reload(TreeNode node) {
 		DefaultTreeModel model = (DefaultTreeModel) this.getModel();
-		model.reload(this.packageManager.getRoot());
+		model.reload(node);
+	}
+
+	public void reload() {
+		this.reload(this.packageManager.getRoot());
 	}
 
 	public interface ClassSelectionListener {

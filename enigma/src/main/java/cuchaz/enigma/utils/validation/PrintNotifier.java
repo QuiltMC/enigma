@@ -12,6 +12,11 @@ public class PrintNotifier implements ValidationContext.Notifier {
 		formatMessage(message);
 	}
 
+	@Override
+	public boolean verifyWarning(ParameterizedMessage message) {
+		return true;
+	}
+
 	public static void formatMessage(ParameterizedMessage message) {
 		String text = message.getText();
 		String longText = message.getLongText();

@@ -1,9 +1,14 @@
 package cuchaz.enigma.command;
 
 import cuchaz.enigma.Enigma;
+import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.analysis.index.JarIndex;
+import cuchaz.enigma.api.EnigmaPlugin;
+import cuchaz.enigma.classprovider.CachingClassProvider;
 import cuchaz.enigma.classprovider.ClasspathClassProvider;
+import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingDelta;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
@@ -18,11 +23,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
 import com.google.common.io.MoreFiles;
 import org.tinylog.Logger;
+
+import javax.annotation.Nullable;
 
 public abstract class Command {
 	public final String name;
@@ -37,12 +45,49 @@ public abstract class Command {
 
 	public abstract void run(String... args) throws Exception;
 
+	public static JarIndex loadJar(Path jar) throws IOException {
+		Logger.info("Reading JAR...");
+		JarClassProvider classProvider = new JarClassProvider(jar);
+		JarIndex index = JarIndex.empty();
+		index.indexJar(classProvider.getClassNames(), new CachingClassProvider(classProvider), ProgressListener.none());
+
+		return index;
+	}
+
+	public static Enigma createEnigma() {
+		return Enigma.create();
+	}
+
+	public static Enigma createEnigma(EnigmaProfile profile) {
+		return createEnigma(profile, null);
+	}
+
+	public static Enigma createEnigma(EnigmaProfile profile, @Nullable Iterable<EnigmaPlugin> plugins) {
+		Enigma.Builder builder = Enigma.builder().setProfile(profile);
+
+		if (plugins != null) {
+			builder.setPlugins(plugins);
+		}
+
+		return builder.build();
+	}
+
 	protected static EnigmaProject openProject(Path fileJarIn, Path fileMappings) throws Exception {
+		return openProject(fileJarIn, fileMappings, createEnigma());
+	}
+
+	protected static EnigmaProject openProject(Path fileJarIn, Path fileMappings, EnigmaProfile profile) throws Exception {
+		return openProject(fileJarIn, fileMappings, profile, null);
+	}
+
+	protected static EnigmaProject openProject(Path fileJarIn, Path fileMappings, EnigmaProfile profile, @Nullable Iterable<EnigmaPlugin> plugins) throws Exception {
+		return openProject(fileJarIn, fileMappings, createEnigma(profile, plugins));
+	}
+
+	public static EnigmaProject openProject(Path fileJarIn, Path fileMappings, Enigma enigma) throws Exception {
 		ProgressListener progress = new ConsoleProgressListener();
 
-		Enigma enigma = Enigma.create();
-
-		Logger.info("Reading jar...");
+		Logger.info("Reading JAR...");
 		EnigmaProject project = enigma.openJar(fileJarIn, new ClasspathClassProvider(), progress);
 
 		if (fileMappings != null) {

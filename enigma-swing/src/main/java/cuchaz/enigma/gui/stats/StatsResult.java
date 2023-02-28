@@ -27,10 +27,16 @@ public final class StatsResult {
 	}
 
 	public int getMapped() {
-		return this.total - this.unmapped;
+		return this.getTotal() - this.getUnmapped();
 	}
 
 	public double getPercentage() {
+		// avoid showing "Nan%" when there are no entries to map
+		// if there are none, you've mapped them all!
+		if (this.total == 0) {
+			return 100.0f;
+		}
+
 		return (this.getMapped() * 100.0f) / this.total;
 	}
 
@@ -51,7 +57,7 @@ public final class StatsResult {
 			public String name;
 			public T value;
 			public List<Node<T>> children = new ArrayList<>();
-			private final transient Map<String, Node<T>> namedChildren = new HashMap<>();
+			private final Map<String, Node<T>> namedChildren = new HashMap<>();
 
 			public Node(String name, T value) {
 				this.name = name;

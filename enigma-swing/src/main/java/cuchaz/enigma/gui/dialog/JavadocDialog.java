@@ -149,7 +149,7 @@ public class JavadocDialog {
 	}
 
 	public void validate() {
-		this.controller.validateChange(this.vc, this.getEntryChange());
+		this.controller.validateJavadocChange(this.vc, this.getEntryChange());
 	}
 
 	public void save() {

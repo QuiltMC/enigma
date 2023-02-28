@@ -1,0 +1,8 @@
+CLASS a
+	METHOD a foo (I)La;
+	METHOD a foo (II)La;
+	METHOD b bar (I)La;
+	METHOD b baz (II)La;
+	METHOD c baz (I)La;
+	METHOD d foo ()La;
+	METHOD e bar ()La;

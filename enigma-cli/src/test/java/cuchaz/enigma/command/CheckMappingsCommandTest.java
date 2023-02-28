@@ -3,22 +3,22 @@ package cuchaz.enigma.command;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
+import java.nio.file.Path;
 
-public class CheckMappingsCommandTest {
-	private static final String PACKAGE_ACCESS = "../enigma/build/test-obf/packageAccess.jar";
+public class CheckMappingsCommandTest extends CommandTest {
+	private static final Path JAR = obfJar("packageAccess");
+	private static final Path WRONG_MAPPINGS = getResource("/packageAccess/wrongMappings");
+	private static final Path CORRECT_MAPPINGS = getResource("/packageAccess/correctMappings");
 
 	@Test
 	public void testWrong() {
 		Assertions.assertThrows(IllegalStateException.class, () ->
-				new CheckMappingsCommand().run(new File(PACKAGE_ACCESS).getAbsolutePath(), new File("src/test/resources" +
-						"/packageAccess/wrongMappings").getAbsolutePath())
+				CheckMappingsCommand.run(JAR, WRONG_MAPPINGS)
 		);
 	}
 
 	@Test
-	public void testRight() throws Exception {
-		new CheckMappingsCommand().run(new File(PACKAGE_ACCESS).getAbsolutePath(), new File("src/test/resources" +
-				"/packageAccess/correctMappings").getAbsolutePath());
+	public void testRight() {
+		Assertions.assertDoesNotThrow(() -> CheckMappingsCommand.run(JAR, CORRECT_MAPPINGS));
 	}
 }

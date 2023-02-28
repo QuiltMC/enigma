@@ -1,5 +1,36 @@
 package cuchaz.enigma;
 
+import com.google.common.base.Functions;
+import com.google.common.base.Preconditions;
+import cuchaz.enigma.analysis.EntryReference;
+import cuchaz.enigma.analysis.index.EnclosingMethodIndex;
+import cuchaz.enigma.analysis.index.JarIndex;
+import cuchaz.enigma.api.service.NameProposalService;
+import cuchaz.enigma.api.service.ObfuscationTestService;
+import cuchaz.enigma.bytecode.translators.TranslationClassVisitor;
+import cuchaz.enigma.classprovider.ClassProvider;
+import cuchaz.enigma.classprovider.ObfuscationFixClassProvider;
+import cuchaz.enigma.source.Decompiler;
+import cuchaz.enigma.source.DecompilerService;
+import cuchaz.enigma.source.SourceSettings;
+import cuchaz.enigma.translation.ProposingTranslator;
+import cuchaz.enigma.translation.Translator;
+import cuchaz.enigma.translation.mapping.EntryMapping;
+import cuchaz.enigma.translation.mapping.EntryRemapper;
+import cuchaz.enigma.translation.mapping.MappingsChecker;
+import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
+import cuchaz.enigma.translation.mapping.tree.EntryTree;
+import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.utils.I18n;
+import cuchaz.enigma.utils.Pair;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.tree.ClassNode;
+import org.tinylog.Logger;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -17,38 +48,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.google.common.base.Functions;
-import com.google.common.base.Preconditions;
-import cuchaz.enigma.analysis.index.EnclosingMethodIndex;
-import cuchaz.enigma.api.service.ObfuscationTestService;
-import cuchaz.enigma.classprovider.ObfuscationFixClassProvider;
-import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
-import cuchaz.enigma.utils.Pair;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.tree.ClassNode;
-
-import cuchaz.enigma.analysis.EntryReference;
-import cuchaz.enigma.analysis.index.JarIndex;
-import cuchaz.enigma.api.service.NameProposalService;
-import cuchaz.enigma.bytecode.translators.TranslationClassVisitor;
-import cuchaz.enigma.classprovider.ClassProvider;
-import cuchaz.enigma.source.Decompiler;
-import cuchaz.enigma.source.DecompilerService;
-import cuchaz.enigma.source.SourceSettings;
-import cuchaz.enigma.translation.ProposingTranslator;
-import cuchaz.enigma.translation.Translator;
-import cuchaz.enigma.translation.mapping.EntryMapping;
-import cuchaz.enigma.translation.mapping.EntryRemapper;
-import cuchaz.enigma.translation.mapping.MappingsChecker;
-import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
-import cuchaz.enigma.translation.mapping.tree.EntryTree;
-import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
-import cuchaz.enigma.translation.representation.entry.MethodEntry;
-import cuchaz.enigma.utils.I18n;
-import org.tinylog.Logger;
 
 public class EnigmaProject {
 	private static final List<Pair<String, String>> NON_RENAMABLE_METHODS = new ArrayList<>();
@@ -161,6 +160,11 @@ public class EnigmaProject {
 
 	public boolean isRenamable(Entry<?> obfEntry) {
 		if (obfEntry instanceof MethodEntry obfMethodEntry) {
+			// constructors are not renamable!
+			if (obfMethodEntry.isConstructor()) {
+				return false;
+			}
+
 			// HACKHACK: Object methods are not obfuscated identifiers
 			String name = obfMethodEntry.getName();
 			String sig = obfMethodEntry.getDesc().toString();
@@ -193,8 +197,6 @@ public class EnigmaProject {
 	}
 
 	public boolean isObfuscated(Entry<?> entry) {
-		String name = entry.getName();
-
 		List<ObfuscationTestService> obfuscationTestServices = this.getEnigma().getServices().get(ObfuscationTestService.TYPE);
 		if (!obfuscationTestServices.isEmpty()) {
 			for (ObfuscationTestService service : obfuscationTestServices) {
@@ -213,8 +215,8 @@ public class EnigmaProject {
 			}
 		}
 
-		String mappedName = this.mapper.deobfuscate(entry).getName();
-		return mappedName == null || mappedName.isEmpty() || mappedName.equals(name);
+		EntryMapping mapping = this.mapper.getDeobfMapping(entry);
+		return mapping.targetName() == null;
 	}
 
 	public boolean isSynthetic(Entry<?> entry) {

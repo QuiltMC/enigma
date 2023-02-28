@@ -1,13 +1,7 @@
 package cuchaz.enigma.command;
 
-import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProject;
-import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.analysis.index.JarIndex;
-import cuchaz.enigma.classprovider.ClasspathClassProvider;
-import cuchaz.enigma.translation.mapping.EntryMapping;
-import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
-import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import org.tinylog.Logger;
 
@@ -38,19 +32,7 @@ public class CheckMappingsCommand extends Command {
 	}
 
 	public static void run(Path fileJarIn, Path fileMappings) throws Exception {
-		Enigma enigma = Enigma.create();
-
-		Logger.info("Reading JAR...");
-
-		EnigmaProject project = enigma.openJar(fileJarIn, new ClasspathClassProvider(), ProgressListener.none());
-
-		Logger.info("Reading mappings...");
-
-		MappingSaveParameters saveParameters = enigma.getProfile().getMappingSaveParameters();
-
-		EntryTree<EntryMapping> mappings = readMappings(fileMappings, ProgressListener.none(), saveParameters);
-		project.setMappings(mappings);
-
+		EnigmaProject project = openProject(fileJarIn, fileMappings);
 		JarIndex idx = project.getJarIndex();
 
 		boolean error = false;

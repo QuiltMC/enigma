@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 24 24"
+   width="24"
+   height="24"
+   version="1.1"
+   id="svg124"
+   sodipodi:docname="partially_deobfuscated.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs128" />
+  <sodipodi:namedview
+     id="namedview126"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="34.458333"
+     inkscape:cx="11.98549"
+     inkscape:cy="12.01451"
+     inkscape:window-width="2560"
+     inkscape:window-height="1007"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg124" />
+  <path
+     d="M12 1c6.075 0 11 4.925 11 11s-4.925 11-11 11S1 18.075 1 12 5.925 1 12 1ZM2.5 12a9.5 9.5 0 0 0 9.5 9.5 9.5 9.5 0 0 0 9.5-9.5A9.5 9.5 0 0 0 12 2.5 9.5 9.5 0 0 0 2.5 12Zm9.5 2a2 2 0 1 1-.001-3.999A2 2 0 0 1 12 14Z"
+     id="path122" />
+  <path
+     style="fill:#ffcc00;stroke-width:0.0290206"
+     d="M 11.448609,21.470594 C 10.487449,21.393006 9.7696841,21.253823 9.0010523,20.995986 5.670141,19.878631 3.2024296,16.987835 2.643499,13.548441 2.4581357,12.407803 2.4904532,11.080293 2.7302958,9.9830713 3.099814,8.2926164 3.9497499,6.7005022 5.1530094,5.444804 7.4957064,3.0000107 10.939248,1.9900954 14.228714,2.7830984 c 3.512431,0.846754 6.268228,3.6647756 7.04099,7.1999729 0.177858,0.8136557 0.252795,1.9915167 0.179456,2.8206957 -0.33609,3.799871 -2.866662,7.000193 -6.486944,8.203798 -1.085886,0.361016 -2.488147,0.545809 -3.513607,0.463029 z m 1.007759,-7.524181 c 0.898688,-0.229845 1.50252,-1.012069 1.50252,-1.946413 0,-1.128953 -0.873466,-2.0024184 -2.002419,-2.0024184 -0.863181,0 -1.58353,0.5003624 -1.896475,1.3173134 C 9.973163,11.541567 9.969863,11.566651 9.969863,12 c 0,0.435144 0.003,0.457651 0.091884,0.68991 0.240988,0.6297 0.744809,1.087859 1.379013,1.254029 0.288182,0.07551 0.72588,0.07657 1.015608,0.0025 z"
+     id="path372" />
+</svg>
