@@ -69,7 +69,7 @@ public abstract class AbstractInheritanceTreeDocker extends Docker {
 	protected abstract DefaultMutableTreeNode getNodeFor(Entry<?> entry);
 
 	@Override
-	public Location getButtonPosition() {
+	public Location getPreferredButtonLocation() {
 		return new Location(Side.RIGHT, VerticalLocation.TOP);
 	}
 }

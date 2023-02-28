@@ -2,11 +2,15 @@ package cuchaz.enigma.gui.docker;
 
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.gui.docker.component.DockerButton;
+import cuchaz.enigma.gui.docker.component.DockerSelector;
+import cuchaz.enigma.gui.docker.component.Draggable;
 
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -140,6 +144,8 @@ public class Dock extends JPanel {
 	}
 
 	public void host(Docker docker, Docker.VerticalLocation verticalLocation, boolean avoidEmptySpace) {
+		Docker.Location previousLocation = Util.findLocation(docker);
+
 		Dock dock = Util.findDock(docker);
 		if (dock != null) {
 			dock.removeDocker(verticalLocation, avoidEmptySpace);
@@ -164,6 +170,23 @@ public class Dock extends JPanel {
 				if (this.toSave != null && !this.toSave.equals(docker)) {
 					this.host(this.toSave, verticalLocation.inverse());
 					this.toSave = null;
+				}
+
+				// make button follow docker from side to side
+				if (previousLocation != null && previousLocation.side() != this.side) {
+					DockerButton button = docker.getButton();
+					DockerSelector selector = this.gui.getMainWindow().getDockerSelector(this.side);
+					Container parent = button.getParent();
+
+					parent.remove(button);
+					(verticalLocation == Docker.VerticalLocation.TOP ? selector.getTopSelector() : selector.getBottomSelector()).add(button);
+					button.setSide(this.side);
+					UiConfig.setDockerButtonLocation(docker, new Docker.Location(this.side, verticalLocation));
+
+					button.getParent().revalidate();
+					button.getParent().repaint();
+					selector.revalidate();
+					selector.repaint();
 				}
 			}
 			case FULL -> {
@@ -230,7 +253,7 @@ public class Dock extends JPanel {
 	public boolean containsMouse(MouseEvent e, Docker.VerticalLocation checkedLocation) {
 		if (this.isVisible()) {
 			Rectangle screenBounds = this.getBoundsFor(this.getLocationOnScreen(), checkedLocation);
-			return contains(screenBounds, e.getLocationOnScreen());
+			return Draggable.contains(screenBounds, e.getLocationOnScreen());
 		}
 
 		return false;
@@ -276,13 +299,19 @@ public class Dock extends JPanel {
 		this.isSplit = false;
 	}
 
-	public void dropDockerFromMouse(Docker docker, MouseEvent event) {
+	/**
+	 * Drops the docker from the given mouse position, if it is within the bounds of this dock.
+	 * @return whether the docker was successfully positioned
+	 */
+	public boolean dropDockerFromMouse(Docker docker, MouseEvent event) {
 		for (Docker.VerticalLocation verticalLocation : Docker.VerticalLocation.values()) {
 			if (this.containsMouse(event, verticalLocation)) {
 				this.host(docker, verticalLocation);
-				return;
+				return true;
 			}
 		}
+
+		return false;
 	}
 
 	public DockerContainer getDock(Docker.VerticalLocation verticalLocation) {
@@ -317,11 +346,6 @@ public class Dock extends JPanel {
 
 	private JSplitPane getParentSplitPane() {
 		return this.side == Docker.Side.RIGHT ? this.gui.getSplitRight() : this.gui.getSplitLeft();
-	}
-
-	private static boolean contains(Rectangle rectangle, Point point) {
-		return (point.x >= rectangle.x && point.x <= rectangle.x + rectangle.width)
-				&& (point.y >= rectangle.y && point.y <= rectangle.y + rectangle.height);
 	}
 
 	@Override
@@ -391,8 +415,8 @@ public class Dock extends JPanel {
 		 */
 		public static void dropDocker(Docker docker, MouseEvent event) {
 			for (Dock dock : INSTANCES) {
-				if (dock.isDisplayable()) {
-					dock.dropDockerFromMouse(docker, event);
+				if (dock.isDisplayable() && dock.dropDockerFromMouse(docker, event)) {
+					return;
 				}
 			}
 		}

@@ -116,13 +116,8 @@ public class CallsTreeDocker extends Docker {
 	}
 
 	@Override
-	public Location getButtonPosition() {
+	public Location getPreferredButtonLocation() {
 		return new Location(Side.RIGHT, VerticalLocation.TOP);
-	}
-
-	@Override
-	public Location getPreferredLocation() {
-		return new Location(Side.RIGHT, VerticalLocation.FULL);
 	}
 
 	@Override

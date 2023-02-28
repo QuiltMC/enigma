@@ -29,6 +29,7 @@ public final class UiConfig {
 	public static final String VERTICAL_DIVIDER_LOCATIONS = "Vertical Divider Locations";
 	public static final String HORIZONTAL_DIVIDER_LOCATIONS = "Horizontal Divider Locations";
 	public static final String HOSTED_DOCKERS = "Hosted Dockers";
+	public static final String DOCKER_BUTTON_LOCATIONS = "Docker Button Locations";
 	public static final String THEMES = "Themes";
 	public static final String COLORS = "Colors";
 	public static final String DECOMPILER = "Decompiler";
@@ -82,10 +83,9 @@ public final class UiConfig {
 	public static final String RECENT_FILES = "Recent Files";
 	public static final String MAX_RECENT_FILES = "Max Recent Files";
 
-	private static final String PAIR_SEPARATOR = ";";
+	public static final String PAIR_SEPARATOR = ";";
 	@Deprecated
 	private static final String OLD_PAIR_SEPARATOR = ":";
-
 	private UiConfig() {
 	}
 
@@ -180,6 +180,22 @@ public final class UiConfig {
 		}
 
 		return Optional.of(dockers);
+	}
+
+	public static void setDockerButtonLocation(Docker docker, Docker.Location location) {
+		swing.data().section(DOCKER_BUTTON_LOCATIONS).setString(docker.getId(), location.toString());
+	}
+
+	public static Docker.Location getButtonLocation(Docker docker) {
+		String location = swing.data().section(DOCKER_BUTTON_LOCATIONS).setIfAbsentString(docker.getId(), docker.getPreferredButtonLocation().toString());
+
+		try {
+			return Docker.Location.parse(location);
+		} catch (Exception e) {
+			Logger.error("invalid docker button location: {}, ignoring!", location);
+			setDockerButtonLocation(docker, docker.getPreferredButtonLocation());
+			return docker.getPreferredButtonLocation();
+		}
 	}
 
 	public static void setVerticalDockDividerLocation(Docker.Side side, int location) {

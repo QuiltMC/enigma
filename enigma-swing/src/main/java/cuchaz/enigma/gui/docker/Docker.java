@@ -1,11 +1,12 @@
 package cuchaz.enigma.gui.docker;
 
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.gui.docker.component.DockerButton;
 import cuchaz.enigma.gui.docker.component.DockerTitleBar;
 import cuchaz.enigma.utils.I18n;
 
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
 import java.awt.BorderLayout;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -23,14 +24,14 @@ public abstract class Docker extends JPanel {
 
 	protected final Supplier<String> titleSupplier = () -> I18n.translate("docker." + this.getId() + ".title");
 	protected final DockerTitleBar title;
-	protected final JToggleButton button;
+	protected final DockerButton button;
 	protected final Gui gui;
 
 	protected Docker(Gui gui) {
 		super(new BorderLayout());
 		this.gui = gui;
 		this.title = new DockerTitleBar(this, this.titleSupplier);
-		this.button = new JToggleButton(this.titleSupplier.get());
+		this.button = new DockerButton(this, this.titleSupplier, this.getButtonLocation().side);
 		// add action listener to open and close the docker when its button is pressed
 		this.button.addActionListener(e -> {
 			Docker docker = getDocker(this.getClass());
@@ -45,13 +46,13 @@ public abstract class Docker extends JPanel {
 		this.add(this.title, BorderLayout.NORTH);
 
 		// validate to prevent difficult-to-trace errors
-		if (this.getButtonPosition().verticalLocation == VerticalLocation.FULL) {
+		if (this.getButtonLocation().verticalLocation == VerticalLocation.FULL) {
 			throw new IllegalStateException("docker button vertical location cannot be full! allowed values are top and bottom.");
 		}
 	}
 
 	public void retranslateUi() {
-		this.button.setText(this.titleSupplier.get());
+		this.button.repaint();
 		this.title.retranslateUi();
 	}
 
@@ -62,7 +63,7 @@ public abstract class Docker extends JPanel {
 	/**
 	 * @return the side panel button that opens and closes this docker
 	 */
-	public JToggleButton getButton() {
+	public DockerButton getButton() {
 		return this.button;
 	}
 
@@ -72,14 +73,13 @@ public abstract class Docker extends JPanel {
 	public abstract String getId();
 
 	/**
-	 * @return the position of the docker's button in the selector panels. cannot use {@link Docker.VerticalLocation#FULL}
+	 * @return the position of the docker's button in the selector panels. this also represents where the docker will open when its button is clicked cannot use {@link Docker.VerticalLocation#FULL}
 	 */
-	public abstract Docker.Location getButtonPosition();
+	public final Location getButtonLocation() {
+		return UiConfig.getButtonLocation(this);
+	}
 
-	/**
-	 * @return an {@link Location} representing this docker's preferred position: where the panel will open when the user clicks its button
-	 */
-	public abstract Location getPreferredLocation();
+	public abstract Location getPreferredButtonLocation();
 
 	@Override
 	public void setVisible(boolean visible) {
@@ -137,6 +137,15 @@ public abstract class Docker extends JPanel {
 	 * @param verticalLocation the vertical location of the docker, being full, top or bottom
 	 */
 	public record Location(Side side, VerticalLocation verticalLocation) {
+		public static Location parse(String string) {
+			String[] parts = string.split(UiConfig.PAIR_SEPARATOR);
+			return new Location(Side.valueOf(parts[0].toUpperCase()), VerticalLocation.valueOf(parts[1].toUpperCase()));
+		}
+
+		@Override
+		public String toString() {
+			return this.side.name().toLowerCase() + UiConfig.PAIR_SEPARATOR + this.verticalLocation.name().toLowerCase();
+		}
 	}
 
 	/**

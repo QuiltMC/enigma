@@ -30,9 +30,4 @@ public class InheritanceTreeDocker extends AbstractInheritanceTreeDocker {
 	public String getId() {
 		return "inheritance";
 	}
-
-	@Override
-	public Location getPreferredLocation() {
-		return new Location(Side.RIGHT, VerticalLocation.FULL);
-	}
 }

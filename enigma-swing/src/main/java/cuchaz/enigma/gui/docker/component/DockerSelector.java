@@ -1,30 +1,45 @@
 package cuchaz.enigma.gui.docker.component;
 
+import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.docker.Docker;
 
-import javax.swing.JLayer;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
-public class DockerSelector {
-	private final JLayer<JPanel> panel;
+public class DockerSelector extends JPanel {
+	private static final List<DockerSelector> INSTANCES = new ArrayList<>();
+
+	private JPanel hovered;
+
 	private final JPanel bottomSelector;
 	private final JPanel topSelector;
 	private final Docker.Side side;
 
 	public DockerSelector(Docker.Side side) {
-		JPanel mainPanel = new JPanel(new BorderLayout());
-		this.bottomSelector = new JPanel(new FlowLayout());
-		this.topSelector = new JPanel(new FlowLayout());
+		super(new BorderLayout());
+		this.bottomSelector = new JPanel(new VerticalFlowLayout(5));
+		this.topSelector = new JPanel(new VerticalFlowLayout(5));
 		this.side = side;
 
-		mainPanel.add(this.topSelector, side == Docker.Side.RIGHT ? BorderLayout.WEST : BorderLayout.EAST);
-		mainPanel.add(this.bottomSelector, side == Docker.Side.RIGHT ? BorderLayout.EAST : BorderLayout.WEST);
+		this.add(this.topSelector, BorderLayout.NORTH);
+		this.add(this.bottomSelector, BorderLayout.SOUTH);
 
-		this.panel = new JLayer<>(mainPanel);
-		this.panel.setUI(new RightAngleLayerUI(side == Docker.Side.RIGHT ? RightAngleLayerUI.Rotation.CLOCKWISE : RightAngleLayerUI.Rotation.COUNTERCLOCKWISE));
+		INSTANCES.add(this);
+	}
+
+	public JPanel getTopSelector() {
+		return this.topSelector;
+	}
+
+	public JPanel getBottomSelector() {
+		return this.bottomSelector;
 	}
 
 	/**
@@ -34,13 +49,13 @@ public class DockerSelector {
 		this.topSelector.removeAll();
 		this.bottomSelector.removeAll();
 
-		// create buttons docker options
 		for (Docker docker : Docker.getDockers().values()) {
 			// only use buttons that match this selector's side
-			if (docker.getButtonPosition().side() == this.side) {
-				JToggleButton button = docker.getButton();
+			if (docker.getButtonLocation().side() == this.side) {
+				DockerButton button = docker.getButton();
+				button.setConstraints("");
 
-				if (docker.getButtonPosition().verticalLocation() == Docker.VerticalLocation.TOP) {
+				if (docker.getButtonLocation().verticalLocation() == Docker.VerticalLocation.TOP) {
 					this.topSelector.add(button);
 				} else {
 					this.bottomSelector.add(button);
@@ -49,7 +64,83 @@ public class DockerSelector {
 		}
 	}
 
-	public JLayer<JPanel> getPanel() {
-		return this.panel;
+	private Rectangle getScreenBoundsFor(JPanel selector) {
+		Point location = selector.getLocationOnScreen();
+		return new Rectangle(location.x, selector.equals(this.bottomSelector) ? this.getLocationOnScreen().y + this.getHeight() / 2 : location.y, selector.getWidth(), this.getHeight() / 2);
+	}
+
+	private JPanel getHoveredPanel(MouseEvent event) {
+		if (Draggable.contains(getScreenBoundsFor(this.topSelector), event.getLocationOnScreen())) {
+			return this.topSelector;
+		} else if (Draggable.contains(getScreenBoundsFor(this.bottomSelector), event.getLocationOnScreen())) {
+			return this.bottomSelector;
+		} else {
+			return null;
+		}
+	}
+
+	private void receiveMouseEvent(MouseEvent event) {
+		if (this.isDisplayable()) {
+			if (event.getID() == MouseEvent.MOUSE_DRAGGED) {
+				this.hovered = this.getHoveredPanel(event);
+			} else if (event.getID() == MouseEvent.MOUSE_RELEASED) {
+				this.hovered = null;
+			}
+		}
+	}
+
+	private boolean dropButton(DockerButton button, MouseEvent event) {
+		JPanel hoveredPanel = this.getHoveredPanel(event);
+		if (hoveredPanel != null) {
+			hoveredPanel.add(button);
+			button.setSide(this.side);
+			UiConfig.setDockerButtonLocation(button.getDocker(), new Docker.Location(this.side, hoveredPanel.equals(this.bottomSelector) ? Docker.VerticalLocation.BOTTOM : Docker.VerticalLocation.TOP));
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public void paint(Graphics graphics) {
+		super.paint(graphics);
+
+		if (this.hovered != null) {
+			Rectangle paintedBounds = this.getScreenBoundsFor(this.hovered);
+
+			Color color = UiConfig.getDockHighlightColor();
+			graphics.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 100));
+			graphics.fillRect(0, this.hovered.equals(this.bottomSelector) ? paintedBounds.height : 0, paintedBounds.width, paintedBounds.height);
+			this.repaint();
+		}
+	}
+
+	public static class Util {
+		/**
+		 * Calls {@link DockerSelector#receiveMouseEvent(MouseEvent)}} on all selectors.
+		 * @param event the mouse event to pass to the docks
+		 */
+		public static void receiveMouseEvent(MouseEvent event) {
+			for (DockerSelector selector : INSTANCES) {
+				selector.receiveMouseEvent(event);
+			}
+		}
+
+		/**
+		 * Drops the button after it has been dragged.
+		 * Checks all selectors to see if it's positioned over one, and if yes, snaps it into to that selector on the proper side.
+		 * @param button the button to drop
+		 * @param event an {@link MouseEvent} to use to check if the docker was held over a dock
+		 * @return true if the button was snapped into a selector, false otherwise
+		 */
+		public static boolean dropButton(DockerButton button, MouseEvent event) {
+			for (DockerSelector selector : INSTANCES) {
+				if (selector.isDisplayable() && selector.dropButton(button, event)) {
+					return true;
+				}
+			}
+
+			return false;
+		}
 	}
 }
