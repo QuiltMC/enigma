@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Set;
 
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
-import cuchaz.enigma.gui.docker.AllClassesDocker;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import joptsimple.*;
@@ -126,11 +125,6 @@ public class Main {
 						CrashDialog.show(t);
 					}
 				});
-			}
-
-			if (options.has("single-class-tree")) {
-				Logger.warn("--single-class-tree is deprecated and will be removed in the next minor version! simply use the \"all classes\" docker instead.");
-				gui.openDocker(AllClassesDocker.class);
 			}
 
 			if (options.has(jar)) {
