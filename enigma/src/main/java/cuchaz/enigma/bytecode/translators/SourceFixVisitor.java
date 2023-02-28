@@ -3,6 +3,7 @@ package cuchaz.enigma.bytecode.translators;
 import cuchaz.enigma.analysis.index.BridgeMethodIndex;
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -20,7 +21,7 @@ public class SourceFixVisitor extends ClassVisitor {
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-		this.ownerEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
+		this.ownerEntry = this.index.getEntryIndex().getDefinition(new ClassEntry(name));
 		super.visit(version, access, name, signature, superName, interfaces);
 	}
 

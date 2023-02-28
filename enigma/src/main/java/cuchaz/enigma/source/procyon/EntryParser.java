@@ -28,7 +28,7 @@ public class EntryParser {
 		AccessFlags access = new AccessFlags(def.getModifiers());
 		ClassEntry superClass = def.getBaseType() != null ? parse(def.getBaseType()) : null;
 		ClassEntry[] interfaces = def.getExplicitInterfaces().stream().map(EntryParser::parse).toArray(ClassEntry[]::new);
-		return new ClassDefEntry(name, signature, access, superClass, interfaces);
+		return new ClassDefEntry(null, name, ClassEntry.getSimpleName(name), signature, access, superClass, interfaces);
 	}
 
 	public static ClassEntry parse(TypeReference typeReference) {

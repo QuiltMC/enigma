@@ -21,31 +21,51 @@ import cuchaz.enigma.utils.validation.ValidationContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Objects;
 
 public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<ClassEntry> {
-	private final String fullName;
 
-	public ClassEntry(String className) {
-		this(getOuterClass(className), getInnerName(className), null);
+	/**
+	 * A class' full name is its internal name, as returned by Class.getName.
+	 */
+	protected final String fullName;
+	/**
+	 * A class' simple name is its declared name, as given in the source code.
+	 * Note: anonymous classes and array types do not have a declared name, so
+	 * for those classes this field is {@code null}.
+	 * 
+	 * example 1: com/example/ExampleClass: 'ExampleClass'
+	 * example 2: com/example/ExampleClass$ExampleInnerClass: 'ExampleInnerClass'
+	 */
+	protected final String simpleName;
+
+	public ClassEntry(String fullName) {
+		this(null, fullName, getSimpleName(fullName), null);
 	}
 
-	public ClassEntry(@Nullable ClassEntry parent, String className) {
-		this(parent, className, null);
+	public ClassEntry(@Nullable ClassEntry parent, String fullName, @Nullable String simpleName) {
+		this(parent, fullName, simpleName, null);
 	}
 
-	public ClassEntry(@Nullable ClassEntry parent, String className, @Nullable String javadocs) {
-		super(parent, className, javadocs);
-		if (parent != null) {
-			this.fullName = parent.getFullName() + "$" + this.name;
-		} else {
-			this.fullName = this.name;
+	/**
+	 * @param parent     the enclosing class of this class
+	 * @param fullName   the fully qualified name of this class
+	 * @param simpleName the declared name of this class (is {@code null} for anonymous classes and array types)
+	 * @param javadocs
+	 */
+	public ClassEntry(@Nullable ClassEntry parent, String fullName, @Nullable String simpleName, @Nullable String javadocs) {
+		super(parent, fullName, javadocs);
+
+		if (parent == null && fullName.indexOf('.') >= 0) {
+			throw new IllegalArgumentException("Class name must be in JVM format. ie, path/to/package/class$inner : " + fullName);
 		}
 
-		if (parent == null && className.indexOf('.') >= 0) {
-			throw new IllegalArgumentException("Class name must be in JVM format. ie, path/to/package/class$inner : " + className);
-		}
+		this.fullName = fullName;
+		this.simpleName = simpleName;
+	}
+
+	protected ClassEntry set(ClassEntry parent, String fullName, @Nullable String simpleName, @Nullable String javadoc) {
+		return new ClassEntry(parent, fullName, simpleName, javadoc);
 	}
 
 	@Override
@@ -55,16 +75,12 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public String getName() {
-		return this.name;
+		return this.fullName;
 	}
 
 	@Override
 	public String getSimpleName() {
-		int packagePos = this.name.lastIndexOf('/');
-		if (packagePos > 0) {
-			return this.name.substring(packagePos + 1);
-		}
-		return this.name;
+		return this.simpleName;
 	}
 
 	@Override
@@ -79,24 +95,24 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public String getContextualName() {
-		if (this.isInnerClass()) {
-			return this.parent.getSimpleName() + "$" + this.name;
-		}
-		return this.getSimpleName();
+		if (this.hasOuterClass())
+			return getSimpleName(this.fullName);
+		return this.simpleName;
 	}
 
 	@Override
 	public TranslateResult<? extends ClassEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
-		if (this.name.charAt(0) == '[') {
-			TranslateResult<TypeDescriptor> translatedName = translator.extendedTranslate(new TypeDescriptor(this.name));
-			return translatedName.map(desc -> new ClassEntry(this.parent, desc.toString()));
+		if (this.fullName.charAt(0) == '[') {
+			TranslateResult<TypeDescriptor> translatedName = translator.extendedTranslate(new TypeDescriptor(this.fullName));
+			return translatedName.map(desc -> this.withName(desc.toString()));
 		}
 
-		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
-		String docs = mapping.javadoc();
+		String targetName = mapping.targetName();
+		String javadoc = mapping.javadoc();
+
 		return TranslateResult.of(
-				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new ClassEntry(this.parent, translatedName, docs)
+				targetName == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
+				this.withNameAndJavadoc(targetName == null ? this.hasOuterClass() ? this.simpleName : this.fullName : targetName, javadoc)
 		);
 	}
 
@@ -116,7 +132,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	public boolean equals(ClassEntry other) {
-		return other != null && Objects.equals(this.parent, other.parent) && this.name.equals(other.name);
+		return other != null && Objects.equals(this.fullName, other.fullName);
 	}
 
 	@Override
@@ -131,32 +147,72 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public void validateName(ValidationContext vc, String name) {
-		IdentifierValidation.validateClassName(vc, name, this.isInnerClass());
+		IdentifierValidation.validateClassName(vc, name, this.hasOuterClass());
 	}
 
 	@Override
 	public ClassEntry withName(String name) {
-		return new ClassEntry(this.parent, name, this.javadocs);
+		return this.withNameAndJavadoc(name, this.javadocs);
+	}
+
+	public ClassEntry withNameAndJavadoc(String name, @Nullable String javadoc) {
+		String fullName = this.fullName;
+		String simpleName = this.simpleName;
+
+		if (this.parent == null) {
+			// not an inner class; given name is full internal name
+			fullName = name;
+			simpleName = getSimpleName(fullName);
+		} else if (simpleName != null) { // anonymous classes cannot be renamed
+			// inner class; given name is simple name
+			if (fullName.endsWith(simpleName)) {
+				// The convention is for the full name of inner classes
+				// to have the form OuterClassName$InnerName but this is
+				// not required by the JVM spec!
+				fullName = fullName.substring(0, fullName.length() - simpleName.length()) + name;
+			}
+			simpleName = name;
+		}
+
+		return this.set(this.parent, fullName, simpleName, javadoc);
 	}
 
 	@Override
 	public ClassEntry withParent(ClassEntry parent) {
-		return new ClassEntry(parent, this.name, this.javadocs);
+		String fullName = this.fullName;
+		String simpleName = this.simpleName;
+
+		if (this.parent == null) {
+			// current parent is null, so reset simple name
+			simpleName = null;
+		} else if (fullName.startsWith(this.parent.fullName)) {
+			// The convention is for the full name of inner classes
+			// to have the form OuterClassName$InnerName but this is
+			// not required by the JVM spec!
+			fullName = parent.fullName + fullName.substring(this.parent.fullName.length());
+		} else {
+			// even if convention is not followed, the full name
+			// should adopt the parent class' package, so as to
+			// avoid package access errors
+			String oldPackage = this.getPackageName();
+			String newPackage = parent.getPackageName();
+
+			fullName = newPackage + fullName.substring(oldPackage.length());
+		}
+
+		return this.set(parent, fullName, simpleName, this.javadocs);
 	}
 
 	@Override
 	public String toString() {
-		return this.getFullName();
+		return this.fullName;
 	}
 
 	public String getPackageName() {
 		return getParentPackage(this.fullName);
 	}
 
-	/**
-	 * Returns whether this class entry has a parent, and therefore is an inner class.
-	 */
-	public boolean isInnerClass() {
+	public boolean hasOuterClass() {
 		return this.parent != null;
 	}
 
@@ -167,28 +223,11 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Nonnull
 	public ClassEntry getOutermostClass() {
-		if (this.parent == null) {
-			return this;
-		}
-		return this.parent.getOutermostClass();
+		return this.hasOuterClass() ? this.getOuterClass().getOutermostClass() : this;
 	}
 
-	public ClassEntry buildClassEntry(List<ClassEntry> classChain) {
-		assert (classChain.contains(this));
-		StringBuilder buf = new StringBuilder();
-		for (ClassEntry chainEntry : classChain) {
-			if (buf.length() == 0) {
-				buf.append(chainEntry.getFullName());
-			} else {
-				buf.append("$");
-				buf.append(chainEntry.getSimpleName());
-			}
-
-			if (chainEntry == this) {
-				break;
-			}
-		}
-		return new ClassEntry(buf.toString());
+	public String getInnerName() {
+		return this.hasOuterClass() ? this.simpleName : null;
 	}
 
 	public boolean isJre() {
@@ -218,40 +257,39 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		return name;
 	}
 
-	@Nullable
-	public static ClassEntry getOuterClass(String name) {
+	public static String getSimpleName(String name) {
 		if (name.charAt(0) == '[') {
 			return null;
 		}
 
-		int index = name.lastIndexOf('$');
-		if (index >= 0) {
-			return new ClassEntry(name.substring(0, index));
+		int packagePos = name.lastIndexOf('/');
+		if (packagePos > 0) {
+			return name.substring(packagePos + 1);
 		}
-		return null;
+		return name;
 	}
 
-	public static String getInnerName(String name) {
+	public static String stripOuterClassName(String name) {
 		if (name.charAt(0) == '[') {
-			return name;
+			return null;
 		}
 
-		int innerClassPos = name.lastIndexOf('$');
-		if (innerClassPos > 0) {
-			return name.substring(innerClassPos + 1);
+		int innerPos = name.lastIndexOf('$');
+		if (innerPos > 0) {
+			return name.substring(innerPos + 1);
 		}
 		return name;
 	}
 
 	@Override
 	public int compareTo(ClassEntry entry) {
-		String name = this.getFullName();
-		String otherFullName = entry.getFullName();
+		int length = this.fullName.length();
+		int otherLength = entry.fullName.length();
 
-		if (name.length() != otherFullName.length()) {
-			return name.length() - otherFullName.length();
+		if (length != otherLength) {
+			return length - otherLength;
 		}
 
-		return name.compareTo(otherFullName);
+		return this.fullName.compareTo(entry.fullName);
 	}
 }

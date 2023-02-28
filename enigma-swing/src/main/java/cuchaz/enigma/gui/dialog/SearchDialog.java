@@ -128,7 +128,7 @@ public class SearchDialog {
 
 		switch (type) {
 			case CLASS -> entryIndex.getClasses().parallelStream()
-					.filter(e -> !e.isInnerClass())
+					.filter(e -> !e.hasOuterClass())
 					.map(e -> SearchEntryImpl.from(e, this.parent.getController()))
 					.map(SearchUtil.Entry::from)
 					.sequential()

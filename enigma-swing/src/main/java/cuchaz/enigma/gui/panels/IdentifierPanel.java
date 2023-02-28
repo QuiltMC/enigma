@@ -95,8 +95,8 @@ public class IdentifierPanel {
 						throw new IllegalStateException("constructor method entry to render has no parent!");
 					}
 
-					name = parent.isInnerClass() ? parent.getName() : parent.getFullName();
-				} else if (this.deobfEntry instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
+					name = parent.hasOuterClass() ? parent.getSimpleName() : parent.getFullName();
+				} else if (this.deobfEntry instanceof ClassEntry classEntry && !classEntry.hasOuterClass()) {
 					name = classEntry.getFullName();
 				} else {
 					name = this.deobfEntry.getName();
@@ -120,7 +120,7 @@ public class IdentifierPanel {
 			this.ui.setEnabled(true);
 
 			if (this.deobfEntry instanceof ClassEntry ce) {
-				String name = ce.isInnerClass() ? ce.getName() : ce.getFullName();
+				String name = ce.hasOuterClass() ? ce.getSimpleName() : ce.getFullName();
 				this.nameField = th.addRenameTextField(EditableType.CLASS, name);
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
 				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.CLASS, this::onModifierChanged);
@@ -134,7 +134,7 @@ public class IdentifierPanel {
 				if (me.isConstructor()) {
 					ClassEntry ce = me.getParent();
 					if (ce != null) {
-						String name = ce.isInnerClass() ? ce.getName() : ce.getFullName();
+						String name = ce.hasOuterClass() ? ce.getSimpleName() : ce.getFullName();
 						this.nameField = th.addRenameTextField(EditableType.CLASS, name);
 					}
 				} else {

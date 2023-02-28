@@ -133,7 +133,7 @@ public final class ClassHandleProvider {
 				e.invalidateJavadoc();
 			}
 
-			if (entry.isInnerClass()) {
+			if (entry.hasOuterClass()) {
 				this.invalidateJavadoc(entry.getOuterClass());
 			}
 		});

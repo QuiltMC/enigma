@@ -396,7 +396,7 @@ public class GuiController implements ClientPacketHandler {
 
 		Collection<ClassEntry> classes = this.project.getJarIndex().getEntryIndex().getClasses();
 		Stream<ClassEntry> visibleClasses = classes.stream()
-				.filter(entry -> !entry.isInnerClass());
+				.filter(entry -> !entry.hasOuterClass());
 
 		visibleClasses.forEach(entry -> {
 			TranslateResult<ClassEntry> result = mapper.extendedDeobfuscate(entry);
@@ -515,7 +515,7 @@ public class GuiController implements ClientPacketHandler {
 			this.chp.invalidateJavadoc(target.getTopLevelClass());
 		}
 
-		if (renamed && target instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
+		if (renamed && target instanceof ClassEntry classEntry && !classEntry.hasOuterClass()) {
 			this.gui.moveClassTree(target, prev.targetName() == null, mapping.targetName() == null);
 			return;
 		}

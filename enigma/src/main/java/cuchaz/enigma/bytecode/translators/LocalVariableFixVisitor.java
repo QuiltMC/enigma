@@ -1,9 +1,12 @@
 package cuchaz.enigma.bytecode.translators;
 
 import com.google.common.base.CharMatcher;
+
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.translation.LocalNameGenerator;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
@@ -15,15 +18,17 @@ import java.util.List;
 import java.util.Map;
 
 public class LocalVariableFixVisitor extends ClassVisitor {
+	private final EntryIndex entryIndex;
 	private ClassDefEntry ownerEntry;
 
-	public LocalVariableFixVisitor(int api, ClassVisitor visitor) {
+	public LocalVariableFixVisitor(int api, ClassVisitor visitor, EntryIndex entryIndex) {
 		super(api, visitor);
+		this.entryIndex = entryIndex;
 	}
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-		this.ownerEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
+		this.ownerEntry = this.entryIndex.getDefinition(new ClassEntry(name));
 		super.visit(version, access, name, signature, superName, interfaces);
 	}
 

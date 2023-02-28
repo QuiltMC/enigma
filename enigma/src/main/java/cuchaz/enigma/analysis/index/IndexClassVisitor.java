@@ -1,6 +1,7 @@
 package cuchaz.enigma.analysis.index;
 
 import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import org.objectweb.asm.ClassVisitor;
@@ -9,17 +10,18 @@ import org.objectweb.asm.MethodVisitor;
 
 public class IndexClassVisitor extends ClassVisitor {
 	private final JarIndexer indexer;
+	private final EntryIndex entryIndex;
 	private ClassDefEntry classEntry;
 
-	public IndexClassVisitor(JarIndex indexer, int api) {
+	public IndexClassVisitor(JarIndexer indexer, EntryIndex entryIndex, int api) {
 		super(api);
 		this.indexer = indexer;
+		this.entryIndex = entryIndex;
 	}
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-		this.classEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
-		this.indexer.indexClass(this.classEntry);
+		this.classEntry = this.entryIndex.getDefinition(new ClassEntry(name));
 
 		super.visit(version, access, name, signature, superName, interfaces);
 	}

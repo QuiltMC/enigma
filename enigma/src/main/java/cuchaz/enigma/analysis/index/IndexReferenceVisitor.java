@@ -34,7 +34,7 @@ public class IndexReferenceVisitor extends ClassVisitor {
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-		this.classEntry = new ClassEntry(name);
+		this.classEntry = this.entryIndex.getDefinition(new ClassEntry(name));
 		this.className = name;
 	}
 

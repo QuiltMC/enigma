@@ -2,8 +2,8 @@ package cuchaz.enigma;
 
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
+
 import cuchaz.enigma.analysis.EntryReference;
-import cuchaz.enigma.analysis.index.EnclosingMethodIndex;
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.api.service.NameProposalService;
 import cuchaz.enigma.api.service.ObfuscationTestService;
@@ -151,7 +151,7 @@ public class EnigmaProject {
 	}
 
 	public boolean isNavigable(Entry<?> obfEntry) {
-		if (obfEntry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
+		if (obfEntry instanceof ClassEntry classEntry && this.isAnonymous(classEntry)) {
 			return false;
 		}
 
@@ -185,7 +185,7 @@ public class EnigmaProject {
 			}
 		} else if (obfEntry instanceof LocalVariableEntry localEntry && !localEntry.isArgument()) {
 			return false;
-		} else if (obfEntry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
+		} else if (obfEntry instanceof ClassEntry classEntry && this.isAnonymous(classEntry)) {
 			return false;
 		}
 
@@ -223,10 +223,10 @@ public class EnigmaProject {
 		return this.jarIndex.getEntryIndex().hasEntry(entry) && this.jarIndex.getEntryIndex().getEntryAccess(entry).isSynthetic();
 	}
 
-	public boolean isAnonymousOrLocal(ClassEntry classEntry) {
-		EnclosingMethodIndex enclosingMethodIndex = this.jarIndex.getEnclosingMethodIndex();
+	public boolean isAnonymous(ClassEntry classEntry) {
 		// Only local and anonymous classes may have the EnclosingMethod attribute
-		return enclosingMethodIndex.hasEnclosingMethod(classEntry);
+		// but anonymous classes do not have simple names, while local classes do
+		return classEntry.getSimpleName() == null && this.jarIndex.getEnclosingMethodIndex().hasEnclosingMethod(classEntry);
 	}
 
 	public JarExport exportRemappedJar(ProgressListener progress) {

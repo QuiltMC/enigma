@@ -149,8 +149,7 @@ public class ClassSelector extends JTree {
 						}
 					}
 					if (allowEdit && ClassSelector.this.renameSelectionListener != null) {
-						Object prevData = node.getUserObject();
-						Object objectData = node.getUserObject() instanceof ClassEntry ? new ClassEntry(((ClassEntry) prevData).getPackageName() + "/" + data) : data;
+						Object objectData = node.getUserObject() instanceof ClassEntry classEntry ? classEntry.withName(data) : data;
 
 						ValidationContext context = new ValidationContext(null);
 						ClassSelector.this.renameSelectionListener.onSelectionRename(context, node.getUserObject(), objectData, node);

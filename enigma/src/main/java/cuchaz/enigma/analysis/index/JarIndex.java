@@ -17,6 +17,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.analysis.ClassDefBuilder;
 import cuchaz.enigma.analysis.ReferenceTargetType;
 import cuchaz.enigma.classprovider.ClassProvider;
 import cuchaz.enigma.translation.mapping.EntryResolver;
@@ -70,8 +71,16 @@ public class JarIndex implements JarIndexer {
 
 		progress.step(1, I18n.translate("progress.jar.indexing.entries"));
 
+		// first pass; indexing classes
+		ClassDefBuilder builder = new ClassDefBuilder(this, this.entryIndex, classProvider);
+
 		for (String className : classNames) {
-			classProvider.get(className).accept(new IndexClassVisitor(this, Enigma.ASM_VERSION));
+			builder.build(className);
+		}
+
+		// second pass; indexing fields and methods
+		for (String className : classNames) {
+			classProvider.get(className).accept(new IndexClassVisitor(this, this.entryIndex, Enigma.ASM_VERSION));
 		}
 
 		progress.step(2, I18n.translate("progress.jar.indexing.references"));
@@ -109,7 +118,7 @@ public class JarIndex implements JarIndexer {
 		}
 
 		this.indexers.forEach(indexer -> indexer.indexClass(classEntry));
-		if (classEntry.isInnerClass() && !classEntry.getAccess().isSynthetic()) {
+		if (classEntry.hasOuterClass() && !classEntry.getAccess().isSynthetic()) {
 			this.childrenByClass.put(classEntry.getParent(), classEntry);
 		}
 	}

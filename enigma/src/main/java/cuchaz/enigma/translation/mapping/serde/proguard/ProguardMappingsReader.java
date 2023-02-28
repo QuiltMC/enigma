@@ -52,7 +52,7 @@ public class ProguardMappingsReader implements MappingsReader {
 				String targetName = classMatcher.group(2);
 
 				currentClass = new ClassEntry(name.replace('.', '/'));
-				mappings.insert(currentClass, new EntryMapping(ClassEntry.getInnerName(targetName.replace('.', '/'))));
+				mappings.insert(currentClass, new EntryMapping(ClassEntry.stripOuterClassName(targetName.replace('.', '/'))));
 			} else if (fieldMatcher.matches()) {
 				String type = fieldMatcher.group(1);
 				String name = fieldMatcher.group(2);
