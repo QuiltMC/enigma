@@ -90,7 +90,7 @@ public class DockerButton extends JToggleButton implements Draggable {
 
 	@Override
 	public int getDragDelay() {
-		return 500;
+		return 100;
 	}
 
 	@Override
@@ -105,7 +105,9 @@ public class DockerButton extends JToggleButton implements Draggable {
 
 	@Override
 	public void setText(String text) {
-		throw new UnsupportedOperationException("cannot set text on a docker button! you should be setting the text supplier to provide translated text instead.");
+		if (!text.isEmpty()) {
+			throw new UnsupportedOperationException("cannot set text on a docker button! you should be setting the text supplier to provide translated text instead.");
+		}
 	}
 
 	@Override

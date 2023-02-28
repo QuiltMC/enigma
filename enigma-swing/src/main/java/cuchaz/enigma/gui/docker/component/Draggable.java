@@ -21,14 +21,56 @@ import java.util.concurrent.TimeUnit;
 public interface Draggable {
 	ScheduledExecutorService executor = Executors.newScheduledThreadPool(5);
 
+	/**
+	 * Returns whether the mouse is currently pressed.
+	 * @return true if the mouse is pressed, false otherwise
+	 */
 	boolean mousePressed();
+
+	/**
+	 * Sets whether the mouse is currently pressed.
+	 * @param mousePressed the new state
+	 */
 	void setMousePressed(boolean mousePressed);
+
+	/**
+	 * @return whether to cancel currently pending "begin dragging" events.
+	 */
 	boolean cancelEvents();
+
+	/**
+	 * @param cancelEvents whether to cancel all currently pending "begin dragging" events. This should be called when an event has successfully started
+	 */
 	void setCancelEvents(boolean cancelEvents);
+
+	/**
+	 * Gets the draggable's initial parent - that is, the parent of the draggable immediately before dragging begins.
+	 * @return the initial parent
+	 */
 	JComponent getInitialParent();
+
+	/**
+	 * Sets the draggable's initial parent - that is, the parent of the draggable immediately before dragging begins.
+	 * @param parent the new parent
+	 */
 	void setInitialParent(JComponent parent);
+
+	/**
+	 * Gets the constraints to use when returning the draggable to its parent post-drag.
+	 * @return the constraints as a generic object
+	 */
 	Object getConstraints();
+
+	/**
+	 * Sets the constraints for this draggable object.
+	 * @param constraints the new constraints
+	 */
 	void setConstraints(Object constraints);
+
+	/**
+	 * Gets this draggable object as a Swing component.
+	 * @return the component
+	 */
 	JComponent get();
 
 	/**
