@@ -49,7 +49,7 @@ public class FillClassMappingsCommandTest extends CommandTest {
 	@Test
 	public void test() throws Exception {
 		Path resultFile = Files.createTempFile("fillClassMappings", ".mappings");
-		FillClassMappingsCommand.run(JAR, MAPPINGS, resultFile, MappingFormat.ENIGMA_FILE.name());
+		FillClassMappingsCommand.run(JAR, MAPPINGS, resultFile, MappingFormat.ENIGMA_FILE.name(), false);
 
 		EntryTree<EntryMapping> result = MappingFormat.ENIGMA_FILE.read(resultFile, ProgressListener.none(), new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF));
 

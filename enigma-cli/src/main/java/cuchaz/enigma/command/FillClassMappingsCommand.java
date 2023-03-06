@@ -14,7 +14,6 @@ import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.Utils;
 import org.tinylog.Logger;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -27,12 +26,12 @@ public class FillClassMappingsCommand extends Command {
 
 	@Override
 	public String getUsage() {
-		return "<in-jar> <source> <result> <result-format>";
+		return "<in-jar> <source> <result> <result-format> [<fill-all>]";
 	}
 
 	@Override
 	public boolean isValidArgument(int length) {
-		return length == 4;
+		return length == 4 || length == 5;
 	}
 
 	@Override
@@ -41,11 +40,12 @@ public class FillClassMappingsCommand extends Command {
 		Path source = getReadablePath(getArg(args, 1, "source", true));
 		Path result = getWritablePath(getArg(args, 2, "result", true));
 		String resultFormat = getArg(args, 3, "result-format", true);
+		boolean fillAll = Boolean.parseBoolean(getArg(args, 4, "fill-all", false));
 
-		run(inJar, source, result, resultFormat);
+		run(inJar, source, result, resultFormat, fillAll);
 	}
 
-	public static void run(Path jar, Path source, Path result, String resultFormat) throws Exception {
+	public static void run(Path jar, Path source, Path result, String resultFormat, boolean fillAll) throws Exception {
 		boolean debug = shouldDebug(NAME);
 		JarIndex jarIndex = loadJar(jar);
 
@@ -53,7 +53,7 @@ public class FillClassMappingsCommand extends Command {
 		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
 		EntryTree<EntryMapping> sourceMappings = readMappings(source, ProgressListener.none(), saveParameters);
 
-		EntryTree<EntryMapping> resultMappings = run(jarIndex, sourceMappings, debug);
+		EntryTree<EntryMapping> resultMappings = exec(jarIndex, sourceMappings, fillAll, debug);
 
 		Logger.info("Writing mappings...");
 		Utils.delete(result);
@@ -64,7 +64,18 @@ public class FillClassMappingsCommand extends Command {
 		}
 	}
 
-	public static EntryTree<EntryMapping> run(JarIndex jarIndex, EntryTree<EntryMapping> source, boolean trackDelta) throws IOException {
+	/**
+	 * Fill class mappings for the given source tree.
+	 *
+	 * @param jarIndex the jar index to analyze which classes should get a name
+	 * @param source the mapping tree to fill in
+	 * @param fillAll add mappings for all existing classes.
+	 *                   This option adds mappings for a whole subtree if its root node, the top-level class node, exists.
+	 *                   That is, if any of its children (or their children and so on) have a mapping
+	 * @param trackDelta whether to use a {@link DeltaTrackingTree} for the result
+	 * @return the resulting mapping tree
+	 */
+	public static EntryTree<EntryMapping> exec(JarIndex jarIndex, EntryTree<EntryMapping> source, boolean fillAll, boolean trackDelta) {
 		EntryTree<EntryMapping> result = new HashEntryTree<>(source);
 
 		if (trackDelta) {
@@ -78,7 +89,7 @@ public class FillClassMappingsCommand extends Command {
 				.toList();
 		for (ClassEntry rootEntry : rootEntries) {
 			// These entries already have a mapping tree node
-			recursiveAddMappings(result, jarIndex, rootEntry, false);
+			recursiveAddMappings(result, jarIndex, rootEntry, fillAll);
 		}
 
 		return result;

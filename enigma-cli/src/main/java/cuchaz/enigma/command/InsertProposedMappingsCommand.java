@@ -70,7 +70,7 @@ public class InsertProposedMappingsCommand extends Command {
 		}
 
 		EnigmaProject project = openProject(inJar, source, enigma);
-		EntryTree<EntryMapping> mappings = run(nameProposalServices, project, debug);
+		EntryTree<EntryMapping> mappings = exec(nameProposalServices, project, debug);
 
 		Utils.delete(output);
 		MappingSaveParameters saveParameters = enigma.getProfile().getMappingSaveParameters();
@@ -81,7 +81,7 @@ public class InsertProposedMappingsCommand extends Command {
 		}
 	}
 
-	public static EntryTree<EntryMapping> run(NameProposalService[] nameProposalServices, EnigmaProject project, boolean trackDelta) {
+	public static EntryTree<EntryMapping> exec(NameProposalService[] nameProposalServices, EnigmaProject project, boolean trackDelta) {
 		EntryTree<EntryMapping> mappings = new HashEntryTree<>(project.getMapper().getObfToDeobf());
 
 		if (trackDelta) {
