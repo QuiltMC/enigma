@@ -122,10 +122,11 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		WindowFocusListener focusListener = new WindowAdapter() {
 			@Override
 			public void windowLostFocus(WindowEvent e) {
-				EnigmaQuickFindDialog.this.setVisible(false);
 				target.getDocument().removeDocumentListener(EnigmaQuickFindDialog.this);
 				Markers.removeMarkers(target, EnigmaQuickFindDialog.this.marker);
 				EnigmaQuickFindDialog.this.removeWindowListener(this);
+				EnigmaQuickFindDialog.this.setVisible(false);
+				target.requestFocus();
 			}
 		};
 		this.addWindowFocusListener(focusListener);
