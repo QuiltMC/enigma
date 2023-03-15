@@ -28,7 +28,6 @@ import cuchaz.enigma.translation.representation.Signature;
 public class ClassDefEntry extends ClassEntry implements DefEntry<ClassEntry> {
 	private final AccessFlags access;
 	private final Signature signature;
-	@Nullable
 	private final ClassEntry superClass;
 	private final ClassEntry[] interfaces;
 
@@ -77,11 +76,11 @@ public class ClassDefEntry extends ClassEntry implements DefEntry<ClassEntry> {
 	}
 
 	public boolean isEnum() {
-		return this.superClass != null && this.superClass.getName().equals("java/lang/Enum");
+		return this.superClass.getName().equals("java/lang/Enum");
 	}
 
 	public boolean isRecord() {
-		return this.superClass != null && this.superClass.getName().equals("java/lang/Record");
+		return this.superClass.getName().equals("java/lang/Record");
 	}
 
 	@Override
