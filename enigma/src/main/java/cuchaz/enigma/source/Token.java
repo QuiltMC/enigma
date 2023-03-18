@@ -30,7 +30,7 @@ public class Token implements Comparable<Token> {
 		return to.length() - this.length();
 	}
 
-	public void rename(StringBuffer source, String to) {
+	public void rename(StringBuilder source, String to) {
 		int oldEnd = this.end;
 		this.text = to;
 		this.end = this.start + to.length();
@@ -55,7 +55,7 @@ public class Token implements Comparable<Token> {
 
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof Token && this.equals((Token) other);
+		return other instanceof Token token && this.equals(token);
 	}
 
 	@Override
