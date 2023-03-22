@@ -239,15 +239,6 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	@Override
-	public String getSourceRemapName() {
-		ClassEntry outerClass = this.getOuterClass();
-		if (outerClass != null) {
-			return outerClass.getSourceRemapName() + "." + this.name;
-		}
-		return this.getSimpleName();
-	}
-
-	@Override
 	public int compareTo(ClassEntry entry) {
 		String name = this.getFullName();
 		String otherFullName = entry.getFullName();

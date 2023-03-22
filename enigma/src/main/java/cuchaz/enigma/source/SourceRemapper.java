@@ -22,12 +22,6 @@ public class SourceRemapper {
 
 			String remappedName = remapper.remap(token, movedToken);
 
-			// fixes a bug where the remapped name was displaying each and every inner class (e.g A.A.B.A.B.C instead of simply A.B.C)
-			// we do this by removing everything but the last class in the name (eg A.B.C -> C)
-			if (remappedName != null && remappedName.contains(".")) {
-				remappedName = remappedName.substring(remappedName.lastIndexOf('.') + 1);
-			}
-
 			if (remappedName != null) {
 				accumulatedOffset += movedToken.getRenameOffset(remappedName);
 				movedToken.rename(remappedSource, remappedName);
