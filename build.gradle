@@ -33,7 +33,7 @@ subprojects {
     }
 
     group = 'org.quiltmc'
-    version = '1.7.2'
+    version = '1.7.3'
 
     var ENV = System.getenv()
     version = version + (ENV.GITHUB_ACTIONS ? (ENV.SNAPSHOTS_URL ? "-SNAPSHOT" : "") : "+local")
