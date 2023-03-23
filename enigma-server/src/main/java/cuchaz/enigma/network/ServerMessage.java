@@ -51,10 +51,10 @@ public abstract class ServerMessage {
 			throw new IOException(String.format("Invalid message type ID %d", typeId));
 		}
 		Type type = Type.values()[typeId];
-		String user = input.readUTF();
+		String user = PacketHelper.readString(input);
 		switch (type) {
 			case CHAT:
-				String message = input.readUTF();
+				String message = PacketHelper.readString(input);
 				return chat(user, message);
 			case CONNECT:
 				return connect(user);
@@ -71,7 +71,7 @@ public abstract class ServerMessage {
 				return removeMapping(user, entry);
 			case RENAME:
 				entry = PacketHelper.readEntry(input);
-				String newName = input.readUTF();
+				String newName = PacketHelper.readString(input);
 				return rename(user, entry, newName);
 			default:
 				throw new IllegalStateException("unreachable");
