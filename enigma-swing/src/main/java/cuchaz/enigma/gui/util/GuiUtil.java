@@ -1,11 +1,8 @@
 package cuchaz.enigma.gui.util;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
-import cuchaz.enigma.EnigmaProject;
-import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.gui.stats.StatsGenerator;
 import cuchaz.enigma.gui.stats.StatsResult;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
@@ -173,6 +170,7 @@ public class GuiUtil {
 		if (entry.isConstructor()) {
 			return CONSTRUCTOR_ICON;
 		}
+
 		return METHOD_ICON;
 	}
 

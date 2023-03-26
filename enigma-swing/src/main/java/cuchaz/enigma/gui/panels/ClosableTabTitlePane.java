@@ -11,7 +11,13 @@ import java.awt.event.MouseEvent;
 
 import javax.accessibility.AccessibleContext;
 import javax.annotation.Nullable;
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 
@@ -89,11 +95,13 @@ public class ClosableTabTitlePane {
 		if (this.parent != null) {
 			pane.removeChangeListener(this.cachedChangeListener);
 		}
+
 		if (pane != null) {
 			this.updateState(pane);
 			this.cachedChangeListener = e -> this.updateState(pane);
 			pane.addChangeListener(this.cachedChangeListener);
 		}
+
 		this.parent = pane;
 	}
 
@@ -119,12 +127,13 @@ public class ClosableTabTitlePane {
 
 	@Nullable
 	public static ClosableTabTitlePane byUi(Component c) {
-		if (c instanceof JComponent) {
-			Object prop = ((JComponent) c).getClientProperty(ClosableTabTitlePane.class);
-			if (prop instanceof ClosableTabTitlePane) {
-				return (ClosableTabTitlePane) prop;
+		if (c instanceof JComponent component) {
+			Object prop = component.getClientProperty(ClosableTabTitlePane.class);
+			if (prop instanceof ClosableTabTitlePane pane) {
+				return pane;
 			}
 		}
+
 		return null;
 	}
 }

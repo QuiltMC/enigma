@@ -100,6 +100,7 @@ public final class KeyBinds {
 				KeyBindsConfig.setKeyBind(editedKeyBind);
 			}
 		}
+
 		if (modified) {
 			KeyBindsConfig.save();
 		}

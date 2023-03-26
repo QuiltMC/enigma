@@ -33,8 +33,10 @@ public class ClassSelectorPackageNode extends DefaultMutableTreeNode {
 
 	@Override
 	public void setUserObject(Object userObject) {
-		if (userObject instanceof String)
+		if (userObject instanceof String) {
 			this.packageName = (String) userObject;
+		}
+
 		super.setUserObject(userObject);
 	}
 

@@ -1,6 +1,14 @@
 package cuchaz.enigma.gui.search;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -75,6 +83,7 @@ public class SearchUtil<T extends SearchEntry> {
 						if (index < 0) {
 							index = ~index;
 						}
+
 						System.arraycopy(scores, index, scores, index + 1, dataSize - index);
 						scores[index] = score;
 						consumer.add(index, value.searchEntry);
@@ -165,6 +174,7 @@ public class SearchUtil<T extends SearchEntry> {
 						merge(newSnapshots, Collections.singletonMap(remaining.substring(i), score + baseScore * posMultiplier + chainBonus), Math::max);
 					}
 				}
+
 				merge(snapshots, newSnapshots, Math::max);
 			}
 
@@ -189,6 +199,7 @@ public class SearchUtil<T extends SearchEntry> {
 			while (len < s1.length() && len < s2.length() && s1.charAt(len) == s2.charAt(len)) {
 				len += 1;
 			}
+
 			return len;
 		}
 
@@ -224,12 +235,14 @@ public class SearchUtil<T extends SearchEntry> {
 									break;
 								}
 							}
+
 							take = nextLowercase - 1;
 						} else {
 							int nextUppercase = 1;
 							while (nextUppercase < input.length() && Character.isLowerCase(input.charAt(nextUppercase))) {
 								nextUppercase += 1;
 							}
+
 							take = nextUppercase;
 						}
 					}
@@ -238,16 +251,18 @@ public class SearchUtil<T extends SearchEntry> {
 					while (nextNonNum < input.length() && Character.isLetter(input.charAt(nextNonNum)) && !Character.isLowerCase(input.charAt(nextNonNum))) {
 						nextNonNum += 1;
 					}
+
 					take = nextNonNum;
 				} else {
 					take = 1;
 				}
+
 				list.add(input.substring(0, take));
 				input = input.substring(take);
 			}
+
 			return list.toArray(new String[0]);
 		}
-
 	}
 
 	@FunctionalInterface

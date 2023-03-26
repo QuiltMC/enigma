@@ -156,7 +156,7 @@ public class CollabDocker extends Docker {
 	}
 
 	/**
-	 * sets up the panel for its offline or online state
+	 * Sets up the panel for its offline or online state.
 	 */
 	public void setUp() {
 		if (this.gui.isOffline() != this.offline) {

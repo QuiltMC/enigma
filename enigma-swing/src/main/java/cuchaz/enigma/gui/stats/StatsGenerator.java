@@ -35,11 +35,11 @@ public class StatsGenerator {
 	}
 
 	public StatsResult generateForClassTree(ProgressListener progress, ClassEntry entry, boolean includeSynthetic) {
-		return generate(progress, EnumSet.allOf(StatsMember.class), entry.getFullName(), true, includeSynthetic);
+		return this.generate(progress, EnumSet.allOf(StatsMember.class), entry.getFullName(), true, includeSynthetic);
 	}
 
 	public StatsResult generate(ProgressListener progress, Set<StatsMember> includedMembers, String topLevelPackage, boolean includeSynthetic) {
-		return generate(progress, includedMembers, topLevelPackage, false, includeSynthetic);
+		return this.generate(progress, includedMembers, topLevelPackage, false, includeSynthetic);
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class StatsGenerator {
 				progress.step(numDone++, I18n.translate("type.methods"));
 
 				// we don't want constructors or otherwise non-mappable things to show as a mapped method!
-				if (!project.isRenamable(method)) {
+				if (!this.project.isRenamable(method)) {
 					continue;
 				}
 
@@ -90,12 +90,12 @@ public class StatsGenerator {
 						.findFirst()
 						.orElseThrow(AssertionError::new);
 
-                ClassEntry clazz = root.getParent();
+				ClassEntry clazz = root.getParent();
 
-                if (root == method && checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
-                    if (includedMembers.contains(StatsMember.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
+				if (root == method && this.checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
+					if (includedMembers.contains(StatsMember.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
 						totalMappable += this.update(counts, method, forClassTree);
-                    }
+					}
 
 					if (includedMembers.contains(StatsMember.PARAMETERS) && (!((MethodDefEntry) method).getAccess().isSynthetic() || includeSynthetic)) {
 						int index = ((MethodDefEntry) method).getAccess().isStatic() ? 0 : 1;
@@ -108,26 +108,26 @@ public class StatsGenerator {
 			}
 		}
 
-        if (includedMembers.contains(StatsMember.FIELDS)) {
-            for (FieldEntry field : this.entryIndex.getFields()) {
-                progress.step(numDone++, I18n.translate("type.fields"));
-                ClassEntry clazz = field.getParent();
+		if (includedMembers.contains(StatsMember.FIELDS)) {
+			for (FieldEntry field : this.entryIndex.getFields()) {
+				progress.step(numDone++, I18n.translate("type.fields"));
+				ClassEntry clazz = field.getParent();
 
-                if (!((FieldDefEntry) field).getAccess().isSynthetic() && checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
+				if (!((FieldDefEntry) field).getAccess().isSynthetic() && this.checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
 					totalMappable += this.update(counts, field, forClassTree);
-                }
-            }
-        }
+				}
+			}
+		}
 
-        if (includedMembers.contains(StatsMember.CLASSES)) {
-            for (ClassEntry clazz : this.entryIndex.getClasses()) {
-                progress.step(numDone++, I18n.translate("type.classes"));
+		if (includedMembers.contains(StatsMember.CLASSES)) {
+			for (ClassEntry clazz : this.entryIndex.getClasses()) {
+				progress.step(numDone++, I18n.translate("type.classes"));
 
-                if (checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
+				if (this.checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
 					totalMappable += this.update(counts, clazz, forClassTree);
-                }
-            }
-        }
+				}
+			}
+		}
 
 		progress.step(-1, I18n.translate("progress.stats.data"));
 

@@ -1,8 +1,12 @@
 package cuchaz.enigma.gui;
 
-import javax.annotation.Nullable;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
-import cuchaz.enigma.translation.representation.entry.*;
+import javax.annotation.Nullable;
 
 public enum EditableType {
 	CLASS,

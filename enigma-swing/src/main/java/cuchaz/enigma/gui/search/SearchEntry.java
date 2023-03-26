@@ -12,5 +12,4 @@ public interface SearchEntry {
 	 * @return a unique identifier for this search entry
 	 */
 	String getIdentifier();
-
 }

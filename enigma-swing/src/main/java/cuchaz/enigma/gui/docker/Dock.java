@@ -315,7 +315,7 @@ public class Dock extends JPanel {
 	}
 
 	public DockerContainer getDock(Docker.VerticalLocation verticalLocation) {
-		 return switch (verticalLocation) {
+		return switch (verticalLocation) {
 			case TOP -> this.topDock;
 			case BOTTOM -> this.bottomDock;
 			case FULL -> this.unifiedDock;
@@ -369,7 +369,7 @@ public class Dock extends JPanel {
 	private static class DockerContainer extends JPanel {
 		private Docker hostedDocker;
 
-		public DockerContainer() {
+		DockerContainer() {
 			super(new BorderLayout());
 			this.hostedDocker = null;
 		}

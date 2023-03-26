@@ -1,7 +1,8 @@
 package cuchaz.enigma.gui.elements;
 
 import java.awt.GridLayout;
-import java.awt.event.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,7 +22,6 @@ import cuchaz.enigma.gui.util.GuiUtil;
  * A label that converts into an editable text field when you click it.
  */
 public class ConvertingTextField {
-
 	private final JPanel ui;
 	private final JTextField textField;
 	private final JLabel label;
@@ -110,6 +110,7 @@ public class ConvertingTextField {
 		if (!this.hasChanges()) {
 			this.textField.setText(text);
 		}
+
 		this.label.setText(text);
 	}
 
