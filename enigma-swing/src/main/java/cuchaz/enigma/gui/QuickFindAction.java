@@ -39,6 +39,7 @@ public final class QuickFindAction extends DefaultSyntaxAction {
 			if (this.findDialog == null) {
 				this.findDialog = new EnigmaQuickFindDialog(target);
 			}
+
 			this.findDialog.showFor(target);
 		}
 	}

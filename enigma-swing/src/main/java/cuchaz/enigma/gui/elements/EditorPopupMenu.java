@@ -143,6 +143,7 @@ public class EditorPopupMenu {
 			this.pasteItem.doClick();
 			return true;
 		}
+
 		return false;
 	}
 

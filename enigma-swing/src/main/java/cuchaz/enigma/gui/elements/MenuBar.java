@@ -1,19 +1,5 @@
 package cuchaz.enigma.gui.elements;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import javax.annotation.Nullable;
-import javax.swing.*;
-
 import cuchaz.enigma.gui.ConnectionState;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.NotificationManager;
@@ -22,7 +8,13 @@ import cuchaz.enigma.gui.config.LookAndFeel;
 import cuchaz.enigma.gui.config.NetConfig;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
-import cuchaz.enigma.gui.dialog.*;
+import cuchaz.enigma.gui.dialog.AboutDialog;
+import cuchaz.enigma.gui.dialog.ChangeDialog;
+import cuchaz.enigma.gui.dialog.ConnectToServerDialog;
+import cuchaz.enigma.gui.dialog.CreateServerDialog;
+import cuchaz.enigma.gui.dialog.FontDialog;
+import cuchaz.enigma.gui.dialog.SearchDialog;
+import cuchaz.enigma.gui.dialog.StatsDialog;
 import cuchaz.enigma.gui.dialog.decompiler.DecompilerSettingsDialog;
 import cuchaz.enigma.gui.dialog.keybind.ConfigureKeyBindsDialog;
 import cuchaz.enigma.gui.util.GuiUtil;
@@ -33,6 +25,25 @@ import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Pair;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
+
+import javax.annotation.Nullable;
+import javax.swing.ButtonGroup;
+import javax.swing.JFileChooser;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JRadioButtonMenuItem;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class MenuBar {
 	private final JMenu fileMenu = new JMenu();
@@ -264,6 +275,7 @@ public class MenuBar {
 			if (Files.exists(path)) {
 				this.gui.getController().openJar(path);
 			}
+
 			UiConfig.setLastSelectedDir(d.getCurrentDirectory().getAbsolutePath());
 		}
 	}
@@ -294,8 +306,10 @@ public class MenuBar {
 			this.gui.showDiscardDiag((response -> {
 				if (response == JOptionPane.YES_OPTION) {
 					this.gui.saveMapping().thenRun(then);
-				} else if (response == JOptionPane.NO_OPTION)
+				} else if (response == JOptionPane.NO_OPTION) {
 					then.run();
+				}
+
 				return null;
 			}), I18n.translate("prompt.close.save"), I18n.translate("prompt.close.discard"), I18n.translate("prompt.cancel"));
 		} else {
@@ -342,12 +356,18 @@ public class MenuBar {
 	private void onCustomScaleClicked() {
 		String answer = (String) JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("menu.view.scale.custom.title"), I18n.translate("menu.view.scale.custom.title"),
 				JOptionPane.QUESTION_MESSAGE, null, null, Float.toString(UiConfig.getScaleFactor() * 100));
-		if (answer == null) return;
+
+		if (answer == null) {
+			return;
+		}
+
 		float newScale = 1.0f;
 		try {
 			newScale = Float.parseFloat(answer) / 100f;
 		} catch (NumberFormatException ignored) {
+			// ignored!
 		}
+
 		ScaleUtil.setScaleFactor(newScale);
 		ChangeDialog.show(this.gui.getFrame());
 	}
@@ -367,16 +387,19 @@ public class MenuBar {
 			this.gui.getController().disconnectIfConnected(null);
 			return;
 		}
+
 		ConnectToServerDialog.Result result = ConnectToServerDialog.show(this.gui);
 		if (result == null) {
 			return;
 		}
+
 		this.gui.getController().disconnectIfConnected(null);
 		try {
 			this.gui.getController().createClient(result.username(), result.address().address, result.address().port, result.password());
 			if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
 				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.CONNECTED_TO_SERVER, result.addressStr()));
 			}
+
 			NetConfig.setUsername(result.username());
 			NetConfig.setRemoteAddress(result.addressStr());
 			NetConfig.setPassword(String.valueOf(result.password()));
@@ -385,6 +408,7 @@ public class MenuBar {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), e.toString(), I18n.translate("menu.collab.connect.error"), JOptionPane.ERROR_MESSAGE);
 			this.gui.getController().disconnectIfConnected(null);
 		}
+
 		Arrays.fill(result.password(), (char) 0);
 	}
 
@@ -393,16 +417,19 @@ public class MenuBar {
 			this.gui.getController().disconnectIfConnected(null);
 			return;
 		}
+
 		CreateServerDialog.Result result = CreateServerDialog.show(this.gui);
 		if (result == null) {
 			return;
 		}
+
 		this.gui.getController().disconnectIfConnected(null);
 		try {
 			this.gui.getController().createServer(result.port(), result.password());
 			if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
 				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.SERVER_STARTED, result.port()));
 			}
+
 			NetConfig.setServerPort(result.port());
 			NetConfig.setServerPassword(String.valueOf(result.password()));
 			NetConfig.save();
@@ -476,7 +503,7 @@ public class MenuBar {
 	}
 
 	/**
-	 * Find the longest common path between two absolute(!!) paths
+	 * Find the longest common path between two absolute(!!) paths.
 	 */
 	@Nullable
 	private static Path findCommonPath(Path a, Path b) {
@@ -523,6 +550,7 @@ public class MenuBar {
 			if (decompiler.equals(UiConfig.getDecompiler())) {
 				decompilerButton.setSelected(true);
 			}
+
 			decompilerButton.addActionListener(event -> {
 				gui.getController().setDecompiler(decompiler.service);
 
@@ -544,6 +572,7 @@ public class MenuBar {
 			if (lookAndFeel.equals(UiConfig.getLookAndFeel())) {
 				themeButton.setSelected(true);
 			}
+
 			themeButton.addActionListener(e -> {
 				UiConfig.setLookAndFeel(lookAndFeel);
 				UiConfig.save();
@@ -561,6 +590,7 @@ public class MenuBar {
 			if (lang.equals(UiConfig.getLanguage())) {
 				languageButton.setSelected(true);
 			}
+
 			languageButton.addActionListener(event -> {
 				UiConfig.setLanguage(lang);
 				I18n.setLanguage(lang);

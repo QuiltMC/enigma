@@ -138,6 +138,7 @@ public record KeyBind(String name, String category, List<Combination> combinatio
 			for (int keyCode : keyCodes) {
 				this.key(keyCode);
 			}
+
 			return this;
 		}
 

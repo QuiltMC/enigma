@@ -6,9 +6,9 @@ import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
-import javax.swing.*;
+import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
-import java.awt.*;
+import java.awt.Component;
 
 public class CallsTreeCellRenderer extends DefaultTreeCellRenderer {
 	private final Gui gui;

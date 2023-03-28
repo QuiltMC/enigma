@@ -4,10 +4,13 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.util.*;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.swing.*;
 
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.UiConfig;
@@ -17,6 +20,13 @@ import cuchaz.enigma.gui.stats.StatsResult;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
+
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 public class StatsDialog {
 	public static void show(Gui gui) {
@@ -78,13 +88,13 @@ public class StatsDialog {
 				UiConfig.save();
 
 				final StatsGenerator statsGenerator = new StatsGenerator(gui.getController().project);
-				final Map<StatsMember, StatsResult> _results = new HashMap<>();
+				final Map<StatsMember, StatsResult> statResults = new EnumMap<>(StatsMember.class);
 				for (StatsMember member : StatsMember.values()) {
-					_results.put(member, statsGenerator.generate(listener, Collections.singleton(member), UiConfig.getLastTopLevelPackage(), false));
+					statResults.put(member, statsGenerator.generate(listener, Collections.singleton(member), UiConfig.getLastTopLevelPackage(), false));
 				}
-				SwingUtilities.invokeLater(() -> show(gui, _results, UiConfig.getLastTopLevelPackage()));
-			});
 
+				SwingUtilities.invokeLater(() -> show(gui, statResults, UiConfig.getLastTopLevelPackage()));
+			});
 		});
 		contentPane.add(filterButton, cb1.pos(0, results.size() + 3).anchor(GridBagConstraints.EAST).build());
 

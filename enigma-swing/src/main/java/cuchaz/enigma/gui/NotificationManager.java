@@ -89,7 +89,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 			List<Notification> sortedNotifications = this.activeNotifications.keySet().stream().sorted((a, b) -> Integer.compare(this.activeNotifications.get(b), this.activeNotifications.get(a))).toList();
 			int index = sortedNotifications.indexOf(notification);
 
-			for (int i = index; i < sortedNotifications.size() - 1; i ++) {
+			for (int i = index; i < sortedNotifications.size() - 1; i++) {
 				height -= sortedNotifications.get(i + 1).getHeight() + VERTICAL_GAP;
 			}
 		}
@@ -178,7 +178,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 			while (true) {
 				int finalNewId = newId;
 				if (notificationManagerNotifications.stream().anyMatch(notification -> notification.id == finalNewId) || dockerNotifications.stream().anyMatch(notification -> notification.id == finalNewId)) {
-					newId ++;
+					newId++;
 				} else {
 					break;
 				}

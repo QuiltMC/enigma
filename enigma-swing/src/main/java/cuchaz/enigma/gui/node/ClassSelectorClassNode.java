@@ -91,12 +91,16 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 	@Override
 	public void setUserObject(Object userObject) {
 		String packageName = "";
-		if (this.classEntry.getPackageName() != null)
+		if (this.classEntry.getPackageName() != null) {
 			packageName = this.classEntry.getPackageName() + "/";
-		if (userObject instanceof String)
+		}
+
+		if (userObject instanceof String) {
 			this.classEntry = new ClassEntry(packageName + userObject);
-		else if (userObject instanceof ClassEntry entry)
+		} else if (userObject instanceof ClassEntry entry) {
 			this.classEntry = entry;
+		}
+
 		super.setUserObject(this.classEntry);
 	}
 

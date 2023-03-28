@@ -59,6 +59,7 @@ public class EditKeyBindDialog extends JDialog {
 			this.combinationPanels.add(combinationPanel);
 			this.combinationsPanel.add(combinationPanel);
 		}
+
 		contentPane.add(this.combinationsPanel, BorderLayout.CENTER);
 
 		// Add confirmation buttons
@@ -135,6 +136,7 @@ public class EditKeyBindDialog extends JDialog {
 			this.combinations.remove(combinationPanel.getOriginalCombination());
 			this.combinationsPanel.remove(combinationPanel);
 		}
+
 		this.combinationPanels.clear();
 		this.pack();
 	}
@@ -152,6 +154,7 @@ public class EditKeyBindDialog extends JDialog {
 			this.combinationPanels.add(combinationPanel);
 			this.combinationsPanel.add(combinationPanel);
 		}
+
 		this.pack();
 	}
 

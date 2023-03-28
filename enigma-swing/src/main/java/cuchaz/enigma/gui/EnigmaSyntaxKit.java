@@ -17,6 +17,7 @@ public class EnigmaSyntaxKit extends JavaSyntaxKit {
 		if (configuration == null) {
 			this.initConfig(DefaultSyntaxKit.getConfig(JavaSyntaxKit.class));
 		}
+
 		return configuration;
 	}
 
@@ -29,11 +30,12 @@ public class EnigmaSyntaxKit extends JavaSyntaxKit {
 		// Also includes the Action.insert-date action which is written in
 		// Javascript and causes the editor to freeze on first load for a short
 		// time.
-		configuration.keySet().removeIf(s -> s.startsWith("Action.") &&
-				!(s.startsWith("Action.find") ||
-						s.startsWith("Action.goto-line") ||
-						s.startsWith("Action.jump-to-pair") ||
-						s.startsWith("Action.quick-find")));
+		configuration.keySet().removeIf(s -> s.startsWith("Action.")
+				&& !(s.startsWith("Action.find")
+				|| s.startsWith("Action.goto-line")
+				|| s.startsWith("Action.jump-to-pair")
+				|| s.startsWith("Action.quick-find"))
+		);
 
 		// See de.sciss.syntaxpane.TokenType
 		configuration.put("Style.KEYWORD", String.format("%d, 0", UiConfig.getHighlightColor().getRGB()));
@@ -74,6 +76,7 @@ public class EnigmaSyntaxKit extends JavaSyntaxKit {
 		for (String p : source.stringPropertyNames()) {
 			config.put(p, source.getString(p));
 		}
+
 		return config;
 	}
 

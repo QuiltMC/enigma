@@ -17,6 +17,7 @@ public class MessageListCellRenderer extends DefaultListCellRenderer {
 		if (message != null) {
 			this.setText(message.translate());
 		}
+
 		return this;
 	}
 }

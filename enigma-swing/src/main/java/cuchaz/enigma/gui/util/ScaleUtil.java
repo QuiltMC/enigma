@@ -112,13 +112,12 @@ public class ScaleUtil {
 		String testString = UIManager.getLookAndFeel().getName().toLowerCase();
 		if (testString.contains("windows")) {
 			return new WindowsTweaker(dpiScaling, testString.contains("classic"));
-		}
-		if (testString.contains("metal")) {
+		} else if (testString.contains("metal")) {
 			return new MetalTweaker(dpiScaling);
-		}
-		if (testString.contains("nimbus")) {
+		} else if (testString.contains("nimbus")) {
 			return new NimbusTweaker(dpiScaling);
 		}
+
 		return new BasicTweaker(dpiScaling);
 	}
 }

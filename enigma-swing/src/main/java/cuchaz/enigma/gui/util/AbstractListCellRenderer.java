@@ -3,7 +3,13 @@ package cuchaz.enigma.gui.util;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 public abstract class AbstractListCellRenderer<E> extends JPanel implements ListCellRenderer<E> {
@@ -11,7 +17,7 @@ public abstract class AbstractListCellRenderer<E> extends JPanel implements List
 
 	private Border noFocusBorder;
 
-	public AbstractListCellRenderer() {
+	protected AbstractListCellRenderer() {
 		this.setBorder(this.getNoFocusBorder());
 	}
 
@@ -20,6 +26,7 @@ public abstract class AbstractListCellRenderer<E> extends JPanel implements List
 			Border border = UIManager.getLookAndFeel().getDefaults().getBorder("List.List.cellNoFocusBorder");
 			this.noFocusBorder = border != null ? border : NO_FOCUS_BORDER;
 		}
+
 		return this.noFocusBorder;
 	}
 
@@ -30,12 +37,14 @@ public abstract class AbstractListCellRenderer<E> extends JPanel implements List
 			if (isSelected) {
 				b = defaults.getBorder("List.focusSelectedCellHighlightBorder");
 			}
+
 			if (b == null) {
 				b = defaults.getBorder("List.focusCellHighlightBorder");
 			}
 		} else {
 			b = this.getNoFocusBorder();
 		}
+
 		return b;
 	}
 
@@ -67,9 +76,10 @@ public abstract class AbstractListCellRenderer<E> extends JPanel implements List
 	@Override
 	public String getToolTipText(MouseEvent event) {
 		Component c = this.getComponentAt(event.getPoint());
-		if (c instanceof JComponent) {
-			return ((JComponent) c).getToolTipText();
+		if (c instanceof JComponent component) {
+			return component.getToolTipText();
 		}
+
 		return this.getToolTipText();
 	}
 }

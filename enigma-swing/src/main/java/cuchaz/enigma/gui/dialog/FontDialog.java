@@ -1,6 +1,11 @@
 package cuchaz.enigma.gui.dialog;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -97,6 +102,7 @@ public class FontDialog extends JDialog {
 		for (int i = 0; i < CATEGORIES.size(); i++) {
 			UiConfig.setFont(CATEGORIES.get(i), this.fonts[i]);
 		}
+
 		UiConfig.setUseCustomFonts(this.customCheckBox.isSelected());
 		UiConfig.save();
 		ChangeDialog.show(this);
@@ -117,6 +123,7 @@ public class FontDialog extends JDialog {
 			for (Component component : container.getComponents()) {
 				recursiveSetEnabled(component, enabled);
 			}
+
 			self.setEnabled(enabled);
 		}
 	}

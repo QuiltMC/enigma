@@ -8,5 +8,4 @@ import cuchaz.enigma.source.RenamableTokenType;
 
 public interface ThemeChangeListener {
 	void onThemeChanged(LookAndFeel lookAndFeel, Map<RenamableTokenType, BoxHighlightPainter> boxHighlightPainters);
-
 }

@@ -1,6 +1,10 @@
 package cuchaz.enigma.gui.config;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;

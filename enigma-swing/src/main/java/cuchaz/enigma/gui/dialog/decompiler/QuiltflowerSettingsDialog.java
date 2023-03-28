@@ -92,7 +92,6 @@ public class QuiltflowerSettingsDialog extends JDialog {
 			};
 			input.setMaximumSize(new Dimension(ScaleUtil.scale(100), ScaleUtil.scale(20)));
 
-
 			if (input instanceof JCheckBox) {
 				panel.add(input);
 				panel.add(label);
@@ -105,7 +104,6 @@ public class QuiltflowerSettingsDialog extends JDialog {
 		}
 
 		pane.add(preferencesScrollPanel, BorderLayout.CENTER);
-
 
 		Container buttonContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, ScaleUtil.scale(4), ScaleUtil.scale(4)));
 		JButton saveButton = new JButton(I18n.translate("prompt.save"));

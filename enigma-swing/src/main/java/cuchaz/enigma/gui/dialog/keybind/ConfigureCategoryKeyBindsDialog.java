@@ -41,6 +41,7 @@ public class ConfigureCategoryKeyBindsDialog extends JDialog {
 
 			keyBindsPanel.add(panel);
 		}
+
 		contentPane.add(keyBindsPanel, BorderLayout.CENTER);
 
 		// Add buttons
