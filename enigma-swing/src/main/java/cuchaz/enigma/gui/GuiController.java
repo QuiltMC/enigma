@@ -381,7 +381,9 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void refreshClasses() {
-		if (this.project == null) return;
+		if (this.project == null) {
+			return;
+		}
 
 		List<ClassEntry> obfClasses = new ArrayList<>();
 		List<ClassEntry> deobfClasses = new ArrayList<>();

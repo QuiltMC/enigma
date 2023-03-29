@@ -192,6 +192,7 @@ public class ClassSelector extends JTree {
 		// update the tree control
 		this.packageManager = new NestedPackages(classEntries, this.comparator, this.controller.project.getMapper());
 		this.setModel(new DefaultTreeModel(this.packageManager.getRoot()));
+		this.invalidateStats();
 
 		this.restoreExpansionState(state);
 	}
@@ -287,8 +288,7 @@ public class ClassSelector extends JTree {
 	public void reloadEntry(ClassEntry classEntry) {
 		this.removeEntry(classEntry);
 		this.moveClassIn(classEntry);
-		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
-		node.reloadStats(this.controller.getGui(), this, true);
+		this.reloadStats(classEntry);
 	}
 
 	public void reload(TreeNode node) {
@@ -298,6 +298,17 @@ public class ClassSelector extends JTree {
 
 	public void reload() {
 		this.reload(this.packageManager.getRoot());
+	}
+
+	public void invalidateStats() {
+		for (ClassEntry entry : this.packageManager.getClassEntries()) {
+			this.packageManager.getClassNode(entry).setStats(null);
+		}
+	}
+
+	public void reloadStats(ClassEntry classEntry) {
+		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
+		node.reloadStats(this.controller.getGui(), this, true);
 	}
 
 	public interface ClassSelectionListener {
