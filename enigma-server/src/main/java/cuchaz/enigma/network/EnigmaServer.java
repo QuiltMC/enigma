@@ -114,7 +114,9 @@ public abstract class EnigmaServer {
 	}
 
 	public void kick(Socket client, String reason) {
-		if (!this.clients.remove(client)) return;
+		if (!this.clients.remove(client)) {
+			return;
+		}
 
 		this.sendPacket(client, new KickS2CPacket(reason));
 

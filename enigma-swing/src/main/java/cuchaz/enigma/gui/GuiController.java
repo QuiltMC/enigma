@@ -585,12 +585,14 @@ public class GuiController implements ClientPacketHandler {
 
 		if (this.client != null) {
 			this.client.disconnect();
+			this.client = null;
 		}
+
 		if (this.server != null) {
 			this.server.stop();
+			this.server = null;
 		}
-		this.client = null;
-		this.server = null;
+
 		SwingUtilities.invokeLater(() -> {
 			if (reason != null) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), I18n.translate(reason), I18n.translate("disconnect.disconnected"), JOptionPane.INFORMATION_MESSAGE);

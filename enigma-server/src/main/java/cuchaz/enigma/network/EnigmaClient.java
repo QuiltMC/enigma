@@ -36,18 +36,18 @@ public class EnigmaClient {
 					} catch (EOFException | SocketException e) {
 						break;
 					}
+
 					Packet<ClientPacketHandler> packet = PacketRegistry.createS2CPacket(packetId);
 					if (packet == null) {
 						throw new IOException("Received invalid packet id " + packetId);
 					}
+
 					packet.read(input);
 					SwingUtilities.invokeLater(() -> packet.handle(this.controller));
 				}
 			} catch (IOException e) {
 				this.controller.disconnectIfConnected(e.toString());
-				return;
 			}
-			this.controller.disconnectIfConnected("Disconnected");
 		});
 		thread.setName("Client I/O thread");
 		thread.setDaemon(true);
