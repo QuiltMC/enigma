@@ -153,7 +153,7 @@
 	"progress.jar.indexing.entries": "Entrées...",
 	"progress.jar.indexing.references": "Références des entrées...",
 	"progress.jar.indexing.methods": "Mise en place des méthodes...",
-	"progress.jar.indexing.process": "Traitement...",
+	"progress.jar.indexing.process": "Traitement: %s",
 	"progress.jar.writing": "Écriture du jar...",
 	"progress.sources.writing": "Écriture des sources...",
 	"progress.classes.deobfuscating": "Déobfuscation des classes...",
