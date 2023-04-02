@@ -75,8 +75,8 @@ public class ReferenceIndex implements JarIndexer {
 
 	@Override
 	public void indexLambda(MethodDefEntry callerEntry, Lambda lambda, ReferenceTargetType targetType) {
-		if (lambda.implMethod() instanceof MethodEntry) {
-			this.indexMethodReference(callerEntry, (MethodEntry) lambda.implMethod(), targetType);
+		if (lambda.implMethod() instanceof MethodEntry method) {
+			this.indexMethodReference(callerEntry, method, targetType);
 		} else {
 			this.indexFieldReference(callerEntry, (FieldEntry) lambda.implMethod(), targetType);
 		}
@@ -144,5 +144,10 @@ public class ReferenceIndex implements JarIndexer {
 
 	public Collection<EntryReference<ClassEntry, MethodDefEntry>> getMethodTypeReferencesToClass(ClassEntry entry) {
 		return this.methodTypeReferences.get(entry);
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return "progress.jar.indexing.process.references";
 	}
 }

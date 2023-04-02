@@ -167,4 +167,9 @@ public class BridgeMethodIndex implements JarIndexer {
 	public Map<MethodEntry, MethodEntry> getBridgeToSpecialized() {
 		return Collections.unmodifiableMap(this.bridgeToSpecialized);
 	}
+
+	@Override
+	public String getTranslationKey() {
+		return "progress.jar.indexing.process.bridge_methods";
+	}
 }

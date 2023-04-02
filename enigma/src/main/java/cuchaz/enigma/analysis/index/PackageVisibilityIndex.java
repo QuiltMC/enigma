@@ -143,4 +143,9 @@ public class PackageVisibilityIndex implements JarIndexer {
 		this.addConnections(entryIndex, referenceIndex, inheritanceIndex);
 		this.addPartitions(entryIndex);
 	}
+
+	@Override
+	public String getTranslationKey() {
+		return "progress.jar.indexing.process.package_visibility";
+	}
 }

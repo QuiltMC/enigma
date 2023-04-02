@@ -101,4 +101,9 @@ public class EntryIndex implements JarIndexer {
 	public Collection<FieldEntry> getFields() {
 		return this.fields.keySet();
 	}
+
+	@Override
+	public String getTranslationKey() {
+		return "progress.jar.indexing.process.entries";
+	}
 }

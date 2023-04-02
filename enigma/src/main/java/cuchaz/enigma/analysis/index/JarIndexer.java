@@ -29,6 +29,8 @@ public interface JarIndexer {
 	default void processIndex(JarIndex index) {
 	}
 
+	String getTranslationKey();
+
 	record EnclosingMethodData(String owner, String name, String descriptor) {
 		public MethodEntry getMethod() {
 			return MethodEntry.parse(this.owner, this.name, this.descriptor);
