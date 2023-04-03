@@ -1,6 +1,5 @@
 package cuchaz.enigma.gui.node;
 
-import cuchaz.enigma.gui.util.SortedMutableTreeNode;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
 import javax.swing.tree.TreeNode;
@@ -20,10 +19,17 @@ public class ClassSelectorPackageNode extends SortedMutableTreeNode {
 	}
 
 	@Override
+	public Object getUserObject() {
+		return this.packageName;
+	}
+
+	@Override
 	public void setUserObject(Object userObject) {
 		if (userObject instanceof String) {
 			this.packageName = (String) userObject;
 		}
+
+		super.setUserObject(userObject);
 	}
 
 	@Override

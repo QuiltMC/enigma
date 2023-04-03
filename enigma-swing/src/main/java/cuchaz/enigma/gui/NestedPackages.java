@@ -2,7 +2,7 @@ package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
 import cuchaz.enigma.gui.node.ClassSelectorPackageNode;
-import cuchaz.enigma.gui.util.SortedMutableTreeNode;
+import cuchaz.enigma.gui.node.SortedMutableTreeNode;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 

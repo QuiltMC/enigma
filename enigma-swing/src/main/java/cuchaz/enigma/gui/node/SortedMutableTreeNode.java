@@ -1,7 +1,8 @@
-package cuchaz.enigma.gui.util;
+package cuchaz.enigma.gui.node;
 
 import com.google.common.collect.Iterables;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import java.util.ArrayList;
@@ -12,9 +13,8 @@ import java.util.List;
 /**
  * A MutableTreeNode whose contents are always guaranteed to be sorted with the given comparator.
  */
-public class SortedMutableTreeNode implements MutableTreeNode {
+public class SortedMutableTreeNode extends DefaultMutableTreeNode {
 	private final Comparator<TreeNode> comparator;
-	private MutableTreeNode parent;
 	private final List<TreeNode> children;
 	private boolean isSorted = true;
 
@@ -25,20 +25,25 @@ public class SortedMutableTreeNode implements MutableTreeNode {
 
 	@Override
 	public void insert(MutableTreeNode child, int index) {
-		if (child == null) throw new IllegalArgumentException("child is null");
+		if (child == null) {
+			throw new IllegalArgumentException("child is null");
+		}
 
 		MutableTreeNode oldParent = (MutableTreeNode) child.getParent();
 
-		if (oldParent != null) oldParent.remove(child);
+		if (oldParent != null) {
+			oldParent.remove(child);
+		}
+
 		child.setParent(this);
-		children.add(child);
-		isSorted = false;
+		this.children.add(child);
+		this.isSorted = false;
 	}
 
 	private void checkSorted() {
-		if (!isSorted) {
-			isSorted = true;
-			children.sort(comparator);
+		if (!this.isSorted) {
+			this.isSorted = true;
+			this.children.sort(this.comparator);
 		}
 	}
 
@@ -51,46 +56,25 @@ public class SortedMutableTreeNode implements MutableTreeNode {
 
 	@Override
 	public void remove(MutableTreeNode node) {
-		children.remove(node);
+		this.children.remove(node);
 		node.setParent(null);
-	}
-
-	@Override
-	public void setUserObject(Object object) {
-		throw new IllegalStateException("SortedMutableTreeNodes can't have user objects.");
-	}
-
-	@Override
-	public void removeFromParent() {
-		if (parent != null)
-			parent.remove(this);
-	}
-
-	@Override
-	public void setParent(MutableTreeNode newParent) {
-		parent = newParent;
 	}
 
 	@Override
 	public TreeNode getChildAt(int childIndex) {
 		checkSorted();
 
-		return children.get(childIndex);
+		return this.children.get(childIndex);
 	}
 
 	@Override
 	public int getChildCount() {
-		return children.size();
-	}
-
-	@Override
-	public TreeNode getParent() {
-		return parent;
+		return this.children.size();
 	}
 
 	@Override
 	public int getIndex(TreeNode node) {
-		return Iterables.indexOf(children, other -> comparator.compare(node, other) == 0);
+		return Iterables.indexOf(this.children, other -> this.comparator.compare(node, other) == 0);
 	}
 
 	@Override
@@ -100,12 +84,12 @@ public class SortedMutableTreeNode implements MutableTreeNode {
 
 	@Override
 	public boolean isLeaf() {
-		return children.isEmpty();
+		return this.children.isEmpty();
 	}
 
 	@Override
-	public Enumeration<? extends TreeNode> children() {
-		var iter = children.iterator();
+	public Enumeration<TreeNode> children() {
+		var iter = this.children.iterator();
 
 		return new Enumeration<>() {
 			@Override
@@ -118,19 +102,5 @@ public class SortedMutableTreeNode implements MutableTreeNode {
 				return iter.next();
 			}
 		};
-	}
-
-	public TreeNode[] getPath() {
-		return doGetPath(this, 0);
-	}
-
-	private static TreeNode[] doGetPath(TreeNode at, int depth) {
-		if (at == null) {
-			return new TreeNode[depth];
-		}
-
-		TreeNode[] path = doGetPath(at, depth + 1);
-		path[path.length - depth - 1] = at;
-		return path;
 	}
 }

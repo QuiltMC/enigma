@@ -3,7 +3,6 @@ package cuchaz.enigma.gui;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
 import cuchaz.enigma.gui.util.GuiUtil;
-import cuchaz.enigma.gui.util.SortedMutableTreeNode;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
@@ -255,13 +254,13 @@ public class ClassSelector extends JTree {
 	}
 
 	public void expandAll() {
-		for (SortedMutableTreeNode packageNode : this.packageManager.getPackageNodes()) {
+		for (DefaultMutableTreeNode packageNode : this.packageManager.getPackageNodes()) {
 			this.expandPath(new TreePath(packageNode.getPath()));
 		}
 	}
 
 	public void collapseAll() {
-		for (SortedMutableTreeNode packageNode : this.packageManager.getPackageNodes()) {
+		for (DefaultMutableTreeNode packageNode : this.packageManager.getPackageNodes()) {
 			this.collapsePath(new TreePath(packageNode.getPath()));
 		}
 	}
