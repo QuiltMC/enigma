@@ -29,7 +29,10 @@ public interface JarIndexer {
 	default void processIndex(JarIndex index) {
 	}
 
-	String getTranslationKey();
+	default String getTranslationKey() {
+		// REMOVE IN 2.0: this is a temporary default impl to avoid api breakage
+		return this.getClass().getSimpleName();
+	}
 
 	record EnclosingMethodData(String owner, String name, String descriptor) {
 		public MethodEntry getMethod() {
