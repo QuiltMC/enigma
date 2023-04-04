@@ -12,7 +12,7 @@ public interface JarIndexerService extends EnigmaService {
 	void acceptJar(Set<String> scope, ClassProvider classProvider, JarIndex jarIndex);
 
 	static JarIndexerService fromVisitor(ClassVisitor visitor) {
-		return (scope,  classProvider,  jarIndex) -> {
+		return (scope, classProvider, jarIndex) -> {
 			for (String className : scope) {
 				classProvider.get(className).accept(visitor);
 			}
