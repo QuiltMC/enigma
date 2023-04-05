@@ -12,6 +12,7 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+
 import org.benf.cfr.reader.bytecode.analysis.loc.HasByteCodeLoc;
 import org.benf.cfr.reader.bytecode.analysis.types.JavaRefTypeInstance;
 import org.benf.cfr.reader.bytecode.analysis.types.JavaTypeInstance;
@@ -102,6 +103,7 @@ public class EnigmaDumper extends StringStreamDumper {
 		if (this.sourceSettings.removeImports()) {
 			return this;
 		}
+
 		return super.packageName(t);
 	}
 
@@ -111,6 +113,7 @@ public class EnigmaDumper extends StringStreamDumper {
 			this.muteLine = true;
 			return this;
 		}
+
 		return super.keyword(s);
 	}
 
@@ -120,6 +123,7 @@ public class EnigmaDumper extends StringStreamDumper {
 			this.muteLine = false;
 			return this;
 		}
+
 		return super.endCodeln();
 	}
 
@@ -128,6 +132,7 @@ public class EnigmaDumper extends StringStreamDumper {
 		if (this.muteLine) {
 			return this;
 		}
+
 		return super.print(s);
 	}
 
@@ -181,6 +186,7 @@ public class EnigmaDumper extends StringStreamDumper {
 				this.print(" */").newln();
 			}
 		}
+
 		return this;
 	}
 
@@ -218,9 +224,11 @@ public class EnigmaDumper extends StringStreamDumper {
 				for (String line : lines) {
 					this.print(" * ").print(line).newln();
 				}
+
 				this.print(" */").newln();
 			}
 		}
+
 		return this;
 	}
 
@@ -236,10 +244,12 @@ public class EnigmaDumper extends StringStreamDumper {
 					for (String line : javadoc.split("\\R")) {
 						this.print(" * ").print(line).newln();
 					}
+
 					this.print(" */").newln();
 				}
 			}
 		}
+
 		return this;
 	}
 
@@ -299,9 +309,11 @@ public class EnigmaDumper extends StringStreamDumper {
 			this.refs.remove(ref);
 			return this;
 		}
+
 		if ((entry = this.refs.get(ref)) == null) {
 			return this;
 		}
+
 		int now = this.sb.length();
 		Token token = new Token(now - name.length(), now, name);
 		this.index.addReference(token, entry, this.contextMethod);
@@ -356,6 +368,7 @@ public class EnigmaDumper extends StringStreamDumper {
 			} else {
 				this.index.addReference(token, this.getClassEntry(type), this.contextMethod);
 			}
+
 			return;
 		}
 

@@ -1,7 +1,5 @@
 package cuchaz.enigma;
 
-import com.google.common.base.Functions;
-import com.google.common.base.Preconditions;
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.analysis.index.EnclosingMethodIndex;
 import cuchaz.enigma.analysis.index.JarIndex;
@@ -27,6 +25,9 @@ import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Pair;
+
+import com.google.common.base.Functions;
+import com.google.common.base.Preconditions;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 import org.tinylog.Logger;

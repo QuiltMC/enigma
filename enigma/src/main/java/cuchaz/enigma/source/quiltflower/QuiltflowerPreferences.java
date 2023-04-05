@@ -106,7 +106,7 @@ public class QuiltflowerPreferences {
 			return null;
 		}
 
-		if (defaultValue == "0" || defaultValue == "1") {
+		if (defaultValue.equals("0") || defaultValue.equals("1")) {
 			return Type.BOOLEAN;
 		}
 
@@ -114,6 +114,7 @@ public class QuiltflowerPreferences {
 			Integer.parseInt(defaultValue.toString());
 			return Type.INTEGER;
 		} catch (Exception ignored) {
+			// ignored!
 		}
 
 		return Type.STRING;

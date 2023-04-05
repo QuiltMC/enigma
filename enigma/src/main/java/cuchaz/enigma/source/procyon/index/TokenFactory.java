@@ -1,12 +1,13 @@
 package cuchaz.enigma.source.procyon.index;
 
+import cuchaz.enigma.source.Token;
+import cuchaz.enigma.source.SourceIndex;
+
 import com.strobel.decompiler.languages.Region;
 import com.strobel.decompiler.languages.java.ast.AstNode;
 import com.strobel.decompiler.languages.java.ast.ConstructorDeclaration;
 import com.strobel.decompiler.languages.java.ast.Identifier;
 import com.strobel.decompiler.languages.java.ast.TypeDeclaration;
-import cuchaz.enigma.source.Token;
-import cuchaz.enigma.source.SourceIndex;
 import org.tinylog.Logger;
 
 import java.util.regex.Pattern;
@@ -29,10 +30,11 @@ public class TokenFactory {
 		Token token = new Token(start, end, text);
 
 		boolean isAnonymousInner =
-				node instanceof Identifier &&
-				name.indexOf('$') >= 0 && node.getParent() instanceof ConstructorDeclaration &&
-				name.lastIndexOf('$') >= 0 &&
-				!ANONYMOUS_INNER.matcher(name).matches();
+				node instanceof Identifier
+						&& name.indexOf('$') >= 0
+						&& node.getParent() instanceof ConstructorDeclaration
+						&& name.lastIndexOf('$') >= 0
+						&& !ANONYMOUS_INNER.matcher(name).matches();
 
 		if (isAnonymousInner) {
 			TypeDeclaration type = node.getParent().getParent() instanceof TypeDeclaration ? (TypeDeclaration) node.getParent().getParent() : null;

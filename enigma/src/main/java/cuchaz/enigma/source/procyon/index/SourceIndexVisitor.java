@@ -1,13 +1,14 @@
 package cuchaz.enigma.source.procyon.index;
 
+import cuchaz.enigma.source.SourceIndex;
+import cuchaz.enigma.source.procyon.EntryParser;
+import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
+
 import com.strobel.assembler.metadata.TypeDefinition;
 import com.strobel.decompiler.languages.java.ast.AstNode;
 import com.strobel.decompiler.languages.java.ast.DepthFirstAstVisitor;
 import com.strobel.decompiler.languages.java.ast.Keys;
 import com.strobel.decompiler.languages.java.ast.TypeDeclaration;
-import cuchaz.enigma.source.SourceIndex;
-import cuchaz.enigma.source.procyon.EntryParser;
-import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 
 public class SourceIndexVisitor extends DepthFirstAstVisitor<SourceIndex, Void> {
 	@Override
@@ -24,6 +25,7 @@ public class SourceIndexVisitor extends DepthFirstAstVisitor<SourceIndex, Void> 
 		for (final AstNode child : node.getChildren()) {
 			child.acceptVisitor(this, index);
 		}
+
 		return null;
 	}
 }

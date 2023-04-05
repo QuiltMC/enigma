@@ -6,6 +6,7 @@ import cuchaz.enigma.source.Source;
 import cuchaz.enigma.source.SourceSettings;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.utils.AsmUtil;
+
 import org.benf.cfr.reader.apiunreleased.ClassFileSource2;
 import org.benf.cfr.reader.apiunreleased.JarContent;
 import org.benf.cfr.reader.bytecode.analysis.parse.utils.Pair;
@@ -25,7 +26,7 @@ public class CfrDecompiler implements Decompiler {
 	private final ClassFileSource2 classFileSource;
 
 	public CfrDecompiler(ClassProvider classProvider, SourceSettings sourceSettings) {
-		this.options = OptionsImpl.getFactory().create( Map.of("trackbytecodeloc", "true"));
+		this.options = OptionsImpl.getFactory().create(Map.of("trackbytecodeloc", "true"));
 		this.settings = sourceSettings;
 		this.classFileSource = new ClassFileSource(classProvider);
 	}

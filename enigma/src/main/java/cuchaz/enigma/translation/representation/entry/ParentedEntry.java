@@ -1,16 +1,16 @@
 package cuchaz.enigma.translation.representation.entry;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import com.google.common.base.Preconditions;
-
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMap;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
+
+import com.google.common.base.Preconditions;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 	protected final P parent;

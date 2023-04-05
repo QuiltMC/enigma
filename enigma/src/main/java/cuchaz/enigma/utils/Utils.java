@@ -30,6 +30,7 @@ public class Utils {
 		if (in == null) {
 			throw new IllegalArgumentException("Resource not found! " + path);
 		}
+
 		return readStreamToString(in);
 	}
 
@@ -60,6 +61,7 @@ public class Utils {
 			// Algorithm guaranteed to be supported
 			throw new RuntimeException(e);
 		}
+
 		try (ZipFile zip = new ZipFile(path.toFile())) {
 			List<? extends ZipEntry> entries = Collections.list(zip.entries());
 			// only compare classes (some implementations may not generate directory entries)
@@ -77,6 +79,7 @@ public class Utils {
 				}
 			}
 		}
+
 		return digest.digest();
 	}
 

@@ -4,6 +4,7 @@ import cuchaz.enigma.source.Source;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.SourceSettings;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
+
 import net.fabricmc.fernflower.api.IFabricJavadocProvider;
 import org.jetbrains.java.decompiler.main.decompiler.BaseDecompiler;
 import org.jetbrains.java.decompiler.main.extern.IContextSource;
@@ -12,9 +13,9 @@ import org.jetbrains.java.decompiler.main.extern.IFernflowerPreferences;
 import org.jetbrains.java.decompiler.main.extern.IResultSaver;
 import org.jetbrains.java.decompiler.main.extern.TextTokenVisitor;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
 
 public class QuiltflowerSource implements Source {
 	private final IContextSource contextSource;

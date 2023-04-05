@@ -1,14 +1,13 @@
 package cuchaz.enigma.classhandle;
 
-import java.util.concurrent.CompletableFuture;
-
-import javax.annotation.Nullable;
-
 import cuchaz.enigma.events.ClassHandleListener;
 import cuchaz.enigma.source.DecompiledClassSource;
 import cuchaz.enigma.source.Source;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.utils.Result;
+
+import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nullable;
 
 /**
  * A handle to a class file. Can be treated similarly to a handle to a file.
@@ -103,5 +102,4 @@ public interface ClassHandle extends AutoCloseable {
 	 */
 	@Override
 	void close();
-
 }

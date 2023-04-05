@@ -27,6 +27,7 @@ public enum Os {
 				os = OTHER;
 			}
 		}
+
 		return os;
 	}
 }

@@ -2,6 +2,7 @@ package cuchaz.enigma.source.quiltflower;
 
 import cuchaz.enigma.classprovider.ClassProvider;
 import cuchaz.enigma.utils.AsmUtil;
+
 import org.jetbrains.java.decompiler.main.extern.IContextSource;
 import org.jetbrains.java.decompiler.main.extern.IResultSaver;
 import org.objectweb.asm.tree.ClassNode;
