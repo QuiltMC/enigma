@@ -5,6 +5,7 @@ import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.EnigmaProject.DecompileErrorStrategy;
 import cuchaz.enigma.source.DecompilerService;
 import cuchaz.enigma.source.Decompilers;
+
 import org.tinylog.Logger;
 
 import java.lang.reflect.Field;

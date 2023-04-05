@@ -3,6 +3,7 @@ package cuchaz.enigma.command;
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
+
 import org.tinylog.Logger;
 
 import java.nio.file.Path;

@@ -3,6 +3,7 @@ package cuchaz.enigma.command;
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
+
 import org.tinylog.Logger;
 
 import java.io.IOException;
