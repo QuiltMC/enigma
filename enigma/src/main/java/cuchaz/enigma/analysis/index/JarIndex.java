@@ -88,14 +88,14 @@ public class JarIndex implements JarIndexer {
 
 	@Override
 	public void processIndex(JarIndex index) {
-		stepProcessingProgress("progress.jar.indexing.process.jar");
+		this.stepProcessingProgress("progress.jar.indexing.process.jar");
 
 		this.indexers.forEach(indexer -> {
-			stepProcessingProgress(indexer.getTranslationKey());
+			this.stepProcessingProgress(indexer.getTranslationKey());
 			indexer.processIndex(index);
 		});
 
-		stepProcessingProgress("progress.jar.indexing.process.done");
+		this.stepProcessingProgress("progress.jar.indexing.process.done");
 	}
 
 	private void stepProcessingProgress(String key) {
