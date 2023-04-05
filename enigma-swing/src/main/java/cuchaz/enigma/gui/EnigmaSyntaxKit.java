@@ -1,7 +1,6 @@
 package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.config.UiConfig;
-
 import de.sciss.syntaxpane.DefaultSyntaxKit;
 import de.sciss.syntaxpane.components.LineNumbersRuler;
 import de.sciss.syntaxpane.syntaxkits.JavaSyntaxKit;

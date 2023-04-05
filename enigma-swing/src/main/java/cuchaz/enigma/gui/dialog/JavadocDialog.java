@@ -1,5 +1,6 @@
 package cuchaz.enigma.gui.dialog;
 
+import com.google.common.base.Strings;
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.gui.GuiController;
 import cuchaz.enigma.gui.config.UiConfig;
@@ -11,8 +12,6 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.ValidationContext;
-
-import com.google.common.base.Strings;
 
 import java.awt.BorderLayout;
 import java.awt.Container;

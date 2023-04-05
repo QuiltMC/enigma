@@ -1,10 +1,9 @@
 package cuchaz.enigma.gui.elements;
 
+import com.formdev.flatlaf.FlatClientProperties;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.events.ConvertingTextFieldListener;
 import cuchaz.enigma.gui.util.GuiUtil;
-
-import com.formdev.flatlaf.FlatClientProperties;
 
 import java.awt.GridLayout;
 import java.awt.event.FocusAdapter;

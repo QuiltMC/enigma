@@ -1,5 +1,6 @@
 package cuchaz.enigma.gui.elements;
 
+import com.google.common.collect.HashBiMap;
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.classhandle.ClassHandle;
 import cuchaz.enigma.gui.Gui;
@@ -10,8 +11,6 @@ import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
-
-import com.google.common.collect.HashBiMap;
 
 import java.awt.Component;
 import java.awt.event.MouseEvent;

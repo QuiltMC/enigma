@@ -8,7 +8,6 @@ import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Pair;
-
 import org.tinylog.Logger;
 
 import java.awt.Color;

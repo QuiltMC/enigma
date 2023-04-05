@@ -1,5 +1,6 @@
 package cuchaz.enigma.gui;
 
+import com.google.common.io.MoreFiles;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.EnigmaProject;
@@ -62,8 +63,6 @@ import cuchaz.enigma.utils.Utils;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
-
-import com.google.common.io.MoreFiles;
 import org.tinylog.Logger;
 
 import java.awt.Desktop;

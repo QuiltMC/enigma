@@ -30,7 +30,6 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Result;
-
 import de.sciss.syntaxpane.DefaultSyntaxKit;
 import org.tinylog.Logger;
 

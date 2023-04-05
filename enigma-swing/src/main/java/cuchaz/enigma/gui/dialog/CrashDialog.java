@@ -4,7 +4,6 @@ import cuchaz.enigma.Enigma;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.gui.util.ScaleUtil;
-
 import org.tinylog.Logger;
 
 import java.awt.BorderLayout;

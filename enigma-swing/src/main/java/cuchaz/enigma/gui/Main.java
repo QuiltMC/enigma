@@ -8,7 +8,6 @@ import cuchaz.enigma.gui.dialog.CrashDialog;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
-
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
