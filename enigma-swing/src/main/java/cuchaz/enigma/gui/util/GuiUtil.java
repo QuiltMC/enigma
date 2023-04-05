@@ -1,6 +1,5 @@
 package cuchaz.enigma.gui.util;
 
-import com.formdev.flatlaf.extras.FlatSVGIcon;
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.stats.StatsResult;
@@ -8,6 +7,8 @@ import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.Os;
+
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;

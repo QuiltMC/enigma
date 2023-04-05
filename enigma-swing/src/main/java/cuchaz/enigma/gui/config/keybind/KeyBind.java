@@ -1,13 +1,13 @@
 package cuchaz.enigma.gui.config.keybind;
 
 import cuchaz.enigma.utils.I18n;
+
 import org.tinylog.Logger;
 
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
 import javax.swing.KeyStroke;
 
 public record KeyBind(String name, String category, List<Combination> combinations) {

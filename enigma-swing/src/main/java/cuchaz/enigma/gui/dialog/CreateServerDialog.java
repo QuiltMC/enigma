@@ -1,11 +1,5 @@
 package cuchaz.enigma.gui.dialog;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.util.Arrays;
-import java.util.List;
-
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.NetConfig;
 import cuchaz.enigma.gui.util.ScaleUtil;
@@ -14,6 +8,11 @@ import cuchaz.enigma.utils.Pair;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.StandardValidation;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 

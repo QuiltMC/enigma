@@ -205,6 +205,7 @@ public class SearchUtil<T extends SearchEntry> {
 
 		/**
 		 * Splits the given input into components, trying to detect word parts.
+		 *
 		 * <p>
 		 * Example of how words get split (using <code>|</code> as seperator):
 		 * <p><code>MinecraftClientGame -> Minecraft|Client|Game</code></p>

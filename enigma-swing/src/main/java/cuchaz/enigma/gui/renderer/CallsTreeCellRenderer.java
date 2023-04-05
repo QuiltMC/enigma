@@ -1,6 +1,10 @@
 package cuchaz.enigma.gui.renderer;
 
-import cuchaz.enigma.analysis.*;
+import cuchaz.enigma.analysis.ClassReferenceTreeNode;
+import cuchaz.enigma.analysis.EntryReference;
+import cuchaz.enigma.analysis.FieldReferenceTreeNode;
+import cuchaz.enigma.analysis.MethodReferenceTreeNode;
+import cuchaz.enigma.analysis.ReferenceTreeNode;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.util.GuiUtil;

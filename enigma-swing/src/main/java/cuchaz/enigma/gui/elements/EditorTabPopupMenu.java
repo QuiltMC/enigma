@@ -1,13 +1,12 @@
 package cuchaz.enigma.gui.elements;
 
-import java.awt.Component;
-
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.utils.I18n;
+
+import java.awt.Component;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 public class EditorTabPopupMenu {
 	private final JPopupMenu ui;

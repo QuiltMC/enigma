@@ -1,10 +1,5 @@
 package cuchaz.enigma.gui.elements;
 
-import java.awt.event.KeyEvent;
-
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.gui.EditableType;
 import cuchaz.enigma.gui.Gui;
@@ -17,6 +12,10 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
+
+import java.awt.event.KeyEvent;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 public class EditorPopupMenu {
 	private final JPopupMenu ui = new JPopupMenu();

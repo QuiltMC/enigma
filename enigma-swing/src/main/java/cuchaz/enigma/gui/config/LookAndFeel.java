@@ -7,7 +7,6 @@ import com.formdev.flatlaf.FlatSystemProperties;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;

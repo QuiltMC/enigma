@@ -62,6 +62,7 @@ import cuchaz.enigma.utils.Utils;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
+
 import com.google.common.io.MoreFiles;
 import org.tinylog.Logger;
 
@@ -79,7 +80,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
-
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 

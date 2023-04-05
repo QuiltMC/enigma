@@ -6,7 +6,6 @@ import cuchaz.enigma.source.DecompilerService;
 import cuchaz.enigma.source.Decompilers;
 
 import java.util.function.BiConsumer;
-
 import javax.swing.JDialog;
 
 public enum Decompiler {

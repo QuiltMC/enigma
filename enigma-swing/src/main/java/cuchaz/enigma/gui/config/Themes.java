@@ -5,13 +5,13 @@ import cuchaz.enigma.gui.events.ThemeChangeListener;
 import cuchaz.enigma.gui.highlight.BoxHighlightPainter;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.source.RenamableTokenType;
+
 import de.sciss.syntaxpane.DefaultSyntaxKit;
 
 import java.awt.Font;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import javax.swing.UIManager;
 
 public class Themes {

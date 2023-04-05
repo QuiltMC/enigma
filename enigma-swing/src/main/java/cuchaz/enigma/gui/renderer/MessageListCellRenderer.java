@@ -1,11 +1,10 @@
 package cuchaz.enigma.gui.renderer;
 
-import java.awt.Component;
+import cuchaz.enigma.network.ServerMessage;
 
+import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
-
-import cuchaz.enigma.network.ServerMessage;
 
 // For now, just render the translated text.
 // TODO: Icons or something later?

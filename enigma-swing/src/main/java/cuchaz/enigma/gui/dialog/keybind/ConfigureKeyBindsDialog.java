@@ -58,6 +58,7 @@ public class ConfigureKeyBindsDialog extends JDialog {
 			categoriesPanel.add(button, cb.pos(1, i).weightX(1.0).anchor(GridBagConstraints.LINE_END).fill(GridBagConstraints.HORIZONTAL).build());
 			i++;
 		}
+
 		contentPane.add(categoriesPanel, BorderLayout.CENTER);
 
 		// Add buttons

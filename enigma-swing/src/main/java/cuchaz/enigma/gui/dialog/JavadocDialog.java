@@ -1,24 +1,5 @@
 package cuchaz.enigma.gui.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuBar;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.WindowConstants;
-import javax.swing.text.html.HTML;
-
-import com.google.common.base.Strings;
-
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.gui.GuiController;
 import cuchaz.enigma.gui.config.UiConfig;
@@ -30,6 +11,24 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.ValidationContext;
+
+import com.google.common.base.Strings;
+
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.WindowConstants;
+import javax.swing.text.html.HTML;
 
 public class JavadocDialog {
 	private final JDialog ui;

@@ -1,5 +1,14 @@
 package cuchaz.enigma.gui.dialog;
 
+import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.gui.stats.StatsGenerator;
+import cuchaz.enigma.gui.stats.StatsMember;
+import cuchaz.enigma.gui.stats.StatsResult;
+import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
+import cuchaz.enigma.gui.util.ScaleUtil;
+import cuchaz.enigma.utils.I18n;
+
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -11,16 +20,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.gui.config.UiConfig;
-import cuchaz.enigma.gui.stats.StatsGenerator;
-import cuchaz.enigma.gui.stats.StatsMember;
-import cuchaz.enigma.gui.stats.StatsResult;
-import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
-import cuchaz.enigma.gui.util.ScaleUtil;
-import cuchaz.enigma.utils.I18n;
-
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -36,6 +35,7 @@ public class StatsDialog {
 			for (StatsMember member : StatsMember.values()) {
 				results.put(member, statsGenerator.generate(listener, Collections.singleton(member), "", false));
 			}
+
 			SwingUtilities.invokeLater(() -> show(gui, results, ""));
 		});
 	}

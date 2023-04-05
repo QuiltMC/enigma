@@ -1,12 +1,12 @@
 package cuchaz.enigma.gui.elements;
 
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.tree.TreePath;
-
 import cuchaz.enigma.gui.ClassSelector;
 import cuchaz.enigma.gui.docker.DeobfuscatedClassesDocker;
 import cuchaz.enigma.utils.I18n;
+
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.tree.TreePath;
 
 public class DeobfPanelPopupMenu {
 	private final JPopupMenu ui;
