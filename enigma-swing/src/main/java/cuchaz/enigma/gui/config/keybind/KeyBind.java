@@ -1,7 +1,6 @@
 package cuchaz.enigma.gui.config.keybind;
 
 import cuchaz.enigma.utils.I18n;
-
 import org.tinylog.Logger;
 
 import java.awt.event.KeyEvent;

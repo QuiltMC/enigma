@@ -15,7 +15,6 @@ package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.util.GuiUtil;
-
 import de.sciss.syntaxpane.actions.DefaultSyntaxAction;
 import de.sciss.syntaxpane.actions.DocumentSearchData;
 import de.sciss.syntaxpane.actions.gui.EscapeListener;

@@ -1,12 +1,11 @@
 package cuchaz.enigma.gui.util;
 
-import cuchaz.enigma.gui.config.UiConfig;
-
 import com.github.swingdpi.UiDefaultsScaler;
 import com.github.swingdpi.plaf.BasicTweaker;
 import com.github.swingdpi.plaf.MetalTweaker;
 import com.github.swingdpi.plaf.NimbusTweaker;
 import com.github.swingdpi.plaf.WindowsTweaker;
+import cuchaz.enigma.gui.config.UiConfig;
 import de.sciss.syntaxpane.DefaultSyntaxKit;
 import org.tinylog.Logger;
 
