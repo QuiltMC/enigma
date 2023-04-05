@@ -1,6 +1,5 @@
 package cuchaz.enigma.translation.mapping.serde.srg;
 
-import com.google.common.collect.Lists;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.MappingTranslator;
 import cuchaz.enigma.translation.Translator;
@@ -17,6 +16,8 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
+
+import com.google.common.collect.Lists;
 import org.tinylog.Logger;
 
 import java.io.IOException;

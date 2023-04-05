@@ -1,14 +1,14 @@
 package cuchaz.enigma.translation.representation.entry;
 
+import cuchaz.enigma.translation.Translatable;
+import cuchaz.enigma.translation.mapping.IdentifierValidation;
+import cuchaz.enigma.utils.validation.ValidationContext;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
-
-import cuchaz.enigma.translation.Translatable;
-import cuchaz.enigma.translation.mapping.IdentifierValidation;
-import cuchaz.enigma.utils.validation.ValidationContext;
 
 public interface Entry<P extends Entry<?>> extends Translatable {
 	/**
@@ -19,9 +19,9 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 *
 	 * <br><p>Examples:</p>
 	 * <ul>
-	 *	 <li>Outer class: "domain.name.ClassA"</li>
-	 *	 <li>Inner class: "ClassB"</li>
-	 *	 <li>Method: "methodC"</li>
+	 *	<li>Outer class: "domain.name.ClassA"</li>
+	 *	<li>Inner class: "ClassB"</li>
+	 *	<li>Method: "methodC"</li>
 	 * </ul>
 	 */
 	String getName();
@@ -50,9 +50,9 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 *
 	 * <br><p>Examples:</p>
 	 * <ul>
-	 *	 <li>Outer class: "domain.name.ClassA"</li>
-	 *	 <li>Inner class: "domain.name.ClassA$ClassB"</li>
-	 *	 <li>Method: "domain.name.ClassA.methodC"</li>
+	 *	<li>Outer class: "domain.name.ClassA"</li>
+	 *	<li>Inner class: "domain.name.ClassA$ClassB"</li>
+	 *	<li>Method: "domain.name.ClassA.methodC"</li>
 	 * </ul>
 	 */
 	String getFullName();
@@ -66,9 +66,9 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 *
 	 * <br><p>Examples:</p>
 	 * <ul>
-	 *	 <li>Outer class: "ClassA"</li>
-	 *	 <li>Inner class: "ClassA$ClassB"</li>
-	 *	 <li>Method: "ClassA.methodC"</li>
+	 *	<li>Outer class: "ClassA"</li>
+	 *	<li>Inner class: "ClassA$ClassB"</li>
+	 *	<li>Method: "ClassA.methodC"</li>
 	 * </ul>
 	 */
 	String getContextualName();
@@ -107,8 +107,10 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 				last = classEntry;
 				break;
 			}
+
 			current = current.getParent();
 		}
+
 		return Objects.requireNonNull(last, () -> String.format("%s has no containing class?", this));
 	}
 
@@ -119,8 +121,10 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 			if (current instanceof ClassEntry classEntry) {
 				last = classEntry;
 			}
+
 			current = current.getParent();
 		}
+
 		return Objects.requireNonNull(last, () -> String.format("%s has no top level class?", this));
 	}
 
@@ -130,6 +134,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 		if (parent != null) {
 			entries.addAll(parent.getAncestry());
 		}
+
 		entries.add(this);
 		return entries;
 	}
@@ -144,6 +149,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 				return (E) ancestor;
 			}
 		}
+
 		return null;
 	}
 

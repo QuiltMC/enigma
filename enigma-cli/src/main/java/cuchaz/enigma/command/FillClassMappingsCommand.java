@@ -12,6 +12,7 @@ import cuchaz.enigma.translation.mapping.tree.HashEntryTree;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.Utils;
+
 import org.tinylog.Logger;
 
 import java.nio.file.Path;

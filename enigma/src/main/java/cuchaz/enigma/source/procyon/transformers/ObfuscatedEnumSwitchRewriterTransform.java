@@ -57,19 +57,19 @@ import java.util.Map;
  */
 @SuppressWarnings("Duplicates")
 public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
-	private final DecompilerContext _context;
+	private final DecompilerContext context;
 
 	public ObfuscatedEnumSwitchRewriterTransform(final DecompilerContext context) {
-		this._context = VerifyArgument.notNull(context, "context");
+		this.context = VerifyArgument.notNull(context, "context");
 	}
 
 	@Override
 	public void run(final AstNode compilationUnit) {
-		compilationUnit.acceptVisitor(new Visitor(this._context), null);
+		compilationUnit.acceptVisitor(new Visitor(this.context), null);
 	}
 
-	private final static class Visitor extends ContextTrackingVisitor<Void> {
-		private final static class SwitchMapInfo {
+	private static final class Visitor extends ContextTrackingVisitor<Void> {
+		private static final class SwitchMapInfo {
 			final String enclosingType;
 			final Map<String, List<SwitchStatement>> switches = new LinkedHashMap<>();
 			final Map<String, Map<Integer, Expression>> mappings = new LinkedHashMap<>();
@@ -110,8 +110,7 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
 
 			try {
 				super.visitTypeDeclarationOverride(typeDeclaration, p);
-			}
-			finally {
+			} finally {
 				this.isSwitchMapWrapper = oldIsSwitchMapWrapper;
 			}
 
@@ -192,10 +191,10 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
 			final TypeDefinition currentType = this.context.getCurrentType();
 			final MethodDefinition currentMethod = this.context.getCurrentMethod();
 
-			if (this.isSwitchMapWrapper &&
-				currentType != null &&
-				currentMethod != null &&
-				currentMethod.isTypeInitializer()) {
+			if (this.isSwitchMapWrapper
+					&& currentType != null
+					&& currentMethod != null
+					&& currentMethod.isTypeInitializer()) {
 				final Expression left = node.getLeft();
 				final Expression right = node.getRight();
 
@@ -377,8 +376,8 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
 			}
 
 			for (final FieldDefinition field : definition.getDeclaredFields()) {
-				if (!field.getName().startsWith("$SwitchMap$") &&
-					BuiltinTypes.Integer.makeArrayType().equals(field.getFieldType())) {
+				if (!field.getName().startsWith("$SwitchMap$")
+						&& BuiltinTypes.Integer.makeArrayType().equals(field.getFieldType())) {
 					return true;
 				}
 			}

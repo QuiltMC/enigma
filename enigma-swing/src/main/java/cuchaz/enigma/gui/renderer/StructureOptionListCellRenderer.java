@@ -3,8 +3,9 @@ package cuchaz.enigma.gui.renderer;
 import cuchaz.enigma.analysis.StructureTreeOptions;
 import cuchaz.enigma.utils.I18n;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Component;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 
 public class StructureOptionListCellRenderer extends DefaultListCellRenderer {
 	@Override

@@ -27,7 +27,7 @@ public class Java8Generics implements IAstTransform {
 		compilationUnit.acceptVisitor(new Visitor(), null);
 	}
 
-	static class Visitor extends DepthFirstAstVisitor<Void,Void> {
+	static class Visitor extends DepthFirstAstVisitor<Void, Void> {
 		@Override
 		public Void visitInvocationExpression(InvocationExpression node, Void data) {
 			super.visitInvocationExpression(node, data);
@@ -36,18 +36,21 @@ public class Java8Generics implements IAstTransform {
 					TypeReference tr = t.toTypeReference();
 					if (tr.getDeclaringType() != null) { // ensure that inner types are resolved, so we can get the TypeDefinition below
 						TypeReference resolved = tr.resolve();
-						if (resolved != null)
+						if (resolved != null) {
 							return resolved;
+						}
 					}
+
 					return tr;
 				}).anyMatch(t -> t.isWildcardType() || (t instanceof TypeDefinition definition && definition.isAnonymous()))) {
 					//these are invalid for invocations, let the compiler work it out
 					referenceExpression.getTypeArguments().clear();
-				} else if (referenceExpression.getTypeArguments().stream().allMatch(t->t.toTypeReference().equals(CommonTypeReferences.Object))) {
+				} else if (referenceExpression.getTypeArguments().stream().allMatch(t -> t.toTypeReference().equals(CommonTypeReferences.Object))) {
 					//all are <Object>, thereby redundant and/or bad
 					referenceExpression.getTypeArguments().clear();
 				}
 			}
+
 			return null;
 		}
 
@@ -62,6 +65,7 @@ public class Java8Generics implements IAstTransform {
 					typeArguments.firstOrNullObject().getChildByRole(Roles.IDENTIFIER).replaceWith(Identifier.create(""));
 				}
 			}
+
 			return null;
 		}
 
@@ -81,10 +85,12 @@ public class Java8Generics implements IAstTransform {
 					doReplace = true;
 				}
 			}
+
 			super.visitCastExpression(node, data);
 			if (doReplace) {
 				node.replaceWith(node.getExpression());
 			}
+
 			return null;
 		}
 	}

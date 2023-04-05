@@ -1,14 +1,14 @@
 package cuchaz.enigma.network.packet;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 import cuchaz.enigma.network.ServerMessage;
 import cuchaz.enigma.network.ServerPacketHandler;
 import cuchaz.enigma.translation.mapping.EntryChange;
 import cuchaz.enigma.translation.mapping.EntryUtil;
 import cuchaz.enigma.utils.validation.ValidationContext;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 public class EntryChangeC2SPacket implements Packet<ServerPacketHandler> {
 	private EntryChange<?> change;

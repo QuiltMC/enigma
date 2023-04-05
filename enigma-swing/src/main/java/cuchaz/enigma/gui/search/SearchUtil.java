@@ -1,5 +1,7 @@
 package cuchaz.enigma.gui.search;
 
+import cuchaz.enigma.utils.Pair;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,8 +20,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import cuchaz.enigma.utils.Pair;
 
 public class SearchUtil<T extends SearchEntry> {
 	private final Map<T, Entry<T>> entries = new HashMap<>();

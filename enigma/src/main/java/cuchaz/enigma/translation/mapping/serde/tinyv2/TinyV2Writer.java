@@ -1,6 +1,5 @@
 package cuchaz.enigma.translation.mapping.serde.tinyv2;
 
-import com.google.common.base.Strings;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.mapping.EntryMap;
 import cuchaz.enigma.translation.mapping.EntryMapping;
@@ -16,6 +15,8 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+
+import com.google.common.base.Strings;
 import org.tinylog.Logger;
 
 import java.io.IOException;
@@ -67,6 +68,7 @@ public final class TinyV2Writer implements MappingsWriter {
 			} else {
 				parts.addFirst(classEntry.getName());
 			}
+
 			classEntry = classEntry.getOuterClass();
 		} while (classEntry != null);
 
@@ -116,13 +118,15 @@ public final class TinyV2Writer implements MappingsWriter {
 			if (entry instanceof LocalVariableEntry) {
 				this.writeParameter(writer, child);
 			}
+
 			// TODO write actual local variables
 		}
 	}
 
 	private void writeField(PrintWriter writer, EntryTreeNode<EntryMapping> node) {
-		if (node.getValue() == null || node.getValue().equals(EntryMapping.DEFAULT))
+		if (node.getValue() == null || node.getValue().equals(EntryMapping.DEFAULT)) {
 			return; // Shortcut
+		}
 
 		writer.print(this.indent(1));
 		writer.print("f\t");
@@ -146,8 +150,9 @@ public final class TinyV2Writer implements MappingsWriter {
 	}
 
 	private void writeParameter(PrintWriter writer, EntryTreeNode<EntryMapping> node) {
-		if (node.getValue() == null || node.getValue().equals(EntryMapping.DEFAULT))
+		if (node.getValue() == null || node.getValue().equals(EntryMapping.DEFAULT)) {
 			return; // Shortcut
+		}
 
 		writer.print(this.indent(2));
 		writer.print("p\t");

@@ -1,12 +1,16 @@
 package cuchaz.enigma.network;
 
-import com.google.common.io.MoreFiles;
-import cuchaz.enigma.*;
+import cuchaz.enigma.Enigma;
+import cuchaz.enigma.EnigmaProfile;
+import cuchaz.enigma.EnigmaProject;
+import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.utils.Utils;
+
+import com.google.common.io.MoreFiles;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
@@ -99,6 +103,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 			Logger.error("Password too long, must be at most {} characters", EnigmaServer.MAX_PASSWORD_LENGTH);
 			System.exit(1);
 		}
+
 		Path logFile = parsedArgs.valueOf(logFileOpt);
 
 		Logger.info("Starting Enigma server");
@@ -124,6 +129,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 				} else {
 					mappingFormat = MappingFormat.ENIGMA_FILE;
 				}
+
 				mappings = EntryRemapper.mapped(project.getJarIndex(), mappingFormat.read(mappingsFile, ProgressListener.none(), profile.getMappingSaveParameters()));
 			}
 
