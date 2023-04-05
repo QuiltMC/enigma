@@ -128,7 +128,7 @@ public class Enigma {
 			for (EnigmaProfile.Service serviceProfile : serviceProfiles) {
 				if (serviceProfile.matches(id)) {
 					T service = factory.create(this.getServiceContext(serviceProfile));
-					services.put(serviceType, new EnigmaServices.RegisteredService<>(id, service));
+					this.services.put(serviceType, new EnigmaServices.RegisteredService<>(id, service));
 					break;
 				}
 			}

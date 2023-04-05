@@ -14,13 +14,13 @@ public final class EnigmaServices {
 	}
 
 	public <T extends EnigmaService> List<T> get(EnigmaServiceType<T> type) {
-		List<RegisteredService<T>> withIds = getWithIds(type);
+		List<RegisteredService<T>> withIds = this.getWithIds(type);
 		return withIds.stream().map(RegisteredService::service).toList();
 	}
 
 	@SuppressWarnings("unchecked")
 	public <T extends EnigmaService> List<RegisteredService<T>> getWithIds(EnigmaServiceType<T> type) {
-		return (List<RegisteredService<T>>) (Object) services.get(type);
+		return (List<RegisteredService<T>>) (Object) this.services.get(type);
 	}
 
 	public record RegisteredService<T extends EnigmaService>(String id, T service) {
