@@ -5,7 +5,6 @@ import cuchaz.enigma.source.Decompiler;
 import cuchaz.enigma.source.Source;
 import cuchaz.enigma.source.SourceSettings;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
-
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class BytecodeDecompiler implements Decompiler {

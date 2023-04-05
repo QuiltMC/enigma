@@ -13,7 +13,6 @@ import cuchaz.enigma.classprovider.ClassProvider;
 import cuchaz.enigma.classprovider.CombiningClassProvider;
 import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.utils.Utils;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableListMultimap;
 import org.objectweb.asm.Opcodes;

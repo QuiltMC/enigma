@@ -6,7 +6,6 @@ import cuchaz.enigma.source.Source;
 import cuchaz.enigma.source.SourceSettings;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.utils.AsmUtil;
-
 import org.benf.cfr.reader.apiunreleased.ClassFileSource2;
 import org.benf.cfr.reader.apiunreleased.JarContent;
 import org.benf.cfr.reader.bytecode.analysis.parse.utils.Pair;

@@ -1,12 +1,11 @@
 package cuchaz.enigma.source;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
 import cuchaz.enigma.translation.representation.entry.Entry;
-
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 
 import java.util.ArrayList;
 import java.util.Collection;

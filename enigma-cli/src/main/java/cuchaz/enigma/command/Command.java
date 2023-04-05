@@ -1,5 +1,6 @@
 package cuchaz.enigma.command;
 
+import com.google.common.io.MoreFiles;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.EnigmaProject;
@@ -15,8 +16,6 @@ import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
-
-import com.google.common.io.MoreFiles;
 import org.tinylog.Logger;
 
 import java.io.BufferedWriter;

@@ -5,7 +5,6 @@ import cuchaz.enigma.bytecode.translators.TranslationClassVisitor;
 import cuchaz.enigma.source.Source;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
-
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.util.TraceClassVisitor;
 

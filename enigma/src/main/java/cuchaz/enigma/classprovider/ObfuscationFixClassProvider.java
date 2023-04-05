@@ -4,7 +4,6 @@ import cuchaz.enigma.Enigma;
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.bytecode.translators.LocalVariableFixVisitor;
 import cuchaz.enigma.bytecode.translators.SourceFixVisitor;
-
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;

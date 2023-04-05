@@ -2,7 +2,6 @@ package cuchaz.enigma.api.service;
 
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.classprovider.ClassProvider;
-
 import org.objectweb.asm.ClassVisitor;
 
 import java.util.Set;

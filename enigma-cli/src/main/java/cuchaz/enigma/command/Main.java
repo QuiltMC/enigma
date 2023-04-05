@@ -1,7 +1,6 @@
 package cuchaz.enigma.command;
 
 import cuchaz.enigma.Enigma;
-
 import org.tinylog.Logger;
 
 import java.util.LinkedHashMap;

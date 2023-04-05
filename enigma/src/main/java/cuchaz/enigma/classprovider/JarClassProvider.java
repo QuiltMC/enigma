@@ -1,8 +1,7 @@
 package cuchaz.enigma.classprovider;
 
-import cuchaz.enigma.utils.AsmUtil;
-
 import com.google.common.collect.ImmutableSet;
+import cuchaz.enigma.utils.AsmUtil;
 import org.objectweb.asm.tree.ClassNode;
 
 import javax.annotation.Nullable;

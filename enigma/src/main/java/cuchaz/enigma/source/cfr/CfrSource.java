@@ -4,7 +4,6 @@ import cuchaz.enigma.source.Source;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.SourceSettings;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
-
 import org.benf.cfr.reader.apiunreleased.ClassFileSource2;
 import org.benf.cfr.reader.entities.ClassFile;
 import org.benf.cfr.reader.mapping.MappingFactory;

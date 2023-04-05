@@ -1,12 +1,5 @@
 package cuchaz.enigma.source.procyon.index;
 
-import cuchaz.enigma.source.SourceIndex;
-import cuchaz.enigma.source.procyon.EntryParser;
-import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
-import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
-
 import com.strobel.assembler.metadata.FieldDefinition;
 import com.strobel.assembler.metadata.MethodDefinition;
 import com.strobel.assembler.metadata.TypeDefinition;
@@ -21,6 +14,12 @@ import com.strobel.decompiler.languages.java.ast.MethodDeclaration;
 import com.strobel.decompiler.languages.java.ast.SimpleType;
 import com.strobel.decompiler.languages.java.ast.TypeDeclaration;
 import com.strobel.decompiler.languages.java.ast.VariableInitializer;
+import cuchaz.enigma.source.SourceIndex;
+import cuchaz.enigma.source.procyon.EntryParser;
+import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
+import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 
 public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	private final ClassDefEntry classEntry;

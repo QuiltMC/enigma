@@ -21,7 +21,6 @@ import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.Utils;
-
 import org.tinylog.Logger;
 
 import java.nio.file.Path;

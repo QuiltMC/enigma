@@ -1,5 +1,9 @@
 package cuchaz.enigma.source.procyon;
 
+import com.strobel.assembler.metadata.FieldDefinition;
+import com.strobel.assembler.metadata.MethodDefinition;
+import com.strobel.assembler.metadata.TypeDefinition;
+import com.strobel.assembler.metadata.TypeReference;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.Signature;
@@ -8,11 +12,6 @@ import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
-
-import com.strobel.assembler.metadata.FieldDefinition;
-import com.strobel.assembler.metadata.MethodDefinition;
-import com.strobel.assembler.metadata.TypeDefinition;
-import com.strobel.assembler.metadata.TypeReference;
 
 public class EntryParser {
 	public static FieldDefEntry parse(FieldDefinition definition) {

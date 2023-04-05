@@ -2,7 +2,6 @@ package cuchaz.enigma.network;
 
 import cuchaz.enigma.network.packet.Packet;
 import cuchaz.enigma.network.packet.PacketRegistry;
-
 import org.tinylog.Logger;
 
 import javax.swing.SwingUtilities;

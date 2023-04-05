@@ -10,7 +10,6 @@ import cuchaz.enigma.translation.mapping.EntryChange;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.Entry;
-
 import org.tinylog.Logger;
 
 import java.io.DataInput;
