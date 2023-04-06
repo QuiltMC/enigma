@@ -8,13 +8,25 @@ import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.Lambda;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.Signature;
-import cuchaz.enigma.translation.representation.entry.*;
-import org.objectweb.asm.*;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.translation.representation.entry.ParentedEntry;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Handle;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.analysis.*;
+import org.objectweb.asm.tree.analysis.Analyzer;
+import org.objectweb.asm.tree.analysis.AnalyzerException;
+import org.objectweb.asm.tree.analysis.BasicValue;
+import org.objectweb.asm.tree.analysis.SourceInterpreter;
+import org.objectweb.asm.tree.analysis.SourceValue;
 
 import java.util.List;
 
@@ -54,7 +66,7 @@ public class IndexReferenceVisitor extends ClassVisitor {
 		private final MethodDefEntry callerEntry;
 		private final JarIndexer indexer;
 
-		public MethodInterpreter(MethodDefEntry callerEntry, JarIndexer indexer, EntryIndex entryIndex, InheritanceIndex inheritanceIndex) {
+		MethodInterpreter(MethodDefEntry callerEntry, JarIndexer indexer, EntryIndex entryIndex, InheritanceIndex inheritanceIndex) {
 			super(new IndexSimpleVerifier(entryIndex, inheritanceIndex), new SourceInterpreter());
 			this.callerEntry = callerEntry;
 			this.indexer = indexer;
@@ -84,7 +96,6 @@ public class IndexReferenceVisitor extends ClassVisitor {
 
 			return super.unaryOperation(insn, value);
 		}
-
 
 		@Override
 		public PairValue<BasicValue, SourceValue> binaryOperation(AbstractInsnNode insn, PairValue<BasicValue, SourceValue> value1, PairValue<BasicValue, SourceValue> value2) throws AnalyzerException {

@@ -1,10 +1,10 @@
 package cuchaz.enigma.translation.mapping;
 
-import java.util.List;
-
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.StandardValidation;
 import cuchaz.enigma.utils.validation.ValidationContext;
+
+import java.util.List;
 
 public final class IdentifierValidation {
 	private IdentifierValidation() {
@@ -32,6 +32,7 @@ public final class IdentifierValidation {
 		for (String part : parts) {
 			validateIdentifier(vc, part);
 		}
+
 		return true;
 	}
 
@@ -47,6 +48,7 @@ public final class IdentifierValidation {
 			vc.raise(Message.ILLEGAL_IDENTIFIER, name, new String(Character.toChars(cp)), position);
 			return false;
 		}
+
 		for (int i = Character.charCount(cp); i < name.length(); i += Character.charCount(cp)) {
 			cp = name.codePointAt(i);
 			position += 1;
@@ -64,6 +66,7 @@ public final class IdentifierValidation {
 			vc.raise(Message.RESERVED_IDENTIFIER, name);
 			return true;
 		}
+
 		return false;
 	}
 

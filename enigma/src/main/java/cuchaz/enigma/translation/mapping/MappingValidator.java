@@ -1,11 +1,5 @@
 package cuchaz.enigma.translation.mapping;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import cuchaz.enigma.analysis.index.InheritanceIndex;
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.translation.Translator;
@@ -15,6 +9,12 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ValidationContext;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MappingValidator {
 	private final EntryTree<EntryMapping> obfToDeobf;
@@ -99,6 +99,7 @@ public class MappingValidator {
 				return false;
 			}
 		}
+
 		return true;
 	}
 

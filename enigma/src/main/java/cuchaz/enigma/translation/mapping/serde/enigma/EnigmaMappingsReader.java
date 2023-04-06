@@ -1,23 +1,38 @@
 package cuchaz.enigma.translation.mapping.serde.enigma;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.util.*;
-
-import javax.annotation.Nullable;
-
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.mapping.AccessModifier;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingPair;
-import cuchaz.enigma.translation.mapping.serde.*;
+import cuchaz.enigma.translation.mapping.serde.MappingHelper;
+import cuchaz.enigma.translation.mapping.serde.MappingParseException;
+import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
+import cuchaz.enigma.translation.mapping.serde.MappingsReader;
+import cuchaz.enigma.translation.mapping.serde.RawEntryMapping;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.HashEntryTree;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
-import cuchaz.enigma.translation.representation.entry.*;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
+import java.nio.file.Path;
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
+import java.util.Locale;
 
 public enum EnigmaMappingsReader implements MappingsReader {
 	FILE {
@@ -39,6 +54,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 			if (!Files.isDirectory(root)) {
 				throw new NotDirectoryException(root.toString());
 			}
+
 			EntryTree<EntryMapping> mappings = new HashEntryTree<>();
 
 			List<Path> files = Files.walk(root)
@@ -54,6 +70,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 				if (Files.isHidden(file)) {
 					continue;
 				}
+
 				readFile(file, mappings);
 			}
 
@@ -157,6 +174,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 		if (commentPos >= 0) {
 			return line.substring(0, commentPos);
 		}
+
 		return line;
 	}
 
@@ -166,8 +184,10 @@ public enum EnigmaMappingsReader implements MappingsReader {
 			if (line.charAt(i) != '\t') {
 				break;
 			}
+
 			indent++;
 		}
+
 		return indent;
 	}
 
@@ -204,13 +224,16 @@ public enum EnigmaMappingsReader implements MappingsReader {
 	}
 
 	private static void readJavadoc(MappingPair<?, RawEntryMapping> parent, String[] tokens) {
-		if (parent == null)
+		if (parent == null) {
 			throw new IllegalStateException("Javadoc has no parent!");
+		}
+
 		// Empty string to concat
 		String jdLine = tokens.length > 1 ? String.join(" ", Arrays.copyOfRange(tokens, 1, tokens.length)) : "";
 		if (parent.getMapping() == null) {
 			parent.setMapping(new RawEntryMapping(parent.getEntry().getName(), AccessModifier.UNCHANGED));
 		}
+
 		parent.getMapping().addJavadocLine(MappingHelper.unescape(jdLine));
 	}
 
@@ -325,6 +348,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 		if (token.startsWith("ACC:")) {
 			return AccessModifier.valueOf(token.substring(4));
 		}
+
 		return null;
 	}
 }

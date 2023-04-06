@@ -6,9 +6,19 @@ import com.google.common.collect.Sets;
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.analysis.ReferenceTargetType;
 import cuchaz.enigma.translation.representation.AccessFlags;
-import cuchaz.enigma.translation.representation.entry.*;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class PackageVisibilityIndex implements JarIndexer {
 	private static boolean requiresSamePackage(AccessFlags entryAcc, EntryReference<?, ?> ref, InheritanceIndex inheritanceIndex) {
@@ -29,9 +39,9 @@ public class PackageVisibilityIndex implements JarIndexer {
 			}
 
 			// access to instance member only valid if target's class assignable to context class
-			return !(ref.targetType.getKind() == ReferenceTargetType.Kind.UNINITIALIZED ||
-					((ReferenceTargetType.ClassType) ref.targetType).getEntry().equals(contextClass) ||
-					inheritanceIndex.getAncestors(((ReferenceTargetType.ClassType) ref.targetType).getEntry()).contains(contextClass));
+			return !(ref.targetType.getKind() == ReferenceTargetType.Kind.UNINITIALIZED
+					|| ((ReferenceTargetType.ClassType) ref.targetType).getEntry().equals(contextClass)
+					|| inheritanceIndex.getAncestors(((ReferenceTargetType.ClassType) ref.targetType).getEntry()).contains(contextClass));
 		}
 
 		return true;

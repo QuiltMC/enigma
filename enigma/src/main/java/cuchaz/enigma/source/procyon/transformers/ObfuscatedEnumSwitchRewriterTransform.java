@@ -170,7 +170,7 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
 							astBuilder = new AstBuilder(this.context);
 						}
 
-						try (final SafeCloseable ignored = astBuilder.suppressImports()) {
+						try (SafeCloseable ignored = astBuilder.suppressImports()) {
 							final TypeDeclaration declaration = astBuilder.createType(resolvedType);
 
 							declaration.acceptVisitor(this, data);
@@ -198,8 +198,8 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
 				final Expression left = node.getLeft();
 				final Expression right = node.getRight();
 
-				if (left instanceof IndexerExpression expression &&
-						right instanceof final PrimitiveExpression value) {
+				if (left instanceof IndexerExpression expression
+						&& right instanceof final PrimitiveExpression value) {
 					String mapName = null;
 
 					final Expression array = expression.getTarget();
@@ -207,8 +207,7 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
 
 					if (array instanceof MemberReferenceExpression referenceExpression) {
 						mapName = referenceExpression.getMemberName();
-					}
-					else if (array instanceof IdentifierExpression identifierExpression) {
+					} else if (array instanceof IdentifierExpression identifierExpression) {
 						mapName = identifierExpression.getIdentifier();
 					}
 
@@ -258,7 +257,7 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
 
 					Map<Integer, Expression> mapping = info.mappings.computeIfAbsent(mapName, k -> new LinkedHashMap<>());
 
-					final IdentifierExpression enumValue = new IdentifierExpression( Expression.MYSTERY_OFFSET, outerMemberReference.getMemberName());
+					final IdentifierExpression enumValue = new IdentifierExpression(Expression.MYSTERY_OFFSET, outerMemberReference.getMemberName());
 
 					enumValue.putUserData(Keys.MEMBER_REFERENCE, outerMemberReference.getUserData(Keys.MEMBER_REFERENCE));
 
@@ -278,9 +277,9 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
 				this.rewrite(info);
 			}
 
-			//
-			// Remove switch map type wrappers that are no longer referenced.
-			//
+		//
+		// Remove switch map type wrappers that are no longer referenced.
+		//
 
 		outer:
 			for (final SwitchMapInfo info : this.switchMaps.values()) {

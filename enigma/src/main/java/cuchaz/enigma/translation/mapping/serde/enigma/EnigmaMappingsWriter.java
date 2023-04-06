@@ -1,19 +1,5 @@
 package cuchaz.enigma.translation.mapping.serde.enigma;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
-
-import javax.annotation.Nonnull;
-
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.MappingTranslator;
 import cuchaz.enigma.translation.Translator;
@@ -21,12 +7,38 @@ import cuchaz.enigma.translation.mapping.AccessModifier;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingDelta;
 import cuchaz.enigma.translation.mapping.VoidEntryResolver;
-import cuchaz.enigma.translation.mapping.serde.*;
+import cuchaz.enigma.translation.mapping.serde.LfPrintWriter;
+import cuchaz.enigma.translation.mapping.serde.MappingFileNameFormat;
+import cuchaz.enigma.translation.mapping.serde.MappingHelper;
+import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
+import cuchaz.enigma.translation.mapping.serde.MappingsWriter;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTreeNode;
-import cuchaz.enigma.translation.representation.entry.*;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
 import org.tinylog.Logger;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 
 public enum EnigmaMappingsWriter implements MappingsWriter {
 	FILE {
@@ -292,8 +304,8 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 	}
 
 	private String indent(String line, int depth) {
-		return "\t".repeat(Math.max(0, depth)) +
-				line.trim();
+		return "\t".repeat(Math.max(0, depth))
+				+ line.trim();
 	}
 
 	protected boolean isClassEmpty(EntryTree<EntryMapping> mappings, ClassEntry classEntry) {

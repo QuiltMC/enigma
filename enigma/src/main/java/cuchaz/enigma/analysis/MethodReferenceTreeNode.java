@@ -47,6 +47,7 @@ public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements R
 		if (this.reference != null) {
 			return String.format("%s", this.translator.translate(this.reference.context));
 		}
+
 		return this.translator.translate(this.entry).getName();
 	}
 
@@ -66,10 +67,11 @@ public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements R
 					TreeNode n = node;
 					while (n.getParent() != null) {
 						n = n.getParent();
-						if (n instanceof MethodReferenceTreeNode) {
-							ancestors.add(((MethodReferenceTreeNode) n).getEntry());
+						if (n instanceof MethodReferenceTreeNode treeNode) {
+							ancestors.add(treeNode.getEntry());
 						}
 					}
+
 					if (ancestors.contains(node.getEntry())) {
 						continue;
 					}

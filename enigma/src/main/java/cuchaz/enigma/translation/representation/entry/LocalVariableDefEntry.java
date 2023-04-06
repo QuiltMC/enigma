@@ -1,14 +1,13 @@
 package cuchaz.enigma.translation.representation.entry;
 
-import javax.annotation.Nonnull;
-
 import com.google.common.base.Preconditions;
-
 import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
+
+import javax.annotation.Nonnull;
 
 public class LocalVariableDefEntry extends LocalVariableEntry {
 	protected final TypeDescriptor desc;

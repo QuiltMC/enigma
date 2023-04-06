@@ -1,14 +1,13 @@
 package cuchaz.enigma.translation.mapping;
 
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.source.DecompiledClassSource;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.TristateChange;
+
+import java.util.Objects;
+import java.util.Optional;
+import javax.annotation.Nullable;
 
 public final class EntryChange<E extends Entry<?>> {
 	private final E target;
@@ -76,10 +75,10 @@ public final class EntryChange<E extends Entry<?>> {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof EntryChange<?> that)) return false;
-		return Objects.equals(this.target, that.target) &&
-				Objects.equals(this.deobfName, that.deobfName) &&
-				Objects.equals(this.javadoc, that.javadoc) &&
-				Objects.equals(this.access, that.access);
+		return Objects.equals(this.target, that.target)
+				&& Objects.equals(this.deobfName, that.deobfName)
+				&& Objects.equals(this.javadoc, that.javadoc)
+				&& Objects.equals(this.access, that.access);
 	}
 
 	@Override

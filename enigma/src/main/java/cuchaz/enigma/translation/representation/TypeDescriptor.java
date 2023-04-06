@@ -1,11 +1,7 @@
 package cuchaz.enigma.translation.representation;
 
-import java.util.Map;
-import java.util.function.UnaryOperator;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-
 import cuchaz.enigma.translation.Translatable;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
@@ -13,6 +9,9 @@ import cuchaz.enigma.translation.mapping.EntryMap;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
+
+import java.util.Map;
+import java.util.function.UnaryOperator;
 
 public class TypeDescriptor implements Translatable {
 	protected final String desc;
@@ -71,8 +70,10 @@ public class TypeDescriptor implements Translatable {
 
 	private static int countArrayDimension(String in) {
 		int i = 0;
-		while (i < in.length() && in.charAt(i) == '[')
+		while (i < in.length() && in.charAt(i) == '[') {
 			i++;
+		}
+
 		return i;
 	}
 
@@ -93,6 +94,7 @@ public class TypeDescriptor implements Translatable {
 				return buf.toString();
 			}
 		}
+
 		return null;
 	}
 
@@ -117,6 +119,7 @@ public class TypeDescriptor implements Translatable {
 		if (!this.isPrimitive()) {
 			throw new IllegalStateException("not a primitive");
 		}
+
 		return Primitive.get(this.desc.charAt(0));
 	}
 
@@ -135,7 +138,6 @@ public class TypeDescriptor implements Translatable {
 			}
 
 			return new ClassEntry(name);
-
 		} else if (this.isArray() && this.getArrayType().isType()) {
 			return this.getArrayType().getTypeEntry();
 		} else {
@@ -151,6 +153,7 @@ public class TypeDescriptor implements Translatable {
 		if (!this.isArray()) {
 			throw new IllegalStateException("not an array");
 		}
+
 		return countArrayDimension(this.desc);
 	}
 
@@ -158,6 +161,7 @@ public class TypeDescriptor implements Translatable {
 		if (!this.isArray()) {
 			throw new IllegalStateException("not an array");
 		}
+
 		return new TypeDescriptor(this.desc.substring(this.getArrayDimension()));
 	}
 
@@ -191,6 +195,7 @@ public class TypeDescriptor implements Translatable {
 				}
 			}
 		}
+
 		return new TypeDescriptor(desc);
 	}
 

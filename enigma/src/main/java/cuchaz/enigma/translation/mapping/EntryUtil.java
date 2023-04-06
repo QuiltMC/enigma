@@ -1,9 +1,9 @@
 package cuchaz.enigma.translation.mapping;
 
-import javax.annotation.Nonnull;
-
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.validation.ValidationContext;
+
+import javax.annotation.Nonnull;
 
 public class EntryUtil {
 	public static EntryMapping applyChange(ValidationContext vc, EntryRemapper remapper, EntryChange<?> change) {

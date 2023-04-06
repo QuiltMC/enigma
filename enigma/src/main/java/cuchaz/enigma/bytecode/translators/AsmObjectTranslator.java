@@ -27,6 +27,7 @@ public class AsmObjectTranslator {
 				return Type.getMethodType(translator.translate(descriptor).toString());
 			}
 		}
+
 		return type;
 	}
 
@@ -55,6 +56,7 @@ public class AsmObjectTranslator {
 		} else if (value instanceof Handle handle) {
 			return translateHandle(translator, handle);
 		}
+
 		return value;
 	}
 }

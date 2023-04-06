@@ -1,7 +1,5 @@
 package cuchaz.enigma.translation.mapping;
 
-import java.util.stream.Stream;
-
 import cuchaz.enigma.translation.Translatable;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
@@ -9,6 +7,8 @@ import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTreeNode;
 import cuchaz.enigma.translation.mapping.tree.HashEntryTree;
 import cuchaz.enigma.translation.representation.entry.Entry;
+
+import java.util.stream.Stream;
 
 public class MappingDelta<T> implements Translatable {
 	public static final Object PLACEHOLDER = new Object();

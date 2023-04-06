@@ -8,7 +8,15 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -56,6 +64,7 @@ public class HashEntryTree<T> implements EntryTree<T> {
 		if (node == null) {
 			return null;
 		}
+
 		return node.getValue();
 	}
 
@@ -70,6 +79,7 @@ public class HashEntryTree<T> implements EntryTree<T> {
 		if (leaf == null) {
 			return Collections.emptyList();
 		}
+
 		return leaf.getChildren();
 	}
 
@@ -79,6 +89,7 @@ public class HashEntryTree<T> implements EntryTree<T> {
 		if (parent == null) {
 			return this.getSiblings(entry, this.root.keySet());
 		}
+
 		return this.getSiblings(entry, this.getChildren(parent));
 	}
 
@@ -101,6 +112,7 @@ public class HashEntryTree<T> implements EntryTree<T> {
 			if (node == null) {
 				return null;
 			}
+
 			node = node.getChild(parentChain.get(i));
 		}
 
@@ -159,6 +171,7 @@ public class HashEntryTree<T> implements EntryTree<T> {
 		for (EntryTreeNode<T> node : this.root.values()) {
 			nodes.addAll(node.getNodesRecursively());
 		}
+
 		return nodes.iterator();
 	}
 
@@ -185,6 +198,7 @@ public class HashEntryTree<T> implements EntryTree<T> {
 		for (EntryTreeNode<T> node : this) {
 			translatedTree.insert(translator.translate(node.getEntry()), node.getValue());
 		}
+
 		return translatedTree;
 	}
 }

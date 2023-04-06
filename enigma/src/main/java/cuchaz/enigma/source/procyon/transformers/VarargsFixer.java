@@ -83,8 +83,9 @@ public class VarargsFixer implements IAstTransform {
 
 			Expression arrayArg = lastArgument;
 
-			if (arrayArg instanceof CastExpression castExpression)
+			if (arrayArg instanceof CastExpression castExpression) {
 				arrayArg = castExpression.getExpression();
+			}
 
 			if (arrayArg == null
 					|| arrayArg.isNull()
@@ -117,8 +118,7 @@ public class VarargsFixer implements IAstTransform {
 						this.context.getCurrentType(),
 						MetadataFilters.matchName(resolved.getName())
 				);
-			}
-			else {
+			} else {
 				final ResolveResult targetResult = this.resolver.apply(invocationTarget);
 
 				if (targetResult == null || targetResult.getType() == null) {

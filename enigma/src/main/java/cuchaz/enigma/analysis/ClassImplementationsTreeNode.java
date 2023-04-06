@@ -28,6 +28,7 @@ public class ClassImplementationsTreeNode extends AbstractClassTreeNode {
 				return foundNode;
 			}
 		}
+
 		return null;
 	}
 

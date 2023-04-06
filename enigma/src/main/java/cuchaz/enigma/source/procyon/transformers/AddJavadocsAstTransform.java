@@ -2,13 +2,26 @@ package cuchaz.enigma.source.procyon.transformers;
 
 import com.google.common.base.Strings;
 import com.strobel.assembler.metadata.ParameterDefinition;
-import com.strobel.decompiler.languages.java.ast.*;
+import com.strobel.decompiler.languages.java.ast.AstNode;
+import com.strobel.decompiler.languages.java.ast.Comment;
+import com.strobel.decompiler.languages.java.ast.CommentType;
+import com.strobel.decompiler.languages.java.ast.ConstructorDeclaration;
+import com.strobel.decompiler.languages.java.ast.DepthFirstAstVisitor;
+import com.strobel.decompiler.languages.java.ast.EnumValueDeclaration;
+import com.strobel.decompiler.languages.java.ast.FieldDeclaration;
+import com.strobel.decompiler.languages.java.ast.Keys;
+import com.strobel.decompiler.languages.java.ast.MethodDeclaration;
+import com.strobel.decompiler.languages.java.ast.ParameterDeclaration;
+import com.strobel.decompiler.languages.java.ast.Roles;
+import com.strobel.decompiler.languages.java.ast.TypeDeclaration;
 import com.strobel.decompiler.languages.java.ast.transforms.IAstTransform;
 import cuchaz.enigma.source.procyon.EntryParser;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
-import cuchaz.enigma.translation.representation.entry.*;
+import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableDefEntry;
+import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -101,6 +114,7 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 			for (final AstNode child : node.getChildren()) {
 				child.acceptVisitor(this, data);
 			}
+
 			return null;
 		}
 

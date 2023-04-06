@@ -190,7 +190,6 @@
         <module name="JavadocParagraph">
             <property name="allowNewlineParagraph" value="false"/>
         </module>
-        <module name="JavadocStyle"/>
         <module name="AtclauseOrder">
             <property name="tagOrder" value="@param,@return,@throws,@deprecated"/>
         </module>

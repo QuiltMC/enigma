@@ -18,9 +18,9 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 *
 	 * <br><p>Examples:</p>
 	 * <ul>
-	 *	<li>Outer class: "domain.name.ClassA"</li>
-	 *	<li>Inner class: "ClassB"</li>
-	 *	<li>Method: "methodC"</li>
+	 * 	<li>Outer class: "domain.name.ClassA"</li>
+	 * 	<li>Inner class: "ClassB"</li>
+	 * 	<li>Method: "methodC"</li>
 	 * </ul>
 	 */
 	String getName();
@@ -33,9 +33,9 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 *
 	 * <br><p>Examples:</p>
 	 * <ul>
-	 *	 <li>Outer class: "ClassA"</li>
-	 *	 <li>Inner class: "ClassB"</li>
-	 *	 <li>Method: "methodC"</li>
+	 * 	<li>Outer class: "ClassA"</li>
+	 * 	<li>Inner class: "ClassB"</li>
+	 * 	<li>Method: "methodC"</li>
 	 * </ul>
 	 */
 	String getSimpleName();
@@ -49,9 +49,9 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 *
 	 * <br><p>Examples:</p>
 	 * <ul>
-	 *	<li>Outer class: "domain.name.ClassA"</li>
-	 *	<li>Inner class: "domain.name.ClassA$ClassB"</li>
-	 *	<li>Method: "domain.name.ClassA.methodC"</li>
+	 * 	<li>Outer class: "domain.name.ClassA"</li>
+	 * 	<li>Inner class: "domain.name.ClassA$ClassB"</li>
+	 * 	<li>Method: "domain.name.ClassA.methodC"</li>
 	 * </ul>
 	 */
 	String getFullName();
@@ -65,9 +65,9 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 *
 	 * <br><p>Examples:</p>
 	 * <ul>
-	 *	<li>Outer class: "ClassA"</li>
-	 *	<li>Inner class: "ClassA$ClassB"</li>
-	 *	<li>Method: "ClassA.methodC"</li>
+	 * 	<li>Outer class: "ClassA"</li>
+	 * 	<li>Inner class: "ClassA$ClassB"</li>
+	 * 	<li>Method: "ClassA.methodC"</li>
 	 * </ul>
 	 */
 	String getContextualName();

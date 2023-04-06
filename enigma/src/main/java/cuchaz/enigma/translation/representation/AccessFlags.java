@@ -99,7 +99,7 @@ public class AccessFlags {
 
 	@Override
 	public boolean equals(Object obj) {
-		return obj instanceof AccessFlags flags && flags.flags == this.flags;
+		return obj instanceof AccessFlags accessFlags && accessFlags.flags == this.flags;
 	}
 
 	@Override
@@ -113,12 +113,15 @@ public class AccessFlags {
 		if (this.isStatic()) {
 			builder.append(" static");
 		}
+
 		if (this.isSynthetic()) {
 			builder.append(" synthetic");
 		}
+
 		if (this.isBridge()) {
 			builder.append(" bridge");
 		}
+
 		return builder.toString();
 	}
 }

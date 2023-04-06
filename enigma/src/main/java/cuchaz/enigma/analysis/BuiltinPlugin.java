@@ -115,6 +115,7 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 				this.classInits.add(node);
 				return node;
 			}
+
 			return super.visitMethod(access, name, descriptor, signature, exceptions);
 		}
 
@@ -159,6 +160,7 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 					if (s != null) {
 						this.mappings.put(new FieldEntry(this.clazz, ((FieldInsnNode) instr2).name, new TypeDescriptor(((FieldInsnNode) instr2).desc)), s);
 					}
+
 					// report otherwise?
 				}
 			}

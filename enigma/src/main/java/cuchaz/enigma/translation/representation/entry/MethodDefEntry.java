@@ -1,9 +1,6 @@
 package cuchaz.enigma.translation.representation.entry;
 
-import javax.annotation.Nonnull;
-
 import com.google.common.base.Preconditions;
-
 import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
@@ -11,6 +8,8 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.Signature;
+
+import javax.annotation.Nonnull;
 
 public class MethodDefEntry extends MethodEntry implements DefEntry<ClassEntry> {
 	private final AccessFlags access;

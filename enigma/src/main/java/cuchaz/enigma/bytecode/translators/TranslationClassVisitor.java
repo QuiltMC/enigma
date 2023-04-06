@@ -3,8 +3,17 @@ package cuchaz.enigma.bytecode.translators;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
-import cuchaz.enigma.translation.representation.entry.*;
-import org.objectweb.asm.*;
+import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
+import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.RecordComponentVisitor;
+import org.objectweb.asm.TypePath;
 
 import java.util.Arrays;
 
@@ -45,6 +54,7 @@ public class TranslationClassVisitor extends ClassVisitor {
 		for (int i = 0; i < exceptions.length; i++) {
 			translatedExceptions[i] = this.translator.translate(new ClassEntry(exceptions[i])).getFullName();
 		}
+
 		MethodVisitor mv = super.visitMethod(translatedEntry.getAccess().getFlags(), translatedEntry.getName(), translatedEntry.getDesc().toString(), translatedEntry.getSignature().toString(), translatedExceptions);
 		return new TranslationMethodVisitor(this.translator, this.obfClassEntry, entry, this.api, mv);
 	}

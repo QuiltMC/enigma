@@ -56,21 +56,19 @@ public class RecafMappingsWriter implements MappingsWriter {
 					writer.write(classEntry.getFullName());
 					writer.write(" ");
 					writer.write(mapping.targetName());
-
 				} else if (entry instanceof FieldEntry fieldEntry) {
 					writer.write(fieldEntry.getFullName());
 					writer.write(" ");
 					writer.write(fieldEntry.getDesc().toString());
 					writer.write(" ");
 					writer.write(mapping.targetName());
-
 				} else if (entry instanceof MethodEntry methodEntry) {
 					writer.write(methodEntry.getFullName());
 					writer.write(methodEntry.getDesc().toString());
 					writer.write(" ");
 					writer.write(mapping.targetName());
-
 				}
+
 				writer.write("\n");
 			}
 		} catch (IOException e) {

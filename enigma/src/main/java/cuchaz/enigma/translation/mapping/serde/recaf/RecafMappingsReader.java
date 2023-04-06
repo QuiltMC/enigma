@@ -55,6 +55,7 @@ public class RecafMappingsReader implements MappingsReader {
 				mappings.insert(new ClassEntry(classMatcher.group(1)), new EntryMapping(classMatcher.group(2)));
 			}
 		}
+
 		return mappings;
 	}
 }

@@ -60,12 +60,14 @@ public final class TinyV2Reader implements MappingsReader {
 				String line = lines.get(lineNumber);
 
 				int indent = 0;
-				while (line.charAt(indent) == '\t')
+				while (line.charAt(indent) == '\t') {
 					indent++;
+				}
 
 				String[] parts = line.substring(indent).split("\t", -1);
-				if (parts.length == 0 || indent >= INDENT_CLEAR_START.length)
+				if (parts.length == 0 || indent >= INDENT_CLEAR_START.length) {
 					throw new IllegalArgumentException("Invalid format");
+				}
 
 				// clean and register stuff in stack
 				for (int i = INDENT_CLEAR_START[indent]; i < STATE_SIZE; i++) {
@@ -83,12 +85,15 @@ public final class TinyV2Reader implements MappingsReader {
 								if (lineNumber != 0) {
 									throw new IllegalArgumentException("Header can only be on the first line");
 								}
+
 								if (parts.length < 5) {
 									throw new IllegalArgumentException("Not enough header columns, needs at least 5");
 								}
+
 								if (!"2".equals(parts[1]) || !MINOR_VERSION.equals(parts[2])) {
 									throw new IllegalArgumentException("Unsupported TinyV2 version, requires major " + "2" + " and minor " + MINOR_VERSION + "");
 								}
+
 								state.set(IN_HEADER);
 							}
 							case "c" -> { // class
@@ -122,6 +127,7 @@ public final class TinyV2Reader implements MappingsReader {
 										this.addJavadoc(holds[IN_CLASS], parts);
 								default -> this.unsupportKey(parts);
 							}
+
 							break;
 						}
 
@@ -164,6 +170,7 @@ public final class TinyV2Reader implements MappingsReader {
 							} else {
 								this.unsupportKey(parts);
 							}
+
 							break;
 						}
 
@@ -171,7 +178,6 @@ public final class TinyV2Reader implements MappingsReader {
 					default:
 						this.unsupportKey(parts);
 				}
-
 			} catch (Exception e) {
 				throw new MappingParseException(path, lineNumber + 1, e);
 			}

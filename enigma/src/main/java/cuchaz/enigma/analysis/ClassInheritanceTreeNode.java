@@ -25,6 +25,7 @@ public class ClassInheritanceTreeNode extends AbstractClassTreeNode {
 				return foundNode;
 			}
 		}
+
 		return null;
 	}
 
