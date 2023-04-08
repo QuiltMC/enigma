@@ -5,11 +5,11 @@ public class E_AnonymousWithOuterAccess {
 	// https://bitbucket.org/cuchaz/enigma/issue/61/stackoverflowerror-when-deobfuscating
 
 	public Object makeInner() {
-		outerMethod();
+		this.outerMethod();
 		return new Object() {
 			@Override
 			public String toString() {
-				return outerMethod();
+				return E_AnonymousWithOuterAccess.this.outerMethod();
 			}
 		};
 	}

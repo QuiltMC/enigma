@@ -50,7 +50,9 @@
         </module>
 
         <!-- Ensure all imports are ship shape -->
-        <module name="AvoidStarImport"/>
+        <module name="AvoidStarImport">
+            <property name="excludes" value="org.hamcrest.Matchers,cuchaz.enigma.TestEntryFactory"/>
+        </module>
         <module name="IllegalImport"/>
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
@@ -59,7 +61,7 @@
             <property name="groups" value="*,/java|javax/"/>
             <property name="ordered" value="false"/><!-- the plugin orders alphabetically without considering separators.. -->
             <property name="separated" value="true"/>
-            <property name="option" value="top"/>
+            <property name="option" value="bottom"/>
             <property name="sortStaticImportsAlphabetically" value="true"/>
         </module>
 

@@ -44,7 +44,7 @@ public class BaseClass {
 
 	// a(II)La;
 	public BaseClass foo(int x, int y) {
-		return bar(1);
+		return this.bar(1);
 	}
 
 	// e()La;
@@ -54,7 +54,7 @@ public class BaseClass {
 
 	// b(I)La;
 	public BaseClass bar(int x) {
-		return baz(1, x);
+		return this.baz(1, x);
 	}
 
 	// c(I)La;
@@ -67,6 +67,7 @@ public class BaseClass {
 		if (y == 0) {
 			return this;
 		}
-		return new BaseClass(getX(), y, xz);
+
+		return new BaseClass(this.getX(), y, xz);
 	}
 }

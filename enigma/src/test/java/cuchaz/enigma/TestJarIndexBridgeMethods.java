@@ -35,134 +35,134 @@ public class TestJarIndexBridgeMethods {
 
 	public TestJarIndexBridgeMethods() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
-		classProvider = new CachingClassProvider(jcp);
-		index = JarIndex.empty();
-		index.indexJar(jcp.getClassNames(), classProvider, ProgressListener.none());
+		this.classProvider = new CachingClassProvider(jcp);
+		this.index = JarIndex.empty();
+		this.index.indexJar(jcp.getClassNames(), this.classProvider, ProgressListener.none());
 	}
 
 	@Test
 	public void obfEntries() {
-		assertThat(index.getEntryIndex().getClasses(), containsInAnyOrder(newClass("cuchaz/enigma/inputs/Keep"), baseClass,
-				otherClass, subClass, innerSubClass));
+		assertThat(this.index.getEntryIndex().getClasses(), containsInAnyOrder(newClass("cuchaz/enigma/inputs/Keep"), this.baseClass,
+				this.otherClass, this.subClass, this.innerSubClass));
 	}
 
 	@Test
 	public void testBase() {
 		BridgeMethodIndex index = this.index.getBridgeMethodIndex();
 
-		assertThat(index.isBridgeMethod(newMethod(baseClass, "a", "()I")), is(false));
-		assertThat(index.getBridgeFromSpecialized(newMethod(baseClass, "a", "()La;")), nullValue());
-		assertThat(index.isSpecializedMethod(newMethod(baseClass, "b", "(II)La;")), is(false));
-		assertThat(index.getSpecializedFromBridge(newMethod(baseClass, "c", "(I)La;")), nullValue());
+		assertThat(index.isBridgeMethod(newMethod(this.baseClass, "a", "()I")), is(false));
+		assertThat(index.getBridgeFromSpecialized(newMethod(this.baseClass, "a", "()La;")), nullValue());
+		assertThat(index.isSpecializedMethod(newMethod(this.baseClass, "b", "(II)La;")), is(false));
+		assertThat(index.getSpecializedFromBridge(newMethod(this.baseClass, "c", "(I)La;")), nullValue());
 	}
 
 	@Test
 	public void testSub() {
 		BridgeMethodIndex index = this.index.getBridgeMethodIndex();
 
-		assertThat(index.isBridgeMethod(newMethod(subClass, "f", "()Lc;")), is(false));
-		assertThat(index.isBridgeMethod(newMethod(subClass, "d", "()La;")), is(true));
-		assertThat(index.getSpecializedFromBridge(newMethod(subClass, "b", "(II)La;")),
-				is(newMethod(subClass, "d", "(II)Lc;")));
-		assertThat(index.isSpecializedMethod(newMethod(subClass, "f", "(I)Lc;")), is(true));
-		assertThat(index.isSpecializedMethod(newMethod(subClass, "c", "(I)La;")), is(false));
-		assertThat(index.getBridgeFromSpecialized(newMethod(subClass, "e", "(I)Lc;")),
-				is(newMethod(subClass, "b", "(I)La;")));
-		assertThat(index.getBridgeFromSpecialized(newMethod(subClass, "g", "()Lc;")),
-				is(newMethod(subClass, "e", "()La;")));
+		assertThat(index.isBridgeMethod(newMethod(this.subClass, "f", "()Lc;")), is(false));
+		assertThat(index.isBridgeMethod(newMethod(this.subClass, "d", "()La;")), is(true));
+		assertThat(index.getSpecializedFromBridge(newMethod(this.subClass, "b", "(II)La;")),
+				is(newMethod(this.subClass, "d", "(II)Lc;")));
+		assertThat(index.isSpecializedMethod(newMethod(this.subClass, "f", "(I)Lc;")), is(true));
+		assertThat(index.isSpecializedMethod(newMethod(this.subClass, "c", "(I)La;")), is(false));
+		assertThat(index.getBridgeFromSpecialized(newMethod(this.subClass, "e", "(I)Lc;")),
+				is(newMethod(this.subClass, "b", "(I)La;")));
+		assertThat(index.getBridgeFromSpecialized(newMethod(this.subClass, "g", "()Lc;")),
+				is(newMethod(this.subClass, "e", "()La;")));
 	}
 
 	@Test
 	public void testInnerSub() {
 		BridgeMethodIndex index = this.index.getBridgeMethodIndex();
 
-		assertThat(index.isBridgeMethod(newMethod(innerSubClass, "d", "()La;")), is(true));
-		assertThat(index.getSpecializedFromBridge(newMethod(innerSubClass, "a", "(I)La;")),
-				is(newMethod(subClass, "d", "(I)Lc;")));
-		assertThat(index.getSpecializedFromBridge(newMethod(innerSubClass, "e", "()La;")),
-				is(newMethod(subClass, "g", "()Lc;")));
-		assertThat(index.isSpecializedMethod(newMethod(innerSubClass, "b", "(I)La;")), is(false));
-		assertThat(index.getBridgeFromSpecialized(newMethod(innerSubClass, "c", "(I)La;")), nullValue());
-		assertThat(index.getBridgeFromSpecialized(newMethod(innerSubClass, "b", "(II)La;")), nullValue());
+		assertThat(index.isBridgeMethod(newMethod(this.innerSubClass, "d", "()La;")), is(true));
+		assertThat(index.getSpecializedFromBridge(newMethod(this.innerSubClass, "a", "(I)La;")),
+				is(newMethod(this.subClass, "d", "(I)Lc;")));
+		assertThat(index.getSpecializedFromBridge(newMethod(this.innerSubClass, "e", "()La;")),
+				is(newMethod(this.subClass, "g", "()Lc;")));
+		assertThat(index.isSpecializedMethod(newMethod(this.innerSubClass, "b", "(I)La;")), is(false));
+		assertThat(index.getBridgeFromSpecialized(newMethod(this.innerSubClass, "c", "(I)La;")), nullValue());
+		assertThat(index.getBridgeFromSpecialized(newMethod(this.innerSubClass, "b", "(II)La;")), nullValue());
 	}
 
 	@Test
 	public void testOther() {
 		BridgeMethodIndex index = this.index.getBridgeMethodIndex();
 
-		assertThat(index.getBridgeFromSpecialized(newMethod(otherClass, "a", "()Ljava/lang/Integer;")),
-				is(newMethod(otherClass, "get", "()Ljava/lang/Object;")));
-		assertThat(index.getSpecializedFromBridge(newMethod(otherClass, "a", "(Ljava/lang/String;)Ljava/lang/Integer;")), nullValue());
-		assertThat(index.getBridgeFromSpecialized(newMethod(otherClass, "get", "()Ljava/lang/Object;")), nullValue());
-		assertThat(index.getSpecializedFromBridge(newMethod(otherClass, "apply", "(Ljava/lang/Object;)Ljava/lang/Object;")),
-				is(newMethod(otherClass, "a", "(Ljava/lang/String;)Ljava/lang/Integer;")));
+		assertThat(index.getBridgeFromSpecialized(newMethod(this.otherClass, "a", "()Ljava/lang/Integer;")),
+				is(newMethod(this.otherClass, "get", "()Ljava/lang/Object;")));
+		assertThat(index.getSpecializedFromBridge(newMethod(this.otherClass, "a", "(Ljava/lang/String;)Ljava/lang/Integer;")), nullValue());
+		assertThat(index.getBridgeFromSpecialized(newMethod(this.otherClass, "get", "()Ljava/lang/Object;")), nullValue());
+		assertThat(index.getSpecializedFromBridge(newMethod(this.otherClass, "apply", "(Ljava/lang/Object;)Ljava/lang/Object;")),
+				is(newMethod(this.otherClass, "a", "(Ljava/lang/String;)Ljava/lang/Integer;")));
 	}
 
 	@Test
 	public void testTokensBase() {
-		testTokensBase(Decompilers.QUILTFLOWER);
-		testTokensBase(Decompilers.CFR);
-		testTokensBase(Decompilers.PROCYON);
+		this.testTokensBase(Decompilers.QUILTFLOWER);
+		this.testTokensBase(Decompilers.CFR);
+		this.testTokensBase(Decompilers.PROCYON);
 	}
 
 	private void testTokensBase(DecompilerService decompiler) {
-		TokenChecker checker = getTokenChecker(decompiler);
-		assertThat(checker.getDeclarationToken(newMethod(baseClass, "d", "()La;")), is("d"));
-		assertThat(checker.getDeclarationToken(newMethod(baseClass, "a", "(I)La;")), is("a"));
-		assertThat(checker.getDeclarationToken(newMethod(baseClass, "b", "(II)La;")), is("b"));
+		TokenChecker checker = this.getTokenChecker(decompiler);
+		assertThat(checker.getDeclarationToken(newMethod(this.baseClass, "d", "()La;")), is("d"));
+		assertThat(checker.getDeclarationToken(newMethod(this.baseClass, "a", "(I)La;")), is("a"));
+		assertThat(checker.getDeclarationToken(newMethod(this.baseClass, "b", "(II)La;")), is("b"));
 	}
 
 	@Test
 	public void testTokensSub() {
-		testTokensSub(Decompilers.QUILTFLOWER);
-		testTokensSub(Decompilers.CFR);
-		testTokensSub(Decompilers.PROCYON);
+		this.testTokensSub(Decompilers.QUILTFLOWER);
+		this.testTokensSub(Decompilers.CFR);
+		this.testTokensSub(Decompilers.PROCYON);
 	}
 
 	private void testTokensSub(DecompilerService decompiler) {
-		TokenChecker checker = getTokenChecker(decompiler);
-		assertThat(checker.getDeclarationToken(newMethod(subClass, "d", "()La;")), is(emptyOrNullString()));
-		assertThat(checker.getDeclarationToken(newMethod(subClass, "f", "()Lc;")), is("f"));
-		assertThat(checker.getDeclarationToken(newMethod(subClass, "a", "(I)La;")), is(emptyOrNullString()));
-		assertThat(checker.getDeclarationToken(newMethod(subClass, "d", "(I)Lc;")), is("d"));
-		assertThat(checker.getDeclarationToken(newMethod(subClass, "b", "(II)La;")), is(emptyOrNullString()));
-		assertThat(checker.getDeclarationToken(newMethod(subClass, "d", "(II)Lc;")), is("d"));
+		TokenChecker checker = this.getTokenChecker(decompiler);
+		assertThat(checker.getDeclarationToken(newMethod(this.subClass, "d", "()La;")), is(emptyOrNullString()));
+		assertThat(checker.getDeclarationToken(newMethod(this.subClass, "f", "()Lc;")), is("f"));
+		assertThat(checker.getDeclarationToken(newMethod(this.subClass, "a", "(I)La;")), is(emptyOrNullString()));
+		assertThat(checker.getDeclarationToken(newMethod(this.subClass, "d", "(I)Lc;")), is("d"));
+		assertThat(checker.getDeclarationToken(newMethod(this.subClass, "b", "(II)La;")), is(emptyOrNullString()));
+		assertThat(checker.getDeclarationToken(newMethod(this.subClass, "d", "(II)Lc;")), is("d"));
 	}
 
 	@Test
 	public void testTokensInnerSub() {
-		testTokensInnerSub(Decompilers.QUILTFLOWER);
-		testTokensInnerSub(Decompilers.CFR);
-		testTokensInnerSub(Decompilers.PROCYON);
+		this.testTokensInnerSub(Decompilers.QUILTFLOWER);
+		this.testTokensInnerSub(Decompilers.CFR);
+		this.testTokensInnerSub(Decompilers.PROCYON);
 	}
 
 	private void testTokensInnerSub(DecompilerService decompiler) {
-		TokenChecker checker = getTokenChecker(decompiler);
-		assertThat(checker.getDeclarationToken(newMethod(innerSubClass, "d", "()La;")), is(emptyOrNullString()));
-		assertThat(checker.getDeclarationToken(newMethod(innerSubClass, "f", "()Lc;")), is(emptyOrNullString()));
-		assertThat(checker.getDeclarationToken(newMethod(innerSubClass, "a", "(I)La;")), is(emptyOrNullString()));
-		assertThat(checker.getDeclarationToken(newMethod(innerSubClass, "d", "(I)Lc;")), is(emptyOrNullString()));
-		assertThat(checker.getDeclarationToken(newMethod(innerSubClass, "b", "(II)La;")), is(emptyOrNullString()));
-		assertThat(checker.getDeclarationToken(newMethod(innerSubClass, "d", "(II)Lc;")), is(emptyOrNullString()));
+		TokenChecker checker = this.getTokenChecker(decompiler);
+		assertThat(checker.getDeclarationToken(newMethod(this.innerSubClass, "d", "()La;")), is(emptyOrNullString()));
+		assertThat(checker.getDeclarationToken(newMethod(this.innerSubClass, "f", "()Lc;")), is(emptyOrNullString()));
+		assertThat(checker.getDeclarationToken(newMethod(this.innerSubClass, "a", "(I)La;")), is(emptyOrNullString()));
+		assertThat(checker.getDeclarationToken(newMethod(this.innerSubClass, "d", "(I)Lc;")), is(emptyOrNullString()));
+		assertThat(checker.getDeclarationToken(newMethod(this.innerSubClass, "b", "(II)La;")), is(emptyOrNullString()));
+		assertThat(checker.getDeclarationToken(newMethod(this.innerSubClass, "d", "(II)Lc;")), is(emptyOrNullString()));
 	}
 
 	@Test
 	public void testTokensOther() {
-		testTokensOther(Decompilers.QUILTFLOWER);
-		testTokensOther(Decompilers.CFR);
-		testTokensOther(Decompilers.PROCYON);
+		this.testTokensOther(Decompilers.QUILTFLOWER);
+		this.testTokensOther(Decompilers.CFR);
+		this.testTokensOther(Decompilers.PROCYON);
 	}
 
 	private void testTokensOther(DecompilerService decompiler) {
-		TokenChecker checker = getTokenChecker(decompiler);
-		assertThat(checker.getDeclarationToken(newMethod(otherClass, "a", "()Ljava/lang/Integer;")), is("a"));
-		assertThat(checker.getDeclarationToken(newMethod(otherClass, "get", "()Ljava/lang/Object;")), is(emptyOrNullString()));
-		assertThat(checker.getDeclarationToken(newMethod(otherClass, "a", "(Ljava/lang/String;)Ljava/lang/Integer;")), is("a"));
-		assertThat(checker.getDeclarationToken(newMethod(otherClass, "apply", "(Ljava/lang/Object;)Ljava/lang/Object;")), is(emptyOrNullString()));
+		TokenChecker checker = this.getTokenChecker(decompiler);
+		assertThat(checker.getDeclarationToken(newMethod(this.otherClass, "a", "()Ljava/lang/Integer;")), is("a"));
+		assertThat(checker.getDeclarationToken(newMethod(this.otherClass, "get", "()Ljava/lang/Object;")), is(emptyOrNullString()));
+		assertThat(checker.getDeclarationToken(newMethod(this.otherClass, "a", "(Ljava/lang/String;)Ljava/lang/Integer;")), is("a"));
+		assertThat(checker.getDeclarationToken(newMethod(this.otherClass, "apply", "(Ljava/lang/Object;)Ljava/lang/Object;")), is(emptyOrNullString()));
 	}
 
 	private TokenChecker getTokenChecker(DecompilerService decompiler) {
-		return tokenCheckers.computeIfAbsent(decompiler, d ->
-				new TokenChecker(JAR, d, new ObfuscationFixClassProvider(classProvider, index)));
+		return this.tokenCheckers.computeIfAbsent(decompiler, d ->
+				new TokenChecker(JAR, d, new ObfuscationFixClassProvider(this.classProvider, this.index)));
 	}
 }

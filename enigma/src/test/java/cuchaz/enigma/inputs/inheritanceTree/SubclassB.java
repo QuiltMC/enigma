@@ -11,19 +11,19 @@ public class SubclassB extends BaseClass {
 		super("B");
 
 		// access to a
-		numThings = 4;
+		this.numThings = 4;
 	}
 
 	@Override
 	// a()V
 	public void doBaseThings() {
 		// call to a.a()Ljava/lang/String;
-		System.out.println("Base things by B! " + getName());
+		System.out.println("Base things by B! " + this.getName());
 	}
 
 	// b()V
 	public void doBThings() {
 		// access to a
-		System.out.println("" + numThings + " B things!");
+		System.out.println("" + this.numThings + " B things!");
 	}
 }

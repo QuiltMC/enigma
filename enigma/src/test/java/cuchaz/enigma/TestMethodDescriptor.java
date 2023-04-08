@@ -24,6 +24,7 @@ public class TestMethodDescriptor {
 			));
 			assertThat(sig.getReturnDesc(), is(new TypeDescriptor("V")));
 		}
+
 		{
 			final MethodDescriptor sig = new MethodDescriptor("(I)I");
 			assertThat(sig.getArgumentDescs(), contains(
@@ -31,6 +32,7 @@ public class TestMethodDescriptor {
 			));
 			assertThat(sig.getReturnDesc(), is(new TypeDescriptor("I")));
 		}
+
 		{
 			final MethodDescriptor sig = new MethodDescriptor("(IBCJ)Z");
 			assertThat(sig.getArgumentDescs(), contains(
@@ -51,6 +53,7 @@ public class TestMethodDescriptor {
 			assertThat(sig.getArgumentDescs().get(0), is(new TypeDescriptor("[LFoo;")));
 			assertThat(sig.getReturnDesc(), is(new TypeDescriptor("V")));
 		}
+
 		{
 			final MethodDescriptor sig = new MethodDescriptor("(LFoo;)LBar;");
 			assertThat(sig.getArgumentDescs(), contains(
@@ -58,6 +61,7 @@ public class TestMethodDescriptor {
 			));
 			assertThat(sig.getReturnDesc(), is(new TypeDescriptor("LBar;")));
 		}
+
 		{
 			final MethodDescriptor sig = new MethodDescriptor("(LFoo;LMoo;LZoo;)LBar;");
 			assertThat(sig.getArgumentDescs(), contains(
@@ -78,6 +82,7 @@ public class TestMethodDescriptor {
 			));
 			assertThat(sig.getReturnDesc(), is(new TypeDescriptor("V")));
 		}
+
 		{
 			final MethodDescriptor sig = new MethodDescriptor("([I)[J");
 			assertThat(sig.getArgumentDescs(), contains(
@@ -85,6 +90,7 @@ public class TestMethodDescriptor {
 			));
 			assertThat(sig.getReturnDesc(), is(new TypeDescriptor("[J")));
 		}
+
 		{
 			final MethodDescriptor sig = new MethodDescriptor("([I[Z[F)[D");
 			assertThat(sig.getArgumentDescs(), contains(
@@ -107,6 +113,7 @@ public class TestMethodDescriptor {
 			));
 			assertThat(sig.getReturnDesc(), is(new TypeDescriptor("Z")));
 		}
+
 		{
 			final MethodDescriptor sig = new MethodDescriptor("(III)[LFoo;");
 			assertThat(sig.getArgumentDescs(), contains(
@@ -126,6 +133,7 @@ public class TestMethodDescriptor {
 			assertThat(sig.getArgumentDescs(), is(empty()));
 			assertThat(sig.getReturnDesc(), is(new TypeDescriptor("V")));
 		}
+
 		{
 			final MethodDescriptor oldSig = new MethodDescriptor("(IJLFoo;)V");
 			final MethodDescriptor sig = oldSig.remap(s -> null);
@@ -136,12 +144,14 @@ public class TestMethodDescriptor {
 			));
 			assertThat(sig.getReturnDesc(), is(new TypeDescriptor("V")));
 		}
+
 		{
 			final MethodDescriptor oldSig = new MethodDescriptor("(LFoo;LBar;)LMoo;");
 			final MethodDescriptor sig = oldSig.remap(s -> {
 				if (s.equals("Foo")) {
 					return "Bar";
 				}
+
 				return null;
 			});
 			assertThat(sig.getArgumentDescs(), contains(
@@ -150,12 +160,14 @@ public class TestMethodDescriptor {
 			));
 			assertThat(sig.getReturnDesc(), is(new TypeDescriptor("LMoo;")));
 		}
+
 		{
 			final MethodDescriptor oldSig = new MethodDescriptor("(LFoo;LBar;)LMoo;");
 			final MethodDescriptor sig = oldSig.remap(s -> {
 				if (s.equals("Moo")) {
 					return "Cow";
 				}
+
 				return null;
 			});
 			assertThat(sig.getArgumentDescs(), contains(
@@ -176,6 +188,7 @@ public class TestMethodDescriptor {
 				} else if (s.equals("Bar")) {
 					return "Beer";
 				}
+
 				return null;
 			});
 			assertThat(sig.getArgumentDescs(), contains(

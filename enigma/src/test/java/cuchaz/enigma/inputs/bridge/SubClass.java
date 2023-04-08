@@ -23,25 +23,25 @@ public class SubClass extends BaseClass {
 	// c(II)Lc;
 	// bridge a(II)La;
 	public SubClass foo(int x, int y) {
-		return baz(y);
+		return this.baz(y);
 	}
 
 	// g()Lc;
 	// bridge e()La;
 	public SubClass bar() {
-		return new SubClass(getX(), -1, 0);
+		return new SubClass(this.getX(), -1, 0);
 	}
 
 	// e(I)Lc;
 	// bridge b(I)La;
 	public SubClass bar(int x) {
-		return baz(-1, x);
+		return this.baz(-1, x);
 	}
 
 	// f(I)Lc;
 	// bridge c(I)La;
 	public SubClass baz(int xz) {
-		return new SubClass(xz, getY(), getZ() + xz);
+		return new SubClass(xz, this.getY(), this.getZ() + xz);
 	}
 
 	// d(II)Lc;
@@ -50,7 +50,8 @@ public class SubClass extends BaseClass {
 		if (y == 0) {
 			return this;
 		}
-		return new SubClass(getX() - xz, getY() * y, getZ() + xz);
+
+		return new SubClass(this.getX() - xz, this.getY() * y, this.getZ() + xz);
 	}
 
 	// c$a extends c

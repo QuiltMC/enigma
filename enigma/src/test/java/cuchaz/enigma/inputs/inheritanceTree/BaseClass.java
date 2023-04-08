@@ -12,7 +12,7 @@ public abstract class BaseClass {
 
 	// a()Ljava/lang/String;
 	public String getName() {
-		return name;
+		return this.name;
 	}
 
 	// a()V

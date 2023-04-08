@@ -151,6 +151,7 @@ public class TestTypeDescriptor {
 			assertThat(TypeDescriptor.parseFirst("LFoo;LFoo;"), is(answer));
 			assertThat(TypeDescriptor.parseFirst("LFoo;[LFoo;"), is(answer));
 		}
+
 		{
 			final String answer = "Ljava/lang/String;";
 			assertThat(TypeDescriptor.parseFirst("Ljava/lang/String;"), is(answer));
@@ -172,6 +173,7 @@ public class TestTypeDescriptor {
 			assertThat(TypeDescriptor.parseFirst("[I[I"), is(answer));
 			assertThat(TypeDescriptor.parseFirst("[ILFoo;"), is(answer));
 		}
+
 		{
 			final String answer = "[[I";
 			assertThat(TypeDescriptor.parseFirst("[[I"), is(answer));
@@ -180,6 +182,7 @@ public class TestTypeDescriptor {
 			assertThat(TypeDescriptor.parseFirst("[[I[I"), is(answer));
 			assertThat(TypeDescriptor.parseFirst("[[ILFoo;"), is(answer));
 		}
+
 		{
 			final String answer = "[LFoo;";
 			assertThat(TypeDescriptor.parseFirst("[LFoo;"), is(answer));

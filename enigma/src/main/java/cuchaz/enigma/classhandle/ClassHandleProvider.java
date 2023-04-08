@@ -1,7 +1,5 @@
 package cuchaz.enigma.classhandle;
 
-import static cuchaz.enigma.utils.Utils.withLock;
-
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.classprovider.CachingClassProvider;
 import cuchaz.enigma.classprovider.ObfuscationFixClassProvider;
@@ -32,6 +30,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nullable;
+
+import static cuchaz.enigma.utils.Utils.withLock;
 
 public final class ClassHandleProvider {
 	private final EnigmaProject project;
