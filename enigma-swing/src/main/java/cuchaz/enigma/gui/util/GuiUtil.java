@@ -49,7 +49,6 @@ import java.util.function.Consumer;
 
 public class GuiUtil {
 	public static final Icon CLASS_ICON = loadIcon("class");
-	public static final Icon ABSTRACT_CLASS_ICON = loadIcon("abstractClass");
 	public static final Icon INTERFACE_ICON = loadIcon("interface");
 	public static final Icon ENUM_ICON = loadIcon("enum");
 	public static final Icon ANNOTATION_ICON = loadIcon("annotation");
@@ -60,9 +59,9 @@ public class GuiUtil {
 
 	// icons sourced from https://github.com/primer/octicons
 	public static final Icon OBFUSCATED_ICON = loadIcon("obfuscated");
-	public static final Icon PARTIALLY_DEOBFUSCATED_ICON = loadIcon("partiallyDeobfuscated");
+	public static final Icon PARTIALLY_DEOBFUSCATED_ICON = loadIcon("partially_deobfuscated");
 	public static final Icon DEOBFUSCATED_ICON = loadIcon("deobfuscated");
-	public static final Icon PENDING_STATUS_ICON = loadIcon("pendingStatus");
+	public static final Icon PENDING_STATUS_ICON = loadIcon("pending_status");
 
 	public static void openUrl(String url) {
 		try {
@@ -149,9 +148,7 @@ public class GuiUtil {
 				return INTERFACE_ICON;
 			} else if (access.isEnum()) {
 				return ENUM_ICON;
-			} else if (access.isAbstract()) {
-				return ABSTRACT_CLASS_ICON;
-			}else if (entryIndex.getDefinition(entry).isRecord()) {
+			} else if (entryIndex.getDefinition(entry).isRecord()) {
 				return RECORD_ICON;
 			}
 		}
