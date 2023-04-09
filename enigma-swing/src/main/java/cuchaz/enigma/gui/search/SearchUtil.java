@@ -53,6 +53,7 @@ public class SearchUtil<T extends SearchEntry> {
 	}
 
 	public SearchControl asyncSearch(String term, SearchResultConsumer<T> consumer) {
+		// TODO: sorting by type
 		Map<String, Integer> hitCount = new HashMap<>(this.hitCount);
 		Map<T, Entry<T>> entries = new HashMap<>(this.entries);
 		float[] scores = new float[entries.size()];
@@ -60,6 +61,7 @@ public class SearchUtil<T extends SearchEntry> {
 		AtomicInteger size = new AtomicInteger();
 		AtomicBoolean control = new AtomicBoolean(false);
 		AtomicInteger elapsed = new AtomicInteger();
+
 		for (Entry<T> value : entries.values()) {
 			this.searchExecutor.execute(() -> {
 				try {
@@ -107,7 +109,7 @@ public class SearchUtil<T extends SearchEntry> {
 
 	public void hit(T entry) {
 		if (this.entries.containsKey(entry)) {
-			this.hitCount.compute(entry.getIdentifier(), (_id, i) -> i == null ? 1 : i + 1);
+			this.hitCount.compute(entry.getIdentifier(), (id, i) -> i == null ? 1 : i + 1);
 		}
 	}
 

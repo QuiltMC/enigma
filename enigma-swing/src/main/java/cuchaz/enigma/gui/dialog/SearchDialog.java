@@ -43,18 +43,22 @@ import cuchaz.enigma.gui.search.SearchUtil;
 
 public class SearchDialog {
 	private final JTextField searchField;
+	private final JCheckBox classesCheckBox;
+	private final JCheckBox methodsCheckBox;
+	private final JCheckBox fieldsCheckBox;
 	private DefaultListModel<SearchEntryImpl> classListModel;
 	private final JList<SearchEntryImpl> classList;
 	private final JDialog dialog;
 
 	private final Gui parent;
-	private final SearchUtil<SearchEntryImpl> su;
+	private final SearchUtil<SearchEntryImpl> util;
+	private final List<Type> searchedTypes = new ArrayList<>();
 	private SearchUtil.SearchControl currentSearch;
 
 	public SearchDialog(Gui parent) {
 		this.parent = parent;
 
-		this.su = new SearchUtil<>();
+		this.util = new SearchUtil<>();
 
 		this.dialog = new JDialog(parent.getFrame(), I18n.translate("menu.search"), true);
 		JPanel contentPane = new JPanel();
@@ -81,7 +85,29 @@ public class SearchDialog {
 		});
 		this.searchField.addKeyListener(GuiUtil.onKeyPress(this::onKeyPressed));
 		this.searchField.addActionListener(e -> this.openSelected());
-		contentPane.add(this.searchField, BorderLayout.NORTH);
+
+		JPanel enabledTypes = new JPanel();
+		enabledTypes.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+		this.classesCheckBox = new JCheckBox(I18n.translate("prompt.classes"));
+		this.classesCheckBox.addMouseListener(this.createCheckboxListener(Type.CLASS));
+
+		this.methodsCheckBox = new JCheckBox(I18n.translate("prompt.methods"));
+		this.methodsCheckBox.addMouseListener(this.createCheckboxListener(Type.METHOD));
+
+		this.fieldsCheckBox = new JCheckBox(I18n.translate("prompt.fields"));
+		this.fieldsCheckBox.addMouseListener(this.createCheckboxListener(Type.FIELD));
+
+		enabledTypes.add(this.classesCheckBox);
+		enabledTypes.add(this.methodsCheckBox);
+		enabledTypes.add(this.fieldsCheckBox);
+
+		JPanel topBar = new JPanel();
+		topBar.setLayout(new BorderLayout());
+		topBar.add(enabledTypes, BorderLayout.SOUTH);
+		topBar.add(this.searchField, BorderLayout.NORTH);
+
+		contentPane.add(topBar, BorderLayout.NORTH);
 
 		this.classListModel = new DefaultListModel<>();
 		this.classList = new JList<>();
@@ -121,29 +147,77 @@ public class SearchDialog {
 		this.dialog.setLocationRelativeTo(parent.getFrame());
 	}
 
+	private MouseListener createCheckboxListener(Type type) {
+		return new MouseListener() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (SearchDialog.this.getCheckBox(type).isSelected() && !SearchDialog.this.searchedTypes.contains(type)) {
+					SearchDialog.this.show(type);
+				} else {
+					SearchDialog.this.searchedTypes.remove(type);
+					SearchDialog.this.show(null);
+				}
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				// no-op
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				// no-op
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				// no-op
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				// no-op
+			}
+		};
+	}
+
+	private JCheckBox getCheckBox(Type type) {
+		return switch (type) {
+			case CLASS -> this.classesCheckBox;
+			case METHOD -> this.methodsCheckBox;
+			case FIELD -> this.fieldsCheckBox;
+		};
+	}
+
 	public void show(Type type) {
-		this.su.clear();
+		this.util.clear();
+		if (type != null) {
+			this.searchedTypes.add(type);
+			this.getCheckBox(type).setSelected(true);
+		}
 
 		final EntryIndex entryIndex = this.parent.getController().project.getJarIndex().getEntryIndex();
 
-		switch (type) {
-			case CLASS -> entryIndex.getClasses().parallelStream()
-					.filter(e -> !e.isInnerClass())
-					.map(e -> SearchEntryImpl.from(e, this.parent.getController()))
-					.map(SearchUtil.Entry::from)
-					.sequential()
-					.forEach(this.su::add);
-			case METHOD -> entryIndex.getMethods().parallelStream()
-					.filter(e -> !e.isConstructor() && !entryIndex.getMethodAccess(e).isSynthetic())
-					.map(e -> SearchEntryImpl.from(e, this.parent.getController()))
-					.map(SearchUtil.Entry::from)
-					.sequential()
-					.forEach(this.su::add);
-			case FIELD -> entryIndex.getFields().parallelStream()
-					.map(e -> SearchEntryImpl.from(e, this.parent.getController()))
-					.map(SearchUtil.Entry::from)
-					.sequential()
-					.forEach(this.su::add);
+		for (Type searchedType : this.searchedTypes) {
+			switch (searchedType) {
+				case CLASS -> entryIndex.getClasses().parallelStream()
+						.filter(e -> !e.isInnerClass())
+						.map(e -> SearchEntryImpl.from(e, this.parent.getController()))
+						.map(SearchUtil.Entry::from)
+						.sequential()
+						.forEach(this.util::add);
+				case METHOD -> entryIndex.getMethods().parallelStream()
+						.filter(e -> !e.isConstructor() && !entryIndex.getMethodAccess(e).isSynthetic())
+						.map(e -> SearchEntryImpl.from(e, this.parent.getController()))
+						.map(SearchUtil.Entry::from)
+						.sequential()
+						.forEach(this.util::add);
+				case FIELD -> entryIndex.getFields().parallelStream()
+						.map(e -> SearchEntryImpl.from(e, this.parent.getController()))
+						.map(SearchUtil.Entry::from)
+						.sequential()
+						.forEach(this.util::add);
+			}
 		}
 
 		this.updateList();
@@ -163,7 +237,7 @@ public class SearchDialog {
 
 	private void openEntry(SearchEntryImpl entryImpl) {
 		this.close();
-		this.su.hit(entryImpl);
+		this.util.hit(entryImpl);
 		this.parent.getController().navigateTo(entryImpl.obf);
 		if (entryImpl.obf instanceof ClassEntry entry) {
 			if (entryImpl.deobf != null) {
@@ -219,7 +293,7 @@ public class SearchDialog {
 			}
 		};
 
-		this.currentSearch = this.su.asyncSearch(this.searchField.getText(), (idx, e) -> queue.add(new Order(idx, e)));
+		this.currentSearch = this.util.asyncSearch(this.searchField.getText(), (idx, e) -> queue.add(new Order(idx, e)));
 		SwingUtilities.invokeLater(updater);
 	}
 
