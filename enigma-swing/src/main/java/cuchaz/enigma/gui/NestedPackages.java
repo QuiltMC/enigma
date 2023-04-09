@@ -2,6 +2,7 @@ package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
 import cuchaz.enigma.gui.node.ClassSelectorPackageNode;
+import cuchaz.enigma.gui.node.SortedMutableTreeNode;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
@@ -15,8 +16,8 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 public class NestedPackages {
-	private final DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-	private final Map<String, DefaultMutableTreeNode> packageToNode = new HashMap<>();
+	private final SortedMutableTreeNode root;
+	private final Map<String, SortedMutableTreeNode> packageToNode = new HashMap<>();
 	private final Map<ClassEntry, ClassSelectorClassNode> classToNode = new HashMap<>();
 	private final EntryRemapper remapper;
 	private final Comparator<TreeNode> comparator;
@@ -40,6 +41,7 @@ public class NestedPackages {
 
 			return 0;
 		};
+		this.root = new SortedMutableTreeNode(comparator);
 
 		for (var entry : entries) {
 			this.addEntry(entry);
@@ -50,10 +52,11 @@ public class NestedPackages {
 		var translated = this.remapper.deobfuscate(entry);
 		var me = new ClassSelectorClassNode(entry, translated);
 		this.classToNode.put(entry, me);
-		this.insert(this.getPackage(translated.getPackageName()), me);
+		SortedMutableTreeNode parent = this.getPackage(translated.getPackageName());
+		parent.insert(me, 0);
 	}
 
-	public DefaultMutableTreeNode getPackage(String packageName) {
+	public SortedMutableTreeNode getPackage(String packageName) {
 		var node = this.packageToNode.get(packageName);
 
 		if (packageName == null) {
@@ -61,15 +64,16 @@ public class NestedPackages {
 		}
 
 		if (node == null) {
-			node = new ClassSelectorPackageNode(packageName);
-			this.insert(this.getPackage(ClassEntry.getParentPackage(packageName)), node);
+			node = new ClassSelectorPackageNode(this.comparator, packageName);
+			SortedMutableTreeNode parent = this.getPackage(ClassEntry.getParentPackage(packageName));
+			parent.insert(node, 0);
 			this.packageToNode.put(packageName, node);
 		}
 
 		return node;
 	}
 
-	public DefaultMutableTreeNode getRoot() {
+	public SortedMutableTreeNode getRoot() {
 		return this.root;
 	}
 
@@ -89,11 +93,11 @@ public class NestedPackages {
 			var parent = node.getParent();
 			node.removeFromParent();
 			// remove dangling packages
-			var packageNode = (DefaultMutableTreeNode) parent;
+			var packageNode = (SortedMutableTreeNode) parent;
 
 			while (packageNode != null && packageNode.getChildCount() == 0) {
 				var theNode = packageNode;
-				packageNode = (DefaultMutableTreeNode) packageNode.getParent();
+				packageNode = (SortedMutableTreeNode) packageNode.getParent();
 				theNode.removeFromParent();
 
 				if (theNode instanceof ClassSelectorPackageNode pn) {
@@ -107,22 +111,7 @@ public class NestedPackages {
 		return this.classToNode.keySet();
 	}
 
-	public Collection<DefaultMutableTreeNode> getPackageNodes() {
+	public Collection<SortedMutableTreeNode> getPackageNodes() {
 		return this.packageToNode.values();
-	}
-
-	private void insert(DefaultMutableTreeNode parent, MutableTreeNode child) {
-		var index = 0;
-		var children = parent.children();
-
-		while (children.hasMoreElements()) {
-			if (this.comparator.compare(children.nextElement(), child) < 0) {
-				index++;
-			} else {
-				break;
-			}
-		}
-
-		parent.insert(child, index);
 	}
 }

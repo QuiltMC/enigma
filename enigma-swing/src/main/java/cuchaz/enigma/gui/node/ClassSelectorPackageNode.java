@@ -2,12 +2,15 @@ package cuchaz.enigma.gui.node;
 
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
-import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
+import java.util.Comparator;
 
-public class ClassSelectorPackageNode extends DefaultMutableTreeNode {
+public class ClassSelectorPackageNode extends SortedMutableTreeNode {
 	private String packageName;
 
-	public ClassSelectorPackageNode(String packageName) {
+	public ClassSelectorPackageNode(Comparator<TreeNode> comparator, String packageName) {
+		super(comparator);
+
 		this.packageName = packageName != null ? packageName : "(none)";
 	}
 
