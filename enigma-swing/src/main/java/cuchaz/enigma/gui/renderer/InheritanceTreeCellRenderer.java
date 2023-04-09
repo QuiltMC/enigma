@@ -1,16 +1,15 @@
 package cuchaz.enigma.gui.renderer;
 
-import java.awt.Component;
-import java.awt.Font;
-
-import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeCellRenderer;
-
 import cuchaz.enigma.analysis.ClassInheritanceTreeNode;
 import cuchaz.enigma.analysis.MethodInheritanceTreeNode;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.util.GuiUtil;
+
+import java.awt.Component;
+import java.awt.Font;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultTreeCellRenderer;
 
 public class InheritanceTreeCellRenderer extends DefaultTreeCellRenderer {
 	private final Gui gui;

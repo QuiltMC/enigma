@@ -7,6 +7,7 @@ public enum TranslationDirection {
 			if (deobfChoice == null) {
 				return obfChoice;
 			}
+
 			return deobfChoice;
 		}
 	},
@@ -16,6 +17,7 @@ public enum TranslationDirection {
 			if (obfChoice == null) {
 				return deobfChoice;
 			}
+
 			return obfChoice;
 		}
 	};

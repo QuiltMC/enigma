@@ -41,6 +41,7 @@ public class FieldReferenceTreeNode extends DefaultMutableTreeNode implements Re
 		if (this.reference != null) {
 			return String.format("%s", this.translator.translate(this.reference.context));
 		}
+
 		return this.translator.translate(this.entry).toString();
 	}
 

@@ -1,7 +1,12 @@
 package cuchaz.enigma.source.procyon.transformers;
 
 import com.strobel.assembler.metadata.Flags;
-import com.strobel.decompiler.languages.java.ast.*;
+import com.strobel.decompiler.languages.java.ast.AstNode;
+import com.strobel.decompiler.languages.java.ast.DepthFirstAstVisitor;
+import com.strobel.decompiler.languages.java.ast.EntityDeclaration;
+import com.strobel.decompiler.languages.java.ast.JavaModifierToken;
+import com.strobel.decompiler.languages.java.ast.ParameterDeclaration;
+import com.strobel.decompiler.languages.java.ast.VariableDeclarationStatement;
 import com.strobel.decompiler.languages.java.ast.transforms.IAstTransform;
 
 public final class DropVarModifiersAstTransform implements IAstTransform {

@@ -54,8 +54,8 @@ public final class TristateChange<T> {
 		if (this == o) return true;
 		if (o == null || this.getClass() != o.getClass()) return false;
 		TristateChange<?> that = (TristateChange<?>) o;
-		return this.type == that.type &&
-				Objects.equals(this.val, that.val);
+		return this.type == that.type
+				&& Objects.equals(this.val, that.val);
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package cuchaz.enigma.translation.representation.entry;
 
 import com.google.common.base.Preconditions;
-
 import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
@@ -53,7 +52,6 @@ public class FieldDefEntry extends FieldEntry implements DefEntry<ClassEntry> {
 				new FieldDefEntry(this.parent, translatedName, translatedDesc, translatedSignature, translatedAccess, docs)
 		);
 	}
-
 
 	@Override
 	public FieldDefEntry withName(String name) {

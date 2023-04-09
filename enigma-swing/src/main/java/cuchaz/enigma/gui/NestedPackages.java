@@ -39,7 +39,7 @@ public class NestedPackages {
 
 			return 0;
 		};
-		this.root = new SortedMutableTreeNode(comparator);
+		this.root = new SortedMutableTreeNode(this.comparator);
 
 		for (var entry : entries) {
 			this.addEntry(entry);

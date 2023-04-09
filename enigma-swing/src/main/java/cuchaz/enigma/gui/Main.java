@@ -1,27 +1,26 @@
 package cuchaz.enigma.gui;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-
-import cuchaz.enigma.gui.config.keybind.KeyBinds;
-import cuchaz.enigma.utils.validation.Message;
-import cuchaz.enigma.utils.validation.ParameterizedMessage;
-
 import cuchaz.enigma.EnigmaProfile;
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.CrashDialog;
 import cuchaz.enigma.utils.I18n;
+import cuchaz.enigma.utils.validation.Message;
+import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import joptsimple.ValueConverter;
 import org.tinylog.Logger;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 public class Main {
 	public static void main(String[] args) throws IOException {

@@ -24,6 +24,7 @@ public class SignatureUpdater {
 					if (className == null) {
 						throw new IllegalArgumentException("Malformed signature: " + signature);
 					}
+
 					buf.append(updater.update(className));
 					buf.append(';');
 				} else {

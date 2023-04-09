@@ -60,12 +60,14 @@ public final class TinyV2Reader implements MappingsReader {
 				String line = lines.get(lineNumber);
 
 				int indent = 0;
-				while (line.charAt(indent) == '\t')
+				while (line.charAt(indent) == '\t') {
 					indent++;
+				}
 
 				String[] parts = line.substring(indent).split("\t", -1);
-				if (parts.length == 0 || indent >= INDENT_CLEAR_START.length)
+				if (parts.length == 0 || indent >= INDENT_CLEAR_START.length) {
 					throw new IllegalArgumentException("Invalid format");
+				}
 
 				// clean and register stuff in stack
 				for (int i = INDENT_CLEAR_START[indent]; i < STATE_SIZE; i++) {
@@ -83,12 +85,15 @@ public final class TinyV2Reader implements MappingsReader {
 								if (lineNumber != 0) {
 									throw new IllegalArgumentException("Header can only be on the first line");
 								}
+
 								if (parts.length < 5) {
 									throw new IllegalArgumentException("Not enough header columns, needs at least 5");
 								}
+
 								if (!"2".equals(parts[1]) || !MINOR_VERSION.equals(parts[2])) {
 									throw new IllegalArgumentException("Unsupported TinyV2 version, requires major " + "2" + " and minor " + MINOR_VERSION + "");
 								}
+
 								state.set(IN_HEADER);
 							}
 							case "c" -> { // class
@@ -122,6 +127,7 @@ public final class TinyV2Reader implements MappingsReader {
 										this.addJavadoc(holds[IN_CLASS], parts);
 								default -> this.unsupportKey(parts);
 							}
+
 							break;
 						}
 
@@ -142,6 +148,7 @@ public final class TinyV2Reader implements MappingsReader {
 								default:
 									this.unsupportKey(parts);
 							}
+
 							break;
 						}
 
@@ -151,8 +158,10 @@ public final class TinyV2Reader implements MappingsReader {
 							} else {
 								this.unsupportKey(parts);
 							}
+
 							break;
 						}
+
 						this.unsupportKey(parts);
 					case 3:
 						if (state.get(IN_PARAMETER)) {
@@ -161,13 +170,14 @@ public final class TinyV2Reader implements MappingsReader {
 							} else {
 								this.unsupportKey(parts);
 							}
+
 							break;
 						}
+
 						this.unsupportKey(parts);
 					default:
 						this.unsupportKey(parts);
 				}
-
 			} catch (Exception e) {
 				throw new MappingParseException(path, lineNumber + 1, e);
 			}
@@ -205,8 +215,10 @@ public final class TinyV2Reader implements MappingsReader {
 
 	private MappingPair<ClassEntry, RawEntryMapping> parseClass(String[] tokens, boolean escapeNames) {
 		ClassEntry obfuscatedEntry = new ClassEntry(unescapeOpt(tokens[1], escapeNames));
-		if (tokens.length <= 2)
+		if (tokens.length <= 2) {
 			return new MappingPair<>(obfuscatedEntry);
+		}
+
 		String token2 = unescapeOpt(tokens[2], escapeNames);
 		String mapping = token2.substring(token2.lastIndexOf('$') + 1);
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
@@ -217,8 +229,10 @@ public final class TinyV2Reader implements MappingsReader {
 		TypeDescriptor descriptor = new TypeDescriptor(unescapeOpt(tokens[1], escapeNames));
 
 		FieldEntry obfuscatedEntry = new FieldEntry(ownerClass, unescapeOpt(tokens[2], escapeNames), descriptor);
-		if (tokens.length <= 3)
+		if (tokens.length <= 3) {
 			return new MappingPair<>(obfuscatedEntry);
+		}
+
 		String mapping = unescapeOpt(tokens[3], escapeNames);
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
 	}
@@ -228,8 +242,10 @@ public final class TinyV2Reader implements MappingsReader {
 		MethodDescriptor descriptor = new MethodDescriptor(unescapeOpt(tokens[1], escapeNames));
 
 		MethodEntry obfuscatedEntry = new MethodEntry(ownerClass, unescapeOpt(tokens[2], escapeNames), descriptor);
-		if (tokens.length <= 3)
+		if (tokens.length <= 3) {
 			return new MappingPair<>(obfuscatedEntry);
+		}
+
 		String mapping = unescapeOpt(tokens[3], escapeNames);
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
 	}
@@ -239,6 +255,7 @@ public final class TinyV2Reader implements MappingsReader {
 		if (mapping == null) {
 			throw new IllegalArgumentException("Javadoc requires a mapping in enigma!");
 		}
+
 		mapping.addJavadocLine(MappingHelper.unescape(javadoc));
 	}
 
@@ -249,8 +266,10 @@ public final class TinyV2Reader implements MappingsReader {
 		// tokens[2] is the useless obf name
 
 		LocalVariableEntry obfuscatedEntry = new LocalVariableEntry(ownerMethod, variableIndex, "", true, null);
-		if (tokens.length <= 3)
+		if (tokens.length <= 3) {
 			return new MappingPair<>(obfuscatedEntry);
+		}
+
 		String mapping = unescapeOpt(tokens[3], escapeNames);
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
 	}

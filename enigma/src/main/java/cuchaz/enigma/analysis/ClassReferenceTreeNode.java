@@ -12,8 +12,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import java.util.Set;
 
-public class ClassReferenceTreeNode extends DefaultMutableTreeNode
-	implements ReferenceTreeNode<ClassEntry, MethodDefEntry> {
+public class ClassReferenceTreeNode extends DefaultMutableTreeNode implements ReferenceTreeNode<ClassEntry, MethodDefEntry> {
 	private final Translator deobfuscatingTranslator;
 	private final ClassEntry entry;
 	private final EntryReference<ClassEntry, MethodDefEntry> reference;
@@ -45,6 +44,7 @@ public class ClassReferenceTreeNode extends DefaultMutableTreeNode
 		if (this.reference != null) {
 			return String.format("%s", this.deobfuscatingTranslator.translate(this.reference.context));
 		}
+
 		return this.deobfuscatingTranslator.translate(this.entry).getFullName();
 	}
 
@@ -64,10 +64,11 @@ public class ClassReferenceTreeNode extends DefaultMutableTreeNode
 					TreeNode n = node;
 					while (n.getParent() != null) {
 						n = n.getParent();
-						if (n instanceof ClassReferenceTreeNode) {
-							ancestors.add(((ClassReferenceTreeNode) n).getEntry());
+						if (n instanceof ClassReferenceTreeNode treeNode) {
+							ancestors.add(treeNode.getEntry());
 						}
 					}
+
 					if (ancestors.contains(node.getEntry())) {
 						continue;
 					}

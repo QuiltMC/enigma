@@ -1,6 +1,27 @@
 package cuchaz.enigma.classhandle;
 
-import java.util.*;
+import cuchaz.enigma.EnigmaProject;
+import cuchaz.enigma.classprovider.CachingClassProvider;
+import cuchaz.enigma.classprovider.ObfuscationFixClassProvider;
+import cuchaz.enigma.events.ClassHandleListener;
+import cuchaz.enigma.events.ClassHandleListener.InvalidationType;
+import cuchaz.enigma.source.DecompiledClassSource;
+import cuchaz.enigma.source.Decompiler;
+import cuchaz.enigma.source.DecompilerService;
+import cuchaz.enigma.source.Source;
+import cuchaz.enigma.source.SourceIndex;
+import cuchaz.enigma.source.SourceSettings;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.utils.Result;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -8,17 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import javax.annotation.Nullable;
-
-import cuchaz.enigma.EnigmaProject;
-import cuchaz.enigma.classprovider.CachingClassProvider;
-import cuchaz.enigma.classprovider.ObfuscationFixClassProvider;
-import cuchaz.enigma.events.ClassHandleListener;
-import cuchaz.enigma.events.ClassHandleListener.InvalidationType;
-import cuchaz.enigma.source.*;
-import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.utils.Result;
 
 import static cuchaz.enigma.utils.Utils.withLock;
 
@@ -423,6 +434,5 @@ public final class ClassHandleProvider {
 			this.listeners.forEach(l -> l.onDeleted(this));
 			this.valid = false;
 		}
-
 	}
 }

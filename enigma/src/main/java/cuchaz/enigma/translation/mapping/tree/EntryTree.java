@@ -1,10 +1,5 @@
 package cuchaz.enigma.translation.mapping.tree;
 
-import java.util.Collection;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
 import cuchaz.enigma.translation.Translatable;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
@@ -12,6 +7,10 @@ import cuchaz.enigma.translation.mapping.EntryMap;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.representation.entry.Entry;
+
+import java.util.Collection;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
 
 public interface EntryTree<T> extends EntryMap<T>, Iterable<EntryTreeNode<T>>, Translatable {
 	Collection<Entry<?>> getChildren(Entry<?> entry);

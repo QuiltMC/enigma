@@ -1,5 +1,38 @@
 package cuchaz.enigma.gui.panels;
 
+import cuchaz.enigma.EnigmaProject;
+import cuchaz.enigma.analysis.EntryReference;
+import cuchaz.enigma.classhandle.ClassHandle;
+import cuchaz.enigma.classhandle.ClassHandleError;
+import cuchaz.enigma.events.ClassHandleListener;
+import cuchaz.enigma.gui.BrowserCaret;
+import cuchaz.enigma.gui.EditableType;
+import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.GuiController;
+import cuchaz.enigma.gui.config.LookAndFeel;
+import cuchaz.enigma.gui.config.Themes;
+import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
+import cuchaz.enigma.gui.elements.EditorPopupMenu;
+import cuchaz.enigma.gui.events.EditorActionListener;
+import cuchaz.enigma.gui.events.ThemeChangeListener;
+import cuchaz.enigma.gui.highlight.BoxHighlightPainter;
+import cuchaz.enigma.gui.highlight.SelectionHighlightPainter;
+import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
+import cuchaz.enigma.gui.util.ScaleUtil;
+import cuchaz.enigma.source.DecompiledClassSource;
+import cuchaz.enigma.source.RenamableTokenType;
+import cuchaz.enigma.source.Token;
+import cuchaz.enigma.translation.mapping.EntryRemapper;
+import cuchaz.enigma.translation.mapping.EntryResolver;
+import cuchaz.enigma.translation.mapping.ResolutionStrategy;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.utils.I18n;
+import cuchaz.enigma.utils.Result;
+import de.sciss.syntaxpane.DefaultSyntaxKit;
+import org.tinylog.Logger;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -18,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
 import javax.annotation.Nullable;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -35,40 +67,6 @@ import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter.HighlightPainter;
-
-import cuchaz.enigma.gui.config.keybind.KeyBinds;
-import de.sciss.syntaxpane.DefaultSyntaxKit;
-
-import cuchaz.enigma.EnigmaProject;
-import cuchaz.enigma.analysis.EntryReference;
-import cuchaz.enigma.classhandle.ClassHandle;
-import cuchaz.enigma.classhandle.ClassHandleError;
-import cuchaz.enigma.events.ClassHandleListener;
-import cuchaz.enigma.gui.BrowserCaret;
-import cuchaz.enigma.gui.EditableType;
-import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.gui.GuiController;
-import cuchaz.enigma.gui.config.LookAndFeel;
-import cuchaz.enigma.gui.config.Themes;
-import cuchaz.enigma.gui.config.UiConfig;
-import cuchaz.enigma.gui.elements.EditorPopupMenu;
-import cuchaz.enigma.gui.events.EditorActionListener;
-import cuchaz.enigma.gui.events.ThemeChangeListener;
-import cuchaz.enigma.gui.highlight.BoxHighlightPainter;
-import cuchaz.enigma.gui.highlight.SelectionHighlightPainter;
-import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
-import cuchaz.enigma.gui.util.ScaleUtil;
-import cuchaz.enigma.source.DecompiledClassSource;
-import cuchaz.enigma.source.RenamableTokenType;
-import cuchaz.enigma.source.Token;
-import cuchaz.enigma.translation.mapping.EntryRemapper;
-import cuchaz.enigma.translation.mapping.EntryResolver;
-import cuchaz.enigma.translation.mapping.ResolutionStrategy;
-import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.utils.I18n;
-import cuchaz.enigma.utils.Result;
-import org.tinylog.Logger;
 
 public class EditorPanel {
 	private final JPanel ui = new JPanel();

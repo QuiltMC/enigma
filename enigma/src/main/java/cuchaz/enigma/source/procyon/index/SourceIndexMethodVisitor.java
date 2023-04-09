@@ -2,17 +2,41 @@ package cuchaz.enigma.source.procyon.index;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.strobel.assembler.metadata.*;
+import com.strobel.assembler.metadata.FieldReference;
+import com.strobel.assembler.metadata.MemberReference;
+import com.strobel.assembler.metadata.MethodDefinition;
+import com.strobel.assembler.metadata.MethodReference;
+import com.strobel.assembler.metadata.ParameterDefinition;
+import com.strobel.assembler.metadata.TypeReference;
+import com.strobel.assembler.metadata.VariableDefinition;
 import com.strobel.decompiler.ast.Variable;
 import com.strobel.decompiler.languages.TextLocation;
-import com.strobel.decompiler.languages.java.ast.*;
+import com.strobel.decompiler.languages.java.ast.AstNode;
+import com.strobel.decompiler.languages.java.ast.AstNodeCollection;
+import com.strobel.decompiler.languages.java.ast.Identifier;
+import com.strobel.decompiler.languages.java.ast.IdentifierExpression;
+import com.strobel.decompiler.languages.java.ast.InvocationExpression;
+import com.strobel.decompiler.languages.java.ast.Keys;
+import com.strobel.decompiler.languages.java.ast.MemberReferenceExpression;
+import com.strobel.decompiler.languages.java.ast.MethodGroupExpression;
+import com.strobel.decompiler.languages.java.ast.ObjectCreationExpression;
+import com.strobel.decompiler.languages.java.ast.ParameterDeclaration;
+import com.strobel.decompiler.languages.java.ast.SimpleType;
+import com.strobel.decompiler.languages.java.ast.SuperReferenceExpression;
+import com.strobel.decompiler.languages.java.ast.ThisReferenceExpression;
+import com.strobel.decompiler.languages.java.ast.VariableDeclarationStatement;
+import com.strobel.decompiler.languages.java.ast.VariableInitializer;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.procyon.EntryParser;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
-import cuchaz.enigma.translation.representation.entry.*;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableDefEntry;
+import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
-import java.lang.Error;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,6 +61,7 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 			if (ref instanceof MethodReference) {
 				methodEntry = new MethodEntry(classEntry, ref.getName(), new MethodDescriptor(ref.getErasedSignature()));
 			}
+
 			if (methodEntry != null) {
 				// get the node for the token
 				AstNode tokenNode = null;
@@ -47,6 +72,7 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 				} else if (node.getTarget() instanceof ThisReferenceExpression) {
 					tokenNode = node.getTarget();
 				}
+
 				if (tokenNode != null) {
 					index.addReference(TokenFactory.createToken(index, tokenNode), methodEntry, this.methodEntry);
 				}
@@ -95,8 +121,8 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 
 		if (parameterIndex >= 0) {
 			MethodDefEntry ownerMethod = this.methodEntry;
-			if (def.getMethod() instanceof MethodDefinition) {
-				ownerMethod = EntryParser.parse((MethodDefinition) def.getMethod());
+			if (def.getMethod() instanceof MethodDefinition definition) {
+				ownerMethod = EntryParser.parse(definition);
 			}
 
 			TypeDescriptor parameterType = EntryParser.parseTypeDescriptor(def.getParameterType());
@@ -117,26 +143,33 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 			ClassEntry classEntry = new ClassEntry(ref.getDeclaringType().getInternalName());
 			FieldEntry fieldEntry = new FieldEntry(classEntry, ref.getName(), new TypeDescriptor(ref.getErasedSignature()));
 			index.addReference(TokenFactory.createToken(index, node.getIdentifierToken()), fieldEntry, this.methodEntry);
-		} else
+		} else {
 			this.checkIdentifier(node, index);
+		}
+
 		return this.visitChildren(node, index);
 	}
 
 	private void checkIdentifier(IdentifierExpression node, SourceIndex index) {
-		if (this.identifierEntryCache.containsKey(node.getIdentifier())) // If it's in the argument cache, create a token!
+		if (this.identifierEntryCache.containsKey(node.getIdentifier())) { // If it's in the argument cache, create a token!
 			index.addDeclaration(TokenFactory.createToken(index, node.getIdentifierToken()), this.identifierEntryCache.get(node.getIdentifier()));
-		else
+		} else {
 			this.unmatchedIdentifier.put(node.getIdentifier(), node.getIdentifierToken()); // Not matched actually, put it!
+		}
 	}
 
 	private void addDeclarationToUnmatched(String key, SourceIndex index) {
 		Entry<?> entry = this.identifierEntryCache.get(key);
 
-		// This cannot happened in theory
-		if (entry == null)
+		// This cannot happen in theory
+		if (entry == null) {
 			return;
-		for (Identifier identifier : this.unmatchedIdentifier.get(key))
+		}
+
+		for (Identifier identifier : this.unmatchedIdentifier.get(key)) {
 			index.addDeclaration(TokenFactory.createToken(index, identifier), entry);
+		}
+
 		this.unmatchedIdentifier.removeAll(key);
 	}
 
@@ -178,6 +211,7 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 				}
 			}
 		}
+
 		return this.visitChildren(node, index);
 	}
 

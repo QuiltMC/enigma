@@ -1,7 +1,6 @@
 package cuchaz.enigma.network;
 
 import java.util.Objects;
-
 import javax.annotation.Nullable;
 
 public class ServerAddress {
@@ -52,6 +51,7 @@ public class ServerAddress {
 		} else {
 			return null;
 		}
+
 		return ServerAddress.of(address, port);
 	}
 
@@ -60,8 +60,8 @@ public class ServerAddress {
 		if (this == o) return true;
 		if (o == null || this.getClass() != o.getClass()) return false;
 		ServerAddress that = (ServerAddress) o;
-		return this.port == that.port &&
-				Objects.equals(this.address, that.address);
+		return this.port == that.port
+				&& Objects.equals(this.address, that.address);
 	}
 
 	@Override

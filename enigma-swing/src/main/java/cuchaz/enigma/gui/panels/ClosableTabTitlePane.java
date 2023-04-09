@@ -8,7 +8,6 @@ import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
 import javax.accessibility.AccessibleContext;
 import javax.annotation.Nullable;
 import javax.swing.JButton;

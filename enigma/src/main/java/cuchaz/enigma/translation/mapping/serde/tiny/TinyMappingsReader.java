@@ -76,6 +76,7 @@ public enum TinyMappingsReader implements MappingsReader {
 			// inner classes should map to only the final part
 			mapping = mapping.substring(mapping.lastIndexOf('$') + 1);
 		}
+
 		return new MappingPair<>(obfuscatedEntry, new EntryMapping(mapping));
 	}
 

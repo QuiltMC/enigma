@@ -1,9 +1,5 @@
 package cuchaz.enigma.analysis;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-
 import cuchaz.enigma.translation.Translatable;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
@@ -13,6 +9,10 @@ import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements Translatable {
 	private static final List<String> CONSTRUCTOR_NON_NAMES = Arrays.asList("this", "super", "static");
@@ -48,8 +48,8 @@ public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements T
 		this.targetType = targetType;
 		this.declaration = declaration;
 
-		this.sourceName = sourceName != null && !sourceName.isEmpty() &&
-				!(entry instanceof MethodEntry && ((MethodEntry) entry).isConstructor() && CONSTRUCTOR_NON_NAMES.contains(sourceName));
+		this.sourceName = sourceName != null && !sourceName.isEmpty()
+				&& !(entry instanceof MethodEntry method && method.isConstructor() && CONSTRUCTOR_NON_NAMES.contains(sourceName));
 	}
 
 	public EntryReference(E entry, C context, EntryReference<E, C> other) {
@@ -64,6 +64,7 @@ public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements T
 		if (this.context != null) {
 			return this.context.getContainingClass();
 		}
+
 		return this.entry.getContainingClass();
 	}
 
@@ -83,6 +84,7 @@ public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements T
 			// renaming a constructor really means renaming the class
 			return this.entry.getContainingClass();
 		}
+
 		return this.entry;
 	}
 
@@ -95,6 +97,7 @@ public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements T
 		if (this.context != null) {
 			return Objects.hash(this.entry.hashCode(), this.context.hashCode());
 		}
+
 		return this.entry.hashCode() ^ Boolean.hashCode(this.declaration);
 	}
 

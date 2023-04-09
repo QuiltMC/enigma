@@ -1,11 +1,11 @@
 package cuchaz.enigma.network.packet;
 
+import cuchaz.enigma.network.ClientPacketHandler;
+import cuchaz.enigma.network.ServerMessage;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
-import cuchaz.enigma.network.ClientPacketHandler;
-import cuchaz.enigma.network.ServerMessage;
 
 public class MessageS2CPacket implements Packet<ClientPacketHandler> {
 	private ServerMessage message;
@@ -31,5 +31,4 @@ public class MessageS2CPacket implements Packet<ClientPacketHandler> {
 	public void handle(ClientPacketHandler handler) {
 		handler.addMessage(this.message);
 	}
-
 }

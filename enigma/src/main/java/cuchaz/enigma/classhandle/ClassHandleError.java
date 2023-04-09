@@ -2,7 +2,6 @@ package cuchaz.enigma.classhandle;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-
 import javax.annotation.Nullable;
 
 public final class ClassHandleError {

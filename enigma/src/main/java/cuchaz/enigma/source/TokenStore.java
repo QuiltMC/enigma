@@ -1,6 +1,12 @@
 package cuchaz.enigma.source;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NavigableSet;
+import java.util.TreeSet;
 
 public final class TokenStore {
 	private static final TokenStore EMPTY = new TokenStore(Collections.emptyNavigableSet(), Collections.emptyMap(), null);
@@ -20,6 +26,7 @@ public final class TokenStore {
 		for (RenamableTokenType value : RenamableTokenType.values()) {
 			map.put(value, new TreeSet<>(Comparator.comparing(t -> t.start)));
 		}
+
 		return new TokenStore(new TreeSet<>(Comparator.comparing(t -> t.start)), Collections.unmodifiableMap(map), obfuscatedIndex.getSource());
 	}
 
@@ -33,9 +40,9 @@ public final class TokenStore {
 	}
 
 	public boolean isCompatible(TokenStore other) {
-		return this.obfSource != null && other.obfSource != null &&
-				this.obfSource.equals(other.obfSource) &&
-				this.tokens.size() == other.tokens.size();
+		return this.obfSource != null && other.obfSource != null
+				&& this.obfSource.equals(other.obfSource)
+				&& this.tokens.size() == other.tokens.size();
 	}
 
 	public int mapPosition(TokenStore to, int position) {

@@ -1,5 +1,7 @@
 package cuchaz.enigma.gui.search;
 
+import cuchaz.enigma.utils.Pair;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,8 +20,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import cuchaz.enigma.utils.Pair;
 
 public class SearchUtil<T extends SearchEntry> {
 	private final Map<T, Entry<T>> entries = new HashMap<>();
@@ -205,6 +205,7 @@ public class SearchUtil<T extends SearchEntry> {
 
 		/**
 		 * Splits the given input into components, trying to detect word parts.
+		 *
 		 * <p>
 		 * Example of how words get split (using <code>|</code> as seperator):
 		 * <p><code>MinecraftClientGame -> Minecraft|Client|Game</code></p>

@@ -25,6 +25,7 @@ public enum Access {
 		} else if (!isPublic && !isProtected && !isPrivate) {
 			return PACKAGE;
 		}
+
 		// assume public by default
 		return PUBLIC;
 	}

@@ -1,10 +1,10 @@
 package cuchaz.enigma.translation.mapping.serde;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import cuchaz.enigma.translation.mapping.AccessModifier;
 import cuchaz.enigma.translation.mapping.EntryMapping;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public final class RawEntryMapping {
 	private final String targetName;

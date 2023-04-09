@@ -1,10 +1,10 @@
 package cuchaz.enigma.translation;
 
-import javax.annotation.Nullable;
-
 import cuchaz.enigma.translation.mapping.EntryMap;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryResolver;
+
+import javax.annotation.Nullable;
 
 public class MappingTranslator implements Translator {
 	private final EntryMap<EntryMapping> mappings;
@@ -22,6 +22,7 @@ public class MappingTranslator implements Translator {
 		if (translatable == null) {
 			return null;
 		}
+
 		return (TranslateResult<T>) translatable.extendedTranslate(this, this.resolver, this.mappings);
 	}
 }

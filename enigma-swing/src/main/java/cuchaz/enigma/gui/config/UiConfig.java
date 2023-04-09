@@ -1,5 +1,15 @@
 package cuchaz.enigma.gui.config;
 
+import cuchaz.enigma.config.ConfigContainer;
+import cuchaz.enigma.config.ConfigSection;
+import cuchaz.enigma.gui.NotificationManager;
+import cuchaz.enigma.gui.docker.Dock;
+import cuchaz.enigma.gui.docker.Docker;
+import cuchaz.enigma.gui.util.ScaleUtil;
+import cuchaz.enigma.utils.I18n;
+import cuchaz.enigma.utils.Pair;
+import org.tinylog.Logger;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -13,16 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
-
-import cuchaz.enigma.config.ConfigContainer;
-import cuchaz.enigma.config.ConfigSection;
-import cuchaz.enigma.gui.NotificationManager;
-import cuchaz.enigma.gui.docker.Dock;
-import cuchaz.enigma.gui.docker.Docker;
-import cuchaz.enigma.gui.util.ScaleUtil;
-import cuchaz.enigma.utils.I18n;
-import org.tinylog.Logger;
-import cuchaz.enigma.utils.Pair;
 
 public final class UiConfig {
 	// sections

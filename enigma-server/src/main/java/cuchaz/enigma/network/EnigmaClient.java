@@ -4,8 +4,13 @@ import cuchaz.enigma.network.packet.Packet;
 import cuchaz.enigma.network.packet.PacketRegistry;
 import org.tinylog.Logger;
 
-import javax.swing.*;
-import java.io.*;
+import javax.swing.SwingUtilities;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 
@@ -63,7 +68,6 @@ public class EnigmaClient {
 			}
 		}
 	}
-
 
 	public void sendPacket(Packet<ServerPacketHandler> packet) {
 		try {

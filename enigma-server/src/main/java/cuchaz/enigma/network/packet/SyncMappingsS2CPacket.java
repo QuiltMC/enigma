@@ -1,11 +1,5 @@
 package cuchaz.enigma.network.packet;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-
 import cuchaz.enigma.network.ClientPacketHandler;
 import cuchaz.enigma.network.EnigmaServer;
 import cuchaz.enigma.translation.mapping.EntryMapping;
@@ -13,6 +7,12 @@ import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTreeNode;
 import cuchaz.enigma.translation.mapping.tree.HashEntryTree;
 import cuchaz.enigma.translation.representation.entry.Entry;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 
 public class SyncMappingsS2CPacket implements Packet<ClientPacketHandler> {
 	private EntryTree<EntryMapping> mappings;

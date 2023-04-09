@@ -49,9 +49,9 @@ public class SortedMutableTreeNode extends DefaultMutableTreeNode {
 
 	@Override
 	public void remove(int index) {
-		checkSorted();
+		this.checkSorted();
 
-		remove((MutableTreeNode) getChildAt(index));
+		this.remove((MutableTreeNode) this.getChildAt(index));
 	}
 
 	@Override
@@ -62,7 +62,7 @@ public class SortedMutableTreeNode extends DefaultMutableTreeNode {
 
 	@Override
 	public TreeNode getChildAt(int childIndex) {
-		checkSorted();
+		this.checkSorted();
 
 		return this.children.get(childIndex);
 	}

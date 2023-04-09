@@ -230,6 +230,7 @@ public class ClassSelector extends JTree {
 				state.add(new StateEntry(State.EXPANDED, path));
 			}
 		}
+
 		return state;
 	}
 

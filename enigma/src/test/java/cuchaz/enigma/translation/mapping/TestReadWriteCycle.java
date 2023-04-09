@@ -57,45 +57,44 @@ public class TestReadWriteCycle {
 	private void testReadWriteCycle(MappingFormat mappingFormat, boolean supportsJavadoc, String tmpNameSuffix) throws IOException, MappingParseException {
 		//construct some known mappings to test with
 		EntryTree<EntryMapping> testMappings = new HashEntryTree<>();
-		insertMapping(testMappings, testClazz);
-		insertMapping(testMappings, testField1);
-		insertMapping(testMappings, testField2);
-		insertMapping(testMappings, testMethod1);
-		insertMapping(testMappings, testMethod2);
+		this.insertMapping(testMappings, this.testClazz);
+		this.insertMapping(testMappings, this.testField1);
+		this.insertMapping(testMappings, this.testField2);
+		this.insertMapping(testMappings, this.testMethod1);
+		this.insertMapping(testMappings, this.testMethod2);
 
-		Assertions.assertTrue(testMappings.contains(testClazz.a()), "Test mapping insertion failed: testClazz");
-		Assertions.assertTrue(testMappings.contains(testField1.a()), "Test mapping insertion failed: testField1");
-		Assertions.assertTrue(testMappings.contains(testField2.a()), "Test mapping insertion failed: testField2");
-		Assertions.assertTrue(testMappings.contains(testMethod1.a()), "Test mapping insertion failed: testMethod1");
-		Assertions.assertTrue(testMappings.contains(testMethod2.a()), "Test mapping insertion failed: testMethod2");
+		Assertions.assertTrue(testMappings.contains(this.testClazz.a()), "Test mapping insertion failed: testClazz");
+		Assertions.assertTrue(testMappings.contains(this.testField1.a()), "Test mapping insertion failed: testField1");
+		Assertions.assertTrue(testMappings.contains(this.testField2.a()), "Test mapping insertion failed: testField2");
+		Assertions.assertTrue(testMappings.contains(this.testMethod1.a()), "Test mapping insertion failed: testMethod1");
+		Assertions.assertTrue(testMappings.contains(this.testMethod2.a()), "Test mapping insertion failed: testMethod2");
 
 		File tempFile = File.createTempFile("readWriteCycle", tmpNameSuffix);
-		tempFile.delete();//remove the auto created file
+		tempFile.delete(); //remove the auto created file
 
-
-		mappingFormat.write(testMappings, tempFile.toPath(), ProgressListener.none(), parameters);
+		mappingFormat.write(testMappings, tempFile.toPath(), ProgressListener.none(), this.parameters);
 		Assertions.assertTrue(tempFile.exists(), "Written file not created");
 
-		EntryTree<EntryMapping> loadedMappings = mappingFormat.read(tempFile.toPath(), ProgressListener.none(), parameters);
+		EntryTree<EntryMapping> loadedMappings = mappingFormat.read(tempFile.toPath(), ProgressListener.none(), this.parameters);
 
-		Assertions.assertTrue(loadedMappings.contains(testClazz.a()), "Loaded mappings don't contain testClazz");
-		Assertions.assertTrue(loadedMappings.contains(testField1.a()), "Loaded mappings don't contain testField1");
-		Assertions.assertTrue(loadedMappings.contains(testField2.a()), "Loaded mappings don't contain testField2");
-		Assertions.assertTrue(loadedMappings.contains(testMethod1.a()), "Loaded mappings don't contain testMethod1");
-		Assertions.assertTrue(loadedMappings.contains(testMethod2.a()), "Loaded mappings don't contain testMethod2");
+		Assertions.assertTrue(loadedMappings.contains(this.testClazz.a()), "Loaded mappings don't contain testClazz");
+		Assertions.assertTrue(loadedMappings.contains(this.testField1.a()), "Loaded mappings don't contain testField1");
+		Assertions.assertTrue(loadedMappings.contains(this.testField2.a()), "Loaded mappings don't contain testField2");
+		Assertions.assertTrue(loadedMappings.contains(this.testMethod1.a()), "Loaded mappings don't contain testMethod1");
+		Assertions.assertTrue(loadedMappings.contains(this.testMethod2.a()), "Loaded mappings don't contain testMethod2");
 
-		Assertions.assertEquals(testClazz.b().targetName(), loadedMappings.get(testClazz.a()).targetName(), "Incorrect mapping: testClazz");
-		Assertions.assertEquals(testField1.b().targetName(), loadedMappings.get(testField1.a()).targetName(), "Incorrect mapping: testField1");
-		Assertions.assertEquals(testField2.b().targetName(), loadedMappings.get(testField2.a()).targetName(), "Incorrect mapping: testField2");
-		Assertions.assertEquals(testMethod1.b().targetName(), loadedMappings.get(testMethod1.a()).targetName(), "Incorrect mapping: testMethod1");
-		Assertions.assertEquals(testMethod2.b().targetName(), loadedMappings.get(testMethod2.a()).targetName(), "Incorrect mapping: testMethod2");
+		Assertions.assertEquals(this.testClazz.b().targetName(), loadedMappings.get(this.testClazz.a()).targetName(), "Incorrect mapping: testClazz");
+		Assertions.assertEquals(this.testField1.b().targetName(), loadedMappings.get(this.testField1.a()).targetName(), "Incorrect mapping: testField1");
+		Assertions.assertEquals(this.testField2.b().targetName(), loadedMappings.get(this.testField2.a()).targetName(), "Incorrect mapping: testField2");
+		Assertions.assertEquals(this.testMethod1.b().targetName(), loadedMappings.get(this.testMethod1.a()).targetName(), "Incorrect mapping: testMethod1");
+		Assertions.assertEquals(this.testMethod2.b().targetName(), loadedMappings.get(this.testMethod2.a()).targetName(), "Incorrect mapping: testMethod2");
 
 		if (supportsJavadoc) {
-			Assertions.assertEquals(testClazz.b().javadoc(), loadedMappings.get(testClazz.a()).javadoc(), "Incorrect javadoc: testClazz");
-			Assertions.assertEquals(testField1.b().javadoc(), loadedMappings.get(testField1.a()).javadoc(), "Incorrect javadoc: testField1");
-			Assertions.assertEquals(testField2.b().javadoc(), loadedMappings.get(testField2.a()).javadoc(), "Incorrect javadoc: testField2");
-			Assertions.assertEquals(testMethod1.b().javadoc(), loadedMappings.get(testMethod1.a()).javadoc(), "Incorrect javadoc: testMethod1");
-			Assertions.assertEquals(testMethod2.b().javadoc(), loadedMappings.get(testMethod2.a()).javadoc(), "Incorrect javadoc: testMethod2");
+			Assertions.assertEquals(this.testClazz.b().javadoc(), loadedMappings.get(this.testClazz.a()).javadoc(), "Incorrect javadoc: testClazz");
+			Assertions.assertEquals(this.testField1.b().javadoc(), loadedMappings.get(this.testField1.a()).javadoc(), "Incorrect javadoc: testField1");
+			Assertions.assertEquals(this.testField2.b().javadoc(), loadedMappings.get(this.testField2.a()).javadoc(), "Incorrect javadoc: testField2");
+			Assertions.assertEquals(this.testMethod1.b().javadoc(), loadedMappings.get(this.testMethod1.a()).javadoc(), "Incorrect javadoc: testMethod1");
+			Assertions.assertEquals(this.testMethod2.b().javadoc(), loadedMappings.get(this.testMethod2.a()).javadoc(), "Incorrect javadoc: testMethod2");
 		}
 
 		tempFile.delete();
@@ -103,26 +102,26 @@ public class TestReadWriteCycle {
 
 	@Test
 	public void testEnigmaFile() throws IOException, MappingParseException {
-		testReadWriteCycle(MappingFormat.ENIGMA_FILE, true, ".enigma");
+		this.testReadWriteCycle(MappingFormat.ENIGMA_FILE, true, ".enigma");
 	}
 
 	@Test
 	public void testEnigmaDir() throws IOException, MappingParseException {
-		testReadWriteCycle(MappingFormat.ENIGMA_DIRECTORY, true, ".tmp");
+		this.testReadWriteCycle(MappingFormat.ENIGMA_DIRECTORY, true, ".tmp");
 	}
 
 	@Test
 	public void testEnigmaZip() throws IOException, MappingParseException {
-		testReadWriteCycle(MappingFormat.ENIGMA_ZIP, true, ".zip");
+		this.testReadWriteCycle(MappingFormat.ENIGMA_ZIP, true, ".zip");
 	}
 
 	@Test
 	public void testTinyFile() throws IOException, MappingParseException {
-		testReadWriteCycle(MappingFormat.TINY_FILE, false, ".tiny");
+		this.testReadWriteCycle(MappingFormat.TINY_FILE, false, ".tiny");
 	}
 
 	@Test
 	public void testTinyV2() throws IOException, MappingParseException {
-		testReadWriteCycle(MappingFormat.TINY_V2, true, ".tinyv2");
+		this.testReadWriteCycle(MappingFormat.TINY_V2, true, ".tinyv2");
 	}
 }

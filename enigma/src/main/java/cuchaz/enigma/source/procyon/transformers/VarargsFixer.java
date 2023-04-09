@@ -50,7 +50,7 @@ public class VarargsFixer implements IAstTransform {
 			this.resolver = new JavaResolver(context);
 		}
 
-		//remove `new Object[0]` on varagrs as the normal tranformer doesnt do them
+		//remove `new Object[0]` on varargs as the normal transformer doesn't do them
 		@Override
 		public Void visitInvocationExpression(InvocationExpression node, Void data) {
 			super.visitInvocationExpression(node, data);
@@ -65,10 +65,12 @@ public class VarargsFixer implements IAstTransform {
 						for (Expression e : varargArray.getInitializer().getElements()) {
 							arguments.insertBefore(varargArray, e.clone());
 						}
+
 						varargArray.remove();
 					}
 				}
 			}
+
 			return null;
 		}
 
@@ -81,13 +83,14 @@ public class VarargsFixer implements IAstTransform {
 
 			Expression arrayArg = lastArgument;
 
-			if (arrayArg instanceof CastExpression castExpression)
+			if (arrayArg instanceof CastExpression castExpression) {
 				arrayArg = castExpression.getExpression();
+			}
 
-			if (arrayArg == null ||
-					arrayArg.isNull() ||
-					!(arrayArg instanceof final ArrayCreationExpression newArray &&
-							node.getTarget() instanceof final MemberReferenceExpression target)) {
+			if (arrayArg == null
+					|| arrayArg.isNull()
+					|| !(arrayArg instanceof final ArrayCreationExpression newArray
+							&& node.getTarget() instanceof final MemberReferenceExpression target)) {
 				return null;
 			}
 
@@ -115,8 +118,7 @@ public class VarargsFixer implements IAstTransform {
 						this.context.getCurrentType(),
 						MetadataFilters.matchName(resolved.getName())
 				);
-			}
-			else {
+			} else {
 				final ResolveResult targetResult = this.resolver.apply(invocationTarget);
 
 				if (targetResult == null || targetResult.getType() == null) {
@@ -166,9 +168,9 @@ public class VarargsFixer implements IAstTransform {
 
 			final MethodBinder.BindResult c2 = MethodBinder.selectMethod(candidates, argTypes);
 
-			if (c2.isFailure() ||
-					c2.isAmbiguous() ||
-					!StringUtilities.equals(c2.getMethod().getErasedSignature(), c1.getMethod().getErasedSignature())) {
+			if (c2.isFailure()
+					|| c2.isAmbiguous()
+					|| !StringUtilities.equals(c2.getMethod().getErasedSignature(), c1.getMethod().getErasedSignature())) {
 				return null;
 			}
 

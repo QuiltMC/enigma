@@ -18,6 +18,6 @@ public class SubsubclassAA extends SubclassA {
 	// a()V
 	public void doBaseThings() {
 		// call to d.a()Ljava/lang/String;
-		System.out.println("Base things by " + getName());
+		System.out.println("Base things by " + this.getName());
 	}
 }

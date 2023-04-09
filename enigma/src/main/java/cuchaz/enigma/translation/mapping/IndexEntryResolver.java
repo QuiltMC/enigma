@@ -1,9 +1,5 @@
 package cuchaz.enigma.translation.mapping;
 
-import java.util.*;
-
-import javax.annotation.Nullable;
-
 import cuchaz.enigma.analysis.IndexTreeBuilder;
 import cuchaz.enigma.analysis.MethodImplementationsTreeNode;
 import cuchaz.enigma.analysis.MethodInheritanceTreeNode;
@@ -16,6 +12,13 @@ import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.annotation.Nullable;
 
 public class IndexEntryResolver implements EntryResolver {
 	private final EntryIndex entryIndex;

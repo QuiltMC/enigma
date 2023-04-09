@@ -1,18 +1,34 @@
 package cuchaz.enigma.network;
 
-import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
-import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import cuchaz.enigma.network.packet.*;
+import cuchaz.enigma.network.packet.EntryChangeS2CPacket;
+import cuchaz.enigma.network.packet.KickS2CPacket;
+import cuchaz.enigma.network.packet.MessageS2CPacket;
+import cuchaz.enigma.network.packet.Packet;
+import cuchaz.enigma.network.packet.PacketRegistry;
+import cuchaz.enigma.network.packet.UserListS2CPacket;
 import cuchaz.enigma.translation.mapping.EntryChange;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import org.tinylog.Logger;
+
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class EnigmaServer {
 	// https://discordapp.com/channels/507304429255393322/566418023372816394/700292322918793347
@@ -78,10 +94,12 @@ public abstract class EnigmaServer {
 					} catch (EOFException | SocketException e) {
 						break;
 					}
+
 					Packet<ServerPacketHandler> packet = PacketRegistry.createC2SPacket(packetId);
 					if (packet == null) {
 						throw new IOException("Received invalid packet id " + packetId);
 					}
+
 					packet.read(input);
 					this.runOnThread(() -> packet.handle(new ServerPacketHandler(client, this)));
 				}
@@ -104,6 +122,7 @@ public abstract class EnigmaServer {
 				for (Socket client : this.clients) {
 					this.kick(client, "disconnect.server_closed");
 				}
+
 				try {
 					this.socket.close();
 				} catch (IOException e) {
@@ -124,6 +143,7 @@ public abstract class EnigmaServer {
 			list.remove(client);
 			return list.isEmpty();
 		});
+
 		String username = this.usernames.remove(client);
 		try {
 			client.close();
@@ -135,6 +155,7 @@ public abstract class EnigmaServer {
 			Logger.info("Kicked " + username + " because " + reason);
 			this.sendMessage(ServerMessage.disconnect(username));
 		}
+
 		this.sendUsernamePacket();
 	}
 
@@ -196,6 +217,7 @@ public abstract class EnigmaServer {
 		if (syncId == null) {
 			return true;
 		}
+
 		Set<Socket> clients = this.clientsNeedingConfirmation.get(syncId);
 		return clients == null || !clients.contains(client);
 	}
@@ -207,10 +229,12 @@ public abstract class EnigmaServer {
 		if (this.nextSyncId == 65536) {
 			this.nextSyncId = DUMMY_SYNC_ID + 1;
 		}
+
 		Integer oldSyncId = this.syncIds.get(entry);
 		if (oldSyncId != null) {
 			this.clientsNeedingConfirmation.remove(oldSyncId);
 		}
+
 		this.syncIds.put(entry, syncId);
 		this.inverseSyncIds.put(syncId, entry);
 		Set<Socket> clients = new HashSet<>(this.clients);

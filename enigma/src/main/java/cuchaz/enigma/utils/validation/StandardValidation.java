@@ -6,6 +6,7 @@ public class StandardValidation {
 			vc.raise(Message.EMPTY_FIELD);
 			return false;
 		}
+
 		return true;
 	}
 
@@ -27,6 +28,7 @@ public class StandardValidation {
 			vc.raise(Message.FIELD_OUT_OF_RANGE_INT, min, max);
 			return false;
 		}
+
 		return true;
 	}
 }
