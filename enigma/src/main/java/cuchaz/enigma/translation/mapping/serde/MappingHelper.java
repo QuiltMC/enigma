@@ -15,6 +15,7 @@ public final class MappingHelper {
 				builder.append('\\').append(ESCAPED.charAt(r));
 			}
 		}
+
 		return builder.toString();
 	}
 

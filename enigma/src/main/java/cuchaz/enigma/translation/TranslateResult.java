@@ -1,9 +1,9 @@
 package cuchaz.enigma.translation;
 
+import cuchaz.enigma.source.RenamableTokenType;
+
 import java.util.Objects;
 import java.util.function.Function;
-
-import cuchaz.enigma.source.RenamableTokenType;
 
 public final class TranslateResult<T> {
 	private final RenamableTokenType type;
@@ -67,8 +67,8 @@ public final class TranslateResult<T> {
 		if (this == o) return true;
 		if (o == null || this.getClass() != o.getClass()) return false;
 		TranslateResult<?> that = (TranslateResult<?>) o;
-		return this.type == that.type &&
-				Objects.equals(this.value, that.value);
+		return this.type == that.type
+				&& Objects.equals(this.value, that.value);
 	}
 
 	@Override

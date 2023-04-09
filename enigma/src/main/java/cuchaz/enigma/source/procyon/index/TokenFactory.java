@@ -29,10 +29,11 @@ public class TokenFactory {
 		Token token = new Token(start, end, text);
 
 		boolean isAnonymousInner =
-				node instanceof Identifier &&
-				name.indexOf('$') >= 0 && node.getParent() instanceof ConstructorDeclaration &&
-				name.lastIndexOf('$') >= 0 &&
-				!ANONYMOUS_INNER.matcher(name).matches();
+				node instanceof Identifier
+						&& name.indexOf('$') >= 0
+						&& node.getParent() instanceof ConstructorDeclaration
+						&& name.lastIndexOf('$') >= 0
+						&& !ANONYMOUS_INNER.matcher(name).matches();
 
 		if (isAnonymousInner) {
 			TypeDeclaration type = node.getParent().getParent() instanceof TypeDeclaration ? (TypeDeclaration) node.getParent().getParent() : null;

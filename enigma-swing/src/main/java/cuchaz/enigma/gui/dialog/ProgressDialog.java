@@ -1,11 +1,5 @@
 package cuchaz.enigma.gui.dialog;
 
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.util.concurrent.CompletableFuture;
-
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
@@ -13,6 +7,11 @@ import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.util.concurrent.CompletableFuture;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;

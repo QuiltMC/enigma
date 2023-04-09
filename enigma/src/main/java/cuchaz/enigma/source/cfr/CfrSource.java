@@ -67,6 +67,7 @@ public class CfrSource implements Source {
 		try {
 			tree = state.getClassFile(tree.getClassType());
 		} catch (CannotLoadClassException ignored) {
+			// ignored!
 		}
 
 		if (this.options.getOption(OptionsImpl.DECOMPILE_INNER_CLASSES)) {

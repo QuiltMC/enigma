@@ -22,7 +22,7 @@ public class RemoveObjectCasts implements IAstTransform {
 		compilationUnit.acceptVisitor(new Visitor(this._context), null);
 	}
 
-	private final static class Visitor extends ContextTrackingVisitor<Void> {
+	private static final class Visitor extends ContextTrackingVisitor<Void> {
 		private Visitor(DecompilerContext context) {
 			super(context);
 		}
@@ -32,6 +32,7 @@ public class RemoveObjectCasts implements IAstTransform {
 			if (node.getType().toTypeReference().equals(BuiltinTypes.Object)) {
 				node.replaceWith(node.getExpression());
 			}
+
 			return super.visitCastExpression(node, data);
 		}
 	}

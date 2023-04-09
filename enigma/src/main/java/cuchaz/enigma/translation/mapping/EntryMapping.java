@@ -3,7 +3,6 @@ package cuchaz.enigma.translation.mapping;
 import org.tinylog.Logger;
 
 import java.util.Arrays;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 

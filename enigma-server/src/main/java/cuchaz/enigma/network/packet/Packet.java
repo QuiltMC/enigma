@@ -10,5 +10,4 @@ public interface Packet<H> {
 	void write(DataOutput output) throws IOException;
 
 	void handle(H handler);
-
 }

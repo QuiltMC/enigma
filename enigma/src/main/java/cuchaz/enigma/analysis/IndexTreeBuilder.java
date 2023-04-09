@@ -40,6 +40,7 @@ public class IndexTreeBuilder {
 			node.load(this.index);
 			return node;
 		}
+
 		return null;
 	}
 

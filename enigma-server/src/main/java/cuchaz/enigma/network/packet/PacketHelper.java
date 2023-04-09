@@ -1,16 +1,20 @@
 package cuchaz.enigma.network.packet;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
 import cuchaz.enigma.translation.mapping.AccessModifier;
 import cuchaz.enigma.translation.mapping.EntryChange;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
-import cuchaz.enigma.translation.representation.entry.*;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.TristateChange;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class PacketHelper {
 	private static final int ENTRY_CLASS = 0, ENTRY_FIELD = 1, ENTRY_METHOD = 2, ENTRY_LOCAL_VAR = 3;
@@ -129,6 +133,7 @@ public class PacketHelper {
 		if (bytes.length > MAX_STRING_LENGTH) {
 			throw new IOException("String too long, was " + bytes.length + " bytes, max " + MAX_STRING_LENGTH + " allowed");
 		}
+
 		output.writeShort(bytes.length);
 		output.write(bytes);
 	}
@@ -164,9 +169,9 @@ public class PacketHelper {
 
 	public static void writeEntryChange(DataOutput output, EntryChange<?> change) throws IOException {
 		writeEntry(output, change.getTarget());
-		int flags = change.getDeobfName().getType().ordinal() |
-				change.getAccess().getType().ordinal() << 2 |
-				change.getJavadoc().getType().ordinal() << 4;
+		int flags = change.getDeobfName().getType().ordinal()
+				| change.getAccess().getType().ordinal() << 2
+				| change.getJavadoc().getType().ordinal() << 4;
 
 		if (change.getAccess().isSet()) {
 			flags |= change.getAccess().getNewValue().ordinal() << 6;
@@ -182,5 +187,4 @@ public class PacketHelper {
 			writeString(output, change.getJavadoc().getNewValue());
 		}
 	}
-
 }

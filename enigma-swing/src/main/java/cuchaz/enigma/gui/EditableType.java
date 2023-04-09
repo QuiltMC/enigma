@@ -14,8 +14,7 @@ public enum EditableType {
 	FIELD,
 	PARAMETER,
 	LOCAL_VARIABLE,
-	JAVADOC,
-	;
+	JAVADOC;
 
 	@Nullable
 	public static EditableType fromEntry(Entry<?> entry) {

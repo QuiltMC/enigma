@@ -13,11 +13,11 @@ public class SourceTestUtil {
 	 * for easier debugging of decompiling-related issues.
 	 */
 	public static String toHtml(Source source, String name) {
-		return "<html><head><meta charset=\"UTF-8\"/>" + "<title>" + name + ".java</title>" +
-				"<style>* { font-family: monospace; }.ref { background-color: khaki; border: 1px solid; }</style></meta><body>" +
-				"<h3>" + name + ".java</h3>" +
-				"<pre>" + insertTokenHtmlData(source) + "</pre>" +
-				"</body></html>";
+		return "<html><head><meta charset=\"UTF-8\"/>" + "<title>" + name + ".java</title>"
+				+ "<style>* { font-family: monospace; }.ref { background-color: khaki; border: 1px solid; }</style></meta><body>"
+				+ "<h3>" + name + ".java</h3>"
+				+ "<pre>" + insertTokenHtmlData(source) + "</pre>"
+				+ "</body></html>";
 	}
 
 	private static String insertTokenHtmlData(Source source) {

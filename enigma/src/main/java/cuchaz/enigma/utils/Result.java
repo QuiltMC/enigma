@@ -86,8 +86,8 @@ public final class Result<T, E> {
 		if (this == o) return true;
 		if (o == null || this.getClass() != o.getClass()) return false;
 		Result<?, ?> result = (Result<?, ?>) o;
-		return Objects.equals(this.ok, result.ok) &&
-				Objects.equals(this.err, result.err);
+		return Objects.equals(this.ok, result.ok)
+				&& Objects.equals(this.err, result.err);
 	}
 
 	@Override

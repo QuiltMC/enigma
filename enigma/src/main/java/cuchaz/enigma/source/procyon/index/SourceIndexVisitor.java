@@ -24,6 +24,7 @@ public class SourceIndexVisitor extends DepthFirstAstVisitor<SourceIndex, Void> 
 		for (final AstNode child : node.getChildren()) {
 			child.acceptVisitor(this, index);
 		}
+
 		return null;
 	}
 }

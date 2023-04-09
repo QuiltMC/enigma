@@ -1,13 +1,12 @@
 package cuchaz.enigma.gui;
 
-import java.awt.Font;
-
+import cuchaz.enigma.gui.config.UiConfig;
 import de.sciss.syntaxpane.DefaultSyntaxKit;
 import de.sciss.syntaxpane.components.LineNumbersRuler;
 import de.sciss.syntaxpane.syntaxkits.JavaSyntaxKit;
 import de.sciss.syntaxpane.util.Configuration;
 
-import cuchaz.enigma.gui.config.UiConfig;
+import java.awt.Font;
 
 public class EnigmaSyntaxKit extends JavaSyntaxKit {
 	private static Configuration configuration = null;

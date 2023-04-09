@@ -4,7 +4,12 @@ import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.classprovider.CachingClassProvider;
 import cuchaz.enigma.classprovider.ClassProvider;
 import cuchaz.enigma.classprovider.JarClassProvider;
-import cuchaz.enigma.source.*;
+import cuchaz.enigma.source.Decompiler;
+import cuchaz.enigma.source.DecompilerService;
+import cuchaz.enigma.source.Source;
+import cuchaz.enigma.source.SourceIndex;
+import cuchaz.enigma.source.SourceSettings;
+import cuchaz.enigma.source.Token;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.Pair;
@@ -32,13 +37,13 @@ public class TokenChecker {
 	}
 
 	protected TokenChecker(Path path, DecompilerService decompilerService, ClassProvider classProvider) {
-		decompiler = decompilerService.create(classProvider, new SourceSettings(false, false));
-		shownFiles = ALL_SHOWN_FILES.computeIfAbsent(new Pair<>(decompilerService, path), p -> new HashSet<>());
+		this.decompiler = decompilerService.create(classProvider, new SourceSettings(false, false));
+		this.shownFiles = ALL_SHOWN_FILES.computeIfAbsent(new Pair<>(decompilerService, path), p -> new HashSet<>());
 	}
 
 	protected String getDeclarationToken(Entry<?> entry) {
 		// decompile the class
-		Source source = decompiler.getSource(entry.getContainingClass().getFullName());
+		Source source = this.decompiler.getSource(entry.getContainingClass().getFullName());
 		// DEBUG
 		// createDebugFile(source, entry.getContainingClass());
 		String string = source.asString();
@@ -49,13 +54,14 @@ public class TokenChecker {
 		if (token == null) {
 			return null;
 		}
+
 		return string.substring(token.start, token.end);
 	}
 
 	@SuppressWarnings("unchecked")
 	protected Collection<String> getReferenceTokens(EntryReference<? extends Entry<?>, ? extends Entry<?>> reference) {
 		// decompile the class
-		Source source = decompiler.getSource(reference.context.getContainingClass().getFullName());
+		Source source = this.decompiler.getSource(reference.context.getContainingClass().getFullName());
 		String string = source.asString();
 		SourceIndex index = source.index();
 		// DEBUG
@@ -66,11 +72,12 @@ public class TokenChecker {
 		for (Token token : index.getReferenceTokens((EntryReference<Entry<?>, Entry<?>>) reference)) {
 			values.add(string.substring(token.start, token.end));
 		}
+
 		return values;
 	}
 
 	private void createDebugFile(Source source, ClassEntry classEntry) {
-		if (!shownFiles.add(classEntry.getFullName())) {
+		if (!this.shownFiles.add(classEntry.getFullName())) {
 			return;
 		}
 

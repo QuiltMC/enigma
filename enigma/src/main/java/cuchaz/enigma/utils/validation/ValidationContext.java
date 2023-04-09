@@ -1,11 +1,11 @@
 package cuchaz.enigma.utils.validation;
 
+import cuchaz.enigma.utils.validation.Message.Type;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
-import cuchaz.enigma.utils.validation.Message.Type;
 
 /**
  * A context for user input validation. Handles collecting error messages and displaying them using its {@link Notifier}.

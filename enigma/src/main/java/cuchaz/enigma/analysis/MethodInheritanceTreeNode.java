@@ -28,6 +28,7 @@ public class MethodInheritanceTreeNode extends AbstractMethodTreeNode {
 				return foundNode;
 			}
 		}
+
 		return null;
 	}
 

@@ -1,13 +1,13 @@
 package cuchaz.enigma.gui.docker;
 
-import javax.annotation.Nullable;
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.renderer.ImplementationsTreeCellRenderer;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+
+import javax.annotation.Nullable;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 public class ImplementationsTreeDocker extends AbstractInheritanceTreeDocker {
 	public ImplementationsTreeDocker(Gui gui) {

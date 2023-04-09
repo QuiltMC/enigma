@@ -1,9 +1,9 @@
 package cuchaz.enigma.config;
 
+import cuchaz.enigma.utils.Os;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import cuchaz.enigma.utils.Os;
 
 public class ConfigPaths {
 	public static Path getConfigFilePath(String name) {
@@ -18,6 +18,7 @@ public class ConfigPaths {
 				if (configHome == null) {
 					return getUserHomeUnix().resolve(".config");
 				}
+
 				return Paths.get(configHome);
 			}
 			case MAC -> {
@@ -37,6 +38,7 @@ public class ConfigPaths {
 		if (userHome == null) {
 			userHome = System.getProperty("user.dir");
 		}
+
 		return Paths.get(userHome);
 	}
 }

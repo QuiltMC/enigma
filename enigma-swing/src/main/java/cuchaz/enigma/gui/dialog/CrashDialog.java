@@ -6,6 +6,13 @@ import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import org.tinylog.Logger;
 
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.FileWriter;
+import java.io.File;
+import java.io.IOException;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -17,13 +24,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.FileWriter;
-import java.io.File;
-import java.io.IOException;
 
 public class CrashDialog {
 	private static CrashDialog instance = null;

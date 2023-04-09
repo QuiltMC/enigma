@@ -80,7 +80,6 @@ public class ConfigTest {
 		assertEquals("", ConfigContainer.parse("[").serialize());
 		assertEquals("[a]\na=b\nc=d\n", ConfigContainer.parse("[a]\na=b\n[\nc=d").serialize());
 
-
 		// not technically syntax errors but never something that gets generated
 		assertEquals("", ConfigContainer.parse("[a]").serialize());
 		assertEquals("", ConfigContainer.parse("[a]\n[b]").serialize());

@@ -1,7 +1,6 @@
 package cuchaz.enigma.source;
 
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.translation.mapping.EntryResolver;
@@ -10,6 +9,7 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -24,7 +24,7 @@ public class SourceIndex {
 	public SourceIndex() {
 		this.tokenToReference = new TreeMap<>();
 		this.referenceToTokens = HashMultimap.create();
-		this.declarationToToken = Maps.newHashMap();
+		this.declarationToToken = new HashMap<>();
 	}
 
 	public SourceIndex(String source) {

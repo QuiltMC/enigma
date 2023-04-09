@@ -67,6 +67,7 @@ public final class TinyV2Writer implements MappingsWriter {
 			} else {
 				parts.addFirst(classEntry.getName());
 			}
+
 			classEntry = classEntry.getOuterClass();
 		} while (classEntry != null);
 
@@ -116,13 +117,15 @@ public final class TinyV2Writer implements MappingsWriter {
 			if (entry instanceof LocalVariableEntry) {
 				this.writeParameter(writer, child);
 			}
+
 			// TODO write actual local variables
 		}
 	}
 
 	private void writeField(PrintWriter writer, EntryTreeNode<EntryMapping> node) {
-		if (node.getValue() == null || node.getValue().equals(EntryMapping.DEFAULT))
+		if (node.getValue() == null || node.getValue().equals(EntryMapping.DEFAULT)) {
 			return; // Shortcut
+		}
 
 		writer.print(this.indent(1));
 		writer.print("f\t");
@@ -146,8 +149,9 @@ public final class TinyV2Writer implements MappingsWriter {
 	}
 
 	private void writeParameter(PrintWriter writer, EntryTreeNode<EntryMapping> node) {
-		if (node.getValue() == null || node.getValue().equals(EntryMapping.DEFAULT))
+		if (node.getValue() == null || node.getValue().equals(EntryMapping.DEFAULT)) {
 			return; // Shortcut
+		}
 
 		writer.print(this.indent(2));
 		writer.print("p\t");

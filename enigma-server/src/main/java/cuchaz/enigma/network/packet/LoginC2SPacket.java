@@ -28,12 +28,14 @@ public class LoginC2SPacket implements Packet<ServerPacketHandler> {
 		if (input.readUnsignedShort() != EnigmaServer.PROTOCOL_VERSION) {
 			throw new IOException("Mismatching protocol");
 		}
+
 		this.jarChecksum = new byte[EnigmaServer.CHECKSUM_SIZE];
 		input.readFully(this.jarChecksum);
 		this.password = new char[input.readUnsignedByte()];
 		for (int i = 0; i < this.password.length; i++) {
 			this.password[i] = input.readChar();
 		}
+
 		this.username = PacketHelper.readString(input);
 	}
 
@@ -45,6 +47,7 @@ public class LoginC2SPacket implements Packet<ServerPacketHandler> {
 		for (char c : this.password) {
 			output.writeChar(c);
 		}
+
 		PacketHelper.writeString(output, this.username);
 	}
 

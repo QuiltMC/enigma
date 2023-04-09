@@ -1,11 +1,11 @@
 package cuchaz.enigma.network.packet;
 
+import cuchaz.enigma.network.ClientPacketHandler;
+import cuchaz.enigma.network.ServerPacketHandler;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-
-import cuchaz.enigma.network.ClientPacketHandler;
-import cuchaz.enigma.network.ServerPacketHandler;
 
 public class PacketRegistry {
 	private static final Map<Class<? extends Packet<ServerPacketHandler>>, Integer> c2sPacketIds = new HashMap<>();

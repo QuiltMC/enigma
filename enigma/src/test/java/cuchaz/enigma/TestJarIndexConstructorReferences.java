@@ -29,20 +29,20 @@ public class TestJarIndexConstructorReferences {
 
 	public TestJarIndexConstructorReferences() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
-		index = JarIndex.empty();
-		index.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.none());
+		this.index = JarIndex.empty();
+		this.index.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.none());
 	}
 
 	@Test
 	public void obfEntries() {
-		assertThat(index.getEntryIndex().getClasses(), containsInAnyOrder(newClass("cuchaz/enigma/inputs/Keep"), BASE_CLASS,
+		assertThat(this.index.getEntryIndex().getClasses(), containsInAnyOrder(newClass("cuchaz/enigma/inputs/Keep"), BASE_CLASS,
 				SUB_CLASS, SUBSUB_CLASS, DEFAULT_CLASS, CALLER_CLASS));
 	}
 
 	@Test
 	public void baseDefault() {
 		MethodEntry source = newMethod(BASE_CLASS, "<init>", "()V");
-		Collection<EntryReference<MethodEntry, MethodDefEntry>> references = index.getReferenceIndex().getReferencesToMethod(source);
+		Collection<EntryReference<MethodEntry, MethodDefEntry>> references = this.index.getReferenceIndex().getReferencesToMethod(source);
 		assertThat(references, containsInAnyOrder(
 				newBehaviorReferenceByMethod(source, CALLER_CLASS.getName(), "a", "()V"),
 				newBehaviorReferenceByMethod(source, SUB_CLASS.getName(), "<init>", "()V"),
@@ -53,7 +53,7 @@ public class TestJarIndexConstructorReferences {
 	@Test
 	public void baseInt() {
 		MethodEntry source = newMethod(BASE_CLASS, "<init>", "(I)V");
-		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
+		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
 				newBehaviorReferenceByMethod(source, CALLER_CLASS.getName(), "b", "()V")
 		));
 	}
@@ -61,7 +61,7 @@ public class TestJarIndexConstructorReferences {
 	@Test
 	public void subDefault() {
 		MethodEntry source = newMethod(SUB_CLASS, "<init>", "()V");
-		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
+		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
 				newBehaviorReferenceByMethod(source, CALLER_CLASS.getName(), "c", "()V"),
 				newBehaviorReferenceByMethod(source, SUB_CLASS.getName(), "<init>", "(I)V")
 		));
@@ -70,7 +70,7 @@ public class TestJarIndexConstructorReferences {
 	@Test
 	public void subInt() {
 		MethodEntry source = newMethod(SUB_CLASS, "<init>", "(I)V");
-		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
+		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
 				newBehaviorReferenceByMethod(source, CALLER_CLASS.getName(), "d", "()V"),
 				newBehaviorReferenceByMethod(source, SUB_CLASS.getName(), "<init>", "(II)V"),
 				newBehaviorReferenceByMethod(source, SUBSUB_CLASS.getName(), "<init>", "(I)V")
@@ -80,7 +80,7 @@ public class TestJarIndexConstructorReferences {
 	@Test
 	public void subIntInt() {
 		MethodEntry source = newMethod(SUB_CLASS, "<init>", "(II)V");
-		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
+		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
 				newBehaviorReferenceByMethod(source, CALLER_CLASS.getName(), "e", "()V")
 		));
 	}
@@ -88,13 +88,13 @@ public class TestJarIndexConstructorReferences {
 	@Test
 	public void subIntIntInt() {
 		MethodEntry source = newMethod(SUB_CLASS, "<init>", "(III)V");
-		assertThat(index.getReferenceIndex().getReferencesToMethod(source), is(empty()));
+		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), is(empty()));
 	}
 
 	@Test
 	public void subsubInt() {
 		MethodEntry source = newMethod(SUBSUB_CLASS, "<init>", "(I)V");
-		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
+		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
 				newBehaviorReferenceByMethod(source, CALLER_CLASS.getName(), "f", "()V")
 		));
 	}
@@ -102,7 +102,7 @@ public class TestJarIndexConstructorReferences {
 	@Test
 	public void defaultConstructable() {
 		MethodEntry source = newMethod(DEFAULT_CLASS, "<init>", "()V");
-		assertThat(index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
+		assertThat(this.index.getReferenceIndex().getReferencesToMethod(source), containsInAnyOrder(
 				newBehaviorReferenceByMethod(source, CALLER_CLASS.getName(), "g", "()V")
 		));
 	}

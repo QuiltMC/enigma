@@ -1,8 +1,5 @@
 package cuchaz.enigma.translation.mapping;
 
-import java.io.IOException;
-import java.nio.file.Path;
-
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.TestUtil;
 import cuchaz.enigma.translation.mapping.serde.MappingFileNameFormat;
@@ -12,6 +9,9 @@ import cuchaz.enigma.translation.mapping.serde.enigma.EnigmaMappingsReader;
 import cuchaz.enigma.translation.mapping.serde.tinyv2.TinyV2Writer;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.nio.file.Path;
 
 public class TestComments {
 	private static final Path DIRECTORY = TestUtil.getResource("/comments/");

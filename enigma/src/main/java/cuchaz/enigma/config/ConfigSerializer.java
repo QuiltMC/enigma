@@ -1,7 +1,12 @@
 package cuchaz.enigma.config;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -33,8 +38,8 @@ public final class ConfigSerializer {
 			if (line.trim().isEmpty() || line.trim().startsWith(";")) continue;
 
 			int r;
-			boolean fail = (r = parseSectionLine(line, 0, visitor)) == NO_MATCH &&
-					(r = parseKeyValue(line, 0, visitor)) == NO_MATCH;
+			boolean fail = (r = parseSectionLine(line, 0, visitor)) == NO_MATCH
+					&& (r = parseKeyValue(line, 0, visitor)) == NO_MATCH;
 		}
 	}
 
@@ -78,6 +83,7 @@ public final class ConfigSerializer {
 				idx = parseEscape(v, nextEscape, sb);
 			}
 		}
+
 		return idx;
 	}
 
@@ -101,6 +107,7 @@ public final class ConfigSerializer {
 				idx = parseEscape(v, nextEscape, sb);
 			}
 		}
+
 		while (idx < v.length()) {
 			int nextEscape = v.indexOf('\\', idx);
 			if (nextEscape != -1) {
@@ -110,6 +117,7 @@ public final class ConfigSerializer {
 				break;
 			}
 		}
+
 		sb.append(v, idx, v.length());
 		if (k == null) return NO_MATCH;
 		visitor.visitKeyValue(k, sb.toString());
@@ -125,7 +133,9 @@ public final class ConfigSerializer {
 						int c = Integer.parseUnsignedInt(codePoint, 16);
 						sb.append((char) c);
 					} catch (NumberFormatException ignored) {
+						// ignored!
 					}
+
 					idx = idx + 6;
 				}
 			} else if (v.charAt(idx + 1) == 'n') {
@@ -138,6 +148,7 @@ public final class ConfigSerializer {
 		} else {
 			idx = idx + 1;
 		}
+
 		return idx;
 	}
 
@@ -198,7 +209,10 @@ public final class ConfigSerializer {
 	}
 
 	public static OptionalInt parseInt(String v) {
-		if (v == null) return OptionalInt.empty();
+		if (v == null) {
+			return OptionalInt.empty();
+		}
+
 		try {
 			return OptionalInt.of(Integer.parseInt(v));
 		} catch (NumberFormatException e) {
@@ -270,6 +284,7 @@ public final class ConfigSerializer {
 				if (nextEsc + 1 < v.length()) {
 					cur.append(v.charAt(nextEsc + 1));
 				}
+
 				idx = nextEsc + 2;
 			}
 		}

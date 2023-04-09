@@ -2,7 +2,6 @@ package cuchaz.enigma.gui.util;
 
 import java.awt.Component;
 import java.awt.event.MouseEvent;
-
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JList;

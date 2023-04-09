@@ -32,6 +32,7 @@ public class MethodImplementationsTreeNode extends AbstractMethodTreeNode {
 				return foundNode;
 			}
 		}
+
 		return null;
 	}
 

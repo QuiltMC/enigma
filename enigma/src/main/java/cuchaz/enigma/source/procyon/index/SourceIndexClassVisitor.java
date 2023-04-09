@@ -5,10 +5,21 @@ import com.strobel.assembler.metadata.MethodDefinition;
 import com.strobel.assembler.metadata.TypeDefinition;
 import com.strobel.assembler.metadata.TypeReference;
 import com.strobel.decompiler.languages.TextLocation;
-import com.strobel.decompiler.languages.java.ast.*;
+import com.strobel.decompiler.languages.java.ast.AstNode;
+import com.strobel.decompiler.languages.java.ast.ConstructorDeclaration;
+import com.strobel.decompiler.languages.java.ast.EnumValueDeclaration;
+import com.strobel.decompiler.languages.java.ast.FieldDeclaration;
+import com.strobel.decompiler.languages.java.ast.Keys;
+import com.strobel.decompiler.languages.java.ast.MethodDeclaration;
+import com.strobel.decompiler.languages.java.ast.SimpleType;
+import com.strobel.decompiler.languages.java.ast.TypeDeclaration;
+import com.strobel.decompiler.languages.java.ast.VariableInitializer;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.procyon.EntryParser;
-import cuchaz.enigma.translation.representation.entry.*;
+import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
+import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 
 public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	private final ClassDefEntry classEntry;
@@ -35,8 +46,8 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	public Void visitSimpleType(SimpleType node, SourceIndex index) {
 		TypeReference ref = node.getUserData(Keys.TYPE_REFERENCE);
 		if (node.getIdentifierToken().getStartLocation() != TextLocation.EMPTY) {
-			ClassEntry classEntry = new ClassEntry(ref.getInternalName());
-			index.addReference(TokenFactory.createToken(index, node.getIdentifierToken()), classEntry, this.classEntry);
+			ClassEntry entry = new ClassEntry(ref.getInternalName());
+			index.addReference(TokenFactory.createToken(index, node.getIdentifierToken()), entry, this.classEntry);
 		}
 
 		return this.visitChildren(node, index);
@@ -51,6 +62,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 			// for static initializers, check elsewhere for the token node
 			tokenNode = node.getModifiers().firstOrNullObject();
 		}
+
 		index.addDeclaration(TokenFactory.createToken(index, tokenNode), methodEntry);
 		return node.acceptVisitor(new SourceIndexMethodVisitor(methodEntry), index);
 	}

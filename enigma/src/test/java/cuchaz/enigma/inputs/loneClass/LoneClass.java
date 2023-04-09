@@ -8,6 +8,6 @@ public class LoneClass {
 	}
 
 	public String getName() {
-		return name;
+		return this.name;
 	}
 }
