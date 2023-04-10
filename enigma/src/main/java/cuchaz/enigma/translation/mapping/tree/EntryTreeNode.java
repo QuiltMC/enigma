@@ -25,6 +25,7 @@ public interface EntryTreeNode<T> {
 		for (EntryTreeNode<T> node : this.getChildNodes()) {
 			nodes.addAll(node.getNodesRecursively());
 		}
+
 		return nodes;
 	}
 

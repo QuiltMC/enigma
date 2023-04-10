@@ -13,7 +13,7 @@ public class SourceRemapper {
 	}
 
 	public Result remap(Remapper remapper) {
-		StringBuffer remappedSource = new StringBuffer(this.source);
+		StringBuilder remappedSource = new StringBuilder(this.source);
 		Map<Token, Token> remappedTokens = new HashMap<>();
 
 		int accumulatedOffset = 0;
@@ -21,6 +21,7 @@ public class SourceRemapper {
 			Token movedToken = token.move(accumulatedOffset);
 
 			String remappedName = remapper.remap(token, movedToken);
+
 			if (remappedName != null) {
 				accumulatedOffset += movedToken.getRenameOffset(remappedName);
 				movedToken.rename(remappedSource, remappedName);

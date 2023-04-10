@@ -23,8 +23,8 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.Utils;
 import org.tinylog.Logger;
 
-import javax.annotation.Nullable;
 import java.nio.file.Path;
+import javax.annotation.Nullable;
 
 public class InsertProposedMappingsCommand extends Command {
 	private static final String NAME = "insert-proposed-mappings";
@@ -122,6 +122,7 @@ public class InsertProposedMappingsCommand extends Command {
 				if (insertMapping(param, mappings, mapper, translator)) {
 					parameters++;
 				}
+
 				p += paramDesc.getSize();
 			}
 		}

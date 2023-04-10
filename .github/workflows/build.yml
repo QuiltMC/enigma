@@ -11,7 +11,7 @@ jobs:
       options: --user root
     steps:
       - uses: actions/checkout@v3
-      - run: ./gradlew build publish --stacktrace --warning-mode fail
+      - run: ./gradlew checkstyleMain build publish --stacktrace --warning-mode fail
         env:
           SNAPSHOTS_URL: ${{ secrets.SNAPSHOTS_URL }}
           SNAPSHOTS_USERNAME: ${{ secrets.SNAPSHOTS_USERNAME }}

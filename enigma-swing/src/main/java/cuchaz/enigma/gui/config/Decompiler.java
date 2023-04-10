@@ -5,8 +5,8 @@ import cuchaz.enigma.gui.dialog.decompiler.QuiltflowerSettingsDialog;
 import cuchaz.enigma.source.DecompilerService;
 import cuchaz.enigma.source.Decompilers;
 
-import javax.swing.JDialog;
 import java.util.function.BiConsumer;
+import javax.swing.JDialog;
 
 public enum Decompiler {
 	QUILTFLOWER("QuiltFlower", Decompilers.QUILTFLOWER, QuiltflowerSettingsDialog::new),

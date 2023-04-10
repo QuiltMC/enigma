@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.GridLayout;
-
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -54,7 +53,7 @@ public class StatusBar {
 	 *
 	 * @param message the message to display
 	 * @param timeout the timeout in milliseconds to wait until clearing the
-	 *				message; if 0, the message is not automatically cleared
+	 * message; if 0, the message is not automatically cleared
 	 */
 	public void showMessage(String message, int timeout) {
 		this.timer.stop();

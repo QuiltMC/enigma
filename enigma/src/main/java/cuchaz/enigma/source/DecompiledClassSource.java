@@ -1,9 +1,5 @@
 package cuchaz.enigma.source;
 
-import java.util.*;
-
-import javax.annotation.Nullable;
-
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.EnigmaServices;
 import cuchaz.enigma.analysis.EntryReference;
@@ -17,6 +13,13 @@ import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableDefEntry;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class DecompiledClassSource {
 	protected static final boolean DEBUG_TOKEN_HIGHLIGHTS = false;

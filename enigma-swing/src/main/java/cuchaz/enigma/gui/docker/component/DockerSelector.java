@@ -70,9 +70,9 @@ public class DockerSelector extends JPanel {
 	}
 
 	private JPanel getHoveredPanel(MouseEvent event) {
-		if (Draggable.contains(getScreenBoundsFor(this.topSelector), event.getLocationOnScreen())) {
+		if (Draggable.contains(this.getScreenBoundsFor(this.topSelector), event.getLocationOnScreen())) {
 			return this.topSelector;
-		} else if (Draggable.contains(getScreenBoundsFor(this.bottomSelector), event.getLocationOnScreen())) {
+		} else if (Draggable.contains(this.getScreenBoundsFor(this.bottomSelector), event.getLocationOnScreen())) {
 			return this.bottomSelector;
 		} else {
 			return null;

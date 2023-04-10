@@ -1,16 +1,15 @@
 package cuchaz.enigma.network;
 
+import cuchaz.enigma.network.packet.PacketHelper;
+import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.utils.I18n;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Objects;
 
-import cuchaz.enigma.network.packet.PacketHelper;
-import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.utils.I18n;
-
 public abstract class ServerMessage {
-
 	public final String user;
 
 	public static Chat chat(String user, String message) {
@@ -50,11 +49,12 @@ public abstract class ServerMessage {
 		if (typeId < 0 || typeId >= Type.values().length) {
 			throw new IOException(String.format("Invalid message type ID %d", typeId));
 		}
+
 		Type type = Type.values()[typeId];
-		String user = input.readUTF();
+		String user = PacketHelper.readString(input);
 		switch (type) {
 			case CHAT:
-				String message = input.readUTF();
+				String message = PacketHelper.readString(input);
 				return chat(user, message);
 			case CONNECT:
 				return connect(user);
@@ -71,7 +71,7 @@ public abstract class ServerMessage {
 				return removeMapping(user, entry);
 			case RENAME:
 				entry = PacketHelper.readEntry(input);
-				String newName = input.readUTF();
+				String newName = PacketHelper.readString(input);
 				return rename(user, entry, newName);
 			default:
 				throw new IllegalStateException("unreachable");
@@ -152,7 +152,6 @@ public abstract class ServerMessage {
 		public String toString() {
 			return String.format("Message.Chat { user: '%s', message: '%s' }", this.user, this.message);
 		}
-
 	}
 
 	public static final class Connect extends ServerMessage {
@@ -174,7 +173,6 @@ public abstract class ServerMessage {
 		public String toString() {
 			return String.format("Message.Connect { user: '%s' }", this.user);
 		}
-
 	}
 
 	public static final class Disconnect extends ServerMessage {
@@ -196,10 +194,9 @@ public abstract class ServerMessage {
 		public String toString() {
 			return String.format("Message.Disconnect { user: '%s' }", this.user);
 		}
-
 	}
 
-	public static  final class EditDocs extends ServerMessage {
+	public static final class EditDocs extends ServerMessage {
 		public final Entry<?> entry;
 
 		private EditDocs(String user, Entry<?> entry) {
@@ -241,7 +238,6 @@ public abstract class ServerMessage {
 		public String toString() {
 			return String.format("Message.EditDocs { user: '%s', entry: %s }", this.user, this.entry);
 		}
-
 	}
 
 	public static final class MarkDeobf extends ServerMessage {
@@ -286,7 +282,6 @@ public abstract class ServerMessage {
 		public String toString() {
 			return String.format("Message.MarkDeobf { user: '%s', entry: %s }", this.user, this.entry);
 		}
-
 	}
 
 	public static final class RemoveMapping extends ServerMessage {
@@ -331,7 +326,6 @@ public abstract class ServerMessage {
 		public String toString() {
 			return String.format("Message.RemoveMapping { user: '%s', entry: %s }", this.user, this.entry);
 		}
-
 	}
 
 	public static final class Rename extends ServerMessage {
@@ -367,8 +361,8 @@ public abstract class ServerMessage {
 			if (o == null || this.getClass() != o.getClass()) return false;
 			if (!super.equals(o)) return false;
 			Rename rename = (Rename) o;
-			return Objects.equals(this.entry, rename.entry) &&
-					Objects.equals(this.newName, rename.newName);
+			return Objects.equals(this.entry, rename.entry)
+					&& Objects.equals(this.newName, rename.newName);
 		}
 
 		@Override
@@ -380,6 +374,5 @@ public abstract class ServerMessage {
 		public String toString() {
 			return String.format("Message.Rename { user: '%s', entry: %s, newName: '%s' }", this.user, this.entry, this.newName);
 		}
-
 	}
 }

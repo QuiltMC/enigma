@@ -1,12 +1,5 @@
 package cuchaz.enigma.translation.mapping;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.List;
-import java.util.stream.Stream;
-
-import javax.annotation.Nonnull;
-
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.translation.MappingTranslator;
 import cuchaz.enigma.translation.Translatable;
@@ -18,10 +11,15 @@ import cuchaz.enigma.translation.mapping.tree.HashEntryTree;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
-
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ValidationContext;
+
+import java.util.Collection;
+import java.util.Objects;
+import java.util.List;
+import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 
 public class EntryRemapper {
 	private final DeltaTrackingTree<EntryMapping> obfToDeobf;
@@ -61,9 +59,9 @@ public class EntryRemapper {
 
 	private void doPutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping, boolean validateOnly) {
 		// todo this needs to be fixed!
-//		if (obfuscatedEntry instanceof FieldEntry fieldEntry) {
-//			mapRecordComponentGetter(vc, fieldEntry.getParent(), fieldEntry, deobfMapping);
-//		}
+		//if (obfuscatedEntry instanceof FieldEntry fieldEntry) {
+		//	mapRecordComponentGetter(vc, fieldEntry.getParent(), fieldEntry, deobfMapping);
+		//}
 
 		boolean renaming = !Objects.equals(this.getDeobfMapping(obfuscatedEntry).targetName(), deobfMapping.targetName());
 

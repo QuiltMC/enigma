@@ -1,14 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2015 Jeff Martin.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public
- * License v3.0 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl.html
- *
- * Contributors:
- *	 Jeff Martin - initial API and implementation
- ******************************************************************************/
-
 package cuchaz.enigma;
 
 import cuchaz.enigma.classprovider.ClasspathClassProvider;
@@ -30,12 +19,12 @@ public class TestDeobfuscator {
 
 	@Test
 	public void loadJar() throws Exception {
-		openProject();
+		this.openProject();
 	}
 
 	@Test
 	public void decompileClass() throws Exception {
-		EnigmaProject project = openProject();
+		EnigmaProject project = this.openProject();
 		Decompiler decompiler = Decompilers.CFR.create(project.getClassProvider(), new SourceSettings(false, false));
 
 		decompiler.getSource("a").asString();

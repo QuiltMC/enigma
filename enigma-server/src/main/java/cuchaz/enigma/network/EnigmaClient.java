@@ -4,8 +4,13 @@ import cuchaz.enigma.network.packet.Packet;
 import cuchaz.enigma.network.packet.PacketRegistry;
 import org.tinylog.Logger;
 
-import javax.swing.*;
-import java.io.*;
+import javax.swing.SwingUtilities;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 
@@ -36,18 +41,18 @@ public class EnigmaClient {
 					} catch (EOFException | SocketException e) {
 						break;
 					}
+
 					Packet<ClientPacketHandler> packet = PacketRegistry.createS2CPacket(packetId);
 					if (packet == null) {
 						throw new IOException("Received invalid packet id " + packetId);
 					}
+
 					packet.read(input);
 					SwingUtilities.invokeLater(() -> packet.handle(this.controller));
 				}
 			} catch (IOException e) {
 				this.controller.disconnectIfConnected(e.toString());
-				return;
 			}
-			this.controller.disconnectIfConnected("Disconnected");
 		});
 		thread.setName("Client I/O thread");
 		thread.setDaemon(true);
@@ -63,7 +68,6 @@ public class EnigmaClient {
 			}
 		}
 	}
-
 
 	public void sendPacket(Packet<ServerPacketHandler> packet) {
 		try {

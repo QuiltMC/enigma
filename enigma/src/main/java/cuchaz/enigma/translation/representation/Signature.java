@@ -1,12 +1,5 @@
 package cuchaz.enigma.translation.representation;
 
-import java.util.function.UnaryOperator;
-import java.util.regex.Pattern;
-
-import org.objectweb.asm.signature.SignatureReader;
-import org.objectweb.asm.signature.SignatureVisitor;
-import org.objectweb.asm.signature.SignatureWriter;
-
 import cuchaz.enigma.bytecode.translators.TranslationSignatureVisitor;
 import cuchaz.enigma.translation.Translatable;
 import cuchaz.enigma.translation.TranslateResult;
@@ -15,6 +8,12 @@ import cuchaz.enigma.translation.mapping.EntryMap;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import org.objectweb.asm.signature.SignatureReader;
+import org.objectweb.asm.signature.SignatureVisitor;
+import org.objectweb.asm.signature.SignatureWriter;
+
+import java.util.function.UnaryOperator;
+import java.util.regex.Pattern;
 
 public class Signature implements Translatable {
 	private static final Pattern OBJECT_PATTERN = Pattern.compile(".*:Ljava/lang/Object;:.*");
@@ -35,6 +34,7 @@ public class Signature implements Translatable {
 		if (signature != null && !signature.isEmpty()) {
 			return new Signature(signature, true);
 		}
+
 		return new Signature(null, true);
 	}
 
@@ -42,6 +42,7 @@ public class Signature implements Translatable {
 		if (signature != null && !signature.isEmpty()) {
 			return new Signature(signature, false);
 		}
+
 		return new Signature(null, false);
 	}
 
@@ -57,6 +58,7 @@ public class Signature implements Translatable {
 		if (this.signature == null) {
 			return this;
 		}
+
 		SignatureWriter writer = new SignatureWriter();
 		SignatureVisitor visitor = new TranslationSignatureVisitor(remapper, writer);
 		if (this.isType) {
@@ -64,6 +66,7 @@ public class Signature implements Translatable {
 		} else {
 			new SignatureReader(this.signature).accept(visitor);
 		}
+
 		return new Signature(writer.toString(), this.isType);
 	}
 
@@ -74,6 +77,7 @@ public class Signature implements Translatable {
 					&& this.signature != null && other.signature.equals(this.signature))
 					&& other.isType == this.isType;
 		}
+
 		return false;
 	}
 

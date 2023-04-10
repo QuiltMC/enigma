@@ -1,14 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2015 Jeff Martin.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public
- * License v3.0 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl.html
- * <p>
- * Contributors:
- * Jeff Martin - initial API and implementation
- ******************************************************************************/
-
 package cuchaz.enigma.utils;
 
 import com.google.common.io.CharStreams;
@@ -41,6 +30,7 @@ public class Utils {
 		if (in == null) {
 			throw new IllegalArgumentException("Resource not found! " + path);
 		}
+
 		return readStreamToString(in);
 	}
 
@@ -71,6 +61,7 @@ public class Utils {
 			// Algorithm guaranteed to be supported
 			throw new RuntimeException(e);
 		}
+
 		try (ZipFile zip = new ZipFile(path.toFile())) {
 			List<? extends ZipEntry> entries = Collections.list(zip.entries());
 			// only compare classes (some implementations may not generate directory entries)
@@ -88,6 +79,7 @@ public class Utils {
 				}
 			}
 		}
+
 		return digest.digest();
 	}
 

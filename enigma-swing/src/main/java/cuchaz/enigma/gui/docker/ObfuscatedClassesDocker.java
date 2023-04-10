@@ -13,6 +13,7 @@ public class ObfuscatedClassesDocker extends ClassesDocker {
 		if (aName.length() != bName.length()) {
 			return aName.length() - bName.length();
 		}
+
 		return aName.compareTo(bName);
 	};
 

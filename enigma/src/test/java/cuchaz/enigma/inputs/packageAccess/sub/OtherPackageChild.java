@@ -7,7 +7,7 @@ public class OtherPackageChild extends Base {
 		final int value;
 
 		Inner() {
-			value = OtherPackageChild.this.make(); // synthetic method call
+			this.value = OtherPackageChild.this.make(); // synthetic method call
 		}
 	}
 }

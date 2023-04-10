@@ -1,14 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2015 Jeff Martin.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public
- * License v3.0 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl.html
- * <p>
- * Contributors:
- * Jeff Martin - initial API and implementation
- ******************************************************************************/
-
 package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
@@ -59,14 +48,15 @@ public class ClassSelector extends JTree {
 
 		// hook events
 		this.addMouseListener(GuiUtil.onMouseClick(event -> {
-				if (this.selectionListener != null && event.getClickCount() == 2) {
-					// get the selected node
-					TreePath path = this.getSelectionPath();
-					if (path != null && path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
-						this.selectionListener.onSelectClass(node.getObfEntry());
-					}
+			if (this.selectionListener != null && event.getClickCount() == 2) {
+				// get the selected node
+				TreePath path = this.getSelectionPath();
+				if (path != null && path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
+					this.selectionListener.onSelectClass(node.getObfEntry());
 				}
-			}));
+			}
+		}));
+
 		this.addKeyListener(GuiUtil.onKeyPress(e -> {
 			TreePath[] paths = this.getSelectionPaths();
 
@@ -138,8 +128,10 @@ public class ClassSelector extends JTree {
 
 				if (path != null && path.getLastPathComponent() instanceof DefaultMutableTreeNode node && data != null) {
 					TreeNode parentNode = node.getParent();
-					if (parentNode == null)
+					if (parentNode == null) {
 						return;
+					}
+
 					boolean allowEdit = true;
 					for (int i = 0; i < parentNode.getChildCount(); i++) {
 						TreeNode childNode = parentNode.getChildAt(i);
@@ -148,6 +140,7 @@ public class ClassSelector extends JTree {
 							break;
 						}
 					}
+
 					if (allowEdit && ClassSelector.this.renameSelectionListener != null) {
 						Object prevData = node.getUserObject();
 						Object objectData = node.getUserObject() instanceof ClassEntry ? new ClassEntry(((ClassEntry) prevData).getPackageName() + "/" + data) : data;
@@ -199,6 +192,7 @@ public class ClassSelector extends JTree {
 		// update the tree control
 		this.packageManager = new NestedPackages(classEntries, this.comparator, this.controller.project.getMapper());
 		this.setModel(new DefaultTreeModel(this.packageManager.getRoot()));
+		this.invalidateStats();
 
 		this.restoreExpansionState(state);
 	}
@@ -231,10 +225,12 @@ public class ClassSelector extends JTree {
 			if (this.isPathSelected(path)) {
 				state.add(new StateEntry(State.SELECTED, path));
 			}
+
 			if (this.isExpanded(path)) {
 				state.add(new StateEntry(State.EXPANDED, path));
 			}
 		}
+
 		return state;
 	}
 
@@ -293,8 +289,7 @@ public class ClassSelector extends JTree {
 	public void reloadEntry(ClassEntry classEntry) {
 		this.removeEntry(classEntry);
 		this.moveClassIn(classEntry);
-		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
-		node.reloadStats(controller.getGui(), this, true);
+		this.reloadStats(classEntry);
 	}
 
 	public void reload(TreeNode node) {
@@ -304,6 +299,17 @@ public class ClassSelector extends JTree {
 
 	public void reload() {
 		this.reload(this.packageManager.getRoot());
+	}
+
+	public void invalidateStats() {
+		for (ClassEntry entry : this.packageManager.getClassEntries()) {
+			this.packageManager.getClassNode(entry).setStats(null);
+		}
+	}
+
+	public void reloadStats(ClassEntry classEntry) {
+		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
+		node.reloadStats(this.controller.getGui(), this, true);
 	}
 
 	public interface ClassSelectionListener {

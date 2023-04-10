@@ -2,7 +2,9 @@ package cuchaz.enigma.command;
 
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.mapping.EntryMapping;
-import cuchaz.enigma.translation.mapping.serde.*;
+import cuchaz.enigma.translation.mapping.serde.MappingFormat;
+import cuchaz.enigma.translation.mapping.serde.MappingParseException;
+import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.enigma.EnigmaMappingsReader;
 import cuchaz.enigma.translation.mapping.serde.enigma.EnigmaMappingsWriter;
 import cuchaz.enigma.translation.mapping.serde.tiny.TinyMappingsReader;
@@ -15,7 +17,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class MappingCommandsUtil {
-	private MappingCommandsUtil() {}
+	private MappingCommandsUtil() {
+	}
 
 	// TODO: Merge with methods in Command
 	public static EntryTree<EntryMapping> read(String type, Path path, MappingSaveParameters saveParameters) throws MappingParseException, IOException {
@@ -74,7 +77,9 @@ public final class MappingCommandsUtil {
 		MappingFormat format = null;
 		try {
 			format = MappingFormat.valueOf(type.toUpperCase());
-		} catch (IllegalArgumentException ignored) {}
+		} catch (IllegalArgumentException ignored) {
+			// ignored!
+		}
 
 		if (format != null) {
 			format.getWriter().write(mappings, path, ProgressListener.none(), saveParameters);

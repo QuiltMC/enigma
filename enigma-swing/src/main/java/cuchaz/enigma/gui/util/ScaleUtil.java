@@ -1,25 +1,23 @@
 package cuchaz.enigma.gui.util;
 
+import com.github.swingdpi.UiDefaultsScaler;
+import com.github.swingdpi.plaf.BasicTweaker;
+import com.github.swingdpi.plaf.MetalTweaker;
+import com.github.swingdpi.plaf.NimbusTweaker;
+import com.github.swingdpi.plaf.WindowsTweaker;
+import cuchaz.enigma.gui.config.UiConfig;
+import de.sciss.syntaxpane.DefaultSyntaxKit;
+import org.tinylog.Logger;
+
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.BorderFactory;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-
-import com.github.swingdpi.UiDefaultsScaler;
-import com.github.swingdpi.plaf.BasicTweaker;
-import com.github.swingdpi.plaf.MetalTweaker;
-import com.github.swingdpi.plaf.NimbusTweaker;
-import com.github.swingdpi.plaf.WindowsTweaker;
-import de.sciss.syntaxpane.DefaultSyntaxKit;
-
-import cuchaz.enigma.gui.config.UiConfig;
-import org.tinylog.Logger;
 
 public class ScaleUtil {
 	private static final List<ScaleChangeListener> listeners = new ArrayList<>();
@@ -112,13 +110,12 @@ public class ScaleUtil {
 		String testString = UIManager.getLookAndFeel().getName().toLowerCase();
 		if (testString.contains("windows")) {
 			return new WindowsTweaker(dpiScaling, testString.contains("classic"));
-		}
-		if (testString.contains("metal")) {
+		} else if (testString.contains("metal")) {
 			return new MetalTweaker(dpiScaling);
-		}
-		if (testString.contains("nimbus")) {
+		} else if (testString.contains("nimbus")) {
 			return new NimbusTweaker(dpiScaling);
 		}
+
 		return new BasicTweaker(dpiScaling);
 	}
 }

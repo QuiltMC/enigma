@@ -1,5 +1,7 @@
 package cuchaz.enigma.utils.validation;
 
+import java.io.File;
+
 /**
  * Represents a formatted message ready for display to the user.
  * @param message the message to display
@@ -7,7 +9,7 @@ package cuchaz.enigma.utils.validation;
  */
 public record ParameterizedMessage(Message message, Object... params) {
 	public static ParameterizedMessage openedProject(String jar, String mappings) {
-		return new ParameterizedMessage(Message.OPENED_PROJECT, jar.substring(jar.lastIndexOf("/")), mappings.substring(jar.lastIndexOf("/")));
+		return new ParameterizedMessage(Message.OPENED_PROJECT, jar.substring(jar.lastIndexOf(File.separator)), mappings.substring(jar.lastIndexOf(File.separator)));
 	}
 
 	public Message.Type getType() {

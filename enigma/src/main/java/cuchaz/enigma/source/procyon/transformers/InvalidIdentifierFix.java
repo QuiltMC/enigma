@@ -14,7 +14,7 @@ public class InvalidIdentifierFix implements IAstTransform {
 		compilationUnit.acceptVisitor(new Visitor(), null);
 	}
 
-	class Visitor extends DepthFirstAstVisitor<Void,Void> {
+	class Visitor extends DepthFirstAstVisitor<Void, Void> {
 		@Override
 		public Void visitIdentifier(Identifier node, Void data) {
 			super.visitIdentifier(node, data);
@@ -23,6 +23,7 @@ public class InvalidIdentifierFix implements IAstTransform {
 				newIdentifier.copyUserDataFrom(node);
 				node.replaceWith(newIdentifier);
 			}
+
 			return null;
 		}
 	}

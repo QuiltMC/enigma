@@ -1,39 +1,20 @@
-/*******************************************************************************
- * Copyright (c) 2015 Jeff Martin.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public
- * License v3.0 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl.html
- * <p>
- * Contributors:
- * Jeff Martin - initial API and implementation
- ******************************************************************************/
-
 package cuchaz.enigma.gui;
-
-import java.awt.Desktop;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Stream;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 import com.google.common.io.MoreFiles;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.EnigmaProject;
-import cuchaz.enigma.analysis.*;
+import cuchaz.enigma.analysis.ClassImplementationsTreeNode;
+import cuchaz.enigma.analysis.ClassInheritanceTreeNode;
+import cuchaz.enigma.analysis.ClassReferenceTreeNode;
+import cuchaz.enigma.analysis.EntryReference;
+import cuchaz.enigma.analysis.FieldReferenceTreeNode;
+import cuchaz.enigma.analysis.IndexTreeBuilder;
+import cuchaz.enigma.analysis.MethodImplementationsTreeNode;
+import cuchaz.enigma.analysis.MethodInheritanceTreeNode;
+import cuchaz.enigma.analysis.MethodReferenceTreeNode;
+import cuchaz.enigma.analysis.StructureTreeNode;
+import cuchaz.enigma.analysis.StructureTreeOptions;
 import cuchaz.enigma.api.service.ObfuscationTestService;
 import cuchaz.enigma.classhandle.ClassHandle;
 import cuchaz.enigma.classhandle.ClassHandleProvider;
@@ -46,7 +27,12 @@ import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.stats.StatsGenerator;
 import cuchaz.enigma.gui.stats.StatsMember;
 import cuchaz.enigma.gui.util.History;
-import cuchaz.enigma.network.*;
+import cuchaz.enigma.network.ClientPacketHandler;
+import cuchaz.enigma.network.EnigmaClient;
+import cuchaz.enigma.network.EnigmaServer;
+import cuchaz.enigma.network.IntegratedEnigmaServer;
+import cuchaz.enigma.network.ServerMessage;
+import cuchaz.enigma.network.ServerPacketHandler;
 import cuchaz.enigma.network.packet.EntryChangeC2SPacket;
 import cuchaz.enigma.network.packet.LoginC2SPacket;
 import cuchaz.enigma.network.packet.Packet;
@@ -56,7 +42,12 @@ import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.Token;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
-import cuchaz.enigma.translation.mapping.*;
+import cuchaz.enigma.translation.mapping.EntryChange;
+import cuchaz.enigma.translation.mapping.EntryMapping;
+import cuchaz.enigma.translation.mapping.EntryRemapper;
+import cuchaz.enigma.translation.mapping.EntryUtil;
+import cuchaz.enigma.translation.mapping.MappingDelta;
+import cuchaz.enigma.translation.mapping.ResolutionStrategy;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
@@ -73,6 +64,23 @@ import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
 import org.tinylog.Logger;
+
+import java.awt.Desktop;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 public class GuiController implements ClientPacketHandler {
 	private final Gui gui;
@@ -302,7 +310,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	/**
-	 * Navigates to the declaration with respect to navigation history
+	 * Navigates to the declaration with respect to navigation history.
 	 *
 	 * @param entry the entry whose declaration will be navigated to
 	 */
@@ -310,11 +318,12 @@ public class GuiController implements ClientPacketHandler {
 		if (entry == null) {
 			throw new IllegalArgumentException("Entry cannot be null!");
 		}
+
 		this.openReference(EntryReference.declaration(entry, entry.getName()));
 	}
 
 	/**
-	 * Navigates to the reference with respect to navigation history
+	 * Navigates to the reference with respect to navigation history.
 	 *
 	 * @param reference the reference
 	 */
@@ -322,6 +331,7 @@ public class GuiController implements ClientPacketHandler {
 		if (reference == null) {
 			throw new IllegalArgumentException("Reference cannot be null!");
 		}
+
 		if (this.referenceHistory == null) {
 			this.referenceHistory = new History<>(reference);
 		} else {
@@ -374,7 +384,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void navigateTo(EntryReference<Entry<?>, Entry<?>> reference) {
-		if (!this.project.isNavigable(reference.getLocationClassEntry())) {
+		if (!this.project.isNavigable(reference.getNameableEntry())) {
 			return;
 		}
 
@@ -382,7 +392,9 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void refreshClasses() {
-		if (this.project == null) return;
+		if (this.project == null) {
+			return;
+		}
 
 		List<ClassEntry> obfClasses = new ArrayList<>();
 		List<ClassEntry> deobfClasses = new ArrayList<>();
@@ -448,9 +460,11 @@ public class GuiController implements ClientPacketHandler {
 		if (rootNodes.isEmpty()) {
 			return null;
 		}
+
 		if (rootNodes.size() > 1) {
 			Logger.warn("Method {} implements multiple interfaces. Only showing first one.", entry);
 		}
+
 		return MethodImplementationsTreeNode.findNode(rootNodes.get(0), entry);
 	}
 
@@ -586,16 +600,19 @@ public class GuiController implements ClientPacketHandler {
 
 		if (this.client != null) {
 			this.client.disconnect();
+			this.client = null;
 		}
+
 		if (this.server != null) {
 			this.server.stop();
+			this.server = null;
 		}
-		this.client = null;
-		this.server = null;
+
 		SwingUtilities.invokeLater(() -> {
 			if (reason != null) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), I18n.translate(reason), I18n.translate("disconnect.disconnected"), JOptionPane.INFORMATION_MESSAGE);
 			}
+
 			this.gui.setConnectionState(ConnectionState.NOT_CONNECTED);
 		});
 
@@ -603,6 +620,7 @@ public class GuiController implements ClientPacketHandler {
 		if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
 			this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.LEFT_SERVER));
 		}
+
 		Docker.getDocker(CollabDocker.class).setUp();
 	}
 

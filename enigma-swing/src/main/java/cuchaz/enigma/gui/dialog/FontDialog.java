@@ -1,19 +1,22 @@
 package cuchaz.enigma.gui.dialog;
 
-import java.awt.*;
-import java.util.List;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JList;
-
-import org.drjekyll.fontchooser.FontChooser;
-
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
+import org.drjekyll.fontchooser.FontChooser;
+
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.util.List;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JList;
 
 public class FontDialog extends JDialog {
 	private static final List<String> CATEGORIES = List.of(
@@ -97,6 +100,7 @@ public class FontDialog extends JDialog {
 		for (int i = 0; i < CATEGORIES.size(); i++) {
 			UiConfig.setFont(CATEGORIES.get(i), this.fonts[i]);
 		}
+
 		UiConfig.setUseCustomFonts(this.customCheckBox.isSelected());
 		UiConfig.save();
 		ChangeDialog.show(this);
@@ -117,6 +121,7 @@ public class FontDialog extends JDialog {
 			for (Component component : container.getComponents()) {
 				recursiveSetEnabled(component, enabled);
 			}
+
 			self.setEnabled(enabled);
 		}
 	}

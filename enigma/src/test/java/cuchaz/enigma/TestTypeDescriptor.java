@@ -1,14 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2015 Jeff Martin.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public
- * License v3.0 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl.html
- *
- * Contributors:
- *	 Jeff Martin - initial API and implementation
- ******************************************************************************/
-
 package cuchaz.enigma;
 
 import cuchaz.enigma.translation.representation.TypeDescriptor;
@@ -162,6 +151,7 @@ public class TestTypeDescriptor {
 			assertThat(TypeDescriptor.parseFirst("LFoo;LFoo;"), is(answer));
 			assertThat(TypeDescriptor.parseFirst("LFoo;[LFoo;"), is(answer));
 		}
+
 		{
 			final String answer = "Ljava/lang/String;";
 			assertThat(TypeDescriptor.parseFirst("Ljava/lang/String;"), is(answer));
@@ -183,6 +173,7 @@ public class TestTypeDescriptor {
 			assertThat(TypeDescriptor.parseFirst("[I[I"), is(answer));
 			assertThat(TypeDescriptor.parseFirst("[ILFoo;"), is(answer));
 		}
+
 		{
 			final String answer = "[[I";
 			assertThat(TypeDescriptor.parseFirst("[[I"), is(answer));
@@ -191,6 +182,7 @@ public class TestTypeDescriptor {
 			assertThat(TypeDescriptor.parseFirst("[[I[I"), is(answer));
 			assertThat(TypeDescriptor.parseFirst("[[ILFoo;"), is(answer));
 		}
+
 		{
 			final String answer = "[LFoo;";
 			assertThat(TypeDescriptor.parseFirst("[LFoo;"), is(answer));

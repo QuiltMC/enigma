@@ -13,7 +13,9 @@ import java.util.Collections;
  * Provides classes by loading them from the classpath.
  */
 public class ClasspathClassProvider implements ClassProvider {
-	@Nullable @Override public ClassNode get(String name) {
+	@Nullable
+	@Override
+	public ClassNode get(String name) {
 		try (InputStream in = ClasspathClassProvider.class.getResourceAsStream("/" + name + ".class")) {
 			if (in == null) {
 				return null;

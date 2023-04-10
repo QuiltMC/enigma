@@ -1,19 +1,5 @@
 package cuchaz.enigma.gui.docker;
 
-import java.awt.BorderLayout;
-import java.awt.event.MouseEvent;
-import java.util.Collection;
-import java.util.Vector;
-
-import javax.swing.JList;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTree;
-import javax.swing.ListSelectionModel;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.analysis.ReferenceTreeNode;
 import cuchaz.enigma.gui.Gui;
@@ -27,6 +13,19 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+
+import java.awt.BorderLayout;
+import java.awt.event.MouseEvent;
+import java.util.Collection;
+import java.util.Vector;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTree;
+import javax.swing.ListSelectionModel;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 
 public class CallsTreeDocker extends Docker {
 	private final JTree tree = new JTree();

@@ -1,19 +1,24 @@
 package cuchaz.enigma.gui.dialog;
 
-import java.awt.*;
-import java.util.List;
-
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Pair;
 import cuchaz.enigma.utils.validation.ValidationContext;
+
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.util.List;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 public abstract class AbstractDialog extends JDialog {
 	protected final ValidationContext vc;
@@ -40,6 +45,7 @@ public abstract class AbstractDialog extends JDialog {
 			inputContainer.add(label, cb.pos(0, i).weightX(0.0).anchor(GridBagConstraints.LINE_END).fill(GridBagConstraints.NONE).build());
 			inputContainer.add(component, cb.pos(1, i).weightX(1.0).anchor(GridBagConstraints.LINE_END).fill(GridBagConstraints.HORIZONTAL).build());
 		}
+
 		contentPane.add(inputContainer, BorderLayout.CENTER);
 		Container buttonContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, ScaleUtil.scale(4), ScaleUtil.scale(4)));
 		JButton connectButton = new JButton(I18n.translate(confirmAction));

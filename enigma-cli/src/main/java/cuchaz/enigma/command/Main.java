@@ -1,14 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2015 Jeff Martin.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public
- * License v3.0 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl.html
- * <p>
- * Contributors:
- * Jeff Martin - initial API and implementation
- ******************************************************************************/
-
 package cuchaz.enigma.command;
 
 import cuchaz.enigma.Enigma;
@@ -19,19 +8,21 @@ import java.util.Locale;
 import java.util.Map;
 
 public class Main {
-
 	private static final Map<String, Command> COMMANDS = new LinkedHashMap<>();
 
-	public static void main(String... args) throws Exception {
+	public static void main(String... args) {
 		try {
 			// process the command
-			if (args.length < 1)
+			if (args.length < 1) {
 				throw new IllegalArgumentException("Requires a command");
+			}
+
 			String command = args[0].toLowerCase(Locale.ROOT);
 
 			Command cmd = COMMANDS.get(command);
-			if (cmd == null)
+			if (cmd == null) {
 				throw new IllegalArgumentException("Command not recognized: " + command);
+			}
 
 			if (!cmd.isValidArgument(args.length - 1)) {
 				throw new CommandHelpException(cmd);
@@ -99,7 +90,6 @@ public class Main {
 	}
 
 	private static final class CommandHelpException extends IllegalArgumentException {
-
 		final Command command;
 
 		CommandHelpException(Command command) {

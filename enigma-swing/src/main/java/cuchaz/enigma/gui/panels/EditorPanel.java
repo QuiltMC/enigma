@@ -1,21 +1,5 @@
 package cuchaz.enigma.gui.panels;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-import javax.swing.*;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Highlighter.HighlightPainter;
-
-import cuchaz.enigma.gui.config.keybind.KeyBinds;
-import de.sciss.syntaxpane.DefaultSyntaxKit;
-
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.classhandle.ClassHandle;
@@ -28,6 +12,7 @@ import cuchaz.enigma.gui.GuiController;
 import cuchaz.enigma.gui.config.LookAndFeel;
 import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.elements.EditorPopupMenu;
 import cuchaz.enigma.gui.events.EditorActionListener;
 import cuchaz.enigma.gui.events.ThemeChangeListener;
@@ -45,7 +30,43 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Result;
+import de.sciss.syntaxpane.DefaultSyntaxKit;
 import org.tinylog.Logger;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Highlighter.HighlightPainter;
 
 public class EditorPanel {
 	private final JPanel ui = new JPanel();
@@ -131,6 +152,7 @@ public class EditorPanel {
 					case 5 -> // Forward navigation
 							gui.getController().openNextReference();
 				}
+
 				EditorPanel.this.mouseIsPressed = false;
 			}
 		});
@@ -195,6 +217,7 @@ public class EditorPanel {
 
 				this.editorLaf = laf;
 			}
+
 			this.boxHighlightPainters = boxHighlightPainters;
 		};
 
@@ -209,6 +232,7 @@ public class EditorPanel {
 				return panel;
 			}
 		}
+
 		return null;
 	}
 
@@ -218,6 +242,7 @@ public class EditorPanel {
 			old = this.classHandle.getRef();
 			this.classHandle.close();
 		}
+
 		this.setClassHandle0(old, handle);
 	}
 
@@ -279,6 +304,7 @@ public class EditorPanel {
 			} else {
 				this.displayError(res.unwrapErr());
 			}
+
 			this.nextReference = null;
 		});
 	}
@@ -326,6 +352,7 @@ public class EditorPanel {
 				break;
 			}
 		}
+
 		this.ui.validate();
 		this.ui.repaint();
 		this.mode = mode;
@@ -362,6 +389,7 @@ public class EditorPanel {
 				EntryResolver resolver = mapper.getObfResolver();
 				navigationEntry = resolver.resolveFirstEntry(referenceEntry, ResolutionStrategy.RESOLVE_ROOT);
 			}
+
 			this.controller.navigateTo(navigationEntry);
 		}
 	}
@@ -378,6 +406,7 @@ public class EditorPanel {
 		if (this.source == null) {
 			return null;
 		}
+
 		return this.source.getIndex().getReferenceToken(pos);
 	}
 
@@ -386,6 +415,7 @@ public class EditorPanel {
 		if (this.source == null) {
 			return null;
 		}
+
 		return this.source.getIndex().getReference(token);
 	}
 
@@ -424,6 +454,7 @@ public class EditorPanel {
 			if (this.source != null) {
 				this.editor.setCaretPosition(newCaretPos);
 			}
+
 			this.setHighlightedTokens(source.getHighlightedTokens());
 			this.setCursorReference(this.getReference(this.getToken(this.editor.getCaretPosition())));
 		} finally {
@@ -493,8 +524,9 @@ public class EditorPanel {
 	 * Navigates to the reference without modifying history. Assumes the class is loaded.
 	 */
 	private void showReference0(EntryReference<Entry<?>, Entry<?>> reference) {
-		if (this.source == null) return;
-		if (reference == null) return;
+		if (this.source == null || reference == null) {
+			return;
+		}
 
 		List<Token> tokens = this.controller.getTokensForReference(this.source, reference);
 		if (tokens.isEmpty()) {
@@ -509,6 +541,7 @@ public class EditorPanel {
 		if (token == null) {
 			throw new IllegalArgumentException("Token cannot be null!");
 		}
+
 		this.navigateToToken(token, SelectionHighlightPainter.INSTANCE);
 	}
 
@@ -522,13 +555,15 @@ public class EditorPanel {
 
 		try {
 			// make sure the token is visible in the scroll window
-			Rectangle start = this.editor.modelToView(token.start);
-			Rectangle end = this.editor.modelToView(token.end);
+			Rectangle2D start = this.editor.modelToView2D(token.start);
+			Rectangle2D end = this.editor.modelToView2D(token.end);
 			if (start == null || end == null) {
 				return;
 			}
-			Rectangle show = start.union(end);
-			show.grow(start.width * 10, start.height * 6);
+
+			Rectangle show = new Rectangle();
+			Rectangle2D.union(start, end, show);
+			show.grow((int) (start.getWidth() * 10), (int) (start.getHeight() * 6));
 			SwingUtilities.invokeLater(() -> this.editor.scrollRectToVisible(show));
 		} catch (BadLocationException ex) {
 			if (!this.settingSource) {
@@ -561,6 +596,7 @@ public class EditorPanel {
 				}
 			}
 		});
+
 		timer.start();
 	}
 

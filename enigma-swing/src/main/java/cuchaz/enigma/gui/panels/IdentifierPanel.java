@@ -1,18 +1,5 @@
 package cuchaz.enigma.gui.panels;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ItemEvent;
-import java.awt.event.MouseEvent;
-import java.util.function.Consumer;
-
-import javax.swing.BorderFactory;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.gui.EditableType;
 import cuchaz.enigma.gui.Gui;
@@ -24,9 +11,25 @@ import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.translation.mapping.AccessModifier;
 import cuchaz.enigma.translation.mapping.EntryChange;
 import cuchaz.enigma.translation.mapping.EntryMapping;
-import cuchaz.enigma.translation.representation.entry.*;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.ValidationContext;
+
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ItemEvent;
+import java.awt.event.MouseEvent;
+import java.util.function.Consumer;
+import javax.swing.BorderFactory;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 public class IdentifierPanel {
 	private final Gui gui;
@@ -83,7 +86,6 @@ public class IdentifierPanel {
 		// Prevent IdentifierPanel from being rebuilt if you didn't click off.
 		if (this.lastEntry == this.entry && this.nameField != null) {
 			if (!this.nameField.hasChanges()) {
-
 				final String name;
 
 				// Find what to set the name to.
@@ -141,6 +143,7 @@ public class IdentifierPanel {
 					this.nameField = th.addRenameTextField(EditableType.METHOD, me.getName());
 					th.addStringRow(I18n.translate("info_panel.identifier.class"), me.getParent().getFullName());
 				}
+
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method_descriptor"), me.getDesc().toString());
 				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.METHOD, this::onModifierChanged);
@@ -161,6 +164,7 @@ public class IdentifierPanel {
 				throw new IllegalStateException("unreachable");
 			}
 		}
+
 		th.end();
 
 		if (this.nameField != null) {
@@ -230,7 +234,7 @@ public class IdentifierPanel {
 		private final Gui gui;
 		private int row;
 
-		public TableHelper(Container c, Entry<?> e, Gui gui) {
+		TableHelper(Container c, Entry<?> e, Gui gui) {
 			this.c = c;
 			this.e = e;
 			this.gui = gui;
@@ -268,7 +272,7 @@ public class IdentifierPanel {
 		}
 
 		public ConvertingTextField addRenameTextField(EditableType type, String c2) {
-			String description = switch(type) {
+			String description = switch (type) {
 				case CLASS -> I18n.translate("info_panel.identifier.class");
 				case METHOD -> I18n.translate("info_panel.identifier.method");
 				case FIELD -> I18n.translate("info_panel.identifier.field");
@@ -325,6 +329,5 @@ public class IdentifierPanel {
 			// Add an empty panel with y-weight=1 so that all the other elements get placed at the top edge
 			this.c.add(new JPanel(), GridBagConstraintsBuilder.create().pos(0, this.row).weight(0.0, 1.0).build());
 		}
-
 	}
 }

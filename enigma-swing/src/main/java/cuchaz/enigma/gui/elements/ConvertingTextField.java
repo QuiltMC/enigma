@@ -1,27 +1,25 @@
 package cuchaz.enigma.gui.elements;
 
+import com.formdev.flatlaf.FlatClientProperties;
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
+import cuchaz.enigma.gui.events.ConvertingTextFieldListener;
+import cuchaz.enigma.gui.util.GuiUtil;
+
 import java.awt.GridLayout;
-import java.awt.event.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.Document;
 
-import com.formdev.flatlaf.FlatClientProperties;
-
-import cuchaz.enigma.gui.config.keybind.KeyBinds;
-import cuchaz.enigma.gui.events.ConvertingTextFieldListener;
-import cuchaz.enigma.gui.util.GuiUtil;
-
 /**
  * A label that converts into an editable text field when you click it.
  */
 public class ConvertingTextField {
-
 	private final JPanel ui;
 	private final JTextField textField;
 	private final JLabel label;
@@ -100,6 +98,7 @@ public class ConvertingTextField {
 
 	/**
 	 * Sets the visible text without aborting.
+	 *
 	 * <p>
 	 * The text in the {@link #textField} is not replaced if it has been edited,
 	 * allowing the user to continue editing their entry without interference.
@@ -110,6 +109,7 @@ public class ConvertingTextField {
 		if (!this.hasChanges()) {
 			this.textField.setText(text);
 		}
+
 		this.label.setText(text);
 	}
 

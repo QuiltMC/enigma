@@ -2,13 +2,26 @@ package cuchaz.enigma.source.procyon.transformers;
 
 import com.google.common.base.Strings;
 import com.strobel.assembler.metadata.ParameterDefinition;
-import com.strobel.decompiler.languages.java.ast.*;
+import com.strobel.decompiler.languages.java.ast.AstNode;
+import com.strobel.decompiler.languages.java.ast.Comment;
+import com.strobel.decompiler.languages.java.ast.CommentType;
+import com.strobel.decompiler.languages.java.ast.ConstructorDeclaration;
+import com.strobel.decompiler.languages.java.ast.DepthFirstAstVisitor;
+import com.strobel.decompiler.languages.java.ast.EnumValueDeclaration;
+import com.strobel.decompiler.languages.java.ast.FieldDeclaration;
+import com.strobel.decompiler.languages.java.ast.Keys;
+import com.strobel.decompiler.languages.java.ast.MethodDeclaration;
+import com.strobel.decompiler.languages.java.ast.ParameterDeclaration;
+import com.strobel.decompiler.languages.java.ast.Roles;
+import com.strobel.decompiler.languages.java.ast.TypeDeclaration;
 import com.strobel.decompiler.languages.java.ast.transforms.IAstTransform;
 import cuchaz.enigma.source.procyon.EntryParser;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
-import cuchaz.enigma.translation.representation.entry.*;
+import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableDefEntry;
+import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,6 +75,7 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 					ret[i].setContent(indent + ret[i].getContent());
 				}
 			}
+
 			return ret;
 		}
 
@@ -69,22 +83,25 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 			final MethodDefEntry methodDefEntry = EntryParser.parse(node.getUserData(Keys.METHOD_DEFINITION));
 			final Comment[] baseComments = this.getComments(node, obj -> methodDefEntry);
 			List<Comment> comments = new ArrayList<>();
-			if (baseComments != null)
+			if (baseComments != null) {
 				Collections.addAll(comments, baseComments);
+			}
 
 			for (ParameterDeclaration dec : node.getChildrenByRole(Roles.PARAMETER)) {
 				ParameterDefinition def = dec.getUserData(Keys.PARAMETER_DEFINITION);
 				final Comment[] paramComments = this.getParameterComments(dec, obj -> new LocalVariableDefEntry(methodDefEntry, def.getSlot(), def.getName(),
 						true,
 						EntryParser.parseTypeDescriptor(def.getParameterType()), null));
-				if (paramComments != null)
+				if (paramComments != null) {
 					Collections.addAll(comments, paramComments);
+				}
 			}
 
 			if (!comments.isEmpty()) {
 				if (this.remapper.getObfResolver().resolveEntry(methodDefEntry, ResolutionStrategy.RESOLVE_ROOT).stream().noneMatch(e -> Objects.equals(e, methodDefEntry))) {
 					comments.add(0, new Comment("{@inheritDoc}", CommentType.Documentation));
 				}
+
 				final AstNode oldFirst = node.getFirstChild();
 				for (Comment comment : comments) {
 					node.insertChildBefore(oldFirst, comment, Roles.COMMENT);
@@ -97,6 +114,7 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 			for (final AstNode child : node.getChildren()) {
 				child.acceptVisitor(this, data);
 			}
+
 			return null;
 		}
 

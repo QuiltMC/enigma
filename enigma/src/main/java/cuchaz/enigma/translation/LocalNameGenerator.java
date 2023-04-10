@@ -1,11 +1,11 @@
 package cuchaz.enigma.translation;
 
-import java.util.Collection;
-import java.util.Locale;
-
 import cuchaz.enigma.translation.mapping.IdentifierValidation;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 import org.tinylog.Logger;
+
+import java.util.Collection;
+import java.util.Locale;
 
 public class LocalNameGenerator {
 	public static String generateArgumentName(int index, TypeDescriptor desc, Collection<TypeDescriptor> arguments) {
@@ -16,6 +16,7 @@ public class LocalNameGenerator {
 		if (!uniqueType || IdentifierValidation.isReservedMethodName(nameBuilder.toString())) {
 			nameBuilder.append(nameIndex);
 		}
+
 		translatedName = nameBuilder.toString();
 		return translatedName;
 	}

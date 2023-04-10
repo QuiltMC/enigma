@@ -1,14 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2015 Jeff Martin.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public
- * License v3.0 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl.html
- * <p>
- * Contributors:
- * Jeff Martin - initial API and implementation
- ******************************************************************************/
-
 package cuchaz.enigma.gui;
 
 import cuchaz.enigma.Enigma;
@@ -410,7 +399,7 @@ public class Gui {
 	}
 
 	/**
-	 * Updates the Structure docker without opening it
+	 * Updates the Structure docker without opening it.
 	 * @param editor the editor to extract the new structure from
 	 */
 	public void updateStructure(EditorPanel editor) {
@@ -418,7 +407,7 @@ public class Gui {
 	}
 
 	/**
-	 * Opens the Structure docker and displays information for the provided editor
+	 * Opens the Structure docker and displays information for the provided editor.
 	 * @param editor the editor to extract structure from
 	 */
 	public void showStructure(EditorPanel editor) {
@@ -485,8 +474,10 @@ public class Gui {
 	}
 
 	public CompletableFuture<Void> saveMapping() {
-		if (this.enigmaMappingsFileChooser.getSelectedFile() != null || this.enigmaMappingsFileChooser.showSaveDialog(this.mainWindow.getFrame()) == JFileChooser.APPROVE_OPTION)
+		if (this.enigmaMappingsFileChooser.getSelectedFile() != null || this.enigmaMappingsFileChooser.showSaveDialog(this.mainWindow.getFrame()) == JFileChooser.APPROVE_OPTION) {
 			return this.controller.saveMappings(this.enigmaMappingsFileChooser.getSelectedFile().toPath());
+		}
+
 		return CompletableFuture.completedFuture(null);
 	}
 
@@ -522,6 +513,7 @@ public class Gui {
 		if (this.searchDialog != null) {
 			this.searchDialog.dispose();
 		}
+
 		this.mainWindow.getFrame().dispose();
 		System.exit(0);
 	}
@@ -542,6 +534,7 @@ public class Gui {
 
 				this.onRenameFromClassTree(vc, prevDataChild, node);
 			}
+
 			node.setUserObject(data);
 
 			// Ob package will never be modified, just reload deob view
@@ -614,6 +607,7 @@ public class Gui {
 		if (this.searchDialog == null) {
 			this.searchDialog = new SearchDialog(this);
 		}
+
 		return this.searchDialog;
 	}
 

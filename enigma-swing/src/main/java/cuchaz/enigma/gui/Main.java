@@ -1,15 +1,19 @@
-/*******************************************************************************
- * Copyright (c) 2015 Jeff Martin.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public
- * License v3.0 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl.html
- * <p>
- * Contributors:
- * Jeff Martin - initial API and implementation
- ******************************************************************************/
-
 package cuchaz.enigma.gui;
+
+import cuchaz.enigma.EnigmaProfile;
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
+import cuchaz.enigma.gui.config.Themes;
+import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.gui.dialog.CrashDialog;
+import cuchaz.enigma.utils.I18n;
+import cuchaz.enigma.utils.validation.Message;
+import cuchaz.enigma.utils.validation.ParameterizedMessage;
+import joptsimple.OptionException;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
+import joptsimple.ValueConverter;
+import org.tinylog.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -17,18 +21,6 @@ import java.nio.file.Paths;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-
-import cuchaz.enigma.gui.config.keybind.KeyBinds;
-import cuchaz.enigma.utils.validation.Message;
-import cuchaz.enigma.utils.validation.ParameterizedMessage;
-import joptsimple.*;
-
-import cuchaz.enigma.EnigmaProfile;
-import cuchaz.enigma.gui.config.Themes;
-import cuchaz.enigma.gui.config.UiConfig;
-import cuchaz.enigma.gui.dialog.CrashDialog;
-import cuchaz.enigma.utils.I18n;
-import org.tinylog.Logger;
 
 public class Main {
 	public static void main(String[] args) throws IOException {

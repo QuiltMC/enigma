@@ -97,6 +97,7 @@ public class CombinationPanel extends JPanel {
 			} else {
 				this.editingCombination.setKeyCode(e.getKeyCode());
 			}
+
 			this.update();
 		}
 	}
@@ -175,6 +176,7 @@ public class CombinationPanel extends JPanel {
 			if (!modifiers.isEmpty()) {
 				return modifiers + "+" + key;
 			}
+
 			return key;
 		}
 
@@ -182,6 +184,7 @@ public class CombinationPanel extends JPanel {
 			if (this.keyModifiers == 0) {
 				return "";
 			}
+
 			return InputEvent.getModifiersExText(this.keyModifiers);
 		}
 
@@ -189,6 +192,7 @@ public class CombinationPanel extends JPanel {
 			if (this.keyCode == -1) {
 				return I18n.translate("menu.file.configure_keybinds.edit.empty");
 			}
+
 			return KeyEvent.getKeyText(this.keyCode);
 		}
 
@@ -206,6 +210,7 @@ public class CombinationPanel extends JPanel {
 			} else if (obj instanceof MutableCombination mutableCombination) {
 				return mutableCombination.keyCode == this.keyCode && mutableCombination.keyModifiers == this.keyModifiers;
 			}
+
 			return false;
 		}
 	}

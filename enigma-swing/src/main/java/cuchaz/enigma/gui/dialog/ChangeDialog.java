@@ -1,17 +1,16 @@
 package cuchaz.enigma.gui.dialog;
 
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
+import cuchaz.enigma.gui.util.GuiUtil;
+import cuchaz.enigma.utils.I18n;
+
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Window;
-
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-
-import cuchaz.enigma.gui.config.keybind.KeyBinds;
-import cuchaz.enigma.gui.util.GuiUtil;
-import cuchaz.enigma.utils.I18n;
 
 public class ChangeDialog {
 	public static void show(Window parent) {

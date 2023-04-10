@@ -1,5 +1,6 @@
 package cuchaz.enigma.command;
 
+import com.google.common.io.MoreFiles;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.EnigmaProject;
@@ -15,21 +16,17 @@ import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
+import org.tinylog.Logger;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-
-import com.google.common.io.MoreFiles;
-import org.tinylog.Logger;
-
 import javax.annotation.Nullable;
 
 public abstract class Command {
@@ -115,10 +112,12 @@ public abstract class Command {
 				}
 			}
 		}
+
 		RuntimeException exception = new RuntimeException("Unable to parse mappings!");
 		for (Exception supressedException : suppressed) {
 			exception.addSuppressed(supressedException);
 		}
+
 		throw exception;
 	}
 
@@ -141,6 +140,7 @@ public abstract class Command {
 		for (Exception supressedException : suppressed) {
 			exception.addSuppressed(supressedException);
 		}
+
 		throw exception;
 	}
 
@@ -148,15 +148,18 @@ public abstract class Command {
 		if (path == null) {
 			return null;
 		}
+
 		File file = new File(path).getAbsoluteFile();
 		File dir = file.getParentFile();
 		if (dir == null) {
 			throw new IllegalArgumentException("Cannot write file: " + path);
 		}
+
 		// quick fix to avoid stupid stuff in Gradle code
 		if (!dir.isDirectory()) {
 			dir.mkdirs();
 		}
+
 		return file;
 	}
 
@@ -164,10 +167,12 @@ public abstract class Command {
 		if (path == null) {
 			return null;
 		}
+
 		File dir = new File(path).getAbsoluteFile();
 		if (!dir.exists()) {
 			throw new IllegalArgumentException("Cannot write to folder: " + dir);
 		}
+
 		return dir;
 	}
 
@@ -175,10 +180,12 @@ public abstract class Command {
 		if (path == null) {
 			return null;
 		}
+
 		File file = new File(path).getAbsoluteFile();
 		if (!file.exists()) {
 			throw new IllegalArgumentException("Cannot find file: " + file.getAbsolutePath());
 		}
+
 		return file;
 	}
 
@@ -186,10 +193,12 @@ public abstract class Command {
 		if (path == null) {
 			return null;
 		}
+
 		Path file = Paths.get(path).toAbsolutePath();
 		if (!Files.exists(file)) {
 			throw new IllegalArgumentException("Cannot find file: " + file);
 		}
+
 		return file;
 	}
 
@@ -219,6 +228,7 @@ public abstract class Command {
 				return null;
 			}
 		}
+
 		return args[i];
 	}
 
@@ -243,7 +253,6 @@ public abstract class Command {
 	}
 
 	public static class ConsoleProgressListener implements ProgressListener {
-
 		private static final int ReportTime = 5000; // 5s
 
 		private int totalWork;
@@ -269,6 +278,7 @@ public abstract class Command {
 				Logger.info("\tProgress: {}%", percent);
 				this.lastReportTime = now;
 			}
+
 			if (isLastUpdate) {
 				double elapsedSeconds = (now - this.startTime) / 1000.0;
 				Logger.info("Finished in {} seconds", elapsedSeconds);

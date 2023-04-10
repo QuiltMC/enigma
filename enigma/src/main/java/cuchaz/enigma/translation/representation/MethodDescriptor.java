@@ -1,20 +1,4 @@
-/*******************************************************************************
- * Copyright (c) 2015 Jeff Martin.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public
- * License v3.0 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl.html
- * <p>
- * Contributors:
- * Jeff Martin - initial API and implementation
- ******************************************************************************/
-
 package cuchaz.enigma.translation.representation;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 import cuchaz.enigma.translation.Translatable;
 import cuchaz.enigma.translation.TranslateResult;
@@ -23,6 +7,11 @@ import cuchaz.enigma.translation.mapping.EntryMap;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 public class MethodDescriptor implements Translatable {
 	private final List<TypeDescriptor> argumentDescs;
@@ -47,6 +36,7 @@ public class MethodDescriptor implements Translatable {
 					i += type.length();
 				}
 			}
+
 			this.returnDesc = new TypeDescriptor(TypeDescriptor.parseFirst(desc.substring(i)));
 		} catch (Exception ex) {
 			throw new IllegalArgumentException("Unable to parse method descriptor: " + desc, ex);
@@ -73,6 +63,7 @@ public class MethodDescriptor implements Translatable {
 		for (TypeDescriptor desc : this.argumentDescs) {
 			buf.append(desc);
 		}
+
 		buf.append(")");
 		buf.append(this.returnDesc);
 		return buf.toString();
@@ -104,6 +95,7 @@ public class MethodDescriptor implements Translatable {
 				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -112,6 +104,7 @@ public class MethodDescriptor implements Translatable {
 		for (TypeDescriptor desc : this.argumentDescs) {
 			argumentDescriptors.add(desc.remap(remapper));
 		}
+
 		return new MethodDescriptor(argumentDescriptors, this.returnDesc.remap(remapper));
 	}
 
@@ -121,6 +114,7 @@ public class MethodDescriptor implements Translatable {
 		for (TypeDescriptor argument : this.argumentDescs) {
 			translatedArguments.add(translator.translate(argument));
 		}
+
 		return TranslateResult.ungrouped(new MethodDescriptor(translatedArguments, translator.translate(this.returnDesc)));
 	}
 

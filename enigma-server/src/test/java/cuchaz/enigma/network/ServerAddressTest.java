@@ -23,5 +23,4 @@ public class ServerAddressTest {
 		assertNull(ServerAddress.from("127.0.0.1:100000000", 22));
 		assertNull(ServerAddress.from("127.0.0.1:lmao", 22));
 	}
-
 }

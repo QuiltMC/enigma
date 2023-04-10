@@ -1,11 +1,11 @@
 package cuchaz.enigma.network.packet;
 
+import cuchaz.enigma.network.ClientPacketHandler;
+import cuchaz.enigma.translation.mapping.EntryChange;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
-import cuchaz.enigma.network.ClientPacketHandler;
-import cuchaz.enigma.translation.mapping.EntryChange;
 
 public class EntryChangeS2CPacket implements Packet<ClientPacketHandler> {
 	private int syncId;
