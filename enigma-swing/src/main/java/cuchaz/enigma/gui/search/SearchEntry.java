@@ -1,5 +1,7 @@
 package cuchaz.enigma.gui.search;
 
+import cuchaz.enigma.gui.dialog.SearchDialog;
+
 import java.util.List;
 
 public interface SearchEntry {
@@ -13,4 +15,5 @@ public interface SearchEntry {
 	 */
 	String getIdentifier();
 
+	SearchDialog.Type getType();
 }

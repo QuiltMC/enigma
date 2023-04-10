@@ -34,6 +34,7 @@ import cuchaz.enigma.gui.util.AbstractListCellRenderer;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.translation.representation.entry.ParentedEntry;
@@ -331,6 +332,11 @@ public class SearchDialog {
 		}
 
 		@Override
+		public Type getType() {
+			return Type.get(this.obf);
+		}
+
+		@Override
 		public String toString() {
 			return String.format("SearchEntryImpl { obf: %s, deobf: %s }", this.obf, this.deobf);
 		}
@@ -385,9 +391,24 @@ public class SearchDialog {
 
 	}
 
+	/**
+	 * Contains all searchable types. Ordered by priority in the search dialog (i.e. the first type here will show up above the second type, etc.).
+	 */
 	public enum Type {
 		CLASS,
 		METHOD,
-		FIELD
+		FIELD;
+
+		public static Type get(Entry<?> entry) {
+			if (entry instanceof ClassEntry) {
+				return CLASS;
+			} else if (entry instanceof MethodEntry) {
+				return METHOD;
+			} else if (entry instanceof FieldEntry) {
+				return FIELD;
+			} else {
+				throw new IllegalArgumentException("Non-searchable entry type: " + entry);
+			}
+		}
 	}
 }

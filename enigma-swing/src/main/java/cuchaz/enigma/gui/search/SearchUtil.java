@@ -11,6 +11,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import cuchaz.enigma.gui.dialog.SearchDialog;
 import cuchaz.enigma.utils.Pair;
 
 public class SearchUtil<T extends SearchEntry> {
@@ -53,7 +54,6 @@ public class SearchUtil<T extends SearchEntry> {
 	}
 
 	public SearchControl asyncSearch(String term, SearchResultConsumer<T> consumer) {
-		// TODO: sorting by type
 		Map<String, Integer> hitCount = new HashMap<>(this.hitCount);
 		Map<T, Entry<T>> entries = new HashMap<>(this.entries);
 		float[] scores = new float[entries.size()];
@@ -127,7 +127,10 @@ public class SearchUtil<T extends SearchEntry> {
 			float maxScore = (float) Arrays.stream(this.components)
 					.mapToDouble(name -> getScoreFor(ucTerm, name))
 					.max().orElse(0.0);
-			return maxScore * (hits + 1);
+
+			// modify by type
+			int typeModifier = ((Math.abs(this.searchEntry.getType().ordinal() - SearchDialog.Type.values().length)) + 1);
+			return maxScore * (hits + 1) * typeModifier;
 		}
 
 		/**
