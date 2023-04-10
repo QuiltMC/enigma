@@ -24,6 +24,5 @@ public final class EnigmaServices {
 	}
 
 	public record RegisteredService<T extends EnigmaService>(String id, T service) {
-
 	}
 }
