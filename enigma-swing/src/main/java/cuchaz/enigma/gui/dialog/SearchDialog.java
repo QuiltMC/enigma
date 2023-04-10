@@ -26,6 +26,9 @@ import java.awt.Font;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -33,6 +36,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -269,9 +273,9 @@ public class SearchDialog {
 	private void updateList() {
 		if (this.currentSearch != null) this.currentSearch.stop();
 
-		DefaultListModel<SearchEntryImpl> classListModel = new DefaultListModel<>();
-		this.classListModel = classListModel;
-		this.classList.setModel(classListModel);
+		DefaultListModel<SearchEntryImpl> updatedClassListModel = new DefaultListModel<>();
+		this.classListModel = updatedClassListModel;
+		this.classList.setModel(updatedClassListModel);
 
 		// handle these search result like minecraft scheduled tasks to prevent
 		// flooding swing buttons inputs etc with tons of (possibly outdated) invocations
@@ -280,7 +284,7 @@ public class SearchDialog {
 		Runnable updater = new Runnable() {
 			@Override
 			public void run() {
-				if (SearchDialog.this.classListModel != classListModel || !SearchDialog.this.dialog.isVisible()) {
+				if (SearchDialog.this.classListModel != updatedClassListModel || !SearchDialog.this.dialog.isVisible()) {
 					return;
 				}
 
@@ -288,7 +292,7 @@ public class SearchDialog {
 				int count = 100;
 				while (count > 0 && !queue.isEmpty()) {
 					var o = queue.remove();
-					classListModel.insertElementAt(o.e, o.idx);
+					updatedClassListModel.insertElementAt(o.e, o.idx);
 					count--;
 				}
 
