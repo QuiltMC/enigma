@@ -71,6 +71,7 @@
 	"menu.view.change.title": "Changes",
 	"menu.view.change.summary": "Changes will be applied after the next restart.",
 	"menu.search": "Search",
+  	"menu.search.all": "Search All",
 	"menu.search.class": "Search Classes",
 	"menu.search.method": "Search Methods",
 	"menu.search.field": "Search Fields",
@@ -185,6 +186,10 @@
 	"prompt.save": "Save",
 	"prompt.open": "Open",
 
+  	"prompt.search.classes": "Classes",
+  	"prompt.search.methods": "Methods",
+  	"prompt.search.fields": "Fields",
+
 	"prompt.close.title": "Save your changes?",
 	"prompt.close.summary": "Your mappings have not been saved yet. Do you want to save?",
 	"prompt.close.save": "Save and close",
@@ -264,6 +269,7 @@
 	"keybind.editor.zoom_out": "Zoom in",
 	"keybind.editor.close_tab": "Close editor tab",
 	"keybind.editor.reload_class": "Reload open class",
+  	"keybind.menu.search_all": "Search for anything",
 	"keybind.menu.search_class": "Search for class",
 	"keybind.menu.search_method": "Search for method",
 	"keybind.menu.search_field": "Search for field",

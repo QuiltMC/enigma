@@ -94,15 +94,15 @@ public class SearchDialog {
 		this.searchField.addActionListener(e -> this.openSelected());
 
 		JPanel enabledTypes = new JPanel();
-		enabledTypes.setLayout(new FlowLayout(FlowLayout.LEFT));
+		enabledTypes.setLayout(new FlowLayout(FlowLayout.CENTER));
 
-		this.classesCheckBox = new JCheckBox(I18n.translate("prompt.classes"));
+		this.classesCheckBox = new JCheckBox(I18n.translate("prompt.search.classes"));
 		this.classesCheckBox.addMouseListener(this.createCheckboxListener(Type.CLASS));
 
-		this.methodsCheckBox = new JCheckBox(I18n.translate("prompt.methods"));
+		this.methodsCheckBox = new JCheckBox(I18n.translate("prompt.search.methods"));
 		this.methodsCheckBox.addMouseListener(this.createCheckboxListener(Type.METHOD));
 
-		this.fieldsCheckBox = new JCheckBox(I18n.translate("prompt.fields"));
+		this.fieldsCheckBox = new JCheckBox(I18n.translate("prompt.search.fields"));
 		this.fieldsCheckBox.addMouseListener(this.createCheckboxListener(Type.FIELD));
 
 		enabledTypes.add(this.classesCheckBox);
@@ -159,10 +159,10 @@ public class SearchDialog {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (SearchDialog.this.getCheckBox(type).isSelected() && !SearchDialog.this.searchedTypes.contains(type)) {
-					SearchDialog.this.show(type);
+					SearchDialog.this.show(new Type[]{type}, false);
 				} else {
 					SearchDialog.this.searchedTypes.remove(type);
-					SearchDialog.this.show(null);
+					SearchDialog.this.show(new Type[0], false);
 				}
 			}
 
@@ -196,16 +196,30 @@ public class SearchDialog {
 		};
 	}
 
-	public void show(Type type) {
-		this.util.clear();
-		if (type != null) {
-			this.searchedTypes.add(type);
-			this.getCheckBox(type).setSelected(true);
+	private void clearCheckBoxes() {
+		for (Type type : Type.values()) {
+			this.getCheckBox(type).setSelected(false);
 		}
+	}
+
+	public void show(Type type) {
+		this.show(new Type[]{type}, true);
+	}
+
+	public void show(Type[] types, boolean clear) {
+		this.util.clear();
+		if (clear) {
+			this.searchedTypes.clear();
+			this.clearCheckBoxes();
+		}
+
+		this.searchedTypes.addAll(Arrays.asList(types));
 
 		final EntryIndex entryIndex = this.parent.getController().project.getJarIndex().getEntryIndex();
 
 		for (Type searchedType : this.searchedTypes) {
+			this.getCheckBox(searchedType).setSelected(true);
+
 			switch (searchedType) {
 				case CLASS -> entryIndex.getClasses().parallelStream()
 						.filter(e -> !e.isInnerClass())

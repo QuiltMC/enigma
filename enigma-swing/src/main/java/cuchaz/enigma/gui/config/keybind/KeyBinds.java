@@ -49,7 +49,8 @@ public final class KeyBinds {
 	public static final KeyBind RELOAD_MAPPINGS = KeyBind.builder("reload_mappings", MENU_CATEGORY).build();
 	public static final KeyBind RELOAD_ALL = KeyBind.builder("reload_all", MENU_CATEGORY).build();
 	public static final KeyBind MAPPING_STATS = KeyBind.builder("mapping_stats", MENU_CATEGORY).build();
-	public static final KeyBind SEARCH_CLASS = KeyBind.builder("search_class", MENU_CATEGORY).mod(KeyEvent.SHIFT_DOWN_MASK).key(KeyEvent.VK_SPACE).build();
+	public static final KeyBind SEARCH_ALL = KeyBind.builder("search_all", MENU_CATEGORY).mod(KeyEvent.SHIFT_DOWN_MASK).key(KeyEvent.VK_SPACE).build();
+	public static final KeyBind SEARCH_CLASS = KeyBind.builder("search_class", MENU_CATEGORY).build();
 	public static final KeyBind SEARCH_METHOD = KeyBind.builder("search_method", MENU_CATEGORY).build();
 	public static final KeyBind SEARCH_FIELD = KeyBind.builder("search_field", MENU_CATEGORY).build();
 
@@ -58,14 +59,14 @@ public final class KeyBinds {
 			EDITOR_EDIT_JAVADOC, EDITOR_SHOW_INHERITANCE, EDITOR_SHOW_IMPLEMENTATIONS, EDITOR_SHOW_CALLS,
 			EDITOR_SHOW_CALLS_SPECIFIC, EDITOR_OPEN_ENTRY, EDITOR_OPEN_PREVIOUS, EDITOR_OPEN_NEXT,
 			EDITOR_TOGGLE_MAPPING, EDITOR_ZOOM_IN, EDITOR_ZOOM_OUT, EDITOR_CLOSE_TAB, EDITOR_RELOAD_CLASS,
-			EDITOR_QUICK_FIND, SAVE_MAPPINGS, DROP_MAPPINGS, RELOAD_MAPPINGS, RELOAD_ALL, MAPPING_STATS, SEARCH_CLASS,
-			SEARCH_METHOD, SEARCH_FIELD).map(KeyBind::toImmutable).toList();
+			EDITOR_QUICK_FIND, SAVE_MAPPINGS, DROP_MAPPINGS, RELOAD_MAPPINGS, RELOAD_ALL, MAPPING_STATS,
+			SEARCH_ALL, SEARCH_CLASS, SEARCH_METHOD, SEARCH_FIELD).map(KeyBind::toImmutable).toList();
 
 	private static final List<KeyBind> CONFIGURABLE_KEY_BINDS = List.of(EDITOR_RENAME, EDITOR_PASTE, EDITOR_EDIT_JAVADOC,
 			EDITOR_SHOW_INHERITANCE, EDITOR_SHOW_IMPLEMENTATIONS, EDITOR_SHOW_CALLS, EDITOR_SHOW_CALLS_SPECIFIC,
 			EDITOR_OPEN_ENTRY, EDITOR_OPEN_PREVIOUS, EDITOR_OPEN_NEXT, EDITOR_TOGGLE_MAPPING, EDITOR_ZOOM_IN,
 			EDITOR_ZOOM_OUT, EDITOR_CLOSE_TAB, EDITOR_RELOAD_CLASS, SAVE_MAPPINGS, DROP_MAPPINGS, RELOAD_MAPPINGS,
-			RELOAD_ALL, MAPPING_STATS, SEARCH_CLASS, SEARCH_METHOD, SEARCH_FIELD);
+			RELOAD_ALL, MAPPING_STATS, SEARCH_ALL, SEARCH_CLASS, SEARCH_METHOD, SEARCH_FIELD);
 	// Editing entries in CONFIGURABLE_KEY_BINDS directly wouldn't allow to revert the changes instead of saving
 	private static List<KeyBind> EDITABLE_KEY_BINDS;
 
