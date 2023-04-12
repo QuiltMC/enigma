@@ -26,7 +26,6 @@ import java.awt.Font;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -155,37 +154,14 @@ public class SearchDialog {
 	}
 
 	private MouseListener createCheckboxListener(Type type) {
-		return new MouseListener() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (SearchDialog.this.getCheckBox(type).isSelected() && !SearchDialog.this.searchedTypes.contains(type)) {
-					SearchDialog.this.show(new Type[]{type}, false);
-				} else {
-					SearchDialog.this.searchedTypes.remove(type);
-					SearchDialog.this.show(new Type[0], false);
-				}
+		return GuiUtil.onMouseClick(e -> {
+			if (SearchDialog.this.getCheckBox(type).isSelected() && !SearchDialog.this.searchedTypes.contains(type)) {
+				SearchDialog.this.show(new Type[]{type}, false);
+			} else {
+				SearchDialog.this.searchedTypes.remove(type);
+				SearchDialog.this.show(new Type[0], false);
 			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-				// no-op
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				// no-op
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				// no-op
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-				// no-op
-			}
-		};
+		});
 	}
 
 	private JCheckBox getCheckBox(Type type) {
