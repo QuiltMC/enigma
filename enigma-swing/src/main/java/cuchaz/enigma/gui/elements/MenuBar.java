@@ -76,6 +76,7 @@ public class MenuBar {
 	private final JMenuItem customScaleItem = new JMenuItem();
 
 	private final JMenu searchMenu = new JMenu();
+	private final JMenuItem searchItem = new JMenuItem(GuiUtil.DEOBFUSCATED_ICON);
 	private final JMenuItem searchAllItem = new JMenuItem(GuiUtil.DEOBFUSCATED_ICON);
 	private final JMenuItem searchClassItem = new JMenuItem(GuiUtil.CLASS_ICON);
 	private final JMenuItem searchMethodItem = new JMenuItem(GuiUtil.METHOD_ICON);
@@ -142,6 +143,7 @@ public class MenuBar {
 		this.viewMenu.add(this.fontItem);
 		ui.add(this.viewMenu);
 
+		this.searchMenu.add(this.searchItem);
 		this.searchMenu.add(this.searchAllItem);
 		this.searchMenu.add(this.searchClassItem);
 		this.searchMenu.add(this.searchMethodItem);
@@ -174,10 +176,11 @@ public class MenuBar {
 		this.decompilerSettingsItem.addActionListener(e -> DecompilerSettingsDialog.show(this.gui));
 		this.customScaleItem.addActionListener(e -> this.onCustomScaleClicked());
 		this.fontItem.addActionListener(e -> this.onFontClicked(this.gui));
-		this.searchAllItem.addActionListener(e -> this.onSearchClicked(SearchDialog.Type.values()));
-		this.searchClassItem.addActionListener(e -> this.onSearchClicked(new SearchDialog.Type[]{SearchDialog.Type.CLASS}));
-		this.searchMethodItem.addActionListener(e -> this.onSearchClicked(new SearchDialog.Type[]{SearchDialog.Type.METHOD}));
-		this.searchFieldItem.addActionListener(e -> this.onSearchClicked(new SearchDialog.Type[]{SearchDialog.Type.FIELD}));
+		this.searchItem.addActionListener(e -> this.onSearchClicked(new SearchDialog.Type[0], false));
+		this.searchAllItem.addActionListener(e -> this.onSearchClicked(SearchDialog.Type.values(), true));
+		this.searchClassItem.addActionListener(e -> this.onSearchClicked(new SearchDialog.Type[]{SearchDialog.Type.CLASS}, true));
+		this.searchMethodItem.addActionListener(e -> this.onSearchClicked(new SearchDialog.Type[]{SearchDialog.Type.METHOD}, true));
+		this.searchFieldItem.addActionListener(e -> this.onSearchClicked(new SearchDialog.Type[]{SearchDialog.Type.FIELD}, true));
 		this.connectItem.addActionListener(e -> this.onConnectClicked());
 		this.startServerItem.addActionListener(e -> this.onStartServerClicked());
 		this.aboutItem.addActionListener(e -> AboutDialog.show(this.gui.getFrame()));
@@ -190,6 +193,7 @@ public class MenuBar {
 		this.reloadMappingsItem.setAccelerator(KeyBinds.RELOAD_MAPPINGS.toKeyStroke());
 		this.reloadAllItem.setAccelerator(KeyBinds.RELOAD_ALL.toKeyStroke());
 		this.statsItem.setAccelerator(KeyBinds.MAPPING_STATS.toKeyStroke());
+		this.searchItem.setAccelerator(KeyBinds.SEARCH.toKeyStroke());
 		this.searchAllItem.setAccelerator(KeyBinds.SEARCH_ALL.toKeyStroke());
 		this.searchClassItem.setAccelerator(KeyBinds.SEARCH_CLASS.toKeyStroke());
 		this.searchMethodItem.setAccelerator(KeyBinds.SEARCH_METHOD.toKeyStroke());
@@ -248,6 +252,7 @@ public class MenuBar {
 		this.customScaleItem.setText(I18n.translate("menu.view.scale.custom"));
 
 		this.searchMenu.setText(I18n.translate("menu.search"));
+		this.searchItem.setText(I18n.translate("menu.search"));
 		this.searchAllItem.setText(I18n.translate("menu.search.all"));
 		this.searchClassItem.setText(I18n.translate("menu.search.class"));
 		this.searchMethodItem.setText(I18n.translate("menu.search.method"));
@@ -381,9 +386,9 @@ public class MenuBar {
 		FontDialog.display(gui.getFrame());
 	}
 
-	private void onSearchClicked(SearchDialog.Type[] types) {
+	private void onSearchClicked(SearchDialog.Type[] types, boolean clear) {
 		if (this.gui.getController().project != null) {
-			this.gui.getSearchDialog().show(types, true);
+			this.gui.getSearchDialog().show(types, clear);
 		}
 	}
 

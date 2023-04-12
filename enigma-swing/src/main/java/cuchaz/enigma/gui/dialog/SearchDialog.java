@@ -206,11 +206,21 @@ public class SearchDialog {
 		this.show(new Type[]{type}, true);
 	}
 
+	/**
+	 * Shows the search dialog, displaying the provided types.
+	 * @param types the search types to show
+	 * @param clear whether to clear previously saved types. If false with no types, will add all types.
+	 */
 	public void show(Type[] types, boolean clear) {
 		this.util.clear();
 		if (clear) {
 			this.searchedTypes.clear();
 			this.clearCheckBoxes();
+		} else {
+			// if no types are provided, add all types to avoid showing an empty dialog
+			if (this.searchedTypes.isEmpty()) {
+				this.searchedTypes.addAll(Arrays.asList(Type.values()));
+			}
 		}
 
 		this.searchedTypes.addAll(Arrays.asList(types));
