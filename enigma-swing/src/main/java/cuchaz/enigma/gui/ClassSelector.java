@@ -288,7 +288,6 @@ public class ClassSelector extends JTree {
 	}
 
 	public void reloadEntry(ClassEntry classEntry) {
-		this.removeEntry(classEntry);
 		this.moveClassIn(classEntry);
 		this.reloadStats(classEntry);
 	}

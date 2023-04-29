@@ -586,13 +586,16 @@ public class Gui {
 	}
 
 	public void reloadClassEntry(ClassEntry classEntry, boolean isOldOb, boolean isNewOb) {
-		if (!isNewOb) {
-			Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector().reloadEntry(classEntry);
-		} else if (!isOldOb) {
-			Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector().reloadEntry(classEntry);
+		ClassSelector selector;
+
+		if (!isNewOb || isOldOb) {
+			selector = Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector();
 		} else {
-			Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector().reloadEntry(classEntry);
+			selector = Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector();
 		}
+
+		selector.reloadEntry(classEntry);
+		selector.reload();
 
 		ClassSelector allClassesClassSelector = Docker.getDocker(AllClassesDocker.class).getClassSelector();
 		List<ClassSelector.StateEntry> expansionState = allClassesClassSelector.getExpansionState();

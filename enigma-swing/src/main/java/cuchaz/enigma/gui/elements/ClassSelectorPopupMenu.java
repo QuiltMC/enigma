@@ -45,8 +45,10 @@ public class ClassSelectorPopupMenu {
 			}
 
 			// todo brokey
+			System.out.println(path);
 			selector.getUI().startEditingAtPath(selector, path);
 		});
+
 		this.renameClass.addActionListener(a -> {
 			// todo brokey
 			selector.getUI().startEditingAtPath(selector, selector.getSelectionPath());
