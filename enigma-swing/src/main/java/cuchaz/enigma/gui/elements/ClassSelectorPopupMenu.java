@@ -8,14 +8,15 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
-public class DeobfPanelPopupMenu {
+public class ClassSelectorPopupMenu {
 	private final JPopupMenu ui;
 	private final JMenuItem renamePackage = new JMenuItem();
 	private final JMenuItem renameClass = new JMenuItem();
+	private final JMenuItem toggleMapping = new JMenuItem();
 	private final JMenuItem expandAll = new JMenuItem();
 	private final JMenuItem collapseAll = new JMenuItem();
 
-	public DeobfPanelPopupMenu(DeobfuscatedClassesDocker panel) {
+	public ClassSelectorPopupMenu(DeobfuscatedClassesDocker panel) {
 		this.ui = new JPopupMenu();
 
 		this.ui.add(this.renamePackage);
@@ -24,33 +25,45 @@ public class DeobfPanelPopupMenu {
 		this.ui.add(this.expandAll);
 		this.ui.add(this.collapseAll);
 
-		ClassSelector deobfClasses = panel.getClassSelector();
+		ClassSelector selector = panel.getClassSelector();
 
 		this.renamePackage.addActionListener(a -> {
 			TreePath path;
 
-			if (deobfClasses.getSelectedClass() != null && deobfClasses.getSelectionPath() != null) {
+			if (selector.getSelectedClass() != null
+					&& selector.getSelectionPath() != null) {
 				// Rename parent package if selected path is a class
-				path = deobfClasses.getSelectionPath().getParentPath();
+				path = selector.getSelectionPath().getParentPath();
+
+				// do not allow renaming if the class has no package
+				if (path.getPathCount() == 1) {
+					return;
+				}
 			} else {
 				// Rename selected path if it's already a package
-				path = deobfClasses.getSelectionPath();
+				path = selector.getSelectionPath();
 			}
 
-			deobfClasses.getUI().startEditingAtPath(deobfClasses, path);
+			// todo brokey
+			selector.getUI().startEditingAtPath(selector, path);
 		});
-		this.renameClass.addActionListener(a -> deobfClasses.getUI().startEditingAtPath(deobfClasses, deobfClasses.getSelectionPath()));
-		this.expandAll.addActionListener(a -> deobfClasses.expandAll());
-		this.collapseAll.addActionListener(a -> deobfClasses.collapseAll());
+		this.renameClass.addActionListener(a -> {
+			// todo brokey
+			selector.getUI().startEditingAtPath(selector, selector.getSelectionPath());
+		});
+
+		this.expandAll.addActionListener(a -> selector.expandAll());
+		this.collapseAll.addActionListener(a -> selector.collapseAll());
 
 		this.retranslateUi();
 	}
 
-	public void show(ClassSelector deobfClasses, int x, int y) {
+	public void show(ClassSelector selector, int x, int y) {
 		// Only enable rename class if selected path is a class
-		this.renameClass.setEnabled(deobfClasses.getSelectedClass() != null);
+		this.renameClass.setEnabled(selector.getSelectedClass() != null);
+		// todo mark as deob / mark as ob
 
-		this.ui.show(deobfClasses, x, y);
+		this.ui.show(selector, x, y);
 	}
 
 	public void retranslateUi() {

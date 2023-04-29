@@ -163,6 +163,7 @@ public class ClassSelector extends JTree {
 				// NOP
 			}
 		});
+
 		// init defaults
 		this.selectionListener = null;
 		this.renameSelectionListener = null;

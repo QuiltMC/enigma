@@ -509,7 +509,10 @@ public class GuiController implements ClientPacketHandler {
 	public void applyChange(ValidationContext vc, EntryChange<?> change) {
 		this.applyChange0(vc, change);
 		this.gui.updateStructure(this.gui.getActiveEditor());
-		if (!vc.canProceed()) return;
+		if (!vc.canProceed()) {
+			return;
+		}
+
 		this.sendPacket(new EntryChangeC2SPacket(change));
 	}
 
@@ -529,12 +532,15 @@ public class GuiController implements ClientPacketHandler {
 			this.chp.invalidateJavadoc(target.getTopLevelClass());
 		}
 
+		boolean isOldOb = prev.targetName() == null;
+		boolean isNewOb = mapping.targetName() == null;
+
 		if (renamed && target instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
-			this.gui.moveClassTree(target, prev.targetName() == null, mapping.targetName() == null);
+			this.gui.moveClassTree(target, isOldOb, isNewOb);
 			return;
 		}
 
-		this.gui.reloadClassEntry(change.getTarget().getTopLevelClass());
+		this.gui.reloadClassEntry(change.getTarget().getTopLevelClass(), isOldOb, isNewOb);
 	}
 
 	public void openStats(Set<StatsMember> includedMembers, String topLevelPackage, boolean includeSynthetic) {

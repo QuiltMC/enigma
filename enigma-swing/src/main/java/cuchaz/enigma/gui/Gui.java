@@ -453,7 +453,9 @@ public class Gui {
 
 	public void toggleMapping(EditorPanel editor) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
-		if (cursorReference == null) return;
+		if (cursorReference == null) {
+			return;
+		}
 
 		Entry<?> obfEntry = cursorReference.getNameableEntry();
 		this.toggleMappingFromEntry(obfEntry);
@@ -558,7 +560,6 @@ public class Gui {
 		}
 	}
 
-	// TODO: getExpansionState will *not* actually update itself based on name changes!
 	public void moveClassTree(Entry<?> obfEntry, boolean isOldOb, boolean isNewOb) {
 		ClassEntry classEntry = obfEntry.getContainingClass();
 
@@ -570,31 +571,28 @@ public class Gui {
 
 		if (!isNewOb) {
 			// obfuscated -> deobfuscated
-			deobfuscatedClassSelector.moveClassIn(classEntry);
 			obfuscatedClassSelector.removeEntry(classEntry);
-			deobfuscatedClassSelector.reload();
 			obfuscatedClassSelector.reload();
 		} else if (!isOldOb) {
 			// deobfuscated -> obfuscated
-			obfuscatedClassSelector.moveClassIn(classEntry);
 			deobfuscatedClassSelector.removeEntry(classEntry);
-			deobfuscatedClassSelector.reload();
-			obfuscatedClassSelector.reload();
-		} else {
-			// local move: deobfuscated -> deobfuscated
-			deobfuscatedClassSelector.moveClassIn(classEntry);
 			deobfuscatedClassSelector.reload();
 		}
 
-		this.reloadClassEntry(classEntry);
+		this.reloadClassEntry(classEntry, isOldOb, isNewOb);
 
 		deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
 		obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
 	}
 
-	public void reloadClassEntry(ClassEntry classEntry) {
-		Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector().reloadEntry(classEntry);
-		Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector().reloadEntry(classEntry);
+	public void reloadClassEntry(ClassEntry classEntry, boolean isOldOb, boolean isNewOb) {
+		if (!isNewOb) {
+			Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector().reloadEntry(classEntry);
+		} else if (!isOldOb) {
+			Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector().reloadEntry(classEntry);
+		} else {
+			Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector().reloadEntry(classEntry);
+		}
 
 		ClassSelector allClassesClassSelector = Docker.getDocker(AllClassesDocker.class).getClassSelector();
 		List<ClassSelector.StateEntry> expansionState = allClassesClassSelector.getExpansionState();
