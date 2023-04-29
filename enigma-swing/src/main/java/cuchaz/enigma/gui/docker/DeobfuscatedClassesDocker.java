@@ -14,7 +14,7 @@ public class DeobfuscatedClassesDocker extends ClassesDocker {
 	public DeobfuscatedClassesDocker(Gui gui) {
 		super(gui, new ClassSelector(gui, ClassSelector.DEOBF_CLASS_COMPARATOR, true));
 
-		this.popupMenu = new ClassSelectorPopupMenu(this);
+		this.popupMenu = new ClassSelectorPopupMenu(gui, this);
 		this.selector.addMouseListener(GuiUtil.onMousePress(this::onPress));
 
 		this.retranslateUi();
