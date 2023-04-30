@@ -74,21 +74,19 @@ public class ClassSelectorPopupMenu {
 			String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("gaming"), pathString.toString());
 			String[] oldPackageNames = pathString.toString().split("/");
 			String[] newPackageNames = input.split("/");
-			int packageIndex = 0;
-			boolean rename = false;
 
 			for (int i = 0; i < selector.getPackageManager().getRoot().getChildCount(); i++) {
 				TreeNode node = selector.getPackageManager().getRoot().getChildAt(i);
 				Deque<Runnable> renameStack = new ArrayDeque<>();
 
-				this.handleNode(packageIndex, 0, rename, oldPackageNames, newPackageNames, renameStack, node);
+				this.handleNode(0, 0, false, oldPackageNames, newPackageNames, renameStack, node);
 				renameStack.forEach(Runnable::run);
 			}
 		});
 
 		this.renameClass.addActionListener(a -> {
-			// todo brokey
-			selector.getUI().startEditingAtPath(selector, selector.getSelectionPath());
+			String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("gaming"), selector.getSelectedClass().getFullName());
+			this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(selector.getSelectedClass()).withDeobfName(input));
 		});
 
 		this.expandAll.addActionListener(a -> selector.expandAll());
@@ -106,17 +104,21 @@ public class ClassSelectorPopupMenu {
 				StringBuilder newPackages = new StringBuilder();
 
 				for (int i = finalPackageIndex; i < newPackageNames.length; i++) {
-					if (i < oldPackageNames.length && i < split.length && oldPackageNames[i].equals(split[i])) {
-						split[i] = newPackageNames[i];
-					} else {
-						newPackages.append("/").append(newPackageNames[i]);
+					if (i >= 0) {
+						if (i < oldPackageNames.length && i < split.length && oldPackageNames[i].equals(split[i])) {
+							split[i] = newPackageNames[i];
+						} else {
+							newPackages.append("/").append(newPackageNames[i]);
+						}
 					}
 				}
 
 				// append new packages to last package
-				split[newPackageNames.length - 2] = split[newPackageNames.length - 2] + newPackages;
-				String newName = String.join("/", split);
+				if (!newPackages.toString().isBlank()) {
+					split[newPackageNames.length - 2] = split[newPackageNames.length - 2] + newPackages;
+				}
 
+				String newName = String.join("/", split);
 				this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(classNode.getClassEntry()).withDeobfName(newName));
 			});
 		} else if (node instanceof ClassSelectorPackageNode packageNode) {
@@ -128,7 +130,7 @@ public class ClassSelectorPopupMenu {
 						this.handlePackage(divergenceIndex, realIndex, false, oldPackageNames, newPackageNames, renameStack, packageNode);
 					} else {
 						// use parent package to begin rename
-						realIndex --;
+						realIndex--;
 						this.handlePackage(divergenceIndex, realIndex, true, oldPackageNames, newPackageNames, renameStack, packageNode.getParent());
 					}
 				} else {
@@ -141,7 +143,7 @@ public class ClassSelectorPopupMenu {
 	}
 
 	private void handlePackage(int divergenceIndex, int realIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, Deque<Runnable> renameStack, TreeNode packageNode) {
-		realIndex ++;
+		realIndex++;
 		if (!rename) {
 			divergenceIndex++;
 		}
