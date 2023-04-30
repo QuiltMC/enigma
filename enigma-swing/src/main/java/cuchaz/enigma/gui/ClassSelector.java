@@ -199,11 +199,15 @@ public class ClassSelector extends JTree {
 	}
 
 	public ClassEntry getSelectedClass() {
+		return this.getSelectedClass(false);
+	}
+
+	public ClassEntry getSelectedClass(boolean obfuscated) {
 		if (!this.isSelectionEmpty() && this.getSelectionPath() != null) {
 			Object selectedNode = this.getSelectionPath().getLastPathComponent();
 
 			if (selectedNode instanceof ClassSelectorClassNode classNode) {
-				return classNode.getClassEntry();
+				return obfuscated ? classNode.getObfEntry() : classNode.getClassEntry();
 			}
 		}
 

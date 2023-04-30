@@ -86,7 +86,7 @@ public class ClassSelectorPopupMenu {
 
 		this.renameClass.addActionListener(a -> {
 			String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("gaming"), selector.getSelectedClass().getFullName());
-			this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(selector.getSelectedClass()).withDeobfName(input));
+			this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(selector.getSelectedClass(true)).withDeobfName(input));
 		});
 
 		this.expandAll.addActionListener(a -> selector.expandAll());
@@ -119,7 +119,7 @@ public class ClassSelectorPopupMenu {
 				}
 
 				String newName = String.join("/", split);
-				this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(classNode.getClassEntry()).withDeobfName(newName));
+				this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(classNode.getObfEntry()).withDeobfName(newName));
 			});
 		} else if (node instanceof ClassSelectorPackageNode packageNode) {
 			String packageName = packageNode.getPackageName().substring(packageNode.getPackageName().lastIndexOf("/") + 1);
