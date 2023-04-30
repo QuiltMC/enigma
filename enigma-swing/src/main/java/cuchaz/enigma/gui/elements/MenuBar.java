@@ -176,11 +176,11 @@ public class MenuBar {
 		this.decompilerSettingsItem.addActionListener(e -> DecompilerSettingsDialog.show(this.gui));
 		this.customScaleItem.addActionListener(e -> this.onCustomScaleClicked());
 		this.fontItem.addActionListener(e -> this.onFontClicked(this.gui));
-		this.searchItem.addActionListener(e -> this.onSearchClicked(new SearchDialog.Type[0], false));
-		this.searchAllItem.addActionListener(e -> this.onSearchClicked(SearchDialog.Type.values(), true));
-		this.searchClassItem.addActionListener(e -> this.onSearchClicked(new SearchDialog.Type[]{SearchDialog.Type.CLASS}, true));
-		this.searchMethodItem.addActionListener(e -> this.onSearchClicked(new SearchDialog.Type[]{SearchDialog.Type.METHOD}, true));
-		this.searchFieldItem.addActionListener(e -> this.onSearchClicked(new SearchDialog.Type[]{SearchDialog.Type.FIELD}, true));
+		this.searchItem.addActionListener(e -> this.onSearchClicked(false));
+		this.searchAllItem.addActionListener(e -> this.onSearchClicked(true, SearchDialog.Type.values()));
+		this.searchClassItem.addActionListener(e -> this.onSearchClicked(true, SearchDialog.Type.CLASS));
+		this.searchMethodItem.addActionListener(e -> this.onSearchClicked(true, SearchDialog.Type.METHOD));
+		this.searchFieldItem.addActionListener(e -> this.onSearchClicked(true, SearchDialog.Type.FIELD));
 		this.connectItem.addActionListener(e -> this.onConnectClicked());
 		this.startServerItem.addActionListener(e -> this.onStartServerClicked());
 		this.aboutItem.addActionListener(e -> AboutDialog.show(this.gui.getFrame()));
@@ -386,9 +386,9 @@ public class MenuBar {
 		FontDialog.display(gui.getFrame());
 	}
 
-	private void onSearchClicked(SearchDialog.Type[] types, boolean clear) {
+	private void onSearchClicked(boolean clear, SearchDialog.Type... types) {
 		if (this.gui.getController().project != null) {
-			this.gui.getSearchDialog().show(types, clear);
+			this.gui.getSearchDialog().show(clear, types);
 		}
 	}
 

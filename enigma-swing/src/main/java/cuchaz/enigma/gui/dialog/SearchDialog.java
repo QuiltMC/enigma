@@ -156,10 +156,10 @@ public class SearchDialog {
 	private MouseListener createCheckboxListener(Type type) {
 		return GuiUtil.onMouseClick(e -> {
 			if (SearchDialog.this.getCheckBox(type).isSelected() && !SearchDialog.this.searchedTypes.contains(type)) {
-				SearchDialog.this.show(new Type[]{type}, false);
+				SearchDialog.this.show(false, type);
 			} else {
 				SearchDialog.this.searchedTypes.remove(type);
-				SearchDialog.this.show(new Type[0], false);
+				SearchDialog.this.show(false);
 			}
 		});
 	}
@@ -179,7 +179,7 @@ public class SearchDialog {
 	}
 
 	public void show(Type type) {
-		this.show(new Type[]{type}, true);
+		this.show(true, type);
 	}
 
 	/**
@@ -187,7 +187,7 @@ public class SearchDialog {
 	 * @param types the search types to show
 	 * @param clear whether to clear previously saved types. If false with no types, will add all types.
 	 */
-	public void show(Type[] types, boolean clear) {
+	public void show(boolean clear, Type... types) {
 		this.util.clear();
 		if (clear) {
 			this.searchedTypes.clear();
