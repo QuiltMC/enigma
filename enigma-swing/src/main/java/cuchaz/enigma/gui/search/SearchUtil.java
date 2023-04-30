@@ -138,7 +138,7 @@ public class SearchUtil<T extends SearchEntry> {
 					.max().orElse(0.0);
 
 			// modify by type
-			int typeModifier = ((Math.abs(this.searchEntry.getType().ordinal() - SearchDialog.Type.values().length)) + 1);
+			int typeModifier = SearchDialog.Type.values().length - this.searchEntry.getType().ordinal() + 1;
 			return maxScore * (hits + 1) * typeModifier;
 		}
 
