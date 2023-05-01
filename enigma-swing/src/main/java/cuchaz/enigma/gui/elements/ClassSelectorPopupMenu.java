@@ -2,6 +2,7 @@ package cuchaz.enigma.gui.elements;
 
 import cuchaz.enigma.gui.ClassSelector;
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.dialog.ProgressDialog;
 import cuchaz.enigma.gui.docker.DeobfuscatedClassesDocker;
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
 import cuchaz.enigma.gui.node.ClassSelectorPackageNode;
@@ -14,8 +15,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClassSelectorPopupMenu {
 	private final Gui gui;
@@ -72,16 +73,32 @@ public class ClassSelectorPopupMenu {
 			}
 
 			String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("gaming"), pathString.toString());
+
+			if (input == null || !input.matches("[a-z_/]+") || input.isBlank() || input.startsWith("/") || input.endsWith("/")) {
+				// todo show error message
+				return;
+			}
+
 			String[] oldPackageNames = pathString.toString().split("/");
 			String[] newPackageNames = input.split("/");
 
-			for (int i = 0; i < selector.getPackageManager().getRoot().getChildCount(); i++) {
-				TreeNode node = selector.getPackageManager().getRoot().getChildAt(i);
-				Deque<Runnable> renameStack = new ArrayDeque<>();
+			List<Runnable> renameStack = new ArrayList<>();
 
-				this.handleNode(0, 0, false, oldPackageNames, newPackageNames, renameStack, node);
-				renameStack.forEach(Runnable::run);
-			}
+			ProgressDialog.runOffThread(this.gui.getFrame(), listener -> {
+				listener.init(1, "discovering classes to rename");
+
+				for (int i = 0; i < selector.getPackageManager().getRoot().getChildCount(); i++) {
+					TreeNode node = selector.getPackageManager().getRoot().getChildAt(i);
+					this.handleNode(0, 0, false, oldPackageNames, newPackageNames, renameStack, node);
+				}
+
+				listener.init(renameStack.size(), "renaming classes");
+
+				for (int j = 0; j < renameStack.size(); j++) {
+					listener.step(j, "still renaming classes");
+					renameStack.get(j).run();
+				}
+			});
 		});
 
 		this.renameClass.addActionListener(a -> {
@@ -95,11 +112,12 @@ public class ClassSelectorPopupMenu {
 		this.retranslateUi();
 	}
 
-	private void handleNode(int divergenceIndex, int realIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, Deque<Runnable> renameStack, TreeNode node) {
+	private void handleNode(int divergenceIndex, int realIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, List<Runnable> renameStack, TreeNode node) {
 		if (node instanceof ClassSelectorClassNode classNode && rename) {
 			String oldName = classNode.getClassEntry().getFullName();
 			int finalPackageIndex = divergenceIndex - 1;
-			renameStack.push(() -> {
+
+			renameStack.add(() -> {
 				String[] split = oldName.split("/");
 				StringBuilder newPackages = new StringBuilder();
 
@@ -115,16 +133,18 @@ public class ClassSelectorPopupMenu {
 
 				// append new packages to last package
 				if (!newPackages.toString().isBlank()) {
-					split[newPackageNames.length - 2] = split[newPackageNames.length - 2] + newPackages;
+					int packageAppendIndex = divergenceIndex - 1;
+					split[packageAppendIndex] = split[packageAppendIndex] + newPackages;
 				}
 
 				String newName = String.join("/", split);
 				this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(classNode.getObfEntry()).withDeobfName(newName));
 			});
 		} else if (node instanceof ClassSelectorPackageNode packageNode) {
+			// todo does not handle the possibility of going backwards instead of forwards
 			String packageName = packageNode.getPackageName().substring(packageNode.getPackageName().lastIndexOf("/") + 1);
 
-			if (packageName.equals(oldPackageNames[divergenceIndex])) {
+			if ((divergenceIndex >= oldPackageNames.length && realIndex < newPackageNames.length) || packageName.equals(oldPackageNames[divergenceIndex])) {
 				if (!rename) {
 					if (packageName.equals(newPackageNames[divergenceIndex])) {
 						this.handlePackage(divergenceIndex, realIndex, false, oldPackageNames, newPackageNames, renameStack, packageNode);
@@ -142,7 +162,7 @@ public class ClassSelectorPopupMenu {
 		}
 	}
 
-	private void handlePackage(int divergenceIndex, int realIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, Deque<Runnable> renameStack, TreeNode packageNode) {
+	private void handlePackage(int divergenceIndex, int realIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, List<Runnable> renameStack, TreeNode packageNode) {
 		realIndex++;
 		if (!rename) {
 			divergenceIndex++;
