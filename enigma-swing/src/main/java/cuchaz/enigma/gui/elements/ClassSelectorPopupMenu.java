@@ -170,10 +170,10 @@ public class ClassSelectorPopupMenu {
 				this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(classNode.getObfEntry()).withDeobfName(newName));
 			});
 		} else if (node instanceof ClassSelectorPackageNode packageNode) {
-			// todo does not handle the possibility of going backwards instead of forwards
 			String packageName = packageNode.getPackageName().substring(packageNode.getPackageName().lastIndexOf("/") + 1);
 			int index = packageNode.getPackageName().split("/").length;
 
+			// handle backwards renaming
 			if (oldPackageNames.length > newPackageNames.length) {
 				if (divergenceIndex == 0 || packageName.equals(oldPackageNames[divergenceIndex])) {
 					if (rename) {
@@ -190,7 +190,8 @@ public class ClassSelectorPopupMenu {
 				}
 			}
 
-			if ((divergenceIndex >= oldPackageNames.length && index < newPackageNames.length) || packageName.equals(oldPackageNames[divergenceIndex])) {
+			// forwards
+			if ((divergenceIndex >= oldPackageNames.length) || packageName.equals(oldPackageNames[divergenceIndex])) {
 				if (!rename) {
 					if (packageName.equals(newPackageNames[divergenceIndex])) {
 						if (newPackageNames.length > oldPackageNames.length && divergenceIndex == oldPackageNames.length - 1) {
