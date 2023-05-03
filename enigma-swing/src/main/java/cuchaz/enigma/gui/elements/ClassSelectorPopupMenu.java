@@ -75,7 +75,7 @@ public class ClassSelectorPopupMenu {
 			String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("gaming"), pathString.toString());
 
 			if (input == null || !input.matches("[a-z_/]+") || input.isBlank() || input.startsWith("/") || input.endsWith("/")) {
-				// todo show error message
+				//this.gui.getNotificationManager().notify(Message.INVALID_PACKAGE);
 				return;
 			}
 
@@ -89,7 +89,7 @@ public class ClassSelectorPopupMenu {
 
 				for (int i = 0; i < selector.getPackageManager().getRoot().getChildCount(); i++) {
 					TreeNode node = selector.getPackageManager().getRoot().getChildAt(i);
-					this.handleNode(0, 0, false, oldPackageNames, newPackageNames, renameStack, node);
+					this.handleNode(0, false, oldPackageNames, newPackageNames, renameStack, node);
 				}
 
 				listener.init(renameStack.size(), "renaming classes");
@@ -112,7 +112,7 @@ public class ClassSelectorPopupMenu {
 		this.retranslateUi();
 	}
 
-	private void handleNode(int divergenceIndex, int realIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, List<Runnable> renameStack, TreeNode node) {
+	private void handleNode(int divergenceIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, List<Runnable> renameStack, TreeNode node) {
 		if (node instanceof ClassSelectorClassNode classNode && rename) {
 			String oldName = classNode.getClassEntry().getFullName();
 			int finalPackageIndex = divergenceIndex - 1;
@@ -121,20 +121,49 @@ public class ClassSelectorPopupMenu {
 				String[] split = oldName.split("/");
 				StringBuilder newPackages = new StringBuilder();
 
-				for (int i = finalPackageIndex; i < newPackageNames.length; i++) {
-					if (i >= 0) {
-						if (i < oldPackageNames.length && i < split.length && oldPackageNames[i].equals(split[i])) {
-							split[i] = newPackageNames[i];
-						} else {
-							newPackages.append("/").append(newPackageNames[i]);
+				if (oldPackageNames.length <= newPackageNames.length) {
+					for (int i = finalPackageIndex; i < newPackageNames.length; i++) {
+						if (i >= 0) {
+							if (i < oldPackageNames.length && i < split.length && oldPackageNames[i].equals(split[i])) {
+								split[i] = newPackageNames[i];
+							} else {
+								newPackages.append("/").append(newPackageNames[i]);
+							}
+						}
+					}
+				} else {
+					for (int i = 0; i < oldPackageNames.length; i++) {
+						if (i > newPackageNames.length - 1 || !oldPackageNames[i].equals(newPackageNames[i])) {
+							StringBuilder string = new StringBuilder();
+							for (int j = 0; j <= i - 1; j++) {
+								if (!string.isEmpty()) {
+									string.append("/");
+								}
+
+								string.append(oldPackageNames[j]);
+							}
+
+							for (int j = i; j < newPackageNames.length; j++) {
+								if (!string.isEmpty()) {
+									string.append("/");
+								}
+
+								string.append(newPackageNames[j]);
+							}
+
+							if (!string.isEmpty()) {
+								string.append("/");
+							}
+							string.append(classNode.getClassEntry().getSimpleName());
+							split = string.toString().split("/");
+							break;
 						}
 					}
 				}
 
 				// append new packages to last package
 				if (!newPackages.toString().isBlank()) {
-					int packageAppendIndex = divergenceIndex - 1;
-					split[packageAppendIndex] = split[packageAppendIndex] + newPackages;
+					split[finalPackageIndex] = split[finalPackageIndex] + newPackages;
 				}
 
 				String newName = String.join("/", split);
@@ -143,33 +172,52 @@ public class ClassSelectorPopupMenu {
 		} else if (node instanceof ClassSelectorPackageNode packageNode) {
 			// todo does not handle the possibility of going backwards instead of forwards
 			String packageName = packageNode.getPackageName().substring(packageNode.getPackageName().lastIndexOf("/") + 1);
+			int index = packageNode.getPackageName().split("/").length;
 
-			if ((divergenceIndex >= oldPackageNames.length && realIndex < newPackageNames.length) || packageName.equals(oldPackageNames[divergenceIndex])) {
+			if (oldPackageNames.length > newPackageNames.length) {
+				if (divergenceIndex == 0 || packageName.equals(oldPackageNames[divergenceIndex])) {
+					if (rename) {
+						this.handlePackage(divergenceIndex, true, oldPackageNames, newPackageNames, renameStack, packageNode);
+					} else if (divergenceIndex < newPackageNames.length && newPackageNames[divergenceIndex].equals(oldPackageNames[divergenceIndex])) {
+						this.handlePackage(divergenceIndex, false, oldPackageNames, newPackageNames, renameStack, packageNode);
+					} else {
+						this.handlePackage(index, true, oldPackageNames, newPackageNames, renameStack, packageNode);
+					}
+
+					return;
+				} else {
+					this.handlePackage(index, false, oldPackageNames, newPackageNames, renameStack, packageNode);
+				}
+			}
+
+			if ((divergenceIndex >= oldPackageNames.length && index < newPackageNames.length) || packageName.equals(oldPackageNames[divergenceIndex])) {
 				if (!rename) {
 					if (packageName.equals(newPackageNames[divergenceIndex])) {
-						this.handlePackage(divergenceIndex, realIndex, false, oldPackageNames, newPackageNames, renameStack, packageNode);
+						if (newPackageNames.length > oldPackageNames.length && divergenceIndex == oldPackageNames.length - 1) {
+							this.handlePackage(divergenceIndex + 1, true, oldPackageNames, newPackageNames, renameStack, packageNode);
+						}
+
+						this.handlePackage(divergenceIndex, false, oldPackageNames, newPackageNames, renameStack, packageNode);
 					} else {
 						// use parent package to begin rename
-						realIndex--;
-						this.handlePackage(divergenceIndex, realIndex, true, oldPackageNames, newPackageNames, renameStack, packageNode.getParent());
+						this.handlePackage(divergenceIndex, true, oldPackageNames, newPackageNames, renameStack, packageNode.getParent());
 					}
 				} else {
-					this.handlePackage(divergenceIndex, realIndex, true, oldPackageNames, newPackageNames, renameStack, packageNode);
+					this.handlePackage(divergenceIndex, true, oldPackageNames, newPackageNames, renameStack, packageNode);
 				}
-			} else if (rename && realIndex >= oldPackageNames.length) {
-				this.handlePackage(divergenceIndex, realIndex, true, oldPackageNames, newPackageNames, renameStack, packageNode);
+			} else if (rename && index >= oldPackageNames.length) {
+				this.handlePackage(divergenceIndex, true, oldPackageNames, newPackageNames, renameStack, packageNode);
 			}
 		}
 	}
 
-	private void handlePackage(int divergenceIndex, int realIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, List<Runnable> renameStack, TreeNode packageNode) {
-		realIndex++;
+	private void handlePackage(int divergenceIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, List<Runnable> renameStack, TreeNode node) {
 		if (!rename) {
 			divergenceIndex++;
 		}
 
-		for (int j = 0; j < packageNode.getChildCount(); j++) {
-			this.handleNode(divergenceIndex, realIndex, rename, oldPackageNames, newPackageNames, renameStack, packageNode.getChildAt(j));
+		for (int j = 0; j < node.getChildCount(); j++) {
+			this.handleNode(divergenceIndex, rename, oldPackageNames, newPackageNames, renameStack, node.getChildAt(j));
 		}
 	}
 
