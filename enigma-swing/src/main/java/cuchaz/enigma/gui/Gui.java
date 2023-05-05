@@ -569,11 +569,11 @@ public class Gui {
 		List<ClassSelector.StateEntry> deobfuscatedPanelExpansionState = deobfuscatedClassSelector.getExpansionState();
 		List<ClassSelector.StateEntry> obfuscatedPanelExpansionState = obfuscatedClassSelector.getExpansionState();
 
-		if (!isNewOb) {
+		if (!isNewOb && isOldOb) {
 			// obfuscated -> deobfuscated
 			obfuscatedClassSelector.removeEntry(classEntry);
 			obfuscatedClassSelector.reload();
-		} else if (!isOldOb) {
+		} else if (!isOldOb && isNewOb) {
 			// deobfuscated -> obfuscated
 			deobfuscatedClassSelector.removeEntry(classEntry);
 			deobfuscatedClassSelector.reload();

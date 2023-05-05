@@ -132,6 +132,7 @@ public class ClassSelectorPopupMenu {
 						}
 					}
 				} else {
+					// todo backwards renaming throws away packages after the renamed one
 					for (int i = 0; i < oldPackageNames.length; i++) {
 						if (i > newPackageNames.length - 1 || !oldPackageNames[i].equals(newPackageNames[i])) {
 							StringBuilder string = new StringBuilder();
@@ -171,43 +172,32 @@ public class ClassSelectorPopupMenu {
 			});
 		} else if (node instanceof ClassSelectorPackageNode packageNode) {
 			String packageName = packageNode.getPackageName().substring(packageNode.getPackageName().lastIndexOf("/") + 1);
-			int index = packageNode.getPackageName().split("/").length;
+			int index = packageNode.getPackageName().split("/").length - 1;
+
+			if (rename) {
+				this.handlePackage(divergenceIndex, true, oldPackageNames, newPackageNames, renameStack, node);
+				return;
+			}
 
 			// handle backwards renaming
 			if (oldPackageNames.length > newPackageNames.length) {
-				if (divergenceIndex == 0 || packageName.equals(oldPackageNames[divergenceIndex])) {
-					if (rename) {
-						this.handlePackage(divergenceIndex, true, oldPackageNames, newPackageNames, renameStack, packageNode);
-					} else if (divergenceIndex < newPackageNames.length && newPackageNames[divergenceIndex].equals(oldPackageNames[divergenceIndex])) {
-						this.handlePackage(divergenceIndex, false, oldPackageNames, newPackageNames, renameStack, packageNode);
-					} else {
-						this.handlePackage(index, true, oldPackageNames, newPackageNames, renameStack, packageNode);
-					}
-
+				// if we are past the final index in the new packages, begin rename from previous
+				if (newPackageNames.length <= index) {
+					this.handlePackage(index - 1, true, oldPackageNames, newPackageNames, renameStack, node.getParent());
 					return;
-				} else {
-					this.handlePackage(index, false, oldPackageNames, newPackageNames, renameStack, packageNode);
+				}
+			} else {
+				// handle appending new packages
+				if (newPackageNames.length > oldPackageNames.length && index == oldPackageNames.length - 1) {
+					this.handlePackage(index + 1, true, oldPackageNames, newPackageNames, renameStack, packageNode);
+					return;
 				}
 			}
 
-			// forwards
-			if ((divergenceIndex >= oldPackageNames.length) || packageName.equals(oldPackageNames[divergenceIndex])) {
-				if (!rename) {
-					if (packageName.equals(newPackageNames[divergenceIndex])) {
-						if (newPackageNames.length > oldPackageNames.length && divergenceIndex == oldPackageNames.length - 1) {
-							this.handlePackage(divergenceIndex + 1, true, oldPackageNames, newPackageNames, renameStack, packageNode);
-						}
-
-						this.handlePackage(divergenceIndex, false, oldPackageNames, newPackageNames, renameStack, packageNode);
-					} else {
-						// use parent package to begin rename
-						this.handlePackage(divergenceIndex, true, oldPackageNames, newPackageNames, renameStack, packageNode.getParent());
-					}
-				} else {
-					this.handlePackage(divergenceIndex, true, oldPackageNames, newPackageNames, renameStack, packageNode);
-				}
-			} else if (rename && index >= oldPackageNames.length) {
-				this.handlePackage(divergenceIndex, true, oldPackageNames, newPackageNames, renameStack, packageNode);
+			if (packageName.equals(newPackageNames[index])) {
+				this.handlePackage(index, false, oldPackageNames, newPackageNames, renameStack, packageNode);
+			} else if (index != 0) {
+				this.handlePackage(index, true, oldPackageNames, newPackageNames, renameStack, packageNode);
 			}
 		}
 	}

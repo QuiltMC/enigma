@@ -61,7 +61,9 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 			@Override
 			public void done() {
 				((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(ClassSelectorClassNode.this.getStats()));
+				var expansionState = selector.getExpansionState();
 				selector.reload(ClassSelectorClassNode.this.getParent());
+				selector.restoreExpansionState(expansionState);
 			}
 		};
 
