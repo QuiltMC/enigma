@@ -23,4 +23,9 @@ public class EnclosingMethodIndex implements JarIndexer {
 	public boolean hasEnclosingMethod(ClassEntry entry) {
 		return this.getEnclosingMethodData(entry) != null;
 	}
+
+	@Override
+	public String getTranslationKey() {
+		return "progress.jar.indexing.process.enclosing_methods";
+	}
 }

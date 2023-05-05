@@ -75,7 +75,7 @@
 	"progress.jar.indexing.entries": "条目...",
 	"progress.jar.indexing.references": "条目引用...",
 	"progress.jar.indexing.methods": "桥接方法...",
-	"progress.jar.indexing.process": "处理中...",
+	"progress.jar.indexing.process": "处理中: %s",
 	"progress.jar.writing": "写入 Jar 中...",
 	"progress.sources.writing": "写出源码中...",
 	"progress.classes.deobfuscating": "反混淆类中...",
