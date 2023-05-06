@@ -11,6 +11,7 @@ import cuchaz.enigma.gui.util.AbstractListCellRenderer;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.translation.representation.entry.ParentedEntry;
@@ -25,6 +26,8 @@ import java.awt.Font;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +35,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -46,18 +50,22 @@ import javax.swing.event.DocumentListener;
 
 public class SearchDialog {
 	private final JTextField searchField;
+	private final JCheckBox classesCheckBox;
+	private final JCheckBox methodsCheckBox;
+	private final JCheckBox fieldsCheckBox;
 	private DefaultListModel<SearchEntryImpl> classListModel;
 	private final JList<SearchEntryImpl> classList;
 	private final JDialog dialog;
 
 	private final Gui parent;
-	private final SearchUtil<SearchEntryImpl> su;
+	private final SearchUtil<SearchEntryImpl> util;
+	private final List<Type> searchedTypes = new ArrayList<>();
 	private SearchUtil.SearchControl currentSearch;
 
 	public SearchDialog(Gui parent) {
 		this.parent = parent;
 
-		this.su = new SearchUtil<>();
+		this.util = new SearchUtil<>();
 
 		this.dialog = new JDialog(parent.getFrame(), I18n.translate("menu.search"), true);
 		JPanel contentPane = new JPanel();
@@ -83,7 +91,29 @@ public class SearchDialog {
 		});
 		this.searchField.addKeyListener(GuiUtil.onKeyPress(this::onKeyPressed));
 		this.searchField.addActionListener(e -> this.openSelected());
-		contentPane.add(this.searchField, BorderLayout.NORTH);
+
+		JPanel enabledTypes = new JPanel();
+		enabledTypes.setLayout(new FlowLayout(FlowLayout.CENTER));
+
+		this.classesCheckBox = new JCheckBox(I18n.translate("prompt.search.classes"));
+		this.classesCheckBox.addMouseListener(this.createCheckboxListener(Type.CLASS));
+
+		this.methodsCheckBox = new JCheckBox(I18n.translate("prompt.search.methods"));
+		this.methodsCheckBox.addMouseListener(this.createCheckboxListener(Type.METHOD));
+
+		this.fieldsCheckBox = new JCheckBox(I18n.translate("prompt.search.fields"));
+		this.fieldsCheckBox.addMouseListener(this.createCheckboxListener(Type.FIELD));
+
+		enabledTypes.add(this.classesCheckBox);
+		enabledTypes.add(this.methodsCheckBox);
+		enabledTypes.add(this.fieldsCheckBox);
+
+		JPanel topBar = new JPanel();
+		topBar.setLayout(new BorderLayout());
+		topBar.add(enabledTypes, BorderLayout.SOUTH);
+		topBar.add(this.searchField, BorderLayout.NORTH);
+
+		contentPane.add(topBar, BorderLayout.NORTH);
 
 		this.classListModel = new DefaultListModel<>();
 		this.classList = new JList<>();
@@ -123,29 +153,78 @@ public class SearchDialog {
 		this.dialog.setLocationRelativeTo(parent.getFrame());
 	}
 
+	private MouseListener createCheckboxListener(Type type) {
+		return GuiUtil.onMouseClick(e -> {
+			if (SearchDialog.this.getCheckBox(type).isSelected() && !SearchDialog.this.searchedTypes.contains(type)) {
+				SearchDialog.this.show(false, type);
+			} else {
+				SearchDialog.this.searchedTypes.remove(type);
+				SearchDialog.this.show(false);
+			}
+		});
+	}
+
+	private JCheckBox getCheckBox(Type type) {
+		return switch (type) {
+			case CLASS -> this.classesCheckBox;
+			case METHOD -> this.methodsCheckBox;
+			case FIELD -> this.fieldsCheckBox;
+		};
+	}
+
+	private void clearCheckBoxes() {
+		for (Type type : Type.values()) {
+			this.getCheckBox(type).setSelected(false);
+		}
+	}
+
 	public void show(Type type) {
-		this.su.clear();
+		this.show(true, type);
+	}
+
+	/**
+	 * Shows the search dialog, displaying the provided types.
+	 * @param types the search types to show
+	 * @param clear whether to clear previously saved types. If false with no types, will add all types.
+	 */
+	public void show(boolean clear, Type... types) {
+		this.util.clear();
+		if (clear) {
+			this.searchedTypes.clear();
+			this.clearCheckBoxes();
+		} else {
+			// if no types are provided, add all types to avoid showing an empty dialog
+			if (this.searchedTypes.isEmpty()) {
+				this.searchedTypes.addAll(Arrays.asList(Type.values()));
+			}
+		}
+
+		this.searchedTypes.addAll(Arrays.asList(types));
 
 		final EntryIndex entryIndex = this.parent.getController().getProject().getJarIndex().getEntryIndex();
 
-		switch (type) {
-			case CLASS -> entryIndex.getClasses().parallelStream()
-					.filter(e -> !e.isInnerClass())
-					.map(e -> SearchEntryImpl.from(e, this.parent.getController()))
-					.map(SearchUtil.Entry::from)
-					.sequential()
-					.forEach(this.su::add);
-			case METHOD -> entryIndex.getMethods().parallelStream()
-					.filter(e -> !e.isConstructor() && !entryIndex.getMethodAccess(e).isSynthetic())
-					.map(e -> SearchEntryImpl.from(e, this.parent.getController()))
-					.map(SearchUtil.Entry::from)
-					.sequential()
-					.forEach(this.su::add);
-			case FIELD -> entryIndex.getFields().parallelStream()
-					.map(e -> SearchEntryImpl.from(e, this.parent.getController()))
-					.map(SearchUtil.Entry::from)
-					.sequential()
-					.forEach(this.su::add);
+		for (Type searchedType : this.searchedTypes) {
+			this.getCheckBox(searchedType).setSelected(true);
+
+			switch (searchedType) {
+				case CLASS -> entryIndex.getClasses().parallelStream()
+						.filter(e -> !e.isInnerClass())
+						.map(e -> SearchEntryImpl.from(e, this.parent.getController()))
+						.map(SearchUtil.Entry::from)
+						.sequential()
+						.forEach(this.util::add);
+				case METHOD -> entryIndex.getMethods().parallelStream()
+						.filter(e -> !e.isConstructor() && !entryIndex.getMethodAccess(e).isSynthetic())
+						.map(e -> SearchEntryImpl.from(e, this.parent.getController()))
+						.map(SearchUtil.Entry::from)
+						.sequential()
+						.forEach(this.util::add);
+				case FIELD -> entryIndex.getFields().parallelStream()
+						.map(e -> SearchEntryImpl.from(e, this.parent.getController()))
+						.map(SearchUtil.Entry::from)
+						.sequential()
+						.forEach(this.util::add);
+			}
 		}
 
 		this.updateList();
@@ -165,7 +244,7 @@ public class SearchDialog {
 
 	private void openEntry(SearchEntryImpl entryImpl) {
 		this.close();
-		this.su.hit(entryImpl);
+		this.util.hit(entryImpl);
 		this.parent.getController().navigateTo(entryImpl.obf);
 		if (entryImpl.obf instanceof ClassEntry entry) {
 			if (entryImpl.deobf != null) {
@@ -194,9 +273,9 @@ public class SearchDialog {
 	private void updateList() {
 		if (this.currentSearch != null) this.currentSearch.stop();
 
-		DefaultListModel<SearchEntryImpl> classListModel = new DefaultListModel<>();
-		this.classListModel = classListModel;
-		this.classList.setModel(classListModel);
+		DefaultListModel<SearchEntryImpl> updatedClassListModel = new DefaultListModel<>();
+		this.classListModel = updatedClassListModel;
+		this.classList.setModel(updatedClassListModel);
 
 		// handle these search result like minecraft scheduled tasks to prevent
 		// flooding swing buttons inputs etc with tons of (possibly outdated) invocations
@@ -205,7 +284,7 @@ public class SearchDialog {
 		Runnable updater = new Runnable() {
 			@Override
 			public void run() {
-				if (SearchDialog.this.classListModel != classListModel || !SearchDialog.this.dialog.isVisible()) {
+				if (SearchDialog.this.classListModel != updatedClassListModel || !SearchDialog.this.dialog.isVisible()) {
 					return;
 				}
 
@@ -213,7 +292,7 @@ public class SearchDialog {
 				int count = 100;
 				while (count > 0 && !queue.isEmpty()) {
 					var o = queue.remove();
-					classListModel.insertElementAt(o.e, o.idx);
+					updatedClassListModel.insertElementAt(o.e, o.idx);
 					count--;
 				}
 
@@ -221,7 +300,7 @@ public class SearchDialog {
 			}
 		};
 
-		this.currentSearch = this.su.asyncSearch(this.searchField.getText(), (idx, e) -> queue.add(new Order(idx, e)));
+		this.currentSearch = this.util.asyncSearch(this.searchField.getText(), (idx, e) -> queue.add(new Order(idx, e)));
 		SwingUtilities.invokeLater(updater);
 	}
 
@@ -256,6 +335,11 @@ public class SearchDialog {
 		@Override
 		public String getIdentifier() {
 			return this.obf.getFullName();
+		}
+
+		@Override
+		public Type getType() {
+			return Type.get(this.obf);
 		}
 
 		@Override
@@ -312,9 +396,24 @@ public class SearchDialog {
 		}
 	}
 
+	/**
+	 * Contains all searchable types. Ordered by priority in the search dialog (i.e. the first type here will show up above the second type, etc.).
+	 */
 	public enum Type {
 		CLASS,
 		METHOD,
-		FIELD
+		FIELD;
+
+		public static Type get(Entry<?> entry) {
+			if (entry instanceof ClassEntry) {
+				return CLASS;
+			} else if (entry instanceof MethodEntry) {
+				return METHOD;
+			} else if (entry instanceof FieldEntry) {
+				return FIELD;
+			} else {
+				throw new IllegalArgumentException("Non-searchable entry type: " + entry);
+			}
+		}
 	}
 }

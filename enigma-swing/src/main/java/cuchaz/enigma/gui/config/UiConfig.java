@@ -311,7 +311,7 @@ public final class UiConfig {
 	}
 
 	public static Decompiler getDecompiler() {
-		return ui.data().section(DECOMPILER).setIfAbsentEnum(Decompiler::valueOf, CURRENT, Decompiler.CFR);
+		return ui.data().section(DECOMPILER).setIfAbsentEnum(Decompiler::valueOf, CURRENT, Decompiler.QUILTFLOWER);
 	}
 
 	public static void setDecompiler(Decompiler d) {
