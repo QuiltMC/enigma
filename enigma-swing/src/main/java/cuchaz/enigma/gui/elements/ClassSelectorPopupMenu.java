@@ -4,6 +4,7 @@ import cuchaz.enigma.gui.ClassSelector;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.dialog.ProgressDialog;
 import cuchaz.enigma.gui.docker.ClassesDocker;
+import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
 import cuchaz.enigma.gui.node.ClassSelectorPackageNode;
 import cuchaz.enigma.translation.mapping.EntryChange;
@@ -17,8 +18,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ClassSelectorPopupMenu {
 	private final Gui gui;
@@ -98,7 +100,7 @@ public class ClassSelectorPopupMenu {
 			}
 		}
 
-		String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("gaming"), pathString.toString());
+		String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("popup_menu.class_selector.package_rename.title"), pathString.toString());
 
 		if (input == null || !input.matches("[a-z_/]+") || input.isBlank() || input.startsWith("/") || input.endsWith("/")) {
 			this.gui.getNotificationManager().notify(Message.INVALID_PACKAGE_NAME);
@@ -108,31 +110,47 @@ public class ClassSelectorPopupMenu {
 		String[] oldPackageNames = pathString.toString().split("/");
 		String[] newPackageNames = input.split("/");
 
-		List<Runnable> renameStack = new ArrayList<>();
+		Map<String, Runnable> renameStack = new HashMap<>();
 
 		ProgressDialog.runOffThread(this.gui.getFrame(), listener -> {
-			listener.init(1, I18n.translate("popup_menu.class_selector.discovering_classes_to_rename"));
+			listener.init(1, I18n.translate("popup_menu.class_selector.package_rename.discovering"));
+			TreeNode root = this.selector.getPackageManager().getRoot();
 
-			for (int i = 0; i < this.selector.getPackageManager().getRoot().getChildCount(); i++) {
-				TreeNode node = this.selector.getPackageManager().getRoot().getChildAt(i);
+			for (int i = 0; i < root.getChildCount(); i++) {
+				TreeNode node = root.getChildAt(i);
 				this.handleNode(0, false, oldPackageNames, newPackageNames, renameStack, node);
 			}
 
-			listener.init(renameStack.size(), I18n.translate("popup_menu.class_selector.renaming_classes"));
+			listener.init(renameStack.size(), I18n.translate("popup_menu.class_selector.package_rename.renaming_classes"));
 
-			for (int j = 0; j < renameStack.size(); j++) {
-				listener.step(j,  I18n.translate("popup_menu.class_selector.renaming_class"));
-				renameStack.get(j).run();
+			Map<ClassesDocker, List<ClassSelector.StateEntry>> expansionStates = new HashMap<>();
+			for (Docker docker : Docker.getDockers().values()) {
+				if (docker instanceof ClassesDocker classesDocker) {
+					expansionStates.put(classesDocker, classesDocker.getClassSelector().getExpansionState());
+				}
+			}
+
+			int i = 0;
+			for (var entry : renameStack.entrySet()) {
+				listener.step(i, I18n.translateFormatted("popup_menu.class_selector.package_rename.renaming_class", entry.getKey()));
+				entry.getValue().run();
+				i++;
+			}
+
+			for (var entry : expansionStates.entrySet()) {
+				ClassSelector classSelector = entry.getKey().getClassSelector();
+				classSelector.restoreExpansionState(entry.getValue());
+				classSelector.reload();
 			}
 		});
 	}
 
-	private void handleNode(int divergenceIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, List<Runnable> renameStack, TreeNode node) {
+	private void handleNode(int divergenceIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, Map<String, Runnable> renameStack, TreeNode node) {
 		if (node instanceof ClassSelectorClassNode classNode && rename) {
 			String oldName = classNode.getClassEntry().getFullName();
 			int finalPackageIndex = divergenceIndex - 1;
 
-			renameStack.add(() -> {
+			renameStack.put(oldName, () -> {
 				String[] split = oldName.split("/");
 				StringBuilder newPackages = new StringBuilder();
 
@@ -185,7 +203,7 @@ public class ClassSelectorPopupMenu {
 				}
 
 				String newName = String.join("/", split);
-				this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(classNode.getObfEntry()).withDeobfName(newName));
+				this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(classNode.getObfEntry()).withDeobfName(newName), false);
 			});
 		} else if (node instanceof ClassSelectorPackageNode packageNode) {
 			String packageName = packageNode.getPackageName().substring(packageNode.getPackageName().lastIndexOf("/") + 1);
@@ -213,9 +231,7 @@ public class ClassSelectorPopupMenu {
 
 			if (packageName.equals(newPackageNames[index])) {
 				this.handlePackage(index, false, oldPackageNames, newPackageNames, renameStack, packageNode);
-			// todo this makes renaming a package at index zero not work
-			// needs a better solution
-			} else if (index != 0) {
+			} else if (packageName.equals(oldPackageNames[index])) {
 				this.handlePackage(index, true, oldPackageNames, newPackageNames, renameStack, packageNode);
 			}
 		}
@@ -227,7 +243,7 @@ public class ClassSelectorPopupMenu {
 		}
 	}
 
-	private void handlePackage(int divergenceIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, List<Runnable> renameStack, TreeNode node) {
+	private void handlePackage(int divergenceIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, Map<String, Runnable> renameStack, TreeNode node) {
 		if (!rename) {
 			divergenceIndex++;
 		}

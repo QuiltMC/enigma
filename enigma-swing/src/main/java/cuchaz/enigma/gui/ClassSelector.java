@@ -240,8 +240,6 @@ public class ClassSelector extends JTree {
 	}
 
 	public void restoreExpansionState(List<StateEntry> expansionState) {
-		this.clearSelection();
-
 		for (StateEntry entry : expansionState) {
 			if (entry.state() == State.EXPANDED) {
 				this.expandPath(entry.path());
@@ -292,7 +290,6 @@ public class ClassSelector extends JTree {
 	}
 
 	public void reloadEntry(ClassEntry classEntry) {
-		this.removeEntry(classEntry);
 		this.moveClassIn(classEntry);
 		this.reloadStats(classEntry);
 	}

@@ -113,6 +113,10 @@
 	"popup_menu.class_selector.rename_class": "Rename Class",
 	"popup_menu.class_selector.expand_all": "Expand All",
 	"popup_menu.class_selector.collapse_all": "Collapse All",
+  	"popup_menu.class_selector.package_rename.title": "Renaming package...",
+  	"popup_menu.class_selector.package_rename.discovering": "Discovering classes to rename...",
+  	"popup_menu.class_selector.package_rename.renaming_classes": "Renaming classes...",
+  	"popup_menu.class_selector.package_rename.renaming_class": "Renaming class: %s",
 
 	"editor.decompiling": "Decompiling...",
 	"editor.decompile_error": "An error was encountered while decompiling.",

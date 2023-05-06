@@ -560,7 +560,7 @@ public class Gui {
 		}
 	}
 
-	public void moveClassTree(Entry<?> obfEntry, boolean isOldOb, boolean isNewOb) {
+	public void moveClassTree(Entry<?> obfEntry, boolean updateSwingState, boolean isOldOb, boolean isNewOb) {
 		ClassEntry classEntry = obfEntry.getContainingClass();
 
 		ClassSelector deobfuscatedClassSelector = Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector();
@@ -572,20 +572,26 @@ public class Gui {
 		if (!isNewOb && isOldOb) {
 			// obfuscated -> deobfuscated
 			obfuscatedClassSelector.removeEntry(classEntry);
-			obfuscatedClassSelector.reload();
+			if (updateSwingState) {
+				obfuscatedClassSelector.reload();
+			}
 		} else if (!isOldOb && isNewOb) {
 			// deobfuscated -> obfuscated
 			deobfuscatedClassSelector.removeEntry(classEntry);
-			deobfuscatedClassSelector.reload();
+			if (updateSwingState) {
+				deobfuscatedClassSelector.reload();
+			}
 		}
 
-		this.reloadClassEntry(classEntry, isOldOb, isNewOb);
+		this.reloadClassEntry(classEntry, updateSwingState, isOldOb, isNewOb);
 
-		deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
-		obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
+		if (updateSwingState) {
+			deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
+			obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
+		}
 	}
 
-	public void reloadClassEntry(ClassEntry classEntry, boolean isOldOb, boolean isNewOb) {
+	public void reloadClassEntry(ClassEntry classEntry, boolean updateSwingState, boolean isOldOb, boolean isNewOb) {
 		ClassSelector selector;
 
 		if (!isNewOb || isOldOb) {
@@ -594,14 +600,22 @@ public class Gui {
 			selector = Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector();
 		}
 
-		selector.reloadEntry(classEntry);
-		selector.reload();
+		if (updateSwingState) {
+			selector.reloadEntry(classEntry);
+			selector.reload();
+		} else {
+			selector.moveClassIn(classEntry);
+		}
 
-		ClassSelector allClassesClassSelector = Docker.getDocker(AllClassesDocker.class).getClassSelector();
-		List<ClassSelector.StateEntry> expansionState = allClassesClassSelector.getExpansionState();
-		allClassesClassSelector.reloadEntry(classEntry);
-		allClassesClassSelector.reload();
-		allClassesClassSelector.restoreExpansionState(expansionState);
+		ClassSelector allClassesSelector = Docker.getDocker(AllClassesDocker.class).getClassSelector();
+		List<ClassSelector.StateEntry> expansionState = allClassesSelector.getExpansionState();
+		if (updateSwingState) {
+			allClassesSelector.reloadEntry(classEntry);
+			allClassesSelector.reload();
+			allClassesSelector.restoreExpansionState(expansionState);
+		} else {
+			allClassesSelector.moveClassIn(classEntry);
+		}
 	}
 
 	public SearchDialog getSearchDialog() {

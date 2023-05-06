@@ -84,7 +84,7 @@ import javax.swing.SwingUtilities;
 
 public class GuiController implements ClientPacketHandler {
 	private final Gui gui;
-	public final Enigma enigma;
+	private final Enigma enigma;
 
 	public EnigmaProject project;
 	private IndexTreeBuilder indexTreeBuilder;
@@ -492,7 +492,7 @@ public class GuiController implements ClientPacketHandler {
 	@Override
 	public boolean applyChangeFromServer(EntryChange<?> change) {
 		ValidationContext vc = new ValidationContext(this.gui.getNotificationManager());
-		this.applyChange0(vc, change);
+		this.applyChange0(vc, change, true);
 		this.gui.updateStructure(this.gui.getActiveEditor());
 
 		return vc.canProceed();
@@ -507,7 +507,11 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void applyChange(ValidationContext vc, EntryChange<?> change) {
-		this.applyChange0(vc, change);
+		this.applyChange(vc, change, true);
+	}
+
+	public void applyChange(ValidationContext vc, EntryChange<?> change, boolean updateSwingState) {
+		this.applyChange0(vc, change, updateSwingState);
 		this.gui.updateStructure(this.gui.getActiveEditor());
 		if (!vc.canProceed()) {
 			return;
@@ -516,7 +520,7 @@ public class GuiController implements ClientPacketHandler {
 		this.sendPacket(new EntryChangeC2SPacket(change));
 	}
 
-	private void applyChange0(ValidationContext vc, EntryChange<?> change) {
+	private void applyChange0(ValidationContext vc, EntryChange<?> change, boolean updateSwingState) {
 		Entry<?> target = change.getTarget();
 		EntryMapping prev = this.project.getMapper().getDeobfMapping(target);
 		EntryMapping mapping = EntryUtil.applyChange(vc, this.project.getMapper(), change);
@@ -536,11 +540,11 @@ public class GuiController implements ClientPacketHandler {
 		boolean isNewOb = mapping.targetName() == null;
 
 		if (renamed && target instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
-			this.gui.moveClassTree(target, isOldOb, isNewOb);
+			this.gui.moveClassTree(target, updateSwingState, isOldOb, isNewOb);
 			return;
 		}
 
-		this.gui.reloadClassEntry(change.getTarget().getTopLevelClass(), isOldOb, isNewOb);
+		this.gui.reloadClassEntry(change.getTarget().getTopLevelClass(), updateSwingState, isOldOb, isNewOb);
 	}
 
 	public void openStats(Set<StatsMember> includedMembers, String topLevelPackage, boolean includeSynthetic) {
@@ -580,6 +584,14 @@ public class GuiController implements ClientPacketHandler {
 
 	public EnigmaServer getServer() {
 		return this.server;
+	}
+
+	public EnigmaProject getProject() {
+		return this.project;
+	}
+
+	public Enigma getEnigma() {
+		return this.enigma;
 	}
 
 	public void createClient(String username, String ip, int port, char[] password) throws IOException {
