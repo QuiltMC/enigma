@@ -22,7 +22,9 @@ import java.util.List;
 
 public class ClassSelectorPopupMenu {
 	private final Gui gui;
+	private final ClassSelector selector;
 	private final JPopupMenu ui;
+
 	private final JMenuItem renamePackage = new JMenuItem();
 	private final JMenuItem renameClass = new JMenuItem();
 	private final JMenuItem toggleMapping = new JMenuItem();
@@ -31,6 +33,7 @@ public class ClassSelectorPopupMenu {
 
 	public ClassSelectorPopupMenu(Gui gui, ClassesDocker docker) {
 		this.gui = gui;
+		this.selector = docker.getClassSelector();
 		this.ui = new JPopupMenu();
 
 		this.ui.add(this.renamePackage);
@@ -40,77 +43,15 @@ public class ClassSelectorPopupMenu {
 		this.ui.add(this.expandAll);
 		this.ui.add(this.collapseAll);
 
-		ClassSelector selector = docker.getClassSelector();
-
-		this.renamePackage.addActionListener(a -> {
-			TreePath path;
-
-			if (selector.getSelectedClass() != null
-					&& selector.getSelectionPath() != null) {
-				// Rename parent package if selected path is a class
-				path = selector.getSelectionPath().getParentPath();
-
-				// do not allow renaming if the class has no package
-				if (path.getPathCount() == 1) {
-					return;
-				}
-			} else {
-				// Rename selected path if it's already a package
-				path = selector.getSelectionPath();
-			}
-
-			if (path == null) {
-				return;
-			}
-
-			StringBuilder pathString = new StringBuilder();
-			for (int i = 0; i < path.getPathCount(); i++) {
-				String component = path.getPathComponent(i).toString();
-
-				if (!component.isBlank()) {
-					pathString.append(component);
-					if (i < path.getPathCount() - 1) {
-						pathString.append("/");
-					}
-				}
-			}
-
-			String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("gaming"), pathString.toString());
-
-			if (input == null || !input.matches("[a-z_/]+") || input.isBlank() || input.startsWith("/") || input.endsWith("/")) {
-				this.gui.getNotificationManager().notify(Message.INVALID_PACKAGE_NAME);
-				return;
-			}
-
-			String[] oldPackageNames = pathString.toString().split("/");
-			String[] newPackageNames = input.split("/");
-
-			List<Runnable> renameStack = new ArrayList<>();
-
-			ProgressDialog.runOffThread(this.gui.getFrame(), listener -> {
-				listener.init(1, "discovering classes to rename");
-
-				for (int i = 0; i < selector.getPackageManager().getRoot().getChildCount(); i++) {
-					TreeNode node = selector.getPackageManager().getRoot().getChildAt(i);
-					this.handleNode(0, false, oldPackageNames, newPackageNames, renameStack, node);
-				}
-
-				listener.init(renameStack.size(), "renaming classes");
-
-				for (int j = 0; j < renameStack.size(); j++) {
-					listener.step(j, "still renaming classes");
-					renameStack.get(j).run();
-				}
-			});
-		});
+		this.renamePackage.addActionListener(a -> this.onRenamePackage());
 
 		this.renameClass.addActionListener(a -> {
-			String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("gaming"), selector.getSelectedClass().getFullName());
-			this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(selector.getSelectedClass(true)).withDeobfName(input));
+			String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("gaming"), this.selector.getSelectedClass().getFullName());
+			this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(this.selector.getSelectedClass(true)).withDeobfName(input));
 		});
 
 		this.toggleMapping.addActionListener(a -> {
-			ClassEntry classEntry = selector.getSelectedClass(true);
+			ClassEntry classEntry = this.selector.getSelectedClass(true);
 			if (classEntry == null) {
 				return;
 			}
@@ -118,10 +59,72 @@ public class ClassSelectorPopupMenu {
 			this.gui.toggleMappingFromEntry(classEntry);
 		});
 
-		this.expandAll.addActionListener(a -> selector.expandAll());
-		this.collapseAll.addActionListener(a -> selector.collapseAll());
+		this.expandAll.addActionListener(a -> this.selector.expandAll());
+		this.collapseAll.addActionListener(a -> this.selector.collapseAll());
 
 		this.retranslateUi();
+	}
+
+	private void onRenamePackage() {
+		TreePath path;
+
+		if (this.selector.getSelectedClass() != null
+				&& this.selector.getSelectionPath() != null) {
+			// Rename parent package if selected path is a class
+			path = this.selector.getSelectionPath().getParentPath();
+
+			// do not allow renaming if the class has no package
+			if (path.getPathCount() == 1) {
+				return;
+			}
+		} else {
+			// Rename selected path if it's already a package
+			path = this.selector.getSelectionPath();
+		}
+
+		if (path == null) {
+			return;
+		}
+
+		StringBuilder pathString = new StringBuilder();
+		for (int i = 0; i < path.getPathCount(); i++) {
+			String component = path.getPathComponent(i).toString();
+
+			if (!component.isBlank()) {
+				pathString.append(component);
+				if (i < path.getPathCount() - 1) {
+					pathString.append("/");
+				}
+			}
+		}
+
+		String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("gaming"), pathString.toString());
+
+		if (input == null || !input.matches("[a-z_/]+") || input.isBlank() || input.startsWith("/") || input.endsWith("/")) {
+			this.gui.getNotificationManager().notify(Message.INVALID_PACKAGE_NAME);
+			return;
+		}
+
+		String[] oldPackageNames = pathString.toString().split("/");
+		String[] newPackageNames = input.split("/");
+
+		List<Runnable> renameStack = new ArrayList<>();
+
+		ProgressDialog.runOffThread(this.gui.getFrame(), listener -> {
+			listener.init(1, I18n.translate("popup_menu.class_selector.discovering_classes_to_rename"));
+
+			for (int i = 0; i < this.selector.getPackageManager().getRoot().getChildCount(); i++) {
+				TreeNode node = this.selector.getPackageManager().getRoot().getChildAt(i);
+				this.handleNode(0, false, oldPackageNames, newPackageNames, renameStack, node);
+			}
+
+			listener.init(renameStack.size(), I18n.translate("popup_menu.class_selector.renaming_classes"));
+
+			for (int j = 0; j < renameStack.size(); j++) {
+				listener.step(j,  I18n.translate("popup_menu.class_selector.renaming_class"));
+				renameStack.get(j).run();
+			}
+		});
 	}
 
 	private void handleNode(int divergenceIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, List<Runnable> renameStack, TreeNode node) {
@@ -210,6 +213,8 @@ public class ClassSelectorPopupMenu {
 
 			if (packageName.equals(newPackageNames[index])) {
 				this.handlePackage(index, false, oldPackageNames, newPackageNames, renameStack, packageNode);
+			// todo this makes renaming a package at index zero not work
+			// needs a better solution
 			} else if (index != 0) {
 				this.handlePackage(index, true, oldPackageNames, newPackageNames, renameStack, packageNode);
 			}
@@ -251,10 +256,10 @@ public class ClassSelectorPopupMenu {
 	}
 
 	public void retranslateUi() {
-		this.renamePackage.setText(I18n.translate("popup_menu.deobf_panel.rename_package"));
-		this.renameClass.setText(I18n.translate("popup_menu.deobf_panel.rename_class"));
-		this.expandAll.setText(I18n.translate("popup_menu.deobf_panel.expand_all"));
-		this.collapseAll.setText(I18n.translate("popup_menu.deobf_panel.collapse_all"));
+		this.renamePackage.setText(I18n.translate("popup_menu.class_selector.rename_package"));
+		this.renameClass.setText(I18n.translate("popup_menu.class_selector.rename_class"));
+		this.expandAll.setText(I18n.translate("popup_menu.class_selector.expand_all"));
+		this.collapseAll.setText(I18n.translate("popup_menu.class_selector.collapse_all"));
 		this.toggleMapping.setText(I18n.translate("popup_menu.mark_deobfuscated"));
 	}
 }

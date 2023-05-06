@@ -16,11 +16,11 @@ public abstract class ClassesDocker extends Docker {
 
 	protected ClassesDocker(Gui gui, ClassSelector selector) {
 		super(gui);
-		this.popupMenu = new ClassSelectorPopupMenu(gui, this);
 		this.selector = selector;
 		this.selector.addMouseListener(GuiUtil.onMousePress(this::onPress));
 		this.selector.setSelectionListener(gui.getController()::navigateTo);
 		this.selector.setRenameSelectionListener(((vc, prevData, data, node) -> gui.onRenameFromClassTree(vc, data, node)));
+		this.popupMenu = new ClassSelectorPopupMenu(gui, this);
 
 		this.add(new JScrollPane(this.selector), BorderLayout.CENTER);
 	}
