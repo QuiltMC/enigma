@@ -88,6 +88,14 @@ public class ValidationContext {
 		 * Takes a generic message and displays it to the user.
 		 * @param message the message to display
 		 */
+		default void notify(Message message) {
+			this.notify(new ParameterizedMessage(message));
+		}
+
+		/**
+		 * Takes a generic message and displays it to the user.
+		 * @param message the message to display
+		 */
 		void notify(ParameterizedMessage message);
 
 		/**

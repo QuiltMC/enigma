@@ -3,11 +3,13 @@ package cuchaz.enigma.gui.elements;
 import cuchaz.enigma.gui.ClassSelector;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.dialog.ProgressDialog;
-import cuchaz.enigma.gui.docker.DeobfuscatedClassesDocker;
+import cuchaz.enigma.gui.docker.ClassesDocker;
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
 import cuchaz.enigma.gui.node.ClassSelectorPackageNode;
 import cuchaz.enigma.translation.mapping.EntryChange;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.utils.I18n;
+import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 import javax.swing.JMenuItem;
@@ -27,17 +29,18 @@ public class ClassSelectorPopupMenu {
 	private final JMenuItem expandAll = new JMenuItem();
 	private final JMenuItem collapseAll = new JMenuItem();
 
-	public ClassSelectorPopupMenu(Gui gui, DeobfuscatedClassesDocker panel) {
+	public ClassSelectorPopupMenu(Gui gui, ClassesDocker docker) {
 		this.gui = gui;
 		this.ui = new JPopupMenu();
 
 		this.ui.add(this.renamePackage);
 		this.ui.add(this.renameClass);
+		this.ui.add(this.toggleMapping);
 		this.ui.addSeparator();
 		this.ui.add(this.expandAll);
 		this.ui.add(this.collapseAll);
 
-		ClassSelector selector = panel.getClassSelector();
+		ClassSelector selector = docker.getClassSelector();
 
 		this.renamePackage.addActionListener(a -> {
 			TreePath path;
@@ -75,7 +78,7 @@ public class ClassSelectorPopupMenu {
 			String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("gaming"), pathString.toString());
 
 			if (input == null || !input.matches("[a-z_/]+") || input.isBlank() || input.startsWith("/") || input.endsWith("/")) {
-				//this.gui.getNotificationManager().notify(Message.INVALID_PACKAGE);
+				this.gui.getNotificationManager().notify(Message.INVALID_PACKAGE_NAME);
 				return;
 			}
 
@@ -106,6 +109,15 @@ public class ClassSelectorPopupMenu {
 			this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(selector.getSelectedClass(true)).withDeobfName(input));
 		});
 
+		this.toggleMapping.addActionListener(a -> {
+			ClassEntry classEntry = selector.getSelectedClass(true);
+			if (classEntry == null) {
+				return;
+			}
+
+			this.gui.toggleMappingFromEntry(classEntry);
+		});
+
 		this.expandAll.addActionListener(a -> selector.expandAll());
 		this.collapseAll.addActionListener(a -> selector.collapseAll());
 
@@ -132,29 +144,31 @@ public class ClassSelectorPopupMenu {
 						}
 					}
 				} else {
-					// todo backwards renaming throws away packages after the renamed one
 					for (int i = 0; i < oldPackageNames.length; i++) {
 						if (i > newPackageNames.length - 1 || !oldPackageNames[i].equals(newPackageNames[i])) {
 							StringBuilder string = new StringBuilder();
-							for (int j = 0; j <= i - 1; j++) {
-								if (!string.isEmpty()) {
-									string.append("/");
-								}
 
+							// append preceding old package names
+							for (int j = 0; j <= i - 1; j++) {
+								appendSlash(string);
 								string.append(oldPackageNames[j]);
 							}
 
+							// append new package names
 							for (int j = i; j < newPackageNames.length; j++) {
-								if (!string.isEmpty()) {
-									string.append("/");
-								}
-
+								appendSlash(string);
 								string.append(newPackageNames[j]);
 							}
 
-							if (!string.isEmpty()) {
-								string.append("/");
+							// append the remaining old package names
+							if (split.length - 2 >= i) {
+								for (int j = i + 1; j <= split.length - 2; j++) {
+									appendSlash(string);
+									string.append(split[j]);
+								}
 							}
+
+							appendSlash(string);
 							string.append(classNode.getClassEntry().getSimpleName());
 							split = string.toString().split("/");
 							break;
@@ -202,6 +216,12 @@ public class ClassSelectorPopupMenu {
 		}
 	}
 
+	private static void appendSlash(StringBuilder string) {
+		if (!string.isEmpty()) {
+			string.append("/");
+		}
+	}
+
 	private void handlePackage(int divergenceIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, List<Runnable> renameStack, TreeNode node) {
 		if (!rename) {
 			divergenceIndex++;
@@ -213,9 +233,19 @@ public class ClassSelectorPopupMenu {
 	}
 
 	public void show(ClassSelector selector, int x, int y) {
+		ClassEntry selected = selector.getSelectedClass(true);
+
 		// Only enable rename class if selected path is a class
-		this.renameClass.setEnabled(selector.getSelectedClass() != null);
-		// todo mark as deob / mark as ob
+		this.renameClass.setEnabled(selected != null);
+		// update toggle mapping text to match
+		this.toggleMapping.setEnabled(selected != null);
+		if (selected != null) {
+			if (this.gui.getController().project.getMapper().extendedDeobfuscate(selected).isDeobfuscated()) {
+				this.toggleMapping.setText(I18n.translate("popup_menu.reset_obfuscated"));
+			} else {
+				this.toggleMapping.setText(I18n.translate("popup_menu.mark_deobfuscated"));
+			}
+		}
 
 		this.ui.show(selector, x, y);
 	}
@@ -225,5 +255,6 @@ public class ClassSelectorPopupMenu {
 		this.renameClass.setText(I18n.translate("popup_menu.deobf_panel.rename_class"));
 		this.expandAll.setText(I18n.translate("popup_menu.deobf_panel.expand_all"));
 		this.collapseAll.setText(I18n.translate("popup_menu.deobf_panel.collapse_all"));
+		this.toggleMapping.setText(I18n.translate("popup_menu.mark_deobfuscated"));
 	}
 }
