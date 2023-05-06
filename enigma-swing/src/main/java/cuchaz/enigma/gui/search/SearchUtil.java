@@ -1,5 +1,6 @@
 package cuchaz.enigma.gui.search;
 
+import cuchaz.enigma.gui.dialog.SearchDialog;
 import cuchaz.enigma.utils.Pair;
 
 import java.util.ArrayList;
@@ -68,6 +69,7 @@ public class SearchUtil<T extends SearchEntry> {
 		AtomicInteger size = new AtomicInteger();
 		AtomicBoolean control = new AtomicBoolean(false);
 		AtomicInteger elapsed = new AtomicInteger();
+
 		for (Entry<T> value : entries.values()) {
 			this.searchExecutor.execute(() -> {
 				try {
@@ -116,7 +118,7 @@ public class SearchUtil<T extends SearchEntry> {
 
 	public void hit(T entry) {
 		if (this.entries.containsKey(entry)) {
-			this.hitCount.compute(entry.getIdentifier(), (_id, i) -> i == null ? 1 : i + 1);
+			this.hitCount.compute(entry.getIdentifier(), (id, i) -> i == null ? 1 : i + 1);
 		}
 	}
 
@@ -134,7 +136,10 @@ public class SearchUtil<T extends SearchEntry> {
 			float maxScore = (float) Arrays.stream(this.components)
 					.mapToDouble(name -> getScoreFor(ucTerm, name))
 					.max().orElse(0.0);
-			return maxScore * (hits + 1);
+
+			// modify by type
+			int typeModifier = SearchDialog.Type.values().length - this.searchEntry.getType().ordinal() + 1;
+			return maxScore * (hits + 1) * typeModifier;
 		}
 
 		/**

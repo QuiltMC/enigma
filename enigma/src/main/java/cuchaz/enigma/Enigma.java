@@ -12,6 +12,7 @@ import cuchaz.enigma.classprovider.CachingClassProvider;
 import cuchaz.enigma.classprovider.ClassProvider;
 import cuchaz.enigma.classprovider.CombiningClassProvider;
 import cuchaz.enigma.classprovider.JarClassProvider;
+import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Utils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableListMultimap;
@@ -57,7 +58,17 @@ public class Enigma {
 
 		JarIndex index = JarIndex.empty();
 		index.indexJar(scope, classProvider, progress);
-		this.services.get(JarIndexerService.TYPE).forEach(indexer -> indexer.acceptJar(scope, classProvider, index));
+
+		var indexers = this.services.getWithIds(JarIndexerService.TYPE);
+		progress.init(indexers.size(), I18n.translate("progress.jar.custom_indexing"));
+
+		int i = 1;
+		for (var service : indexers) {
+			progress.step(i++, I18n.translateFormatted("progress.jar.custom_indexing.indexer", service.id()));
+			service.service().acceptJar(scope, classProvider, index);
+		}
+
+		progress.step(i, I18n.translate("progress.jar.custom_indexing.finished"));
 
 		return new EnigmaProject(this, path, classProvider, index, Utils.zipSha1(path));
 	}
@@ -103,7 +114,7 @@ public class Enigma {
 	private static class PluginContext implements EnigmaPluginContext {
 		private final EnigmaProfile profile;
 
-		private final ImmutableListMultimap.Builder<EnigmaServiceType<?>, EnigmaService> services = ImmutableListMultimap.builder();
+		private final ImmutableListMultimap.Builder<EnigmaServiceType<?>, EnigmaServices.RegisteredService<?>> services = ImmutableListMultimap.builder();
 
 		PluginContext(EnigmaProfile profile) {
 			this.profile = profile;
@@ -116,7 +127,7 @@ public class Enigma {
 			for (EnigmaProfile.Service serviceProfile : serviceProfiles) {
 				if (serviceProfile.matches(id)) {
 					T service = factory.create(this.getServiceContext(serviceProfile));
-					this.services.put(serviceType, service);
+					this.services.put(serviceType, new EnigmaServices.RegisteredService<>(id, service));
 					break;
 				}
 			}

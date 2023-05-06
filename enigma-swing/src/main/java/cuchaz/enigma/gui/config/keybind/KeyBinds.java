@@ -49,7 +49,9 @@ public final class KeyBinds {
 	public static final KeyBind RELOAD_MAPPINGS = KeyBind.builder("reload_mappings", MENU_CATEGORY).build();
 	public static final KeyBind RELOAD_ALL = KeyBind.builder("reload_all", MENU_CATEGORY).build();
 	public static final KeyBind MAPPING_STATS = KeyBind.builder("mapping_stats", MENU_CATEGORY).build();
-	public static final KeyBind SEARCH_CLASS = KeyBind.builder("search_class", MENU_CATEGORY).mod(KeyEvent.SHIFT_DOWN_MASK).key(KeyEvent.VK_SPACE).build();
+	public static final KeyBind SEARCH = KeyBind.builder("search", MENU_CATEGORY).mod(KeyEvent.SHIFT_DOWN_MASK).key(KeyEvent.VK_SPACE).build();
+	public static final KeyBind SEARCH_ALL = KeyBind.builder("search_all", MENU_CATEGORY).build();
+	public static final KeyBind SEARCH_CLASS = KeyBind.builder("search_class", MENU_CATEGORY).build();
 	public static final KeyBind SEARCH_METHOD = KeyBind.builder("search_method", MENU_CATEGORY).build();
 	public static final KeyBind SEARCH_FIELD = KeyBind.builder("search_field", MENU_CATEGORY).build();
 
@@ -58,16 +60,16 @@ public final class KeyBinds {
 			EDITOR_EDIT_JAVADOC, EDITOR_SHOW_INHERITANCE, EDITOR_SHOW_IMPLEMENTATIONS, EDITOR_SHOW_CALLS,
 			EDITOR_SHOW_CALLS_SPECIFIC, EDITOR_OPEN_ENTRY, EDITOR_OPEN_PREVIOUS, EDITOR_OPEN_NEXT,
 			EDITOR_TOGGLE_MAPPING, EDITOR_ZOOM_IN, EDITOR_ZOOM_OUT, EDITOR_CLOSE_TAB, EDITOR_RELOAD_CLASS,
-			EDITOR_QUICK_FIND, SAVE_MAPPINGS, DROP_MAPPINGS, RELOAD_MAPPINGS, RELOAD_ALL, MAPPING_STATS, SEARCH_CLASS,
-			SEARCH_METHOD, SEARCH_FIELD).map(KeyBind::toImmutable).toList();
+			EDITOR_QUICK_FIND, SAVE_MAPPINGS, DROP_MAPPINGS, RELOAD_MAPPINGS, RELOAD_ALL, MAPPING_STATS,
+			SEARCH, SEARCH_ALL, SEARCH_CLASS, SEARCH_METHOD, SEARCH_FIELD).map(KeyBind::toImmutable).toList();
 
 	private static final List<KeyBind> CONFIGURABLE_KEY_BINDS = List.of(EDITOR_RENAME, EDITOR_PASTE, EDITOR_EDIT_JAVADOC,
 			EDITOR_SHOW_INHERITANCE, EDITOR_SHOW_IMPLEMENTATIONS, EDITOR_SHOW_CALLS, EDITOR_SHOW_CALLS_SPECIFIC,
 			EDITOR_OPEN_ENTRY, EDITOR_OPEN_PREVIOUS, EDITOR_OPEN_NEXT, EDITOR_TOGGLE_MAPPING, EDITOR_ZOOM_IN,
 			EDITOR_ZOOM_OUT, EDITOR_CLOSE_TAB, EDITOR_RELOAD_CLASS, SAVE_MAPPINGS, DROP_MAPPINGS, RELOAD_MAPPINGS,
-			RELOAD_ALL, MAPPING_STATS, SEARCH_CLASS, SEARCH_METHOD, SEARCH_FIELD);
+			RELOAD_ALL, MAPPING_STATS, SEARCH, SEARCH_ALL, SEARCH_CLASS, SEARCH_METHOD, SEARCH_FIELD);
 	// Editing entries in CONFIGURABLE_KEY_BINDS directly wouldn't allow to revert the changes instead of saving
-	private static List<KeyBind> EDITABLE_KEY_BINDS;
+	private static List<KeyBind> editableKeyBinds;
 
 	private KeyBinds() {
 	}
@@ -77,7 +79,7 @@ public final class KeyBinds {
 	}
 
 	public static Map<String, List<KeyBind>> getEditableKeyBindsByCategory() {
-		return EDITABLE_KEY_BINDS.stream()
+		return editableKeyBinds.stream()
 				.collect(Collectors.groupingBy(KeyBind::category));
 	}
 
@@ -93,7 +95,7 @@ public final class KeyBinds {
 		boolean modified = false;
 		for (int i = 0; i < CONFIGURABLE_KEY_BINDS.size(); i++) {
 			KeyBind keyBind = CONFIGURABLE_KEY_BINDS.get(i);
-			KeyBind editedKeyBind = EDITABLE_KEY_BINDS.get(i);
+			KeyBind editedKeyBind = editableKeyBinds.get(i);
 			if (!editedKeyBind.equals(keyBind)) {
 				modified = true;
 				keyBind.setFrom(editedKeyBind);
@@ -108,13 +110,13 @@ public final class KeyBinds {
 
 	// Reset the key binds to the saved values
 	public static void resetEditableKeyBinds() {
-		EDITABLE_KEY_BINDS = CONFIGURABLE_KEY_BINDS.stream().map(KeyBind::copy)
+		editableKeyBinds = CONFIGURABLE_KEY_BINDS.stream().map(KeyBind::copy)
 				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	public static void resetToDefault(KeyBind keyBind) {
 		// Ensure the key bind is editable
-		if (!EDITABLE_KEY_BINDS.contains(keyBind)) {
+		if (!editableKeyBinds.contains(keyBind)) {
 			return;
 		}
 
@@ -127,6 +129,6 @@ public final class KeyBinds {
 	}
 
 	public static List<KeyBind> getEditableKeyBinds() {
-		return EDITABLE_KEY_BINDS;
+		return editableKeyBinds;
 	}
 }

@@ -127,7 +127,7 @@
 	"progress.jar.indexing.entries": "エントリー...",
 	"progress.jar.indexing.references": "エントリーの参照...",
 	"progress.jar.indexing.methods": "ブリッジメソッド...",
-	"progress.jar.indexing.process": "処理中...",
+	"progress.jar.indexing.process": "処理中: %s",
 	"progress.jar.writing": "Jarを書き出し中...",
 	"progress.sources.writing": "ソースコードを書き出し中...",
 	"progress.classes.deobfuscating": "クラスを難読化解除中...",
