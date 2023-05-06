@@ -79,11 +79,6 @@ public class StatsGenerator {
 			for (MethodEntry method : this.entryIndex.getMethods()) {
 				progress.step(numDone++, I18n.translate("type.methods"));
 
-				// we don't want constructors or otherwise non-mappable things to show as a mapped method!
-				if (!this.project.isRenamable(method)) {
-					continue;
-				}
-
 				MethodEntry root = this.entryResolver
 						.resolveEntry(method, ResolutionStrategy.RESOLVE_ROOT)
 						.stream()
@@ -93,7 +88,7 @@ public class StatsGenerator {
 				ClassEntry clazz = root.getParent();
 
 				if (root == method && this.checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
-					if (includedMembers.contains(StatsMember.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
+					if (includedMembers.contains(StatsMember.METHODS) && this.project.isRenamable(method) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
 						totalMappable += this.update(counts, method, forClassTree);
 					}
 

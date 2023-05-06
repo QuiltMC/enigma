@@ -105,7 +105,12 @@ public class InheritanceIndex implements JarIndexer {
 
 	public boolean hasParents(ClassEntry classEntry) {
 		Collection<ClassEntry> parents = this.classParents.get(classEntry);
-		return parents != null && !parents.isEmpty();
+		return !parents.isEmpty();
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return "progress.jar.indexing.process.inheritance";
 	}
 
 	public enum Relation {
