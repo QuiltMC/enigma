@@ -155,7 +155,7 @@ public class EditorPopupMenu {
 		boolean isFieldEntry = referenceEntry instanceof FieldEntry;
 		boolean isMethodEntry = referenceEntry instanceof MethodEntry me && !me.isConstructor();
 		boolean isConstructorEntry = referenceEntry instanceof MethodEntry me && me.isConstructor();
-		boolean isRenamable = ref != null && controller.project.isRenamable(ref);
+		boolean isRenamable = ref != null && controller.getProject().isRenamable(ref);
 
 		EditableType type = EditableType.fromEntry(referenceEntry);
 
@@ -171,7 +171,7 @@ public class EditorPopupMenu {
 		this.openNextItem.setEnabled(controller.hasNextReference());
 		this.toggleMappingItem.setEnabled(isRenamable && (type != null && this.gui.isEditable(type)));
 
-		if (referenceEntry != null && this.gui.getController().project.getMapper().extendedDeobfuscate(referenceEntry).isDeobfuscated()) {
+		if (referenceEntry != null && this.gui.getController().getProject().getMapper().extendedDeobfuscate(referenceEntry).isDeobfuscated()) {
 			this.toggleMappingItem.setText(I18n.translate("popup_menu.reset_obfuscated"));
 		} else {
 			this.toggleMappingItem.setText(I18n.translate("popup_menu.mark_deobfuscated"));

@@ -86,7 +86,7 @@ public class GuiController implements ClientPacketHandler {
 	private final Gui gui;
 	private final Enigma enigma;
 
-	public EnigmaProject project;
+	private EnigmaProject project;
 	private IndexTreeBuilder indexTreeBuilder;
 
 	private Path loadedMappingPath;

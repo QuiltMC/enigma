@@ -88,7 +88,7 @@ public class ClassSelector extends JTree {
 			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
-				if (gui.getController().project != null && leaf && value instanceof ClassSelectorClassNode node) {
+				if (gui.getController().getProject() != null && leaf && value instanceof ClassSelectorClassNode node) {
 					JPanel panel = new JPanel();
 					panel.setOpaque(false);
 					panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
@@ -191,7 +191,7 @@ public class ClassSelector extends JTree {
 		}
 
 		// update the tree control
-		this.packageManager = new NestedPackages(classEntries, this.comparator, this.controller.project.getMapper());
+		this.packageManager = new NestedPackages(classEntries, this.comparator, this.controller.getProject().getMapper());
 		this.setModel(new DefaultTreeModel(this.packageManager.getRoot()));
 		this.invalidateStats();
 

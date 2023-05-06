@@ -261,7 +261,7 @@ public class ClassSelectorPopupMenu {
 		// update toggle mapping text to match
 		this.toggleMapping.setEnabled(selected != null);
 		if (selected != null) {
-			if (this.gui.getController().project.getMapper().extendedDeobfuscate(selected).isDeobfuscated()) {
+			if (this.gui.getController().getProject().getMapper().extendedDeobfuscate(selected).isDeobfuscated()) {
 				this.toggleMapping.setText(I18n.translate("popup_menu.reset_obfuscated"));
 			} else {
 				this.toggleMapping.setText(I18n.translate("popup_menu.mark_deobfuscated"));

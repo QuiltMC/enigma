@@ -160,7 +160,7 @@ public class JavadocDialog {
 	}
 
 	public static void show(JFrame parent, GuiController controller, EntryReference<Entry<?>, Entry<?>> entry) {
-		EntryMapping mapping = controller.project.getMapper().getDeobfMapping(entry.entry);
+		EntryMapping mapping = controller.getProject().getMapper().getDeobfMapping(entry.entry);
 		String text = Strings.nullToEmpty(mapping.javadoc());
 
 		JavadocDialog dialog = new JavadocDialog(parent, controller, entry.entry, text);

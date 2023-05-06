@@ -126,7 +126,7 @@ public class SearchDialog {
 	public void show(Type type) {
 		this.su.clear();
 
-		final EntryIndex entryIndex = this.parent.getController().project.getJarIndex().getEntryIndex();
+		final EntryIndex entryIndex = this.parent.getController().getProject().getJarIndex().getEntryIndex();
 
 		switch (type) {
 			case CLASS -> entryIndex.getClasses().parallelStream()
@@ -264,7 +264,7 @@ public class SearchDialog {
 		}
 
 		public static SearchEntryImpl from(ParentedEntry<?> e, GuiController controller) {
-			ParentedEntry<?> deobf = controller.project.getMapper().deobfuscate(e);
+			ParentedEntry<?> deobf = controller.getProject().getMapper().deobfuscate(e);
 			if (deobf.equals(e)) deobf = null;
 			return new SearchEntryImpl(e, deobf);
 		}

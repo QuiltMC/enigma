@@ -462,10 +462,10 @@ public class Gui {
 	}
 
 	public void toggleMappingFromEntry(Entry<?> obfEntry) {
-		if (this.controller.project.getMapper().getDeobfMapping(obfEntry).targetName() != null) {
+		if (this.controller.getProject().getMapper().getDeobfMapping(obfEntry).targetName() != null) {
 			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).clearDeobfName());
 		} else {
-			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).withDefaultDeobfName(this.getController().project));
+			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).withDefaultDeobfName(this.getController().getProject()));
 		}
 	}
 
@@ -547,7 +547,7 @@ public class Gui {
 
 			// TODO optimize reverse class lookup, although it looks like it's
 			//	  fast enough for now
-			EntryRemapper mapper = this.controller.project.getMapper();
+			EntryRemapper mapper = this.controller.getProject().getMapper();
 			ClassEntry obf = mapper.getObfToDeobf().getAllEntries()
 					.filter(ClassEntry.class::isInstance)
 					.map(ClassEntry.class::cast)

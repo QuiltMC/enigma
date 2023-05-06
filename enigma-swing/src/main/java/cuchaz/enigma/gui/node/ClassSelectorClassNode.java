@@ -51,7 +51,7 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 			@Override
 			protected ClassSelectorClassNode doInBackground() {
 				if (ClassSelectorClassNode.this.getStats() == null || updateIfPresent) {
-					StatsResult newStats = new StatsGenerator(gui.getController().project).generateForClassTree(ProgressListener.none(), ClassSelectorClassNode.this.getObfEntry(), false);
+					StatsResult newStats = new StatsGenerator(gui.getController().getProject()).generateForClassTree(ProgressListener.none(), ClassSelectorClassNode.this.getObfEntry(), false);
 					ClassSelectorClassNode.this.setStats(newStats);
 				}
 
