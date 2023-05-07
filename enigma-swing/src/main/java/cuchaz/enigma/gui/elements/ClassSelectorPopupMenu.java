@@ -139,8 +139,8 @@ public class ClassSelectorPopupMenu {
 
 			for (var entry : expansionStates.entrySet()) {
 				ClassSelector classSelector = entry.getKey().getClassSelector();
-				classSelector.restoreExpansionState(entry.getValue());
 				classSelector.reload();
+				classSelector.restoreExpansionState(entry.getValue());
 			}
 		});
 	}
