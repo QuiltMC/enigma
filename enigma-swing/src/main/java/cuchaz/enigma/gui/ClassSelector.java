@@ -2,16 +2,17 @@ package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
+import cuchaz.enigma.gui.stats.StatType;
+import cuchaz.enigma.gui.stats.StatsResult;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.utils.validation.ValidationContext;
+import cuchaz.enigma.utils.I18n;
 
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
-import javax.swing.event.CellEditorListener;
-import javax.swing.event.ChangeEvent;
+import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -19,6 +20,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.Component;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,9 +36,8 @@ public class ClassSelector extends JTree {
 
 	private NestedPackages packageManager;
 	private ClassSelectionListener selectionListener;
-	private RenameSelectionListener renameSelectionListener;
 
-	public ClassSelector(Gui gui, Comparator<ClassEntry> comparator, boolean isRenamable) {
+	public ClassSelector(Gui gui, Comparator<ClassEntry> comparator) {
 		this.comparator = comparator;
 		this.controller = gui.getController();
 
@@ -89,10 +90,35 @@ public class ClassSelector extends JTree {
 				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
 				if (gui.getController().getProject() != null && leaf && value instanceof ClassSelectorClassNode node) {
-					JPanel panel = new JPanel();
+					class TooltipPanel extends JPanel {
+						@Override
+						public String getToolTipText(MouseEvent event) {
+							StringBuilder text = new StringBuilder(I18n.translateFormatted("class_selector.tooltip.stats_for", node.getClassEntry().getSimpleName()));
+							text.append("\n");
+							StatsResult stats = node.getStats();
+
+							if (stats == null) {
+								text.append(I18n.translate("class_selector.tooltip.stats_not_generated"));
+							} else {
+								if ((event.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
+									for (int i = 0; i < StatType.values().length; i++) {
+										StatType type = StatType.values()[i];
+										text.append(type.getName()).append(": ").append(stats.toString(type)).append(i == StatType.values().length - 1 ? "" : "\n");
+									}
+								} else {
+									text.append(node.getStats().toString());
+								}
+							}
+
+							return text.toString();
+						}
+					}
+
+					JPanel panel = new TooltipPanel();
 					panel.setOpaque(false);
 					panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-					panel.add(new JLabel(GuiUtil.getClassIcon(gui, node.getObfEntry())));
+					JLabel nodeLabel = new JLabel(GuiUtil.getClassIcon(gui, node.getObfEntry()));
+					panel.add(nodeLabel);
 
 					if (node.getStats() == null) {
 						// calculate stats on a separate thread for performance reasons
@@ -103,78 +129,32 @@ public class ClassSelector extends JTree {
 					}
 
 					panel.add(this);
+
 					return panel;
 				}
 
 				return this;
 			}
 		};
+
+		ToolTipManager.sharedInstance().registerComponent(this);
 		this.setCellRenderer(renderer);
 
-		final JTree tree = this;
-
-		final DefaultTreeCellEditor editor = new DefaultTreeCellEditor(tree, renderer) {
+		// disallow cell editing
+		final DefaultTreeCellEditor editor = new DefaultTreeCellEditor(this, renderer) {
 			@Override
 			public boolean isCellEditable(EventObject event) {
-				return isRenamable && !(event instanceof MouseEvent) && super.isCellEditable(event);
+				return false;
 			}
 		};
 		this.setCellEditor(editor);
-		editor.addCellEditorListener(new CellEditorListener() {
-			@Override
-			public void editingStopped(ChangeEvent e) {
-				String data = editor.getCellEditorValue().toString();
-				TreePath path = ClassSelector.this.getSelectionPath();
-
-				if (path != null && path.getLastPathComponent() instanceof DefaultMutableTreeNode node && data != null) {
-					TreeNode parentNode = node.getParent();
-					if (parentNode == null) {
-						return;
-					}
-
-					boolean allowEdit = true;
-					for (int i = 0; i < parentNode.getChildCount(); i++) {
-						TreeNode childNode = parentNode.getChildAt(i);
-						if (childNode != null && childNode.toString().equals(data) && childNode != node) {
-							allowEdit = false;
-							break;
-						}
-					}
-
-					if (allowEdit && ClassSelector.this.renameSelectionListener != null) {
-						Object prevData = node.getUserObject();
-						Object objectData = node.getUserObject() instanceof ClassEntry ? new ClassEntry(((ClassEntry) prevData).getPackageName() + "/" + data) : data;
-
-						ValidationContext context = new ValidationContext(null);
-						ClassSelector.this.renameSelectionListener.onSelectionRename(context, node.getUserObject(), objectData, node);
-						if (context.canProceed()) {
-							node.setUserObject(objectData); // Make sure that it's modified
-						} else {
-							editor.cancelCellEditing();
-						}
-					} else {
-						editor.cancelCellEditing();
-					}
-				}
-			}
-
-			@Override
-			public void editingCanceled(ChangeEvent e) {
-				// NOP
-			}
-		});
 
 		// init defaults
 		this.selectionListener = null;
-		this.renameSelectionListener = null;
 	}
 
 	public void setSelectionListener(ClassSelectionListener val) {
 		this.selectionListener = val;
-	}
-
-	public void setRenameSelectionListener(RenameSelectionListener renameSelectionListener) {
-		this.renameSelectionListener = renameSelectionListener;
 	}
 
 	public NestedPackages getPackageManager() {
@@ -316,9 +296,5 @@ public class ClassSelector extends JTree {
 
 	public interface ClassSelectionListener {
 		void onSelectClass(ClassEntry classEntry);
-	}
-
-	public interface RenameSelectionListener {
-		void onSelectionRename(ValidationContext vc, Object prevData, Object data, DefaultMutableTreeNode node);
 	}
 }

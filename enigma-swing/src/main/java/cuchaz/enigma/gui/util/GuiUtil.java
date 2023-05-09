@@ -3,6 +3,7 @@ package cuchaz.enigma.gui.util;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.stats.StatType;
 import cuchaz.enigma.gui.stats.StatsResult;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
@@ -158,9 +159,9 @@ public class GuiUtil {
 
 	public static Icon getDeobfuscationIcon(StatsResult stats) {
 		if (stats != null) {
-			if (stats.getPercentage() == 100d) {
+			if (stats.getPercentage(StatType.values()) == 100d) {
 				return DEOBFUSCATED_ICON;
-			} else if (stats.getPercentage() > 0) {
+			} else if (stats.getPercentage(StatType.values()) > 0) {
 				return PARTIALLY_DEOBFUSCATED_ICON;
 			}
 		}

@@ -6,38 +6,55 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class StatsResult {
-	private final int total;
-	private final int unmapped;
+	private final Map<StatType, Integer> totalMappable;
+	private final Map<StatType, Integer> totalUnmapped;
 	private final Tree<Integer> tree;
 
-	public StatsResult(int total, int unmapped, Tree<Integer> tree) {
-		this.total = total;
-		this.unmapped = unmapped;
+	public StatsResult(Map<StatType, Integer> totalMappable, Map<StatType, Integer> totalUnmapped, Tree<Integer> tree) {
+		this.totalMappable = totalMappable;
+		this.totalUnmapped = totalUnmapped;
 		this.tree = tree;
 	}
 
-	public int getTotal() {
-		return this.total;
+	public int getMappable(StatType... types) {
+		return this.getSum(this.totalMappable, types);
 	}
 
-	public int getUnmapped() {
-		return this.unmapped;
+	public int getUnmapped(StatType... types) {
+		return this.getSum(this.totalUnmapped, types);
 	}
 
-	public int getMapped() {
-		return this.getTotal() - this.getUnmapped();
+	private int getSum(Map<StatType, Integer> map, StatType... types) {
+		int sum = 0;
+		for (StatType type : types) {
+			if (this.getTypes().contains(type)) {
+				sum += map.getOrDefault(type, 0);
+			}
+		}
+
+		return sum;
 	}
 
-	public double getPercentage() {
+	public int getMapped(StatType... types) {
+		return this.getMappable(types) - this.getUnmapped(types);
+	}
+
+	public double getPercentage(StatType... types) {
 		// avoid showing "Nan%" when there are no entries to map
 		// if there are none, you've mapped them all!
-		if (this.total == 0) {
+		int mappable = this.getMappable(types);
+		if (mappable == 0) {
 			return 100.0f;
 		}
 
-		return (this.getMapped() * 100.0f) / this.total;
+		return (this.getMapped(types) * 100.0f) / mappable;
+	}
+
+	public Set<StatType> getTypes() {
+		return this.totalMappable.keySet();
 	}
 
 	public String getTreeJson() {
@@ -46,7 +63,11 @@ public final class StatsResult {
 
 	@Override
 	public String toString() {
-		return String.format("%s/%s %.1f%%", this.getMapped(), this.total, this.getPercentage());
+		return this.toString(StatType.values());
+	}
+
+	public String toString(StatType... types) {
+		return String.format("%s/%s %.1f%%", this.getMapped(types), this.getMappable(types), this.getPercentage(types));
 	}
 
 	public static class Tree<T> {

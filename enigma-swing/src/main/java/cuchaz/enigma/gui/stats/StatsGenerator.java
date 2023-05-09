@@ -16,6 +16,7 @@ import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
 
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,10 +36,10 @@ public class StatsGenerator {
 	}
 
 	public StatsResult generateForClassTree(ProgressListener progress, ClassEntry entry, boolean includeSynthetic) {
-		return this.generate(progress, EnumSet.allOf(StatsMember.class), entry.getFullName(), true, includeSynthetic);
+		return this.generate(progress, EnumSet.allOf(StatType.class), entry.getFullName(), true, includeSynthetic);
 	}
 
-	public StatsResult generate(ProgressListener progress, Set<StatsMember> includedMembers, String topLevelPackage, boolean includeSynthetic) {
+	public StatsResult generate(ProgressListener progress, Set<StatType> includedMembers, String topLevelPackage, boolean includeSynthetic) {
 		return this.generate(progress, includedMembers, topLevelPackage, false, includeSynthetic);
 	}
 
@@ -51,31 +52,30 @@ public class StatsGenerator {
 	 * @param includeSynthetic whether to include synthetic methods
 	 * @return the generated {@link StatsResult} for the provided class or package.
 	 */
-	public StatsResult generate(ProgressListener progress, Set<StatsMember> includedMembers, String topLevelPackage, boolean forClassTree, boolean includeSynthetic) {
+	public StatsResult generate(ProgressListener progress, Set<StatType> includedMembers, String topLevelPackage, boolean forClassTree, boolean includeSynthetic) {
 		includedMembers = EnumSet.copyOf(includedMembers);
 		int totalWork = 0;
-		int totalMappable = 0;
+		Map<StatType, Integer> mappableCounts = new EnumMap<>(StatType.class);
+		Map<StatType, Map<String, Integer>> unmappedCounts = new EnumMap<>(StatType.class);
 
-		if (includedMembers.contains(StatsMember.METHODS) || includedMembers.contains(StatsMember.PARAMETERS)) {
+		if (includedMembers.contains(StatType.METHODS) || includedMembers.contains(StatType.PARAMETERS)) {
 			totalWork += this.entryIndex.getMethods().size();
 		}
 
-		if (includedMembers.contains(StatsMember.FIELDS)) {
+		if (includedMembers.contains(StatType.FIELDS)) {
 			totalWork += this.entryIndex.getFields().size();
 		}
 
-		if (includedMembers.contains(StatsMember.CLASSES)) {
+		if (includedMembers.contains(StatType.CLASSES)) {
 			totalWork += this.entryIndex.getClasses().size();
 		}
 
 		progress.init(totalWork, I18n.translate("progress.stats"));
 
-		Map<String, Integer> counts = new HashMap<>();
-
 		String topLevelPackageSlash = topLevelPackage.replace(".", "/");
 
 		int numDone = 0;
-		if (includedMembers.contains(StatsMember.METHODS) || includedMembers.contains(StatsMember.PARAMETERS)) {
+		if (includedMembers.contains(StatType.METHODS) || includedMembers.contains(StatType.PARAMETERS)) {
 			for (MethodEntry method : this.entryIndex.getMethods()) {
 				progress.step(numDone++, I18n.translate("type.methods"));
 
@@ -88,14 +88,14 @@ public class StatsGenerator {
 				ClassEntry clazz = root.getParent();
 
 				if (root == method && this.checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
-					if (includedMembers.contains(StatsMember.METHODS) && this.project.isRenamable(method) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
-						totalMappable += this.update(counts, method, forClassTree);
+					if (includedMembers.contains(StatType.METHODS) && this.project.isRenamable(method) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
+						this.update(StatType.METHODS, mappableCounts, unmappedCounts, method);
 					}
 
-					if (includedMembers.contains(StatsMember.PARAMETERS) && (!((MethodDefEntry) method).getAccess().isSynthetic() || includeSynthetic)) {
+					if (includedMembers.contains(StatType.PARAMETERS) && (!((MethodDefEntry) method).getAccess().isSynthetic() || includeSynthetic)) {
 						int index = ((MethodDefEntry) method).getAccess().isStatic() ? 0 : 1;
 						for (TypeDescriptor argument : method.getDesc().getArgumentDescs()) {
-							totalMappable += this.update(counts, new LocalVariableEntry(method, index, "", true, null), forClassTree);
+							this.update(StatType.PARAMETERS, mappableCounts, unmappedCounts, new LocalVariableEntry(method, index, "", true, null));
 							index += argument.getSize();
 						}
 					}
@@ -103,39 +103,53 @@ public class StatsGenerator {
 			}
 		}
 
-		if (includedMembers.contains(StatsMember.FIELDS)) {
+		if (includedMembers.contains(StatType.FIELDS)) {
 			for (FieldEntry field : this.entryIndex.getFields()) {
 				progress.step(numDone++, I18n.translate("type.fields"));
 				ClassEntry clazz = field.getParent();
 
 				if (!((FieldDefEntry) field).getAccess().isSynthetic() && this.checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
-					totalMappable += this.update(counts, field, forClassTree);
+					this.update(StatType.FIELDS, mappableCounts, unmappedCounts, field);
 				}
 			}
 		}
 
-		if (includedMembers.contains(StatsMember.CLASSES)) {
+		if (includedMembers.contains(StatType.CLASSES)) {
 			for (ClassEntry clazz : this.entryIndex.getClasses()) {
 				progress.step(numDone++, I18n.translate("type.classes"));
 
 				if (this.checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
-					totalMappable += this.update(counts, clazz, forClassTree);
+					this.update(StatType.CLASSES, mappableCounts, unmappedCounts, clazz);
 				}
 			}
 		}
 
 		progress.step(-1, I18n.translate("progress.stats.data"));
 
+		// generate html display
 		StatsResult.Tree<Integer> tree = new StatsResult.Tree<>();
 
-		for (Map.Entry<String, Integer> entry : counts.entrySet()) {
-			if (entry.getKey().startsWith(topLevelPackage)) {
-				tree.getNode(entry.getKey()).value = entry.getValue();
+		for (Map.Entry<StatType, Map<String, Integer>> typedEntry : unmappedCounts.entrySet()) {
+			for (Map.Entry<String, Integer> entry : typedEntry.getValue().entrySet()) {
+				if (entry.getKey().startsWith(topLevelPackage)) {
+					StatsResult.Tree.Node<Integer> node = tree.getNode(entry.getKey());
+					int value = node.value == null ? 0 : node.value;
+
+					node.value = value + entry.getValue();
+				}
 			}
 		}
 
 		tree.collapse(tree.root);
-		return new StatsResult(totalMappable, counts.values().stream().mapToInt(i -> i).sum(), tree);
+
+		Map<StatType, Integer> rawUnmappedCounts = new EnumMap<>(StatType.class);
+		for (var entry : unmappedCounts.entrySet()) {
+			for (int value : entry.getValue().values()) {
+				rawUnmappedCounts.put(entry.getKey(), rawUnmappedCounts.getOrDefault(entry.getKey(), 0) + value);
+			}
+		}
+
+		return new StatsResult(mappableCounts, rawUnmappedCounts, tree);
 	}
 
 	private boolean checkPackage(ClassEntry clazz, String topLevelPackage, boolean singleClass) {
@@ -147,24 +161,18 @@ public class StatsGenerator {
 		return topLevelPackage.isBlank() || (deobfuscatedName != null && deobfuscatedName.startsWith(topLevelPackage));
 	}
 
-	/**
-	 * @return whether to increment the total mappable entry count - 0 if no, 1 if yes
-	 */
-	private int update(Map<String, Integer> counts, Entry<?> entry, boolean forClassTree) {
+	private void update(StatType type, Map<StatType, Integer> mappable, Map<StatType, Map<String, Integer>> unmapped, Entry<?> entry) {
 		boolean obfuscated = this.project.isObfuscated(entry);
 		boolean renamable = this.project.isRenamable(entry);
 		boolean synthetic = this.project.isSynthetic(entry);
 
-		if (forClassTree && obfuscated && !renamable) {
-			return 0;
-		}
-
 		if (obfuscated && renamable && !synthetic) {
 			String parent = this.mapper.deobfuscate(entry.getAncestry().get(0)).getName().replace('/', '.');
-			counts.put(parent, counts.getOrDefault(parent, 0) + 1);
-			return 1;
+
+			unmapped.computeIfAbsent(type, t -> new HashMap<>());
+			unmapped.get(type).put(parent, unmapped.get(type).getOrDefault(parent, 0) + 1);
 		}
 
-		return 1;
+		mappable.put(type, mappable.getOrDefault(type, 0) + 1);
 	}
 }

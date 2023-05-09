@@ -18,7 +18,7 @@ public class ObfuscatedClassesDocker extends ClassesDocker {
 	};
 
 	public ObfuscatedClassesDocker(Gui gui) {
-		super(gui, new ClassSelector(gui, obfuscatedClassComparator, false));
+		super(gui, new ClassSelector(gui, obfuscatedClassComparator));
 	}
 
 	@Override
