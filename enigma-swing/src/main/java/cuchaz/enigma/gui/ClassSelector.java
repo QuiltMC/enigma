@@ -172,7 +172,7 @@ public class ClassSelector extends JTree {
 					return null;
 				}
 
-				return ((TreeNode)parent).getChildAt(index);
+				return ((TreeNode) parent).getChildAt(index);
 			}
 		});
 
