@@ -75,9 +75,9 @@ public final class StatsResult {
 		private final Map<String, Node<T>> nodes = new HashMap<>();
 
 		public static class Node<T> {
-			public String name;
-			public T value;
-			public List<Node<T>> children = new ArrayList<>();
+			private String name;
+			private T value;
+			private List<Node<T>> children = new ArrayList<>();
 			private final Map<String, Node<T>> namedChildren = new HashMap<>();
 
 			public Node(String name, T value) {

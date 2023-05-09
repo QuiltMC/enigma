@@ -80,7 +80,7 @@ public class StatsDialog {
 				UiConfig.save();
 
 				final StatsGenerator statsGenerator = new StatsGenerator(gui.getController().getProject());
-				StatsResult statResult =  statsGenerator.generate(listener, Set.of(StatType.values()), UiConfig.getLastTopLevelPackage(), false);
+				StatsResult statResult = statsGenerator.generate(listener, Set.of(StatType.values()), UiConfig.getLastTopLevelPackage(), false);
 
 				SwingUtilities.invokeLater(() -> show(gui, statResult, UiConfig.getLastTopLevelPackage()));
 			});
