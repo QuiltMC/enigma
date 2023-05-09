@@ -133,9 +133,9 @@ public class StatsGenerator {
 			for (Map.Entry<String, Integer> entry : typedEntry.getValue().entrySet()) {
 				if (entry.getKey().startsWith(topLevelPackage)) {
 					StatsResult.Tree.Node<Integer> node = tree.getNode(entry.getKey());
-					int value = node.value == null ? 0 : node.value;
+					int value = node.getValue() == null ? 0 : node.getValue();
 
-					node.value = value + entry.getValue();
+					node.setValue(value + entry.getValue());
 				}
 			}
 		}
