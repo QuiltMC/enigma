@@ -308,7 +308,9 @@ public class ClassSelector extends JTree {
 
 	public void reload(TreeNode node) {
 		DefaultTreeModel model = (DefaultTreeModel) this.getModel();
-		model.reload(node);
+		if (model != null) {
+			model.reload(node);
+		}
 	}
 
 	public void reload() {
@@ -323,7 +325,9 @@ public class ClassSelector extends JTree {
 
 	public void reloadStats(ClassEntry classEntry) {
 		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
-		node.reloadStats(this.controller.getGui(), this, true);
+		if (node != null) {
+			node.reloadStats(this.controller.getGui(), this, true);
+		}
 	}
 
 	public interface ClassSelectionListener {
