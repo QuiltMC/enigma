@@ -134,8 +134,12 @@ public class EditorTabbedPane {
 	private void onTabPressed(MouseEvent e) {
 		int i = this.openFiles.getUI().tabForCoordinate(this.openFiles, e.getX(), e.getY());
 
-		if (i != -1 && SwingUtilities.isRightMouseButton(e)) {
-			this.editorTabPopupMenu.show(this.openFiles, e.getX(), e.getY(), EditorPanel.byUi(this.openFiles.getComponentAt(i)));
+		if (i != -1) {
+			if (SwingUtilities.isRightMouseButton(e)) {
+				this.editorTabPopupMenu.show(this.openFiles, e.getX(), e.getY(), EditorPanel.byUi(this.openFiles.getComponentAt(i)));
+			}
+
+			this.gui.updateStructure(this.getActiveEditor());
 		}
 	}
 
