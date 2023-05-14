@@ -572,18 +572,22 @@ public class Gui {
 		if (!isNewOb && isOldOb) {
 			// obfuscated -> deobfuscated
 			obfuscatedClassSelector.removeEntry(classEntry);
+			deobfuscatedClassSelector.moveClassIn(classEntry);
 			if (updateSwingState) {
 				obfuscatedClassSelector.reload();
+				deobfuscatedClassSelector.reload();
 			}
 		} else if (!isOldOb && isNewOb) {
 			// deobfuscated -> obfuscated
 			deobfuscatedClassSelector.removeEntry(classEntry);
+			obfuscatedClassSelector.moveClassIn(classEntry);
 			if (updateSwingState) {
+				obfuscatedClassSelector.reload();
 				deobfuscatedClassSelector.reload();
 			}
 		}
 
-		this.reloadClassEntry(classEntry, updateSwingState, isOldOb, isNewOb);
+		this.reloadClassEntry(classEntry, updateSwingState);
 
 		if (updateSwingState) {
 			deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
@@ -591,20 +595,10 @@ public class Gui {
 		}
 	}
 
-	public void reloadClassEntry(ClassEntry classEntry, boolean updateSwingState, boolean isOldOb, boolean isNewOb) {
-		ClassSelector selector;
-
-		if (!isNewOb || isOldOb) {
-			selector = Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector();
-		} else {
-			selector = Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector();
-		}
-
+	public void reloadClassEntry(ClassEntry classEntry, boolean updateSwingState) {
 		if (updateSwingState) {
-			selector.reloadEntry(classEntry);
-			selector.reload();
-		} else {
-			selector.moveClassIn(classEntry);
+			Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector().reloadStats(classEntry);
+			Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector().reloadStats(classEntry);
 		}
 
 		ClassSelector allClassesSelector = Docker.getDocker(AllClassesDocker.class).getClassSelector();

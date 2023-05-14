@@ -536,15 +536,14 @@ public class GuiController implements ClientPacketHandler {
 			this.chp.invalidateJavadoc(target.getTopLevelClass());
 		}
 
-		boolean isOldOb = prev.targetName() == null;
-		boolean isNewOb = mapping.targetName() == null;
-
 		if (renamed && target instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
+			boolean isOldOb = prev.targetName() == null;
+			boolean isNewOb = mapping.targetName() == null;
 			this.gui.moveClassTree(target, updateSwingState, isOldOb, isNewOb);
 			return;
 		}
 
-		this.gui.reloadClassEntry(change.getTarget().getTopLevelClass(), updateSwingState, isOldOb, isNewOb);
+		this.gui.reloadClassEntry(change.getTarget().getTopLevelClass(), updateSwingState);
 	}
 
 	public void openStats(Set<StatType> includedTypes, String topLevelPackage, boolean includeSynthetic) {

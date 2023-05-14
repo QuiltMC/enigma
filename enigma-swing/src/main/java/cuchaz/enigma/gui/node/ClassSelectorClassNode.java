@@ -11,7 +11,6 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreePath;
 
 public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 	private final ClassEntry obfEntry;
@@ -62,11 +61,7 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 			@Override
 			public void done() {
 				((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(ClassSelectorClassNode.this.getStats()));
-				// a bit of a hack for performance
-				// we do this instead of reloading from parent
-				TreePath path = selector.getSelectionPath();
-				selector.setSelectionPath(new TreePath(ClassSelectorClassNode.this.getPath()));
-				selector.setSelectionPath(path);
+				selector.reload(ClassSelectorClassNode.this);
 			}
 		};
 

@@ -149,6 +149,18 @@ public class ClassSelector extends JTree {
 		};
 		this.setCellEditor(editor);
 
+		// make this method safe from out-of-bounds arrays to fix a rare crash on rename
+		this.setModel(new DefaultTreeModel(null) {
+			@Override
+			public Object getChild(Object parent, int index) {
+				if (index > this.getChildCount(parent)) {
+					return null;
+				}
+
+				return ((TreeNode) parent).getChildAt(index);
+			}
+		});
+
 		// init defaults
 		this.selectionListener = null;
 	}
@@ -276,7 +288,9 @@ public class ClassSelector extends JTree {
 
 	public void reload(TreeNode node) {
 		DefaultTreeModel model = (DefaultTreeModel) this.getModel();
-		model.reload(node);
+		if (model != null) {
+			model.reload(node);
+		}
 	}
 
 	public void reload() {
@@ -291,7 +305,9 @@ public class ClassSelector extends JTree {
 
 	public void reloadStats(ClassEntry classEntry) {
 		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
-		node.reloadStats(this.controller.getGui(), this, true);
+		if (node != null) {
+			node.reloadStats(this.controller.getGui(), this, true);
+		}
 	}
 
 	public interface ClassSelectionListener {
