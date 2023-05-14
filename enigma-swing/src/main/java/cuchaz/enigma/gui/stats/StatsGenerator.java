@@ -173,6 +173,8 @@ public class StatsGenerator {
 			unmapped.get(type).put(parent, unmapped.get(type).getOrDefault(parent, 0) + 1);
 		}
 
-		mappable.put(type, mappable.getOrDefault(type, 0) + 1);
+		if (renamable) {
+			mappable.put(type, mappable.getOrDefault(type, 0) + 1);
+		}
 	}
 }
