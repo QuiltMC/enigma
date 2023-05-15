@@ -95,7 +95,7 @@ public class Dock extends JPanel {
 		// hack fix: if the right dock is closed while the left dock is open, the divider location is saved as if the left dock is open,
 		// thereby offsetting the divider location by the width of the left dock. which means, if the right dock is reopened while the left dock is closed,
 		// the divider location is too far to the left by the width of the left dock. so here we offset the location to avoid that.
-		if (!init && this.side == Docker.Side.RIGHT && !this.gui.getSplitLeft().getLeftComponent().isVisible() && UiConfig.getSavedWithLeftOpen()) {
+		if (init && this.side == Docker.Side.RIGHT && !this.gui.getSplitLeft().getLeftComponent().isVisible() && UiConfig.getSavedWithLeftOpen()) {
 			location += UiConfig.getHorizontalDividerLocation(Docker.Side.LEFT);
 		}
 
@@ -144,62 +144,63 @@ public class Dock extends JPanel {
 	}
 
 	public void host(Docker docker, Docker.VerticalLocation verticalLocation, boolean avoidEmptySpace) {
-		Docker.Location previousLocation = Util.findLocation(docker);
-
 		Dock dock = Util.findDock(docker);
 		if (dock != null) {
 			dock.removeDocker(verticalLocation, avoidEmptySpace);
 		}
 
-		switch (verticalLocation) {
-			case BOTTOM, TOP -> {
-				// if we'd be leaving empty space via opening, we want to host the docker as the full panel
-				// this is to avoid wasting space
-				if (avoidEmptySpace && ((this.isSplit && this.getDock(verticalLocation.inverse()).getHostedDocker() == null)
-						|| (!this.isSplit && this.unifiedDock.getHostedDocker() == null)
-						|| (!this.isSplit && this.unifiedDock.getHostedDocker().getId().equals(docker.getId())))) {
-					this.host(docker, Docker.VerticalLocation.FULL);
-					return;
-				}
-
-				if (!this.isSplit) {
-					this.split();
-				}
-
-				this.getDock(verticalLocation).setHostedDocker(docker);
-				if (this.toSave != null && !this.toSave.equals(docker)) {
-					this.host(this.toSave, verticalLocation.inverse());
-					this.toSave = null;
-				}
-
-				// make button follow docker from side to side
-				if (previousLocation != null && previousLocation.side() != this.side) {
-					DockerButton button = docker.getButton();
-					DockerSelector selector = this.gui.getMainWindow().getDockerSelector(this.side);
-					Container parent = button.getParent();
-
-					parent.remove(button);
-					(verticalLocation == Docker.VerticalLocation.TOP ? selector.getTopSelector() : selector.getBottomSelector()).add(button);
-					button.setSide(this.side);
-					UiConfig.setDockerButtonLocation(docker, new Docker.Location(this.side, verticalLocation));
-
-					button.getParent().revalidate();
-					button.getParent().repaint();
-					selector.revalidate();
-					selector.repaint();
-				}
+		if (verticalLocation == Docker.VerticalLocation.BOTTOM || verticalLocation == Docker.VerticalLocation.TOP) {
+			// if we'd be leaving empty space via opening, we want to host the docker as the full panel
+			// this is to avoid wasting space
+			if (avoidEmptySpace && ((this.isSplit && this.getDock(verticalLocation.inverse()).getHostedDocker() == null)
+					|| (!this.isSplit && this.unifiedDock.getHostedDocker() == null)
+					|| (!this.isSplit && this.unifiedDock.getHostedDocker().getId().equals(docker.getId())))) {
+				this.host(docker, Docker.VerticalLocation.FULL);
+				return;
 			}
-			case FULL -> {
-				// note: always uses top, since it doesn't matter
-				// since we're setting the hosted docker anyway
 
-				if (this.isSplit) {
-					this.unify(Docker.VerticalLocation.TOP);
-				}
-
-				// we cannot assume top here, since it could be called on a unified side
-				this.unifiedDock.setHostedDocker(docker);
+			if (!this.isSplit) {
+				this.split();
 			}
+
+			// preserve divider location and host
+			int location = this.splitPane.getDividerLocation();
+			this.getDock(verticalLocation).setHostedDocker(docker);
+			this.splitPane.setDividerLocation(location);
+
+			if (this.toSave != null && !this.toSave.equals(docker)) {
+				this.host(this.toSave, verticalLocation.inverse());
+				this.toSave = null;
+			}
+
+			// make button follow docker from side to side
+			Docker.Location previousLocation = Util.findLocation(docker);
+
+			if (previousLocation != null && previousLocation.side() != this.side) {
+				DockerButton button = docker.getButton();
+				DockerSelector selector = this.gui.getMainWindow().getDockerSelector(this.side);
+				Container parent = button.getParent();
+
+				parent.remove(button);
+				(verticalLocation == Docker.VerticalLocation.TOP ? selector.getTopSelector() : selector.getBottomSelector()).add(button);
+				button.setSide(this.side);
+				UiConfig.setDockerButtonLocation(docker, new Docker.Location(this.side, verticalLocation));
+
+				button.getParent().revalidate();
+				button.getParent().repaint();
+				selector.revalidate();
+				selector.repaint();
+			}
+		} else if (verticalLocation == Docker.VerticalLocation.FULL) {
+			// note: always uses top, since it doesn't matter
+			// since we're setting the hosted docker anyway
+
+			if (this.isSplit) {
+				this.unify(Docker.VerticalLocation.TOP);
+			}
+
+			// we cannot assume top here, since it could be called on a unified side
+			this.unifiedDock.setHostedDocker(docker);
 		}
 
 		this.updateVisibility();
