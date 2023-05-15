@@ -85,6 +85,7 @@ public class QuiltflowerPreferences {
 					continue;
 				}
 
+				// TODO: Use @Type preference annotation
 				Type type = inferType(key);
 				String name = field.getAnnotation(IFernflowerPreferences.Name.class).value();
 				String description = field.getAnnotation(IFernflowerPreferences.Description.class).value();
