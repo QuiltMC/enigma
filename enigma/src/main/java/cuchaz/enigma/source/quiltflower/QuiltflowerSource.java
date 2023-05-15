@@ -11,6 +11,7 @@ import org.jetbrains.java.decompiler.main.extern.IFernflowerLogger;
 import org.jetbrains.java.decompiler.main.extern.IFernflowerPreferences;
 import org.jetbrains.java.decompiler.main.extern.IResultSaver;
 import org.jetbrains.java.decompiler.main.extern.TextTokenVisitor;
+import org.tinylog.Logger;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;

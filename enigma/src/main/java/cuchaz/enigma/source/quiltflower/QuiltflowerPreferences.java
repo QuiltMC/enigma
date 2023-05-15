@@ -56,7 +56,7 @@ public class QuiltflowerPreferences {
 
 	public static Map<String, Object> getEffectiveOptions() {
 		Map<String, Object> options = new HashMap<>(DEFAULTS);
-		options.putAll(OPTIONS);
+		OPTIONS.forEach((key, value) -> options.put(key, String.valueOf(value)));
 		return options;
 	}
 
