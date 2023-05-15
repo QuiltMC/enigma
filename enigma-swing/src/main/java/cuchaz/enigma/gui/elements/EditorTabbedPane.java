@@ -139,7 +139,7 @@ public class EditorTabbedPane {
 				this.editorTabPopupMenu.show(this.openFiles, e.getX(), e.getY(), EditorPanel.byUi(this.openFiles.getComponentAt(i)));
 			}
 
-			this.gui.showStructure(this.getActiveEditor());
+			this.gui.updateStructure(this.getActiveEditor());
 		}
 	}
 

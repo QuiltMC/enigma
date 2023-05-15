@@ -407,15 +407,6 @@ public class Gui {
 	}
 
 	/**
-	 * Opens the Structure docker and displays information for the provided editor.
-	 * @param editor the editor to extract structure from
-	 */
-	public void showStructure(EditorPanel editor) {
-		this.openDocker(StructureDocker.class);
-		this.updateStructure(editor);
-	}
-
-	/**
 	 * Opens the Inheritance docker and displays information for the provided editor's cursor reference.
 	 * @param editor the editor to extract the reference from
 	 */
