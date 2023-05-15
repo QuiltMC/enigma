@@ -6,6 +6,7 @@ import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
+import javax.annotation.Nullable;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -80,10 +81,6 @@ public class ClassSelector extends JTree {
 		}));
 
 		final DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
-			{
-				this.setLeafIcon(GuiUtil.CLASS_ICON);
-			}
-
 			@Override
 			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
@@ -109,7 +106,6 @@ public class ClassSelector extends JTree {
 				return this;
 			}
 		};
-		this.setCellRenderer(renderer);
 
 		final JTree tree = this;
 
@@ -177,11 +173,19 @@ public class ClassSelector extends JTree {
 		this.renameSelectionListener = renameSelectionListener;
 	}
 
+	/**
+	 * Gets the package manager, which contains data for classes and nodes in the tree.
+	 * @return the package manager
+	 */
 	public NestedPackages getPackageManager() {
 		return this.packageManager;
 	}
 
-	public void setClasses(Collection<ClassEntry> classEntries) {
+	/**
+	 * Clears all classes in the tree, and replaces them with the given list of classes. If the list is null, the tree is cleared.
+	 * @param classEntries the list of classes to display
+	 */
+	public void setClasses(@Nullable Collection<ClassEntry> classEntries) {
 		List<StateEntry> state = this.getExpansionState();
 
 		if (classEntries == null) {
@@ -198,11 +202,25 @@ public class ClassSelector extends JTree {
 		this.restoreExpansionState(state);
 	}
 
-	public ClassEntry getSelectedClass() {
+	/**
+	 * Gets the deobfuscated version of the currently selected class.
+	 * <br>The deobfuscated class entry provides name information. For renaming, use {@link #getSelectedClassObf()}.
+	 * @return the obfuscated class entry
+	 */
+	public ClassEntry getSelectedClassDeobf() {
 		return this.getSelectedClass(false);
 	}
 
-	public ClassEntry getSelectedClass(boolean obfuscated) {
+	/**
+	 * Gets the obfuscated version of the currently selected class.
+	 * <br>The obfuscated class entry can be used for renaming actions, but only provides the obfuscated name. For the mapped name, see {@link #getSelectedClassDeobf()}.
+	 * @return the obfuscated class entry
+	 */
+	public ClassEntry getSelectedClassObf() {
+		return this.getSelectedClass(true);
+	}
+
+	private ClassEntry getSelectedClass(boolean obfuscated) {
 		if (!this.isSelectionEmpty() && this.getSelectionPath() != null) {
 			Object selectedNode = this.getSelectionPath().getLastPathComponent();
 
@@ -222,6 +240,10 @@ public class ClassSelector extends JTree {
 	public record StateEntry(State state, TreePath path) {
 	}
 
+	/**
+	 * Gets the current expansion state of the tree, as a list of {@link StateEntry} objects.
+	 * @return a list of {@link StateEntry} objects, with an entry for each expanded or selected node.
+	 */
 	public List<StateEntry> getExpansionState() {
 		List<StateEntry> state = new ArrayList<>();
 		int rowCount = this.getRowCount();
@@ -239,6 +261,10 @@ public class ClassSelector extends JTree {
 		return state;
 	}
 
+	/**
+	 * Restores the expansion state from the given list. Does not clear current expansion state, instead adding onto it.
+	 * @param expansionState a list of entries to restore
+	 */
 	public void restoreExpansionState(List<StateEntry> expansionState) {
 		for (StateEntry entry : expansionState) {
 			if (entry.state() == State.EXPANDED) {
@@ -249,6 +275,10 @@ public class ClassSelector extends JTree {
 		}
 	}
 
+	/**
+	 * Expands the package that matches the provided name.
+	 * @param packageName the package name to expand
+	 */
 	public void expandPackage(String packageName) {
 		if (packageName == null) {
 			return;
@@ -257,18 +287,28 @@ public class ClassSelector extends JTree {
 		this.expandPath(this.packageManager.getPackagePath(packageName));
 	}
 
+	/**
+	 * Expands every package in the tree.
+	 */
 	public void expandAll() {
 		for (DefaultMutableTreeNode packageNode : this.packageManager.getPackageNodes()) {
 			this.expandPath(new TreePath(packageNode.getPath()));
 		}
 	}
 
+	/**
+	 * Collapses every package in the tree.
+	 */
 	public void collapseAll() {
 		for (DefaultMutableTreeNode packageNode : this.packageManager.getPackageNodes()) {
 			this.collapsePath(new TreePath(packageNode.getPath()));
 		}
 	}
 
+	/**
+	 * Sets the currently selected class and scrolls to it. Expands packages to ensure the class is visible.
+	 * @param classEntry the class to select
+	 */
 	public void setSelectionClass(ClassEntry classEntry) {
 		this.expandPackage(classEntry.getPackageName());
 		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
@@ -280,20 +320,27 @@ public class ClassSelector extends JTree {
 		}
 	}
 
+	/**
+	 * Moves the entry into the tree, removing it and re-adding it if it already exists.
+	 * @param classEntry the entry to add
+	 */
 	public void moveClassIn(ClassEntry classEntry) {
 		this.removeEntry(classEntry);
 		this.packageManager.addEntry(classEntry);
 	}
 
+	/**
+	 * Removes the given class entry from the tree.
+	 * @param classEntry the class to be removed
+	 */
 	public void removeEntry(ClassEntry classEntry) {
 		this.packageManager.removeClassNode(classEntry);
 	}
 
-	public void reloadEntry(ClassEntry classEntry) {
-		this.moveClassIn(classEntry);
-		this.reloadStats(classEntry);
-	}
-
+	/**
+	 * Reloads the tree below the given node.
+	 * @param node the node to be reloaded below
+	 */
 	public void reload(TreeNode node) {
 		DefaultTreeModel model = (DefaultTreeModel) this.getModel();
 		if (model != null) {
@@ -301,16 +348,28 @@ public class ClassSelector extends JTree {
 		}
 	}
 
+	/**
+	 * Reloads the tree from the root node.
+	 */
 	public void reload() {
 		this.reload(this.packageManager.getRoot());
 	}
 
+	/**
+	 * Invalidates the stats for all classes in the tree, forcing them to be reloaded.
+	 * Stats will be calculated asynchronously for each entry the next time that entry is visible.
+	 */
 	public void invalidateStats() {
 		for (ClassEntry entry : this.packageManager.getClassEntries()) {
 			this.packageManager.getClassNode(entry).setStats(null);
 		}
 	}
 
+	/**
+	 * Requests an asynchronous reload of the stats for the given class.
+	 * <br>On completion, the class's stats icon will be updated.
+	 * @param classEntry the class to reload stats for
+	 */
 	public void reloadStats(ClassEntry classEntry) {
 		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
 		if (node != null) {

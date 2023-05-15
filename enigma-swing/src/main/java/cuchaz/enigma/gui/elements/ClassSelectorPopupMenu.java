@@ -48,12 +48,12 @@ public class ClassSelectorPopupMenu {
 		this.renamePackage.addActionListener(a -> this.onRenamePackage());
 
 		this.renameClass.addActionListener(a -> {
-			String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("gaming"), this.selector.getSelectedClass().getFullName());
-			this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(this.selector.getSelectedClass(true)).withDeobfName(input));
+			String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("gaming"), this.selector.getSelectedClassDeobf().getFullName());
+			this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(this.selector.getSelectedClassObf()).withDeobfName(input));
 		});
 
 		this.toggleMapping.addActionListener(a -> {
-			ClassEntry classEntry = this.selector.getSelectedClass(true);
+			ClassEntry classEntry = this.selector.getSelectedClassObf();
 			if (classEntry == null) {
 				return;
 			}
@@ -70,7 +70,7 @@ public class ClassSelectorPopupMenu {
 	private void onRenamePackage() {
 		TreePath path;
 
-		if (this.selector.getSelectedClass() != null
+		if (this.selector.getSelectedClassDeobf() != null
 				&& this.selector.getSelectionPath() != null) {
 			// Rename parent package if selected path is a class
 			path = this.selector.getSelectionPath().getParentPath();
@@ -254,7 +254,7 @@ public class ClassSelectorPopupMenu {
 	}
 
 	public void show(ClassSelector selector, int x, int y) {
-		ClassEntry selected = selector.getSelectedClass(true);
+		ClassEntry selected = selector.getSelectedClassObf();
 
 		// Only enable rename class if selected path is a class
 		this.renameClass.setEnabled(selected != null);

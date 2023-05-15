@@ -604,7 +604,8 @@ public class Gui {
 		ClassSelector allClassesSelector = Docker.getDocker(AllClassesDocker.class).getClassSelector();
 		List<ClassSelector.StateEntry> expansionState = allClassesSelector.getExpansionState();
 		if (updateSwingState) {
-			allClassesSelector.reloadEntry(classEntry);
+			allClassesSelector.moveClassIn(classEntry);
+			allClassesSelector.reloadStats(classEntry);
 			allClassesSelector.reload();
 			allClassesSelector.restoreExpansionState(expansionState);
 		} else {
