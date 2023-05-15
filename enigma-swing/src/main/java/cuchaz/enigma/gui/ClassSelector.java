@@ -164,18 +164,6 @@ public class ClassSelector extends JTree {
 			}
 		});
 
-		// make this method safe from out-of-bounds arrays to fix a rare crash on rename
-		this.setModel(new DefaultTreeModel(null) {
-			@Override
-			public Object getChild(Object parent, int index) {
-				if (index > this.getChildCount(parent)) {
-					return null;
-				}
-
-				return ((TreeNode) parent).getChildAt(index);
-			}
-		});
-
 		// init defaults
 		this.selectionListener = null;
 		this.renameSelectionListener = null;
