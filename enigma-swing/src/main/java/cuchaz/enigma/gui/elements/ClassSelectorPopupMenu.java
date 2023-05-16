@@ -2,6 +2,7 @@ package cuchaz.enigma.gui.elements;
 
 import cuchaz.enigma.gui.ClassSelector;
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.dialog.CrashDialog;
 import cuchaz.enigma.gui.dialog.ProgressDialog;
 import cuchaz.enigma.gui.docker.ClassesDocker;
 import cuchaz.enigma.gui.docker.Docker;
@@ -21,6 +22,7 @@ import javax.swing.tree.TreePath;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class ClassSelectorPopupMenu {
 	private final Gui gui;
@@ -48,7 +50,7 @@ public class ClassSelectorPopupMenu {
 		this.renamePackage.addActionListener(a -> this.onRenamePackage());
 
 		this.renameClass.addActionListener(a -> {
-			String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("gaming"), this.selector.getSelectedClassDeobf().getFullName());
+			String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("popup_menu.class_selector.rename_class"), this.selector.getSelectedClassDeobf().getFullName());
 			this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(this.selector.getSelectedClassObf()).withDeobfName(input));
 		});
 
@@ -101,18 +103,25 @@ public class ClassSelectorPopupMenu {
 		}
 
 		String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("popup_menu.class_selector.package_rename.title"), pathString.toString());
+		try {
+			this.renamePackage(pathString.toString(), input);
+		} catch (Exception e) {
+			CrashDialog.show(e);
+		}
+	}
 
+	public CompletableFuture<Void> renamePackage(String path, String input) {
 		if (input == null || !input.matches("[a-z_/]+") || input.isBlank() || input.startsWith("/") || input.endsWith("/")) {
 			this.gui.getNotificationManager().notify(Message.INVALID_PACKAGE_NAME);
-			return;
+			return CompletableFuture.supplyAsync(() -> null);
 		}
 
-		String[] oldPackageNames = pathString.toString().split("/");
+		String[] oldPackageNames = path.split("/");
 		String[] newPackageNames = input.split("/");
 
 		Map<String, Runnable> renameStack = new HashMap<>();
 
-		ProgressDialog.runOffThread(this.gui.getFrame(), listener -> {
+		return ProgressDialog.runOffThread(this.gui.getFrame(), listener -> {
 			listener.init(1, I18n.translate("popup_menu.class_selector.package_rename.discovering"));
 			TreeNode root = this.selector.getPackageManager().getRoot();
 

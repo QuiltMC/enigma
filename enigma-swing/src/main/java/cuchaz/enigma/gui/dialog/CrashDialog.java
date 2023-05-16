@@ -92,14 +92,18 @@ public class CrashDialog {
 	}
 
 	public static void show(Throwable ex) {
-		// get the error report
-		StringWriter buf = new StringWriter();
-		ex.printStackTrace(new PrintWriter(buf));
-		String report = buf.toString();
+		if (instance != null) {
+			// get the error report
+			StringWriter buf = new StringWriter();
+			ex.printStackTrace(new PrintWriter(buf));
+			String report = buf.toString();
 
-		// show it!
-		instance.text.setText(report);
-		instance.frame.doLayout();
-		instance.frame.setVisible(true);
+			// show it!
+			instance.text.setText(report);
+			instance.frame.doLayout();
+			instance.frame.setVisible(true);
+		} else {
+			throw new RuntimeException(ex);
+		}
 	}
 }

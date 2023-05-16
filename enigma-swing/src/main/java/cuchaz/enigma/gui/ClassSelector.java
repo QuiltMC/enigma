@@ -106,6 +106,7 @@ public class ClassSelector extends JTree {
 				return this;
 			}
 		};
+		this.setCellRenderer(renderer);
 
 		final JTree tree = this;
 

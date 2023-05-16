@@ -39,6 +39,10 @@ public abstract class ClassesDocker extends Docker {
 		return this.selector;
 	}
 
+	public ClassSelectorPopupMenu getPopupMenu() {
+		return this.popupMenu;
+	}
+
 	@Override
 	public void retranslateUi() {
 		super.retranslateUi();

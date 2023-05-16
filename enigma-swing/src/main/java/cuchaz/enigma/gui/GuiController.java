@@ -133,31 +133,31 @@ public class GuiController implements ClientPacketHandler {
 		this.gui.onCloseJar();
 	}
 
-	public void openMappings(Path path) {
+	public CompletableFuture<Void> openMappings(Path path) {
 		if (Files.isDirectory(path)) {
-			this.openMappings(MappingFormat.ENIGMA_DIRECTORY, path);
+			return this.openMappings(MappingFormat.ENIGMA_DIRECTORY, path);
 		} else {
 			String extension = MoreFiles.getFileExtension(path).toLowerCase();
 
-			switch (extension) {
+			return switch (extension) {
 				case "zip" -> this.openMappings(MappingFormat.ENIGMA_ZIP, path);
 				case "tiny" -> this.openMappings(MappingFormat.TINY_FILE, path);
 				case "tinyv2" -> this.openMappings(MappingFormat.TINY_V2, path);
 				default -> this.openMappings(MappingFormat.ENIGMA_FILE, path);
-			}
+			};
 		}
 	}
 
-	public void openMappings(MappingFormat format, Path path) {
+	public CompletableFuture<Void> openMappings(MappingFormat format, Path path) {
 		if (this.project == null) {
-			return;
+			return CompletableFuture.supplyAsync(() -> null);
 		}
 
 		this.gui.setMappingsFile(path);
 		UiConfig.addRecentFilePair(this.project.getJarPath(), path);
 		this.gui.getMenuBar().reloadOpenRecentMenu(this.gui);
 
-		ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
+		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
 			try {
 				MappingSaveParameters saveParameters = this.enigma.getProfile().getMappingSaveParameters();
 

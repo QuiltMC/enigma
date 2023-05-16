@@ -6,6 +6,7 @@ plugins {
 
 dependencies {
 	implementation project(':enigma')
+	testImplementation(testFixtures(project(':enigma')))
 }
 
 mainClassName = 'cuchaz.enigma.command.Main'
