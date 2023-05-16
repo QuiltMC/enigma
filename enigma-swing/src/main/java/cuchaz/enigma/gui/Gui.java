@@ -98,7 +98,7 @@ public class Gui {
 	public final JFileChooser exportJarFileChooser;
 	public SearchDialog searchDialog;
 
-	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes) {
+	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean visible) {
 		this.mainWindow = new MainWindow(Enigma.NAME);
 		this.centerPanel = new JPanel(new BorderLayout());
 		this.editableTypes = editableTypes;
@@ -127,7 +127,7 @@ public class Gui {
 		LanguageUtil.addListener(this::retranslateUi);
 		Themes.addListener((lookAndFeel, boxHighlightPainters) -> SwingUtilities.updateComponentTreeUI(this.getFrame()));
 
-		this.mainWindow.setVisible(true);
+		this.mainWindow.setVisible(visible);
 	}
 
 	private void setupDockers() {

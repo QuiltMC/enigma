@@ -32,9 +32,7 @@ public class PackageRenameTest {
 	void testSimpleRename() throws InterruptedException {
 		Set<EditableType> editables = EnumSet.allOf(EditableType.class);
 		editables.addAll(List.of(EditableType.values()));
-		Gui gui = new Gui(EnigmaProfile.EMPTY, editables);
-
-		System.out.println(new File(MAPPINGS.toUri()).getAbsolutePath());
+		Gui gui = new Gui(EnigmaProfile.EMPTY, editables, false);
 
 		CountDownLatch latch = new CountDownLatch(1);
 		gui.getController().openJar(JAR).thenRun(() -> gui.getController().openMappings(MappingFormat.ENIGMA_DIRECTORY, MAPPINGS).thenRun(latch::countDown));
