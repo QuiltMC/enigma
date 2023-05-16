@@ -61,6 +61,8 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 			@Override
 			public void done() {
 				((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(ClassSelectorClassNode.this.getStats()));
+				// todo fix rare AIOOBE caused by parallel reloads here
+				// blocker issue for implementing tests
 				selector.reload(ClassSelectorClassNode.this);
 			}
 		};

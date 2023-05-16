@@ -11,7 +11,6 @@ import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.List;
@@ -29,7 +28,102 @@ public class PackageRenameTest {
 	private static Translator deobfuscator;
 
 	@Test
+	void testRemoveOnePackage() throws InterruptedException {
+		ClassSelectorPopupMenu menu = this.setupMenu();
+		this.assertBaseMappings();
+
+		CountDownLatch packageRenameLatch = new CountDownLatch(1);
+		menu.renamePackage("a/b/c", "a/c").thenRun(packageRenameLatch::countDown);
+		packageRenameLatch.await();
+
+		this.assertMapping(newClass("A"), newClass("a/c/A"));
+		this.assertMapping(newClass("B"), newClass("a/c/B"));
+		this.assertMapping(newClass("C"), newClass("a/c/C"));
+		this.assertMapping(newClass("D"), newClass("a/D"));
+		this.assertMapping(newClass("E"), newClass("E"));
+	}
+
+	@Test
+	void testRemoveTwoPackages() throws InterruptedException {
+		ClassSelectorPopupMenu menu = this.setupMenu();
+		this.assertBaseMappings();
+
+		CountDownLatch packageRenameLatch = new CountDownLatch(1);
+		menu.renamePackage("a/b/c", "a").thenRun(packageRenameLatch::countDown);
+		packageRenameLatch.await();
+
+		this.assertMapping(newClass("A"), newClass("a/A"));
+		this.assertMapping(newClass("B"), newClass("a/B"));
+		this.assertMapping(newClass("C"), newClass("a/C"));
+		this.assertMapping(newClass("D"), newClass("a/D"));
+		this.assertMapping(newClass("E"), newClass("E"));
+	}
+
+	@Test
+	void testPackageConservation() throws InterruptedException {
+		ClassSelectorPopupMenu menu = this.setupMenu();
+		this.assertBaseMappings();
+
+		CountDownLatch packageRenameLatch = new CountDownLatch(1);
+		menu.renamePackage("a/b", "a").thenRun(packageRenameLatch::countDown);
+		packageRenameLatch.await();
+
+		this.assertMapping(newClass("A"), newClass("a/c/A"));
+		this.assertMapping(newClass("B"), newClass("a/c/B"));
+		this.assertMapping(newClass("C"), newClass("a/C"));
+		this.assertMapping(newClass("D"), newClass("a/D"));
+		this.assertMapping(newClass("E"), newClass("E"));
+	}
+
+	@Test
+	void testAppendOnePackage() throws InterruptedException {
+		ClassSelectorPopupMenu menu = this.setupMenu();
+		this.assertBaseMappings();
+
+		CountDownLatch packageRenameLatch = new CountDownLatch(1);
+		menu.renamePackage("a/b/c", "a/b/c/d").thenRun(packageRenameLatch::countDown);
+		packageRenameLatch.await();
+
+		this.assertMapping(newClass("A"), newClass("a/b/c/d/A"));
+		this.assertMapping(newClass("B"), newClass("a/b/c/d/B"));
+		this.assertMapping(newClass("C"), newClass("a/b/C"));
+		this.assertMapping(newClass("D"), newClass("a/D"));
+		this.assertMapping(newClass("E"), newClass("E"));
+	}
+
+	@Test
 	void testSimpleRename() throws InterruptedException {
+		ClassSelectorPopupMenu menu = this.setupMenu();
+		this.assertBaseMappings();
+
+		CountDownLatch packageRenameLatch = new CountDownLatch(1);
+		menu.renamePackage("a/b/c", "a/b/d").thenRun(packageRenameLatch::countDown);
+		packageRenameLatch.await();
+
+		this.assertMapping(newClass("A"), newClass("a/b/d/A"));
+		this.assertMapping(newClass("B"), newClass("a/b/d/B"));
+		this.assertMapping(newClass("C"), newClass("a/b/C"));
+		this.assertMapping(newClass("D"), newClass("a/D"));
+		this.assertMapping(newClass("E"), newClass("E"));
+	}
+
+	@Test
+	void testFirstPackageRename() throws InterruptedException {
+		ClassSelectorPopupMenu menu = this.setupMenu();
+		this.assertBaseMappings();
+
+		CountDownLatch packageRenameLatch = new CountDownLatch(1);
+		menu.renamePackage("a", "b").thenRun(packageRenameLatch::countDown);
+		packageRenameLatch.await();
+
+		this.assertMapping(newClass("A"), newClass("b/b/c/A"));
+		this.assertMapping(newClass("B"), newClass("b/b/c/B"));
+		this.assertMapping(newClass("C"), newClass("b/b/C"));
+		this.assertMapping(newClass("D"), newClass("b/D"));
+		this.assertMapping(newClass("E"), newClass("E"));
+	}
+
+	private ClassSelectorPopupMenu setupMenu() throws InterruptedException {
 		Set<EditableType> editables = EnumSet.allOf(EditableType.class);
 		editables.addAll(List.of(EditableType.values()));
 		Gui gui = new Gui(EnigmaProfile.EMPTY, editables, false);
@@ -39,16 +133,16 @@ public class PackageRenameTest {
 		latch.await();
 
 		deobfuscator = gui.getController().getProject().getMapper().getDeobfuscator();
+		return Docker.getDocker(AllClassesDocker.class).getPopupMenu();
+	}
 
+	private void assertBaseMappings() {
 		// assert starting mappings
 		this.assertMapping(newClass("A"), newClass("a/b/c/A"));
-
-		ClassSelectorPopupMenu menu = Docker.getDocker(AllClassesDocker.class).getPopupMenu();
-		CountDownLatch packageRenameLatch = new CountDownLatch(1);
-		menu.renamePackage("a/b/c", "a/b/c/d").thenRun(packageRenameLatch::countDown);
-		packageRenameLatch.await();
-
-		this.assertMapping(newClass("A"), newClass("a/b/c/d/A"));
+		this.assertMapping(newClass("B"), newClass("a/b/c/B"));
+		this.assertMapping(newClass("C"), newClass("a/b/C"));
+		this.assertMapping(newClass("D"), newClass("a/D"));
+		this.assertMapping(newClass("E"), newClass("E"));
 	}
 
 	private void assertMapping(Entry<?> obf, Entry<?> deobf) {

@@ -191,11 +191,9 @@ public class ClassSelectorPopupMenu {
 							}
 
 							// append the remaining old package names
-							if (split.length - 2 >= i) {
-								for (int j = i + 1; j <= split.length - 2; j++) {
-									appendSlash(string);
-									string.append(split[j]);
-								}
+							for (int j = i - 1 + oldPackageNames.length; j < split.length - 1; j++) {
+								appendSlash(string);
+								string.append(split[j]);
 							}
 
 							appendSlash(string);
