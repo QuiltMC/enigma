@@ -30,7 +30,10 @@ public class PackageRenameTest {
 
 	@Test
 	void testRemoveOnePackage() throws InterruptedException {
-		this.renamePackage("a/b/c", "a/c");
+		if (this.renamePackage("a/b/c", "a/c")) {
+			return;
+		}
+
 		this.assertMapping(newClass("A"), newClass("a/c/A"));
 		this.assertMapping(newClass("B"), newClass("a/c/B"));
 		this.assertMapping(newClass("C"), newClass("a/c/C"));
@@ -40,7 +43,10 @@ public class PackageRenameTest {
 
 	@Test
 	void testRemoveTwoPackages() throws InterruptedException {
-		this.renamePackage("a/b/c", "a");
+		if (this.renamePackage("a/b/c", "a")) {
+			return;
+		}
+
 		this.assertMapping(newClass("A"), newClass("a/A"));
 		this.assertMapping(newClass("B"), newClass("a/B"));
 		this.assertMapping(newClass("C"), newClass("a/C"));
@@ -50,7 +56,10 @@ public class PackageRenameTest {
 
 	@Test
 	void testPackageConservation() throws InterruptedException {
-		this.renamePackage("a/b", "a");
+		if (this.renamePackage("a/b", "a")) {
+			return;
+		}
+
 		this.assertMapping(newClass("A"), newClass("a/c/A"));
 		this.assertMapping(newClass("B"), newClass("a/c/B"));
 		this.assertMapping(newClass("C"), newClass("a/C"));
@@ -60,7 +69,10 @@ public class PackageRenameTest {
 
 	@Test
 	void testAppendOnePackage() throws InterruptedException {
-		this.renamePackage("a/b/c", "a/b/c/d");
+		if (this.renamePackage("a/b/c", "a/b/c/d")) {
+			return;
+		}
+
 		this.assertMapping(newClass("A"), newClass("a/b/c/d/A"));
 		this.assertMapping(newClass("B"), newClass("a/b/c/d/B"));
 		this.assertMapping(newClass("C"), newClass("a/b/C"));
@@ -70,7 +82,10 @@ public class PackageRenameTest {
 
 	@Test
 	void testSimpleRename() throws InterruptedException {
-		this.renamePackage("a/b/c", "a/b/d");
+		if (this.renamePackage("a/b/c", "a/b/d")) {
+			return;
+		}
+
 		this.assertMapping(newClass("A"), newClass("a/b/d/A"));
 		this.assertMapping(newClass("B"), newClass("a/b/d/B"));
 		this.assertMapping(newClass("C"), newClass("a/b/C"));
@@ -80,7 +95,10 @@ public class PackageRenameTest {
 
 	@Test
 	void testFirstPackageRename() throws InterruptedException {
-		this.renamePackage("a", "b");
+		if (this.renamePackage("a", "b")) {
+			return;
+		}
+
 		this.assertMapping(newClass("A"), newClass("b/b/c/A"));
 		this.assertMapping(newClass("B"), newClass("b/b/c/B"));
 		this.assertMapping(newClass("C"), newClass("b/b/C"));
@@ -88,7 +106,10 @@ public class PackageRenameTest {
 		this.assertMapping(newClass("E"), newClass("E"));
 	}
 
-	private void renamePackage(String packageName, String input) throws InterruptedException {
+	/**
+	 * @return whether to cancel the test
+	 */
+	private boolean renamePackage(String packageName, String input) throws InterruptedException {
 		try {
 			ClassSelectorPopupMenu menu = this.setupMenu();
 
@@ -97,10 +118,13 @@ public class PackageRenameTest {
 				CountDownLatch packageRenameLatch = new CountDownLatch(1);
 				menu.renamePackage(packageName, input).thenRun(packageRenameLatch::countDown);
 				packageRenameLatch.await();
+				return false;
 			}
 		} catch (HeadlessException ignored) {
 			// skip the test in a headless environment without xvfb. it'll be run through github actions
 		}
+
+		return true;
 	}
 
 	private ClassSelectorPopupMenu setupMenu() throws InterruptedException {
