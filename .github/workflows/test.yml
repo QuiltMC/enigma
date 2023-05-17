@@ -14,7 +14,7 @@ jobs:
       - name: update apt
         run: apt-get update
       - name: install xvfb
-        run: apt-get install -y xvfb libxext6
+        run: apt-get install -y xvfb libxrender1
       - name: run tests
         run: xvfb-run ./gradlew completeTestGui --stacktrace --warning-mode fail
         env:
