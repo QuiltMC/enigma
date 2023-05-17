@@ -93,30 +93,19 @@ public class EnigmaContextSource implements IContextSource {
 	}
 
 	public class ExternalContextSource implements IContextSource {
-		private List<String> externalClassNames;
-
 		@Override
 		public String getName() {
 			return "external classes for " + EnigmaContextSource.this.name;
 		}
 
-		private void collectExternalClassNames() {
-			if (this.externalClassNames != null) {
-				return;
-			}
-
-			EnigmaContextSource.this.collectClassNames();
-			this.externalClassNames = new ArrayList<>(EnigmaContextSource.this.classProvider.getClassNames());
-			this.externalClassNames.removeAll(EnigmaContextSource.this.classNames);
+		@Override
+		public Entries getEntries() {
+			return Entries.EMPTY;
 		}
 
 		@Override
-		public Entries getEntries() {
-			this.collectExternalClassNames();
-			List<Entry> classes = this.externalClassNames.stream()
-					.distinct().map(Entry::atBase).toList();
-			return new Entries(classes,
-					Collections.emptyList(), Collections.emptyList());
+		public boolean isLazy() {
+			return true;
 		}
 
 		@Override

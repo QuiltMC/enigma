@@ -11,7 +11,7 @@ swing_dpi = "0.10"
 fontchooser = "2.5.2"
 tinylog = "2.6.0"
 
-quiltflower = "1.10.0-20230512.014220-86"
+quiltflower = "1.10.0-20230513.181048-90"
 cfr = "0.0.6"
 procyon = "0.6.0"
 
