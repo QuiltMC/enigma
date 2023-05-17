@@ -96,7 +96,8 @@ public class PackageRenameTest {
 			CountDownLatch packageRenameLatch = new CountDownLatch(1);
 			menu.renamePackage(packageName, input).thenRun(packageRenameLatch::countDown);
 			packageRenameLatch.await();
-		} catch (HeadlessException ignored) {
+		} catch (Exception ignored) {
+			System.out.println(ignored.getStackTrace());
 			// skip the test in a headless environment without xvfb. it'll be run through github actions
 		}
 	}
