@@ -92,33 +92,29 @@ public class PackageRenameTest {
 	private void renamePackage(String packageName, String input) throws InterruptedException {
 		try {
 			ClassSelectorPopupMenu menu = this.setupMenu();
-			this.assertBaseMappings();
 
-			CountDownLatch packageRenameLatch = new CountDownLatch(1);
-			menu.renamePackage(packageName, input).thenRun(packageRenameLatch::countDown);
-			packageRenameLatch.await();
-		} catch (Exception e) {
-			Logger.error(e, "fail");
+			if (menu != null) {
+				this.assertBaseMappings();
+				CountDownLatch packageRenameLatch = new CountDownLatch(1);
+				menu.renamePackage(packageName, input).thenRun(packageRenameLatch::countDown);
+				packageRenameLatch.await();
+			}
+		} catch (ExceptionInInitializerError ignored) {
 			// skip the test in a headless environment without xvfb. it'll be run through github actions
 		}
 	}
 
 	private ClassSelectorPopupMenu setupMenu() throws InterruptedException {
-		try {
-			Set<EditableType> editables = EnumSet.allOf(EditableType.class);
-			editables.addAll(List.of(EditableType.values()));
-			Gui gui = new Gui(EnigmaProfile.EMPTY, editables, false);
+		Set<EditableType> editables = EnumSet.allOf(EditableType.class);
+		editables.addAll(List.of(EditableType.values()));
+		Gui gui = new Gui(EnigmaProfile.EMPTY, editables, false);
 
-			CountDownLatch latch = new CountDownLatch(1);
-			gui.getController().openJar(JAR).thenRun(() -> gui.getController().openMappings(MappingFormat.ENIGMA_DIRECTORY, MAPPINGS).thenRun(latch::countDown));
-			latch.await();
+		CountDownLatch latch = new CountDownLatch(1);
+		gui.getController().openJar(JAR).thenRun(() -> gui.getController().openMappings(MappingFormat.ENIGMA_DIRECTORY, MAPPINGS).thenRun(latch::countDown));
+		latch.await();
 
-			deobfuscator = gui.getController().getProject().getMapper().getDeobfuscator();
-			return Docker.getDocker(AllClassesDocker.class).getPopupMenu();
-		} catch (Exception e) {
-			Logger.error(e, "fail");
-			return null;
-		}
+		deobfuscator = gui.getController().getProject().getMapper().getDeobfuscator();
+		return Docker.getDocker(AllClassesDocker.class).getPopupMenu();
 	}
 
 	private void assertBaseMappings() {
@@ -131,15 +127,13 @@ public class PackageRenameTest {
 	}
 
 	private void assertMapping(Entry<?> obf, Entry<?> deobf) {
-		if (deobfuscator != null) {
-			TranslateResult<? extends Entry<?>> result = deobfuscator.extendedTranslate(obf);
-			assertThat(result, is(notNullValue()));
-			assertThat(result.getValue(), is(deobf));
+		TranslateResult<? extends Entry<?>> result = deobfuscator.extendedTranslate(obf);
+		assertThat(result, is(notNullValue()));
+		assertThat(result.getValue(), is(deobf));
 
-			String deobfName = result.getValue().getName();
-			if (deobfName != null) {
-				assertThat(deobfName, is(deobf.getName()));
-			}
+		String deobfName = result.getValue().getName();
+		if (deobfName != null) {
+			assertThat(deobfName, is(deobf.getName()));
 		}
 	}
 }
