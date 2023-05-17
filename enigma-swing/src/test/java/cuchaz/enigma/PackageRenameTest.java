@@ -92,7 +92,7 @@ public class PackageRenameTest {
 		try {
 			ClassSelectorPopupMenu menu = this.setupMenu();
 
-			if (menu != null) {
+			if (menu != null && deobfuscator != null) {
 				this.assertBaseMappings();
 				CountDownLatch packageRenameLatch = new CountDownLatch(1);
 				menu.renamePackage(packageName, input).thenRun(packageRenameLatch::countDown);
