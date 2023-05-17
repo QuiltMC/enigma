@@ -92,7 +92,7 @@ public class CrashDialog {
 	}
 
 	public static void show(Throwable ex) {
-		if (/*instance != null*/ true) {
+		if (/*instance != null*/ false) {
 			// get the error report
 			StringWriter buf = new StringWriter();
 			ex.printStackTrace(new PrintWriter(buf));
