@@ -146,6 +146,7 @@ public class PackageRenameTest {
 		latch.await();
 		future.join();
 		t.stop();
+		throw new RuntimeException("end of method");
 	}
 
 	private static void renamePackage(String packageName, String input) throws InterruptedException {
