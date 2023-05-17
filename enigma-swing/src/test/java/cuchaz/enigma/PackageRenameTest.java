@@ -144,9 +144,10 @@ public class PackageRenameTest {
 
 		t.start();
 		latch.await();
-		future.join();
-		t.stop();
-		throw new RuntimeException("end of method");
+		throw new RuntimeException("latch unlocked");
+		//future.join();
+		//t.stop();
+		//throw new RuntimeException("end of method");
 	}
 
 	private static void renamePackage(String packageName, String input) throws InterruptedException {
