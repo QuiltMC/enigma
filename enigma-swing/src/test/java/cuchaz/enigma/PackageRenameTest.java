@@ -11,7 +11,9 @@ import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import org.junit.jupiter.api.Test;
 
+import javax.swing.JFrame;
 import java.awt.HeadlessException;
+import java.awt.event.WindowEvent;
 import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.List;
@@ -27,6 +29,7 @@ public class PackageRenameTest {
 	public static final Path JAR = TestUtil.obfJar("complete");
 	public static final Path MAPPINGS = Path.of("src/test/resources/test_mappings");
 	private static Translator deobfuscator;
+	private static JFrame frame;
 
 	@Test
 	void testRemoveOnePackage() throws InterruptedException {
@@ -39,6 +42,8 @@ public class PackageRenameTest {
 		this.assertMapping(newClass("C"), newClass("a/c/C"));
 		this.assertMapping(newClass("D"), newClass("a/D"));
 		this.assertMapping(newClass("E"), newClass("E"));
+
+		endTest();
 	}
 
 	@Test
@@ -52,6 +57,8 @@ public class PackageRenameTest {
 		this.assertMapping(newClass("C"), newClass("a/C"));
 		this.assertMapping(newClass("D"), newClass("a/D"));
 		this.assertMapping(newClass("E"), newClass("E"));
+
+		endTest();
 	}
 
 	@Test
@@ -65,6 +72,8 @@ public class PackageRenameTest {
 		this.assertMapping(newClass("C"), newClass("a/C"));
 		this.assertMapping(newClass("D"), newClass("a/D"));
 		this.assertMapping(newClass("E"), newClass("E"));
+
+		endTest();
 	}
 
 	@Test
@@ -78,6 +87,8 @@ public class PackageRenameTest {
 		this.assertMapping(newClass("C"), newClass("a/b/C"));
 		this.assertMapping(newClass("D"), newClass("a/D"));
 		this.assertMapping(newClass("E"), newClass("E"));
+
+		endTest();
 	}
 
 	@Test
@@ -91,6 +102,8 @@ public class PackageRenameTest {
 		this.assertMapping(newClass("C"), newClass("a/b/C"));
 		this.assertMapping(newClass("D"), newClass("a/D"));
 		this.assertMapping(newClass("E"), newClass("E"));
+
+		endTest();
 	}
 
 	@Test
@@ -104,6 +117,12 @@ public class PackageRenameTest {
 		this.assertMapping(newClass("C"), newClass("b/b/C"));
 		this.assertMapping(newClass("D"), newClass("b/D"));
 		this.assertMapping(newClass("E"), newClass("E"));
+
+		endTest();
+	}
+
+	private static void endTest() {
+		frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSED));
 	}
 
 	/**
@@ -137,6 +156,7 @@ public class PackageRenameTest {
 		latch.await();
 
 		deobfuscator = gui.getController().getProject().getMapper().getDeobfuscator();
+		frame = gui.getFrame();
 		return Docker.getDocker(AllClassesDocker.class).getPopupMenu();
 	}
 
