@@ -1,0 +1,20 @@
+name: test
+on: [push, pull_request]
+jobs:
+  build:
+    strategy:
+      matrix:
+        java: [17-jdk, 19-jdk]
+    runs-on: ubuntu-22.04
+    container:
+      image: eclipse-temurin:${{ matrix.java }}
+      options: --user root
+    steps:
+      - name: install xvfb
+        run: sudo apt-get install -y xvfb
+      - uses: actions/checkout@v3
+      - run: xvfb-run ./gradlew test --stacktrace --warning-mode fail
+        env:
+          SNAPSHOTS_URL: ${{ secrets.SNAPSHOTS_URL }}
+          SNAPSHOTS_USERNAME: ${{ secrets.SNAPSHOTS_USERNAME }}
+          SNAPSHOTS_PASSWORD: ${{ secrets.SNAPSHOTS_PASSWORD }}

@@ -11,6 +11,7 @@ import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import org.junit.jupiter.api.Test;
 
+import java.awt.HeadlessException;
 import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.List;
@@ -29,13 +30,7 @@ public class PackageRenameTest {
 
 	@Test
 	void testRemoveOnePackage() throws InterruptedException {
-		ClassSelectorPopupMenu menu = this.setupMenu();
-		this.assertBaseMappings();
-
-		CountDownLatch packageRenameLatch = new CountDownLatch(1);
-		menu.renamePackage("a/b/c", "a/c").thenRun(packageRenameLatch::countDown);
-		packageRenameLatch.await();
-
+		this.renamePackage("a/b/c", "a/c");
 		this.assertMapping(newClass("A"), newClass("a/c/A"));
 		this.assertMapping(newClass("B"), newClass("a/c/B"));
 		this.assertMapping(newClass("C"), newClass("a/c/C"));
@@ -45,13 +40,7 @@ public class PackageRenameTest {
 
 	@Test
 	void testRemoveTwoPackages() throws InterruptedException {
-		ClassSelectorPopupMenu menu = this.setupMenu();
-		this.assertBaseMappings();
-
-		CountDownLatch packageRenameLatch = new CountDownLatch(1);
-		menu.renamePackage("a/b/c", "a").thenRun(packageRenameLatch::countDown);
-		packageRenameLatch.await();
-
+		this.renamePackage("a/b/c", "a");
 		this.assertMapping(newClass("A"), newClass("a/A"));
 		this.assertMapping(newClass("B"), newClass("a/B"));
 		this.assertMapping(newClass("C"), newClass("a/C"));
@@ -61,13 +50,7 @@ public class PackageRenameTest {
 
 	@Test
 	void testPackageConservation() throws InterruptedException {
-		ClassSelectorPopupMenu menu = this.setupMenu();
-		this.assertBaseMappings();
-
-		CountDownLatch packageRenameLatch = new CountDownLatch(1);
-		menu.renamePackage("a/b", "a").thenRun(packageRenameLatch::countDown);
-		packageRenameLatch.await();
-
+		this.renamePackage("a/b", "a");
 		this.assertMapping(newClass("A"), newClass("a/c/A"));
 		this.assertMapping(newClass("B"), newClass("a/c/B"));
 		this.assertMapping(newClass("C"), newClass("a/C"));
@@ -77,13 +60,7 @@ public class PackageRenameTest {
 
 	@Test
 	void testAppendOnePackage() throws InterruptedException {
-		ClassSelectorPopupMenu menu = this.setupMenu();
-		this.assertBaseMappings();
-
-		CountDownLatch packageRenameLatch = new CountDownLatch(1);
-		menu.renamePackage("a/b/c", "a/b/c/d").thenRun(packageRenameLatch::countDown);
-		packageRenameLatch.await();
-
+		this.renamePackage("a/b/c", "a/b/c/d");
 		this.assertMapping(newClass("A"), newClass("a/b/c/d/A"));
 		this.assertMapping(newClass("B"), newClass("a/b/c/d/B"));
 		this.assertMapping(newClass("C"), newClass("a/b/C"));
@@ -93,13 +70,7 @@ public class PackageRenameTest {
 
 	@Test
 	void testSimpleRename() throws InterruptedException {
-		ClassSelectorPopupMenu menu = this.setupMenu();
-		this.assertBaseMappings();
-
-		CountDownLatch packageRenameLatch = new CountDownLatch(1);
-		menu.renamePackage("a/b/c", "a/b/d").thenRun(packageRenameLatch::countDown);
-		packageRenameLatch.await();
-
+		this.renamePackage("a/b/c", "a/b/d");
 		this.assertMapping(newClass("A"), newClass("a/b/d/A"));
 		this.assertMapping(newClass("B"), newClass("a/b/d/B"));
 		this.assertMapping(newClass("C"), newClass("a/b/C"));
@@ -109,18 +80,25 @@ public class PackageRenameTest {
 
 	@Test
 	void testFirstPackageRename() throws InterruptedException {
-		ClassSelectorPopupMenu menu = this.setupMenu();
-		this.assertBaseMappings();
-
-		CountDownLatch packageRenameLatch = new CountDownLatch(1);
-		menu.renamePackage("a", "b").thenRun(packageRenameLatch::countDown);
-		packageRenameLatch.await();
-
+		this.renamePackage("a", "b");
 		this.assertMapping(newClass("A"), newClass("b/b/c/A"));
 		this.assertMapping(newClass("B"), newClass("b/b/c/B"));
 		this.assertMapping(newClass("C"), newClass("b/b/C"));
 		this.assertMapping(newClass("D"), newClass("b/D"));
 		this.assertMapping(newClass("E"), newClass("E"));
+	}
+
+	private void renamePackage(String packageName, String input) throws InterruptedException {
+		try {
+			ClassSelectorPopupMenu menu = this.setupMenu();
+			this.assertBaseMappings();
+
+			CountDownLatch packageRenameLatch = new CountDownLatch(1);
+			menu.renamePackage(packageName, input).thenRun(packageRenameLatch::countDown);
+			packageRenameLatch.await();
+		} catch (HeadlessException ignored) {
+			// skip the test in a headless environment without xvfb. it'll be run through github actions
+		}
 	}
 
 	private ClassSelectorPopupMenu setupMenu() throws InterruptedException {
