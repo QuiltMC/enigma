@@ -11,6 +11,8 @@ jobs:
       options: --user root
     steps:
       - uses: actions/checkout@v3
+      - name: update apt
+        run: apt-get update
       - name: install xvfb
         run: apt-get install -y xvfb
       - name: run tests
