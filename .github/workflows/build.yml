@@ -11,7 +11,10 @@ jobs:
       options: --user root
     steps:
       - uses: actions/checkout@v3
-      - run: ./gradlew checkstyleMain build publish --stacktrace --warning-mode fail
+      - run: ./gradlew checkstyleMain build --stacktrace --warning-mode fail
+      - name: Publish Snapshot
+        if: ${{ matrix.java == 17-jdk && github.repository_owner == 'QuiltMC' && github.ref_name == 'master' }}
+        run: ./gradlew publish --stacktrace
         env:
           SNAPSHOTS_URL: ${{ secrets.SNAPSHOTS_URL }}
           SNAPSHOTS_USERNAME: ${{ secrets.SNAPSHOTS_USERNAME }}
