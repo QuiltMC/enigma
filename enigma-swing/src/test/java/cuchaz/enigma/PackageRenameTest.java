@@ -33,7 +33,7 @@ public class PackageRenameTest {
 
 	@Test
 	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
-	void testRemoveOnePackage() {
+	void testRemoveOnePackage() throws InterruptedException {
 		runTest(() -> {
 			renamePackage("a/b/c", "a/c");
 
@@ -47,7 +47,7 @@ public class PackageRenameTest {
 
 	@Test
 	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
-	void testRemoveTwoPackages() {
+	void testRemoveTwoPackages() throws InterruptedException {
 		runTest(() -> {
 			renamePackage("a/b/c", "a");
 
@@ -61,7 +61,7 @@ public class PackageRenameTest {
 
 	@Test
 	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
-	void testPackageConservation() {
+	void testPackageConservation() throws InterruptedException {
 		runTest(() -> {
 			renamePackage("a/b", "a");
 
@@ -75,7 +75,7 @@ public class PackageRenameTest {
 
 	@Test
 	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
-	void testAppendOnePackage() {
+	void testAppendOnePackage() throws InterruptedException {
 		runTest(() -> {
 			renamePackage("a/b/c", "a/b/c/d");
 
@@ -89,7 +89,7 @@ public class PackageRenameTest {
 
 	@Test
 	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
-	void testSimpleRename() {
+	void testSimpleRename() throws InterruptedException {
 		runTest(() -> {
 			renamePackage("a/b/c", "a/b/d");
 
@@ -103,7 +103,7 @@ public class PackageRenameTest {
 
 	@Test
 	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
-	void testFirstPackageRename() {
+	void testFirstPackageRename() throws InterruptedException {
 		runTest(() -> {
 			renamePackage("a", "b");
 
@@ -119,9 +119,12 @@ public class PackageRenameTest {
 		void run() throws InterruptedException;
 	}
 
-	private static void runTest(ThrowingRunnable test) {
+	private static void runTest(ThrowingRunnable test) throws InterruptedException {
+		CountDownLatch latch = new CountDownLatch(1);
+
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			try {
+				latch.await();
 				test.run();
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
@@ -131,6 +134,7 @@ public class PackageRenameTest {
 		Thread t = new Thread(() -> {
 			try {
 				menu = setupMenu();
+				latch.countDown();
 				future.get();
 			} catch (InterruptedException | ExecutionException e) {
 				throw new RuntimeException(e);
@@ -139,6 +143,7 @@ public class PackageRenameTest {
 
 
 		t.start();
+		latch.await();
 		future.join();
 		t.stop();
 	}
