@@ -10,7 +10,6 @@ import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import org.junit.jupiter.api.Test;
-import org.tinylog.Logger;
 
 import java.awt.HeadlessException;
 import java.nio.file.Path;
@@ -99,7 +98,7 @@ public class PackageRenameTest {
 				menu.renamePackage(packageName, input).thenRun(packageRenameLatch::countDown);
 				packageRenameLatch.await();
 			}
-		} catch (ExceptionInInitializerError ignored) {
+		} catch (HeadlessException ignored) {
 			// skip the test in a headless environment without xvfb. it'll be run through github actions
 		}
 	}
