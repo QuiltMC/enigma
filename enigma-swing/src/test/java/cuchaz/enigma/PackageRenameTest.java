@@ -9,16 +9,16 @@ import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.representation.entry.Entry;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 
-import javax.swing.JFrame;
 import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 
 import static cuchaz.enigma.TestEntryFactory.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -29,95 +29,128 @@ public class PackageRenameTest {
 	public static final Path JAR = TestUtil.obfJar("complete");
 	public static final Path MAPPINGS = Path.of("src/test/resources/test_mappings");
 	private static Translator deobfuscator;
-	private static JFrame frame;
+	private static ClassSelectorPopupMenu menu;
 
 	@Test
 	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
-	void testRemoveOnePackage() throws InterruptedException {
-		this.renamePackage("a/b/c", "a/c");
+	void testRemoveOnePackage() {
+		runTest(() -> {
+			renamePackage("a/b/c", "a/c");
 
-		this.assertMapping(newClass("A"), newClass("a/c/A"));
-		this.assertMapping(newClass("B"), newClass("a/c/B"));
-		this.assertMapping(newClass("C"), newClass("a/c/C"));
-		this.assertMapping(newClass("D"), newClass("a/D"));
-		this.assertMapping(newClass("E"), newClass("E"));
-	}
-
-	@Test
-	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
-	void testRemoveTwoPackages() throws InterruptedException {
-		this.renamePackage("a/b/c", "a");
-
-		this.assertMapping(newClass("A"), newClass("a/A"));
-		this.assertMapping(newClass("B"), newClass("a/B"));
-		this.assertMapping(newClass("C"), newClass("a/C"));
-		this.assertMapping(newClass("D"), newClass("a/D"));
-		this.assertMapping(newClass("E"), newClass("E"));
+			assertMapping(newClass("A"), newClass("a/c/A"));
+			assertMapping(newClass("B"), newClass("a/c/B"));
+			assertMapping(newClass("C"), newClass("a/c/C"));
+			assertMapping(newClass("D"), newClass("a/D"));
+			assertMapping(newClass("E"), newClass("E"));
+		});
 	}
 
 	@Test
 	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
-	void testPackageConservation() throws InterruptedException {
-		this.renamePackage("a/b", "a");
+	void testRemoveTwoPackages() {
+		runTest(() -> {
+			renamePackage("a/b/c", "a");
 
-		this.assertMapping(newClass("A"), newClass("a/c/A"));
-		this.assertMapping(newClass("B"), newClass("a/c/B"));
-		this.assertMapping(newClass("C"), newClass("a/C"));
-		this.assertMapping(newClass("D"), newClass("a/D"));
-		this.assertMapping(newClass("E"), newClass("E"));
+			assertMapping(newClass("A"), newClass("a/A"));
+			assertMapping(newClass("B"), newClass("a/B"));
+			assertMapping(newClass("C"), newClass("a/C"));
+			assertMapping(newClass("D"), newClass("a/D"));
+			assertMapping(newClass("E"), newClass("E"));
+		});
 	}
 
 	@Test
 	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
-	void testAppendOnePackage() throws InterruptedException {
-		this.renamePackage("a/b/c", "a/b/c/d");
+	void testPackageConservation() {
+		runTest(() -> {
+			renamePackage("a/b", "a");
 
-		this.assertMapping(newClass("A"), newClass("a/b/c/d/A"));
-		this.assertMapping(newClass("B"), newClass("a/b/c/d/B"));
-		this.assertMapping(newClass("C"), newClass("a/b/C"));
-		this.assertMapping(newClass("D"), newClass("a/D"));
-		this.assertMapping(newClass("E"), newClass("E"));
+			assertMapping(newClass("A"), newClass("a/c/A"));
+			assertMapping(newClass("B"), newClass("a/c/B"));
+			assertMapping(newClass("C"), newClass("a/C"));
+			assertMapping(newClass("D"), newClass("a/D"));
+			assertMapping(newClass("E"), newClass("E"));
+		});
 	}
 
 	@Test
 	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
-	void testSimpleRename() throws InterruptedException {
-		this.renamePackage("a/b/c", "a/b/d");
+	void testAppendOnePackage() {
+		runTest(() -> {
+			renamePackage("a/b/c", "a/b/c/d");
 
-		this.assertMapping(newClass("A"), newClass("a/b/d/A"));
-		this.assertMapping(newClass("B"), newClass("a/b/d/B"));
-		this.assertMapping(newClass("C"), newClass("a/b/C"));
-		this.assertMapping(newClass("D"), newClass("a/D"));
-		this.assertMapping(newClass("E"), newClass("E"));
+			assertMapping(newClass("A"), newClass("a/b/c/d/A"));
+			assertMapping(newClass("B"), newClass("a/b/c/d/B"));
+			assertMapping(newClass("C"), newClass("a/b/C"));
+			assertMapping(newClass("D"), newClass("a/D"));
+			assertMapping(newClass("E"), newClass("E"));
+		});
 	}
 
 	@Test
 	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
-	void testFirstPackageRename() throws InterruptedException {
-		this.renamePackage("a", "b");
+	void testSimpleRename() {
+		runTest(() -> {
+			renamePackage("a/b/c", "a/b/d");
 
-		this.assertMapping(newClass("A"), newClass("b/b/c/A"));
-		this.assertMapping(newClass("B"), newClass("b/b/c/B"));
-		this.assertMapping(newClass("C"), newClass("b/b/C"));
-		this.assertMapping(newClass("D"), newClass("b/D"));
-		this.assertMapping(newClass("E"), newClass("E"));
+			assertMapping(newClass("A"), newClass("a/b/d/A"));
+			assertMapping(newClass("B"), newClass("a/b/d/B"));
+			assertMapping(newClass("C"), newClass("a/b/C"));
+			assertMapping(newClass("D"), newClass("a/D"));
+			assertMapping(newClass("E"), newClass("E"));
+		});
 	}
 
-	@AfterEach
-	void endTest() {
-		frame.dispose();
+	@Test
+	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
+	void testFirstPackageRename() {
+		runTest(() -> {
+			renamePackage("a", "b");
+
+			assertMapping(newClass("A"), newClass("b/b/c/A"));
+			assertMapping(newClass("B"), newClass("b/b/c/B"));
+			assertMapping(newClass("C"), newClass("b/b/C"));
+			assertMapping(newClass("D"), newClass("b/D"));
+			assertMapping(newClass("E"), newClass("E"));
+		});
 	}
 
-	private void renamePackage(String packageName, String input) throws InterruptedException {
-		ClassSelectorPopupMenu menu = this.setupMenu();
+	private interface ThrowingRunnable {
+		void run() throws InterruptedException;
+	}
 
-		this.assertBaseMappings();
+	private static void runTest(ThrowingRunnable test) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			try {
+				test.run();
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		});
+
+		Thread t = new Thread(() -> {
+			try {
+				menu = setupMenu();
+				future.get();
+			} catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException(e);
+			}
+		});
+
+
+		t.start();
+		future.join();
+		t.stop();
+	}
+
+	private static void renamePackage(String packageName, String input) throws InterruptedException {
+		assertBaseMappings();
 		CountDownLatch packageRenameLatch = new CountDownLatch(1);
 		menu.renamePackage(packageName, input).thenRun(packageRenameLatch::countDown);
 		packageRenameLatch.await();
 	}
 
-	private ClassSelectorPopupMenu setupMenu() throws InterruptedException {
+	private static ClassSelectorPopupMenu setupMenu() throws InterruptedException {
 		Set<EditableType> editables = EnumSet.allOf(EditableType.class);
 		editables.addAll(List.of(EditableType.values()));
 		Gui gui = new Gui(EnigmaProfile.EMPTY, editables, false);
@@ -127,20 +160,19 @@ public class PackageRenameTest {
 		latch.await();
 
 		deobfuscator = gui.getController().getProject().getMapper().getDeobfuscator();
-		frame = gui.getFrame();
 		return Docker.getDocker(AllClassesDocker.class).getPopupMenu();
 	}
 
-	private void assertBaseMappings() {
+	private static void assertBaseMappings() {
 		// assert starting mappings
-		this.assertMapping(newClass("A"), newClass("a/b/c/A"));
-		this.assertMapping(newClass("B"), newClass("a/b/c/B"));
-		this.assertMapping(newClass("C"), newClass("a/b/C"));
-		this.assertMapping(newClass("D"), newClass("a/D"));
-		this.assertMapping(newClass("E"), newClass("E"));
+		assertMapping(newClass("A"), newClass("a/b/c/A"));
+		assertMapping(newClass("B"), newClass("a/b/c/B"));
+		assertMapping(newClass("C"), newClass("a/b/C"));
+		assertMapping(newClass("D"), newClass("a/D"));
+		assertMapping(newClass("E"), newClass("E"));
 	}
 
-	private void assertMapping(Entry<?> obf, Entry<?> deobf) {
+	private static void assertMapping(Entry<?> obf, Entry<?> deobf) {
 		TranslateResult<? extends Entry<?>> result = deobfuscator.extendedTranslate(obf);
 		assertThat(result, is(notNullValue()));
 		assertThat(result.getValue(), is(deobf));
