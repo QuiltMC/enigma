@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 
 import javax.swing.JFrame;
 import java.awt.HeadlessException;
-import java.awt.event.WindowEvent;
 import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.List;
@@ -122,7 +121,7 @@ public class PackageRenameTest {
 	}
 
 	private static void endTest() {
-		frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSED));
+		frame.dispose();
 	}
 
 	/**
