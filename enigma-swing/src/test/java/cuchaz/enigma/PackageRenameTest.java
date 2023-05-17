@@ -9,10 +9,11 @@ import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.representation.entry.Entry;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 
 import javax.swing.JFrame;
-import java.awt.HeadlessException;
 import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.List;
@@ -31,118 +32,89 @@ public class PackageRenameTest {
 	private static JFrame frame;
 
 	@Test
+	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
 	void testRemoveOnePackage() throws InterruptedException {
-		if (this.renamePackage("a/b/c", "a/c")) {
-			return;
-		}
+		this.renamePackage("a/b/c", "a/c");
 
 		this.assertMapping(newClass("A"), newClass("a/c/A"));
 		this.assertMapping(newClass("B"), newClass("a/c/B"));
 		this.assertMapping(newClass("C"), newClass("a/c/C"));
 		this.assertMapping(newClass("D"), newClass("a/D"));
 		this.assertMapping(newClass("E"), newClass("E"));
-
-		endTest();
 	}
 
 	@Test
+	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
 	void testRemoveTwoPackages() throws InterruptedException {
-		if (this.renamePackage("a/b/c", "a")) {
-			return;
-		}
+		this.renamePackage("a/b/c", "a");
 
 		this.assertMapping(newClass("A"), newClass("a/A"));
 		this.assertMapping(newClass("B"), newClass("a/B"));
 		this.assertMapping(newClass("C"), newClass("a/C"));
 		this.assertMapping(newClass("D"), newClass("a/D"));
 		this.assertMapping(newClass("E"), newClass("E"));
-
-		endTest();
 	}
 
 	@Test
+	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
 	void testPackageConservation() throws InterruptedException {
-		if (this.renamePackage("a/b", "a")) {
-			return;
-		}
+		this.renamePackage("a/b", "a");
 
 		this.assertMapping(newClass("A"), newClass("a/c/A"));
 		this.assertMapping(newClass("B"), newClass("a/c/B"));
 		this.assertMapping(newClass("C"), newClass("a/C"));
 		this.assertMapping(newClass("D"), newClass("a/D"));
 		this.assertMapping(newClass("E"), newClass("E"));
-
-		endTest();
 	}
 
 	@Test
+	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
 	void testAppendOnePackage() throws InterruptedException {
-		if (this.renamePackage("a/b/c", "a/b/c/d")) {
-			return;
-		}
+		this.renamePackage("a/b/c", "a/b/c/d");
 
 		this.assertMapping(newClass("A"), newClass("a/b/c/d/A"));
 		this.assertMapping(newClass("B"), newClass("a/b/c/d/B"));
 		this.assertMapping(newClass("C"), newClass("a/b/C"));
 		this.assertMapping(newClass("D"), newClass("a/D"));
 		this.assertMapping(newClass("E"), newClass("E"));
-
-		endTest();
 	}
 
 	@Test
+	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
 	void testSimpleRename() throws InterruptedException {
-		if (this.renamePackage("a/b/c", "a/b/d")) {
-			return;
-		}
+		this.renamePackage("a/b/c", "a/b/d");
 
 		this.assertMapping(newClass("A"), newClass("a/b/d/A"));
 		this.assertMapping(newClass("B"), newClass("a/b/d/B"));
 		this.assertMapping(newClass("C"), newClass("a/b/C"));
 		this.assertMapping(newClass("D"), newClass("a/D"));
 		this.assertMapping(newClass("E"), newClass("E"));
-
-		endTest();
 	}
 
 	@Test
+	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
 	void testFirstPackageRename() throws InterruptedException {
-		if (this.renamePackage("a", "b")) {
-			return;
-		}
+		this.renamePackage("a", "b");
 
 		this.assertMapping(newClass("A"), newClass("b/b/c/A"));
 		this.assertMapping(newClass("B"), newClass("b/b/c/B"));
 		this.assertMapping(newClass("C"), newClass("b/b/C"));
 		this.assertMapping(newClass("D"), newClass("b/D"));
 		this.assertMapping(newClass("E"), newClass("E"));
-
-		endTest();
 	}
 
-	private static void endTest() {
+	@AfterEach
+	void endTest() {
 		frame.dispose();
 	}
 
-	/**
-	 * @return whether to cancel the test
-	 */
-	private boolean renamePackage(String packageName, String input) throws InterruptedException {
-		try {
-			ClassSelectorPopupMenu menu = this.setupMenu();
+	private void renamePackage(String packageName, String input) throws InterruptedException {
+		ClassSelectorPopupMenu menu = this.setupMenu();
 
-			if (menu != null && deobfuscator != null) {
-				this.assertBaseMappings();
-				CountDownLatch packageRenameLatch = new CountDownLatch(1);
-				menu.renamePackage(packageName, input).thenRun(packageRenameLatch::countDown);
-				packageRenameLatch.await();
-				return false;
-			}
-		} catch (HeadlessException ignored) {
-			// skip the test in a headless environment without xvfb. it'll be run through github actions
-		}
-
-		return true;
+		this.assertBaseMappings();
+		CountDownLatch packageRenameLatch = new CountDownLatch(1);
+		menu.renamePackage(packageName, input).thenRun(packageRenameLatch::countDown);
+		packageRenameLatch.await();
 	}
 
 	private ClassSelectorPopupMenu setupMenu() throws InterruptedException {
