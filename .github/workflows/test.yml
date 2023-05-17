@@ -11,7 +11,11 @@ jobs:
       options: --user root
     steps:
       - name: install xvfb
-        run: sudo apt install -y xvfb
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: xvfb
+          version: 1.0
+      - name: run tests
       - uses: actions/checkout@v3
       - run: xvfb-run ./gradlew test --stacktrace --warning-mode fail
         env:
