@@ -143,8 +143,9 @@ public class PackageRenameTest {
 
 
 		t.start();
-		latch.await();
-		throw new RuntimeException("latch unlocked");
+		throw new RuntimeException("started thread");
+		//latch.await();
+		//throw new RuntimeException("latch unlocked");
 		//future.join();
 		//t.stop();
 		//throw new RuntimeException("end of method");
