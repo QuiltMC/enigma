@@ -28,11 +28,16 @@ public class DecompilerConfig {
 		for (Map.Entry<String, Object> entry : options.entrySet()) {
 			if (entry.getValue() instanceof String s) {
 				section.setString(entry.getKey(), s);
+			} else if (entry.getValue() instanceof Integer i) {
+				section.setInt(entry.getKey(), i);
+			} else if (entry.getValue() instanceof Boolean b) {
+				section.setBool(entry.getKey(), b);
 			}
 		}
 	}
 
 	public static void bootstrap() {
+		// Just run the static initialization
 	}
 
 	static {
