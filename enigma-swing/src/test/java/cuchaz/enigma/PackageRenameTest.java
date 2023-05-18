@@ -162,13 +162,14 @@ public class PackageRenameTest {
 		Set<EditableType> editables = EnumSet.allOf(EditableType.class);
 		editables.addAll(List.of(EditableType.values()));
 		Gui gui = new Gui(EnigmaProfile.EMPTY, editables, false);
+		throw new RuntimeException("started thread");
 
-		CountDownLatch latch = new CountDownLatch(1);
-		gui.getController().openJar(JAR).thenRun(() -> gui.getController().openMappings(MappingFormat.ENIGMA_DIRECTORY, MAPPINGS).thenRun(latch::countDown));
-		latch.await();
-
-		deobfuscator = gui.getController().getProject().getMapper().getDeobfuscator();
-		return Docker.getDocker(AllClassesDocker.class).getPopupMenu();
+//		CountDownLatch latch = new CountDownLatch(1);
+//		gui.getController().openJar(JAR).thenRun(() -> gui.getController().openMappings(MappingFormat.ENIGMA_DIRECTORY, MAPPINGS).thenRun(latch::countDown));
+//		latch.await();
+//
+//		deobfuscator = gui.getController().getProject().getMapper().getDeobfuscator();
+		//return Docker.getDocker(AllClassesDocker.class).getPopupMenu();
 	}
 
 	private static void assertBaseMappings() {
