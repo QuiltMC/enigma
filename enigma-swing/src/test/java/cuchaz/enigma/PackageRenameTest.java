@@ -134,10 +134,13 @@ public class PackageRenameTest {
 		Thread t = new Thread(() -> {
 			try {
 				menu = setupMenu();
-				throw new RuntimeException("started thread");
-				//latch.countDown();
-				//future.get();
 			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+			latch.countDown();
+			try {
+				future.get();
+			} catch (InterruptedException | ExecutionException e) {
 				throw new RuntimeException(e);
 			}
 		});
@@ -145,10 +148,8 @@ public class PackageRenameTest {
 
 		t.start();
 		latch.await();
-		//throw new RuntimeException("latch unlocked");
-		//future.join();
-		//t.stop();
-		//throw new RuntimeException("end of method");
+		future.join();
+		t.stop();
 	}
 
 	private static void renamePackage(String packageName, String input) throws InterruptedException {
@@ -162,14 +163,13 @@ public class PackageRenameTest {
 		Set<EditableType> editables = EnumSet.allOf(EditableType.class);
 		editables.addAll(List.of(EditableType.values()));
 		Gui gui = new Gui(EnigmaProfile.EMPTY, editables, false);
-		throw new RuntimeException("started thread");
 
-//		CountDownLatch latch = new CountDownLatch(1);
-//		gui.getController().openJar(JAR).thenRun(() -> gui.getController().openMappings(MappingFormat.ENIGMA_DIRECTORY, MAPPINGS).thenRun(latch::countDown));
-//		latch.await();
-//
-//		deobfuscator = gui.getController().getProject().getMapper().getDeobfuscator();
-		//return Docker.getDocker(AllClassesDocker.class).getPopupMenu();
+		CountDownLatch latch = new CountDownLatch(1);
+		gui.getController().openJar(JAR).thenRun(() -> gui.getController().openMappings(MappingFormat.ENIGMA_DIRECTORY, MAPPINGS).thenRun(latch::countDown));
+		latch.await();
+
+		deobfuscator = gui.getController().getProject().getMapper().getDeobfuscator();
+		return Docker.getDocker(AllClassesDocker.class).getPopupMenu();
 	}
 
 	private static void assertBaseMappings() {
