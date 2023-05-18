@@ -134,17 +134,17 @@ public class PackageRenameTest {
 		Thread t = new Thread(() -> {
 			try {
 				menu = setupMenu();
-				latch.countDown();
-				future.get();
-			} catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException("started thread");
+				//latch.countDown();
+				//future.get();
+			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
 		});
 
 
 		t.start();
-		throw new RuntimeException("started thread");
-		//latch.await();
+		latch.await();
 		//throw new RuntimeException("latch unlocked");
 		//future.join();
 		//t.stop();
