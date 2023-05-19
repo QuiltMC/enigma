@@ -149,7 +149,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public CompletableFuture<Void> openMappings(MappingFormat format, Path path) {
-		if (this.project == null) {
+		if (this.project == null || !new File(path.toUri()).exists()) {
 			return CompletableFuture.supplyAsync(() -> null);
 		}
 
