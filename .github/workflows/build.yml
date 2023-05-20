@@ -10,13 +10,11 @@ jobs:
       image: eclipse-temurin:${{ matrix.java }}
       options: --user root
     steps:
-      - uses: actions/checkout@v3
-      - name: update apt
-        run: apt-get update
-      - name: install xvfb
-        run: apt-get install -y xvfb libxrender1 libxtst6 libxi6
-      - run: xvfb-run -a ./gradlew checkstyleMain build --stacktrace --warning-mode fail
-      - name: Publish Snapshot
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: run gradle tasks
+        run: ./gradlew checkstyleMain build --stacktrace --warning-mode fail
+      - name: publish snapshot
         if: ${{ matrix.java == '17-jdk' && github.repository_owner == 'QuiltMC' && github.ref_name == 'master' }}
         run: ./gradlew publish --stacktrace
         env:
