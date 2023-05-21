@@ -68,16 +68,10 @@ public class CrashDialog {
 		buttonsPanel.add(Box.createHorizontalGlue());
 		buttonsPanel.add(GuiUtil.unboldLabel(new JLabel(I18n.translate("crash.exit.warning"))));
 		JButton ignoreButton = new JButton(I18n.translate("crash.ignore"));
-		ignoreButton.addActionListener(event -> {
-			// close (hide) the dialog
-			this.frame.setVisible(false);
-		});
+		ignoreButton.addActionListener(event -> this.frame.setVisible(false));
 		buttonsPanel.add(ignoreButton);
 		JButton exitButton = new JButton(I18n.translate("crash.exit"));
-		exitButton.addActionListener(event -> {
-			// exit enigma
-			System.exit(1);
-		});
+		exitButton.addActionListener(event -> System.exit(1));
 		buttonsPanel.add(exitButton);
 		pane.add(buttonsPanel, BorderLayout.SOUTH);
 
@@ -92,7 +86,7 @@ public class CrashDialog {
 	}
 
 	public static void show(Throwable ex) {
-		if (/*instance != null*/ false) {
+		if (instance != null) {
 			// get the error report
 			StringWriter buf = new StringWriter();
 			ex.printStackTrace(new PrintWriter(buf));

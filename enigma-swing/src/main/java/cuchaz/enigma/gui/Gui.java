@@ -355,7 +355,7 @@ public class Gui {
 			entries.addAll(deobfuscatedPackages.getClassEntries());
 		}
 
-		allClasses.setClasses(entries.isEmpty() ? null : entries);
+		allClasses.setClasses(entries.isEmpty() || this.getController().getProject() == null ? null : entries);
 	}
 
 	public void setMappingsFile(Path path) {
