@@ -4,27 +4,21 @@ import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.utils.validation.ValidationContext;
 
 import javax.annotation.Nullable;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
-import javax.swing.event.CellEditorListener;
-import javax.swing.event.ChangeEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.Component;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.EventObject;
 import java.util.List;
 
 public class ClassSelector extends JTree {
@@ -35,14 +29,13 @@ public class ClassSelector extends JTree {
 
 	private NestedPackages packageManager;
 	private ClassSelectionListener selectionListener;
-	private RenameSelectionListener renameSelectionListener;
 
-	public ClassSelector(Gui gui, Comparator<ClassEntry> comparator, boolean isRenamable) {
+	public ClassSelector(Gui gui, Comparator<ClassEntry> comparator) {
 		this.comparator = comparator;
 		this.controller = gui.getController();
 
 		// configure the tree control
-		this.setEditable(true);
+		this.setEditable(false);
 		this.setRootVisible(false);
 		this.setShowsRootHandles(false);
 		this.setModel(null);
@@ -80,7 +73,7 @@ public class ClassSelector extends JTree {
 			}
 		}));
 
-		final DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
+		this.setCellRenderer(new DefaultTreeCellRenderer() {
 			@Override
 			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
@@ -105,73 +98,14 @@ public class ClassSelector extends JTree {
 
 				return this;
 			}
-		};
-		this.setCellRenderer(renderer);
-
-		final JTree tree = this;
-
-		final DefaultTreeCellEditor editor = new DefaultTreeCellEditor(tree, renderer) {
-			@Override
-			public boolean isCellEditable(EventObject event) {
-				return isRenamable && !(event instanceof MouseEvent) && super.isCellEditable(event);
-			}
-		};
-		this.setCellEditor(editor);
-		editor.addCellEditorListener(new CellEditorListener() {
-			@Override
-			public void editingStopped(ChangeEvent e) {
-				String data = editor.getCellEditorValue().toString();
-				TreePath path = ClassSelector.this.getSelectionPath();
-
-				if (path != null && path.getLastPathComponent() instanceof DefaultMutableTreeNode node && data != null) {
-					TreeNode parentNode = node.getParent();
-					if (parentNode == null) {
-						return;
-					}
-
-					boolean allowEdit = true;
-					for (int i = 0; i < parentNode.getChildCount(); i++) {
-						TreeNode childNode = parentNode.getChildAt(i);
-						if (childNode != null && childNode.toString().equals(data) && childNode != node) {
-							allowEdit = false;
-							break;
-						}
-					}
-
-					if (allowEdit && ClassSelector.this.renameSelectionListener != null) {
-						Object prevData = node.getUserObject();
-						Object objectData = node.getUserObject() instanceof ClassEntry ? new ClassEntry(((ClassEntry) prevData).getPackageName() + "/" + data) : data;
-
-						ValidationContext context = new ValidationContext(null);
-						ClassSelector.this.renameSelectionListener.onSelectionRename(context, node.getUserObject(), objectData, node);
-						if (context.canProceed()) {
-							node.setUserObject(objectData); // Make sure that it's modified
-						} else {
-							editor.cancelCellEditing();
-						}
-					} else {
-						editor.cancelCellEditing();
-					}
-				}
-			}
-
-			@Override
-			public void editingCanceled(ChangeEvent e) {
-				// NOP
-			}
 		});
 
 		// init defaults
 		this.selectionListener = null;
-		this.renameSelectionListener = null;
 	}
 
 	public void setSelectionListener(ClassSelectionListener val) {
 		this.selectionListener = val;
-	}
-
-	public void setRenameSelectionListener(RenameSelectionListener renameSelectionListener) {
-		this.renameSelectionListener = renameSelectionListener;
 	}
 
 	/**
@@ -339,6 +273,17 @@ public class ClassSelector extends JTree {
 	}
 
 	/**
+	 * If the class entry is present in this class tree, updates moves it into the tree and updates its stats.
+	 * @param entry the entry to update
+	 */
+	public void updateIfPresent(ClassEntry entry) {
+		if (this.packageManager.getClassNode(entry) != null) {
+			this.moveClassIn(entry);
+			this.reloadStats(entry);
+		}
+	}
+
+	/**
 	 * Reloads the tree below the given node.
 	 * @param node the node to be reloaded below
 	 */
@@ -380,9 +325,5 @@ public class ClassSelector extends JTree {
 
 	public interface ClassSelectionListener {
 		void onSelectClass(ClassEntry classEntry);
-	}
-
-	public interface RenameSelectionListener {
-		void onSelectionRename(ValidationContext vc, Object prevData, Object data, DefaultMutableTreeNode node);
 	}
 }

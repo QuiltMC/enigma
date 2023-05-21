@@ -5,7 +5,7 @@ import cuchaz.enigma.gui.Gui;
 
 public class AllClassesDocker extends ClassesDocker {
 	public AllClassesDocker(Gui gui) {
-		super(gui, new ClassSelector(gui, ClassSelector.DEOBF_CLASS_COMPARATOR, true));
+		super(gui, new ClassSelector(gui, ClassSelector.DEOBF_CLASS_COMPARATOR));
 	}
 
 	@Override

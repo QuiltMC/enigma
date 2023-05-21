@@ -31,7 +31,6 @@ import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.network.ServerMessage;
 import cuchaz.enigma.source.Token;
 import cuchaz.enigma.translation.mapping.EntryChange;
-import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
@@ -51,7 +50,6 @@ import javax.swing.JScrollBar;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -518,39 +516,6 @@ public class Gui {
 		frame.repaint();
 	}
 
-	public void onRenameFromClassTree(ValidationContext vc, Object data, DefaultMutableTreeNode node) {
-		if (data instanceof String) {
-			// package rename
-			for (int i = 0; i < node.getChildCount(); i++) {
-				DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) node.getChildAt(i);
-				ClassEntry prevDataChild = (ClassEntry) childNode.getUserObject();
-
-				this.onRenameFromClassTree(vc, prevDataChild, node);
-			}
-
-			node.setUserObject(data);
-
-			// Ob package will never be modified, just reload deob view
-			DeobfuscatedClassesDocker deobfuscatedPanel = Docker.getDocker(DeobfuscatedClassesDocker.class);
-			deobfuscatedPanel.getClassSelector().reload();
-		} else if (data instanceof ClassEntry entry) {
-			// class rename
-
-			// TODO optimize reverse class lookup, although it looks like it's
-			//	  fast enough for now
-			EntryRemapper mapper = this.controller.getProject().getMapper();
-			ClassEntry obf = mapper.getObfToDeobf().getAllEntries()
-					.filter(ClassEntry.class::isInstance)
-					.map(ClassEntry.class::cast)
-					.filter(e -> mapper.deobfuscate(e).equals(entry))
-					.findAny().orElse(entry);
-
-			this.controller.applyChange(vc, EntryChange.modify(obf).withDeobfName(((ClassEntry) data).getFullName()));
-		} else {
-			throw new IllegalStateException(String.format("unhandled rename object data: '%s'", data));
-		}
-	}
-
 	public void moveClassTree(Entry<?> obfEntry, boolean updateSwingState, boolean isOldOb, boolean isNewOb) {
 		ClassEntry classEntry = obfEntry.getContainingClass();
 
@@ -587,16 +552,16 @@ public class Gui {
 	}
 
 	public void reloadClassEntry(ClassEntry classEntry, boolean updateSwingState) {
+		ClassSelector allClassesSelector = Docker.getDocker(AllClassesDocker.class).getClassSelector();
+
 		if (updateSwingState) {
-			Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector().reloadStats(classEntry);
-			Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector().reloadStats(classEntry);
+			Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector().updateIfPresent(classEntry);
+			Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector().updateIfPresent(classEntry);
+			allClassesSelector.updateIfPresent(classEntry);
 		}
 
-		ClassSelector allClassesSelector = Docker.getDocker(AllClassesDocker.class).getClassSelector();
 		List<ClassSelector.StateEntry> expansionState = allClassesSelector.getExpansionState();
 		if (updateSwingState) {
-			allClassesSelector.moveClassIn(classEntry);
-			allClassesSelector.reloadStats(classEntry);
 			allClassesSelector.reload();
 			allClassesSelector.restoreExpansionState(expansionState);
 		} else {

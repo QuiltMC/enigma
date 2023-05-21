@@ -76,16 +76,6 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 	}
 
 	@Override
-	public boolean equals(Object other) {
-		return other instanceof ClassSelectorClassNode node && this.equals(node);
-	}
-
-	@Override
-	public int hashCode() {
-		return 17 + (this.classEntry != null ? this.classEntry.hashCode() : 0);
-	}
-
-	@Override
 	public Object getUserObject() {
 		return this.classEntry;
 	}
@@ -104,9 +94,5 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 		}
 
 		super.setUserObject(this.classEntry);
-	}
-
-	public boolean equals(ClassSelectorClassNode other) {
-		return this.classEntry.equals(other.classEntry);
 	}
 }
