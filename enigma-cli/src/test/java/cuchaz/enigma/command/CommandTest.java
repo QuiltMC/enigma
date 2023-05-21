@@ -8,10 +8,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 
 public abstract class CommandTest {
-	public static Path obfJar(String name) {
-		return Path.of("../enigma/build/test-obf/%s.jar".formatted(name)).toAbsolutePath();
-	}
-
 	public static Path getResource(String name) {
 		try {
 			return Path.of(CommandTest.class.getResource(name).toURI()).toAbsolutePath();

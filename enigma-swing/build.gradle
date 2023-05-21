@@ -1,6 +1,7 @@
 plugins {
 	id 'application'
 	id 'checkstyle'
+	id 'java-library'
 	alias(libs.plugins.shadow)
 }
 
@@ -14,6 +15,7 @@ dependencies {
 	implementation libs.syntaxpane
 	implementation libs.swing.dpi
 	implementation libs.fontchooser
+	testImplementation(testFixtures(project(':enigma')))
 }
 
 mainClassName = 'cuchaz.enigma.gui.Main'

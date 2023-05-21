@@ -61,6 +61,8 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 			@Override
 			public void done() {
 				((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(ClassSelectorClassNode.this.getStats()));
+				// todo fix rare AIOOBE caused by parallel reloads here
+				// blocker issue for implementing tests
 				selector.reload(ClassSelectorClassNode.this);
 			}
 		};
@@ -71,16 +73,6 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 	@Override
 	public String toString() {
 		return this.classEntry.getSimpleName();
-	}
-
-	@Override
-	public boolean equals(Object other) {
-		return other instanceof ClassSelectorClassNode node && this.equals(node);
-	}
-
-	@Override
-	public int hashCode() {
-		return 17 + (this.classEntry != null ? this.classEntry.hashCode() : 0);
 	}
 
 	@Override
@@ -102,9 +94,5 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 		}
 
 		super.setUserObject(this.classEntry);
-	}
-
-	public boolean equals(ClassSelectorClassNode other) {
-		return this.classEntry.equals(other.classEntry);
 	}
 }

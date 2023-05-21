@@ -105,7 +105,7 @@ public class Main {
 
 			KeyBinds.loadConfig();
 
-			Gui gui = new Gui(parsedProfile, editables);
+			Gui gui = new Gui(parsedProfile, editables, true);
 			GuiController controller = gui.getController();
 
 			if (Boolean.parseBoolean(System.getProperty("enigma.catchExceptions", "true"))) {

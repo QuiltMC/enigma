@@ -15,7 +15,6 @@ import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -26,7 +25,6 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.EventObject;
 import java.util.List;
 
 public class ClassSelector extends JTree {
@@ -43,7 +41,7 @@ public class ClassSelector extends JTree {
 		this.controller = gui.getController();
 
 		// configure the tree control
-		this.setEditable(true);
+		this.setEditable(false);
 		this.setRootVisible(false);
 		this.setShowsRootHandles(false);
 		this.setModel(null);
@@ -81,7 +79,7 @@ public class ClassSelector extends JTree {
 			}
 		}));
 
-		final DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
+		this.setCellRenderer(new DefaultTreeCellRenderer() {
 			@Override
 			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
@@ -132,19 +130,9 @@ public class ClassSelector extends JTree {
 
 				return this;
 			}
-		};
+		});
 
 		ToolTipManager.sharedInstance().registerComponent(this);
-		this.setCellRenderer(renderer);
-
-		// disallow cell editing
-		final DefaultTreeCellEditor editor = new DefaultTreeCellEditor(this, renderer) {
-			@Override
-			public boolean isCellEditable(EventObject event) {
-				return false;
-			}
-		};
-		this.setCellEditor(editor);
 
 		// init defaults
 		this.selectionListener = null;
@@ -316,6 +304,17 @@ public class ClassSelector extends JTree {
 	 */
 	public void removeEntry(ClassEntry classEntry) {
 		this.packageManager.removeClassNode(classEntry);
+	}
+
+	/**
+	 * If the class entry is present in this class tree, updates moves it into the tree and updates its stats.
+	 * @param entry the entry to update
+	 */
+	public void updateIfPresent(ClassEntry entry) {
+		if (this.packageManager.getClassNode(entry) != null) {
+			this.moveClassIn(entry);
+			this.reloadStats(entry);
+		}
 	}
 
 	/**

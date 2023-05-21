@@ -1,6 +1,7 @@
 package cuchaz.enigma.command;
 
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.TestUtil;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.serde.MappingFileNameFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
@@ -18,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class MapSpecializedMethodsCommandTest extends CommandTest {
-	private static final Path JAR = obfJar("bridge");
+	private static final Path JAR = TestUtil.obfJar("bridge");
 	private static final Path MAPPINGS = getResource("/mapSpecializedMethods/");
 
 	private static final ClassEntry BASE_CLASS = new ClassEntry("a");

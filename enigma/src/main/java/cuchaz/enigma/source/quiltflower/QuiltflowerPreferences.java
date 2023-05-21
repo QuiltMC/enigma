@@ -56,7 +56,7 @@ public class QuiltflowerPreferences {
 
 	public static Map<String, Object> getEffectiveOptions() {
 		Map<String, Object> options = new HashMap<>(DEFAULTS);
-		options.putAll(OPTIONS);
+		OPTIONS.forEach((key, value) -> options.put(key, String.valueOf(value)));
 		return options;
 	}
 
@@ -85,6 +85,7 @@ public class QuiltflowerPreferences {
 					continue;
 				}
 
+				// TODO: Use @Type preference annotation
 				Type type = inferType(key);
 				String name = field.getAnnotation(IFernflowerPreferences.Name.class).value();
 				String description = field.getAnnotation(IFernflowerPreferences.Description.class).value();
