@@ -8,16 +8,19 @@ import cuchaz.enigma.gui.stats.StatsResult;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeNode;
+import java.util.Comparator;
 
-public class ClassSelectorClassNode extends DefaultMutableTreeNode {
+public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	private final ClassEntry obfEntry;
 	private ClassEntry classEntry;
 	private StatsResult stats;
 
 	public ClassSelectorClassNode(ClassEntry obfEntry, ClassEntry classEntry) {
+		super(Comparator.comparing(TreeNode::toString));
 		this.obfEntry = obfEntry;
 		this.classEntry = classEntry;
 		this.stats = null;
@@ -61,9 +64,7 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 			@Override
 			public void done() {
 				((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(ClassSelectorClassNode.this.getStats()));
-				// todo fix rare AIOOBE caused by parallel reloads here
-				// blocker issue for implementing tests
-				selector.reload(ClassSelectorClassNode.this);
+				SwingUtilities.invokeLater(() -> selector.reload(ClassSelectorClassNode.this));
 			}
 		};
 
