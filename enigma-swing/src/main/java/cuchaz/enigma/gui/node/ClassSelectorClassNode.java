@@ -68,7 +68,7 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 			}
 		};
 
-		iconUpdateWorker.execute();
+		SwingUtilities.invokeLater(iconUpdateWorker::execute);
 	}
 
 	@Override

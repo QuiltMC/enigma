@@ -11,6 +11,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -290,7 +291,7 @@ public class ClassSelector extends JTree {
 	public void reload(SortedMutableTreeNode node) {
 		DefaultTreeModel model = (DefaultTreeModel) this.getModel();
 		if (model != null) {
-			model.reload(node);
+			SwingUtilities.invokeLater(() -> model.reload(node));
 		}
 	}
 
