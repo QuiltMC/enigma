@@ -387,12 +387,12 @@ public class Dock extends JPanel {
 
 			this.hostedDocker = hostedDocker;
 
-			if (this.hostedDocker != null) {
-				this.add(this.hostedDocker);
-				this.hostedDocker.setVisible(true);
+			if (hostedDocker != null) {
+				this.add(hostedDocker);
+				hostedDocker.setVisible(true);
 
 				// since the docker is being hosted, we know that findLocation will succeed
-				this.hostedDocker.getTitleBar().updateResizeButton(Objects.requireNonNull(Util.findLocation(hostedDocker)).verticalLocation());
+				hostedDocker.getTitleBar().updateResizeButton(Objects.requireNonNull(Util.findLocation(hostedDocker)).verticalLocation());
 			}
 		}
 	}
