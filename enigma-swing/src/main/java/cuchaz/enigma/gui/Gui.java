@@ -94,7 +94,7 @@ public class Gui {
 	public final JFileChooser enigmaMappingsFileChooser;
 	public final JFileChooser exportSourceFileChooser;
 	public final JFileChooser exportJarFileChooser;
-	public SearchDialog searchDialog;
+	public final SearchDialog searchDialog;
 
 	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean visible) {
 		this.mainWindow = new MainWindow(Enigma.NAME);
@@ -119,6 +119,7 @@ public class Gui {
 		this.exportJarFileChooser = new JFileChooser();
 		this.connectionStatusLabel = new JLabel();
 		this.notificationManager = new NotificationManager(this);
+		this.searchDialog = new SearchDialog(this);
 
 		this.setupUi();
 
@@ -570,10 +571,6 @@ public class Gui {
 	}
 
 	public SearchDialog getSearchDialog() {
-		if (this.searchDialog == null) {
-			this.searchDialog = new SearchDialog(this);
-		}
-
 		return this.searchDialog;
 	}
 

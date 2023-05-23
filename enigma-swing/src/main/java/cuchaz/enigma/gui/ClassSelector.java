@@ -2,6 +2,7 @@ package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
+import cuchaz.enigma.gui.node.SortedMutableTreeNode;
 import cuchaz.enigma.gui.stats.StatType;
 import cuchaz.enigma.gui.stats.StatsResult;
 import cuchaz.enigma.gui.util.GuiUtil;
@@ -13,11 +14,11 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.Component;
 import java.awt.event.InputEvent;
@@ -321,10 +322,10 @@ public class ClassSelector extends JTree {
 	 * Reloads the tree below the given node.
 	 * @param node the node to be reloaded below
 	 */
-	public void reload(TreeNode node) {
+	public void reload(SortedMutableTreeNode node) {
 		DefaultTreeModel model = (DefaultTreeModel) this.getModel();
 		if (model != null) {
-			model.reload(node);
+			SwingUtilities.invokeLater(() -> model.reload(node));
 		}
 	}
 
