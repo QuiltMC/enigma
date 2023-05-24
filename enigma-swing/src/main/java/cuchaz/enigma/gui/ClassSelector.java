@@ -105,8 +105,11 @@ public class ClassSelector extends JTree {
 		this.selectionListener = null;
 	}
 
-	public void setSelectionListener(ClassSelectionListener val) {
-		this.selectionListener = val;
+	/**
+	 * Sets this tree's selection listener. The listener is fired when the user clicks on a class. 
+	 */
+	public void setSelectionListener(ClassSelectionListener listener) {
+		this.selectionListener = listener;
 	}
 
 	/**
@@ -257,7 +260,7 @@ public class ClassSelector extends JTree {
 	}
 
 	/**
-	 * Moves the entry into the tree, removing it and re-adding it if it already exists.
+	 * Moves the entry into the tree, removing it and re-adding it if it already exists. Does not update the tree visually!
 	 * @param classEntry the entry to add
 	 */
 	public void moveClassIn(ClassEntry classEntry) {
@@ -266,7 +269,7 @@ public class ClassSelector extends JTree {
 	}
 
 	/**
-	 * Removes the given class entry from the tree.
+	 * Removes the given class entry from the tree. Does not update the tree visually!
 	 * @param classEntry the class to be removed
 	 */
 	public void removeEntry(ClassEntry classEntry) {
@@ -287,6 +290,10 @@ public class ClassSelector extends JTree {
 	/**
 	 * Reloads the tree below the given node.
 	 * @param node the node to be reloaded below
+	 * @param instant whether the action should happen immediately
+	 * @apiNote the {@code instant} parameter exists in case you need to restore state after a reload: if you attempt a reload and subsequent 
+	 * state restoration it's possible the reload will occur after the restoration and therefore be reset. Otherwise, it's encouraged to leave 
+	 * this false to avoid the possibility of concurrency issues.
 	 */
 	public void reload(SortedMutableTreeNode node, boolean instant) {
 		DefaultTreeModel model = (DefaultTreeModel) this.getModel();
@@ -300,7 +307,7 @@ public class ClassSelector extends JTree {
 	}
 
 	/**
-	 * Reloads the tree from the root node.
+	 * Reloads the tree from the root node instantly.
 	 */
 	public void reload() {
 		this.reload(this.packageManager.getRoot(), true);
