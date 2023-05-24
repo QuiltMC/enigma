@@ -539,7 +539,7 @@ public class GuiController implements ClientPacketHandler {
 		if (renamed && target instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
 			boolean isOldOb = prev.targetName() == null;
 			boolean isNewOb = mapping.targetName() == null;
-			this.gui.moveClassTree(target, updateSwingState, isOldOb, isNewOb);
+			this.gui.moveClassTree(target.getContainingClass(), updateSwingState, isOldOb, isNewOb);
 			return;
 		}
 

@@ -278,17 +278,6 @@ public class ClassSelector extends JTree {
 	}
 
 	/**
-	 * If the class entry is present in this class tree, updates moves it into the tree and updates its stats.
-	 * @param entry the entry to update
-	 */
-	public void updateIfPresent(ClassEntry entry) {
-		if (this.packageManager.getClassNode(entry) != null) {
-			this.moveClassIn(entry);
-			this.reloadStats(entry);
-		}
-	}
-
-	/**
 	 * Reloads the tree below the given node.
 	 * @param node the node to be reloaded below
 	 * @param instant whether the action should happen immediately
