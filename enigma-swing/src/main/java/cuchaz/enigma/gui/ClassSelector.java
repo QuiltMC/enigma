@@ -106,7 +106,8 @@ public class ClassSelector extends JTree {
 	}
 
 	/**
-	 * Sets this tree's selection listener. The listener is fired when the user clicks on a class. 
+	 * Sets this tree's selection listener. The listener is fired when the user clicks on a class.
+	 * @param listener the new listener
 	 */
 	public void setSelectionListener(ClassSelectionListener listener) {
 		this.selectionListener = listener;
@@ -291,8 +292,8 @@ public class ClassSelector extends JTree {
 	 * Reloads the tree below the given node.
 	 * @param node the node to be reloaded below
 	 * @param instant whether the action should happen immediately
-	 * @apiNote the {@code instant} parameter exists in case you need to restore state after a reload: if you attempt a reload and subsequent 
-	 * state restoration it's possible the reload will occur after the restoration and therefore be reset. Otherwise, it's encouraged to leave 
+	 * @apiNote the {@code instant} parameter exists in case you need to restore state after a reload: if you attempt a reload and subsequent
+	 * state restoration it's possible the reload will occur after the restoration and therefore be reset. Otherwise, it's encouraged to leave
 	 * this false to avoid the possibility of concurrency issues.
 	 */
 	public void reload(SortedMutableTreeNode node, boolean instant) {
