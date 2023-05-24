@@ -542,6 +542,12 @@ public class Gui {
 				obfuscatedClassSelector.reload();
 				deobfuscatedClassSelector.reload();
 			}
+		} else {
+			// deobfuscated -> deobfuscated
+			deobfuscatedClassSelector.moveClassIn(classEntry);
+			if (updateSwingState) {
+				deobfuscatedClassSelector.reload();
+			}
 		}
 
 		this.reloadClassEntry(classEntry, updateSwingState);

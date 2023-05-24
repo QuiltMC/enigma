@@ -288,10 +288,14 @@ public class ClassSelector extends JTree {
 	 * Reloads the tree below the given node.
 	 * @param node the node to be reloaded below
 	 */
-	public void reload(SortedMutableTreeNode node) {
+	public void reload(SortedMutableTreeNode node, boolean instant) {
 		DefaultTreeModel model = (DefaultTreeModel) this.getModel();
 		if (model != null) {
-			SwingUtilities.invokeLater(() -> model.reload(node));
+			if (instant) {
+				model.reload(node);
+			} else {
+				SwingUtilities.invokeLater(() -> model.reload(node));
+			}
 		}
 	}
 
@@ -299,7 +303,7 @@ public class ClassSelector extends JTree {
 	 * Reloads the tree from the root node.
 	 */
 	public void reload() {
-		this.reload(this.packageManager.getRoot());
+		this.reload(this.packageManager.getRoot(), true);
 	}
 
 	/**
