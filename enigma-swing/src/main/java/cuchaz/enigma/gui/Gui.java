@@ -8,6 +8,7 @@ import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.JavadocDialog;
 import cuchaz.enigma.gui.dialog.SearchDialog;
+import cuchaz.enigma.gui.docker.ClassesDocker;
 import cuchaz.enigma.gui.docker.NotificationsDocker;
 import cuchaz.enigma.gui.elements.EditorTabbedPane;
 import cuchaz.enigma.gui.elements.MainWindow;
@@ -517,9 +518,15 @@ public class Gui {
 		frame.repaint();
 	}
 
-	public void moveClassTree(Entry<?> obfEntry, boolean updateSwingState, boolean isOldOb, boolean isNewOb) {
-		ClassEntry classEntry = obfEntry.getContainingClass();
-
+	/**
+	 * Moves the provided {@link ClassEntry} to the appropriate class selectors for its new state,
+	 * and updates stats and swing state accordingly.
+	 * @param classEntry the entry to move
+	 * @param updateSwingState whether to update swing state (visual reloads)
+	 * @param isOldOb whether the class was obfuscated before its name change
+	 * @param isNewOb whether the class has become deobfuscated after its name change
+	 */
+	public void moveClassTree(ClassEntry classEntry, boolean updateSwingState, boolean isOldOb, boolean isNewOb) {
 		ClassSelector deobfuscatedClassSelector = Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector();
 		ClassSelector obfuscatedClassSelector = Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector();
 
@@ -542,6 +549,12 @@ public class Gui {
 				obfuscatedClassSelector.reload();
 				deobfuscatedClassSelector.reload();
 			}
+		} else {
+			// deobfuscated -> deobfuscated
+			deobfuscatedClassSelector.moveClassIn(classEntry);
+			if (updateSwingState) {
+				deobfuscatedClassSelector.reload();
+			}
 		}
 
 		this.reloadClassEntry(classEntry, updateSwingState);
@@ -552,21 +565,27 @@ public class Gui {
 		}
 	}
 
+	/**
+	 * Reloads stats for the provided class in all selectors and updates the {@link AllClassesDocker} instance.
+	 * @param classEntry the class to reload
+	 * @param updateSwingState whether swing state should be updated (visual reloads)
+	 */
 	public void reloadClassEntry(ClassEntry classEntry, boolean updateSwingState) {
-		ClassSelector allClassesSelector = Docker.getDocker(AllClassesDocker.class).getClassSelector();
-
 		if (updateSwingState) {
-			Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector().updateIfPresent(classEntry);
-			Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector().updateIfPresent(classEntry);
-			allClassesSelector.updateIfPresent(classEntry);
+			for (var entry : Docker.getDockers().entrySet()) {
+				if (entry.getValue() instanceof ClassesDocker docker) {
+					docker.getClassSelector().reloadStats(classEntry);
+				}
+			}
 		}
 
+		ClassSelector allClassesSelector = Docker.getDocker(AllClassesDocker.class).getClassSelector();
 		List<ClassSelector.StateEntry> expansionState = allClassesSelector.getExpansionState();
+		allClassesSelector.moveClassIn(classEntry);
+
 		if (updateSwingState) {
 			allClassesSelector.reload();
 			allClassesSelector.restoreExpansionState(expansionState);
-		} else {
-			allClassesSelector.moveClassIn(classEntry);
 		}
 	}
 

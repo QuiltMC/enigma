@@ -64,7 +64,7 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 			@Override
 			public void done() {
 				((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(ClassSelectorClassNode.this.getStats()));
-				SwingUtilities.invokeLater(() -> selector.reload(ClassSelectorClassNode.this));
+				SwingUtilities.invokeLater(() -> selector.reload(ClassSelectorClassNode.this, false));
 			}
 		};
 
