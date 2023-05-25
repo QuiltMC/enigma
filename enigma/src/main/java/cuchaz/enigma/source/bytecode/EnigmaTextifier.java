@@ -11,4 +11,8 @@ public class EnigmaTextifier extends Textifier {
 		super(Enigma.ASM_VERSION);
 		this.sourceIndex = sourceIndex;
 	}
+
+	public void clearText() {
+		this.text.clear();
+	}
 }
