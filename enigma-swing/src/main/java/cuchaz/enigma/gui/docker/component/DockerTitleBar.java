@@ -1,5 +1,6 @@
 package cuchaz.enigma.gui.docker.component;
 
+import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.docker.Dock;
 
@@ -19,7 +20,7 @@ public class DockerTitleBar extends JPanel {
 	private final DockerLabel label;
 	private final JButton resizeButton;
 
-	public DockerTitleBar(Docker parent, Supplier<String> titleSupplier) {
+	public DockerTitleBar(Gui gui, Docker parent, Supplier<String> titleSupplier) {
 		super(new BorderLayout(0, 0));
 		this.label = new DockerLabel(parent, titleSupplier.get());
 		this.titleSupplier = titleSupplier;
@@ -37,7 +38,7 @@ public class DockerTitleBar extends JPanel {
 		JButton minimiseButton = new JButton("-");
 
 		minimiseButton.addActionListener(e -> {
-			Docker docker = Docker.getDocker(parent.getClass());
+			Docker docker = gui.getDockerManager().getDocker(parent.getClass());
 			Dock.Util.undock(docker);
 		});
 

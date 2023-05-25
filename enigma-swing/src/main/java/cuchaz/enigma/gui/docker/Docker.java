@@ -8,9 +8,6 @@ import cuchaz.enigma.utils.I18n;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -19,9 +16,6 @@ import java.util.function.Supplier;
  * <br> A docker is an instance of {@link JPanel} that uses a {@link BorderLayout} by default.
  */
 public abstract class Docker extends JPanel {
-	private static final Map<Class<? extends Docker>, Docker> DOCKERS = new LinkedHashMap<>();
-	private static final Map<String, Class<? extends Docker>> DOCKER_CLASSES = new HashMap<>();
-
 	protected final Supplier<String> titleSupplier = () -> I18n.translate("docker." + this.getId() + ".title");
 	protected final DockerTitleBar title;
 	protected final DockerButton button;
@@ -30,11 +24,11 @@ public abstract class Docker extends JPanel {
 	protected Docker(Gui gui) {
 		super(new BorderLayout());
 		this.gui = gui;
-		this.title = new DockerTitleBar(this, this.titleSupplier);
+		this.title = new DockerTitleBar(gui, this, this.titleSupplier);
 		this.button = new DockerButton(this, this.titleSupplier, this.getButtonLocation().side);
 		// add action listener to open and close the docker when its button is pressed
 		this.button.addActionListener(e -> {
-			Docker docker = getDocker(this.getClass());
+			Docker docker = gui.getDockerManager().getDocker(this.getClass());
 
 			if (Dock.Util.isDocked(docker)) {
 				Dock.Util.undock(docker);
@@ -102,33 +96,6 @@ public abstract class Docker extends JPanel {
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.getId());
-	}
-
-	public static void addDocker(Docker panel) {
-		DOCKERS.put(panel.getClass(), panel);
-		DOCKER_CLASSES.put(panel.getId(), panel.getClass());
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T extends Docker> T getDocker(Class<T> clazz) {
-		Docker panel = DOCKERS.get(clazz);
-		if (panel != null) {
-			return (T) DOCKERS.get(clazz);
-		} else {
-			throw new IllegalArgumentException("no docker registered for class " + clazz);
-		}
-	}
-
-	public static Docker getDocker(String id) {
-		if (!DOCKER_CLASSES.containsKey(id)) {
-			throw new IllegalArgumentException("no docker registered for id " + id);
-		}
-
-		return getDocker(DOCKER_CLASSES.get(id));
-	}
-
-	public static Map<Class<? extends Docker>, Docker> getDockers() {
-		return DOCKERS;
 	}
 
 	/**

@@ -23,7 +23,6 @@ import cuchaz.enigma.gui.config.NetConfig;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.ProgressDialog;
 import cuchaz.enigma.gui.docker.CollabDocker;
-import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.stats.StatsGenerator;
 import cuchaz.enigma.gui.stats.StatsMember;
 import cuchaz.enigma.gui.util.History;
@@ -65,6 +64,8 @@ import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
 import org.tinylog.Logger;
 
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.FileWriter;
@@ -79,8 +80,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 public class GuiController implements ClientPacketHandler {
 	private final Gui gui;
@@ -638,7 +637,7 @@ public class GuiController implements ClientPacketHandler {
 			this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.LEFT_SERVER));
 		}
 
-		Docker.getDocker(CollabDocker.class).setUp();
+		this.gui.getDockerManager().getDocker(CollabDocker.class).setUp();
 	}
 
 	@Override

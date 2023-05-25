@@ -1,6 +1,5 @@
 package cuchaz.enigma.gui;
 
-import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.docker.NotificationsDocker;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.Message;
@@ -116,7 +115,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 		notificationPanel.setBounds(notificationPanel.getX(), notificationPanel.getY(), notificationPanel.getPreferredSize().width, notificationPanel.getPreferredSize().height);
 
 		this.activeNotifications.put(notificationPanel, TIMEOUT_MILLISECONDS);
-		Docker.getDocker(NotificationsDocker.class).addNotification(notificationPanel);
+		this.gui.getDockerManager().getDocker(NotificationsDocker.class).addNotification(notificationPanel);
 
 		notificationPanel.setLocation(glass.getWidth() - notificationPanel.getWidth() - notificationPanel.getWidth() / 8, this.getHeightFor(notificationPanel));
 		notificationPanel.setVisible(true);
@@ -168,7 +167,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 			this.title = title;
 			this.message = message;
 
-			NotificationsDocker notificationsDocker = Docker.getDocker(NotificationsDocker.class);
+			NotificationsDocker notificationsDocker = gui.getDockerManager().getDocker(NotificationsDocker.class);
 			NotificationManager activeManager = gui.getNotificationManager();
 			Set<Notification> notificationManagerNotifications = activeManager.getActiveNotifications().keySet();
 			List<Notification> dockerNotifications = notificationsDocker.getNotifications();

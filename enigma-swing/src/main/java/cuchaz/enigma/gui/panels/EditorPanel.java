@@ -146,7 +146,7 @@ public class EditorPanel {
 			public void mouseReleased(MouseEvent e) {
 				switch (e.getButton()) {
 					case MouseEvent.BUTTON3 -> // Right click
-							EditorPanel.this.editor.setCaretPosition(EditorPanel.this.editor.viewToModel(e.getPoint()));
+							EditorPanel.this.editor.setCaretPosition(EditorPanel.this.editor.viewToModel2D(e.getPoint()));
 					case 4 -> // Back navigation
 							gui.getController().openPreviousReference();
 					case 5 -> // Forward navigation

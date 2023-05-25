@@ -2,6 +2,7 @@ package cuchaz.enigma.gui.docker.component;
 
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.docker.Docker;
+import cuchaz.enigma.gui.docker.DockerManager;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -16,14 +17,16 @@ import java.util.List;
 public class DockerSelector extends JPanel {
 	private static final List<DockerSelector> INSTANCES = new ArrayList<>();
 
-	private JPanel hovered;
-
+	private final DockerManager manager;
 	private final JPanel bottomSelector;
 	private final JPanel topSelector;
 	private final Docker.Side side;
 
-	public DockerSelector(Docker.Side side) {
+	private JPanel hovered;
+
+	public DockerSelector(DockerManager manager, Docker.Side side) {
 		super(new BorderLayout());
+		this.manager = manager;
 		this.bottomSelector = new JPanel(new VerticalFlowLayout(5));
 		this.topSelector = new JPanel(new VerticalFlowLayout(5));
 		this.side = side;
@@ -49,7 +52,7 @@ public class DockerSelector extends JPanel {
 		this.topSelector.removeAll();
 		this.bottomSelector.removeAll();
 
-		for (Docker docker : Docker.getDockers().values()) {
+		for (Docker docker : this.manager.getDockers()) {
 			// only use buttons that match this selector's side
 			if (docker.getButtonLocation().side() == this.side) {
 				DockerButton button = docker.getButton();

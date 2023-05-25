@@ -1,5 +1,6 @@
 package cuchaz.enigma.gui.elements;
 
+import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.docker.component.DockerSelector;
 
@@ -18,9 +19,9 @@ public class MainWindow {
 	private final DockerSelector rightDockerSelector;
 	private final DockerSelector leftDockerSelector;
 
-	public MainWindow(String title) {
-		this.rightDockerSelector = new DockerSelector(Docker.Side.RIGHT);
-		this.leftDockerSelector = new DockerSelector(Docker.Side.LEFT);
+	public MainWindow(Gui gui, String title) {
+		this.rightDockerSelector = new DockerSelector(gui.getDockerManager(), Docker.Side.RIGHT);
+		this.leftDockerSelector = new DockerSelector(gui.getDockerManager(), Docker.Side.LEFT);
 
 		this.frame = new JFrame(title);
 		this.frame.setJMenuBar(this.menuBar);
