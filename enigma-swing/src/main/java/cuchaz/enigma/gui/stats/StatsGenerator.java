@@ -6,6 +6,7 @@ import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
+import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
@@ -19,6 +20,7 @@ import cuchaz.enigma.utils.I18n;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -88,11 +90,20 @@ public class StatsGenerator {
 				ClassEntry clazz = root.getParent();
 
 				if (root == method && this.checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
-					if (includedMembers.contains(StatType.METHODS) && this.project.isRenamable(method) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
+					if (includedMembers.contains(StatType.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
 						this.update(StatType.METHODS, mappableCounts, unmappedCounts, method);
 					}
 
-					if (includedMembers.contains(StatType.PARAMETERS) && (!((MethodDefEntry) method).getAccess().isSynthetic() || includeSynthetic)) {
+					ClassEntry containingClass = method.getContainingClass();
+					if (includedMembers.contains(StatType.PARAMETERS) && !this.project.isAnonymousOrLocal(containingClass) && !(((MethodDefEntry) method).getAccess().isSynthetic() || includeSynthetic)) {
+						MethodDescriptor descriptor = method.getDesc();
+						List<TypeDescriptor> argumentDescs = descriptor.getArgumentDescs();
+
+						// ignore the implicit constructor for non-static inner classes
+						if (containingClass.isInnerClass() && argumentDescs.size() == 1 && argumentDescs.get(0).getTypeEntry().equals(containingClass.getOuterClass())) {
+							continue;
+						}
+
 						int index = ((MethodDefEntry) method).getAccess().isStatic() ? 0 : 1;
 						for (TypeDescriptor argument : method.getDesc().getArgumentDescs()) {
 							this.update(StatType.PARAMETERS, mappableCounts, unmappedCounts, new LocalVariableEntry(method, index, "", true, null));
@@ -153,12 +164,12 @@ public class StatsGenerator {
 	}
 
 	private boolean checkPackage(ClassEntry clazz, String topLevelPackage, boolean singleClass) {
-		String deobfuscatedName = this.mapper.deobfuscate(clazz).getPackageName();
+		String packageName = this.mapper.deobfuscate(clazz).getPackageName();
 		if (singleClass) {
-			return (deobfuscatedName != null && deobfuscatedName.startsWith(topLevelPackage)) || clazz.getFullName().startsWith(topLevelPackage);
+			return (packageName != null && packageName.startsWith(topLevelPackage)) || clazz.getFullName().startsWith(topLevelPackage);
 		}
 
-		return topLevelPackage.isBlank() || (deobfuscatedName != null && deobfuscatedName.startsWith(topLevelPackage));
+		return topLevelPackage.isBlank() || (packageName != null && packageName.startsWith(topLevelPackage));
 	}
 
 	private void update(StatType type, Map<StatType, Integer> mappable, Map<StatType, Map<String, Integer>> unmapped, Entry<?> entry) {
@@ -166,14 +177,14 @@ public class StatsGenerator {
 		boolean renamable = this.project.isRenamable(entry);
 		boolean synthetic = this.project.isSynthetic(entry);
 
-		if (obfuscated && renamable && !synthetic) {
-			String parent = this.mapper.deobfuscate(entry.getAncestry().get(0)).getName().replace('/', '.');
-
-			unmapped.computeIfAbsent(type, t -> new HashMap<>());
-			unmapped.get(type).put(parent, unmapped.get(type).getOrDefault(parent, 0) + 1);
-		}
-
 		if (renamable) {
+			if (obfuscated && !synthetic) {
+				String parent = this.mapper.deobfuscate(entry.getAncestry().get(0)).getName().replace('/', '.');
+
+				unmapped.computeIfAbsent(type, t -> new HashMap<>());
+				unmapped.get(type).put(parent, unmapped.get(type).getOrDefault(parent, 0) + 1);
+			}
+
 			mappable.put(type, mappable.getOrDefault(type, 0) + 1);
 		}
 	}
