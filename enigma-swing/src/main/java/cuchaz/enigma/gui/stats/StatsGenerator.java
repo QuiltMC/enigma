@@ -50,7 +50,7 @@ public class StatsGenerator {
 	 * @param progress a listener to update with current progress
 	 * @param includedMembers the types of entry to include in the stats
 	 * @param topLevelPackage the package or class to generate stats for
-	 * @param forClassTree if true, the stats will be generated for the class tree - this means that non-mappable obfuscated entries will be ignored for correctness
+	 * @param forClassTree if true, the stats will be generated for the class tree - this indicates that {@code topLevelPackage} is a class
 	 * @param includeSynthetic whether to include synthetic methods
 	 * @return the generated {@link StatsResult} for the provided class or package.
 	 */
