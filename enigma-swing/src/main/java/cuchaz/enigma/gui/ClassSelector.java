@@ -4,6 +4,7 @@ import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
 import cuchaz.enigma.gui.node.SortedMutableTreeNode;
 import cuchaz.enigma.gui.stats.StatType;
+import cuchaz.enigma.gui.stats.StatsManager;
 import cuchaz.enigma.gui.stats.StatsResult;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
@@ -33,6 +34,7 @@ public class ClassSelector extends JTree {
 
 	private final Comparator<ClassEntry> comparator;
 	private final GuiController controller;
+	private final StatsManager statsManager;
 
 	private NestedPackages packageManager;
 	private ClassSelectionListener selectionListener;
@@ -40,6 +42,7 @@ public class ClassSelector extends JTree {
 	public ClassSelector(Gui gui, Comparator<ClassEntry> comparator) {
 		this.comparator = comparator;
 		this.controller = gui.getController();
+		this.statsManager = gui.getStatsManager();
 
 		// configure the tree control
 		this.setEditable(false);
@@ -91,7 +94,7 @@ public class ClassSelector extends JTree {
 						public String getToolTipText(MouseEvent event) {
 							StringBuilder text = new StringBuilder(I18n.translateFormatted("class_selector.tooltip.stats_for", node.getClassEntry().getSimpleName()));
 							text.append("\n");
-							StatsResult stats = node.getStats();
+							StatsResult stats = ClassSelector.this.statsManager.getStats(node.getClassEntry());
 
 							if (stats == null) {
 								text.append(I18n.translate("class_selector.tooltip.stats_not_generated"));
@@ -102,7 +105,7 @@ public class ClassSelector extends JTree {
 										text.append(type.getName()).append(": ").append(stats.toString(type)).append(i == StatType.values().length - 1 ? "" : "\n");
 									}
 								} else {
-									text.append(node.getStats().toString());
+									text.append(stats);
 								}
 							}
 
@@ -116,12 +119,13 @@ public class ClassSelector extends JTree {
 					JLabel nodeLabel = new JLabel(GuiUtil.getClassIcon(gui, node.getObfEntry()));
 					panel.add(nodeLabel);
 
-					if (node.getStats() == null) {
+					StatsResult stats = ClassSelector.this.statsManager.getStats(node.getClassEntry());
+					if (stats == null) {
 						// calculate stats on a separate thread for performance reasons
 						this.setIcon(GuiUtil.PENDING_STATUS_ICON);
 						node.reloadStats(gui, ClassSelector.this, false);
 					} else {
-						this.setIcon(GuiUtil.getDeobfuscationIcon(node.getStats()));
+						this.setIcon(GuiUtil.getDeobfuscationIcon(stats));
 					}
 
 					panel.add(this);
@@ -343,7 +347,7 @@ public class ClassSelector extends JTree {
 	 */
 	public void invalidateStats() {
 		for (ClassEntry entry : this.packageManager.getClassEntries()) {
-			this.packageManager.getClassNode(entry).setStats(null);
+			this.statsManager.setStats(entry, null);
 		}
 	}
 

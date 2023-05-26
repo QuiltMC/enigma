@@ -26,6 +26,7 @@ import cuchaz.enigma.gui.docker.AllClassesDocker;
 import cuchaz.enigma.gui.docker.Dock;
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.renderer.MessageListCellRenderer;
+import cuchaz.enigma.gui.stats.StatsManager;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.LanguageUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
@@ -89,6 +90,7 @@ public class Gui {
 
 	private final JLabel connectionStatusLabel;
 	private final NotificationManager notificationManager;
+	private final StatsManager statsManager;
 
 	public final JFileChooser jarFileChooser;
 	public final JFileChooser tinyMappingsFileChooser;
@@ -121,6 +123,7 @@ public class Gui {
 		this.connectionStatusLabel = new JLabel();
 		this.notificationManager = new NotificationManager(this);
 		this.searchDialog = new SearchDialog(this);
+		this.statsManager = new StatsManager();
 
 		this.setupUi();
 
@@ -272,6 +275,10 @@ public class Gui {
 
 	public GuiController getController() {
 		return this.controller;
+	}
+
+	public StatsManager getStatsManager() {
+		return this.statsManager;
 	}
 
 	public void onStartOpenJar() {
