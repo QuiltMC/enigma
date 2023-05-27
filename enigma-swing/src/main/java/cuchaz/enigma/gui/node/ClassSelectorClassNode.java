@@ -1,11 +1,8 @@
 package cuchaz.enigma.gui.node;
 
-import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.gui.ClassSelector;
 import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.gui.stats.StatsGenerator;
 import cuchaz.enigma.gui.stats.StatsManager;
-import cuchaz.enigma.gui.stats.StatsResult;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
@@ -48,8 +45,7 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 			@Override
 			protected ClassSelectorClassNode doInBackground() {
 				if (manager.getStats(entry) == null || updateIfPresent) {
-					StatsResult newStats = new StatsGenerator(gui.getController().getProject()).generateForClassTree(ProgressListener.none(), ClassSelectorClassNode.this.getObfEntry(), false);
-					manager.setStats(entry, newStats);
+					manager.generateFor(entry);
 				}
 
 				return ClassSelectorClassNode.this;

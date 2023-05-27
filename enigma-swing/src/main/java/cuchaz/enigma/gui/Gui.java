@@ -26,6 +26,7 @@ import cuchaz.enigma.gui.docker.AllClassesDocker;
 import cuchaz.enigma.gui.docker.Dock;
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.renderer.MessageListCellRenderer;
+import cuchaz.enigma.gui.stats.StatsGenerator;
 import cuchaz.enigma.gui.stats.StatsManager;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.LanguageUtil;
@@ -289,6 +290,8 @@ public class Gui {
 		// update gui
 		this.mainWindow.setTitle(Enigma.NAME + " - " + jarName);
 		this.editorTabbedPane.closeAllEditorTabs();
+
+		this.statsManager.setStatsGenerator(new StatsGenerator(this.controller.getProject()));
 
 		// update menu
 		this.isJarOpen = true;
