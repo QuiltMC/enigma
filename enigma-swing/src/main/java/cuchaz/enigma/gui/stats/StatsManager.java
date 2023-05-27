@@ -10,7 +10,6 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * A class to manage generated stats for class tree classes. This is used to avoid generating stats for a class multiple times.
- * <br>It simply consists of a map of class entries and stat results.
  */
 public class StatsManager {
 	private final HashMap<ClassEntry, StatsResult> results = new HashMap<>();
