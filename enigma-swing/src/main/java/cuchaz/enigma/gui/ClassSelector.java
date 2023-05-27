@@ -146,6 +146,7 @@ public class ClassSelector extends JTree {
 	 * Gets the deobfuscated version of the currently selected class.
 	 * <br>The deobfuscated class entry provides name information. For renaming, use {@link #getSelectedClassObf()}.
 	 * @return the obfuscated class entry
+	 * @see #getSelectedClassObf()
 	 */
 	public ClassEntry getSelectedClassDeobf() {
 		return this.getSelectedClass(false);
@@ -155,6 +156,7 @@ public class ClassSelector extends JTree {
 	 * Gets the obfuscated version of the currently selected class.
 	 * <br>The obfuscated class entry can be used for renaming actions, but only provides the obfuscated name. For the mapped name, see {@link #getSelectedClassDeobf()}.
 	 * @return the obfuscated class entry
+	 * @see #getSelectedClassDeobf()
 	 */
 	public ClassEntry getSelectedClassObf() {
 		return this.getSelectedClass(true);

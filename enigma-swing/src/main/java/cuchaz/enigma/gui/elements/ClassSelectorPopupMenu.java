@@ -263,8 +263,12 @@ public class ClassSelectorPopupMenu {
 	public void show(ClassSelector selector, int x, int y) {
 		ClassEntry selected = selector.getSelectedClassObf();
 
-		// Only enable rename class if selected path is a class
+		// only enable rename class if selected path is a class
 		this.renameClass.setEnabled(selected != null);
+
+		// only enable rename package if selected path is *not* a class with no package
+		this.renamePackage.setEnabled(selected == null || selector.getSelectedClassDeobf().getPackageName() != null);
+
 		// update toggle mapping text to match
 		this.toggleMapping.setEnabled(selected != null);
 		if (selected != null) {
