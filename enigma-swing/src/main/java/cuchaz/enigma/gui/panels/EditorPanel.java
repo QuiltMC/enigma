@@ -180,10 +180,10 @@ public class EditorPanel {
 			public void keyTyped(KeyEvent event) {
 				EntryReference<Entry<?>, Entry<?>> ref = EditorPanel.this.getCursorReference();
 				if (ref == null) return;
-				if (!EditorPanel.this.controller.project.isRenamable(ref)) return;
+				if (!EditorPanel.this.controller.getProject().isRenamable(ref)) return;
 
 				if (!event.isControlDown() && !event.isAltDown() && Character.isJavaIdentifierPart(event.getKeyChar())) {
-					EnigmaProject project = gui.getController().project;
+					EnigmaProject project = gui.getController().getProject();
 					EntryReference<Entry<?>, Entry<?>> reference = project.getMapper().deobfuscate(EditorPanel.this.cursorReference);
 					Entry<?> entry = reference.getNameableEntry();
 
@@ -372,10 +372,11 @@ public class EditorPanel {
 	}
 
 	public void onCaretMove(int pos, boolean fromClick) {
-		if (this.settingSource) return;
-		if (this.controller.project == null) return;
+		if (this.settingSource || this.controller.getProject() == null) {
+			return;
+		}
 
-		EntryRemapper mapper = this.controller.project.getMapper();
+		EntryRemapper mapper = this.controller.getProject().getMapper();
 		Token token = this.getToken(pos);
 
 		this.setCursorReference(this.getReference(token));

@@ -81,7 +81,7 @@ public class IdentifierPanel {
 	}
 
 	public void refreshReference() {
-		this.deobfEntry = this.entry == null ? null : this.gui.getController().project.getMapper().deobfuscate(this.entry);
+		this.deobfEntry = this.entry == null ? null : this.gui.getController().getProject().getMapper().deobfuscate(this.entry);
 
 		// Prevent IdentifierPanel from being rebuilt if you didn't click off.
 		if (this.lastEntry == this.entry && this.nameField != null) {
@@ -280,7 +280,7 @@ public class IdentifierPanel {
 				default -> throw new IllegalStateException("Unexpected value: " + type);
 			};
 
-			if (this.gui.getController().project.isRenamable(this.e)) {
+			if (this.gui.getController().getProject().isRenamable(this.e)) {
 				ConvertingTextField field = this.addConvertingTextField(description, c2);
 				field.setEditable(this.gui.isEditable(type));
 				return field;
@@ -299,7 +299,7 @@ public class IdentifierPanel {
 		}
 
 		public JComboBox<AccessModifier> addModifierRow(String c1, EditableType type, Consumer<AccessModifier> changeListener) {
-			EnigmaProject project = this.gui.getController().project;
+			EnigmaProject project = this.gui.getController().getProject();
 
 			if (!project.isRenamable(this.e)) {
 				return null;

@@ -1,5 +1,7 @@
 plugins {
 	id 'checkstyle'
+	id 'java-library'
+	id 'java-test-fixtures'
 }
 
 configurations {

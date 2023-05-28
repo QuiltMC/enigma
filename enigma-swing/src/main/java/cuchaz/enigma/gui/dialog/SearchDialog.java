@@ -201,7 +201,7 @@ public class SearchDialog {
 
 		this.searchedTypes.addAll(Arrays.asList(types));
 
-		final EntryIndex entryIndex = this.parent.getController().project.getJarIndex().getEntryIndex();
+		final EntryIndex entryIndex = this.parent.getController().getProject().getJarIndex().getEntryIndex();
 
 		for (Type searchedType : this.searchedTypes) {
 			this.getCheckBox(searchedType).setSelected(true);
@@ -348,7 +348,7 @@ public class SearchDialog {
 		}
 
 		public static SearchEntryImpl from(ParentedEntry<?> e, GuiController controller) {
-			ParentedEntry<?> deobf = controller.project.getMapper().deobfuscate(e);
+			ParentedEntry<?> deobf = controller.getProject().getMapper().deobfuscate(e);
 			if (deobf.equals(e)) deobf = null;
 			return new SearchEntryImpl(e, deobf);
 		}

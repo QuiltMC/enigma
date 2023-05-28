@@ -84,9 +84,9 @@ import javax.swing.SwingUtilities;
 
 public class GuiController implements ClientPacketHandler {
 	private final Gui gui;
-	public final Enigma enigma;
+	private final Enigma enigma;
 
-	public EnigmaProject project;
+	private EnigmaProject project;
 	private IndexTreeBuilder indexTreeBuilder;
 
 	private Path loadedMappingPath;
@@ -133,31 +133,31 @@ public class GuiController implements ClientPacketHandler {
 		this.gui.onCloseJar();
 	}
 
-	public void openMappings(Path path) {
+	public CompletableFuture<Void> openMappings(Path path) {
 		if (Files.isDirectory(path)) {
-			this.openMappings(MappingFormat.ENIGMA_DIRECTORY, path);
+			return this.openMappings(MappingFormat.ENIGMA_DIRECTORY, path);
 		} else {
 			String extension = MoreFiles.getFileExtension(path).toLowerCase();
 
-			switch (extension) {
+			return switch (extension) {
 				case "zip" -> this.openMappings(MappingFormat.ENIGMA_ZIP, path);
 				case "tiny" -> this.openMappings(MappingFormat.TINY_FILE, path);
 				case "tinyv2" -> this.openMappings(MappingFormat.TINY_V2, path);
 				default -> this.openMappings(MappingFormat.ENIGMA_FILE, path);
-			}
+			};
 		}
 	}
 
-	public void openMappings(MappingFormat format, Path path) {
-		if (this.project == null) {
-			return;
+	public CompletableFuture<Void> openMappings(MappingFormat format, Path path) {
+		if (this.project == null || !new File(path.toUri()).exists()) {
+			return CompletableFuture.supplyAsync(() -> null);
 		}
 
 		this.gui.setMappingsFile(path);
 		UiConfig.addRecentFilePair(this.project.getJarPath(), path);
 		this.gui.getMenuBar().reloadOpenRecentMenu(this.gui);
 
-		ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
+		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
 			try {
 				MappingSaveParameters saveParameters = this.enigma.getProfile().getMappingSaveParameters();
 
@@ -492,7 +492,7 @@ public class GuiController implements ClientPacketHandler {
 	@Override
 	public boolean applyChangeFromServer(EntryChange<?> change) {
 		ValidationContext vc = new ValidationContext(this.gui.getNotificationManager());
-		this.applyChange0(vc, change);
+		this.applyChange0(vc, change, true);
 		this.gui.updateStructure(this.gui.getActiveEditor());
 
 		return vc.canProceed();
@@ -507,13 +507,20 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void applyChange(ValidationContext vc, EntryChange<?> change) {
-		this.applyChange0(vc, change);
+		this.applyChange(vc, change, true);
+	}
+
+	public void applyChange(ValidationContext vc, EntryChange<?> change, boolean updateSwingState) {
+		this.applyChange0(vc, change, updateSwingState);
 		this.gui.updateStructure(this.gui.getActiveEditor());
-		if (!vc.canProceed()) return;
+		if (!vc.canProceed()) {
+			return;
+		}
+
 		this.sendPacket(new EntryChangeC2SPacket(change));
 	}
 
-	private void applyChange0(ValidationContext vc, EntryChange<?> change) {
+	private void applyChange0(ValidationContext vc, EntryChange<?> change, boolean updateSwingState) {
 		Entry<?> target = change.getTarget();
 		EntryMapping prev = this.project.getMapper().getDeobfMapping(target);
 		EntryMapping mapping = EntryUtil.applyChange(vc, this.project.getMapper(), change);
@@ -530,11 +537,13 @@ public class GuiController implements ClientPacketHandler {
 		}
 
 		if (renamed && target instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
-			this.gui.moveClassTree(target, prev.targetName() == null, mapping.targetName() == null);
+			boolean isOldOb = prev.targetName() == null;
+			boolean isNewOb = mapping.targetName() == null;
+			this.gui.moveClassTree(target.getContainingClass(), updateSwingState, isOldOb, isNewOb);
 			return;
 		}
 
-		this.gui.reloadClassEntry(change.getTarget().getTopLevelClass());
+		this.gui.reloadClassEntry(change.getTarget().getTopLevelClass(), updateSwingState);
 	}
 
 	public void openStats(Set<StatsMember> includedMembers, String topLevelPackage, boolean includeSynthetic) {
@@ -574,6 +583,14 @@ public class GuiController implements ClientPacketHandler {
 
 	public EnigmaServer getServer() {
 		return this.server;
+	}
+
+	public EnigmaProject getProject() {
+		return this.project;
+	}
+
+	public Enigma getEnigma() {
+		return this.enigma;
 	}
 
 	public void createClient(String username, String ip, int port, char[] password) throws IOException {

@@ -8,6 +8,7 @@ import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.JavadocDialog;
 import cuchaz.enigma.gui.dialog.SearchDialog;
+import cuchaz.enigma.gui.docker.ClassesDocker;
 import cuchaz.enigma.gui.docker.NotificationsDocker;
 import cuchaz.enigma.gui.elements.EditorTabbedPane;
 import cuchaz.enigma.gui.elements.MainWindow;
@@ -31,7 +32,6 @@ import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.network.ServerMessage;
 import cuchaz.enigma.source.Token;
 import cuchaz.enigma.translation.mapping.EntryChange;
-import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
@@ -51,7 +51,6 @@ import javax.swing.JScrollBar;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -96,9 +95,9 @@ public class Gui {
 	public final JFileChooser enigmaMappingsFileChooser;
 	public final JFileChooser exportSourceFileChooser;
 	public final JFileChooser exportJarFileChooser;
-	public SearchDialog searchDialog;
+	public final SearchDialog searchDialog;
 
-	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes) {
+	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean visible) {
 		this.mainWindow = new MainWindow(Enigma.NAME);
 		this.centerPanel = new JPanel(new BorderLayout());
 		this.editableTypes = editableTypes;
@@ -121,13 +120,14 @@ public class Gui {
 		this.exportJarFileChooser = new JFileChooser();
 		this.connectionStatusLabel = new JLabel();
 		this.notificationManager = new NotificationManager(this);
+		this.searchDialog = new SearchDialog(this);
 
 		this.setupUi();
 
 		LanguageUtil.addListener(this::retranslateUi);
 		Themes.addListener((lookAndFeel, boxHighlightPainters) -> SwingUtilities.updateComponentTreeUI(this.getFrame()));
 
-		this.mainWindow.setVisible(true);
+		this.mainWindow.setVisible(visible);
 	}
 
 	private void setupDockers() {
@@ -355,7 +355,7 @@ public class Gui {
 			entries.addAll(deobfuscatedPackages.getClassEntries());
 		}
 
-		allClasses.setClasses(entries.isEmpty() ? null : entries);
+		allClasses.setClasses(entries.isEmpty() || this.getController().getProject() == null ? null : entries);
 	}
 
 	public void setMappingsFile(Path path) {
@@ -444,17 +444,19 @@ public class Gui {
 
 	public void toggleMapping(EditorPanel editor) {
 		EntryReference<Entry<?>, Entry<?>> cursorReference = editor.getCursorReference();
-		if (cursorReference == null) return;
+		if (cursorReference == null) {
+			return;
+		}
 
 		Entry<?> obfEntry = cursorReference.getNameableEntry();
 		this.toggleMappingFromEntry(obfEntry);
 	}
 
 	public void toggleMappingFromEntry(Entry<?> obfEntry) {
-		if (this.controller.project.getMapper().getDeobfMapping(obfEntry).targetName() != null) {
+		if (this.controller.getProject().getMapper().getDeobfMapping(obfEntry).targetName() != null) {
 			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).clearDeobfName());
 		} else {
-			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).withDefaultDeobfName(this.getController().project));
+			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).withDefaultDeobfName(this.getController().getProject()));
 		}
 	}
 
@@ -516,89 +518,78 @@ public class Gui {
 		frame.repaint();
 	}
 
-	public void onRenameFromClassTree(ValidationContext vc, Object data, DefaultMutableTreeNode node) {
-		if (data instanceof String) {
-			// package rename
-			for (int i = 0; i < node.getChildCount(); i++) {
-				DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) node.getChildAt(i);
-				ClassEntry prevDataChild = (ClassEntry) childNode.getUserObject();
-
-				this.onRenameFromClassTree(vc, prevDataChild, node);
-			}
-
-			node.setUserObject(data);
-
-			// Ob package will never be modified, just reload deob view
-			DeobfuscatedClassesDocker deobfuscatedPanel = Docker.getDocker(DeobfuscatedClassesDocker.class);
-			deobfuscatedPanel.getClassSelector().reload();
-		} else if (data instanceof ClassEntry entry) {
-			// class rename
-
-			// TODO optimize reverse class lookup, although it looks like it's
-			//	  fast enough for now
-			EntryRemapper mapper = this.controller.project.getMapper();
-			ClassEntry obf = mapper.getObfToDeobf().getAllEntries()
-					.filter(ClassEntry.class::isInstance)
-					.map(ClassEntry.class::cast)
-					.filter(e -> mapper.deobfuscate(e).equals(entry))
-					.findAny().orElse(entry);
-
-			this.controller.applyChange(vc, EntryChange.modify(obf).withDeobfName(((ClassEntry) data).getFullName()));
-		} else {
-			throw new IllegalStateException(String.format("unhandled rename object data: '%s'", data));
-		}
-	}
-
-	// TODO: getExpansionState will *not* actually update itself based on name changes!
-	public void moveClassTree(Entry<?> obfEntry, boolean isOldOb, boolean isNewOb) {
-		ClassEntry classEntry = obfEntry.getContainingClass();
-
+	/**
+	 * Moves the provided {@link ClassEntry} to the appropriate class selectors for its new state,
+	 * and updates stats and swing state accordingly.
+	 * @param classEntry the entry to move
+	 * @param updateSwingState whether to update swing state (visual reloads)
+	 * @param isOldOb whether the class was obfuscated before its name change
+	 * @param isNewOb whether the class has become deobfuscated after its name change
+	 */
+	public void moveClassTree(ClassEntry classEntry, boolean updateSwingState, boolean isOldOb, boolean isNewOb) {
 		ClassSelector deobfuscatedClassSelector = Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector();
 		ClassSelector obfuscatedClassSelector = Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector();
 
 		List<ClassSelector.StateEntry> deobfuscatedPanelExpansionState = deobfuscatedClassSelector.getExpansionState();
 		List<ClassSelector.StateEntry> obfuscatedPanelExpansionState = obfuscatedClassSelector.getExpansionState();
 
-		if (!isNewOb) {
+		if (!isNewOb && isOldOb) {
 			// obfuscated -> deobfuscated
-			deobfuscatedClassSelector.moveClassIn(classEntry);
 			obfuscatedClassSelector.removeEntry(classEntry);
-			deobfuscatedClassSelector.reload();
-			obfuscatedClassSelector.reload();
-		} else if (!isOldOb) {
-			// deobfuscated -> obfuscated
-			obfuscatedClassSelector.moveClassIn(classEntry);
-			deobfuscatedClassSelector.removeEntry(classEntry);
-			deobfuscatedClassSelector.reload();
-			obfuscatedClassSelector.reload();
-		} else {
-			// local move: deobfuscated -> deobfuscated
 			deobfuscatedClassSelector.moveClassIn(classEntry);
-			deobfuscatedClassSelector.reload();
+			if (updateSwingState) {
+				obfuscatedClassSelector.reload();
+				deobfuscatedClassSelector.reload();
+			}
+		} else if (!isOldOb && isNewOb) {
+			// deobfuscated -> obfuscated
+			deobfuscatedClassSelector.removeEntry(classEntry);
+			obfuscatedClassSelector.moveClassIn(classEntry);
+			if (updateSwingState) {
+				obfuscatedClassSelector.reload();
+				deobfuscatedClassSelector.reload();
+			}
+		} else {
+			// deobfuscated -> deobfuscated
+			deobfuscatedClassSelector.moveClassIn(classEntry);
+			if (updateSwingState) {
+				deobfuscatedClassSelector.reload();
+			}
 		}
 
-		this.reloadClassEntry(classEntry);
+		this.reloadClassEntry(classEntry, updateSwingState);
 
-		deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
-		obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
+		if (updateSwingState) {
+			deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
+			obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
+		}
 	}
 
-	public void reloadClassEntry(ClassEntry classEntry) {
-		Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector().reloadEntry(classEntry);
-		Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector().reloadEntry(classEntry);
+	/**
+	 * Reloads stats for the provided class in all selectors and updates the {@link AllClassesDocker} instance.
+	 * @param classEntry the class to reload
+	 * @param updateSwingState whether swing state should be updated (visual reloads)
+	 */
+	public void reloadClassEntry(ClassEntry classEntry, boolean updateSwingState) {
+		if (updateSwingState) {
+			for (var entry : Docker.getDockers().entrySet()) {
+				if (entry.getValue() instanceof ClassesDocker docker) {
+					docker.getClassSelector().reloadStats(classEntry);
+				}
+			}
+		}
 
-		ClassSelector allClassesClassSelector = Docker.getDocker(AllClassesDocker.class).getClassSelector();
-		List<ClassSelector.StateEntry> expansionState = allClassesClassSelector.getExpansionState();
-		allClassesClassSelector.reloadEntry(classEntry);
-		allClassesClassSelector.reload();
-		allClassesClassSelector.restoreExpansionState(expansionState);
+		ClassSelector allClassesSelector = Docker.getDocker(AllClassesDocker.class).getClassSelector();
+		List<ClassSelector.StateEntry> expansionState = allClassesSelector.getExpansionState();
+		allClassesSelector.moveClassIn(classEntry);
+
+		if (updateSwingState) {
+			allClassesSelector.reload();
+			allClassesSelector.restoreExpansionState(expansionState);
+		}
 	}
 
 	public SearchDialog getSearchDialog() {
-		if (this.searchDialog == null) {
-			this.searchDialog = new SearchDialog(this);
-		}
-
 		return this.searchDialog;
 	}
 

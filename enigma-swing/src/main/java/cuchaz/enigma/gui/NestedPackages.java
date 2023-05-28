@@ -31,7 +31,7 @@ public class NestedPackages {
 				}
 			} else if (a instanceof ClassSelectorClassNode cA) {
 				if (b instanceof ClassSelectorClassNode cB) {
-					return entryComparator.compare(cA.getClassEntry(), cB.getClassEntry());
+					return entryComparator.compare(cA.getDeobfEntry(), cB.getDeobfEntry());
 				} else {
 					return 1;
 				}

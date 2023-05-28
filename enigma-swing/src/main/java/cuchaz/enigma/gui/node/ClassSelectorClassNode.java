@@ -8,28 +8,31 @@ import cuchaz.enigma.gui.stats.StatsResult;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeNode;
+import java.util.Comparator;
 
-public class ClassSelectorClassNode extends DefaultMutableTreeNode {
+public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	private final ClassEntry obfEntry;
-	private ClassEntry classEntry;
+	private ClassEntry deobfEntry;
 	private StatsResult stats;
 
-	public ClassSelectorClassNode(ClassEntry obfEntry, ClassEntry classEntry) {
+	public ClassSelectorClassNode(ClassEntry obfEntry, ClassEntry deobfEntry) {
+		super(Comparator.comparing(TreeNode::toString));
 		this.obfEntry = obfEntry;
-		this.classEntry = classEntry;
+		this.deobfEntry = deobfEntry;
 		this.stats = null;
-		this.setUserObject(classEntry);
+		this.setUserObject(deobfEntry);
 	}
 
 	public ClassEntry getObfEntry() {
 		return this.obfEntry;
 	}
 
-	public ClassEntry getClassEntry() {
-		return this.classEntry;
+	public ClassEntry getDeobfEntry() {
+		return this.deobfEntry;
 	}
 
 	public StatsResult getStats() {
@@ -42,6 +45,7 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 
 	/**
 	 * Reloads the stats for this class node and updates the icon in the provided class selector.
+	 *
 	 * @param gui the current gui instance
 	 * @param selector the class selector to reload on
 	 * @param updateIfPresent whether to update the stats if they have already been generated for this node
@@ -51,7 +55,7 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 			@Override
 			protected ClassSelectorClassNode doInBackground() {
 				if (ClassSelectorClassNode.this.getStats() == null || updateIfPresent) {
-					StatsResult newStats = new StatsGenerator(gui.getController().project).generateForClassTree(ProgressListener.none(), ClassSelectorClassNode.this.getObfEntry(), false);
+					StatsResult newStats = new StatsGenerator(gui.getController().getProject()).generateForClassTree(ProgressListener.none(), ClassSelectorClassNode.this.getObfEntry(), false);
 					ClassSelectorClassNode.this.setStats(newStats);
 				}
 
@@ -61,50 +65,36 @@ public class ClassSelectorClassNode extends DefaultMutableTreeNode {
 			@Override
 			public void done() {
 				((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(ClassSelectorClassNode.this.getStats()));
-				selector.reload(ClassSelectorClassNode.this.getParent());
+				SwingUtilities.invokeLater(() -> selector.reload(ClassSelectorClassNode.this, false));
 			}
 		};
 
-		iconUpdateWorker.execute();
+		SwingUtilities.invokeLater(iconUpdateWorker::execute);
 	}
 
 	@Override
 	public String toString() {
-		return this.classEntry.getSimpleName();
-	}
-
-	@Override
-	public boolean equals(Object other) {
-		return other instanceof ClassSelectorClassNode node && this.equals(node);
-	}
-
-	@Override
-	public int hashCode() {
-		return 17 + (this.classEntry != null ? this.classEntry.hashCode() : 0);
+		return this.deobfEntry.getSimpleName();
 	}
 
 	@Override
 	public Object getUserObject() {
-		return this.classEntry;
+		return this.deobfEntry;
 	}
 
 	@Override
 	public void setUserObject(Object userObject) {
 		String packageName = "";
-		if (this.classEntry.getPackageName() != null) {
-			packageName = this.classEntry.getPackageName() + "/";
+		if (this.deobfEntry.getPackageName() != null) {
+			packageName = this.deobfEntry.getPackageName() + "/";
 		}
 
 		if (userObject instanceof String) {
-			this.classEntry = new ClassEntry(packageName + userObject);
+			this.deobfEntry = new ClassEntry(packageName + userObject);
 		} else if (userObject instanceof ClassEntry entry) {
-			this.classEntry = entry;
+			this.deobfEntry = entry;
 		}
 
-		super.setUserObject(this.classEntry);
-	}
-
-	public boolean equals(ClassSelectorClassNode other) {
-		return this.classEntry.equals(other.classEntry);
+		super.setUserObject(this.deobfEntry);
 	}
 }

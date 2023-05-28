@@ -15,7 +15,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -30,8 +29,8 @@ import javax.swing.SwingUtilities;
 public class StatsDialog {
 	public static void show(Gui gui) {
 		ProgressDialog.runOffThread(gui.getFrame(), listener -> {
-			final StatsGenerator statsGenerator = new StatsGenerator(gui.getController().project);
-			final Map<StatsMember, StatsResult> results = new HashMap<>();
+			final StatsGenerator statsGenerator = new StatsGenerator(gui.getController().getProject());
+			final Map<StatsMember, StatsResult> results = new EnumMap<>(StatsMember.class);
 			for (StatsMember member : StatsMember.values()) {
 				results.put(member, statsGenerator.generate(listener, Collections.singleton(member), "", false));
 			}
@@ -48,7 +47,7 @@ public class StatsDialog {
 
 		GridBagConstraintsBuilder cb = GridBagConstraintsBuilder.create().insets(2);
 
-		Map<StatsMember, JCheckBox> checkboxes = new HashMap<>();
+		Map<StatsMember, JCheckBox> checkboxes = new EnumMap<>(StatsMember.class);
 
 		int[] i = {0};
 		results.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(e -> {
@@ -87,7 +86,7 @@ public class StatsDialog {
 				UiConfig.setLastTopLevelPackage(topLevelPackage.getText());
 				UiConfig.save();
 
-				final StatsGenerator statsGenerator = new StatsGenerator(gui.getController().project);
+				final StatsGenerator statsGenerator = new StatsGenerator(gui.getController().getProject());
 				final Map<StatsMember, StatsResult> statResults = new EnumMap<>(StatsMember.class);
 				for (StatsMember member : StatsMember.values()) {
 					statResults.put(member, statsGenerator.generate(listener, Collections.singleton(member), UiConfig.getLastTopLevelPackage(), false));
@@ -147,7 +146,7 @@ public class StatsDialog {
 				.collect(Collectors.toSet());
 
 		// checks if a project is open
-		if (gui.getController().project != null) {
+		if (gui.getController().getProject() != null) {
 			gui.getController().openStats(includedMembers, topLevelPackage, includeSynthetic);
 		}
 	}

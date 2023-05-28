@@ -2,28 +2,24 @@ package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
+import cuchaz.enigma.gui.node.SortedMutableTreeNode;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.utils.validation.ValidationContext;
 
+import javax.annotation.Nullable;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
-import javax.swing.event.CellEditorListener;
-import javax.swing.event.ChangeEvent;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.Component;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.EventObject;
 import java.util.List;
 
 public class ClassSelector extends JTree {
@@ -34,14 +30,13 @@ public class ClassSelector extends JTree {
 
 	private NestedPackages packageManager;
 	private ClassSelectionListener selectionListener;
-	private RenameSelectionListener renameSelectionListener;
 
-	public ClassSelector(Gui gui, Comparator<ClassEntry> comparator, boolean isRenamable) {
+	public ClassSelector(Gui gui, Comparator<ClassEntry> comparator) {
 		this.comparator = comparator;
 		this.controller = gui.getController();
 
 		// configure the tree control
-		this.setEditable(true);
+		this.setEditable(false);
 		this.setRootVisible(false);
 		this.setShowsRootHandles(false);
 		this.setModel(null);
@@ -79,16 +74,12 @@ public class ClassSelector extends JTree {
 			}
 		}));
 
-		final DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
-			{
-				this.setLeafIcon(GuiUtil.CLASS_ICON);
-			}
-
+		this.setCellRenderer(new DefaultTreeCellRenderer() {
 			@Override
 			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
-				if (gui.getController().project != null && leaf && value instanceof ClassSelectorClassNode node) {
+				if (gui.getController().getProject() != null && leaf && value instanceof ClassSelectorClassNode node) {
 					JPanel panel = new JPanel();
 					panel.setOpaque(false);
 					panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
@@ -108,79 +99,36 @@ public class ClassSelector extends JTree {
 
 				return this;
 			}
-		};
-		this.setCellRenderer(renderer);
-
-		final JTree tree = this;
-
-		final DefaultTreeCellEditor editor = new DefaultTreeCellEditor(tree, renderer) {
-			@Override
-			public boolean isCellEditable(EventObject event) {
-				return isRenamable && !(event instanceof MouseEvent) && super.isCellEditable(event);
-			}
-		};
-		this.setCellEditor(editor);
-		editor.addCellEditorListener(new CellEditorListener() {
-			@Override
-			public void editingStopped(ChangeEvent e) {
-				String data = editor.getCellEditorValue().toString();
-				TreePath path = ClassSelector.this.getSelectionPath();
-
-				if (path != null && path.getLastPathComponent() instanceof DefaultMutableTreeNode node && data != null) {
-					TreeNode parentNode = node.getParent();
-					if (parentNode == null) {
-						return;
-					}
-
-					boolean allowEdit = true;
-					for (int i = 0; i < parentNode.getChildCount(); i++) {
-						TreeNode childNode = parentNode.getChildAt(i);
-						if (childNode != null && childNode.toString().equals(data) && childNode != node) {
-							allowEdit = false;
-							break;
-						}
-					}
-
-					if (allowEdit && ClassSelector.this.renameSelectionListener != null) {
-						Object prevData = node.getUserObject();
-						Object objectData = node.getUserObject() instanceof ClassEntry ? new ClassEntry(((ClassEntry) prevData).getPackageName() + "/" + data) : data;
-
-						ValidationContext context = new ValidationContext(null);
-						ClassSelector.this.renameSelectionListener.onSelectionRename(context, node.getUserObject(), objectData, node);
-						if (context.canProceed()) {
-							node.setUserObject(objectData); // Make sure that it's modified
-						} else {
-							editor.cancelCellEditing();
-						}
-					} else {
-						editor.cancelCellEditing();
-					}
-				}
-			}
-
-			@Override
-			public void editingCanceled(ChangeEvent e) {
-				// NOP
-			}
 		});
+
 		// init defaults
 		this.selectionListener = null;
-		this.renameSelectionListener = null;
 	}
 
-	public void setSelectionListener(ClassSelectionListener val) {
-		this.selectionListener = val;
+	/**
+	 * Sets this tree's selection listener. The listener is fired when the user clicks on a class.
+	 *
+	 * @param listener the new listener
+	 */
+	public void setSelectionListener(ClassSelectionListener listener) {
+		this.selectionListener = listener;
 	}
 
-	public void setRenameSelectionListener(RenameSelectionListener renameSelectionListener) {
-		this.renameSelectionListener = renameSelectionListener;
-	}
-
+	/**
+	 * Gets the package manager, which contains data for classes and nodes in the tree.
+	 *
+	 * @return the package manager
+	 */
 	public NestedPackages getPackageManager() {
 		return this.packageManager;
 	}
 
-	public void setClasses(Collection<ClassEntry> classEntries) {
+	/**
+	 * Clears all classes in the tree, and replaces them with the given list of classes. If the list is null, no entries are added back.
+	 *
+	 * @param classEntries the list of classes to display
+	 */
+	public void setClasses(@Nullable Collection<ClassEntry> classEntries) {
 		List<StateEntry> state = this.getExpansionState();
 
 		if (classEntries == null) {
@@ -190,19 +138,43 @@ public class ClassSelector extends JTree {
 		}
 
 		// update the tree control
-		this.packageManager = new NestedPackages(classEntries, this.comparator, this.controller.project.getMapper());
+		this.packageManager = new NestedPackages(classEntries, this.comparator, this.controller.getProject().getMapper());
 		this.setModel(new DefaultTreeModel(this.packageManager.getRoot()));
 		this.invalidateStats();
 
 		this.restoreExpansionState(state);
 	}
 
-	public ClassEntry getSelectedClass() {
+	/**
+	 * Gets the deobfuscated version of the currently selected class.
+	 *
+	 * <p> The deobfuscated class entry provides name information. For renaming, use {@link #getSelectedClassObf()}.
+	 *
+	 * @return the deobfuscated class entry
+	 * @see #getSelectedClassObf()
+	 */
+	public ClassEntry getSelectedClassDeobf() {
+		return this.getSelectedClass(false);
+	}
+
+	/**
+	 * Gets the obfuscated version of the currently selected class.
+	 *
+	 * <p> The obfuscated class entry can be used for renaming actions, but only provides the obfuscated name. For the mapped name, see {@link #getSelectedClassDeobf()}.
+	 *
+	 * @return the obfuscated class entry
+	 * @see #getSelectedClassDeobf()
+	 */
+	public ClassEntry getSelectedClassObf() {
+		return this.getSelectedClass(true);
+	}
+
+	private ClassEntry getSelectedClass(boolean obfuscated) {
 		if (!this.isSelectionEmpty() && this.getSelectionPath() != null) {
 			Object selectedNode = this.getSelectionPath().getLastPathComponent();
 
 			if (selectedNode instanceof ClassSelectorClassNode classNode) {
-				return classNode.getClassEntry();
+				return obfuscated ? classNode.getObfEntry() : classNode.getDeobfEntry();
 			}
 		}
 
@@ -217,6 +189,11 @@ public class ClassSelector extends JTree {
 	public record StateEntry(State state, TreePath path) {
 	}
 
+	/**
+	 * Gets the current expansion state of the tree, as a list of {@link StateEntry} objects.
+	 *
+	 * @return a list of {@link StateEntry} objects, with an entry for each expanded or selected node.
+	 */
 	public List<StateEntry> getExpansionState() {
 		List<StateEntry> state = new ArrayList<>();
 		int rowCount = this.getRowCount();
@@ -234,9 +211,12 @@ public class ClassSelector extends JTree {
 		return state;
 	}
 
+	/**
+	 * Restores the expansion state from the given list. Does not clear current expansion state, instead adding onto it.
+	 *
+	 * @param expansionState a list of entries to restore
+	 */
 	public void restoreExpansionState(List<StateEntry> expansionState) {
-		this.clearSelection();
-
 		for (StateEntry entry : expansionState) {
 			if (entry.state() == State.EXPANDED) {
 				this.expandPath(entry.path());
@@ -246,6 +226,10 @@ public class ClassSelector extends JTree {
 		}
 	}
 
+	/**
+	 * Expands the package that matches the provided name.
+	 * @param packageName the package name to expand
+	 */
 	public void expandPackage(String packageName) {
 		if (packageName == null) {
 			return;
@@ -254,18 +238,29 @@ public class ClassSelector extends JTree {
 		this.expandPath(this.packageManager.getPackagePath(packageName));
 	}
 
+	/**
+	 * Expands every package in the tree.
+	 */
 	public void expandAll() {
 		for (DefaultMutableTreeNode packageNode : this.packageManager.getPackageNodes()) {
 			this.expandPath(new TreePath(packageNode.getPath()));
 		}
 	}
 
+	/**
+	 * Collapses every package in the tree.
+	 */
 	public void collapseAll() {
 		for (DefaultMutableTreeNode packageNode : this.packageManager.getPackageNodes()) {
 			this.collapsePath(new TreePath(packageNode.getPath()));
 		}
 	}
 
+	/**
+	 * Sets the currently selected class and scrolls to it. Expands packages to ensure the class is visible.
+	 *
+	 * @param classEntry the class to select
+	 */
 	public void setSelectionClass(ClassEntry classEntry) {
 		this.expandPackage(classEntry.getPackageName());
 		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
@@ -277,46 +272,76 @@ public class ClassSelector extends JTree {
 		}
 	}
 
+	/**
+	 * Moves the entry into the tree, removing it and re-adding it if it already exists. Does not update the tree visually!
+	 *
+	 * @param classEntry the entry to add
+	 */
 	public void moveClassIn(ClassEntry classEntry) {
 		this.removeEntry(classEntry);
 		this.packageManager.addEntry(classEntry);
 	}
 
+	/**
+	 * Removes the given class entry from the tree. Does not update the tree visually!
+	 *
+	 * @param classEntry the class to be removed
+	 */
 	public void removeEntry(ClassEntry classEntry) {
 		this.packageManager.removeClassNode(classEntry);
 	}
 
-	public void reloadEntry(ClassEntry classEntry) {
-		this.removeEntry(classEntry);
-		this.moveClassIn(classEntry);
-		this.reloadStats(classEntry);
-	}
-
-	public void reload(TreeNode node) {
+	/**
+	 * Reloads the tree below the given node.
+	 *
+	 * @param node the node to be reloaded below
+	 * @param instant whether the action should happen immediately
+	 * @apiNote the {@code instant} parameter exists in case you need to restore state after a reload: if you attempt a reload and subsequent
+	 * state restoration it's possible the reload will occur after the restoration and therefore be reset. Otherwise, it's encouraged to leave
+	 * this false to avoid the possibility of concurrency issues.
+	 */
+	public void reload(SortedMutableTreeNode node, boolean instant) {
 		DefaultTreeModel model = (DefaultTreeModel) this.getModel();
-		model.reload(node);
+		if (model != null) {
+			if (instant) {
+				model.reload(node);
+			} else {
+				SwingUtilities.invokeLater(() -> model.reload(node));
+			}
+		}
 	}
 
+	/**
+	 * Reloads the tree from the root node instantly.
+	 */
 	public void reload() {
-		this.reload(this.packageManager.getRoot());
+		this.reload(this.packageManager.getRoot(), true);
 	}
 
+	/**
+	 * Invalidates the stats for all classes in the tree, forcing them to be reloaded.
+	 * Stats will be calculated asynchronously for each entry the next time that entry is visible.
+	 */
 	public void invalidateStats() {
 		for (ClassEntry entry : this.packageManager.getClassEntries()) {
 			this.packageManager.getClassNode(entry).setStats(null);
 		}
 	}
 
+	/**
+	 * Requests an asynchronous reload of the stats for the given class.
+	 * On completion, the class's stats icon will be updated.
+	 *
+	 * @param classEntry the class to reload stats for
+	 */
 	public void reloadStats(ClassEntry classEntry) {
 		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
-		node.reloadStats(this.controller.getGui(), this, true);
+		if (node != null) {
+			node.reloadStats(this.controller.getGui(), this, true);
+		}
 	}
 
 	public interface ClassSelectionListener {
 		void onSelectClass(ClassEntry classEntry);
-	}
-
-	public interface RenameSelectionListener {
-		void onSelectionRename(ValidationContext vc, Object prevData, Object data, DefaultMutableTreeNode node);
 	}
 }

@@ -387,7 +387,7 @@ public class MenuBar {
 	}
 
 	private void onSearchClicked(boolean clear, SearchDialog.Type... types) {
-		if (this.gui.getController().project != null) {
+		if (this.gui.getController().getProject() != null) {
 			this.gui.getSearchDialog().show(clear, types);
 		}
 	}
