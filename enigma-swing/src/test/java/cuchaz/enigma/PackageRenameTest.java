@@ -114,7 +114,7 @@ public class PackageRenameTest {
 		latch.await();
 
 		deobfuscator = gui.getController().getProject().getMapper().getDeobfuscator();
-		return Docker.getDocker(AllClassesDocker.class).getPopupMenu();
+		return gui.getDockerManager().getDocker(AllClassesDocker.class).getPopupMenu();
 	}
 
 	private static void assertBaseMappings() {
