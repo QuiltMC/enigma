@@ -107,6 +107,7 @@ public class ClassSelector extends JTree {
 
 	/**
 	 * Sets this tree's selection listener. The listener is fired when the user clicks on a class.
+	 *
 	 * @param listener the new listener
 	 */
 	public void setSelectionListener(ClassSelectionListener listener) {
@@ -115,6 +116,7 @@ public class ClassSelector extends JTree {
 
 	/**
 	 * Gets the package manager, which contains data for classes and nodes in the tree.
+	 *
 	 * @return the package manager
 	 */
 	public NestedPackages getPackageManager() {
@@ -123,6 +125,7 @@ public class ClassSelector extends JTree {
 
 	/**
 	 * Clears all classes in the tree, and replaces them with the given list of classes. If the list is null, the tree is cleared.
+	 *
 	 * @param classEntries the list of classes to display
 	 */
 	public void setClasses(@Nullable Collection<ClassEntry> classEntries) {
@@ -144,7 +147,8 @@ public class ClassSelector extends JTree {
 
 	/**
 	 * Gets the deobfuscated version of the currently selected class.
-	 * <br>The deobfuscated class entry provides name information. For renaming, use {@link #getSelectedClassObf()}.
+	 * <p> The deobfuscated class entry provides name information. For renaming, use {@link #getSelectedClassObf()}.
+	 *
 	 * @return the obfuscated class entry
 	 * @see #getSelectedClassObf()
 	 */
@@ -154,7 +158,8 @@ public class ClassSelector extends JTree {
 
 	/**
 	 * Gets the obfuscated version of the currently selected class.
-	 * <br>The obfuscated class entry can be used for renaming actions, but only provides the obfuscated name. For the mapped name, see {@link #getSelectedClassDeobf()}.
+	 * <p> The obfuscated class entry can be used for renaming actions, but only provides the obfuscated name. For the mapped name, see {@link #getSelectedClassDeobf()}.
+	 *
 	 * @return the obfuscated class entry
 	 * @see #getSelectedClassDeobf()
 	 */
@@ -184,6 +189,7 @@ public class ClassSelector extends JTree {
 
 	/**
 	 * Gets the current expansion state of the tree, as a list of {@link StateEntry} objects.
+	 *
 	 * @return a list of {@link StateEntry} objects, with an entry for each expanded or selected node.
 	 */
 	public List<StateEntry> getExpansionState() {
@@ -205,6 +211,7 @@ public class ClassSelector extends JTree {
 
 	/**
 	 * Restores the expansion state from the given list. Does not clear current expansion state, instead adding onto it.
+	 *
 	 * @param expansionState a list of entries to restore
 	 */
 	public void restoreExpansionState(List<StateEntry> expansionState) {
@@ -249,6 +256,7 @@ public class ClassSelector extends JTree {
 
 	/**
 	 * Sets the currently selected class and scrolls to it. Expands packages to ensure the class is visible.
+	 *
 	 * @param classEntry the class to select
 	 */
 	public void setSelectionClass(ClassEntry classEntry) {
@@ -264,6 +272,7 @@ public class ClassSelector extends JTree {
 
 	/**
 	 * Moves the entry into the tree, removing it and re-adding it if it already exists. Does not update the tree visually!
+	 *
 	 * @param classEntry the entry to add
 	 */
 	public void moveClassIn(ClassEntry classEntry) {
@@ -273,6 +282,7 @@ public class ClassSelector extends JTree {
 
 	/**
 	 * Removes the given class entry from the tree. Does not update the tree visually!
+	 *
 	 * @param classEntry the class to be removed
 	 */
 	public void removeEntry(ClassEntry classEntry) {
@@ -281,6 +291,7 @@ public class ClassSelector extends JTree {
 
 	/**
 	 * Reloads the tree below the given node.
+	 *
 	 * @param node the node to be reloaded below
 	 * @param instant whether the action should happen immediately
 	 * @apiNote the {@code instant} parameter exists in case you need to restore state after a reload: if you attempt a reload and subsequent
@@ -317,7 +328,8 @@ public class ClassSelector extends JTree {
 
 	/**
 	 * Requests an asynchronous reload of the stats for the given class.
-	 * <br>On completion, the class's stats icon will be updated.
+	 * <p> On completion, the class's stats icon will be updated.
+	 *
 	 * @param classEntry the class to reload stats for
 	 */
 	public void reloadStats(ClassEntry classEntry) {
