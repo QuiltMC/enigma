@@ -133,7 +133,7 @@ public class ClassSelectorPopupMenu {
 			listener.init(renameStack.size(), I18n.translate("popup_menu.class_selector.package_rename.renaming_classes"));
 
 			Map<ClassesDocker, List<ClassSelector.StateEntry>> expansionStates = new HashMap<>();
-			for (Docker docker : this.gui.getDockerManager().getDockers()) {
+			for (Docker docker : Docker.getDockers().values()) {
 				if (docker instanceof ClassesDocker classesDocker) {
 					expansionStates.put(classesDocker, classesDocker.getClassSelector().getExpansionState());
 				}
@@ -156,7 +156,7 @@ public class ClassSelectorPopupMenu {
 
 	private void handleNode(int divergenceIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, Map<String, Runnable> renameStack, TreeNode node) {
 		if (node instanceof ClassSelectorClassNode classNode && rename) {
-			String oldName = classNode.getClassEntry().getFullName();
+			String oldName = classNode.getDeobfEntry().getFullName();
 			int finalPackageIndex = divergenceIndex - 1;
 
 			renameStack.put(oldName, () -> {
@@ -197,7 +197,7 @@ public class ClassSelectorPopupMenu {
 							}
 
 							appendSlash(string);
-							string.append(classNode.getClassEntry().getSimpleName());
+							string.append(classNode.getDeobfEntry().getSimpleName());
 							split = string.toString().split("/");
 							break;
 						}
@@ -263,8 +263,12 @@ public class ClassSelectorPopupMenu {
 	public void show(ClassSelector selector, int x, int y) {
 		ClassEntry selected = selector.getSelectedClassObf();
 
-		// Only enable rename class if selected path is a class
+		// only enable rename class if selected path is a class
 		this.renameClass.setEnabled(selected != null);
+
+		// only enable rename package if selected path is *not* a class with no package
+		this.renamePackage.setEnabled(selected == null || selector.getSelectedClassDeobf().getPackageName() != null);
+
 		// update toggle mapping text to match
 		this.toggleMapping.setEnabled(selected != null);
 		if (selected != null) {

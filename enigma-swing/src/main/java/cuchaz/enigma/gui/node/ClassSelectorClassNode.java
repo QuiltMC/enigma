@@ -16,23 +16,23 @@ import java.util.Comparator;
 
 public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	private final ClassEntry obfEntry;
-	private ClassEntry classEntry;
+	private ClassEntry deobfEntry;
 	private StatsResult stats;
 
-	public ClassSelectorClassNode(ClassEntry obfEntry, ClassEntry classEntry) {
+	public ClassSelectorClassNode(ClassEntry obfEntry, ClassEntry deobfEntry) {
 		super(Comparator.comparing(TreeNode::toString));
 		this.obfEntry = obfEntry;
-		this.classEntry = classEntry;
+		this.deobfEntry = deobfEntry;
 		this.stats = null;
-		this.setUserObject(classEntry);
+		this.setUserObject(deobfEntry);
 	}
 
 	public ClassEntry getObfEntry() {
 		return this.obfEntry;
 	}
 
-	public ClassEntry getClassEntry() {
-		return this.classEntry;
+	public ClassEntry getDeobfEntry() {
+		return this.deobfEntry;
 	}
 
 	public StatsResult getStats() {
@@ -45,6 +45,7 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 
 	/**
 	 * Reloads the stats for this class node and updates the icon in the provided class selector.
+	 *
 	 * @param gui the current gui instance
 	 * @param selector the class selector to reload on
 	 * @param updateIfPresent whether to update the stats if they have already been generated for this node
@@ -73,27 +74,27 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 
 	@Override
 	public String toString() {
-		return this.classEntry.getSimpleName();
+		return this.deobfEntry.getSimpleName();
 	}
 
 	@Override
 	public Object getUserObject() {
-		return this.classEntry;
+		return this.deobfEntry;
 	}
 
 	@Override
 	public void setUserObject(Object userObject) {
 		String packageName = "";
-		if (this.classEntry.getPackageName() != null) {
-			packageName = this.classEntry.getPackageName() + "/";
+		if (this.deobfEntry.getPackageName() != null) {
+			packageName = this.deobfEntry.getPackageName() + "/";
 		}
 
 		if (userObject instanceof String) {
-			this.classEntry = new ClassEntry(packageName + userObject);
+			this.deobfEntry = new ClassEntry(packageName + userObject);
 		} else if (userObject instanceof ClassEntry entry) {
-			this.classEntry = entry;
+			this.deobfEntry = entry;
 		}
 
-		super.setUserObject(this.classEntry);
+		super.setUserObject(this.deobfEntry);
 	}
 }

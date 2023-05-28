@@ -10,11 +10,9 @@ jobs:
       image: eclipse-temurin:${{ matrix.java }}
       options: --user root
     steps:
-      - name: checkout
-        uses: actions/checkout@v3
-      - name: run gradle tasks
-        run: ./gradlew checkstyleMain build --stacktrace --warning-mode fail
-      - name: publish snapshot
+      - uses: actions/checkout@v3
+      - run: ./gradlew checkstyleMain build --stacktrace --warning-mode fail
+      - name: Publish Snapshot
         if: ${{ matrix.java == '17-jdk' && github.repository_owner == 'QuiltMC' && github.ref_name == 'master' }}
         run: ./gradlew publish --stacktrace
         env:
