@@ -156,7 +156,7 @@ public class ClassSelectorPopupMenu {
 
 	private void handleNode(int divergenceIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, Map<String, Runnable> renameStack, TreeNode node) {
 		if (node instanceof ClassSelectorClassNode classNode && rename) {
-			String oldName = classNode.getClassEntry().getFullName();
+			String oldName = classNode.getDeobfEntry().getFullName();
 			int finalPackageIndex = divergenceIndex - 1;
 
 			renameStack.put(oldName, () -> {
@@ -197,7 +197,7 @@ public class ClassSelectorPopupMenu {
 							}
 
 							appendSlash(string);
-							string.append(classNode.getClassEntry().getSimpleName());
+							string.append(classNode.getDeobfEntry().getSimpleName());
 							split = string.toString().split("/");
 							break;
 						}

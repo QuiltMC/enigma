@@ -147,6 +147,7 @@ public class ClassSelector extends JTree {
 
 	/**
 	 * Gets the deobfuscated version of the currently selected class.
+	 *
 	 * <p> The deobfuscated class entry provides name information. For renaming, use {@link #getSelectedClassObf()}.
 	 *
 	 * @return the deobfuscated class entry
@@ -158,6 +159,7 @@ public class ClassSelector extends JTree {
 
 	/**
 	 * Gets the obfuscated version of the currently selected class.
+	 *
 	 * <p> The obfuscated class entry can be used for renaming actions, but only provides the obfuscated name. For the mapped name, see {@link #getSelectedClassDeobf()}.
 	 *
 	 * @return the obfuscated class entry
@@ -172,7 +174,7 @@ public class ClassSelector extends JTree {
 			Object selectedNode = this.getSelectionPath().getLastPathComponent();
 
 			if (selectedNode instanceof ClassSelectorClassNode classNode) {
-				return obfuscated ? classNode.getObfEntry() : classNode.getClassEntry();
+				return obfuscated ? classNode.getObfEntry() : classNode.getDeobfEntry();
 			}
 		}
 
@@ -328,7 +330,7 @@ public class ClassSelector extends JTree {
 
 	/**
 	 * Requests an asynchronous reload of the stats for the given class.
-	 * <p> On completion, the class's stats icon will be updated.
+	 * On completion, the class's stats icon will be updated.
 	 *
 	 * @param classEntry the class to reload stats for
 	 */
