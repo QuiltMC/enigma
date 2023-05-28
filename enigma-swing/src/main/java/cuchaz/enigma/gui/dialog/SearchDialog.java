@@ -4,7 +4,6 @@ import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.GuiController;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
-import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.docker.DeobfuscatedClassesDocker;
 import cuchaz.enigma.gui.docker.ObfuscatedClassesDocker;
 import cuchaz.enigma.gui.util.AbstractListCellRenderer;
@@ -57,17 +56,17 @@ public class SearchDialog {
 	private final JList<SearchEntryImpl> classList;
 	private final JDialog dialog;
 
-	private final Gui parent;
+	private final Gui gui;
 	private final SearchUtil<SearchEntryImpl> util;
 	private final List<Type> searchedTypes = new ArrayList<>();
 	private SearchUtil.SearchControl currentSearch;
 
-	public SearchDialog(Gui parent) {
-		this.parent = parent;
+	public SearchDialog(Gui gui) {
+		this.gui = gui;
 
 		this.util = new SearchUtil<>();
 
-		this.dialog = new JDialog(parent.getFrame(), I18n.translate("menu.search"), true);
+		this.dialog = new JDialog(gui.getFrame(), I18n.translate("menu.search"), true);
 		JPanel contentPane = new JPanel();
 		contentPane.setBorder(ScaleUtil.createEmptyBorder(4, 4, 4, 4));
 		contentPane.setLayout(new BorderLayout(ScaleUtil.scale(4), ScaleUtil.scale(4)));
@@ -118,7 +117,7 @@ public class SearchDialog {
 		this.classListModel = new DefaultListModel<>();
 		this.classList = new JList<>();
 		this.classList.setModel(this.classListModel);
-		this.classList.setCellRenderer(new ListCellRendererImpl(parent));
+		this.classList.setCellRenderer(new ListCellRendererImpl(gui));
 		this.classList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		this.classList.addMouseListener(GuiUtil.onMouseClick(mouseEvent -> {
 			if (mouseEvent.getClickCount() >= 2) {
@@ -150,7 +149,7 @@ public class SearchDialog {
 
 		this.dialog.setContentPane(contentPane);
 		this.dialog.setSize(ScaleUtil.getDimension(400, 500));
-		this.dialog.setLocationRelativeTo(parent.getFrame());
+		this.dialog.setLocationRelativeTo(gui.getFrame());
 	}
 
 	private MouseListener createCheckboxListener(Type type) {
@@ -201,7 +200,7 @@ public class SearchDialog {
 
 		this.searchedTypes.addAll(Arrays.asList(types));
 
-		final EntryIndex entryIndex = this.parent.getController().getProject().getJarIndex().getEntryIndex();
+		final EntryIndex entryIndex = this.gui.getController().getProject().getJarIndex().getEntryIndex();
 
 		for (Type searchedType : this.searchedTypes) {
 			this.getCheckBox(searchedType).setSelected(true);
@@ -209,18 +208,18 @@ public class SearchDialog {
 			switch (searchedType) {
 				case CLASS -> entryIndex.getClasses().parallelStream()
 						.filter(e -> !e.isInnerClass())
-						.map(e -> SearchEntryImpl.from(e, this.parent.getController()))
+						.map(e -> SearchEntryImpl.from(e, this.gui.getController()))
 						.map(SearchUtil.Entry::from)
 						.sequential()
 						.forEach(this.util::add);
 				case METHOD -> entryIndex.getMethods().parallelStream()
 						.filter(e -> !e.isConstructor() && !entryIndex.getMethodAccess(e).isSynthetic())
-						.map(e -> SearchEntryImpl.from(e, this.parent.getController()))
+						.map(e -> SearchEntryImpl.from(e, this.gui.getController()))
 						.map(SearchUtil.Entry::from)
 						.sequential()
 						.forEach(this.util::add);
 				case FIELD -> entryIndex.getFields().parallelStream()
-						.map(e -> SearchEntryImpl.from(e, this.parent.getController()))
+						.map(e -> SearchEntryImpl.from(e, this.gui.getController()))
 						.map(SearchUtil.Entry::from)
 						.sequential()
 						.forEach(this.util::add);
@@ -245,21 +244,21 @@ public class SearchDialog {
 	private void openEntry(SearchEntryImpl entryImpl) {
 		this.close();
 		this.util.hit(entryImpl);
-		this.parent.getController().navigateTo(entryImpl.obf);
+		this.gui.getController().navigateTo(entryImpl.obf);
 		if (entryImpl.obf instanceof ClassEntry entry) {
 			if (entryImpl.deobf != null) {
-				DeobfuscatedClassesDocker deobfuscatedPanel = Docker.getDocker(DeobfuscatedClassesDocker.class);
+				DeobfuscatedClassesDocker deobfuscatedPanel = this.gui.getDockerManager().getDocker(DeobfuscatedClassesDocker.class);
 				deobfuscatedPanel.getClassSelector().setSelectionClass((ClassEntry) entryImpl.deobf);
 			} else {
-				ObfuscatedClassesDocker obfuscatedPanel = Docker.getDocker(ObfuscatedClassesDocker.class);
+				ObfuscatedClassesDocker obfuscatedPanel = this.gui.getDockerManager().getDocker(ObfuscatedClassesDocker.class);
 				obfuscatedPanel.getClassSelector().setSelectionClass(entry);
 			}
 		} else {
 			if (entryImpl.deobf != null && entryImpl.deobf.getParent() != null) {
-				DeobfuscatedClassesDocker deobfuscatedPanel = Docker.getDocker(DeobfuscatedClassesDocker.class);
+				DeobfuscatedClassesDocker deobfuscatedPanel = this.gui.getDockerManager().getDocker(DeobfuscatedClassesDocker.class);
 				deobfuscatedPanel.getClassSelector().setSelectionClass((ClassEntry) entryImpl.deobf.getParent());
 			} else if (entryImpl.obf.getParent() != null) {
-				ObfuscatedClassesDocker obfuscatedPanel = Docker.getDocker(ObfuscatedClassesDocker.class);
+				ObfuscatedClassesDocker obfuscatedPanel = this.gui.getDockerManager().getDocker(ObfuscatedClassesDocker.class);
 				obfuscatedPanel.getClassSelector().setSelectionClass((ClassEntry) entryImpl.obf.getParent());
 			}
 		}
