@@ -3,7 +3,6 @@ package cuchaz.enigma;
 import cuchaz.enigma.gui.EditableType;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.docker.AllClassesDocker;
-import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.elements.ClassSelectorPopupMenu;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
