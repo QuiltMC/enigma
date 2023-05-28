@@ -124,7 +124,7 @@ public class ClassSelector extends JTree {
 	}
 
 	/**
-	 * Clears all classes in the tree, and replaces them with the given list of classes. If the list is null, the tree is cleared.
+	 * Clears all classes in the tree, and replaces them with the given list of classes. If the list is null, no entries are added back.
 	 *
 	 * @param classEntries the list of classes to display
 	 */
@@ -149,7 +149,7 @@ public class ClassSelector extends JTree {
 	 * Gets the deobfuscated version of the currently selected class.
 	 * <p> The deobfuscated class entry provides name information. For renaming, use {@link #getSelectedClassObf()}.
 	 *
-	 * @return the obfuscated class entry
+	 * @return the deobfuscated class entry
 	 * @see #getSelectedClassObf()
 	 */
 	public ClassEntry getSelectedClassDeobf() {
