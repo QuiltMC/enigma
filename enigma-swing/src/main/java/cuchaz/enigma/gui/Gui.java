@@ -125,6 +125,7 @@ public class Gui {
 		this.notificationManager = new NotificationManager(this);
 		this.searchDialog = new SearchDialog(this);
 		this.statsManager = new StatsManager();
+		this.searchDialog = new SearchDialog(this);
 
 		this.setupUi();
 
