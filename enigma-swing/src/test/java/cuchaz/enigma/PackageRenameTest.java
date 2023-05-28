@@ -23,13 +23,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
+@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
 public class PackageRenameTest {
 	public static final Path JAR = TestUtil.obfJar("complete");
 	public static final Path MAPPINGS = Path.of("src/test/resources/test_mappings");
 	private static Translator deobfuscator;
 
 	@Test
-	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
 	void testRemoveOnePackage() throws InterruptedException {
 		renamePackage("a/b/c", "a/c");
 
@@ -41,7 +41,6 @@ public class PackageRenameTest {
 	}
 
 	@Test
-	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
 	void testRemoveTwoPackages() throws InterruptedException {
 		renamePackage("a/b/c", "a");
 
@@ -53,7 +52,6 @@ public class PackageRenameTest {
 	}
 
 	@Test
-	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
 	void testPackageConservation() throws InterruptedException {
 		renamePackage("a/b", "a");
 
@@ -65,7 +63,6 @@ public class PackageRenameTest {
 	}
 
 	@Test
-	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
 	void testAppendOnePackage() throws InterruptedException {
 		renamePackage("a/b/c", "a/b/c/d");
 
@@ -77,7 +74,6 @@ public class PackageRenameTest {
 	}
 
 	@Test
-	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
 	void testSimpleRename() throws InterruptedException {
 		renamePackage("a/b/c", "a/b/d");
 
@@ -89,7 +85,6 @@ public class PackageRenameTest {
 	}
 
 	@Test
-	@DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
 	void testFirstPackageRename() throws InterruptedException {
 		renamePackage("a", "b");
 
