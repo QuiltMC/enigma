@@ -64,7 +64,7 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 
 	@Override
 	public String toString() {
-		return this.classEntry.getSimpleName();
+		return this.deobfEntry.getSimpleName();
 	}
 
 	@Override

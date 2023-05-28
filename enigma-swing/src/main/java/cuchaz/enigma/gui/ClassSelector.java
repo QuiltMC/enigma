@@ -6,7 +6,6 @@ import cuchaz.enigma.gui.node.SortedMutableTreeNode;
 import cuchaz.enigma.gui.stats.StatType;
 import cuchaz.enigma.gui.stats.StatsManager;
 import cuchaz.enigma.gui.stats.StatsResult;
-import cuchaz.enigma.gui.node.SortedMutableTreeNode;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.utils.I18n;
@@ -18,7 +17,6 @@ import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
-import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -94,9 +92,9 @@ public class ClassSelector extends JTree {
 					class TooltipPanel extends JPanel {
 						@Override
 						public String getToolTipText(MouseEvent event) {
-							StringBuilder text = new StringBuilder(I18n.translateFormatted("class_selector.tooltip.stats_for", node.getClassEntry().getSimpleName()));
+							StringBuilder text = new StringBuilder(I18n.translateFormatted("class_selector.tooltip.stats_for", node.getDeobfEntry().getSimpleName()));
 							text.append("\n");
-							StatsResult stats = ClassSelector.this.statsManager.getStats(node.getClassEntry());
+							StatsResult stats = ClassSelector.this.statsManager.getStats(node.getDeobfEntry());
 
 							if (stats == null) {
 								text.append(I18n.translate("class_selector.tooltip.stats_not_generated"));
@@ -121,7 +119,7 @@ public class ClassSelector extends JTree {
 					JLabel nodeLabel = new JLabel(GuiUtil.getClassIcon(gui, node.getObfEntry()));
 					panel.add(nodeLabel);
 
-					StatsResult stats = ClassSelector.this.statsManager.getStats(node.getClassEntry());
+					StatsResult stats = ClassSelector.this.statsManager.getStats(node.getDeobfEntry());
 					if (stats == null) {
 						// calculate stats on a separate thread for performance reasons
 						this.setIcon(GuiUtil.PENDING_STATUS_ICON);
