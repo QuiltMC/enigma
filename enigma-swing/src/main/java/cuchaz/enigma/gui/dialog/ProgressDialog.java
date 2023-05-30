@@ -89,7 +89,6 @@ public class ProgressDialog implements ProgressListener, AutoCloseable {
 				runnable.run(progress);
 			} catch (Exception e) {
 				CrashDialog.show(e);
-				throw new RuntimeException(e);
 			}
 		});
 	}
