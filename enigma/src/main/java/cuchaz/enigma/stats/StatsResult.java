@@ -21,21 +21,31 @@ public final class StatsResult {
 
 	/**
 	 * Gets the total number of entries that can be mapped, taking into consideration only the provided {@link StatType}s.
+	 * Defaults to all types if none are provided.
 	 *
 	 * @param types the types of entry to include in the result
 	 * @return the number of mappable entries for the given types
 	 */
 	public int getMappable(StatType... types) {
+		if (types.length == 0) {
+			types = StatType.values();
+		}
+
 		return this.getSum(this.totalMappable, types);
 	}
 
 	/**
 	 * Gets the total number of entries that are mappable and remain obfuscated, taking into consideration only the provided {@link StatType}s.
+	 * Defaults to all types if none are provided.
 	 *
 	 * @param types the types of entry to include in the result
 	 * @return the number of unmapped entries for the given types
 	 */
 	public int getUnmapped(StatType... types) {
+		if (types.length == 0) {
+			types = StatType.values();
+		}
+
 		return this.getSum(this.totalUnmapped, types);
 	}
 
@@ -52,21 +62,31 @@ public final class StatsResult {
 
 	/**
 	 * Gets the total number of entries that have been mapped, taking into consideration only the provided {@link StatType}s.
+	 * Defaults to all types if none are provided.
 	 *
 	 * @param types the types of entry to include in the result
 	 * @return the number of mapped entries for the given types
 	 */
 	public int getMapped(StatType... types) {
+		if (types.length == 0) {
+			types = StatType.values();
+		}
+
 		return this.getMappable(types) - this.getUnmapped(types);
 	}
 
 	/**
 	 * Gets the percentage of entries that have been mapped, taking into consideration only the provided {@link StatType}s.
+	 * Defaults to all types if none are provided.
 	 *
 	 * @param types the types of entry to include in the result
 	 * @return the percentage of entries mapped for the given types
 	 */
 	public double getPercentage(StatType... types) {
+		if (types.length == 0) {
+			types = StatType.values();
+		}
+
 		// avoid showing "Nan%" when there are no entries to map
 		// if there are none, you've mapped them all!
 		int mappable = this.getMappable(types);
@@ -75,15 +95,6 @@ public final class StatsResult {
 		}
 
 		return (this.getMapped(types) * 100.0f) / mappable;
-	}
-
-	/**
-	 * Gets the overall percentage of entries that have been mapped. Takes all {@link StatType}s into consideration.
-	 *
-	 * @return the overall percentage of entries mapped
-	 */
-	public double getOverallPercentage() {
-		return this.getPercentage(StatType.values());
 	}
 
 	/**
@@ -112,11 +123,16 @@ public final class StatsResult {
 	/**
 	 * Produces a clean string representation of this result, taking into consideration only the provided {@link StatType}s.
 	 * The result is formatted as {@code <mapped>/<mappable> <percentage>%}.
+	 * Defaults to all types if none are provided.
 	 *
 	 * @param types the types of entry to include in the result
 	 * @return the string representation
 	 */
 	public String toString(StatType... types) {
+		if (types.length == 0) {
+			types = StatType.values();
+		}
+
 		return String.format("%s/%s %.1f%%", this.getMapped(types), this.getMappable(types), this.getPercentage(types));
 	}
 
