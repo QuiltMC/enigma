@@ -110,12 +110,10 @@ public class Main {
 
 			if (Boolean.parseBoolean(System.getProperty("enigma.catchExceptions", "true"))) {
 				// install a global exception handler to the event thread
-				CrashDialog.init(gui.getFrame());
+				CrashDialog.init(gui);
 				Thread.setDefaultUncaughtExceptionHandler((thread, t) -> {
 					Logger.error(t, "Uncaught exception in thread {}", thread);
-					if (!ExceptionIgnorer.shouldIgnore(t)) {
-						CrashDialog.show(t);
-					}
+					CrashDialog.show(t);
 				});
 			}
 
