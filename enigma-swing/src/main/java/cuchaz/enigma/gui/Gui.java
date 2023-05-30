@@ -282,7 +282,7 @@ public class Gui {
 
 	public StatsManager getStatsManager() {
 		return this.statsManager;
-  }
+	}
 
 	public List<Throwable> getCrashHistory() {
 		return this.crashHistory;
