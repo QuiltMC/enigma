@@ -70,6 +70,7 @@ public class Gui {
 	private ConnectionState connectionState;
 	private boolean isJarOpen;
 	private final Set<EditableType> editableTypes;
+	private final List<Throwable> crashHistory;
 
 	private final MenuBar menuBar;
 	private final IdentifierPanel infoPanel;
@@ -103,6 +104,7 @@ public class Gui {
 		this.editableTypes = editableTypes;
 		this.controller = new GuiController(this, profile);
 		this.infoPanel = new IdentifierPanel(this);
+		this.crashHistory = new ArrayList<>();
 		this.menuBar = new MenuBar(this);
 		this.userModel = new DefaultListModel<>();
 		this.messageModel = new DefaultListModel<>();
@@ -272,6 +274,15 @@ public class Gui {
 
 	public GuiController getController() {
 		return this.controller;
+	}
+
+	public List<Throwable> getCrashHistory() {
+		return this.crashHistory;
+	}
+
+	public void addCrash(Throwable t) {
+		this.crashHistory.add(t);
+		this.menuBar.prepareCrashHistoryMenu();
 	}
 
 	public void onStartOpenJar() {
@@ -503,11 +514,9 @@ public class Gui {
 
 		UiConfig.save();
 
-		if (this.searchDialog != null) {
-			this.searchDialog.dispose();
-		}
-
+		this.searchDialog.dispose();
 		this.mainWindow.getFrame().dispose();
+
 		System.exit(0);
 	}
 
