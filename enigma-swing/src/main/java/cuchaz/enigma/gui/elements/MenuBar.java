@@ -452,8 +452,6 @@ public class MenuBar {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), e.toString(), I18n.translate("menu.collab.server.start.error"), JOptionPane.ERROR_MESSAGE);
 			this.gui.getController().disconnectIfConnected(null);
 		}
-
-		throw new RuntimeException();
 	}
 
 	private void onGithubClicked() {
@@ -678,8 +676,6 @@ public class MenuBar {
 			this.crashHistoryMenu.add(crashHistoryButton);
 		}
 
-		if (this.gui.getCrashHistory().isEmpty()) {
-			this.crashHistoryMenu.setEnabled(false);
-		}
+		this.crashHistoryMenu.setEnabled(!this.gui.getCrashHistory().isEmpty());
 	}
 }
