@@ -2,9 +2,9 @@ package cuchaz.enigma.gui.dialog;
 
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.UiConfig;
-import cuchaz.enigma.gui.stats.StatsGenerator;
-import cuchaz.enigma.gui.stats.StatType;
-import cuchaz.enigma.gui.stats.StatsResult;
+import cuchaz.enigma.stats.StatsGenerator;
+import cuchaz.enigma.stats.StatType;
+import cuchaz.enigma.stats.StatsResult;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;

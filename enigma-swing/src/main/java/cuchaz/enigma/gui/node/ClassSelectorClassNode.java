@@ -2,7 +2,7 @@ package cuchaz.enigma.gui.node;
 
 import cuchaz.enigma.gui.ClassSelector;
 import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.gui.stats.StatsManager;
+import cuchaz.enigma.gui.util.StatsManager;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 

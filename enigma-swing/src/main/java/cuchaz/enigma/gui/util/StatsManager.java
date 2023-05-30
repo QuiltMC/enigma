@@ -1,6 +1,8 @@
-package cuchaz.enigma.gui.stats;
+package cuchaz.enigma.gui.util;
 
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.stats.StatsGenerator;
+import cuchaz.enigma.stats.StatsResult;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import org.tinylog.Logger;
 

@@ -1,4 +1,4 @@
-package cuchaz.enigma.gui.stats;
+package cuchaz.enigma.stats;
 
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.ProgressListener;
