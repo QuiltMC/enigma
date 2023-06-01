@@ -23,7 +23,6 @@ import cuchaz.enigma.gui.config.NetConfig;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.ProgressDialog;
 import cuchaz.enigma.gui.docker.CollabDocker;
-import cuchaz.enigma.gui.stats.StatsGenerator;
 import cuchaz.enigma.stats.StatType;
 import cuchaz.enigma.gui.util.History;
 import cuchaz.enigma.network.ClientPacketHandler;
