@@ -24,8 +24,7 @@ import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.ProgressDialog;
 import cuchaz.enigma.gui.docker.CollabDocker;
 import cuchaz.enigma.gui.docker.Docker;
-import cuchaz.enigma.gui.stats.StatsGenerator;
-import cuchaz.enigma.gui.stats.StatsMember;
+import cuchaz.enigma.stats.StatType;
 import cuchaz.enigma.gui.util.History;
 import cuchaz.enigma.network.ClientPacketHandler;
 import cuchaz.enigma.network.EnigmaClient;
@@ -546,9 +545,9 @@ public class GuiController implements ClientPacketHandler {
 		this.gui.reloadClassEntry(change.getTarget().getTopLevelClass(), updateSwingState);
 	}
 
-	public void openStats(Set<StatsMember> includedMembers, String topLevelPackage, boolean includeSynthetic) {
+	public void openStats(Set<StatType> includedTypes, String topLevelPackage, boolean includeSynthetic) {
 		ProgressDialog.runOffThread(this.gui, progress -> {
-			String data = new StatsGenerator(this.project).generate(progress, includedMembers, topLevelPackage, includeSynthetic).getTreeJson();
+			String data = this.gui.getStatsManager().getGenerator().generate(progress, includedTypes, topLevelPackage, includeSynthetic).getTreeJson();
 
 			try {
 				File statsFile = File.createTempFile("stats", ".html");

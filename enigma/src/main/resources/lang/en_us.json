@@ -139,6 +139,9 @@
 	"info_panel.editor.class.decompiling": "(decompiling...)",
 	"info_panel.editor.class.not_found": "Unable to find class:",
 
+  	"class_selector.tooltip.stats_not_generated": "Stats are being generated...",
+  	"class_selector.tooltip.stats_for": "Stats for %s:",
+
 	"popup.copied": "Copied!",
 
 	"structure.options.obfuscation": "Obfuscation Visibility",

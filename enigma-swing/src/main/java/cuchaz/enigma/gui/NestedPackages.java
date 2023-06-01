@@ -55,11 +55,11 @@ public class NestedPackages {
 	}
 
 	public SortedMutableTreeNode getPackage(String packageName) {
-		var node = this.packageToNode.get(packageName);
-
 		if (packageName == null) {
 			return this.root;
 		}
+
+		var node = this.packageToNode.get(packageName);
 
 		if (node == null) {
 			node = new ClassSelectorPackageNode(this.comparator, packageName);

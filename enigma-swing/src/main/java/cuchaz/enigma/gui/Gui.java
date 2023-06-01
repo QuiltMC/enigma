@@ -26,6 +26,8 @@ import cuchaz.enigma.gui.docker.AllClassesDocker;
 import cuchaz.enigma.gui.docker.Dock;
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.renderer.MessageListCellRenderer;
+import cuchaz.enigma.stats.StatsGenerator;
+import cuchaz.enigma.gui.util.StatsManager;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.LanguageUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
@@ -91,6 +93,7 @@ public class Gui {
 
 	private final JLabel connectionStatusLabel;
 	private final NotificationManager notificationManager;
+	private final StatsManager statsManager;
 
 	public final JFileChooser jarFileChooser;
 	public final JFileChooser tinyMappingsFileChooser;
@@ -124,6 +127,7 @@ public class Gui {
 		this.connectionStatusLabel = new JLabel();
 		this.notificationManager = new NotificationManager(this);
 		this.searchDialog = new SearchDialog(this);
+		this.statsManager = new StatsManager();
 
 		this.showsProgressBars = true;
 
@@ -287,6 +291,10 @@ public class Gui {
 		return this.controller;
 	}
 
+	public StatsManager getStatsManager() {
+		return this.statsManager;
+	}
+
 	public List<Throwable> getCrashHistory() {
 		return this.crashHistory;
 	}
@@ -304,6 +312,8 @@ public class Gui {
 		// update gui
 		this.mainWindow.setTitle(Enigma.NAME + " - " + jarName);
 		this.editorTabbedPane.closeAllEditorTabs();
+
+		this.statsManager.setStatsGenerator(new StatsGenerator(this.controller.getProject()));
 
 		// update menu
 		this.isJarOpen = true;
