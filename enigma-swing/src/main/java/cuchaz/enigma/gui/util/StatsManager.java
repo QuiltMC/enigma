@@ -42,6 +42,7 @@ public class StatsManager {
 
 	/**
 	 * Generates stats for the given class entry. If stats are already being generated for that entry, this method will block until the stats are generated to preserve processing power.
+	 *
 	 * <p>When complete, the stats will be stored in this manager and are ready for use.
 	 *
 	 * @param classEntry the entry to generate stats for
