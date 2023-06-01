@@ -27,7 +27,7 @@ import javax.swing.SwingUtilities;
 
 public class StatsDialog {
 	public static void show(Gui gui) {
-		ProgressDialog.runOffThread(gui.getFrame(), listener -> {
+		ProgressDialog.runOffThread(gui, listener -> {
 			final StatsGenerator statsGenerator = new StatsGenerator(gui.getController().getProject());
 			StatsResult result = statsGenerator.generate(listener, Set.of(StatType.values()), "", false);
 
@@ -75,7 +75,7 @@ public class StatsDialog {
 		JButton filterButton = new JButton(I18n.translate("menu.file.stats.filter"));
 		filterButton.addActionListener(action -> {
 			dialog.dispose();
-			ProgressDialog.runOffThread(gui.getFrame(), listener -> {
+			ProgressDialog.runOffThread(gui, listener -> {
 				UiConfig.setLastTopLevelPackage(topLevelPackage.getText());
 				UiConfig.save();
 

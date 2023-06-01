@@ -40,6 +40,7 @@ import cuchaz.enigma.source.DecompiledClassSource;
 import cuchaz.enigma.source.DecompilerService;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.Token;
+import cuchaz.enigma.stats.StatType;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryChange;
@@ -115,7 +116,7 @@ public class GuiController implements ClientPacketHandler {
 	public CompletableFuture<Void> openJar(final Path jarPath) {
 		this.gui.onStartOpenJar();
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
+		return ProgressDialog.runOffThread(this.gui, progress -> {
 			this.project = this.enigma.openJar(jarPath, new ClasspathClassProvider(), progress);
 			this.indexTreeBuilder = new IndexTreeBuilder(this.project.getJarIndex());
 			this.chp = new ClassHandleProvider(this.project, UiConfig.getDecompiler().service);
@@ -157,7 +158,7 @@ public class GuiController implements ClientPacketHandler {
 		UiConfig.addRecentFilePair(this.project.getJarPath(), path);
 		this.gui.getMenuBar().reloadOpenRecentMenu(this.gui);
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
+		return ProgressDialog.runOffThread(this.gui, progress -> {
 			try {
 				MappingSaveParameters saveParameters = this.enigma.getProfile().getMappingSaveParameters();
 
@@ -202,7 +203,7 @@ public class GuiController implements ClientPacketHandler {
 	public CompletableFuture<Void> saveMappings(Path path, MappingFormat format) {
 		if (this.project == null) return CompletableFuture.completedFuture(null);
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
+		return ProgressDialog.runOffThread(this.gui, progress -> {
 			EntryRemapper mapper = this.project.getMapper();
 			MappingSaveParameters saveParameters = this.enigma.getProfile().getMappingSaveParameters();
 
@@ -251,13 +252,13 @@ public class GuiController implements ClientPacketHandler {
 	public CompletableFuture<Void> dropMappings() {
 		if (this.project == null) return CompletableFuture.completedFuture(null);
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> this.project.dropMappings(progress));
+		return ProgressDialog.runOffThread(this.gui, progress -> this.project.dropMappings(progress));
 	}
 
 	public CompletableFuture<Void> exportSource(final Path path) {
 		if (this.project == null) return CompletableFuture.completedFuture(null);
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
+		return ProgressDialog.runOffThread(this.gui, progress -> {
 			EnigmaProject.JarExport jar = this.project.exportRemappedJar(progress);
 			jar.decompileStream(progress, this.chp.getDecompilerService(), EnigmaProject.DecompileErrorStrategy.TRACE_AS_SOURCE)
 					.forEach(source -> {
@@ -273,7 +274,7 @@ public class GuiController implements ClientPacketHandler {
 	public CompletableFuture<Void> exportJar(final Path path) {
 		if (this.project == null) return CompletableFuture.completedFuture(null);
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
+		return ProgressDialog.runOffThread(this.gui, progress -> {
 			EnigmaProject.JarExport jar = this.project.exportRemappedJar(progress);
 			jar.write(path, progress);
 		});
@@ -547,8 +548,8 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void openStats(Set<StatType> includedTypes, String topLevelPackage, boolean includeSynthetic) {
-		ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
-			String data = new StatsGenerator(this.project).generate(progress, includedTypes, topLevelPackage, includeSynthetic).getTreeJson();
+		ProgressDialog.runOffThread(this.gui, progress -> {
+			String data = this.gui.getStatsManager().generate(progress, includedTypes, topLevelPackage, includeSynthetic).getTreeJson();
 
 			try {
 				File statsFile = File.createTempFile("stats", ".html");
