@@ -64,7 +64,7 @@ public class Dock extends JPanel {
 	 */
 	public void restoreState() {
 		// restore docker state
-		Optional<Map<Docker, Docker.VerticalLocation>> hostedDockers = UiConfig.getHostedDockers(this.side);
+		Optional<Map<Docker, Docker.VerticalLocation>> hostedDockers = UiConfig.getHostedDockers(this.gui.getDockerManager(), this.side);
 		hostedDockers.ifPresent(m -> m.forEach(this::host));
 
 		this.restoreDividerState(true);

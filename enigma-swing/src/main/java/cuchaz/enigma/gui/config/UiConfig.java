@@ -5,6 +5,7 @@ import cuchaz.enigma.config.ConfigSection;
 import cuchaz.enigma.gui.NotificationManager;
 import cuchaz.enigma.gui.docker.Dock;
 import cuchaz.enigma.gui.docker.Docker;
+import cuchaz.enigma.gui.docker.DockerManager;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Pair;
@@ -88,7 +89,7 @@ public final class UiConfig {
 	public static final String MAX_RECENT_FILES = "Max Recent Files";
 
 	public static final String PAIR_SEPARATOR = ";";
-	@Deprecated
+	@Deprecated(since = "1.6.2", forRemoval = true)
 	private static final String OLD_PAIR_SEPARATOR = ":";
 	private UiConfig() {
 	}
@@ -159,7 +160,7 @@ public final class UiConfig {
 		swing.data().section(HOSTED_DOCKERS).setArray(side.name(), dockerData);
 	}
 
-	public static Optional<Map<Docker, Docker.VerticalLocation>> getHostedDockers(Docker.Side side) {
+	public static Optional<Map<Docker, Docker.VerticalLocation>> getHostedDockers(DockerManager manager, Docker.Side side) {
 		Optional<String[]> hostedDockers = swing.data().section(HOSTED_DOCKERS).getArray(side.name());
 
 		if (hostedDockers.isEmpty()) {
@@ -174,7 +175,7 @@ public final class UiConfig {
 
 				try {
 					Docker.VerticalLocation location = Docker.VerticalLocation.valueOf(split[1]);
-					Docker docker = Docker.getDocker(split[0]);
+					Docker docker = manager.getDocker(split[0]);
 
 					dockers.put(docker, location);
 				} catch (Exception e) {

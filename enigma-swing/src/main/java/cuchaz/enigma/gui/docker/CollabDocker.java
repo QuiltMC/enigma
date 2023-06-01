@@ -58,7 +58,7 @@ public class CollabDocker extends Docker {
 		this.connectToServerButton.addActionListener(e -> this.gui.getMenuBar().onConnectClicked());
 
 		// we make a copy of the title bar to avoid having to shuffle it around both panels
-		this.titleCopy = new DockerTitleBar(this, this.titleSupplier);
+		this.titleCopy = new DockerTitleBar(gui, this, this.titleSupplier);
 
 		offlineTopPanel.add(this.titleCopy, BorderLayout.NORTH);
 		offlineTopPanel.add(this.offlineLabel, BorderLayout.CENTER);
