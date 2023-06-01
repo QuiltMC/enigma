@@ -1,6 +1,6 @@
 package cuchaz.enigma;
 
-import cuchaz.enigma.classprovider.ClasspathClassProvider;
+import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.stats.StatType;
 import cuchaz.enigma.stats.StatsGenerator;
 import cuchaz.enigma.stats.StatsResult;
@@ -19,42 +19,41 @@ import java.util.Set;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class StatsGenerationTest {
+public class TestStatsGeneration {
 	private static final Path JAR = TestUtil.obfJar("complete");
 
 	@Test
-	void checkNoMappedEntriesByDefault() throws Exception {
+	void checkNoMappedEntriesByDefault() {
 		EnigmaProject project = openProject();
 		StatsResult stats = new StatsGenerator(project).generate(ProgressListener.none(), Set.of(StatType.values()), "", false);
-		assertThat(stats.getMapped(StatType.values()), equalTo(0));
-		assertThat(stats.getPercentage(StatType.values()), equalTo(0d));
+		assertThat(stats.getMapped(), equalTo(0));
+		assertThat(stats.getPercentage(), equalTo(0d));
 	}
 
 	@Test
-	void checkClassMapping() throws IOException {
+	void checkClassMapping() {
 		EnigmaProject project = openProject();
 		renameAll(project, project.getJarIndex().getEntryIndex().getClasses());
 		checkFullyMapped(project, StatType.CLASSES);
 	}
 
 	@Test
-	void checkMethodMapping() throws IOException {
+	void checkMethodMapping() {
 		EnigmaProject project = openProject();
 		renameAll(project, project.getJarIndex().getEntryIndex().getMethods());
 		checkFullyMapped(project, StatType.METHODS);
 	}
 
 	@Test
-	void checkFieldMapping() throws IOException {
+	void checkFieldMapping() {
 		EnigmaProject project = openProject();
 		renameAll(project, project.getJarIndex().getEntryIndex().getFields());
 		checkFullyMapped(project, StatType.FIELDS);
 	}
 
 	@Test
-	void checkOverallMapping() throws IOException {
+	void checkOverallMapping() {
 		// note: does not check parameters. as this is the most fragile part of stats generation, it should be added to this test as soon as possible!
-
 		EnigmaProject project = openProject();
 		renameAll(project, project.getJarIndex().getEntryIndex().getClasses());
 		renameAll(project, project.getJarIndex().getEntryIndex().getFields());
@@ -76,9 +75,13 @@ public class StatsGenerationTest {
 		}
 	}
 
-	private static EnigmaProject openProject() throws IOException {
-		Enigma enigma = Enigma.create();
-		return enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
+	private static EnigmaProject openProject() {
+		try {
+			Enigma enigma = Enigma.create();
+			return enigma.openJar(JAR, new JarClassProvider(JAR), ProgressListener.none());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private static void checkFullyMapped(EnigmaProject project, StatType... types) {
