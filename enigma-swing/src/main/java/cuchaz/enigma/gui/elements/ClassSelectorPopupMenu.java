@@ -121,7 +121,7 @@ public class ClassSelectorPopupMenu {
 
 		Map<String, Runnable> renameStack = new HashMap<>();
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), listener -> {
+		return ProgressDialog.runOffThread(this.gui, listener -> {
 			listener.init(1, I18n.translate("popup_menu.class_selector.package_rename.discovering"));
 			TreeNode root = this.selector.getPackageManager().getRoot();
 

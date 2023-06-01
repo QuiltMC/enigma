@@ -2,6 +2,7 @@ package cuchaz.enigma.gui.dialog;
 
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
@@ -68,20 +69,22 @@ public class ProgressDialog implements ProgressListener, AutoCloseable {
 		this.dialog.setLocationRelativeTo(this.dialog.getParent());
 	}
 
-	public static CompletableFuture<Void> runOffThread(final JFrame parent, final ProgressRunnable runnable) {
+	public static CompletableFuture<Void> runOffThread(final Gui gui, final ProgressRunnable runnable) {
 		return CompletableFuture.supplyAsync(() -> {
-			ProgressDialog progress = new ProgressDialog(parent);
+			ProgressDialog progress = new ProgressDialog(gui.getFrame());
 
-			// Somehow opening the dialog, disposing it, then reopening it
-			// and then repositioning it fixes the size issues detailed above
-			// most of the time.
-			// Using setVisible(false) instead of dispose() does not work as
-			// well.
-			// Don't ask me why.
-			progress.dialog.setVisible(true);
-			progress.dialog.dispose();
-			progress.dialog.setVisible(true);
-			progress.reposition();
+			if (gui.showsProgressBars()) {
+				// Somehow opening the dialog, disposing it, then reopening it
+				// and then repositioning it fixes the size issues detailed above
+				// most of the time.
+				// Using setVisible(false) instead of dispose() does not work as
+				// well.
+				// Don't ask me why.
+				progress.dialog.setVisible(true);
+				progress.dialog.dispose();
+				progress.dialog.setVisible(true);
+				progress.reposition();
+			}
 
 			return progress;
 		}, SwingUtilities::invokeLater).thenAcceptAsync(progress -> {
