@@ -123,6 +123,8 @@ public class Gui {
 		this.notificationManager = new NotificationManager(this);
 		this.searchDialog = new SearchDialog(this);
 
+		this.showsProgressBars = true;
+
 		this.setupUi();
 
 		LanguageUtil.addListener(this::retranslateUi);
