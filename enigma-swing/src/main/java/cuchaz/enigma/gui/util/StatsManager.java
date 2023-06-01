@@ -23,7 +23,17 @@ public class StatsManager {
 	}
 
 	/**
+	 * Gets the current {@link StatsGenerator}.
+	 *
+	 * @return the current generator
+	 */
+	public StatsGenerator getGenerator() {
+		return this.generator;
+	}
+
+	/**
 	 * Sets the stats generator to use for generating stats. This should be called whenever the underlying {@link cuchaz.enigma.EnigmaProject} is updated.
+	 *
 	 * @param generator the generator to use
 	 */
 	public void setStatsGenerator(StatsGenerator generator) {
@@ -32,7 +42,8 @@ public class StatsManager {
 
 	/**
 	 * Generates stats for the given class entry. If stats are already being generated for that entry, this method will block until the stats are generated to preserve processing power.
-	 * <br>When complete, the stats will be stored in this manager and are ready for use.
+	 * <p>When complete, the stats will be stored in this manager and are ready for use.
+	 *
 	 * @param classEntry the entry to generate stats for
 	 */
 	public void generateFor(ClassEntry classEntry) {
@@ -52,6 +63,7 @@ public class StatsManager {
 
 	/**
 	 * Sets the stats for the given class entry.
+	 *
 	 * @param classEntry the entry
 	 * @param stats the stats to associate
 	 */
@@ -65,6 +77,7 @@ public class StatsManager {
 
 	/**
 	 * Gets the stats for the given class entry.
+	 *
 	 * @param classEntry the entry to get stats for
 	 * @return the stats for the given class entry, or {@code null} if not yet generated
 	 */
