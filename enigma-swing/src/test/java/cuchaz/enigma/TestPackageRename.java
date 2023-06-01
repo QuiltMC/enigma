@@ -23,7 +23,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 @DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
-public class PackageRenameTest {
+public class TestPackageRename {
 	public static final Path JAR = TestUtil.obfJar("complete");
 	public static final Path MAPPINGS = Path.of("src/test/resources/test_mappings");
 	private static Translator deobfuscator;
@@ -107,6 +107,7 @@ public class PackageRenameTest {
 		Set<EditableType> editables = EnumSet.allOf(EditableType.class);
 		editables.addAll(List.of(EditableType.values()));
 		Gui gui = new Gui(EnigmaProfile.EMPTY, editables, false);
+		gui.setShowsProgressBars(false);
 
 		CountDownLatch latch = new CountDownLatch(1);
 		gui.getController().openJar(JAR).thenRun(() -> gui.getController().openMappings(MappingFormat.ENIGMA_DIRECTORY, MAPPINGS).thenRun(latch::countDown));

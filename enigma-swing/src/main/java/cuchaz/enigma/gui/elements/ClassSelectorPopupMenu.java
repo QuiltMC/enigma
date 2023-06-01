@@ -2,7 +2,6 @@ package cuchaz.enigma.gui.elements;
 
 import cuchaz.enigma.gui.ClassSelector;
 import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.gui.dialog.CrashDialog;
 import cuchaz.enigma.gui.dialog.ProgressDialog;
 import cuchaz.enigma.gui.docker.ClassesDocker;
 import cuchaz.enigma.gui.docker.Docker;
@@ -103,11 +102,7 @@ public class ClassSelectorPopupMenu {
 		}
 
 		String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("popup_menu.class_selector.package_rename.title"), pathString.toString());
-		try {
-			this.renamePackage(pathString.toString(), input);
-		} catch (Exception e) {
-			CrashDialog.show(e);
-		}
+		this.renamePackage(pathString.toString(), input);
 	}
 
 	public CompletableFuture<Void> renamePackage(String path, String input) {
@@ -121,7 +116,7 @@ public class ClassSelectorPopupMenu {
 
 		Map<String, Runnable> renameStack = new HashMap<>();
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), listener -> {
+		return ProgressDialog.runOffThread(this.gui, listener -> {
 			listener.init(1, I18n.translate("popup_menu.class_selector.package_rename.discovering"));
 			TreeNode root = this.selector.getPackageManager().getRoot();
 

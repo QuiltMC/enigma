@@ -43,7 +43,7 @@ sourceSets.main.output.dir genOutputDir, builtBy: generateVersionFile
 // Generate obfuscated JARs for tests
 // If your test fails for class file version problem with proguard, run gradle with -Dorg.gradle.java.home="<older jdk>" flag
 def registerTestJarTasks(String name, String... input) {
-	def libraryJarsArg = "<java.home>/jmods"
+	def libraryJarsArg = "<java.home>/jmods/java.base.jmod(!**.jar;!module-info.class)"
 
 	tasks.register("${name}TestJar", Jar.class) {
 		group("test-setup")
@@ -73,16 +73,15 @@ def registerTestJarTasks(String name, String... input) {
 	}
 }
 
+registerTestJarTasks("complete", "cuchaz/enigma/inputs/**/*.class")
+test.dependsOn("completeTestObf")
+
 file('src/test/java/cuchaz/enigma/inputs').listFiles().each { f ->
 	if (f.directory) {
 		registerTestJarTasks(f.name, "cuchaz/enigma/inputs/$f.name/**/*.class", "cuchaz/enigma/inputs/Keep.class")
 		test.dependsOn("${f.name}TestObf")
 	}
 }
-
-registerTestJarTasks("complete", "cuchaz/enigma/inputs/**/*.class")
-
-test.dependsOn 'translationTestObf'
 
 publishing {
 	publications {

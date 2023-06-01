@@ -27,6 +27,8 @@ import cuchaz.enigma.gui.docker.AllClassesDocker;
 import cuchaz.enigma.gui.docker.Dock;
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.renderer.MessageListCellRenderer;
+import cuchaz.enigma.stats.StatsGenerator;
+import cuchaz.enigma.gui.util.StatsManager;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.LanguageUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
@@ -70,7 +72,9 @@ public class Gui {
 
 	private ConnectionState connectionState;
 	private boolean isJarOpen;
+	private boolean showsProgressBars;
 	private final Set<EditableType> editableTypes;
+	private final List<Throwable> crashHistory;
 
 	private final MenuBar menuBar;
 	private final IdentifierPanel infoPanel;
@@ -89,6 +93,7 @@ public class Gui {
 
 	private final JLabel connectionStatusLabel;
 	private final NotificationManager notificationManager;
+	private final StatsManager statsManager;
 
 	public final JFileChooser jarFileChooser;
 	public final JFileChooser tinyMappingsFileChooser;
@@ -104,6 +109,7 @@ public class Gui {
 		this.editableTypes = editableTypes;
 		this.controller = new GuiController(this, profile);
 		this.infoPanel = new IdentifierPanel(this);
+		this.crashHistory = new ArrayList<>();
 		this.menuBar = new MenuBar(this);
 		this.userModel = new DefaultListModel<>();
 		this.messageModel = new DefaultListModel<>();
@@ -120,6 +126,9 @@ public class Gui {
 		this.connectionStatusLabel = new JLabel();
 		this.notificationManager = new NotificationManager(this);
 		this.searchDialog = new SearchDialog(this);
+		this.statsManager = new StatsManager();
+
+		this.showsProgressBars = true;
 
 		this.setupUi();
 
@@ -219,6 +228,14 @@ public class Gui {
 		this.dockerManager.host(docker, docker.getButtonLocation());
 	}
 
+	public void setShowsProgressBars(boolean show) {
+		this.showsProgressBars = show;
+	}
+
+	public boolean showsProgressBars() {
+		return this.showsProgressBars;
+	}
+
 	public NotificationManager getNotificationManager() {
 		return this.notificationManager;
 	}
@@ -255,6 +272,19 @@ public class Gui {
 		return this.controller;
 	}
 
+	public StatsManager getStatsManager() {
+		return this.statsManager;
+	}
+
+	public List<Throwable> getCrashHistory() {
+		return this.crashHistory;
+	}
+
+	public void addCrash(Throwable t) {
+		this.crashHistory.add(t);
+		this.menuBar.prepareCrashHistoryMenu();
+	}
+
 	public DockerManager getDockerManager() {
 		return this.dockerManager;
 	}
@@ -267,6 +297,8 @@ public class Gui {
 		// update gui
 		this.mainWindow.setTitle(Enigma.NAME + " - " + jarName);
 		this.editorTabbedPane.closeAllEditorTabs();
+
+		this.statsManager.setStatsGenerator(new StatsGenerator(this.controller.getProject()));
 
 		// update menu
 		this.isJarOpen = true;
@@ -485,11 +517,9 @@ public class Gui {
 		this.dockerManager.saveStateToConfig();
 		UiConfig.save();
 
-		if (this.searchDialog != null) {
-			this.searchDialog.dispose();
-		}
-
+		this.searchDialog.dispose();
 		this.mainWindow.getFrame().dispose();
+
 		System.exit(0);
 	}
 

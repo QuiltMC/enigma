@@ -1,10 +1,8 @@
 package cuchaz.enigma.gui.node;
 
-import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.gui.ClassSelector;
 import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.gui.stats.StatsGenerator;
-import cuchaz.enigma.gui.stats.StatsResult;
+import cuchaz.enigma.gui.util.StatsManager;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
@@ -17,13 +15,11 @@ import java.util.Comparator;
 public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	private final ClassEntry obfEntry;
 	private ClassEntry deobfEntry;
-	private StatsResult stats;
 
 	public ClassSelectorClassNode(ClassEntry obfEntry, ClassEntry deobfEntry) {
 		super(Comparator.comparing(TreeNode::toString));
 		this.obfEntry = obfEntry;
 		this.deobfEntry = deobfEntry;
-		this.stats = null;
 		this.setUserObject(deobfEntry);
 	}
 
@@ -35,14 +31,6 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 		return this.deobfEntry;
 	}
 
-	public StatsResult getStats() {
-		return this.stats;
-	}
-
-	public void setStats(StatsResult stats) {
-		this.stats = stats;
-	}
-
 	/**
 	 * Reloads the stats for this class node and updates the icon in the provided class selector.
 	 *
@@ -51,12 +39,14 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	 * @param updateIfPresent whether to update the stats if they have already been generated for this node
 	 */
 	public void reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent) {
+		StatsManager manager = gui.getStatsManager();
+		ClassEntry entry = this.getDeobfEntry();
+
 		SwingWorker<ClassSelectorClassNode, Void> iconUpdateWorker = new SwingWorker<>() {
 			@Override
 			protected ClassSelectorClassNode doInBackground() {
-				if (ClassSelectorClassNode.this.getStats() == null || updateIfPresent) {
-					StatsResult newStats = new StatsGenerator(gui.getController().getProject()).generateForClassTree(ProgressListener.none(), ClassSelectorClassNode.this.getObfEntry(), false);
-					ClassSelectorClassNode.this.setStats(newStats);
+				if (manager.getStats(entry) == null || updateIfPresent) {
+					manager.generateFor(entry);
 				}
 
 				return ClassSelectorClassNode.this;
@@ -64,7 +54,7 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 
 			@Override
 			public void done() {
-				((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(ClassSelectorClassNode.this.getStats()));
+				((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(manager.getStats(entry)));
 				SwingUtilities.invokeLater(() -> selector.reload(ClassSelectorClassNode.this, false));
 			}
 		};

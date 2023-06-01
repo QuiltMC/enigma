@@ -108,14 +108,16 @@ public class Main {
 			Gui gui = new Gui(parsedProfile, editables, true);
 			GuiController controller = gui.getController();
 
+			if (options.has("hide-progress-bars")) {
+				gui.setShowsProgressBars(false);
+			}
+
 			if (Boolean.parseBoolean(System.getProperty("enigma.catchExceptions", "true"))) {
 				// install a global exception handler to the event thread
-				CrashDialog.init(gui.getFrame());
+				CrashDialog.init(gui);
 				Thread.setDefaultUncaughtExceptionHandler((thread, t) -> {
 					Logger.error(t, "Uncaught exception in thread {}", thread);
-					if (!ExceptionIgnorer.shouldIgnore(t)) {
-						CrashDialog.show(t);
-					}
+					CrashDialog.show(t);
 				});
 			}
 

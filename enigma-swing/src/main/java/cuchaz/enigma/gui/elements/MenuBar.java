@@ -11,6 +11,7 @@ import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.dialog.AboutDialog;
 import cuchaz.enigma.gui.dialog.ChangeDialog;
 import cuchaz.enigma.gui.dialog.ConnectToServerDialog;
+import cuchaz.enigma.gui.dialog.CrashDialog;
 import cuchaz.enigma.gui.dialog.CreateServerDialog;
 import cuchaz.enigma.gui.dialog.FontDialog;
 import cuchaz.enigma.gui.dialog.SearchDialog;
@@ -63,6 +64,7 @@ public class MenuBar {
 	private final JMenuItem statsItem = new JMenuItem();
 	private final JMenuItem configureKeyBindsItem = new JMenuItem();
 	private final JMenuItem exitItem = new JMenuItem();
+	private final JMenu crashHistoryMenu = new JMenu();
 
 	private final JMenu decompilerMenu = new JMenu();
 	private final JMenuItem decompilerSettingsItem = new JMenuItem();
@@ -107,6 +109,7 @@ public class MenuBar {
 		prepareLanguagesMenu(this.languagesMenu);
 		prepareScaleMenu(this.scaleMenu, gui);
 		prepareNotificationsMenu(this.notificationsMenu);
+		this.prepareCrashHistoryMenu();
 
 		this.fileMenu.add(this.jarOpenItem);
 		this.fileMenu.add(this.jarCloseItem);
@@ -130,6 +133,7 @@ public class MenuBar {
 		this.fileMenu.addSeparator();
 		this.fileMenu.add(this.configureKeyBindsItem);
 		this.fileMenu.addSeparator();
+		this.fileMenu.add(this.crashHistoryMenu);
 		this.fileMenu.add(this.exitItem);
 		ui.add(this.fileMenu);
 
@@ -238,6 +242,7 @@ public class MenuBar {
 		this.exportJarItem.setText(I18n.translate("menu.file.export.jar"));
 		this.statsItem.setText(I18n.translate("menu.file.stats"));
 		this.configureKeyBindsItem.setText(I18n.translate("menu.file.configure_keybinds"));
+		this.crashHistoryMenu.setText(I18n.translate("menu.file.crash_history"));
 		this.exitItem.setText(I18n.translate("menu.file.exit"));
 
 		this.decompilerMenu.setText(I18n.translate("menu.decompiler"));
@@ -655,5 +660,22 @@ public class MenuBar {
 
 			notificationsMenu.add(notificationsButton);
 		}
+	}
+
+	public void prepareCrashHistoryMenu() {
+		this.crashHistoryMenu.removeAll();
+		ButtonGroup crashHistoryGroup = new ButtonGroup();
+
+		for (int i = 0; i < this.gui.getCrashHistory().size(); i++) {
+			Throwable t = this.gui.getCrashHistory().get(i);
+			JMenuItem crashHistoryButton = new JMenuItem(i + " - " + t.toString());
+			crashHistoryGroup.add(crashHistoryButton);
+
+			crashHistoryButton.addActionListener(event -> CrashDialog.show(t, false));
+
+			this.crashHistoryMenu.add(crashHistoryButton);
+		}
+
+		this.crashHistoryMenu.setEnabled(!this.gui.getCrashHistory().isEmpty());
 	}
 }
