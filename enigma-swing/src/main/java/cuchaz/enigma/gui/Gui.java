@@ -69,6 +69,7 @@ public class Gui {
 
 	private ConnectionState connectionState;
 	private boolean isJarOpen;
+	private boolean showsProgressBars;
 	private final Set<EditableType> editableTypes;
 	private final List<Throwable> crashHistory;
 
@@ -123,6 +124,8 @@ public class Gui {
 		this.connectionStatusLabel = new JLabel();
 		this.notificationManager = new NotificationManager(this);
 		this.searchDialog = new SearchDialog(this);
+
+		this.showsProgressBars = true;
 
 		this.setupUi();
 
@@ -238,6 +241,14 @@ public class Gui {
 
 		Dock dock = (newDocker.getButtonLocation().side() == Docker.Side.LEFT ? this.leftDock : this.rightDock);
 		dock.host(newDocker, newDocker.getButtonLocation().verticalLocation());
+	}
+
+	public void setShowsProgressBars(boolean show) {
+		this.showsProgressBars = show;
+	}
+
+	public boolean showsProgressBars() {
+		return this.showsProgressBars;
 	}
 
 	public NotificationManager getNotificationManager() {
