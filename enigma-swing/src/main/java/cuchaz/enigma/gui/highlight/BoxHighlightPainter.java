@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
@@ -24,9 +25,10 @@ public class BoxHighlightPainter implements Highlighter.HighlightPainter {
 	public static Rectangle getBounds(JTextComponent text, int start, int end) {
 		try {
 			// determine the bounds of the text
-			Rectangle startRect = text.modelToView(start);
-			Rectangle endRect = text.modelToView(end);
-			Rectangle bounds = startRect.union(endRect);
+			Rectangle2D startRect = text.modelToView2D(start);
+			Rectangle2D endRect = text.modelToView2D(end);
+			Rectangle bounds = new Rectangle();
+			Rectangle2D.union(startRect, endRect, bounds);
 
 			// adjust the box so it looks nice
 			bounds.x -= 2;
