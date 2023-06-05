@@ -40,13 +40,12 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	 */
 	public void reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent) {
 		StatsManager manager = gui.getStatsManager();
-		ClassEntry entry = this.getDeobfEntry();
 
 		SwingWorker<ClassSelectorClassNode, Void> iconUpdateWorker = new SwingWorker<>() {
 			@Override
 			protected ClassSelectorClassNode doInBackground() {
-				if (manager.getStats(entry) == null || updateIfPresent) {
-					manager.generateFor(entry);
+				if (manager.getStats(ClassSelectorClassNode.this) == null || updateIfPresent) {
+					manager.generateFor(ClassSelectorClassNode.this);
 				}
 
 				return ClassSelectorClassNode.this;
@@ -54,7 +53,7 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 
 			@Override
 			public void done() {
-				((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(manager.getStats(entry)));
+				((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(manager.getStats(ClassSelectorClassNode.this)));
 				SwingUtilities.invokeLater(() -> selector.reload(ClassSelectorClassNode.this, false));
 			}
 		};

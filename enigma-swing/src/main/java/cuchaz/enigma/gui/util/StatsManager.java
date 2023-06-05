@@ -1,6 +1,7 @@
 package cuchaz.enigma.gui.util;
 
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.gui.node.ClassSelectorClassNode;
 import cuchaz.enigma.stats.StatsGenerator;
 import cuchaz.enigma.stats.StatsResult;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
@@ -41,48 +42,60 @@ public class StatsManager {
 	}
 
 	/**
-	 * Generates stats for the given class entry. If stats are already being generated for that entry, this method will block until the stats are generated to preserve processing power.
+	 * Generates stats for the given class node. If stats are already being generated for that node's class entry, this method will block until the stats are generated to preserve processing power.
 	 *
 	 * <p>When complete, the stats will be stored in this manager and are ready for use.
 	 *
-	 * @param classEntry the entry to generate stats for
+	 * @param node the node to generate stats for
 	 */
-	public void generateFor(ClassEntry classEntry) {
-		if (!this.latches.containsKey(classEntry)) {
-			this.latches.put(classEntry, new CountDownLatch(1));
+	public void generateFor(ClassSelectorClassNode node) {
+		ClassEntry entry = node.getObfEntry();
 
-			StatsResult stats = this.generator.generateForClassTree(ProgressListener.none(), classEntry, false);
-			this.setStats(classEntry, stats);
+		if (!this.latches.containsKey(entry)) {
+			this.latches.put(entry, new CountDownLatch(1));
+
+			StatsResult stats = this.generator.generateForClassTree(ProgressListener.none(), entry, false);
+			this.setStats(node, stats);
 		} else {
 			try {
-				this.latches.get(classEntry).await();
+				this.latches.get(entry).await();
 			} catch (InterruptedException e) {
-				Logger.error(e, "Failed to await stats generation for class \"{}\"!", classEntry);
+				Logger.error(e, "Failed to await stats generation for class \"{}\"!", entry);
 			}
 		}
 	}
 
 	/**
-	 * Sets the stats for the given class entry.
+	 * Sets the stats for the given class node.
 	 *
-	 * @param classEntry the entry
+	 * @param node the node to set stats for
 	 * @param stats the stats to associate
 	 */
-	public void setStats(ClassEntry classEntry, StatsResult stats) {
-		this.results.put(classEntry, stats);
-		if (this.latches.containsKey(classEntry)) {
-			this.latches.get(classEntry).countDown();
-			this.latches.remove(classEntry);
+	public void setStats(ClassSelectorClassNode node, StatsResult stats) {
+		ClassEntry entry = node.getObfEntry();
+
+		this.results.put(entry, stats);
+		if (this.latches.containsKey(entry)) {
+			this.latches.get(entry).countDown();
+			this.latches.remove(entry);
 		}
 	}
 
 	/**
-	 * Gets the stats for the given class entry.
-	 *
-	 * @param classEntry the entry to get stats for
-	 * @return the stats for the given class entry, or {@code null} if not yet generated
+	 * Invalidates all stats stored in this manager by clearing them from storage.
 	 */
-	public StatsResult getStats(ClassEntry classEntry) {
-		return this.results.get(classEntry);
+	public void invalidateStats() {
+		this.results.clear();
+	}
+
+	/**
+	 * Gets the stats for the given class node.
+	 *
+	 * @param node the node to get stats for
+	 * @return the stats for the given class node, or {@code null} if not yet generated
+	 */
+	public StatsResult getStats(ClassSelectorClassNode node) {
+		ClassEntry entry = node.getObfEntry();
+		return this.results.get(entry);
 	}
 }

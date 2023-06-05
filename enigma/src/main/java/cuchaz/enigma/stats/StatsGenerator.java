@@ -115,8 +115,11 @@ public class StatsGenerator {
 						List<TypeDescriptor> argumentDescs = descriptor.getArgumentDescs();
 
 						// ignore the implicit constructor for non-static inner classes
-						if (containingClass.isInnerClass() && argumentDescs.size() == 1 && argumentDescs.get(0).getTypeEntry().equals(containingClass.getOuterClass())) {
-							continue;
+						if (containingClass.isInnerClass() && argumentDescs.size() == 1) {
+							TypeDescriptor desc = argumentDescs.get(0);
+							if (desc.containsType() && desc.getTypeEntry().equals(containingClass.getOuterClass())) {
+								continue;
+							}
 						}
 
 						int index = ((MethodDefEntry) method).getAccess().isStatic() ? 0 : 1;

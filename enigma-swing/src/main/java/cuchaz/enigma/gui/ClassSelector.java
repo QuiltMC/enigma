@@ -94,7 +94,7 @@ public class ClassSelector extends JTree {
 						public String getToolTipText(MouseEvent event) {
 							StringBuilder text = new StringBuilder(I18n.translateFormatted("class_selector.tooltip.stats_for", node.getDeobfEntry().getSimpleName()));
 							text.append("\n");
-							StatsResult stats = ClassSelector.this.statsManager.getStats(node.getDeobfEntry());
+							StatsResult stats = ClassSelector.this.statsManager.getStats(node);
 
 							if (stats == null) {
 								text.append(I18n.translate("class_selector.tooltip.stats_not_generated"));
@@ -119,7 +119,7 @@ public class ClassSelector extends JTree {
 					JLabel nodeLabel = new JLabel(GuiUtil.getClassIcon(gui, node.getObfEntry()));
 					panel.add(nodeLabel);
 
-					StatsResult stats = ClassSelector.this.statsManager.getStats(node.getDeobfEntry());
+					StatsResult stats = ClassSelector.this.statsManager.getStats(node);
 					if (stats == null) {
 						// calculate stats on a separate thread for performance reasons
 						this.setIcon(GuiUtil.PENDING_STATUS_ICON);
@@ -361,9 +361,7 @@ public class ClassSelector extends JTree {
 	 * Stats will be calculated asynchronously for each entry the next time that entry is visible.
 	 */
 	public void invalidateStats() {
-		for (ClassEntry entry : this.packageManager.getClassEntries()) {
-			this.statsManager.setStats(entry, null);
-		}
+		this.statsManager.invalidateStats();
 	}
 
 	/**
