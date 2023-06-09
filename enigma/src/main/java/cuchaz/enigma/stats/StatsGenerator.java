@@ -6,8 +6,8 @@ import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
+import cuchaz.enigma.translation.representation.ArgumentDescriptor;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
-import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
@@ -110,21 +110,24 @@ public class StatsGenerator {
 					}
 
 					ClassEntry containingClass = method.getContainingClass();
-					if (includedTypes.contains(StatType.PARAMETERS) && !this.project.isAnonymousOrLocal(containingClass) && !(((MethodDefEntry) method).getAccess().isSynthetic() || includeSynthetic)) {
+					if (includedTypes.contains(StatType.PARAMETERS) && !this.project.isAnonymousOrLocal(containingClass) && !(((MethodDefEntry) method).getAccess().isSynthetic() && !includeSynthetic)) {
 						MethodDescriptor descriptor = method.getDesc();
-						List<TypeDescriptor> argumentDescs = descriptor.getArgumentDescs();
+						List<ArgumentDescriptor> argumentDescs = descriptor.getArgumentDescs();
 
 						// ignore the implicit constructor for non-static inner classes
 						if (containingClass.isInnerClass() && argumentDescs.size() == 1) {
-							TypeDescriptor desc = argumentDescs.get(0);
+							ArgumentDescriptor desc = argumentDescs.get(0);
 							if (desc.containsType() && desc.getTypeEntry().equals(containingClass.getOuterClass())) {
 								continue;
 							}
 						}
 
 						int index = ((MethodDefEntry) method).getAccess().isStatic() ? 0 : 1;
-						for (TypeDescriptor argument : method.getDesc().getArgumentDescs()) {
-							this.update(StatType.PARAMETERS, mappableCounts, unmappedCounts, new LocalVariableEntry(method, index, "", true, null));
+						for (ArgumentDescriptor argument : argumentDescs) {
+							if (!(argument.getAccess().isSynthetic() && !includeSynthetic)) {
+								this.update(StatType.PARAMETERS, mappableCounts, unmappedCounts, new LocalVariableEntry(method, index, "", true, null));
+							}
+
 							index += argument.getSize();
 						}
 					}

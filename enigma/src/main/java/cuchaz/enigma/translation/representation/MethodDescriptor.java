@@ -6,6 +6,7 @@ import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMap;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryResolver;
+import cuchaz.enigma.translation.representation.accessflags.ParameterAccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 public class MethodDescriptor implements Translatable {
-	private final List<TypeDescriptor> argumentDescs;
+	private final List<ArgumentDescriptor> argumentDescs;
 	private TypeDescriptor returnDesc;
 
 	public MethodDescriptor(String desc) {
@@ -32,7 +33,7 @@ public class MethodDescriptor implements Translatable {
 					break;
 				} else {
 					String type = TypeDescriptor.parseFirst(desc.substring(i));
-					this.argumentDescs.add(new TypeDescriptor(type));
+					this.argumentDescs.add(new ArgumentDescriptor(type, ParameterAccessFlags.DEFAULT));
 					i += type.length();
 				}
 			}
@@ -43,13 +44,17 @@ public class MethodDescriptor implements Translatable {
 		}
 	}
 
-	public MethodDescriptor(List<TypeDescriptor> argumentDescs, TypeDescriptor returnDesc) {
+	public MethodDescriptor(List<ArgumentDescriptor> argumentDescs, TypeDescriptor returnDesc) {
 		this.argumentDescs = argumentDescs;
 		this.returnDesc = returnDesc;
 	}
 
-	public List<TypeDescriptor> getArgumentDescs() {
+	public List<ArgumentDescriptor> getArgumentDescs() {
 		return this.argumentDescs;
+	}
+
+	public List<TypeDescriptor> getTypeDescs() {
+		return new ArrayList<>(this.argumentDescs);
 	}
 
 	public TypeDescriptor getReturnDesc() {
@@ -100,9 +105,9 @@ public class MethodDescriptor implements Translatable {
 	}
 
 	public MethodDescriptor remap(UnaryOperator<String> remapper) {
-		List<TypeDescriptor> argumentDescriptors = new ArrayList<>(this.argumentDescs.size());
-		for (TypeDescriptor desc : this.argumentDescs) {
-			argumentDescriptors.add(desc.remap(remapper));
+		List<ArgumentDescriptor> argumentDescriptors = new ArrayList<>(this.argumentDescs.size());
+		for (ArgumentDescriptor desc : this.argumentDescs) {
+			argumentDescriptors.add(new ArgumentDescriptor(desc.remap(remapper).desc, desc.getAccess()));
 		}
 
 		return new MethodDescriptor(argumentDescriptors, this.returnDesc.remap(remapper));
@@ -110,8 +115,8 @@ public class MethodDescriptor implements Translatable {
 
 	@Override
 	public TranslateResult<MethodDescriptor> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
-		List<TypeDescriptor> translatedArguments = new ArrayList<>(this.argumentDescs.size());
-		for (TypeDescriptor argument : this.argumentDescs) {
+		List<ArgumentDescriptor> translatedArguments = new ArrayList<>(this.argumentDescs.size());
+		for (ArgumentDescriptor argument : this.argumentDescs) {
 			translatedArguments.add(translator.translate(argument));
 		}
 

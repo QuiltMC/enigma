@@ -101,7 +101,7 @@ public class DecompiledClassSource {
 		if (entry instanceof LocalVariableDefEntry localVariable) {
 			int index = localVariable.getIndex();
 			if (localVariable.isArgument()) {
-				List<TypeDescriptor> arguments = localVariable.getParent().getDesc().getArgumentDescs();
+				List<TypeDescriptor> arguments = localVariable.getParent().getDesc().getTypeDescs();
 				return LocalNameGenerator.generateArgumentName(index, localVariable.getDesc(), arguments);
 			} else {
 				return LocalNameGenerator.generateLocalVariableName(index, localVariable.getDesc());

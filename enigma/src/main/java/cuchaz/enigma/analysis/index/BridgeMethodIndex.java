@@ -2,6 +2,7 @@ package cuchaz.enigma.analysis.index;
 
 import com.google.common.collect.Maps;
 import cuchaz.enigma.translation.representation.AccessFlags;
+import cuchaz.enigma.translation.representation.ArgumentDescriptor;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
@@ -101,8 +102,8 @@ public class BridgeMethodIndex implements JarIndexer {
 
 		MethodDescriptor bridgeDesc = bridgeMethod.getDesc();
 		MethodDescriptor specializedDesc = specializedMethod.getDesc();
-		List<TypeDescriptor> bridgeArguments = bridgeDesc.getArgumentDescs();
-		List<TypeDescriptor> specializedArguments = specializedDesc.getArgumentDescs();
+		List<ArgumentDescriptor> bridgeArguments = bridgeDesc.getArgumentDescs();
+		List<ArgumentDescriptor> specializedArguments = specializedDesc.getArgumentDescs();
 
 		// A bridge method will always have the same number of arguments
 		if (bridgeArguments.size() != specializedArguments.size()) {

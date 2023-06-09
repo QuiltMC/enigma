@@ -12,6 +12,7 @@ import cuchaz.enigma.classprovider.CachingClassProvider;
 import cuchaz.enigma.classprovider.ClassProvider;
 import cuchaz.enigma.classprovider.CombiningClassProvider;
 import cuchaz.enigma.classprovider.JarClassProvider;
+import cuchaz.enigma.classprovider.ObfuscationFixClassProvider;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Utils;
 import com.google.common.base.Preconditions;
@@ -53,10 +54,10 @@ public class Enigma {
 
 	public EnigmaProject openJar(Path path, ClassProvider libraryClassProvider, ProgressListener progress) throws IOException {
 		JarClassProvider jarClassProvider = new JarClassProvider(path);
-		ClassProvider classProvider = new CachingClassProvider(new CombiningClassProvider(jarClassProvider, libraryClassProvider));
+		JarIndex index = JarIndex.empty();
+		ClassProvider classProvider = new ObfuscationFixClassProvider(new CachingClassProvider(new CombiningClassProvider(jarClassProvider, libraryClassProvider)), index);
 		Set<String> scope = jarClassProvider.getClassNames();
 
-		JarIndex index = JarIndex.empty();
 		index.indexJar(scope, classProvider, progress);
 
 		var indexers = this.services.getWithIds(JarIndexerService.TYPE);

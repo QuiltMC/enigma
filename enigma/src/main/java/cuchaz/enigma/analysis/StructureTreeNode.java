@@ -110,7 +110,7 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 			result = result + ": " + returnType;
 		} else if (this.entry instanceof MethodDefEntry) {
 			MethodDefEntry method = (MethodDefEntry) translateResult.getValue();
-			String args = this.parseArgs(method.getDesc().getArgumentDescs());
+			String args = this.parseArgs(method.getDesc().getTypeDescs());
 			String returnType = this.parseDesc(method.getDesc().getReturnDesc());
 
 			if (method.isConstructor()) {
