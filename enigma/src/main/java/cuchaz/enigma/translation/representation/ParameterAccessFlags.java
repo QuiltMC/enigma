@@ -1,4 +1,4 @@
-package cuchaz.enigma.translation.representation.accessflags;
+package cuchaz.enigma.translation.representation;
 
 import org.objectweb.asm.Opcodes;
 

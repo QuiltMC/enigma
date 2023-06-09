@@ -1,7 +1,7 @@
 package cuchaz.enigma.analysis.index;
 
 import cuchaz.enigma.analysis.MethodNodeWithAction;
-import cuchaz.enigma.translation.representation.accessflags.ParameterAccessFlags;
+import cuchaz.enigma.translation.representation.ParameterAccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;

@@ -6,7 +6,6 @@ import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMap;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryResolver;
-import cuchaz.enigma.translation.representation.accessflags.ParameterAccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
 import java.util.ArrayList;

@@ -2,8 +2,6 @@ package cuchaz.enigma.translation.representation;
 
 import java.util.function.UnaryOperator;
 
-import cuchaz.enigma.translation.representation.accessflags.ParameterAccessFlags;
-
 public class ArgumentDescriptor extends TypeDescriptor {
 	private ParameterAccessFlags access;
 
