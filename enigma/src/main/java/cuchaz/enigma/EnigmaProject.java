@@ -185,6 +185,14 @@ public class EnigmaProject {
 			}
 		} else if (obfEntry instanceof LocalVariableEntry localEntry && !localEntry.isArgument()) {
 			return false;
+		} else if (obfEntry instanceof LocalVariableEntry localEntry && localEntry.isArgument()) {
+			MethodEntry method = localEntry.getParent();
+			ClassDefEntry parent = this.jarIndex.getEntryIndex().getDefinition(method.getParent());
+
+			// if this is the valueOf method of an enum class, the argument shouldn't be able to be renamed.
+			if (parent.isEnum() && method.getName().equals("valueOf") && method.getDesc().toString().equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")) {
+				return false;
+			}
 		} else if (obfEntry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
 			return false;
 		}
