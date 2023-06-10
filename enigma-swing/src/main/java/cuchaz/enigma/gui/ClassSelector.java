@@ -93,7 +93,7 @@ public class ClassSelector extends JTree {
 						@Override
 						public String getToolTipText(MouseEvent event) {
 							StringBuilder text = new StringBuilder(I18n.translateFormatted("class_selector.tooltip.stats_for", node.getDeobfEntry().getSimpleName()));
-							text.append("\n");
+							text.append(System.lineSeparator());
 							StatsResult stats = ClassSelector.this.statsManager.getStats(node);
 
 							if (stats == null) {
