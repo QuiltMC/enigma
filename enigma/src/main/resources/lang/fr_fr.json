@@ -20,8 +20,6 @@
 	"menu.file.open_recent_project": "Ouvrir un projet récent",
 	"menu.file.max_recent_projects": "Maximum de projets récents",
 	"menu.file.dialog.max_recent_projects.set": "Définir le maximum de projets récents",
-	"menu.file.dialog.max_recent_projects.invalid": "Valeur invalide!",
-	"menu.file.dialog.error": "Erreur!",
 	"menu.file.mappings.open": "Ouvrir les mappings...",
 	"menu.file.mappings.save": "Enregistrer les mappings",
 	"menu.file.mappings.save_as": "Enregistrer les mappings sous...",
@@ -184,6 +182,8 @@
 	"prompt.retry": "Réessayer",
 	"prompt.save": "Enregistrer",
 	"prompt.open": "Ouvrir",
+	"prompt.error": "Erreur",
+	"prompt.invalid_input": "Valeur invalide",
 
 	"prompt.close.title": "Enregistrer les modifications ?",
 	"prompt.close.summary": "Vos mappings n'ont pas encore été enregistrés. Souhaitez-vous enregistrer ?",
