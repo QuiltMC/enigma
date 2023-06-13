@@ -139,8 +139,8 @@
 	"info_panel.editor.class.decompiling": "(décompilation...)",
 	"info_panel.editor.class.not_found": "Impossible de trouver la classe :",
 
-	"class_selector.tooltip.stats_not_generated": "Stats are being generated...",
-	"class_selector.tooltip.stats_for": "Stats for %s:",
+	"class_selector.tooltip.stats_not_generated": "Les statistiques sont en train d'être générées...",
+	"class_selector.tooltip.stats_for": "Statistiques pour %s :",
 
 	"popup.copied": "Copié !",
 
