@@ -265,7 +265,7 @@
   	"validation.message.opened_project": "Opened project: (%s -> %s)",
   	"validation.message.opened_jar": "Opened jar: %s",
   	"validation.message.invalid_package_name": "Invalid package name!",
-	"validation.message.invalid_package_name.long": "Package must not start or end with a slash, and only contain lowercase letters, underscores, and slashes.",
+	"validation.message.invalid_package_name.long": "Package must not start or end with a slash, and only contain lowercase letters, digits, underscores, and slashes.",
 
 	"crash.title": "%s - Crash Report",
 	"crash.summary": "%s has crashed! =(",

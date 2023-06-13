@@ -106,8 +106,14 @@ public class ClassSelectorPopupMenu {
 	}
 
 	public CompletableFuture<Void> renamePackage(String path, String input) {
-		if (input == null || !input.matches("[a-z_/]+") || input.isBlank() || input.startsWith("/") || input.endsWith("/")) {
+		// validate input
+		if (input == null || !input.matches("[a-z0-9_/]+") || input.isBlank() || input.startsWith("/") || input.endsWith("/")) {
 			this.gui.getNotificationManager().notify(Message.INVALID_PACKAGE_NAME);
+			return CompletableFuture.supplyAsync(() -> null);
+		}
+
+		// skip if identical
+		if (path.equals(input)) {
 			return CompletableFuture.supplyAsync(() -> null);
 		}
 
