@@ -206,8 +206,8 @@
 	"prompt.open": "Ouvrir",
 
 	"prompt.search.classes": "Classes",
-	"prompt.search.methods": "Methods",
-	"prompt.search.fields": "Fields",
+	"prompt.search.methods": "Méthodes",
+	"prompt.search.fields": "Champs",
 
 	"prompt.close.title": "Enregistrer les modifications ?",
 	"prompt.close.summary": "Vos mappings n'ont pas encore été enregistrés. Souhaitez-vous enregistrer ?",
