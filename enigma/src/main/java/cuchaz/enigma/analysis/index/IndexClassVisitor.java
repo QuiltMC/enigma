@@ -1,5 +1,7 @@
 package cuchaz.enigma.analysis.index;
 
+import cuchaz.enigma.analysis.MethodNodeWithAction;
+import cuchaz.enigma.translation.representation.ParameterAccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
@@ -41,8 +43,17 @@ public class IndexClassVisitor extends ClassVisitor {
 
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-		this.indexer.indexMethod(MethodDefEntry.parse(this.classEntry, access, name, desc, signature));
+		MethodDefEntry entry = MethodDefEntry.parse(this.classEntry, access, name, desc, signature);
 
-		return super.visitMethod(access, name, desc, signature, exceptions);
+		return new MethodNodeWithAction(this.api, access, name, desc, signature, exceptions, methodNode -> {
+			// add parameter access values to the entry
+			if (methodNode.parameters != null) {
+				for (int i = 0; i < methodNode.parameters.size(); i++) {
+					entry.getDesc().getArgumentDescs().get(i).setAccess(new ParameterAccessFlags(methodNode.parameters.get(i).access));
+				}
+			}
+
+			this.indexer.indexMethod(entry);
+		});
 	}
 }

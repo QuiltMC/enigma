@@ -45,7 +45,7 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 			this.methodEntry = methodEntry;
 
 			int lvIndex = methodEntry.getAccess().isStatic() ? 0 : 1;
-			List<TypeDescriptor> parameters = methodEntry.getDesc().getArgumentDescs();
+			List<TypeDescriptor> parameters = methodEntry.getDesc().getTypeDescs();
 			for (int parameterIndex = 0; parameterIndex < parameters.size(); parameterIndex++) {
 				TypeDescriptor param = parameters.get(parameterIndex);
 				this.parameterIndices.put(lvIndex, parameterIndex);
@@ -80,7 +80,7 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 		@Override
 		public void visitEnd() {
 			if (!this.hasParameterTable) {
-				List<TypeDescriptor> arguments = this.methodEntry.getDesc().getArgumentDescs();
+				List<TypeDescriptor> arguments = this.methodEntry.getDesc().getTypeDescs();
 				for (int argumentIndex = 0; argumentIndex < arguments.size(); argumentIndex++) {
 					super.visitParameter(this.fixParameterName(argumentIndex, null), this.fixParameterAccess(argumentIndex, 0));
 				}
@@ -95,7 +95,7 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 			}
 
 			if (this.isInvalidName(name)) {
-				List<TypeDescriptor> arguments = this.methodEntry.getDesc().getArgumentDescs();
+				List<TypeDescriptor> arguments = this.methodEntry.getDesc().getTypeDescs();
 				name = LocalNameGenerator.generateArgumentName(index, arguments.get(index), arguments);
 			}
 
