@@ -8,6 +8,7 @@ import cuchaz.enigma.utils.I18n;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
@@ -15,11 +16,13 @@ import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EditKeyBindDialog extends JDialog {
+	private final Frame owner;
 	private final List<CombinationPanel> combinationPanels = new ArrayList<>();
 	private final List<KeyBind.Combination> combinations;
 	private final KeyBind keyBind;
@@ -27,6 +30,7 @@ public class EditKeyBindDialog extends JDialog {
 
 	public EditKeyBindDialog(Frame owner, KeyBind bind) {
 		super(owner, I18n.translate("menu.file.configure_keybinds.edit.title"), true);
+		this.owner = owner;
 		this.keyBind = bind;
 		this.combinations = new ArrayList<>(this.keyBind.combinations());
 
@@ -84,6 +88,13 @@ public class EditKeyBindDialog extends JDialog {
 			if (combinationPanel.isModified() && combinationPanel.isCombinationValid()) {
 				modified = true;
 				KeyBind.Combination combination = combinationPanel.getResultCombination();
+
+				// using space as a keybind is not allowed, due to issues with it not working depending on where you click
+				if (combination.keyCode() == KeyEvent.VK_SPACE) {
+					JOptionPane.showMessageDialog(this.owner, I18n.translateFormatted("menu.file.configure_keybinds.invalid_character_error", "space"), I18n.translate("prompt.error"), JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+
 				if (this.isNewCombination(combinationPanel)) {
 					this.combinations.add(combination);
 				} else {
