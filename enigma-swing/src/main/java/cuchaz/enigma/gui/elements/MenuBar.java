@@ -307,7 +307,7 @@ public class MenuBar {
 
 				UiConfig.setMaxRecentFiles(max);
 			} catch (NumberFormatException e) {
-				JOptionPane.showMessageDialog(this.gui.getFrame(), I18n.translate("menu.file.dialog.max_recent_projects.invalid"), I18n.translate("menu.file.dialog.error"), JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this.gui.getFrame(), I18n.translate("prompt.invalid_input"), I18n.translate("prompt.error"), JOptionPane.ERROR_MESSAGE);
 			}
 		}
 	}

@@ -19,6 +19,9 @@ subprojects {
         maven {
             url = "https://maven.quiltmc.org/repository/snapshot/"
         }
+		maven {
+			url = "https://maven.fabricmc.net/"
+		}
     }
 
     dependencies {

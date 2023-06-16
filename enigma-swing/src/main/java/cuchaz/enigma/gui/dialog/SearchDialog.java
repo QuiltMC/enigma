@@ -299,7 +299,7 @@ public class SearchDialog {
 			}
 		};
 
-		this.currentSearch = this.util.asyncSearch(this.searchField.getText(), (idx, e) -> queue.add(new Order(idx, e)));
+		this.currentSearch = this.util.asyncSearch(this.searchField.getText().trim(), (idx, e) -> queue.add(new Order(idx, e)));
 		SwingUtilities.invokeLater(updater);
 	}
 
