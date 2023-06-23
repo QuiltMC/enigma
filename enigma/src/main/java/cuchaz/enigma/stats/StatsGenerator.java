@@ -197,7 +197,7 @@ public class StatsGenerator {
 
 		if (renamable) {
 			if (obfuscated && !synthetic) {
-				String parent = this.mapper.deobfuscate(entry.getAncestry().get(0)).getName().replace('/', '.');
+				String parent = this.mapper.deobfuscate(entry.getTopLevelClass()).getName().replace('/', '.');
 
 				unmapped.computeIfAbsent(type, t -> new HashMap<>());
 				unmapped.get(type).put(parent, unmapped.get(type).getOrDefault(parent, 0) + 1);

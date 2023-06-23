@@ -2,7 +2,6 @@ package cuchaz.enigma.gui.dialog;
 
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.UiConfig;
-import cuchaz.enigma.stats.StatsGenerator;
 import cuchaz.enigma.stats.StatType;
 import cuchaz.enigma.stats.StatsResult;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
@@ -28,8 +27,7 @@ import javax.swing.SwingUtilities;
 public class StatsDialog {
 	public static void show(Gui gui) {
 		ProgressDialog.runOffThread(gui, listener -> {
-			final StatsGenerator statsGenerator = new StatsGenerator(gui.getController().getProject());
-			StatsResult result = statsGenerator.generate(listener, Set.of(StatType.values()), "", false);
+			StatsResult result = gui.getStatsManager().getGenerator().generate(listener, Set.of(StatType.values()), "", false);
 
 			SwingUtilities.invokeLater(() -> show(gui, result, ""));
 		});
@@ -79,8 +77,7 @@ public class StatsDialog {
 				UiConfig.setLastTopLevelPackage(topLevelPackage.getText());
 				UiConfig.save();
 
-				final StatsGenerator statsGenerator = new StatsGenerator(gui.getController().getProject());
-				StatsResult statResult = statsGenerator.generate(listener, Set.of(StatType.values()), UiConfig.getLastTopLevelPackage(), false);
+				StatsResult statResult = gui.getStatsManager().getGenerator().generate(listener, Set.of(StatType.values()), UiConfig.getLastTopLevelPackage(), false);
 
 				SwingUtilities.invokeLater(() -> show(gui, statResult, UiConfig.getLastTopLevelPackage()));
 			});

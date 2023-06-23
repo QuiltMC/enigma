@@ -38,6 +38,7 @@ import cuchaz.enigma.source.DecompiledClassSource;
 import cuchaz.enigma.source.DecompilerService;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.Token;
+import cuchaz.enigma.stats.StatsGenerator;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryChange;
@@ -167,6 +168,7 @@ public class GuiController implements ClientPacketHandler {
 
 				this.refreshClasses();
 				this.chp.invalidateJavadoc();
+				this.gui.getStatsManager().setStatsGenerator(new StatsGenerator(this.project));
 			} catch (MappingParseException e) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), e.getMessage());
 			}
