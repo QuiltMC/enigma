@@ -540,10 +540,9 @@ public class GuiController implements ClientPacketHandler {
 			boolean isOldOb = prev.targetName() == null;
 			boolean isNewOb = mapping.targetName() == null;
 			this.gui.moveClassTree(target.getContainingClass(), updateSwingState, isOldOb, isNewOb);
-			return;
+		} else if (updateSwingState) {
+			this.gui.reloadStats(change.getTarget().getTopLevelClass());
 		}
-
-		this.gui.reloadClassEntry(change.getTarget().getTopLevelClass(), updateSwingState);
 	}
 
 	public void openStats(Set<StatType> includedTypes, String topLevelPackage, boolean includeSynthetic) {

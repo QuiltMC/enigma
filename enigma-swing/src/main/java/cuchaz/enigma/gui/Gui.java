@@ -569,28 +569,7 @@ public class Gui {
 			}
 		}
 
-		this.reloadClassEntry(classEntry, updateSwingState);
-
-		if (updateSwingState) {
-			deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
-			obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
-		}
-	}
-
-	/**
-	 * Reloads stats for the provided class in all selectors and updates the {@link AllClassesDocker} instance.
-	 * @param classEntry the class to reload
-	 * @param updateSwingState whether swing state should be updated (visual reloads)
-	 */
-	public void reloadClassEntry(ClassEntry classEntry, boolean updateSwingState) {
-		if (updateSwingState) {
-			for (Docker value : this.dockerManager.getDockers()) {
-				if (value instanceof ClassesDocker docker) {
-					docker.getClassSelector().reloadStats(classEntry);
-				}
-			}
-		}
-
+		// all classes selector always needs updating on class rename
 		ClassSelector allClassesSelector = this.dockerManager.getDocker(AllClassesDocker.class).getClassSelector();
 		List<ClassSelector.StateEntry> expansionState = allClassesSelector.getExpansionState();
 		allClassesSelector.moveClassIn(classEntry);
@@ -598,6 +577,21 @@ public class Gui {
 		if (updateSwingState) {
 			allClassesSelector.reload();
 			allClassesSelector.restoreExpansionState(expansionState);
+			deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
+			obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
+			this.reloadStats(classEntry);
+		}
+	}
+
+	/**
+	 * Reloads stats for the provided class in all selectors and updates the {@link AllClassesDocker} instance.
+	 * @param classEntry the class to reload
+	 */
+	public void reloadStats(ClassEntry classEntry) {
+		for (Docker value : this.dockerManager.getDockers()) {
+			if (value instanceof ClassesDocker docker) {
+				docker.getClassSelector().reloadStats(classEntry);
+			}
 		}
 	}
 
