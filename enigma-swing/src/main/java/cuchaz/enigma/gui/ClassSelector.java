@@ -84,6 +84,10 @@ public class ClassSelector extends JTree {
 		}));
 
 		this.setCellRenderer(new DefaultTreeCellRenderer() {
+			{
+				this.setLeafIcon(null);
+			}
+
 			@Override
 			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
