@@ -17,6 +17,7 @@ import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
 
+import javax.annotation.Nullable;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -45,7 +46,7 @@ public class StatsGenerator {
 	 * @return the generated {@link StatsResult} for the provided class
 	 */
 	public StatsResult generateForClassTree(ProgressListener progress, ClassEntry entry, boolean includeSynthetic) {
-		return this.generate(progress, EnumSet.allOf(StatType.class), entry.getFullName(), true, includeSynthetic);
+		return this.generate(progress, EnumSet.allOf(StatType.class), entry.getFullName(), entry, includeSynthetic);
 	}
 
 	/**
@@ -57,7 +58,7 @@ public class StatsGenerator {
 	 * @return the generated {@link StatsResult} for the provided package
 	 */
 	public StatsResult generate(ProgressListener progress, Set<StatType> includedTypes, String topLevelPackage, boolean includeSynthetic) {
-		return this.generate(progress, includedTypes, topLevelPackage, false, includeSynthetic);
+		return this.generate(progress, includedTypes, topLevelPackage, null, includeSynthetic);
 	}
 
 	/**
@@ -65,11 +66,11 @@ public class StatsGenerator {
 	 * @param progress a listener to update with current progress
 	 * @param includedTypes the types of entry to include in the stats
 	 * @param topLevelPackage the package or class to generate stats for
-	 * @param forClassTree if true, the stats will be generated for the class tree - this indicates that {@code topLevelPackage} is a class
+	 * @param classEntry if stats are being generated for a single class, provide the class here
 	 * @param includeSynthetic whether to include synthetic methods
 	 * @return the generated {@link StatsResult} for the provided class or package.
 	 */
-	public StatsResult generate(ProgressListener progress, Set<StatType> includedTypes, String topLevelPackage, boolean forClassTree, boolean includeSynthetic) {
+	public StatsResult generate(ProgressListener progress, Set<StatType> includedTypes, String topLevelPackage, @Nullable ClassEntry classEntry, boolean includeSynthetic) {
 		includedTypes = EnumSet.copyOf(includedTypes);
 		int totalWork = 0;
 		Map<StatType, Integer> mappableCounts = new EnumMap<>(StatType.class);
@@ -104,7 +105,7 @@ public class StatsGenerator {
 
 				ClassEntry clazz = root.getParent();
 
-				if (root == method && this.checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
+				if (root == method && this.checkPackage(clazz, topLevelPackageSlash, classEntry)) {
 					if (includedTypes.contains(StatType.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
 						this.update(StatType.METHODS, mappableCounts, unmappedCounts, method);
 					}
@@ -137,7 +138,7 @@ public class StatsGenerator {
 				progress.step(numDone++, I18n.translate("type.fields"));
 				ClassEntry clazz = field.getParent();
 
-				if (!((FieldDefEntry) field).getAccess().isSynthetic() && this.checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
+				if (!((FieldDefEntry) field).getAccess().isSynthetic() && this.checkPackage(clazz, topLevelPackageSlash, classEntry)) {
 					this.update(StatType.FIELDS, mappableCounts, unmappedCounts, field);
 				}
 			}
@@ -147,7 +148,7 @@ public class StatsGenerator {
 			for (ClassEntry clazz : this.entryIndex.getClasses()) {
 				progress.step(numDone++, I18n.translate("type.classes"));
 
-				if (this.checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
+				if (this.checkPackage(clazz, topLevelPackageSlash, classEntry)) {
 					this.update(StatType.CLASSES, mappableCounts, unmappedCounts, clazz);
 				}
 			}
@@ -181,13 +182,14 @@ public class StatsGenerator {
 		return new StatsResult(mappableCounts, rawUnmappedCounts, tree);
 	}
 
-	private boolean checkPackage(ClassEntry clazz, String topLevelPackage, boolean singleClass) {
+	private boolean checkPackage(ClassEntry clazz, String topLevelPackage, @Nullable ClassEntry entry) {
 		String packageName = this.mapper.deobfuscate(clazz).getPackageName();
-		if (singleClass) {
-			return (packageName != null && packageName.startsWith(topLevelPackage)) || clazz.getFullName().startsWith(topLevelPackage);
-		}
 
-		return topLevelPackage.isBlank() || (packageName != null && packageName.startsWith(topLevelPackage));
+		if (entry == null) {
+			return topLevelPackage.isBlank() || (packageName != null && packageName.startsWith(topLevelPackage));
+		} else {
+			return clazz.getTopLevelClass().equals(entry.getTopLevelClass());
+		}
 	}
 
 	private void update(StatType type, Map<StatType, Integer> mappable, Map<StatType, Map<String, Integer>> unmapped, Entry<?> entry) {
