@@ -117,12 +117,9 @@ public class StatsGenerator {
 
 						int index = ((MethodDefEntry) method).getAccess().isStatic() ? 0 : 1;
 						for (ArgumentDescriptor argument : argumentDescs) {
-							if (!(argument.getAccess().isSynthetic() && !includeSynthetic)) {
-								if (method.isConstructor() && containingClass.isInnerClass() && index == 1 && argument.containsType() && argument.getTypeEntry().equals(containingClass.getOuterClass())) {
+							if (!(argument.getAccess().isSynthetic() && !includeSynthetic) &&
 									// skip the implicit superclass parameter for non-static inner class constructors
-									continue;
-								}
-
+									!(method.isConstructor() && containingClass.isInnerClass() && index == 1 && argument.containsType() && argument.getTypeEntry().equals(containingClass.getOuterClass()))) {
 								this.update(StatType.PARAMETERS, mappableCounts, unmappedCounts, new LocalVariableEntry(method, index, "", true, null));
 							}
 
