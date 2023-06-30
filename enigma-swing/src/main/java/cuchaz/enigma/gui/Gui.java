@@ -584,7 +584,7 @@ public class Gui {
 	}
 
 	/**
-	 * Reloads stats for the provided class in all selectors and updates the {@link AllClassesDocker} instance.
+	 * Reloads stats for the provided class in all selectors.
 	 * @param classEntry the class to reload
 	 */
 	public void reloadStats(ClassEntry classEntry) {
