@@ -1,10 +1,11 @@
 plugins {
 	id 'application'
 	id 'checkstyle'
+	alias(libs.plugins.shadow)
 }
 
 dependencies {
-	implementation project(':enigma')
+	shadow(implementation project(':enigma'))
 	implementation libs.jopt
 }
 
