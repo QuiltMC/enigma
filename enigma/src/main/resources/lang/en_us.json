@@ -255,8 +255,6 @@
 	"validation.message.illegal_doc_comment_end": "Javadoc comment cannot contain the character sequence '*/'.",
 	"validation.message.reserved_identifier": "'%s' is a reserved identifier.",
 	"validation.message.unknown_record_getter": "Could not find a matching record component getter for %s",
-	"validation.message.name_conflict_class": "Name '%s' conflict with another in '%s'.",
-	"validation.message.name_conflict": "Name '%s' conflicts with another entry.",
   	"validation.message.server_started": "Server started on port %s!",
   	"validation.message.connected_to_server": "Connected to server with address %s!",
   	"validation.message.left_server": "Left server.",
