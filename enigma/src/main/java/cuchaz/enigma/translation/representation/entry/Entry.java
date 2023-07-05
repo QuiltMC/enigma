@@ -96,6 +96,10 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 
 	boolean canConflictWith(Entry<?> entry);
 
+	/**
+	 * @deprecated Use {@link #canConflictWith(Entry)} instead. Will be removed in 2.0.
+	 */
+	@Deprecated(forRemoval = true, since = "1.9.0")
 	boolean canShadow(Entry<?> entry);
 
 	default ClassEntry getContainingClass() {

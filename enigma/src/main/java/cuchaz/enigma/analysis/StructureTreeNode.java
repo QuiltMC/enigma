@@ -79,8 +79,8 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 		for (ParentedEntry<?> child : children.toList()) {
 			StructureTreeNode childNode = new StructureTreeNode(project, this.parentEntry, child);
 
-			if (child instanceof ClassEntry) {
-				childNode = new StructureTreeNode(project, (ClassEntry) child, child);
+			if (child instanceof ClassEntry classEntry) {
+				childNode = new StructureTreeNode(project, classEntry, child);
 				childNode.load(project, options);
 			}
 

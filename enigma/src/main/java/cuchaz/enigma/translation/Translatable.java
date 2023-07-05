@@ -4,11 +4,14 @@ import cuchaz.enigma.translation.mapping.EntryMap;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 
+import javax.annotation.Nullable;
+
 public interface Translatable {
 	TranslateResult<? extends Translatable> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings);
 
-	@Deprecated
+	@Nullable
 	default Translatable translate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
-		return this.extendedTranslate(translator, resolver, mappings).getValue();
+		TranslateResult<? extends Translatable> res = this.extendedTranslate(translator, resolver, mappings);
+		return res == null ? null : res.getValue();
 	}
 }

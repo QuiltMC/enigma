@@ -255,8 +255,6 @@
 	"validation.message.illegal_doc_comment_end": "Un commentaire de Javadoc ne peut pas contenir la séquence de caractères '*/'.",
 	"validation.message.reserved_identifier": "'%s' est un identifiant réservé.",
 	"validation.message.unknown_record_getter": "Impossible de trouver un accesseur de composant de record correspondant pour %s",
-	"validation.message.shadowed_name_class": "Le nom '%s' en cache un autre dans '%s'.",
-	"validation.message.shadowed_name": "Le nom '%s' cache une autre entrée.",
 	"validation.message.server_started": "Le serveur a démarré sur le port %s !",
 	"validation.message.connected_to_server": "Connecté au serveur avec l'adresse %s !",
 	"validation.message.left_server": "Quitter le serveur",

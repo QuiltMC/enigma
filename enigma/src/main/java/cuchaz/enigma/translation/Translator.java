@@ -14,7 +14,6 @@ public interface Translator {
 	@Nullable
 	<T extends Translatable> TranslateResult<T> extendedTranslate(@Nullable T translatable);
 
-	@Deprecated
 	@Nullable
 	default <T extends Translatable> T translate(@Nullable T translatable) {
 		TranslateResult<T> res = this.extendedTranslate(translatable);
