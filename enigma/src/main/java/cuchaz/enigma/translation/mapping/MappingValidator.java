@@ -58,7 +58,7 @@ public class MappingValidator {
 
 		// add deobfuscated versions
 		siblings.addAll(
-			siblings.stream()
+				siblings.stream()
 				.map(this.deobfuscator::translate)
 				.toList()
 		);
