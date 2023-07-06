@@ -71,6 +71,10 @@ public class MappingValidator {
 		return false;
 	}
 
+	/**
+	 * Ensures that the parameter's new name is not used by any other parameter of its parent method.
+	 * @implNote currently, we cannot check against obfuscated parameter names, since parameters are not indexed
+	 */
 	private boolean validateParameterUniqueness(ValidationContext context, String name, LocalVariableEntry parameter) {
 		MethodEntry parent = parameter.getParent();
 		if (parent != null) {
