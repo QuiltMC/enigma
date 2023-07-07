@@ -118,7 +118,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 * 	 public class D.E {
 	 * 		public int name;
 	 *
-	 *			public void b() {
+	 * 		public void b() {
 	 *         }
 	 *  	}
 	 *  }
