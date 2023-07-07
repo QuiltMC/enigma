@@ -8,13 +8,16 @@ public class Message {
 	public static final Message NOT_INT = create(Type.ERROR, "not_int");
 	public static final Message FIELD_OUT_OF_RANGE_INT = create(Type.ERROR, "field_out_of_range_int");
 	public static final Message FIELD_LENGTH_OUT_OF_RANGE = create(Type.ERROR, "field_length_out_of_range");
-	public static final Message NONUNIQUE_NAME_CLASS = create(Type.ERROR, "nonunique_name_class");
-	public static final Message NONUNIQUE_NAME = create(Type.ERROR, "nonunique_name");
+	public static final Message NON_UNIQUE_NAME_CLASS = create(Type.ERROR, "non_unique_name_class");
+	public static final Message NON_UNIQUE_NAME = create(Type.ERROR, "non_unique_name");
 	public static final Message ILLEGAL_IDENTIFIER = create(Type.ERROR, "illegal_identifier");
 	public static final Message RESERVED_IDENTIFIER = create(Type.ERROR, "reserved_identifier");
 	public static final Message ILLEGAL_DOC_COMMENT_END = create(Type.ERROR, "illegal_doc_comment_end");
 	public static final Message UNKNOWN_RECORD_GETTER = create(Type.ERROR, "unknown_record_getter");
 	public static final Message INVALID_PACKAGE_NAME = create(Type.ERROR, "invalid_package_name");
+
+	public static final Message SHADOWED_NAME_CLASS = create(Type.WARNING, "shadowed_name_class");
+	public static final Message SHADOWED_NAME = create(Type.WARNING, "shadowed_unique_name");
 
 	public static final Message SERVER_STARTED = create(Type.INFO, "server_started");
 	public static final Message CONNECTED_TO_SERVER = create(Type.INFO, "connected_to_server");
@@ -50,6 +53,11 @@ public class Message {
 
 	public static Message create(Type type, String name) {
 		return new Message(type, String.format("validation.message.%s", name), String.format("validation.message.%s.long", name));
+	}
+
+	@Override
+	public String toString() {
+		return this.textKey + " (" + this.type + ")";
 	}
 
 	public enum Type {

@@ -13,6 +13,7 @@ import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -65,7 +66,10 @@ public class MappingValidator {
 		);
 
 		if (translatedEntry != null && !this.isUnique(translatedEntry, siblings, name)) {
-			this.raiseConflict(context, translatedEntry.getParent(), name);
+			this.raiseConflict(context, translatedEntry.getParent(), name, false);
+			return true;
+		} else if (translatedEntry != null && this.isShadowed(translatedEntry, siblings, name) != null) {
+			this.raiseConflict(context, translatedEntry.getParent(), name, true);
 			return true;
 		}
 
@@ -90,7 +94,7 @@ public class MappingValidator {
 					LocalVariableEntry translatedArgEntry = this.deobfuscator.translate(argEntry);
 
 					if (translatedArgEntry != null && translatedArgEntry.getName().equals(name)) {
-						this.raiseConflict(context, parent, name);
+						this.raiseConflict(context, parent, name, false);
 						return true;
 					}
 
@@ -102,11 +106,11 @@ public class MappingValidator {
 		return false;
 	}
 
-	private void raiseConflict(ValidationContext context, Entry<?> parent, String name) {
+	private void raiseConflict(ValidationContext context, Entry<?> parent, String name, boolean shadow) {
 		if (parent != null) {
-			context.raise(Message.NONUNIQUE_NAME_CLASS, name, parent);
+			context.raise(shadow ? Message.SHADOWED_NAME_CLASS : Message.NON_UNIQUE_NAME_CLASS, name, parent);
 		} else {
-			context.raise(Message.NONUNIQUE_NAME, name);
+			context.raise(shadow ? Message.SHADOWED_NAME : Message.NON_UNIQUE_NAME, name);
 		}
 	}
 
@@ -118,6 +122,22 @@ public class MappingValidator {
 		}
 
 		return true;
+	}
+
+	@Nullable
+	private Entry<?> isShadowed(Entry<?> entry, List<? extends Entry<?>> siblings, String name) {
+		for (Entry<?> sibling : siblings) {
+			if (entry.canShadow(sibling) && this.index.getInheritanceIndex().getAncestors(entry.getContainingClass()).contains(sibling.getContainingClass())) {
+				AccessFlags flags = this.index.getEntryIndex().getEntryAccess(sibling);
+
+				if ((flags == null || !flags.isPrivate())
+						&& name.equals(sibling.getName())) {
+					return sibling;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	private boolean canConflict(Entry<?> entry, Entry<?> sibling) {
