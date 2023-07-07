@@ -106,8 +106,7 @@ public class TestMappingValidator {
 		vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newMethod("a", "d", "()V"), new EntryMapping("method02"));
 
-		// TODO: shouldn't be an error
-		// assertValid(vc);
+		assertValid(vc);
 	}
 
 	@Test

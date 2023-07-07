@@ -13,6 +13,7 @@ import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class MappingValidator {
 			return this.validateParameterUniqueness(context, name, parameter);
 		}
 
-		List<ParentedEntry<?>> siblings = this.index.getChildrenByClass().get(containingClass);
+		List<ParentedEntry<?>> siblings = new ArrayList<>(this.index.getChildrenByClass().get(containingClass));
 
 		// add all ancestors
 		for (ClassEntry ancestor : this.index.getInheritanceIndex().getAncestors(containingClass)) {
