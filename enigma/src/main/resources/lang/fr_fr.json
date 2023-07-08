@@ -265,6 +265,9 @@
 	"validation.message.invalid_package_name": "Nom de package invalide !",
 	"validation.message.invalid_package_name.long": "Le package ne doit pas commencer ni se terminer par une barre oblique et ne doit contenir que des lettres minuscules, des tirets du bas et des barres obliques.",
 
+	"validation.message.shadowed_name_class": "Le nom '%s' en cache un autre dans '%s'.",
+	"validation.message.shadowed_name": "Le nom '%s' cache une autre entrée.",
+
 	"crash.title": "%s - Rapport de plantage",
 	"crash.summary": "%s a planté ! =(",
 	"crash.export": "Exporter",
@@ -314,6 +317,7 @@
 	"docker.deobfuscated_classes.title": "Classes déobfusquées",
   	"docker.notifications.title": "Notifications",
 
+	"notification.misc.continue": "Continue?",
 	"notification.type.error": "Erreur",
 	"notification.type.warning": "Warning",
 	"notification.type.info": "Info",

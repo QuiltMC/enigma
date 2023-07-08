@@ -123,7 +123,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 
 	@Override
 	public boolean verifyWarning(ParameterizedMessage message) {
-		String text = message.getText() + (message.getLongText().length() > 0 ? "\n\n" + message.getLongText() : "");
+		String text = message.getText() + (message.getLongText().length() > 0 ? "\n\n" + message.getLongText() : "") + " " + I18n.translate("notification.misc.continue");
 		return JOptionPane.showConfirmDialog(this.gui.getFrame(), text, translateType(message.getType()), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION;
 	}
 

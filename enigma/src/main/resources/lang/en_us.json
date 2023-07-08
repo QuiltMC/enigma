@@ -265,6 +265,9 @@
   	"validation.message.invalid_package_name": "Invalid package name!",
 	"validation.message.invalid_package_name.long": "Package must not start or end with a slash, and only contain lowercase letters, digits, underscores, and slashes.",
 
+	"validation.message.shadowed_name_class": "Name '%s' shadows another in '%s'.",
+	"validation.message.shadowed_name": "Name '%s' shadows another entry.",
+
 	"crash.title": "%s - Crash Report",
 	"crash.summary": "%s has crashed! =(",
 	"crash.export": "Export",
@@ -314,6 +317,7 @@
 	"docker.deobfuscated_classes.title": "Deobfuscated Classes",
 	"docker.notifications.title": "Notifications",
 
+	"notification.misc.continue": "Continue?",
 	"notification.type.error": "Error",
   	"notification.type.warning": "Warning",
   	"notification.type.info": "Info",
