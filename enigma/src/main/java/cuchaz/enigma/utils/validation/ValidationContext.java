@@ -68,7 +68,7 @@ public class ValidationContext {
 	}
 
 	/**
-	 * Returns a list of all currently stored messages.
+	 * Returns an unmodifiable list of all currently stored messages.
 	 * @return the messages
 	 */
 	public List<ParameterizedMessage> getMessages() {

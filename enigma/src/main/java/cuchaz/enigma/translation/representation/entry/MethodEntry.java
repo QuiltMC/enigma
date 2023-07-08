@@ -1,12 +1,19 @@
 package cuchaz.enigma.translation.representation.entry;
 
 import com.google.common.base.Preconditions;
+import cuchaz.enigma.analysis.index.EntryIndex;
+import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
+import cuchaz.enigma.translation.representation.AccessFlags;
+import cuchaz.enigma.translation.representation.ArgumentDescriptor;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
@@ -41,6 +48,33 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 
 	public boolean isConstructor() {
 		return this.name.equals("<init>") || this.name.equals("<clinit>");
+	}
+
+	/**
+	 * Creates an iterator of all parameters in this method. Unmapped args will have no name, and javadoc is ignored.
+	 * @param index the entry index
+	 * @param deobfuscator a translator
+	 * @return an iterator of this method's parameters
+	 */
+	public Iterator<LocalVariableEntry> getParameterIterator(EntryIndex index, Translator deobfuscator) {
+		List<LocalVariableEntry> parameters = new ArrayList<>();
+
+		MethodDescriptor desc = this.getDesc();
+		AccessFlags flags = index.getMethodAccess(this);
+
+		if (desc != null && flags != null) {
+			int argIndex = flags.isStatic() ? 0 : 1;
+
+			for (ArgumentDescriptor arg : desc.getArgumentDescs()) {
+				LocalVariableEntry argEntry = new LocalVariableEntry(this, argIndex, "", true, null);
+				LocalVariableEntry translatedArgEntry = deobfuscator.translate(argEntry);
+
+				parameters.add(translatedArgEntry == null ? argEntry : translatedArgEntry);
+				argIndex += arg.getSize();
+			}
+		}
+
+		return parameters.iterator();
 	}
 
 	@Override

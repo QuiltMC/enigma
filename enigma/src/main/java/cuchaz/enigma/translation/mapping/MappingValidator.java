@@ -3,8 +3,6 @@ package cuchaz.enigma.translation.mapping;
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.representation.AccessFlags;
-import cuchaz.enigma.translation.representation.ArgumentDescriptor;
-import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
@@ -16,6 +14,7 @@ import cuchaz.enigma.utils.validation.ValidationContext;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 public class MappingValidator {
@@ -47,6 +46,7 @@ public class MappingValidator {
 		ClassEntry containingClass = entry.getContainingClass();
 		Entry<?> translatedEntry = this.deobfuscator.translate(entry);
 
+		// parameters must be special-cased
 		if (entry instanceof LocalVariableEntry parameter) {
 			return this.validateParameterUniqueness(context, name, parameter);
 		}
@@ -65,12 +65,17 @@ public class MappingValidator {
 				.toList()
 		);
 
-		if (translatedEntry != null && !this.isUnique(translatedEntry, siblings, name)) {
-			this.raiseConflict(context, translatedEntry.getParent(), name, false);
-			return true;
-		} else if (translatedEntry != null && this.isShadowed(translatedEntry, siblings, name) != null) {
-			this.raiseConflict(context, translatedEntry.getParent(), name, true);
-			return true;
+		if (translatedEntry != null) {
+			if (!this.isUnique(translatedEntry, siblings, name)) {
+				this.raiseConflict(context, translatedEntry.getParent(), name, false);
+				return true;
+			} else {
+				Entry<?> shadowedEntry = this.getShadowedEntry(translatedEntry, siblings, name);
+				if (shadowedEntry != null) {
+					this.raiseConflict(context, shadowedEntry.getParent(), name, true);
+					return true;
+				}
+			}
 		}
 
 		return false;
@@ -79,26 +84,16 @@ public class MappingValidator {
 	/**
 	 * Ensures that the parameter's new name is not used by any other parameter of its parent method.
 	 * @implNote currently, we cannot check against obfuscated parameter names, since parameters are not indexed
+	 * @return whether the parameter's new name creates a conflict
 	 */
 	private boolean validateParameterUniqueness(ValidationContext context, String name, LocalVariableEntry parameter) {
 		MethodEntry parent = parameter.getParent();
 		if (parent != null) {
-			MethodDescriptor desc = parent.getDesc();
-			AccessFlags flags = this.index.getEntryIndex().getMethodAccess(parent);
-
-			if (desc != null && flags != null) {
-				int argIndex = flags.isStatic() ? 0 : 1;
-
-				for (ArgumentDescriptor arg : desc.getArgumentDescs()) {
-					LocalVariableEntry argEntry = new LocalVariableEntry(parent, argIndex, "", true, null);
-					LocalVariableEntry translatedArgEntry = this.deobfuscator.translate(argEntry);
-
-					if (translatedArgEntry != null && translatedArgEntry.getName().equals(name)) {
-						this.raiseConflict(context, parent, name, false);
-						return true;
-					}
-
-					argIndex += arg.getSize();
+			Iterator<LocalVariableEntry> iterator = parent.getParameterIterator(this.index.getEntryIndex(), this.deobfuscator);
+			while (iterator.hasNext()) {
+				if (iterator.next().getName().equals(name)) {
+					this.raiseConflict(context, parent, name, false);
+					return true;
 				}
 			}
 		}
@@ -116,7 +111,7 @@ public class MappingValidator {
 
 	private boolean isUnique(Entry<?> entry, List<? extends Entry<?>> siblings, String name) {
 		for (Entry<?> sibling : siblings) {
-			if (this.canConflict(entry, sibling) && sibling.getName().equals(name)) {
+			if (entry.canConflictWith(sibling) && sibling.getName().equals(name)) {
 				return false;
 			}
 		}
@@ -125,7 +120,7 @@ public class MappingValidator {
 	}
 
 	@Nullable
-	private Entry<?> isShadowed(Entry<?> entry, List<? extends Entry<?>> siblings, String name) {
+	private Entry<?> getShadowedEntry(Entry<?> entry, List<? extends Entry<?>> siblings, String name) {
 		for (Entry<?> sibling : siblings) {
 			if (entry.canShadow(sibling) && this.index.getInheritanceIndex().getAncestors(entry.getContainingClass()).contains(sibling.getContainingClass())) {
 				AccessFlags flags = this.index.getEntryIndex().getEntryAccess(sibling);
@@ -138,9 +133,5 @@ public class MappingValidator {
 		}
 
 		return null;
-	}
-
-	private boolean canConflict(Entry<?> entry, Entry<?> sibling) {
-		return entry.canConflictWith(sibling);
 	}
 }
