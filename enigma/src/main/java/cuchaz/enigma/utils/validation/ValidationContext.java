@@ -58,9 +58,11 @@ public class ValidationContext {
 		List<ParameterizedMessage> messagesCopy = new ArrayList<>(this.messages);
 
 		for (ParameterizedMessage m : messagesCopy) {
-			this.messages.remove(m);
-			if (m.getType() == Type.WARNING && !this.notifier.verifyWarning(m)) {
-				return false;
+			if (m.getType() == Type.WARNING) {
+				this.messages.remove(m);
+				if (!this.notifier.verifyWarning(m)) {
+					return false;
+				}
 			}
 		}
 
