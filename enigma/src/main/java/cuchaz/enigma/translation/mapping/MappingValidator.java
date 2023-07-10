@@ -58,8 +58,8 @@ public class MappingValidator {
 		if (entry instanceof ClassEntry) {
 			siblings.addAll(this.index.getEntryIndex().getClasses().stream().filter(e -> {
 				// filter by package
-				if (name.contains("/")) {
-					String packageName = e.getPackageName();
+				String packageName = e.getPackageName();
+				if (packageName != null && name.contains("/")) {
 					String newPackage = name.substring(0, name.lastIndexOf('/'));
 					return packageName.equals(newPackage);
 				}
@@ -75,7 +75,7 @@ public class MappingValidator {
 
 		// add deobfuscated versions
 		siblings.addAll(
-			siblings.stream()
+				siblings.stream()
 				.map(this.deobfuscator::translate)
 				.toList()
 		);
@@ -141,7 +141,7 @@ public class MappingValidator {
 				// ancestry check only contains obf names, so we need to translate to deobf just in case
 				Set<ClassEntry> ancestors = this.index.getInheritanceIndex().getAncestors(entry.getContainingClass());
 				ancestors.addAll(
-					ancestors.stream()
+						ancestors.stream()
 						.map(this.deobfuscator::translate)
 						.toList()
 				);
@@ -151,9 +151,8 @@ public class MappingValidator {
 					AccessFlags flags = this.index.getEntryIndex().getEntryAccess(entry);
 
 					if ((siblingFlags == null || (!siblingFlags.isPrivate() && siblingFlags.isStatic()))
-						&& (flags == null || flags.isStatic())
-						&& name.equals(sibling.getName())) {
-
+							&& (flags == null || flags.isStatic())
+							&& name.equals(sibling.getName())) {
 						return sibling;
 					}
 				}

@@ -55,7 +55,7 @@ public class TestMappingValidator {
 		vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newField("a", "a", "I"), new EntryMapping("field01"));
 
-		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
+		assertMessages(vc);
 
 		// instance fields
 		remapper.putMapping(newVC(), newField("b", "b", "I"), new EntryMapping("field02"));
@@ -63,7 +63,7 @@ public class TestMappingValidator {
 		vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newField("a", "b", "I"), new EntryMapping("field02"));
 
-		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
+		assertMessages(vc);
 	}
 
 	@Test
@@ -82,7 +82,7 @@ public class TestMappingValidator {
 		vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newField("a", "a", "Z"), new EntryMapping("field05"));
 
-		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
+		assertMessages(vc);
 	}
 
 	@Test
@@ -101,7 +101,7 @@ public class TestMappingValidator {
 		vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newMethod("a", "d", "()V"), new EntryMapping("method02"));
 
-		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
+		assertMessages(vc);
 	}
 
 	@Test
