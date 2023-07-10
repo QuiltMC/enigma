@@ -85,7 +85,7 @@ public class MappingValidator {
 				this.raiseConflict(context, translatedEntry.getParent(), name, false);
 				return true;
 			} else {
-				Entry<?> shadowedEntry = this.getShadowedEntry(translatedEntry, siblings, name);
+				Entry<?> shadowedEntry = this.getShadowedEntry(translatedEntry, entry, siblings, name);
 				if (shadowedEntry != null) {
 					this.raiseConflict(context, shadowedEntry.getParent(), name, true);
 					return true;
@@ -135,11 +135,11 @@ public class MappingValidator {
 	}
 
 	@Nullable
-	private Entry<?> getShadowedEntry(Entry<?> entry, List<? extends Entry<?>> siblings, String name) {
+	private Entry<?> getShadowedEntry(Entry<?> entry, Entry<?> obfEntry, List<? extends Entry<?>> siblings, String name) {
 		for (Entry<?> sibling : siblings) {
 			if (entry.canShadow(sibling)) {
 				// ancestry check only contains obf names, so we need to translate to deobf just in case
-				Set<ClassEntry> ancestors = this.index.getInheritanceIndex().getAncestors(entry.getContainingClass());
+				Set<ClassEntry> ancestors = this.index.getInheritanceIndex().getAncestors(obfEntry.getContainingClass());
 				ancestors.addAll(
 						ancestors.stream()
 						.map(this.deobfuscator::translate)
@@ -148,7 +148,7 @@ public class MappingValidator {
 
 				if (ancestors.contains(sibling.getContainingClass())) {
 					AccessFlags siblingFlags = this.index.getEntryIndex().getEntryAccess(sibling);
-					AccessFlags flags = this.index.getEntryIndex().getEntryAccess(entry);
+					AccessFlags flags = this.index.getEntryIndex().getEntryAccess(obfEntry);
 
 					if ((siblingFlags == null || (!siblingFlags.isPrivate() && siblingFlags.isStatic()))
 							&& (flags == null || flags.isStatic())
