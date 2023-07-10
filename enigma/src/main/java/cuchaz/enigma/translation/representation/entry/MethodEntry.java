@@ -112,7 +112,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 
 	@Override
 	public boolean canConflictWith(Entry<?> entry) {
-		return entry instanceof MethodEntry methodEntry && methodEntry.parent.equals(this.parent) && methodEntry.descriptor.canConflictWith(this.descriptor);
+		return entry instanceof MethodEntry methodEntry && methodEntry.descriptor.canConflictWith(this.descriptor);
 	}
 
 	@Override

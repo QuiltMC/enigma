@@ -218,7 +218,6 @@ public class TestMappingValidator {
 	}
 
 	@Test
-	@Disabled // TODO: Fix these cases
 	public void conflictingMethods() {
 		// "overriding" w/different return descriptor
 		remapper.putMapping(newVC(), newMethod("b", "a", "()Z"), new EntryMapping("method01"));

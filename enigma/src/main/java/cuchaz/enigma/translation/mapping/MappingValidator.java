@@ -12,11 +12,14 @@ import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 import javax.annotation.Nullable;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MappingValidator {
 	private final Translator deobfuscator;
@@ -73,19 +76,18 @@ public class MappingValidator {
 			siblings.addAll(this.index.getChildrenByClass().get(ancestor));
 		}
 
-		// add deobfuscated versions
-		siblings.addAll(
-				siblings.stream()
-				.map(this.deobfuscator::translate)
-				.toList()
-		);
+		// collect deobfuscated versions
+		Map<Entry<?>, Entry<?>> deobfSiblings = siblings.stream()
+				.distinct() // May throw IllegalStateException otherwise
+				.map(e -> new AbstractMap.SimpleEntry<>(e, this.deobfuscator.translate(e)))
+				.collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, e -> e.getValue() != null ? e.getValue() : e.getKey()));
 
 		if (translatedEntry != null) {
-			if (!this.isUnique(translatedEntry, siblings, name)) {
+			if (!this.isUnique(translatedEntry, entry, deobfSiblings, name)) {
 				this.raiseConflict(context, translatedEntry.getParent(), name, false);
 				return true;
 			} else {
-				Entry<?> shadowedEntry = this.getShadowedEntry(translatedEntry, entry, siblings, name);
+				Entry<?> shadowedEntry = this.getShadowedEntry(translatedEntry, entry, deobfSiblings, name);
 				if (shadowedEntry != null) {
 					this.raiseConflict(context, shadowedEntry.getParent(), name, true);
 					return true;
@@ -124,9 +126,47 @@ public class MappingValidator {
 		}
 	}
 
-	private boolean isUnique(Entry<?> entry, List<? extends Entry<?>> siblings, String name) {
-		for (Entry<?> sibling : siblings) {
+	private boolean isUnique(Entry<?> entry, Entry<?> obfEntry, Map<Entry<?>, Entry<?>> siblings, String name) {
+		// Methods need further checks
+		if (entry instanceof MethodEntry methodEntry) {
+			return isMethodUnique(methodEntry, obfEntry, siblings, name);
+		}
+
+		for (Map.Entry<Entry<?>, Entry<?>> siblingEntry : siblings.entrySet()) {
+			Entry<?> sibling = siblingEntry.getValue();
+			Entry<?> obfSibling = siblingEntry.getKey();
+
 			if (entry.canConflictWith(sibling) && sibling.getName().equals(name)) {
+				return false;
+			} else if (entry.canConflictWith(obfSibling) && obfSibling.getName().equals(name)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private boolean isMethodUnique(MethodEntry entry, Entry<?> obfEntry, Map<Entry<?>, Entry<?>> siblings, String name) {
+		for (Map.Entry<Entry<?>, Entry<?>> siblingEntry : siblings.entrySet()) {
+			Entry<?> sibling = siblingEntry.getValue();
+			Entry<?> obfSibling = siblingEntry.getKey();
+
+			if (entry.canConflictWith(sibling) && sibling.getName().equals(name)
+				|| entry.canConflictWith(obfSibling) && obfSibling.getName().equals(name)) {
+				AccessFlags siblingFlags = this.index.getEntryIndex().getEntryAccess(obfSibling);
+				AccessFlags flags = this.index.getEntryIndex().getEntryAccess(obfEntry);
+
+				boolean sameParent = (entry.getParent() != null && entry.getParent().equals(sibling.getParent()))
+					|| (obfEntry.getParent() != null && entry.getParent().equals(sibling.getParent()));
+				if (!sameParent && flags != null && siblingFlags != null) {
+					// Methods from different parents don't conflict if they are both static or private
+					if (flags.isStatic() && siblingFlags.isStatic()) {
+						continue;
+					} else if (flags.isPrivate() && siblingFlags.isPrivate()) {
+						continue;
+					}
+				}
+
 				return false;
 			}
 		}
@@ -135,9 +175,12 @@ public class MappingValidator {
 	}
 
 	@Nullable
-	private Entry<?> getShadowedEntry(Entry<?> entry, Entry<?> obfEntry, List<? extends Entry<?>> siblings, String name) {
-		for (Entry<?> sibling : siblings) {
-			if (entry.canShadow(sibling)) {
+	private Entry<?> getShadowedEntry(Entry<?> entry, Entry<?> obfEntry, Map<Entry<?>, Entry<?>> siblings, String name) {
+		for (Map.Entry<Entry<?>, Entry<?>> siblingEntry : siblings.entrySet()) {
+			Entry<?> sibling = siblingEntry.getValue();
+			Entry<?> obfSibling = siblingEntry.getKey();
+
+			if (entry.canShadow(sibling) || entry.canShadow(obfSibling)) {
 				// ancestry check only contains obf names, so we need to translate to deobf just in case
 				Set<ClassEntry> ancestors = this.index.getInheritanceIndex().getAncestors(obfEntry.getContainingClass());
 				ancestors.addAll(
