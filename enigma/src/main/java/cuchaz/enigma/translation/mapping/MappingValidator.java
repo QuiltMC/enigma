@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class MappingValidator {
 	private final Translator deobfuscator;
@@ -53,6 +54,20 @@ public class MappingValidator {
 
 		List<ParentedEntry<?>> siblings = new ArrayList<>(this.index.getChildrenByClass().get(containingClass));
 
+		// add sibling classes
+		if (entry instanceof ClassEntry) {
+			siblings.addAll(this.index.getEntryIndex().getClasses().stream().filter(e -> {
+				// filter by package
+				if (name.contains("/")) {
+					String packageName = e.getPackageName();
+					String newPackage = name.substring(0, name.lastIndexOf('/'));
+					return packageName.equals(newPackage);
+				}
+
+				return true;
+			}).toList());
+		}
+
 		// add all ancestors
 		for (ClassEntry ancestor : this.index.getInheritanceIndex().getAncestors(containingClass)) {
 			siblings.addAll(this.index.getChildrenByClass().get(ancestor));
@@ -60,7 +75,7 @@ public class MappingValidator {
 
 		// add deobfuscated versions
 		siblings.addAll(
-				siblings.stream()
+			siblings.stream()
 				.map(this.deobfuscator::translate)
 				.toList()
 		);
@@ -122,12 +137,25 @@ public class MappingValidator {
 	@Nullable
 	private Entry<?> getShadowedEntry(Entry<?> entry, List<? extends Entry<?>> siblings, String name) {
 		for (Entry<?> sibling : siblings) {
-			if (entry.canShadow(sibling) && this.index.getInheritanceIndex().getAncestors(entry.getContainingClass()).contains(sibling.getContainingClass())) {
-				AccessFlags flags = this.index.getEntryIndex().getEntryAccess(sibling);
+			if (entry.canShadow(sibling)) {
+				// ancestry check only contains obf names, so we need to translate to deobf just in case
+				Set<ClassEntry> ancestors = this.index.getInheritanceIndex().getAncestors(entry.getContainingClass());
+				ancestors.addAll(
+					ancestors.stream()
+						.map(this.deobfuscator::translate)
+						.toList()
+				);
 
-				if ((flags == null || !flags.isPrivate())
+				if (ancestors.contains(sibling.getContainingClass())) {
+					AccessFlags siblingFlags = this.index.getEntryIndex().getEntryAccess(sibling);
+					AccessFlags flags = this.index.getEntryIndex().getEntryAccess(entry);
+
+					if ((siblingFlags == null || (!siblingFlags.isPrivate() && siblingFlags.isStatic()))
+						&& (flags == null || flags.isStatic())
 						&& name.equals(sibling.getName())) {
-					return sibling;
+
+						return sibling;
+					}
 				}
 			}
 		}
