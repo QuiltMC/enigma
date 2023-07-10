@@ -525,23 +525,25 @@ public class GuiController implements ClientPacketHandler {
 		EntryMapping prev = this.project.getMapper().getDeobfMapping(target);
 		EntryMapping mapping = EntryUtil.applyChange(vc, this.project.getMapper(), change);
 
-		boolean renamed = !change.getDeobfName().isUnchanged();
-		this.gui.updateStructure(this.gui.getActiveEditor());
+		if (vc.canProceed()) {
+			boolean renamed = !change.getDeobfName().isUnchanged();
+			this.gui.updateStructure(this.gui.getActiveEditor());
 
-		if (!Objects.equals(prev.targetName(), mapping.targetName())) {
-			this.chp.invalidateMapped();
-		}
+			if (!Objects.equals(prev.targetName(), mapping.targetName())) {
+				this.chp.invalidateMapped();
+			}
 
-		if (!Objects.equals(prev.javadoc(), mapping.javadoc())) {
-			this.chp.invalidateJavadoc(target.getTopLevelClass());
-		}
+			if (!Objects.equals(prev.javadoc(), mapping.javadoc())) {
+				this.chp.invalidateJavadoc(target.getTopLevelClass());
+			}
 
-		if (renamed && target instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
-			boolean isOldOb = prev.targetName() == null;
-			boolean isNewOb = mapping.targetName() == null;
-			this.gui.moveClassTree(target.getContainingClass(), updateSwingState, isOldOb, isNewOb);
-		} else if (updateSwingState) {
-			this.gui.reloadStats(change.getTarget().getTopLevelClass());
+			if (renamed && target instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
+				boolean isOldOb = prev.targetName() == null;
+				boolean isNewOb = mapping.targetName() == null;
+				this.gui.moveClassTree(target.getContainingClass(), updateSwingState, isOldOb, isNewOb);
+			} else if (updateSwingState) {
+				this.gui.reloadStats(change.getTarget().getTopLevelClass());
+			}
 		}
 	}
 

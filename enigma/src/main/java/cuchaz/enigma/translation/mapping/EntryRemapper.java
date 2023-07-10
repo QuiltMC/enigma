@@ -38,7 +38,7 @@ public class EntryRemapper {
 		this.deobfuscator = new MappingTranslator(obfToDeobf, this.obfResolver);
 		this.jarIndex = jarIndex;
 
-		this.validator = new MappingValidator(obfToDeobf, this.deobfuscator, jarIndex);
+		this.validator = new MappingValidator(this.deobfuscator, jarIndex);
 	}
 
 	public static EntryRemapper mapped(JarIndex index, EntryTree<EntryMapping> obfToDeobf) {
@@ -57,6 +57,8 @@ public class EntryRemapper {
 		this.doPutMapping(vc, obfuscatedEntry, deobfMapping, false);
 	}
 
+	// note: just supressing warnings until it's fixed
+	@SuppressWarnings("all")
 	private void doPutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping, boolean validateOnly) {
 		// todo this needs to be fixed!
 		//if (obfuscatedEntry instanceof FieldEntry fieldEntry) {

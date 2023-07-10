@@ -112,7 +112,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public boolean canConflictWith(Entry<?> entry) {
-		return true;
+		return entry instanceof ClassEntry;
 	}
 
 	@Override

@@ -22,22 +22,19 @@ import static org.hamcrest.Matchers.*;
 
 public class TestMappingValidator {
 	public static final Path JAR = TestUtil.obfJar("validation");
-	private static Enigma enigma;
 	private static EnigmaProject project;
-	private static EntryTree<EntryMapping> mappings;
-
 	private static EntryRemapper remapper;
 
 	@BeforeAll
 	public static void beforeAll() throws Exception {
-		enigma = Enigma.create();
+		Enigma enigma = Enigma.create();
 		project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
 		remapper = project.getMapper();
 	}
 
 	@BeforeEach
 	public void beforeEach() {
-		mappings = new HashEntryTree<>();
+		EntryTree<EntryMapping> mappings = new HashEntryTree<>();
 		project.setMappings(mappings);
 		remapper = project.getMapper();
 	}
@@ -50,7 +47,15 @@ public class TestMappingValidator {
 		ValidationContext vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newField("a", "c", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
 
-		assertValid(vc);
+		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
+
+		// repeat with mapped classes
+		this.putClassMappings();
+		vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newField("a", "c", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
+
+		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
+		this.removeClassMappings();
 
 		// final fields
 		remapper.putMapping(newVC(), newField("b", "a", "I"), new EntryMapping("field01"));
@@ -58,7 +63,15 @@ public class TestMappingValidator {
 		vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newField("a", "a", "I"), new EntryMapping("field01"));
 
-		assertValid(vc);
+		assertMessages(vc);
+
+		// repeat with mapped classes
+		this.putClassMappings();
+		vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newField("a", "a", "I"), new EntryMapping("field01"));
+
+		assertMessages(vc);
+		this.removeClassMappings();
 
 		// instance fields
 		remapper.putMapping(newVC(), newField("b", "b", "I"), new EntryMapping("field02"));
@@ -66,7 +79,14 @@ public class TestMappingValidator {
 		vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newField("a", "b", "I"), new EntryMapping("field02"));
 
-		assertValid(vc);
+		assertMessages(vc);
+
+		// repeat with mapped classes
+		this.putClassMappings();
+		vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newField("a", "b", "I"), new EntryMapping("field02"));
+
+		assertMessages(vc);
 	}
 
 	@Test
@@ -77,8 +97,15 @@ public class TestMappingValidator {
 		ValidationContext vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newField("a", "a", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
 
-		// TODO: warning
-		assertValid(vc);
+		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
+
+		// repeat with mapped classes
+		this.putClassMappings();
+		vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newField("a", "a", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
+
+		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
+		this.removeClassMappings();
 
 		// default fields
 		remapper.putMapping(newVC(), newField("b", "b", "Z"), new EntryMapping("field05"));
@@ -86,8 +113,12 @@ public class TestMappingValidator {
 		vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newField("a", "a", "Z"), new EntryMapping("field05"));
 
-		// TODO: warning
-		assertValid(vc);
+		assertMessages(vc);
+
+		// repeat with mapped classes
+		this.putClassMappings();
+		vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newField("a", "a", "Z"), new EntryMapping("field05"));
 	}
 
 	@Test
@@ -98,7 +129,15 @@ public class TestMappingValidator {
 		ValidationContext vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newMethod("a", "a", "()V"), new EntryMapping("method01"));
 
-		assertValid(vc);
+		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
+
+		// repeat with mapped classes
+		this.putClassMappings();
+		vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newMethod("a", "a", "()V"), new EntryMapping("method01"));
+
+		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
+		this.removeClassMappings();
 
 		// private methods
 		remapper.putMapping(newVC(), newMethod("b", "a", "()V"), new EntryMapping("method02"));
@@ -106,8 +145,12 @@ public class TestMappingValidator {
 		vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newMethod("a", "d", "()V"), new EntryMapping("method02"));
 
-		// TODO: shouldn't be an error
-		// assertValid(vc);
+		assertMessages(vc);
+
+		// repeat with mapped classes
+		this.putClassMappings();
+		vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newMethod("a", "d", "()V"), new EntryMapping("method02"));
 	}
 
 	@Test
@@ -117,14 +160,29 @@ public class TestMappingValidator {
 		ValidationContext vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newField("a", "b", "I"), new EntryMapping("field01"));
 
-		assertErrorMessages(vc, Message.NONUNIQUE_NAME_CLASS);
+		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
+
+		// repeat with mapped classes
+		this.putClassMappings();
+		vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newField("a", "b", "I"), new EntryMapping("field01"));
+
+		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
+		this.removeClassMappings();
 
 		remapper.putMapping(newVC(), newField("a", "c", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
 
 		vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newField("a", "a", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
 
-		assertErrorMessages(vc, Message.NONUNIQUE_NAME_CLASS);
+		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
+
+		// repeat with mapped classes
+		this.putClassMappings();
+		vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newField("a", "a", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
+
+		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 	}
 
 	@Test
@@ -134,31 +192,101 @@ public class TestMappingValidator {
 		ValidationContext vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newMethod("a", "b", "()V"), new EntryMapping("method01"));
 
-		assertErrorMessages(vc, Message.NONUNIQUE_NAME_CLASS);
+		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
+
+		// repeat with mapped classes
+		this.putClassMappings();
+		vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newMethod("a", "b", "()V"), new EntryMapping("method01"));
+
+		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
+		this.removeClassMappings();
 
 		vc = new ValidationContext(notifier());
 		remapper.validatePutMapping(vc, newMethod("a", "d", "()V"), new EntryMapping("method01"));
 
-		assertErrorMessages(vc, Message.NONUNIQUE_NAME_CLASS);
+		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
+
+		// repeat with mapped classes
+		this.putClassMappings();
+		vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newMethod("a", "d", "()V"), new EntryMapping("method01"));
+
+		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 	}
 
-	private static void assertValid(ValidationContext vc) {
-		assertThat(vc.getMessages().size(), is(0));
-		assertThat(vc.canProceed(), is(true));
+	@Test
+	public void conflictingMethods() {
+		// "overriding" w/different return descriptor
+		remapper.putMapping(newVC(), newMethod("b", "a", "()Z"), new EntryMapping("method01"));
+
+		ValidationContext vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newMethod("a", "b", "()V"), new EntryMapping("method01"));
+
+		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
+
+		// repeat with mapped classes
+		this.putClassMappings();
+		vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newMethod("a", "b", "()V"), new EntryMapping("method01"));
+
+		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
+		this.removeClassMappings();
+
+		// "overriding" a static method
+		remapper.putMapping(newVC(), newMethod("b", "c", "()V"), new EntryMapping("method02"));
+
+		vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newMethod("a", "b", "()V"), new EntryMapping("method02"));
+
+		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
+
+		// repeat with mapped classes
+		this.putClassMappings();
+		vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newMethod("a", "b", "()V"), new EntryMapping("method02"));
+
+		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
+		this.removeClassMappings();
+
+		// "overriding" when the original methods were not related
+		remapper.putMapping(newVC(), newMethod("b", "b", "()I"), new EntryMapping("method03"));
+
+		vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newMethod("a", "a", "()I"), new EntryMapping("method03"));
+
+		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
+
+		// repeat with mapped classes
+		this.putClassMappings();
+		vc = new ValidationContext(notifier());
+		remapper.validatePutMapping(vc, newMethod("a", "a", "()I"), new EntryMapping("method03"));
+
+		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 	}
 
 	/**
-	 * Assert that the validation context can't proceed and contain the messages.
+	 * Assert that the validation context contains the messages.
 	 *
 	 * @param vc validation context
 	 * @param messages the messages the validation context should contain
 	 */
-	private static void assertErrorMessages(ValidationContext vc, Message... messages) {
+	private static void assertMessages(ValidationContext vc, Message... messages) {
 		assertThat(vc.getMessages().size(), is(messages.length));
 		for (int i = 0; i < messages.length; i++) {
 			ParameterizedMessage msg = vc.getMessages().get(i);
 			assertThat(msg.message(), is(messages[i]));
 		}
+	}
+
+	private void putClassMappings() {
+		remapper.putMapping(newVC(), newClass("a"), new EntryMapping("BaseClass"));
+		remapper.putMapping(newVC(), newClass("b"), new EntryMapping("SuperClass"));
+	}
+
+	private void removeClassMappings() {
+		remapper.putMapping(newVC(), newClass("a"), new EntryMapping(null));
+		remapper.putMapping(newVC(), newClass("b"), new EntryMapping(null));
 	}
 
 	private static ValidationContext newVC() {

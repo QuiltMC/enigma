@@ -29,4 +29,9 @@ public class SuperClass {
 	// a()V
 	private void methodC() {
 	}
+
+	// b()I
+	public int methodD() {
+		return 0;
+	}
 }

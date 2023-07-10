@@ -55,9 +55,14 @@ public class ValidationContext {
 	 * valid state
 	 */
 	public boolean canProceed() {
-		for (ParameterizedMessage m : this.messages) {
-			if (m.getType() == Type.WARNING && !this.notifier.verifyWarning(m)) {
-				return false;
+		List<ParameterizedMessage> messagesCopy = new ArrayList<>(this.messages);
+
+		for (ParameterizedMessage m : messagesCopy) {
+			if (m.getType() == Type.WARNING) {
+				this.messages.remove(m);
+				if (!this.notifier.verifyWarning(m)) {
+					return false;
+				}
 			}
 		}
 
@@ -65,7 +70,7 @@ public class ValidationContext {
 	}
 
 	/**
-	 * Returns a list of all currently stored messages.
+	 * Returns an unmodifiable list of all currently stored messages.
 	 * @return the messages
 	 */
 	public List<ParameterizedMessage> getMessages() {

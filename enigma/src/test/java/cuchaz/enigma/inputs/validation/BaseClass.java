@@ -18,15 +18,20 @@ public class BaseClass extends SuperClass {
 	}
 
 	// b()V
-	public void methodD() {
+	public void methodE() {
 	}
 
 	// a(I)I
-	public int methodD(int i) {
+	public int methodE(int i) {
 		return i;
 	}
 
 	// d()V
 	private void methodC() {
+	}
+
+	// a()I
+	public int methodF() {
+		return 1;
 	}
 }
