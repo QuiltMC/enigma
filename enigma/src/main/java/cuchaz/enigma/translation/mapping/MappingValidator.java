@@ -129,7 +129,7 @@ public class MappingValidator {
 	private boolean isUnique(Entry<?> entry, Entry<?> obfEntry, Map<Entry<?>, Entry<?>> siblings, String name) {
 		// Methods need further checks
 		if (entry instanceof MethodEntry methodEntry) {
-			return isMethodUnique(methodEntry, obfEntry, siblings, name);
+			return this.isMethodUnique(methodEntry, obfEntry, siblings, name);
 		}
 
 		for (Map.Entry<Entry<?>, Entry<?>> siblingEntry : siblings.entrySet()) {
@@ -152,12 +152,12 @@ public class MappingValidator {
 			Entry<?> obfSibling = siblingEntry.getKey();
 
 			if (entry.canConflictWith(sibling) && sibling.getName().equals(name)
-				|| entry.canConflictWith(obfSibling) && obfSibling.getName().equals(name)) {
+					|| entry.canConflictWith(obfSibling) && obfSibling.getName().equals(name)) {
 				AccessFlags siblingFlags = this.index.getEntryIndex().getEntryAccess(obfSibling);
 				AccessFlags flags = this.index.getEntryIndex().getEntryAccess(obfEntry);
 
 				boolean sameParent = (entry.getParent() != null && entry.getParent().equals(sibling.getParent()))
-					|| (obfEntry.getParent() != null && entry.getParent().equals(sibling.getParent()));
+						|| (obfEntry.getParent() != null && entry.getParent().equals(sibling.getParent()));
 				if (!sameParent && flags != null && siblingFlags != null) {
 					// Methods from different parents don't conflict if they are both static or private
 					if (flags.isStatic() && siblingFlags.isStatic()) {
