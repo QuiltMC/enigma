@@ -1,6 +1,5 @@
 package cuchaz.enigma.command;
 
-import com.google.common.io.MoreFiles;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.EnigmaProject;
@@ -12,6 +11,7 @@ import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingDelta;
+import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
@@ -99,49 +98,14 @@ public abstract class Command {
 		return project;
 	}
 
-	protected static EntryTree<EntryMapping> readMappings(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws Exception {
-		List<Exception> suppressed = new ArrayList<>();
-		if ("zip".equalsIgnoreCase(MoreFiles.getFileExtension(path))) {
-			return MappingFormat.ENIGMA_ZIP.read(path, progress, saveParameters);
-		} else {
-			for (MappingFormat format : MappingFormat.getReadableFormats()) {
-				try {
-					return format.read(path, progress, saveParameters);
-				} catch (Exception e) {
-					suppressed.add(e);
-				}
-			}
-		}
-
-		RuntimeException exception = new RuntimeException("Unable to parse mappings!");
-		for (Exception supressedException : suppressed) {
-			exception.addSuppressed(supressedException);
-		}
-
-		throw exception;
+	protected static EntryTree<EntryMapping> readMappings(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws MappingParseException, IOException {
+		MappingFormat format = MappingFormat.parseFromFile(path);
+		return format.read(path, progress, saveParameters);
 	}
 
-	protected static void writeMappings(EntryTree<EntryMapping> mappings, Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws Exception {
-		List<Exception> suppressed = new ArrayList<>();
-		if ("zip".equalsIgnoreCase(MoreFiles.getFileExtension(path))) {
-			MappingFormat.ENIGMA_ZIP.write(mappings, path, progress, saveParameters);
-		} else {
-			for (MappingFormat format : MappingFormat.getWritableFormats()) {
-				try {
-					format.write(mappings, path, progress, saveParameters);
-					return;
-				} catch (Exception e) {
-					suppressed.add(e);
-				}
-			}
-		}
-
-		RuntimeException exception = new RuntimeException("Unable to write mappings!");
-		for (Exception supressedException : suppressed) {
-			exception.addSuppressed(supressedException);
-		}
-
-		throw exception;
+	protected static void writeMappings(EntryTree<EntryMapping> mappings, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
+		MappingFormat format = MappingFormat.parseFromFile(path);
+		format.write(mappings, path, progress, saveParameters);
 	}
 
 	protected static File getWritableFile(String path) {
@@ -253,7 +217,7 @@ public abstract class Command {
 	}
 
 	public static class ConsoleProgressListener implements ProgressListener {
-		private static final int ReportTime = 5000; // 5s
+		private static final int REPORT_TIME = 5000; // 5s
 
 		private int totalWork;
 		private long startTime;
@@ -271,7 +235,7 @@ public abstract class Command {
 		public void step(int numDone, String message) {
 			long now = System.currentTimeMillis();
 			boolean isLastUpdate = numDone == this.totalWork;
-			boolean shouldReport = isLastUpdate || now - this.lastReportTime > ReportTime;
+			boolean shouldReport = isLastUpdate || now - this.lastReportTime > REPORT_TIME;
 
 			if (shouldReport) {
 				int percent = numDone * 100 / this.totalWork;

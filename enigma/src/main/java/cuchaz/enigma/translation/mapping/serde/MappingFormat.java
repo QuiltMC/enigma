@@ -1,5 +1,6 @@
 package cuchaz.enigma.translation.mapping.serde;
 
+import com.google.common.io.MoreFiles;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingDelta;
@@ -17,7 +18,9 @@ import cuchaz.enigma.translation.mapping.tree.EntryTree;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Scanner;
 
 public enum MappingFormat {
 	ENIGMA_FILE(EnigmaMappingsWriter.FILE, EnigmaMappingsReader.FILE),
@@ -67,25 +70,54 @@ public enum MappingFormat {
 		return this.reader;
 	}
 
-	public static MappingFormat[] getReadableFormats() {
-		return new MappingFormat[] {
-				ENIGMA_DIRECTORY,
-				ENIGMA_FILE,
-				TINY_V2,
-				TINY_FILE,
-				ENIGMA_ZIP,
-				PROGUARD
-		};
-	}
+	/**
+	 * Determines the mapping format of the provided file. Checks all formats, and returns {@link #RECAF} if none match.
+	 * @param file the file to analyse
+	 * @apiNote While most assessments are based on file extension, tiny format is determined by the first line of the file.
+	 * If the first line has "v2" in its header, the file is considered {@link #TINY_V2}. Otherwise, it goes to {@link #TINY_FILE}.
+	 * Any directory is considered to be the {@link #ENIGMA_DIRECTORY} format.
+	 * @return the mapping format of the file.
+	 */
+	public static MappingFormat parseFromFile(Path file) {
+		if (Files.isDirectory(file)) {
+			return ENIGMA_DIRECTORY;
+		} else {
+			switch (MoreFiles.getFileExtension(file).toLowerCase()) {
+				case "zip" -> {
+					return ENIGMA_ZIP;
+				}
+				case "mapping" -> {
+					return ENIGMA_FILE;
+				}
+				case "tiny" -> {
+					// the first line of a tiny v2 file should contain "v2"
+					try (Scanner scanner = new Scanner(file)) {
+						if (scanner.next().contains("v2")) {
+							return TINY_V2;
+						} else {
+							return TINY_FILE;
+						}
+					} catch (IOException e) {
+						return TINY_V2;
+					}
+				}
+				case "tsrg" -> {
+					return SRG_FILE;
+				}
+				default -> {
+					// check for proguard. Recaf is the default if we don't match proguard here
+					try (Scanner scanner = new Scanner(file)) {
+						String[] firstLine = scanner.next().split(" ");
+						if (firstLine.length == 3 && firstLine[1].equals("->") && firstLine[2].endsWith(":")) {
+							return PROGUARD;
+						}
+					} catch (IOException e) {
+						return RECAF;
+					}
+				}
+			}
+		}
 
-	public static MappingFormat[] getWritableFormats() {
-		return new MappingFormat[] {
-				ENIGMA_DIRECTORY,
-				ENIGMA_FILE,
-				TINY_V2,
-				TINY_FILE,
-				ENIGMA_ZIP,
-				SRG_FILE
-		};
+		return RECAF;
 	}
 }
