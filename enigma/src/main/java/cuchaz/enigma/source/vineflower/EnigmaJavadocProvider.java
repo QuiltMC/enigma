@@ -1,4 +1,4 @@
-package cuchaz.enigma.source.quiltflower;
+package cuchaz.enigma.source.vineflower;
 
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryRemapper;

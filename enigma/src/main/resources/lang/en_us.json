@@ -54,7 +54,7 @@
 	"menu.file.exit": "Exit",
 	"menu.decompiler": "Decompiler",
 	"menu.decompiler.settings": "Decompiler Settings",
-	"menu.decompiler.settings.quiltflower": "Quiltflower Settings",
+	"menu.decompiler.settings.vineflower": "Vineflower Settings",
 	"menu.view": "View",
   	"menu.view.notifications": "Server Notifications",
 	"menu.view.themes": "Themes",

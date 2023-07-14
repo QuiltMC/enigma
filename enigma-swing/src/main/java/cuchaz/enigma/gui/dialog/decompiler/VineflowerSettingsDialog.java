@@ -3,7 +3,7 @@ package cuchaz.enigma.gui.dialog.decompiler;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.DecompilerConfig;
 import cuchaz.enigma.gui.util.ScaleUtil;
-import cuchaz.enigma.source.quiltflower.QuiltflowerPreferences;
+import cuchaz.enigma.source.vineflower.VineflowerPreferences;
 import cuchaz.enigma.utils.I18n;
 
 import javax.swing.BoxLayout;
@@ -26,11 +26,11 @@ import java.awt.FlowLayout;
 import java.util.HashMap;
 import java.util.Map;
 
-public class QuiltflowerSettingsDialog extends JDialog {
-	private final Map<String, Object> options = new HashMap<>(QuiltflowerPreferences.OPTIONS);
+public class VineflowerSettingsDialog extends JDialog {
+	private final Map<String, Object> options = new HashMap<>(VineflowerPreferences.OPTIONS);
 
-	public QuiltflowerSettingsDialog(Gui gui, JDialog parent) {
-		super(parent, I18n.translate("menu.decompiler.settings.quiltflower"), true);
+	public VineflowerSettingsDialog(Gui gui, JDialog parent) {
+		super(parent, I18n.translate("menu.decompiler.settings.vineflower"), true);
 		Container pane = this.getContentPane();
 		pane.setLayout(new BorderLayout());
 
@@ -42,20 +42,20 @@ public class QuiltflowerSettingsDialog extends JDialog {
 		preferencesScrollPanel.setBorder(new EmptyBorder(ScaleUtil.scale(10), ScaleUtil.scale(20), ScaleUtil.scale(10), ScaleUtil.scale(20)));
 		preferencesScrollPanel.getVerticalScrollBar().setUnitIncrement(16);
 
-		for (QuiltflowerPreferences.Preference preference : QuiltflowerPreferences.getPreferences()) {
+		for (VineflowerPreferences.Preference preference : VineflowerPreferences.getPreferences()) {
 			JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			JLabel label = new JLabel(preference.name());
 			label.setToolTipText(preference.description());
 
 			String key = preference.key();
-			Object value = QuiltflowerPreferences.getValue(key);
+			Object value = VineflowerPreferences.getValue(key);
 			JComponent input = switch (preference.type()) {
 				case BOOLEAN -> {
 					JCheckBox c = new JCheckBox();
 					c.setSelected(value.equals("1"));
 					c.addActionListener(e -> {
 						String newValue = c.isSelected() ? "1" : "0";
-						if (newValue != QuiltflowerPreferences.DEFAULTS.get(key)) {
+						if (newValue != VineflowerPreferences.DEFAULTS.get(key)) {
 							this.options.put(key, newValue);
 						} else {
 							this.options.remove(key);
@@ -68,7 +68,7 @@ public class QuiltflowerSettingsDialog extends JDialog {
 					t.setColumns(20);
 					t.addActionListener(e -> {
 						String newValue = t.getText();
-						if (newValue != QuiltflowerPreferences.DEFAULTS.get(key)) {
+						if (newValue != VineflowerPreferences.DEFAULTS.get(key)) {
 							this.options.put(key, newValue);
 						} else {
 							this.options.remove(key);
@@ -81,7 +81,7 @@ public class QuiltflowerSettingsDialog extends JDialog {
 					spinner.setModel(new SpinnerNumberModel(toInt(value), 0, Integer.MAX_VALUE, 1));
 					spinner.addChangeListener(e -> {
 						Object newValue = spinner.getValue();
-						if (newValue != QuiltflowerPreferences.DEFAULTS.get(key)) {
+						if (newValue != VineflowerPreferences.DEFAULTS.get(key)) {
 							this.options.put(key, newValue);
 						} else {
 							this.options.remove(key);
@@ -133,10 +133,10 @@ public class QuiltflowerSettingsDialog extends JDialog {
 	}
 
 	private void save() {
-		QuiltflowerPreferences.OPTIONS.clear();
-		QuiltflowerPreferences.OPTIONS.putAll(this.options);
+		VineflowerPreferences.OPTIONS.clear();
+		VineflowerPreferences.OPTIONS.putAll(this.options);
 
-		DecompilerConfig.updateQuiltflowerValues(QuiltflowerPreferences.OPTIONS);
+		DecompilerConfig.updateVineflowerValues(VineflowerPreferences.OPTIONS);
 		DecompilerConfig.save();
 		this.dispose();
 	}

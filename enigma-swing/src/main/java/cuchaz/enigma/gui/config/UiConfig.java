@@ -312,7 +312,7 @@ public final class UiConfig {
 	}
 
 	public static Decompiler getDecompiler() {
-		return ui.data().section(DECOMPILER).setIfAbsentEnum(Decompiler::valueOf, CURRENT, Decompiler.QUILTFLOWER);
+		return ui.data().section(DECOMPILER).setIfAbsentEnum(Decompiler::valueOfLegacy, CURRENT, Decompiler.VINEFLOWER);
 	}
 
 	public static void setDecompiler(Decompiler d) {

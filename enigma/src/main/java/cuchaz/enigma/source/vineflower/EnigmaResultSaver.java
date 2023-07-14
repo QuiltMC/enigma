@@ -1,4 +1,4 @@
-package cuchaz.enigma.source.quiltflower;
+package cuchaz.enigma.source.vineflower;
 
 import cuchaz.enigma.source.SourceIndex;
 import org.jetbrains.java.decompiler.main.extern.IResultSaver;

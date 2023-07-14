@@ -11,7 +11,7 @@ swing_dpi = "0.10"
 fontchooser = "2.5.2"
 tinylog = "2.6.2"
 
-quiltflower = "1.10.0-20230513.181048-90"
+vineflower = "1.10.0-20230713.053900-2"
 cfr = "0.2.1"
 procyon = "0.6.0"
 
@@ -39,7 +39,7 @@ syntaxpane = { module = "de.sciss:syntaxpane", version.ref = "syntaxpane" }
 swing_dpi = { module = "com.github.lukeu:swing-dpi", version.ref = "swing_dpi" }
 fontchooser = { module = "org.drjekyll:fontchooser", version.ref = "fontchooser" }
 
-quiltflower = { module = "org.quiltmc:quiltflower", version.ref = "quiltflower" }
+vineflower = { module = "org.vineflower:vineflower", version.ref = "vineflower" }
 cfr = { module = "net.fabricmc:cfr", version.ref = "cfr" }
 procyon = { module = "org.bitbucket.mstrobel:procyon-compilertools", version.ref = "procyon" }
 

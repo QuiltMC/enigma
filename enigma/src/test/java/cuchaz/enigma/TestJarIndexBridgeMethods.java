@@ -100,7 +100,7 @@ public class TestJarIndexBridgeMethods {
 
 	@Test
 	public void testTokensBase() {
-		this.testTokensBase(Decompilers.QUILTFLOWER);
+		this.testTokensBase(Decompilers.VINEFLOWER);
 		this.testTokensBase(Decompilers.CFR);
 		this.testTokensBase(Decompilers.PROCYON);
 	}
@@ -114,7 +114,7 @@ public class TestJarIndexBridgeMethods {
 
 	@Test
 	public void testTokensSub() {
-		this.testTokensSub(Decompilers.QUILTFLOWER);
+		this.testTokensSub(Decompilers.VINEFLOWER);
 		this.testTokensSub(Decompilers.CFR);
 		this.testTokensSub(Decompilers.PROCYON);
 	}
@@ -131,7 +131,7 @@ public class TestJarIndexBridgeMethods {
 
 	@Test
 	public void testTokensInnerSub() {
-		this.testTokensInnerSub(Decompilers.QUILTFLOWER);
+		this.testTokensInnerSub(Decompilers.VINEFLOWER);
 		this.testTokensInnerSub(Decompilers.CFR);
 		this.testTokensInnerSub(Decompilers.PROCYON);
 	}
@@ -148,7 +148,7 @@ public class TestJarIndexBridgeMethods {
 
 	@Test
 	public void testTokensOther() {
-		this.testTokensOther(Decompilers.QUILTFLOWER);
+		this.testTokensOther(Decompilers.VINEFLOWER);
 		this.testTokensOther(Decompilers.CFR);
 		this.testTokensOther(Decompilers.PROCYON);
 	}
