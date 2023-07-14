@@ -1,10 +1,10 @@
-package cuchaz.enigma.source.quiltflower;
+package cuchaz.enigma.source.vineflower;
 
 import org.jetbrains.java.decompiler.main.extern.IFernflowerLogger;
 import org.tinylog.Logger;
 
 public class EnigmaFernflowerLogger extends IFernflowerLogger {
-	private static final String MESSAGE_TEMPLATE = "[Quiltflower] {}";
+	private static final String MESSAGE_TEMPLATE = "[Vineflower] {}";
 
 	@Override
 	public void writeMessage(String message, Severity severity) {

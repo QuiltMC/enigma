@@ -22,6 +22,10 @@ subprojects {
 		maven {
 			url = "https://maven.fabricmc.net/"
 		}
+		maven {
+			// Vineflower snapshots
+			url = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+		}
 	}
 
 	dependencies {

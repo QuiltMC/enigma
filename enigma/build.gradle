@@ -11,7 +11,7 @@ configurations {
 dependencies {
 	implementation libs.bundles.asm
 
-	implementation libs.quiltflower
+	implementation libs.vineflower
 	implementation libs.cfr
 	implementation libs.procyon
 
@@ -27,7 +27,7 @@ ext.genOutputDir = file("$buildDir/generated-resources")
 task generateVersionFile {
 	ext.outputFile = file("$genOutputDir/version.properties")
 	inputs.property("version", project.version)
-	inputs.property("quiltflower-version", libs.quiltflower.get().versionConstraint.displayName)
+	inputs.property("vineflower-version", libs.vineflower.get().versionConstraint.displayName)
 	inputs.property("cfr-version", libs.cfr.get().versionConstraint.displayName)
 	inputs.property("procyon-version", libs.procyon.get().versionConstraint.displayName)
 

@@ -30,7 +30,7 @@ import java.util.Set;
 public class Enigma {
 	public static final String NAME = "Enigma";
 	public static final String VERSION;
-	public static final String QUILTFLOWER_VERSION;
+	public static final String VINEFLOWER_VERSION;
 	public static final String CFR_VERSION;
 	public static final String PROCYON_VERSION;
 	public static final String URL = "https://quiltmc.org";
@@ -155,22 +155,22 @@ public class Enigma {
 
 	static {
 		String version;
-		String qf;
+		String vf;
 		String cfr;
 		String procyon;
 
 		try {
 			Properties properties = Utils.readResourceToProperties("/version.properties");
 			version = properties.getProperty("version");
-			qf = properties.getProperty("quiltflower-version");
+			vf = properties.getProperty("vineflower-version");
 			cfr = properties.getProperty("cfr-version");
 			procyon = properties.getProperty("procyon-version");
 		} catch (Exception ignored) {
-			version = qf = cfr = procyon = "Unknown Version";
+			version = vf = cfr = procyon = "Unknown Version";
 		}
 
 		VERSION = version;
-		QUILTFLOWER_VERSION = qf;
+		VINEFLOWER_VERSION = vf;
 		CFR_VERSION = cfr;
 		PROCYON_VERSION = procyon;
 	}

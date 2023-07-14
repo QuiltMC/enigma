@@ -30,7 +30,7 @@ public class DecompilationTest {
 
 	private static Stream<DecompilerService> provideDecompilers() {
 		return Stream.of(
-				Decompilers.QUILTFLOWER,
+				Decompilers.VINEFLOWER,
 				Decompilers.CFR,
 				Decompilers.PROCYON
 		);

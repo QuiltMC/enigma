@@ -53,7 +53,7 @@ We'll only be cataloguing major changes, since there are countless bug fixes to 
 - improved token highlighting with different colour signifying different things
 - add more information to info panel, such as obfuscated name
 - added nested packages in class selectors
-- added support for decompilation with quiltflower
+- added support for decompilation with vineflower
 - added storage of recent projects
 - reworked notification system
 - added support for renaming entire packages

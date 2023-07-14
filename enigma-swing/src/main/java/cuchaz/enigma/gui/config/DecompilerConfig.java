@@ -2,12 +2,16 @@ package cuchaz.enigma.gui.config;
 
 import cuchaz.enigma.config.ConfigContainer;
 import cuchaz.enigma.config.ConfigSection;
-import cuchaz.enigma.source.quiltflower.QuiltflowerPreferences;
+import cuchaz.enigma.source.vineflower.VineflowerPreferences;
 
 import java.util.HashSet;
 import java.util.Map;
 
 public class DecompilerConfig {
+	@Deprecated
+	private static final String QUILTFLOWER = "Quiltflower";
+	private static final String VINEFLOWER = "Vineflower";
+
 	private DecompilerConfig() {
 	}
 
@@ -17,12 +21,12 @@ public class DecompilerConfig {
 		cfg.save();
 	}
 
-	private static ConfigSection getQuiltflowerSection() {
-		return cfg.data().section("Quiltflower");
+	private static ConfigSection getVineflowerSection() {
+		return cfg.data().section(VINEFLOWER);
 	}
 
-	public static void updateQuiltflowerValues(Map<String, Object> options) {
-		ConfigSection section = getQuiltflowerSection();
+	public static void updateVineflowerValues(Map<String, Object> options) {
+		ConfigSection section = getVineflowerSection();
 		new HashSet<>(section.values().keySet()).forEach(section::remove);
 
 		for (Map.Entry<String, Object> entry : options.entrySet()) {
@@ -40,7 +44,20 @@ public class DecompilerConfig {
 		// Just run the static initialization
 	}
 
+	private static void updateToVineflower() {
+		if (cfg.data().sections().containsKey(QUILTFLOWER)) {
+			ConfigSection oldSection = cfg.data().section(QUILTFLOWER);
+			ConfigSection newSection = getVineflowerSection();
+			oldSection.values().forEach(newSection::setIfAbsentString);
+
+			cfg.data().removeSection(QUILTFLOWER);
+			save();
+		}
+	}
+
 	static {
-		QuiltflowerPreferences.OPTIONS.putAll(getQuiltflowerSection().values());
+		updateToVineflower();
+
+		VineflowerPreferences.OPTIONS.putAll(getVineflowerSection().values());
 	}
 }

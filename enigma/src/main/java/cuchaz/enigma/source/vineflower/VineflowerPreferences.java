@@ -1,4 +1,4 @@
-package cuchaz.enigma.source.quiltflower;
+package cuchaz.enigma.source.vineflower;
 
 import org.jetbrains.java.decompiler.main.extern.IFernflowerLogger;
 import org.jetbrains.java.decompiler.main.extern.IFernflowerPreferences;
@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class QuiltflowerPreferences {
+public class VineflowerPreferences {
 	public static final List<String> IGNORED_PREFERENCES = List.of(
 			IFernflowerPreferences.INCLUDE_ENTIRE_CLASSPATH,
 			IFernflowerPreferences.INCLUDE_JAVA_RUNTIME,
@@ -31,7 +31,7 @@ public class QuiltflowerPreferences {
 			IFernflowerPreferences.INCLUDE_ENTIRE_CLASSPATH, "1",
 			IFernflowerPreferences.BANNER, """
 						/*
-						 * Class file decompiled with Quiltflower
+						 * Class file decompiled with Vineflower
 						 */
 
 						""",
@@ -102,7 +102,7 @@ public class QuiltflowerPreferences {
 	}
 
 	private static Type inferType(String key) {
-		Object defaultValue = QuiltflowerPreferences.DEFAULTS.get(key);
+		Object defaultValue = VineflowerPreferences.DEFAULTS.get(key);
 		if (defaultValue == null) {
 			return null;
 		}

@@ -54,7 +54,7 @@
 	"menu.file.exit": "Quitter",
 	"menu.decompiler": "Décompilateur",
   	"menu.decompiler.settings": "Paramètres du décompilateur",
-	"menu.decompiler.settings.quiltflower": "Paramètres de Quiltflower",
+	"menu.decompiler.settings.vineflower": "Paramètres de Vineflower",
 	"menu.view": "Affichage",
   	"menu.view.notifications": "Notifications du serveur",
 	"menu.view.themes": "Thèmes",

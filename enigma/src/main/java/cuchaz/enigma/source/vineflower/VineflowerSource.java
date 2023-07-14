@@ -1,4 +1,4 @@
-package cuchaz.enigma.source.quiltflower;
+package cuchaz.enigma.source.vineflower;
 
 import cuchaz.enigma.source.Source;
 import cuchaz.enigma.source.SourceIndex;
@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
-public class QuiltflowerSource implements Source {
+public class VineflowerSource implements Source {
 	private final IContextSource contextSource;
 	private final IContextSource libraryContextSource;
 	private final boolean hasLibrarySource;
@@ -25,11 +25,11 @@ public class QuiltflowerSource implements Source {
 
 	private SourceIndex index;
 
-	public QuiltflowerSource(EnigmaContextSource contextSource, EntryRemapper remapper, SourceSettings settings) {
+	public VineflowerSource(EnigmaContextSource contextSource, EntryRemapper remapper, SourceSettings settings) {
 		this(contextSource, contextSource.getExternalSource(), remapper, settings);
 	}
 
-	public QuiltflowerSource(IContextSource contextSource, @Nullable IContextSource libraryContextSource, EntryRemapper remapper, SourceSettings settings) {
+	public VineflowerSource(IContextSource contextSource, @Nullable IContextSource libraryContextSource, EntryRemapper remapper, SourceSettings settings) {
 		this.contextSource = contextSource;
 		this.libraryContextSource = libraryContextSource;
 		this.hasLibrarySource = libraryContextSource != null;
@@ -38,7 +38,7 @@ public class QuiltflowerSource implements Source {
 	}
 
 	private static Map<String, Object> getOptions(IFabricJavadocProvider javadocProvider, SourceSettings settings) {
-		Map<String, Object> options = QuiltflowerPreferences.getEffectiveOptions();
+		Map<String, Object> options = VineflowerPreferences.getEffectiveOptions();
 		options.put(IFabricJavadocProvider.PROPERTY_NAME, javadocProvider);
 
 		if (settings.removeImports()) {
