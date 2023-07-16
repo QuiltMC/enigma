@@ -20,7 +20,6 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Scanner;
 
 public enum MappingFormat {
 	ENIGMA_FILE(EnigmaMappingsWriter.FILE, EnigmaMappingsReader.FILE),
@@ -90,9 +89,11 @@ public enum MappingFormat {
 					return ENIGMA_FILE;
 				}
 				case "tiny" -> {
-					// the first line of a tiny v2 file should contain "v2"
-					try (Scanner scanner = new Scanner(file)) {
-						if (scanner.next().contains("v2")) {
+					// the first line of a tiny v2 file should be a header with tiny[tab]2[tab]0
+					try {
+						String contents = Files.readString(file);
+
+						if (contents.contains("tiny\t2\t0")) {
 							return TINY_V2;
 						} else {
 							return TINY_FILE;
@@ -106,9 +107,12 @@ public enum MappingFormat {
 				}
 				default -> {
 					// check for proguard. Recaf is the default if we don't match proguard here
-					try (Scanner scanner = new Scanner(file)) {
-						String[] firstLine = scanner.next().split(" ");
-						if (firstLine.length == 3 && firstLine[1].equals("->") && firstLine[2].endsWith(":")) {
+					try {
+						String contents = Files.readString(file);
+						String firstLine = contents.split("\n")[0];
+						String[] splitFirstLine = firstLine.split(" ");
+
+						if (splitFirstLine.length == 3 && splitFirstLine[1].equals("->") && splitFirstLine[2].endsWith(":")) {
 							return PROGUARD;
 						}
 					} catch (IOException e) {
