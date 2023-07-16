@@ -72,9 +72,10 @@ public enum MappingFormat {
 	/**
 	 * Determines the mapping format of the provided file. Checks all formats, and returns {@link #RECAF} if none match.
 	 * @param file the file to analyse
-	 * @apiNote While most assessments are based on file extension, tiny format is determined by the first line of the file.
-	 * If the first line has "v2" in its header, the file is considered {@link #TINY_V2}. Otherwise, it goes to {@link #TINY_FILE}.
-	 * Any directory is considered to be the {@link #ENIGMA_DIRECTORY} format.
+	 * @apiNote While most assessments are based on file extension, tiny format is determined by the contents of the file.
+	 * If it contains a tiny header ("tiny[tab]2[tab]0"), the file is considered {@link #TINY_V2}. Otherwise, it goes to {@link #TINY_FILE}.
+	 * Any directory is considered to be the {@link #ENIGMA_DIRECTORY} format. Recaf and Proguard formats are not determined by file extension,
+	 * but we only check for Proguard, Recaf being the fallback.
 	 * @return the mapping format of the file.
 	 */
 	public static MappingFormat parseFromFile(Path file) {
