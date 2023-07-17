@@ -50,7 +50,7 @@ public class MenuBar {
 	private final JMenu fileMenu = new JMenu();
 	private final JMenuItem jarOpenItem = new JMenuItem();
 	private final JMenuItem jarCloseItem = new JMenuItem();
-	private final JMenu openMenu = new JMenu();
+	private final JMenuItem openMappingsItem = new JMenuItem();
 	private final JMenu openRecentMenu = new JMenu();
 	private final JMenuItem maxRecentFilesItem = new JMenuItem();
 	private final JMenuItem saveMappingsItem = new JMenuItem();
@@ -101,7 +101,6 @@ public class MenuBar {
 
 		this.retranslateUi();
 
-		prepareOpenMenu(this.openMenu, gui);
 		this.reloadOpenRecentMenu(gui);
 		prepareSaveMappingsAsMenu(this.saveMappingsAsMenu, this.saveMappingsItem, gui);
 		prepareDecompilerMenu(this.decompilerMenu, this.decompilerSettingsItem, gui);
@@ -117,7 +116,7 @@ public class MenuBar {
 		this.fileMenu.add(this.openRecentMenu);
 		this.fileMenu.add(this.maxRecentFilesItem);
 		this.fileMenu.addSeparator();
-		this.fileMenu.add(this.openMenu);
+		this.fileMenu.add(this.openMappingsItem);
 		this.fileMenu.add(this.saveMappingsItem);
 		this.fileMenu.add(this.saveMappingsAsMenu);
 		this.fileMenu.add(this.closeMappingsItem);
@@ -165,6 +164,7 @@ public class MenuBar {
 		this.setKeyBinds();
 
 		this.jarOpenItem.addActionListener(e -> this.onOpenJarClicked());
+		this.openMappingsItem.addActionListener(e -> this.onOpenMappingsClicked());
 		this.jarCloseItem.addActionListener(e -> this.gui.getController().closeJar());
 		this.maxRecentFilesItem.addActionListener(e -> this.onMaxRecentFilesClicked());
 		this.saveMappingsItem.addActionListener(e -> this.onSaveMappingsClicked());
@@ -214,7 +214,7 @@ public class MenuBar {
 		this.startServerItem.setText(I18n.translate(connectionState != ConnectionState.HOSTING ? "menu.collab.server.start" : "menu.collab.server.stop"));
 
 		this.jarCloseItem.setEnabled(jarOpen);
-		this.openMenu.setEnabled(jarOpen);
+		this.openMappingsItem.setEnabled(jarOpen);
 		this.saveMappingsItem.setEnabled(jarOpen && this.gui.enigmaMappingsFileChooser.getSelectedFile() != null && connectionState != ConnectionState.CONNECTED);
 		this.saveMappingsAsMenu.setEnabled(jarOpen);
 		this.closeMappingsItem.setEnabled(jarOpen);
@@ -231,7 +231,7 @@ public class MenuBar {
 		this.jarCloseItem.setText(I18n.translate("menu.file.jar.close"));
 		this.openRecentMenu.setText(I18n.translate("menu.file.open_recent_project"));
 		this.maxRecentFilesItem.setText(I18n.translate("menu.file.max_recent_projects"));
-		this.openMenu.setText(I18n.translate("menu.file.mappings.open"));
+		this.openMappingsItem.setText(I18n.translate("menu.file.mappings.open"));
 		this.saveMappingsItem.setText(I18n.translate("menu.file.mappings.save"));
 		this.saveMappingsAsMenu.setText(I18n.translate("menu.file.mappings.save_as"));
 		this.closeMappingsItem.setText(I18n.translate("menu.file.mappings.close"));
@@ -458,19 +458,18 @@ public class MenuBar {
 		GuiUtil.openUrl("https://github.com/QuiltMC/Enigma");
 	}
 
-	private static void prepareOpenMenu(JMenu openMenu, Gui gui) {
-		for (MappingFormat format : MappingFormat.values()) {
+	private void onOpenMappingsClicked() {
+		this.gui.enigmaMappingsFileChooser.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
+		if (this.gui.enigmaMappingsFileChooser.showOpenDialog(this.gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
+			File selectedFile = this.gui.enigmaMappingsFileChooser.getSelectedFile();
+			UiConfig.setLastSelectedDir(this.gui.enigmaMappingsFileChooser.getCurrentDirectory().toString());
+
+			MappingFormat format = MappingFormat.parseFromFile(selectedFile.toPath());
 			if (format.getReader() != null) {
-				JMenuItem item = new JMenuItem(I18n.translate("mapping_format." + format.name().toLowerCase(Locale.ROOT)));
-				item.addActionListener(event -> {
-					gui.enigmaMappingsFileChooser.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
-					if (gui.enigmaMappingsFileChooser.showOpenDialog(gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
-						File selectedFile = gui.enigmaMappingsFileChooser.getSelectedFile();
-						gui.getController().openMappings(format, selectedFile.toPath());
-						UiConfig.setLastSelectedDir(gui.enigmaMappingsFileChooser.getCurrentDirectory().toString());
-					}
-				});
-				openMenu.add(item);
+				this.gui.getController().openMappings(format, selectedFile.toPath());
+			} else {
+				String nonParseableMessage = I18n.translateFormatted("menu.file.open.non_parseable", I18n.translate("mapping_format." + format.name().toLowerCase(Locale.ROOT)));
+				JOptionPane.showMessageDialog(this.gui.getFrame(), nonParseableMessage, I18n.translate("menu.file.open.cannot_open"), JOptionPane.ERROR_MESSAGE);
 			}
 		}
 	}
