@@ -103,11 +103,6 @@ public abstract class Command {
 		return format.read(path, progress, saveParameters);
 	}
 
-	protected static void writeMappings(EntryTree<EntryMapping> mappings, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
-		MappingFormat format = MappingFormat.parseFromFile(path);
-		format.write(mappings, path, progress, saveParameters);
-	}
-
 	protected static File getWritableFile(String path) {
 		if (path == null) {
 			return null;

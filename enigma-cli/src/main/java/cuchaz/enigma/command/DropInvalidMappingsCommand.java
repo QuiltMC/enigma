@@ -2,6 +2,7 @@ package cuchaz.enigma.command;
 
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import org.tinylog.Logger;
 
@@ -71,6 +72,7 @@ public class DropInvalidMappingsCommand extends Command {
 		}
 
 		MappingSaveParameters saveParameters = project.getEnigma().getProfile().getMappingSaveParameters();
-		writeMappings(project.getMapper().getObfToDeobf(), mappingsOut, ProgressListener.none(), saveParameters);
+		MappingFormat format = MappingFormat.parseFromFile(mappingsOut);
+		format.write(project.getMapper().getObfToDeobf(), mappingsOut, ProgressListener.none(), saveParameters);
 	}
 }
