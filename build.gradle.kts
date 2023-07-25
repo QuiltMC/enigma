@@ -18,19 +18,12 @@ subprojects {
         mavenLocal()
         mavenCentral()
 
-        maven {
-            url = uri("https://maven.quiltmc.org/repository/release/")
-        }
-        maven {
-            url = uri("https://maven.quiltmc.org/repository/snapshot/")
-        }
-        maven {
-            url = uri("https://maven.fabricmc.net/")
-        }
-        maven {
-            // Vineflower snapshots
-            url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-        }
+        maven("https://maven.quiltmc.org/repository/release/")
+        maven("https://maven.quiltmc.org/repository/snapshot/")
+        maven("https://maven.fabricmc.net/")
+
+        // Vineflower snapshots
+        maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
     }
 
     // https://github.com/gradle/gradle/issues/16634
