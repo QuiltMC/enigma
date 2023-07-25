@@ -82,16 +82,16 @@ public enum MappingFormat {
 		if (Files.isDirectory(file)) {
 			return ENIGMA_DIRECTORY;
 		} else {
-			switch (MoreFiles.getFileExtension(file).toLowerCase()) {
-				case "zip" -> {
-					return ENIGMA_ZIP;
-				}
-				case "mapping" -> {
-					return ENIGMA_FILE;
-				}
-				case "tiny" -> {
-					// the first line of a tiny v2 file should be a header with tiny[tab]2[tab]0
-					try {
+			try {
+				switch (MoreFiles.getFileExtension(file).toLowerCase()) {
+					case "zip" -> {
+						return ENIGMA_ZIP;
+					}
+					case "mapping" -> {
+						return ENIGMA_FILE;
+					}
+					case "tiny" -> {
+						// the first line of a tiny v2 file should be a header with tiny[tab]2[tab]0
 						String contents = Files.readString(file);
 
 						if (contents.contains("tiny\t2\t0")) {
@@ -99,16 +99,12 @@ public enum MappingFormat {
 						} else {
 							return TINY_FILE;
 						}
-					} catch (IOException e) {
-						return TINY_V2;
 					}
-				}
-				case "tsrg" -> {
-					return SRG_FILE;
-				}
-				default -> {
-					// check for proguard. Recaf is the default if we don't match proguard here
-					try {
+					case "tsrg" -> {
+						return SRG_FILE;
+					}
+					default -> {
+						// check for proguard. Recaf is the default if we don't match proguard here
 						String contents = Files.readString(file);
 						String firstLine = contents.split("\n")[0];
 						String[] splitFirstLine = firstLine.split(" ");
@@ -116,10 +112,10 @@ public enum MappingFormat {
 						if (splitFirstLine.length == 3 && splitFirstLine[1].equals("->") && splitFirstLine[2].endsWith(":")) {
 							return PROGUARD;
 						}
-					} catch (IOException e) {
-						return RECAF;
 					}
 				}
+			} catch (IOException e) {
+				throw new RuntimeException("failed to read file \"" + file + "\" to parse mapping format!", e);
 			}
 		}
 
