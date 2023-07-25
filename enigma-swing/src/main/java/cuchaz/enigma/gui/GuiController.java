@@ -1,6 +1,5 @@
 package cuchaz.enigma.gui;
 
-import com.google.common.io.MoreFiles;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.EnigmaProject;
@@ -70,11 +69,11 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -133,18 +132,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public CompletableFuture<Void> openMappings(Path path) {
-		if (Files.isDirectory(path)) {
-			return this.openMappings(MappingFormat.ENIGMA_DIRECTORY, path);
-		} else {
-			String extension = MoreFiles.getFileExtension(path).toLowerCase();
-
-			return switch (extension) {
-				case "zip" -> this.openMappings(MappingFormat.ENIGMA_ZIP, path);
-				case "tiny" -> this.openMappings(MappingFormat.TINY_FILE, path);
-				case "tinyv2" -> this.openMappings(MappingFormat.TINY_V2, path);
-				default -> this.openMappings(MappingFormat.ENIGMA_FILE, path);
-			};
-		}
+		return this.openMappings(MappingFormat.parseFromFile(path), path);
 	}
 
 	public CompletableFuture<Void> openMappings(MappingFormat format, Path path) {
@@ -200,7 +188,13 @@ public class GuiController implements ClientPacketHandler {
 	 * @return the future of saving
 	 */
 	public CompletableFuture<Void> saveMappings(Path path, MappingFormat format) {
-		if (this.project == null) return CompletableFuture.completedFuture(null);
+		if (this.project == null) {
+			return CompletableFuture.completedFuture(null);
+		} else if (format.getWriter() == null) {
+			String nonWriteableMessage = I18n.translateFormatted("menu.file.save.non_writeable", I18n.translate("mapping_format." + format.name().toLowerCase(Locale.ROOT)));
+			JOptionPane.showMessageDialog(this.gui.getFrame(), nonWriteableMessage, I18n.translate("menu.file.save.cannot_save"), JOptionPane.ERROR_MESSAGE);
+			return CompletableFuture.completedFuture(null);
+		}
 
 		return ProgressDialog.runOffThread(this.gui, progress -> {
 			EntryRemapper mapper = this.project.getMapper();

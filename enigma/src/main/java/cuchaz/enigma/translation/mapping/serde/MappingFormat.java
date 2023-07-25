@@ -1,5 +1,6 @@
 package cuchaz.enigma.translation.mapping.serde;
 
+import com.google.common.io.MoreFiles;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingDelta;
@@ -17,6 +18,7 @@ import cuchaz.enigma.translation.mapping.tree.EntryTree;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public enum MappingFormat {
@@ -67,25 +69,56 @@ public enum MappingFormat {
 		return this.reader;
 	}
 
-	public static MappingFormat[] getReadableFormats() {
-		return new MappingFormat[] {
-				ENIGMA_DIRECTORY,
-				ENIGMA_FILE,
-				TINY_V2,
-				TINY_FILE,
-				ENIGMA_ZIP,
-				PROGUARD
-		};
-	}
+	/**
+	 * Determines the mapping format of the provided file. Checks all formats, and returns {@link #RECAF} if none match.
+	 * @param file the file to analyse
+	 * @apiNote While most assessments are based on file extension, tiny format is determined by the contents of the file.
+	 * If it contains a tiny header ("tiny[tab]2[tab]0"), the file is considered {@link #TINY_V2}. Otherwise, it goes to {@link #TINY_FILE}.
+	 * Any directory is considered to be the {@link #ENIGMA_DIRECTORY} format. Recaf and Proguard formats are not determined by file extension,
+	 * but we only check for Proguard, Recaf being the fallback.
+	 * @return the mapping format of the file.
+	 */
+	public static MappingFormat parseFromFile(Path file) {
+		if (Files.isDirectory(file)) {
+			return ENIGMA_DIRECTORY;
+		} else {
+			try {
+				switch (MoreFiles.getFileExtension(file).toLowerCase()) {
+					case "zip" -> {
+						return ENIGMA_ZIP;
+					}
+					case "mapping" -> {
+						return ENIGMA_FILE;
+					}
+					case "tiny" -> {
+						// the first line of a tiny v2 file should be a header with tiny[tab]2[tab]0
+						String contents = Files.readString(file);
 
-	public static MappingFormat[] getWritableFormats() {
-		return new MappingFormat[] {
-				ENIGMA_DIRECTORY,
-				ENIGMA_FILE,
-				TINY_V2,
-				TINY_FILE,
-				ENIGMA_ZIP,
-				SRG_FILE
-		};
+						if (contents.contains("tiny\t2\t0")) {
+							return TINY_V2;
+						} else {
+							return TINY_FILE;
+						}
+					}
+					case "tsrg" -> {
+						return SRG_FILE;
+					}
+					default -> {
+						// check for proguard. Recaf is the default if we don't match proguard here
+						String contents = Files.readString(file);
+						String firstLine = contents.split("\n")[0];
+						String[] splitFirstLine = firstLine.split(" ");
+
+						if (splitFirstLine.length == 3 && splitFirstLine[1].equals("->") && splitFirstLine[2].endsWith(":")) {
+							return PROGUARD;
+						}
+					}
+				}
+			} catch (IOException e) {
+				throw new RuntimeException("failed to read file \"" + file + "\" to parse mapping format!", e);
+			}
+		}
+
+		return RECAF;
 	}
 }
