@@ -80,6 +80,7 @@ public class EditorTabbedPane {
 		if (editorPanel != null && activeEditor != editorPanel) {
 			this.openFiles.setSelectedComponent(this.editors.get(entry).getUi());
 			this.gui.updateStructure(editorPanel);
+			this.gui.showCursorReference(editorPanel.getCursorReference());
 		}
 
 		return editorPanel;
@@ -88,7 +89,9 @@ public class EditorTabbedPane {
 	public void closeEditor(EditorPanel ed) {
 		this.openFiles.remove(ed.getUi());
 		this.editors.inverse().remove(ed);
-		this.gui.updateStructure(this.getActiveEditor());
+		EditorPanel activeEditor = this.getActiveEditor();
+		this.gui.updateStructure(activeEditor);
+		this.gui.showCursorReference(activeEditor != null ? activeEditor.getCursorReference() : null);
 		ed.destroy();
 	}
 
@@ -139,7 +142,9 @@ public class EditorTabbedPane {
 				this.editorTabPopupMenu.show(this.openFiles, e.getX(), e.getY(), EditorPanel.byUi(this.openFiles.getComponentAt(i)));
 			}
 
-			this.gui.updateStructure(this.getActiveEditor());
+			EditorPanel activeEditor = this.getActiveEditor();
+			this.gui.updateStructure(activeEditor);
+			this.gui.showCursorReference(activeEditor != null ? activeEditor.getCursorReference() : null);
 		}
 	}
 
