@@ -53,7 +53,7 @@ public class StatsGenerator {
 	 * Generates stats for the given package.
 	 * @param progress a listener to update with current progress
 	 * @param includedTypes the types of entry to include in the stats
-	 * @param topLevelPackage the package to generate stats for. If this is empty, stats will be generated for the entire project.
+	 * @param topLevelPackage the package to generate stats for. Can be separated by slashes or dots. If this is empty, stats will be generated for the entire project
 	 * @param includeSynthetic whether to include synthetic methods
 	 * @return the generated {@link StatsResult} for the provided package
 	 */
@@ -65,7 +65,7 @@ public class StatsGenerator {
 	 * Generates stats for the given package or class.
 	 * @param progress a listener to update with current progress
 	 * @param includedTypes the types of entry to include in the stats
-	 * @param topLevelPackage the package or class to generate stats for
+	 * @param topLevelPackage the package or class to generate stats for. Can be separated by slashes or dots. If this is empty, stats will be generated for the entire project
 	 * @param classEntry if stats are being generated for a single class, provide the class here
 	 * @param includeSynthetic whether to include synthetic methods
 	 * @return the generated {@link StatsResult} for the provided class or package.
@@ -154,18 +154,8 @@ public class StatsGenerator {
 		progress.step(-1, I18n.translate("progress.stats.data"));
 
 		// generate html display
-		StatsResult.Tree<Integer> tree = new StatsResult.Tree<>();
-
-		for (Map.Entry<StatType, Map<String, Integer>> typedEntry : unmappedCounts.entrySet()) {
-			for (Map.Entry<String, Integer> entry : typedEntry.getValue().entrySet()) {
-				if (entry.getKey().startsWith(topLevelPackage)) {
-					StatsResult.Tree.Node<Integer> node = tree.getNode(entry.getKey());
-					int value = node.getValue() == null ? 0 : node.getValue();
-
-					node.setValue(value + entry.getValue());
-				}
-			}
-		}
+		String topLevelPackageDot = topLevelPackageSlash.replace("/", ".");
+		StatsResult.Tree<Integer> tree = getStatTree(unmappedCounts, topLevelPackageDot);
 
 		tree.collapse(tree.root);
 
@@ -177,6 +167,23 @@ public class StatsGenerator {
 		}
 
 		return new StatsResult(mappableCounts, rawUnmappedCounts, tree);
+	}
+
+	private static StatsResult.Tree<Integer> getStatTree(Map<StatType, Map<String, Integer>> unmappedCounts, String topLevelPackageDot) {
+		StatsResult.Tree<Integer> tree = new StatsResult.Tree<>();
+
+		for (Map.Entry<StatType, Map<String, Integer>> typedEntry : unmappedCounts.entrySet()) {
+			for (Map.Entry<String, Integer> entry : typedEntry.getValue().entrySet()) {
+				if (entry.getKey().startsWith(topLevelPackageDot)) {
+					StatsResult.Tree.Node<Integer> node = tree.getNode(entry.getKey());
+					int value = node.getValue() == null ? 0 : node.getValue();
+
+					node.setValue(value + entry.getValue());
+				}
+			}
+		}
+
+		return tree;
 	}
 
 	private boolean checkPackage(ClassEntry clazz, String topLevelPackage, @Nullable ClassEntry entry) {
