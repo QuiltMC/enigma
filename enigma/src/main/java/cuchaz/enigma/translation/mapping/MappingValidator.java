@@ -68,9 +68,9 @@ public class MappingValidator {
 				String packageName = e.getPackageName();
 				String originalPackageName = classEntry.getPackageName();
 
-                return (originalPackageName == null && packageName == null)
-                        || (packageName != null && packageName.equals(originalPackageName));
-            }).toList());
+				return (originalPackageName == null && packageName == null)
+					|| (packageName != null && packageName.equals(originalPackageName));
+			}).toList());
 		}
 
 		// add all ancestors
