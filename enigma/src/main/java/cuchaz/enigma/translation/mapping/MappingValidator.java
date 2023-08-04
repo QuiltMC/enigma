@@ -138,8 +138,8 @@ public class MappingValidator {
 			Entry<?> deobfSibling = siblingEntry.getValue();
 			Entry<?> obfSibling = siblingEntry.getKey();
 
-			if ((entry.canConflictWith(deobfSibling) && deobfSibling.getName().equals(name) && !deobfSibling.equals(entry))
-					|| (entry.canConflictWith(obfSibling) && obfSibling.getName().equals(name) && !obfSibling.equals(entry))) {
+			if ((entry.canConflictWith(deobfSibling) && deobfSibling.getName().equals(name) && doesNotMatch(entry, obfEntry, deobfSibling, obfSibling))
+					|| (entry.canConflictWith(obfSibling) && obfSibling.getName().equals(name) && doesNotMatch(entry, obfEntry, obfSibling, obfSibling))) {
 				return false;
 			}
 		}
@@ -152,8 +152,8 @@ public class MappingValidator {
 			Entry<?> sibling = siblingEntry.getValue();
 			Entry<?> obfSibling = siblingEntry.getKey();
 
-			if (entry.canConflictWith(sibling) && sibling.getName().equals(name)
-					|| entry.canConflictWith(obfSibling) && obfSibling.getName().equals(name)) {
+			if ((entry.canConflictWith(sibling) && sibling.getName().equals(name) && doesNotMatch(entry, obfEntry, sibling, obfSibling))
+					|| (entry.canConflictWith(obfSibling) && obfSibling.getName().equals(name) && doesNotMatch(entry, obfEntry, obfSibling, obfSibling))) {
 				AccessFlags siblingFlags = this.index.getEntryIndex().getEntryAccess(obfSibling);
 				AccessFlags flags = this.index.getEntryIndex().getEntryAccess(obfEntry);
 
@@ -172,6 +172,10 @@ public class MappingValidator {
 		}
 
 		return true;
+	}
+
+	private static boolean doesNotMatch(Entry<?> entry, Entry<?> obfEntry, Entry<?> deobfSibling, Entry<?> obfSibling) {
+		return !entry.equals(obfSibling) && !entry.equals(deobfSibling) && !obfEntry.equals(deobfSibling) && !obfEntry.equals(obfSibling);
 	}
 
 	@Nullable
