@@ -1,7 +1,6 @@
 package cuchaz.enigma.translation.mapping.serde.enigma;
 
 import cuchaz.enigma.ProgressListener;
-import cuchaz.enigma.translation.mapping.AccessModifier;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingPair;
 import cuchaz.enigma.translation.mapping.serde.MappingHelper;
@@ -231,7 +230,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 		// Empty string to concat
 		String jdLine = tokens.length > 1 ? String.join(" ", Arrays.copyOfRange(tokens, 1, tokens.length)) : "";
 		if (parent.getMapping() == null) {
-			parent.setMapping(new RawEntryMapping(parent.getEntry().getName(), AccessModifier.UNCHANGED));
+			parent.setMapping(new RawEntryMapping(parent.getEntry().getName()));
 		}
 
 		parent.getMapping().addJavadocLine(MappingHelper.unescape(jdLine));
@@ -246,23 +245,9 @@ public enum EnigmaMappingsReader implements MappingsReader {
 			obfuscatedEntry = new ClassEntry(obfuscatedName);
 		}
 
-		String mapping = null;
-		AccessModifier modifier = AccessModifier.UNCHANGED;
+		String mapping = tokens[2];
 
-		if (tokens.length == 3) {
-			AccessModifier parsedModifier = parseModifier(tokens[2]);
-			if (parsedModifier != null) {
-				modifier = parsedModifier;
-				mapping = obfuscatedName;
-			} else {
-				mapping = tokens[2];
-			}
-		} else if (tokens.length == 4) {
-			mapping = tokens[2];
-			modifier = parseModifier(tokens[3]);
-		}
-
-		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping, modifier));
+		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
 	}
 
 	private static MappingPair<FieldEntry, RawEntryMapping> parseField(@Nullable Entry<?> parent, String[] tokens) {
@@ -272,30 +257,22 @@ public enum EnigmaMappingsReader implements MappingsReader {
 
 		String obfuscatedName = tokens[1];
 		String mapping = null;
-		AccessModifier modifier = AccessModifier.UNCHANGED;
 		TypeDescriptor descriptor;
 
 		if (tokens.length == 3) {
 			descriptor = new TypeDescriptor(tokens[2]);
 		} else if (tokens.length == 4) {
-			AccessModifier parsedModifier = parseModifier(tokens[3]);
-			if (parsedModifier != null) {
-				descriptor = new TypeDescriptor(tokens[2]);
-				modifier = parsedModifier;
-			} else {
-				mapping = tokens[2];
-				descriptor = new TypeDescriptor(tokens[3]);
-			}
+			mapping = tokens[2];
+			descriptor = new TypeDescriptor(tokens[3]);
 		} else if (tokens.length == 5) {
 			mapping = tokens[2];
-			modifier = parseModifier(tokens[3]);
 			descriptor = new TypeDescriptor(tokens[4]);
 		} else {
 			throw new RuntimeException("Invalid field declaration");
 		}
 
 		FieldEntry obfuscatedEntry = new FieldEntry(ownerEntry, obfuscatedName, descriptor);
-		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping, modifier));
+		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
 	}
 
 	private static MappingPair<MethodEntry, RawEntryMapping> parseMethod(@Nullable Entry<?> parent, String[] tokens) {
@@ -305,31 +282,19 @@ public enum EnigmaMappingsReader implements MappingsReader {
 
 		String obfuscatedName = tokens[1];
 		String mapping = null;
-		AccessModifier modifier = AccessModifier.UNCHANGED;
 		MethodDescriptor descriptor;
 
 		if (tokens.length == 3) {
 			descriptor = new MethodDescriptor(tokens[2]);
-		} else if (tokens.length == 4) {
-			AccessModifier parsedModifier = parseModifier(tokens[3]);
-			if (parsedModifier != null) {
-				modifier = parsedModifier;
-				mapping = obfuscatedName;
-				descriptor = new MethodDescriptor(tokens[2]);
-			} else {
-				mapping = tokens[2];
-				descriptor = new MethodDescriptor(tokens[3]);
-			}
-		} else if (tokens.length == 5) {
+		} else if (tokens.length == 4 || tokens.length == 5) {
 			mapping = tokens[2];
-			modifier = parseModifier(tokens[4]);
 			descriptor = new MethodDescriptor(tokens[3]);
 		} else {
 			throw new RuntimeException("Invalid method declaration");
 		}
 
 		MethodEntry obfuscatedEntry = new MethodEntry(ownerEntry, obfuscatedName, descriptor);
-		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping, modifier));
+		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
 	}
 
 	private static MappingPair<LocalVariableEntry, RawEntryMapping> parseArgument(@Nullable Entry<?> parent, String[] tokens) {
@@ -341,14 +306,5 @@ public enum EnigmaMappingsReader implements MappingsReader {
 		String mapping = tokens[2];
 
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
-	}
-
-	@Nullable
-	private static AccessModifier parseModifier(String token) {
-		if (token.startsWith("ACC:")) {
-			return AccessModifier.valueOf(token.substring(4));
-		}
-
-		return null;
 	}
 }

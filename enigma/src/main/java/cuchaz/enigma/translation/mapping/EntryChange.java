@@ -13,21 +13,19 @@ public final class EntryChange<E extends Entry<?>> {
 	private final E target;
 	private final TristateChange<String> deobfName;
 	private final TristateChange<String> javadoc;
-	private final TristateChange<AccessModifier> access;
 
-	private EntryChange(E target, TristateChange<String> deobfName, TristateChange<String> javadoc, TristateChange<AccessModifier> access) {
+	private EntryChange(E target, TristateChange<String> deobfName, TristateChange<String> javadoc) {
 		this.target = target;
 		this.deobfName = deobfName;
 		this.javadoc = javadoc;
-		this.access = access;
 	}
 
 	public static <E extends Entry<?>> EntryChange<E> modify(E target) {
-		return new EntryChange<>(target, TristateChange.unchanged(), TristateChange.unchanged(), TristateChange.unchanged());
+		return new EntryChange<>(target, TristateChange.unchanged(), TristateChange.unchanged());
 	}
 
 	public EntryChange<E> withDeobfName(String name) {
-		return new EntryChange<>(this.target, TristateChange.set(name), this.javadoc, this.access);
+		return new EntryChange<>(this.target, TristateChange.set(name), this.javadoc);
 	}
 
 	public EntryChange<E> withDefaultDeobfName(@Nullable EnigmaProject project) {
@@ -36,23 +34,15 @@ public final class EntryChange<E extends Entry<?>> {
 	}
 
 	public EntryChange<E> clearDeobfName() {
-		return new EntryChange<>(this.target, TristateChange.reset(), this.javadoc, this.access);
+		return new EntryChange<>(this.target, TristateChange.reset(), this.javadoc);
 	}
 
 	public EntryChange<E> withJavadoc(String javadoc) {
-		return new EntryChange<>(this.target, this.deobfName, TristateChange.set(javadoc), this.access);
+		return new EntryChange<>(this.target, this.deobfName, TristateChange.set(javadoc));
 	}
 
 	public EntryChange<E> clearJavadoc() {
-		return new EntryChange<>(this.target, this.deobfName, TristateChange.reset(), this.access);
-	}
-
-	public EntryChange<E> withAccess(AccessModifier access) {
-		return new EntryChange<>(this.target, this.deobfName, this.javadoc, TristateChange.set(access));
-	}
-
-	public EntryChange<E> clearAccess() {
-		return new EntryChange<>(this.target, this.deobfName, this.javadoc, TristateChange.reset());
+		return new EntryChange<>(this.target, this.deobfName, TristateChange.reset());
 	}
 
 	public TristateChange<String> getDeobfName() {
@@ -61,10 +51,6 @@ public final class EntryChange<E extends Entry<?>> {
 
 	public TristateChange<String> getJavadoc() {
 		return this.javadoc;
-	}
-
-	public TristateChange<AccessModifier> getAccess() {
-		return this.access;
 	}
 
 	public E getTarget() {
@@ -77,17 +63,16 @@ public final class EntryChange<E extends Entry<?>> {
 		if (!(o instanceof EntryChange<?> that)) return false;
 		return Objects.equals(this.target, that.target)
 				&& Objects.equals(this.deobfName, that.deobfName)
-				&& Objects.equals(this.javadoc, that.javadoc)
-				&& Objects.equals(this.access, that.access);
+				&& Objects.equals(this.javadoc, that.javadoc);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.target, this.deobfName, this.javadoc, this.access);
+		return Objects.hash(this.target, this.deobfName, this.javadoc);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("EntryChange { target: %s, deobfName: %s, javadoc: %s, access: %s }", this.target, this.deobfName, this.javadoc, this.access);
+		return String.format("EntryChange { target: %s, deobfName: %s, javadoc: %s }", this.target, this.deobfName, this.javadoc);
 	}
 }

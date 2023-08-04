@@ -3,7 +3,6 @@ package cuchaz.enigma.translation.mapping.serde.enigma;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.MappingTranslator;
 import cuchaz.enigma.translation.Translator;
-import cuchaz.enigma.translation.mapping.AccessModifier;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingDelta;
 import cuchaz.enigma.translation.mapping.VoidEntryResolver;
@@ -295,11 +294,6 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 	private void writeMapping(StringBuilder builder, EntryMapping mapping) {
 		if (mapping.targetName() != null) {
 			builder.append(mapping.targetName()).append(' ');
-			if (mapping.accessModifier() != AccessModifier.UNCHANGED) {
-				builder.append(mapping.accessModifier().getFormattedName()).append(' ');
-			}
-		} else if (mapping.accessModifier() != AccessModifier.UNCHANGED) {
-			builder.append("- ").append(mapping.accessModifier().getFormattedName()).append(' ');
 		}
 	}
 
@@ -316,6 +310,6 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 	}
 
 	private boolean isMappingEmpty(EntryMapping mapping) {
-		return mapping.targetName() == null && mapping.accessModifier() == AccessModifier.UNCHANGED && mapping.javadoc() == null;
+		return mapping.targetName() == null && mapping.javadoc() == null;
 	}
 }

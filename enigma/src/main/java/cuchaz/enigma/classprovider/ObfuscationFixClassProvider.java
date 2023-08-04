@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
  * Wraps a ClassProvider to apply fixes to the following problems introduced by the obfuscator,
  * so that the classes can be decompiled correctly:
  * <ul>
- * 	<li>Bridge methods missing the "bridge" or "synthetic" access modifier
+ * 	<li>Bridge methods missing the "bridge" or "synthetic" zaccess modifier
  * 	<li>.getClass() calls added by Proguard (Proguard adds these to preserve semantics when Proguard removes
  * 	a field access which may have caused a {@code NullPointerException}).
  * 	<li>LVT names that don't match parameter table name

@@ -45,11 +45,10 @@ public class MethodDefEntry extends MethodEntry implements DefEntry<ClassEntry> 
 		MethodDescriptor translatedDesc = translator.translate(this.descriptor);
 		Signature translatedSignature = translator.translate(this.signature);
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
-		AccessFlags translatedAccess = mapping.accessModifier().transform(this.access);
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new MethodDefEntry(this.parent, translatedName, translatedDesc, translatedSignature, translatedAccess, docs)
+				new MethodDefEntry(this.parent, translatedName, translatedDesc, translatedSignature, this.access, docs)
 		);
 	}
 

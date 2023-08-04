@@ -65,7 +65,6 @@
 	"info_panel.identifier.class": "类",
 	"info_panel.identifier.type_descriptor": "类型描述符",
 	"info_panel.identifier.method_descriptor": "方法描述符",
-	"info_panel.identifier.modifier": "修饰符",
 	"info_panel.identifier.index": "索引",
 	"info_panel.editor.class.decompiling": "（反编译中...）",
 	"info_panel.editor.class.not_found": "找不到类：",

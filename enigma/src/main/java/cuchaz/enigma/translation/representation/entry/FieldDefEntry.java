@@ -45,11 +45,10 @@ public class FieldDefEntry extends FieldEntry implements DefEntry<ClassEntry> {
 		TypeDescriptor translatedDesc = translator.translate(this.desc);
 		Signature translatedSignature = translator.translate(this.signature);
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
-		AccessFlags translatedAccess = mapping.accessModifier().transform(this.access);
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new FieldDefEntry(this.parent, translatedName, translatedDesc, translatedSignature, translatedAccess, docs)
+				new FieldDefEntry(this.parent, translatedName, translatedDesc, translatedSignature, this.access, docs)
 		);
 	}
 

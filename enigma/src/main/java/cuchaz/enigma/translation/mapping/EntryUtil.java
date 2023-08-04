@@ -29,12 +29,6 @@ public class EntryUtil {
 			self = self.withDocs(null);
 		}
 
-		if (change.getAccess().isSet()) {
-			self = self.withModifier(change.getAccess().getNewValue());
-		} else if (change.getAccess().isReset()) {
-			self = self.withModifier(AccessModifier.UNCHANGED);
-		}
-
 		return self;
 	}
 }

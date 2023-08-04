@@ -133,7 +133,6 @@
   	"info_panel.identifier.obfuscated": "Nom obfusqué",
 	"info_panel.identifier.type_descriptor": "Descripteur de type",
 	"info_panel.identifier.method_descriptor": "Descripteur de méthode",
-	"info_panel.identifier.modifier": "Modificateur",
 	"info_panel.identifier.index": "Index",
 	"info_panel.editor.class.decompiling": "(décompilation...)",
 	"info_panel.editor.class.not_found": "Impossible de trouver la classe :",
