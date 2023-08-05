@@ -12,7 +12,7 @@ public record EntryMapping(
 		this(targetName, null);
 	}
 
-    public EntryMapping withName(String newName) {
+	public EntryMapping withName(String newName) {
 		return new EntryMapping(newName, this.javadoc);
 	}
 
