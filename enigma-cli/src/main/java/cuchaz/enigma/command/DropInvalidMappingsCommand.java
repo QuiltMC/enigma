@@ -44,6 +44,7 @@ public class DropInvalidMappingsCommand extends Command {
 			return;
 		}
 
+		MappingFormat format = MappingFormat.parseFromFile(mappingsIn);
 		EnigmaProject project = openProject(jarIn, mappingsIn);
 
 		Logger.info("Dropping invalid mappings...");
@@ -72,7 +73,6 @@ public class DropInvalidMappingsCommand extends Command {
 		}
 
 		MappingSaveParameters saveParameters = project.getEnigma().getProfile().getMappingSaveParameters();
-		MappingFormat format = MappingFormat.parseFromFile(mappingsOut);
 		format.write(project.getMapper().getObfToDeobf(), mappingsOut, ProgressListener.none(), saveParameters);
 	}
 }
