@@ -225,7 +225,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 		if (tokens.length == 3) {
 			mapping = tokens[2];
 		} else if (tokens.length != 2) {
-			throw new RuntimeException("invalid class declaration: not enough tokens (" + tokens.length +  " found, 2 needed)!");
+			throw new RuntimeException("invalid class declaration: not enough tokens (" + tokens.length + " found, 2 needed)!");
 		}
 
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
