@@ -34,9 +34,7 @@ public class TestDeterministicWrite {
 			MappingFormat.TINY_V2.write(mappings, file, ProgressListener.none(), null);
 
 			String content = Files.readString(file);
-			if (prev != null) {
-				Assertions.assertEquals(prev, content, "Iteration " + i + " has a different result from the previous one");
-			}
+			if (prev != null) Assertions.assertEquals(prev, content, "Iteration " + i + " has a different result from the previous one");
 			prev = content;
 			mappings = MappingFormat.TINY_V2.read(file, ProgressListener.none(), null);
 		}
@@ -103,8 +101,6 @@ public class TestDeterministicWrite {
 		int val = random.nextInt(allowVoid ? 10 : 9);
 
 		return switch (val) {
-			default -> // Class
-				"L" + classes.get(random.nextInt(classes.size())).getFullName() + ";";
 			case 1 -> "B";
 			case 2 -> "C";
 			case 3 -> "D";
@@ -114,6 +110,8 @@ public class TestDeterministicWrite {
 			case 7 -> "S";
 			case 8 -> "Z";
 			case 9 -> "V";
+			default -> // Class
+				"L" + classes.get(random.nextInt(classes.size())).getFullName() + ";";
 		};
 	}
 
