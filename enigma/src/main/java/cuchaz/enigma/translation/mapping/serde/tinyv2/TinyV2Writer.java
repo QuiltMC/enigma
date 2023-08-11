@@ -79,9 +79,9 @@ public final class TinyV2Writer implements MappingsWriter {
 	@Override
 	public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters parameters) {
 		List<EntryTreeNode<EntryMapping>> classes = StreamSupport.stream(mappings.spliterator(), false)
-			.filter(node -> node.getEntry() instanceof ClassEntry)
-			.sorted(mappingComparator())
-			.toList();
+				.filter(node -> node.getEntry() instanceof ClassEntry)
+				.sorted(mappingComparator())
+				.toList();
 
 		try (PrintWriter writer = new LfPrintWriter(Files.newBufferedWriter(path))) {
 			writer.println("tiny\t2\t" + MINOR_VERSION + "\t" + this.obfHeader + "\t" + this.deobfHeader);
