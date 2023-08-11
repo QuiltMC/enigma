@@ -5,7 +5,6 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingPair;
 import cuchaz.enigma.translation.mapping.serde.MappingHelper;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
-import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.MappingsReader;
 import cuchaz.enigma.translation.mapping.serde.RawEntryMapping;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
@@ -37,7 +36,7 @@ import java.util.stream.Stream;
 public enum EnigmaMappingsReader implements MappingsReader {
 	FILE {
 		@Override
-		public EntryTree<EntryMapping> read(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws IOException, MappingParseException {
+		public EntryTree<EntryMapping> read(Path path, ProgressListener progress) throws IOException, MappingParseException {
 			progress.init(1, I18n.translate("progress.mappings.enigma_file.loading"));
 
 			EntryTree<EntryMapping> mappings = new HashEntryTree<>();
@@ -50,7 +49,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 	},
 	DIRECTORY {
 		@Override
-		public EntryTree<EntryMapping> read(Path root, ProgressListener progress, MappingSaveParameters saveParameters) throws IOException, MappingParseException {
+		public EntryTree<EntryMapping> read(Path root, ProgressListener progress) throws IOException, MappingParseException {
 			if (!Files.isDirectory(root)) {
 				throw new NotDirectoryException(root.toString());
 			}
@@ -82,9 +81,9 @@ public enum EnigmaMappingsReader implements MappingsReader {
 	},
 	ZIP {
 		@Override
-		public EntryTree<EntryMapping> read(Path zip, ProgressListener progress, MappingSaveParameters saveParameters) throws MappingParseException, IOException {
+		public EntryTree<EntryMapping> read(Path zip, ProgressListener progress) throws MappingParseException, IOException {
 			try (FileSystem fs = FileSystems.newFileSystem(zip, (ClassLoader) null)) {
-				return DIRECTORY.read(fs.getPath("/"), progress, saveParameters);
+				return DIRECTORY.read(fs.getPath("/"), progress);
 			}
 		}
 	};

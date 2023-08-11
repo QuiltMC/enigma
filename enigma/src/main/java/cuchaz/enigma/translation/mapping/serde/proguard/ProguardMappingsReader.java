@@ -4,7 +4,6 @@ import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.translation.mapping.MappingOperations;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.EntryMapping;
-import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.MappingsReader;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.HashEntryTree;
@@ -31,7 +30,7 @@ public class ProguardMappingsReader implements MappingsReader {
 	private static final Pattern METHOD = Pattern.compile(" {4}(?:[0-9]+:[0-9]+:)?(" + TYPE + ") (" + NAME + ")\\((" + TYPE_LIST + ")\\) -> (" + NAME + ")");
 
 	@Override
-	public EntryTree<EntryMapping> read(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws MappingParseException, IOException {
+	public EntryTree<EntryMapping> read(Path path, ProgressListener progress) throws MappingParseException, IOException {
 		EntryTree<EntryMapping> mappings = new HashEntryTree<>();
 
 		int lineNumber = 0;

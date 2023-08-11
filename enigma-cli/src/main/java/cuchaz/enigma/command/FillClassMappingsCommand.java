@@ -5,6 +5,7 @@ import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.serde.MappingFileNameFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
+import cuchaz.enigma.translation.mapping.serde.MappingsWriter;
 import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTreeNode;
@@ -51,13 +52,14 @@ public class FillClassMappingsCommand extends Command {
 
 		Logger.info("Reading mappings...");
 		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
-		EntryTree<EntryMapping> sourceMappings = readMappings(source, ProgressListener.none(), saveParameters);
+		EntryTree<EntryMapping> sourceMappings = readMappings(source, ProgressListener.none());
 
 		EntryTree<EntryMapping> resultMappings = exec(jarIndex, sourceMappings, fillAll, debug);
 
 		Logger.info("Writing mappings...");
 		Utils.delete(result);
-		MappingCommandsUtil.write(resultMappings, resultFormat, result, saveParameters);
+		MappingsWriter writer = MappingCommandsUtil.getWriter(resultFormat);
+		writer.write(resultMappings, result, ProgressListener.none(), saveParameters);
 
 		if (debug) {
 			writeDebugDelta((DeltaTrackingTree<EntryMapping>) resultMappings, result);

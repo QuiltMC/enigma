@@ -32,10 +32,10 @@ public class TestRecaf {
 			RecafMappingsWriter writer = RecafMappingsWriter.INSTANCE;
 			RecafMappingsReader reader = RecafMappingsReader.INSTANCE;
 
-			EntryTree<EntryMapping> mappings = reader.read(path, ProgressListener.none(), null);
+			EntryTree<EntryMapping> mappings = reader.read(path);
 			writer.write(mappings, path, ProgressListener.none(), null);
 
-			reader.read(path, ProgressListener.none(), null);
+			reader.read(path);
 			Set<String> newContents = new HashSet<>(Files.readAllLines(path));
 
 			assertEquals(contents, newContents);

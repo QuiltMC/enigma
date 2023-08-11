@@ -1,6 +1,5 @@
 package cuchaz.enigma.translation.mapping;
 
-import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.TestUtil;
 import cuchaz.enigma.translation.mapping.serde.MappingFileNameFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
@@ -18,12 +17,11 @@ public class TestComments {
 
 	@Test
 	public void testParseAndWrite() throws IOException, MappingParseException {
-		ProgressListener progressListener = ProgressListener.none();
 		MappingSaveParameters params = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
 		EntryTree<EntryMapping> mappings = EnigmaMappingsReader.DIRECTORY.read(
-						DIRECTORY, progressListener, params);
+						DIRECTORY);
 
 		new TinyV2Writer("intermediary", "named")
-						.write(mappings, DIRECTORY.resolve("convertedtiny.tiny"), progressListener, params);
+						.write(mappings, DIRECTORY.resolve("convertedtiny.tiny"), params);
 	}
 }

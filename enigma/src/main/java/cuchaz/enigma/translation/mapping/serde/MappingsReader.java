@@ -8,5 +8,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public interface MappingsReader {
-	EntryTree<EntryMapping> read(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws MappingParseException, IOException;
+	EntryTree<EntryMapping> read(Path path, ProgressListener progress) throws MappingParseException, IOException;
+
+	default EntryTree<EntryMapping> read(Path path) throws MappingParseException, IOException {
+		return read(path, ProgressListener.none());
+	}
 }

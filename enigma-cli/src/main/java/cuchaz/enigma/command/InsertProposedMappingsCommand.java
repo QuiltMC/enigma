@@ -3,6 +3,7 @@ package cuchaz.enigma.command;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.EnigmaProject;
+import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.api.EnigmaPlugin;
 import cuchaz.enigma.api.service.NameProposalService;
@@ -11,6 +12,7 @@ import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
+import cuchaz.enigma.translation.mapping.serde.MappingsWriter;
 import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.HashEntryTree;
@@ -74,7 +76,8 @@ public class InsertProposedMappingsCommand extends Command {
 
 		Utils.delete(output);
 		MappingSaveParameters saveParameters = enigma.getProfile().getMappingSaveParameters();
-		MappingCommandsUtil.write(mappings, resultFormat, output, saveParameters);
+		MappingsWriter writer = MappingCommandsUtil.getWriter(resultFormat);
+		writer.write(mappings, output, ProgressListener.none(), saveParameters);
 
 		if (debug) {
 			writeDebugDelta((DeltaTrackingTree<EntryMapping>) mappings, output);

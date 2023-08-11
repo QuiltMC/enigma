@@ -30,7 +30,7 @@ public class TestTranslator {
 		project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
 		mappings = MappingFormat.ENIGMA_FILE.read(
 				TestUtil.getResource("/translation.mappings"),
-				ProgressListener.none(), enigma.getProfile().getMappingSaveParameters());
+				ProgressListener.none());
 		project.setMappings(mappings);
 		deobfuscator = project.getMapper().getDeobfuscator();
 	}
