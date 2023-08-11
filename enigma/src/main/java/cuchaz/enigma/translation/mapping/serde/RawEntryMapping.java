@@ -2,6 +2,7 @@ package cuchaz.enigma.translation.mapping.serde;
 
 import cuchaz.enigma.translation.mapping.EntryMapping;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +10,7 @@ public final class RawEntryMapping {
 	private final String targetName;
 	private final List<String> javadocs = new ArrayList<>();
 
-	public RawEntryMapping(String targetName) {
+	public RawEntryMapping(@Nullable String targetName) {
 		this.targetName = targetName != null && !targetName.equals("-") ? targetName : null;
 	}
 
