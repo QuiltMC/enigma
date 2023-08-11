@@ -1,6 +1,5 @@
 package cuchaz.enigma.gui.panels;
 
-import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.gui.EditableType;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.elements.ConvertingTextField;
@@ -8,9 +7,7 @@ import cuchaz.enigma.gui.events.ConvertingTextFieldListener;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
-import cuchaz.enigma.translation.mapping.AccessModifier;
 import cuchaz.enigma.translation.mapping.EntryChange;
-import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
@@ -23,11 +20,8 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ItemEvent;
 import java.awt.event.MouseEvent;
-import java.util.function.Consumer;
 import javax.swing.BorderFactory;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -76,10 +70,6 @@ public class IdentifierPanel {
 		return true;
 	}
 
-	private void onModifierChanged(AccessModifier modifier) {
-		this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(this.entry).withAccess(modifier));
-	}
-
 	public void refreshReference() {
 		this.deobfEntry = this.entry == null ? null : this.gui.getController().getProject().getMapper().deobfuscate(this.entry);
 
@@ -125,13 +115,11 @@ public class IdentifierPanel {
 				String name = ce.isInnerClass() ? ce.getName() : ce.getFullName();
 				this.nameField = th.addRenameTextField(EditableType.CLASS, name);
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
-				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.CLASS, this::onModifierChanged);
 			} else if (this.deobfEntry instanceof FieldEntry fe) {
 				this.nameField = th.addRenameTextField(EditableType.FIELD, fe.getName());
 				th.addStringRow(I18n.translate("info_panel.identifier.class"), fe.getParent().getFullName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.type_descriptor"), fe.getDesc().toString());
-				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.FIELD, this::onModifierChanged);
 			} else if (this.deobfEntry instanceof MethodEntry me) {
 				if (me.isConstructor()) {
 					ClassEntry ce = me.getParent();
@@ -146,7 +134,6 @@ public class IdentifierPanel {
 
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method_descriptor"), me.getDesc().toString());
-				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.METHOD, this::onModifierChanged);
 			} else if (this.deobfEntry instanceof LocalVariableEntry lve) {
 				EditableType type;
 
@@ -296,33 +283,6 @@ public class IdentifierPanel {
 
 		public void addCopiableStringRow(String c1, String c2) {
 			this.addCopiableRow(new JLabel(c1), GuiUtil.unboldLabel(new JLabel(c2)));
-		}
-
-		public JComboBox<AccessModifier> addModifierRow(String c1, EditableType type, Consumer<AccessModifier> changeListener) {
-			EnigmaProject project = this.gui.getController().getProject();
-
-			if (!project.isRenamable(this.e)) {
-				return null;
-			}
-
-			JComboBox<AccessModifier> combo = new JComboBox<>(AccessModifier.values());
-			EntryMapping mapping = project.getMapper().getDeobfMapping(this.e);
-			combo.setSelectedIndex(mapping.accessModifier().ordinal());
-
-			if (this.gui.isEditable(type)) {
-				combo.addItemListener(event -> {
-					if (event.getStateChange() == ItemEvent.SELECTED) {
-						AccessModifier modifier = (AccessModifier) event.getItem();
-						changeListener.accept(modifier);
-					}
-				});
-			} else {
-				combo.setEnabled(false);
-			}
-
-			this.addRow(new JLabel(c1), combo);
-
-			return combo;
 		}
 
 		public void end() {

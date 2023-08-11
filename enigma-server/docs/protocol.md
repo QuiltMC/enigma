@@ -29,7 +29,7 @@ Client     Server
    has received the mappings and is in sync with the server. Once the server receives this packet, the client will be
    allowed to modify mappings.
 
-The server will not accept any other packets from the client until this entire exchange has been completed. 
+The server will not accept any other packets from the client until this entire exchange has been completed.
 
 ## Kicking clients
 When the server kicks a client, it may optionally send a `Kick` packet immediately before closing the connection, which
@@ -94,7 +94,7 @@ struct utf {
 ```
 - `length`: The number of bytes in the UTF-8 encoding of the string. Note, this may not be the same as the number of
             Unicode characters in the string.
-- `data`: A standard UTF-8 encoded byte array representing the string. 
+- `data`: A standard UTF-8 encoded byte array representing the string.
 
 ### The Entry struct
 ```c
@@ -198,19 +198,10 @@ typedef enum tristate_change {
     TRISTATE_CHANGE_SET = 2
 } tristate_change_t;
 
-typedef enum access_modifier {
-    ACCESS_MODIFIER_UNCHANGED = 0,
-    ACCESS_MODIFIER_PUBLIC = 1,
-    ACCESS_MODIFIER_PROTECTED = 2,
-    ACCESS_MODIFIER_PRIVATE = 3
-} access_modifier_t;
-
-// Contains 4 packed values:
+// Contains 2 packed values:
 // bitmask   type
-// 00000011  tristate_change_t deobf_name_change;
-// 00001100  tristate_change_t access_change;
-// 00110000  tristate_change_t javadoc_change;
-// 11000000  access_modifier_t access_modifiers;
+// 0011  tristate_change_t deobf_name_change;
+// 1100  tristate_change_t javadoc_change;
 typedef uint8_t entry_change_flags;
 
 struct entry_change {
@@ -228,7 +219,6 @@ struct entry_change {
 - `flags`: See definition of `entry_change_flags`.
 - `deobf_name`: The new deobfuscated name, if deobf_name_change == TRISTATE_CHANGE_SET
 - `javadoc`: The new javadoc, if javadoc_change == TRISTATE_CHANGE_SET
-- `access_modifiers`: The new access modifier, if access_change == TRISTATE_CHANGE_SET (otherwise 0)
 
 ### Login (client-to-server)
 ```c

@@ -1,6 +1,5 @@
 package cuchaz.enigma.network.packet;
 
-import cuchaz.enigma.translation.mapping.AccessModifier;
 import cuchaz.enigma.translation.mapping.EntryChange;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
@@ -17,7 +16,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class PacketHelper {
-	private static final int ENTRY_CLASS = 0, ENTRY_FIELD = 1, ENTRY_METHOD = 2, ENTRY_LOCAL_VAR = 3;
+	private static final int ENTRY_CLASS = 0;
+	private static final int ENTRY_FIELD = 1;
+	private static final int ENTRY_METHOD = 2;
+	private static final int ENTRY_LOCAL_VAR = 3;
 	private static final int MAX_STRING_LENGTH = 65535;
 
 	public static Entry<?> readEntry(DataInput input) throws IOException {
@@ -144,19 +146,12 @@ public class PacketHelper {
 
 		int flags = input.readUnsignedByte();
 		TristateChange.Type deobfNameT = TristateChange.Type.values()[flags & 0x3];
-		TristateChange.Type accessT = TristateChange.Type.values()[flags >> 2 & 0x3];
-		TristateChange.Type javadocT = TristateChange.Type.values()[flags >> 4 & 0x3];
+		TristateChange.Type javadocT = TristateChange.Type.values()[flags >> 2 & 0x3];
 
 		switch (deobfNameT) {
 			case RESET -> change = change.clearDeobfName();
 			case SET -> change = change.withDeobfName(readString(input));
 		}
-
-		change = switch (accessT) {
-			case RESET -> change.clearAccess();
-			case SET -> change.withAccess(AccessModifier.values()[flags >> 6 & 0x3]);
-			default -> change;
-		};
 
 		change = switch (javadocT) {
 			case RESET -> change.clearJavadoc();
@@ -170,12 +165,7 @@ public class PacketHelper {
 	public static void writeEntryChange(DataOutput output, EntryChange<?> change) throws IOException {
 		writeEntry(output, change.getTarget());
 		int flags = change.getDeobfName().getType().ordinal()
-				| change.getAccess().getType().ordinal() << 2
-				| change.getJavadoc().getType().ordinal() << 4;
-
-		if (change.getAccess().isSet()) {
-			flags |= change.getAccess().getNewValue().ordinal() << 6;
-		}
+				| change.getJavadoc().getType().ordinal() << 2;
 
 		output.writeByte(flags);
 

@@ -98,7 +98,7 @@ public class MappingsChecker {
 	private boolean shouldDropEmptyMapping(Entry<?> entry) {
 		EntryMapping mapping = this.mappings.get(entry);
 		if (mapping != null) {
-			boolean isEmpty = mapping.targetName() == null && mapping.javadoc() == null && mapping.accessModifier() == AccessModifier.UNCHANGED;
+			boolean isEmpty = mapping.targetName() == null && mapping.javadoc() == null;
 			if (isEmpty) {
 				return this.mappings.getChildren(entry).isEmpty();
 			}
