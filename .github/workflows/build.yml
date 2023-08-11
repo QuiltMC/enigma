@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v3
       - run: ./gradlew checkstyleMain build --stacktrace --warning-mode fail
       - name: Publish Snapshot
-        if: ${{ matrix.java == '17-jdk' && github.repository_owner == 'QuiltMC' && github.ref_name == 'master' }}
+        if: ${{ matrix.java == '17-jdk' && github.repository_owner == 'QuiltMC' && contains(github.ref_name, 'develop') }}
         run: ./gradlew publish --stacktrace
         env:
           SNAPSHOTS_URL: ${{ secrets.SNAPSHOTS_URL }}
