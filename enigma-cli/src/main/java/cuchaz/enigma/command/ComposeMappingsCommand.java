@@ -21,7 +21,7 @@ public class ComposeMappingsCommand extends Command {
 
 	@Override
 	public String getUsage() {
-		return "<left-format> <left> <right-format> <right> <result-format> <result> <keep-mode>";
+		return "<left> <right> <result-format> <result> <keep-mode>";
 	}
 
 	@Override

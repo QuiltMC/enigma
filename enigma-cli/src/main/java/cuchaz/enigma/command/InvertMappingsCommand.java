@@ -20,7 +20,7 @@ public class InvertMappingsCommand extends Command {
 
 	@Override
 	public String getUsage() {
-		return "<source-format> <source> <result-format> <result>";
+		return "<source> <result-format> <result>";
 	}
 
 	@Override

@@ -30,7 +30,7 @@ public class MapSpecializedMethodsCommand extends Command {
 
 	@Override
 	public String getUsage() {
-		return "<jar> <source-format> <source> <result-format> <result>";
+		return "<jar> <source> <result-format> <result>";
 	}
 
 	@Override
