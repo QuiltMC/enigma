@@ -29,7 +29,7 @@ public final class MappingCommandsUtil {
 		try {
 			format = MappingFormat.valueOf(type);
 		} catch (IllegalArgumentException ignored) {
-			format = MappingFormat.valueOf(type.toLowerCase());
+			format = MappingFormat.valueOf(type.toUpperCase());
 		}
 
 		return format.getWriter();
