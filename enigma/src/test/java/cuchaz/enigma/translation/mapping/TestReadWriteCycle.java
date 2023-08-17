@@ -20,7 +20,6 @@ import java.io.IOException;
 
 /**
  * Tests that a MappingFormat can write out a fixed set of mappings and read them back without losing any information.
- * Javadoc skipped for Tiny (v1) as it doesn't support them.
  */
 public class TestReadWriteCycle {
 	private final MappingSaveParameters parameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
@@ -54,7 +53,7 @@ public class TestReadWriteCycle {
 		mappings.insert(mappingPair.a(), mappingPair.b());
 	}
 
-	private void testReadWriteCycle(MappingFormat mappingFormat, boolean supportsJavadoc, String tmpNameSuffix) throws IOException, MappingParseException {
+	private void testReadWriteCycle(MappingFormat mappingFormat, String tmpNameSuffix) throws IOException, MappingParseException {
 		//construct some known mappings to test with
 		EntryTree<EntryMapping> testMappings = new HashEntryTree<>();
 		this.insertMapping(testMappings, this.testClazz);
@@ -75,7 +74,7 @@ public class TestReadWriteCycle {
 		mappingFormat.write(testMappings, tempFile.toPath(), ProgressListener.none(), this.parameters);
 		Assertions.assertTrue(tempFile.exists(), "Written file not created");
 
-		EntryTree<EntryMapping> loadedMappings = mappingFormat.read(tempFile.toPath(), ProgressListener.none(), this.parameters);
+		EntryTree<EntryMapping> loadedMappings = mappingFormat.read(tempFile.toPath(), ProgressListener.none());
 
 		Assertions.assertTrue(loadedMappings.contains(this.testClazz.a()), "Loaded mappings don't contain testClazz");
 		Assertions.assertTrue(loadedMappings.contains(this.testField1.a()), "Loaded mappings don't contain testField1");
@@ -89,39 +88,32 @@ public class TestReadWriteCycle {
 		Assertions.assertEquals(this.testMethod1.b().targetName(), loadedMappings.get(this.testMethod1.a()).targetName(), "Incorrect mapping: testMethod1");
 		Assertions.assertEquals(this.testMethod2.b().targetName(), loadedMappings.get(this.testMethod2.a()).targetName(), "Incorrect mapping: testMethod2");
 
-		if (supportsJavadoc) {
-			Assertions.assertEquals(this.testClazz.b().javadoc(), loadedMappings.get(this.testClazz.a()).javadoc(), "Incorrect javadoc: testClazz");
-			Assertions.assertEquals(this.testField1.b().javadoc(), loadedMappings.get(this.testField1.a()).javadoc(), "Incorrect javadoc: testField1");
-			Assertions.assertEquals(this.testField2.b().javadoc(), loadedMappings.get(this.testField2.a()).javadoc(), "Incorrect javadoc: testField2");
-			Assertions.assertEquals(this.testMethod1.b().javadoc(), loadedMappings.get(this.testMethod1.a()).javadoc(), "Incorrect javadoc: testMethod1");
-			Assertions.assertEquals(this.testMethod2.b().javadoc(), loadedMappings.get(this.testMethod2.a()).javadoc(), "Incorrect javadoc: testMethod2");
-		}
+		Assertions.assertEquals(this.testClazz.b().javadoc(), loadedMappings.get(this.testClazz.a()).javadoc(), "Incorrect javadoc: testClazz");
+		Assertions.assertEquals(this.testField1.b().javadoc(), loadedMappings.get(this.testField1.a()).javadoc(), "Incorrect javadoc: testField1");
+		Assertions.assertEquals(this.testField2.b().javadoc(), loadedMappings.get(this.testField2.a()).javadoc(), "Incorrect javadoc: testField2");
+		Assertions.assertEquals(this.testMethod1.b().javadoc(), loadedMappings.get(this.testMethod1.a()).javadoc(), "Incorrect javadoc: testMethod1");
+		Assertions.assertEquals(this.testMethod2.b().javadoc(), loadedMappings.get(this.testMethod2.a()).javadoc(), "Incorrect javadoc: testMethod2");
 
 		tempFile.delete();
 	}
 
 	@Test
 	public void testEnigmaFile() throws IOException, MappingParseException {
-		this.testReadWriteCycle(MappingFormat.ENIGMA_FILE, true, ".enigma");
+		this.testReadWriteCycle(MappingFormat.ENIGMA_FILE, ".enigma");
 	}
 
 	@Test
 	public void testEnigmaDir() throws IOException, MappingParseException {
-		this.testReadWriteCycle(MappingFormat.ENIGMA_DIRECTORY, true, ".tmp");
+		this.testReadWriteCycle(MappingFormat.ENIGMA_DIRECTORY, ".tmp");
 	}
 
 	@Test
 	public void testEnigmaZip() throws IOException, MappingParseException {
-		this.testReadWriteCycle(MappingFormat.ENIGMA_ZIP, true, ".zip");
-	}
-
-	@Test
-	public void testTinyFile() throws IOException, MappingParseException {
-		this.testReadWriteCycle(MappingFormat.TINY_FILE, false, ".tiny");
+		this.testReadWriteCycle(MappingFormat.ENIGMA_ZIP, ".zip");
 	}
 
 	@Test
 	public void testTinyV2() throws IOException, MappingParseException {
-		this.testReadWriteCycle(MappingFormat.TINY_V2, true, ".tinyv2");
+		this.testReadWriteCycle(MappingFormat.TINY_V2, ".tiny");
 	}
 }

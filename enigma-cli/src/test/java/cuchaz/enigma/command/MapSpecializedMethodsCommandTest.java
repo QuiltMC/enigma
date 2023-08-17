@@ -3,9 +3,7 @@ package cuchaz.enigma.command;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.TestUtil;
 import cuchaz.enigma.translation.mapping.EntryMapping;
-import cuchaz.enigma.translation.mapping.serde.MappingFileNameFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
-import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
@@ -62,9 +60,9 @@ public class MapSpecializedMethodsCommandTest extends CommandTest {
 	@Test
 	public void test() throws Exception {
 		Path resultFile = Files.createTempFile("mapSpecializedMethods", ".mappings");
-		MapSpecializedMethodsCommand.run(JAR, MappingFormat.ENIGMA_DIRECTORY.name(), MAPPINGS, MappingFormat.ENIGMA_FILE.name(), resultFile);
+		MapSpecializedMethodsCommand.run(JAR, MAPPINGS, MappingFormat.ENIGMA_FILE.name(), resultFile);
 
-		EntryTree<EntryMapping> result = MappingFormat.ENIGMA_FILE.read(resultFile, ProgressListener.none(), new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF));
+		EntryTree<EntryMapping> result = MappingFormat.ENIGMA_FILE.read(resultFile, ProgressListener.none());
 
 		assertNotNull(result.findNode(BASE_CLASS));
 		assertEquals("foo", getName(result, BASE_FOO_1));

@@ -12,7 +12,6 @@ import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingDelta;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
-import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
@@ -89,8 +88,7 @@ public abstract class Command {
 		if (fileMappings != null) {
 			Logger.info("Reading mappings...");
 
-			MappingSaveParameters saveParameters = enigma.getProfile().getMappingSaveParameters();
-			EntryTree<EntryMapping> mappings = readMappings(fileMappings, progress, saveParameters);
+			EntryTree<EntryMapping> mappings = readMappings(fileMappings, progress);
 
 			project.setMappings(mappings);
 		}
@@ -98,9 +96,9 @@ public abstract class Command {
 		return project;
 	}
 
-	protected static EntryTree<EntryMapping> readMappings(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws MappingParseException, IOException {
+	protected static EntryTree<EntryMapping> readMappings(Path path, ProgressListener progress) throws MappingParseException, IOException {
 		MappingFormat format = MappingFormat.parseFromFile(path);
-		return format.read(path, progress, saveParameters);
+		return format.read(path, progress);
 	}
 
 	protected static File getWritableFile(String path) {

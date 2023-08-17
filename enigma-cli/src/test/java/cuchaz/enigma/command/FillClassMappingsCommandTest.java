@@ -1,11 +1,8 @@
 package cuchaz.enigma.command;
 
-import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.TestUtil;
 import cuchaz.enigma.translation.mapping.EntryMapping;
-import cuchaz.enigma.translation.mapping.serde.MappingFileNameFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
-import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
@@ -52,7 +49,7 @@ public class FillClassMappingsCommandTest extends CommandTest {
 		Path resultFile = Files.createTempFile("fillClassMappings", ".mappings");
 		FillClassMappingsCommand.run(JAR, MAPPINGS, resultFile, MappingFormat.ENIGMA_FILE.name(), false);
 
-		EntryTree<EntryMapping> result = MappingFormat.ENIGMA_FILE.read(resultFile, ProgressListener.none(), new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF));
+		EntryTree<EntryMapping> result = MappingFormat.ENIGMA_FILE.read(resultFile);
 
 		assertEquals("A_Anonymous", getName(result, A));
 		assertNotNull(result.findNode(A_ANONYMOUS));

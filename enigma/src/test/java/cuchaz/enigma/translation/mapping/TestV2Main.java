@@ -16,7 +16,7 @@ public final class TestV2Main {
 
 		MappingSaveParameters parameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
 
-		EntryTree<EntryMapping> tree = EnigmaMappingsReader.DIRECTORY.read(path, ProgressListener.none(), parameters);
+		EntryTree<EntryMapping> tree = EnigmaMappingsReader.DIRECTORY.read(path);
 
 		new TinyV2Writer("obf", "deobf").write(tree, Paths.get("currentYarn.tiny"), ProgressListener.none(), parameters);
 	}

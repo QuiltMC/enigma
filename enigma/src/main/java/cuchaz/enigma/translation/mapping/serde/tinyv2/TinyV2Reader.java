@@ -5,7 +5,6 @@ import cuchaz.enigma.translation.mapping.serde.MappingHelper;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingPair;
-import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.MappingsReader;
 import cuchaz.enigma.translation.mapping.serde.RawEntryMapping;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
@@ -40,7 +39,7 @@ public final class TinyV2Reader implements MappingsReader {
 	private static final int[] INDENT_CLEAR_START = {IN_HEADER, IN_METHOD, IN_PARAMETER, STATE_SIZE};
 
 	@Override
-	public EntryTree<EntryMapping> read(Path path, ProgressListener progress, MappingSaveParameters saveParameters) throws IOException, MappingParseException {
+	public EntryTree<EntryMapping> read(Path path, ProgressListener progress) throws IOException, MappingParseException {
 		return this.read(path, Files.readAllLines(path, StandardCharsets.UTF_8), progress);
 	}
 
@@ -91,7 +90,7 @@ public final class TinyV2Reader implements MappingsReader {
 								}
 
 								if (!"2".equals(parts[1]) || !MINOR_VERSION.equals(parts[2])) {
-									throw new IllegalArgumentException("Unsupported TinyV2 version, requires major " + "2" + " and minor " + MINOR_VERSION + "");
+									throw new IllegalArgumentException("Unsupported TinyV2 version, requires major " + "2" + " and minor " + MINOR_VERSION);
 								}
 
 								state.set(IN_HEADER);

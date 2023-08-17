@@ -10,8 +10,6 @@ import cuchaz.enigma.translation.mapping.serde.proguard.ProguardMappingsReader;
 import cuchaz.enigma.translation.mapping.serde.recaf.RecafMappingsReader;
 import cuchaz.enigma.translation.mapping.serde.recaf.RecafMappingsWriter;
 import cuchaz.enigma.translation.mapping.serde.srg.SrgMappingsWriter;
-import cuchaz.enigma.translation.mapping.serde.tiny.TinyMappingsReader;
-import cuchaz.enigma.translation.mapping.serde.tiny.TinyMappingsWriter;
 import cuchaz.enigma.translation.mapping.serde.tinyv2.TinyV2Reader;
 import cuchaz.enigma.translation.mapping.serde.tinyv2.TinyV2Writer;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
@@ -26,7 +24,6 @@ public enum MappingFormat {
 	ENIGMA_DIRECTORY(EnigmaMappingsWriter.DIRECTORY, EnigmaMappingsReader.DIRECTORY),
 	ENIGMA_ZIP(EnigmaMappingsWriter.ZIP, EnigmaMappingsReader.ZIP),
 	TINY_V2(new TinyV2Writer("intermediary", "named"), new TinyV2Reader()),
-	TINY_FILE(TinyMappingsWriter.INSTANCE, TinyMappingsReader.INSTANCE),
 	SRG_FILE(SrgMappingsWriter.INSTANCE, null),
 	PROGUARD(null, ProguardMappingsReader.INSTANCE),
 	RECAF(RecafMappingsWriter.INSTANCE, RecafMappingsReader.INSTANCE);
@@ -37,6 +34,10 @@ public enum MappingFormat {
 	MappingFormat(MappingsWriter writer, MappingsReader reader) {
 		this.writer = writer;
 		this.reader = reader;
+	}
+
+	public void write(EntryTree<EntryMapping> mappings, Path path, MappingSaveParameters saveParameters) {
+		this.write(mappings, MappingDelta.added(mappings), path, ProgressListener.none(), saveParameters);
 	}
 
 	public void write(EntryTree<EntryMapping> mappings, Path path, ProgressListener progressListener, MappingSaveParameters saveParameters) {
@@ -51,12 +52,35 @@ public enum MappingFormat {
 		this.writer.write(mappings, delta, path, progressListener, saveParameters);
 	}
 
-	public EntryTree<EntryMapping> read(Path path, ProgressListener progressListener, MappingSaveParameters saveParameters) throws IOException, MappingParseException {
+	/**
+	 * Reads the provided path and returns it as a tree of mappings.
+	 * @param path the path to read
+	 * @return a tree of every read mapping
+	 * @throws IOException when there's an I/O error reading the files
+	 * @throws MappingParseException when there's an issue with the content of a mapping file
+	 */
+	public EntryTree<EntryMapping> read(Path path) throws IOException, MappingParseException {
 		if (this.reader == null) {
 			throw new IllegalStateException(this.name() + " does not support reading");
 		}
 
-		return this.reader.read(path, progressListener, saveParameters);
+		return this.reader.read(path, ProgressListener.none());
+	}
+
+	/**
+	 * Reads the provided path and returns it as a tree of mappings.
+	 * @param path the path to read
+	 * @param progressListener a progress listener to be used for displaying the progress to the user
+	 * @return a tree of every read mapping
+	 * @throws IOException when there's an I/O error reading the files
+	 * @throws MappingParseException when there's an issue with the content of a mapping file
+	 */
+	public EntryTree<EntryMapping> read(Path path, ProgressListener progressListener) throws IOException, MappingParseException {
+		if (this.reader == null) {
+			throw new IllegalStateException(this.name() + " does not support reading");
+		}
+
+		return this.reader.read(path, progressListener);
 	}
 
 	@Nullable
@@ -72,9 +96,8 @@ public enum MappingFormat {
 	/**
 	 * Determines the mapping format of the provided file. Checks all formats, and returns {@link #RECAF} if none match.
 	 * @param file the file to analyse
-	 * @apiNote While most assessments are based on file extension, tiny format is determined by the contents of the file.
-	 * If it contains a tiny header ("tiny[tab]2[tab]0"), the file is considered {@link #TINY_V2}. Otherwise, it goes to {@link #TINY_FILE}.
-	 * Any directory is considered to be the {@link #ENIGMA_DIRECTORY} format. Recaf and Proguard formats are not determined by file extension,
+	 * @apiNote Any directory is considered to be the {@link #ENIGMA_DIRECTORY} format.
+	 * Recaf and Proguard formats are not determined by file extension,
 	 * but we only check for Proguard, Recaf being the fallback.
 	 * @return the mapping format of the file.
 	 */
@@ -91,14 +114,7 @@ public enum MappingFormat {
 						return ENIGMA_FILE;
 					}
 					case "tiny" -> {
-						// the first line of a tiny v2 file should be a header with tiny[tab]2[tab]0
-						String contents = Files.readString(file);
-
-						if (contents.contains("tiny\t2\t0")) {
-							return TINY_V2;
-						} else {
-							return TINY_FILE;
-						}
+						return TINY_V2;
 					}
 					case "tsrg" -> {
 						return SRG_FILE;

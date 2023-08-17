@@ -17,6 +17,6 @@ public final class TestTinyV2InnerClasses {
 	@Test
 	public void testMappings() throws Exception {
 		EnigmaProject project = Enigma.create().openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
-		project.setMappings(EnigmaMappingsReader.DIRECTORY.read(MAPPINGS, ProgressListener.none(), project.getEnigma().getProfile().getMappingSaveParameters()));
+		project.setMappings(EnigmaMappingsReader.DIRECTORY.read(MAPPINGS, ProgressListener.none()));
 	}
 }

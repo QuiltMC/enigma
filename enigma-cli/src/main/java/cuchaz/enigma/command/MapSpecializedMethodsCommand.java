@@ -6,8 +6,10 @@ import cuchaz.enigma.translation.MappingTranslator;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.serde.MappingFileNameFormat;
+import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
+import cuchaz.enigma.translation.mapping.serde.MappingsWriter;
 import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTreeNode;
@@ -28,36 +30,37 @@ public class MapSpecializedMethodsCommand extends Command {
 
 	@Override
 	public String getUsage() {
-		return "<jar> <source-format> <source> <result-format> <result>";
+		return "<jar> <source> <result-format> <result>";
 	}
 
 	@Override
 	public boolean isValidArgument(int length) {
-		return length == 5;
+		return length == 4;
 	}
 
 	@Override
 	public void run(String... args) throws IOException, MappingParseException {
 		Path jar = getReadablePath(getArg(args, 0, "jar", true));
-		String sourceFormat = getArg(args, 1, "source-format", true);
-		Path source = getReadablePath(getArg(args, 2, "source", true));
-		String resultFormat = getArg(args, 3, "result-format", true);
-		Path result = getWritablePath(getArg(args, 4, "result", true));
+		Path source = getReadablePath(getArg(args, 1, "source", true));
+		String resultFormat = getArg(args, 2, "result-format", true);
+		Path result = getWritablePath(getArg(args, 3, "result", true));
 
-		run(jar, sourceFormat, source, resultFormat, result);
+		run(jar, source, resultFormat, result);
 	}
 
-	public static void run(Path jar, String sourceFormat, Path sourcePath, String resultFormat, Path output) throws IOException, MappingParseException {
+	public static void run(Path jar, Path sourcePath, String resultFormat, Path output) throws IOException, MappingParseException {
 		boolean debug = shouldDebug(NAME);
 		JarIndex jarIndex = loadJar(jar);
 
 		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
-		EntryTree<EntryMapping> source = MappingCommandsUtil.read(sourceFormat, sourcePath, saveParameters);
+		MappingFormat sourceFormat = MappingFormat.parseFromFile(sourcePath);
+		EntryTree<EntryMapping> source = sourceFormat.read(sourcePath);
 
 		EntryTree<EntryMapping> result = run(jarIndex, source, debug);
 
 		Utils.delete(output);
-		MappingCommandsUtil.write(result, resultFormat, output, saveParameters);
+		MappingsWriter writer = MappingCommandsUtil.getWriter(resultFormat);
+		writer.write(result, output, saveParameters);
 
 		if (debug) {
 			writeDebugDelta((DeltaTrackingTree<EntryMapping>) result, output);
