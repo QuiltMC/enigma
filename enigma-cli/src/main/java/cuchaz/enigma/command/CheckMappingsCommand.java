@@ -11,17 +11,9 @@ import java.util.stream.Collectors;
 
 public class CheckMappingsCommand extends Command {
 	public CheckMappingsCommand() {
-		super("checkmappings");
-	}
-
-	@Override
-	public String getUsage() {
-		return "<in jar> <mappings file>";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 2;
+		super("check-mappings",
+				Argument.INPUT_JAR.required(),
+				Argument.INPUT_MAPPINGS.required());
 	}
 
 	@Override

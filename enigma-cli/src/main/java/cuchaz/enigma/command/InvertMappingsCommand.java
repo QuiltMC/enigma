@@ -15,17 +15,10 @@ import java.nio.file.Path;
 
 public class InvertMappingsCommand extends Command {
 	public InvertMappingsCommand() {
-		super("invert-mappings");
-	}
-
-	@Override
-	public String getUsage() {
-		return "<source> <result-format> <result>";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 4;
+		super("invert-mappings",
+				Argument.INPUT_MAPPINGS.required(),
+				Argument.OUTPUT_MAPPING_FORMAT.required(),
+				Argument.OUTPUT_FOLDER.required());
 	}
 
 	@Override

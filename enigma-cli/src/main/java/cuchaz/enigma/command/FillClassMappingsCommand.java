@@ -22,17 +22,12 @@ public class FillClassMappingsCommand extends Command {
 	public static final String NAME = "fill-class-mappings";
 
 	protected FillClassMappingsCommand() {
-		super(NAME);
-	}
-
-	@Override
-	public String getUsage() {
-		return "<in-jar> <source> <result> <result-format> [<fill-all>]";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 4 || length == 5;
+		super(NAME,
+				Argument.INPUT_JAR.required(),
+				Argument.INPUT_MAPPINGS.required(),
+				Argument.MAPPING_OUTPUT.required(),
+				Argument.OUTPUT_MAPPING_FORMAT.required(),
+				Argument.FILL_ALL.optional());
 	}
 
 	@Override

@@ -13,17 +13,11 @@ import java.util.Locale;
 
 public class DecompileCommand extends Command {
 	public DecompileCommand() {
-		super("decompile");
-	}
-
-	@Override
-	public String getUsage() {
-		return "<decompiler> <in jar> <out folder> [<mappings file>]";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 3 || length == 4;
+		super("decompile",
+				Argument.DECOMPILER.required(),
+				Argument.INPUT_JAR.required(),
+				Argument.OUTPUT_JAR.required(),
+				Argument.INPUT_MAPPINGS.optional());
 	}
 
 	@Override

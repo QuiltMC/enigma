@@ -15,17 +15,10 @@ import java.nio.file.Path;
 
 public class ConvertMappingsCommand extends Command {
 	public ConvertMappingsCommand() {
-		super("convert-mappings");
-	}
-
-	@Override
-	public String getUsage() {
-		return "<source> <result-format> <result>";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 3;
+		super("convert-mappings",
+				Argument.INPUT_MAPPINGS.required(),
+				Argument.OUTPUT_MAPPING_FORMAT.required(),
+				Argument.MAPPING_OUTPUT.required());
 	}
 
 	@Override

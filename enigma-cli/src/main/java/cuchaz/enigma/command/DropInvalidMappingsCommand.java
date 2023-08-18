@@ -15,17 +15,10 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 public class DropInvalidMappingsCommand extends Command {
 	public DropInvalidMappingsCommand() {
-		super("dropinvalidmappings");
-	}
-
-	@Override
-	public String getUsage() {
-		return "<in jar> <mappings in> [<mappings out>]";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 3;
+		super("drop-invalid-mappings",
+				Argument.INPUT_JAR.required(),
+				Argument.INPUT_MAPPINGS.required(),
+				Argument.MAPPING_OUTPUT.optional());
 	}
 
 	@Override

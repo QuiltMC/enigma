@@ -16,17 +16,12 @@ import java.nio.file.Path;
 
 public class ComposeMappingsCommand extends Command {
 	public ComposeMappingsCommand() {
-		super("compose-mappings");
-	}
-
-	@Override
-	public String getUsage() {
-		return "<left> <right> <result-format> <result> <keep-mode>";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 5;
+		super("compose-mappings",
+				Argument.LEFT_MAPPINGS.required(),
+				Argument.RIGHT_MAPPINGS.required(),
+				Argument.OUTPUT_MAPPING_FORMAT.required(),
+				Argument.MAPPING_OUTPUT.required(),
+				Argument.KEEP_MODE.required());
 	}
 
 	@Override

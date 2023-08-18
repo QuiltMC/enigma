@@ -32,17 +32,12 @@ public class InsertProposedMappingsCommand extends Command {
 	private static final String NAME = "insert-proposed-mappings";
 
 	public InsertProposedMappingsCommand() {
-		super(NAME);
-	}
-
-	@Override
-	public String getUsage() {
-		return "<in jar> <source> <result> <result-format> [<profile>]";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 4 || length == 5;
+		super(NAME,
+				Argument.INPUT_JAR.required(),
+				Argument.INPUT_MAPPINGS.required(),
+				Argument.MAPPING_OUTPUT.required(),
+				Argument.OUTPUT_MAPPING_FORMAT.required(),
+				Argument.ENIGMA_PROFILE.optional());
 	}
 
 	@Override

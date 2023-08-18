@@ -25,17 +25,11 @@ public class MapSpecializedMethodsCommand extends Command {
 	private static final String NAME = "map-specialized-methods";
 
 	public MapSpecializedMethodsCommand() {
-		super(NAME);
-	}
-
-	@Override
-	public String getUsage() {
-		return "<jar> <source> <result-format> <result>";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 4;
+		super(NAME,
+				Argument.INPUT_JAR.required(),
+				Argument.INPUT_MAPPINGS.required(),
+				Argument.OUTPUT_MAPPING_FORMAT.required(),
+				Argument.MAPPING_OUTPUT.required());
 	}
 
 	@Override

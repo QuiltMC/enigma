@@ -7,17 +7,10 @@ import java.nio.file.Path;
 
 public class DeobfuscateCommand extends Command {
 	public DeobfuscateCommand() {
-		super("deobfuscate");
-	}
-
-	@Override
-	public String getUsage() {
-		return "<in jar> <out jar> [<mappings file>]";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 2 || length == 3;
+		super("deobfuscate",
+				Argument.INPUT_JAR.required(),
+				Argument.OUTPUT_JAR.required(),
+				Argument.INPUT_MAPPINGS.optional());
 	}
 
 	@Override

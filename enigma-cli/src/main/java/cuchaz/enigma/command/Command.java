@@ -23,20 +23,60 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
 
 public abstract class Command {
 	public final String name;
+	protected final List<Argument> requiredArguments = new ArrayList<>();
+	protected final List<Argument> optionalArguments = new ArrayList<>();
 
-	protected Command(String name) {
+	protected Command(String name, ComposedArgument... arguments) {
 		this.name = name;
+
+		for (ComposedArgument argument : arguments) {
+			if (argument.optional()) {
+				this.optionalArguments.add(argument.argument());
+			} else {
+				this.requiredArguments.add(argument.argument());
+
+				if (!this.optionalArguments.isEmpty()) {
+					throw new IllegalArgumentException("optional arguments should be grouped at the end of command arguments! (declaring arg " + argument + ")");
+				}
+			}
+		}
 	}
 
-	public abstract String getUsage();
+	public String getUsage() {
+		StringBuilder arguments = new StringBuilder();
+		appendArguments(arguments, this.requiredArguments);
 
-	public abstract boolean isValidArgument(int length);
+		if (!this.optionalArguments.isEmpty()) {
+			arguments.append(" [");
+			appendArguments(arguments, this.optionalArguments);
+			arguments.append("]");
+		}
+
+		return arguments.toString();
+	}
+
+	private static void appendArguments(StringBuilder builder, List<Argument> arguments) {
+		for (int i = 0; i < arguments.size(); i++) {
+			builder.append(arguments.get(i).getDisplayForm()).append(i == arguments.size() - 1 ? "" : " ");
+		}
+	}
+
+	/**
+	 * Ensures that the amount of arguments provided is valid to the command.
+	 * @param length the amount of arguments passed in
+	 * @return {@code true} if the argument count is valid, {@code false} otherwise
+	 */
+	public boolean checkArgumentCount(int length) {
+		// valid if length is equal to the amount of required arguments or between required argument count and total argument count
+		return length == this.requiredArguments.size() || length > this.requiredArguments.size() && length <= this.requiredArguments.size() + this.optionalArguments.size();
+	}
 
 	public abstract void run(String... args) throws Exception;
 
@@ -53,10 +93,6 @@ public abstract class Command {
 		return Enigma.create();
 	}
 
-	public static Enigma createEnigma(EnigmaProfile profile) {
-		return createEnigma(profile, null);
-	}
-
 	public static Enigma createEnigma(EnigmaProfile profile, @Nullable Iterable<EnigmaPlugin> plugins) {
 		Enigma.Builder builder = Enigma.builder().setProfile(profile);
 
@@ -69,14 +105,6 @@ public abstract class Command {
 
 	protected static EnigmaProject openProject(Path fileJarIn, Path fileMappings) throws Exception {
 		return openProject(fileJarIn, fileMappings, createEnigma());
-	}
-
-	protected static EnigmaProject openProject(Path fileJarIn, Path fileMappings, EnigmaProfile profile) throws Exception {
-		return openProject(fileJarIn, fileMappings, profile, null);
-	}
-
-	protected static EnigmaProject openProject(Path fileJarIn, Path fileMappings, EnigmaProfile profile, @Nullable Iterable<EnigmaPlugin> plugins) throws Exception {
-		return openProject(fileJarIn, fileMappings, createEnigma(profile, plugins));
 	}
 
 	public static EnigmaProject openProject(Path fileJarIn, Path fileMappings, Enigma enigma) throws Exception {
