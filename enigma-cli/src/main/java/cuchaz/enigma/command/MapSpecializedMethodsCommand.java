@@ -22,11 +22,8 @@ import java.nio.file.Path;
 import java.util.Map;
 
 public class MapSpecializedMethodsCommand extends Command {
-	private static final String NAME = "map-specialized-methods";
-
 	public MapSpecializedMethodsCommand() {
-		super(NAME,
-				Argument.INPUT_JAR.required(),
+		super(Argument.INPUT_JAR.required(),
 				Argument.INPUT_MAPPINGS.required(),
 				Argument.OUTPUT_MAPPING_FORMAT.required(),
 				Argument.MAPPING_OUTPUT.required());
@@ -42,8 +39,19 @@ public class MapSpecializedMethodsCommand extends Command {
 		run(jar, source, resultFormat, result);
 	}
 
+	@Override
+	public String getName() {
+		return "map-specialized-methods";
+	}
+
+	@Override
+	public String getDescription() {
+		// todo
+		return null;
+	}
+
 	public static void run(Path jar, Path sourcePath, String resultFormat, Path output) throws IOException, MappingParseException {
-		boolean debug = shouldDebug(NAME);
+		boolean debug = shouldDebug(new MapSpecializedMethodsCommand().getName());
 		JarIndex jarIndex = loadJar(jar);
 
 		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);

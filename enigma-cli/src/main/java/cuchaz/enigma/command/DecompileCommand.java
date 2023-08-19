@@ -13,8 +13,7 @@ import java.util.Locale;
 
 public class DecompileCommand extends Command {
 	public DecompileCommand() {
-		super("decompile",
-				Argument.DECOMPILER.required(),
+		super(Argument.DECOMPILER.required(),
 				Argument.INPUT_JAR.required(),
 				Argument.OUTPUT_JAR.required(),
 				Argument.INPUT_MAPPINGS.optional());
@@ -28,6 +27,16 @@ public class DecompileCommand extends Command {
 		Path fileMappings = getReadablePath(this.getArg(args, 3));
 
 		run(decompilerName, fileJarIn, fileJarOut, fileMappings);
+	}
+
+	@Override
+	public String getName() {
+		return "decompile";
+	}
+
+	@Override
+	public String getDescription() {
+		return "Decompiles the provided jar into human-readable code.";
 	}
 
 	public static void run(String decompilerName, Path fileJarIn, Path fileJarOut, Path fileMappings) throws Exception {

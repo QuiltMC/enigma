@@ -19,11 +19,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class FillClassMappingsCommand extends Command {
-	public static final String NAME = "fill-class-mappings";
-
 	protected FillClassMappingsCommand() {
-		super(NAME,
-				Argument.INPUT_JAR.required(),
+		super(Argument.INPUT_JAR.required(),
 				Argument.INPUT_MAPPINGS.required(),
 				Argument.MAPPING_OUTPUT.required(),
 				Argument.OUTPUT_MAPPING_FORMAT.required(),
@@ -41,8 +38,19 @@ public class FillClassMappingsCommand extends Command {
 		run(inJar, source, result, resultFormat, fillAll);
 	}
 
+	@Override
+	public String getName() {
+		return "fill-class-mappings";
+	}
+
+	@Override
+	public String getDescription() {
+		// todo
+		return null;
+	}
+
 	public static void run(Path jar, Path source, Path result, String resultFormat, boolean fillAll) throws Exception {
-		boolean debug = shouldDebug(NAME);
+		boolean debug = shouldDebug(new FillClassMappingsCommand().getName());
 		JarIndex jarIndex = loadJar(jar);
 
 		Logger.info("Reading mappings...");

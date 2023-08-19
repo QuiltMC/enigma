@@ -16,8 +16,7 @@ import java.nio.file.Path;
 
 public class ComposeMappingsCommand extends Command {
 	public ComposeMappingsCommand() {
-		super("compose-mappings",
-				Argument.LEFT_MAPPINGS.required(),
+		super(Argument.LEFT_MAPPINGS.required(),
 				Argument.RIGHT_MAPPINGS.required(),
 				Argument.OUTPUT_MAPPING_FORMAT.required(),
 				Argument.MAPPING_OUTPUT.required(),
@@ -33,6 +32,17 @@ public class ComposeMappingsCommand extends Command {
 		String keepMode = this.getArg(args, 4);
 
 		run(left, right, resultFormat, result, keepMode);
+	}
+
+	@Override
+	public String getName() {
+		return "compose-mappings";
+	}
+
+	@Override
+	public String getDescription() {
+		// todo
+		return null;
 	}
 
 	public static void run(Path leftFile, Path rightFile, String resultFormat, Path resultFile, String keepMode) throws IOException, MappingParseException {

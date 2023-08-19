@@ -29,11 +29,8 @@ import java.nio.file.Path;
 import javax.annotation.Nullable;
 
 public class InsertProposedMappingsCommand extends Command {
-	private static final String NAME = "insert-proposed-mappings";
-
 	public InsertProposedMappingsCommand() {
-		super(NAME,
-				Argument.INPUT_JAR.required(),
+		super(Argument.INPUT_JAR.required(),
 				Argument.INPUT_MAPPINGS.required(),
 				Argument.MAPPING_OUTPUT.required(),
 				Argument.OUTPUT_MAPPING_FORMAT.required(),
@@ -48,10 +45,20 @@ public class InsertProposedMappingsCommand extends Command {
 		String resultFormat = this.getArg(args, 3);
 		Path profilePath = getReadablePath(this.getArg(args, 4));
 
-		run(inJar, source, output, resultFormat, profilePath, null);
+		this.run(inJar, source, output, resultFormat, profilePath, null);
 	}
 
-	public static void run(Path inJar, Path source, Path output, String resultFormat, @Nullable Path profilePath, @Nullable Iterable<EnigmaPlugin> plugins) throws Exception {
+	@Override
+	public String getName() {
+		return "insert-proposed-mappings";
+	}
+
+	@Override
+	public String getDescription() {
+		return "Adds all mappings proposed by the provided plugins into the given mappings.";
+	}
+
+	public void run(Path inJar, Path source, Path output, String resultFormat, @Nullable Path profilePath, @Nullable Iterable<EnigmaPlugin> plugins) throws Exception {
 		EnigmaProfile profile = EnigmaProfile.read(profilePath);
 		Enigma enigma = createEnigma(profile, plugins);
 
@@ -59,7 +66,7 @@ public class InsertProposedMappingsCommand extends Command {
 	}
 
 	public static void run(Path inJar, Path source, Path output, String resultFormat, Enigma enigma) throws Exception {
-		boolean debug = shouldDebug(NAME);
+		boolean debug = shouldDebug(new InsertProposedMappingsCommand().getName());
 		NameProposalService[] nameProposalServices = enigma.getServices().get(NameProposalService.TYPE).toArray(new NameProposalService[0]);
 		if (nameProposalServices.length == 0) {
 			Logger.error("No name proposal service found");

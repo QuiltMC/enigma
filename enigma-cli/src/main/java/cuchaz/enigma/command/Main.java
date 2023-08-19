@@ -39,7 +39,7 @@ public class Main {
 		} catch (CommandHelpException ex) {
 			Logger.error(ex);
 			logEnigmaInfo();
-			Logger.info("Command {} has encountered an error! Usage:", ex.command.name);
+			Logger.info("Command {} has encountered an error! Usage:", ex.command.getName());
 			StringBuilder help = new StringBuilder();
 			appendHelp(ex.command, help);
 			Logger.info(help.toString());
@@ -70,7 +70,7 @@ public class Main {
 	}
 
 	private static void appendHelp(Command command, StringBuilder builder) {
-		builder.append(String.format("\t\t%s %s", command.name, command.getUsage())).append("\n");
+		builder.append(String.format("\t\t%s %s", command.getName(), command.getUsage())).append("\n");
 
 		if (!command.requiredArguments.isEmpty()) {
 			builder.append("Arguments:").append("\n");
@@ -98,9 +98,9 @@ public class Main {
 	}
 
 	private static void register(Command command) {
-		Command old = COMMANDS.put(command.name, command);
+		Command old = COMMANDS.put(command.getName(), command);
 		if (old != null) {
-			Logger.warn("Command {} with name {} has been substituted by {}", old, command.name, command);
+			Logger.warn("Command {} with name {} has been substituted by {}", old, command.getName(), command);
 		}
 	}
 

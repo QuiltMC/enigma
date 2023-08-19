@@ -29,13 +29,11 @@ import java.util.Locale;
 import javax.annotation.Nullable;
 
 public abstract class Command {
-	public final String name;
 	protected final List<Argument> requiredArguments = new ArrayList<>();
 	protected final List<Argument> optionalArguments = new ArrayList<>();
 	protected final List<ComposedArgument> allArguments;
 
-	protected Command(String name, ComposedArgument... arguments) {
-		this.name = name;
+	protected Command(ComposedArgument... arguments) {
 		this.allArguments = new ArrayList<>();
 
 		for (ComposedArgument argument : arguments) {
@@ -82,7 +80,25 @@ public abstract class Command {
 		return length == this.requiredArguments.size() || length > this.requiredArguments.size() && length <= this.requiredArguments.size() + this.optionalArguments.size();
 	}
 
+	/**
+	 * Executes this command.
+	 * @param args the command-line arguments, to be parsed with {@link #getArg(String[], int)}
+	 * @throws Exception on any error
+	 */
 	public abstract void run(String... args) throws Exception;
+
+	/**
+	 * Returns the name of this command. Should be all-lowercase, and separated by dashes for words.
+	 * Examples: {@code decompile}, {@code compose-mappings}, {@code fill-class-mappings}
+	 * @return the name of the command
+	 */
+	public abstract String getName();
+
+	/**
+	 * Returns a one-sentence description of this command's function, used in {@link HelpCommand}.
+	 * @return the description
+	 */
+	public abstract String getDescription();
 
 	public static JarIndex loadJar(Path jar) throws IOException {
 		Logger.info("Reading JAR...");
@@ -97,6 +113,12 @@ public abstract class Command {
 		return Enigma.create();
 	}
 
+	/**
+	 * Parses and validates the argument at {@code index}. The argument can then be converted to something more useful via {@link #getReadablePath(String)}, {@link #getWritablePath(String)}, etc.
+	 * @param args the command-line args, provided in {@link #run(String...)}
+	 * @param index the index of the argument
+	 * @return the argument, as a string
+	 */
 	protected String getArg(String[] args, int index) {
 		if (index >= args.length || index >= this.allArguments.size()) {
 			return getArg(args, index, this.allArguments.get(index));

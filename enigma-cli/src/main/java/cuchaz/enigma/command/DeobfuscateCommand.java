@@ -7,8 +7,7 @@ import java.nio.file.Path;
 
 public class DeobfuscateCommand extends Command {
 	public DeobfuscateCommand() {
-		super("deobfuscate",
-				Argument.INPUT_JAR.required(),
+		super(Argument.INPUT_JAR.required(),
 				Argument.OUTPUT_JAR.required(),
 				Argument.INPUT_MAPPINGS.optional());
 	}
@@ -20,6 +19,16 @@ public class DeobfuscateCommand extends Command {
 		Path fileMappings = getReadablePath(this.getArg(args, 2));
 
 		run(fileJarIn, fileJarOut, fileMappings);
+	}
+
+	@Override
+	public String getName() {
+		return "deobfuscate";
+	}
+
+	@Override
+	public String getDescription() {
+		return "Remaps all names in the jar according to the provided mappings.";
 	}
 
 	public static void run(Path fileJarIn, Path fileJarOut, Path fileMappings) throws Exception {

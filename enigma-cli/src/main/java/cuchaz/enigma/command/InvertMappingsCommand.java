@@ -15,8 +15,7 @@ import java.nio.file.Path;
 
 public class InvertMappingsCommand extends Command {
 	public InvertMappingsCommand() {
-		super("invert-mappings",
-				Argument.INPUT_MAPPINGS.required(),
+		super(Argument.INPUT_MAPPINGS.required(),
 				Argument.OUTPUT_MAPPING_FORMAT.required(),
 				Argument.OUTPUT_FOLDER.required());
 	}
@@ -28,6 +27,17 @@ public class InvertMappingsCommand extends Command {
 		Path result = getWritablePath(this.getArg(args, 2));
 
 		run(source, resultFormat, result);
+	}
+
+	@Override
+	public String getName() {
+		return "invert-mappings";
+	}
+
+	@Override
+	public String getDescription() {
+		// todo
+		return null;
 	}
 
 	public static void run(Path sourceFile, String resultFormat, Path resultFile) throws MappingParseException, IOException {

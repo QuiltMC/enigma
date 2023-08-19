@@ -15,8 +15,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 public class DropInvalidMappingsCommand extends Command {
 	public DropInvalidMappingsCommand() {
-		super("drop-invalid-mappings",
-				Argument.INPUT_JAR.required(),
+		super(Argument.INPUT_JAR.required(),
 				Argument.INPUT_MAPPINGS.required(),
 				Argument.MAPPING_OUTPUT.optional());
 	}
@@ -29,6 +28,16 @@ public class DropInvalidMappingsCommand extends Command {
 		Path mappingsOut = mappingsOutArg != null && !mappingsOutArg.isEmpty() ? getReadablePath(mappingsOutArg) : mappingsIn;
 
 		run(jarIn, mappingsIn, mappingsOut);
+	}
+
+	@Override
+	public String getName() {
+		return "drop-invalid-mappings";
+	}
+
+	@Override
+	public String getDescription() {
+		return "Removes all invalid mapping entries (entries whose obfuscated name is not found in the jar) from the provided mappings.";
 	}
 
 	public static void run(Path jarIn, Path mappingsIn, Path mappingsOut) throws Exception {

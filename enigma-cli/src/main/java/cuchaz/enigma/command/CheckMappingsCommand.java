@@ -11,8 +11,7 @@ import java.util.stream.Collectors;
 
 public class CheckMappingsCommand extends Command {
 	public CheckMappingsCommand() {
-		super("check-mappings",
-				Argument.INPUT_JAR.required(),
+		super(Argument.INPUT_JAR.required(),
 				Argument.INPUT_MAPPINGS.required());
 	}
 
@@ -21,6 +20,16 @@ public class CheckMappingsCommand extends Command {
 		Path fileJarIn = getReadableFile(this.getArg(args, 0)).toPath();
 		Path fileMappings = getReadablePath(this.getArg(args, 1));
 		run(fileJarIn, fileMappings);
+	}
+
+	@Override
+	public String getName() {
+		return "check-mappings";
+	}
+
+	@Override
+	public String getDescription() {
+		return "Validates the mappings for umm... something? idk really this always produces an error when running the tests but like it doesn't fail them? what's going on here??";
 	}
 
 	public static void run(Path fileJarIn, Path fileMappings) throws Exception {
