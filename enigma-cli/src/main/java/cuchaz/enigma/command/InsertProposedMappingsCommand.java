@@ -42,11 +42,11 @@ public class InsertProposedMappingsCommand extends Command {
 
 	@Override
 	public void run(String... args) throws Exception {
-		Path inJar = getReadablePath(getArg(args, 0, "in jar", true));
-		Path source = getReadablePath(getArg(args, 1, "source", true));
-		Path output = getWritablePath(getArg(args, 2, "result", true));
-		String resultFormat = getArg(args, 3, "result-format", true);
-		Path profilePath = getReadablePath(getArg(args, 4, "profile", false));
+		Path inJar = getReadablePath(this.getArg(args, 0));
+		Path source = getReadablePath(this.getArg(args, 1));
+		Path output = getWritablePath(this.getArg(args, 2));
+		String resultFormat = this.getArg(args, 3);
+		Path profilePath = getReadablePath(this.getArg(args, 4));
 
 		run(inJar, source, output, resultFormat, profilePath, null);
 	}

@@ -23,9 +23,9 @@ public class DropInvalidMappingsCommand extends Command {
 
 	@Override
 	public void run(String... args) throws Exception {
-		Path jarIn = getReadablePath(getArg(args, 0, "in jar", true));
-		Path mappingsIn = getReadablePath(getArg(args, 1, "mappings in", true));
-		String mappingsOutArg = getArg(args, 2, "mappings out", false);
+		Path jarIn = getReadablePath(this.getArg(args, 0));
+		Path mappingsIn = getReadablePath(this.getArg(args, 1));
+		String mappingsOutArg = this.getArg(args, 2);
 		Path mappingsOut = mappingsOutArg != null && !mappingsOutArg.isEmpty() ? getReadablePath(mappingsOutArg) : mappingsIn;
 
 		run(jarIn, mappingsIn, mappingsOut);

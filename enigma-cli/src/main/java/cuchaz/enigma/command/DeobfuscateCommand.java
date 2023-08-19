@@ -15,9 +15,9 @@ public class DeobfuscateCommand extends Command {
 
 	@Override
 	public void run(String... args) throws Exception {
-		Path fileJarIn = getReadablePath(getArg(args, 0, "in jar", true));
-		Path fileJarOut = getWritableFile(getArg(args, 1, "out jar", true)).toPath();
-		Path fileMappings = getReadablePath(getArg(args, 2, "mappings file", false));
+		Path fileJarIn = getReadablePath(this.getArg(args, 0));
+		Path fileJarOut = getWritableFile(this.getArg(args, 1)).toPath();
+		Path fileMappings = getReadablePath(this.getArg(args, 2));
 
 		run(fileJarIn, fileJarOut, fileMappings);
 	}

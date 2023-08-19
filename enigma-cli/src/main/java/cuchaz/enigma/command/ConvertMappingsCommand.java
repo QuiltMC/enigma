@@ -23,9 +23,9 @@ public class ConvertMappingsCommand extends Command {
 
 	@Override
 	public void run(String... args) throws IOException, MappingParseException {
-		Path source = getReadablePath(getArg(args, 0, "source", true));
-		String resultFormat = getArg(args, 1, "result-format", true);
-		Path result = getWritablePath(getArg(args, 2, "result", true));
+		Path source = getReadablePath(this.getArg(args, 0));
+		String resultFormat = this.getArg(args, 1);
+		Path result = getWritablePath(this.getArg(args, 2));
 
 		run(source, resultFormat, result);
 	}

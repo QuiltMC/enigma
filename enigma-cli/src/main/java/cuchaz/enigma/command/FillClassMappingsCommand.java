@@ -32,11 +32,11 @@ public class FillClassMappingsCommand extends Command {
 
 	@Override
 	public void run(String... args) throws Exception {
-		Path inJar = getReadablePath(getArg(args, 0, "in-jar", true));
-		Path source = getReadablePath(getArg(args, 1, "source", true));
-		Path result = getWritablePath(getArg(args, 2, "result", true));
-		String resultFormat = getArg(args, 3, "result-format", true);
-		boolean fillAll = Boolean.parseBoolean(getArg(args, 4, "fill-all", false));
+		Path inJar = getReadablePath(this.getArg(args, 0));
+		Path source = getReadablePath(this.getArg(args, 1));
+		Path result = getWritablePath(this.getArg(args, 2));
+		String resultFormat = this.getArg(args, 3);
+		boolean fillAll = Boolean.parseBoolean(this.getArg(args, 4));
 
 		run(inJar, source, result, resultFormat, fillAll);
 	}

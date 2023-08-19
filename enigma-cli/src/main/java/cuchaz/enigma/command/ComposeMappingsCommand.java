@@ -26,11 +26,11 @@ public class ComposeMappingsCommand extends Command {
 
 	@Override
 	public void run(String... args) throws IOException, MappingParseException {
-		Path left = getReadablePath(getArg(args, 0, "left", true));
-		Path right = getReadablePath(getArg(args, 1, "right", true));
-		String resultFormat = getArg(args, 2, "result-format", true);
-		Path result = getWritablePath(getArg(args, 3, "result", true));
-		String keepMode = getArg(args, 4, "keep-mode", true);
+		Path left = getReadablePath(this.getArg(args, 0));
+		Path right = getReadablePath(this.getArg(args, 1));
+		String resultFormat = this.getArg(args, 2);
+		Path result = getWritablePath(this.getArg(args, 3));
+		String keepMode = this.getArg(args, 4);
 
 		run(left, right, resultFormat, result, keepMode);
 	}

@@ -18,8 +18,8 @@ public class CheckMappingsCommand extends Command {
 
 	@Override
 	public void run(String... args) throws Exception {
-		Path fileJarIn = getReadableFile(getArg(args, 0, "in jar", true)).toPath();
-		Path fileMappings = getReadablePath(getArg(args, 1, "mappings file", true));
+		Path fileJarIn = getReadableFile(this.getArg(args, 0)).toPath();
+		Path fileMappings = getReadablePath(this.getArg(args, 1));
 		run(fileJarIn, fileMappings);
 	}
 

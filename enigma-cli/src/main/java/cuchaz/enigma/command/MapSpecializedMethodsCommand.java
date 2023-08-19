@@ -34,10 +34,10 @@ public class MapSpecializedMethodsCommand extends Command {
 
 	@Override
 	public void run(String... args) throws IOException, MappingParseException {
-		Path jar = getReadablePath(getArg(args, 0, "jar", true));
-		Path source = getReadablePath(getArg(args, 1, "source", true));
-		String resultFormat = getArg(args, 2, "result-format", true);
-		Path result = getWritablePath(getArg(args, 3, "result", true));
+		Path jar = getReadablePath(this.getArg(args, 0));
+		Path source = getReadablePath(this.getArg(args, 1));
+		String resultFormat = this.getArg(args, 2);
+		Path result = getWritablePath(this.getArg(args, 3));
 
 		run(jar, source, resultFormat, result);
 	}

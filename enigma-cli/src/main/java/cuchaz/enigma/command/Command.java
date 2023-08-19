@@ -32,15 +32,19 @@ public abstract class Command {
 	public final String name;
 	protected final List<Argument> requiredArguments = new ArrayList<>();
 	protected final List<Argument> optionalArguments = new ArrayList<>();
+	protected final List<ComposedArgument> allArguments;
 
 	protected Command(String name, ComposedArgument... arguments) {
 		this.name = name;
+		this.allArguments = new ArrayList<>();
 
 		for (ComposedArgument argument : arguments) {
 			if (argument.optional()) {
 				this.optionalArguments.add(argument.argument());
+				this.allArguments.add(argument);
 			} else {
 				this.requiredArguments.add(argument.argument());
+				this.allArguments.add(argument);
 
 				if (!this.optionalArguments.isEmpty()) {
 					throw new IllegalArgumentException("optional arguments should be grouped at the end of command arguments! (declaring arg " + argument + ")");
@@ -91,6 +95,14 @@ public abstract class Command {
 
 	public static Enigma createEnigma() {
 		return Enigma.create();
+	}
+
+	protected String getArg(String[] args, int index) {
+		if (index >= args.length || index >= this.allArguments.size()) {
+			return getArg(args, index, this.allArguments.get(index));
+		} else {
+			throw new RuntimeException("arg index is outside of range of possible arguments! (index: " + index + ", allowed arg count: " + this.allArguments.size() + ")");
+		}
 	}
 
 	public static Enigma createEnigma(EnigmaProfile profile, @Nullable Iterable<EnigmaPlugin> plugins) {
@@ -205,10 +217,10 @@ public abstract class Command {
 		return dir;
 	}
 
-	protected static String getArg(String[] args, int i, String name, boolean required) {
+	private static String getArg(String[] args, int i, ComposedArgument argument) {
 		if (i >= args.length) {
-			if (required) {
-				throw new IllegalArgumentException(name + " is required");
+			if (!argument.optional()) {
+				throw new IllegalArgumentException(argument.argument().getDisplayForm() + " is required");
 			} else {
 				return null;
 			}

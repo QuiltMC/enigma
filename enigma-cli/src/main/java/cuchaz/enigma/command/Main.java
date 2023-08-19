@@ -51,6 +51,10 @@ public class Main {
 		}
 	}
 
+	public static Map<String, Command> getCommands() {
+		return COMMANDS;
+	}
+
 	private static void printHelp() {
 		logEnigmaInfo();
 
@@ -115,6 +119,7 @@ public class Main {
 		register(new InsertProposedMappingsCommand());
 		register(new DropInvalidMappingsCommand());
 		register(new FillClassMappingsCommand());
+		register(new HelpCommand());
 	}
 
 	private static final class CommandHelpException extends IllegalArgumentException {
