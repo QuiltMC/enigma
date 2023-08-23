@@ -36,8 +36,7 @@ public class InvertMappingsCommand extends Command {
 
 	@Override
 	public String getDescription() {
-		// todo
-		return "Flips the source names with the destination names, ie. 'class a -> Example' becomes 'class Example -> a'";
+		return "Flips the source names with the destination names, ie. 'class a -> Example' becomes 'class Example -> a'.";
 	}
 
 	public static void run(Path sourceFile, String resultFormat, Path resultFile) throws MappingParseException, IOException {

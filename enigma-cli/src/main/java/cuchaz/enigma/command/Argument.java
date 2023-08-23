@@ -35,7 +35,7 @@ public enum Argument {
 	),
 	KEEP_MODE("<keep-mode>",
 		"""
-				Which mappings that should be kept when composing mappings. Allowed values are "left", "right", and "both"."""
+				Which mappings should overwrite the others when composing conflicting mappings. Allowed values are "left", "right", and "both"."""
 	),
 	DECOMPILER("<decompiler>",
 		"""

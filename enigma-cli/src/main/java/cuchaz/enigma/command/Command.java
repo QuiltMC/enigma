@@ -66,7 +66,10 @@ public abstract class Command {
 
 	private static void appendArguments(StringBuilder builder, List<Argument> arguments) {
 		for (int i = 0; i < arguments.size(); i++) {
-			builder.append(arguments.get(i).getDisplayForm()).append(i == arguments.size() - 1 ? "" : " ");
+			builder.append(arguments.get(i).getDisplayForm());
+			if (i < arguments.size() - 1) {
+				builder.append(" ");
+			}
 		}
 	}
 

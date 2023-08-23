@@ -29,7 +29,7 @@ public class CheckMappingsCommand extends Command {
 
 	@Override
 	public String getDescription() {
-		return "Checks that the mappings can be applied on the jar and used without any runtime error, such as package-private members accessed from an invalid package";
+		return "Checks that the mappings can be applied on the jar and used without any runtime errors, such as package-private members accessed from an invalid package.";
 	}
 
 	public static void run(Path fileJarIn, Path fileMappings) throws Exception {

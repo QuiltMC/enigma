@@ -41,8 +41,7 @@ public class ComposeMappingsCommand extends Command {
 
 	@Override
 	public String getDescription() {
-		// todo
-		return null;
+		return "Merges the two mapping trees (left and right) into a common (middle) name set, handling conflicts according to the given \"keep mode\".";
 	}
 
 	public static void run(Path leftFile, Path rightFile, String resultFormat, Path resultFile, String keepMode) throws IOException, MappingParseException {

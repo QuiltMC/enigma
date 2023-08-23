@@ -45,7 +45,6 @@ public class FillClassMappingsCommand extends Command {
 
 	@Override
 	public String getDescription() {
-		// todo
 		return "Adds empty mappings for classes missing in the input file, but whose parent or ancestors, do have names";
 	}
 

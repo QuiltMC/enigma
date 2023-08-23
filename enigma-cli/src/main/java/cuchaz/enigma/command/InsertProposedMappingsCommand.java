@@ -45,7 +45,7 @@ public class InsertProposedMappingsCommand extends Command {
 		String resultFormat = this.getArg(args, 3);
 		Path profilePath = getReadablePath(this.getArg(args, 4));
 
-		this.run(inJar, source, output, resultFormat, profilePath, null);
+		run(inJar, source, output, resultFormat, profilePath, null);
 	}
 
 	@Override
@@ -55,10 +55,10 @@ public class InsertProposedMappingsCommand extends Command {
 
 	@Override
 	public String getDescription() {
-		return "Adds all mappings proposed by the provided plugins into the given mappings.";
+		return "Adds all mappings proposed by the plugins on the classpath and declared in the profile into the given mappings.";
 	}
 
-	public void run(Path inJar, Path source, Path output, String resultFormat, @Nullable Path profilePath, @Nullable Iterable<EnigmaPlugin> plugins) throws Exception {
+	public static void run(Path inJar, Path source, Path output, String resultFormat, @Nullable Path profilePath, @Nullable Iterable<EnigmaPlugin> plugins) throws Exception {
 		EnigmaProfile profile = EnigmaProfile.read(profilePath);
 		Enigma enigma = createEnigma(profile, plugins);
 

@@ -46,7 +46,6 @@ public class MapSpecializedMethodsCommand extends Command {
 
 	@Override
 	public String getDescription() {
-		// todo
 		return "Adds names for specialized methods from their corresponding bridge method";
 	}
 
