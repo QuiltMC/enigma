@@ -15,26 +15,28 @@ import java.nio.file.Path;
 
 public class ConvertMappingsCommand extends Command {
 	public ConvertMappingsCommand() {
-		super("convert-mappings");
-	}
-
-	@Override
-	public String getUsage() {
-		return "<source> <result-format> <result>";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 3;
+		super(Argument.INPUT_MAPPINGS.required(),
+				Argument.OUTPUT_MAPPING_FORMAT.required(),
+				Argument.MAPPING_OUTPUT.required());
 	}
 
 	@Override
 	public void run(String... args) throws IOException, MappingParseException {
-		Path source = getReadablePath(getArg(args, 0, "source", true));
-		String resultFormat = getArg(args, 1, "result-format", true);
-		Path result = getWritablePath(getArg(args, 2, "result", true));
+		Path source = getReadablePath(this.getArg(args, 0));
+		String resultFormat = this.getArg(args, 1);
+		Path result = getWritablePath(this.getArg(args, 2));
 
 		run(source, resultFormat, result);
+	}
+
+	@Override
+	public String getName() {
+		return "convert-mappings";
+	}
+
+	@Override
+	public String getDescription() {
+		return "Converts the provided mappings to a different format.";
 	}
 
 	public static void run(Path source, String resultFormat, Path output) throws MappingParseException, IOException {

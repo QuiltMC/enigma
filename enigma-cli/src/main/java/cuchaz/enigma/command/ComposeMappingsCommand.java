@@ -16,28 +16,32 @@ import java.nio.file.Path;
 
 public class ComposeMappingsCommand extends Command {
 	public ComposeMappingsCommand() {
-		super("compose-mappings");
-	}
-
-	@Override
-	public String getUsage() {
-		return "<left> <right> <result-format> <result> <keep-mode>";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 5;
+		super(Argument.LEFT_MAPPINGS.required(),
+				Argument.RIGHT_MAPPINGS.required(),
+				Argument.OUTPUT_MAPPING_FORMAT.required(),
+				Argument.MAPPING_OUTPUT.required(),
+				Argument.KEEP_MODE.required());
 	}
 
 	@Override
 	public void run(String... args) throws IOException, MappingParseException {
-		Path left = getReadablePath(getArg(args, 0, "left", true));
-		Path right = getReadablePath(getArg(args, 1, "right", true));
-		String resultFormat = getArg(args, 2, "result-format", true);
-		Path result = getWritablePath(getArg(args, 3, "result", true));
-		String keepMode = getArg(args, 4, "keep-mode", true);
+		Path left = getReadablePath(this.getArg(args, 0));
+		Path right = getReadablePath(this.getArg(args, 1));
+		String resultFormat = this.getArg(args, 2);
+		Path result = getWritablePath(this.getArg(args, 3));
+		String keepMode = this.getArg(args, 4);
 
 		run(left, right, resultFormat, result, keepMode);
+	}
+
+	@Override
+	public String getName() {
+		return "compose-mappings";
+	}
+
+	@Override
+	public String getDescription() {
+		return "Merges the two mapping trees (left and right) into a common (middle) name set, handling conflicts according to the given \"keep mode\".";
 	}
 
 	public static void run(Path leftFile, Path rightFile, String resultFormat, Path resultFile, String keepMode) throws IOException, MappingParseException {

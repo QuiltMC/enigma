@@ -19,35 +19,37 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class FillClassMappingsCommand extends Command {
-	public static final String NAME = "fill-class-mappings";
-
 	protected FillClassMappingsCommand() {
-		super(NAME);
-	}
-
-	@Override
-	public String getUsage() {
-		return "<in-jar> <source> <result> <result-format> [<fill-all>]";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 4 || length == 5;
+		super(Argument.INPUT_JAR.required(),
+				Argument.INPUT_MAPPINGS.required(),
+				Argument.MAPPING_OUTPUT.required(),
+				Argument.OUTPUT_MAPPING_FORMAT.required(),
+				Argument.FILL_ALL.optional());
 	}
 
 	@Override
 	public void run(String... args) throws Exception {
-		Path inJar = getReadablePath(getArg(args, 0, "in-jar", true));
-		Path source = getReadablePath(getArg(args, 1, "source", true));
-		Path result = getWritablePath(getArg(args, 2, "result", true));
-		String resultFormat = getArg(args, 3, "result-format", true);
-		boolean fillAll = Boolean.parseBoolean(getArg(args, 4, "fill-all", false));
+		Path inJar = getReadablePath(this.getArg(args, 0));
+		Path source = getReadablePath(this.getArg(args, 1));
+		Path result = getWritablePath(this.getArg(args, 2));
+		String resultFormat = this.getArg(args, 3);
+		boolean fillAll = Boolean.parseBoolean(this.getArg(args, 4));
 
 		run(inJar, source, result, resultFormat, fillAll);
 	}
 
+	@Override
+	public String getName() {
+		return "fill-class-mappings";
+	}
+
+	@Override
+	public String getDescription() {
+		return "Adds empty mappings for classes missing in the input file, but whose parent or ancestors, do have names";
+	}
+
 	public static void run(Path jar, Path source, Path result, String resultFormat, boolean fillAll) throws Exception {
-		boolean debug = shouldDebug(NAME);
+		boolean debug = shouldDebug(new FillClassMappingsCommand().getName());
 		JarIndex jarIndex = loadJar(jar);
 
 		Logger.info("Reading mappings...");

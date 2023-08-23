@@ -11,24 +11,25 @@ import java.util.stream.Collectors;
 
 public class CheckMappingsCommand extends Command {
 	public CheckMappingsCommand() {
-		super("checkmappings");
-	}
-
-	@Override
-	public String getUsage() {
-		return "<in jar> <mappings file>";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 2;
+		super(Argument.INPUT_JAR.required(),
+				Argument.INPUT_MAPPINGS.required());
 	}
 
 	@Override
 	public void run(String... args) throws Exception {
-		Path fileJarIn = getReadableFile(getArg(args, 0, "in jar", true)).toPath();
-		Path fileMappings = getReadablePath(getArg(args, 1, "mappings file", true));
+		Path fileJarIn = getReadableFile(this.getArg(args, 0)).toPath();
+		Path fileMappings = getReadablePath(this.getArg(args, 1));
 		run(fileJarIn, fileMappings);
+	}
+
+	@Override
+	public String getName() {
+		return "check-mappings";
+	}
+
+	@Override
+	public String getDescription() {
+		return "Checks that the mappings can be applied on the jar and used without any runtime errors, such as package-private members accessed from an invalid package.";
 	}
 
 	public static void run(Path fileJarIn, Path fileMappings) throws Exception {

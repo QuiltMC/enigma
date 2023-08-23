@@ -29,31 +29,33 @@ import java.nio.file.Path;
 import javax.annotation.Nullable;
 
 public class InsertProposedMappingsCommand extends Command {
-	private static final String NAME = "insert-proposed-mappings";
-
 	public InsertProposedMappingsCommand() {
-		super(NAME);
-	}
-
-	@Override
-	public String getUsage() {
-		return "<in jar> <source> <result> <result-format> [<profile>]";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 4 || length == 5;
+		super(Argument.INPUT_JAR.required(),
+				Argument.INPUT_MAPPINGS.required(),
+				Argument.MAPPING_OUTPUT.required(),
+				Argument.OUTPUT_MAPPING_FORMAT.required(),
+				Argument.ENIGMA_PROFILE.optional());
 	}
 
 	@Override
 	public void run(String... args) throws Exception {
-		Path inJar = getReadablePath(getArg(args, 0, "in jar", true));
-		Path source = getReadablePath(getArg(args, 1, "source", true));
-		Path output = getWritablePath(getArg(args, 2, "result", true));
-		String resultFormat = getArg(args, 3, "result-format", true);
-		Path profilePath = getReadablePath(getArg(args, 4, "profile", false));
+		Path inJar = getReadablePath(this.getArg(args, 0));
+		Path source = getReadablePath(this.getArg(args, 1));
+		Path output = getWritablePath(this.getArg(args, 2));
+		String resultFormat = this.getArg(args, 3);
+		Path profilePath = getReadablePath(this.getArg(args, 4));
 
 		run(inJar, source, output, resultFormat, profilePath, null);
+	}
+
+	@Override
+	public String getName() {
+		return "insert-proposed-mappings";
+	}
+
+	@Override
+	public String getDescription() {
+		return "Adds all mappings proposed by the plugins on the classpath and declared in the profile into the given mappings.";
 	}
 
 	public static void run(Path inJar, Path source, Path output, String resultFormat, @Nullable Path profilePath, @Nullable Iterable<EnigmaPlugin> plugins) throws Exception {
@@ -64,7 +66,7 @@ public class InsertProposedMappingsCommand extends Command {
 	}
 
 	public static void run(Path inJar, Path source, Path output, String resultFormat, Enigma enigma) throws Exception {
-		boolean debug = shouldDebug(NAME);
+		boolean debug = shouldDebug(new InsertProposedMappingsCommand().getName());
 		NameProposalService[] nameProposalServices = enigma.getServices().get(NameProposalService.TYPE).toArray(new NameProposalService[0]);
 		if (nameProposalServices.length == 0) {
 			Logger.error("No name proposal service found");

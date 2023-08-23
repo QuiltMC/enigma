@@ -7,26 +7,28 @@ import java.nio.file.Path;
 
 public class DeobfuscateCommand extends Command {
 	public DeobfuscateCommand() {
-		super("deobfuscate");
-	}
-
-	@Override
-	public String getUsage() {
-		return "<in jar> <out jar> [<mappings file>]";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 2 || length == 3;
+		super(Argument.INPUT_JAR.required(),
+				Argument.OUTPUT_JAR.required(),
+				Argument.INPUT_MAPPINGS.optional());
 	}
 
 	@Override
 	public void run(String... args) throws Exception {
-		Path fileJarIn = getReadablePath(getArg(args, 0, "in jar", true));
-		Path fileJarOut = getWritableFile(getArg(args, 1, "out jar", true)).toPath();
-		Path fileMappings = getReadablePath(getArg(args, 2, "mappings file", false));
+		Path fileJarIn = getReadablePath(this.getArg(args, 0));
+		Path fileJarOut = getWritableFile(this.getArg(args, 1)).toPath();
+		Path fileMappings = getReadablePath(this.getArg(args, 2));
 
 		run(fileJarIn, fileJarOut, fileMappings);
+	}
+
+	@Override
+	public String getName() {
+		return "deobfuscate";
+	}
+
+	@Override
+	public String getDescription() {
+		return "Remaps all names in the jar according to the provided mappings.";
 	}
 
 	public static void run(Path fileJarIn, Path fileJarOut, Path fileMappings) throws Exception {

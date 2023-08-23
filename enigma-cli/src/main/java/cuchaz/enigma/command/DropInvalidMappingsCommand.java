@@ -15,27 +15,29 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 public class DropInvalidMappingsCommand extends Command {
 	public DropInvalidMappingsCommand() {
-		super("dropinvalidmappings");
-	}
-
-	@Override
-	public String getUsage() {
-		return "<in jar> <mappings in> [<mappings out>]";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 3;
+		super(Argument.INPUT_JAR.required(),
+				Argument.INPUT_MAPPINGS.required(),
+				Argument.MAPPING_OUTPUT.optional());
 	}
 
 	@Override
 	public void run(String... args) throws Exception {
-		Path jarIn = getReadablePath(getArg(args, 0, "in jar", true));
-		Path mappingsIn = getReadablePath(getArg(args, 1, "mappings in", true));
-		String mappingsOutArg = getArg(args, 2, "mappings out", false);
+		Path jarIn = getReadablePath(this.getArg(args, 0));
+		Path mappingsIn = getReadablePath(this.getArg(args, 1));
+		String mappingsOutArg = this.getArg(args, 2);
 		Path mappingsOut = mappingsOutArg != null && !mappingsOutArg.isEmpty() ? getReadablePath(mappingsOutArg) : mappingsIn;
 
 		run(jarIn, mappingsIn, mappingsOut);
+	}
+
+	@Override
+	public String getName() {
+		return "drop-invalid-mappings";
+	}
+
+	@Override
+	public String getDescription() {
+		return "Removes all invalid mapping entries (entries whose obfuscated name is not found in the jar) from the provided mappings.";
 	}
 
 	public static void run(Path jarIn, Path mappingsIn, Path mappingsOut) throws Exception {

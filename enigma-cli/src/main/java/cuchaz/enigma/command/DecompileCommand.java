@@ -13,27 +13,30 @@ import java.util.Locale;
 
 public class DecompileCommand extends Command {
 	public DecompileCommand() {
-		super("decompile");
-	}
-
-	@Override
-	public String getUsage() {
-		return "<decompiler> <in jar> <out folder> [<mappings file>]";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 3 || length == 4;
+		super(Argument.DECOMPILER.required(),
+				Argument.INPUT_JAR.required(),
+				Argument.OUTPUT_JAR.required(),
+				Argument.INPUT_MAPPINGS.optional());
 	}
 
 	@Override
 	public void run(String... args) throws Exception {
-		String decompilerName = getArg(args, 0, "decompiler", true);
-		Path fileJarIn = getReadableFile(getArg(args, 1, "in jar", true)).toPath();
-		Path fileJarOut = getWritableFolder(getArg(args, 2, "out folder", true)).toPath();
-		Path fileMappings = getReadablePath(getArg(args, 3, "mappings file", false));
+		String decompilerName = this.getArg(args, 0);
+		Path fileJarIn = getReadableFile(this.getArg(args, 1)).toPath();
+		Path fileJarOut = getWritableFolder(this.getArg(args, 2)).toPath();
+		Path fileMappings = getReadablePath(this.getArg(args, 3));
 
 		run(decompilerName, fileJarIn, fileJarOut, fileMappings);
+	}
+
+	@Override
+	public String getName() {
+		return "decompile";
+	}
+
+	@Override
+	public String getDescription() {
+		return "Decompiles the provided jar into human-readable code.";
 	}
 
 	public static void run(String decompilerName, Path fileJarIn, Path fileJarOut, Path fileMappings) throws Exception {

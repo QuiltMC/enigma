@@ -23,22 +23,85 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
 
 public abstract class Command {
-	public final String name;
+	protected final List<Argument> requiredArguments = new ArrayList<>();
+	protected final List<Argument> optionalArguments = new ArrayList<>();
+	protected final List<ComposedArgument> allArguments;
 
-	protected Command(String name) {
-		this.name = name;
+	protected Command(ComposedArgument... arguments) {
+		this.allArguments = new ArrayList<>();
+
+		for (ComposedArgument argument : arguments) {
+			if (argument.optional()) {
+				this.optionalArguments.add(argument.argument());
+				this.allArguments.add(argument);
+			} else {
+				this.requiredArguments.add(argument.argument());
+				this.allArguments.add(argument);
+
+				if (!this.optionalArguments.isEmpty()) {
+					throw new IllegalArgumentException("optional arguments should be grouped at the end of command arguments! (declaring arg " + argument + ")");
+				}
+			}
+		}
 	}
 
-	public abstract String getUsage();
+	public String getUsage() {
+		StringBuilder arguments = new StringBuilder();
+		appendArguments(arguments, this.requiredArguments);
 
-	public abstract boolean isValidArgument(int length);
+		if (!this.optionalArguments.isEmpty()) {
+			arguments.append(" [");
+			appendArguments(arguments, this.optionalArguments);
+			arguments.append("]");
+		}
 
+		return arguments.toString();
+	}
+
+	private static void appendArguments(StringBuilder builder, List<Argument> arguments) {
+		for (int i = 0; i < arguments.size(); i++) {
+			builder.append(arguments.get(i).getDisplayForm());
+			if (i < arguments.size() - 1) {
+				builder.append(" ");
+			}
+		}
+	}
+
+	/**
+	 * Ensures that the amount of arguments provided is valid to the command.
+	 * @param length the amount of arguments passed in
+	 * @return {@code true} if the argument count is valid, {@code false} otherwise
+	 */
+	public boolean checkArgumentCount(int length) {
+		// valid if length is equal to the amount of required arguments or between required argument count and total argument count
+		return length == this.requiredArguments.size() || length > this.requiredArguments.size() && length <= this.allArguments.size();
+	}
+
+	/**
+	 * Executes this command.
+	 * @param args the command-line arguments, to be parsed with {@link #getArg(String[], int)}
+	 * @throws Exception on any error
+	 */
 	public abstract void run(String... args) throws Exception;
+
+	/**
+	 * Returns the name of this command. Should be all-lowercase, and separated by dashes for words.
+	 * Examples: {@code decompile}, {@code compose-mappings}, {@code fill-class-mappings}
+	 * @return the name of the command
+	 */
+	public abstract String getName();
+
+	/**
+	 * Returns a one-sentence description of this command's function, used in {@link HelpCommand}.
+	 * @return the description
+	 */
+	public abstract String getDescription();
 
 	public static JarIndex loadJar(Path jar) throws IOException {
 		Logger.info("Reading JAR...");
@@ -53,8 +116,18 @@ public abstract class Command {
 		return Enigma.create();
 	}
 
-	public static Enigma createEnigma(EnigmaProfile profile) {
-		return createEnigma(profile, null);
+	/**
+	 * Parses and validates the argument at {@code index}. The argument can then be converted to something more useful via {@link #getReadablePath(String)}, {@link #getWritablePath(String)}, etc.
+	 * @param args the command-line args, provided in {@link #run(String...)}
+	 * @param index the index of the argument
+	 * @return the argument, as a string
+	 */
+	protected String getArg(String[] args, int index) {
+		if (index >= args.length || index >= this.allArguments.size()) {
+			return getArg(args, index, this.allArguments.get(index));
+		} else {
+			throw new RuntimeException("arg index is outside of range of possible arguments! (index: " + index + ", allowed arg count: " + this.allArguments.size() + ")");
+		}
 	}
 
 	public static Enigma createEnigma(EnigmaProfile profile, @Nullable Iterable<EnigmaPlugin> plugins) {
@@ -69,14 +142,6 @@ public abstract class Command {
 
 	protected static EnigmaProject openProject(Path fileJarIn, Path fileMappings) throws Exception {
 		return openProject(fileJarIn, fileMappings, createEnigma());
-	}
-
-	protected static EnigmaProject openProject(Path fileJarIn, Path fileMappings, EnigmaProfile profile) throws Exception {
-		return openProject(fileJarIn, fileMappings, profile, null);
-	}
-
-	protected static EnigmaProject openProject(Path fileJarIn, Path fileMappings, EnigmaProfile profile, @Nullable Iterable<EnigmaPlugin> plugins) throws Exception {
-		return openProject(fileJarIn, fileMappings, createEnigma(profile, plugins));
 	}
 
 	public static EnigmaProject openProject(Path fileJarIn, Path fileMappings, Enigma enigma) throws Exception {
@@ -177,10 +242,10 @@ public abstract class Command {
 		return dir;
 	}
 
-	protected static String getArg(String[] args, int i, String name, boolean required) {
+	private static String getArg(String[] args, int i, ComposedArgument argument) {
 		if (i >= args.length) {
-			if (required) {
-				throw new IllegalArgumentException(name + " is required");
+			if (!argument.optional()) {
+				throw new IllegalArgumentException(argument.argument().getDisplayForm() + " is required");
 			} else {
 				return null;
 			}

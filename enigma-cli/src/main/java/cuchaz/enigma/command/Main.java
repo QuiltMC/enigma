@@ -24,7 +24,7 @@ public class Main {
 				throw new IllegalArgumentException("Command not recognized: " + command);
 			}
 
-			if (!cmd.isValidArgument(args.length - 1)) {
+			if (!cmd.checkArgumentCount(args.length - 1)) {
 				throw new CommandHelpException(cmd);
 			}
 
@@ -39,8 +39,10 @@ public class Main {
 		} catch (CommandHelpException ex) {
 			Logger.error(ex);
 			logEnigmaInfo();
-			Logger.info("Command {} has encountered an error! Usage:", ex.command.name);
-			printHelp(ex.command);
+			Logger.info("Command {} has encountered an error! Usage:", ex.command.getName());
+			StringBuilder help = new StringBuilder();
+			appendHelp(ex.command, help);
+			Logger.info(help.toString());
 			System.exit(1);
 		} catch (IllegalArgumentException ex) {
 			Logger.error(ex);
@@ -49,26 +51,56 @@ public class Main {
 		}
 	}
 
+	public static Map<String, Command> getCommands() {
+		return COMMANDS;
+	}
+
 	private static void printHelp() {
 		logEnigmaInfo();
-		Logger.info("""
+
+		StringBuilder help = new StringBuilder();
+		help.append("""
 				Usage:
 				\tjava -cp enigma.jar cuchaz.enigma.command.CommandMain <command> <args>
 				\twhere <command> is one of:""");
 
 		for (Command command : COMMANDS.values()) {
-			printHelp(command);
+			appendHelp(command, help);
 		}
 	}
 
-	private static void printHelp(Command command) {
-		Logger.info("\t\t{} {}", command.name, command.getUsage());
+	private static void appendHelp(Command command, StringBuilder builder) {
+		builder.append(String.format("\t\t%s %s", command.getName(), command.getUsage())).append("\n");
+
+		if (!command.requiredArguments.isEmpty()) {
+			builder.append("Arguments:").append("\n");
+			int argIndex = 0;
+			for (int j = 0; j < command.requiredArguments.size(); j++) {
+				Argument argument = command.requiredArguments.get(j);
+				appendHelp(argument, argIndex, builder);
+				argIndex++;
+			}
+
+			if (!command.optionalArguments.isEmpty()) {
+				builder.append("\n").append("Optional arguments:").append("\n");
+				for (int i = 0; i < command.optionalArguments.size(); i++) {
+					Argument argument = command.optionalArguments.get(i);
+					appendHelp(argument, argIndex, builder);
+					argIndex++;
+				}
+			}
+		}
+	}
+
+	private static void appendHelp(Argument argument, int index, StringBuilder builder) {
+		builder.append(String.format("Argument %s: %s", index, argument.getDisplayForm())).append("\n");
+		builder.append(argument.getExplanation()).append("\n");
 	}
 
 	private static void register(Command command) {
-		Command old = COMMANDS.put(command.name, command);
+		Command old = COMMANDS.put(command.getName(), command);
 		if (old != null) {
-			Logger.warn("Command {} with name {} has been substituted by {}", old, command.name, command);
+			Logger.warn("Command {} with name {} has been substituted by {}", old, command.getName(), command);
 		}
 	}
 
@@ -87,6 +119,7 @@ public class Main {
 		register(new InsertProposedMappingsCommand());
 		register(new DropInvalidMappingsCommand());
 		register(new FillClassMappingsCommand());
+		register(new HelpCommand());
 	}
 
 	private static final class CommandHelpException extends IllegalArgumentException {

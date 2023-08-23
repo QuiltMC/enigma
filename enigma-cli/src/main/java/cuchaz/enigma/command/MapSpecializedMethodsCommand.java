@@ -22,34 +22,35 @@ import java.nio.file.Path;
 import java.util.Map;
 
 public class MapSpecializedMethodsCommand extends Command {
-	private static final String NAME = "map-specialized-methods";
-
 	public MapSpecializedMethodsCommand() {
-		super(NAME);
-	}
-
-	@Override
-	public String getUsage() {
-		return "<jar> <source> <result-format> <result>";
-	}
-
-	@Override
-	public boolean isValidArgument(int length) {
-		return length == 4;
+		super(Argument.INPUT_JAR.required(),
+				Argument.INPUT_MAPPINGS.required(),
+				Argument.OUTPUT_MAPPING_FORMAT.required(),
+				Argument.MAPPING_OUTPUT.required());
 	}
 
 	@Override
 	public void run(String... args) throws IOException, MappingParseException {
-		Path jar = getReadablePath(getArg(args, 0, "jar", true));
-		Path source = getReadablePath(getArg(args, 1, "source", true));
-		String resultFormat = getArg(args, 2, "result-format", true);
-		Path result = getWritablePath(getArg(args, 3, "result", true));
+		Path jar = getReadablePath(this.getArg(args, 0));
+		Path source = getReadablePath(this.getArg(args, 1));
+		String resultFormat = this.getArg(args, 2);
+		Path result = getWritablePath(this.getArg(args, 3));
 
 		run(jar, source, resultFormat, result);
 	}
 
+	@Override
+	public String getName() {
+		return "map-specialized-methods";
+	}
+
+	@Override
+	public String getDescription() {
+		return "Adds names for specialized methods from their corresponding bridge method";
+	}
+
 	public static void run(Path jar, Path sourcePath, String resultFormat, Path output) throws IOException, MappingParseException {
-		boolean debug = shouldDebug(NAME);
+		boolean debug = shouldDebug(new MapSpecializedMethodsCommand().getName());
 		JarIndex jarIndex = loadJar(jar);
 
 		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
