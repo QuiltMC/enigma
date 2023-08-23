@@ -77,7 +77,7 @@ public abstract class Command {
 	 */
 	public boolean checkArgumentCount(int length) {
 		// valid if length is equal to the amount of required arguments or between required argument count and total argument count
-		return length == this.requiredArguments.size() || length > this.requiredArguments.size() && length <= this.requiredArguments.size() + this.optionalArguments.size();
+		return length == this.requiredArguments.size() || length > this.requiredArguments.size() && length <= this.allArguments.size();
 	}
 
 	/**

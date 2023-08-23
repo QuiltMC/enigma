@@ -47,7 +47,7 @@ public class MapSpecializedMethodsCommand extends Command {
 	@Override
 	public String getDescription() {
 		// todo
-		return null;
+		return "Adds names for specialized methods from their corresponding bridge method";
 	}
 
 	public static void run(Path jar, Path sourcePath, String resultFormat, Path output) throws IOException, MappingParseException {
