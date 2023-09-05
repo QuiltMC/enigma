@@ -35,10 +35,10 @@ public class NavigatorPanel extends JPanel {
 		this.validityChecker = validityChecker;
 		this.statsLabel = new JLabel("0/0");
 
-		JButton up = new JButton("up");
+		JButton up = new JButton("⋀");
 		up.addActionListener(event -> {
 			if (!this.entries.isEmpty()) {
-				this.currentIndex --;
+				this.currentIndex--;
 				if (this.currentIndex < 0) {
 					this.currentIndex = this.entries.size() - 1;
 				}
@@ -47,10 +47,10 @@ public class NavigatorPanel extends JPanel {
 			}
 		});
 
-		JButton down = new JButton("down");
+		JButton down = new JButton("⋁");
 		down.addActionListener(event -> {
 			if (!this.entries.isEmpty()) {
-				this.currentIndex ++;
+				this.currentIndex++;
 				if (this.currentIndex >= this.entries.size()) {
 					this.currentIndex = 0;
 				}
