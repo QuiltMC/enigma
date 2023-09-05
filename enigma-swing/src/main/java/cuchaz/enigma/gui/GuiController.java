@@ -520,9 +520,6 @@ public class GuiController implements ClientPacketHandler {
 		if (vc.canProceed()) {
 			boolean renamed = !change.getDeobfName().isUnchanged();
 			this.gui.updateStructure(this.gui.getActiveEditor());
-			if (this.gui.getActiveEditor() != null) {
-				this.gui.getActiveEditor().onRename(target);
-			}
 
 			if (!Objects.equals(prev.targetName(), mapping.targetName())) {
 				this.chp.invalidateMapped();

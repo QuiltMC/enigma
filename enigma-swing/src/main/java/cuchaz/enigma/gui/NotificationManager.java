@@ -1,7 +1,6 @@
 package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.docker.NotificationsDocker;
-import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
@@ -102,7 +101,13 @@ public class NotificationManager implements ValidationContext.Notifier {
 
 		JPanel glass = (JPanel) this.gui.getFrame().getGlassPane();
 		this.glassPane = glass;
-		GuiUtil.setUpGlassPane(glass);
+
+		// set up glass pane to actually display elements
+		glass.setOpaque(false);
+		glass.setVisible(true);
+		glass.setLayout(null);
+		glass.revalidate();
+
 		glass.add(notificationPanel);
 
 		// set up notification panel

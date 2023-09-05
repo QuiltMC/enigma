@@ -14,7 +14,6 @@ import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.elements.EditorPopupMenu;
-import cuchaz.enigma.gui.elements.NavigatorPanel;
 import cuchaz.enigma.gui.events.EditorActionListener;
 import cuchaz.enigma.gui.events.ThemeChangeListener;
 import cuchaz.enigma.gui.highlight.BoxHighlightPainter;
@@ -36,7 +35,6 @@ import org.tinylog.Logger;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -85,7 +83,6 @@ public class EditorPanel {
 	private final JTextArea errorTextArea = new JTextArea();
 	private final JScrollPane errorScrollPane = new JScrollPane(this.errorTextArea);
 	private final JButton retryButton = new JButton(I18n.translate("prompt.retry"));
-	private final NavigatorPanel navigatorPanel;
 
 	private DisplayMode mode = DisplayMode.INACTIVE;
 
@@ -114,7 +111,6 @@ public class EditorPanel {
 		this.controller = gui.getController();
 
 		this.editor.setEditable(false);
-		this.editor.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		this.editor.setSelectionColor(new Color(31, 46, 90));
 		this.editor.setCaret(new BrowserCaret());
 		this.editor.setFont(ScaleUtil.getFont(this.editor.getFont().getFontName(), Font.PLAIN, this.fontSize));
@@ -132,11 +128,6 @@ public class EditorPanel {
 		// init editor popup menu
 		this.popupMenu = new EditorPopupMenu(this, gui);
 		this.editor.setComponentPopupMenu(this.popupMenu.getUi());
-
-		// navigator panel
-		// todo needs to stick when scrolling
-		this.navigatorPanel = new NavigatorPanel(gui, entry -> this.gui.getController().getProject().isObfuscated(entry) && this.gui.getController().getProject().isRenamable(entry));
-		this.editor.add(this.navigatorPanel);
 
 		this.decompilingLabel.setFont(ScaleUtil.getFont(this.decompilingLabel.getFont().getFontName(), Font.BOLD, 26));
 		this.decompilingProgressBar.setIndeterminate(true);
@@ -231,10 +222,6 @@ public class EditorPanel {
 		};
 
 		this.ui.putClientProperty(EditorPanel.class, this);
-	}
-
-	public void onRename(Entry<?> target) {
-		this.navigatorPanel.checkForRemoval(target);
 	}
 
 	@Nullable
@@ -465,17 +452,11 @@ public class EditorPanel {
 			this.source = source;
 			this.editor.getHighlighter().removeAllHighlights();
 			this.editor.setText(source.toString());
-
-			this.setHighlightedTokens(source.getHighlightedTokens());
 			if (this.source != null) {
 				this.editor.setCaretPosition(newCaretPos);
-
-				for (Entry<?> entry : this.source.getIndex().declarations()) {
-					// todo confirm that the entry comes from this class - overridden methods, even deobf ones, are being added here
-					this.navigatorPanel.tryAddEntry(entry);
-				}
 			}
 
+			this.setHighlightedTokens(source.getHighlightedTokens());
 			this.setCursorReference(this.getReference(this.getToken(this.editor.getCaretPosition())));
 		} finally {
 			this.settingSource = false;

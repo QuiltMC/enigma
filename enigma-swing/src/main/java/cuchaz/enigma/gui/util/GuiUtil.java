@@ -12,7 +12,6 @@ import cuchaz.enigma.utils.Os;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JToolTip;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
@@ -226,16 +225,5 @@ public class GuiUtil {
 				op.accept(e);
 			}
 		};
-	}
-
-	/**
-	 * A hack method to set up the Swing glass pane, because of course it doesn't actually display anything
-	 * unless you do this. Thanks Swing!
-	 */
-	public static void setUpGlassPane(JPanel glass) {
-		glass.setOpaque(false);
-		glass.setVisible(true);
-		glass.setLayout(null);
-		glass.revalidate();
 	}
 }
