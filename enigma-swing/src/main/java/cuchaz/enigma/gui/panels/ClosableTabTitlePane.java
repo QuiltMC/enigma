@@ -126,6 +126,7 @@ public class ClosableTabTitlePane {
 		} else {
 			this.ui.remove(this.navigator);
 		}
+
 		this.ui.remove(this.closeButton);
 		this.ui.add(this.closeButton);
 

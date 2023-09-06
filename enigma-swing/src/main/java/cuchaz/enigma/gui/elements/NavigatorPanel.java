@@ -112,6 +112,7 @@ public class NavigatorPanel extends JPanel {
 		for (var list : this.entries.values()) {
 			list.clear();
 		}
+
 		this.currentIndex = 0;
 	}
 
