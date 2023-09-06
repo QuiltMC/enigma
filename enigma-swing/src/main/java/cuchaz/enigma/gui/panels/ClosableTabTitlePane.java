@@ -1,5 +1,6 @@
 package cuchaz.enigma.gui.panels;
 
+import cuchaz.enigma.gui.elements.NavigatorPanel;
 import cuchaz.enigma.gui.util.GuiUtil;
 
 import java.awt.Component;
@@ -24,14 +25,16 @@ public class ClosableTabTitlePane {
 	private final JPanel ui;
 	private final JButton closeButton;
 	private final JLabel label;
+	private final NavigatorPanel navigator;
 
 	private ChangeListener cachedChangeListener;
 	private JTabbedPane parent;
 
-	public ClosableTabTitlePane(String text, Runnable onClose) {
+	public ClosableTabTitlePane(String text, Runnable onClose, NavigatorPanel navigatorPanel) {
 		this.ui = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 2));
 		this.ui.setOpaque(false);
 		this.label = new JLabel(text);
+		this.navigator = navigatorPanel;
 		this.ui.add(this.label);
 
 		// Adapted from javax.swing.plaf.metal.MetalTitlePane
@@ -117,6 +120,15 @@ public class ClosableTabTitlePane {
 		boolean isActive = selectedIndex != -1 && pane.getTabComponentAt(selectedIndex) == this.ui;
 		this.closeButton.setEnabled(isActive);
 		this.closeButton.putClientProperty("paintActive", isActive);
+
+		if (isActive) {
+			this.ui.add(this.navigator);
+		} else {
+			this.ui.remove(this.navigator);
+		}
+		this.ui.remove(this.closeButton);
+		this.ui.add(this.closeButton);
+
 		this.ui.repaint();
 	}
 

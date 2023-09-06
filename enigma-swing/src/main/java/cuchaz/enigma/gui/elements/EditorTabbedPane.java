@@ -26,10 +26,12 @@ public class EditorTabbedPane {
 
 	private final EditorTabPopupMenu editorTabPopupMenu;
 	private final Gui gui;
+	private final NavigatorPanel navigator;
 
 	public EditorTabbedPane(Gui gui) {
 		this.gui = gui;
 		this.editorTabPopupMenu = new EditorTabPopupMenu(this);
+		this.navigator = new NavigatorPanel(this.gui);
 
 		this.openFiles.addMouseListener(GuiUtil.onMousePress(this::onTabPressed));
 	}
@@ -39,12 +41,13 @@ public class EditorTabbedPane {
 		EditorPanel editorPanel = this.editors.computeIfAbsent(entry, e -> {
 			ClassHandle ch = this.gui.getController().getClassHandleProvider().openClass(entry);
 			if (ch == null) return null;
-			EditorPanel ed = new EditorPanel(this.gui);
+			this.navigator.clear();
+			EditorPanel ed = new EditorPanel(this.gui, this.navigator);
 			ed.setup();
 			ed.setClassHandle(ch);
 			this.openFiles.addTab(ed.getFileName(), ed.getUi());
 
-			ClosableTabTitlePane titlePane = new ClosableTabTitlePane(ed.getFileName(), () -> this.closeEditor(ed));
+			ClosableTabTitlePane titlePane = new ClosableTabTitlePane(ed.getFileName(), () -> this.closeEditor(ed), this.navigator);
 			this.openFiles.setTabComponentAt(this.openFiles.indexOfComponent(ed.getUi()), titlePane.getUi());
 			titlePane.setTabbedPane(this.openFiles);
 

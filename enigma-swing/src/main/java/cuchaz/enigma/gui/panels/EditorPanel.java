@@ -109,9 +109,10 @@ public class EditorPanel {
 	private DecompiledClassSource source;
 	private boolean settingSource;
 
-	public EditorPanel(Gui gui) {
+	public EditorPanel(Gui gui, NavigatorPanel navigator) {
 		this.gui = gui;
 		this.controller = gui.getController();
+		this.navigatorPanel = navigator;
 
 		this.editor.setEditable(false);
 		this.editor.setLayout(new FlowLayout(FlowLayout.RIGHT));
@@ -132,11 +133,6 @@ public class EditorPanel {
 		// init editor popup menu
 		this.popupMenu = new EditorPopupMenu(this, gui);
 		this.editor.setComponentPopupMenu(this.popupMenu.getUi());
-
-		// navigator panel
-		// todo needs to stick when scrolling
-		this.navigatorPanel = new NavigatorPanel(gui);
-		this.editor.add(this.navigatorPanel);
 
 		this.decompilingLabel.setFont(ScaleUtil.getFont(this.decompilingLabel.getFont().getFontName(), Font.BOLD, 26));
 		this.decompilingProgressBar.setIndeterminate(true);
@@ -471,7 +467,6 @@ public class EditorPanel {
 				this.editor.setCaretPosition(newCaretPos);
 
 				for (Entry<?> entry : this.source.getIndex().declarations()) {
-					// todo confirm that the entry comes from this class - overridden methods, even deobf ones, are being added here
 					this.navigatorPanel.addEntry(entry);
 				}
 			}

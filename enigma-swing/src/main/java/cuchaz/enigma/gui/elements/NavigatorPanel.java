@@ -104,6 +104,18 @@ public class NavigatorPanel extends JPanel {
 	}
 
 	/**
+	 * Removes all data from this navigator and updates its UI.
+	 * Keeps selected type intact.
+	 */
+	public void clear() {
+		this.tokenTypes.clear();
+		for (var list : this.entries.values()) {
+			list.clear();
+		}
+		this.currentIndex = 0;
+	}
+
+	/**
 	 * Adds the provided entry to this navigator's pool and sorts it.
 	 * @param entry the entry to add
 	 */
