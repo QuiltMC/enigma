@@ -135,7 +135,7 @@ public class EditorPanel {
 
 		// navigator panel
 		// todo needs to stick when scrolling
-		this.navigatorPanel = new NavigatorPanel(gui, entry -> this.gui.getController().getProject().isObfuscated(entry) && this.gui.getController().getProject().isRenamable(entry));
+		this.navigatorPanel = new NavigatorPanel(gui);
 		this.editor.add(this.navigatorPanel);
 
 		this.decompilingLabel.setFont(ScaleUtil.getFont(this.decompilingLabel.getFont().getFontName(), Font.BOLD, 26));
@@ -234,7 +234,7 @@ public class EditorPanel {
 	}
 
 	public void onRename(Entry<?> target) {
-		this.navigatorPanel.checkForRemoval(target);
+		this.navigatorPanel.updateTokenType(target);
 	}
 
 	@Nullable
@@ -472,7 +472,7 @@ public class EditorPanel {
 
 				for (Entry<?> entry : this.source.getIndex().declarations()) {
 					// todo confirm that the entry comes from this class - overridden methods, even deobf ones, are being added here
-					this.navigatorPanel.tryAddEntry(entry);
+					this.navigatorPanel.addEntry(entry);
 				}
 			}
 

@@ -1,47 +1,65 @@
 package cuchaz.enigma.gui.elements;
 
+import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.representation.entry.Entry;
 
 import javax.annotation.Nullable;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
+import java.awt.event.ItemEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Map;
 
 /**
  * A panel with buttons to navigate to the next and previous items in its entry collection.
  */
 public class NavigatorPanel extends JPanel {
+	private static final RenamableTokenType[] SUPPORTED_TOKEN_TYPES = {RenamableTokenType.OBFUSCATED, RenamableTokenType.PROPOSED, RenamableTokenType.DEOBFUSCATED};
+
 	private final Gui gui;
 	private final JLabel statsLabel;
-	private final List<Entry<?>> entries = new ArrayList<>();
-	private final Function<Entry<?>, Boolean> validityChecker;
+	private final Map<RenamableTokenType, List<Entry<?>>> entries = new HashMap<>();
+	private final Map<Entry<?>, RenamableTokenType> tokenTypes = new HashMap<>();
 
 	private int currentIndex = 0;
+	private RenamableTokenType selectedType;
 
 	/**
 	 * Creates a new navigator panel.
 	 * @param gui the parent gui
-	 * @param validityChecker a function that check if an entry should still be accessible from this panel. returns {@code true} if yes, or {@code false} if it should be removed
 	 */
-	public NavigatorPanel(Gui gui, Function<Entry<?>, Boolean> validityChecker) {
+	public NavigatorPanel(Gui gui) {
 		super();
 		this.gui = gui;
-		this.validityChecker = validityChecker;
 		this.statsLabel = new JLabel("0/0");
+
+		JComboBox<RenamableTokenType> typeSelector = new JComboBox<>(SUPPORTED_TOKEN_TYPES);
+		typeSelector.addItemListener(event -> {
+			if (event.getStateChange() == ItemEvent.SELECTED) {
+				this.selectedType = (RenamableTokenType) event.getItem();
+				this.onTypeChange();
+			}
+		});
+		this.selectedType = RenamableTokenType.OBFUSCATED;
+
+		for (RenamableTokenType type : SUPPORTED_TOKEN_TYPES) {
+			this.entries.put(type, new ArrayList<>());
+		}
 
 		JButton up = new JButton("⋀");
 		up.addActionListener(event -> {
-			if (!this.entries.isEmpty()) {
+			List<Entry<?>> currentEntrySet = this.entries.get(this.selectedType);
+			if (!currentEntrySet.isEmpty()) {
 				this.currentIndex--;
-				if (this.currentIndex < 0) {
-					this.currentIndex = this.entries.size() - 1;
-				}
+				this.wrapIndex();
 
 				this.tryNavigate();
 			}
@@ -49,51 +67,90 @@ public class NavigatorPanel extends JPanel {
 
 		JButton down = new JButton("⋁");
 		down.addActionListener(event -> {
-			if (!this.entries.isEmpty()) {
+			List<Entry<?>> currentEntrySet = this.entries.get(this.selectedType);
+			if (!currentEntrySet.isEmpty()) {
 				this.currentIndex++;
-				if (this.currentIndex >= this.entries.size()) {
-					this.currentIndex = 0;
-				}
+				this.wrapIndex();
 
 				this.tryNavigate();
 			}
 		});
 
+		this.add(typeSelector);
 		this.add(up);
 		this.add(down);
 		this.add(this.statsLabel);
 		this.setBorder(new LineBorder(Color.BLACK));
 	}
 
-	private void tryNavigate() {
-		this.checkForRemoval(this.entries.get(this.currentIndex));
+	private void onTypeChange() {
+		this.wrapIndex();
 		this.updateStatsLabel();
-		this.gui.getController().navigateTo(this.entries.get(this.currentIndex));
+	}
+
+	private void wrapIndex() {
+		List<Entry<?>> currentEntrySet = this.entries.get(this.selectedType);
+		if (this.currentIndex < 0) {
+			this.currentIndex = currentEntrySet.size() - 1;
+		} else if (this.currentIndex >= currentEntrySet.size()) {
+			this.currentIndex = 0;
+		}
+	}
+
+	private void tryNavigate() {
+		this.updateTokenType(this.entries.get(this.selectedType).get(this.currentIndex));
+		this.updateStatsLabel();
+		this.gui.getController().navigateTo(this.entries.get(this.selectedType).get(this.currentIndex));
 	}
 
 	/**
-	 * Adds the entry if it's valid for this navigator.
+	 * Adds the provided entry to this navigator's pool and sorts it.
 	 * @param entry the entry to add
 	 */
-	public void tryAddEntry(@Nullable Entry<?> entry) {
-		if (entry != null && !this.entries.contains(entry) && this.validityChecker.apply(entry)) {
-			this.entries.add(entry);
-			this.statsLabel.setText((this.currentIndex + 1) + "/" + this.entries.size());
+	public void addEntry(@Nullable Entry<?> entry) {
+		EnigmaProject project = this.gui.getController().getProject();
+		if (entry != null && project.isRenamable(entry) && project.isNavigable(entry)) {
+			RenamableTokenType tokenType = this.getTokenType(entry);
+			List<Entry<?>> entries = this.entries.get(tokenType);
+
+			if (!entries.contains(entry)) {
+				entries.add(entry);
+				this.tokenTypes.put(entry, tokenType);
+				this.updateStatsLabel();
+			}
 		}
 	}
 
 	/**
-	 * Checks if the entry should be removed, and if so handles removal and updates.
+	 * Checks if the entry should be moved to a different token type, and updates it if so.
+	 * Assumes that the entry's old token type matches the currently selected token type.
 	 * @param target the entry to check
 	 */
-	public void checkForRemoval(Entry<?> target) {
-		if (!this.validityChecker.apply(target)) {
-			this.entries.remove(target);
+	public void updateTokenType(Entry<?> target) {
+		RenamableTokenType tokenType = this.getTokenType(target);
+		RenamableTokenType oldType = this.tokenTypes.get(target);
+
+		if (tokenType != oldType) {
+			this.entries.get(oldType).remove(target);
+			this.entries.get(tokenType).add(target);
+			this.tokenTypes.put(target, tokenType);
 			this.updateStatsLabel();
 		}
 	}
 
+	private RenamableTokenType getTokenType(Entry<?> target) {
+		EnigmaProject project = this.gui.getController().getProject();
+		RenamableTokenType tokenType = project.getMapper().extendedDeobfuscate(target).getType();
+		if (tokenType == RenamableTokenType.OBFUSCATED) {
+			if (project.hasProposedName(target)) {
+				tokenType = RenamableTokenType.PROPOSED;
+			}
+		}
+
+		return tokenType;
+	}
+
 	private void updateStatsLabel() {
-		this.statsLabel.setText((this.currentIndex + 1) + "/" + this.entries.size());
+		this.statsLabel.setText((this.currentIndex + 1) + "/" + this.entries.get(this.selectedType).size());
 	}
 }
