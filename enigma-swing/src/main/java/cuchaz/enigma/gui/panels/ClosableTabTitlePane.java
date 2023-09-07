@@ -1,18 +1,9 @@
 package cuchaz.enigma.gui.panels;
 
-import cuchaz.enigma.gui.elements.NavigatorPanel;
 import cuchaz.enigma.gui.util.GuiUtil;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import javax.accessibility.AccessibleContext;
-import javax.annotation.Nullable;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -20,21 +11,24 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class ClosableTabTitlePane {
 	private final JPanel ui;
 	private final JButton closeButton;
 	private final JLabel label;
-	private final NavigatorPanel navigator;
 
 	private ChangeListener cachedChangeListener;
 	private JTabbedPane parent;
 
-	public ClosableTabTitlePane(String text, Runnable onClose, NavigatorPanel navigatorPanel) {
+	public ClosableTabTitlePane(String text, Runnable onClose) {
 		this.ui = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 2));
 		this.ui.setOpaque(false);
 		this.label = new JLabel(text);
-		this.navigator = navigatorPanel;
 		this.ui.add(this.label);
 
 		// Adapted from javax.swing.plaf.metal.MetalTitlePane
@@ -121,12 +115,6 @@ public class ClosableTabTitlePane {
 		this.closeButton.setEnabled(isActive);
 		this.closeButton.putClientProperty("paintActive", isActive);
 
-		if (isActive) {
-			this.ui.add(this.navigator);
-		} else {
-			this.ui.remove(this.navigator);
-		}
-
 		this.ui.remove(this.closeButton);
 		this.ui.add(this.closeButton);
 
@@ -135,17 +123,5 @@ public class ClosableTabTitlePane {
 
 	public JPanel getUi() {
 		return this.ui;
-	}
-
-	@Nullable
-	public static ClosableTabTitlePane byUi(Component c) {
-		if (c instanceof JComponent component) {
-			Object prop = component.getClientProperty(ClosableTabTitlePane.class);
-			if (prop instanceof ClosableTabTitlePane pane) {
-				return pane;
-			}
-		}
-
-		return null;
 	}
 }

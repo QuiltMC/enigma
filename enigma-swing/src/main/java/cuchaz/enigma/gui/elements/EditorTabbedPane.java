@@ -47,7 +47,7 @@ public class EditorTabbedPane {
 			ed.setClassHandle(ch);
 			this.openFiles.addTab(ed.getFileName(), ed.getUi());
 
-			ClosableTabTitlePane titlePane = new ClosableTabTitlePane(ed.getFileName(), () -> this.closeEditor(ed), this.navigator);
+			ClosableTabTitlePane titlePane = new ClosableTabTitlePane(ed.getFileName(), () -> this.closeEditor(ed));
 			this.openFiles.setTabComponentAt(this.openFiles.indexOfComponent(ed.getUi()), titlePane.getUi());
 			titlePane.setTabbedPane(this.openFiles);
 

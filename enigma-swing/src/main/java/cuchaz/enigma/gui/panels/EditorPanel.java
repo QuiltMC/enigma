@@ -41,6 +41,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -348,7 +349,34 @@ public class EditorPanel {
 			}
 			case SUCCESS: {
 				this.ui.setLayout(new GridLayout(1, 1, 0, 0));
-				this.ui.add(this.editorScrollPane);
+
+				JPanel editorPane = new JPanel() {
+					@Override
+					public boolean isOptimizedDrawingEnabled() {
+						return false;
+					}
+				};
+				editorPane.setLayout(new GridBagLayout());
+
+				GridBagConstraints constraints = new GridBagConstraints();
+				constraints.gridx = 0;
+				constraints.gridy = 0;
+				constraints.weightx = 1.0;
+				constraints.weighty = 1.0;
+				constraints.anchor = GridBagConstraints.FIRST_LINE_END;
+				constraints.insets = new Insets(32, 32, 32, 32);
+				constraints.ipadx = 16;
+				constraints.ipady = 16;
+				editorPane.add(this.navigatorPanel, constraints);
+
+				constraints = new GridBagConstraints();
+				constraints.gridx = 0;
+				constraints.gridy = 0;
+				constraints.weightx = 1.0;
+				constraints.weighty = 1.0;
+				constraints.fill = GridBagConstraints.BOTH;
+				editorPane.add(this.editorScrollPane, constraints);
+				this.ui.add(editorPane);
 				break;
 			}
 			case ERRORED: {

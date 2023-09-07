@@ -164,6 +164,8 @@ public class NavigatorPanel extends JPanel {
 	}
 
 	private void updateStatsLabel() {
-		this.statsLabel.setText((this.currentIndex + 1) + "/" + this.entries.get(this.selectedType).size());
+		int index = this.entries.get(this.selectedType).isEmpty() ? 0 : this.currentIndex + 1;
+		String indexString = String.valueOf(index).length() == 1 ? "0" + index : String.valueOf(index);
+		this.statsLabel.setText(indexString + "/" + this.entries.get(this.selectedType).size());
 	}
 }
