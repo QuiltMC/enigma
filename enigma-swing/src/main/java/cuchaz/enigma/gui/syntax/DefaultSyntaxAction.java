@@ -14,12 +14,10 @@
 
 package cuchaz.enigma.gui.syntax;
 
-import java.awt.event.ActionEvent;
-import java.net.URL;
-import java.util.regex.Pattern;
-import javax.swing.*;
+import javax.swing.Action;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
+import java.awt.event.ActionEvent;
 
 /**
  * The DefaultSyntaxAction.  You can extend this class or implement the interface
@@ -27,36 +25,10 @@ import javax.swing.text.TextAction;
  *
  * @author Ayman Al-Sairafi
  */
-abstract public class DefaultSyntaxAction extends TextAction implements SyntaxAction {
-
+abstract public class DefaultSyntaxAction extends TextAction implements Action {
 	public DefaultSyntaxAction(String actionName) {
 		super(actionName);
 		this.putValue(NAME, actionName);
-	}
-
-	@Override
-	public void install(JEditorPane editor, Configuration config, String name) {
-		// find setter methods for each property key:
-		String actionName = name.substring(ACTION_PREFIX.length());
-		for (Configuration.StringKeyMatcher m : config.getKeys(
-			Pattern.compile(Pattern.quote(name) + "\\.((\\w|-)+)"))) {
-			if (!ReflectUtils.callSetter(this, m.group1, m.value)) {
-				this.putValue(m.group1, m.value);
-			}
-		}
-		// if we did not put a name, use the action name
-		if (this.getValue(NAME) == null) {
-			this.putValue(NAME, actionName);
-		}
-		// if we did not put an icon, try and find one using our name
-		if (this.getValue(SMALL_ICON) == null) {
-			this.setSmallIcon(actionName + ".png");
-		}
-	}
-
-	@Override
-	public void deinstall(JEditorPane editor) {
-		// nothing
 	}
 
 	@Override
@@ -76,8 +48,7 @@ abstract public class DefaultSyntaxAction extends TextAction implements SyntaxAc
 	 * @param dot (position of caret at text document)
 	 * @param e actual ActionEvent passed to actionPerformed
 	 */
-	public void actionPerformed(JTextComponent target, SyntaxDocument sDoc,
-								int dot, ActionEvent e) {
+	public void actionPerformed(JTextComponent target, SyntaxDocument sDoc, int dot, ActionEvent e) {
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
 
@@ -85,48 +56,4 @@ abstract public class DefaultSyntaxAction extends TextAction implements SyntaxAc
 	public String toString() {
 		return "Action " + this.getValue(NAME) + "of type " + this.getClass().getSimpleName();
 	}
-
-	/**
-	 * Configure the MenuText for the Action
-	 */
-	public final void setMenuText(String text) {
-		this.putValue(NAME, text);
-		// also set the SHORT_DESCRIPTIOn if it was not set, so we have
-		// at least some tooltip for toolbar buttons
-		if (this.getValue(SHORT_DESCRIPTION) == null) {
-			this.putValue(SHORT_DESCRIPTION, text);
-		}
-	}
-
-	/**
-	 * Configure the ToolTip for the Action
-	 */
-	public final void setToolTip(String text) {
-		this.putValue(SHORT_DESCRIPTION, text);
-	}
-
-	/**
-	 * Sets the Large Icon for this action from given url
-	 */
-	public final void setLargeIcon(String url) {
-		URL loc = this.getClass().getClassLoader().getResource(LARGE_ICONS_LOC_PREFIX + url);
-		if (loc != null) {
-			ImageIcon i = new ImageIcon(loc);
-			this.putValue(LARGE_ICON_KEY, i);
-		}
-	}
-
-	/**
-	 * Configure the SmallIcon for the Action
-	 */
-	public final void setSmallIcon(String url) {
-		URL loc = this.getClass().getClassLoader().getResource(SMALL_ICONS_LOC_PREFIX + url);
-		if (loc != null) {
-			ImageIcon i = new ImageIcon(loc);
-			this.putValue(SMALL_ICON, i);
-		}
-	}
-	public static final String ACTION_PREFIX = "Action.";
-	public static final String SMALL_ICONS_LOC_PREFIX = "de/sciss/syntaxpane/images/small-icons/";
-	public static final String LARGE_ICONS_LOC_PREFIX = "de/sciss/syntaxpane/images/large-icons/";
 }

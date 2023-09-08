@@ -16,11 +16,6 @@
 package cuchaz.enigma.gui.syntax;
 
 import java.io.Serializable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Segment;
 
 /**
  * A Token in a Document.  Tokens do NOT store a reference to the
@@ -32,8 +27,7 @@ import javax.swing.text.Segment;
  *
  * @author Ayman Al-Sairafi, Hanns Holger Rutz
  */
-public class Token implements Serializable, Comparable {
-
+public class Token implements Serializable, Comparable<Token> {
 	public final TokenType type;
 	public final int start;
 	public final int length;
@@ -102,14 +96,13 @@ public class Token implements Serializable, Comparable {
 	}
 
 	@Override
-	public int compareTo(Object o) {
-		Token t = (Token) o;
-		if (this.start != t.start) {
-			return (this.start - t.start);
-		} else if (this.length != t.length) {
-			return (this.length - t.length);
+	public int compareTo(Token token) {
+		if (this.start != token.start) {
+			return (this.start - token.start);
+		} else if (this.length != token.length) {
+			return (this.length - token.length);
 		} else {
-			return this.type.compareTo(t.type);
+			return this.type.compareTo(token.type);
 		}
 	}
 
@@ -119,28 +112,5 @@ public class Token implements Serializable, Comparable {
 	 */
 	public int end() {
 		return this.start + this.length;
-	}
-
-	/**
-	 * Get the text of the token from this document
-	 */
-	public CharSequence getText(Document doc) {
-		Segment text = new Segment();
-		try {
-			doc.getText(this.start, this.length, text);
-		} catch (BadLocationException ex) {
-			Logger.getLogger(Token.class.getName()).log(Level.SEVERE, null, ex);
-		}
-		return text;
-	}
-
-	public String getString(Document doc) {
-		String result = "";
-		try {
-			result = doc.getText(this.start, this.length);
-		} catch (BadLocationException ex) {
-			Logger.getLogger(Token.class.getName()).log(Level.SEVERE, null, ex);
-		}
-		return result;
 	}
 }

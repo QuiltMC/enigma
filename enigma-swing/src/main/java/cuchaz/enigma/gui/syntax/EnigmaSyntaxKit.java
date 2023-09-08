@@ -1,0 +1,162 @@
+/*
+ * Copyright 2008 Ayman Al-Sairafi ayman.alsairafi@gmail.com
+ * Copyright 2011-2022 Hanns Holger Rutz.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License
+ *       at http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package cuchaz.enigma.gui.syntax;
+
+import cuchaz.enigma.gui.QuickFindAction;
+import cuchaz.enigma.gui.config.UiConfig;
+
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JEditorPane;
+import javax.swing.KeyStroke;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.View;
+import javax.swing.text.ViewFactory;
+import java.awt.Color;
+import java.awt.Font;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
+
+public class EnigmaSyntaxKit extends DefaultEditorKit implements ViewFactory {
+	private final Lexer lexer;
+	private final Map<JEditorPane, List<SyntaxComponent>> editorComponents = new WeakHashMap<>();
+
+	/**
+	 * Creates a new Kit for the given language
+	 */
+	public EnigmaSyntaxKit() {
+		super();
+		// JavaLexer is generated automagically by jflex based on the java.jflex file
+		this.lexer = new JavaLexer();
+	}
+
+	/**
+	 * Adds UI components to the pane
+	 *
+	 * @param editorPane a component to install this kit for
+	 */
+	public void addComponents(JEditorPane editorPane) {
+		this.installComponent(editorPane, new PairsMarker());
+		this.installComponent(editorPane, new LineNumbersRuler());
+	}
+
+	/**
+	 * Creates a SyntaxComponent of the given class name and installs it on the pane
+	 */
+	public void installComponent(JEditorPane pane, SyntaxComponent comp) {
+		comp.configure();
+		comp.install(pane);
+		this.editorComponents.computeIfAbsent(pane, k -> new ArrayList<>());
+		this.editorComponents.get(pane).add(comp);
+	}
+
+	@Override
+	public ViewFactory getViewFactory() {
+		return this;
+	}
+
+	@Override
+	public View create(Element element) {
+		return new SyntaxView(element);
+	}
+
+	/**
+	 * Installs the View on the given EditorPane.  This is called by Swing and
+	 * can be used to do anything you need on the JEditorPane control.  Here
+	 * I set some default Actions.
+	 */
+	@Override
+	public void install(JEditorPane editorPane) {
+		super.install(editorPane);
+		// get our font
+		Font font = UiConfig.getDefaultFont();
+		editorPane.setFont(font);
+		// todo based on theme!
+		Color caretColor = Color.BLACK;
+		editorPane.setCaretColor(caretColor);
+		Color selectionColor = new Color(0x99ccff);
+		editorPane.setSelectionColor(selectionColor);
+		this.addQuickFindAction(editorPane);
+		this.addComponents(editorPane);
+	}
+
+	@Override
+	public void deinstall(JEditorPane editorPane) {
+		for (SyntaxComponent c : this.editorComponents.get(editorPane)) {
+			c.deinstall(editorPane);
+		}
+		this.editorComponents.clear();
+		editorPane.getInputMap().clear();
+		ActionMap m = editorPane.getActionMap();
+		m.clear();
+	}
+
+	/**
+	 * Adds keyboard actions to this control using the Configuration we have
+	 * This is revised to properly use InputMap and ActionMap of the component
+	 * instead of using the KeyMaps directly.
+	 *
+	 * @param editorPane    the component to attach the actions to
+	 */
+	public void addQuickFindAction(JEditorPane editorPane) {
+		InputMap inputMap = new InputMap();
+		inputMap.setParent(editorPane.getInputMap());
+		ActionMap actionMap = new ActionMap();
+		actionMap.setParent(editorPane.getActionMap());
+
+		QuickFindAction action = new QuickFindAction();
+		actionMap.put(action.getClass().getSimpleName(), action);
+
+		KeyStroke stroke = KeyStroke.getKeyStroke("control F");
+		action.putValue(Action.ACCELERATOR_KEY, stroke);
+		inputMap.put(stroke, action.getClass().getSimpleName());
+
+		editorPane.setActionMap(actionMap);
+		editorPane.setInputMap(JTextComponent.WHEN_FOCUSED, inputMap);
+	}
+
+	/**
+	 * This is called by Swing to create a Document for the JEditorPane document
+	 * This may be called before you actually get a reference to the control.
+	 * We use it here to create a proper lexer and pass it to the
+	 * SyntaxDocument we return.
+	 */
+	@Override
+	public Document createDefaultDocument() {
+		return new SyntaxDocument(this.lexer);
+	}
+
+	/**
+	 * Registers the given content type to use the given class name as its kit
+	 * When this is called, an entry is added into the private HashMap of the
+	 * registered editors kits.  This is needed so that the SyntaxPane library
+	 * has it's own registration of all the EditorKits
+	 */
+	public static void registerContentType(String type) {
+		JEditorPane.registerEditorKitForContentType(type, EnigmaSyntaxKit.class.getName());
+	}
+
+	@Override
+	public String getContentType() {
+		return "text/enigma-sources";
+	}
+}

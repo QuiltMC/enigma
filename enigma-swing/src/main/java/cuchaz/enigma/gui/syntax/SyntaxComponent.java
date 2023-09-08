@@ -23,13 +23,11 @@ import javax.swing.JEditorPane;
  * @author Ayman Al-Sairafi
  */
 public interface SyntaxComponent {
-
 	/**
 	 * Configure the component using the given properties. The keys
 	 * needed for configuration will be prefixed by the given prefix
-	 * @param config configuration data
 	 */
-    void config(Configuration config);
+    void configure();
 
 	/**
 	 * Called to install the component on an editor

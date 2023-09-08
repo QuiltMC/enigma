@@ -55,7 +55,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Reimplementation of {@link de.sciss.syntaxpane.actions.gui.QuickFindDialog} to allow more customization.
+ * Reimplementation of to allow more customization.
  */
 public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, ActionListener, EscapeListener {
 	private static final int SEARCH_FIELD_MAX_WIDTH = 200;
@@ -89,13 +89,6 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		this.initComponents();
 		SwingUtils.addEscapeListener(this);
 		this.searchData = new WeakReference<>(searchData);
-	}
-
-	private static void setButtonIcon(AbstractButton button, String name) {
-		URL url = DefaultSyntaxAction.class.getClassLoader().getResource(DefaultSyntaxAction.SMALL_ICONS_LOC_PREFIX + name);
-		if (url != null) {
-			button.setIcon(new ImageIcon(url));
-		}
 	}
 
 	public void showFor(JTextComponent target) {
@@ -192,7 +185,6 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		this.toolBar.add(this.searchField);
 		this.toolBar.addSeparator();
 
-		setButtonIcon(this.prevButton, "go-up.png");
 		this.prevButton.setHorizontalTextPosition(SwingConstants.CENTER);
 		this.prevButton.setFocusable(false);
 		this.prevButton.setOpaque(false);
@@ -200,7 +192,6 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		this.prevButton.addActionListener(this::prevButtonActionPerformed);
 		this.toolBar.add(this.prevButton);
 
-		setButtonIcon(this.nextButton, "go-down.png");
 		this.nextButton.setHorizontalTextPosition(SwingConstants.CENTER);
 		this.nextButton.setMargin(new Insets(2, 2, 2, 2));
 		this.nextButton.setFocusable(false);

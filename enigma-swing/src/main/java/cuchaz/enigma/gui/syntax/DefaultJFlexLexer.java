@@ -30,22 +30,9 @@ import javax.swing.text.Segment;
  * @author Ayman Al-Sairafi
  */
 public abstract class DefaultJFlexLexer implements Lexer {
-
 	protected int tokenStart;
 	protected int tokenLength;
 	protected int offset;
-
-	/**
-	 * Helper method to create and return a new Token from of TokenType
-	 * tokenStart and tokenLength will be modified to the newStart and
-	 * newLength params
-	 */
-	protected Token token(TokenType type, int tStart, int tLength,
-						  int newStart, int newLength) {
-		this.tokenStart = newStart;
-		this.tokenLength = newLength;
-		return new Token(type, tStart + this.offset, tLength);
-	}
 
 	/**
 	 * Create and return a Token of given type from start with length
@@ -105,29 +92,10 @@ public abstract class DefaultJFlexLexer implements Lexer {
 	public abstract Token yylex() throws java.io.IOException;
 
 	/**
-	 * Returns the character at position <tt>pos</tt> from the
-	 * matched text.
-	 *
-	 * It is equivalent to yytext().charAt(pos), but faster
-	 *
-	 * @param pos the position of the character to fetch.
-	 *            A value from 0 to yylength()-1.
-	 *
-	 * @return the character at position pos
-	 */
-	public abstract char yycharat(int pos);
-
-	/**
 	 * Returns the length of the matched text region.
 	 * This method is automatically implemented by JFlex lexers
 	 */
 	public abstract int yylength();
-
-	/**
-	 * Returns the text matched by the current regular expression.
-	 * This method is automatically implemented by JFlex lexers
-	 */
-	public abstract String yytext();
 
 	/**
 	 * Return the char number from beginning of input stream.

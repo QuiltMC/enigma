@@ -15,8 +15,6 @@
 
 package cuchaz.enigma.gui.syntax;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -41,15 +39,8 @@ import javax.swing.text.Segment;
  * @author Ayman Al-Sairafi, Hanns Holger Rutz
  */
 public class SyntaxDocument extends PlainDocument {
-	public static final String CAN_UNDO = "can-undo";
-	public static final String CAN_REDO = "can-redo";
-
 	Lexer lexer;
 	List<Token> tokens;
-
-	private final PropertyChangeSupport propSupport;
-	private boolean canUndoState = false;
-	private boolean canRedoState = false;
 
 	private int earliestTokenChangePos = -1;
 	private int latestTokenChangePos = -1;
@@ -58,7 +49,6 @@ public class SyntaxDocument extends PlainDocument {
 		super();
 		this.putProperty(PlainDocument.tabSizeAttribute, 4);
 		this.lexer  = lexer;
-		this.propSupport = new PropertyChangeSupport(this);
 	}
 
 	/*
@@ -76,7 +66,7 @@ public class SyntaxDocument extends PlainDocument {
 		}
 		List<Token> oldTokens = this.tokens;
 
-		List<Token> toks = new ArrayList<Token>(this.getLength() / 10);
+		List<Token> toks = new ArrayList<>(this.getLength() / 10);
 		long ts = System.nanoTime();
 		int len = this.getLength();
 		try {
@@ -133,23 +123,21 @@ public class SyntaxDocument extends PlainDocument {
 		// and not parsed equally far
 		boolean canScanBackwards = false;
 
-		if (change != null) {
-			Token lastNew = newTokens.get(newTokens.size() - 1);
-			Token lastOld = oldTokens.get(oldTokens.size() - 1);
-			int oldStart;
-			if (lastOld.start < change.getOffset()) {
-				oldStart = lastOld.start;
-			} else if (DocumentEvent.EventType.INSERT.equals(change.getType())) {
-				oldStart = lastOld.start + change.getLength();
-			} else if (DocumentEvent.EventType.REMOVE.equals(change.getType())) {
-				oldStart = lastOld.start - change.getLength();
-			} else {
-				// Unexpected event.
-				oldStart = -1;
-			}
-
-			canScanBackwards = oldStart == lastNew.start;
+		Token lastNew = newTokens.get(newTokens.size() - 1);
+		Token lastOld = oldTokens.get(oldTokens.size() - 1);
+		int oldStart;
+		if (lastOld.start < change.getOffset()) {
+			oldStart = lastOld.start;
+		} else if (DocumentEvent.EventType.INSERT.equals(change.getType())) {
+			oldStart = lastOld.start + change.getLength();
+		} else if (DocumentEvent.EventType.REMOVE.equals(change.getType())) {
+			oldStart = lastOld.start - change.getLength();
+		} else {
+			// Unexpected event.
+			oldStart = -1;
 		}
+
+		canScanBackwards = oldStart == lastNew.start;
 
 		pos = this.getLength();
 		if (canScanBackwards) {
@@ -206,37 +194,24 @@ public class SyntaxDocument extends PlainDocument {
 	}
 
 	/**
-	 * Replaces the token with the replacement string
-	 */
-	public void replaceToken(Token token, String replacement) {
-		try {
-			this.replace(token.start, token.length, replacement, null);
-		} catch (BadLocationException ex) {
-			log.log(Level.WARNING, "unable to replace token: " + token, ex);
-		}
-	}
-
-	/**
 	 * This class is used to iterate over tokens between two positions
 	 */
 	class TokenIterator implements ListIterator<Token> {
-
 		int start;
 		int end;
 		int ndx = 0;
 
-		@SuppressWarnings("unchecked")
 		private TokenIterator(int start, int end) {
 			this.start = start;
 			this.end = end;
 			if (SyntaxDocument.this.tokens != null && !SyntaxDocument.this.tokens.isEmpty()) {
 				Token token = new Token(TokenType.COMMENT, start, end - start);
-				this.ndx = Collections.binarySearch((List) SyntaxDocument.this.tokens, token);
+				this.ndx = Collections.binarySearch(SyntaxDocument.this.tokens, token);
 				// we will probably not find the exact token...
 				if (this.ndx < 0) {
 					// so, start from one before the token where we should be...
 					// -1 to get the location, and another -1 to go back..
-					this.ndx = (-this.ndx - 1 - 1 < 0) ? 0 : (-this.ndx - 1 - 1);
+					this.ndx = Math.max(-this.ndx - 1 - 1, 0);
 					Token t = SyntaxDocument.this.tokens.get(this.ndx);
 					// if the prev token does not overlap, then advance one
 					if (t.end() <= start) {
@@ -327,12 +302,11 @@ public class SyntaxDocument extends PlainDocument {
 		}
 		Token tok = null;
 		Token tKey = new Token(TokenType.DEFAULT, pos, 1);
-		@SuppressWarnings("unchecked")
-		int ndx = Collections.binarySearch((List) this.tokens, tKey);
+		int ndx = Collections.binarySearch(this.tokens, tKey);
 		if (ndx < 0) {
 			// so, start from one before the token where we should be...
 			// -1 to get the location, and another -1 to go back..
-			ndx = (-ndx - 1 - 1 < 0) ? 0 : (-ndx - 1 - 1);
+			ndx = Math.max(-ndx - 1 - 1, 0);
 			Token t = this.tokens.get(ndx);
 			if ((t.start <= pos) && (pos <= t.end())) {
 				tok = t;
@@ -341,60 +315,6 @@ public class SyntaxDocument extends PlainDocument {
 			tok = this.tokens.get(ndx);
 		}
 		return tok;
-	}
-
-	public Token getWordAt(int offs, Pattern p) {
-		Token word = null;
-		try {
-			Element line = this.getParagraphElement(offs);
-			if (line == null) {
-				return null;
-			}
-			int lineStart = line.getStartOffset();
-			int lineEnd = Math.min(line.getEndOffset(), this.getLength());
-			Segment seg = new Segment();
-			this.getText(lineStart, lineEnd - lineStart, seg);
-			if (seg.count > 0) {
-				// we need to get the word using the words pattern p
-				Matcher m = p.matcher(seg);
-				int o = offs - lineStart;
-				while (m.find()) {
-					if (m.start() <= o && o <= m.end()) {
-						word = new Token(TokenType.DEFAULT, m.start() + lineStart, m.end() - m.start());
-						break;
-					}
-				}
-			}
-		} catch (BadLocationException ex) {
-			Logger.getLogger(SyntaxDocument.class.getName()).log(Level.SEVERE, null, ex);
-		}
-		return word;
-	}
-
-	/**
-	 * Returns the token following the current token, or null
-	 * <b>This is an expensive operation, so do not use it to update the gui</b>
-	 */
-	public Token getNextToken(Token tok) {
-		int n = this.tokens.indexOf(tok);
-		if ((n >= 0) && (n < (this.tokens.size() - 1))) {
-			return this.tokens.get(n + 1);
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Returns the token prior to the given token, or null
-	 * <b>This is an expensive operation, so do not use it to update the gui</b>
-	 */
-	public Token getPrevToken(Token tok) {
-		int n = this.tokens.indexOf(tok);
-		if ((n > 0) && (!this.tokens.isEmpty())) {
-			return this.tokens.get(n - 1);
-		} else {
-			return null;
-		}
 	}
 
 	/**
@@ -435,34 +355,6 @@ public class SyntaxDocument extends PlainDocument {
 		}
 
 		return p;
-	}
-
-	// public boolean isDirty() { return dirty; }
-
-	public void setCanUndo(boolean value) {
-		if (this.canUndoState != value) {
-			// System.out.println("canUndo = " + value);
-			this.canUndoState = value;
-			this.propSupport.firePropertyChange(CAN_UNDO, !value, value);
-		}
-	}
-
-	public void setCanRedo(boolean value) {
-		if (this.canRedoState != value) {
-			// System.out.println("canRedo = " + value);
-			this.canRedoState = value;
-			this.propSupport.firePropertyChange(CAN_REDO, !value, value);
-		}
-	}
-
-	public void addPropertyChangeListener(String property, PropertyChangeListener listener) {
-		// System.out.println("ADD " + property + " " + listener.hashCode() + " / " + this.hashCode());
-		this.propSupport.addPropertyChangeListener(property, listener);
-	}
-
-	public void removePropertyChangeListener(String property, PropertyChangeListener listener) {
-		// System.out.println("REM " + property + " " + listener.hashCode() + " / " + this.hashCode());
-		this.propSupport.removePropertyChangeListener(property, listener);
 	}
 
 
@@ -520,107 +412,6 @@ public class SyntaxDocument extends PlainDocument {
 	}
 
 	/**
-	 * Gets the line at given position.  The line returned will NOT include
-	 * the line terminator '\n'
-	 * @param pos Position (usually from text.getCaretPosition()
-	 * @return the String of text at given position
-	 */
-	public String getLineAt(int pos) throws BadLocationException {
-		Element e = this.getParagraphElement(pos);
-		Segment seg = new Segment();
-		this.getText(e.getStartOffset(), e.getEndOffset() - e.getStartOffset(), seg);
-		char last = seg.last();
-		if (last == '\n' || last == '\r') {
-			seg.count--;
-		}
-		return seg.toString();
-	}
-
-	/**
-	 * Deletes the line at given position
-	 */
-	public void removeLineAt(int pos)
-		throws BadLocationException {
-		Element e = this.getParagraphElement(pos);
-		this.remove(e.getStartOffset(), this.getElementLength(e));
-	}
-
-	/**
-	 * Replaces the line at given position with the given string, which can span
-	 * multiple lines
-	 */
-	public void replaceLineAt(int pos, String newLines)
-		throws BadLocationException {
-		Element e = this.getParagraphElement(pos);
-		this.replace(e.getStartOffset(), this.getElementLength(e), newLines, null);
-	}
-
-	/*
-	 * Helper method to get the length of an element and avoid getting
-	 * a too long element at the end of the document
-	 */
-	private int getElementLength(Element e) {
-		int end = e.getEndOffset();
-		if (end >= (this.getLength() - 1)) {
-			end--;
-		}
-		return end - e.getStartOffset();
-	}
-
-	/**
-	 * Gets the text without the comments. For example for the string
-	 * <code>{ // it's a comment</code> this method will return "{ ".
-	 * @param aStart start of the text.
-	 * @param anEnd end of the text.
-	 * @return String for the line without comments (if exists).
-	 */
-	public synchronized String getUncommentedText(int aStart, int anEnd) {
-		this.readLock();
-		StringBuilder result = new StringBuilder();
-		Iterator<Token> iter = this.getTokens(aStart, anEnd);
-		while (iter.hasNext()) {
-			Token t = iter.next();
-			if (!TokenType.isComment(t)) {
-				result.append(t.getText(this));
-			}
-		}
-		this.readUnlock();
-		return result.toString();
-	}
-
-	public int getOffsetAtLineStart(int line) {
-		Element lineMap = this.getDefaultRootElement();
-		if (line < 0)
-			return 0;
-		int lineCount = lineMap.getElementCount();
-		return lineMap.getElement(Math.min(line, lineCount - 1)).getStartOffset();
-	}
-
-
-	/**
-	 * Returns the starting position of the line at pos
-	 *
-	 * @return starting position of the line
-	 */
-	public int getLineStartOffset(int pos) {
-		return this.getParagraphElement(pos).getStartOffset();
-	}
-
-	/**
-	 * Returns the end position of the line at pos.
-	 * Does a bounds check to ensure the returned value does not exceed
-	 * document length
-	 */
-	public int getLineEndOffset(int pos) {
-		int end = 0;
-		end = this.getParagraphElement(pos).getEndOffset();
-		if (end >= this.getLength()) {
-			end = this.getLength();
-		}
-		return end;
-	}
-
-	/**
 	 * Returns the number of lines in this document
 	 */
 	public int getLineCount() {
@@ -649,20 +440,6 @@ public class SyntaxDocument extends PlainDocument {
 	public void replace(int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
 		this.remove(offset, length);
 		this.insertString(offset, text, attrs);
-	}
-
-	/**
-	 * Appends the given string to the text of this document.
-	 *
-	 * @return this document
-	 */
-	public SyntaxDocument append(String str) {
-		try {
-			this.insertString(this.getLength(), str, null);
-		} catch (BadLocationException ex) {
-			log.log(Level.WARNING, "Error appending str", ex);
-		}
-		return this;
 	}
 
 	// our logger instance...

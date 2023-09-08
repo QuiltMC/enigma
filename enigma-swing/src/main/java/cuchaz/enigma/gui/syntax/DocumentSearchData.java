@@ -14,16 +14,7 @@
 
 package cuchaz.enigma.gui.syntax;
 
-import cuchaz.enigma.gui.EnigmaQuickFindDialog;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import java.awt.Component;
-import java.text.MessageFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -32,19 +23,17 @@ import java.util.regex.PatternSyntaxException;
  * Data that is shared by Find / Replace and Find Next actions for a Document
  * The data here will be added as a property of the Document using the key
  * PROPERTY_KEY.  Only through the getFtmEditor can you crate a new instance.
- *
+ * <p>
  * The class is responsible for handling the doFind and doReplace all actions.
- *
+ * <p>
  * The class is also responsible for displaying the Find / Replace dialog
  *
  * @author Ayman Al-Sairafi
  */
 public class DocumentSearchData {
-
 	private static final String PROPERTY_KEY = "SearchData";
 	private Pattern pattern = null;
 	private boolean wrap = true;
-	private EnigmaQuickFindDialog quickFindDlg;
 
 	/**
 	 * This prevents creating a new instance.  You must call the getFromEditor
@@ -108,41 +97,6 @@ public class DocumentSearchData {
 			DocumentSearchData newDSD = new DocumentSearchData();
 			target.getDocument().putProperty(PROPERTY_KEY, newDSD);
 			return newDSD;
-		}
-	}
-
-	/**
-	 * Performs a replace all operation on the given component.
-	 * Note that this create a new duplicate String big as the entire
-	 * document and then assign it to the target text component
-	 */
-	public void doReplaceAll(JTextComponent target, String replacement) {
-		if (replacement == null) {
-			replacement = "";
-		}
-		SyntaxDocument sDoc = ActionUtils.getSyntaxDocument(target);
-		if (sDoc == null) {
-			return;
-		}
-		if (this.getPattern() == null) {
-			return;
-		}
-		Matcher matcher = sDoc.getMatcher(this.getPattern());
-		String newText = matcher.replaceAll(replacement);
-		try {
-			sDoc.replace(0, sDoc.getLength(), newText, null);
-		} catch (BadLocationException ex) {
-			Logger.getLogger(DocumentSearchData.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	/**
-	 * Replaces single occurrence of match with the replacement.
-	 */
-	public void doReplace(JTextComponent target, String replacement) {
-		if (target.getSelectedText() != null) {
-			target.replaceSelection(replacement == null ? "" : replacement);
-			this.doFindNext(target,true);
 		}
 	}
 
@@ -227,23 +181,5 @@ public class DocumentSearchData {
 				return false;
 			}
 		}
-	}
-
-	/**
-	 * Displays an OptionPane dialog that the search string is not found
-	 */
-	public void msgNotFound(Component target) {
-		JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(target),
-			MessageFormat.format(java.util.ResourceBundle.getBundle("de/sciss/syntaxpane/Bundle")
-				.getString("DocumentSearchData.SearchStringNotFound"), this.getPattern()),
-			java.util.ResourceBundle.getBundle("de/sciss/syntaxpane/Bundle")
-				.getString("DocumentSearchData.Find"), JOptionPane.INFORMATION_MESSAGE);
-	}
-
-	public void showQuickFindDialog(JTextComponent target) {
-		if (this.quickFindDlg == null) {
-			this.quickFindDlg = new EnigmaQuickFindDialog(target, this);
-		}
-		this.quickFindDlg.showFor(target);
 	}
 }

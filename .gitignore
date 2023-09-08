@@ -16,6 +16,8 @@
 *.ipr
 *.iws
 
+*Lexer.java
+
 # Build artifacts
 bin/
 build/

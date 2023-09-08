@@ -1,9 +1,8 @@
 package cuchaz.enigma.gui.config;
 
-import cuchaz.enigma.gui.EnigmaSyntaxKit;
 import cuchaz.enigma.gui.events.ThemeChangeListener;
 import cuchaz.enigma.gui.highlight.BoxHighlightPainter;
-import cuchaz.enigma.gui.syntax.DefaultSyntaxKit;
+import cuchaz.enigma.gui.syntax.EnigmaSyntaxKit;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.source.RenamableTokenType;
 
@@ -25,9 +24,9 @@ public class Themes {
 		UiConfig.snapshotConfig();
 		Themes.setFonts();
 		UIManager.put("ScrollBar.showButtons", true);
-		EnigmaSyntaxKit.invalidate();
-		DefaultSyntaxKit.initKit();
-		DefaultSyntaxKit.registerContentType("text/enigma-sources", EnigmaSyntaxKit.class.getName());
+		// todo
+		//EnigmaSyntaxKit.invalidate();
+		EnigmaSyntaxKit.registerContentType("text/enigma-sources");
 		Map<RenamableTokenType, BoxHighlightPainter> boxHighlightPainters = getBoxHighlightPainters();
 		listeners.forEach(l -> l.onThemeChanged(laf, boxHighlightPainters));
 		ScaleUtil.applyScaling();

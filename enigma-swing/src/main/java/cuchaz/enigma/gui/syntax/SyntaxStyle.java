@@ -15,10 +15,14 @@
 
 package cuchaz.enigma.gui.syntax;
 
+import cuchaz.enigma.gui.config.UiConfig;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.text.Segment;
 import javax.swing.text.TabExpander;
 import javax.swing.text.Utilities;
@@ -29,109 +33,79 @@ import javax.swing.text.Utilities;
  *
  * @author Ayman Al-Sairafi, Hanns Holger Rutz
  */
-public final class SyntaxStyle {
+public record SyntaxStyle(Color color, int fontStyle) {
+	static Map<TokenType, SyntaxStyle> styles = new HashMap<>();
+	private static final SyntaxStyle DEFAULT_STYLE = new SyntaxStyle(Color.BLACK, Font.PLAIN);
 
-	private Color color;
-	private int fontStyle;
-
-	public SyntaxStyle() {
-		super();
+	static {
+		styles.put(TokenType.KEYWORD, new SyntaxStyle(UiConfig.getHighlightColor(), Font.PLAIN));
+		styles.put(TokenType.KEYWORD2, new SyntaxStyle(UiConfig.getHighlightColor(), 3));
+		styles.put(TokenType.STRING, new SyntaxStyle(UiConfig.getStringColor(), Font.PLAIN));
+		styles.put(TokenType.STRING2, new SyntaxStyle(UiConfig.getStringColor(), Font.BOLD));
+		styles.put(TokenType.NUMBER, new SyntaxStyle(UiConfig.getNumberColor(), Font.PLAIN));
+		styles.put(TokenType.OPERATOR, new SyntaxStyle(UiConfig.getOperatorColor(), Font.PLAIN));
+		styles.put(TokenType.DELIMITER, new SyntaxStyle(UiConfig.getDelimiterColor(), Font.BOLD));
+		styles.put(TokenType.TYPE, new SyntaxStyle(UiConfig.getTypeColor(), Font.ITALIC));
+		styles.put(TokenType.TYPE2, new SyntaxStyle(UiConfig.getTypeColor(), Font.BOLD));
+		styles.put(TokenType.TYPE3, new SyntaxStyle(UiConfig.getTypeColor(), 3));
+		styles.put(TokenType.IDENTIFIER, new SyntaxStyle(UiConfig.getIdentifierColor(), Font.PLAIN));
+		styles.put(TokenType.COMMENT, new SyntaxStyle(new Color(0x339933), Font.ITALIC));
+		styles.put(TokenType.COMMENT2, new SyntaxStyle(new Color(0x339933), 3));
+		styles.put(TokenType.DEFAULT, new SyntaxStyle(UiConfig.getTextColor(), Font.PLAIN));
+		styles.put(TokenType.WARNING, new SyntaxStyle(UiConfig.getTextColor(), Font.PLAIN));
+		styles.put(TokenType.ERROR, new SyntaxStyle(UiConfig.getTextColor(), 3));
 	}
 
-	public SyntaxStyle(Color color, boolean bold, boolean italic) {
-		super();
-		this.color = color;
-		this.setBold(bold);
-		this.setItalic(italic);
+	/**
+	 * Returns the style for the given TokenType
+	 */
+	public static SyntaxStyle getStyle(TokenType type) {
+		return styles.get(type);
 	}
 
-	public SyntaxStyle(Color color, int fontStyle) {
-		super();
-		this.color = color;
-		this.fontStyle = fontStyle;
-	}
-
-	public SyntaxStyle(String str) {
-		String[] parts = str.split("\\s*,\\s*");
-		if (parts.length != 2) {
-			throw new IllegalArgumentException("style not correct format: " + str);
-		}
-		this.color = new Color(Integer.decode(parts[0]));
-		this.fontStyle = Integer.decode(parts[1]);
-	}
-
-	public boolean isBold() {
-		return (this.fontStyle & Font.BOLD) != 0;
-	}
-
-	public void setBold(Boolean bold) {
-		if (bold) {
-			this.fontStyle |= Font.BOLD;
-		} else {
-			this.fontStyle &= ~Font.BOLD;
-		}
-	}
-
-	public String getColorString() {
-		return String.format("0x%06x", this.color.getRGB() & 0x00ffffff);
-	}
-
-	public void setColorString(String color) {
-		this.color = Color.decode(color);
-	}
-
-	public Boolean isItalic() {
-		return (this.fontStyle & Font.ITALIC) != 0;
-	}
-
-	public void setItalic(Boolean italic) {
-		if (italic) {
-			this.fontStyle |= Font.ITALIC;
-		} else {
-			this.fontStyle &= ~Font.ITALIC;
-		}
-	}
-
-	public int getFontStyle() {
-		return this.fontStyle;
-	}
-
-	public Color getColor() {
-		return this.color;
+	/**
+	 * Draws the given Token. This will simply find the proper SyntaxStyle for
+	 * the TokenType and then asks the proper Style to draw the text of the
+	 * Token.
+	 */
+	public static float drawText(Segment segment, float x, float y, Graphics2D graphics, TabExpander e, Token token) {
+		SyntaxStyle s = getStyle(token.type);
+		return s.drawText(segment, x, y, graphics, e, token.start);
 	}
 
 	/**
 	 * Draw text.  This can directly call the Utilities.drawTabbedText.
-	 * Sub-classes can override this method to provide any other decorations.
-	 * @param  segment - the source of the text
-	 * @param  x - the X origin &gt;= 0
-	 * @param  y - the Y origin &gt;= 0
-	 * @param  graphics - the graphics context
-	 * @param e - how to expand the tabs. If this value is null, tabs will be
-	 * expanded as a space character.
+	 * Subclasses can override this method to provide any other decorations.
+	 *
+	 * @param segment     - the source of the text
+	 * @param x           - the X origin &gt;= 0
+	 * @param y           - the Y origin &gt;= 0
+	 * @param graphics    - the graphics context
+	 * @param e           - how to expand the tabs. If this value is null, tabs will be
+	 *                    expanded as a space character.
 	 * @param startOffset - starting offset of the text in the document &gt;= 0
 	 */
-	public int drawText(Segment segment, int x, int y,
-						Graphics graphics, TabExpander e, int startOffset) {
-		graphics.setFont(graphics.getFont().deriveFont(this.getFontStyle()));
+	public float drawText(Segment segment, float x, float y, Graphics2D graphics, TabExpander e, int startOffset) {
+		graphics.setFont(graphics.getFont().deriveFont(this.fontStyle()));
 		FontMetrics fontMetrics = graphics.getFontMetrics();
 		int a = fontMetrics.getAscent();
 		int h = a + fontMetrics.getDescent();
-		int w = Utilities.getTabbedTextWidth(segment, fontMetrics, 0, e, startOffset);
-		int rX = x - 1;
-		int rY = y - a;
-		int rW = w + 2;
-		int rH = h;
-		if ((this.getFontStyle() & 0x10) != 0) {
+		float w = Utilities.getTabbedTextWidth(segment, fontMetrics, 0f, e, startOffset);
+		int rX = (int) (x - 1);
+		int rY = (int) (y - a);
+		int rW = (int) w + 2;
+		if ((this.fontStyle() & 0x10) != 0) {
 			graphics.setColor(Color.decode("#EEEEEE"));
-			graphics.fillRect(rX, rY, rW, rH);
+			graphics.fillRect(rX, rY, rW, h);
 		}
-		graphics.setColor(this.getColor());
+
+		graphics.setColor(this.color());
 		x = Utilities.drawTabbedText(segment, x, y, graphics, e, startOffset);
-		if ((this.getFontStyle() & 0x8) != 0) {
+		if ((this.fontStyle() & 0x8) != 0) {
 			graphics.setColor(Color.RED);
-			graphics.drawRect(rX, rY, rW, rH);
+			graphics.drawRect(rX, rY, rW, h);
 		}
+
 		return x;
 	}
 }

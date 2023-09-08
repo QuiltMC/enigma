@@ -29,8 +29,6 @@ import java.beans.PropertyChangeListener;
  * @author Ayman Al-Sairafi
  */
 public class PairsMarker implements CaretListener, SyntaxComponent, PropertyChangeListener {
-
-	public static final String PROPERTY_COLOR = "PairMarker.Color";
 	private JTextComponent pane;
 	private Markers.SimpleMarker marker;
 	private Status status;
@@ -62,8 +60,8 @@ public class PairsMarker implements CaretListener, SyntaxComponent, PropertyChan
 	}
 
 	@Override
-	public void config(Configuration config) {
-		Color markerColor = config.getColor(PROPERTY_COLOR, new Color(0xeeee33));
+	public void configure() {
+		Color markerColor = new Color(0xffbb77);
 		this.marker = new Markers.SimpleMarker(markerColor);
 	}
 

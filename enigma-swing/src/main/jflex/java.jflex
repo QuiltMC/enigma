@@ -27,7 +27,6 @@ import cuchaz.enigma.gui.syntax.TokenType;
 %char
 %type Token
 
-
 %{
     /**
      * Create an empty lexer, yyrset will be called later to reset and assign

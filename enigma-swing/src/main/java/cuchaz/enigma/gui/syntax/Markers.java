@@ -15,15 +15,13 @@
 
 package cuchaz.enigma.gui.syntax;
 
-import java.awt.Color;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
+import java.awt.Color;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class contains static utility methods to make highlighting in text
@@ -32,10 +30,8 @@ import javax.swing.text.JTextComponent;
  * @author Ayman Al-Sairafi, Hanns Holger Rutz
  */
 public class Markers {
-
 	// This subclass is used in our highlighting code
 	public static class SimpleMarker extends DefaultHighlighter.DefaultHighlightPainter {
-
 		public SimpleMarker(Color color) {
 			super(color);
 		}
@@ -53,20 +49,13 @@ public class Markers {
 		Highlighter hilite = component.getHighlighter();
 		Highlighter.Highlight[] hilites = hilite.getHighlights();
 
-		for (int i = 0; i < hilites.length; i++) {
-			if (hilites[i].getPainter() instanceof SimpleMarker hMarker) {
+		for (Highlighter.Highlight highlight : hilites) {
+			if (highlight.getPainter() instanceof SimpleMarker hMarker) {
 				if (marker == null || hMarker.equals(marker)) {
-					hilite.removeHighlight(hilites[i]);
+					hilite.removeHighlight(highlight);
 				}
 			}
 		}
-	}
-
-	/**
-	 * Removes all the markers from an JEditorPane
-	 */
-	public static void removeMarkers(JTextComponent editorPane) {
-		removeMarkers(editorPane, null);
 	}
 
 	/**
@@ -101,27 +90,6 @@ public class Markers {
 		} catch (BadLocationException ex) {
 			// nothing we can do if the request is out of bound
 			LOG.log(Level.SEVERE, null, ex);
-		}
-	}
-
-	/**
-	 * Marks all text in the document that matches the given pattern
-	 * @param pane control to use
-	 * @param pattern pattern to match
-	 * @param marker marker to use for highlighting
-	 */
-	public static void markAll(JTextComponent pane, Pattern pattern, SimpleMarker marker) {
-		SyntaxDocument sDoc = ActionUtils.getSyntaxDocument(pane);
-		if(sDoc  == null || pattern == null) {
-			return;
-		}
-		Matcher matcher = sDoc.getMatcher(pattern);
-		// we may not have any matcher (due to undo or something, so don't do anything.
-		if(matcher==null) {
-			return;
-		}
-		while(matcher.find()) {
-			markText(pane, matcher.start(), matcher.end(), marker);
 		}
 	}
 

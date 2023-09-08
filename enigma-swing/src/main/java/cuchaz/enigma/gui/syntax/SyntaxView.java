@@ -15,11 +15,15 @@
 
 package cuchaz.enigma.gui.syntax;
 
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.PlainView;
+import javax.swing.text.Segment;
+import javax.swing.text.ViewFactory;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Toolkit;
@@ -27,52 +31,30 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.DocumentEvent;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Element;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.PlainView;
-import javax.swing.text.Segment;
-import javax.swing.text.ViewFactory;
 
 public class SyntaxView extends PlainView {
-
-	public static final String PROPERTY_RIGHT_MARGIN_COLOR  = "RightMarginColor";
-	public static final String PROPERTY_RIGHT_MARGIN_COLUMN = "RightMarginColumn";
-	public static final String PROPERTY_SINGLE_COLOR_SELECT = "SingleColorSelect";
 	private static final Logger log = Logger.getLogger(SyntaxView.class.getName());
-	private boolean singleColorSelect;
 	private int rightMarginColumn;
 	private Color rightMarginColor;
-	private SyntaxStyles styles;
 	private SyntaxStyle defaultStyle;
 
 	/**
 	 * Construct a new view using the given configuration and prefix given
 	 */
-	public SyntaxView(Element element, Configuration config) {
+	public SyntaxView(Element element) {
 		super(element);
-		this.configure(config);
+		this.configure();
 	}
 
-	public void reconfigure(Configuration config) {
-		this.configure(config);
-	}
-
-	private void configure(Configuration config) {
-		this.singleColorSelect = config.getBoolean(PROPERTY_SINGLE_COLOR_SELECT, false);
-		this.rightMarginColor = new Color(config.getInteger(PROPERTY_RIGHT_MARGIN_COLOR,
-			0xFF7777));
-		this.rightMarginColumn = config.getInteger(PROPERTY_RIGHT_MARGIN_COLUMN,
-			0);
-		this.styles = SyntaxStyles.read(config);
-		this.defaultStyle = this.styles.getStyle(TokenType.DEFAULT);
+	private void configure() {
+		this.rightMarginColor = new Color(0xFF7777);
+		this.rightMarginColumn = 0;
+		this.defaultStyle = SyntaxStyle.getStyle(TokenType.DEFAULT);
 	}
 
 	@Override
-	protected int drawUnselectedText(Graphics graphics, int x, int y, int p0,
-									 int p1) {
-		setRenderingHits((Graphics2D) graphics);
+	protected float drawUnselectedText(Graphics2D graphics, float x, float y, int p0, int p1) {
+		setRenderingHits(graphics);
 		Font saveFont = graphics.getFont();
 		Color saveColor = graphics.getColor();
 		SyntaxDocument doc = (SyntaxDocument) this.getDocument();
@@ -83,8 +65,9 @@ public class SyntaxView extends PlainView {
 			int m_x = this.rightMarginColumn * graphics.getFontMetrics().charWidth('m');
 			int h = graphics.getFontMetrics().getHeight();
 			graphics.setColor(this.rightMarginColor);
-			graphics.drawLine(m_x, y, m_x, y - h);
+			graphics.drawLine(m_x, (int) y, m_x, (int) y - h);
 		}
+
 		try {
 			// Colour the parts
 			Iterator<Token> i = doc.getTokens(p0, p1);
@@ -96,27 +79,30 @@ public class SyntaxView extends PlainView {
 				// it in the default type
 				if (start < t.start) {
 					doc.getText(start, t.start - start, segment);
-					x = this.defaultStyle.drawText(segment, x, y, graphics, this, start);
+					x = this.defaultStyle.drawText(segment, (int) x, (int) y, graphics, this, start);
 				}
+
 				// t and s are the actual start and length of what we should
 				// put on the screen.  assume these are the whole token....
 				int l = t.length;
 				int s = t.start;
 				// ... unless the token starts before p0:
 				if (s < p0) {
-					// token is before what is requested. adgust the length and s
+					// token is before what is requested. adjust the length and s
 					l -= (p0 - s);
 					s = p0;
 				}
+
 				// if token end (s + l is still the token end pos) is greater
 				// than p1, then just put up to p1
 				if (s + l > p1) {
 					l = p1 - s;
 				}
 				doc.getText(s, l, segment);
-				x = this.styles.drawText(segment, x, y, graphics, this, t);
+				x = SyntaxStyle.drawText(segment, x, y, graphics, this, t);
 				start = t.end();
 			}
+
 			// now for any remaining text not tokenized:
 			if (start < p1) {
 				doc.getText(start, p1 - start, segment);
@@ -128,23 +114,20 @@ public class SyntaxView extends PlainView {
 			graphics.setFont(saveFont);
 			graphics.setColor(saveColor);
 		}
+
 		return x;
 	}
 
 	@Override
-	protected int drawSelectedText(Graphics graphics, int x, int y, int p0, int p1)
-		throws BadLocationException {
-		if (this.singleColorSelect) {
-			if (this.rightMarginColumn > 0) {
-				int m_x = this.rightMarginColumn * graphics.getFontMetrics().charWidth('m');
-				int h = graphics.getFontMetrics().getHeight();
-				graphics.setColor(this.rightMarginColor);
-				graphics.drawLine(m_x, y, m_x, y - h);
-			}
-			return super.drawSelectedText(graphics, x, y, p0, p1);
-		} else {
-			return this.drawUnselectedText(graphics, x, y, p0, p1);
+	protected float drawSelectedText(Graphics2D graphics, float x, float y, int p0, int p1) throws BadLocationException {
+		if (this.rightMarginColumn > 0) {
+			int m_x = this.rightMarginColumn * graphics.getFontMetrics().charWidth('m');
+			int h = graphics.getFontMetrics().getHeight();
+			graphics.setColor(this.rightMarginColor);
+			graphics.drawLine(m_x, (int) y, m_x, (int) (y - h));
 		}
+
+		return super.drawSelectedText(graphics, x, y, p0, p1);
 	}
 
 	/**
@@ -156,9 +139,7 @@ public class SyntaxView extends PlainView {
 	}
 
 	@Override
-	protected void updateDamage(javax.swing.event.DocumentEvent changes,
-								Shape a,
-								ViewFactory f) {
+	protected void updateDamage(javax.swing.event.DocumentEvent changes, Shape a, ViewFactory f) {
 		super.updateDamage(changes, a, f);
 
 		// Try to limit extra repaint work
@@ -181,6 +162,7 @@ public class SyntaxView extends PlainView {
 			}
 		}
 	}
+
 	/**
 	 * The values for the string key for Text Anti-Aliasing
 	 */
