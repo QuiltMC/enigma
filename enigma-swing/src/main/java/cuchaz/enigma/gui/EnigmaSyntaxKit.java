@@ -1,10 +1,10 @@
 package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.config.UiConfig;
-import de.sciss.syntaxpane.DefaultSyntaxKit;
-import de.sciss.syntaxpane.components.LineNumbersRuler;
-import de.sciss.syntaxpane.syntaxkits.JavaSyntaxKit;
-import de.sciss.syntaxpane.util.Configuration;
+import cuchaz.enigma.gui.syntax.Configuration;
+import cuchaz.enigma.gui.syntax.DefaultSyntaxKit;
+import cuchaz.enigma.gui.syntax.JavaSyntaxKit;
+import cuchaz.enigma.gui.syntax.LineNumbersRuler;
 
 import java.awt.Font;
 

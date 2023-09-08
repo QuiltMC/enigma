@@ -3,9 +3,9 @@ package cuchaz.enigma.gui.config;
 import cuchaz.enigma.gui.EnigmaSyntaxKit;
 import cuchaz.enigma.gui.events.ThemeChangeListener;
 import cuchaz.enigma.gui.highlight.BoxHighlightPainter;
+import cuchaz.enigma.gui.syntax.DefaultSyntaxKit;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.source.RenamableTokenType;
-import de.sciss.syntaxpane.DefaultSyntaxKit;
 
 import java.awt.Font;
 import java.util.HashSet;

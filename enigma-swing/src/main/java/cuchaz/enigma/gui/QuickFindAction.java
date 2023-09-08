@@ -1,7 +1,7 @@
 package cuchaz.enigma.gui;
 
-import de.sciss.syntaxpane.SyntaxDocument;
-import de.sciss.syntaxpane.actions.DefaultSyntaxAction;
+import cuchaz.enigma.gui.syntax.DefaultSyntaxAction;
+import cuchaz.enigma.gui.syntax.SyntaxDocument;
 
 import javax.swing.text.JTextComponent;
 import java.awt.event.ActionEvent;

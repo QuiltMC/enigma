@@ -6,7 +6,7 @@ import com.github.swingdpi.plaf.MetalTweaker;
 import com.github.swingdpi.plaf.NimbusTweaker;
 import com.github.swingdpi.plaf.WindowsTweaker;
 import cuchaz.enigma.gui.config.UiConfig;
-import de.sciss.syntaxpane.DefaultSyntaxKit;
+import cuchaz.enigma.gui.syntax.DefaultSyntaxKit;
 import org.tinylog.Logger;
 
 import java.awt.Dimension;

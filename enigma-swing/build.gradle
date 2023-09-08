@@ -2,6 +2,7 @@ plugins {
 	id 'application'
 	id 'checkstyle'
 	id 'java-library'
+	id "org.xbib.gradle.plugin.jflex" version "1.4.0"
 	alias(libs.plugins.shadow)
 }
 
@@ -12,11 +13,12 @@ dependencies {
 	implementation libs.jopt
 	implementation libs.flatlaf
 	implementation libs.flatlaf.extras // for SVG icons
-	implementation libs.syntaxpane
 	implementation libs.swing.dpi
 	implementation libs.fontchooser
 	testImplementation(testFixtures(project(':enigma')))
 }
+
+sourcesJar.dependsOn(':enigma-swing:generateJflex')
 
 mainClassName = 'cuchaz.enigma.gui.Main'
 

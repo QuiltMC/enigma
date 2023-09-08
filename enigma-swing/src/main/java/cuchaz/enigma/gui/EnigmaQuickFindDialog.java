@@ -14,12 +14,12 @@
 package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
+import cuchaz.enigma.gui.syntax.DefaultSyntaxAction;
+import cuchaz.enigma.gui.syntax.DocumentSearchData;
+import cuchaz.enigma.gui.syntax.EscapeListener;
+import cuchaz.enigma.gui.syntax.Markers;
+import cuchaz.enigma.gui.syntax.SwingUtils;
 import cuchaz.enigma.gui.util.GuiUtil;
-import de.sciss.syntaxpane.actions.DefaultSyntaxAction;
-import de.sciss.syntaxpane.actions.DocumentSearchData;
-import de.sciss.syntaxpane.actions.gui.EscapeListener;
-import de.sciss.syntaxpane.components.Markers;
-import de.sciss.syntaxpane.util.SwingUtils;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -174,8 +174,7 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		this.toolBar.addSeparator();
 
 		this.label.setLabelFor(this.searchField);
-		ResourceBundle bundle = ResourceBundle.getBundle("de/sciss/syntaxpane/Bundle");
-		this.label.setText(bundle.getString("QuickFindDialog.jLabel1.text"));
+		this.label.setText("QuickFindDialog.jLabel1.text");
 		this.toolBar.add(this.label);
 		this.toolBar.addSeparator();
 
@@ -211,7 +210,7 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		this.toolBar.add(this.nextButton);
 
 		this.ignoreCaseCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_IGNORE_CASE.getKeyCode());
-		this.ignoreCaseCheckBox.setText(bundle.getString("QuickFindDialog.jChkIgnoreCase.text"));
+		this.ignoreCaseCheckBox.setText("QuickFindDialog.jChkIgnoreCase.text");
 		this.ignoreCaseCheckBox.setFocusable(false);
 		this.ignoreCaseCheckBox.setOpaque(false);
 		this.ignoreCaseCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -219,7 +218,7 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		this.toolBar.add(this.ignoreCaseCheckBox);
 
 		this.regexCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_REGEX.getKeyCode());
-		this.regexCheckBox.setText(bundle.getString("QuickFindDialog.jChkRegExp.text"));
+		this.regexCheckBox.setText("QuickFindDialog.jChkRegExp.text");
 		this.regexCheckBox.setFocusable(false);
 		this.regexCheckBox.setOpaque(false);
 		this.regexCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -227,7 +226,7 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		this.toolBar.add(this.regexCheckBox);
 
 		this.wrapCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_WRAP.getKeyCode());
-		this.wrapCheckBox.setText(bundle.getString("QuickFindDialog.jChkWrap.text"));
+		this.wrapCheckBox.setText("QuickFindDialog.jChkWrap.text");
 		this.wrapCheckBox.setFocusable(false);
 		this.wrapCheckBox.setOpaque(false);
 		this.wrapCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -300,7 +299,7 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 			// so we need to relocate to our saved pos before we call doFindNext
 			target.setCaretPosition(this.prevCaretPos);
 			if (!searchData.doFindNext(target)) {
-				this.statusLabel.setText(ResourceBundle.getBundle("de/sciss/syntaxpane/Bundle").getString("QuickFindDialog.NotFound"));
+				this.statusLabel.setText("QuickFindDialog.NotFound");
 			} else {
 				this.statusLabel.setText(null);
 			}
