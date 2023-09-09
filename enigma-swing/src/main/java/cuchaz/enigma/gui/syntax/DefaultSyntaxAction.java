@@ -25,7 +25,7 @@ import java.awt.event.ActionEvent;
  *
  * @author Ayman Al-Sairafi
  */
-abstract public class DefaultSyntaxAction extends TextAction implements Action {
+public abstract class DefaultSyntaxAction extends TextAction implements Action {
 	public DefaultSyntaxAction(String actionName) {
 		super(actionName);
 		this.putValue(NAME, actionName);

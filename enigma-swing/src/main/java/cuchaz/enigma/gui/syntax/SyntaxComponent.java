@@ -27,23 +27,23 @@ public interface SyntaxComponent {
 	 * Configure the component using the given properties. The keys
 	 * needed for configuration will be prefixed by the given prefix
 	 */
-    void configure();
+	void configure();
 
 	/**
 	 * Called to install the component on an editor
 	 */
-    void install(JEditorPane editor);
+	void install(JEditorPane editor);
 
 	/**
 	 * Called when the component is to be removed from the editor
 	 */
-    void deinstall(JEditorPane editor);
+	void deinstall(JEditorPane editor);
 
 	/**
-	 * The status is used to have proper propertyChange support.  We need to know if we are INSTALLING
+	 * The status is used to have proper propertyChange support. We need to know if we are INSTALLING
 	 * the component or DE-INSTALLING it
 	 */
-    enum Status {
+	enum Status {
 		INSTALLING,
 		DEINSTALLING
 	}

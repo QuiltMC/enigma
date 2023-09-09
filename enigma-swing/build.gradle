@@ -18,6 +18,10 @@ dependencies {
 	testImplementation(testFixtures(project(':enigma')))
 }
 
+tasks.withType(Checkstyle) {
+	exclude '**cuchaz/enigma/gui/syntax/generated**'
+}
+
 mainClassName = 'cuchaz.enigma.gui.Main'
 
 jar.manifest.attributes 'Main-Class': mainClassName

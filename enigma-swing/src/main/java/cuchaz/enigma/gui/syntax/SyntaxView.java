@@ -98,6 +98,7 @@ public class SyntaxView extends PlainView {
 				if (s + l > p1) {
 					l = p1 - s;
 				}
+
 				doc.getText(s, l, segment);
 				x = SyntaxStyle.drawText(segment, x, y, graphics, this, t);
 				start = t.end();
@@ -173,10 +174,10 @@ public class SyntaxView extends PlainView {
 		try {
 			Toolkit toolkit = Toolkit.getDefaultToolkit();
 			@SuppressWarnings("unchecked")
-			Map<RenderingHints.Key,?> map = (Map<RenderingHints.Key,?>)
-				toolkit.getDesktopProperty("awt.font.desktophints");
+			Map<RenderingHints.Key, ?> map = (Map<RenderingHints.Key, ?>) toolkit.getDesktopProperty("awt.font.desktophints");
 			sysHints = new RenderingHints(map);
 		} catch (Throwable ignored) {
+			// ignored!
 		}
 	}
 }

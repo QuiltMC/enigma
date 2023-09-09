@@ -47,8 +47,7 @@ public class SyntaxDocument extends PlainDocument {
 	public SyntaxDocument(Lexer lexer) {
 		super();
 		this.putProperty(PlainDocument.tabSizeAttribute, 4);
-		this.lexer  = lexer;
-
+		this.lexer = lexer;
 	}
 
 	/*
@@ -79,7 +78,7 @@ public class SyntaxDocument extends PlainDocument {
 		} finally {
 			if (log.isLoggable(Level.FINEST)) {
 				log.finest(String.format("Parsed %d in %d ms, giving %d tokens\n",
-					len, (System.nanoTime() - ts) / 1000000, toks.size()));
+						len, (System.nanoTime() - ts) / 1000000, toks.size()));
 			}
 
 			this.tokens = toks;
@@ -92,8 +91,7 @@ public class SyntaxDocument extends PlainDocument {
 	// that repaint happens, but if anyone tried to use this information for something beyond calculating
 	// needed repaints, we would have issues.
 	private void calculateEarliestAndLatestTokenChangePos(DocumentEvent change, List<Token> oldTokens, List<Token> newTokens) {
-		if (oldTokens == null || change == null ||
-			oldTokens.isEmpty() || newTokens.isEmpty()) {
+		if (oldTokens == null || change == null || oldTokens.isEmpty() || newTokens.isEmpty()) {
 			// Not enough info for a diff
 			this.earliestTokenChangePos = 0;
 			this.latestTokenChangePos = this.getLength();
@@ -148,12 +146,11 @@ public class SyntaxDocument extends PlainDocument {
 
 			oldIter = oldTokens.listIterator(oldTokens.size());
 			newIter = newTokens.listIterator(newTokens.size());
-			while (oldIter.hasPrevious() && newIter.hasPrevious() &&
-				pos > searchCutoff) {
+			while (oldIter.hasPrevious() && newIter.hasPrevious()
+				&& pos > searchCutoff) {
 				Token oldToken = oldIter.previous();
 				Token newToken = newIter.previous();
-				if (oldToken.type == newToken.type &&
-					oldToken.length == newToken.length) {
+				if (oldToken.type == newToken.type && oldToken.length == newToken.length) {
 					pos = newToken.start;
 				} else {
 					pos = newToken.end();
@@ -221,7 +218,6 @@ public class SyntaxDocument extends PlainDocument {
 					if (t.end() <= start) {
 						this.ndx++;
 					}
-
 				}
 			}
 		}
@@ -369,7 +365,6 @@ public class SyntaxDocument extends PlainDocument {
 		return p;
 	}
 
-
 	/**
 	 * Returns a matcher that matches the given pattern on the entire document
 	 *
@@ -409,9 +404,11 @@ public class SyntaxDocument extends PlainDocument {
 			if (start < 0) {
 				start = 0;
 			}
+
 			if (start + length > this.getLength()) {
 				length = this.getLength() - start;
 			}
+
 			Segment seg = new Segment();
 			this.getText(start, length, seg);
 			matcher = pattern.matcher(seg);
@@ -439,8 +436,8 @@ public class SyntaxDocument extends PlainDocument {
 
 	@Override
 	public String toString() {
-		return "SyntaxDocument(" + this.lexer + ", " + ((this.tokens == null) ? 0 : this.tokens.size()) + " tokens)@" +
-			this.hashCode();
+		return "SyntaxDocument(" + this.lexer + ", " + ((this.tokens == null) ? 0 : this.tokens.size()) + " tokens)@"
+			+ this.hashCode();
 	}
 
 	// our logger instance...

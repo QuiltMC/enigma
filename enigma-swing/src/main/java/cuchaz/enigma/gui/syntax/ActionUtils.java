@@ -40,6 +40,7 @@ public class ActionUtils {
 		if (component == null) {
 			return null;
 		}
+
 		Document doc = component.getDocument();
 		if (doc instanceof SyntaxDocument) {
 			return (SyntaxDocument) doc;
@@ -54,8 +55,7 @@ public class ActionUtils {
 	 *
 	 * @return line number
 	 */
-	public static int getLineNumber(JTextComponent editor, int pos)
-		throws BadLocationException {
+	public static int getLineNumber(JTextComponent editor, int pos) throws BadLocationException {
 		if (getSyntaxDocument(editor) != null) {
 			SyntaxDocument sdoc = getSyntaxDocument(editor);
 			return sdoc.getLineNumberAt(pos);
@@ -70,6 +70,7 @@ public class ActionUtils {
 		if (sdoc != null) {
 			return sdoc.getLineCount();
 		}
+
 		int count = 0;
 		try {
 			int p = pane.getDocument().getLength() - 1;
@@ -79,6 +80,7 @@ public class ActionUtils {
 		} catch (BadLocationException ex) {
 			Logger.getLogger(ActionUtils.class.getName()).log(Level.SEVERE, null, ex);
 		}
+
 		return count;
 	}
 }

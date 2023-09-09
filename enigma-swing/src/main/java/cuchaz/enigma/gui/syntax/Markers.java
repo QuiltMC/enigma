@@ -70,23 +70,24 @@ public class Markers {
 	 */
 	public static void markText(JTextComponent pane, int start, int end, SimpleMarker marker) {
 		try {
-			Highlighter hiliter = pane.getHighlighter();
+			Highlighter highlighter = pane.getHighlighter();
 			int selStart = pane.getSelectionStart();
 			int selEnd = pane.getSelectionEnd();
 			// if there is no selection or selection does not overlap
-			if(selStart == selEnd || end < selStart || start > selStart) {
-				hiliter.addHighlight(start, end, marker);
+			if (selStart == selEnd || end < selStart || start > selStart) {
+				highlighter.addHighlight(start, end, marker);
 				return;
 			}
+
 			// selection starts within the highlight, highlight before selection
-			if(selStart > start && selStart < end ) {
-				hiliter.addHighlight(start, selStart, marker);
-			}
-			// selection ends within the highlight, highlight remaining
-			if(selEnd > start && selEnd < end ) {
-				hiliter.addHighlight(selEnd, end, marker);
+			if (selStart > start && selStart < end) {
+				highlighter.addHighlight(start, selStart, marker);
 			}
 
+			// selection ends within the highlight, highlight remaining
+			if (selEnd > start && selEnd < end) {
+				highlighter.addHighlight(selEnd, end, marker);
+			}
 		} catch (BadLocationException ex) {
 			// nothing we can do if the request is out of bound
 			LOG.log(Level.SEVERE, null, ex);

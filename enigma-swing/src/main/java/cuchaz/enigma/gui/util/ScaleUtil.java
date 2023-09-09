@@ -6,6 +6,7 @@ import com.github.swingdpi.plaf.MetalTweaker;
 import com.github.swingdpi.plaf.NimbusTweaker;
 import com.github.swingdpi.plaf.WindowsTweaker;
 import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.gui.syntax.EnigmaSyntaxKit;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -92,16 +93,9 @@ public class ScaleUtil {
 			UiDefaultsScaler.updateAndApplyGlobalScaling((int) (100 * scale), true);
 		}
 
-		// todo
-//		try {
-//			Field defaultFontField = UiConfig.getDefaultFont();
-//			defaultFontField.setAccessible(true);
-//			Font font = UiConfig.getDefaultFont();
-//			font = font.deriveFont(12 * scale);
-//			defaultFontField.set(null, font);
-//		} catch (NoSuchFieldException | IllegalAccessException e) {
-//			Logger.error(e, "Failed to apply scaling!");
-//		}
+		Font font = UiConfig.getEditorFont();
+		font = font.deriveFont(12 * scale);
+		EnigmaSyntaxKit.setFont(font);
 	}
 
 	private static BasicTweaker createTweakerForCurrentLook(float dpiScaling) {

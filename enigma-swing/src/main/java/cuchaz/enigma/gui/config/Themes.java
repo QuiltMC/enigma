@@ -25,8 +25,6 @@ public class Themes {
 		UiConfig.snapshotConfig();
 		Themes.setFonts();
 		UIManager.put("ScrollBar.showButtons", true);
-		// todo
-		//EnigmaSyntaxKit.invalidate();
 		JEditorPane.registerEditorKitForContentType("text/enigma-sources", EnigmaSyntaxKit.class.getName());
 		Map<RenamableTokenType, BoxHighlightPainter> boxHighlightPainters = getBoxHighlightPainters();
 		listeners.forEach(l -> l.onThemeChanged(laf, boxHighlightPainters));

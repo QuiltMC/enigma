@@ -23,8 +23,10 @@ import java.util.regex.PatternSyntaxException;
  * Data that is shared by Find / Replace and Find Next actions for a Document
  * The data here will be added as a property of the Document using the key
  * PROPERTY_KEY.  Only through the getFtmEditor can you crate a new instance.
+ *
  * <p>
  * The class is responsible for handling the doFind and doReplace all actions.
+ *
  * <p>
  * The class is also responsible for displaying the Find / Replace dialog
  *
@@ -90,6 +92,7 @@ public class DocumentSearchData {
 		if (target == null) {
 			return null;
 		}
+
 		Object o = target.getDocument().getProperty(PROPERTY_KEY);
 		if (o instanceof DocumentSearchData documentSearchData) {
 			return documentSearchData;
@@ -107,15 +110,18 @@ public class DocumentSearchData {
 		if (this.getPattern() == null) {
 			return false;
 		}
+
 		SyntaxDocument sDoc = ActionUtils.getSyntaxDocument(target);
 		if (sDoc == null) {
 			return false;
 		}
+
 		int dot = target.getSelectionStart();
 		Matcher matcher = sDoc.getMatcher(this.getPattern());
 		if (matcher == null) {
 			return false;
 		}
+
 		// we have no way of jumping to last match, so we need to
 		// go throw all matches, and stop when we reach current pos
 		int start = -1;
@@ -124,9 +130,11 @@ public class DocumentSearchData {
 			if (matcher.end() >= dot) {
 				break;
 			}
+
 			start = matcher.start();
 			end = matcher.end();
 		}
+
 		if (end > 0) {
 			target.select(start, end);
 			return true;
@@ -139,19 +147,23 @@ public class DocumentSearchData {
 		if (this.getPattern() == null) {
 			return false;
 		}
+
 		SyntaxDocument sDoc = ActionUtils.getSyntaxDocument(target);
 		if (sDoc == null) {
 			return false;
 		}
+
 		int start = target.getSelectionEnd();
 		if (target.getSelectionEnd() == target.getSelectionStart()) {
 			// we must advance the position by one, otherwise we will find
 			// the same text again
 			start++;
 		}
+
 		if (start >= sDoc.getLength()) {
 			start = sDoc.getLength();
 		}
+
 		Matcher matcher = sDoc.getMatcher(this.getPattern(), start);
 		if (matcher != null && matcher.find()) {
 			// since we used an offset in the matcher, the matcher location

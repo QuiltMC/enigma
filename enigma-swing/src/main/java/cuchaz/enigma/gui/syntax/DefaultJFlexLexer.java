@@ -14,7 +14,6 @@
 
 package cuchaz.enigma.gui.syntax;
 
-
 import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.Reader;

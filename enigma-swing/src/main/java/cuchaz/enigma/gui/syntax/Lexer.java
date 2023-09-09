@@ -19,6 +19,7 @@ import javax.swing.text.Segment;
 
 /**
  * Lexers must implement these methods.  These are used in the Tokenizer
+ *
  * <p>
  * A Lexer should be tied to one document.
  *

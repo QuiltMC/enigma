@@ -43,27 +43,22 @@ import java.beans.PropertyChangeListener;
 /**
  * This class will display line numbers for a related text component. The text
  * component must use the same line height for each line.
- * <p>
  * This class was designed to be used as a component added to the row header
  * of a JScrollPane.
- * <p>
  * Original code from <a href="http://tips4java.wordpress.com/2009/05/23/text-component-line-number/">a tips4java article</a>
  *
  * @author Rob Camick
- * <p>
- * Revised for de.sciss.syntaxpane
  *
  * @author Ayman Al-Sairafi, Hanns Holger Rutz
  */
 public class LineNumbersRuler extends JPanel implements CaretListener, DocumentListener, PropertyChangeListener, SyntaxComponent {
 	private Status status;
-	private final static int MAX_HEIGHT = 0x100000; // issue #36 - avoid overflow on HiDPI monitors
+	private static final int MAX_HEIGHT = 0x100000; // issue #36 - avoid overflow on HiDPI monitors
 	//  Text component this TextTextLineNumber component is in sync with
 	private JEditorPane editor;
 	//  Keep history information to reduce the number of times the component
 	//  needs to be repainted
 	private int lastDigits;
-	private int lastHeight;
 	private int lastLine;
 	// The formatting to use for displaying numbers.  Use in String.format(numbersFormat, line)
 	private String numbersFormat = "%3d";
@@ -80,8 +75,10 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 			if (p instanceof JScrollPane) {
 				return (JScrollPane) p;
 			}
+
 			p = p.getParent();
 		}
+
 		return null;
 	}
 
@@ -130,14 +127,14 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 	}
 
 	/**
-	 *  Calculate the width needed to display the maximum line number
+	 * Calculate the width needed to display the maximum line number
 	 */
 	private void setPreferredWidth(boolean force) {
-		int lines  = ActionUtils.getLineCount(this.editor);
+		int lines = ActionUtils.getLineCount(this.editor);
 		int minimumDisplayDigits = 2;
 		int digits = Math.max(String.valueOf(lines).length(), minimumDisplayDigits);
 
-		//  Update sizes when number of digits in the line number changes
+		// Update sizes when number of digits in the line number changes
 
 		if (force || this.lastDigits != digits) {
 			this.lastDigits = digits;
@@ -176,12 +173,12 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 		SyntaxView.setRenderingHits((Graphics2D) g);
 
 		Rectangle clip = g.getClip().getBounds();
-		int topLine    = (int) (clip.getY() / lh);
+		int topLine = (int) (clip.getY() / lh);
 		int bottomLine = Math.min(maxLines, (int) (clip.getHeight() + lh - 1) / lh + topLine + 1);
 
 		for (int line = topLine; line < bottomLine; line++) {
 			String lineNumber = String.format(this.numbersFormat, line + 1);
-			int y  = line * lh + insets.top;
+			int y = line * lh + insets.top;
 			int yt = y + fontMetrics.getAscent();
 			if (line == currentLine) {
 				g.setColor(this.currentLineColor);
@@ -221,6 +218,7 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 				SyntaxDocument syntaxDocument = (SyntaxDocument) evt.getOldValue();
 				syntaxDocument.removeDocumentListener(this);
 			}
+
 			if (evt.getNewValue() instanceof SyntaxDocument && this.status.equals(Status.INSTALLING)) {
 				SyntaxDocument syntaxDocument = (SyntaxDocument) evt.getNewValue();
 				syntaxDocument.addDocumentListener(this);
@@ -235,16 +233,16 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 
 	@Override
 	public void insertUpdate(DocumentEvent e) {
-
+		// no-op: the line numbers cannot change in enigma's documents
 	}
 
 	@Override
 	public void removeUpdate(DocumentEvent e) {
-
+		// no-op: the line numbers cannot change in enigma's documents
 	}
 
 	@Override
 	public void changedUpdate(DocumentEvent e) {
-
+		// no-op: the line numbers cannot change in enigma's documents
 	}
 }

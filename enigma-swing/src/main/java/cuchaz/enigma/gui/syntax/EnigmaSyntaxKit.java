@@ -17,6 +17,7 @@ package cuchaz.enigma.gui.syntax;
 
 import cuchaz.enigma.gui.QuickFindAction;
 import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.gui.syntax.generated.JavaLexer;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -39,6 +40,7 @@ import java.util.WeakHashMap;
 public class EnigmaSyntaxKit extends DefaultEditorKit implements ViewFactory {
 	private final Lexer lexer;
 	private final Map<JEditorPane, List<SyntaxComponent>> editorComponents = new WeakHashMap<>();
+	private static Font font = null;
 
 	/**
 	 * Creates a new Kit for the given language
@@ -69,6 +71,10 @@ public class EnigmaSyntaxKit extends DefaultEditorKit implements ViewFactory {
 		this.editorComponents.get(pane).add(comp);
 	}
 
+	public static void setFont(Font newFont) {
+		font = newFont;
+	}
+
 	@Override
 	public ViewFactory getViewFactory() {
 		return this;
@@ -82,8 +88,13 @@ public class EnigmaSyntaxKit extends DefaultEditorKit implements ViewFactory {
 	@Override
 	public void install(JEditorPane editorPane) {
 		super.install(editorPane);
-		Font font = UiConfig.getEditorFont();
+
+		if (font == null) {
+			font = UiConfig.getEditorFont();
+		}
+
 		editorPane.setFont(font);
+
 		Color caretColor = UiConfig.getTextColor();
 		editorPane.setCaretColor(caretColor);
 		Color selectionColor = new Color(0x99ccff);
@@ -97,6 +108,7 @@ public class EnigmaSyntaxKit extends DefaultEditorKit implements ViewFactory {
 		for (SyntaxComponent c : this.editorComponents.get(editorPane)) {
 			c.deinstall(editorPane);
 		}
+
 		this.editorComponents.clear();
 		editorPane.getInputMap().clear();
 		ActionMap m = editorPane.getActionMap();

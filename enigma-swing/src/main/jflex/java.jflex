@@ -12,7 +12,11 @@
  * limitations under the License.
  */
 
-package cuchaz.enigma.gui.syntax;
+package cuchaz.enigma.gui.syntax.generated;
+
+import cuchaz.enigma.gui.syntax.Token;
+import cuchaz.enigma.gui.syntax.TokenType;
+import cuchaz.enigma.gui.syntax.DefaultJFlexLexer;
 
 @SuppressWarnings("all")
 %%
