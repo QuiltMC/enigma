@@ -10,6 +10,7 @@ import java.awt.Font;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.JEditorPane;
 import javax.swing.UIManager;
 
 public class Themes {
@@ -26,7 +27,7 @@ public class Themes {
 		UIManager.put("ScrollBar.showButtons", true);
 		// todo
 		//EnigmaSyntaxKit.invalidate();
-		EnigmaSyntaxKit.registerContentType("text/enigma-sources");
+		JEditorPane.registerEditorKitForContentType("text/enigma-sources", EnigmaSyntaxKit.class.getName());
 		Map<RenamableTokenType, BoxHighlightPainter> boxHighlightPainters = getBoxHighlightPainters();
 		listeners.forEach(l -> l.onThemeChanged(laf, boxHighlightPainters));
 		ScaleUtil.applyScaling();

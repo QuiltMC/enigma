@@ -135,17 +135,7 @@ public class DocumentSearchData {
 		}
 	}
 
-	/**
-	 * Performs a FindNext operation on the given text component.  Position
-	 * the caret at the start of the next found pattern.
-	 *
-	 * @return true if pattern is found, false otherwise
-	 */
 	public boolean doFindNext(JTextComponent target) {
-		return this.doFindNext(target, false);
-	}
-
-	public boolean doFindNext(JTextComponent target, boolean isReplace) {
 		if (this.getPattern() == null) {
 			return false;
 		}
@@ -154,7 +144,7 @@ public class DocumentSearchData {
 			return false;
 		}
 		int start = target.getSelectionEnd();
-		if (target.getSelectionEnd() == target.getSelectionStart() && !isReplace) {
+		if (target.getSelectionEnd() == target.getSelectionStart()) {
 			// we must advance the position by one, otherwise we will find
 			// the same text again
 			start++;

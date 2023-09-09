@@ -54,7 +54,7 @@ public class SyntaxDocument extends PlainDocument {
 	/*
 	 * Parse the entire document and return list of tokens that do not already
 	 * exist in the tokens list.  There may be overlaps, and replacements,
-	 * which we will cleanup later.
+	 * which we will clean up later.
 	 *
 	 * @return list of tokens that do not exist in the tokens field
 	 */
@@ -121,7 +121,7 @@ public class SyntaxDocument extends PlainDocument {
 		// (ie start matches as expected depending on operation), but not
 		// otherwise since one or both of the parsings may have failed
 		// and not parsed equally far
-		boolean canScanBackwards = false;
+		boolean canScanBackwards;
 
 		Token lastNew = newTokens.get(newTokens.size() - 1);
 		Token lastOld = oldTokens.get(oldTokens.size() - 1);

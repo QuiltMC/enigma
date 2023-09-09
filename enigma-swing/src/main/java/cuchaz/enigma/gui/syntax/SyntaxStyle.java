@@ -34,12 +34,11 @@ import javax.swing.text.Utilities;
  * @author Ayman Al-Sairafi, Hanns Holger Rutz
  */
 public record SyntaxStyle(Color color, int fontStyle) {
-	static Map<TokenType, SyntaxStyle> styles = new HashMap<>();
-	private static final SyntaxStyle DEFAULT_STYLE = new SyntaxStyle(Color.BLACK, Font.PLAIN);
+	private static final Map<TokenType, SyntaxStyle> styles = new HashMap<>();
 
 	static {
 		styles.put(TokenType.KEYWORD, new SyntaxStyle(UiConfig.getHighlightColor(), Font.PLAIN));
-		styles.put(TokenType.KEYWORD2, new SyntaxStyle(UiConfig.getHighlightColor(), 3));
+		styles.put(TokenType.KEYWORD2, new SyntaxStyle(UiConfig.getHighlightColor(), Font.BOLD + Font.ITALIC));
 		styles.put(TokenType.STRING, new SyntaxStyle(UiConfig.getStringColor(), Font.PLAIN));
 		styles.put(TokenType.STRING2, new SyntaxStyle(UiConfig.getStringColor(), Font.BOLD));
 		styles.put(TokenType.NUMBER, new SyntaxStyle(UiConfig.getNumberColor(), Font.PLAIN));
@@ -47,13 +46,13 @@ public record SyntaxStyle(Color color, int fontStyle) {
 		styles.put(TokenType.DELIMITER, new SyntaxStyle(UiConfig.getDelimiterColor(), Font.BOLD));
 		styles.put(TokenType.TYPE, new SyntaxStyle(UiConfig.getTypeColor(), Font.ITALIC));
 		styles.put(TokenType.TYPE2, new SyntaxStyle(UiConfig.getTypeColor(), Font.BOLD));
-		styles.put(TokenType.TYPE3, new SyntaxStyle(UiConfig.getTypeColor(), 3));
+		styles.put(TokenType.TYPE3, new SyntaxStyle(UiConfig.getTypeColor(), Font.BOLD + Font.ITALIC));
 		styles.put(TokenType.IDENTIFIER, new SyntaxStyle(UiConfig.getIdentifierColor(), Font.PLAIN));
 		styles.put(TokenType.COMMENT, new SyntaxStyle(new Color(0x339933), Font.ITALIC));
-		styles.put(TokenType.COMMENT2, new SyntaxStyle(new Color(0x339933), 3));
+		styles.put(TokenType.COMMENT2, new SyntaxStyle(new Color(0x339933), Font.BOLD + Font.ITALIC));
 		styles.put(TokenType.DEFAULT, new SyntaxStyle(UiConfig.getTextColor(), Font.PLAIN));
 		styles.put(TokenType.WARNING, new SyntaxStyle(UiConfig.getTextColor(), Font.PLAIN));
-		styles.put(TokenType.ERROR, new SyntaxStyle(UiConfig.getTextColor(), 3));
+		styles.put(TokenType.ERROR, new SyntaxStyle(UiConfig.getTextColor(), Font.BOLD + Font.ITALIC));
 	}
 
 	/**

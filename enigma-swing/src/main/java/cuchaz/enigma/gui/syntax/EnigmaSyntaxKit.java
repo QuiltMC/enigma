@@ -145,16 +145,6 @@ public class EnigmaSyntaxKit extends DefaultEditorKit implements ViewFactory {
 		return new SyntaxDocument(this.lexer);
 	}
 
-	/**
-	 * Registers the given content type to use the given class name as its kit
-	 * When this is called, an entry is added into the private HashMap of the
-	 * registered editors kits.  This is needed so that the SyntaxPane library
-	 * has it's own registration of all the EditorKits
-	 */
-	public static void registerContentType(String type) {
-		JEditorPane.registerEditorKitForContentType(type, EnigmaSyntaxKit.class.getName());
-	}
-
 	@Override
 	public String getContentType() {
 		return "text/enigma-sources";

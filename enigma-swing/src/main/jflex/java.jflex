@@ -14,9 +14,6 @@
 
 package cuchaz.enigma.gui.syntax;
 
-import cuchaz.enigma.gui.syntax.Token;
-import cuchaz.enigma.gui.syntax.TokenType;
-
 %%
 
 %public

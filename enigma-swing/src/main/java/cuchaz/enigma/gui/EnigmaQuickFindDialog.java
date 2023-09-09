@@ -14,17 +14,13 @@
 package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
-import cuchaz.enigma.gui.syntax.DefaultSyntaxAction;
 import cuchaz.enigma.gui.syntax.DocumentSearchData;
 import cuchaz.enigma.gui.syntax.EscapeListener;
 import cuchaz.enigma.gui.syntax.Markers;
-import cuchaz.enigma.gui.syntax.SwingUtils;
 import cuchaz.enigma.gui.util.GuiUtil;
 
-import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -49,8 +45,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.lang.ref.WeakReference;
-import java.net.URL;
-import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -69,9 +63,7 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 	private final WeakReference<DocumentSearchData> searchData;
 	private int prevCaretPos;
 
-	private JToolBar toolBar;
 	private JLabel statusLabel;
-	private JLabel label;
 	private JTextField searchField;
 	private JButton prevButton;
 	private JButton nextButton;
@@ -87,7 +79,7 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		super(SwingUtilities.getWindowAncestor(target), ModalityType.MODELESS);
 
 		this.initComponents();
-		SwingUtils.addEscapeListener(this);
+		GuiUtil.addEscapeListener(this);
 		this.searchData = new WeakReference<>(searchData);
 	}
 
@@ -145,12 +137,12 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 	}
 
 	private void initComponents() {
-		this.toolBar = new JToolBar();
+		JToolBar toolBar = new JToolBar();
 		this.statusLabel = new JLabel();
-		this.label = new JLabel();
+		JLabel label = new JLabel();
 		this.searchField = new JTextField();
-		this.prevButton = new JButton();
-		this.nextButton = new JButton();
+		this.prevButton = new JButton("prev");
+		this.nextButton = new JButton("next");
 		this.ignoreCaseCheckBox = new JCheckBox();
 		this.regexCheckBox = new JCheckBox();
 		this.wrapCheckBox = new JCheckBox();
@@ -161,15 +153,15 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		this.setResizable(false);
 		this.setUndecorated(true);
 
-		this.toolBar.setBorder(BorderFactory.createEtchedBorder());
-		this.toolBar.setFloatable(false);
-		this.toolBar.setRollover(true);
-		this.toolBar.addSeparator();
+		toolBar.setBorder(BorderFactory.createEtchedBorder());
+		toolBar.setFloatable(false);
+		toolBar.setRollover(true);
+		toolBar.addSeparator();
 
-		this.label.setLabelFor(this.searchField);
-		this.label.setText("QuickFindDialog.jLabel1.text");
-		this.toolBar.add(this.label);
-		this.toolBar.addSeparator();
+		label.setLabelFor(this.searchField);
+		label.setText("QuickFindDialog.jLabel1.text");
+		toolBar.add(label);
+		toolBar.addSeparator();
 
 		this.searchField.setColumns(30);
 		this.searchField.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -182,15 +174,15 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 				this.nextButton.doClick();
 			}
 		}));
-		this.toolBar.add(this.searchField);
-		this.toolBar.addSeparator();
+		toolBar.add(this.searchField);
+		toolBar.addSeparator();
 
 		this.prevButton.setHorizontalTextPosition(SwingConstants.CENTER);
 		this.prevButton.setFocusable(false);
 		this.prevButton.setOpaque(false);
 		this.prevButton.setVerticalTextPosition(SwingConstants.BOTTOM);
 		this.prevButton.addActionListener(this::prevButtonActionPerformed);
-		this.toolBar.add(this.prevButton);
+		toolBar.add(this.prevButton);
 
 		this.nextButton.setHorizontalTextPosition(SwingConstants.CENTER);
 		this.nextButton.setMargin(new Insets(2, 2, 2, 2));
@@ -198,7 +190,7 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		this.nextButton.setOpaque(false);
 		this.nextButton.setVerticalTextPosition(SwingConstants.BOTTOM);
 		this.nextButton.addActionListener(this::nextButtonActionPerformed);
-		this.toolBar.add(this.nextButton);
+		toolBar.add(this.nextButton);
 
 		this.ignoreCaseCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_IGNORE_CASE.getKeyCode());
 		this.ignoreCaseCheckBox.setText("QuickFindDialog.jChkIgnoreCase.text");
@@ -206,7 +198,7 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		this.ignoreCaseCheckBox.setOpaque(false);
 		this.ignoreCaseCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
 		this.ignoreCaseCheckBox.addActionListener(this);
-		this.toolBar.add(this.ignoreCaseCheckBox);
+		toolBar.add(this.ignoreCaseCheckBox);
 
 		this.regexCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_REGEX.getKeyCode());
 		this.regexCheckBox.setText("QuickFindDialog.jChkRegExp.text");
@@ -214,7 +206,7 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		this.regexCheckBox.setOpaque(false);
 		this.regexCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
 		this.regexCheckBox.addActionListener(this);
-		this.toolBar.add(this.regexCheckBox);
+		toolBar.add(this.regexCheckBox);
 
 		this.wrapCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_WRAP.getKeyCode());
 		this.wrapCheckBox.setText("QuickFindDialog.jChkWrap.text");
@@ -222,20 +214,20 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		this.wrapCheckBox.setOpaque(false);
 		this.wrapCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
 		this.wrapCheckBox.addActionListener(this);
-		this.toolBar.add(this.wrapCheckBox);
+		toolBar.add(this.wrapCheckBox);
 
-		this.toolBar.addSeparator();
+		toolBar.addSeparator();
 
 		this.statusLabel.setFont(this.statusLabel.getFont().deriveFont(this.statusLabel.getFont().getStyle() | Font.BOLD, this.statusLabel.getFont().getSize() - 2));
 		this.statusLabel.setForeground(Color.RED);
-		this.toolBar.add(this.statusLabel);
+		toolBar.add(this.statusLabel);
 
 		GroupLayout layout = new GroupLayout(this.getContentPane());
 		this.getContentPane().setLayout(layout);
 		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(this.toolBar, GroupLayout.DEFAULT_SIZE, PREFERRED_TOOLBAR_WIDTH, Short.MAX_VALUE));
+				.addComponent(toolBar, GroupLayout.DEFAULT_SIZE, PREFERRED_TOOLBAR_WIDTH, Short.MAX_VALUE));
 		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(this.toolBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
+				.addComponent(toolBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
 
 		this.pack();
 	}
@@ -244,7 +236,7 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		if (this.searchData.get().doFindPrev(this.target.get())) {
 			this.statusLabel.setText(null);
 		} else {
-			this.statusLabel.setText(ResourceBundle.getBundle("de/sciss/syntaxpane/Bundle").getString("QuickFindDialog.NotFound"));
+			this.statusLabel.setText("QuickFindDialog.NotFound");
 		}
 	}
 
@@ -252,7 +244,7 @@ public class EnigmaQuickFindDialog extends JDialog implements DocumentListener, 
 		if (this.searchData.get().doFindNext(this.target.get())) {
 			this.statusLabel.setText(null);
 		} else {
-			this.statusLabel.setText(ResourceBundle.getBundle("de/sciss/syntaxpane/Bundle").getString("QuickFindDialog.NotFound"));
+			this.statusLabel.setText("QuickFindDialog.NotFound");
 		}
 	}
 

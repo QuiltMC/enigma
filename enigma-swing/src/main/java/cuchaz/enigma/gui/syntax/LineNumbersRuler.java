@@ -88,14 +88,11 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 
 	@Override
 	public void configure() {
-		int left = 5;
-		// no need for a right margin
-		int right = 999;
 		Color foreground = UiConfig.getLineNumbersForegroundColor();
 		this.setForeground(foreground);
 		Color back = UiConfig.getLineNumbersBackgroundColor();
 		this.setBackground(back);
-		this.setBorder(BorderFactory.createEmptyBorder(0, left, 0, 5));
+		this.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
 		this.currentLineColor = UiConfig.getLineNumbersSelectedColor();
 	}
 
@@ -240,20 +237,16 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 		//  Preferred size of the component has not been updated at the time
 		//  the DocumentEvent is fired
 
-		SwingUtilities.invokeLater(new Runnable() {
+		SwingUtilities.invokeLater(() -> {
+			int preferredHeight = LineNumbersRuler.this.editor.getPreferredSize().height;
 
-			@Override
-			public void run() {
-				int preferredHeight = LineNumbersRuler.this.editor.getPreferredSize().height;
+			//  Document change has caused a change in the number of lines.
+			//  Repaint to reflect the new line numbers
 
-				//  Document change has caused a change in the number of lines.
-				//  Repaint to reflect the new line numbers
-
-				if (LineNumbersRuler.this.lastHeight != preferredHeight) {
-					LineNumbersRuler.this.setPreferredWidth(false);
-					LineNumbersRuler.this.repaint();
-					LineNumbersRuler.this.lastHeight = preferredHeight;
-				}
+			if (LineNumbersRuler.this.lastHeight != preferredHeight) {
+				LineNumbersRuler.this.setPreferredWidth(false);
+				LineNumbersRuler.this.repaint();
+				LineNumbersRuler.this.lastHeight = preferredHeight;
 			}
 		});
 	}
