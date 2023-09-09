@@ -14,8 +14,10 @@
 
 package cuchaz.enigma.gui.syntax;
 
+@SuppressWarnings("all")
 %%
 
+%no_suppress_warnings
 %public
 %class JavaLexer
 %extends DefaultJFlexLexer
@@ -341,7 +343,7 @@ SingleCharacter = [^\r\n\'\\]
                                      return token(TokenType.COMMENT, start, len);
                                  }
 
-  .|\n                           { tokenLength ++; }
+  .|[^]                           { tokenLength ++; }
 
 }
 
@@ -353,7 +355,7 @@ SingleCharacter = [^\r\n\'\\]
                                      return token(TokenType.COMMENT, tokenStart, tokenLength + 2);
                                  }
 
-  .|\n                           {
+  .|[^]                           {
                                      yybegin(JDOC);
                                      // length also includes the trailing quote
                                      int start = tokenStart;
@@ -366,5 +368,5 @@ SingleCharacter = [^\r\n\'\\]
 
 
 /* error fallback */
-.|\n                             {  }
+.|[^]                             {  }
 <<EOF>>                          { return null; }

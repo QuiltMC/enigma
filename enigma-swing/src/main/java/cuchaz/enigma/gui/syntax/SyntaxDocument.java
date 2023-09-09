@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.DocumentEvent;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.PlainDocument;
@@ -39,8 +38,8 @@ import javax.swing.text.Segment;
  * @author Ayman Al-Sairafi, Hanns Holger Rutz
  */
 public class SyntaxDocument extends PlainDocument {
-	Lexer lexer;
-	List<Token> tokens;
+	private final Lexer lexer;
+	private List<Token> tokens;
 
 	private int earliestTokenChangePos = -1;
 	private int latestTokenChangePos = -1;
@@ -49,6 +48,7 @@ public class SyntaxDocument extends PlainDocument {
 		super();
 		this.putProperty(PlainDocument.tabSizeAttribute, 4);
 		this.lexer  = lexer;
+
 	}
 
 	/*
@@ -64,6 +64,7 @@ public class SyntaxDocument extends PlainDocument {
 			this.tokens = null;
 			return;
 		}
+
 		List<Token> oldTokens = this.tokens;
 
 		List<Token> toks = new ArrayList<>(this.getLength() / 10);
@@ -80,6 +81,7 @@ public class SyntaxDocument extends PlainDocument {
 				log.finest(String.format("Parsed %d in %d ms, giving %d tokens\n",
 					len, (System.nanoTime() - ts) / 1000000, toks.size()));
 			}
+
 			this.tokens = toks;
 			this.calculateEarliestAndLatestTokenChangePos(event, oldTokens, toks);
 		}
@@ -112,6 +114,7 @@ public class SyntaxDocument extends PlainDocument {
 				break;
 			}
 		}
+
 		if (this.earliestTokenChangePos < 0 || this.earliestTokenChangePos > pos) {
 			this.earliestTokenChangePos = pos;
 		}
@@ -158,6 +161,7 @@ public class SyntaxDocument extends PlainDocument {
 				}
 			}
 		}
+
 		if (this.latestTokenChangePos < pos) {
 			this.latestTokenChangePos = pos;
 		}
@@ -227,9 +231,11 @@ public class SyntaxDocument extends PlainDocument {
 			if (SyntaxDocument.this.tokens == null) {
 				return false;
 			}
+
 			if (this.ndx >= SyntaxDocument.this.tokens.size()) {
 				return false;
 			}
+
 			Token t = SyntaxDocument.this.tokens.get(this.ndx);
 			return t.start < this.end;
 		}
@@ -249,9 +255,11 @@ public class SyntaxDocument extends PlainDocument {
 			if (SyntaxDocument.this.tokens == null) {
 				return false;
 			}
+
 			if (this.ndx <= 0) {
 				return false;
 			}
+
 			Token t = SyntaxDocument.this.tokens.get(this.ndx);
 			return t.end() > this.start;
 		}
@@ -300,6 +308,7 @@ public class SyntaxDocument extends PlainDocument {
 		if (this.tokens == null || this.tokens.isEmpty() || pos > this.getLength()) {
 			return null;
 		}
+
 		Token tok = null;
 		Token tKey = new Token(TokenType.DEFAULT, pos, 1);
 		int ndx = Collections.binarySearch(this.tokens, tKey);
@@ -314,6 +323,7 @@ public class SyntaxDocument extends PlainDocument {
 		} else {
 			tok = this.tokens.get(ndx);
 		}
+
 		return tok;
 	}
 
@@ -331,6 +341,7 @@ public class SyntaxDocument extends PlainDocument {
 		if (t == null || t.pairValue == 0) {
 			return null;
 		}
+
 		Token p = null;
 		int ndx = this.tokens.indexOf(t);
 		// w will be similar to a stack. The openners weght is added to it
@@ -344,6 +355,7 @@ public class SyntaxDocument extends PlainDocument {
 			if (ndx < 0 || ndx >= this.tokens.size()) {
 				break;
 			}
+
 			Token current = this.tokens.get(ndx);
 			if (Math.abs(current.pairValue) == v) {
 				w += current.pairValue;
@@ -389,12 +401,10 @@ public class SyntaxDocument extends PlainDocument {
 	 */
 	public Matcher getMatcher(Pattern pattern, int start, int length) {
 		Matcher matcher = null;
-		if (this.getLength() == 0) {
+		if (this.getLength() == 0 || start >= this.getLength()) {
 			return null;
 		}
-		if (start >= this.getLength()) {
-			return null;
-		}
+
 		try {
 			if (start < 0) {
 				start = 0;
@@ -408,6 +418,7 @@ public class SyntaxDocument extends PlainDocument {
 		} catch (BadLocationException ex) {
 			log.log(Level.SEVERE, "Requested offset: " + ex.offsetRequested(), ex);
 		}
+
 		return matcher;
 	}
 
@@ -430,16 +441,6 @@ public class SyntaxDocument extends PlainDocument {
 	public String toString() {
 		return "SyntaxDocument(" + this.lexer + ", " + ((this.tokens == null) ? 0 : this.tokens.size()) + " tokens)@" +
 			this.hashCode();
-	}
-
-	/**
-	 * We override this here so that the replace is treated as one operation
-	 * by the undo manager
-	 */
-	@Override
-	public void replace(int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-		this.remove(offset, length);
-		this.insertString(offset, text, attrs);
 	}
 
 	// our logger instance...

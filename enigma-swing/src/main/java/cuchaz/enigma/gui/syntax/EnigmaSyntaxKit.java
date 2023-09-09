@@ -79,19 +79,12 @@ public class EnigmaSyntaxKit extends DefaultEditorKit implements ViewFactory {
 		return new SyntaxView(element);
 	}
 
-	/**
-	 * Installs the View on the given EditorPane.  This is called by Swing and
-	 * can be used to do anything you need on the JEditorPane control.  Here
-	 * I set some default Actions.
-	 */
 	@Override
 	public void install(JEditorPane editorPane) {
 		super.install(editorPane);
-		// get our font
-		Font font = UiConfig.getDefaultFont();
+		Font font = UiConfig.getEditorFont();
 		editorPane.setFont(font);
-		// todo based on theme!
-		Color caretColor = Color.BLACK;
+		Color caretColor = UiConfig.getTextColor();
 		editorPane.setCaretColor(caretColor);
 		Color selectionColor = new Color(0x99ccff);
 		editorPane.setSelectionColor(selectionColor);
@@ -111,11 +104,7 @@ public class EnigmaSyntaxKit extends DefaultEditorKit implements ViewFactory {
 	}
 
 	/**
-	 * Adds keyboard actions to this control using the Configuration we have
-	 * This is revised to properly use InputMap and ActionMap of the component
-	 * instead of using the KeyMaps directly.
-	 *
-	 * @param editorPane    the component to attach the actions to
+	 * Sets up the quick find action.
 	 */
 	public void addQuickFindAction(JEditorPane editorPane) {
 		InputMap inputMap = new InputMap();
@@ -134,12 +123,6 @@ public class EnigmaSyntaxKit extends DefaultEditorKit implements ViewFactory {
 		editorPane.setInputMap(JTextComponent.WHEN_FOCUSED, inputMap);
 	}
 
-	/**
-	 * This is called by Swing to create a Document for the JEditorPane document
-	 * This may be called before you actually get a reference to the control.
-	 * We use it here to create a proper lexer and pass it to the
-	 * SyntaxDocument we return.
-	 */
 	@Override
 	public Document createDefaultDocument() {
 		return new SyntaxDocument(this.lexer);

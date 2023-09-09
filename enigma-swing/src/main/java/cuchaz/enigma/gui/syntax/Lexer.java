@@ -30,9 +30,9 @@ public interface Lexer {
 	 * a Reader, and it should return non-overlapping Tokens for each recognized token
 	 * in the stream.
 	 * @param segment Text to parse.
-	 * @param ofst offset to add to start of each token (useful for nesting)
+	 * @param offset offset to add to start of each token (useful for nesting)
 	 * @param tokens List of Tokens to be added.  This is done so that the caller creates the
 	 * appropriate List implementation and size.  The parse method just adds to the list
 	 */
-	void parse(Segment segment, int ofst, List<Token> tokens);
+	void parse(Segment segment, int offset, List<Token> tokens);
 }

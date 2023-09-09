@@ -66,11 +66,11 @@ public abstract class DefaultJFlexLexer implements Lexer {
 	 * Lexer and adds the tokens obtained to an ArrayList.
 	 */
 	@Override
-	public void parse(Segment segment, int ofst, List<Token> tokens) {
+	public void parse(Segment segment, int offset, List<Token> tokens) {
 		try {
 			CharArrayReader reader = new CharArrayReader(segment.array, segment.offset, segment.count);
 			this.yyreset(reader);
-			this.offset = ofst;
+			this.offset = offset;
 			for (Token t = this.yylex(); t != null; t = this.yylex()) {
 				tokens.add(t);
 			}

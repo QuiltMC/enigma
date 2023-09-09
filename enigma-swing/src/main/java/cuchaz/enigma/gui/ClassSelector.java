@@ -109,7 +109,7 @@ public class ClassSelector extends JTree {
 										text.append(type.getName()).append(": ").append(stats.toString(type)).append(i == StatType.values().length - 1 ? "" : "\n");
 									}
 								} else {
-									text.append(stats);
+									text.append(" ").append(stats);
 								}
 							}
 

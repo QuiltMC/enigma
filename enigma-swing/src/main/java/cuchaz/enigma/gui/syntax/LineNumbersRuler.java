@@ -21,7 +21,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
@@ -195,9 +194,6 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 		}
 	}
 
-	//
-//  Implement CaretListener interface
-//
 	@Override
 	public void caretUpdate(CaretEvent e) {
 		//  Get the line the caret is positioned on
@@ -212,43 +208,6 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 			this.repaint();
 			this.lastLine = currentLine;
 		}
-	}
-
-	@Override
-	public void changedUpdate(DocumentEvent e) {
-		this.documentChanged();
-	}
-
-	@Override
-	public void insertUpdate(DocumentEvent e) {
-		this.documentChanged();
-	}
-
-	@Override
-	public void removeUpdate(DocumentEvent e) {
-		this.documentChanged();
-	}
-
-	/*
-	 *  A document change may affect the number of displayed lines of text.
-	 *  Therefore the lines numbers will also change.
-	 */
-	private void documentChanged() {
-		//  Preferred size of the component has not been updated at the time
-		//  the DocumentEvent is fired
-
-		SwingUtilities.invokeLater(() -> {
-			int preferredHeight = LineNumbersRuler.this.editor.getPreferredSize().height;
-
-			//  Document change has caused a change in the number of lines.
-			//  Repaint to reflect the new line numbers
-
-			if (LineNumbersRuler.this.lastHeight != preferredHeight) {
-				LineNumbersRuler.this.setPreferredWidth(false);
-				LineNumbersRuler.this.repaint();
-				LineNumbersRuler.this.lastHeight = preferredHeight;
-			}
-		});
 	}
 
 	/**
@@ -272,6 +231,20 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 			this.setFont((Font) evt.getNewValue());
 			this.setPreferredWidth(true);
 		}
-		// TODO - theoretically also track "insets"
+	}
+
+	@Override
+	public void insertUpdate(DocumentEvent e) {
+
+	}
+
+	@Override
+	public void removeUpdate(DocumentEvent e) {
+
+	}
+
+	@Override
+	public void changedUpdate(DocumentEvent e) {
+
 	}
 }
