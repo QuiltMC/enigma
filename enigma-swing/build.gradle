@@ -18,9 +18,13 @@ dependencies {
 	testImplementation(testFixtures(project(':enigma')))
 }
 
+// exclude auto-generated jflex lexer from checkstyle
 tasks.withType(Checkstyle) {
 	exclude '**cuchaz/enigma/gui/syntax/generated**'
 }
+
+// fix jflex generation
+sourcesJar.dependsOn(':enigma-swing:generateJflex')
 
 mainClassName = 'cuchaz.enigma.gui.Main'
 
