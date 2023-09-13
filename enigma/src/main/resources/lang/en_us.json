@@ -115,6 +115,7 @@
 	"popup_menu.editor_tab.close_left": "Close All to the Left",
 	"popup_menu.editor_tab.close_right": "Close All to the Right",
 	"popup_menu.class_selector.rename_package": "Rename Package",
+	"popup_menu.class_selector.move_package": "Move Package",
 	"popup_menu.class_selector.rename_class": "Rename Class",
 	"popup_menu.class_selector.expand_all": "Expand All",
 	"popup_menu.class_selector.collapse_all": "Collapse All",

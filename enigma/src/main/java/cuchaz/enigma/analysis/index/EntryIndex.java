@@ -1,5 +1,8 @@
 package cuchaz.enigma.analysis.index;
 
+import cuchaz.enigma.translation.mapping.EntryMapping;
+import cuchaz.enigma.translation.mapping.tree.EntryTree;
+import cuchaz.enigma.translation.mapping.tree.HashEntryTree;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
@@ -16,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EntryIndex implements JarIndexer {
+	private final EntryTree<EntryMapping> tree = new HashEntryTree<>();
+
 	private final Map<ClassEntry, AccessFlags> classes = new HashMap<>();
 	private final Map<FieldEntry, AccessFlags> fields = new HashMap<>();
 	private final Map<MethodEntry, AccessFlags> methods = new HashMap<>();
@@ -35,6 +40,21 @@ public class EntryIndex implements JarIndexer {
 	@Override
 	public void indexField(FieldDefEntry fieldEntry) {
 		this.fields.put(fieldEntry, fieldEntry.getAccess());
+	}
+
+	@Override
+	public void processIndex(JarIndex index) {
+		for (ClassEntry entry : this.getClasses()) {
+			this.tree.insert(entry, null);
+		}
+
+		for (FieldEntry entry : this.getFields()) {
+			this.tree.insert(entry, null);
+		}
+
+		for (MethodEntry entry : this.getMethods()) {
+			this.tree.insert(entry, null);
+		}
 	}
 
 	public boolean hasClass(ClassEntry entry) {
@@ -107,6 +127,15 @@ public class EntryIndex implements JarIndexer {
 
 	public Collection<FieldEntry> getFields() {
 		return this.fields.keySet();
+	}
+
+	/**
+	 * Returns all indexed entries, organised into an {@link EntryTree}.
+	 * Note that all entries will have their mapping set to {@code null}.
+	 * @return the entry tree
+	 */
+	public EntryTree<EntryMapping> getTree() {
+		return this.tree;
 	}
 
 	@Override

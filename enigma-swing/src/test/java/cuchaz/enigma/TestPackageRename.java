@@ -4,6 +4,7 @@ import cuchaz.enigma.gui.EditableType;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.docker.AllClassesDocker;
 import cuchaz.enigma.gui.elements.ClassSelectorPopupMenu;
+import cuchaz.enigma.gui.util.PackageRenamer;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
@@ -30,7 +31,7 @@ public class TestPackageRename {
 
 	@Test
 	void testRemoveOnePackage() throws InterruptedException {
-		renamePackage("a/b/c", "a/c");
+		renamePackage("a/b/c", "a/c", PackageRenamer.Mode.REFACTOR);
 
 		assertMapping(newClass("A"), newClass("a/c/A"));
 		assertMapping(newClass("B"), newClass("a/c/B"));
@@ -41,7 +42,7 @@ public class TestPackageRename {
 
 	@Test
 	void testRemoveTwoPackages() throws InterruptedException {
-		renamePackage("a/b/c", "a");
+		renamePackage("a/b/c", "a", PackageRenamer.Mode.REFACTOR);
 
 		assertMapping(newClass("A"), newClass("a/A"));
 		assertMapping(newClass("B"), newClass("a/B"));
@@ -52,7 +53,7 @@ public class TestPackageRename {
 
 	@Test
 	void testPackageConservation() throws InterruptedException {
-		renamePackage("a/b", "a");
+		renamePackage("a/b", "a", PackageRenamer.Mode.REFACTOR);
 
 		assertMapping(newClass("A"), newClass("a/c/A"));
 		assertMapping(newClass("B"), newClass("a/c/B"));
@@ -63,7 +64,7 @@ public class TestPackageRename {
 
 	@Test
 	void testAppendOnePackage() throws InterruptedException {
-		renamePackage("a/b/c", "a/b/c/d");
+		renamePackage("a/b/c", "a/b/c/d", PackageRenamer.Mode.REFACTOR);
 
 		assertMapping(newClass("A"), newClass("a/b/c/d/A"));
 		assertMapping(newClass("B"), newClass("a/b/c/d/B"));
@@ -74,7 +75,7 @@ public class TestPackageRename {
 
 	@Test
 	void testSimpleRename() throws InterruptedException {
-		renamePackage("a/b/c", "a/b/d");
+		renamePackage("a/b/c", "a/b/d", PackageRenamer.Mode.REFACTOR);
 
 		assertMapping(newClass("A"), newClass("a/b/d/A"));
 		assertMapping(newClass("B"), newClass("a/b/d/B"));
@@ -85,7 +86,7 @@ public class TestPackageRename {
 
 	@Test
 	void testFirstPackageRename() throws InterruptedException {
-		renamePackage("a", "b");
+		renamePackage("a", "b", PackageRenamer.Mode.REFACTOR);
 
 		assertMapping(newClass("A"), newClass("b/b/c/A"));
 		assertMapping(newClass("B"), newClass("b/b/c/B"));
@@ -94,12 +95,23 @@ public class TestPackageRename {
 		assertMapping(newClass("E"), newClass("E"));
 	}
 
-	private static void renamePackage(String packageName, String newName) throws InterruptedException {
+	@Test
+	void testPackageMove() throws InterruptedException {
+		renamePackage("a/b/c", "a/c", PackageRenamer.Mode.MOVE);
+
+		assertMapping(newClass("A"), newClass("a/c/A"));
+		assertMapping(newClass("B"), newClass("a/c/B"));
+		assertMapping(newClass("C"), newClass("a/b/C"));
+		assertMapping(newClass("D"), newClass("a/D"));
+		assertMapping(newClass("E"), newClass("E"));
+	}
+
+	private static void renamePackage(String packageName, String newName, PackageRenamer.Mode mode) throws InterruptedException {
 		ClassSelectorPopupMenu menu = setupMenu();
 		assertBaseMappings();
 
 		CountDownLatch packageRenameLatch = new CountDownLatch(1);
-		menu.renamePackage(packageName, newName).thenRun(packageRenameLatch::countDown);
+		menu.createPackageRenamer(mode).renamePackage(packageName, newName).thenRun(packageRenameLatch::countDown);
 		packageRenameLatch.await();
 	}
 
