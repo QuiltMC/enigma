@@ -45,7 +45,9 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 			@Override
 			protected ClassSelectorClassNode doInBackground() {
 				if (manager.getStats(ClassSelectorClassNode.this) == null || updateIfPresent) {
-					manager.generateFor(ClassSelectorClassNode.this);
+					//System.out.println("generating!");
+					//manager.generateFor(ClassSelectorClassNode.this);
+					//System.out.println("complete!");
 				}
 
 				return ClassSelectorClassNode.this;
@@ -53,8 +55,8 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 
 			@Override
 			public void done() {
-				((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(manager.getStats(ClassSelectorClassNode.this)));
-				SwingUtilities.invokeLater(() -> selector.reload(ClassSelectorClassNode.this, false));
+				//((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(manager.getStats(ClassSelectorClassNode.this)));
+				//SwingUtilities.invokeLater(() -> selector.reload(ClassSelectorClassNode.this, false));
 			}
 		};
 

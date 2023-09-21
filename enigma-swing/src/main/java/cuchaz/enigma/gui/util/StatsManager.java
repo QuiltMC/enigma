@@ -2,8 +2,9 @@ package cuchaz.enigma.gui.util;
 
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
+import cuchaz.enigma.stats.AggregateStatsResult;
 import cuchaz.enigma.stats.StatsGenerator;
-import cuchaz.enigma.stats.StatsResult;
+import cuchaz.enigma.stats.ClassStatsResult;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import org.tinylog.Logger;
 
@@ -15,7 +16,7 @@ import java.util.concurrent.CountDownLatch;
  * A class to manage generated stats for class tree classes. This is used to avoid generating stats for a class multiple times.
  */
 public class StatsManager {
-	private final HashMap<ClassEntry, StatsResult> results = new HashMap<>();
+	private final HashMap<ClassEntry, ClassStatsResult> results = new HashMap<>();
 	private final Map<ClassEntry, CountDownLatch> latches = new HashMap<>();
 	private StatsGenerator generator;
 
@@ -51,18 +52,18 @@ public class StatsManager {
 	public void generateFor(ClassSelectorClassNode node) {
 		ClassEntry entry = node.getObfEntry();
 
-		if (!this.latches.containsKey(entry)) {
+		//if (!this.latches.containsKey(entry)) {
 			this.latches.put(entry, new CountDownLatch(1));
 
-			StatsResult stats = this.generator.generateForClassTree(ProgressListener.none(), entry, false);
-			this.setStats(node, stats);
-		} else {
-			try {
-				this.latches.get(entry).await();
-			} catch (InterruptedException e) {
-				Logger.error(e, "Failed to await stats generation for class \"{}\"!", entry);
-			}
-		}
+			AggregateStatsResult stats = this.generator.generateForClassTree(ProgressListener.none(), entry, false);
+			this.setStats(node, stats.getStats().get(entry));
+		//} else {
+//			try {
+//				this.latches.get(entry).await();
+//			} catch (InterruptedException e) {
+//				Logger.error(e, "Failed to await stats generation for class \"{}\"!", entry);
+//			}
+		//}
 	}
 
 	/**
@@ -71,7 +72,7 @@ public class StatsManager {
 	 * @param node the node to set stats for
 	 * @param stats the stats to associate
 	 */
-	public void setStats(ClassSelectorClassNode node, StatsResult stats) {
+	public void setStats(ClassSelectorClassNode node, ClassStatsResult stats) {
 		ClassEntry entry = node.getObfEntry();
 
 		this.results.put(entry, stats);
@@ -94,7 +95,7 @@ public class StatsManager {
 	 * @param node the node to get stats for
 	 * @return the stats for the given class node, or {@code null} if not yet generated
 	 */
-	public StatsResult getStats(ClassSelectorClassNode node) {
+	public ClassStatsResult getStats(ClassSelectorClassNode node) {
 		ClassEntry entry = node.getObfEntry();
 		return this.results.get(entry);
 	}

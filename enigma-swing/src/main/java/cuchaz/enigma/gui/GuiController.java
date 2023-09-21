@@ -541,22 +541,23 @@ public class GuiController implements ClientPacketHandler {
 
 	public void openStats(Set<StatType> includedTypes, String topLevelPackage, boolean includeSynthetic) {
 		ProgressDialog.runOffThread(this.gui, progress -> {
-			String data = this.gui.getStatsManager().getGenerator().generate(progress, includedTypes, topLevelPackage, includeSynthetic).getTreeJson();
-
-			try {
-				File statsFile = File.createTempFile("stats", ".html");
-
-				try (FileWriter w = new FileWriter(statsFile)) {
-					w.write(
-							Utils.readResourceToString("/stats.html")
-									.replace("/*data*/", data)
-					);
-				}
-
-				Desktop.getDesktop().open(statsFile);
-			} catch (IOException e) {
-				throw new Error(e);
-			}
+//			String data = this.gui.getStatsManager().getGenerator().generate(progress, includedTypes, topLevelPackage, includeSynthetic).getTreeJson();
+//			// todo only generate stats tree here
+//
+//			try {
+//				File statsFile = File.createTempFile("stats", ".html");
+//
+//				try (FileWriter w = new FileWriter(statsFile)) {
+//					w.write(
+//							Utils.readResourceToString("/stats.html")
+//									.replace("/*data*/", data)
+//					);
+//				}
+//
+//				Desktop.getDesktop().open(statsFile);
+//			} catch (IOException e) {
+//				throw new Error(e);
+//			}
 		});
 	}
 

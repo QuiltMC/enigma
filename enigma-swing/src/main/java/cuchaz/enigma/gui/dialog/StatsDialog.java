@@ -3,7 +3,7 @@ package cuchaz.enigma.gui.dialog;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.stats.StatType;
-import cuchaz.enigma.stats.StatsResult;
+import cuchaz.enigma.stats.ClassStatsResult;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
@@ -27,13 +27,14 @@ import javax.swing.SwingUtilities;
 public class StatsDialog {
 	public static void show(Gui gui) {
 		ProgressDialog.runOffThread(gui, listener -> {
-			StatsResult result = gui.getStatsManager().getGenerator().generate(listener, Set.of(StatType.values()), "", false);
+			// todo
+			//ClassStatsResult result = gui.getStatsManager().getGenerator().generate(listener, Set.of(StatType.values()), "", false);
 
-			SwingUtilities.invokeLater(() -> show(gui, result, ""));
+			//SwingUtilities.invokeLater(() -> show(gui, result, ""));
 		});
 	}
 
-	public static void show(Gui gui, StatsResult result, String packageName) {
+	public static void show(Gui gui, ClassStatsResult result, String packageName) {
 		// init frame
 		JDialog dialog = new JDialog(gui.getFrame(), packageName.isEmpty() ? I18n.translate("menu.file.stats.title") : I18n.translateFormatted("menu.file.stats.title_filtered", packageName), true);
 		Container contentPane = dialog.getContentPane();
@@ -77,9 +78,10 @@ public class StatsDialog {
 				UiConfig.setLastTopLevelPackage(topLevelPackage.getText());
 				UiConfig.save();
 
-				StatsResult statResult = gui.getStatsManager().getGenerator().generate(listener, Set.of(StatType.values()), UiConfig.getLastTopLevelPackage(), false);
+				// todo
+				//ClassStatsResult statResult = gui.getStatsManager().getGenerator().generate(listener, Set.of(StatType.values()), UiConfig.getLastTopLevelPackage(), false);
 
-				SwingUtilities.invokeLater(() -> show(gui, statResult, UiConfig.getLastTopLevelPackage()));
+				//SwingUtilities.invokeLater(() -> show(gui, statResult, UiConfig.getLastTopLevelPackage()));
 			});
 		});
 		contentPane.add(filterButton, cb1.pos(0, result.getTypes().size() + 3).anchor(GridBagConstraints.EAST).build());

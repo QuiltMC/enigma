@@ -1,11 +1,13 @@
 package cuchaz.enigma.gui;
 
+import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
 import cuchaz.enigma.gui.node.SortedMutableTreeNode;
+import cuchaz.enigma.stats.AggregateStatsResult;
 import cuchaz.enigma.stats.StatType;
 import cuchaz.enigma.gui.util.StatsManager;
-import cuchaz.enigma.stats.StatsResult;
+import cuchaz.enigma.stats.ClassStatsResult;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.utils.I18n;
@@ -98,7 +100,7 @@ public class ClassSelector extends JTree {
 						public String getToolTipText(MouseEvent event) {
 							StringBuilder text = new StringBuilder(I18n.translateFormatted("class_selector.tooltip.stats_for", node.getDeobfEntry().getSimpleName()));
 							text.append(System.lineSeparator());
-							StatsResult stats = ClassSelector.this.statsManager.getStats(node);
+							ClassStatsResult stats = ClassSelector.this.statsManager.getGenerator().getResult().getStats().get(node.getObfEntry());
 
 							if (stats == null) {
 								text.append(I18n.translate("class_selector.tooltip.stats_not_generated"));
@@ -123,13 +125,17 @@ public class ClassSelector extends JTree {
 					JLabel nodeLabel = new JLabel(GuiUtil.getClassIcon(gui, node.getObfEntry()));
 					panel.add(nodeLabel);
 
-					StatsResult stats = ClassSelector.this.statsManager.getStats(node);
+					AggregateStatsResult stats = ClassSelector.this.statsManager.getGenerator().getResult();
 					if (stats == null) {
 						// calculate stats on a separate thread for performance reasons
 						this.setIcon(GuiUtil.PENDING_STATUS_ICON);
-						node.reloadStats(gui, ClassSelector.this, false);
+						SwingUtilities.invokeLater(() -> {
+							AggregateStatsResult newStats = ClassSelector.this.statsManager.getGenerator().generateForClassTree(ProgressListener.none(), null, false);
+							this.setIcon(GuiUtil.getDeobfuscationIcon(newStats, node.getObfEntry()));
+						});
+						//node.reloadStats(gui, ClassSelector.this, false);
 					} else {
-						this.setIcon(GuiUtil.getDeobfuscationIcon(stats));
+						this.setIcon(GuiUtil.getDeobfuscationIcon(stats, node.getObfEntry()));
 					}
 
 					panel.add(this);
