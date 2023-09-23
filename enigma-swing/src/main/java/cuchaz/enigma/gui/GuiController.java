@@ -86,6 +86,7 @@ public class GuiController implements ClientPacketHandler {
 
 	private EnigmaProject project;
 	private IndexTreeBuilder indexTreeBuilder;
+	private StatsGenerator statsGenerator;
 
 	private Path loadedMappingPath;
 	private MappingFormat loadedMappingFormat;
@@ -117,6 +118,8 @@ public class GuiController implements ClientPacketHandler {
 			this.project = this.enigma.openJar(jarPath, new ClasspathClassProvider(), progress);
 			this.indexTreeBuilder = new IndexTreeBuilder(this.project.getJarIndex());
 			this.chp = new ClassHandleProvider(this.project, UiConfig.getDecompiler().service);
+			this.statsGenerator = new StatsGenerator(this.project);
+
 			SwingUtilities.invokeLater(() -> {
 				this.gui.onFinishOpenJar(jarPath.getFileName().toString());
 				this.refreshClasses();
@@ -154,7 +157,7 @@ public class GuiController implements ClientPacketHandler {
 
 				this.refreshClasses();
 				this.chp.invalidateJavadoc();
-				this.gui.getStatsManager().setStatsGenerator(new StatsGenerator(this.project));
+				this.statsGenerator = new StatsGenerator(this.project);
 			} catch (MappingParseException e) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), e.getMessage());
 			}
@@ -585,6 +588,10 @@ public class GuiController implements ClientPacketHandler {
 
 	public Enigma getEnigma() {
 		return this.enigma;
+	}
+
+	public StatsGenerator getStatsGenerator() {
+		return this.statsGenerator;
 	}
 
 	public void createClient(String username, String ip, int port, char[] password) throws IOException {

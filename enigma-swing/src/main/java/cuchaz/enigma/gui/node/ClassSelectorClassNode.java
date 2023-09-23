@@ -1,9 +1,12 @@
 package cuchaz.enigma.gui.node;
 
+import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.gui.ClassSelector;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.util.StatsManager;
 import cuchaz.enigma.gui.util.GuiUtil;
+import cuchaz.enigma.stats.AggregateStatsResult;
+import cuchaz.enigma.stats.StatsGenerator;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
 import javax.swing.SwingUtilities;
@@ -39,15 +42,13 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	 * @param updateIfPresent whether to update the stats if they have already been generated for this node
 	 */
 	public void reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent) {
-		StatsManager manager = gui.getStatsManager();
+		StatsGenerator generator = gui.getController().getStatsGenerator();
 
 		SwingWorker<ClassSelectorClassNode, Void> iconUpdateWorker = new SwingWorker<>() {
 			@Override
 			protected ClassSelectorClassNode doInBackground() {
-				if (manager.getStats(ClassSelectorClassNode.this) == null || updateIfPresent) {
-					//System.out.println("generating!");
-					//manager.generateFor(ClassSelectorClassNode.this);
-					//System.out.println("complete!");
+				if (generator.getResult() == null || updateIfPresent) {
+					generator.generateForClassTree(ProgressListener.none(), ClassSelectorClassNode.this.getObfEntry(), false);
 				}
 
 				return ClassSelectorClassNode.this;
@@ -55,8 +56,8 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 
 			@Override
 			public void done() {
-				//((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(manager.getStats(ClassSelectorClassNode.this)));
-				//SwingUtilities.invokeLater(() -> selector.reload(ClassSelectorClassNode.this, false));
+				((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(generator.getResult(), ClassSelectorClassNode.this.getObfEntry()));
+				SwingUtilities.invokeLater(() -> selector.reload(ClassSelectorClassNode.this, false));
 			}
 		};
 
