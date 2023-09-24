@@ -131,6 +131,7 @@ public class GuiController implements ClientPacketHandler {
 		this.chp.destroy();
 		this.chp = null;
 		this.project = null;
+		this.statsGenerator = null;
 		this.gui.onCloseJar();
 	}
 

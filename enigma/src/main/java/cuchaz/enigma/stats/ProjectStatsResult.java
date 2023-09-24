@@ -9,21 +9,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AggregateStatsResult implements StatsResult {
+public class ProjectStatsResult implements StatsProvider {
 	private final EnigmaProject project;
 
-	private final Map<String, List<ClassStatsResult>> packageToClasses = new HashMap<>();
-	private final Map<ClassEntry, ClassStatsResult> stats = new HashMap<>();
+	private final Map<String, List<StatsResult>> packageToClasses = new HashMap<>();
+	private final Map<ClassEntry, StatsResult> stats = new HashMap<>();
 	private final Map<ClassEntry, String> classToPackage = new HashMap<>();
 
-	private ClassStatsResult overall;
+	private StatsResult overall;
 
-	public AggregateStatsResult(EnigmaProject project, Map<ClassEntry, ClassStatsResult> stats) {
+	public ProjectStatsResult(EnigmaProject project, Map<ClassEntry, StatsResult> stats) {
 		this.project = project;
 
 		for (var entry : stats.entrySet()) {
 			ClassEntry classEntry = entry.getKey();
-			ClassStatsResult statEntry = entry.getValue();
+			StatsResult statEntry = entry.getValue();
 
 			this.stats.put(classEntry, statEntry);
 			this.updatePackage(classEntry, statEntry);
@@ -32,11 +32,7 @@ public class AggregateStatsResult implements StatsResult {
 		this.rebuildOverall(null);
 	}
 
-	public Map<ClassEntry, ClassStatsResult> getStats() {
-		return this.stats;
-	}
-
-	public void updatePackage(ClassEntry obfEntry, ClassStatsResult newStats) {
+	public void updatePackage(ClassEntry obfEntry, StatsResult newStats) {
 		ClassEntry deobfuscated = this.project.getMapper().deobfuscate(obfEntry);
 		ClassEntry classEntry = deobfuscated == null ? obfEntry : deobfuscated;
 
@@ -48,10 +44,10 @@ public class AggregateStatsResult implements StatsResult {
 		this.classToPackage.putIfAbsent(classEntry, packageName);
 
 		// remove old result
-		List<ClassStatsResult> oldPackageResults = this.packageToClasses.get(oldPackageName);
+		List<StatsResult> oldPackageResults = this.packageToClasses.get(oldPackageName);
 
-		ClassStatsResult oldResult = null;
-		for (ClassStatsResult result : oldPackageResults) {
+		StatsResult oldResult = null;
+		for (StatsResult result : oldPackageResults) {
 			if (result.obfEntry().equals(obfEntry)) {
 				oldResult = result;
 			}
@@ -61,7 +57,7 @@ public class AggregateStatsResult implements StatsResult {
 			oldPackageResults.remove(oldResult);
 		}
 
-		List<ClassStatsResult> newResults = this.packageToClasses.get(packageName);
+		List<StatsResult> newResults = this.packageToClasses.get(packageName);
 		newResults.add(newStats);
 
 		this.rebuildOverall(null);
@@ -73,7 +69,7 @@ public class AggregateStatsResult implements StatsResult {
 			Map<StatType, Integer> totalUnmapped = new HashMap<>();
 
 			for (var entry : this.stats.entrySet()) {
-				ClassStatsResult result = entry.getValue();
+				StatsResult result = entry.getValue();
 
 				for (var unmappedEntry : result.totalUnmapped().entrySet()) {
 					totalUnmapped.put(unmappedEntry.getKey(), totalUnmapped.getOrDefault(unmappedEntry.getKey(), 0) + unmappedEntry.getValue());
@@ -84,13 +80,21 @@ public class AggregateStatsResult implements StatsResult {
 				}
 			}
 
-			this.overall = new ClassStatsResult(null, totalMappable, totalUnmapped);
+			this.overall = new StatsResult(null, totalMappable, totalUnmapped);
 		} else {
 			for (ClassEntry entry : updated) {
-				ClassStatsResult result = this.stats.get(entry);
+				StatsResult result = this.stats.get(entry);
 				// todo
 			}
 		}
+	}
+
+	public Map<ClassEntry, StatsResult> getStats() {
+		return this.stats;
+	}
+
+	public StatsResult getOverall() {
+		return this.overall;
 	}
 
 	@Override

@@ -1,10 +1,9 @@
 package cuchaz.enigma;
 
 import cuchaz.enigma.classprovider.JarClassProvider;
-import cuchaz.enigma.stats.AggregateStatsResult;
+import cuchaz.enigma.stats.ProjectStatsResult;
 import cuchaz.enigma.stats.StatType;
 import cuchaz.enigma.stats.StatsGenerator;
-import cuchaz.enigma.stats.ClassStatsResult;
 import cuchaz.enigma.translation.mapping.EntryChange;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryUtil;
@@ -26,7 +25,7 @@ public class TestStatsGeneration {
 	@Test
 	void checkNoMappedEntriesByDefault() {
 		EnigmaProject project = openProject();
-		AggregateStatsResult stats = new StatsGenerator(project).generate(ProgressListener.none(), Set.of(StatType.values()), null, false);
+		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.none(), Set.of(StatType.values()), null, false);
 		assertThat(stats.getMapped(), equalTo(0));
 		assertThat(stats.getPercentage(), equalTo(0d));
 	}
@@ -86,7 +85,7 @@ public class TestStatsGeneration {
 	}
 
 	private static void checkFullyMapped(EnigmaProject project, StatType... types) {
-		AggregateStatsResult stats = new StatsGenerator(project).generate(ProgressListener.none(), Set.of(types), null, false);
+		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.none(), Set.of(types), null, false);
 		assertThat(stats.getMapped(types), equalTo(stats.getMappable(types)));
 		assertThat(stats.getPercentage(types), equalTo(100d));
 	}

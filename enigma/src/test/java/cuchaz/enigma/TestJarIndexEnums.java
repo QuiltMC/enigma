@@ -1,6 +1,6 @@
 package cuchaz.enigma;
 
-import cuchaz.enigma.stats.AggregateStatsResult;
+import cuchaz.enigma.stats.ProjectStatsResult;
 import org.junit.jupiter.api.Test;
 import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.stats.StatType;
@@ -19,7 +19,7 @@ public class TestJarIndexEnums {
 	@Test
 	void checkEnumStats() {
 		EnigmaProject project = openProject();
-		AggregateStatsResult stats = new StatsGenerator(project).generate(ProgressListener.none(), EnumSet.allOf(StatType.class), null, false);
+		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.none(), EnumSet.allOf(StatType.class), null, false);
 
 		assertThat(stats.getMapped(StatType.CLASSES), equalTo(0));
 		assertThat(stats.getMapped(StatType.FIELDS), equalTo(0));

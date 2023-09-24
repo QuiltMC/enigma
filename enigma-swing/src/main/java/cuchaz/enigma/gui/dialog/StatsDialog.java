@@ -2,8 +2,9 @@ package cuchaz.enigma.gui.dialog;
 
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.stats.ProjectStatsResult;
 import cuchaz.enigma.stats.StatType;
-import cuchaz.enigma.stats.ClassStatsResult;
+import cuchaz.enigma.stats.StatsResult;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
@@ -27,14 +28,12 @@ import javax.swing.SwingUtilities;
 public class StatsDialog {
 	public static void show(Gui gui) {
 		ProgressDialog.runOffThread(gui, listener -> {
-			// todo
-			//ClassStatsResult result = gui.getStatsManager().getGenerator().generate(listener, Set.of(StatType.values()), "", false);
-
-			//SwingUtilities.invokeLater(() -> show(gui, result, ""));
+			ProjectStatsResult result = gui.getController().getStatsGenerator().getResult(false);
+			SwingUtilities.invokeLater(() -> show(gui, result, ""));
 		});
 	}
 
-	public static void show(Gui gui, ClassStatsResult result, String packageName) {
+	public static void show(Gui gui, ProjectStatsResult result, String packageName) {
 		// init frame
 		JDialog dialog = new JDialog(gui.getFrame(), packageName.isEmpty() ? I18n.translate("menu.file.stats.title") : I18n.translateFormatted("menu.file.stats.title_filtered", packageName), true);
 		Container contentPane = dialog.getContentPane();
@@ -45,7 +44,7 @@ public class StatsDialog {
 		Map<StatType, JCheckBox> checkboxes = new EnumMap<>(StatType.class);
 
 		final int[] i = {0};
-		result.getTypes().stream().sorted(Comparator.comparing(StatType::getName)).forEach(type -> {
+		result.getOverall().getTypes().stream().sorted(Comparator.comparing(StatType::getName)).forEach(type -> {
 			JCheckBox checkBox = new JCheckBox(type.getName());
 			checkboxes.put(type, checkBox);
 			contentPane.add(checkBox, cb.pos(0, i[0]).weightX(1.0).anchor(GridBagConstraints.WEST).build());
@@ -64,13 +63,18 @@ public class StatsDialog {
 
 		// show top-level package option
 		JLabel topLevelPackageOption = new JLabel(I18n.translate("menu.file.stats.top_level_package"));
-		contentPane.add(topLevelPackageOption, cb1.pos(0, result.getTypes().size() + 1).build());
+		contentPane.add(topLevelPackageOption, cb1.pos(0, result.getOverall().getTypes().size() + 1).build());
 
 		JTextField topLevelPackage = new JTextField();
 		topLevelPackage.setText(UiConfig.getLastTopLevelPackage());
-		contentPane.add(topLevelPackage, cb1.pos(0, result.getTypes().size() + 2).fill(GridBagConstraints.HORIZONTAL).build());
+		contentPane.add(topLevelPackage, cb1.pos(0, result.getOverall().getTypes().size() + 2).fill(GridBagConstraints.HORIZONTAL).build());
 
-		// Show filter button
+		// show synthetic members option
+		JCheckBox syntheticParametersOption = new JCheckBox(I18n.translate("menu.file.stats.synthetic_parameters"));
+		syntheticParametersOption.setSelected(UiConfig.shouldIncludeSyntheticParameters());
+		contentPane.add(syntheticParametersOption, cb1.pos(0, result.getOverall().getTypes().size() + 4).build());
+
+		// show filter button
 		JButton filterButton = new JButton(I18n.translate("menu.file.stats.filter"));
 		filterButton.addActionListener(action -> {
 			dialog.dispose();
@@ -78,18 +82,12 @@ public class StatsDialog {
 				UiConfig.setLastTopLevelPackage(topLevelPackage.getText());
 				UiConfig.save();
 
-				// todo
-				//ClassStatsResult statResult = gui.getStatsManager().getGenerator().generate(listener, Set.of(StatType.values()), UiConfig.getLastTopLevelPackage(), false);
-
-				//SwingUtilities.invokeLater(() -> show(gui, statResult, UiConfig.getLastTopLevelPackage()));
+				// todo reimplement filtering inside ProjectStatsResult
+				ProjectStatsResult projectResult = gui.getController().getStatsGenerator().getResult(syntheticParametersOption.isSelected());
+				SwingUtilities.invokeLater(() -> show(gui, projectResult, UiConfig.getLastTopLevelPackage()));
 			});
 		});
-		contentPane.add(filterButton, cb1.pos(0, result.getTypes().size() + 3).anchor(GridBagConstraints.EAST).build());
-
-		// show synthetic members option
-		JCheckBox syntheticParametersOption = new JCheckBox(I18n.translate("menu.file.stats.synthetic_parameters"));
-		syntheticParametersOption.setSelected(UiConfig.shouldIncludeSyntheticParameters());
-		contentPane.add(syntheticParametersOption, cb1.pos(0, result.getTypes().size() + 4).build());
+		contentPane.add(filterButton, cb1.pos(0, result.getOverall().getTypes().size() + 3).anchor(GridBagConstraints.EAST).build());
 
 		// show generate button
 		JButton button = new JButton(I18n.translate("menu.file.stats.generate"));
@@ -104,7 +102,7 @@ public class StatsDialog {
 			generateStats(gui, checkboxes, topLevelPackage.getText(), syntheticParametersOption.isSelected());
 		});
 
-		contentPane.add(button, cb1.pos(0, result.getTypes().size() + 5).weightY(1.0).anchor(GridBagConstraints.SOUTHWEST).build());
+		contentPane.add(button, cb1.pos(0, result.getOverall().getTypes().size() + 5).weightY(1.0).anchor(GridBagConstraints.SOUTHWEST).build());
 
 		// add action listener to each checkbox
 		checkboxes.forEach((key, value) -> value.addActionListener(action -> {

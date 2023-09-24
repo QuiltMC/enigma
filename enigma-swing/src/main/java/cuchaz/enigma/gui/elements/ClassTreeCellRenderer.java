@@ -5,8 +5,8 @@ import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.GuiController;
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
 import cuchaz.enigma.gui.util.GuiUtil;
-import cuchaz.enigma.stats.AggregateStatsResult;
-import cuchaz.enigma.stats.ClassStatsResult;
+import cuchaz.enigma.stats.ProjectStatsResult;
+import cuchaz.enigma.stats.StatsResult;
 import cuchaz.enigma.stats.StatType;
 import cuchaz.enigma.stats.StatsGenerator;
 import cuchaz.enigma.utils.I18n;
@@ -44,10 +44,10 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 
 					StatsGenerator generator = ClassTreeCellRenderer.this.controller.getStatsGenerator();
 
-					if (generator == null || generator.getResult() == null) {
+					if (generator == null || generator.getResultNullable() == null) {
 						text.append(I18n.translate("class_selector.tooltip.stats_not_generated"));
 					} else {
-						ClassStatsResult stats = ClassTreeCellRenderer.this.controller.getStatsGenerator().getStats(node.getObfEntry());
+						StatsResult stats = ClassTreeCellRenderer.this.controller.getStatsGenerator().getStats(node.getObfEntry());
 
 						if ((event.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
 							for (int i = 0; i < StatType.values().length; i++) {
@@ -70,7 +70,7 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 			panel.add(nodeLabel);
 
 			if (this.controller.getStatsGenerator() != null) {
-				AggregateStatsResult stats = this.controller.getStatsGenerator().getResult();
+				ProjectStatsResult stats = this.controller.getStatsGenerator().getResultNullable();
 				if (stats == null) {
 					// calculate stats on a separate thread for performance reasons
 					this.setIcon(GuiUtil.PENDING_STATUS_ICON);
