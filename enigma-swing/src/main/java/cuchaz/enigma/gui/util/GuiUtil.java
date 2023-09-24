@@ -157,7 +157,7 @@ public class GuiUtil {
 	}
 
 	public static Icon getDeobfuscationIcon(ProjectStatsResult stats, ClassEntry obfEntry) {
-		if (stats != null) {
+		if (stats != null && stats.getStats().get(obfEntry) != null) {
 			double percentage = stats.getStats().get(obfEntry).getPercentage();
 
 			if (percentage == 100d) {

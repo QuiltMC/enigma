@@ -132,7 +132,7 @@ public class StatsGenerator {
 		while (!doneSearch) {
 			doneSearch = true;
 
-			for (Entry<?> entry : entries) {
+			for (Entry<?> entry : children) {
 				if (entry instanceof ClassEntry classEntry2 && !checked.contains(classEntry2)) {
 					List<ParentedEntry<?>> classChildren = this.project.getJarIndex().getChildrenByClass().get(classEntry2);
 					if (!classChildren.isEmpty()) {

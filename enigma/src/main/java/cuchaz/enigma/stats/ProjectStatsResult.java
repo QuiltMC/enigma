@@ -2,9 +2,10 @@ package cuchaz.enigma.stats;
 
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.utils.Pair;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ public class ProjectStatsResult implements StatsProvider {
 	private final Map<String, List<StatsResult>> packageToClasses = new HashMap<>();
 	private final Map<ClassEntry, StatsResult> stats = new HashMap<>();
 	private final Map<ClassEntry, String> classToPackage = new HashMap<>();
+	private final Map<String, StatsResult> packageStats = new HashMap<>();
 
 	private StatsResult overall;
 
@@ -29,7 +31,7 @@ public class ProjectStatsResult implements StatsProvider {
 			this.updatePackage(classEntry, statEntry);
 		}
 
-		this.rebuildOverall(null);
+		this.rebuildOverall();
 	}
 
 	public void updatePackage(ClassEntry obfEntry, StatsResult newStats) {
@@ -48,7 +50,7 @@ public class ProjectStatsResult implements StatsProvider {
 
 		StatsResult oldResult = null;
 		for (StatsResult result : oldPackageResults) {
-			if (result.obfEntry().equals(obfEntry)) {
+			if (result.obfEntry() != null && result.obfEntry().equals(obfEntry)) {
 				oldResult = result;
 			}
 		}
@@ -60,33 +62,46 @@ public class ProjectStatsResult implements StatsProvider {
 		List<StatsResult> newResults = this.packageToClasses.get(packageName);
 		newResults.add(newStats);
 
-		this.rebuildOverall(null);
+		this.rebuildOverall();
+		//this.rebuildPackageFor(obfEntry, oldPackageName);
 	}
 
-	private void rebuildOverall(@Nullable List<ClassEntry> updated) {
-		if (updated == null) {
-			Map<StatType, Integer> totalMappable = new HashMap<>();
-			Map<StatType, Integer> totalUnmapped = new HashMap<>();
+	private void rebuildOverall() {
+		var maps = buildStats(this.stats.values());
+		this.overall = new StatsResult(null, maps.a(), maps.b());
+	}
 
-			for (var entry : this.stats.entrySet()) {
-				StatsResult result = entry.getValue();
+	private static Pair<Map<StatType, Integer>, Map<StatType, Integer>> buildStats(Collection<StatsResult> stats) {
+		Map<StatType, Integer> totalMappable = new HashMap<>();
+		Map<StatType, Integer> totalUnmapped = new HashMap<>();
 
-				for (var unmappedEntry : result.totalUnmapped().entrySet()) {
-					totalUnmapped.put(unmappedEntry.getKey(), totalUnmapped.getOrDefault(unmappedEntry.getKey(), 0) + unmappedEntry.getValue());
-				}
-
-				for (var mappableEntry : result.totalMappable().entrySet()) {
-					totalMappable.put(mappableEntry.getKey(), totalMappable.getOrDefault(mappableEntry.getKey(), 0) + mappableEntry.getValue());
-				}
+		for (StatsResult result : stats) {
+			for (var unmappedEntry : result.totalUnmapped().entrySet()) {
+				totalUnmapped.put(unmappedEntry.getKey(), totalUnmapped.getOrDefault(unmappedEntry.getKey(), 0) + unmappedEntry.getValue());
 			}
 
-			this.overall = new StatsResult(null, totalMappable, totalUnmapped);
-		} else {
-			for (ClassEntry entry : updated) {
-				StatsResult result = this.stats.get(entry);
-				// todo
+			for (var mappableEntry : result.totalMappable().entrySet()) {
+				totalMappable.put(mappableEntry.getKey(), totalMappable.getOrDefault(mappableEntry.getKey(), 0) + mappableEntry.getValue());
 			}
 		}
+
+		return new Pair<>(totalMappable, totalUnmapped);
+	}
+
+	private void rebuildPackageFor(ClassEntry entry, String oldPackage) {
+		String packageName = this.classToPackage.get(entry);
+
+		if (!packageName.equals(oldPackage)) {
+			var newStats = buildStats(this.packageToClasses.get(oldPackage));
+			this.packageStats.put(oldPackage, new StatsResult(null, newStats.a(), newStats.b()));
+		}
+
+		var newStats = buildStats(this.packageToClasses.get(packageName));
+		this.packageStats.put(packageName, new StatsResult(null, newStats.a(), newStats.b()));
+	}
+
+	public StatsResult getPackageStats(String name) {
+		return this.packageStats.get(name);
 	}
 
 	public Map<ClassEntry, StatsResult> getStats() {
