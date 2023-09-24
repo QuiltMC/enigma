@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// todo doesn't handle package properly
 public class ProjectStatsResult implements StatsProvider {
 	private final EnigmaProject project;
 

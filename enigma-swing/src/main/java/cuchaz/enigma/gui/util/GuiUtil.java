@@ -13,9 +13,12 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JToolTip;
+import javax.swing.JTree;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.Timer;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.Color;
@@ -154,6 +157,25 @@ public class GuiUtil {
 		}
 
 		return CLASS_ICON;
+	}
+
+	public static Icon getFolderIcon(DefaultTreeCellRenderer renderer, JTree tree, DefaultMutableTreeNode node) {
+		boolean expanded = tree.isExpanded(new TreePath(node.getPath()));
+		return expanded ? renderer.getOpenIcon() : renderer.getClosedIcon();
+	}
+
+	public static Icon getDeobfuscationIcon(ProjectStatsResult stats, String packageName) {
+		if (stats != null && stats.getPackageStats(packageName) != null) {
+			double percentage = stats.getPackageStats(packageName).getPercentage();
+
+			if (percentage == 100d) {
+				return DEOBFUSCATED_ICON;
+			} else if (percentage > 0) {
+				return PARTIALLY_DEOBFUSCATED_ICON;
+			}
+		}
+
+		return OBFUSCATED_ICON;
 	}
 
 	public static Icon getDeobfuscationIcon(ProjectStatsResult stats, ClassEntry obfEntry) {
