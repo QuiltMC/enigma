@@ -8,6 +8,7 @@ import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.stats.AggregateStatsResult;
 import cuchaz.enigma.stats.ClassStatsResult;
 import cuchaz.enigma.stats.StatType;
+import cuchaz.enigma.stats.StatsGenerator;
 import cuchaz.enigma.utils.I18n;
 
 import javax.swing.BoxLayout;
@@ -41,7 +42,9 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 					StringBuilder text = new StringBuilder(I18n.translateFormatted("class_selector.tooltip.stats_for", node.getDeobfEntry().getSimpleName()));
 					text.append(System.lineSeparator());
 
-					if (ClassTreeCellRenderer.this.controller.getStatsGenerator() == null) {
+					StatsGenerator generator = ClassTreeCellRenderer.this.controller.getStatsGenerator();
+
+					if (generator == null || generator.getResult() == null) {
 						text.append(I18n.translate("class_selector.tooltip.stats_not_generated"));
 					} else {
 						ClassStatsResult stats = ClassTreeCellRenderer.this.controller.getStatsGenerator().getStats(node.getObfEntry());

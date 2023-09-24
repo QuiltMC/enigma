@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.analysis.index.EntryIndex;
-import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
 import cuchaz.enigma.translation.representation.ArgumentDescriptor;
@@ -20,6 +19,7 @@ import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -119,15 +119,16 @@ public class StatsGenerator {
 
 		boolean doneSearch = false;
 		Set<ClassEntry> checked = new HashSet<>();
-		List<ParentedEntry<?>> entries = this.project.getJarIndex().getChildrenByClass().get(classEntry);
+		List<ParentedEntry<?>> children = this.project.getJarIndex().getChildrenByClass().get(classEntry);
+		List<Entry<?>> entries = new ArrayList<>(children);
+
 		while (!doneSearch) {
 			doneSearch = true;
-			List<Entry<?>> copy = List.copyOf(entries);
 
-			for (Entry<?> entry : copy) {
+			for (Entry<?> entry : entries) {
 				if (entry instanceof ClassEntry classEntry2 && !checked.contains(classEntry2)) {
-					List<ParentedEntry<?>> children = this.project.getJarIndex().getChildrenByClass().get(classEntry2);
-					if (!children.isEmpty()) {
+					List<ParentedEntry<?>> classChildren = this.project.getJarIndex().getChildrenByClass().get(classEntry2);
+					if (!classChildren.isEmpty()) {
 						entries.addAll(this.project.getJarIndex().getChildrenByClass().get(classEntry2));
 						doneSearch = false;
 						checked.add(classEntry2);
