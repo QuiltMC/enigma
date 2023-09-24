@@ -38,12 +38,12 @@ public class ProjectStatsResult implements StatsProvider {
 		ClassEntry deobfuscated = this.project.getMapper().deobfuscate(obfEntry);
 		ClassEntry classEntry = deobfuscated == null ? obfEntry : deobfuscated;
 
-		String packageName = classEntry.getPackageName();
+		String packageName = classEntry.getPackageName() == null ? "" : classEntry.getPackageName();
 		String oldPackageName = this.classToPackage.get(obfEntry) == null ? packageName : this.classToPackage.get(obfEntry);
 
 		this.packageToClasses.putIfAbsent(packageName, new ArrayList<>());
 		this.classToPackage.remove(obfEntry);
-		this.classToPackage.putIfAbsent(classEntry, packageName);
+		this.classToPackage.put(obfEntry, packageName);
 
 		// remove old result
 		List<StatsResult> oldPackageResults = this.packageToClasses.get(oldPackageName);
@@ -63,7 +63,7 @@ public class ProjectStatsResult implements StatsProvider {
 		newResults.add(newStats);
 
 		this.rebuildOverall();
-		//this.rebuildPackageFor(obfEntry, oldPackageName);
+		this.rebuildPackageFor(obfEntry, oldPackageName);
 	}
 
 	private void rebuildOverall() {
