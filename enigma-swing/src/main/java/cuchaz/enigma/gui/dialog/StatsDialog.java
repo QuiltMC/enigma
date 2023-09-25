@@ -4,7 +4,6 @@ import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.stats.ProjectStatsResult;
 import cuchaz.enigma.stats.StatType;
-import cuchaz.enigma.stats.StatsResult;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
@@ -82,8 +81,7 @@ public class StatsDialog {
 				UiConfig.setLastTopLevelPackage(topLevelPackage.getText());
 				UiConfig.save();
 
-				// todo reimplement filtering inside ProjectStatsResult
-				ProjectStatsResult projectResult = gui.getController().getStatsGenerator().getResult(syntheticParametersOption.isSelected());
+				ProjectStatsResult projectResult = gui.getController().getStatsGenerator().getResult(syntheticParametersOption.isSelected()).filter(UiConfig.getLastTopLevelPackage());
 				SwingUtilities.invokeLater(() -> show(gui, projectResult, UiConfig.getLastTopLevelPackage()));
 			});
 		});

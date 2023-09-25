@@ -35,7 +35,7 @@ public class ProjectStatsResult implements StatsProvider {
 		this.rebuildOverall();
 	}
 
-	public void updatePackage(ClassEntry obfEntry, StatsResult newStats) {
+	private void updatePackage(ClassEntry obfEntry, StatsResult newStats) {
 		try {
 			ClassEntry deobfuscated = this.project.getMapper().deobfuscate(obfEntry);
 			ClassEntry classEntry = deobfuscated == null ? obfEntry : deobfuscated;
@@ -97,6 +97,22 @@ public class ProjectStatsResult implements StatsProvider {
 			var newStats = buildStats(this.packageToClasses.get(name));
 			this.packageStats.put(name, new StatsResult(null, newStats.a(), newStats.b()));
 		}
+	}
+
+	public ProjectStatsResult filter(String topLevelPackage) {
+		Map<ClassEntry, StatsResult> newStats = new HashMap<>();
+
+		for (var entry : this.stats.entrySet()) {
+			ClassEntry deobfuscated = this.project.getMapper().deobfuscate(entry.getKey());
+			ClassEntry classEntry = deobfuscated == null ? entry.getKey() : deobfuscated;
+
+			String packageName = classEntry.getPackageName() == null ? "" : classEntry.getPackageName();
+			if (packageName.startsWith(topLevelPackage)) {
+				newStats.put(entry.getKey(), entry.getValue());
+			}
+		}
+
+		return new ProjectStatsResult(this.project, newStats);
 	}
 
 	public StatsResult getPackageStats(String name) {

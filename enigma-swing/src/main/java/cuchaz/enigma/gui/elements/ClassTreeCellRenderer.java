@@ -42,7 +42,7 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 
 			if (value instanceof ClassSelectorPackageNode node) {
 				class PackageTooltipPanel extends TooltipPanel {
-					public PackageTooltipPanel(GuiController controller) {
+					PackageTooltipPanel(GuiController controller) {
 						super(controller);
 					}
 
@@ -65,7 +65,7 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 				ClassSelectorClassNode node = (ClassSelectorClassNode) value;
 
 				class ClassTooltipPanel extends TooltipPanel {
-					public ClassTooltipPanel(GuiController controller) {
+					ClassTooltipPanel(GuiController controller) {
 						super(controller);
 					}
 
