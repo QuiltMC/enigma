@@ -26,22 +26,20 @@ public class ClassSelectorPackageNode extends SortedMutableTreeNode {
 		DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer) selector.getCellRenderer();
 		this.updateIcon(generator, renderer);
 
-		// todo needs to be recursive and restore
-		SwingUtilities.invokeLater(() -> {
-			DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.getParent();
-			while (!node.isRoot() && node instanceof ClassSelectorPackageNode packageNode) {
-				packageNode.updateIcon(generator, renderer);
-				node = (DefaultMutableTreeNode) packageNode.getParent();
-			}
-
-			var expansionState = selector.getExpansionState();
-			selector.reload();
-			selector.restoreExpansionState(expansionState);
-		});
+//		SwingUtilities.invokeLater(() -> {
+//			DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.getParent();
+//			while (!node.isRoot() && node instanceof ClassSelectorPackageNode packageNode) {
+//				packageNode.updateIcon(generator, renderer);
+//				node = (DefaultMutableTreeNode) packageNode.getParent();
+//			}
+//
+//			var expansionState = selector.getExpansionState();
+//			selector.reload();
+//			selector.restoreExpansionState(expansionState);
+//		});
 	}
 
 	private void updateIcon(StatsGenerator generator, DefaultTreeCellRenderer renderer) {
-		System.out.println("updating icon" + this.getPackageName());
 		renderer.setIcon(GuiUtil.getDeobfuscationIcon(generator.getResultNullable(), this.getPackageName()));
 	}
 

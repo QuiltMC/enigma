@@ -3,6 +3,7 @@ package cuchaz.enigma.stats;
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.utils.Pair;
+import org.tinylog.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,7 +17,6 @@ public class ProjectStatsResult implements StatsProvider {
 
 	private final Map<String, List<StatsResult>> packageToClasses = new HashMap<>();
 	private final Map<ClassEntry, StatsResult> stats = new HashMap<>();
-	private final Map<ClassEntry, String> classToPackage = new HashMap<>();
 	private final Map<String, StatsResult> packageStats = new HashMap<>();
 
 	private StatsResult overall;
@@ -36,35 +36,38 @@ public class ProjectStatsResult implements StatsProvider {
 	}
 
 	public void updatePackage(ClassEntry obfEntry, StatsResult newStats) {
-		ClassEntry deobfuscated = this.project.getMapper().deobfuscate(obfEntry);
-		ClassEntry classEntry = deobfuscated == null ? obfEntry : deobfuscated;
+		try {
+			ClassEntry deobfuscated = this.project.getMapper().deobfuscate(obfEntry);
+			ClassEntry classEntry = deobfuscated == null ? obfEntry : deobfuscated;
 
-		String packageName = classEntry.getPackageName() == null ? "" : classEntry.getPackageName();
-		String oldPackageName = this.classToPackage.get(obfEntry) == null ? packageName : this.classToPackage.get(obfEntry);
+			String packageName = classEntry.getPackageName() == null ? "" : classEntry.getPackageName();
+			List<String> packages = getPackages(packageName);
 
-		this.packageToClasses.putIfAbsent(packageName, new ArrayList<>());
-		this.classToPackage.remove(obfEntry);
-		this.classToPackage.put(obfEntry, packageName);
+			this.addClass(packages, newStats);
+			this.rebuildPackageFor(packages);
+		} catch (Exception e) {
+		Logger.error(e);
+	}
+	}
 
-		// remove old result
-		List<StatsResult> oldPackageResults = this.packageToClasses.get(oldPackageName);
+	private void addClass(List<String> packages, StatsResult newStats) {
+		for (String name : packages) {
+			this.packageToClasses.putIfAbsent(name, new ArrayList<>());
+			List<StatsResult> newResults = this.packageToClasses.get(name);
+			newResults.add(newStats);
+		}
+	}
 
-		StatsResult oldResult = null;
-		for (StatsResult result : oldPackageResults) {
-			if (result.obfEntry() != null && result.obfEntry().equals(obfEntry)) {
-				oldResult = result;
+	private static List<String> getPackages(String packageName) {
+		List<String> packages = new ArrayList<>();
+		packages.add(packageName);
+		for (int i = packageName.lastIndexOf('/'); i > 0; i--) {
+			if (packageName.charAt(i) == '/') {
+				packages.add(packageName.substring(0, i));
 			}
 		}
 
-		if (oldResult != null) {
-			oldPackageResults.remove(oldResult);
-		}
-
-		List<StatsResult> newResults = this.packageToClasses.get(packageName);
-		newResults.add(newStats);
-
-		this.rebuildOverall();
-		this.rebuildPackageFor(obfEntry, oldPackageName);
+		return packages;
 	}
 
 	private void rebuildOverall() {
@@ -89,16 +92,11 @@ public class ProjectStatsResult implements StatsProvider {
 		return new Pair<>(totalMappable, totalUnmapped);
 	}
 
-	private void rebuildPackageFor(ClassEntry entry, String oldPackage) {
-		String packageName = this.classToPackage.get(entry);
-
-		if (!packageName.equals(oldPackage)) {
-			var newStats = buildStats(this.packageToClasses.get(oldPackage));
-			this.packageStats.put(oldPackage, new StatsResult(null, newStats.a(), newStats.b()));
+	private void rebuildPackageFor(List<String> packageNames) {
+		for (String name : packageNames) {
+			var newStats = buildStats(this.packageToClasses.get(name));
+			this.packageStats.put(name, new StatsResult(null, newStats.a(), newStats.b()));
 		}
-
-		var newStats = buildStats(this.packageToClasses.get(packageName));
-		this.packageStats.put(packageName, new StatsResult(null, newStats.a(), newStats.b()));
 	}
 
 	public StatsResult getPackageStats(String name) {

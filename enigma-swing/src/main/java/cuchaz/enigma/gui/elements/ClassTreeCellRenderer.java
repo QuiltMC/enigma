@@ -8,18 +8,15 @@ import cuchaz.enigma.gui.node.ClassSelectorPackageNode;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.stats.ProjectStatsResult;
 import cuchaz.enigma.stats.StatsResult;
-import cuchaz.enigma.stats.StatType;
 import cuchaz.enigma.stats.StatsGenerator;
-import cuchaz.enigma.utils.I18n;
 
 import javax.swing.BoxLayout;
+import javax.swing.Icon;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.Component;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseEvent;
+import java.util.function.Function;
 
 public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 	private final GuiController controller;
@@ -30,95 +27,69 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 		this.selector = selector;
 
 		// todo folder icons crash for some reason
-		//this.setLeafIcon(null);
+		this.setLeafIcon(null);
 	}
 
 	@Override
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 		super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
-		if (this.controller.getProject() != null && leaf && value instanceof ClassSelectorClassNode node) {
-			class TooltipPanel extends JPanel {
-				@Override
-				public String getToolTipText(MouseEvent event) {
-					StringBuilder text = new StringBuilder(I18n.translateFormatted("class_selector.tooltip.stats_for", node.getDeobfEntry().getSimpleName()));
-					text.append(System.lineSeparator());
+		if ((this.controller.getProject() != null && leaf && value instanceof ClassSelectorClassNode)
+				|| (this.controller.getProject() != null && value instanceof ClassSelectorPackageNode)) {
+			TooltipPanel panel;
+			Icon icon;
+			Function<ProjectStatsResult, Icon> deobfuscationIconGetter;
+			Runnable reloader;
 
-					StatsGenerator generator = ClassTreeCellRenderer.this.controller.getStatsGenerator();
-
-					if (generator == null || generator.getResultNullable() == null) {
-						text.append(I18n.translate("class_selector.tooltip.stats_not_generated"));
-					} else {
-						StatsResult stats = ClassTreeCellRenderer.this.controller.getStatsGenerator().getStats(node.getObfEntry());
-
-						if ((event.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
-							for (int i = 0; i < StatType.values().length; i++) {
-								StatType type = StatType.values()[i];
-								text.append(type.getName()).append(": ").append(stats.toString(type)).append(i == StatType.values().length - 1 ? "" : "\n");
-							}
-						} else {
-							text.append(stats);
-						}
+			if (value instanceof ClassSelectorPackageNode node) {
+				class PackageTooltipPanel extends TooltipPanel {
+					public PackageTooltipPanel(GuiController controller) {
+						super(controller);
 					}
 
-					return text.toString();
-				}
-			}
+					@Override
+					StatsResult getStats(StatsGenerator generator) {
+						return generator.getResultNullable().getPackageStats(this.getDisplayName());
+					}
 
-			JPanel panel = new TooltipPanel();
-			panel.setOpaque(false);
-			panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-			JLabel nodeLabel = new JLabel(GuiUtil.getClassIcon(this.controller.getGui(), node.getObfEntry()));
-			panel.add(nodeLabel);
-
-			if (this.controller.getStatsGenerator() != null) {
-				ProjectStatsResult stats = this.controller.getStatsGenerator().getResultNullable();
-				if (stats == null) {
-					// calculate stats on a separate thread for performance reasons
-					this.setIcon(GuiUtil.PENDING_STATUS_ICON);
-					node.reloadStats(this.controller.getGui(), this.selector, false);
-				} else {
-					this.setIcon(GuiUtil.getDeobfuscationIcon(stats, node.getObfEntry()));
+					@Override
+					String getDisplayName() {
+						return node.getPackageName();
+					}
 				}
+
+				panel = new PackageTooltipPanel(this.controller);
+				icon = GuiUtil.getFolderIcon(this, tree, node);
+				deobfuscationIconGetter = projectStatsResult -> GuiUtil.getDeobfuscationIcon(projectStatsResult, node.getPackageName());
+				reloader = () -> node.reloadStats(this.controller.getGui(), this.selector);
 			} else {
-				this.setIcon(GuiUtil.PENDING_STATUS_ICON);
-			}
+				ClassSelectorClassNode node = (ClassSelectorClassNode) value;
 
-			panel.add(this);
-
-			return panel;
-		} else if (this.controller.getProject() != null && value instanceof ClassSelectorPackageNode node) {
-			class TooltipPanel extends JPanel {
-				@Override
-				public String getToolTipText(MouseEvent event) {
-					StringBuilder text = new StringBuilder(I18n.translateFormatted("class_selector.tooltip.stats_for", node.getPackageName()));
-					text.append(System.lineSeparator());
-
-					StatsGenerator generator = ClassTreeCellRenderer.this.controller.getStatsGenerator();
-
-					if (generator == null || generator.getResultNullable() == null) {
-						text.append(I18n.translate("class_selector.tooltip.stats_not_generated"));
-					} else {
-						StatsResult stats = ClassTreeCellRenderer.this.controller.getStatsGenerator().getResultNullable().getPackageStats(node.getPackageName());
-
-						if ((event.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
-							for (int i = 0; i < StatType.values().length; i++) {
-								StatType type = StatType.values()[i];
-								text.append(type.getName()).append(": ").append(stats.toString(type)).append(i == StatType.values().length - 1 ? "" : "\n");
-							}
-						} else {
-							text.append(stats);
-						}
+				class ClassTooltipPanel extends TooltipPanel {
+					public ClassTooltipPanel(GuiController controller) {
+						super(controller);
 					}
 
-					return text.toString();
+					@Override
+					StatsResult getStats(StatsGenerator generator) {
+						return generator.getStats(node.getObfEntry());
+					}
+
+					@Override
+					String getDisplayName() {
+						return node.getDeobfEntry().getSimpleName();
+					}
 				}
+
+				panel = new ClassTooltipPanel(this.controller);
+				icon = GuiUtil.getClassIcon(this.controller.getGui(), node.getObfEntry());
+				deobfuscationIconGetter = projectStatsResult -> GuiUtil.getDeobfuscationIcon(projectStatsResult, node.getObfEntry());
+				reloader = () -> node.reloadStats(this.controller.getGui(), this.selector, false);
 			}
 
-			JPanel panel = new TooltipPanel();
 			panel.setOpaque(false);
 			panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-			JLabel nodeLabel = new JLabel(GuiUtil.getFolderIcon(this, tree, node));
+			JLabel nodeLabel = new JLabel(icon);
 			panel.add(nodeLabel);
 
 			if (this.controller.getStatsGenerator() != null) {
@@ -126,9 +97,9 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 				if (stats == null) {
 					// calculate stats on a separate thread for performance reasons
 					this.setIcon(GuiUtil.PENDING_STATUS_ICON);
-					node.reloadStats(this.controller.getGui(), this.selector);
+					reloader.run();
 				} else {
-					this.setIcon(GuiUtil.getDeobfuscationIcon(stats, node.getPackageName()));
+					this.setIcon(deobfuscationIconGetter.apply(stats));
 				}
 			} else {
 				this.setIcon(GuiUtil.PENDING_STATUS_ICON);
