@@ -26,7 +26,6 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 		this.controller = gui.getController();
 		this.selector = selector;
 
-		// todo folder icons crash for some reason
 		this.setLeafIcon(null);
 	}
 
@@ -61,7 +60,7 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 				panel = new PackageTooltipPanel(this.controller);
 				icon = GuiUtil.getFolderIcon(this, tree, node);
 				deobfuscationIconGetter = projectStatsResult -> GuiUtil.getDeobfuscationIcon(projectStatsResult, node.getPackageName());
-				reloader = () -> node.reloadStats(this.controller.getGui(), this.selector);
+				reloader = () -> {};
 			} else {
 				ClassSelectorClassNode node = (ClassSelectorClassNode) value;
 
