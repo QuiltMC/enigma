@@ -6,8 +6,6 @@ import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.stats.StatsGenerator;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
-import javax.swing.SwingUtilities;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import java.util.Comparator;
