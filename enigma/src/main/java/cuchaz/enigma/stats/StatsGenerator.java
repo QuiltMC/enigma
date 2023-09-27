@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,38 +119,34 @@ public class StatsGenerator {
 		return this.result;
 	}
 
-	public StatsResult generateOptimised(ProgressListener progress, Set<StatType> includedTypes, ClassEntry classEntry, boolean includeSynthetic) {
-		Map<StatType, Integer> mappableCounts = new EnumMap<>(StatType.class);
-		Map<StatType, Map<ClassEntry, Integer>> unmappedCounts = new EnumMap<>(StatType.class);
-
-		boolean doneSearch = false;
-		Set<ClassEntry> checked = new HashSet<>();
-		List<ParentedEntry<?>> children = this.project.getJarIndex().getChildrenByClass().get(classEntry);
-		List<Entry<?>> entries = new ArrayList<>(children);
-
-		while (!doneSearch) {
-			doneSearch = true;
-
-			for (Entry<?> entry : children) {
-				if (entry instanceof ClassEntry classEntry2 && !checked.contains(classEntry2)) {
-					List<ParentedEntry<?>> classChildren = this.project.getJarIndex().getChildrenByClass().get(classEntry2);
-					if (!classChildren.isEmpty()) {
-						entries.addAll(this.project.getJarIndex().getChildrenByClass().get(classEntry2));
-						doneSearch = false;
-						checked.add(classEntry2);
+	private void addChildrenRecursively(List<Entry<?>> entries, Entry<?> toCheck) {
+		if (toCheck instanceof ClassEntry innerClassEntry) {
+			List<ParentedEntry<?>> classChildren = this.project.getJarIndex().getChildrenByClass().get(innerClassEntry);
+			if (!classChildren.isEmpty()) {
+				entries.addAll(classChildren);
+				for (Entry<?> entry : classChildren) {
+					if (entry instanceof ClassEntry innerInnerClassEntry) {
+						this.addChildrenRecursively(entries, innerInnerClassEntry);
 					}
 				}
 			}
 		}
+	}
+
+	public StatsResult generateOptimised(ProgressListener progress, Set<StatType> includedTypes, ClassEntry classEntry, boolean includeSynthetic) {
+		Map<StatType, Integer> mappableCounts = new EnumMap<>(StatType.class);
+		Map<StatType, Map<String, Integer>> unmappedCounts = new EnumMap<>(StatType.class);
+
+		List<ParentedEntry<?>> children = this.project.getJarIndex().getChildrenByClass().get(classEntry);
+		List<Entry<?>> entries = new ArrayList<>(children);
+
+		for (Entry<?> entry : children) {
+			this.addChildrenRecursively(entries, entry);
+		}
 
 		entries.add(classEntry);
 
-		int numDone = 0;
-		progress.init(entries.size(), "stats for class " + classEntry.getName());
-
 		for (Entry<?> entry : entries) {
-			progress.step(numDone++, "stats for class " + classEntry.getName());
-
 			if (entry instanceof FieldEntry field) {
 				if (!((FieldDefEntry) field).getAccess().isSynthetic()) {
 					this.update(StatType.FIELDS, mappableCounts, unmappedCounts, field);
@@ -190,33 +185,8 @@ public class StatsGenerator {
 			}
 		}
 
-		Map<StatType, Integer> rawUnmappedCounts = new EnumMap<>(StatType.class);
-		for (var entry : unmappedCounts.entrySet()) {
-			for (int value : entry.getValue().values()) {
-				rawUnmappedCounts.put(entry.getKey(), rawUnmappedCounts.getOrDefault(entry.getKey(), 0) + value);
-			}
-		}
-
-		return new StatsResult(classEntry, mappableCounts, rawUnmappedCounts);
+		return StatsResult.create(mappableCounts, unmappedCounts, false);
 	}
-
-//	private static StatsResult.Tree<Integer> getStatTree(Map<StatType, Map<String, Integer>> unmappedCounts, String topLevelPackageDot) {
-//		// todo rewrite
-//		StatsResult.Tree<Integer> tree = new StatsResult.Tree<>();
-//
-//		for (Map.Entry<StatType, Map<String, Integer>> typedEntry : unmappedCounts.entrySet()) {
-//			for (Map.Entry<String, Integer> entry : typedEntry.getValue().entrySet()) {
-//				if (entry.getKey().startsWith(topLevelPackageDot)) {
-//					StatsResult.Tree.Node<Integer> node = tree.getNode(entry.getKey());
-//					int value = node.getValue() == null ? 0 : node.getValue();
-//
-//					node.setValue(value + entry.getValue());
-//				}
-//			}
-//		}
-//
-//		return tree;
-//	}
 
 	public StatsResult getStats(ClassEntry entry) {
 		if (this.result == null) {
@@ -226,18 +196,14 @@ public class StatsGenerator {
 		return this.result.getStats().get(entry);
 	}
 
-	public void invalidateStats() {
-		this.result = null;
-	}
-
-	private void update(StatType type, Map<StatType, Integer> mappable, Map<StatType, Map<ClassEntry, Integer>> unmapped, Entry<?> entry) {
+	private void update(StatType type, Map<StatType, Integer> mappable, Map<StatType, Map<String, Integer>> unmapped, Entry<?> entry) {
 		boolean obfuscated = this.project.isObfuscated(entry);
 		boolean renamable = this.project.isRenamable(entry);
 		boolean synthetic = this.project.isSynthetic(entry);
 
 		if (renamable) {
 			if (obfuscated && !synthetic) {
-				ClassEntry parent = entry.getTopLevelClass();
+				String parent = this.project.getMapper().deobfuscate(entry.getTopLevelClass()).getName().replace('/', '.');
 
 				unmapped.computeIfAbsent(type, t -> new HashMap<>());
 				unmapped.get(type).put(parent, unmapped.get(type).getOrDefault(parent, 0) + 1);

@@ -1,5 +1,6 @@
 package cuchaz.enigma.gui;
 
+import com.google.gson.GsonBuilder;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.EnigmaProject;
@@ -38,6 +39,8 @@ import cuchaz.enigma.source.DecompilerService;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.Token;
 import cuchaz.enigma.stats.StatsGenerator;
+import cuchaz.enigma.stats.StatsResult;
+import cuchaz.enigma.stats.StatsTree;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryChange;
@@ -57,6 +60,7 @@ import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.TristateChange;
+import cuchaz.enigma.utils.Utils;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
@@ -64,7 +68,9 @@ import org.tinylog.Logger;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import java.awt.Desktop;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -540,25 +546,26 @@ public class GuiController implements ClientPacketHandler {
 		}
 	}
 
-	public void openStats(Set<StatType> includedTypes, String topLevelPackage, boolean includeSynthetic) {
+	public void openStatsTree(Set<StatType> includedTypes) {
 		ProgressDialog.runOffThread(this.gui, progress -> {
-//			String data = this.gui.getStatsManager().getGenerator().generate(progress, includedTypes, topLevelPackage, includeSynthetic).getTreeJson();
-//			// todo only generate stats tree here
-//
-//			try {
-//				File statsFile = File.createTempFile("stats", ".html");
-//
-//				try (FileWriter w = new FileWriter(statsFile)) {
-//					w.write(
-//							Utils.readResourceToString("/stats.html")
-//									.replace("/*data*/", data)
-//					);
-//				}
-//
-//				Desktop.getDesktop().open(statsFile);
-//			} catch (IOException e) {
-//				throw new Error(e);
-//			}
+			StatsResult overall = this.getStatsGenerator().getResultNullable().getOverall();
+			StatsTree<Integer> tree = overall.buildTree(UiConfig.getLastTopLevelPackage(), includedTypes);
+			String treeJson = new GsonBuilder().setPrettyPrinting().create().toJson(tree.root);
+
+			try {
+				File statsFile = File.createTempFile("stats", ".html");
+
+				try (FileWriter w = new FileWriter(statsFile)) {
+					w.write(
+							Utils.readResourceToString("/stats.html")
+									.replace("/*data*/", treeJson)
+					);
+				}
+
+				Desktop.getDesktop().open(statsFile);
+			} catch (IOException e) {
+				throw new Error(e);
+			}
 		});
 	}
 

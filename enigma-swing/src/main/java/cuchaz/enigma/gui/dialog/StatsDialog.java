@@ -97,7 +97,7 @@ public class StatsDialog {
 			UiConfig.setIncludeSyntheticParameters(syntheticParametersOption.isSelected());
 			UiConfig.save();
 
-			generateStats(gui, checkboxes, topLevelPackage.getText(), syntheticParametersOption.isSelected());
+			generateStats(gui, checkboxes);
 		});
 
 		contentPane.add(button, cb1.pos(0, result.getOverall().getTypes().size() + 5).weightY(1.0).anchor(GridBagConstraints.SOUTHWEST).build());
@@ -121,7 +121,7 @@ public class StatsDialog {
 		dialog.setVisible(true);
 	}
 
-	private static void generateStats(Gui gui, Map<StatType, JCheckBox> checkboxes, String topLevelPackage, boolean includeSynthetic) {
+	private static void generateStats(Gui gui, Map<StatType, JCheckBox> checkboxes) {
 		// get members from selected checkboxes
 		Set<StatType> includedMembers = checkboxes
 				.entrySet()
@@ -132,7 +132,7 @@ public class StatsDialog {
 
 		// checks if a project is open
 		if (gui.getController().getProject() != null) {
-			gui.getController().openStats(includedMembers, topLevelPackage, includeSynthetic);
+			gui.getController().openStatsTree(includedMembers);
 		}
 	}
 }

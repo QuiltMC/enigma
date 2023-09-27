@@ -6,14 +6,14 @@ import java.util.List;
 import java.util.Map;
 
 public class StatsTree<T> {
-	public final StatsTree.Node<T> root;
-	private final Map<String, StatsTree.Node<T>> nodes = new HashMap<>();
+	public final Node<T> root;
+	private final Map<String, Node<T>> nodes = new HashMap<>();
 
 	public static class Node<T> {
 		private String name;
 		private T value;
-		private List<StatsTree.Node<T>> children = new ArrayList<>();
-		private final Map<String, StatsTree.Node<T>> namedChildren = new HashMap<>();
+		private List<Node<T>> children = new ArrayList<>();
+		private final Map<String, Node<T>> namedChildren = new HashMap<>();
 
 		public Node(String name, T value) {
 			this.name = name;
@@ -30,20 +30,20 @@ public class StatsTree<T> {
 	}
 
 	public StatsTree() {
-		this.root = new StatsTree.Node<>("", null);
+		this.root = new Node<>("", null);
 	}
 
-	public StatsTree.Node<T> getNode(String name) {
-		StatsTree.Node<T> node = this.nodes.get(name);
+	public Node<T> getNode(String name) {
+		Node<T> node = this.nodes.get(name);
 
 		if (node == null) {
 			node = this.root;
 
 			for (String part : name.split("\\.")) {
-				StatsTree.Node<T> child = node.namedChildren.get(part);
+				Node<T> child = node.namedChildren.get(part);
 
 				if (child == null) {
-					child = new StatsTree.Node<>(part, null);
+					child = new Node<>(part, null);
 					node.namedChildren.put(part, child);
 					node.children.add(child);
 				}
@@ -57,15 +57,15 @@ public class StatsTree<T> {
 		return node;
 	}
 
-	public void collapse(StatsTree.Node<T> node) {
+	public void collapse(Node<T> node) {
 		while (node.children.size() == 1) {
-			StatsTree.Node<T> child = node.children.get(0);
+			Node<T> child = node.children.get(0);
 			node.name = node.name.isEmpty() ? child.name : node.name + "." + child.name;
 			node.children = child.children;
 			node.value = child.value;
 		}
 
-		for (StatsTree.Node<T> child : node.children) {
+		for (Node<T> child : node.children) {
 			this.collapse(child);
 		}
 	}

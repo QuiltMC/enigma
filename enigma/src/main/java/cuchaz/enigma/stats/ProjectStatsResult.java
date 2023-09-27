@@ -1,9 +1,8 @@
 package cuchaz.enigma.stats;
 
+import com.strobel.core.Triple;
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.utils.Pair;
-import org.tinylog.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// todo doesn't handle package properly
 public class ProjectStatsResult implements StatsProvider {
 	private final EnigmaProject project;
 
@@ -36,18 +34,14 @@ public class ProjectStatsResult implements StatsProvider {
 	}
 
 	private void updatePackage(ClassEntry obfEntry, StatsResult newStats) {
-		try {
-			ClassEntry deobfuscated = this.project.getMapper().deobfuscate(obfEntry);
-			ClassEntry classEntry = deobfuscated == null ? obfEntry : deobfuscated;
+		ClassEntry deobfuscated = this.project.getMapper().deobfuscate(obfEntry);
+		ClassEntry classEntry = deobfuscated == null ? obfEntry : deobfuscated;
 
-			String packageName = classEntry.getPackageName() == null ? "" : classEntry.getPackageName();
-			List<String> packages = getPackages(packageName);
+		String packageName = classEntry.getPackageName() == null ? "" : classEntry.getPackageName();
+		List<String> packages = getPackages(packageName);
 
-			this.addClass(packages, newStats);
-			this.rebuildPackageFor(packages);
-		} catch (Exception e) {
-		Logger.error(e);
-	}
+		this.addClass(packages, newStats);
+		this.rebuildPackageFor(packages);
 	}
 
 	private void addClass(List<String> packages, StatsResult newStats) {
@@ -71,13 +65,14 @@ public class ProjectStatsResult implements StatsProvider {
 	}
 
 	private void rebuildOverall() {
-		var maps = buildStats(this.stats.values());
-		this.overall = new StatsResult(null, maps.a(), maps.b());
+		var maps = this.buildStats(this.stats.values());
+		this.overall = new StatsResult(maps.getFirst(), maps.getSecond(), maps.getThird(), false);
 	}
 
-	private static Pair<Map<StatType, Integer>, Map<StatType, Integer>> buildStats(Collection<StatsResult> stats) {
+	private Triple<Map<StatType, Integer>, Map<StatType, Integer>, Map<StatType, Map<String, Integer>>> buildStats(Collection<StatsResult> stats) {
 		Map<StatType, Integer> totalMappable = new HashMap<>();
 		Map<StatType, Integer> totalUnmapped = new HashMap<>();
+		Map<StatType, Map<String, Integer>> unmappedTreeData = new HashMap<>();
 
 		for (StatsResult result : stats) {
 			for (var unmappedEntry : result.totalUnmapped().entrySet()) {
@@ -87,15 +82,27 @@ public class ProjectStatsResult implements StatsProvider {
 			for (var mappableEntry : result.totalMappable().entrySet()) {
 				totalMappable.put(mappableEntry.getKey(), totalMappable.getOrDefault(mappableEntry.getKey(), 0) + mappableEntry.getValue());
 			}
+
+			if (!result.isPackage()) {
+				for (var dataEntry : result.unmappedTreeData().entrySet()) {
+					Map<String, Integer> classData = unmappedTreeData.getOrDefault(dataEntry.getKey(), new HashMap<>());
+
+					for (var data : dataEntry.getValue().entrySet()) {
+						classData.put(data.getKey(), classData.getOrDefault(data.getKey(), 0) + data.getValue());
+					}
+
+					unmappedTreeData.put(dataEntry.getKey(), classData);
+				}
+			}
 		}
 
-		return new Pair<>(totalMappable, totalUnmapped);
+		return new Triple<>(totalMappable, totalUnmapped, unmappedTreeData);
 	}
 
 	private void rebuildPackageFor(List<String> packageNames) {
 		for (String name : packageNames) {
-			var newStats = buildStats(this.packageToClasses.get(name));
-			this.packageStats.put(name, new StatsResult(null, newStats.a(), newStats.b()));
+			var newStats = this.buildStats(this.packageToClasses.get(name));
+			this.packageStats.put(name, new StatsResult(newStats.getFirst(), newStats.getSecond(), newStats.getThird(), true));
 		}
 	}
 
