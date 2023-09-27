@@ -4,9 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public record StatsResult(Map<StatType, Integer> totalMappable, Map<StatType, Integer> totalUnmapped,
-						  Map<StatType, Map<String, Integer>> unmappedTreeData,
-						  boolean isPackage) implements StatsProvider {
+public record StatsResult(Map<StatType, Integer> totalMappable, Map<StatType, Integer> totalUnmapped, Map<StatType, Map<String, Integer>> unmappedTreeData, boolean isPackage) implements StatsProvider {
 	public static StatsResult create(Map<StatType, Integer> totalMappable, Map<StatType, Map<String, Integer>> unmappedTreeData, boolean isPackage) {
 		Map<StatType, Integer> totalUnmapped = new HashMap<>();
 		for (var entry : unmappedTreeData.entrySet()) {
@@ -86,7 +84,6 @@ public record StatsResult(Map<StatType, Integer> totalMappable, Map<StatType, In
 		tree.collapse(tree.root);
 		return tree;
 	}
-
 
 	@Override
 	public String toString() {

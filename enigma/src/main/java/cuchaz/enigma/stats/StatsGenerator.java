@@ -153,10 +153,10 @@ public class StatsGenerator {
 				}
 			} else if (entry instanceof MethodEntry method) {
 				MethodEntry root = this.entryResolver
-					.resolveEntry(method, ResolutionStrategy.RESOLVE_ROOT)
-					.stream()
-					.findFirst()
-					.orElseThrow(AssertionError::new);
+						.resolveEntry(method, ResolutionStrategy.RESOLVE_ROOT)
+						.stream()
+						.findFirst()
+						.orElseThrow(AssertionError::new);
 
 				if (root == method) {
 					if (includedTypes.contains(StatType.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
@@ -171,8 +171,8 @@ public class StatsGenerator {
 						int index = ((MethodDefEntry) method).getAccess().isStatic() ? 0 : 1;
 						for (ArgumentDescriptor argument : argumentDescs) {
 							if (!(argument.getAccess().isSynthetic() && !includeSynthetic)
-								// skip the implicit superclass parameter for non-static inner class constructors
-								&& !(method.isConstructor() && containingClass.isInnerClass() && index == 1 && argument.containsType() && argument.getTypeEntry().equals(containingClass.getOuterClass()))) {
+									// skip the implicit superclass parameter for non-static inner class constructors
+									&& !(method.isConstructor() && containingClass.isInnerClass() && index == 1 && argument.containsType() && argument.getTypeEntry().equals(containingClass.getOuterClass()))) {
 								this.update(StatType.PARAMETERS, mappableCounts, unmappedCounts, new LocalVariableEntry(method, index, "", true, null));
 							}
 
