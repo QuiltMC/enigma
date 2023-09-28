@@ -190,7 +190,8 @@
 	"progress.mappings.srg_file.generating": "Generating mappings",
 	"progress.mappings.srg_file.writing": "Writing mappings",
 	"progress.stats": "Generating stats",
-	"progress.stats.data": "Generating data",
+	"progress.stats.for": "Generating stats for: %s",
+	"progress.stats.awaiting": "Awaiting off-thread generation",
 
 	"javadocs.edit": "Edit Javadocs",
 	"javadocs.instruction": "Edit javadocs here.",

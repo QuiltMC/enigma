@@ -89,7 +89,6 @@
 	"progress.mappings.srg_file.generating": "生成映射",
 	"progress.mappings.srg_file.writing": "写出映射",
 	"progress.stats": "生成统计范围",
-	"progress.stats.data": "生成数据",
 
 	"javadocs.edit": "编辑注释",
 	"javadocs.instruction": "在此处编辑编辑注释。",

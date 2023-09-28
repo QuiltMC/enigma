@@ -16,11 +16,11 @@ import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.translation.representation.entry.ParentedEntry;
+import cuchaz.enigma.utils.I18n;
 import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -78,7 +78,7 @@ public class StatsGenerator {
 	}
 
 	/**
-	 * Generates stats for the given package or class.
+	 * Generates stats for the full project or the provided class.
 	 * @param progress a listener to update with current progress
 	 * @param includedTypes the types of entry to include in the stats
 	 * @param classEntry if stats are being generated for a single class, provide the class here
@@ -93,18 +93,23 @@ public class StatsGenerator {
 			if (this.generationLatch == null) {
 				this.generationLatch = new CountDownLatch(1);
 
-				Collection<ClassEntry> classes = this.entryIndex.getClasses();
+				ClassEntry[] classes = (ClassEntry[]) this.entryIndex.getClasses()
+						.stream().filter(entry -> !entry.isInnerClass()).toArray();
+
+				int done = 0;
+				progress.init(classes.length, I18n.translate("progress.stats"));
+
 				for (ClassEntry entry : classes) {
-					if (!entry.isInnerClass()) {
-						StatsResult result = this.generateOptimised(progress, includedTypes, entry, includeSynthetic);
-						stats.put(entry, result);
-					}
+					progress.step(done++, I18n.translateFormatted("progress.stats.for", entry.getName()));
+					StatsResult result = this.generateOptimised(includedTypes, entry, includeSynthetic);
+					stats.put(entry, result);
 				}
 
 				this.result = new ProjectStatsResult(this.project, stats);
 				this.generationLatch.countDown();
 			} else {
 				try {
+					progress.init(1, "progress.stats.awaiting");
 					this.generationLatch.await();
 				} catch (InterruptedException e) {
 					Logger.error(e, "Failed to await stats generation for project!");
@@ -112,7 +117,7 @@ public class StatsGenerator {
 			}
 		} else {
 			Preconditions.checkNotNull(classEntry, "Entry cannot be null after initial stat generation!");
-			stats.put(classEntry, this.generateOptimised(progress, includedTypes, classEntry, includeSynthetic));
+			stats.put(classEntry, this.generateOptimised(includedTypes, classEntry, includeSynthetic));
 			this.result = new ProjectStatsResult(this.project, stats);
 		}
 
@@ -133,7 +138,7 @@ public class StatsGenerator {
 		}
 	}
 
-	public StatsResult generateOptimised(ProgressListener progress, Set<StatType> includedTypes, ClassEntry classEntry, boolean includeSynthetic) {
+	public StatsResult generateOptimised(Set<StatType> includedTypes, ClassEntry classEntry, boolean includeSynthetic) {
 		Map<StatType, Integer> mappableCounts = new EnumMap<>(StatType.class);
 		Map<StatType, Map<String, Integer>> unmappedCounts = new EnumMap<>(StatType.class);
 
