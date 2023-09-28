@@ -102,11 +102,11 @@ public class StatsGenerator {
 			if (this.generationLatch == null) {
 				this.generationLatch = new CountDownLatch(1);
 
-				ClassEntry[] classes = (ClassEntry[]) this.entryIndex.getClasses()
-						.stream().filter(entry -> !entry.isInnerClass()).toArray();
+				List<ClassEntry> classes = this.entryIndex.getClasses()
+						.stream().filter(entry -> !entry.isInnerClass()).toList();
 
 				int done = 0;
-				progress.init(classes.length, I18n.translate("progress.stats"));
+				progress.init(classes.size(), I18n.translate("progress.stats"));
 
 				for (ClassEntry entry : classes) {
 					progress.step(done++, I18n.translateFormatted("progress.stats.for", entry.getName()));
