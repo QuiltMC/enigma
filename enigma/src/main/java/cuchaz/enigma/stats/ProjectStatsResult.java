@@ -19,6 +19,11 @@ public class ProjectStatsResult implements StatsProvider {
 
 	private StatsResult overall;
 
+	/**
+	 * Creates and indexes an overall result.
+	 * @param project the project the stats are for
+	 * @param stats a map of classes to results
+	 */
 	public ProjectStatsResult(EnigmaProject project, Map<ClassEntry, StatsResult> stats) {
 		this.project = project;
 
@@ -106,6 +111,11 @@ public class ProjectStatsResult implements StatsProvider {
 		}
 	}
 
+	/**
+	 * Filters results by the provided top-level package.
+	 * @param topLevelPackage the package to get stats for, separated with slashes
+	 * @return a new result, containing only classes which match the filter
+	 */
 	public ProjectStatsResult filter(String topLevelPackage) {
 		Map<ClassEntry, StatsResult> newStats = new HashMap<>();
 
@@ -122,14 +132,27 @@ public class ProjectStatsResult implements StatsProvider {
 		return new ProjectStatsResult(this.project, newStats);
 	}
 
+	/**
+	 * Gets the overall result for the provided package
+	 * @param name the package name, separated by slashes
+	 * @return the overall result
+	 */
 	public StatsResult getPackageStats(String name) {
 		return this.packageStats.get(name);
 	}
 
+	/**
+	 * Gets all per-class stats.
+	 * @return the stats, as a class-to-result map
+	 */
 	public Map<ClassEntry, StatsResult> getStats() {
 		return this.stats;
 	}
 
+	/**
+	 * Gets the overall stats for the full project.
+	 * @return the overall result
+	 */
 	public StatsResult getOverall() {
 		return this.overall;
 	}

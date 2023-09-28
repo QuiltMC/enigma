@@ -5,6 +5,13 @@ import java.util.Map;
 import java.util.Set;
 
 public record StatsResult(Map<StatType, Integer> totalMappable, Map<StatType, Integer> totalUnmapped, Map<StatType, Map<String, Integer>> unmappedTreeData, boolean isPackage) implements StatsProvider {
+	/**
+	 * Creates a new stats result, generating the total unmapped entries from the provided {@code unmappedTreeData}.
+	 * @param totalMappable the total mappable entries
+	 * @param unmappedTreeData the data to use when generating the {@link StatsTree}
+	 * @param isPackage whether the stats are for a package
+	 * @return the result
+	 */
 	public static StatsResult create(Map<StatType, Integer> totalMappable, Map<StatType, Map<String, Integer>> unmappedTreeData, boolean isPackage) {
 		Map<StatType, Integer> totalUnmapped = new HashMap<>();
 		for (var entry : unmappedTreeData.entrySet()) {
@@ -63,6 +70,12 @@ public record StatsResult(Map<StatType, Integer> totalMappable, Map<StatType, In
 		return this.totalMappable.keySet();
 	}
 
+	/**
+	 * Builds a tree representation of this stats result.
+	 * @param topLevelPackageDot the top level package, separated by dots
+	 * @param includedTypes the types to include in the tree
+	 * @return the tree
+	 */
 	public StatsTree<Integer> buildTree(String topLevelPackageDot, Set<StatType> includedTypes) {
 		StatsTree<Integer> tree = new StatsTree<>();
 

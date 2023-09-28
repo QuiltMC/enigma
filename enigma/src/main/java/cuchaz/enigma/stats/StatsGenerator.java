@@ -43,10 +43,18 @@ public class StatsGenerator {
 		this.entryResolver = project.getJarIndex().getEntryResolver();
 	}
 
+	/**
+	 * Gets the latest generated stats.
+	 * @return the stats, or {@code null} if not yet generated
+	 */
 	public ProjectStatsResult getResultNullable() {
 		return this.result;
 	}
 
+	/**
+	 * Gets the latest generated stats, or generates them if not yet present.
+	 * @return the stats
+	 */
 	public ProjectStatsResult getResult(boolean includeSynthetic) {
 		if (this.result == null) {
 			return this.generateForClassTree(ProgressListener.none(), null, includeSynthetic);
@@ -67,23 +75,24 @@ public class StatsGenerator {
 	}
 
 	/**
-	 * Generates stats for the given package.
+	 * Generates stats for the current project.
 	 * @param progress a listener to update with current progress
 	 * @param includedTypes the types of entry to include in the stats
 	 * @param includeSynthetic whether to include synthetic methods
-	 * @return the generated {@link StatsResult} for the provided package
+	 * @return the generated {@link ProjectStatsResult}
 	 */
 	public ProjectStatsResult generate(ProgressListener progress, Set<StatType> includedTypes, boolean includeSynthetic) {
 		return this.generate(progress, includedTypes, null, includeSynthetic);
 	}
 
 	/**
-	 * Generates stats for the full project or the provided class.
+	 * Generates stats for the current project or updates existing stats with the provided class.
+	 * Somewhat thread-safe: will only generate stats on one thread at a time, awaiting generation on all other threads if called in parallel.
 	 * @param progress a listener to update with current progress
 	 * @param includedTypes the types of entry to include in the stats
 	 * @param classEntry if stats are being generated for a single class, provide the class here
 	 * @param includeSynthetic whether to include synthetic methods
-	 * @return the generated {@link StatsResult} for the provided class or package.
+	 * @return the generated {@link ProjectStatsResult} for the provided class or package
 	 */
 	public ProjectStatsResult generate(ProgressListener progress, Set<StatType> includedTypes, @Nullable ClassEntry classEntry, boolean includeSynthetic) {
 		includedTypes = EnumSet.copyOf(includedTypes);
@@ -101,7 +110,7 @@ public class StatsGenerator {
 
 				for (ClassEntry entry : classes) {
 					progress.step(done++, I18n.translateFormatted("progress.stats.for", entry.getName()));
-					StatsResult result = this.generateOptimised(includedTypes, entry, includeSynthetic);
+					StatsResult result = this.generate(includedTypes, entry, includeSynthetic);
 					stats.put(entry, result);
 				}
 
@@ -117,7 +126,7 @@ public class StatsGenerator {
 			}
 		} else {
 			Preconditions.checkNotNull(classEntry, "Entry cannot be null after initial stat generation!");
-			stats.put(classEntry, this.generateOptimised(includedTypes, classEntry, includeSynthetic));
+			stats.put(classEntry, this.generate(includedTypes, classEntry, includeSynthetic));
 			this.result = new ProjectStatsResult(this.project, stats);
 		}
 
@@ -138,7 +147,14 @@ public class StatsGenerator {
 		}
 	}
 
-	public StatsResult generateOptimised(Set<StatType> includedTypes, ClassEntry classEntry, boolean includeSynthetic) {
+	/**
+	 * Generates stats for the provided class.
+	 * @param includedTypes the types of entry to include in the stats
+	 * @param classEntry the class to generate stats for
+	 * @param includeSynthetic whether to include synthetic parameters
+	 * @return the generated {@link StatsResult}
+	 */
+	public StatsResult generate(Set<StatType> includedTypes, ClassEntry classEntry, boolean includeSynthetic) {
 		Map<StatType, Integer> mappableCounts = new EnumMap<>(StatType.class);
 		Map<StatType, Map<String, Integer>> unmappedCounts = new EnumMap<>(StatType.class);
 
@@ -193,6 +209,11 @@ public class StatsGenerator {
 		return StatsResult.create(mappableCounts, unmappedCounts, false);
 	}
 
+	/**
+	 * Gets the stats for the provided class.
+	 * @param entry the class to get stats for
+	 * @return the stats, or {@code null} if not generated
+	 */
 	public StatsResult getStats(ClassEntry entry) {
 		if (this.result == null) {
 			return null;
