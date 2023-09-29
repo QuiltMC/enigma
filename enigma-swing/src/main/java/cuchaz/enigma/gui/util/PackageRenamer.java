@@ -49,7 +49,7 @@ public class PackageRenamer {
 		 *         <ul>
 		 *             <li>{@code A} -> no change</li>
 		 *             <li>{@code a/B} -> no change</li>
-		 *	           <li>{@code a/b/C} -> no change</li>
+		 *             <li>{@code a/b/C} -> no change</li>
 		 *             <li>{@code a/b/c/D} -> {@code a/b/d/D}</li>
 		 *             <li>{@code a/b/c/d/E} -> {@code a/b/d/d/E}</li>
 		 *         </ul>
