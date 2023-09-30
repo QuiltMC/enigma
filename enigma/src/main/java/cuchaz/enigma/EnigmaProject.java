@@ -214,17 +214,25 @@ public class EnigmaProject {
 			}
 		}
 
-		List<NameProposalService> nameProposalServices = this.getEnigma().getServices().get(NameProposalService.TYPE);
-		if (!nameProposalServices.isEmpty()) {
-			for (NameProposalService service : nameProposalServices) {
-				if (service.proposeName(entry, this.mapper).isPresent()) {
-					return false;
-				}
-			}
+		if (this.hasProposedName(entry)) {
+			return false;
 		}
 
 		EntryMapping mapping = this.mapper.getDeobfMapping(entry);
 		return mapping.targetName() == null;
+	}
+
+	public boolean hasProposedName(Entry<?> entry) {
+		List<NameProposalService> nameProposalServices = this.getEnigma().getServices().get(NameProposalService.TYPE);
+		if (!nameProposalServices.isEmpty()) {
+			for (NameProposalService service : nameProposalServices) {
+				if (service.proposeName(entry, this.mapper).isPresent()) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	public boolean isSynthetic(Entry<?> entry) {

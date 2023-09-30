@@ -297,6 +297,8 @@
 	"keybind.editor.zoom_out": "Zoom in",
 	"keybind.editor.close_tab": "Close editor tab",
 	"keybind.editor.reload_class": "Reload open class",
+	"keybind.editor.navigate_next": "Navigate to next entry",
+	"keybind.editor.navigate_last": "Navigate to last entry",
 	"keybind.menu.search": "Search",
 	"keybind.menu.search_all": "Search for anything",
 	"keybind.menu.search_class": "Search for class",

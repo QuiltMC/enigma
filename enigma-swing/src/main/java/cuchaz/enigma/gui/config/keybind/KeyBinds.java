@@ -45,6 +45,9 @@ public final class KeyBinds {
 	public static final KeyBind EDITOR_RELOAD_CLASS = KeyBind.builder("reload_class", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_F5).build();
 	public static final KeyBind EDITOR_QUICK_FIND = KeyBind.builder("quick_find", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_F).build();
 
+	public static final KeyBind ENTRY_NAVIGATOR_NEXT = KeyBind.builder("navigate_next", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_DOWN).build();
+	public static final KeyBind ENTRY_NAVIGATOR_LAST = KeyBind.builder("navigate_last", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_UP).build();
+
 	public static final KeyBind SAVE_MAPPINGS = KeyBind.builder("save", MENU_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_S).build();
 	public static final KeyBind DROP_MAPPINGS = KeyBind.builder("drop_mappings", MENU_CATEGORY).build();
 	public static final KeyBind RELOAD_MAPPINGS = KeyBind.builder("reload_mappings", MENU_CATEGORY).build();
