@@ -10,7 +10,6 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.border.LineBorder;
 import java.awt.Color;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
@@ -55,32 +54,43 @@ public class NavigatorPanel extends JPanel {
 		}
 
 		JButton up = new JButton("⋀");
-		up.addActionListener(event -> {
-			List<Entry<?>> currentEntrySet = this.entries.get(this.selectedType);
-			if (!currentEntrySet.isEmpty()) {
-				this.currentIndex--;
-				this.wrapIndex();
-
-				this.tryNavigate();
-			}
-		});
-
+		up.addActionListener(event -> this.navigateUp());
 		JButton down = new JButton("⋁");
-		down.addActionListener(event -> {
-			List<Entry<?>> currentEntrySet = this.entries.get(this.selectedType);
-			if (!currentEntrySet.isEmpty()) {
-				this.currentIndex++;
-				this.wrapIndex();
-
-				this.tryNavigate();
-			}
-		});
+		down.addActionListener(event -> this.navigateDown());
 
 		this.add(typeSelector);
 		this.add(up);
 		this.add(down);
 		this.add(this.statsLabel);
-		this.setBorder(new LineBorder(Color.BLACK));
+
+		// transparent background
+		this.setBackground(new Color(0, 0, 0, 0));
+	}
+
+	/**
+	 * Navigates to the next entry matching the current filter.
+	 */
+	public void navigateDown() {
+		List<Entry<?>> currentEntrySet = this.entries.get(this.selectedType);
+		if (!currentEntrySet.isEmpty()) {
+			this.currentIndex++;
+			this.wrapIndex();
+
+			this.tryNavigate();
+		}
+	}
+
+	/**
+	 * Navigates to the last entry matching the current filter.
+	 */
+	public void navigateUp() {
+		List<Entry<?>> currentEntrySet = this.entries.get(this.selectedType);
+		if (!currentEntrySet.isEmpty()) {
+			this.currentIndex--;
+			this.wrapIndex();
+
+			this.tryNavigate();
+		}
 	}
 
 	private void onTypeChange() {

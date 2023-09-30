@@ -74,6 +74,10 @@ public class EditorTabbedPane {
 			ed.getEditor().addKeyListener(GuiUtil.onKeyPress(keyEvent -> {
 				if (KeyBinds.EDITOR_CLOSE_TAB.matches(keyEvent)) {
 					this.closeEditor(ed);
+				} else if (KeyBinds.ENTRY_NAVIGATOR_NEXT.matches(keyEvent)) {
+					this.navigator.navigateDown();
+				} else if (KeyBinds.ENTRY_NAVIGATOR_LAST.matches(keyEvent)) {
+					this.navigator.navigateUp();
 				}
 			}));
 
