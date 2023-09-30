@@ -1,5 +1,6 @@
 package cuchaz.enigma.gui;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
@@ -84,6 +85,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 public class GuiController implements ClientPacketHandler {
+	public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
 	private final Gui gui;
 	private final Enigma enigma;
 
@@ -550,7 +553,7 @@ public class GuiController implements ClientPacketHandler {
 		ProgressDialog.runOffThread(this.gui, progress -> {
 			StatsResult overall = this.getStatsGenerator().getResultNullable().getOverall();
 			StatsTree<Integer> tree = overall.buildTree(UiConfig.getLastTopLevelPackage(), includedTypes);
-			String treeJson = new GsonBuilder().setPrettyPrinting().create().toJson(tree.root);
+			String treeJson = GSON.toJson(tree.root);
 
 			try {
 				File statsFile = File.createTempFile("stats", ".html");
