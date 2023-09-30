@@ -1,5 +1,7 @@
 package cuchaz.enigma.gui;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.EnigmaProject;
@@ -38,6 +40,8 @@ import cuchaz.enigma.source.DecompilerService;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.Token;
 import cuchaz.enigma.stats.StatsGenerator;
+import cuchaz.enigma.stats.StatsResult;
+import cuchaz.enigma.stats.StatsTree;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryChange;
@@ -81,11 +85,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 public class GuiController implements ClientPacketHandler {
+	public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
 	private final Gui gui;
 	private final Enigma enigma;
 
 	private EnigmaProject project;
 	private IndexTreeBuilder indexTreeBuilder;
+	private StatsGenerator statsGenerator;
 
 	private Path loadedMappingPath;
 	private MappingFormat loadedMappingFormat;
@@ -117,6 +124,8 @@ public class GuiController implements ClientPacketHandler {
 			this.project = this.enigma.openJar(jarPath, new ClasspathClassProvider(), progress);
 			this.indexTreeBuilder = new IndexTreeBuilder(this.project.getJarIndex());
 			this.chp = new ClassHandleProvider(this.project, UiConfig.getDecompiler().service);
+			this.statsGenerator = new StatsGenerator(this.project);
+
 			SwingUtilities.invokeLater(() -> {
 				this.gui.onFinishOpenJar(jarPath.getFileName().toString());
 				this.refreshClasses();
@@ -128,6 +137,7 @@ public class GuiController implements ClientPacketHandler {
 		this.chp.destroy();
 		this.chp = null;
 		this.project = null;
+		this.statsGenerator = null;
 		this.gui.onCloseJar();
 	}
 
@@ -154,7 +164,7 @@ public class GuiController implements ClientPacketHandler {
 
 				this.refreshClasses();
 				this.chp.invalidateJavadoc();
-				this.gui.getStatsManager().setStatsGenerator(new StatsGenerator(this.project));
+				this.statsGenerator = new StatsGenerator(this.project);
 			} catch (MappingParseException e) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), e.getMessage());
 			}
@@ -539,9 +549,11 @@ public class GuiController implements ClientPacketHandler {
 		}
 	}
 
-	public void openStats(Set<StatType> includedTypes, String topLevelPackage, boolean includeSynthetic) {
+	public void openStatsTree(Set<StatType> includedTypes) {
 		ProgressDialog.runOffThread(this.gui, progress -> {
-			String data = this.gui.getStatsManager().getGenerator().generate(progress, includedTypes, topLevelPackage, includeSynthetic).getTreeJson();
+			StatsResult overall = this.getStatsGenerator().getResultNullable().getOverall();
+			StatsTree<Integer> tree = overall.buildTree(UiConfig.getLastTopLevelPackage(), includedTypes);
+			String treeJson = GSON.toJson(tree.root);
 
 			try {
 				File statsFile = File.createTempFile("stats", ".html");
@@ -549,7 +561,7 @@ public class GuiController implements ClientPacketHandler {
 				try (FileWriter w = new FileWriter(statsFile)) {
 					w.write(
 							Utils.readResourceToString("/stats.html")
-									.replace("/*data*/", data)
+									.replace("/*data*/", treeJson)
 					);
 				}
 
@@ -584,6 +596,10 @@ public class GuiController implements ClientPacketHandler {
 
 	public Enigma getEnigma() {
 		return this.enigma;
+	}
+
+	public StatsGenerator getStatsGenerator() {
+		return this.statsGenerator;
 	}
 
 	public void createClient(String username, String ip, int port, char[] password) throws IOException {

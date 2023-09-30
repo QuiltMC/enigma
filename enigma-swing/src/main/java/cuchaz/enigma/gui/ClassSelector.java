@@ -1,29 +1,19 @@
 package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
+import cuchaz.enigma.gui.elements.ClassTreeCellRenderer;
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
 import cuchaz.enigma.gui.node.SortedMutableTreeNode;
-import cuchaz.enigma.stats.StatType;
-import cuchaz.enigma.gui.util.StatsManager;
-import cuchaz.enigma.stats.StatsResult;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.utils.I18n;
 
 import javax.annotation.Nullable;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import java.awt.Component;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -34,7 +24,6 @@ public class ClassSelector extends JTree {
 
 	private final Comparator<ClassEntry> comparator;
 	private final GuiController controller;
-	private final StatsManager statsManager;
 
 	private NestedPackages packageManager;
 	private ClassSelectionListener selectionListener;
@@ -42,7 +31,6 @@ public class ClassSelector extends JTree {
 	public ClassSelector(Gui gui, Comparator<ClassEntry> comparator) {
 		this.comparator = comparator;
 		this.controller = gui.getController();
-		this.statsManager = gui.getStatsManager();
 
 		// configure the tree control
 		this.setEditable(false);
@@ -83,64 +71,7 @@ public class ClassSelector extends JTree {
 			}
 		}));
 
-		this.setCellRenderer(new DefaultTreeCellRenderer() {
-			{
-				this.setLeafIcon(null);
-			}
-
-			@Override
-			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-
-				if (gui.getController().getProject() != null && leaf && value instanceof ClassSelectorClassNode node) {
-					class TooltipPanel extends JPanel {
-						@Override
-						public String getToolTipText(MouseEvent event) {
-							StringBuilder text = new StringBuilder(I18n.translateFormatted("class_selector.tooltip.stats_for", node.getDeobfEntry().getSimpleName()));
-							text.append(System.lineSeparator());
-							StatsResult stats = ClassSelector.this.statsManager.getStats(node);
-
-							if (stats == null) {
-								text.append(I18n.translate("class_selector.tooltip.stats_not_generated"));
-							} else {
-								if ((event.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
-									for (int i = 0; i < StatType.values().length; i++) {
-										StatType type = StatType.values()[i];
-										text.append(type.getName()).append(": ").append(stats.toString(type)).append(i == StatType.values().length - 1 ? "" : "\n");
-									}
-								} else {
-									text.append(stats);
-								}
-							}
-
-							return text.toString();
-						}
-					}
-
-					JPanel panel = new TooltipPanel();
-					panel.setOpaque(false);
-					panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-					JLabel nodeLabel = new JLabel(GuiUtil.getClassIcon(gui, node.getObfEntry()));
-					panel.add(nodeLabel);
-
-					StatsResult stats = ClassSelector.this.statsManager.getStats(node);
-					if (stats == null) {
-						// calculate stats on a separate thread for performance reasons
-						this.setIcon(GuiUtil.PENDING_STATUS_ICON);
-						node.reloadStats(gui, ClassSelector.this, false);
-					} else {
-						this.setIcon(GuiUtil.getDeobfuscationIcon(stats));
-					}
-
-					panel.add(this);
-
-					return panel;
-				}
-
-				return this;
-			}
-		});
-
+		this.setCellRenderer(new ClassTreeCellRenderer(gui, this));
 		ToolTipManager.sharedInstance().registerComponent(this);
 
 		// init defaults
@@ -182,7 +113,6 @@ public class ClassSelector extends JTree {
 		// update the tree control
 		this.packageManager = new NestedPackages(classEntries, this.comparator, this.controller.getProject().getMapper());
 		this.setModel(new DefaultTreeModel(this.packageManager.getRoot()));
-		this.invalidateStats();
 
 		this.restoreExpansionState(state);
 	}
@@ -358,14 +288,6 @@ public class ClassSelector extends JTree {
 	 */
 	public void reload() {
 		this.reload(this.packageManager.getRoot(), true);
-	}
-
-	/**
-	 * Invalidates the stats for all classes in the tree, forcing them to be reloaded.
-	 * Stats will be calculated asynchronously for each entry the next time that entry is visible.
-	 */
-	public void invalidateStats() {
-		this.statsManager.invalidateStats();
 	}
 
 	/**

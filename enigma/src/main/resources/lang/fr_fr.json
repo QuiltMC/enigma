@@ -186,7 +186,7 @@
 	"progress.mappings.srg_file.generating": "Génération des mappings",
 	"progress.mappings.srg_file.writing": "Écriture des mappings",
 	"progress.stats": "Génération des statistiques",
-	"progress.stats.data": "Génération des données",
+	"progress.stats.for": "Génération des statistiques pour: %s",
 
 	"javadocs.edit": "Éditer les Javadocs",
 	"javadocs.instruction": "Éditer les Javadocs ici.",

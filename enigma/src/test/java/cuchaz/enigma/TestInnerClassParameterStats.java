@@ -1,9 +1,9 @@
 package cuchaz.enigma;
 
 import cuchaz.enigma.classprovider.JarClassProvider;
+import cuchaz.enigma.stats.ProjectStatsResult;
 import cuchaz.enigma.stats.StatType;
 import cuchaz.enigma.stats.StatsGenerator;
-import cuchaz.enigma.stats.StatsResult;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -19,7 +19,7 @@ public class TestInnerClassParameterStats {
 	@Test
 	public void testInnerClassParameterStats() {
 		EnigmaProject project = openProject();
-		StatsResult stats = new StatsGenerator(project).generate(ProgressListener.none(), EnumSet.of(StatType.PARAMETERS), "", false);
+		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.none(), EnumSet.of(StatType.PARAMETERS), null, false);
 		// 5/8 total parameters in our six classes are non-mappable, meaning that we should get 0/3 parameters mapped
 		// these non-mappable parameters come from non-static inner classes taking their enclosing class as a parameter
 		// they are currently manually excluded by a check in the stats generator
