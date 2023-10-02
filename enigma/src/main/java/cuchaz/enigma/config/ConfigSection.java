@@ -1,5 +1,6 @@
 package cuchaz.enigma.config;
 
+import java.awt.Color;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -103,6 +104,11 @@ public class ConfigSection {
 
 	public OptionalInt getRgbColor(String key) {
 		return ConfigSerializer.parseRgbColor(this.values.get(key));
+	}
+
+	public Color getColor(String key) {
+		OptionalInt rgbColor = this.getRgbColor(key);
+		return rgbColor.isPresent() ? new Color(rgbColor.getAsInt()) : null;
 	}
 
 	public void setRgbColor(String key, int value) {

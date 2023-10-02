@@ -6,6 +6,7 @@ gson = "2.10.1"
 asm = "9.4"
 jopt = "6.0-alpha-3"
 flatlaf = "3.1.1"
+syntaxpain = "0.1.0"
 swing_dpi = "0.10"
 fontchooser = "2.5.2"
 tinylog = "2.6.2"
@@ -34,6 +35,7 @@ tinylog_impl = { module = "org.tinylog:tinylog-impl", version.ref = "tinylog" }
 jopt = { module = "net.sf.jopt-simple:jopt-simple", version.ref = "jopt" }
 flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }
 flatlaf_extras = { module = "com.formdev:flatlaf-extras", version.ref = "flatlaf" }
+syntaxpain = { module = "org.quiltmc:syntaxpain", version.ref = "syntaxpain" }
 swing_dpi = { module = "com.github.lukeu:swing-dpi", version.ref = "swing_dpi" }
 fontchooser = { module = "org.drjekyll:fontchooser", version.ref = "fontchooser" }
 

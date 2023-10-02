@@ -2,6 +2,7 @@ package cuchaz.enigma.gui.config;
 
 import cuchaz.enigma.config.ConfigContainer;
 import cuchaz.enigma.config.ConfigSection;
+import cuchaz.enigma.gui.EnigmaQuickFindDialog;
 import cuchaz.enigma.gui.NotificationManager;
 import cuchaz.enigma.gui.docker.Dock;
 import cuchaz.enigma.gui.docker.Docker;
@@ -9,6 +10,7 @@ import cuchaz.enigma.gui.docker.DockerManager;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Pair;
+import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 import org.tinylog.Logger;
 
 import java.awt.Color;
@@ -79,6 +81,7 @@ public final class UiConfig {
 	public static final String TYPE = "Type";
 	public static final String IDENTIFIER = "Identifier";
 	public static final String TEXT = "Text";
+	public static final String COMMENT = "Comment";
 	public static final String DEBUG_TOKEN = "Debug Token";
 	public static final String DEBUG_TOKEN_ALPHA = "Debug Token Alpha";
 	public static final String DEBUG_TOKEN_OUTLINE = "Debug Token Outline";
@@ -109,6 +112,7 @@ public final class UiConfig {
 
 	static {
 		UiConfig.snapshotConfig();
+		updateSyntaxpain();
 	}
 
 	// Saves the current configuration state so a consistent user interface can
@@ -378,10 +382,6 @@ public final class UiConfig {
 		return getThemeColorRgb(EDITOR_BACKGROUND);
 	}
 
-	public static Color getHighlightColor() {
-		return getThemeColorRgb(HIGHLIGHT);
-	}
-
 	public static Color getCaretColor() {
 		return getThemeColorRgb(CARET);
 	}
@@ -390,44 +390,12 @@ public final class UiConfig {
 		return getThemeColorRgb(SELECTION_HIGHLIGHT);
 	}
 
-	public static Color getStringColor() {
-		return getThemeColorRgb(STRING);
-	}
-
 	public static Color getNumberColor() {
 		return getThemeColorRgb(NUMBER);
 	}
 
-	public static Color getOperatorColor() {
-		return getThemeColorRgb(OPERATOR);
-	}
-
-	public static Color getDelimiterColor() {
-		return getThemeColorRgb(DELIMITER);
-	}
-
-	public static Color getTypeColor() {
-		return getThemeColorRgb(TYPE);
-	}
-
-	public static Color getIdentifierColor() {
-		return getThemeColorRgb(IDENTIFIER);
-	}
-
 	public static Color getTextColor() {
 		return getThemeColorRgb(TEXT);
-	}
-
-	public static Color getLineNumbersForegroundColor() {
-		return getThemeColorRgb(LINE_NUMBERS_FOREGROUND);
-	}
-
-	public static Color getLineNumbersBackgroundColor() {
-		return getThemeColorRgb(LINE_NUMBERS_BACKGROUND);
-	}
-
-	public static Color getLineNumbersSelectedColor() {
-		return getThemeColorRgb(LINE_NUMBERS_SELECTED);
 	}
 
 	public static Color getDockHighlightColor() {
@@ -654,5 +622,32 @@ public final class UiConfig {
 
 		// theme-independent colors
 		s.setIfAbsentRgbColor(DOCK_HIGHLIGHT, 0x0000FF);
+		s.setIfAbsentRgbColor(COMMENT, 0x339933);
+
+		updateSyntaxpain();
+	}
+
+	/**
+	 * Updates the backend library Syntaxpain, used for code highlighting and other editor things.
+	 */
+	private static void updateSyntaxpain() {
+		SyntaxpainConfiguration.setEditorFont(getEditorFont());
+		SyntaxpainConfiguration.setQuickFindDialogFactory(EnigmaQuickFindDialog::new);
+
+		ConfigSection colors = swing.data().section(THEMES).section(getLookAndFeel().name()).section(COLORS);
+
+		SyntaxpainConfiguration.setLineRulerPrimaryColor(colors.getColor(LINE_NUMBERS_FOREGROUND));
+		SyntaxpainConfiguration.setLineRulerSecondaryColor(colors.getColor(LINE_NUMBERS_BACKGROUND));
+		SyntaxpainConfiguration.setLineRulerSelectionColor(colors.getColor(LINE_NUMBERS_SELECTED));
+
+		SyntaxpainConfiguration.setHighlightColor(colors.getColor(HIGHLIGHT));
+		SyntaxpainConfiguration.setStringColor(colors.getColor(STRING));
+		SyntaxpainConfiguration.setNumberColor(colors.getColor(NUMBER));
+		SyntaxpainConfiguration.setOperatorColor(colors.getColor(OPERATOR));
+		SyntaxpainConfiguration.setDelimiterColor(colors.getColor(DELIMITER));
+		SyntaxpainConfiguration.setTypeColor(colors.getColor(TYPE));
+		SyntaxpainConfiguration.setIdentifierColor(colors.getColor(IDENTIFIER));
+		SyntaxpainConfiguration.setCommentColour(colors.getColor(COMMENT));
+		SyntaxpainConfiguration.setTextColor(colors.getColor(TEXT));
 	}
 }

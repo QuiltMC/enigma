@@ -3,7 +3,6 @@ package cuchaz.enigma.gui.util;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.gui.syntax.EscapeListener;
 import cuchaz.enigma.stats.StatsResult;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
@@ -14,7 +13,6 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JToolTip;
-import javax.swing.KeyStroke;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.Timer;
@@ -28,7 +26,6 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -228,13 +225,5 @@ public class GuiUtil {
 				op.accept(e);
 			}
 		};
-	}
-
-	public static void addEscapeListener(EscapeListener dialog) {
-		ActionListener escListener = e -> dialog.escapePressed();
-
-		dialog.getRootPane().registerKeyboardAction(escListener,
-				KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-				JComponent.WHEN_IN_FOCUSED_WINDOW);
 	}
 }
