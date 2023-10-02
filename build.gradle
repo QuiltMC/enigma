@@ -1,0 +1,41 @@
+plugins {
+    id "checkstyle"
+    id "java"
+    id "java-library"
+    id "maven-publish"
+    id "org.xbib.gradle.plugin.jflex" version "3.0.0"
+}
+
+group = 'org.quiltmc'
+version = '0.1.0'
+
+// exclude auto-generated jflex lexer from checkstyle
+tasks.withType(Checkstyle).configureEach {
+    exclude '**cuchaz/enigma/gui/syntax/generated**'
+}
+
+// fix jflex generation
+jar.dependsOn(':generateJflex')
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+
+    repositories {
+        mavenLocal()
+
+        def ENV = System.getenv()
+        if (ENV.MAVEN_URL) {
+            maven {
+                url ENV.MAVEN_URL
+                credentials {
+                    username ENV.MAVEN_USERNAME
+                    password ENV.MAVEN_PASSWORD
+                }
+            }
+        }
+    }
+}
