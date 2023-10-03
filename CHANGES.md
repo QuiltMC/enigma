@@ -1,4 +1,4 @@
-## changes since forking from org's original enigma
+## changes since forking from cuchaz's original enigma
 
 One large change since the fork has been splitting the project into subprojects: `enigma`, `enigma-cli`, `enigma-swing`, and `enigma-server`.
 The changes will be split into changes to `enigma`, `enigma-cli`, and `enigma-swing`, since `enigma-server` is an addition post-fork.
