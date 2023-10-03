@@ -26,4 +26,4 @@ Pre-compiled jars can be found on the [Quilt maven](https://maven.quiltmc.org/re
 
 ### On the command line
 
-`java -cp enigma.jar command.org.quiltmc.enigma.Main`
+`java -cp enigma.jar org.quiltmc.enigma.command.Main`

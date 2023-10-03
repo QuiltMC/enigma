@@ -592,7 +592,7 @@ public class MenuBar {
 				UiConfig.setLookAndFeel(lookAndFeel);
 				UiConfig.save();
 				Themes.setupTheme();
-				//ChangeDialog.show(gui.getFrame());
+				ChangeDialog.show(gui.getFrame());
 			});
 			themesMenu.add(themeButton);
 		}
