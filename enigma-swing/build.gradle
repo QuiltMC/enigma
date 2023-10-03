@@ -9,10 +9,10 @@ dependencies {
 	implementation project(':enigma')
 	implementation project(':enigma-server')
 
+	implementation libs.syntaxpain
 	implementation libs.jopt
 	implementation libs.flatlaf
 	implementation libs.flatlaf.extras // for SVG icons
-	implementation libs.syntaxpane
 	implementation libs.swing.dpi
 	implementation libs.fontchooser
 	testImplementation(testFixtures(project(':enigma')))

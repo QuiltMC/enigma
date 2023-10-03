@@ -1,16 +1,16 @@
 package cuchaz.enigma.gui.config;
 
-import cuchaz.enigma.gui.EnigmaSyntaxKit;
 import cuchaz.enigma.gui.events.ThemeChangeListener;
 import cuchaz.enigma.gui.highlight.BoxHighlightPainter;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.source.RenamableTokenType;
-import de.sciss.syntaxpane.DefaultSyntaxKit;
+import org.quiltmc.syntaxpain.JavaSyntaxKit;
 
 import java.awt.Font;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.JEditorPane;
 import javax.swing.UIManager;
 
 public class Themes {
@@ -25,9 +25,7 @@ public class Themes {
 		UiConfig.snapshotConfig();
 		Themes.setFonts();
 		UIManager.put("ScrollBar.showButtons", true);
-		EnigmaSyntaxKit.invalidate();
-		DefaultSyntaxKit.initKit();
-		DefaultSyntaxKit.registerContentType("text/enigma-sources", EnigmaSyntaxKit.class.getName());
+		JEditorPane.registerEditorKitForContentType("text/enigma-sources", JavaSyntaxKit.class.getName());
 		Map<RenamableTokenType, BoxHighlightPainter> boxHighlightPainters = getBoxHighlightPainters();
 		listeners.forEach(l -> l.onThemeChanged(laf, boxHighlightPainters));
 		ScaleUtil.applyScaling();

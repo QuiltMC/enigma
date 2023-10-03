@@ -31,7 +31,6 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Result;
-import de.sciss.syntaxpane.DefaultSyntaxKit;
 import org.tinylog.Logger;
 
 import java.awt.Color;
@@ -124,8 +123,6 @@ public class EditorPanel {
 		this.editor.setCaretColor(UiConfig.getCaretColor());
 		this.editor.setContentType("text/enigma-sources");
 		this.editor.setBackground(UiConfig.getEditorBackgroundColor());
-		DefaultSyntaxKit kit = (DefaultSyntaxKit) this.editor.getEditorKit();
-		kit.toggleComponent(this.editor, "de.sciss.syntaxpane.components.TokenMarker");
 
 		// set unit increment to height of one line, the amount scrolled per
 		// mouse wheel rotation is then controlled by OS settings

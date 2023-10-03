@@ -3,6 +3,7 @@ package cuchaz.enigma.gui.util;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.config.LookAndFeel;
 import cuchaz.enigma.stats.ProjectStatsResult;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
@@ -66,6 +67,11 @@ public class GuiUtil {
 	public static final Icon PARTIALLY_DEOBFUSCATED_ICON = loadIcon("partially_deobfuscated");
 	public static final Icon DEOBFUSCATED_ICON = loadIcon("deobfuscated");
 	public static final Icon PENDING_STATUS_ICON = loadIcon("pending_status");
+
+	public static final Icon CHEVRON_UP_BLACK = loadIcon("chevron-up-black");
+	public static final Icon CHEVRON_DOWN_BLACK = loadIcon("chevron-down-black");
+	public static final Icon CHEVRON_UP_WHITE = loadIcon("chevron-up-white");
+	public static final Icon CHEVRON_DOWN_WHITE = loadIcon("chevron-down-white");
 
 	public static void openUrl(String url) {
 		try {
@@ -259,5 +265,13 @@ public class GuiUtil {
 		glass.setVisible(true);
 		glass.setLayout(null);
 		glass.revalidate();
+	}
+
+	public static Icon getUpChevron() {
+		return LookAndFeel.isDarkLaf() ? CHEVRON_UP_WHITE : CHEVRON_UP_BLACK;
+	}
+
+	public static Icon getDownChevron() {
+		return LookAndFeel.isDarkLaf() ? CHEVRON_DOWN_WHITE : CHEVRON_DOWN_BLACK;
 	}
 }

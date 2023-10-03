@@ -6,13 +6,11 @@ import com.github.swingdpi.plaf.MetalTweaker;
 import com.github.swingdpi.plaf.NimbusTweaker;
 import com.github.swingdpi.plaf.WindowsTweaker;
 import cuchaz.enigma.gui.config.UiConfig;
-import de.sciss.syntaxpane.DefaultSyntaxKit;
-import org.tinylog.Logger;
+import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -95,15 +93,9 @@ public class ScaleUtil {
 			UiDefaultsScaler.updateAndApplyGlobalScaling((int) (100 * scale), true);
 		}
 
-		try {
-			Field defaultFontField = DefaultSyntaxKit.class.getDeclaredField("DEFAULT_FONT");
-			defaultFontField.setAccessible(true);
-			Font font = (Font) defaultFontField.get(null);
-			font = font.deriveFont(12 * scale);
-			defaultFontField.set(null, font);
-		} catch (NoSuchFieldException | IllegalAccessException e) {
-			Logger.error(e, "Failed to apply scaling!");
-		}
+		Font font = UiConfig.getEditorFont();
+		font = font.deriveFont(12 * scale);
+		SyntaxpainConfiguration.setEditorFont(font);
 	}
 
 	private static BasicTweaker createTweakerForCurrentLook(float dpiScaling) {
