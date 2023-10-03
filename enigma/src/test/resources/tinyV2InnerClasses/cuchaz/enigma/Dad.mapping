@@ -1,4 +1,4 @@
-CLASS f cuchaz/enigma/Dad
+CLASS f org/enigma/Dad
 	CLASS a One
 		CLASS a Two
 			CLASS a
