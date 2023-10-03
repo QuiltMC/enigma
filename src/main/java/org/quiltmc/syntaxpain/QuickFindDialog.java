@@ -121,7 +121,6 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
     protected void initComponents() {
         JToolBar toolBar = new JToolBar();
         this.statusLabel = new JLabel();
-        JLabel label = new JLabel();
         this.searchField = new JTextField();
         this.prevButton = new JButton("prev");
         this.nextButton = new JButton("next");
@@ -138,11 +137,6 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
         toolBar.setBorder(BorderFactory.createEtchedBorder());
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
-        toolBar.addSeparator();
-
-        label.setLabelFor(this.searchField);
-        label.setText("QuickFindDialog.jLabel1.text");
-        toolBar.add(label);
         toolBar.addSeparator();
 
         this.searchField.setColumns(30);
@@ -167,28 +161,28 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
         this.nextButton.addActionListener(this::nextButtonActionPerformed);
         toolBar.add(this.nextButton);
 
-        this.ignoreCaseCheckBox.setText("QuickFindDialog.jChkIgnoreCase.text");
+        toolBar.addSeparator();
+
+        this.ignoreCaseCheckBox.setText("Ignore case");
         this.ignoreCaseCheckBox.setFocusable(false);
         this.ignoreCaseCheckBox.setOpaque(false);
         this.ignoreCaseCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
         this.ignoreCaseCheckBox.addActionListener(this);
         toolBar.add(this.ignoreCaseCheckBox);
 
-        this.regexCheckBox.setText("QuickFindDialog.jChkRegExp.text");
+        this.regexCheckBox.setText("Use regex");
         this.regexCheckBox.setFocusable(false);
         this.regexCheckBox.setOpaque(false);
         this.regexCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
         this.regexCheckBox.addActionListener(this);
         toolBar.add(this.regexCheckBox);
 
-        this.wrapCheckBox.setText("QuickFindDialog.jChkWrap.text");
+        this.wrapCheckBox.setText("Wrap");
         this.wrapCheckBox.setFocusable(false);
         this.wrapCheckBox.setOpaque(false);
         this.wrapCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
         this.wrapCheckBox.addActionListener(this);
         toolBar.add(this.wrapCheckBox);
-
-        toolBar.addSeparator();
 
         this.statusLabel.setFont(this.statusLabel.getFont().deriveFont(this.statusLabel.getFont().getStyle() | Font.BOLD, this.statusLabel.getFont().getSize() - 2));
         this.statusLabel.setForeground(Color.RED);

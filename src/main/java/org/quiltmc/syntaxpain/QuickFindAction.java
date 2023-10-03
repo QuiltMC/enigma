@@ -34,7 +34,7 @@ public final class QuickFindAction extends DefaultSyntaxAction {
 
 		public void showFindDialog(JTextComponent target) {
 			if (this.findDialog == null) {
-				this.findDialog = new QuickFindDialog(target);
+				this.findDialog = SyntaxpainConfiguration.getQuickFindDialog(target);
 			}
 
 			this.findDialog.showFor(target);

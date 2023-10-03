@@ -15,7 +15,8 @@ public class SyntaxpainConfiguration {
     private static Color typeColor = new Color(0x000000);
     private static Color identifierColor = new Color(0x000000);
     private static Color commentColour = new Color(0x339933);
-    private static Color textColor = new Color(0x00000);
+    private static Color textColor = new Color(0x000000);
+    private static Color regexColor = new Color(0xcc6600);
 
     private static Color lineRulerPrimaryColor = new Color(0x333300);
     private static Color lineRulerSecondaryColor = new Color(0xEEEEFF);
@@ -94,6 +95,14 @@ public class SyntaxpainConfiguration {
 
     public static void setTextColor(Color textColor) {
         SyntaxpainConfiguration.textColor = textColor;
+    }
+
+    public static Color getRegexColor() {
+        return regexColor;
+    }
+
+    public static void setRegexColor(Color regexColor) {
+        SyntaxpainConfiguration.regexColor = regexColor;
     }
 
     public static Color getLineRulerPrimaryColor() {

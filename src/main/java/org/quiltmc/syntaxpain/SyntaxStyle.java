@@ -51,6 +51,8 @@ public record SyntaxStyle(Color color, int fontStyle) {
 		styles.put(TokenType.DEFAULT, new SyntaxStyle(SyntaxpainConfiguration.getTextColor(), Font.PLAIN));
 		styles.put(TokenType.WARNING, new SyntaxStyle(SyntaxpainConfiguration.getTextColor(), Font.PLAIN));
 		styles.put(TokenType.ERROR, new SyntaxStyle(SyntaxpainConfiguration.getTextColor(), Font.BOLD + Font.ITALIC));
+		styles.put(TokenType.REGEX, new SyntaxStyle(SyntaxpainConfiguration.getRegexColor(), Font.PLAIN));
+		styles.put(TokenType.REGEX2, new SyntaxStyle(SyntaxpainConfiguration.getRegexColor(), Font.BOLD));
 	}
 
 	/**
