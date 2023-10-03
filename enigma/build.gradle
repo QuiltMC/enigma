@@ -88,14 +88,14 @@ def registerTestJarTasks(String name, String... input) {
 	}
 }
 
-registerTestJarTasks("complete", "org/quiltmc/enigma/inputs/**/*.class")
+registerTestJarTasks("complete", "org/quiltmc/enigma/input/**/*.class")
 test.dependsOn("completeTestObf")
 
-file('src/test/java/org/quiltmc/enigma/inputs').listFiles().each { f ->
+file('src/test/java/org/quiltmc/enigma/input').listFiles().each { f ->
 	if (f.directory) {
 		String taskName = convertToGradleTaskName(f.name)
 
-		registerTestJarTasks(f.name, "org/quiltmc/enigma/inputs/$f.name/**/*.class", "org/quiltmc/enigma/inputs/Keep.class")
+		registerTestJarTasks(f.name, "org/quiltmc/enigma/input/$f.name/**/*.class", "org/quiltmc/enigma/input/Keep.class")
 		test.dependsOn("${taskName}TestObf")
 	}
 }

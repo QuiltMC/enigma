@@ -54,7 +54,7 @@ def registerTestTask(String name) {
 	}
 }
 
-project(":enigma").file("src/test/java/org/quiltmc/enigma/inputs").listFiles().each {
+project(":enigma").file("src/test/java/org/quiltmc/enigma/input").listFiles().each {
 	if (it.directory) {
 		registerTestTask(it.name)
 	}
