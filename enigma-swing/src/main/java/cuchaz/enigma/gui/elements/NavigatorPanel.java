@@ -2,6 +2,7 @@ package cuchaz.enigma.gui.elements;
 
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.representation.entry.Entry;
 
@@ -53,9 +54,9 @@ public class NavigatorPanel extends JPanel {
 			this.entries.put(type, new ArrayList<>());
 		}
 
-		JButton up = new JButton("⋀");
+		JButton up = new JButton(GuiUtil.getUpChevron());
 		up.addActionListener(event -> this.navigateUp());
-		JButton down = new JButton("⋁");
+		JButton down = new JButton(GuiUtil.getDownChevron());
 		down.addActionListener(event -> this.navigateDown());
 
 		this.add(typeSelector);
