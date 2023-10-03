@@ -14,6 +14,8 @@
 package cuchaz.enigma.gui;
 
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
+import cuchaz.enigma.gui.util.GuiUtil;
+import cuchaz.enigma.utils.I18n;
 import org.quiltmc.syntaxpain.QuickFindDialog;
 
 import javax.swing.text.JTextComponent;
@@ -21,9 +23,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 /**
- * Extension of {@link QuickFindDialog} to allow using keybindings.
+ * Extension of {@link QuickFindDialog} to allow using keybindings, and improve UI.
  */
-// todo make this support translation somehow
 public class EnigmaQuickFindDialog extends QuickFindDialog {
 	public EnigmaQuickFindDialog(JTextComponent target) {
 		super(target);
@@ -32,6 +33,8 @@ public class EnigmaQuickFindDialog extends QuickFindDialog {
 	@Override
 	protected void initComponents() {
 		super.initComponents();
+
+		// keybinding support
 		this.searchField.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -46,5 +49,16 @@ public class EnigmaQuickFindDialog extends QuickFindDialog {
 		this.ignoreCaseCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_IGNORE_CASE.getKeyCode());
 		this.regexCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_REGEX.getKeyCode());
 		this.wrapCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_WRAP.getKeyCode());
+
+		// make buttons icon-only
+		this.nextButton.setText("");
+		this.nextButton.setIcon(GuiUtil.getDownChevron());
+		this.prevButton.setText("");
+		this.prevButton.setIcon(GuiUtil.getUpChevron());
+
+		// translations
+		this.ignoreCaseCheckBox.setText(I18n.translate("editor.quick_find.ignore_case"));
+		this.regexCheckBox.setText(I18n.translate("editor.quick_find.use_regex"));
+		this.wrapCheckBox.setText(I18n.translate("editor.quick_find.wrap"));
 	}
 }

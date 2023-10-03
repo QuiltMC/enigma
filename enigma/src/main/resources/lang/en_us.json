@@ -126,6 +126,9 @@
 	"editor.decompiling": "Decompiling...",
 	"editor.decompile_error": "An error was encountered while decompiling.",
 	"editor.remap_error": "An error was encountered while remapping.",
+	"editor.quick_find.ignore_case": "Ignore case",
+	"editor.quick_find.use_regex": "Use regex",
+	"editor.quick_find.wrap": "Wrap",
 
 	"info_panel.identifier": "Identifier Info",
 	"info_panel.identifier.none": "No identifier selected",
