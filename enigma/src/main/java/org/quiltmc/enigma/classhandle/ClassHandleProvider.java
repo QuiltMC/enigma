@@ -31,8 +31,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nullable;
 
-import static org.quiltmc.enigma.utils.Utils.withLock;
-
 public final class ClassHandleProvider {
 	private final EnigmaProject project;
 
