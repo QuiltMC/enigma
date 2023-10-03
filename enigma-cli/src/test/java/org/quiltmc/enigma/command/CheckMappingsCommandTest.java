@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Path;
 
 public class CheckMappingsCommandTest extends CommandTest {
-	private static final Path JAR = TestUtil.obfJar("packageAccess");
+	private static final Path JAR = TestUtil.obfJar("package_access");
 	private static final Path WRONG_MAPPINGS = getResource("/packageAccess/wrongMappings");
 	private static final Path CORRECT_MAPPINGS = getResource("/packageAccess/correctMappings");
 

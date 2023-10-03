@@ -32,7 +32,7 @@ public class TestDeobfed {
 	@Test
 	public void obfEntries() {
 		assertThat(deobfProject.getJarIndex().getEntryIndex().getClasses(), Matchers.containsInAnyOrder(
-				TestEntryFactory.newClass("org/enigma/inputs/Keep"),
+				TestEntryFactory.newClass("org/quiltmc/enigma/inputs/Keep"),
 				TestEntryFactory.newClass("a"),
 				TestEntryFactory.newClass("b"),
 				TestEntryFactory.newClass("c"),

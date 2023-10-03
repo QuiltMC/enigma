@@ -35,7 +35,7 @@ public class TestJarIndexConstructorReferences {
 
 	@Test
 	public void obfEntries() {
-		assertThat(this.index.getEntryIndex().getClasses(), Matchers.containsInAnyOrder(TestEntryFactory.newClass("org/enigma/inputs/Keep"), BASE_CLASS,
+		assertThat(this.index.getEntryIndex().getClasses(), Matchers.containsInAnyOrder(TestEntryFactory.newClass("org/quiltmc/enigma/inputs/Keep"), BASE_CLASS,
 				SUB_CLASS, SUBSUB_CLASS, DEFAULT_CLASS, CALLER_CLASS));
 	}
 

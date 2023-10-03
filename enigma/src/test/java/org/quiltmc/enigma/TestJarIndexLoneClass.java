@@ -28,7 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public class TestJarIndexLoneClass {
-	public static final Path JAR = TestUtil.obfJar("loneClass");
+	public static final Path JAR = TestUtil.obfJar("lone_class");
 	private final JarIndex index;
 
 	public TestJarIndexLoneClass() throws Exception {
@@ -40,7 +40,7 @@ public class TestJarIndexLoneClass {
 	@Test
 	public void obfEntries() {
 		assertThat(this.index.getEntryIndex().getClasses(), Matchers.containsInAnyOrder(
-				TestEntryFactory.newClass("org/enigma/inputs/Keep"),
+				TestEntryFactory.newClass("org/quiltmc/enigma/inputs/Keep"),
 				TestEntryFactory.newClass("a")
 		));
 	}
@@ -49,11 +49,11 @@ public class TestJarIndexLoneClass {
 	public void translationIndex() {
 		InheritanceIndex inheritanceIndex = this.index.getInheritanceIndex();
 		assertThat(inheritanceIndex.getParents(new ClassEntry("a")), is(empty()));
-		assertThat(inheritanceIndex.getParents(new ClassEntry("org/enigma/inputs/Keep")), is(empty()));
+		assertThat(inheritanceIndex.getParents(new ClassEntry("org/quiltmc/enigma/inputs/Keep")), is(empty()));
 		assertThat(inheritanceIndex.getAncestors(new ClassEntry("a")), is(empty()));
-		assertThat(inheritanceIndex.getAncestors(new ClassEntry("org/enigma/inputs/Keep")), is(empty()));
+		assertThat(inheritanceIndex.getAncestors(new ClassEntry("org/quiltmc/enigma/inputs/Keep")), is(empty()));
 		assertThat(inheritanceIndex.getChildren(new ClassEntry("a")), is(empty()));
-		assertThat(inheritanceIndex.getChildren(new ClassEntry("org/enigma/inputs/Keep")), is(empty()));
+		assertThat(inheritanceIndex.getChildren(new ClassEntry("org/quiltmc/enigma/inputs/Keep")), is(empty()));
 	}
 
 	@Test

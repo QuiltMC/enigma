@@ -14,7 +14,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 public class TestInnerClassParameterStats {
-	private static final Path JAR = TestUtil.obfJar("innerClasses");
+	private static final Path JAR = TestUtil.obfJar("inner_classes");
 
 	@Test
 	public void testInnerClassParameterStats() {

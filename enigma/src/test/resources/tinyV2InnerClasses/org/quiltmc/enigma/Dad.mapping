@@ -1,4 +1,4 @@
-CLASS f org/enigma/Dad
+CLASS f org/quiltmc/enigma/Dad
 	CLASS a One
 		CLASS a Two
 			CLASS a

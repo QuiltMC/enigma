@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public class TestDeobfuscator {
-	private static final Path JAR = TestUtil.obfJar("loneClass");
+	private static final Path JAR = TestUtil.obfJar("lone_class");
 
 	private EnigmaProject openProject() throws IOException {
 		Enigma enigma = Enigma.create();

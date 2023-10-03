@@ -23,7 +23,7 @@ public class TestInnerClasses {
 	private static final ClassEntry CLASS_TREE_LEVEL_2 = TestEntryFactory.newClass("f$a$a");
 	private static final ClassEntry CLASS_TREE_LEVEL_3 = TestEntryFactory.newClass("f$a$a$a");
 
-	public static final Path JAR = TestUtil.obfJar("innerClasses");
+	public static final Path JAR = TestUtil.obfJar("inner_classes");
 	private final JarIndex index;
 	private final Decompiler decompiler;
 

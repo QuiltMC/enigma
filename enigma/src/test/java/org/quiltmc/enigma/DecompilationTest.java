@@ -41,7 +41,7 @@ public class DecompilationTest {
 		TokenChecker checker = this.getTokenChecker(decompiler);
 		MethodEntry method = TestEntryFactory.newMethod("a", "a", "()V");
 		assertThat(checker.getReferenceTokens(
-				new EntryReference<>(TestEntryFactory.newMethod("org/enigma/inputs/Keep", "a", "([Ljava/lang/String;)V"), "", method)
+				new EntryReference<>(TestEntryFactory.newMethod("org/quiltmc/enigma/inputs/Keep", "a", "([Ljava/lang/String;)V"), "", method)
 		), contains("a"));
 		assertThat(checker.getReferenceTokens(
 				new EntryReference<>(TestEntryFactory.newClass("java/lang/String"), "", method)

@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class FillClassMappingsCommandTest extends CommandTest {
-	private static final Path JAR = TestUtil.obfJar("innerClasses");
+	private static final Path JAR = TestUtil.obfJar("inner_classes");
 	private static final Path MAPPINGS = getResource("/fillClassMappings/");
 
 	private static final ClassEntry A = new ClassEntry("a");

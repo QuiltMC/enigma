@@ -24,7 +24,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public class TestJarIndexInheritanceTree {
-	public static final Path JAR = TestUtil.obfJar("inheritanceTree");
+	public static final Path JAR = TestUtil.obfJar("inheritance_tree");
 
 	private static final ClassEntry BASE_CLASS = TestEntryFactory.newClass("a");
 	private static final ClassEntry SUB_CLASS_A = TestEntryFactory.newClass("b");
@@ -44,7 +44,7 @@ public class TestJarIndexInheritanceTree {
 	@Test
 	public void obfEntries() {
 		assertThat(this.index.getEntryIndex().getClasses(), Matchers.containsInAnyOrder(
-				TestEntryFactory.newClass("org/enigma/inputs/Keep"), BASE_CLASS, SUB_CLASS_A, SUB_CLASS_AA, SUB_CLASS_B
+				TestEntryFactory.newClass("org/quiltmc/enigma/inputs/Keep"), BASE_CLASS, SUB_CLASS_A, SUB_CLASS_AA, SUB_CLASS_B
 		));
 	}
 

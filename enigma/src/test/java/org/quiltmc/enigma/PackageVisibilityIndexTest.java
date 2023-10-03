@@ -13,8 +13,8 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
 public class PackageVisibilityIndexTest {
-	public static final Path JAR = TestUtil.obfJar("packageAccess");
-	private static final ClassEntry KEEP = TestEntryFactory.newClass("org/enigma/inputs/Keep");
+	public static final Path JAR = TestUtil.obfJar("package_access");
+	private static final ClassEntry KEEP = TestEntryFactory.newClass("org/quiltmc/enigma/inputs/Keep");
 	private static final ClassEntry BASE = TestEntryFactory.newClass("a");
 	private static final ClassEntry SAME_PACKAGE_CHILD = TestEntryFactory.newClass("b");
 	private static final ClassEntry SAME_PACKAGE_CHILD_INNER = TestEntryFactory.newClass("b$a");

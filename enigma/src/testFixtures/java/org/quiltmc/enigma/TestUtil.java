@@ -8,11 +8,11 @@ public final class TestUtil {
 	}
 
 	public static Path obfJar(String name) {
-		return Path.of("../enigma/build/test-obf/%s.jar".formatted(name)).toAbsolutePath();
+		return Path.of("").toAbsolutePath().getParent().resolve("enigma/build/test-obf/%s.jar".formatted(name));
 	}
 
 	public static Path deobfJar(String name) {
-		return Path.of("../enigma/build/test-deobf/%s.jar".formatted(name)).toAbsolutePath();
+		return Path.of("").toAbsolutePath().getParent().resolve("enigma/build/test-deobf/%s.jar".formatted(name));
 	}
 
 	public static Path getResource(String name) {

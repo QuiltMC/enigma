@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Path;
 
 public final class TestTinyV2InnerClasses {
-	public static final Path JAR = TestUtil.obfJar("innerClasses");
+	public static final Path JAR = TestUtil.obfJar("inner_classes");
 	public static final Path MAPPINGS = TestUtil.getResource("/tinyV2InnerClasses/");
 
 	@Test
