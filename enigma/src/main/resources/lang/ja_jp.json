@@ -141,7 +141,6 @@
 	"progress.mappings.srg_file.generating": "マッピングの作成中",
 	"progress.mappings.srg_file.writing": "マッピングの書き出し中",
 	"progress.stats": "統計情報を作成中",
-	"progress.stats.data": "データの作成中",
 
 	"javadocs.edit": "Javadocを編集",
 	"javadocs.instruction": "このJavadocを編集",

@@ -111,6 +111,7 @@
 	"popup_menu.editor_tab.close_left": "Tout fermer sur la gauche",
 	"popup_menu.editor_tab.close_right": "Tout fermer sur la droite",
 	"popup_menu.class_selector.rename_package": "Renommer le package",
+	"popup_menu.class_selector.move_package": "Bouger le package",
 	"popup_menu.class_selector.rename_class": "Renommer la classe",
 	"popup_menu.class_selector.expand_all": "Tout développer",
 	"popup_menu.class_selector.collapse_all": "Tout réduire",
@@ -186,7 +187,7 @@
 	"progress.mappings.srg_file.generating": "Génération des mappings",
 	"progress.mappings.srg_file.writing": "Écriture des mappings",
 	"progress.stats": "Génération des statistiques",
-	"progress.stats.data": "Génération des données",
+	"progress.stats.for": "Génération des statistiques pour: %s",
 
 	"javadocs.edit": "Éditer les Javadocs",
 	"javadocs.instruction": "Éditer les Javadocs ici.",

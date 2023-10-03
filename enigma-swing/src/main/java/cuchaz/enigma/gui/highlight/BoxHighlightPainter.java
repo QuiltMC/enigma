@@ -32,7 +32,7 @@ public class BoxHighlightPainter implements Highlighter.HighlightPainter {
 
 			// adjust the box so it looks nice
 			bounds.x -= 2;
-			bounds.width += 2;
+			bounds.width += 1;
 			bounds.y += 1;
 			bounds.height -= 2;
 

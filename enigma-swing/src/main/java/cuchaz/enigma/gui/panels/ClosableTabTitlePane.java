@@ -2,16 +2,8 @@ package cuchaz.enigma.gui.panels;
 
 import cuchaz.enigma.gui.util.GuiUtil;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import javax.accessibility.AccessibleContext;
-import javax.annotation.Nullable;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -19,6 +11,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class ClosableTabTitlePane {
 	private final JPanel ui;
@@ -117,22 +114,14 @@ public class ClosableTabTitlePane {
 		boolean isActive = selectedIndex != -1 && pane.getTabComponentAt(selectedIndex) == this.ui;
 		this.closeButton.setEnabled(isActive);
 		this.closeButton.putClientProperty("paintActive", isActive);
+
+		this.ui.remove(this.closeButton);
+		this.ui.add(this.closeButton);
+
 		this.ui.repaint();
 	}
 
 	public JPanel getUi() {
 		return this.ui;
-	}
-
-	@Nullable
-	public static ClosableTabTitlePane byUi(Component c) {
-		if (c instanceof JComponent component) {
-			Object prop = component.getClientProperty(ClosableTabTitlePane.class);
-			if (prop instanceof ClosableTabTitlePane pane) {
-				return pane;
-			}
-		}
-
-		return null;
 	}
 }

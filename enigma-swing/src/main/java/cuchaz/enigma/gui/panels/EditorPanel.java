@@ -14,6 +14,7 @@ import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.elements.EditorPopupMenu;
+import cuchaz.enigma.gui.elements.NavigatorPanel;
 import cuchaz.enigma.gui.events.EditorActionListener;
 import cuchaz.enigma.gui.events.ThemeChangeListener;
 import cuchaz.enigma.gui.highlight.BoxHighlightPainter;
@@ -34,10 +35,12 @@ import org.tinylog.Logger;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -82,6 +85,7 @@ public class EditorPanel {
 	private final JTextArea errorTextArea = new JTextArea();
 	private final JScrollPane errorScrollPane = new JScrollPane(this.errorTextArea);
 	private final JButton retryButton = new JButton(I18n.translate("prompt.retry"));
+	private final NavigatorPanel navigatorPanel;
 
 	private DisplayMode mode = DisplayMode.INACTIVE;
 
@@ -105,11 +109,13 @@ public class EditorPanel {
 	private DecompiledClassSource source;
 	private boolean settingSource;
 
-	public EditorPanel(Gui gui) {
+	public EditorPanel(Gui gui, NavigatorPanel navigator) {
 		this.gui = gui;
 		this.controller = gui.getController();
+		this.navigatorPanel = navigator;
 
 		this.editor.setEditable(false);
+		this.editor.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		this.editor.setSelectionColor(new Color(31, 46, 90));
 		this.editor.setCaret(new BrowserCaret());
 		this.editor.setFont(ScaleUtil.getFont(this.editor.getFont().getFontName(), Font.PLAIN, this.fontSize));
@@ -219,6 +225,10 @@ public class EditorPanel {
 		};
 
 		this.ui.putClientProperty(EditorPanel.class, this);
+	}
+
+	public void onRename(Entry<?> target) {
+		this.navigatorPanel.updateTokenType(target);
 	}
 
 	@Nullable
@@ -336,7 +346,34 @@ public class EditorPanel {
 			}
 			case SUCCESS: {
 				this.ui.setLayout(new GridLayout(1, 1, 0, 0));
-				this.ui.add(this.editorScrollPane);
+
+				JPanel editorPane = new JPanel() {
+					@Override
+					public boolean isOptimizedDrawingEnabled() {
+						return false;
+					}
+				};
+				editorPane.setLayout(new GridBagLayout());
+
+				GridBagConstraints constraints = new GridBagConstraints();
+				constraints.gridx = 0;
+				constraints.gridy = 0;
+				constraints.weightx = 1.0;
+				constraints.weighty = 1.0;
+				constraints.anchor = GridBagConstraints.FIRST_LINE_END;
+				constraints.insets = new Insets(32, 32, 32, 32);
+				constraints.ipadx = 16;
+				constraints.ipady = 16;
+				editorPane.add(this.navigatorPanel, constraints);
+
+				constraints = new GridBagConstraints();
+				constraints.gridx = 0;
+				constraints.gridy = 0;
+				constraints.weightx = 1.0;
+				constraints.weighty = 1.0;
+				constraints.fill = GridBagConstraints.BOTH;
+				editorPane.add(this.editorScrollPane, constraints);
+				this.ui.add(editorPane);
 				break;
 			}
 			case ERRORED: {
@@ -449,11 +486,16 @@ public class EditorPanel {
 			this.source = source;
 			this.editor.getHighlighter().removeAllHighlights();
 			this.editor.setText(source.toString());
-			if (this.source != null) {
-				this.editor.setCaretPosition(newCaretPos);
-			}
 
 			this.setHighlightedTokens(source.getHighlightedTokens());
+			if (this.source != null) {
+				this.editor.setCaretPosition(newCaretPos);
+
+				for (Entry<?> entry : this.source.getIndex().declarations()) {
+					this.navigatorPanel.addEntry(entry);
+				}
+			}
+
 			this.setCursorReference(this.getReference(this.getToken(this.editor.getCaretPosition())));
 		} finally {
 			this.settingSource = false;

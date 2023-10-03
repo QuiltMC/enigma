@@ -1,9 +1,9 @@
 package cuchaz.enigma.stats;
 
+import com.google.common.base.Preconditions;
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.analysis.index.EntryIndex;
-import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
 import cuchaz.enigma.translation.representation.ArgumentDescriptor;
@@ -15,27 +15,52 @@ import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.I18n;
+import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 public class StatsGenerator {
 	private final EnigmaProject project;
 	private final EntryIndex entryIndex;
-	private final EntryRemapper mapper;
 	private final EntryResolver entryResolver;
+	private ProjectStatsResult result = null;
+
+	private CountDownLatch generationLatch = null;
 
 	public StatsGenerator(EnigmaProject project) {
 		this.project = project;
 		this.entryIndex = project.getJarIndex().getEntryIndex();
-		this.mapper = project.getMapper();
 		this.entryResolver = project.getJarIndex().getEntryResolver();
+	}
+
+	/**
+	 * Gets the latest generated stats.
+	 * @return the stats, or {@code null} if not yet generated
+	 */
+	public ProjectStatsResult getResultNullable() {
+		return this.result;
+	}
+
+	/**
+	 * Gets the latest generated stats, or generates them if not yet present.
+	 * @return the stats
+	 */
+	public ProjectStatsResult getResult(boolean includeSynthetic) {
+		if (this.result == null) {
+			return this.generateForClassTree(ProgressListener.none(), null, includeSynthetic);
+		}
+
+		return this.result;
 	}
 
 	/**
@@ -45,67 +70,116 @@ public class StatsGenerator {
 	 * @param includeSynthetic whether to include synthetic methods
 	 * @return the generated {@link StatsResult} for the provided class
 	 */
-	public StatsResult generateForClassTree(ProgressListener progress, ClassEntry entry, boolean includeSynthetic) {
-		return this.generate(progress, EnumSet.allOf(StatType.class), entry.getFullName(), entry, includeSynthetic);
+	public ProjectStatsResult generateForClassTree(ProgressListener progress, ClassEntry entry, boolean includeSynthetic) {
+		return this.generate(progress, EnumSet.allOf(StatType.class), entry, includeSynthetic);
 	}
 
 	/**
-	 * Generates stats for the given package.
+	 * Generates stats for the current project.
 	 * @param progress a listener to update with current progress
 	 * @param includedTypes the types of entry to include in the stats
-	 * @param topLevelPackage the package to generate stats for. Can be separated by slashes or dots. If this is empty, stats will be generated for the entire project
 	 * @param includeSynthetic whether to include synthetic methods
-	 * @return the generated {@link StatsResult} for the provided package
+	 * @return the generated {@link ProjectStatsResult}
 	 */
-	public StatsResult generate(ProgressListener progress, Set<StatType> includedTypes, String topLevelPackage, boolean includeSynthetic) {
-		return this.generate(progress, includedTypes, topLevelPackage, null, includeSynthetic);
+	public ProjectStatsResult generate(ProgressListener progress, Set<StatType> includedTypes, boolean includeSynthetic) {
+		return this.generate(progress, includedTypes, null, includeSynthetic);
 	}
 
 	/**
-	 * Generates stats for the given package or class.
+	 * Generates stats for the current project or updates existing stats with the provided class.
+	 * Somewhat thread-safe: will only generate stats on one thread at a time, awaiting generation on all other threads if called in parallel.
 	 * @param progress a listener to update with current progress
 	 * @param includedTypes the types of entry to include in the stats
-	 * @param topLevelPackage the package or class to generate stats for. Can be separated by slashes or dots. If this is empty, stats will be generated for the entire project
 	 * @param classEntry if stats are being generated for a single class, provide the class here
 	 * @param includeSynthetic whether to include synthetic methods
-	 * @return the generated {@link StatsResult} for the provided class or package.
+	 * @return the generated {@link ProjectStatsResult} for the provided class or package
 	 */
-	public StatsResult generate(ProgressListener progress, Set<StatType> includedTypes, String topLevelPackage, @Nullable ClassEntry classEntry, boolean includeSynthetic) {
+	public ProjectStatsResult generate(ProgressListener progress, Set<StatType> includedTypes, @Nullable ClassEntry classEntry, boolean includeSynthetic) {
 		includedTypes = EnumSet.copyOf(includedTypes);
-		int totalWork = 0;
+		Map<ClassEntry, StatsResult> stats = this.result == null ? new HashMap<>() : this.result.getStats();
+
+		if (this.result == null || classEntry == null) {
+			if (this.generationLatch == null) {
+				this.generationLatch = new CountDownLatch(1);
+
+				List<ClassEntry> classes = this.entryIndex.getClasses()
+						.stream().filter(entry -> !entry.isInnerClass()).toList();
+
+				int done = 0;
+				progress.init(classes.size(), I18n.translate("progress.stats"));
+
+				for (ClassEntry entry : classes) {
+					progress.step(done++, I18n.translateFormatted("progress.stats.for", entry.getName()));
+					StatsResult result = this.generate(includedTypes, entry, includeSynthetic);
+					stats.put(entry, result);
+				}
+
+				this.result = new ProjectStatsResult(this.project, stats);
+				this.generationLatch.countDown();
+			} else {
+				try {
+					progress.init(1, "progress.stats.awaiting");
+					this.generationLatch.await();
+				} catch (InterruptedException e) {
+					Logger.error(e, "Failed to await stats generation for project!");
+				}
+			}
+		} else {
+			Preconditions.checkNotNull(classEntry, "Entry cannot be null after initial stat generation!");
+			stats.put(classEntry, this.generate(includedTypes, classEntry, includeSynthetic));
+			this.result = new ProjectStatsResult(this.project, stats);
+		}
+
+		return this.result;
+	}
+
+	private void addChildrenRecursively(List<Entry<?>> entries, Entry<?> toCheck) {
+		if (toCheck instanceof ClassEntry innerClassEntry) {
+			List<ParentedEntry<?>> classChildren = this.project.getJarIndex().getChildrenByClass().get(innerClassEntry);
+			if (!classChildren.isEmpty()) {
+				entries.addAll(classChildren);
+				for (Entry<?> entry : classChildren) {
+					if (entry instanceof ClassEntry innerInnerClassEntry) {
+						this.addChildrenRecursively(entries, innerInnerClassEntry);
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Generates stats for the provided class.
+	 * @param includedTypes the types of entry to include in the stats
+	 * @param classEntry the class to generate stats for
+	 * @param includeSynthetic whether to include synthetic parameters
+	 * @return the generated {@link StatsResult}
+	 */
+	public StatsResult generate(Set<StatType> includedTypes, ClassEntry classEntry, boolean includeSynthetic) {
 		Map<StatType, Integer> mappableCounts = new EnumMap<>(StatType.class);
 		Map<StatType, Map<String, Integer>> unmappedCounts = new EnumMap<>(StatType.class);
 
-		if (includedTypes.contains(StatType.METHODS) || includedTypes.contains(StatType.PARAMETERS)) {
-			totalWork += this.entryIndex.getMethods().size();
+		List<ParentedEntry<?>> children = this.project.getJarIndex().getChildrenByClass().get(classEntry);
+		List<Entry<?>> entries = new ArrayList<>(children);
+
+		for (Entry<?> entry : children) {
+			this.addChildrenRecursively(entries, entry);
 		}
 
-		if (includedTypes.contains(StatType.FIELDS)) {
-			totalWork += this.entryIndex.getFields().size();
-		}
+		entries.add(classEntry);
 
-		if (includedTypes.contains(StatType.CLASSES)) {
-			totalWork += this.entryIndex.getClasses().size();
-		}
-
-		progress.init(totalWork, I18n.translate("progress.stats"));
-
-		String topLevelPackageSlash = topLevelPackage.replace(".", "/");
-
-		int numDone = 0;
-		if (includedTypes.contains(StatType.METHODS) || includedTypes.contains(StatType.PARAMETERS)) {
-			for (MethodEntry method : this.entryIndex.getMethods()) {
-				progress.step(numDone++, I18n.translate("type.methods"));
-
+		for (Entry<?> entry : entries) {
+			if (entry instanceof FieldEntry field) {
+				if (!((FieldDefEntry) field).getAccess().isSynthetic()) {
+					this.update(StatType.FIELDS, mappableCounts, unmappedCounts, field);
+				}
+			} else if (entry instanceof MethodEntry method) {
 				MethodEntry root = this.entryResolver
 						.resolveEntry(method, ResolutionStrategy.RESOLVE_ROOT)
 						.stream()
 						.findFirst()
 						.orElseThrow(AssertionError::new);
 
-				ClassEntry clazz = root.getParent();
-
-				if (root == method && this.checkPackage(clazz, topLevelPackageSlash, classEntry)) {
+				if (root == method) {
 					if (includedTypes.contains(StatType.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
 						this.update(StatType.METHODS, mappableCounts, unmappedCounts, method);
 					}
@@ -127,73 +201,25 @@ public class StatsGenerator {
 						}
 					}
 				}
+			} else if (entry instanceof ClassEntry clazz) {
+				this.update(StatType.CLASSES, mappableCounts, unmappedCounts, clazz);
 			}
 		}
 
-		if (includedTypes.contains(StatType.FIELDS)) {
-			for (FieldEntry field : this.entryIndex.getFields()) {
-				progress.step(numDone++, I18n.translate("type.fields"));
-				ClassEntry clazz = field.getParent();
-
-				if (!((FieldDefEntry) field).getAccess().isSynthetic() && this.checkPackage(clazz, topLevelPackageSlash, classEntry)) {
-					this.update(StatType.FIELDS, mappableCounts, unmappedCounts, field);
-				}
-			}
-		}
-
-		if (includedTypes.contains(StatType.CLASSES)) {
-			for (ClassEntry clazz : this.entryIndex.getClasses()) {
-				progress.step(numDone++, I18n.translate("type.classes"));
-
-				if (this.checkPackage(clazz, topLevelPackageSlash, classEntry)) {
-					this.update(StatType.CLASSES, mappableCounts, unmappedCounts, clazz);
-				}
-			}
-		}
-
-		progress.step(-1, I18n.translate("progress.stats.data"));
-
-		// generate html display
-		String topLevelPackageDot = topLevelPackageSlash.replace("/", ".");
-		StatsResult.Tree<Integer> tree = getStatTree(unmappedCounts, topLevelPackageDot);
-
-		tree.collapse(tree.root);
-
-		Map<StatType, Integer> rawUnmappedCounts = new EnumMap<>(StatType.class);
-		for (var entry : unmappedCounts.entrySet()) {
-			for (int value : entry.getValue().values()) {
-				rawUnmappedCounts.put(entry.getKey(), rawUnmappedCounts.getOrDefault(entry.getKey(), 0) + value);
-			}
-		}
-
-		return new StatsResult(mappableCounts, rawUnmappedCounts, tree);
+		return StatsResult.create(mappableCounts, unmappedCounts, false);
 	}
 
-	private static StatsResult.Tree<Integer> getStatTree(Map<StatType, Map<String, Integer>> unmappedCounts, String topLevelPackageDot) {
-		StatsResult.Tree<Integer> tree = new StatsResult.Tree<>();
-
-		for (Map.Entry<StatType, Map<String, Integer>> typedEntry : unmappedCounts.entrySet()) {
-			for (Map.Entry<String, Integer> entry : typedEntry.getValue().entrySet()) {
-				if (entry.getKey().startsWith(topLevelPackageDot)) {
-					StatsResult.Tree.Node<Integer> node = tree.getNode(entry.getKey());
-					int value = node.getValue() == null ? 0 : node.getValue();
-
-					node.setValue(value + entry.getValue());
-				}
-			}
+	/**
+	 * Gets the stats for the provided class.
+	 * @param entry the class to get stats for
+	 * @return the stats, or {@code null} if not generated
+	 */
+	public StatsResult getStats(ClassEntry entry) {
+		if (this.result == null) {
+			return null;
 		}
 
-		return tree;
-	}
-
-	private boolean checkPackage(ClassEntry clazz, String topLevelPackage, @Nullable ClassEntry entry) {
-		String packageName = this.mapper.deobfuscate(clazz).getPackageName();
-
-		if (entry == null) {
-			return topLevelPackage.isBlank() || (packageName != null && packageName.startsWith(topLevelPackage));
-		} else {
-			return clazz.getTopLevelClass().equals(entry.getTopLevelClass());
-		}
+		return this.result.getStats().get(entry);
 	}
 
 	private void update(StatType type, Map<StatType, Integer> mappable, Map<StatType, Map<String, Integer>> unmapped, Entry<?> entry) {
@@ -203,7 +229,7 @@ public class StatsGenerator {
 
 		if (renamable) {
 			if (obfuscated && !synthetic) {
-				String parent = this.mapper.deobfuscate(entry.getTopLevelClass()).getName().replace('/', '.');
+				String parent = this.project.getMapper().deobfuscate(entry.getTopLevelClass()).getName().replace('/', '.');
 
 				unmapped.computeIfAbsent(type, t -> new HashMap<>());
 				unmapped.get(type).put(parent, unmapped.get(type).getOrDefault(parent, 0) + 1);
