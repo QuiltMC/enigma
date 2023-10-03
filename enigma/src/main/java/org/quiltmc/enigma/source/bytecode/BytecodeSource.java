@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.source.bytecode;
 
 import org.quiltmc.enigma.Enigma;
-import org.quiltmc.enigma.bytecode.translators.TranslationClassVisitor;
+import org.quiltmc.enigma.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.source.Source;
 import org.quiltmc.enigma.source.SourceIndex;
 import org.quiltmc.enigma.translation.mapping.EntryRemapper;

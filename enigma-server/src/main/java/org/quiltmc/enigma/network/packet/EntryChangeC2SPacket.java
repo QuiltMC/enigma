@@ -4,7 +4,7 @@ import org.quiltmc.enigma.network.ServerMessage;
 import org.quiltmc.enigma.network.ServerPacketHandler;
 import org.quiltmc.enigma.translation.mapping.EntryChange;
 import org.quiltmc.enigma.translation.mapping.EntryUtil;
-import org.quiltmc.enigma.utils.validation.ValidationContext;
+import org.quiltmc.enigma.util.validation.ValidationContext;
 
 import java.io.DataInput;
 import java.io.DataOutput;

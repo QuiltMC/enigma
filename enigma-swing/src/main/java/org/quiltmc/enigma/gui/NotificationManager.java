@@ -2,10 +2,10 @@ package org.quiltmc.enigma.gui;
 
 import org.quiltmc.enigma.gui.docker.NotificationsDocker;
 import org.quiltmc.enigma.gui.util.GuiUtil;
-import org.quiltmc.enigma.utils.I18n;
-import org.quiltmc.enigma.utils.validation.Message;
-import org.quiltmc.enigma.utils.validation.ParameterizedMessage;
-import org.quiltmc.enigma.utils.validation.ValidationContext;
+import org.quiltmc.enigma.util.I18n;
+import org.quiltmc.enigma.util.validation.Message;
+import org.quiltmc.enigma.util.validation.ParameterizedMessage;
+import org.quiltmc.enigma.util.validation.ValidationContext;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;

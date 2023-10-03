@@ -3,9 +3,9 @@ package org.quiltmc.enigma.gui.dialog;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.utils.I18n;
-import org.quiltmc.enigma.utils.Pair;
-import org.quiltmc.enigma.utils.validation.ValidationContext;
+import org.quiltmc.enigma.util.I18n;
+import org.quiltmc.enigma.util.Pair;
+import org.quiltmc.enigma.util.validation.ValidationContext;
 
 import java.awt.BorderLayout;
 import java.awt.Component;

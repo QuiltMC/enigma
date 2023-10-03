@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.translation.representation;
 
-import org.quiltmc.enigma.bytecode.translators.TranslationSignatureVisitor;
+import org.quiltmc.enigma.bytecode.translator.TranslationSignatureVisitor;
 import org.quiltmc.enigma.translation.Translatable;
 import org.quiltmc.enigma.translation.TranslateResult;
 import org.quiltmc.enigma.translation.Translator;

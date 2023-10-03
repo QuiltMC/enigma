@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.source.vineflower;
 
 import org.quiltmc.enigma.classprovider.ClassProvider;
-import org.quiltmc.enigma.utils.AsmUtil;
+import org.quiltmc.enigma.util.AsmUtil;
 import org.jetbrains.java.decompiler.main.extern.IContextSource;
 import org.jetbrains.java.decompiler.main.extern.IResultSaver;
 import org.objectweb.asm.tree.ClassNode;

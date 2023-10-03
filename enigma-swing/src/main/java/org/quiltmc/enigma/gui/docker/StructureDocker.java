@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.docker;
 import org.quiltmc.enigma.analysis.StructureTreeNode;
 import org.quiltmc.enigma.analysis.StructureTreeOptions;
 import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.panels.EditorPanel;
+import org.quiltmc.enigma.gui.panel.EditorPanel;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.renderer.StructureOptionListCellRenderer;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
@@ -13,7 +13,7 @@ import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.translation.representation.entry.ParentedEntry;
-import org.quiltmc.enigma.utils.I18n;
+import org.quiltmc.enigma.util.I18n;
 
 import java.awt.BorderLayout;
 import java.awt.Component;

@@ -11,7 +11,7 @@ import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.translation.representation.entry.Entry;
 import org.quiltmc.enigma.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
-import org.quiltmc.enigma.utils.Pair;
+import org.quiltmc.enigma.util.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

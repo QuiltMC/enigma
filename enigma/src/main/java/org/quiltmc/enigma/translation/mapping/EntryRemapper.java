@@ -12,8 +12,8 @@ import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.translation.representation.entry.Entry;
 import org.quiltmc.enigma.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
-import org.quiltmc.enigma.utils.validation.Message;
-import org.quiltmc.enigma.utils.validation.ValidationContext;
+import org.quiltmc.enigma.util.validation.Message;
+import org.quiltmc.enigma.util.validation.ValidationContext;
 
 import java.util.Collection;
 import java.util.Objects;

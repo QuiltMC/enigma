@@ -4,7 +4,7 @@ import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.UiConfig;
 import org.quiltmc.enigma.gui.docker.component.DockerButton;
 import org.quiltmc.enigma.gui.docker.component.DockerTitleBar;
-import org.quiltmc.enigma.utils.I18n;
+import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;

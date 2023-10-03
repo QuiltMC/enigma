@@ -8,7 +8,7 @@ import org.quiltmc.enigma.translation.mapping.EntryChange;
 import org.quiltmc.enigma.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.translation.mapping.EntryUtil;
 import org.quiltmc.enigma.translation.representation.entry.Entry;
-import org.quiltmc.enigma.utils.validation.ValidationContext;
+import org.quiltmc.enigma.util.validation.ValidationContext;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

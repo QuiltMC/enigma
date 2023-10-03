@@ -16,7 +16,7 @@ import org.quiltmc.enigma.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.translation.representation.entry.MethodDefEntry;
 import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.translation.representation.entry.ParentedEntry;
-import org.quiltmc.enigma.utils.I18n;
+import org.quiltmc.enigma.util.I18n;
 import org.tinylog.Logger;
 
 import javax.annotation.Nullable;

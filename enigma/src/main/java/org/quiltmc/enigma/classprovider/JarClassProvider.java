@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.classprovider;
 
 import com.google.common.collect.ImmutableSet;
-import org.quiltmc.enigma.utils.AsmUtil;
+import org.quiltmc.enigma.util.AsmUtil;
 import org.objectweb.asm.tree.ClassNode;
 
 import javax.annotation.Nullable;

@@ -14,7 +14,7 @@ import org.quiltmc.enigma.translation.representation.entry.Entry;
 import org.quiltmc.enigma.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.translation.representation.entry.ParentedEntry;
-import org.quiltmc.enigma.utils.I18n;
+import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.gui.search.SearchEntry;
 import org.quiltmc.enigma.gui.search.SearchUtil;
 

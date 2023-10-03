@@ -3,7 +3,7 @@ package org.quiltmc.enigma.translation.mapping;
 import org.quiltmc.enigma.EnigmaProject;
 import org.quiltmc.enigma.source.DecompiledClassSource;
 import org.quiltmc.enigma.translation.representation.entry.Entry;
-import org.quiltmc.enigma.utils.TristateChange;
+import org.quiltmc.enigma.util.TristateChange;
 
 import java.util.Objects;
 import java.util.Optional;

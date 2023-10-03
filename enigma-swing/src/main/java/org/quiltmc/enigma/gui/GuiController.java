@@ -59,12 +59,12 @@ import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.translation.representation.entry.Entry;
 import org.quiltmc.enigma.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
-import org.quiltmc.enigma.utils.I18n;
-import org.quiltmc.enigma.utils.TristateChange;
-import org.quiltmc.enigma.utils.Utils;
-import org.quiltmc.enigma.utils.validation.Message;
-import org.quiltmc.enigma.utils.validation.ParameterizedMessage;
-import org.quiltmc.enigma.utils.validation.ValidationContext;
+import org.quiltmc.enigma.util.I18n;
+import org.quiltmc.enigma.util.TristateChange;
+import org.quiltmc.enigma.util.Utils;
+import org.quiltmc.enigma.util.validation.Message;
+import org.quiltmc.enigma.util.validation.ParameterizedMessage;
+import org.quiltmc.enigma.util.validation.ValidationContext;
 import org.tinylog.Logger;
 
 import javax.swing.JOptionPane;

@@ -2,8 +2,8 @@ package org.quiltmc.enigma.classprovider;
 
 import org.quiltmc.enigma.Enigma;
 import org.quiltmc.enigma.analysis.index.JarIndex;
-import org.quiltmc.enigma.bytecode.translators.LocalVariableFixVisitor;
-import org.quiltmc.enigma.bytecode.translators.SourceFixVisitor;
+import org.quiltmc.enigma.bytecode.translator.LocalVariableFixVisitor;
+import org.quiltmc.enigma.bytecode.translator.SourceFixVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;

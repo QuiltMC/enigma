@@ -8,8 +8,8 @@ import org.quiltmc.enigma.translation.representation.entry.Entry;
 import org.quiltmc.enigma.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.translation.representation.entry.ParentedEntry;
-import org.quiltmc.enigma.utils.validation.Message;
-import org.quiltmc.enigma.utils.validation.ValidationContext;
+import org.quiltmc.enigma.util.validation.Message;
+import org.quiltmc.enigma.util.validation.ValidationContext;
 
 import javax.annotation.Nullable;
 import java.util.AbstractMap;

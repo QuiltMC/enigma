@@ -12,7 +12,7 @@ import org.quiltmc.enigma.source.SourceSettings;
 import org.quiltmc.enigma.source.Token;
 import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.translation.representation.entry.Entry;
-import org.quiltmc.enigma.utils.Pair;
+import org.quiltmc.enigma.util.Pair;
 import org.tinylog.Logger;
 
 import java.io.IOException;

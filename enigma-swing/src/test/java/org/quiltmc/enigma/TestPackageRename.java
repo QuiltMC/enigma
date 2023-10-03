@@ -3,7 +3,7 @@ package org.quiltmc.enigma;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.docker.AllClassesDocker;
-import org.quiltmc.enigma.gui.elements.ClassSelectorPopupMenu;
+import org.quiltmc.enigma.gui.element.ClassSelectorPopupMenu;
 import org.quiltmc.enigma.gui.util.PackageRenamer;
 import org.quiltmc.enigma.translation.TranslateResult;
 import org.quiltmc.enigma.translation.Translator;

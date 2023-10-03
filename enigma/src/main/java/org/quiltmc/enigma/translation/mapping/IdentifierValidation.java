@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.translation.mapping;
 
-import org.quiltmc.enigma.utils.validation.Message;
-import org.quiltmc.enigma.utils.validation.StandardValidation;
-import org.quiltmc.enigma.utils.validation.ValidationContext;
+import org.quiltmc.enigma.util.validation.Message;
+import org.quiltmc.enigma.util.validation.StandardValidation;
+import org.quiltmc.enigma.util.validation.ValidationContext;
 
 import java.util.List;
 

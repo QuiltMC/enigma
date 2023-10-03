@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.config;
 
-import org.quiltmc.enigma.utils.Os;
+import org.quiltmc.enigma.util.Os;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

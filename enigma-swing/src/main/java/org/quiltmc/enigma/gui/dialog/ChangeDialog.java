@@ -2,7 +2,7 @@ package org.quiltmc.enigma.gui.dialog;
 
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.util.GuiUtil;
-import org.quiltmc.enigma.utils.I18n;
+import org.quiltmc.enigma.util.I18n;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;

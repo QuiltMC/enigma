@@ -2,7 +2,7 @@ package org.quiltmc.enigma.gui.docker;
 
 import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.elements.ClassSelectorPopupMenu;
+import org.quiltmc.enigma.gui.element.ClassSelectorPopupMenu;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 
 import javax.swing.JScrollPane;

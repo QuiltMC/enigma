@@ -6,7 +6,7 @@ import org.quiltmc.enigma.stats.ProjectStatsResult;
 import org.quiltmc.enigma.stats.StatType;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.utils.I18n;
+import org.quiltmc.enigma.util.I18n;
 
 import java.awt.Container;
 import java.awt.Dimension;

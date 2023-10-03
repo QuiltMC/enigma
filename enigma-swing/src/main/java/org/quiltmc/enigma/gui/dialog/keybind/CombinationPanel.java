@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.dialog.keybind;
 import org.quiltmc.enigma.gui.config.keybind.KeyBind;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.utils.I18n;
+import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;

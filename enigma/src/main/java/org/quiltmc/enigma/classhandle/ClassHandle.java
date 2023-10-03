@@ -1,10 +1,10 @@
 package org.quiltmc.enigma.classhandle;
 
-import org.quiltmc.enigma.events.ClassHandleListener;
+import org.quiltmc.enigma.event.ClassHandleListener;
 import org.quiltmc.enigma.source.DecompiledClassSource;
 import org.quiltmc.enigma.source.Source;
 import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.utils.Result;
+import org.quiltmc.enigma.util.Result;
 
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;

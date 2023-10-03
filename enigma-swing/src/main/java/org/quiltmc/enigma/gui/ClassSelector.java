@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui;
 
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
-import org.quiltmc.enigma.gui.elements.ClassTreeCellRenderer;
+import org.quiltmc.enigma.gui.element.ClassTreeCellRenderer;
 import org.quiltmc.enigma.gui.node.ClassSelectorClassNode;
 import org.quiltmc.enigma.gui.node.SortedMutableTreeNode;
 import org.quiltmc.enigma.gui.util.GuiUtil;

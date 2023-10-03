@@ -42,7 +42,7 @@ public class TestJarIndexBridgeMethods {
 
 	@Test
 	public void obfEntries() {
-		assertThat(this.index.getEntryIndex().getClasses(), Matchers.containsInAnyOrder(TestEntryFactory.newClass("org/quiltmc/enigma/inputs/Keep"), this.baseClass,
+		assertThat(this.index.getEntryIndex().getClasses(), Matchers.containsInAnyOrder(TestEntryFactory.newClass("org/quiltmc/enigma/input/Keep"), this.baseClass,
 				this.otherClass, this.subClass, this.innerSubClass));
 	}
 

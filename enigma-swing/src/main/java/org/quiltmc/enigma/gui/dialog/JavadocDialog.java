@@ -10,8 +10,8 @@ import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.translation.mapping.EntryChange;
 import org.quiltmc.enigma.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.translation.representation.entry.Entry;
-import org.quiltmc.enigma.utils.I18n;
-import org.quiltmc.enigma.utils.validation.ValidationContext;
+import org.quiltmc.enigma.util.I18n;
+import org.quiltmc.enigma.util.validation.ValidationContext;
 
 import java.awt.BorderLayout;
 import java.awt.Container;

@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.dialog;
 import org.quiltmc.enigma.gui.config.UiConfig;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.utils.I18n;
+import org.quiltmc.enigma.util.I18n;
 import org.drjekyll.fontchooser.FontChooser;
 
 import java.awt.Component;

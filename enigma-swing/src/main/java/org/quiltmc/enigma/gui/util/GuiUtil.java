@@ -8,7 +8,7 @@ import org.quiltmc.enigma.stats.ProjectStatsResult;
 import org.quiltmc.enigma.translation.representation.AccessFlags;
 import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
-import org.quiltmc.enigma.utils.Os;
+import org.quiltmc.enigma.util.Os;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;

@@ -40,7 +40,7 @@ public class TestJarIndexLoneClass {
 	@Test
 	public void obfEntries() {
 		assertThat(this.index.getEntryIndex().getClasses(), Matchers.containsInAnyOrder(
-				TestEntryFactory.newClass("org/quiltmc/enigma/inputs/Keep"),
+				TestEntryFactory.newClass("org/quiltmc/enigma/input/Keep"),
 				TestEntryFactory.newClass("a")
 		));
 	}
@@ -49,11 +49,11 @@ public class TestJarIndexLoneClass {
 	public void translationIndex() {
 		InheritanceIndex inheritanceIndex = this.index.getInheritanceIndex();
 		assertThat(inheritanceIndex.getParents(new ClassEntry("a")), is(empty()));
-		assertThat(inheritanceIndex.getParents(new ClassEntry("org/quiltmc/enigma/inputs/Keep")), is(empty()));
+		assertThat(inheritanceIndex.getParents(new ClassEntry("org/quiltmc/enigma/input/Keep")), is(empty()));
 		assertThat(inheritanceIndex.getAncestors(new ClassEntry("a")), is(empty()));
-		assertThat(inheritanceIndex.getAncestors(new ClassEntry("org/quiltmc/enigma/inputs/Keep")), is(empty()));
+		assertThat(inheritanceIndex.getAncestors(new ClassEntry("org/quiltmc/enigma/input/Keep")), is(empty()));
 		assertThat(inheritanceIndex.getChildren(new ClassEntry("a")), is(empty()));
-		assertThat(inheritanceIndex.getChildren(new ClassEntry("org/quiltmc/enigma/inputs/Keep")), is(empty()));
+		assertThat(inheritanceIndex.getChildren(new ClassEntry("org/quiltmc/enigma/input/Keep")), is(empty()));
 	}
 
 	@Test

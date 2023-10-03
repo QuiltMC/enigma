@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui.renderer;
 
 import org.quiltmc.enigma.analysis.StructureTreeOptions;
-import org.quiltmc.enigma.utils.I18n;
+import org.quiltmc.enigma.util.I18n;
 
 import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;

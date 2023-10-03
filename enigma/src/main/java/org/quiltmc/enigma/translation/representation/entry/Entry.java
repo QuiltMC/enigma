@@ -2,7 +2,7 @@ package org.quiltmc.enigma.translation.representation.entry;
 
 import org.quiltmc.enigma.translation.Translatable;
 import org.quiltmc.enigma.translation.mapping.IdentifierValidation;
-import org.quiltmc.enigma.utils.validation.ValidationContext;
+import org.quiltmc.enigma.util.validation.ValidationContext;
 
 import java.util.ArrayList;
 import java.util.List;

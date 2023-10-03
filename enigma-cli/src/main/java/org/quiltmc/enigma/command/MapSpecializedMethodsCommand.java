@@ -15,7 +15,7 @@ import org.quiltmc.enigma.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.translation.mapping.tree.EntryTreeNode;
 import org.quiltmc.enigma.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
-import org.quiltmc.enigma.utils.Utils;
+import org.quiltmc.enigma.util.Utils;
 
 import java.io.IOException;
 import java.nio.file.Path;

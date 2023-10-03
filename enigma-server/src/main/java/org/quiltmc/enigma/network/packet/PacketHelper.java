@@ -8,7 +8,7 @@ import org.quiltmc.enigma.translation.representation.entry.Entry;
 import org.quiltmc.enigma.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
-import org.quiltmc.enigma.utils.TristateChange;
+import org.quiltmc.enigma.util.TristateChange;
 
 import java.io.DataInput;
 import java.io.DataOutput;

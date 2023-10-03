@@ -2,14 +2,14 @@ package org.quiltmc.enigma.gui.config;
 
 import org.quiltmc.enigma.config.ConfigContainer;
 import org.quiltmc.enigma.config.ConfigSection;
-import org.quiltmc.enigma.gui.EnigmaQuickFindDialog;
+import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindDialog;
 import org.quiltmc.enigma.gui.NotificationManager;
 import org.quiltmc.enigma.gui.docker.Dock;
 import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.docker.DockerManager;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.utils.I18n;
-import org.quiltmc.enigma.utils.Pair;
+import org.quiltmc.enigma.util.I18n;
+import org.quiltmc.enigma.util.Pair;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 import org.tinylog.Logger;
 

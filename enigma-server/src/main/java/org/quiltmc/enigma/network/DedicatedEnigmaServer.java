@@ -8,7 +8,7 @@ import org.quiltmc.enigma.classprovider.ClasspathClassProvider;
 import org.quiltmc.enigma.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.translation.mapping.serde.MappingFormat;
-import org.quiltmc.enigma.utils.Utils;
+import org.quiltmc.enigma.util.Utils;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;

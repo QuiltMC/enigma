@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.gui.config.keybind;
 
-import org.quiltmc.enigma.utils.I18n;
+import org.quiltmc.enigma.util.I18n;
 import org.tinylog.Logger;
 
 import java.awt.event.KeyEvent;

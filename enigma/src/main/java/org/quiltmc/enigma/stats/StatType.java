@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.stats;
 
-import org.quiltmc.enigma.utils.I18n;
+import org.quiltmc.enigma.util.I18n;
 
 public enum StatType {
 	CLASSES("type.classes"),

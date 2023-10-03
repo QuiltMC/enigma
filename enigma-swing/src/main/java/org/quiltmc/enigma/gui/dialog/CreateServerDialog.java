@@ -4,9 +4,9 @@ import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.NetConfig;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.network.EnigmaServer;
-import org.quiltmc.enigma.utils.Pair;
-import org.quiltmc.enigma.utils.validation.Message;
-import org.quiltmc.enigma.utils.validation.StandardValidation;
+import org.quiltmc.enigma.util.Pair;
+import org.quiltmc.enigma.util.validation.Message;
+import org.quiltmc.enigma.util.validation.StandardValidation;
 
 import java.awt.Component;
 import java.awt.Dimension;

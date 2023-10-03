@@ -8,7 +8,7 @@ import org.quiltmc.enigma.translation.mapping.serde.MappingFileNameFormat;
 import org.quiltmc.enigma.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.translation.mapping.serde.MappingsWriter;
 import org.quiltmc.enigma.translation.mapping.tree.EntryTree;
-import org.quiltmc.enigma.utils.Utils;
+import org.quiltmc.enigma.util.Utils;
 
 import java.io.IOException;
 import java.nio.file.Path;

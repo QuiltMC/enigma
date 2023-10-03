@@ -44,7 +44,7 @@ public class TestJarIndexInheritanceTree {
 	@Test
 	public void obfEntries() {
 		assertThat(this.index.getEntryIndex().getClasses(), Matchers.containsInAnyOrder(
-				TestEntryFactory.newClass("org/quiltmc/enigma/inputs/Keep"), BASE_CLASS, SUB_CLASS_A, SUB_CLASS_AA, SUB_CLASS_B
+				TestEntryFactory.newClass("org/quiltmc/enigma/input/Keep"), BASE_CLASS, SUB_CLASS_A, SUB_CLASS_AA, SUB_CLASS_B
 		));
 	}
 

@@ -4,7 +4,7 @@ import org.quiltmc.enigma.Enigma;
 import org.quiltmc.enigma.gui.config.Decompiler;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.GuiUtil;
-import org.quiltmc.enigma.utils.I18n;
+import org.quiltmc.enigma.util.I18n;
 
 import java.awt.Container;
 import java.awt.GridBagConstraints;

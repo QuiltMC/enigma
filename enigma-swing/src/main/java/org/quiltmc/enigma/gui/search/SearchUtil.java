@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui.search;
 
 import org.quiltmc.enigma.gui.dialog.SearchDialog;
-import org.quiltmc.enigma.utils.Pair;
+import org.quiltmc.enigma.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;

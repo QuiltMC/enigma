@@ -7,7 +7,7 @@ import com.strobel.decompiler.languages.java.ast.CompilationUnit;
 import org.quiltmc.enigma.source.Source;
 import org.quiltmc.enigma.source.SourceIndex;
 import org.quiltmc.enigma.source.procyon.index.SourceIndexVisitor;
-import org.quiltmc.enigma.source.procyon.transformers.AddJavadocsAstTransform;
+import org.quiltmc.enigma.source.procyon.transformer.AddJavadocsAstTransform;
 import org.quiltmc.enigma.translation.mapping.EntryRemapper;
 
 import java.io.StringWriter;

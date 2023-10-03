@@ -12,7 +12,7 @@ import org.quiltmc.enigma.translation.mapping.tree.EntryTreeNode;
 import org.quiltmc.enigma.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.translation.representation.entry.ParentedEntry;
-import org.quiltmc.enigma.utils.Utils;
+import org.quiltmc.enigma.util.Utils;
 import org.tinylog.Logger;
 
 import java.nio.file.Path;

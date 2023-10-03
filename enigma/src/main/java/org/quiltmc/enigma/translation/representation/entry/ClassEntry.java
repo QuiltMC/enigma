@@ -6,7 +6,7 @@ import org.quiltmc.enigma.translation.Translator;
 import org.quiltmc.enigma.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.translation.mapping.IdentifierValidation;
 import org.quiltmc.enigma.translation.representation.TypeDescriptor;
-import org.quiltmc.enigma.utils.validation.ValidationContext;
+import org.quiltmc.enigma.util.validation.ValidationContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

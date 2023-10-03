@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.dialog;
 import org.quiltmc.enigma.Enigma;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.util.GuiUtil;
-import org.quiltmc.enigma.utils.I18n;
+import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.tinylog.Logger;
 
