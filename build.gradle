@@ -6,12 +6,16 @@ plugins {
     id "org.xbib.gradle.plugin.jflex" version "3.0.0"
 }
 
+repositories {
+    mavenCentral()
+}
+
 group = 'org.quiltmc'
 version = '0.1.0'
 
 // exclude auto-generated jflex lexer from checkstyle
 tasks.withType(Checkstyle).configureEach {
-    exclude '**cuchaz/enigma/gui/syntax/generated**'
+    exclude '**org/quiltmc/syntaxpain/generated**'
 }
 
 // fix jflex generation
