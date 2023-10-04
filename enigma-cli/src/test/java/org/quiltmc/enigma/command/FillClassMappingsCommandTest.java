@@ -1,12 +1,12 @@
 package org.quiltmc.enigma.command;
 
 import org.quiltmc.enigma.TestUtil;
-import org.quiltmc.enigma.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.translation.mapping.serde.MappingFormat;
-import org.quiltmc.enigma.translation.mapping.tree.EntryTree;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.translation.representation.entry.FieldEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;

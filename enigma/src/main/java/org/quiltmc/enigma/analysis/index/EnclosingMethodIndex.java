@@ -1,7 +1,8 @@
 package org.quiltmc.enigma.analysis.index;
 
-import org.quiltmc.enigma.translation.representation.entry.ClassDefEntry;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.analysis.index.JarIndexer;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;

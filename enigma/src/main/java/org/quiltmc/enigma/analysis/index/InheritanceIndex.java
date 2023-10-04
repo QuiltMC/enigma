@@ -3,8 +3,9 @@ package org.quiltmc.enigma.analysis.index;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import org.quiltmc.enigma.translation.representation.entry.ClassDefEntry;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.analysis.index.JarIndexer;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 
 import java.util.Collection;
 import java.util.HashSet;

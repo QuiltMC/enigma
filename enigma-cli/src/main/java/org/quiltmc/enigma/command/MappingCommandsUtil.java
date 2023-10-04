@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.command;
 
 import org.quiltmc.enigma.translation.mapping.serde.MappingFormat;
-import org.quiltmc.enigma.translation.mapping.serde.MappingsWriter;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
 import org.quiltmc.enigma.translation.mapping.serde.tinyv2.TinyV2Writer;
 
 public final class MappingCommandsUtil {

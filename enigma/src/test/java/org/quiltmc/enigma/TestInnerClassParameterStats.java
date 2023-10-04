@@ -1,6 +1,7 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.classprovider.JarClassProvider;
+import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.stats.ProjectStatsResult;
 import org.quiltmc.enigma.stats.StatType;
 import org.quiltmc.enigma.stats.StatsGenerator;

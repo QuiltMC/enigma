@@ -1,17 +1,18 @@
 package org.quiltmc.enigma.analysis.index;
 
-import org.quiltmc.enigma.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.translation.mapping.tree.EntryTree;
-import org.quiltmc.enigma.translation.mapping.tree.HashEntryTree;
-import org.quiltmc.enigma.translation.representation.AccessFlags;
-import org.quiltmc.enigma.translation.representation.entry.ClassDefEntry;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.translation.representation.entry.Entry;
-import org.quiltmc.enigma.translation.representation.entry.FieldDefEntry;
-import org.quiltmc.enigma.translation.representation.entry.FieldEntry;
-import org.quiltmc.enigma.translation.representation.entry.LocalVariableEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodDefEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.analysis.index.JarIndexer;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
+import org.quiltmc.enigma.api.translation.representation.AccessFlags;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import javax.annotation.Nullable;
 import java.util.Collection;

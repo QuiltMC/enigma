@@ -2,17 +2,19 @@ package org.quiltmc.enigma.source;
 
 import org.quiltmc.enigma.EnigmaProject;
 import org.quiltmc.enigma.EnigmaServices;
-import org.quiltmc.enigma.analysis.EntryReference;
+import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.service.NameProposalService;
-import org.quiltmc.enigma.translation.LocalNameGenerator;
-import org.quiltmc.enigma.translation.TranslateResult;
-import org.quiltmc.enigma.translation.Translator;
+import org.quiltmc.enigma.api.source.SourceIndex;
+import org.quiltmc.enigma.api.source.Token;
+import org.quiltmc.enigma.impl.translation.LocalNameGenerator;
+import org.quiltmc.enigma.api.translation.TranslateResult;
+import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.translation.mapping.EntryRemapper;
-import org.quiltmc.enigma.translation.mapping.ResolutionStrategy;
-import org.quiltmc.enigma.translation.representation.TypeDescriptor;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.translation.representation.entry.Entry;
-import org.quiltmc.enigma.translation.representation.entry.LocalVariableDefEntry;
+import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
+import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableDefEntry;
 
 import javax.annotation.Nullable;
 import java.util.Collection;

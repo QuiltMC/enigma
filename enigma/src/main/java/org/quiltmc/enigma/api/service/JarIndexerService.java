@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.api.service;
 
 import org.quiltmc.enigma.analysis.index.JarIndex;
-import org.quiltmc.enigma.classprovider.ClassProvider;
+import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.objectweb.asm.ClassVisitor;
 
 import java.util.Set;

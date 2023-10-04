@@ -1,8 +1,9 @@
 package org.quiltmc.enigma;
 
+import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.stats.ProjectStatsResult;
 import org.junit.jupiter.api.Test;
-import org.quiltmc.enigma.classprovider.ClasspathClassProvider;
+import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.stats.StatType;
 import org.quiltmc.enigma.stats.StatsGenerator;
 

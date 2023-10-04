@@ -1,5 +1,8 @@
 package org.quiltmc.enigma.source;
 
+import org.quiltmc.enigma.api.source.SourceIndex;
+import org.quiltmc.enigma.api.source.Token;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;

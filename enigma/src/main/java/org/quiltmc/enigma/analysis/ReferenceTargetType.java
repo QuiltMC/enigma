@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.analysis;
 
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 
 public abstract class ReferenceTargetType {
 	public abstract Kind getKind();

@@ -1,9 +1,10 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.classprovider.ClasspathClassProvider;
-import org.quiltmc.enigma.source.Decompiler;
+import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
+import org.quiltmc.enigma.api.source.Decompiler;
 import org.quiltmc.enigma.source.Decompilers;
-import org.quiltmc.enigma.source.SourceSettings;
+import org.quiltmc.enigma.api.source.SourceSettings;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

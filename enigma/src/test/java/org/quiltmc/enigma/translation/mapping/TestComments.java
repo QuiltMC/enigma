@@ -1,12 +1,13 @@
 package org.quiltmc.enigma.translation.mapping;
 
 import org.quiltmc.enigma.TestUtil;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.translation.mapping.serde.MappingFileNameFormat;
-import org.quiltmc.enigma.translation.mapping.serde.MappingParseException;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.translation.mapping.serde.enigma.EnigmaMappingsReader;
 import org.quiltmc.enigma.translation.mapping.serde.tinyv2.TinyV2Writer;
-import org.quiltmc.enigma.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

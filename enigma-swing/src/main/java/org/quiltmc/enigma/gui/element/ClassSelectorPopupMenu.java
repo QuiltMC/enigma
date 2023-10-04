@@ -5,7 +5,7 @@ import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.docker.ClassesDocker;
 import org.quiltmc.enigma.gui.util.PackageRenamer;
 import org.quiltmc.enigma.translation.mapping.EntryChange;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 

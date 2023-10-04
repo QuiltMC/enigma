@@ -1,17 +1,20 @@
 package org.quiltmc.enigma.translation.mapping;
 
 import org.quiltmc.enigma.analysis.index.JarIndex;
-import org.quiltmc.enigma.translation.MappingTranslator;
-import org.quiltmc.enigma.translation.Translatable;
-import org.quiltmc.enigma.translation.TranslateResult;
-import org.quiltmc.enigma.translation.Translator;
-import org.quiltmc.enigma.translation.mapping.tree.DeltaTrackingTree;
-import org.quiltmc.enigma.translation.mapping.tree.EntryTree;
-import org.quiltmc.enigma.translation.mapping.tree.HashEntryTree;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.translation.representation.entry.Entry;
-import org.quiltmc.enigma.translation.representation.entry.FieldEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
+import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
+import org.quiltmc.enigma.api.translation.MappingTranslator;
+import org.quiltmc.enigma.api.translation.Translatable;
+import org.quiltmc.enigma.api.translation.TranslateResult;
+import org.quiltmc.enigma.api.translation.Translator;
+import org.quiltmc.enigma.api.translation.mapping.tree.DeltaTrackingTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.validation.Message;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 

@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.source;
 
+import org.quiltmc.enigma.api.source.Token;
+
 import java.util.HashMap;
 import java.util.Map;
 

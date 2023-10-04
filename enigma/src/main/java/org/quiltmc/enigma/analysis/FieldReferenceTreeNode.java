@@ -2,10 +2,11 @@ package org.quiltmc.enigma.analysis;
 
 import org.quiltmc.enigma.analysis.index.JarIndex;
 import org.quiltmc.enigma.analysis.index.ReferenceIndex;
-import org.quiltmc.enigma.translation.Translator;
-import org.quiltmc.enigma.translation.representation.entry.FieldEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodDefEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.analysis.EntryReference;
+import org.quiltmc.enigma.api.translation.Translator;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 

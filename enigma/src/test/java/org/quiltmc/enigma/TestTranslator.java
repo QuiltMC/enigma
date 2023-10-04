@@ -1,12 +1,13 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.classprovider.ClasspathClassProvider;
-import org.quiltmc.enigma.translation.TranslateResult;
-import org.quiltmc.enigma.translation.Translator;
-import org.quiltmc.enigma.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
+import org.quiltmc.enigma.api.translation.TranslateResult;
+import org.quiltmc.enigma.api.translation.Translator;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.translation.mapping.serde.MappingFormat;
-import org.quiltmc.enigma.translation.mapping.tree.EntryTree;
-import org.quiltmc.enigma.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

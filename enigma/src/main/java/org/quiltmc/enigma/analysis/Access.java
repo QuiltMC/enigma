@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.analysis;
 
-import org.quiltmc.enigma.translation.representation.AccessFlags;
+import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 
 import java.lang.reflect.Modifier;
 

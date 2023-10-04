@@ -1,11 +1,11 @@
 package org.quiltmc.enigma.analysis;
 
 import org.quiltmc.enigma.analysis.index.JarIndex;
-import org.quiltmc.enigma.translation.Translator;
-import org.quiltmc.enigma.translation.mapping.EntryResolver;
-import org.quiltmc.enigma.translation.mapping.ResolutionStrategy;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.translation.Translator;
+import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
+import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import java.util.ArrayList;
 import java.util.Collection;

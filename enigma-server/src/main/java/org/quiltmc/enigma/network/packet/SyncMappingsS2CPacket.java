@@ -2,11 +2,11 @@ package org.quiltmc.enigma.network.packet;
 
 import org.quiltmc.enigma.network.ClientPacketHandler;
 import org.quiltmc.enigma.network.EnigmaServer;
-import org.quiltmc.enigma.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.translation.mapping.tree.EntryTree;
-import org.quiltmc.enigma.translation.mapping.tree.EntryTreeNode;
-import org.quiltmc.enigma.translation.mapping.tree.HashEntryTree;
-import org.quiltmc.enigma.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
+import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
 import java.io.DataInput;
 import java.io.DataOutput;

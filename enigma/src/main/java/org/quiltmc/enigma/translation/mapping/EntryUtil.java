@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.translation.mapping;
 
-import org.quiltmc.enigma.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 
 import javax.annotation.Nonnull;

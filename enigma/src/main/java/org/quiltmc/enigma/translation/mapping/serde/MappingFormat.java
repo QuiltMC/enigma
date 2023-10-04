@@ -1,8 +1,11 @@
 package org.quiltmc.enigma.translation.mapping.serde;
 
 import com.google.common.io.MoreFiles;
-import org.quiltmc.enigma.ProgressListener;
-import org.quiltmc.enigma.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingsReader;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.translation.mapping.serde.enigma.EnigmaMappingsReader;
 import org.quiltmc.enigma.translation.mapping.serde.enigma.EnigmaMappingsWriter;
@@ -12,7 +15,7 @@ import org.quiltmc.enigma.translation.mapping.serde.recaf.RecafMappingsWriter;
 import org.quiltmc.enigma.translation.mapping.serde.srg.SrgMappingsWriter;
 import org.quiltmc.enigma.translation.mapping.serde.tinyv2.TinyV2Reader;
 import org.quiltmc.enigma.translation.mapping.serde.tinyv2.TinyV2Writer;
-import org.quiltmc.enigma.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 
 import javax.annotation.Nullable;
 import java.io.IOException;

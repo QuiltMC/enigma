@@ -2,11 +2,12 @@ package org.quiltmc.enigma.translation.mapping;
 
 import org.quiltmc.enigma.Enigma;
 import org.quiltmc.enigma.EnigmaProject;
-import org.quiltmc.enigma.ProgressListener;
+import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.TestUtil;
-import org.quiltmc.enigma.classprovider.ClasspathClassProvider;
-import org.quiltmc.enigma.translation.mapping.tree.EntryTree;
-import org.quiltmc.enigma.translation.mapping.tree.HashEntryTree;
+import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.util.validation.Message;
 import org.quiltmc.enigma.util.validation.ParameterizedMessage;
 import org.quiltmc.enigma.util.validation.ValidationContext;

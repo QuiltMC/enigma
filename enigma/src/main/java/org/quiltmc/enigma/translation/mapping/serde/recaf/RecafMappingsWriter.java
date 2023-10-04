@@ -1,17 +1,17 @@
 package org.quiltmc.enigma.translation.mapping.serde.recaf;
 
 import com.google.common.collect.Lists;
-import org.quiltmc.enigma.ProgressListener;
-import org.quiltmc.enigma.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.translation.mapping.serde.MappingSaveParameters;
-import org.quiltmc.enigma.translation.mapping.serde.MappingsWriter;
-import org.quiltmc.enigma.translation.mapping.tree.EntryTree;
-import org.quiltmc.enigma.translation.mapping.tree.EntryTreeNode;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.translation.representation.entry.Entry;
-import org.quiltmc.enigma.translation.representation.entry.FieldEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.tinylog.Logger;
 
 import java.io.BufferedWriter;

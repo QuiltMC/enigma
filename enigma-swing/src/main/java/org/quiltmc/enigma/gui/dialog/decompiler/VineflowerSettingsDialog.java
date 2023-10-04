@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.dialog.decompiler;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.DecompilerConfig;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.source.vineflower.VineflowerPreferences;
+import org.quiltmc.enigma.impl.source.vineflower.VineflowerPreferences;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.BoxLayout;

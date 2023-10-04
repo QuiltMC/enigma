@@ -5,9 +5,9 @@ import org.quiltmc.enigma.analysis.index.EntryIndex;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.LookAndFeel;
 import org.quiltmc.enigma.stats.ProjectStatsResult;
-import org.quiltmc.enigma.translation.representation.AccessFlags;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.translation.representation.AccessFlags;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.Os;
 
 import javax.swing.Icon;

@@ -1,7 +1,7 @@
 package org.quiltmc.enigma;
 
 import org.quiltmc.enigma.source.Decompilers;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;

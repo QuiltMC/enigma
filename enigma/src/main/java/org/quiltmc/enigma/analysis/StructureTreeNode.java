@@ -2,17 +2,17 @@ package org.quiltmc.enigma.analysis;
 
 import org.quiltmc.enigma.EnigmaProject;
 import org.quiltmc.enigma.api.service.NameProposalService;
-import org.quiltmc.enigma.translation.TranslateResult;
+import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.translation.mapping.EntryRemapper;
-import org.quiltmc.enigma.translation.representation.AccessFlags;
-import org.quiltmc.enigma.translation.representation.TypeDescriptor;
-import org.quiltmc.enigma.translation.representation.entry.ClassDefEntry;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.translation.representation.entry.DefEntry;
-import org.quiltmc.enigma.translation.representation.entry.FieldDefEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodDefEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
-import org.quiltmc.enigma.translation.representation.entry.ParentedEntry;
+import org.quiltmc.enigma.api.translation.representation.AccessFlags;
+import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.DefEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;

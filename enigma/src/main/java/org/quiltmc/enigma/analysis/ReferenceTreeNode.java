@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.analysis;
 
-import org.quiltmc.enigma.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.analysis.EntryReference;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
 public interface ReferenceTreeNode<E extends Entry<?>, C extends Entry<?>> {
 	/**

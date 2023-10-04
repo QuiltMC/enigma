@@ -1,9 +1,9 @@
 package org.quiltmc.enigma.command;
 
 import org.quiltmc.enigma.EnigmaProject;
-import org.quiltmc.enigma.ProgressListener;
+import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.EnigmaProject.DecompileErrorStrategy;
-import org.quiltmc.enigma.source.DecompilerService;
+import org.quiltmc.enigma.api.source.DecompilerService;
 import org.quiltmc.enigma.source.Decompilers;
 import org.tinylog.Logger;
 

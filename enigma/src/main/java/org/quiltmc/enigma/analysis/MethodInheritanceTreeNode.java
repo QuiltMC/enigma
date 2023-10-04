@@ -3,9 +3,9 @@ package org.quiltmc.enigma.analysis;
 import org.quiltmc.enigma.analysis.index.EntryIndex;
 import org.quiltmc.enigma.analysis.index.InheritanceIndex;
 import org.quiltmc.enigma.analysis.index.JarIndex;
-import org.quiltmc.enigma.translation.Translator;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.translation.Translator;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 public class MethodInheritanceTreeNode extends AbstractMethodTreeNode {
 	private final boolean implemented;

@@ -1,9 +1,10 @@
 package org.quiltmc.enigma.source;
 
-import org.quiltmc.enigma.source.bytecode.BytecodeDecompiler;
-import org.quiltmc.enigma.source.cfr.CfrDecompiler;
-import org.quiltmc.enigma.source.procyon.ProcyonDecompiler;
-import org.quiltmc.enigma.source.vineflower.VineflowerDecompiler;
+import org.quiltmc.enigma.api.source.DecompilerService;
+import org.quiltmc.enigma.impl.source.bytecode.BytecodeDecompiler;
+import org.quiltmc.enigma.impl.source.cfr.CfrDecompiler;
+import org.quiltmc.enigma.impl.source.procyon.ProcyonDecompiler;
+import org.quiltmc.enigma.impl.source.vineflower.VineflowerDecompiler;
 
 public class Decompilers {
 	public static final DecompilerService VINEFLOWER = VineflowerDecompiler::new;

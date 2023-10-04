@@ -1,12 +1,15 @@
 package org.quiltmc.enigma.translation.mapping;
 
-import org.quiltmc.enigma.translation.Translatable;
-import org.quiltmc.enigma.translation.TranslateResult;
-import org.quiltmc.enigma.translation.Translator;
-import org.quiltmc.enigma.translation.mapping.tree.EntryTree;
-import org.quiltmc.enigma.translation.mapping.tree.EntryTreeNode;
-import org.quiltmc.enigma.translation.mapping.tree.HashEntryTree;
-import org.quiltmc.enigma.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.Translatable;
+import org.quiltmc.enigma.api.translation.TranslateResult;
+import org.quiltmc.enigma.api.translation.Translator;
+import org.quiltmc.enigma.api.translation.mapping.EntryMap;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
+import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
 import java.util.stream.Stream;
 

@@ -2,7 +2,7 @@ package org.quiltmc.enigma.command;
 
 import org.quiltmc.enigma.EnigmaProject;
 import org.quiltmc.enigma.analysis.index.JarIndex;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.tinylog.Logger;
 
 import java.nio.file.Path;

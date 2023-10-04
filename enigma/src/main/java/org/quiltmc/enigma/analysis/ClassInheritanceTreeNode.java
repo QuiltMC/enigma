@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.analysis;
 
 import org.quiltmc.enigma.analysis.index.InheritanceIndex;
-import org.quiltmc.enigma.translation.Translator;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.Translator;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 
 import java.util.ArrayList;
 import java.util.List;

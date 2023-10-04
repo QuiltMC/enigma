@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.analysis;
 
-import org.quiltmc.enigma.translation.Translator;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.translation.Translator;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 

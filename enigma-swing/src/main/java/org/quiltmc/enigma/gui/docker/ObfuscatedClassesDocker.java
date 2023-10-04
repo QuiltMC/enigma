@@ -2,7 +2,7 @@ package org.quiltmc.enigma.gui.docker;
 
 import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 
 import java.util.Comparator;
 

@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.analysis;
 
-import org.quiltmc.enigma.translation.TranslateResult;
-import org.quiltmc.enigma.translation.Translator;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.TranslateResult;
+import org.quiltmc.enigma.api.translation.Translator;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 

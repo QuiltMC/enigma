@@ -1,11 +1,11 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.analysis.EntryReference;
-import org.quiltmc.enigma.translation.representation.MethodDescriptor;
-import org.quiltmc.enigma.translation.representation.TypeDescriptor;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.translation.representation.entry.FieldEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.analysis.EntryReference;
+import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
+import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 public class TestEntryFactory {
 	public static ClassEntry newClass(String name) {

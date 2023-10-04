@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.translation.mapping.serde;
 
-import org.quiltmc.enigma.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;

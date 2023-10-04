@@ -4,7 +4,7 @@ import org.quiltmc.enigma.EnigmaProject;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.source.RenamableTokenType;
-import org.quiltmc.enigma.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
 import javax.annotation.Nullable;
 import javax.swing.JButton;

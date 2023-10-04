@@ -1,15 +1,15 @@
 package org.quiltmc.enigma.gui.dialog;
 
 import com.google.common.base.Strings;
-import org.quiltmc.enigma.analysis.EntryReference;
+import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.gui.GuiController;
 import org.quiltmc.enigma.gui.config.UiConfig;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.translation.mapping.EntryChange;
-import org.quiltmc.enigma.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 

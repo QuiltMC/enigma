@@ -1,13 +1,14 @@
 package org.quiltmc.enigma.analysis.index;
 
 import com.google.common.collect.Maps;
-import org.quiltmc.enigma.translation.representation.AccessFlags;
-import org.quiltmc.enigma.translation.representation.ArgumentDescriptor;
-import org.quiltmc.enigma.translation.representation.MethodDescriptor;
-import org.quiltmc.enigma.translation.representation.TypeDescriptor;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodDefEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.analysis.index.JarIndexer;
+import org.quiltmc.enigma.api.translation.representation.AccessFlags;
+import org.quiltmc.enigma.api.translation.representation.ArgumentDescriptor;
+import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
+import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import javax.annotation.Nullable;
 import java.util.Collection;

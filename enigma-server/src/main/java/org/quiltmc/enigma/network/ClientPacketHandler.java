@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.network;
 
 import org.quiltmc.enigma.translation.mapping.EntryChange;
-import org.quiltmc.enigma.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.network.packet.Packet;
 
 import java.util.List;

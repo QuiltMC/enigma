@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.gui.node;
 
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 
 import javax.swing.tree.TreeNode;
 import java.util.Comparator;

@@ -2,7 +2,7 @@ package org.quiltmc.enigma.stats;
 
 import com.strobel.core.Triple;
 import org.quiltmc.enigma.EnigmaProject;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 
 import java.util.ArrayList;
 import java.util.Collection;
