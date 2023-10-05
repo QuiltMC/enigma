@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.gui.panel;
 
-import org.quiltmc.enigma.EnigmaProject;
+import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.class_handle.ClassHandleError;
@@ -21,10 +21,10 @@ import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.gui.highlight.SelectionHighlightPainter;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.source.DecompiledClassSource;
-import org.quiltmc.enigma.source.RenamableTokenType;
+import org.quiltmc.enigma.api.source.DecompiledClassSource;
+import org.quiltmc.enigma.api.source.RenamableTokenType;
 import org.quiltmc.enigma.api.source.Token;
-import org.quiltmc.enigma.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;

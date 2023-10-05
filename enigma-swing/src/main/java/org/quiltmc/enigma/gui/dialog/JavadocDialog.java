@@ -7,7 +7,7 @@ import org.quiltmc.enigma.gui.config.UiConfig;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.translation.mapping.EntryChange;
+import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.util.I18n;

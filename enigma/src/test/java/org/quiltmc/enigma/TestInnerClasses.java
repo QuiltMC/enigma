@@ -1,11 +1,11 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.JarIndex;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.source.Decompiler;
-import org.quiltmc.enigma.source.Decompilers;
+import org.quiltmc.enigma.impl.source.Decompilers;
 import org.quiltmc.enigma.api.source.SourceSettings;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.junit.jupiter.api.Test;

@@ -4,7 +4,7 @@ import org.quiltmc.enigma.api.source.SourceIndex;
 import org.quiltmc.enigma.api.source.SourceSettings;
 import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;

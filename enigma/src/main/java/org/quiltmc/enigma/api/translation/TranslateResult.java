@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.api.translation;
 
-import org.quiltmc.enigma.source.RenamableTokenType;
+import org.quiltmc.enigma.api.source.RenamableTokenType;
 
 import java.util.Objects;
 import java.util.function.Function;

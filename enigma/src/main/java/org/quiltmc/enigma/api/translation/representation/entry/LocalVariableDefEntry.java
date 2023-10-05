@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.api.translation.representation.entry;
 
 import com.google.common.base.Preconditions;
-import org.quiltmc.enigma.source.RenamableTokenType;
+import org.quiltmc.enigma.api.source.RenamableTokenType;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;

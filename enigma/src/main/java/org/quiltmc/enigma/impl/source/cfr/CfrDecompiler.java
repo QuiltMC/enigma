@@ -4,7 +4,7 @@ import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.source.Decompiler;
 import org.quiltmc.enigma.api.source.Source;
 import org.quiltmc.enigma.api.source.SourceSettings;
-import org.quiltmc.enigma.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.util.AsmUtil;
 import org.benf.cfr.reader.apiunreleased.ClassFileSource2;
 import org.benf.cfr.reader.apiunreleased.JarContent;

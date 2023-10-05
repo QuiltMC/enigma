@@ -4,7 +4,7 @@ import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMap;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
-import org.quiltmc.enigma.translation.mapping.MappingDelta;
+import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
 import javax.annotation.Nullable;

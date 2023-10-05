@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.config;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.dialog.decompiler.VineflowerSettingsDialog;
 import org.quiltmc.enigma.api.source.DecompilerService;
-import org.quiltmc.enigma.source.Decompilers;
+import org.quiltmc.enigma.impl.source.Decompilers;
 
 import java.util.Map;
 import java.util.function.BiConsumer;

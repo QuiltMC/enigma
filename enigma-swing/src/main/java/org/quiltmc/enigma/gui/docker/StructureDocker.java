@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui.docker;
 
-import org.quiltmc.enigma.analysis.StructureTreeNode;
-import org.quiltmc.enigma.analysis.StructureTreeOptions;
+import org.quiltmc.enigma.api.analysis.tree.StructureTreeNode;
+import org.quiltmc.enigma.api.analysis.tree.StructureTreeOptions;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.panel.EditorPanel;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;

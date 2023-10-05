@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.impl.bytecode.translator;
 
-import org.quiltmc.enigma.analysis.index.BridgeMethodIndex;
-import org.quiltmc.enigma.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.BridgeMethodIndex;
+import org.quiltmc.enigma.api.analysis.index.JarIndex;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.objectweb.asm.ClassVisitor;

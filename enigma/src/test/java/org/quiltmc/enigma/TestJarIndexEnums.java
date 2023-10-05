@@ -1,11 +1,13 @@
 package org.quiltmc.enigma;
 
+import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.stats.ProjectStatsResult;
+import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
-import org.quiltmc.enigma.stats.StatType;
-import org.quiltmc.enigma.stats.StatsGenerator;
+import org.quiltmc.enigma.api.stats.StatType;
+import org.quiltmc.enigma.api.stats.StatsGenerator;
 
 import java.io.IOException;
 import java.nio.file.Path;

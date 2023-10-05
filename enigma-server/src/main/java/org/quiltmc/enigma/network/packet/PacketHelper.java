@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.network.packet;
 
-import org.quiltmc.enigma.translation.mapping.EntryChange;
+import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;

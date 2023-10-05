@@ -3,7 +3,7 @@ package org.quiltmc.enigma.impl.source.vineflower;
 import org.quiltmc.enigma.api.source.Source;
 import org.quiltmc.enigma.api.source.SourceIndex;
 import org.quiltmc.enigma.api.source.SourceSettings;
-import org.quiltmc.enigma.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import net.fabricmc.fernflower.api.IFabricJavadocProvider;
 import org.jetbrains.java.decompiler.main.decompiler.BaseDecompiler;
 import org.jetbrains.java.decompiler.main.extern.IContextSource;

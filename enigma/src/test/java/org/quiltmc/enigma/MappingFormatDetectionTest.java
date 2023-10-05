@@ -1,6 +1,6 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.translation.mapping.serde.MappingFormat;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

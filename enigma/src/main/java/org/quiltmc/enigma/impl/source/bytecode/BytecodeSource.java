@@ -1,10 +1,10 @@
 package org.quiltmc.enigma.impl.source.bytecode;
 
-import org.quiltmc.enigma.Enigma;
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.api.source.Source;
 import org.quiltmc.enigma.api.source.SourceIndex;
-import org.quiltmc.enigma.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.util.TraceClassVisitor;
 

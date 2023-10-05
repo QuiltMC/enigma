@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui.docker;
 
 import org.quiltmc.enigma.api.analysis.EntryReference;
-import org.quiltmc.enigma.analysis.ReferenceTreeNode;
+import org.quiltmc.enigma.api.analysis.tree.ReferenceTreeNode;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.renderer.TokenListCellRenderer;
 import org.quiltmc.enigma.gui.renderer.CallsTreeCellRenderer;

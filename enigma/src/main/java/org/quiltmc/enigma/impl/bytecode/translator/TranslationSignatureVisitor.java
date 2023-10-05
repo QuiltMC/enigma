@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.impl.bytecode.translator;
 
-import org.quiltmc.enigma.Enigma;
+import org.quiltmc.enigma.api.Enigma;
 import org.objectweb.asm.signature.SignatureVisitor;
 
 import java.util.Stack;

@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.command;
 
-import org.quiltmc.enigma.EnigmaProject;
+import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 
 import java.nio.file.Path;

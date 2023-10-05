@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.api.analysis;
 
-import org.quiltmc.enigma.analysis.ReferenceTargetType;
 import org.quiltmc.enigma.api.translation.Translatable;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;

@@ -1,18 +1,18 @@
 package org.quiltmc.enigma.command;
 
-import org.quiltmc.enigma.Enigma;
-import org.quiltmc.enigma.EnigmaProfile;
-import org.quiltmc.enigma.EnigmaProject;
+import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.EnigmaProfile;
+import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.JarIndex;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.translation.mapping.MappingDelta;
+import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
-import org.quiltmc.enigma.translation.mapping.serde.MappingFormat;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
 import org.quiltmc.enigma.api.translation.mapping.tree.DeltaTrackingTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.tinylog.Logger;

@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui.docker;
 
-import org.quiltmc.enigma.analysis.AbstractClassTreeNode;
-import org.quiltmc.enigma.analysis.AbstractMethodTreeNode;
+import org.quiltmc.enigma.api.analysis.tree.AbstractClassTreeNode;
+import org.quiltmc.enigma.api.analysis.tree.AbstractMethodTreeNode;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.SingleTreeSelectionModel;

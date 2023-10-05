@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.config;
 import org.quiltmc.enigma.gui.event.ThemeChangeListener;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.source.RenamableTokenType;
+import org.quiltmc.enigma.api.source.RenamableTokenType;
 import org.quiltmc.syntaxpain.JavaSyntaxKit;
 
 import java.awt.Font;

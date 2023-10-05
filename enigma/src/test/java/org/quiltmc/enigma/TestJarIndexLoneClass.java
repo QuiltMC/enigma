@@ -1,15 +1,15 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.analysis.ClassImplementationsTreeNode;
-import org.quiltmc.enigma.analysis.ClassInheritanceTreeNode;
+import org.quiltmc.enigma.api.analysis.tree.ClassImplementationsTreeNode;
+import org.quiltmc.enigma.api.analysis.tree.ClassInheritanceTreeNode;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.EntryReference;
-import org.quiltmc.enigma.analysis.IndexTreeBuilder;
-import org.quiltmc.enigma.analysis.MethodImplementationsTreeNode;
-import org.quiltmc.enigma.analysis.MethodInheritanceTreeNode;
-import org.quiltmc.enigma.analysis.index.EntryIndex;
-import org.quiltmc.enigma.analysis.index.InheritanceIndex;
-import org.quiltmc.enigma.analysis.index.JarIndex;
+import org.quiltmc.enigma.impl.analysis.IndexTreeBuilder;
+import org.quiltmc.enigma.api.analysis.tree.MethodImplementationsTreeNode;
+import org.quiltmc.enigma.api.analysis.tree.MethodInheritanceTreeNode;
+import org.quiltmc.enigma.api.analysis.index.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.InheritanceIndex;
+import org.quiltmc.enigma.api.analysis.index.JarIndex;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.translation.VoidTranslator;

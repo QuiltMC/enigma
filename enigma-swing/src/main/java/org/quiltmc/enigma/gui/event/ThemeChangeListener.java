@@ -2,7 +2,7 @@ package org.quiltmc.enigma.gui.event;
 
 import org.quiltmc.enigma.gui.config.LookAndFeel;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
-import org.quiltmc.enigma.source.RenamableTokenType;
+import org.quiltmc.enigma.api.source.RenamableTokenType;
 
 import java.util.Map;
 

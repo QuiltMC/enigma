@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui;
 
-import org.quiltmc.enigma.Enigma;
-import org.quiltmc.enigma.EnigmaProfile;
+import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.gui.config.NetConfig;
 import org.quiltmc.enigma.gui.config.Themes;
@@ -32,7 +32,7 @@ import org.quiltmc.enigma.gui.util.LanguageUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.network.ServerMessage;
 import org.quiltmc.enigma.api.source.Token;
-import org.quiltmc.enigma.translation.mapping.EntryChange;
+import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.util.I18n;

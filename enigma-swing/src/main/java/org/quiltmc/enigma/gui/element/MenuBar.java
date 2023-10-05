@@ -22,7 +22,7 @@ import org.quiltmc.enigma.gui.dialog.keybind.ConfigureKeyBindsDialog;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.LanguageUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.translation.mapping.serde.MappingFormat;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Pair;
 import org.quiltmc.enigma.util.validation.Message;

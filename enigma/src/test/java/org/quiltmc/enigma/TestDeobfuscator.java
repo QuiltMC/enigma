@@ -1,9 +1,11 @@
 package org.quiltmc.enigma;
 
+import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.api.source.Decompiler;
-import org.quiltmc.enigma.source.Decompilers;
+import org.quiltmc.enigma.impl.source.Decompilers;
 import org.quiltmc.enigma.api.source.SourceSettings;
 import org.junit.jupiter.api.Test;
 

@@ -1,10 +1,10 @@
 package org.quiltmc.enigma.gui.util;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
-import org.quiltmc.enigma.analysis.index.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.EntryIndex;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.LookAndFeel;
-import org.quiltmc.enigma.stats.ProjectStatsResult;
+import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;

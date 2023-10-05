@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.api.translation;
 
 import org.quiltmc.enigma.api.service.NameProposalService;
-import org.quiltmc.enigma.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 

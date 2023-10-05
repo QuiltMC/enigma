@@ -2,13 +2,13 @@ package org.quiltmc.enigma;
 
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.EntryReference;
-import org.quiltmc.enigma.analysis.index.EntryIndex;
-import org.quiltmc.enigma.analysis.index.InheritanceIndex;
-import org.quiltmc.enigma.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.InheritanceIndex;
+import org.quiltmc.enigma.api.analysis.index.JarIndex;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
-import org.quiltmc.enigma.translation.mapping.IndexEntryResolver;
+import org.quiltmc.enigma.api.translation.mapping.IndexEntryResolver;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;

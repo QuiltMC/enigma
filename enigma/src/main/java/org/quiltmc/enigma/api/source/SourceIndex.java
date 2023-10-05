@@ -3,7 +3,6 @@ package org.quiltmc.enigma.api.source;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import org.quiltmc.enigma.api.analysis.EntryReference;
-import org.quiltmc.enigma.source.SourceRemapper;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;

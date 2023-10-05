@@ -1,10 +1,10 @@
 package org.quiltmc.enigma.api.class_handle;
 
-import org.quiltmc.enigma.EnigmaProject;
+import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
-import org.quiltmc.enigma.source.DecompiledClassSource;
+import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.source.Decompiler;
 import org.quiltmc.enigma.api.source.DecompilerService;
 import org.quiltmc.enigma.api.source.Source;

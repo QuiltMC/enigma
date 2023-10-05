@@ -6,9 +6,9 @@ import org.quiltmc.enigma.network.packet.MessageS2CPacket;
 import org.quiltmc.enigma.network.packet.Packet;
 import org.quiltmc.enigma.network.packet.PacketRegistry;
 import org.quiltmc.enigma.network.packet.UserListS2CPacket;
-import org.quiltmc.enigma.translation.mapping.EntryChange;
+import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.tinylog.Logger;
 

@@ -1,7 +1,6 @@
 package org.quiltmc.enigma.api.analysis.index;
 
-import org.quiltmc.enigma.analysis.ReferenceTargetType;
-import org.quiltmc.enigma.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.ReferenceTargetType;
 import org.quiltmc.enigma.api.translation.representation.Lambda;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;

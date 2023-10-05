@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.api.class_provider;
 
-import org.quiltmc.enigma.Enigma;
-import org.quiltmc.enigma.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.analysis.index.JarIndex;
 import org.quiltmc.enigma.impl.bytecode.translator.LocalVariableFixVisitor;
 import org.quiltmc.enigma.impl.bytecode.translator.SourceFixVisitor;
 import org.objectweb.asm.ClassVisitor;

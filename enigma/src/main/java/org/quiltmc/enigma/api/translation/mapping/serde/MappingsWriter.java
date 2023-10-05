@@ -2,9 +2,8 @@ package org.quiltmc.enigma.api.translation.mapping.serde;
 
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.translation.mapping.MappingDelta;
+import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
-import org.quiltmc.enigma.translation.mapping.serde.MappingSaveParameters;
 
 import java.nio.file.Path;
 

@@ -3,6 +3,8 @@ package org.quiltmc.enigma.translation.mapping.serde.recaf;
 import com.google.common.jimfs.Jimfs;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.serde.recaf.RecafMappingsReader;
+import org.quiltmc.enigma.api.translation.mapping.serde.recaf.RecafMappingsWriter;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.junit.jupiter.api.Test;
 

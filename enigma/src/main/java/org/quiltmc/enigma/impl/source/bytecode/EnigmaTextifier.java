@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.impl.source.bytecode;
 
-import org.quiltmc.enigma.Enigma;
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.source.SourceIndex;
 import org.objectweb.asm.util.Textifier;
 

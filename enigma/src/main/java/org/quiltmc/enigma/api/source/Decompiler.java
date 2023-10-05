@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.api.source;
 
-import org.quiltmc.enigma.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public interface Decompiler {

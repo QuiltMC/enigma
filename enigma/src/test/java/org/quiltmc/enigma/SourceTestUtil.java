@@ -3,7 +3,7 @@ package org.quiltmc.enigma;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.source.Source;
 import org.quiltmc.enigma.api.source.SourceIndex;
-import org.quiltmc.enigma.source.SourceRemapper;
+import org.quiltmc.enigma.api.source.SourceRemapper;
 import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 

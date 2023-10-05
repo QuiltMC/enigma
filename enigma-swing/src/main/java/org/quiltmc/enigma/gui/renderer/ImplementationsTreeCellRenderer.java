@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui.renderer;
 
-import org.quiltmc.enigma.analysis.ClassImplementationsTreeNode;
-import org.quiltmc.enigma.analysis.MethodImplementationsTreeNode;
+import org.quiltmc.enigma.api.analysis.tree.ClassImplementationsTreeNode;
+import org.quiltmc.enigma.api.analysis.tree.MethodImplementationsTreeNode;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.UiConfig;
 import org.quiltmc.enigma.gui.util.GuiUtil;

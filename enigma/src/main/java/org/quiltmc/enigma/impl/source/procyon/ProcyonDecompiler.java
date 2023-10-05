@@ -23,7 +23,7 @@ import org.quiltmc.enigma.impl.source.procyon.transformer.Java8Generics;
 import org.quiltmc.enigma.impl.source.procyon.transformer.ObfuscatedEnumSwitchRewriterTransform;
 import org.quiltmc.enigma.impl.source.procyon.transformer.RemoveObjectCasts;
 import org.quiltmc.enigma.impl.source.procyon.transformer.VarargsFixer;
-import org.quiltmc.enigma.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.util.AsmUtil;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.objectweb.asm.tree.ClassNode;

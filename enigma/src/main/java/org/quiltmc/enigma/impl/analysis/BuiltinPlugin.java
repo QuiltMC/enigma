@@ -1,13 +1,13 @@
 package org.quiltmc.enigma.impl.analysis;
 
-import org.quiltmc.enigma.Enigma;
-import org.quiltmc.enigma.analysis.index.BridgeMethodIndex;
+import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.analysis.index.BridgeMethodIndex;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaPluginContext;
 import org.quiltmc.enigma.api.service.JarIndexerService;
 import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.source.DecompilerService;
-import org.quiltmc.enigma.source.Decompilers;
+import org.quiltmc.enigma.impl.source.Decompilers;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;

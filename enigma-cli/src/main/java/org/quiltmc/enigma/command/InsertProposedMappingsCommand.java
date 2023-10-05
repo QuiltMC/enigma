@@ -1,17 +1,17 @@
 package org.quiltmc.enigma.command;
 
-import org.quiltmc.enigma.Enigma;
-import org.quiltmc.enigma.EnigmaProfile;
-import org.quiltmc.enigma.EnigmaProject;
+import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.EnigmaProfile;
+import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.analysis.index.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.EntryIndex;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.translation.ProposingTranslator;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.translation.mapping.EntryRemapper;
-import org.quiltmc.enigma.translation.mapping.serde.MappingSaveParameters;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
 import org.quiltmc.enigma.api.translation.mapping.tree.DeltaTrackingTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;

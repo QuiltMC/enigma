@@ -2,8 +2,8 @@ package org.quiltmc.enigma.network.packet;
 
 import org.quiltmc.enigma.network.ServerMessage;
 import org.quiltmc.enigma.network.ServerPacketHandler;
-import org.quiltmc.enigma.translation.mapping.EntryChange;
-import org.quiltmc.enigma.translation.mapping.EntryUtil;
+import org.quiltmc.enigma.api.translation.mapping.EntryChange;
+import org.quiltmc.enigma.util.EntryUtil;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 
 import java.io.DataInput;

@@ -1,13 +1,15 @@
 package org.quiltmc.enigma;
 
+import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
-import org.quiltmc.enigma.stats.ProjectStatsResult;
-import org.quiltmc.enigma.stats.StatType;
-import org.quiltmc.enigma.stats.StatsGenerator;
-import org.quiltmc.enigma.translation.mapping.EntryChange;
+import org.quiltmc.enigma.api.stats.ProjectStatsResult;
+import org.quiltmc.enigma.api.stats.StatType;
+import org.quiltmc.enigma.api.stats.StatsGenerator;
+import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.translation.mapping.EntryUtil;
+import org.quiltmc.enigma.util.EntryUtil;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 import org.junit.jupiter.api.Test;

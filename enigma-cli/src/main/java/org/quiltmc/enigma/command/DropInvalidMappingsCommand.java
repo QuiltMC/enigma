@@ -1,9 +1,9 @@
 package org.quiltmc.enigma.command;
 
-import org.quiltmc.enigma.EnigmaProject;
+import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.translation.mapping.serde.MappingFormat;
-import org.quiltmc.enigma.translation.mapping.serde.MappingSaveParameters;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.tinylog.Logger;
 
 import java.io.IOException;
