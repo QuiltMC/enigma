@@ -62,27 +62,27 @@ public class TestDeobfed {
 	public void decompile() {
 		Decompiler decompiler = Decompilers.CFR.create(deobfProject.getClassProvider(), new SourceSettings(false, false));
 
-		decompiler.getSource("a", null);
-		decompiler.getSource("b", null);
-		decompiler.getSource("c", null);
-		decompiler.getSource("d", null);
-		decompiler.getSource("d$1", null);
-		decompiler.getSource("e", null);
-		decompiler.getSource("f", null);
-		decompiler.getSource("g", null);
-		decompiler.getSource("g$a", null);
-		decompiler.getSource("g$a$a", null);
-		decompiler.getSource("g$b", null);
-		decompiler.getSource("g$b$a", null);
-		decompiler.getSource("h", null);
-		decompiler.getSource("h$a", null);
-		decompiler.getSource("h$a$a", null);
-		decompiler.getSource("h$b", null);
-		decompiler.getSource("h$b$a", null);
-		decompiler.getSource("h$b$a$a", null);
-		decompiler.getSource("h$b$a$b", null);
-		decompiler.getSource("i", null);
-		decompiler.getSource("i$a", null);
-		decompiler.getSource("i$b", null);
+		decompiler.getSource("a");
+		decompiler.getSource("b");
+		decompiler.getSource("c");
+		decompiler.getSource("d");
+		decompiler.getSource("d$1");
+		decompiler.getSource("e");
+		decompiler.getSource("f");
+		decompiler.getSource("g");
+		decompiler.getSource("g$a");
+		decompiler.getSource("g$a$a");
+		decompiler.getSource("g$b");
+		decompiler.getSource("g$b$a");
+		decompiler.getSource("h");
+		decompiler.getSource("h$a");
+		decompiler.getSource("h$a$a");
+		decompiler.getSource("h$b");
+		decompiler.getSource("h$b$a");
+		decompiler.getSource("h$b$a$a");
+		decompiler.getSource("h$b$a$b");
+		decompiler.getSource("i");
+		decompiler.getSource("i$a");
+		decompiler.getSource("i$b");
 	}
 }

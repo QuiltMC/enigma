@@ -70,6 +70,6 @@ public class TestInnerClasses {
 	}
 
 	private void decompile(ClassEntry classEntry) {
-		this.decompiler.getSource(classEntry.getName(), null);
+		this.decompiler.getSource(classEntry.getName());
 	}
 }

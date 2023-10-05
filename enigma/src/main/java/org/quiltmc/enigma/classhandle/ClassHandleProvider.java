@@ -243,7 +243,7 @@ public final class ClassHandleProvider {
 			return CompletableFuture.supplyAsync(() -> {
 				if (this.decompileVersion.get() != v) return null;
 
-				Result<Source, ClassHandleError> uncommentedSource = Result.ok(this.p.decompiler.getSource(this.entry.getFullName(), null));
+				Result<Source, ClassHandleError> uncommentedSource = Result.ok(this.p.decompiler.getSource(this.entry.getFullName()));
 				Entry.this.uncommentedSource = uncommentedSource;
 				Entry.this.waitingUncommentedSources.forEach(f -> f.complete(uncommentedSource));
 				Entry.this.waitingUncommentedSources.clear();
