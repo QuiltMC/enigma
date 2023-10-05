@@ -8,8 +8,6 @@ import java.util.HashSet;
 import java.util.Map;
 
 public class DecompilerConfig {
-	@Deprecated
-	private static final String QUILTFLOWER = "Quiltflower";
 	private static final String VINEFLOWER = "Vineflower";
 
 	private DecompilerConfig() {
@@ -44,20 +42,7 @@ public class DecompilerConfig {
 		// Just run the static initialization
 	}
 
-	private static void updateToVineflower() {
-		if (cfg.data().sections().containsKey(QUILTFLOWER)) {
-			ConfigSection oldSection = cfg.data().section(QUILTFLOWER);
-			ConfigSection newSection = getVineflowerSection();
-			oldSection.values().forEach(newSection::setIfAbsentString);
-
-			cfg.data().removeSection(QUILTFLOWER);
-			save();
-		}
-	}
-
 	static {
-		updateToVineflower();
-
 		VineflowerPreferences.OPTIONS.putAll(getVineflowerSection().values());
 	}
 }

@@ -79,11 +79,6 @@ public class AccessFlags {
 		return this;
 	}
 
-	@Deprecated
-	public AccessFlags setBridged() {
-		return this.setBridge();
-	}
-
 	public void setVisibility(int visibility) {
 		this.resetVisibility();
 		this.flags |= visibility;
