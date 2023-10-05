@@ -18,14 +18,30 @@ dependencies {
 	testImplementation(testFixtures(project(':enigma')))
 }
 
-mainClassName = 'cuchaz.enigma.gui.Main'
+mainClassName = 'org.quiltmc.enigma.gui.Main'
 
 jar.manifest.attributes 'Main-Class': mainClassName
 
+static String convertToGradleTaskName(String name) {
+	String newName = new String(name);
+
+	for (int i = 0; i < name.length(); i++) {
+		if (name.charAt(i) == '_') {
+			var toReplace = '_' + name.charAt(i + 1)
+			var newChar = name.charAt(i + 1).toUpperCase().toString()
+			newName = newName.replace(toReplace, newChar)
+		}
+	}
+
+	return newName
+}
+
 def registerTestTask(String name) {
-	tasks.register("${name}TestGui", JavaExec.class) {
+	String taskName = convertToGradleTaskName(name);
+
+	tasks.register("${taskName}TestGui", JavaExec.class) {
 		group("test")
-		dependsOn(":enigma:${name}TestObf")
+		dependsOn(":enigma:${taskName}TestObf")
 		mainClass = mainClassName
 		classpath = sourceSets.main.runtimeClasspath
 
@@ -38,7 +54,7 @@ def registerTestTask(String name) {
 	}
 }
 
-project(":enigma").file("src/test/java/cuchaz/enigma/inputs").listFiles().each {
+project(":enigma").file("src/test/java/org/quiltmc/enigma/input").listFiles().each {
 	if (it.directory) {
 		registerTestTask(it.name)
 	}

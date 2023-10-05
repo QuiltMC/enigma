@@ -8,6 +8,7 @@ We'll only be cataloguing major changes, since there are countless bug fixes to 
 
 - added multiplayer support
 - reworked gradle setup
+- changed package from `cuchaz.enigma` to `org.quiltmc.enigma`
 
 ### enigma
 

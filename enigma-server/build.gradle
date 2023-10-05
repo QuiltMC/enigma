@@ -9,7 +9,7 @@ dependencies {
 	implementation libs.jopt
 }
 
-mainClassName = 'cuchaz.enigma.network.DedicatedEnigmaServer'
+mainClassName = 'org.quiltmc.enigma.network.DedicatedEnigmaServer'
 
 jar.manifest.attributes 'Main-Class': mainClassName
 

@@ -1,0 +1,88 @@
+package org.quiltmc.enigma;
+
+import org.quiltmc.enigma.classprovider.ClasspathClassProvider;
+import org.quiltmc.enigma.source.Decompiler;
+import org.quiltmc.enigma.source.Decompilers;
+import org.quiltmc.enigma.source.SourceSettings;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+
+public class TestDeobfed {
+	public static final Path OBF = TestUtil.obfJar("translation");
+	public static final Path DEOBF = TestUtil.deobfJar("translation");
+	private static EnigmaProject deobfProject;
+
+	@BeforeAll
+	public static void beforeClass() throws Exception {
+		Enigma enigma = Enigma.create();
+
+		Files.createDirectories(DEOBF.getParent());
+		EnigmaProject obfProject = enigma.openJar(OBF, new ClasspathClassProvider(), ProgressListener.none());
+		obfProject.exportRemappedJar(ProgressListener.none()).write(DEOBF, ProgressListener.none());
+
+		deobfProject = enigma.openJar(DEOBF, new ClasspathClassProvider(), ProgressListener.none());
+	}
+
+	@Test
+	public void obfEntries() {
+		assertThat(deobfProject.getJarIndex().getEntryIndex().getClasses(), Matchers.containsInAnyOrder(
+				TestEntryFactory.newClass("org/quiltmc/enigma/input/Keep"),
+				TestEntryFactory.newClass("a"),
+				TestEntryFactory.newClass("b"),
+				TestEntryFactory.newClass("c"),
+				TestEntryFactory.newClass("d"),
+				TestEntryFactory.newClass("d$1"),
+				TestEntryFactory.newClass("e"),
+				TestEntryFactory.newClass("f"),
+				TestEntryFactory.newClass("g"),
+				TestEntryFactory.newClass("g$a"),
+				TestEntryFactory.newClass("g$a$a"),
+				TestEntryFactory.newClass("g$b"),
+				TestEntryFactory.newClass("g$b$a"),
+				TestEntryFactory.newClass("h"),
+				TestEntryFactory.newClass("h$a"),
+				TestEntryFactory.newClass("h$a$a"),
+				TestEntryFactory.newClass("h$b"),
+				TestEntryFactory.newClass("h$b$a"),
+				TestEntryFactory.newClass("h$b$a$a"),
+				TestEntryFactory.newClass("h$b$a$b"),
+				TestEntryFactory.newClass("i"),
+				TestEntryFactory.newClass("i$a"),
+				TestEntryFactory.newClass("i$b")
+		));
+	}
+
+	@Test
+	public void decompile() {
+		Decompiler decompiler = Decompilers.CFR.create(deobfProject.getClassProvider(), new SourceSettings(false, false));
+
+		decompiler.getSource("a", null);
+		decompiler.getSource("b", null);
+		decompiler.getSource("c", null);
+		decompiler.getSource("d", null);
+		decompiler.getSource("d$1", null);
+		decompiler.getSource("e", null);
+		decompiler.getSource("f", null);
+		decompiler.getSource("g", null);
+		decompiler.getSource("g$a", null);
+		decompiler.getSource("g$a$a", null);
+		decompiler.getSource("g$b", null);
+		decompiler.getSource("g$b$a", null);
+		decompiler.getSource("h", null);
+		decompiler.getSource("h$a", null);
+		decompiler.getSource("h$a$a", null);
+		decompiler.getSource("h$b", null);
+		decompiler.getSource("h$b$a", null);
+		decompiler.getSource("h$b$a$a", null);
+		decompiler.getSource("h$b$a$b", null);
+		decompiler.getSource("i", null);
+		decompiler.getSource("i$a", null);
+		decompiler.getSource("i$b", null);
+	}
+}

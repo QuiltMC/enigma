@@ -9,7 +9,7 @@ dependencies {
 	testImplementation(testFixtures(project(':enigma')))
 }
 
-mainClassName = 'cuchaz.enigma.command.Main'
+mainClassName = 'org.quiltmc.enigma.command.Main'
 
 jar.manifest.attributes 'Main-Class': mainClassName
 

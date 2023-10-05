@@ -40,12 +40,27 @@ task generateVersionFile {
 
 sourceSets.main.output.dir genOutputDir, builtBy: generateVersionFile
 
+static String convertToGradleTaskName(String name) {
+	String newName = new String(name);
+
+	for (int i = 0; i < name.length(); i++) {
+		if (name.charAt(i) == '_') {
+			var toReplace = '_' + name.charAt(i + 1)
+			var newChar = name.charAt(i + 1).toUpperCase().toString()
+			newName = newName.replace(toReplace, newChar)
+		}
+	}
+
+	return newName
+}
+
 // Generate obfuscated JARs for tests
 // If your test fails for class file version problem with proguard, run gradle with -Dorg.gradle.java.home="<older jdk>" flag
 def registerTestJarTasks(String name, String... input) {
+	String taskName = convertToGradleTaskName(name)
 	def libraryJarsArg = "<java.home>/jmods/java.base.jmod(!**.jar;!module-info.class)"
 
-	tasks.register("${name}TestJar", Jar.class) {
+	tasks.register("${taskName}TestJar", Jar.class) {
 		group("test-setup")
 		from(sourceSets.test.output) {
 			include input
@@ -60,9 +75,9 @@ def registerTestJarTasks(String name, String... input) {
 		confFile = "src/test/resources/proguard-$name-test.conf"
 	}
 
-	tasks.register("${name}TestObf", JavaExec.class) {
+	tasks.register("${taskName}TestObf", JavaExec.class) {
 		group("test-setup")
-		dependsOn("${name}TestJar")
+		dependsOn("${taskName}TestJar")
 		mainClass = 'proguard.ProGuard'
 		classpath configurations.proGuard
 
@@ -73,13 +88,15 @@ def registerTestJarTasks(String name, String... input) {
 	}
 }
 
-registerTestJarTasks("complete", "cuchaz/enigma/inputs/**/*.class")
+registerTestJarTasks("complete", "org/quiltmc/enigma/input/**/*.class")
 test.dependsOn("completeTestObf")
 
-file('src/test/java/cuchaz/enigma/inputs').listFiles().each { f ->
+file('src/test/java/org/quiltmc/enigma/input').listFiles().each { f ->
 	if (f.directory) {
-		registerTestJarTasks(f.name, "cuchaz/enigma/inputs/$f.name/**/*.class", "cuchaz/enigma/inputs/Keep.class")
-		test.dependsOn("${f.name}TestObf")
+		String taskName = convertToGradleTaskName(f.name)
+
+		registerTestJarTasks(f.name, "org/quiltmc/enigma/input/$f.name/**/*.class", "org/quiltmc/enigma/input/Keep.class")
+		test.dependsOn("${taskName}TestObf")
 	}
 }
 
