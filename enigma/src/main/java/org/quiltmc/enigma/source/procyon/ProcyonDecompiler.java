@@ -68,7 +68,7 @@ public class ProcyonDecompiler implements Decompiler {
 	}
 
 	@Override
-	public Source getUndocumentedSource(String className, @Nullable EntryRemapper remapper) {
+	public Source getSource(String className, @Nullable EntryRemapper remapper) {
 		TypeReference type = this.metadataSystem.lookupType(className);
 		if (type == null) {
 			throw new Error(String.format("Unable to find desc: %s", className));

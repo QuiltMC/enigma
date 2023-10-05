@@ -31,7 +31,7 @@ public class CfrDecompiler implements Decompiler {
 	}
 
 	@Override
-	public Source getUndocumentedSource(String className, @Nullable EntryRemapper mapper) {
+	public Source getSource(String className, @Nullable EntryRemapper mapper) {
 		return new CfrSource(className, this.settings, this.options, this.classFileSource, mapper);
 	}
 

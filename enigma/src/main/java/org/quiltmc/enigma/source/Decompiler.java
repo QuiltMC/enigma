@@ -5,8 +5,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public interface Decompiler {
 	default Source getUndocumentedSource(String className) {
-		return this.getUndocumentedSource(className, null);
+		return this.getSource(className, null);
 	}
 
-	Source getUndocumentedSource(String className, @Nullable EntryRemapper remapper);
+	Source getSource(String className, @Nullable EntryRemapper remapper);
 }

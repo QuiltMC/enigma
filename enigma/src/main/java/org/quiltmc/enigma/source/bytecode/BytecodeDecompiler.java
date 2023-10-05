@@ -19,7 +19,7 @@ public class BytecodeDecompiler implements Decompiler {
 	}
 
 	@Override
-	public Source getUndocumentedSource(String className, @Nullable EntryRemapper remapper) {
+	public Source getSource(String className, @Nullable EntryRemapper remapper) {
 		String rootClassName = className.contains("$") ? className.substring(0, className.indexOf("$")) : className;
 		Collection<String> classes = this.classProvider.getClasses(rootClassName);
 		List<ClassNode> otherClassNodes = classes.stream().filter(s -> !rootClassName.equals(s)).map(this.classProvider::get).toList();
