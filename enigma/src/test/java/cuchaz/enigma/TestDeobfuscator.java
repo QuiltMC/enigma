@@ -27,6 +27,6 @@ public class TestDeobfuscator {
 		EnigmaProject project = this.openProject();
 		Decompiler decompiler = Decompilers.CFR.create(project.getClassProvider(), new SourceSettings(false, false));
 
-		decompiler.getSource("a").asString();
+		decompiler.getSource("a", null).asString();
 	}
 }
