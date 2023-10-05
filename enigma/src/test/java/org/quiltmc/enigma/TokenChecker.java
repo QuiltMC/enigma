@@ -43,7 +43,7 @@ public class TokenChecker {
 
 	protected String getDeclarationToken(Entry<?> entry) {
 		// decompile the class
-		Source source = this.decompiler.getSource(entry.getContainingClass().getFullName());
+		Source source = this.decompiler.getUndocumentedSource(entry.getContainingClass().getFullName());
 		// DEBUG
 		// createDebugFile(source, entry.getContainingClass());
 		String string = source.asString();
@@ -61,7 +61,7 @@ public class TokenChecker {
 	@SuppressWarnings("unchecked")
 	protected Collection<String> getReferenceTokens(EntryReference<? extends Entry<?>, ? extends Entry<?>> reference) {
 		// decompile the class
-		Source source = this.decompiler.getSource(reference.context.getContainingClass().getFullName());
+		Source source = this.decompiler.getUndocumentedSource(reference.context.getContainingClass().getFullName());
 		String string = source.asString();
 		SourceIndex index = source.index();
 		// DEBUG

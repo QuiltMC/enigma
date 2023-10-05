@@ -71,6 +71,6 @@ public class TestInnerClasses {
 	}
 
 	private void decompile(ClassEntry classEntry) {
-		this.decompiler.getSource(classEntry.getName());
+		this.decompiler.getUndocumentedSource(classEntry.getName());
 	}
 }

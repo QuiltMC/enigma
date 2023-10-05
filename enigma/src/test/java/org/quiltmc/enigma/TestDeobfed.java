@@ -65,27 +65,27 @@ public class TestDeobfed {
 	public void decompile() {
 		Decompiler decompiler = Decompilers.CFR.create(deobfProject.getClassProvider(), new SourceSettings(false, false));
 
-		decompiler.getSource("a");
-		decompiler.getSource("b");
-		decompiler.getSource("c");
-		decompiler.getSource("d");
-		decompiler.getSource("d$1");
-		decompiler.getSource("e");
-		decompiler.getSource("f");
-		decompiler.getSource("g");
-		decompiler.getSource("g$a");
-		decompiler.getSource("g$a$a");
-		decompiler.getSource("g$b");
-		decompiler.getSource("g$b$a");
-		decompiler.getSource("h");
-		decompiler.getSource("h$a");
-		decompiler.getSource("h$a$a");
-		decompiler.getSource("h$b");
-		decompiler.getSource("h$b$a");
-		decompiler.getSource("h$b$a$a");
-		decompiler.getSource("h$b$a$b");
-		decompiler.getSource("i");
-		decompiler.getSource("i$a");
-		decompiler.getSource("i$b");
+		decompiler.getUndocumentedSource("a");
+		decompiler.getUndocumentedSource("b");
+		decompiler.getUndocumentedSource("c");
+		decompiler.getUndocumentedSource("d");
+		decompiler.getUndocumentedSource("d$1");
+		decompiler.getUndocumentedSource("e");
+		decompiler.getUndocumentedSource("f");
+		decompiler.getUndocumentedSource("g");
+		decompiler.getUndocumentedSource("g$a");
+		decompiler.getUndocumentedSource("g$a$a");
+		decompiler.getUndocumentedSource("g$b");
+		decompiler.getUndocumentedSource("g$b$a");
+		decompiler.getUndocumentedSource("h");
+		decompiler.getUndocumentedSource("h$a");
+		decompiler.getUndocumentedSource("h$a$a");
+		decompiler.getUndocumentedSource("h$b");
+		decompiler.getUndocumentedSource("h$b$a");
+		decompiler.getUndocumentedSource("h$b$a$a");
+		decompiler.getUndocumentedSource("h$b$a$b");
+		decompiler.getUndocumentedSource("i");
+		decompiler.getUndocumentedSource("i$a");
+		decompiler.getUndocumentedSource("i$b");
 	}
 }
