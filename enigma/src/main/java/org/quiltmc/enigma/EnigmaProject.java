@@ -352,7 +352,7 @@ public class EnigmaProject {
 		}
 
 		private String decompileClass(ClassNode translatedNode, Decompiler decompiler) {
-			return decompiler.getSource(translatedNode.name, this.mapper).asString();
+			return decompiler.getUndocumentedSource(translatedNode.name, this.mapper).asString();
 		}
 	}
 
