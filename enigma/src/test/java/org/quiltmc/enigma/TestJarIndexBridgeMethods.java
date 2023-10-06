@@ -7,7 +7,7 @@ import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
 import org.quiltmc.enigma.api.source.DecompilerService;
-import org.quiltmc.enigma.impl.source.Decompilers;
+import org.quiltmc.enigma.api.source.Decompilers;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;

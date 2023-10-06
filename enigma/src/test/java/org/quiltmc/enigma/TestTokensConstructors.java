@@ -1,6 +1,6 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.impl.source.Decompilers;
+import org.quiltmc.enigma.api.source.Decompilers;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.junit.jupiter.api.Test;
 

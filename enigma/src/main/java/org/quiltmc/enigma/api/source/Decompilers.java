@@ -1,6 +1,5 @@
-package org.quiltmc.enigma.impl.source;
+package org.quiltmc.enigma.api.source;
 
-import org.quiltmc.enigma.api.source.DecompilerService;
 import org.quiltmc.enigma.impl.source.bytecode.BytecodeDecompiler;
 import org.quiltmc.enigma.impl.source.cfr.CfrDecompiler;
 import org.quiltmc.enigma.impl.source.procyon.ProcyonDecompiler;
