@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.gui.renderer;
 
-import org.quiltmc.enigma.analysis.StructureTreeOptions;
+import org.quiltmc.enigma.api.analysis.tree.StructureTreeOptions;
 import org.quiltmc.enigma.util.I18n;
 
 import java.awt.Component;

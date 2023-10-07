@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.api.service;
 
-import org.quiltmc.enigma.translation.mapping.EntryRemapper;
-import org.quiltmc.enigma.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
 import java.util.Optional;
 

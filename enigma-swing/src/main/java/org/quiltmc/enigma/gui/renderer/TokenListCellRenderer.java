@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui.renderer;
 
 import org.quiltmc.enigma.gui.GuiController;
-import org.quiltmc.enigma.source.Token;
+import org.quiltmc.enigma.api.source.Token;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;

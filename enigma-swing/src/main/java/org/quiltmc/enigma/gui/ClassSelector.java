@@ -5,7 +5,7 @@ import org.quiltmc.enigma.gui.element.ClassTreeCellRenderer;
 import org.quiltmc.enigma.gui.node.ClassSelectorClassNode;
 import org.quiltmc.enigma.gui.node.SortedMutableTreeNode;
 import org.quiltmc.enigma.gui.util.GuiUtil;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 
 import javax.annotation.Nullable;
 import javax.swing.JTree;

@@ -1,7 +1,7 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.translation.representation.MethodDescriptor;
-import org.quiltmc.enigma.translation.representation.TypeDescriptor;
+import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
+import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;

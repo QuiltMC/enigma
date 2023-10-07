@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.network.packet;
 
 import org.quiltmc.enigma.network.ClientPacketHandler;
-import org.quiltmc.enigma.translation.mapping.EntryChange;
+import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 
 import java.io.DataInput;
 import java.io.DataOutput;

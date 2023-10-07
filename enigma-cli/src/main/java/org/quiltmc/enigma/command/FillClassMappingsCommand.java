@@ -1,17 +1,17 @@
 package org.quiltmc.enigma.command;
 
-import org.quiltmc.enigma.ProgressListener;
-import org.quiltmc.enigma.analysis.index.JarIndex;
-import org.quiltmc.enigma.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.translation.mapping.serde.MappingFileNameFormat;
-import org.quiltmc.enigma.translation.mapping.serde.MappingSaveParameters;
-import org.quiltmc.enigma.translation.mapping.serde.MappingsWriter;
-import org.quiltmc.enigma.translation.mapping.tree.DeltaTrackingTree;
-import org.quiltmc.enigma.translation.mapping.tree.EntryTree;
-import org.quiltmc.enigma.translation.mapping.tree.EntryTreeNode;
-import org.quiltmc.enigma.translation.mapping.tree.HashEntryTree;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.translation.representation.entry.ParentedEntry;
+import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
+import org.quiltmc.enigma.api.translation.mapping.tree.DeltaTrackingTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
+import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.util.Utils;
 import org.tinylog.Logger;
 

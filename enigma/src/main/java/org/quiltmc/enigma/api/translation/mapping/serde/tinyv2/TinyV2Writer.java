@@ -1,0 +1,184 @@
+package org.quiltmc.enigma.api.translation.mapping.serde.tinyv2;
+
+import com.google.common.base.Strings;
+import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.translation.mapping.EntryMap;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
+import org.quiltmc.enigma.impl.translation.mapping.serde.LfPrintWriter;
+import org.quiltmc.enigma.impl.translation.mapping.serde.MappingHelper;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.tinylog.Logger;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.StreamSupport;
+
+public final class TinyV2Writer implements MappingsWriter {
+	private static final String MINOR_VERSION = "0";
+	private final String obfHeader;
+	private final String deobfHeader;
+
+	public TinyV2Writer(String obfHeader, String deobfHeader) {
+		this.obfHeader = obfHeader;
+		this.deobfHeader = deobfHeader;
+	}
+
+	@Override
+	public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters parameters) {
+		List<EntryTreeNode<EntryMapping>> classes = StreamSupport.stream(mappings.spliterator(), false).filter(node -> node.getEntry() instanceof ClassEntry).toList();
+
+		try (PrintWriter writer = new LfPrintWriter(Files.newBufferedWriter(path))) {
+			writer.println("tiny\t2\t" + MINOR_VERSION + "\t" + this.obfHeader + "\t" + this.deobfHeader);
+
+			// no escape names
+
+			for (EntryTreeNode<EntryMapping> node : classes) {
+				this.writeClass(writer, node, mappings);
+			}
+		} catch (IOException ex) {
+			Logger.error(ex, "Failed to write mappings to {}", path);
+		}
+	}
+
+	private void writeClass(PrintWriter writer, EntryTreeNode<EntryMapping> node, EntryMap<EntryMapping> tree) {
+		writer.print("c\t");
+		ClassEntry classEntry = (ClassEntry) node.getEntry();
+		String fullName = classEntry.getFullName();
+		writer.print(fullName);
+		Deque<String> parts = new LinkedList<>();
+		do {
+			EntryMapping mapping = tree.get(classEntry);
+			if (mapping != null && mapping.targetName() != null) {
+				parts.addFirst(mapping.targetName());
+			} else {
+				parts.addFirst(classEntry.getName());
+			}
+
+			classEntry = classEntry.getOuterClass();
+		} while (classEntry != null);
+
+		String mappedName = String.join("$", parts);
+
+		writer.print("\t");
+
+		writer.print(mappedName); // todo escaping when we have v2 fixed later
+
+		writer.println();
+
+		this.writeComment(writer, node.getValue(), 1);
+
+		for (EntryTreeNode<EntryMapping> child : node.getChildNodes()) {
+			Entry<?> entry = child.getEntry();
+			if (entry instanceof FieldEntry) {
+				this.writeField(writer, child);
+			} else if (entry instanceof MethodEntry) {
+				this.writeMethod(writer, child);
+			}
+		}
+	}
+
+	private void writeMethod(PrintWriter writer, EntryTreeNode<EntryMapping> node) {
+		writer.print(this.indent(1));
+		writer.print("m\t");
+		writer.print(((MethodEntry) node.getEntry()).getDesc().toString());
+		writer.print("\t");
+		writer.print(node.getEntry().getName());
+		writer.print("\t");
+		EntryMapping mapping = node.getValue();
+
+		if (mapping == null) {
+			mapping = EntryMapping.DEFAULT;
+		}
+
+		if (mapping.targetName() != null) {
+			writer.println(mapping.targetName());
+		} else {
+			writer.println(node.getEntry().getName()); // todo fix v2 name inference
+		}
+
+		this.writeComment(writer, mapping, 2);
+
+		for (EntryTreeNode<EntryMapping> child : node.getChildNodes()) {
+			Entry<?> entry = child.getEntry();
+			if (entry instanceof LocalVariableEntry) {
+				this.writeParameter(writer, child);
+			}
+
+			// TODO write actual local variables
+		}
+	}
+
+	private void writeField(PrintWriter writer, EntryTreeNode<EntryMapping> node) {
+		if (node.getValue() == null || node.getValue().equals(EntryMapping.DEFAULT)) {
+			return; // Shortcut
+		}
+
+		writer.print(this.indent(1));
+		writer.print("f\t");
+		writer.print(((FieldEntry) node.getEntry()).getDesc().toString());
+		writer.print("\t");
+		writer.print(node.getEntry().getName());
+		writer.print("\t");
+		EntryMapping mapping = node.getValue();
+
+		if (mapping == null) {
+			mapping = EntryMapping.DEFAULT;
+		}
+
+		if (mapping.targetName() != null) {
+			writer.println(mapping.targetName());
+		} else {
+			writer.println(node.getEntry().getName()); // todo fix v2 name inference
+		}
+
+		this.writeComment(writer, mapping, 2);
+	}
+
+	private void writeParameter(PrintWriter writer, EntryTreeNode<EntryMapping> node) {
+		if (node.getValue() == null || node.getValue().equals(EntryMapping.DEFAULT)) {
+			return; // Shortcut
+		}
+
+		writer.print(this.indent(2));
+		writer.print("p\t");
+		writer.print(((LocalVariableEntry) node.getEntry()).getIndex());
+		writer.print("\t");
+		writer.print(node.getEntry().getName());
+		writer.print("\t");
+		EntryMapping mapping = node.getValue();
+		if (mapping == null || mapping.targetName() == null) {
+			writer.println(); // todo ???
+		} else {
+			writer.println(mapping.targetName());
+
+			this.writeComment(writer, mapping, 3);
+		}
+	}
+
+	private void writeComment(PrintWriter writer, EntryMapping mapping, int indent) {
+		if (mapping != null && mapping.javadoc() != null) {
+			writer.print(this.indent(indent));
+			writer.print("c\t");
+			writer.print(MappingHelper.escape(mapping.javadoc()));
+			writer.println();
+		}
+	}
+
+	private String indent(int level) {
+		return Strings.repeat("\t", level);
+	}
+}

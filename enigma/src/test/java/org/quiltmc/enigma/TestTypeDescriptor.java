@@ -1,6 +1,6 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.translation.representation.TypeDescriptor;
+import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 

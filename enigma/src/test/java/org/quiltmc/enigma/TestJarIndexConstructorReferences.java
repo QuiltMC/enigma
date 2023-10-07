@@ -1,12 +1,13 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.analysis.EntryReference;
-import org.quiltmc.enigma.analysis.index.JarIndex;
-import org.quiltmc.enigma.classprovider.CachingClassProvider;
-import org.quiltmc.enigma.classprovider.JarClassProvider;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodDefEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.EntryReference;
+import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
+import org.quiltmc.enigma.api.class_provider.JarClassProvider;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 

@@ -1,11 +1,11 @@
 package org.quiltmc.enigma.gui.docker;
 
-import org.quiltmc.enigma.analysis.AbstractClassTreeNode;
-import org.quiltmc.enigma.analysis.AbstractMethodTreeNode;
+import org.quiltmc.enigma.api.analysis.tree.AbstractClassTreeNode;
+import org.quiltmc.enigma.api.analysis.tree.AbstractMethodTreeNode;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.SingleTreeSelectionModel;
-import org.quiltmc.enigma.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
 import javax.annotation.Nullable;
 import javax.swing.JScrollPane;

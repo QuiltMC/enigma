@@ -1,10 +1,10 @@
 package org.quiltmc.enigma.gui;
 
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.translation.representation.entry.Entry;
-import org.quiltmc.enigma.translation.representation.entry.FieldEntry;
-import org.quiltmc.enigma.translation.representation.entry.LocalVariableEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import javax.annotation.Nullable;
 

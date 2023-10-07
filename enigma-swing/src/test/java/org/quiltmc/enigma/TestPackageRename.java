@@ -1,14 +1,15 @@
 package org.quiltmc.enigma;
 
+import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.docker.AllClassesDocker;
 import org.quiltmc.enigma.gui.element.ClassSelectorPopupMenu;
 import org.quiltmc.enigma.gui.util.PackageRenamer;
-import org.quiltmc.enigma.translation.TranslateResult;
-import org.quiltmc.enigma.translation.Translator;
-import org.quiltmc.enigma.translation.mapping.serde.MappingFormat;
-import org.quiltmc.enigma.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.TranslateResult;
+import org.quiltmc.enigma.api.translation.Translator;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 

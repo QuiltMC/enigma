@@ -1,13 +1,13 @@
 package org.quiltmc.enigma.network;
 
-import org.quiltmc.enigma.Enigma;
-import org.quiltmc.enigma.EnigmaProfile;
-import org.quiltmc.enigma.EnigmaProject;
-import org.quiltmc.enigma.ProgressListener;
-import org.quiltmc.enigma.classprovider.ClasspathClassProvider;
-import org.quiltmc.enigma.translation.mapping.serde.MappingParseException;
-import org.quiltmc.enigma.translation.mapping.EntryRemapper;
-import org.quiltmc.enigma.translation.mapping.serde.MappingFormat;
+import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.EnigmaProfile;
+import org.quiltmc.enigma.api.EnigmaProject;
+import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
 import org.quiltmc.enigma.util.Utils;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;

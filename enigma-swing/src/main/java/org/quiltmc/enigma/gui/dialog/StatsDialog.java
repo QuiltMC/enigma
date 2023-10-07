@@ -2,8 +2,8 @@ package org.quiltmc.enigma.gui.dialog;
 
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.UiConfig;
-import org.quiltmc.enigma.stats.ProjectStatsResult;
-import org.quiltmc.enigma.stats.StatType;
+import org.quiltmc.enigma.api.stats.ProjectStatsResult;
+import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;

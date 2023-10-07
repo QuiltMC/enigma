@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.gui.dialog;
 
-import org.quiltmc.enigma.Enigma;
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.gui.config.Decompiler;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.GuiUtil;

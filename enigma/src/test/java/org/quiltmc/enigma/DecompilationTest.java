@@ -1,12 +1,12 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.analysis.EntryReference;
-import org.quiltmc.enigma.classprovider.CachingClassProvider;
-import org.quiltmc.enigma.classprovider.ClassProvider;
-import org.quiltmc.enigma.classprovider.JarClassProvider;
-import org.quiltmc.enigma.source.DecompilerService;
-import org.quiltmc.enigma.source.Decompilers;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.analysis.EntryReference;
+import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
+import org.quiltmc.enigma.api.class_provider.ClassProvider;
+import org.quiltmc.enigma.api.class_provider.JarClassProvider;
+import org.quiltmc.enigma.api.source.DecompilerService;
+import org.quiltmc.enigma.api.source.Decompilers;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 

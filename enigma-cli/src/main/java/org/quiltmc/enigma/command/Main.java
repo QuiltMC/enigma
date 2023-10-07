@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.command;
 
-import org.quiltmc.enigma.Enigma;
+import org.quiltmc.enigma.api.Enigma;
 import org.tinylog.Logger;
 
 import java.util.LinkedHashMap;

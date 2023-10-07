@@ -1,14 +1,14 @@
 package org.quiltmc.enigma.gui.renderer;
 
-import org.quiltmc.enigma.analysis.ClassReferenceTreeNode;
-import org.quiltmc.enigma.analysis.EntryReference;
-import org.quiltmc.enigma.analysis.FieldReferenceTreeNode;
-import org.quiltmc.enigma.analysis.MethodReferenceTreeNode;
-import org.quiltmc.enigma.analysis.ReferenceTreeNode;
+import org.quiltmc.enigma.api.analysis.tree.ClassReferenceTreeNode;
+import org.quiltmc.enigma.api.analysis.EntryReference;
+import org.quiltmc.enigma.api.analysis.tree.FieldReferenceTreeNode;
+import org.quiltmc.enigma.api.analysis.tree.MethodReferenceTreeNode;
+import org.quiltmc.enigma.api.analysis.tree.ReferenceTreeNode;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.UiConfig;
 import org.quiltmc.enigma.gui.util.GuiUtil;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;

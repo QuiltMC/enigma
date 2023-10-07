@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.gui.config;
 
-import org.quiltmc.enigma.config.ConfigContainer;
-import org.quiltmc.enigma.config.ConfigSection;
-import org.quiltmc.enigma.source.vineflower.VineflowerPreferences;
+import org.quiltmc.enigma.api.config.ConfigContainer;
+import org.quiltmc.enigma.api.config.ConfigSection;
+import org.quiltmc.enigma.impl.source.vineflower.VineflowerPreferences;
 
 import java.util.HashSet;
 import java.util.Map;

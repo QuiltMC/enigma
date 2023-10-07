@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.gui.config;
 
-import org.quiltmc.enigma.config.ConfigContainer;
+import org.quiltmc.enigma.api.config.ConfigContainer;
 import org.quiltmc.enigma.network.EnigmaServer;
 
 public final class NetConfig {

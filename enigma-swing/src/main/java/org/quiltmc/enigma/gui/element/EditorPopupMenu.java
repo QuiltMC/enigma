@@ -1,16 +1,16 @@
 package org.quiltmc.enigma.gui.element;
 
-import org.quiltmc.enigma.analysis.EntryReference;
+import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.GuiController;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.panel.EditorPanel;
 import org.quiltmc.enigma.gui.util.GuiUtil;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.translation.representation.entry.Entry;
-import org.quiltmc.enigma.translation.representation.entry.FieldEntry;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.I18n;
 
 import java.awt.event.KeyEvent;

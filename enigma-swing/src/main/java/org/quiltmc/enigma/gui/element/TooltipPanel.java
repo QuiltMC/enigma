@@ -1,9 +1,9 @@
 package org.quiltmc.enigma.gui.element;
 
 import org.quiltmc.enigma.gui.GuiController;
-import org.quiltmc.enigma.stats.StatType;
-import org.quiltmc.enigma.stats.StatsGenerator;
-import org.quiltmc.enigma.stats.StatsResult;
+import org.quiltmc.enigma.api.stats.StatType;
+import org.quiltmc.enigma.api.stats.StatsGenerator;
+import org.quiltmc.enigma.api.stats.StatsResult;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JPanel;

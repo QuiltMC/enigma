@@ -1,6 +1,6 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.config.ConfigContainer;
+import org.quiltmc.enigma.api.config.ConfigContainer;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

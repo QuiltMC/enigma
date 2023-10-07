@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.gui;
 
-import org.quiltmc.enigma.EnigmaProfile;
+import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.config.Themes;
 import org.quiltmc.enigma.gui.config.UiConfig;

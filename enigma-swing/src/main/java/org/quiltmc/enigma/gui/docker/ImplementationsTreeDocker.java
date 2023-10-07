@@ -2,9 +2,9 @@ package org.quiltmc.enigma.gui.docker;
 
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.renderer.ImplementationsTreeCellRenderer;
-import org.quiltmc.enigma.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.translation.representation.entry.Entry;
-import org.quiltmc.enigma.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import javax.annotation.Nullable;
 import javax.swing.tree.DefaultMutableTreeNode;
