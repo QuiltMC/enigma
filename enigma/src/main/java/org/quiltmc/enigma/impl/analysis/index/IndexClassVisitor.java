@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.impl.analysis.index;
 
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.impl.analysis.MethodNodeWithAction;
-import org.quiltmc.enigma.api.analysis.index.JarIndexer;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndexer;
 import org.quiltmc.enigma.api.translation.representation.ParameterAccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;

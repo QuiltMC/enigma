@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.MappingTranslator;
 import org.quiltmc.enigma.api.translation.Translatable;
 import org.quiltmc.enigma.api.translation.TranslateResult;

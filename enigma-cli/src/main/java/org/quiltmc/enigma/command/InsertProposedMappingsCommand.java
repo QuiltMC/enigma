@@ -4,7 +4,7 @@ import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.api.analysis.index.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.translation.ProposingTranslator;

@@ -1,7 +1,7 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.api.analysis.index.BridgeMethodIndex;
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;

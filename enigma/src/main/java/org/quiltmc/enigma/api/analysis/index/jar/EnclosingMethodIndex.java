@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.api.analysis.index;
+package org.quiltmc.enigma.api.analysis.index.jar;
 
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;

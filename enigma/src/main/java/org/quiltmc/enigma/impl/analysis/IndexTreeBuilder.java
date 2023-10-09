@@ -4,7 +4,7 @@ import org.quiltmc.enigma.api.analysis.tree.ClassImplementationsTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassInheritanceTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.MethodImplementationsTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.MethodInheritanceTreeNode;
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;

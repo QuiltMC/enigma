@@ -3,8 +3,9 @@ package org.quiltmc.enigma.api;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import org.quiltmc.enigma.api.analysis.EntryReference;
-import org.quiltmc.enigma.api.analysis.index.EnclosingMethodIndex;
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EnclosingMethodIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.service.ObfuscationTestService;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
@@ -71,6 +72,7 @@ public class EnigmaProject {
 	private final Path jarPath;
 	private final ClassProvider classProvider;
 	private final JarIndex jarIndex;
+	private MappingsIndex mappingsIndex;
 	private final byte[] jarChecksum;
 
 	private EntryRemapper mapper;
@@ -84,11 +86,16 @@ public class EnigmaProject {
 		this.jarChecksum = jarChecksum;
 
 		this.mapper = EntryRemapper.empty(jarIndex);
+		this.mappingsIndex = MappingsIndex.empty();
 	}
 
 	public void setMappings(EntryTree<EntryMapping> mappings) {
+		this.mappingsIndex = MappingsIndex.empty();
+
 		if (mappings != null) {
 			this.mapper = EntryRemapper.mapped(this.jarIndex, mappings);
+			// todo progress and mark in docs that this is expensive
+			this.mappingsIndex.indexMappings(mappings, ProgressListener.none());
 		} else {
 			this.mapper = EntryRemapper.empty(this.jarIndex);
 		}

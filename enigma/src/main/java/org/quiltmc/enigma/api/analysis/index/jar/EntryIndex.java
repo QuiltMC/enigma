@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.api.analysis.index;
+package org.quiltmc.enigma.api.analysis.index.jar;
 
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;

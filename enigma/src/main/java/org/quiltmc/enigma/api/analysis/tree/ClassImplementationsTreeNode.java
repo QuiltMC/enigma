@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.api.analysis.tree;
 
-import org.quiltmc.enigma.api.analysis.index.InheritanceIndex;
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;

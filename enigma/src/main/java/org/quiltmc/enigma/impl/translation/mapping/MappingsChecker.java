@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.impl.translation.mapping;
 
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;

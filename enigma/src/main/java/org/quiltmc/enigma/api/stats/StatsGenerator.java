@@ -3,7 +3,7 @@ package org.quiltmc.enigma.api.stats;
 import com.google.common.base.Preconditions;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.api.analysis.index.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.ArgumentDescriptor;

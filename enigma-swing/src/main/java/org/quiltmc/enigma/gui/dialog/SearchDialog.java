@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.gui.dialog;
 
-import org.quiltmc.enigma.api.analysis.index.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.GuiController;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;

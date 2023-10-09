@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.impl.analysis;
 
 import org.quiltmc.enigma.api.Enigma;
-import org.quiltmc.enigma.api.analysis.index.BridgeMethodIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaPluginContext;
 import org.quiltmc.enigma.api.service.JarIndexerService;

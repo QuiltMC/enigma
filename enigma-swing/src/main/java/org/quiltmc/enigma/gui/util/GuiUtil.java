@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui.util;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
-import org.quiltmc.enigma.api.analysis.index.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.LookAndFeel;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
