@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.impl.analysis;
 
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.analysis.tree.ClassImplementationsTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassInheritanceTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.MethodImplementationsTreeNode;
@@ -23,23 +25,25 @@ public class IndexTreeBuilder {
 	}
 
 	public ClassInheritanceTreeNode buildClassInheritance(Translator translator, ClassEntry obfClassEntry) {
+		InheritanceIndex inheritanceIndex = this.index.getIndex(InheritanceIndex.class);
+
 		// get the root node
 		List<String> ancestry = new ArrayList<>();
 		ancestry.add(obfClassEntry.getFullName());
-		for (ClassEntry classEntry : this.index.getInheritanceIndex().getAncestors(obfClassEntry)) {
+		for (ClassEntry classEntry : inheritanceIndex.getAncestors(obfClassEntry)) {
 			ancestry.add(classEntry.getFullName());
 		}
 
 		ClassInheritanceTreeNode rootNode = new ClassInheritanceTreeNode(translator, ancestry.get(ancestry.size() - 1));
 
 		// expand all children recursively
-		rootNode.load(this.index.getInheritanceIndex(), true);
+		rootNode.load(inheritanceIndex, true);
 
 		return rootNode;
 	}
 
 	public ClassImplementationsTreeNode buildClassImplementations(Translator translator, ClassEntry obfClassEntry) {
-		if (this.index.getInheritanceIndex().isParent(obfClassEntry)) {
+		if (this.index.getIndex(InheritanceIndex.class).isParent(obfClassEntry)) {
 			ClassImplementationsTreeNode node = new ClassImplementationsTreeNode(translator, obfClassEntry);
 			node.load(this.index);
 			return node;
@@ -54,7 +58,7 @@ public class IndexTreeBuilder {
 		// make a root node at the base
 		MethodInheritanceTreeNode rootNode = new MethodInheritanceTreeNode(
 				translator, resolvedEntry,
-				this.index.getEntryIndex().hasMethod(resolvedEntry)
+				this.index.getIndex(EntryIndex.class).hasMethod(resolvedEntry)
 		);
 
 		// expand the full tree

@@ -95,7 +95,7 @@ public class InsertProposedMappingsCommand extends Command {
 
 		EntryRemapper mapper = project.getMapper();
 		Translator translator = new ProposingTranslator(mapper, nameProposalServices);
-		EntryIndex index = project.getJarIndex().getEntryIndex();
+		EntryIndex index = project.getJarIndex().getIndex(EntryIndex.class);
 
 		Logger.info("Proposing class names...");
 		int classes = 0;

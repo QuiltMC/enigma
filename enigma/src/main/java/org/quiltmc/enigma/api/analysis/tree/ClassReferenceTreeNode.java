@@ -50,7 +50,7 @@ public class ClassReferenceTreeNode extends DefaultMutableTreeNode implements Re
 	}
 
 	public void load(JarIndex index, boolean recurse) {
-		ReferenceIndex referenceIndex = index.getReferenceIndex();
+		ReferenceIndex referenceIndex = index.getIndex(ReferenceIndex.class);
 
 		// get all the child nodes
 		for (EntryReference<ClassEntry, MethodDefEntry> reference : referenceIndex.getReferencesToClass(this.entry)) {

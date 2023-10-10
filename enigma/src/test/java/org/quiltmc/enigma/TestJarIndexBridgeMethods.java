@@ -1,6 +1,7 @@
 package org.quiltmc.enigma;
 
 import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
@@ -43,13 +44,13 @@ public class TestJarIndexBridgeMethods {
 
 	@Test
 	public void obfEntries() {
-		assertThat(this.index.getEntryIndex().getClasses(), Matchers.containsInAnyOrder(TestEntryFactory.newClass("org/quiltmc/enigma/input/Keep"), this.baseClass,
+		assertThat(this.index.getIndex(EntryIndex.class).getClasses(), Matchers.containsInAnyOrder(TestEntryFactory.newClass("org/quiltmc/enigma/input/Keep"), this.baseClass,
 				this.otherClass, this.subClass, this.innerSubClass));
 	}
 
 	@Test
 	public void testBase() {
-		BridgeMethodIndex index = this.index.getBridgeMethodIndex();
+		BridgeMethodIndex index = this.index.getIndex(BridgeMethodIndex.class);
 
 		assertThat(index.isBridgeMethod(TestEntryFactory.newMethod(this.baseClass, "a", "()I")), is(false));
 		assertThat(index.getBridgeFromSpecialized(TestEntryFactory.newMethod(this.baseClass, "a", "()La;")), nullValue());
@@ -59,7 +60,7 @@ public class TestJarIndexBridgeMethods {
 
 	@Test
 	public void testSub() {
-		BridgeMethodIndex index = this.index.getBridgeMethodIndex();
+		BridgeMethodIndex index = this.index.getIndex(BridgeMethodIndex.class);
 
 		assertThat(index.isBridgeMethod(TestEntryFactory.newMethod(this.subClass, "f", "()Lc;")), is(false));
 		assertThat(index.isBridgeMethod(TestEntryFactory.newMethod(this.subClass, "d", "()La;")), is(true));
@@ -75,7 +76,7 @@ public class TestJarIndexBridgeMethods {
 
 	@Test
 	public void testInnerSub() {
-		BridgeMethodIndex index = this.index.getBridgeMethodIndex();
+		BridgeMethodIndex index = this.index.getIndex(BridgeMethodIndex.class);
 
 		assertThat(index.isBridgeMethod(TestEntryFactory.newMethod(this.innerSubClass, "d", "()La;")), is(true));
 		assertThat(index.getSpecializedFromBridge(TestEntryFactory.newMethod(this.innerSubClass, "a", "(I)La;")),
@@ -89,7 +90,7 @@ public class TestJarIndexBridgeMethods {
 
 	@Test
 	public void testOther() {
-		BridgeMethodIndex index = this.index.getBridgeMethodIndex();
+		BridgeMethodIndex index = this.index.getIndex(BridgeMethodIndex.class);
 
 		assertThat(index.getBridgeFromSpecialized(TestEntryFactory.newMethod(this.otherClass, "a", "()Ljava/lang/Integer;")),
 				Matchers.is(TestEntryFactory.newMethod(this.otherClass, "get", "()Ljava/lang/Object;")));

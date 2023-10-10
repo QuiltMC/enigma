@@ -47,7 +47,7 @@ public class FieldReferenceTreeNode extends DefaultMutableTreeNode implements Re
 	}
 
 	public void load(JarIndex index, boolean recurse) {
-		ReferenceIndex referenceIndex = index.getReferenceIndex();
+		ReferenceIndex referenceIndex = index.getIndex(ReferenceIndex.class);
 
 		// get all the child nodes
 		if (this.reference == null) {

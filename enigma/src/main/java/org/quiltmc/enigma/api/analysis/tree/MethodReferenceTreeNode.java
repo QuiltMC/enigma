@@ -84,7 +84,7 @@ public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements R
 	}
 
 	private Collection<EntryReference<MethodEntry, MethodDefEntry>> getReferences(JarIndex index, boolean recurseMethod) {
-		ReferenceIndex referenceIndex = index.getReferenceIndex();
+		ReferenceIndex referenceIndex = index.getIndex(ReferenceIndex.class);
 
 		if (recurseMethod) {
 			Collection<EntryReference<MethodEntry, MethodDefEntry>> references = new ArrayList<>();

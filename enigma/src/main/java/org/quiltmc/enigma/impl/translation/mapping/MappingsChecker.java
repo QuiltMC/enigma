@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.impl.translation.mapping;
 
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
@@ -64,7 +65,7 @@ public class MappingsChecker {
 	}
 
 	private boolean shouldDropBrokenEntry(Entry<?> entry) {
-		if (!this.index.getEntryIndex().hasEntry(entry)) {
+		if (!this.index.getIndex(EntryIndex.class).hasEntry(entry)) {
 			return true;
 		}
 

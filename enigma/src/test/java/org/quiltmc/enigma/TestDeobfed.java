@@ -3,6 +3,7 @@ package org.quiltmc.enigma;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.api.source.Decompiler;
 import org.quiltmc.enigma.api.source.Decompilers;
@@ -34,7 +35,7 @@ public class TestDeobfed {
 
 	@Test
 	public void obfEntries() {
-		assertThat(deobfProject.getJarIndex().getEntryIndex().getClasses(), Matchers.containsInAnyOrder(
+		assertThat(deobfProject.getJarIndex().getIndex(EntryIndex.class).getClasses(), Matchers.containsInAnyOrder(
 				TestEntryFactory.newClass("org/quiltmc/enigma/input/Keep"),
 				TestEntryFactory.newClass("a"),
 				TestEntryFactory.newClass("b"),

@@ -197,6 +197,7 @@
 	"progress.mappings.indexing.mappings": "Indexing mappings...",
 	"progress.mappings.indexing.packages": "Indexing packages...",
 	"progress.mappings.indexing.process.mappings": "Processing mappings index...",
+	"progress.mappings.indexing.process": "Running indexer: %s",
 	"progress.mappings.indexing.process.done": "Done!",
 	"progress.stats": "Generating stats",
 	"progress.stats.for": "Generating stats for: %s",

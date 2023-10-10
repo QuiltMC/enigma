@@ -28,9 +28,9 @@ public class IndexEntryResolver implements EntryResolver {
 	private final IndexTreeBuilder treeBuilder;
 
 	public IndexEntryResolver(JarIndex index) {
-		this.entryIndex = index.getEntryIndex();
-		this.inheritanceIndex = index.getInheritanceIndex();
-		this.bridgeMethodIndex = index.getBridgeMethodIndex();
+		this.entryIndex = index.getIndex(EntryIndex.class);
+		this.inheritanceIndex = index.getIndex(InheritanceIndex.class);
+		this.bridgeMethodIndex = index.getIndex(BridgeMethodIndex.class);
 
 		this.treeBuilder = new IndexTreeBuilder(index);
 	}

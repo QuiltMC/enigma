@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.translation.MappingTranslator;
@@ -95,12 +96,14 @@ public class EntryRemapper {
 	// note: just supressing warnings until it's fixed
 	@SuppressWarnings("all")
 	private void mapRecordComponentGetter(ValidationContext vc, ClassEntry classEntry, FieldEntry fieldEntry, EntryMapping fieldMapping) {
-		if (!this.jarIndex.getEntryIndex().getDefinition(classEntry).isRecord() || this.jarIndex.getEntryIndex().getFieldAccess(fieldEntry).isStatic()) {
+		EntryIndex entryIndex = this.jarIndex.getIndex(EntryIndex.class);
+
+		if (!entryIndex.getDefinition(classEntry).isRecord() || entryIndex.getFieldAccess(fieldEntry).isStatic()) {
 			return;
 		}
 
 		// Find all the methods in this record class
-		List<MethodEntry> classMethods = this.jarIndex.getEntryIndex().getMethods().stream()
+		List<MethodEntry> classMethods = entryIndex.getMethods().stream()
 				.filter(entry -> classEntry.equals(entry.getParent()))
 				.toList();
 

@@ -39,7 +39,7 @@ public class StatsGenerator {
 
 	public StatsGenerator(EnigmaProject project) {
 		this.project = project;
-		this.entryIndex = project.getJarIndex().getEntryIndex();
+		this.entryIndex = project.getJarIndex().getIndex(EntryIndex.class);
 		this.entryResolver = project.getJarIndex().getEntryResolver();
 	}
 

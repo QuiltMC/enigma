@@ -45,8 +45,8 @@ public class MethodImplementationsTreeNode extends AbstractMethodTreeNode {
 	public void load(JarIndex index) {
 		// get all method implementations
 		List<MethodImplementationsTreeNode> nodes = new ArrayList<>();
-		EntryIndex entryIndex = index.getEntryIndex();
-		InheritanceIndex inheritanceIndex = index.getInheritanceIndex();
+		EntryIndex entryIndex = index.getIndex(EntryIndex.class);
+		InheritanceIndex inheritanceIndex = index.getIndex(InheritanceIndex.class);
 
 		Collection<ClassEntry> descendants = inheritanceIndex.getDescendants(this.entry.getParent());
 		for (ClassEntry inheritor : descendants) {

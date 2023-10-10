@@ -4,6 +4,7 @@ import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.index.jar.EnclosingMethodIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.service.NameProposalService;
@@ -171,7 +172,7 @@ public class EnigmaProject {
 			return false;
 		}
 
-		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);
+		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
 	}
 
 	public boolean isRenamable(Entry<?> obfEntry) {
@@ -193,7 +194,7 @@ public class EnigmaProject {
 				}
 			}
 
-			ClassDefEntry parent = this.jarIndex.getEntryIndex().getDefinition(obfMethodEntry.getParent());
+			ClassDefEntry parent = this.jarIndex.getIndex(EntryIndex.class).getDefinition(obfMethodEntry.getParent());
 			if (parent != null && parent.isEnum()
 					&& ((name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";"))
 					|| (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")))) {
@@ -203,7 +204,7 @@ public class EnigmaProject {
 			return false;
 		} else if (obfEntry instanceof LocalVariableEntry localEntry && localEntry.isArgument()) {
 			MethodEntry method = localEntry.getParent();
-			ClassDefEntry parent = this.jarIndex.getEntryIndex().getDefinition(method.getParent());
+			ClassDefEntry parent = this.jarIndex.getIndex(EntryIndex.class).getDefinition(method.getParent());
 
 			// if this is the valueOf method of an enum class, the argument shouldn't be able to be renamed.
 			if (parent.isEnum() && method.getName().equals("valueOf") && method.getDesc().toString().equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")) {
@@ -213,7 +214,7 @@ public class EnigmaProject {
 			return false;
 		}
 
-		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);
+		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
 	}
 
 	public boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {
@@ -252,17 +253,17 @@ public class EnigmaProject {
 	}
 
 	public boolean isSynthetic(Entry<?> entry) {
-		return this.jarIndex.getEntryIndex().hasEntry(entry) && this.jarIndex.getEntryIndex().getEntryAccess(entry).isSynthetic();
+		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(entry) && this.jarIndex.getIndex(EntryIndex.class).getEntryAccess(entry).isSynthetic();
 	}
 
 	public boolean isAnonymousOrLocal(ClassEntry classEntry) {
-		EnclosingMethodIndex enclosingMethodIndex = this.jarIndex.getEnclosingMethodIndex();
+		EnclosingMethodIndex enclosingMethodIndex = this.jarIndex.getIndex(EnclosingMethodIndex.class);
 		// Only local and anonymous classes may have the EnclosingMethod attribute
 		return enclosingMethodIndex.hasEnclosingMethod(classEntry);
 	}
 
 	public JarExport exportRemappedJar(ProgressListener progress) {
-		Collection<ClassEntry> classEntries = this.jarIndex.getEntryIndex().getClasses();
+		Collection<ClassEntry> classEntries = this.jarIndex.getIndex(EntryIndex.class).getClasses();
 		ClassProvider fixingClassProvider = new ObfuscationFixClassProvider(this.classProvider, this.jarIndex);
 
 		NameProposalService[] nameProposalServices = this.getEnigma().getServices().get(NameProposalService.TYPE).toArray(new NameProposalService[0]);

@@ -56,7 +56,7 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 
 	private void registerSpecializedMethodNamingService(EnigmaPluginContext ctx) {
 		ctx.registerService("enigma:specialized_method_name_proposer", NameProposalService.TYPE, ctx1 -> (obfEntry, remapper) -> {
-			BridgeMethodIndex bridgeMethodIndex = remapper.getJarIndex().getBridgeMethodIndex();
+			BridgeMethodIndex bridgeMethodIndex = remapper.getJarIndex().getIndex(BridgeMethodIndex.class);
 			if (obfEntry instanceof MethodEntry obfMethod) {
 				if (bridgeMethodIndex.isSpecializedMethod(obfMethod)) {
 					return Optional.ofNullable(bridgeMethodIndex.getBridgeFromSpecialized(obfMethod)).map(ParentedEntry::getName);

@@ -147,9 +147,9 @@ public class PackageVisibilityIndex implements JarIndexer {
 
 	@Override
 	public void processIndex(JarIndex index) {
-		EntryIndex entryIndex = index.getEntryIndex();
-		ReferenceIndex referenceIndex = index.getReferenceIndex();
-		InheritanceIndex inheritanceIndex = index.getInheritanceIndex();
+		EntryIndex entryIndex = index.getIndex(EntryIndex.class);
+		ReferenceIndex referenceIndex = index.getIndex(ReferenceIndex.class);
+		InheritanceIndex inheritanceIndex = index.getIndex(InheritanceIndex.class);
 		this.addConnections(entryIndex, referenceIndex, inheritanceIndex);
 		this.addPartitions(entryIndex);
 	}

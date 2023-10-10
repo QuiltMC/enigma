@@ -52,8 +52,8 @@ public class MethodInheritanceTreeNode extends AbstractMethodTreeNode {
 	 */
 	public boolean load(JarIndex index) {
 		// get all the child nodes
-		EntryIndex entryIndex = index.getEntryIndex();
-		InheritanceIndex inheritanceIndex = index.getInheritanceIndex();
+		EntryIndex entryIndex = index.getIndex(EntryIndex.class);
+		InheritanceIndex inheritanceIndex = index.getIndex(InheritanceIndex.class);
 
 		boolean ret = false;
 		for (ClassEntry inheritorEntry : inheritanceIndex.getChildren(this.entry.getParent())) {

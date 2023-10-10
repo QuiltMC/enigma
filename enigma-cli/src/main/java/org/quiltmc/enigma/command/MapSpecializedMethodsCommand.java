@@ -71,7 +71,7 @@ public class MapSpecializedMethodsCommand extends Command {
 	public static EntryTree<EntryMapping> run(JarIndex jarIndex, EntryTree<EntryMapping> source, boolean trackDelta) throws IOException, MappingParseException {
 		EntryTree<EntryMapping> result = new HashEntryTree<>();
 
-		BridgeMethodIndex bridgeMethodIndex = jarIndex.getBridgeMethodIndex();
+		BridgeMethodIndex bridgeMethodIndex = jarIndex.getIndex(BridgeMethodIndex.class);
 		Translator translator = new MappingTranslator(source, jarIndex.getEntryResolver());
 
 		// Copy all non-specialized methods

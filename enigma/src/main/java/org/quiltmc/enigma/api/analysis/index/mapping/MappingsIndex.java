@@ -72,7 +72,7 @@ public class MappingsIndex implements MappingsIndexer {
 		mappings.getRootNodes().forEach(node -> handleNode(node, entries));
 
 		this.work = entries.size();
-		this.progress.init(this.work, I18n.translate("progress.mappings.indexing"));
+		this.progress.init(this.work, I18n.translate("progress.mappings.indexing.mappings"));
 
 		for (var pair : entries) {
 			Entry<?> entry = pair.a();
@@ -88,7 +88,7 @@ public class MappingsIndex implements MappingsIndexer {
 				this.indexLocalVariableMapping(mapping, localVariableEntry);
 			}
 
-			this.progress.step(this.work++, I18n.translate("progress.mappings.indexing"));
+			this.progress.step(this.work++, I18n.translate("progress.mappings.indexing.mappings"));
 		}
 
 		this.processIndex(this);

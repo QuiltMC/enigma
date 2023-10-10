@@ -1,5 +1,6 @@
 package org.quiltmc.enigma;
 
+import org.quiltmc.enigma.api.analysis.index.jar.ReferenceIndex;
 import org.quiltmc.enigma.api.analysis.tree.ClassImplementationsTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassInheritanceTreeNode;
 import org.quiltmc.enigma.api.ProgressListener;
@@ -40,7 +41,7 @@ public class TestJarIndexLoneClass {
 
 	@Test
 	public void obfEntries() {
-		assertThat(this.index.getEntryIndex().getClasses(), Matchers.containsInAnyOrder(
+		assertThat(this.index.getIndex(EntryIndex.class).getClasses(), Matchers.containsInAnyOrder(
 				TestEntryFactory.newClass("org/quiltmc/enigma/input/Keep"),
 				TestEntryFactory.newClass("a")
 		));
@@ -48,7 +49,7 @@ public class TestJarIndexLoneClass {
 
 	@Test
 	public void translationIndex() {
-		InheritanceIndex inheritanceIndex = this.index.getInheritanceIndex();
+		InheritanceIndex inheritanceIndex = this.index.getIndex(InheritanceIndex.class);
 		assertThat(inheritanceIndex.getParents(new ClassEntry("a")), is(empty()));
 		assertThat(inheritanceIndex.getParents(new ClassEntry("org/quiltmc/enigma/input/Keep")), is(empty()));
 		assertThat(inheritanceIndex.getAncestors(new ClassEntry("a")), is(empty()));
@@ -59,7 +60,7 @@ public class TestJarIndexLoneClass {
 
 	@Test
 	public void access() {
-		EntryIndex entryIndex = this.index.getEntryIndex();
+		EntryIndex entryIndex = this.index.getIndex(EntryIndex.class);
 		assertThat(entryIndex.getFieldAccess(TestEntryFactory.newField("a", "a", "Ljava/lang/String;")), is(AccessFlags.PRIVATE));
 		assertThat(entryIndex.getMethodAccess(TestEntryFactory.newMethod("a", "a", "()Ljava/lang/String;")), is(AccessFlags.PUBLIC));
 		assertThat(entryIndex.getFieldAccess(TestEntryFactory.newField("a", "b", "Ljava/lang/String;")), is(nullValue()));
@@ -113,7 +114,7 @@ public class TestJarIndexLoneClass {
 	@Test
 	public void fieldReferences() {
 		FieldEntry source = TestEntryFactory.newField("a", "a", "Ljava/lang/String;");
-		Collection<EntryReference<FieldEntry, MethodDefEntry>> references = this.index.getReferenceIndex().getReferencesToField(source);
+		Collection<EntryReference<FieldEntry, MethodDefEntry>> references = this.index.getIndex(ReferenceIndex.class).getReferencesToField(source);
 		assertThat(references, Matchers.containsInAnyOrder(
 				TestEntryFactory.newFieldReferenceByMethod(source, "a", "<init>", "(Ljava/lang/String;)V"),
 				TestEntryFactory.newFieldReferenceByMethod(source, "a", "a", "()Ljava/lang/String;")
@@ -122,27 +123,27 @@ public class TestJarIndexLoneClass {
 
 	@Test
 	public void behaviorReferences() {
-		assertThat(this.index.getReferenceIndex().getReferencesToMethod(TestEntryFactory.newMethod("a", "a", "()Ljava/lang/String;")), is(empty()));
+		assertThat(this.index.getIndex(ReferenceIndex.class).getReferencesToMethod(TestEntryFactory.newMethod("a", "a", "()Ljava/lang/String;")), is(empty()));
 	}
 
 	@Test
 	public void interfaces() {
-		assertThat(this.index.getInheritanceIndex().getParents(new ClassEntry("a")), is(empty()));
+		assertThat(this.index.getIndex(InheritanceIndex.class).getParents(new ClassEntry("a")), is(empty()));
 	}
 
 	@Test
 	public void implementingClasses() {
-		assertThat(this.index.getInheritanceIndex().getChildren(new ClassEntry("a")), is(empty()));
+		assertThat(this.index.getIndex(InheritanceIndex.class).getChildren(new ClassEntry("a")), is(empty()));
 	}
 
 	@Test
 	public void isInterface() {
-		assertThat(this.index.getInheritanceIndex().isParent(new ClassEntry("a")), is(false));
+		assertThat(this.index.getIndex(InheritanceIndex.class).isParent(new ClassEntry("a")), is(false));
 	}
 
 	@Test
 	public void testContains() {
-		EntryIndex entryIndex = this.index.getEntryIndex();
+		EntryIndex entryIndex = this.index.getIndex(EntryIndex.class);
 		assertThat(entryIndex.hasClass(TestEntryFactory.newClass("a")), is(true));
 		assertThat(entryIndex.hasClass(TestEntryFactory.newClass("b")), is(false));
 		assertThat(entryIndex.hasField(TestEntryFactory.newField("a", "a", "Ljava/lang/String;")), is(true));

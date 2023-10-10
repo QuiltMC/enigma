@@ -37,7 +37,7 @@ public class SourceFixVisitor extends ClassVisitor {
 	public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
 		MethodDefEntry methodEntry = MethodDefEntry.parse(this.ownerEntry, access, name, descriptor, signature);
 
-		BridgeMethodIndex bridgeIndex = this.index.getBridgeMethodIndex();
+		BridgeMethodIndex bridgeIndex = this.index.getIndex(BridgeMethodIndex.class);
 		if (bridgeIndex.isBridgeMethod(methodEntry)) {
 			access |= Opcodes.ACC_BRIDGE;
 		}

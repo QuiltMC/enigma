@@ -6,6 +6,7 @@ import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.tree.ClassImplementationsTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassInheritanceTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassReferenceTreeNode;
@@ -409,7 +410,7 @@ public class GuiController implements ClientPacketHandler {
 	public void addSeparatedClasses(List<ClassEntry> obfClasses, List<ClassEntry> deobfClasses) {
 		EntryRemapper mapper = this.project.getMapper();
 
-		Collection<ClassEntry> classes = this.project.getJarIndex().getEntryIndex().getClasses();
+		Collection<ClassEntry> classes = this.project.getJarIndex().getIndex(EntryIndex.class).getClasses();
 		Stream<ClassEntry> visibleClasses = classes.stream()
 				.filter(entry -> !entry.isInnerClass());
 

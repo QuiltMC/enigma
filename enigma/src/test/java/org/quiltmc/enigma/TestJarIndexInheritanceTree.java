@@ -5,6 +5,7 @@ import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.ReferenceIndex;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
@@ -44,14 +45,14 @@ public class TestJarIndexInheritanceTree {
 
 	@Test
 	public void obfEntries() {
-		assertThat(this.index.getEntryIndex().getClasses(), Matchers.containsInAnyOrder(
+		assertThat(this.index.getIndex(EntryIndex.class).getClasses(), Matchers.containsInAnyOrder(
 				TestEntryFactory.newClass("org/quiltmc/enigma/input/Keep"), BASE_CLASS, SUB_CLASS_A, SUB_CLASS_AA, SUB_CLASS_B
 		));
 	}
 
 	@Test
 	public void translationIndex() {
-		InheritanceIndex index = this.index.getInheritanceIndex();
+		InheritanceIndex index = this.index.getIndex(InheritanceIndex.class);
 
 		// base class
 		assertThat(index.getParents(BASE_CLASS), is(empty()));
@@ -77,8 +78,8 @@ public class TestJarIndexInheritanceTree {
 
 	@Test
 	public void access() {
-		assertThat(this.index.getEntryIndex().getFieldAccess(NAME_FIELD), is(new AccessFlags(Opcodes.ACC_PRIVATE)));
-		assertThat(this.index.getEntryIndex().getFieldAccess(NUM_THINGS_FIELD), is(new AccessFlags(Opcodes.ACC_PRIVATE)));
+		assertThat(this.index.getIndex(EntryIndex.class).getFieldAccess(NAME_FIELD), is(new AccessFlags(Opcodes.ACC_PRIVATE)));
+		assertThat(this.index.getIndex(EntryIndex.class).getFieldAccess(NUM_THINGS_FIELD), is(new AccessFlags(Opcodes.ACC_PRIVATE)));
 	}
 
 	@Test
@@ -128,14 +129,14 @@ public class TestJarIndexInheritanceTree {
 		Collection<EntryReference<FieldEntry, MethodDefEntry>> references;
 
 		// name
-		references = this.index.getReferenceIndex().getReferencesToField(NAME_FIELD);
+		references = this.index.getIndex(ReferenceIndex.class).getReferencesToField(NAME_FIELD);
 		assertThat(references, Matchers.containsInAnyOrder(
 				TestEntryFactory.newFieldReferenceByMethod(NAME_FIELD, BASE_CLASS.getName(), "<init>", "(Ljava/lang/String;)V"),
 				TestEntryFactory.newFieldReferenceByMethod(NAME_FIELD, BASE_CLASS.getName(), "a", "()Ljava/lang/String;")
 		));
 
 		// numThings
-		references = this.index.getReferenceIndex().getReferencesToField(NUM_THINGS_FIELD);
+		references = this.index.getIndex(ReferenceIndex.class).getReferencesToField(NUM_THINGS_FIELD);
 		assertThat(references, Matchers.containsInAnyOrder(
 				TestEntryFactory.newFieldReferenceByMethod(NUM_THINGS_FIELD, SUB_CLASS_B.getName(), "<init>", "()V"),
 				TestEntryFactory.newFieldReferenceByMethod(NUM_THINGS_FIELD, SUB_CLASS_B.getName(), "b", "()V")
@@ -149,7 +150,7 @@ public class TestJarIndexInheritanceTree {
 
 		// baseClass constructor
 		source = TestEntryFactory.newMethod(BASE_CLASS, "<init>", "(Ljava/lang/String;)V");
-		references = this.index.getReferenceIndex().getReferencesToMethod(source);
+		references = this.index.getIndex(ReferenceIndex.class).getReferencesToMethod(source);
 		assertThat(references, Matchers.containsInAnyOrder(
 				TestEntryFactory.newBehaviorReferenceByMethod(source, SUB_CLASS_A.getName(), "<init>", "(Ljava/lang/String;)V"),
 				TestEntryFactory.newBehaviorReferenceByMethod(source, SUB_CLASS_B.getName(), "<init>", "()V")
@@ -157,14 +158,14 @@ public class TestJarIndexInheritanceTree {
 
 		// subClassA constructor
 		source = TestEntryFactory.newMethod(SUB_CLASS_A, "<init>", "(Ljava/lang/String;)V");
-		references = this.index.getReferenceIndex().getReferencesToMethod(source);
+		references = this.index.getIndex(ReferenceIndex.class).getReferencesToMethod(source);
 		assertThat(references, containsInAnyOrder(
 				TestEntryFactory.newBehaviorReferenceByMethod(source, SUB_CLASS_AA.getName(), "<init>", "()V")
 		));
 
 		// baseClass.getName()
 		source = TestEntryFactory.newMethod(BASE_CLASS, "a", "()Ljava/lang/String;");
-		references = this.index.getReferenceIndex().getReferencesToMethod(source);
+		references = this.index.getIndex(ReferenceIndex.class).getReferencesToMethod(source);
 		assertThat(references, Matchers.containsInAnyOrder(
 				TestEntryFactory.newBehaviorReferenceByMethod(source, SUB_CLASS_AA.getName(), "a", "()Ljava/lang/String;"),
 				TestEntryFactory.newBehaviorReferenceByMethod(source, SUB_CLASS_B.getName(), "a", "()V")
@@ -172,7 +173,7 @@ public class TestJarIndexInheritanceTree {
 
 		// subclassAA.getName()
 		source = TestEntryFactory.newMethod(SUB_CLASS_AA, "a", "()Ljava/lang/String;");
-		references = this.index.getReferenceIndex().getReferencesToMethod(source);
+		references = this.index.getIndex(ReferenceIndex.class).getReferencesToMethod(source);
 		assertThat(references, containsInAnyOrder(
 				TestEntryFactory.newBehaviorReferenceByMethod(source, SUB_CLASS_AA.getName(), "a", "()V")
 		));
@@ -180,7 +181,7 @@ public class TestJarIndexInheritanceTree {
 
 	@Test
 	public void containsEntries() {
-		EntryIndex entryIndex = this.index.getEntryIndex();
+		EntryIndex entryIndex = this.index.getIndex(EntryIndex.class);
 		// classes
 		assertThat(entryIndex.hasClass(BASE_CLASS), is(true));
 		assertThat(entryIndex.hasClass(SUB_CLASS_A), is(true));
