@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui.config;
 
-import org.quiltmc.enigma.api.config.ConfigContainer;
-import org.quiltmc.enigma.api.config.ConfigSection;
+import org.quiltmc.config.api.Config;
+import org.quiltmc.config.api.Configs;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindDialog;
 import org.quiltmc.enigma.gui.NotificationManager;
 import org.quiltmc.enigma.gui.docker.Dock;
@@ -28,6 +28,8 @@ import java.util.Optional;
 import java.util.OptionalInt;
 
 public final class UiConfig {
+
+	Config
 	// sections
 	public static final String MAIN_WINDOW = "Main Window";
 	public static final String GENERAL = "General";
