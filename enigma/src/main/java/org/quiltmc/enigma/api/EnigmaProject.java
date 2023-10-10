@@ -89,13 +89,13 @@ public class EnigmaProject {
 		this.mappingsIndex = MappingsIndex.empty();
 	}
 
-	public void setMappings(EntryTree<EntryMapping> mappings) {
+	public void setMappings(EntryTree<EntryMapping> mappings, ProgressListener progress) {
 		this.mappingsIndex = MappingsIndex.empty();
 
 		if (mappings != null) {
-			this.mapper = EntryRemapper.mapped(this.jarIndex, mappings);
+			this.mappingsIndex.indexMappings(mappings, progress);
+			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, mappings);
 			// todo progress and mark in docs that this is expensive
-			this.mappingsIndex.indexMappings(mappings, ProgressListener.none());
 		} else {
 			this.mapper = EntryRemapper.empty(this.jarIndex);
 		}
@@ -115,6 +115,10 @@ public class EnigmaProject {
 
 	public JarIndex getJarIndex() {
 		return this.jarIndex;
+	}
+
+	public MappingsIndex getMappingsIndex() {
+		return this.mappingsIndex;
 	}
 
 	public byte[] getJarChecksum() {

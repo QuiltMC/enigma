@@ -19,16 +19,22 @@ import java.util.Set;
 
 public class MappingsIndex implements MappingsIndexer {
 	private final Collection<MappingsIndexer> indexers;
+	private final PackageIndex packageIndex;
 
 	private ProgressListener progress;
 	private int work;
 
-	public MappingsIndex() {
-		this.indexers = List.of();
+	public MappingsIndex(PackageIndex packageIndex) {
+		this.packageIndex = packageIndex;
+		this.indexers = List.of(this.packageIndex);
 	}
 
 	public static MappingsIndex empty() {
-		return new MappingsIndex();
+		return new MappingsIndex(new PackageIndex());
+	}
+
+	public PackageIndex getPackageIndex() {
+		return this.packageIndex;
 	}
 
 	public void indexMappings(EntryTree<EntryMapping> mappings, ProgressListener progress) {

@@ -40,7 +40,7 @@ public class TestMappingValidator {
 	@BeforeEach
 	public void beforeEach(RepetitionInfo repetitionInfo) {
 		EntryTree<EntryMapping> mappings = new HashEntryTree<>();
-		project.setMappings(mappings);
+		project.setMappings(mappings, ProgressListener.none());
 		remapper = project.getMapper();
 
 		// repeat with mapped classes

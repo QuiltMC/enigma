@@ -33,7 +33,7 @@ public class TestTranslator {
 		mappings = MappingFormat.ENIGMA_FILE.read(
 				TestUtil.getResource("/translation.mappings"),
 				ProgressListener.none());
-		project.setMappings(mappings);
+		project.setMappings(mappings, ProgressListener.none());
 		deobfuscator = project.getMapper().getDeobfuscator();
 	}
 

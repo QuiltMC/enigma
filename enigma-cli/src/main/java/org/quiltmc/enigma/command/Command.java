@@ -155,7 +155,7 @@ public abstract class Command {
 
 			EntryTree<EntryMapping> mappings = readMappings(fileMappings, progress);
 
-			project.setMappings(mappings);
+			project.setMappings(mappings, new ConsoleProgressListener());
 		}
 
 		return project;

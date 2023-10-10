@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.translation.MappingTranslator;
 import org.quiltmc.enigma.api.translation.Translatable;
 import org.quiltmc.enigma.api.translation.TranslateResult;
@@ -30,7 +31,7 @@ public class EntryRemapper {
 
 	private final MappingValidator validator;
 
-	private EntryRemapper(JarIndex jarIndex, EntryTree<EntryMapping> obfToDeobf) {
+	private EntryRemapper(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> obfToDeobf) {
 		this.obfToDeobf = new DeltaTrackingTree<>(obfToDeobf);
 
 		this.obfResolver = jarIndex.getEntryResolver();
@@ -38,15 +39,15 @@ public class EntryRemapper {
 		this.deobfuscator = new MappingTranslator(obfToDeobf, this.obfResolver);
 		this.jarIndex = jarIndex;
 
-		this.validator = new MappingValidator(this.deobfuscator, jarIndex);
+		this.validator = new MappingValidator(this.deobfuscator, jarIndex, mappingsIndex);
 	}
 
-	public static EntryRemapper mapped(JarIndex index, EntryTree<EntryMapping> obfToDeobf) {
-		return new EntryRemapper(index, obfToDeobf);
+	public static EntryRemapper mapped(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> obfToDeobf) {
+		return new EntryRemapper(jarIndex, mappingsIndex, obfToDeobf);
 	}
 
 	public static EntryRemapper empty(JarIndex index) {
-		return new EntryRemapper(index, new HashEntryTree<>());
+		return new EntryRemapper(index, MappingsIndex.empty(), new HashEntryTree<>());
 	}
 
 	public void validatePutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping) {
