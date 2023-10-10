@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * An indexer that saves the names of all currently existing packages.
+ */
 public class PackageIndex implements MappingsIndexer {
 	private final Map<ClassEntry, String> packageNames = new HashMap<>();
 
@@ -31,6 +34,10 @@ public class PackageIndex implements MappingsIndexer {
 		}
 	}
 
+	/**
+	 * Gets all distinct package names.
+	 * @return a list of unique package names
+	 */
 	public List<String> getPackageNames() {
 		return this.packageNames.values().stream().distinct().toList();
 	}

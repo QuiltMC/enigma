@@ -35,7 +35,7 @@ public class MappingValidator {
 	}
 
 	public void validateRename(ValidationContext vc, Entry<?> entry, String name) {
-		PackageIndex packageIndex = this.mappingsIndex.getPackageIndex();
+		PackageIndex packageIndex = this.mappingsIndex.getIndex(PackageIndex.class);
 		if (entry instanceof ClassEntry) {
 			String packageName = ClassEntry.getParentPackage(name);
 			if (!packageIndex.getPackageNames().contains(packageName)) {
