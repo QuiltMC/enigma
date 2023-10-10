@@ -2,6 +2,7 @@ package org.quiltmc.enigma.api.analysis.index.mapping;
 
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
@@ -21,6 +22,8 @@ public interface MappingsIndexer {
 
 	default void processIndex(MappingsIndex index) {
 	}
+
+	void reindexEntry(EntryMapping newMapping, Entry<?> entry);
 
 	String getTranslationKey();
 }

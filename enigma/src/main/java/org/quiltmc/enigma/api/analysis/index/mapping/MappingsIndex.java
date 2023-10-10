@@ -90,6 +90,11 @@ public class MappingsIndex implements MappingsIndexer {
 		this.stepProcessingProgress("progress.mappings.indexing.process.done");
 	}
 
+	@Override
+	public void reindexEntry(EntryMapping newMapping, Entry<?> entry) {
+		this.indexers.forEach(indexer -> indexer.reindexEntry(newMapping, entry));
+	}
+
 	private void stepProcessingProgress(String key) {
 		if (this.progress != null) {
 			this.progress.step(this.work, I18n.translateFormatted("progress.mappings.indexing.process", I18n.translate(key)));

@@ -89,13 +89,18 @@ public class EnigmaProject {
 		this.mappingsIndex = MappingsIndex.empty();
 	}
 
+	/**
+	 * Sets the current mappings of this project.
+	 * Note that this triggers an index of the mappings, which may be expensive.
+	 * @param mappings the new mappings
+	 * @param progress a progress listener for indexing
+	 */
 	public void setMappings(EntryTree<EntryMapping> mappings, ProgressListener progress) {
 		this.mappingsIndex = MappingsIndex.empty();
 
 		if (mappings != null) {
 			this.mappingsIndex.indexMappings(mappings, progress);
 			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, mappings);
-			// todo progress and mark in docs that this is expensive
 		} else {
 			this.mapper = EntryRemapper.empty(this.jarIndex);
 		}

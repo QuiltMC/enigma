@@ -28,6 +28,7 @@ public class EntryRemapper {
 	private final EntryResolver obfResolver;
 	private final Translator deobfuscator;
 	private final JarIndex jarIndex;
+	private final MappingsIndex mappingsIndex;
 
 	private final MappingValidator validator;
 
@@ -38,6 +39,7 @@ public class EntryRemapper {
 
 		this.deobfuscator = new MappingTranslator(obfToDeobf, this.obfResolver);
 		this.jarIndex = jarIndex;
+		this.mappingsIndex = mappingsIndex;
 
 		this.validator = new MappingValidator(this.deobfuscator, jarIndex, mappingsIndex);
 	}
@@ -85,6 +87,8 @@ public class EntryRemapper {
 				this.obfToDeobf.insert(resolvedEntry, deobfMapping);
 			}
 		}
+
+		this.mappingsIndex.reindexEntry(deobfMapping, obfuscatedEntry);
 	}
 
 	// todo this needs to be fixed for hashed mappings!
