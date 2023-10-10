@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
+import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.tree.ClassImplementationsTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassInheritanceTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassReferenceTreeNode;
@@ -157,7 +159,7 @@ public class GuiController implements ClientPacketHandler {
 		return ProgressDialog.runOffThread(this.gui, progress -> {
 			try {
 				EntryTree<EntryMapping> mappings = format.read(path);
-				this.project.setMappings(mappings);
+				this.project.setMappings(mappings, progress);
 
 				this.loadedMappingFormat = format;
 				this.loadedMappingPath = path;
@@ -175,7 +177,7 @@ public class GuiController implements ClientPacketHandler {
 	public void openMappings(EntryTree<EntryMapping> mappings) {
 		if (this.project == null) return;
 
-		this.project.setMappings(mappings);
+		this.project.setMappings(mappings, new ProgressDialog(this.gui.getFrame()));
 		this.refreshClasses();
 		this.chp.invalidateJavadoc();
 	}
@@ -225,7 +227,7 @@ public class GuiController implements ClientPacketHandler {
 	public void closeMappings() {
 		if (this.project == null) return;
 
-		this.project.setMappings(null);
+		this.project.setMappings(null, ProgressListener.none());
 
 		this.gui.setMappingsFile(null);
 		this.refreshClasses();
@@ -408,7 +410,7 @@ public class GuiController implements ClientPacketHandler {
 	public void addSeparatedClasses(List<ClassEntry> obfClasses, List<ClassEntry> deobfClasses) {
 		EntryRemapper mapper = this.project.getMapper();
 
-		Collection<ClassEntry> classes = this.project.getJarIndex().getEntryIndex().getClasses();
+		Collection<ClassEntry> classes = this.project.getJarIndex().getIndex(EntryIndex.class).getClasses();
 		Stream<ClassEntry> visibleClasses = classes.stream()
 				.filter(entry -> !entry.isInnerClass());
 
@@ -613,7 +615,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void createServer(int port, char[] password) throws IOException {
-		this.server = new IntegratedEnigmaServer(this.project.getJarChecksum(), password, EntryRemapper.mapped(this.project.getJarIndex(), new HashEntryTree<>(this.project.getMapper().getObfToDeobf())), port);
+		this.server = new IntegratedEnigmaServer(this.project.getJarChecksum(), password, EntryRemapper.mapped(this.project.getJarIndex(), this.project.getMappingsIndex(), new HashEntryTree<>(this.project.getMapper().getObfToDeobf())), port);
 		this.server.start();
 		this.client = new EnigmaClient(this, "127.0.0.1", port);
 		this.client.connect();

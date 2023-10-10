@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.impl.bytecode.translator;
 
-import org.quiltmc.enigma.api.analysis.index.BridgeMethodIndex;
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.objectweb.asm.ClassVisitor;
@@ -37,7 +37,7 @@ public class SourceFixVisitor extends ClassVisitor {
 	public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
 		MethodDefEntry methodEntry = MethodDefEntry.parse(this.ownerEntry, access, name, descriptor, signature);
 
-		BridgeMethodIndex bridgeIndex = this.index.getBridgeMethodIndex();
+		BridgeMethodIndex bridgeIndex = this.index.getIndex(BridgeMethodIndex.class);
 		if (bridgeIndex.isBridgeMethod(methodEntry)) {
 			access |= Opcodes.ACC_BRIDGE;
 		}

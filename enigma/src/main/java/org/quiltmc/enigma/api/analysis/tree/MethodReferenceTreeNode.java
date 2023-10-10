@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.api.analysis.tree;
 
 import com.google.common.collect.Sets;
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
-import org.quiltmc.enigma.api.analysis.index.ReferenceIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.ReferenceIndex;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
@@ -84,7 +84,7 @@ public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements R
 	}
 
 	private Collection<EntryReference<MethodEntry, MethodDefEntry>> getReferences(JarIndex index, boolean recurseMethod) {
-		ReferenceIndex referenceIndex = index.getReferenceIndex();
+		ReferenceIndex referenceIndex = index.getIndex(ReferenceIndex.class);
 
 		if (recurseMethod) {
 			Collection<EntryReference<MethodEntry, MethodDefEntry>> references = new ArrayList<>();

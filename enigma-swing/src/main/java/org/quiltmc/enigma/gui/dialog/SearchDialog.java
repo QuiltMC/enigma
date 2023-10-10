@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.gui.dialog;
 
-import org.quiltmc.enigma.api.analysis.index.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.GuiController;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
@@ -200,7 +200,7 @@ public class SearchDialog {
 
 		this.searchedTypes.addAll(Arrays.asList(types));
 
-		final EntryIndex entryIndex = this.gui.getController().getProject().getJarIndex().getEntryIndex();
+		final EntryIndex entryIndex = this.gui.getController().getProject().getJarIndex().getIndex(EntryIndex.class);
 
 		for (Type searchedType : this.searchedTypes) {
 			this.getCheckBox(searchedType).setSelected(true);

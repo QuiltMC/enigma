@@ -1,6 +1,10 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
+import org.quiltmc.enigma.api.analysis.index.mapping.PackageIndex;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
@@ -23,15 +27,25 @@ import java.util.stream.Collectors;
 
 public class MappingValidator {
 	private final Translator deobfuscator;
-	private final JarIndex index;
+	private final JarIndex jarIndex;
+	private final MappingsIndex mappingsIndex;
 
-	public MappingValidator(Translator deobfuscator, JarIndex index) {
+	public MappingValidator(Translator deobfuscator, JarIndex jarIndex, MappingsIndex mappingsIndex) {
 		this.deobfuscator = deobfuscator;
-		this.index = index;
+		this.jarIndex = jarIndex;
+		this.mappingsIndex = mappingsIndex;
 	}
 
 	public void validateRename(ValidationContext vc, Entry<?> entry, String name) {
-		Collection<Entry<?>> equivalentEntries = this.index.getEntryResolver().resolveEquivalentEntries(entry);
+		PackageIndex packageIndex = this.mappingsIndex.getIndex(PackageIndex.class);
+		if (entry instanceof ClassEntry) {
+			String packageName = ClassEntry.getParentPackage(name);
+			if (!packageIndex.getPackageNames().contains(packageName)) {
+				vc.raise(Message.NEW_PACKAGE, packageName);
+			}
+		}
+
+		Collection<Entry<?>> equivalentEntries = this.jarIndex.getEntryResolver().resolveEquivalentEntries(entry);
 		boolean uniquenessIssue = false;
 
 		for (Entry<?> equivalentEntry : equivalentEntries) {
@@ -55,11 +69,11 @@ public class MappingValidator {
 			return this.validateParameterUniqueness(context, name, parameter);
 		}
 
-		List<ParentedEntry<?>> siblings = new ArrayList<>(this.index.getChildrenByClass().get(containingClass));
+		List<ParentedEntry<?>> siblings = new ArrayList<>(this.jarIndex.getChildrenByClass().get(containingClass));
 
 		// add sibling classes
 		if (entry instanceof ClassEntry classEntry) {
-			siblings.addAll(this.index.getEntryIndex().getClasses().stream().filter(e -> {
+			siblings.addAll(this.jarIndex.getIndex(EntryIndex.class).getClasses().stream().filter(e -> {
 				if (e.isInnerClass()) {
 					return false;
 				}
@@ -74,8 +88,8 @@ public class MappingValidator {
 		}
 
 		// add all ancestors
-		for (ClassEntry ancestor : this.index.getInheritanceIndex().getAncestors(containingClass)) {
-			siblings.addAll(this.index.getChildrenByClass().get(ancestor));
+		for (ClassEntry ancestor : this.jarIndex.getIndex(InheritanceIndex.class).getAncestors(containingClass)) {
+			siblings.addAll(this.jarIndex.getChildrenByClass().get(ancestor));
 		}
 
 		// collect deobfuscated versions
@@ -108,7 +122,7 @@ public class MappingValidator {
 	private boolean validateParameterUniqueness(ValidationContext context, String name, LocalVariableEntry parameter) {
 		MethodEntry parent = parameter.getParent();
 		if (parent != null) {
-			Iterator<LocalVariableEntry> iterator = parent.getParameterIterator(this.index.getEntryIndex(), this.deobfuscator);
+			Iterator<LocalVariableEntry> iterator = parent.getParameterIterator(this.jarIndex.getIndex(EntryIndex.class), this.deobfuscator);
 			while (iterator.hasNext()) {
 				if (iterator.next().getName().equals(name)) {
 					this.raiseConflict(context, parent, name, false);
@@ -154,8 +168,8 @@ public class MappingValidator {
 
 			if ((entry.canConflictWith(sibling) && sibling.getName().equals(name) && doesNotMatch(entry, obfEntry, sibling, obfSibling))
 					|| (entry.canConflictWith(obfSibling) && obfSibling.getName().equals(name) && doesNotMatch(entry, obfEntry, obfSibling, obfSibling))) {
-				AccessFlags siblingFlags = this.index.getEntryIndex().getEntryAccess(obfSibling);
-				AccessFlags flags = this.index.getEntryIndex().getEntryAccess(obfEntry);
+				AccessFlags siblingFlags = this.jarIndex.getIndex(EntryIndex.class).getEntryAccess(obfSibling);
+				AccessFlags flags = this.jarIndex.getIndex(EntryIndex.class).getEntryAccess(obfEntry);
 
 				boolean sameParent = (entry.getParent() != null && entry.getParent().equals(sibling.getParent()))
 						|| (obfEntry.getParent() != null && entry.getParent().equals(sibling.getParent()));
@@ -186,7 +200,7 @@ public class MappingValidator {
 
 			if (entry.canShadow(sibling) || entry.canShadow(obfSibling)) {
 				// ancestry check only contains obf names, so we need to translate to deobf just in case
-				Set<ClassEntry> ancestors = this.index.getInheritanceIndex().getAncestors(obfEntry.getContainingClass());
+				Set<ClassEntry> ancestors = this.jarIndex.getIndex(InheritanceIndex.class).getAncestors(obfEntry.getContainingClass());
 				ancestors.addAll(
 						ancestors.stream()
 						.map(this.deobfuscator::translate)
@@ -194,8 +208,8 @@ public class MappingValidator {
 				);
 
 				if (ancestors.contains(sibling.getContainingClass())) {
-					AccessFlags siblingFlags = this.index.getEntryIndex().getEntryAccess(sibling);
-					AccessFlags flags = this.index.getEntryIndex().getEntryAccess(obfEntry);
+					AccessFlags siblingFlags = this.jarIndex.getIndex(EntryIndex.class).getEntryAccess(sibling);
+					AccessFlags flags = this.jarIndex.getIndex(EntryIndex.class).getEntryAccess(obfEntry);
 
 					if ((siblingFlags == null || (!siblingFlags.isPrivate() && siblingFlags.isStatic()))
 							&& (flags == null || flags.isStatic())

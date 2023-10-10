@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.api.class_handle;
 
 import org.quiltmc.enigma.api.EnigmaProject;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
@@ -58,7 +59,7 @@ public final class ClassHandleProvider {
 	 */
 	@Nullable
 	public ClassHandle openClass(ClassEntry entry) {
-		if (!this.project.getJarIndex().getEntryIndex().hasClass(entry)) return null;
+		if (!this.project.getJarIndex().getIndex(EntryIndex.class).hasClass(entry)) return null;
 
 		return Utils.withLock(this.lock.writeLock(), () -> {
 			Entry e = this.handles.computeIfAbsent(entry, entry1 -> new Entry(this, entry1));

@@ -3,8 +3,10 @@ package org.quiltmc.enigma.api;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import org.quiltmc.enigma.api.analysis.EntryReference;
-import org.quiltmc.enigma.api.analysis.index.EnclosingMethodIndex;
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EnclosingMethodIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.service.ObfuscationTestService;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
@@ -71,6 +73,7 @@ public class EnigmaProject {
 	private final Path jarPath;
 	private final ClassProvider classProvider;
 	private final JarIndex jarIndex;
+	private MappingsIndex mappingsIndex;
 	private final byte[] jarChecksum;
 
 	private EntryRemapper mapper;
@@ -84,11 +87,21 @@ public class EnigmaProject {
 		this.jarChecksum = jarChecksum;
 
 		this.mapper = EntryRemapper.empty(jarIndex);
+		this.mappingsIndex = MappingsIndex.empty();
 	}
 
-	public void setMappings(EntryTree<EntryMapping> mappings) {
+	/**
+	 * Sets the current mappings of this project.
+	 * Note that this triggers an index of the mappings, which may be expensive.
+	 * @param mappings the new mappings
+	 * @param progress a progress listener for indexing
+	 */
+	public void setMappings(EntryTree<EntryMapping> mappings, ProgressListener progress) {
+		this.mappingsIndex = MappingsIndex.empty();
+
 		if (mappings != null) {
-			this.mapper = EntryRemapper.mapped(this.jarIndex, mappings);
+			this.mappingsIndex.indexMappings(mappings, progress);
+			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, mappings);
 		} else {
 			this.mapper = EntryRemapper.empty(this.jarIndex);
 		}
@@ -108,6 +121,10 @@ public class EnigmaProject {
 
 	public JarIndex getJarIndex() {
 		return this.jarIndex;
+	}
+
+	public MappingsIndex getMappingsIndex() {
+		return this.mappingsIndex;
 	}
 
 	public byte[] getJarChecksum() {
@@ -155,7 +172,7 @@ public class EnigmaProject {
 			return false;
 		}
 
-		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);
+		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
 	}
 
 	public boolean isRenamable(Entry<?> obfEntry) {
@@ -177,7 +194,7 @@ public class EnigmaProject {
 				}
 			}
 
-			ClassDefEntry parent = this.jarIndex.getEntryIndex().getDefinition(obfMethodEntry.getParent());
+			ClassDefEntry parent = this.jarIndex.getIndex(EntryIndex.class).getDefinition(obfMethodEntry.getParent());
 			if (parent != null && parent.isEnum()
 					&& ((name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";"))
 					|| (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")))) {
@@ -187,7 +204,7 @@ public class EnigmaProject {
 			return false;
 		} else if (obfEntry instanceof LocalVariableEntry localEntry && localEntry.isArgument()) {
 			MethodEntry method = localEntry.getParent();
-			ClassDefEntry parent = this.jarIndex.getEntryIndex().getDefinition(method.getParent());
+			ClassDefEntry parent = this.jarIndex.getIndex(EntryIndex.class).getDefinition(method.getParent());
 
 			// if this is the valueOf method of an enum class, the argument shouldn't be able to be renamed.
 			if (parent.isEnum() && method.getName().equals("valueOf") && method.getDesc().toString().equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")) {
@@ -197,7 +214,7 @@ public class EnigmaProject {
 			return false;
 		}
 
-		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);
+		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
 	}
 
 	public boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {
@@ -236,17 +253,17 @@ public class EnigmaProject {
 	}
 
 	public boolean isSynthetic(Entry<?> entry) {
-		return this.jarIndex.getEntryIndex().hasEntry(entry) && this.jarIndex.getEntryIndex().getEntryAccess(entry).isSynthetic();
+		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(entry) && this.jarIndex.getIndex(EntryIndex.class).getEntryAccess(entry).isSynthetic();
 	}
 
 	public boolean isAnonymousOrLocal(ClassEntry classEntry) {
-		EnclosingMethodIndex enclosingMethodIndex = this.jarIndex.getEnclosingMethodIndex();
+		EnclosingMethodIndex enclosingMethodIndex = this.jarIndex.getIndex(EnclosingMethodIndex.class);
 		// Only local and anonymous classes may have the EnclosingMethod attribute
 		return enclosingMethodIndex.hasEnclosingMethod(classEntry);
 	}
 
 	public JarExport exportRemappedJar(ProgressListener progress) {
-		Collection<ClassEntry> classEntries = this.jarIndex.getEntryIndex().getClasses();
+		Collection<ClassEntry> classEntries = this.jarIndex.getIndex(EntryIndex.class).getClasses();
 		ClassProvider fixingClassProvider = new ObfuscationFixClassProvider(this.classProvider, this.jarIndex);
 
 		NameProposalService[] nameProposalServices = this.getEnigma().getServices().get(NameProposalService.TYPE).toArray(new NameProposalService[0]);

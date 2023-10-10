@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.api.analysis.index;
+package org.quiltmc.enigma.api.analysis.index.jar;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
@@ -22,40 +22,39 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.util.I18n;
 
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class JarIndex implements JarIndexer {
 	private final Set<String> indexedClasses = new HashSet<>();
-	private final EntryIndex entryIndex;
-	private final InheritanceIndex inheritanceIndex;
-	private final ReferenceIndex referenceIndex;
-	private final BridgeMethodIndex bridgeMethodIndex;
-	private final PackageVisibilityIndex packageVisibilityIndex;
-	private final EnclosingMethodIndex enclosingMethodIndex;
-	private final EntryResolver entryResolver;
-
-	private final Collection<JarIndexer> indexers;
+	private final Map<Class<? extends JarIndexer>, JarIndexer> indexers = new HashMap<>();
+	private final IndexEntryResolver entryResolver;
 
 	private final Multimap<String, MethodDefEntry> methodImplementations = HashMultimap.create();
 	private final ListMultimap<ClassEntry, ParentedEntry<?>> childrenByClass;
 
 	private ProgressListener progress;
 
-	public JarIndex(EntryIndex entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex, BridgeMethodIndex bridgeMethodIndex, PackageVisibilityIndex packageVisibilityIndex, EnclosingMethodIndex enclosingMethodIndex) {
-		this.entryIndex = entryIndex;
-		this.inheritanceIndex = inheritanceIndex;
-		this.referenceIndex = referenceIndex;
-		this.bridgeMethodIndex = bridgeMethodIndex;
-		this.packageVisibilityIndex = packageVisibilityIndex;
-		this.enclosingMethodIndex = enclosingMethodIndex;
-		this.indexers = List.of(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex, packageVisibilityIndex, enclosingMethodIndex);
+	/**
+	 * Creates a new empty index with all provided indexers.
+	 * @param indexers the indexers to use
+	 */
+	public JarIndex(JarIndexer... indexers) {
+		for (JarIndexer indexer : indexers) {
+			this.indexers.put(indexer.getClass(), indexer);
+		}
+
 		this.entryResolver = new IndexEntryResolver(this);
 		this.childrenByClass = ArrayListMultimap.create();
 	}
 
+	/**
+	 * Creates an empty index, configured to use all built-in indexers.
+	 * @return the newly created index
+	 */
 	public static JarIndex empty() {
 		EntryIndex entryIndex = new EntryIndex();
 		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
@@ -66,6 +65,27 @@ public class JarIndex implements JarIndexer {
 		return new JarIndex(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex, packageVisibilityIndex, enclosingMethodIndex);
 	}
 
+	/**
+	 * Gets the index associated with the provided class.
+	 * @param clazz the class of the index desired - for example, {@code PackageIndex.class}
+	 * @return the index
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends JarIndexer> T getIndex(Class<T> clazz) {
+		JarIndexer index = this.indexers.get(clazz);
+		if (index != null) {
+			return (T) index;
+		} else {
+			throw new IllegalArgumentException("no indexer registered for class " + clazz);
+		}
+	}
+
+	/**
+	 * Runs every configured indexer over the provided jar.
+	 * @param classNames the obfuscated names of each class in the jar
+	 * @param classProvider a class provider containing all classes in the jar
+	 * @param progress a progress listener to track index completion
+	 */
 	public void indexJar(Set<String> classNames, ClassProvider classProvider, ProgressListener progress) {
 		// for use in processIndex
 		this.progress = progress;
@@ -76,21 +96,21 @@ public class JarIndex implements JarIndexer {
 		this.progress.step(1, I18n.translate("progress.jar.indexing.entries"));
 
 		for (String className : classNames) {
-			classProvider.get(className).accept(new IndexClassVisitor(this, Enigma.ASM_VERSION));
+			Objects.requireNonNull(classProvider.get(className)).accept(new IndexClassVisitor(this, Enigma.ASM_VERSION));
 		}
 
 		this.progress.step(2, I18n.translate("progress.jar.indexing.references"));
 
 		for (String className : classNames) {
 			try {
-				classProvider.get(className).accept(new IndexReferenceVisitor(this, this.entryIndex, this.inheritanceIndex, Enigma.ASM_VERSION));
+				Objects.requireNonNull(classProvider.get(className)).accept(new IndexReferenceVisitor(this, this.getIndex(EntryIndex.class), this.getIndex(InheritanceIndex.class), Enigma.ASM_VERSION));
 			} catch (Exception e) {
 				throw new RuntimeException("Exception while indexing class: " + className, e);
 			}
 		}
 
 		this.progress.step(3, I18n.translate("progress.jar.indexing.methods"));
-		this.bridgeMethodIndex.findBridgeMethods();
+		this.getIndex(BridgeMethodIndex.class).findBridgeMethods();
 
 		this.processIndex(this);
 
@@ -101,7 +121,7 @@ public class JarIndex implements JarIndexer {
 	public void processIndex(JarIndex index) {
 		this.stepProcessingProgress("progress.jar.indexing.process.jar");
 
-		this.indexers.forEach(indexer -> {
+		this.indexers.forEach((key, indexer) -> {
 			this.stepProcessingProgress(indexer.getTranslationKey());
 			indexer.processIndex(index);
 		});
@@ -127,7 +147,7 @@ public class JarIndex implements JarIndexer {
 			}
 		}
 
-		this.indexers.forEach(indexer -> indexer.indexClass(classEntry));
+		this.indexers.forEach((key, indexer) -> indexer.indexClass(classEntry));
 		if (classEntry.isInnerClass() && !classEntry.getAccess().isSynthetic()) {
 			this.childrenByClass.put(classEntry.getParent(), classEntry);
 		}
@@ -139,7 +159,7 @@ public class JarIndex implements JarIndexer {
 			return;
 		}
 
-		this.indexers.forEach(indexer -> indexer.indexField(fieldEntry));
+		this.indexers.forEach((key, indexer) -> indexer.indexField(fieldEntry));
 		if (!fieldEntry.getAccess().isSynthetic()) {
 			this.childrenByClass.put(fieldEntry.getParent(), fieldEntry);
 		}
@@ -151,7 +171,7 @@ public class JarIndex implements JarIndexer {
 			return;
 		}
 
-		this.indexers.forEach(indexer -> indexer.indexMethod(methodEntry));
+		this.indexers.forEach((key, indexer) -> indexer.indexMethod(methodEntry));
 		if (!methodEntry.getAccess().isSynthetic() && !methodEntry.getName().equals("<clinit>")) {
 			this.childrenByClass.put(methodEntry.getParent(), methodEntry);
 		}
@@ -167,7 +187,7 @@ public class JarIndex implements JarIndexer {
 			return;
 		}
 
-		this.indexers.forEach(indexer -> indexer.indexMethodReference(callerEntry, referencedEntry, targetType));
+		this.indexers.forEach((key, indexer) -> indexer.indexMethodReference(callerEntry, referencedEntry, targetType));
 	}
 
 	@Override
@@ -176,7 +196,7 @@ public class JarIndex implements JarIndexer {
 			return;
 		}
 
-		this.indexers.forEach(indexer -> indexer.indexFieldReference(callerEntry, referencedEntry, targetType));
+		this.indexers.forEach((key, indexer) -> indexer.indexFieldReference(callerEntry, referencedEntry, targetType));
 	}
 
 	@Override
@@ -185,7 +205,7 @@ public class JarIndex implements JarIndexer {
 			return;
 		}
 
-		this.indexers.forEach(indexer -> indexer.indexLambda(callerEntry, lambda, targetType));
+		this.indexers.forEach((key, indexer) -> indexer.indexLambda(callerEntry, lambda, targetType));
 	}
 
 	@Override
@@ -194,36 +214,12 @@ public class JarIndex implements JarIndexer {
 			return;
 		}
 
-		this.indexers.forEach(indexer -> indexer.indexEnclosingMethod(classEntry, enclosingMethodData));
+		this.indexers.forEach((key, indexer) -> indexer.indexEnclosingMethod(classEntry, enclosingMethodData));
 	}
 
 	@Override
 	public String getTranslationKey() {
 		return "progress.jar.indexing.jar";
-	}
-
-	public EntryIndex getEntryIndex() {
-		return this.entryIndex;
-	}
-
-	public InheritanceIndex getInheritanceIndex() {
-		return this.inheritanceIndex;
-	}
-
-	public ReferenceIndex getReferenceIndex() {
-		return this.referenceIndex;
-	}
-
-	public BridgeMethodIndex getBridgeMethodIndex() {
-		return this.bridgeMethodIndex;
-	}
-
-	public PackageVisibilityIndex getPackageVisibilityIndex() {
-		return this.packageVisibilityIndex;
-	}
-
-	public EnclosingMethodIndex getEnclosingMethodIndex() {
-		return this.enclosingMethodIndex;
 	}
 
 	public EntryResolver getEntryResolver() {

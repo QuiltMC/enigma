@@ -3,10 +3,10 @@ package org.quiltmc.enigma.api.translation.mapping;
 import org.quiltmc.enigma.impl.analysis.IndexTreeBuilder;
 import org.quiltmc.enigma.api.analysis.tree.MethodImplementationsTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.MethodInheritanceTreeNode;
-import org.quiltmc.enigma.api.analysis.index.BridgeMethodIndex;
-import org.quiltmc.enigma.api.analysis.index.EntryIndex;
-import org.quiltmc.enigma.api.analysis.index.InheritanceIndex;
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.VoidTranslator;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
@@ -28,9 +28,9 @@ public class IndexEntryResolver implements EntryResolver {
 	private final IndexTreeBuilder treeBuilder;
 
 	public IndexEntryResolver(JarIndex index) {
-		this.entryIndex = index.getEntryIndex();
-		this.inheritanceIndex = index.getInheritanceIndex();
-		this.bridgeMethodIndex = index.getBridgeMethodIndex();
+		this.entryIndex = index.getIndex(EntryIndex.class);
+		this.inheritanceIndex = index.getIndex(InheritanceIndex.class);
+		this.bridgeMethodIndex = index.getIndex(BridgeMethodIndex.class);
 
 		this.treeBuilder = new IndexTreeBuilder(index);
 	}

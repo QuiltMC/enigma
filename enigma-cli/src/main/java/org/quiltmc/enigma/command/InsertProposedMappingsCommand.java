@@ -4,7 +4,7 @@ import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.api.analysis.index.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.translation.ProposingTranslator;
@@ -95,7 +95,7 @@ public class InsertProposedMappingsCommand extends Command {
 
 		EntryRemapper mapper = project.getMapper();
 		Translator translator = new ProposingTranslator(mapper, nameProposalServices);
-		EntryIndex index = project.getJarIndex().getEntryIndex();
+		EntryIndex index = project.getJarIndex().getIndex(EntryIndex.class);
 
 		Logger.info("Proposing class names...");
 		int classes = 0;

@@ -1,7 +1,8 @@
 package org.quiltmc.enigma.command;
 
 import org.quiltmc.enigma.api.EnigmaProject;
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.PackageVisibilityIndex;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.tinylog.Logger;
 
@@ -38,7 +39,7 @@ public class CheckMappingsCommand extends Command {
 
 		boolean error = false;
 
-		for (Set<ClassEntry> partition : idx.getPackageVisibilityIndex().getPartitions()) {
+		for (Set<ClassEntry> partition : idx.getIndex(PackageVisibilityIndex.class).getPartitions()) {
 			long packages = partition.stream()
 					.map(project.getMapper()::deobfuscate)
 					.map(ClassEntry::getPackageName)

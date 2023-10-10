@@ -1,12 +1,12 @@
 package org.quiltmc.enigma.impl.analysis.index;
 
-import org.quiltmc.enigma.api.analysis.index.EntryIndex;
-import org.quiltmc.enigma.api.analysis.index.InheritanceIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.impl.analysis.IndexSimpleVerifier;
 import org.quiltmc.enigma.impl.analysis.InterpreterPair;
 import org.quiltmc.enigma.impl.analysis.MethodNodeWithAction;
 import org.quiltmc.enigma.api.analysis.ReferenceTargetType;
-import org.quiltmc.enigma.api.analysis.index.JarIndexer;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndexer;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.Lambda;
 import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;

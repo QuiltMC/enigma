@@ -1,6 +1,8 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.translation.MappingTranslator;
 import org.quiltmc.enigma.api.translation.Translatable;
 import org.quiltmc.enigma.api.translation.TranslateResult;
@@ -27,26 +29,28 @@ public class EntryRemapper {
 	private final EntryResolver obfResolver;
 	private final Translator deobfuscator;
 	private final JarIndex jarIndex;
+	private final MappingsIndex mappingsIndex;
 
 	private final MappingValidator validator;
 
-	private EntryRemapper(JarIndex jarIndex, EntryTree<EntryMapping> obfToDeobf) {
+	private EntryRemapper(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> obfToDeobf) {
 		this.obfToDeobf = new DeltaTrackingTree<>(obfToDeobf);
 
 		this.obfResolver = jarIndex.getEntryResolver();
 
 		this.deobfuscator = new MappingTranslator(obfToDeobf, this.obfResolver);
 		this.jarIndex = jarIndex;
+		this.mappingsIndex = mappingsIndex;
 
-		this.validator = new MappingValidator(this.deobfuscator, jarIndex);
+		this.validator = new MappingValidator(this.deobfuscator, jarIndex, mappingsIndex);
 	}
 
-	public static EntryRemapper mapped(JarIndex index, EntryTree<EntryMapping> obfToDeobf) {
-		return new EntryRemapper(index, obfToDeobf);
+	public static EntryRemapper mapped(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> obfToDeobf) {
+		return new EntryRemapper(jarIndex, mappingsIndex, obfToDeobf);
 	}
 
 	public static EntryRemapper empty(JarIndex index) {
-		return new EntryRemapper(index, new HashEntryTree<>());
+		return new EntryRemapper(index, MappingsIndex.empty(), new HashEntryTree<>());
 	}
 
 	public void validatePutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping) {
@@ -84,18 +88,22 @@ public class EntryRemapper {
 				this.obfToDeobf.insert(resolvedEntry, deobfMapping);
 			}
 		}
+
+		this.mappingsIndex.reindexEntry(deobfMapping, obfuscatedEntry);
 	}
 
 	// todo this needs to be fixed for hashed mappings!
 	// note: just supressing warnings until it's fixed
 	@SuppressWarnings("all")
 	private void mapRecordComponentGetter(ValidationContext vc, ClassEntry classEntry, FieldEntry fieldEntry, EntryMapping fieldMapping) {
-		if (!this.jarIndex.getEntryIndex().getDefinition(classEntry).isRecord() || this.jarIndex.getEntryIndex().getFieldAccess(fieldEntry).isStatic()) {
+		EntryIndex entryIndex = this.jarIndex.getIndex(EntryIndex.class);
+
+		if (!entryIndex.getDefinition(classEntry).isRecord() || entryIndex.getFieldAccess(fieldEntry).isStatic()) {
 			return;
 		}
 
 		// Find all the methods in this record class
-		List<MethodEntry> classMethods = this.jarIndex.getEntryIndex().getMethods().stream()
+		List<MethodEntry> classMethods = entryIndex.getMethods().stream()
 				.filter(entry -> classEntry.equals(entry.getParent()))
 				.toList();
 

@@ -4,7 +4,7 @@ import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
@@ -155,7 +155,7 @@ public abstract class Command {
 
 			EntryTree<EntryMapping> mappings = readMappings(fileMappings, progress);
 
-			project.setMappings(mappings);
+			project.setMappings(mappings, new ConsoleProgressListener());
 		}
 
 		return project;
