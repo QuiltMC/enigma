@@ -49,6 +49,7 @@ import javax.swing.event.DocumentListener;
 
 public class SearchDialog {
 	private final JTextField searchField;
+	private final JCheckBox onlyExactMatchesCheckbox;
 	private final JCheckBox classesCheckBox;
 	private final JCheckBox methodsCheckBox;
 	private final JCheckBox fieldsCheckBox;
@@ -91,8 +92,11 @@ public class SearchDialog {
 		this.searchField.addKeyListener(GuiUtil.onKeyPress(this::onKeyPressed));
 		this.searchField.addActionListener(e -> this.openSelected());
 
-		JPanel enabledTypes = new JPanel();
-		enabledTypes.setLayout(new FlowLayout(FlowLayout.CENTER));
+		this.onlyExactMatchesCheckbox = new JCheckBox(I18n.translate("menu.search.only_exact_matches"));
+		this.onlyExactMatchesCheckbox.addActionListener(e -> this.updateList());
+
+		JPanel checkboxes = new JPanel();
+		checkboxes.setLayout(new FlowLayout(FlowLayout.CENTER));
 
 		this.classesCheckBox = new JCheckBox(I18n.translate("prompt.search.classes"));
 		this.classesCheckBox.addMouseListener(this.createCheckboxListener(Type.CLASS));
@@ -103,13 +107,14 @@ public class SearchDialog {
 		this.fieldsCheckBox = new JCheckBox(I18n.translate("prompt.search.fields"));
 		this.fieldsCheckBox.addMouseListener(this.createCheckboxListener(Type.FIELD));
 
-		enabledTypes.add(this.classesCheckBox);
-		enabledTypes.add(this.methodsCheckBox);
-		enabledTypes.add(this.fieldsCheckBox);
+		checkboxes.add(this.classesCheckBox);
+		checkboxes.add(this.methodsCheckBox);
+		checkboxes.add(this.fieldsCheckBox);
+		checkboxes.add(this.onlyExactMatchesCheckbox);
 
 		JPanel topBar = new JPanel();
 		topBar.setLayout(new BorderLayout());
-		topBar.add(enabledTypes, BorderLayout.SOUTH);
+		topBar.add(checkboxes, BorderLayout.SOUTH);
 		topBar.add(this.searchField, BorderLayout.NORTH);
 
 		contentPane.add(topBar, BorderLayout.NORTH);
@@ -299,7 +304,7 @@ public class SearchDialog {
 			}
 		};
 
-		this.currentSearch = this.util.asyncSearch(this.searchField.getText().trim(), (idx, e) -> queue.add(new Order(idx, e)));
+		this.currentSearch = this.util.asyncSearch(this.searchField.getText().trim(), (idx, e) -> queue.add(new Order(idx, e)), this.onlyExactMatchesCheckbox.isSelected());
 		SwingUtilities.invokeLater(updater);
 	}
 

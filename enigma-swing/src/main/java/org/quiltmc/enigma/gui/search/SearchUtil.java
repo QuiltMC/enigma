@@ -61,7 +61,7 @@ public class SearchUtil<T extends SearchEntry> {
 				.sequential();
 	}
 
-	public SearchControl asyncSearch(String term, SearchResultConsumer<T> consumer) {
+	public SearchControl asyncSearch(String term, SearchResultConsumer<T> consumer, boolean onlyExactMatches) {
 		Map<String, Integer> hitCount = new HashMap<>(this.hitCount);
 		Map<T, Entry<T>> entries = new HashMap<>(this.entries);
 		float[] scores = new float[entries.size()];
@@ -73,13 +73,27 @@ public class SearchUtil<T extends SearchEntry> {
 		for (Entry<T> value : entries.values()) {
 			this.searchExecutor.execute(() -> {
 				try {
-					if (control.get()) return;
+					if (control.get()) {
+						return;
+					}
+
+					// if onlyExactMatches is true, don't add any entries that don't have an exact match
+					if (onlyExactMatches && value.searchEntry.getSearchableNames().stream().noneMatch(name -> name.equalsIgnoreCase(term))) {
+						return;
+					}
+
 					float score = value.getScore(term, hitCount.getOrDefault(value.searchEntry.getIdentifier(), 0));
-					if (score <= 0) return;
+					if (score <= 0) {
+						return;
+					}
+
 					score = -score; // sort descending
 					try {
 						scoresLock.lock();
-						if (control.get()) return;
+						if (control.get()) {
+							return;
+						}
+
 						int dataSize = size.getAndIncrement();
 						int index = Arrays.binarySearch(scores, 0, dataSize, score);
 						if (index < 0) {
@@ -133,9 +147,17 @@ public class SearchUtil<T extends SearchEntry> {
 
 		public float getScore(String term, int hits) {
 			String ucTerm = term.toUpperCase(Locale.ROOT);
-			float maxScore = (float) Arrays.stream(this.components)
-					.mapToDouble(name -> getScoreFor(ucTerm, name))
-					.max().orElse(0.0);
+			float maxScore;
+
+			// if exact match, make sure it's at the top of the list
+			if (this.searchEntry.getSearchableNames().stream().anyMatch(name -> name.equalsIgnoreCase(term))) {
+				maxScore = Float.MAX_VALUE / 2;
+			} else {
+				maxScore = (float) Arrays.stream(this.components)
+						.mapToDouble(name -> getScoreFor(ucTerm, name))
+						.max()
+						.orElse(0.0);
+			}
 
 			// modify by type
 			int typeModifier = SearchDialog.Type.values().length - this.searchEntry.getType().ordinal() + 1;

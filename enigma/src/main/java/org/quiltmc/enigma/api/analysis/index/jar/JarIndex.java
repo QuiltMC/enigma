@@ -182,6 +182,15 @@ public class JarIndex implements JarIndexer {
 	}
 
 	@Override
+	public void indexClassReference(MethodDefEntry callerEntry, ClassEntry referencedEntry, ReferenceTargetType targetType) {
+		if (callerEntry.getParent().isJre()) {
+			return;
+		}
+
+		this.indexers.forEach((key, indexer) -> indexer.indexClassReference(callerEntry, referencedEntry, targetType));
+	}
+
+	@Override
 	public void indexMethodReference(MethodDefEntry callerEntry, MethodEntry referencedEntry, ReferenceTargetType targetType) {
 		if (callerEntry.getParent().isJre()) {
 			return;

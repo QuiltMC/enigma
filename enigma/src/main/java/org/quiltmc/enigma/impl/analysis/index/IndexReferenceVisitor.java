@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.impl.analysis.index;
 
+import org.objectweb.asm.tree.LdcInsnNode;
+import org.objectweb.asm.tree.TypeInsnNode;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.impl.analysis.IndexSimpleVerifier;
@@ -82,6 +84,15 @@ public class IndexReferenceVisitor extends ClassVisitor {
 				this.indexer.indexFieldReference(this.callerEntry, FieldEntry.parse(field.owner, field.name, field.desc), ReferenceTargetType.none());
 			}
 
+			if (insn.getOpcode() == Opcodes.LDC) {
+				LdcInsnNode ldc = (LdcInsnNode) insn;
+
+				if (ldc.getType() == Type.ARRAY && ldc.cst instanceof Type type) {
+					String className = type.getClassName().replace(".", "/");
+					this.indexer.indexClassReference(this.callerEntry, new ClassEntry(className), ReferenceTargetType.none());
+				}
+			}
+
 			return super.newOperation(insn);
 		}
 
@@ -95,6 +106,18 @@ public class IndexReferenceVisitor extends ClassVisitor {
 			if (insn.getOpcode() == Opcodes.GETFIELD) {
 				FieldInsnNode field = (FieldInsnNode) insn;
 				this.indexer.indexFieldReference(this.callerEntry, FieldEntry.parse(field.owner, field.name, field.desc), this.getReferenceTargetType(value, insn));
+			}
+
+			// Note: type.desc is actually the name
+
+			if (insn.getOpcode() == Opcodes.INSTANCEOF) {
+				TypeInsnNode type = (TypeInsnNode) insn;
+				this.indexer.indexClassReference(this.callerEntry, new ClassEntry(type.desc), ReferenceTargetType.none());
+			}
+
+			if (insn.getOpcode() == Opcodes.CHECKCAST) {
+				TypeInsnNode type = (TypeInsnNode) insn;
+				this.indexer.indexClassReference(this.callerEntry, new ClassEntry(type.desc), ReferenceTargetType.none());
 			}
 
 			return super.unaryOperation(insn, value);
