@@ -242,7 +242,8 @@ public class PackageRenamer {
 				}
 
 				String newName = String.join("/", split);
-				this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(classNode.getObfEntry()).withDeobfName(newName), false);
+				// ignore warnings, we don't want to bother the user with every individual package created
+				this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager(), false), EntryChange.modify(classNode.getObfEntry()).withDeobfName(newName), false);
 			});
 		} else if (node instanceof ClassSelectorPackageNode packageNode) {
 			String packageName = packageNode.getPackageName().substring(packageNode.getPackageName().lastIndexOf("/") + 1);
