@@ -22,15 +22,15 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.util.I18n;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
 public class JarIndex implements JarIndexer {
 	private final Set<String> indexedClasses = new HashSet<>();
-	private final Map<Class<? extends JarIndexer>, JarIndexer> indexers = new HashMap<>();
+	private final Map<Class<? extends JarIndexer>, JarIndexer> indexers = new LinkedHashMap<>();
 	private final IndexEntryResolver entryResolver;
 
 	private final Multimap<String, MethodDefEntry> methodImplementations = HashMultimap.create();
@@ -40,6 +40,7 @@ public class JarIndex implements JarIndexer {
 
 	/**
 	 * Creates a new empty index with all provided indexers.
+	 * Indexers will be run in the order they're passed to this constructor.
 	 * @param indexers the indexers to use
 	 */
 	public JarIndex(JarIndexer... indexers) {

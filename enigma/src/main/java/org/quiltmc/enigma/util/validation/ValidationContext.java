@@ -11,14 +11,25 @@ import java.util.Objects;
  */
 public class ValidationContext {
 	private final List<ParameterizedMessage> messages = new ArrayList<>();
+	private final boolean verifyWarnings;
 	private Notifier notifier;
+
+	/**
+	 * Creates a new validation context with no messages. Will ask the user before proceeding with warnings.
+	 * @param notifier the notifier to pass new messages into, defaults to {@link PrintNotifier#INSTANCE} if null
+	 */
+	public ValidationContext(Notifier notifier) {
+		this(notifier, true);
+	}
 
 	/**
 	 * Creates a new validation context with no messages.
 	 * @param notifier the notifier to pass new messages into, defaults to {@link PrintNotifier#INSTANCE} if null
+	 * @param verifyWarnings whether to ask the user whether to proceed on warnings. If {@code false}, all warnings will be ignored
 	 */
-	public ValidationContext(Notifier notifier) {
+	public ValidationContext(Notifier notifier, boolean verifyWarnings) {
 		this.notifier = Objects.requireNonNullElse(notifier, PrintNotifier.INSTANCE);
+		this.verifyWarnings = verifyWarnings;
 	}
 
 	/**
@@ -55,11 +66,13 @@ public class ValidationContext {
 	public boolean canProceed() {
 		List<ParameterizedMessage> messagesCopy = new ArrayList<>(this.messages);
 
-		for (ParameterizedMessage m : messagesCopy) {
-			if (m.getType() == Message.Type.WARNING) {
-				this.messages.remove(m);
-				if (!this.notifier.verifyWarning(m)) {
-					return false;
+		if (this.verifyWarnings) {
+			for (ParameterizedMessage m : messagesCopy) {
+				if (m.getType() == Message.Type.WARNING) {
+					this.messages.remove(m);
+					if (!this.notifier.verifyWarning(m)) {
+						return false;
+					}
 				}
 			}
 		}

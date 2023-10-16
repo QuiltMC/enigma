@@ -12,8 +12,8 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Pair;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,13 +21,14 @@ import java.util.Set;
  * A consolidated {@link MappingsIndexer} that can be configured to use as many separate indexers as you like.
  */
 public class MappingsIndex implements MappingsIndexer {
-	private final Map<Class<? extends MappingsIndexer>, MappingsIndexer> indexers = new HashMap<>();
+	private final Map<Class<? extends MappingsIndexer>, MappingsIndexer> indexers = new LinkedHashMap<>();
 
 	private ProgressListener progress;
 	private int work;
 
 	/**
 	 * Creates a new empty index with all provided indexers.
+	 * Indexers will be run in the order they're passed to this constructor.
 	 * @param indexers the indexers to use
 	 */
 	public MappingsIndex(MappingsIndexer... indexers) {
