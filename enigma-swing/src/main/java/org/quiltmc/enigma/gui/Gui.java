@@ -154,6 +154,8 @@ public class Gui {
 		for (Docker.Side side : Docker.Side.values()) {
 			this.mainWindow.getDockerSelector(side).configure();
 		}
+
+		//todo: setup default docker config
 	}
 
 	private void setupUi() {

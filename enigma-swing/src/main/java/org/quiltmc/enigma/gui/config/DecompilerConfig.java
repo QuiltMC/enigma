@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.gui.config;
 
+import org.quiltmc.config.api.ReflectiveConfig;
+import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.api.config.ConfigContainer;
 import org.quiltmc.enigma.api.config.ConfigSection;
 import org.quiltmc.enigma.impl.source.vineflower.VineflowerPreferences;
@@ -7,8 +9,10 @@ import org.quiltmc.enigma.impl.source.vineflower.VineflowerPreferences;
 import java.util.HashSet;
 import java.util.Map;
 
-public class DecompilerConfig {
-	private static final String VINEFLOWER = "Vineflower";
+public class DecompilerConfig extends ReflectiveConfig.Section {
+	public final TrackedValue<Decompiler> decompiler = this.value(Decompiler.VINEFLOWER);
+
+	private static final String VINEFLOWER = Decompiler.VINEFLOWER.name();
 
 	private DecompilerConfig() {
 	}
