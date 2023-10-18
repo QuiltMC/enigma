@@ -3,6 +3,7 @@ package org.quiltmc.enigma.gui;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.analysis.EntryReference;
+import org.quiltmc.enigma.gui.config.DockerConfig;
 import org.quiltmc.enigma.gui.config.NetConfig;
 import org.quiltmc.enigma.gui.config.Themes;
 import org.quiltmc.enigma.gui.config.UiConfig;
@@ -67,6 +68,7 @@ import java.util.function.IntFunction;
 public class Gui {
 	private final MainWindow mainWindow;
 	private final GuiController controller;
+	private final UiConfig config;
 
 	private ConnectionState connectionState;
 	private boolean isJarOpen;
@@ -99,7 +101,8 @@ public class Gui {
 	public final JFileChooser exportJarFileChooser;
 	public final SearchDialog searchDialog;
 
-	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean visible) {
+	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean visible, UiConfig config) {
+		this.config = config;
 		this.dockerManager = new DockerManager(this);
 		this.mainWindow = new MainWindow(this, Enigma.NAME);
 		this.centerPanel = new JPanel(new BorderLayout());
@@ -145,6 +148,10 @@ public class Gui {
 		this.dockerManager.registerDocker(new AllClassesDocker(this));
 		this.dockerManager.registerDocker(new DeobfuscatedClassesDocker(this));
 
+		if (this.config.dockerConfig.dockerLocations.value().isEmpty()) {
+			this.config.dockerConfig.dockerLocations.value().setValue(DockerConfig.getDefaultLocations(this.dockerManager));
+		}
+
 		// set default docker sizes
 		for (Docker docker : this.dockerManager.getDockers()) {
 			docker.setPreferredSize(new Dimension(300, 100));
@@ -154,8 +161,6 @@ public class Gui {
 		for (Docker.Side side : Docker.Side.values()) {
 			this.mainWindow.getDockerSelector(side).configure();
 		}
-
-		//todo: setup default docker config
 	}
 
 	private void setupUi() {

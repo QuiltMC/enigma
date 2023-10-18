@@ -118,7 +118,7 @@ public class TestPackageRename {
 	private static ClassSelectorPopupMenu setupMenu() throws InterruptedException {
 		Set<EditableType> editables = EnumSet.allOf(EditableType.class);
 		editables.addAll(List.of(EditableType.values()));
-		Gui gui = new Gui(EnigmaProfile.EMPTY, editables, false);
+		Gui gui = new Gui(EnigmaProfile.EMPTY, editables, false, config);
 		gui.setShowsProgressBars(false);
 
 		CountDownLatch latch = new CountDownLatch(1);

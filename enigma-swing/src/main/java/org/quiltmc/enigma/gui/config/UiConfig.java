@@ -39,7 +39,7 @@ public final class UiConfig extends ReflectiveConfig {
 
 	public final TrackedValue<String> language = this.value(I18n.DEFAULT_LANGUAGE);
 	public final TrackedValue<Double> scaleFactor = this.value(1.0);
-	public final TrackedValue<DockerConfig> dockerConfig = this.value(new DockerConfig());
+	public final DockerConfig dockerConfig = new DockerConfig();
 	public final TrackedValue<Integer> maxRecentFiles = this.value(10);
 	public final TrackedValue<RecentFiles> recentFiles = this.value(new RecentFiles());
 	public final TrackedValue<LookAndFeel> lookAndFeel = this.value(LookAndFeel.DEFAULT);
