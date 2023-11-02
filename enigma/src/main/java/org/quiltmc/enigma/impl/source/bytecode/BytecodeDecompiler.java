@@ -5,9 +5,9 @@ import org.quiltmc.enigma.api.source.Decompiler;
 import org.quiltmc.enigma.api.source.Source;
 import org.quiltmc.enigma.api.source.SourceSettings;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.objectweb.asm.tree.ClassNode;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 

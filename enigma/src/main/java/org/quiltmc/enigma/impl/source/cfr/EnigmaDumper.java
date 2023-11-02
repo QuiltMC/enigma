@@ -29,8 +29,8 @@ import org.benf.cfr.reader.util.output.IllegalIdentifierDump;
 import org.benf.cfr.reader.util.output.MovableDumperContext;
 import org.benf.cfr.reader.util.output.StringStreamDumper;
 import org.benf.cfr.reader.util.output.TypeContext;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;

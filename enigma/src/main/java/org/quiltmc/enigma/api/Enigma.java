@@ -11,6 +11,7 @@ import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.CombiningClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
+import org.quiltmc.enigma.util.Either;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Utils;
 import com.google.common.base.Preconditions;
@@ -135,7 +136,7 @@ public class Enigma {
 		private <T extends EnigmaService> EnigmaServiceContext<T> getServiceContext(EnigmaProfile.Service serviceProfile) {
 			return new EnigmaServiceContext<>() {
 				@Override
-				public Optional<String> getArgument(String key) {
+				public Optional<Either<String, List<String>>> getArgument(String key) {
 					return serviceProfile.getArgument(key);
 				}
 
