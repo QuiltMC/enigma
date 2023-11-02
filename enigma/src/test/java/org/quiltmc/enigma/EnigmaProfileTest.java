@@ -17,7 +17,6 @@ import java.util.Optional;
 public class EnigmaProfileTest {
 	@Test
 	public void testParse() {
-		//noinspection CheckStyle
 		Reader r = new StringReader("""
 				{
 					"mapping_save_parameters": {
@@ -51,8 +50,7 @@ public class EnigmaProfileTest {
 							}
 						]
 					}
-				}
-				""");
+				}""");
 		EnigmaProfile profile = EnigmaProfile.parse(r);
 
 		Assertions.assertEquals(MappingFileNameFormat.BY_DEOBF, profile.getMappingSaveParameters().fileNameFormat());
