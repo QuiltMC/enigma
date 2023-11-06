@@ -16,6 +16,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.util.I18n;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -46,7 +47,7 @@ public final class TinyV2Reader implements MappingsReader {
 	private EntryTree<EntryMapping> read(Path path, List<String> lines, ProgressListener progress) throws MappingParseException {
 		EntryTree<EntryMapping> mappings = new HashEntryTree<>();
 
-		progress.init(lines.size(), "progress.mappings.tiny_v2.loading");
+		progress.init(lines.size(), I18n.translate("progress.mappings.tiny_v2.loading"));
 
 		BitSet state = new BitSet(STATE_SIZE);
 		@SuppressWarnings("unchecked")
