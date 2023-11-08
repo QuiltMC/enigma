@@ -9,6 +9,9 @@ import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.service.ObfuscationTestService;
+import org.quiltmc.enigma.api.source.RenamableTokenType;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
+import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
@@ -33,6 +36,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 import org.tinylog.Logger;
 
+import javax.annotation.Nullable;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -42,6 +46,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -78,7 +83,7 @@ public class EnigmaProject {
 
 	private EntryRemapper mapper;
 
-	public EnigmaProject(Enigma enigma, Path jarPath, ClassProvider classProvider, JarIndex jarIndex, byte[] jarChecksum) {
+	public EnigmaProject(Enigma enigma, Path jarPath, ClassProvider classProvider, JarIndex jarIndex, EntryTree<EntryMapping> proposedNames, byte[] jarChecksum) {
 		Preconditions.checkArgument(jarChecksum.length == 20);
 		this.enigma = enigma;
 		this.jarPath = jarPath;
@@ -86,22 +91,45 @@ public class EnigmaProject {
 		this.jarIndex = jarIndex;
 		this.jarChecksum = jarChecksum;
 
-		this.mapper = EntryRemapper.empty(jarIndex);
 		this.mappingsIndex = MappingsIndex.empty();
+		// todo move this back into jar opening
+		this.mappingsIndex.indexMappings(proposedNames, ProgressListener.none());
+		this.mapper = EntryRemapper.mapped(jarIndex, this.mappingsIndex, proposedNames);
 	}
 
 	/**
 	 * Sets the current mappings of this project.
-	 * Note that this triggers an index of the mappings, which may be expensive.
+	 * Note that this triggers both an index of the mappings and dynamic name proposal, which may be expensive.
 	 * @param mappings the new mappings
 	 * @param progress a progress listener for indexing
 	 */
-	public void setMappings(EntryTree<EntryMapping> mappings, ProgressListener progress) {
+	public void setMappings(@Nullable EntryTree<EntryMapping> mappings, ProgressListener progress) {
+		EntryTree<EntryMapping> jarProposedMappings = new HashEntryTree<>();
+
+		// keep bytecode-based proposed names, to avoid unnecessary recalculation
+		if (this.mapper != null) {
+			EntryTree<EntryMapping> oldMappings = this.mapper.getObfToDeobf();
+			Iterator<EntryTreeNode<EntryMapping>> iterator = oldMappings.iterator();
+
+			iterator.forEachRemaining(node -> {
+				EntryMapping mapping = node.getValue();
+
+				if (mapping != null && mapping.tokenType() == RenamableTokenType.JAR_PROPOSED) {
+					jarProposedMappings.insert(node.getEntry(), mapping);
+				}
+			});
+		}
+
 		this.mappingsIndex = MappingsIndex.empty();
 
 		if (mappings != null) {
-			this.mappingsIndex.indexMappings(mappings, progress);
-			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, mappings);
+			EntryTree<EntryMapping> mergedTree = EntryTree.merge(jarProposedMappings, mappings);
+
+			this.mappingsIndex.indexMappings(mergedTree, progress);
+			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, mergedTree);
+		} else if (!jarProposedMappings.isEmpty()) {
+			this.mappingsIndex.indexMappings(jarProposedMappings, progress);
+			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, jarProposedMappings);
 		} else {
 			this.mapper = EntryRemapper.empty(this.jarIndex);
 		}
@@ -231,25 +259,8 @@ public class EnigmaProject {
 			}
 		}
 
-		if (this.hasProposedName(entry)) {
-			return false;
-		}
-
 		EntryMapping mapping = this.mapper.getDeobfMapping(entry);
 		return mapping.targetName() == null;
-	}
-
-	public boolean hasProposedName(Entry<?> entry) {
-		List<NameProposalService> nameProposalServices = this.getEnigma().getServices().get(NameProposalService.TYPE);
-		if (!nameProposalServices.isEmpty()) {
-			for (NameProposalService service : nameProposalServices) {
-				if (service.proposeName(entry, this.mapper).isPresent()) {
-					return true;
-				}
-			}
-		}
-
-		return false;
 	}
 
 	public boolean isSynthetic(Entry<?> entry) {

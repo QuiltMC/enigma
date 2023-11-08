@@ -11,6 +11,12 @@ import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.CombiningClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
+import org.quiltmc.enigma.api.service.NameProposalService;
+import org.quiltmc.enigma.api.source.RenamableTokenType;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.util.Either;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Utils;
@@ -20,7 +26,9 @@ import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
@@ -70,7 +78,29 @@ public class Enigma {
 
 		progress.step(i, I18n.translate("progress.jar.custom_indexing.finished"));
 
-		return new EnigmaProject(this, path, classProvider, index, Utils.zipSha1(path));
+
+		var nameProposalServices = this.services.getWithIds(NameProposalService.TYPE);
+		progress.init(nameProposalServices.size(), I18n.translate("progress.proposal"));
+
+		EntryTree<EntryMapping> proposedNames = new HashEntryTree<>();
+
+		int j = 1;
+		for (var service : nameProposalServices) {
+			progress.step(j++, I18n.translateFormatted("progress.jar.custom_indexing.indexer", service.id()));
+			Map<Entry<?>, EntryMapping> proposed = service.service().getProposedNames(index);
+
+			for (var entry : proposed.entrySet()) {
+				if (entry.getValue().tokenType() != RenamableTokenType.JAR_PROPOSED) {
+					throw new RuntimeException("Token type of mapping " + entry.getValue() + " for entry " + entry.getKey() + " was " + entry.getValue().tokenType() + ", but should be " + RenamableTokenType.JAR_PROPOSED + "!");
+				}
+
+				proposedNames.insert(entry.getKey(), entry.getValue());
+			}
+		}
+
+		progress.step(j, I18n.translate("progress.jar.custom_indexing.finished"));
+
+		return new EnigmaProject(this, path, classProvider, index, proposedNames, Utils.zipSha1(path));
 	}
 
 	public EnigmaProfile getProfile() {
