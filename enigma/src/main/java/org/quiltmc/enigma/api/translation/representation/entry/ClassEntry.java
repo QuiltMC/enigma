@@ -1,11 +1,10 @@
 package org.quiltmc.enigma.api.translation.representation.entry;
 
-import org.quiltmc.enigma.api.source.RenamableTokenType;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.impl.translation.mapping.IdentifierValidation;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
+import org.quiltmc.enigma.impl.translation.mapping.IdentifierValidation;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 
 import javax.annotation.Nonnull;
@@ -40,11 +39,6 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	@Override
 	public Class<ClassEntry> getParentType() {
 		return ClassEntry.class;
-	}
-
-	@Override
-	public String getName() {
-		return this.name;
 	}
 
 	@Override
@@ -86,7 +80,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
-				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
+				mapping.tokenType(),
 				new ClassEntry(this.parent, translatedName, docs)
 		);
 	}

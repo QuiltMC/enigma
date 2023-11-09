@@ -1,25 +1,20 @@
 package org.quiltmc.enigma.api.source;
 
 import org.quiltmc.enigma.api.EnigmaProject;
-import org.quiltmc.enigma.api.EnigmaServices;
 import org.quiltmc.enigma.api.analysis.EntryReference;
-import org.quiltmc.enigma.api.service.NameProposalService;
-import org.quiltmc.enigma.impl.translation.LocalNameGenerator;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
-import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
-import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableDefEntry;
+import org.quiltmc.enigma.impl.translation.LocalNameGenerator;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class DecompiledClassSource {
 	protected static final boolean DEBUG_TOKEN_HIGHLIGHTS = false;
@@ -72,8 +67,7 @@ public class DecompiledClassSource {
 			target.add(RenamableTokenType.DEBUG, movedToken);
 		}
 
-		String defaultName = this.generateDefaultName(translatedEntry.getValue());
-		return defaultName;
+		return this.generateDefaultName(translatedEntry.getValue());
 	}
 
 	@Nullable

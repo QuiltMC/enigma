@@ -2,7 +2,6 @@ package org.quiltmc.enigma.api.translation.representation.entry;
 
 import com.google.common.base.Preconditions;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
-import org.quiltmc.enigma.api.source.RenamableTokenType;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -81,7 +80,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
-				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
+				mapping.tokenType(),
 				new MethodEntry(this.parent, translatedName, translator.translate(this.descriptor), docs)
 		);
 	}
