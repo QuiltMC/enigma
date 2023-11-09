@@ -148,8 +148,8 @@ public class PacketHelper {
 		int flags = input.readUnsignedByte();
 		TristateChange.Type deobfNameType = TristateChange.Type.values()[flags & 0x3];
 		TristateChange.Type javadocType = TristateChange.Type.values()[flags >> 2 & 0x3];
-		TristateChange.Type tokenTypeType = TristateChange.Type.values()[flags >> 2 & 0x3];
-		TristateChange.Type pluginIdType = TristateChange.Type.values()[flags >> 2 & 0x3];
+		TristateChange.Type tokenTypeType = TristateChange.Type.values()[flags >> 4 & 0x3];
+		TristateChange.Type pluginIdType = TristateChange.Type.values()[flags >> 6 & 0x3];
 
 		switch (deobfNameType) {
 			case RESET -> change = change.clearDeobfName();
@@ -164,7 +164,7 @@ public class PacketHelper {
 
 		change = switch (tokenTypeType) {
 			case RESET -> throw new RuntimeException("cannot remove token type!");
-			case SET -> change.withTokenType(RenamableTokenType.values()[input.readInt()]);
+			case SET -> change.withTokenType(RenamableTokenType.values()[input.readUnsignedShort()]);
 			default -> change;
 		};
 
@@ -195,7 +195,7 @@ public class PacketHelper {
 		}
 
 		if (change.getTokenType().isSet()) {
-			output.writeInt(change.getTokenType().getNewValue().ordinal());
+			output.writeShort(change.getTokenType().getNewValue().ordinal());
 		}
 
 		if (change.getSourcePluginId().isSet()) {

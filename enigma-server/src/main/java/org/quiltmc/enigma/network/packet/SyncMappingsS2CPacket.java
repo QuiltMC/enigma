@@ -38,7 +38,7 @@ public class SyncMappingsS2CPacket implements Packet<ClientPacketHandler> {
 		Entry<?> entry = PacketHelper.readEntry(input, parent, false);
 		String name = PacketHelper.readString(input);
 		String javadoc = PacketHelper.readString(input);
-		RenamableTokenType tokenType = RenamableTokenType.values()[input.readInt()];
+		RenamableTokenType tokenType = RenamableTokenType.values()[input.readUnsignedShort()];
 		String sourcePluginId = PacketHelper.readString(input);
 
 		EntryMapping mapping = new EntryMapping(!name.isEmpty() ? name : null, !javadoc.isEmpty() ? javadoc : null, tokenType, !sourcePluginId.isEmpty() ? sourcePluginId : null);
@@ -65,7 +65,7 @@ public class SyncMappingsS2CPacket implements Packet<ClientPacketHandler> {
 
 		PacketHelper.writeString(output, value.targetName() != null ? value.targetName() : "");
 		PacketHelper.writeString(output, value.javadoc() != null ? value.javadoc() : "");
-		output.writeInt(value.tokenType().ordinal());
+		output.writeShort(value.tokenType().ordinal());
 		PacketHelper.writeString(output, value.sourcePluginId() != null ? value.sourcePluginId() : "");
 
 		Collection<? extends EntryTreeNode<EntryMapping>> children = node.getChildNodes();
