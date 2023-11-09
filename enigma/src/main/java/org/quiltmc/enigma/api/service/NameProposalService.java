@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.api.service;
 
-import org.checkerframework.checker.units.qual.N;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;

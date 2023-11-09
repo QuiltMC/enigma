@@ -103,7 +103,7 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 		ctx.registerService("enigma:bytecode", DecompilerService.TYPE, ctx1 -> Decompilers.BYTECODE);
 	}
 
-	private static abstract class NameProposalFunction implements NameProposalService, Function<JarIndex, Map<Entry<?>, EntryMapping>> {
+	private abstract static class NameProposalFunction implements NameProposalService, Function<JarIndex, Map<Entry<?>, EntryMapping>> {
 		@Override
 		public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
 			return this.apply(index);

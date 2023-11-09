@@ -26,7 +26,6 @@ import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -77,7 +76,6 @@ public class Enigma {
 		}
 
 		progress.step(i, I18n.translate("progress.jar.custom_indexing.finished"));
-
 
 		var nameProposalServices = this.services.getWithIds(NameProposalService.TYPE);
 		progress.init(nameProposalServices.size(), I18n.translate("progress.proposal"));
