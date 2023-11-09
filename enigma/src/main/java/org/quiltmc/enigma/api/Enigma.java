@@ -111,6 +111,10 @@ public class Enigma {
 		return this.services;
 	}
 
+	public NameProposalService[] getNameProposalServices() {
+		return this.services.getWithIds(NameProposalService.TYPE).stream().map(EnigmaServices.RegisteredService::service).toArray(NameProposalService[]::new);
+	}
+
 	public static class Builder {
 		private EnigmaProfile profile = EnigmaProfile.EMPTY;
 		private Iterable<EnigmaPlugin> plugins = ServiceLoader.load(EnigmaPlugin.class);

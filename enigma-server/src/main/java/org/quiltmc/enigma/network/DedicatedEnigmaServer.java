@@ -117,10 +117,10 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 			MappingFormat mappingFormat = MappingFormat.parseFromFile(mappingsFile);
 			EntryRemapper mappings;
 			if (!Files.exists(mappingsFile)) {
-				mappings = EntryRemapper.empty(project.getJarIndex());
+				mappings = EntryRemapper.empty(project.getJarIndex(), enigma.getNameProposalServices());
 			} else {
 				Logger.info("Reading mappings...");
-				mappings = EntryRemapper.mapped(project.getJarIndex(), project.getMappingsIndex(), mappingFormat.read(mappingsFile));
+				mappings = EntryRemapper.mapped(project.getJarIndex(), project.getMappingsIndex(), mappingFormat.read(mappingsFile), enigma.getNameProposalServices());
 			}
 
 			PrintWriter log = new PrintWriter(Files.newBufferedWriter(logFile));

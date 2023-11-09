@@ -42,7 +42,7 @@ public class EntryChangeC2SPacket implements Packet<ServerPacketHandler> {
 		}
 
 		if (!valid) {
-			handler.server().sendCorrectMapping(handler.client(), this.change.getTarget(), true);
+			handler.server().sendCorrectMapping(handler.client(), this.change.getTarget());
 			return;
 		}
 

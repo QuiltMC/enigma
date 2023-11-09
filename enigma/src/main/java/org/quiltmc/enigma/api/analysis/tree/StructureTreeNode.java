@@ -18,17 +18,14 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 public class StructureTreeNode extends DefaultMutableTreeNode {
-	private final List<NameProposalService> nameProposalServices;
 	private final EntryRemapper mapper;
 	private final ClassEntry parentEntry;
 	private final ParentedEntry<?> entry;
 
 	public StructureTreeNode(EnigmaProject project, ClassEntry parentEntry, ParentedEntry<?> entry) {
-		this.nameProposalServices = project.getEnigma().getServices().get(NameProposalService.TYPE);
 		this.mapper = project.getMapper();
 		this.parentEntry = parentEntry;
 		this.entry = entry;
@@ -92,16 +89,6 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 	public String toString() {
 		TranslateResult<ParentedEntry<?>> translateResult = this.mapper.extendedDeobfuscate(this.entry);
 		String result = translateResult.getValue().getName();
-
-		if (translateResult.isObfuscated() && !this.nameProposalServices.isEmpty()) {
-			for (NameProposalService service : this.nameProposalServices) {
-				Optional<String> proposedName = service.proposeName(this.entry, this.mapper);
-
-				if (proposedName.isPresent()) {
-					result = proposedName.get();
-				}
-			}
-		}
 
 		if (this.entry instanceof FieldDefEntry) {
 			FieldDefEntry field = (FieldDefEntry) translateResult.getValue();

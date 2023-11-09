@@ -18,16 +18,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// todo super borken
 /**
  * A panel with buttons to navigate to the next and previous items in its entry collection.
  */
 public class NavigatorPanel extends JPanel {
-	private static final RenamableTokenType[] SUPPORTED_TOKEN_TYPES = {RenamableTokenType.OBFUSCATED, RenamableTokenType.PROPOSED, RenamableTokenType.DEOBFUSCATED};
+	private static final RenamableTokenType[] SUPPORTED_TOKEN_TYPES = {RenamableTokenType.OBFUSCATED, RenamableTokenType.JAR_PROPOSED, RenamableTokenType.DYNAMIC_PROPOSED, RenamableTokenType.DEOBFUSCATED};
 
 	private final Gui gui;
 	private final JLabel statsLabel;
 	private final Map<RenamableTokenType, List<Entry<?>>> entries = new HashMap<>();
-	private final Map<Entry<?>, RenamableTokenType> tokenTypes = new HashMap<>();
 
 	private int currentIndex = 0;
 	private RenamableTokenType selectedType;
@@ -109,8 +109,6 @@ public class NavigatorPanel extends JPanel {
 	}
 
 	private void tryNavigate() {
-		this.updateTokenType(this.entries.get(this.selectedType).get(this.currentIndex));
-		this.updateStatsLabel();
 		this.gui.getController().navigateTo(this.entries.get(this.selectedType).get(this.currentIndex));
 	}
 
@@ -119,7 +117,6 @@ public class NavigatorPanel extends JPanel {
 	 * Keeps selected type intact.
 	 */
 	public void clear() {
-		this.tokenTypes.clear();
 		for (var list : this.entries.values()) {
 			list.clear();
 		}
@@ -139,7 +136,6 @@ public class NavigatorPanel extends JPanel {
 
 			if (!entries.contains(entry)) {
 				entries.add(entry);
-				this.tokenTypes.put(entry, tokenType);
 				this.updateStatsLabel();
 			}
 		}
@@ -152,26 +148,19 @@ public class NavigatorPanel extends JPanel {
 	 */
 	public void updateTokenType(Entry<?> target) {
 		RenamableTokenType tokenType = this.getTokenType(target);
-		RenamableTokenType oldType = this.tokenTypes.get(target);
-
-		if (tokenType != oldType) {
-			this.entries.get(oldType).remove(target);
-			this.entries.get(tokenType).add(target);
-			this.tokenTypes.put(target, tokenType);
-			this.updateStatsLabel();
+		for (var entry : this.entries.entrySet()) {
+			if (entry.getValue().remove(target)) {
+				break;
+			}
 		}
+
+		this.entries.get(tokenType).add(target);
+		this.updateStatsLabel();
 	}
 
 	private RenamableTokenType getTokenType(Entry<?> target) {
 		EnigmaProject project = this.gui.getController().getProject();
-		RenamableTokenType tokenType = project.getMapper().extendedDeobfuscate(target).getType();
-		if (tokenType == RenamableTokenType.OBFUSCATED) {
-			if (project.hasProposedName(target)) {
-				tokenType = RenamableTokenType.PROPOSED;
-			}
-		}
-
-		return tokenType;
+		return project.getMapper().getMapping(target).tokenType();
 	}
 
 	private void updateStatsLabel() {

@@ -66,12 +66,6 @@ public class DecompiledClassSource {
 				target.add(translatedEntry.getType(), movedToken);
 				return translatedEntry.getValue().getSourceRemapName();
 			} else {
-				Optional<String> proposedName = proposeName(project, entry);
-				if (proposedName.isPresent()) {
-					target.add(RenamableTokenType.PROPOSED, movedToken);
-					return proposedName.get();
-				}
-
 				target.add(RenamableTokenType.OBFUSCATED, movedToken);
 			}
 		} else if (DEBUG_TOKEN_HIGHLIGHTS) {
@@ -80,20 +74,6 @@ public class DecompiledClassSource {
 
 		String defaultName = this.generateDefaultName(translatedEntry.getValue());
 		return defaultName;
-	}
-
-	public static Optional<String> proposeName(EnigmaProject project, Entry<?> entry) {
-		EnigmaServices services = project.getEnigma().getServices();
-
-		return services.get(NameProposalService.TYPE).stream().flatMap(nameProposalService -> {
-			EntryRemapper mapper = project.getMapper();
-			Collection<Entry<?>> resolved = mapper.getObfResolver().resolveEntry(entry, ResolutionStrategy.RESOLVE_ROOT);
-
-			return resolved.stream()
-					.map(e -> nameProposalService.proposeName(e, mapper))
-					.filter(Optional::isPresent)
-					.map(Optional::get);
-		}).findFirst();
 	}
 
 	@Nullable

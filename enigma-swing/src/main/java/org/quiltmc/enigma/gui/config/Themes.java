@@ -84,7 +84,8 @@ public class Themes {
 	public static Map<RenamableTokenType, BoxHighlightPainter> getBoxHighlightPainters() {
 		return Map.of(
 				RenamableTokenType.OBFUSCATED, BoxHighlightPainter.create(UiConfig.getObfuscatedColor(), UiConfig.getObfuscatedOutlineColor()),
-				RenamableTokenType.PROPOSED, BoxHighlightPainter.create(UiConfig.getProposedColor(), UiConfig.getProposedOutlineColor()),
+				RenamableTokenType.JAR_PROPOSED, BoxHighlightPainter.create(UiConfig.getProposedColor(), UiConfig.getProposedOutlineColor()),
+				RenamableTokenType.DYNAMIC_PROPOSED, BoxHighlightPainter.create(UiConfig.getProposedColor(), UiConfig.getProposedOutlineColor()),
 				RenamableTokenType.DEOBFUSCATED, BoxHighlightPainter.create(UiConfig.getDeobfuscatedColor(), UiConfig.getDeobfuscatedOutlineColor()),
 				RenamableTokenType.DEBUG, BoxHighlightPainter.create(UiConfig.getDebugTokenColor(), UiConfig.getDebugTokenOutlineColor())
 		);

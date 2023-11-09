@@ -526,7 +526,7 @@ public class GuiController implements ClientPacketHandler {
 
 	private void applyChange0(ValidationContext vc, EntryChange<?> change, boolean updateSwingState) {
 		Entry<?> target = change.getTarget();
-		EntryMapping prev = this.project.getMapper().getDeobfMapping(target);
+		EntryMapping prev = this.project.getMapper().getMapping(target);
 		EntryMapping mapping = EntryUtil.applyChange(vc, this.project.getMapper(), change);
 
 		if (vc.canProceed()) {
@@ -615,7 +615,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void createServer(int port, char[] password) throws IOException {
-		this.server = new IntegratedEnigmaServer(this.project.getJarChecksum(), password, EntryRemapper.mapped(this.project.getJarIndex(), this.project.getMappingsIndex(), new HashEntryTree<>(this.project.getMapper().getObfToDeobf())), port);
+		this.server = new IntegratedEnigmaServer(this.project.getJarChecksum(), password, EntryRemapper.mapped(this.project.getJarIndex(), this.project.getMappingsIndex(), new HashEntryTree<>(this.project.getMapper().getObfToDeobf()), this.project.getEnigma().getNameProposalServices()), port);
 		this.server.start();
 		this.client = new EnigmaClient(this, "127.0.0.1", port);
 		this.client.connect();

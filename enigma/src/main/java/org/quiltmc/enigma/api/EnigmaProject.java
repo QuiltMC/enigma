@@ -7,7 +7,6 @@ import org.quiltmc.enigma.api.analysis.index.jar.EnclosingMethodIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
-import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.service.ObfuscationTestService;
 import org.quiltmc.enigma.api.source.RenamableTokenType;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
@@ -18,7 +17,6 @@ import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
 import org.quiltmc.enigma.api.source.Decompiler;
 import org.quiltmc.enigma.api.source.DecompilerService;
 import org.quiltmc.enigma.api.source.SourceSettings;
-import org.quiltmc.enigma.api.translation.ProposingTranslator;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
@@ -94,7 +92,8 @@ public class EnigmaProject {
 		this.mappingsIndex = MappingsIndex.empty();
 		// todo move this back into jar opening
 		this.mappingsIndex.indexMappings(proposedNames, ProgressListener.none());
-		this.mapper = EntryRemapper.mapped(jarIndex, this.mappingsIndex, proposedNames);
+
+		this.mapper = EntryRemapper.mapped(jarIndex, this.mappingsIndex, proposedNames, this.enigma.getNameProposalServices());
 	}
 
 	/**
@@ -126,13 +125,16 @@ public class EnigmaProject {
 			EntryTree<EntryMapping> mergedTree = EntryTree.merge(jarProposedMappings, mappings);
 
 			this.mappingsIndex.indexMappings(mergedTree, progress);
-			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, mergedTree);
+			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, mergedTree, this.enigma.getNameProposalServices());
 		} else if (!jarProposedMappings.isEmpty()) {
 			this.mappingsIndex.indexMappings(jarProposedMappings, progress);
-			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, jarProposedMappings);
+			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, jarProposedMappings, this.enigma.getNameProposalServices());
 		} else {
-			this.mapper = EntryRemapper.empty(this.jarIndex);
+			this.mapper = EntryRemapper.empty(this.jarIndex, this.enigma.getNameProposalServices());
 		}
+
+		// update dynamically proposed names
+		this.mapper.insertDynamicallyProposedMappings(null, null, null);
 	}
 
 	public Enigma getEnigma() {
@@ -259,7 +261,7 @@ public class EnigmaProject {
 			}
 		}
 
-		EntryMapping mapping = this.mapper.getDeobfMapping(entry);
+		EntryMapping mapping = this.mapper.getMapping(entry);
 		return mapping.targetName() == null;
 	}
 
@@ -276,9 +278,7 @@ public class EnigmaProject {
 	public JarExport exportRemappedJar(ProgressListener progress) {
 		Collection<ClassEntry> classEntries = this.jarIndex.getIndex(EntryIndex.class).getClasses();
 		ClassProvider fixingClassProvider = new ObfuscationFixClassProvider(this.classProvider, this.jarIndex);
-
-		NameProposalService[] nameProposalServices = this.getEnigma().getServices().get(NameProposalService.TYPE).toArray(new NameProposalService[0]);
-		Translator deobfuscator = nameProposalServices.length == 0 ? this.mapper.getDeobfuscator() : new ProposingTranslator(this.mapper, nameProposalServices);
+		Translator deobfuscator = this.mapper.getDeobfuscator();
 
 		AtomicInteger count = new AtomicInteger();
 		progress.init(classEntries.size(), I18n.translate("progress.classes.deobfuscating"));

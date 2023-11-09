@@ -3,6 +3,7 @@ package org.quiltmc.enigma.gui;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.analysis.EntryReference;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.gui.config.NetConfig;
 import org.quiltmc.enigma.gui.config.Themes;
 import org.quiltmc.enigma.gui.config.UiConfig;
@@ -460,10 +461,13 @@ public class Gui {
 	}
 
 	public void toggleMappingFromEntry(Entry<?> obfEntry) {
-		if (this.controller.getProject().getMapper().getDeobfMapping(obfEntry).targetName() != null) {
+		EntryMapping mapping = this.controller.getProject().getMapper().getMapping(obfEntry);
+
+		// todo figure out how to toggle back onto proposed - this will toggle back to obf
+		if (mapping.targetName() != null) {
 			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).clearDeobfName());
 		} else {
-			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).withDefaultDeobfName(this.getController().getProject()));
+			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).withDeobfName(obfEntry.getName()));
 		}
 	}
 

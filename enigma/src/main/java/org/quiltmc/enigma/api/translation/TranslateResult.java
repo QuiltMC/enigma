@@ -34,10 +34,6 @@ public final class TranslateResult<T> {
 		return TranslateResult.of(RenamableTokenType.DEOBFUSCATED, value);
 	}
 
-	public static <T> TranslateResult<T> proposed(T value) {
-		return TranslateResult.of(RenamableTokenType.PROPOSED, value);
-	}
-
 	public RenamableTokenType getType() {
 		return this.type;
 	}
@@ -56,10 +52,6 @@ public final class TranslateResult<T> {
 
 	public boolean isDeobfuscated() {
 		return this.type == RenamableTokenType.DEOBFUSCATED;
-	}
-
-	public boolean isProposed() {
-		return this.type == RenamableTokenType.PROPOSED;
 	}
 
 	@Override

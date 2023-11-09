@@ -23,4 +23,12 @@ public record EntryMapping(
 	public EntryMapping withDocs(String newDocs) {
 		return new EntryMapping(this.targetName, newDocs, this.tokenType, this.sourcePluginId);
 	}
+
+	public EntryMapping withTokenType(RenamableTokenType newTokenType) {
+		return new EntryMapping(this.targetName, this.javadoc, newTokenType, this.sourcePluginId);
+	}
+
+	public EntryMapping withSourcePluginId(String newPluginId) {
+		return new EntryMapping(this.targetName, this.javadoc, this.tokenType, newPluginId);
+	}
 }

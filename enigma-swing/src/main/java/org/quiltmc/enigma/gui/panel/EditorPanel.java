@@ -70,6 +70,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter.HighlightPainter;
 
+// todo proposed names are green?
 public class EditorPanel {
 	private final JPanel ui = new JPanel();
 	private final JEditorPane editor = new JEditorPane();
@@ -512,7 +513,7 @@ public class EditorPanel {
 		this.editor.getHighlighter().removeAllHighlights();
 
 		if (this.boxHighlightPainters != null) {
-			BoxHighlightPainter proposedPainter = this.boxHighlightPainters.get(RenamableTokenType.PROPOSED);
+			BoxHighlightPainter proposedPainter = this.boxHighlightPainters.get(RenamableTokenType.JAR_PROPOSED);
 
 			for (RenamableTokenType type : tokens.keySet()) {
 				BoxHighlightPainter painter = this.boxHighlightPainters.get(type);

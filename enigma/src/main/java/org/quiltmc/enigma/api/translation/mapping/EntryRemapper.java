@@ -3,6 +3,7 @@ package org.quiltmc.enigma.api.translation.mapping;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
+import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.translation.MappingTranslator;
 import org.quiltmc.enigma.api.translation.Translatable;
 import org.quiltmc.enigma.api.translation.TranslateResult;
@@ -22,6 +23,7 @@ import java.util.Objects;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class EntryRemapper {
 	private final DeltaTrackingTree<EntryMapping> obfToDeobf;
@@ -32,8 +34,9 @@ public class EntryRemapper {
 	private final MappingsIndex mappingsIndex;
 
 	private final MappingValidator validator;
+	private final NameProposalService[] proposalServices;
 
-	private EntryRemapper(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> obfToDeobf) {
+	private EntryRemapper(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> obfToDeobf, NameProposalService[] proposalServices) {
 		this.obfToDeobf = new DeltaTrackingTree<>(obfToDeobf);
 
 		this.obfResolver = jarIndex.getEntryResolver();
@@ -43,14 +46,15 @@ public class EntryRemapper {
 		this.mappingsIndex = mappingsIndex;
 
 		this.validator = new MappingValidator(this.deobfuscator, jarIndex, mappingsIndex);
+		this.proposalServices = proposalServices;
 	}
 
-	public static EntryRemapper mapped(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> obfToDeobf) {
-		return new EntryRemapper(jarIndex, mappingsIndex, obfToDeobf);
+	public static EntryRemapper mapped(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> obfToDeobf, NameProposalService[] proposalServices) {
+		return new EntryRemapper(jarIndex, mappingsIndex, obfToDeobf, proposalServices);
 	}
 
-	public static EntryRemapper empty(JarIndex index) {
-		return new EntryRemapper(index, MappingsIndex.empty(), new HashEntryTree<>());
+	public static EntryRemapper empty(JarIndex index, NameProposalService[] proposalServices) {
+		return new EntryRemapper(index, MappingsIndex.empty(), new HashEntryTree<>(), proposalServices);
 	}
 
 	public void validatePutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping) {
@@ -69,7 +73,8 @@ public class EntryRemapper {
 		//	mapRecordComponentGetter(vc, fieldEntry.getParent(), fieldEntry, deobfMapping);
 		//}
 
-		boolean renaming = !Objects.equals(this.getDeobfMapping(obfuscatedEntry).targetName(), deobfMapping.targetName());
+		EntryMapping oldMapping = this.getMapping(obfuscatedEntry);
+		boolean renaming = !Objects.equals(oldMapping.targetName(), deobfMapping.targetName());
 
 		Collection<Entry<?>> resolvedEntries = this.obfResolver.resolveEntry(obfuscatedEntry, renaming ? ResolutionStrategy.RESOLVE_ROOT : ResolutionStrategy.RESOLVE_CLOSEST);
 
@@ -89,6 +94,7 @@ public class EntryRemapper {
 			}
 		}
 
+		this.insertDynamicallyProposedMappings(obfuscatedEntry, oldMapping, deobfMapping);
 		this.mappingsIndex.reindexEntry(deobfMapping, obfuscatedEntry);
 	}
 
@@ -126,8 +132,21 @@ public class EntryRemapper {
 		this.doPutMapping(vc, methodEntry, new EntryMapping(fieldMapping.targetName()), false);
 	}
 
+	/**
+	 * Runs {@link NameProposalService#getDynamicProposedNames(EntryRemapper, Entry, EntryMapping, EntryMapping)} over the names stored in this remapper,
+	 * inserting all mappings generated.
+	 */
+	public void insertDynamicallyProposedMappings(@Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
+		for (var service : this.proposalServices) {
+			var proposedNames = service.getDynamicProposedNames(this, obfEntry, oldMapping, newMapping);
+			if (proposedNames != null) {
+				proposedNames.forEach(this.obfToDeobf::insert);
+			}
+		}
+	}
+
 	@Nonnull
-	public EntryMapping getDeobfMapping(Entry<?> entry) {
+	public EntryMapping getMapping(Entry<?> entry) {
 		EntryMapping entryMapping = this.obfToDeobf.get(entry);
 		return entryMapping == null ? EntryMapping.DEFAULT : entryMapping;
 	}

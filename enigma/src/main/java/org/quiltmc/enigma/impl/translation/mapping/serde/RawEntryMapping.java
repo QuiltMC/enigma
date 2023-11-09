@@ -1,11 +1,15 @@
 package org.quiltmc.enigma.impl.translation.mapping.serde;
 
+import org.quiltmc.enigma.api.source.RenamableTokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A builder class for creating an {@link EntryMapping}, used when reading mappings.
+ */
 public final class RawEntryMapping {
 	private final String targetName;
 	private final List<String> javadocs = new ArrayList<>();
@@ -19,6 +23,6 @@ public final class RawEntryMapping {
 	}
 
 	public EntryMapping bake() {
-		return new EntryMapping(this.targetName, this.javadocs.isEmpty() ? null : String.join("\n", this.javadocs));
+		return new EntryMapping(this.targetName, this.javadocs.isEmpty() ? null : String.join("\n", this.javadocs), RenamableTokenType.DEOBFUSCATED, null);
 	}
 }
