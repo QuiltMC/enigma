@@ -14,6 +14,7 @@ import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JTree;
+import javax.swing.UIManager;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.Component;
 import java.util.function.Function;
@@ -26,7 +27,8 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 		this.controller = gui.getController();
 		this.selector = selector;
 
-		this.setLeafIcon(null);
+		// fix folder icons being automatically hidden: https://github.com/JFormDesigner/FlatLaf/pull/609
+		UIManager.put("Tree.showDefaultIcons", true);
 	}
 
 	@Override
