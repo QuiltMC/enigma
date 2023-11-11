@@ -18,7 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// todo super borken
+// todo occasionally disappears for no reason
+// todo adds items from other classes sometimes - renaming One in k always seems to do this
 /**
  * A panel with buttons to navigate to the next and previous items in its entry collection.
  */

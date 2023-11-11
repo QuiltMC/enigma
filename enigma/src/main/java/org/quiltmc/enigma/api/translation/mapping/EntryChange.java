@@ -30,15 +30,6 @@ public final class EntryChange<E extends Entry<?>> {
 		return new EntryChange<>(this.target, TristateChange.set(name), this.javadoc, TristateChange.set(RenamableTokenType.DEOBFUSCATED), TristateChange.reset());
 	}
 
-	public EntryChange<E> withProposedName(String name, RenamableTokenType tokenType, String sourcePluginId) {
-		if (!(tokenType == RenamableTokenType.JAR_PROPOSED) && !(tokenType == RenamableTokenType.DYNAMIC_PROPOSED)) {
-			// todo
-			throw new RuntimeException();
-		}
-
-		return new EntryChange<>(this.target, TristateChange.set(name), this.javadoc, TristateChange.set(tokenType), TristateChange.set(sourcePluginId));
-	}
-
 	public EntryChange<E> clearDeobfName() {
 		return new EntryChange<>(this.target, TristateChange.reset(), this.javadoc, TristateChange.set(RenamableTokenType.OBFUSCATED), TristateChange.reset());
 	}
