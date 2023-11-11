@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.api;
 
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.service.EnigmaService;
 import org.quiltmc.enigma.api.service.EnigmaServiceContext;
 import org.quiltmc.enigma.api.service.EnigmaServiceFactory;
@@ -12,7 +13,7 @@ import org.quiltmc.enigma.api.class_provider.CombiningClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
 import org.quiltmc.enigma.api.service.NameProposalService;
-import org.quiltmc.enigma.api.source.RenamableTokenType;
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
@@ -88,8 +89,8 @@ public class Enigma {
 			Map<Entry<?>, EntryMapping> proposed = service.service().getProposedNames(index);
 
 			for (var entry : proposed.entrySet()) {
-				if (entry.getValue().tokenType() != RenamableTokenType.JAR_PROPOSED) {
-					throw new RuntimeException("Token type of mapping " + entry.getValue() + " for entry " + entry.getKey() + " was " + entry.getValue().tokenType() + ", but should be " + RenamableTokenType.JAR_PROPOSED + "!");
+				if (entry.getValue().tokenType() != TokenType.JAR_PROPOSED) {
+					throw new RuntimeException("Token type of mapping " + entry.getValue() + " for entry " + entry.getKey() + " was " + entry.getValue().tokenType() + ", but should be " + TokenType.JAR_PROPOSED + "!");
 				}
 
 				proposedNames.insert(entry.getKey(), entry.getValue());
@@ -98,7 +99,10 @@ public class Enigma {
 
 		progress.step(j, I18n.translate("progress.jar.custom_indexing.finished"));
 
-		return new EnigmaProject(this, path, classProvider, index, proposedNames, Utils.zipSha1(path));
+		MappingsIndex mappingsIndex = MappingsIndex.empty();
+		mappingsIndex.indexMappings(proposedNames, progress);
+
+		return new EnigmaProject(this, path, classProvider, index, mappingsIndex, proposedNames, Utils.zipSha1(path));
 	}
 
 	public EnigmaProfile getProfile() {

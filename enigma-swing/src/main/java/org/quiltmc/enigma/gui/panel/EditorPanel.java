@@ -22,7 +22,7 @@ import org.quiltmc.enigma.gui.highlight.SelectionHighlightPainter;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
-import org.quiltmc.enigma.api.source.RenamableTokenType;
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
@@ -99,7 +99,7 @@ public class EditorPanel {
 
 	public LookAndFeel editorLaf;
 	private int fontSize = 12;
-	private Map<RenamableTokenType, BoxHighlightPainter> boxHighlightPainters;
+	private Map<TokenType, BoxHighlightPainter> boxHighlightPainters;
 
 	private final List<EditorActionListener> listeners = new ArrayList<>();
 
@@ -507,14 +507,14 @@ public class EditorPanel {
 		}
 	}
 
-	public void setHighlightedTokens(Map<RenamableTokenType, ? extends Collection<Token>> tokens) {
+	public void setHighlightedTokens(Map<TokenType, ? extends Collection<Token>> tokens) {
 		// remove any old highlighters
 		this.editor.getHighlighter().removeAllHighlights();
 
 		if (this.boxHighlightPainters != null) {
-			BoxHighlightPainter proposedPainter = this.boxHighlightPainters.get(RenamableTokenType.JAR_PROPOSED);
+			BoxHighlightPainter proposedPainter = this.boxHighlightPainters.get(TokenType.JAR_PROPOSED);
 
-			for (RenamableTokenType type : tokens.keySet()) {
+			for (TokenType type : tokens.keySet()) {
 				BoxHighlightPainter painter = this.boxHighlightPainters.get(type);
 
 				if (painter != null) {

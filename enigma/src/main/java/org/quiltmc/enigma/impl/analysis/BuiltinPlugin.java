@@ -10,7 +10,7 @@ import org.quiltmc.enigma.api.service.JarIndexerService;
 import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.source.DecompilerService;
 import org.quiltmc.enigma.api.source.Decompilers;
-import org.quiltmc.enigma.api.source.RenamableTokenType;
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
@@ -65,7 +65,7 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 
 				jarIndex.getIndex(EntryIndex.class).getFields().forEach(field -> {
 					if (names.containsKey(field)) {
-						mappings.put(field, new EntryMapping(names.get(field), null, RenamableTokenType.JAR_PROPOSED, id));
+						mappings.put(field, new EntryMapping(names.get(field), null, TokenType.JAR_PROPOSED, id));
 					}
 				});
 
@@ -84,7 +84,7 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 					Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
 
 					bridgeMethodIndex.getSpecializedToBridge().forEach((specialized, bridge) -> {
-						EntryMapping mapping = new EntryMapping(bridge.getName(), null, RenamableTokenType.JAR_PROPOSED, id);
+						EntryMapping mapping = new EntryMapping(bridge.getName(), null, TokenType.JAR_PROPOSED, id);
 
 						mappings.put(specialized, mapping);
 						// IndexEntryResolver#resolveEntry can return the bridge method, so we can just use the name

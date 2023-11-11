@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.network.packet;
 
-import org.quiltmc.enigma.api.source.RenamableTokenType;
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.network.ClientPacketHandler;
 import org.quiltmc.enigma.network.EnigmaServer;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -38,7 +38,7 @@ public class SyncMappingsS2CPacket implements Packet<ClientPacketHandler> {
 		Entry<?> entry = PacketHelper.readEntry(input, parent, false);
 		String name = PacketHelper.readString(input);
 		String javadoc = PacketHelper.readString(input);
-		RenamableTokenType tokenType = RenamableTokenType.values()[input.readUnsignedShort()];
+		TokenType tokenType = TokenType.values()[input.readUnsignedShort()];
 		String sourcePluginId = PacketHelper.readString(input);
 
 		EntryMapping mapping = new EntryMapping(!name.isEmpty() ? name : null, !javadoc.isEmpty() ? javadoc : null, tokenType, !sourcePluginId.isEmpty() ? sourcePluginId : null);

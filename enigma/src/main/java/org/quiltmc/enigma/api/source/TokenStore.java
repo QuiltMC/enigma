@@ -12,18 +12,18 @@ public final class TokenStore {
 	private static final TokenStore EMPTY = new TokenStore(Collections.emptyNavigableSet(), Collections.emptyMap(), null);
 
 	private final NavigableSet<Token> tokens;
-	private final Map<RenamableTokenType, NavigableSet<Token>> byType;
+	private final Map<TokenType, NavigableSet<Token>> byType;
 	private final String obfSource;
 
-	private TokenStore(NavigableSet<Token> tokens, Map<RenamableTokenType, NavigableSet<Token>> byType, String obfSource) {
+	private TokenStore(NavigableSet<Token> tokens, Map<TokenType, NavigableSet<Token>> byType, String obfSource) {
 		this.tokens = tokens;
 		this.byType = byType;
 		this.obfSource = obfSource;
 	}
 
 	public static TokenStore create(SourceIndex obfuscatedIndex) {
-		EnumMap<RenamableTokenType, NavigableSet<Token>> map = new EnumMap<>(RenamableTokenType.class);
-		for (RenamableTokenType value : RenamableTokenType.values()) {
+		EnumMap<TokenType, NavigableSet<Token>> map = new EnumMap<>(TokenType.class);
+		for (TokenType value : TokenType.values()) {
 			map.put(value, new TreeSet<>(Comparator.comparing(t -> t.start)));
 		}
 
@@ -34,7 +34,7 @@ public final class TokenStore {
 		return TokenStore.EMPTY;
 	}
 
-	public void add(RenamableTokenType type, Token token) {
+	public void add(TokenType type, Token token) {
 		this.tokens.add(token);
 		this.byType.get(type).add(token);
 	}
@@ -70,7 +70,7 @@ public final class TokenStore {
 		return newPos;
 	}
 
-	public Map<RenamableTokenType, NavigableSet<Token>> getByType() {
+	public Map<TokenType, NavigableSet<Token>> getByType() {
 		return this.byType;
 	}
 }

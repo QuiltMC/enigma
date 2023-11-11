@@ -25,6 +25,8 @@ public class RecafMappingsWriter implements MappingsWriter {
 
 	@Override
 	public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
+		EntryTree<EntryMapping> writtenMappings = MappingsWriter.filterMappings(mappings, saveParameters);
+
 		try {
 			Files.deleteIfExists(path);
 			Files.createFile(path);
@@ -33,10 +35,10 @@ public class RecafMappingsWriter implements MappingsWriter {
 		}
 
 		try (BufferedWriter writer = Files.newBufferedWriter(path)) {
-			Lists.newArrayList(mappings)
+			Lists.newArrayList(writtenMappings)
 					.stream()
 					.map(EntryTreeNode::getEntry)
-					.forEach(entry -> this.writeEntry(writer, mappings, entry));
+					.forEach(entry -> this.writeEntry(writer, writtenMappings, entry));
 		} catch (IOException e) {
 			Logger.error(e, "Failed to write to file {}", path);
 		}

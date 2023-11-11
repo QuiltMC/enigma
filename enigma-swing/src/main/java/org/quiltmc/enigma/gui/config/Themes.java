@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.config;
 import org.quiltmc.enigma.gui.event.ThemeChangeListener;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.api.source.RenamableTokenType;
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.syntaxpain.JavaSyntaxKit;
 
 import java.awt.Font;
@@ -26,7 +26,7 @@ public class Themes {
 		Themes.setFonts();
 		UIManager.put("ScrollBar.showButtons", true);
 		JEditorPane.registerEditorKitForContentType("text/enigma-sources", JavaSyntaxKit.class.getName());
-		Map<RenamableTokenType, BoxHighlightPainter> boxHighlightPainters = getBoxHighlightPainters();
+		Map<TokenType, BoxHighlightPainter> boxHighlightPainters = getBoxHighlightPainters();
 		listeners.forEach(l -> l.onThemeChanged(laf, boxHighlightPainters));
 		ScaleUtil.applyScaling();
 		UiConfig.save();
@@ -81,13 +81,13 @@ public class Themes {
 		}
 	}
 
-	public static Map<RenamableTokenType, BoxHighlightPainter> getBoxHighlightPainters() {
+	public static Map<TokenType, BoxHighlightPainter> getBoxHighlightPainters() {
 		return Map.of(
-				RenamableTokenType.OBFUSCATED, BoxHighlightPainter.create(UiConfig.getObfuscatedColor(), UiConfig.getObfuscatedOutlineColor()),
-				RenamableTokenType.JAR_PROPOSED, BoxHighlightPainter.create(UiConfig.getProposedColor(), UiConfig.getProposedOutlineColor()),
-				RenamableTokenType.DYNAMIC_PROPOSED, BoxHighlightPainter.create(UiConfig.getProposedColor(), UiConfig.getProposedOutlineColor()),
-				RenamableTokenType.DEOBFUSCATED, BoxHighlightPainter.create(UiConfig.getDeobfuscatedColor(), UiConfig.getDeobfuscatedOutlineColor()),
-				RenamableTokenType.DEBUG, BoxHighlightPainter.create(UiConfig.getDebugTokenColor(), UiConfig.getDebugTokenOutlineColor())
+				TokenType.OBFUSCATED, BoxHighlightPainter.create(UiConfig.getObfuscatedColor(), UiConfig.getObfuscatedOutlineColor()),
+				TokenType.JAR_PROPOSED, BoxHighlightPainter.create(UiConfig.getProposedColor(), UiConfig.getProposedOutlineColor()),
+				TokenType.DYNAMIC_PROPOSED, BoxHighlightPainter.create(UiConfig.getProposedColor(), UiConfig.getProposedOutlineColor()),
+				TokenType.DEOBFUSCATED, BoxHighlightPainter.create(UiConfig.getDeobfuscatedColor(), UiConfig.getDeobfuscatedOutlineColor()),
+				TokenType.DEBUG, BoxHighlightPainter.create(UiConfig.getDebugTokenColor(), UiConfig.getDebugTokenOutlineColor())
 		);
 	}
 

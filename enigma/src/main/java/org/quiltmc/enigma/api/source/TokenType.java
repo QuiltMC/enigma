@@ -1,6 +1,9 @@
 package org.quiltmc.enigma.api.source;
 
-public enum RenamableTokenType {
+/**
+ * A token type dictates different types of mapping that an entry can have.
+ */
+public enum TokenType {
 	/**
 	 * Tokens which have no mapping whatsoever.
 	 */
@@ -17,5 +20,13 @@ public enum RenamableTokenType {
 	 * Tokens that have automatically proposed names based on other mappings.
 	 */
 	DYNAMIC_PROPOSED,
-	DEBUG
+	DEBUG;
+
+	/**
+	 * Checks whether this token has a name proposed by a plugin.
+	 * @return whether this token is proposed
+	 */
+	public boolean isProposed() {
+		return this == DYNAMIC_PROPOSED || this == JAR_PROPOSED;
+	}
 }

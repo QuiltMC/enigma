@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.impl.translation.mapping.serde;
 
-import org.quiltmc.enigma.api.source.RenamableTokenType;
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 
 import javax.annotation.Nullable;
@@ -23,6 +23,6 @@ public final class RawEntryMapping {
 	}
 
 	public EntryMapping bake() {
-		return new EntryMapping(this.targetName, this.javadocs.isEmpty() ? null : String.join("\n", this.javadocs), RenamableTokenType.DEOBFUSCATED, null);
+		return new EntryMapping(this.targetName, this.javadocs.isEmpty() ? null : String.join("\n", this.javadocs), TokenType.DEOBFUSCATED, null);
 	}
 }

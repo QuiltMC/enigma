@@ -8,8 +8,9 @@ import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.service.ObfuscationTestService;
-import org.quiltmc.enigma.api.source.RenamableTokenType;
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeUtil;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
@@ -81,7 +82,7 @@ public class EnigmaProject {
 
 	private EntryRemapper mapper;
 
-	public EnigmaProject(Enigma enigma, Path jarPath, ClassProvider classProvider, JarIndex jarIndex, EntryTree<EntryMapping> proposedNames, byte[] jarChecksum) {
+	public EnigmaProject(Enigma enigma, Path jarPath, ClassProvider classProvider, JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedNames, byte[] jarChecksum) {
 		Preconditions.checkArgument(jarChecksum.length == 20);
 		this.enigma = enigma;
 		this.jarPath = jarPath;
@@ -89,10 +90,7 @@ public class EnigmaProject {
 		this.jarIndex = jarIndex;
 		this.jarChecksum = jarChecksum;
 
-		this.mappingsIndex = MappingsIndex.empty();
-		// todo move this back into jar opening
-		this.mappingsIndex.indexMappings(proposedNames, ProgressListener.none());
-
+		this.mappingsIndex = mappingsIndex;
 		this.mapper = EntryRemapper.mapped(jarIndex, this.mappingsIndex, proposedNames, this.enigma.getNameProposalServices());
 	}
 
@@ -113,7 +111,7 @@ public class EnigmaProject {
 			iterator.forEachRemaining(node -> {
 				EntryMapping mapping = node.getValue();
 
-				if (mapping != null && mapping.tokenType() == RenamableTokenType.JAR_PROPOSED) {
+				if (mapping != null && mapping.tokenType() == TokenType.JAR_PROPOSED) {
 					jarProposedMappings.insert(node.getEntry(), mapping);
 				}
 			});
@@ -122,7 +120,7 @@ public class EnigmaProject {
 		this.mappingsIndex = MappingsIndex.empty();
 
 		if (mappings != null) {
-			EntryTree<EntryMapping> mergedTree = EntryTree.merge(jarProposedMappings, mappings);
+			EntryTree<EntryMapping> mergedTree = EntryTreeUtil.merge(jarProposedMappings, mappings);
 
 			this.mappingsIndex.indexMappings(mergedTree, progress);
 			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, mergedTree, this.enigma.getNameProposalServices());

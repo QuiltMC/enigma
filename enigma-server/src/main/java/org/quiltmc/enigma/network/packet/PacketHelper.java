@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.network.packet;
 
-import org.quiltmc.enigma.api.source.RenamableTokenType;
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
@@ -164,7 +164,7 @@ public class PacketHelper {
 
 		change = switch (tokenTypeType) {
 			case RESET -> throw new RuntimeException("cannot remove token type!");
-			case SET -> change.withTokenType(RenamableTokenType.values()[input.readUnsignedShort()]);
+			case SET -> change.withTokenType(TokenType.values()[input.readUnsignedShort()]);
 			default -> change;
 		};
 

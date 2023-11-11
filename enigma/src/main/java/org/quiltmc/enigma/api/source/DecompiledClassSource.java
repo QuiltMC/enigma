@@ -61,10 +61,10 @@ public class DecompiledClassSource {
 				target.add(translatedEntry.getType(), movedToken);
 				return translatedEntry.getValue().getSourceRemapName();
 			} else {
-				target.add(RenamableTokenType.OBFUSCATED, movedToken);
+				target.add(TokenType.OBFUSCATED, movedToken);
 			}
 		} else if (DEBUG_TOKEN_HIGHLIGHTS) {
-			target.add(RenamableTokenType.DEBUG, movedToken);
+			target.add(TokenType.DEBUG, movedToken);
 		}
 
 		return this.generateDefaultName(translatedEntry.getValue());
@@ -97,7 +97,7 @@ public class DecompiledClassSource {
 		return this.highlightedTokens;
 	}
 
-	public Map<RenamableTokenType, ? extends Collection<Token>> getHighlightedTokens() {
+	public Map<TokenType, ? extends Collection<Token>> getHighlightedTokens() {
 		return this.highlightedTokens.getByType();
 	}
 

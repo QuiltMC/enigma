@@ -38,8 +38,10 @@ public final class TinyV2Writer implements MappingsWriter {
 	}
 
 	@Override
-	public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters parameters) {
-		List<EntryTreeNode<EntryMapping>> classes = StreamSupport.stream(mappings.spliterator(), false).filter(node -> node.getEntry() instanceof ClassEntry).toList();
+	public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
+		EntryTree<EntryMapping> writtenMappings = MappingsWriter.filterMappings(mappings, saveParameters);
+
+		List<EntryTreeNode<EntryMapping>> classes = StreamSupport.stream(writtenMappings.spliterator(), false).filter(node -> node.getEntry() instanceof ClassEntry).toList();
 
 		try (PrintWriter writer = new LfPrintWriter(Files.newBufferedWriter(path))) {
 			writer.println("tiny\t2\t" + MINOR_VERSION + "\t" + this.obfHeader + "\t" + this.deobfHeader);
@@ -47,7 +49,7 @@ public final class TinyV2Writer implements MappingsWriter {
 			// no escape names
 
 			for (EntryTreeNode<EntryMapping> node : classes) {
-				this.writeClass(writer, node, mappings);
+				this.writeClass(writer, node, writtenMappings);
 			}
 		} catch (IOException ex) {
 			Logger.error(ex, "Failed to write mappings to {}", path);
