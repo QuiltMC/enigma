@@ -164,7 +164,7 @@ public class PacketHelper {
 
 		change = switch (tokenTypeType) {
 			case RESET -> throw new RuntimeException("cannot remove token type!");
-			case SET -> change.withTokenType(TokenType.values()[input.readUnsignedShort()]);
+			case SET -> change.withTokenType(readTokenType(input));
 			default -> change;
 		};
 
@@ -195,11 +195,24 @@ public class PacketHelper {
 		}
 
 		if (change.getTokenType().isSet()) {
-			output.writeShort(change.getTokenType().getNewValue().ordinal());
+			writeTokenType(output, change.getTokenType().getNewValue());
 		}
 
 		if (change.getSourcePluginId().isSet()) {
 			writeString(output, change.getSourcePluginId().getNewValue());
 		}
+	}
+
+	public static void writeTokenType(DataOutput output, TokenType tokenType) throws IOException {
+		output.writeShort(tokenType.ordinal());
+	}
+
+	public static TokenType readTokenType(DataInput input) throws IOException {
+		int ordinal = input.readUnsignedShort();
+		if (ordinal >= TokenType.values().length) {
+			throw new RuntimeException("Attempted to read invalid token type: " + ordinal + " (maximum value is " + (TokenType.values().length - 1) + ")!");
+		}
+
+		return TokenType.values()[ordinal];
 	}
 }
