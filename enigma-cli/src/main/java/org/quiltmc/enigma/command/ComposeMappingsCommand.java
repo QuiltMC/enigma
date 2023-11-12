@@ -45,7 +45,7 @@ public class ComposeMappingsCommand extends Command {
 	}
 
 	public static void run(Path leftFile, Path rightFile, String resultFormat, Path resultFile, String keepMode) throws IOException, MappingParseException {
-		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
 
 		MappingFormat leftFormat = MappingFormat.parseFromFile(leftFile);
 		EntryTree<EntryMapping> left = leftFormat.read(leftFile);

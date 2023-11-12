@@ -4,20 +4,15 @@ import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.service.NameProposalService;
-import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
 import org.quiltmc.enigma.api.translation.mapping.tree.DeltaTrackingTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
-import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
@@ -25,6 +20,7 @@ import org.quiltmc.enigma.util.Utils;
 import org.tinylog.Logger;
 
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
 public class InsertProposedMappingsCommand extends Command {
@@ -66,85 +62,46 @@ public class InsertProposedMappingsCommand extends Command {
 
 	public static void run(Path inJar, Path source, Path output, String resultFormat, Enigma enigma) throws Exception {
 		boolean debug = shouldDebug(new InsertProposedMappingsCommand().getName());
-		NameProposalService[] nameProposalServices = enigma.getServices().get(NameProposalService.TYPE).toArray(new NameProposalService[0]);
-		if (nameProposalServices.length == 0) {
-			Logger.error("No name proposal service found");
+		int nameProposalServices = enigma.getServices().get(NameProposalService.TYPE).size();
+		if (nameProposalServices == 0) {
+			Logger.error("No name proposal services found!");
 			return;
 		}
 
 		EnigmaProject project = openProject(inJar, source, enigma);
-		EntryTree<EntryMapping> mappings = exec(nameProposalServices, project, debug);
+		DeltaTrackingTree<EntryMapping> mappings = project.getMapper().getObfToDeobf();
+		printStats(project);
 
 		Utils.delete(output);
-		MappingSaveParameters saveParameters = enigma.getProfile().getMappingSaveParameters();
+		MappingSaveParameters saveParameters = new MappingSaveParameters(enigma.getProfile().getMappingSaveParameters().fileNameFormat(), true);
 		MappingsWriter writer = MappingCommandsUtil.getWriter(resultFormat);
 		writer.write(mappings, output, ProgressListener.none(), saveParameters);
 
 		if (debug) {
-			writeDebugDelta((DeltaTrackingTree<EntryMapping>) mappings, output);
+			writeDebugDelta(mappings, output);
 		}
 	}
 
-	public static EntryTree<EntryMapping> exec(NameProposalService[] nameProposalServices, EnigmaProject project, boolean trackDelta) {
+	public static void printStats(EnigmaProject project) {
 		EntryTree<EntryMapping> mappings = new HashEntryTree<>(project.getMapper().getObfToDeobf());
-
-		if (trackDelta) {
-			mappings = new DeltaTrackingTree<>(mappings);
-		}
-
-		EntryRemapper mapper = project.getMapper();
-		Translator translator = new ProposingTranslator(mapper, nameProposalServices);
-		EntryIndex index = project.getJarIndex().getIndex(EntryIndex.class);
-
-		Logger.info("Proposing class names...");
-		int classes = 0;
-		for (ClassEntry clazz : index.getClasses()) {
-			if (insertMapping(clazz, mappings, mapper, translator)) {
-				classes++;
-			}
-		}
-
-		Logger.info("Proposing field names...");
-		int fields = 0;
-		for (FieldEntry field : index.getFields()) {
-			if (insertMapping(field, mappings, mapper, translator)) {
-				fields++;
-			}
-		}
-
-		Logger.info("Proposing method and parameter names...");
-		int methods = 0;
-		int parameters = 0;
-		for (MethodEntry method : index.getMethods()) {
-			if (insertMapping(method, mappings, mapper, translator)) {
-				methods++;
-			}
-
-			int p = index.getMethodAccess(method).isStatic() ? 0 : 1;
-			for (TypeDescriptor paramDesc : method.getDesc().getArgumentDescs()) {
-				LocalVariableEntry param = new LocalVariableEntry(method, p, "", true, null);
-				if (insertMapping(param, mappings, mapper, translator)) {
-					parameters++;
+		AtomicInteger classes = new AtomicInteger();
+		AtomicInteger fields = new AtomicInteger();
+		AtomicInteger methods = new AtomicInteger();
+		AtomicInteger parameters = new AtomicInteger();
+		mappings.forEach(node -> {
+			if (node.getValue() != null && node.getValue().tokenType().isProposed()) {
+				if (node.getEntry() instanceof ClassEntry) {
+					classes.incrementAndGet();
+				} else if (node.getEntry() instanceof FieldEntry) {
+					fields.incrementAndGet();
+				} else if (node.getEntry() instanceof MethodEntry) {
+					methods.incrementAndGet();
+				} else if (node.getEntry() instanceof LocalVariableEntry) {
+					parameters.incrementAndGet();
 				}
-
-				p += paramDesc.getSize();
 			}
-		}
+		});
 
 		Logger.info("Proposed names for {} classes, {} fields, {} methods, {} parameters!", classes, fields, methods, parameters);
-		return mappings;
-	}
-
-	private static <T extends Entry<?>> boolean insertMapping(T entry, EntryTree<EntryMapping> mappings, EntryRemapper mapper, Translator translator) {
-		T deobf = mapper.extendedDeobfuscate(entry).getValue();
-		String name = translator.extendedTranslate(entry).getValue().getName();
-		if (!deobf.getName().equals(name) && !entry.getName().equals(name)) {
-			String javadoc = deobf.getJavadocs();
-			EntryMapping mapping = javadoc != null && !javadoc.isEmpty() ? new EntryMapping(name, javadoc) : new EntryMapping(name);
-			mappings.insert(entry, mapping);
-			return true;
-		}
-
-		return false;
 	}
 }
