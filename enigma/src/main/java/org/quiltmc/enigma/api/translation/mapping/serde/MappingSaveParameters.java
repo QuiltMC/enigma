@@ -11,7 +11,7 @@ public record MappingSaveParameters(@SerializedName("file_name_format") MappingF
 	/**
 	 * Controls how proposed names will be saved.
 	 * If set to {@code true}, proposed names will be treated exactly the same as any other mapping when saving.
-	 * If set to {@code false}, proposed names will not be saved -- on save, proposed names will be filtered out, but their javadocs will still be saved.
+	 * If set to {@code false}, proposed names will not be saved -- on save, proposed names will be filtered out, but their javadocs will still be written.
 	 */
 	@Override
 	public boolean writeProposedNames() {

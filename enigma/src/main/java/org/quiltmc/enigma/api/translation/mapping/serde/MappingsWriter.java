@@ -36,7 +36,7 @@ public interface MappingsWriter {
 
 				if (mapping != null) {
 					if (mapping.tokenType().isProposed() && mapping.javadoc() != null) {
-						newMappings.insert(node.getEntry(), mapping.withName(null).withTokenType(TokenType.OBFUSCATED).withSourcePluginId(null));
+						newMappings.insert(node.getEntry(), mapping.withName(null, TokenType.OBFUSCATED, null));
 					} else if (!mapping.tokenType().isProposed()) {
 						newMappings.insert(node);
 					}

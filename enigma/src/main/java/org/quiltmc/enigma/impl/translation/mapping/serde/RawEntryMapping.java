@@ -23,6 +23,6 @@ public final class RawEntryMapping {
 	}
 
 	public EntryMapping bake() {
-		return new EntryMapping(this.targetName, this.javadocs.isEmpty() ? null : String.join("\n", this.javadocs), TokenType.DEOBFUSCATED, null);
+		return new EntryMapping(this.targetName, this.javadocs.isEmpty() ? null : String.join("\n", this.javadocs), this.targetName == null ? TokenType.OBFUSCATED : TokenType.DEOBFUSCATED, null);
 	}
 }

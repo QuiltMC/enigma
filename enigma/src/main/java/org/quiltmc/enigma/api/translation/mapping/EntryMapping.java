@@ -16,11 +16,33 @@ public record EntryMapping(
 		this(targetName, null, targetName == null ? TokenType.OBFUSCATED : TokenType.DEOBFUSCATED, null);
 	}
 
-	public EntryMapping withName(String newName) {
+	public EntryMapping {
+		if (tokenType == TokenType.OBFUSCATED && targetName != null) {
+			throw new RuntimeException("cannot create a named mapping with an obfuscated token type!");
+		} else if (targetName == null && tokenType != TokenType.OBFUSCATED) {
+			throw new RuntimeException("cannot create a non-obfuscated mapping with no name!");
+		} else if (!tokenType.isProposed() && sourcePluginId != null) {
+			throw new RuntimeException("cannot create a non-proposed mapping with a source plugin ID!");
+		} else if (tokenType.isProposed() && sourcePluginId == null) {
+			throw new RuntimeException("cannot create a proposed mapping with no source plugin ID!");
+		} else if (tokenType.isProposed() && targetName == null) {
+			throw new RuntimeException("cannot create a proposed mapping with no name!");
+		}
+	}
+
+	public EntryMapping withName(@Nullable String newName) {
 		return new EntryMapping(newName, this.javadoc, this.tokenType, this.sourcePluginId);
 	}
 
-	public EntryMapping withDocs(String newDocs) {
+	public EntryMapping withName(@Nullable String newName, TokenType tokenType) {
+		return new EntryMapping(newName, this.javadoc, tokenType, this.sourcePluginId);
+	}
+
+	public EntryMapping withName(@Nullable String newName, TokenType tokenType, @Nullable String sourcePluginId) {
+		return new EntryMapping(newName, this.javadoc, tokenType, sourcePluginId);
+	}
+
+	public EntryMapping withJavadoc(@Nullable String newDocs) {
 		return new EntryMapping(this.targetName, newDocs, this.tokenType, this.sourcePluginId);
 	}
 
@@ -28,7 +50,7 @@ public record EntryMapping(
 		return new EntryMapping(this.targetName, this.javadoc, newTokenType, this.sourcePluginId);
 	}
 
-	public EntryMapping withSourcePluginId(String newPluginId) {
+	public EntryMapping withSourcePluginId(@Nullable String newPluginId) {
 		return new EntryMapping(this.targetName, this.javadoc, this.tokenType, newPluginId);
 	}
 
@@ -39,11 +61,11 @@ public record EntryMapping(
 	public static EntryMapping merge(EntryMapping leftMapping, EntryMapping rightMapping) {
 		EntryMapping merged = leftMapping.copy();
 		if (leftMapping.targetName == null && rightMapping.targetName != null) {
-			merged = merged.withName(rightMapping.targetName).withTokenType(rightMapping.tokenType).withSourcePluginId(rightMapping.sourcePluginId);
+			merged = merged.withName(rightMapping.targetName, rightMapping.tokenType, rightMapping.sourcePluginId);
 		}
 
 		if (leftMapping.javadoc == null && rightMapping.javadoc != null) {
-			merged = merged.withDocs(rightMapping.javadoc);
+			merged = merged.withJavadoc(rightMapping.javadoc);
 		}
 
 		return merged;
