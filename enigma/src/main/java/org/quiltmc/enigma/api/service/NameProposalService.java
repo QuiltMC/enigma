@@ -28,6 +28,7 @@ public interface NameProposalService extends EnigmaService {
 	/**
 	 * Runs when an entry is renamed, for updating proposed names that use other mappings as context.
 	 * Is also run when new mappings are opened -- in that case, {@code obfEntry}, {@code oldMapping}, and {@code newMapping} will be null.
+	 * Will not be run for insertion of proposed mappings, only manual renames.
 	 * All mappings proposed should have a token type of {@link TokenType#DYNAMIC_PROPOSED} and a non-null source plugin ID.
 	 *
 	 * @param remapper a remapper to use as context for name proposal
