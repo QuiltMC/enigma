@@ -1,7 +1,6 @@
 package org.quiltmc.enigma.api.analysis.tree;
 
 import org.quiltmc.enigma.api.EnigmaProject;
-import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;

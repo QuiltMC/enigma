@@ -260,7 +260,7 @@ public class EnigmaProject {
 		}
 
 		EntryMapping mapping = this.mapper.getMapping(entry);
-		return mapping.targetName() == null;
+		return mapping.tokenType() == TokenType.OBFUSCATED;
 	}
 
 	public boolean isSynthetic(Entry<?> entry) {
