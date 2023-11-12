@@ -18,8 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// todo occasionally disappears for no reason
-// todo adds items from other classes sometimes - renaming One in k always seems to do this
 /**
  * A panel with buttons to navigate to the next and previous items in its entry collection.
  */
@@ -111,18 +109,7 @@ public class NavigatorPanel extends JPanel {
 
 	private void tryNavigate() {
 		this.gui.getController().navigateTo(this.entries.get(this.selectedType).get(this.currentIndex));
-	}
-
-	/**
-	 * Removes all data from this navigator and updates its UI.
-	 * Keeps selected type intact.
-	 */
-	public void clear() {
-		for (var list : this.entries.values()) {
-			list.clear();
-		}
-
-		this.currentIndex = 0;
+		this.updateStatsLabel();
 	}
 
 	/**
