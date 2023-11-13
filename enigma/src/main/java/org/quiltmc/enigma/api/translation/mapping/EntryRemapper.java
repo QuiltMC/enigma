@@ -34,9 +34,9 @@ public class EntryRemapper {
 	private final MappingsIndex mappingsIndex;
 
 	private final MappingValidator validator;
-	private final NameProposalService[] proposalServices;
+	private final List<NameProposalService> proposalServices;
 
-	private EntryRemapper(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> obfToDeobf, NameProposalService[] proposalServices) {
+	private EntryRemapper(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> obfToDeobf, List<NameProposalService> proposalServices) {
 		this.obfToDeobf = new DeltaTrackingTree<>(obfToDeobf);
 
 		this.obfResolver = jarIndex.getEntryResolver();
@@ -49,11 +49,11 @@ public class EntryRemapper {
 		this.proposalServices = proposalServices;
 	}
 
-	public static EntryRemapper mapped(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> obfToDeobf, NameProposalService[] proposalServices) {
+	public static EntryRemapper mapped(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> obfToDeobf, List<NameProposalService> proposalServices) {
 		return new EntryRemapper(jarIndex, mappingsIndex, obfToDeobf, proposalServices);
 	}
 
-	public static EntryRemapper empty(JarIndex index, NameProposalService[] proposalServices) {
+	public static EntryRemapper empty(JarIndex index, List<NameProposalService> proposalServices) {
 		return new EntryRemapper(index, MappingsIndex.empty(), new HashEntryTree<>(), proposalServices);
 	}
 

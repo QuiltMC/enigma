@@ -27,6 +27,8 @@ import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -113,8 +115,15 @@ public class Enigma {
 		return this.services;
 	}
 
-	public NameProposalService[] getNameProposalServices() {
-		return this.services.getWithIds(NameProposalService.TYPE).stream().map(EnigmaServices.RegisteredService::service).toArray(NameProposalService[]::new);
+	/**
+	 * Gets all registered {@link NameProposalService name proposal services}, in the order that they should be run.
+	 * This means that the first plugin declared in the profile will be run last -- that way, names it proposes take priority over those proposed by earlier-running plugins.
+	 * @return the ordered list of services
+	 */
+	public List<NameProposalService> getNameProposalServices() {
+		var proposalServices = new ArrayList<>(this.services.getWithIds(NameProposalService.TYPE).stream().map(EnigmaServices.RegisteredService::service).toList());
+		Collections.reverse(proposalServices);
+		return proposalServices;
 	}
 
 	public static class Builder {
