@@ -90,12 +90,14 @@ public class Enigma {
 			progress.step(j++, I18n.translateFormatted("progress.jar.custom_indexing.indexer", service.id()));
 			Map<Entry<?>, EntryMapping> proposed = service.service().getProposedNames(index);
 
-			for (var entry : proposed.entrySet()) {
-				if (entry.getValue().tokenType() != TokenType.JAR_PROPOSED) {
-					throw new RuntimeException("Token type of mapping " + entry.getValue() + " for entry " + entry.getKey() + " was " + entry.getValue().tokenType() + ", but should be " + TokenType.JAR_PROPOSED + "!");
-				}
+			if (proposed != null) {
+				for (var entry : proposed.entrySet()) {
+					if (entry.getValue().tokenType() != TokenType.JAR_PROPOSED) {
+						throw new RuntimeException("Token type of mapping " + entry.getValue() + " for entry " + entry.getKey() + " was " + entry.getValue().tokenType() + ", but should be " + TokenType.JAR_PROPOSED + "!");
+					}
 
-				proposedNames.insert(entry.getKey(), entry.getValue());
+					proposedNames.insert(entry.getKey(), entry.getValue());
+				}
 			}
 		}
 
