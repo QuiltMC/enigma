@@ -5,6 +5,7 @@ import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 public class EntryTreeUtil {
 	/**
 	 * Inserts all entries from both trees into a merged {@link HashEntryTree}, without performing any modifications on the original trees.
+	 * In the case of a conflict, the mappings from the right tree will overwrite the left tree.
 	 * @return the merged tree
 	 */
 	public static EntryTree<EntryMapping> merge(EntryTree<EntryMapping> leftTree, EntryTree<EntryMapping> rightTree) {

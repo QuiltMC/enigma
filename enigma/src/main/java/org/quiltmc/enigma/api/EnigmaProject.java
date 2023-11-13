@@ -105,7 +105,7 @@ public class EnigmaProject {
 
 		// keep bytecode-based proposed names, to avoid unnecessary recalculation
 		if (this.mapper != null) {
-			EntryTree<EntryMapping> oldMappings = this.mapper.getObfToDeobf();
+			EntryTree<EntryMapping> oldMappings = this.mapper.getProposedMappings();
 			Iterator<EntryTreeNode<EntryMapping>> iterator = oldMappings.iterator();
 
 			iterator.forEachRemaining(node -> {
@@ -164,7 +164,7 @@ public class EnigmaProject {
 	}
 
 	public void dropMappings(ProgressListener progress) {
-		DeltaTrackingTree<EntryMapping> mappings = this.mapper.getObfToDeobf();
+		DeltaTrackingTree<EntryMapping> mappings = this.mapper.getDeobfMappings();
 
 		Collection<Entry<?>> dropped = this.dropMappings(mappings, progress);
 		for (Entry<?> entry : dropped) {

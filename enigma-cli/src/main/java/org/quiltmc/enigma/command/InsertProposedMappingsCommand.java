@@ -69,7 +69,7 @@ public class InsertProposedMappingsCommand extends Command {
 		}
 
 		EnigmaProject project = openProject(inJar, source, enigma);
-		DeltaTrackingTree<EntryMapping> mappings = project.getMapper().getObfToDeobf();
+		DeltaTrackingTree<EntryMapping> mappings = project.getMapper().getMappings();
 		printStats(project);
 
 		Utils.delete(output);
@@ -83,13 +83,13 @@ public class InsertProposedMappingsCommand extends Command {
 	}
 
 	public static void printStats(EnigmaProject project) {
-		EntryTree<EntryMapping> mappings = new HashEntryTree<>(project.getMapper().getObfToDeobf());
+		EntryTree<EntryMapping> mappings = new HashEntryTree<>(project.getMapper().getProposedMappings());
 		AtomicInteger classes = new AtomicInteger();
 		AtomicInteger fields = new AtomicInteger();
 		AtomicInteger methods = new AtomicInteger();
 		AtomicInteger parameters = new AtomicInteger();
 		mappings.forEach(node -> {
-			if (node.getValue() != null && node.getValue().tokenType().isProposed()) {
+			if (node.getValue() != null) {
 				if (node.getEntry() instanceof ClassEntry) {
 					classes.incrementAndGet();
 				} else if (node.getEntry() instanceof FieldEntry) {

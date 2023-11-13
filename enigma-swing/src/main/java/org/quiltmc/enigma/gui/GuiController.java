@@ -217,9 +217,9 @@ public class GuiController implements ClientPacketHandler {
 			this.loadedMappingPath = path;
 
 			if (saveAll) {
-				format.write(mapper.getObfToDeobf(), path, progress, saveParameters);
+				format.write(mapper.getMappings(), path, progress, saveParameters);
 			} else {
-				format.write(mapper.getObfToDeobf(), delta, path, progress, saveParameters);
+				format.write(mapper.getMappings(), delta, path, progress, saveParameters);
 			}
 		});
 	}
@@ -615,7 +615,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void createServer(int port, char[] password) throws IOException {
-		this.server = new IntegratedEnigmaServer(this.project.getJarChecksum(), password, EntryRemapper.mapped(this.project.getJarIndex(), this.project.getMappingsIndex(), new HashEntryTree<>(this.project.getMapper().getObfToDeobf()), this.project.getEnigma().getNameProposalServices()), port);
+		this.server = new IntegratedEnigmaServer(this.project.getJarChecksum(), password, EntryRemapper.mapped(this.project.getJarIndex(), this.project.getMappingsIndex(), new HashEntryTree<>(this.project.getMapper().getMappings()), this.project.getEnigma().getNameProposalServices()), port);
 		this.server.start();
 		this.client = new EnigmaClient(this, "127.0.0.1", port);
 		this.client.connect();

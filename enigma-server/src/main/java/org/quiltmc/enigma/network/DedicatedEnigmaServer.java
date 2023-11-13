@@ -153,7 +153,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 	}
 
 	private void saveMappings() {
-		this.mappingFormat.write(this.getMappings().getObfToDeobf(), this.getMappings().takeMappingDelta(), this.mappingsFile, ProgressListener.none(), this.profile.getMappingSaveParameters());
+		this.mappingFormat.write(this.getRemapper().getMappings(), this.getRemapper().takeMappingDelta(), this.mappingsFile, ProgressListener.none(), this.profile.getMappingSaveParameters());
 		this.log.flush();
 	}
 

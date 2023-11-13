@@ -286,7 +286,7 @@ public abstract class EnigmaServer {
 		return this.password;
 	}
 
-	public EntryRemapper getMappings() {
+	public EntryRemapper getRemapper() {
 		return this.mappings;
 	}
 
