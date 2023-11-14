@@ -187,7 +187,7 @@ public class EditorPanel {
 
 				if (!event.isControlDown() && !event.isAltDown() && Character.isJavaIdentifierPart(event.getKeyChar())) {
 					EnigmaProject project = gui.getController().getProject();
-					EntryReference<Entry<?>, Entry<?>> reference = project.getMapper().deobfuscate(EditorPanel.this.cursorReference);
+					EntryReference<Entry<?>, Entry<?>> reference = project.getRemapper().deobfuscate(EditorPanel.this.cursorReference);
 					Entry<?> entry = reference.getNameableEntry();
 
 					String name = String.valueOf(event.getKeyChar());
@@ -410,7 +410,7 @@ public class EditorPanel {
 			return;
 		}
 
-		EntryRemapper mapper = this.controller.getProject().getMapper();
+		EntryRemapper mapper = this.controller.getProject().getRemapper();
 		Token token = this.getToken(pos);
 
 		this.setCursorReference(this.getReference(token));

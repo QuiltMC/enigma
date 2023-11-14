@@ -10,6 +10,7 @@ import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.tree.DeltaTrackingTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeUtil;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
@@ -38,26 +39,14 @@ public class EntryRemapper {
 	private final MappingValidator validator;
 	private final List<NameProposalService> proposalServices;
 
-	private EntryRemapper(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> mappings, List<NameProposalService> proposalServices) {
-		EntryTree<EntryMapping> deobf = new HashEntryTree<>();
-		EntryTree<EntryMapping> proposed = new HashEntryTree<>();
-		mappings.forEach(node -> {
-			if (node.getValue() != null) {
-				if (node.getValue().tokenType().isProposed()) {
-					proposed.insert(node);
-				} else {
-					deobf.insert(node);
-				}
-			}
-		});
-
-		this.deobfNames = new DeltaTrackingTree<>(deobf);
-		this.proposedNames = new DeltaTrackingTree<>(proposed);
-		this.mergedNames = new DeltaTrackingTree<>(mappings);
+	private EntryRemapper(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
+		this.deobfNames = new DeltaTrackingTree<>(deobfMappings);
+		this.proposedNames = new DeltaTrackingTree<>(proposedMappings);
+		this.mergedNames = new DeltaTrackingTree<>(EntryTreeUtil.merge(proposedMappings, deobfMappings));
 
 		this.obfResolver = jarIndex.getEntryResolver();
 
-		this.deobfuscator = new MappingTranslator(mappings, this.obfResolver);
+		this.deobfuscator = new MappingTranslator(this.mergedNames, this.obfResolver);
 		this.jarIndex = jarIndex;
 		this.mappingsIndex = mappingsIndex;
 
@@ -65,12 +54,12 @@ public class EntryRemapper {
 		this.proposalServices = proposalServices;
 	}
 
-	public static EntryRemapper mapped(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> obfToDeobf, List<NameProposalService> proposalServices) {
-		return new EntryRemapper(jarIndex, mappingsIndex, obfToDeobf, proposalServices);
+	public static EntryRemapper mapped(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
+		return new EntryRemapper(jarIndex, mappingsIndex, proposedMappings, deobfMappings, proposalServices);
 	}
 
 	public static EntryRemapper empty(JarIndex index, List<NameProposalService> proposalServices) {
-		return new EntryRemapper(index, MappingsIndex.empty(), new HashEntryTree<>(), proposalServices);
+		return new EntryRemapper(index, MappingsIndex.empty(), new HashEntryTree<>(), new HashEntryTree<>(), proposalServices);
 	}
 
 	public void validatePutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping) {

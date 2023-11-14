@@ -148,7 +148,7 @@ public class NavigatorPanel extends JPanel {
 
 	private TokenType getTokenType(Entry<?> target) {
 		EnigmaProject project = this.gui.getController().getProject();
-		return project.getMapper().getMapping(target).tokenType();
+		return project.getRemapper().getMapping(target).tokenType();
 	}
 
 	private void updateStatsLabel() {

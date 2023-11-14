@@ -69,7 +69,7 @@ public class InsertProposedMappingsCommand extends Command {
 		}
 
 		EnigmaProject project = openProject(inJar, source, enigma);
-		DeltaTrackingTree<EntryMapping> mappings = project.getMapper().getMappings();
+		DeltaTrackingTree<EntryMapping> mappings = project.getRemapper().getMappings();
 		printStats(project);
 
 		Utils.delete(output);
@@ -83,7 +83,7 @@ public class InsertProposedMappingsCommand extends Command {
 	}
 
 	public static void printStats(EnigmaProject project) {
-		EntryTree<EntryMapping> mappings = new HashEntryTree<>(project.getMapper().getProposedMappings());
+		EntryTree<EntryMapping> mappings = new HashEntryTree<>(project.getRemapper().getProposedMappings());
 		AtomicInteger classes = new AtomicInteger();
 		AtomicInteger fields = new AtomicInteger();
 		AtomicInteger methods = new AtomicInteger();

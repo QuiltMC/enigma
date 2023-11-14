@@ -8,6 +8,7 @@ import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
+import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.util.Utils;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -104,6 +105,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 
 		Path logFile = parsedArgs.valueOf(logFileOpt);
 
+		// todo get jar proposed mappings here
 		Logger.info("Starting Enigma server");
 		DedicatedEnigmaServer server;
 		try {
@@ -117,10 +119,10 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 			MappingFormat mappingFormat = MappingFormat.parseFromFile(mappingsFile);
 			EntryRemapper mappings;
 			if (!Files.exists(mappingsFile)) {
-				mappings = EntryRemapper.empty(project.getJarIndex(), enigma.getNameProposalServices());
+				mappings = EntryRemapper.mapped(project.getJarIndex(), project.getMappingsIndex(), project.getRemapper().getProposedMappings(), new HashEntryTree<>(), enigma.getNameProposalServices());
 			} else {
 				Logger.info("Reading mappings...");
-				mappings = EntryRemapper.mapped(project.getJarIndex(), project.getMappingsIndex(), mappingFormat.read(mappingsFile), enigma.getNameProposalServices());
+				mappings = EntryRemapper.mapped(project.getJarIndex(), project.getMappingsIndex(), project.getRemapper().getProposedMappings(), mappingFormat.read(mappingsFile), enigma.getNameProposalServices());
 			}
 
 			PrintWriter log = new PrintWriter(Files.newBufferedWriter(logFile));

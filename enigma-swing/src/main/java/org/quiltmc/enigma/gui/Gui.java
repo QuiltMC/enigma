@@ -4,6 +4,7 @@ import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.gui.config.NetConfig;
 import org.quiltmc.enigma.gui.config.Themes;
 import org.quiltmc.enigma.gui.config.UiConfig;
@@ -461,11 +462,19 @@ public class Gui {
 	}
 
 	public void toggleMappingFromEntry(Entry<?> obfEntry) {
-		EntryMapping mapping = this.controller.getProject().getMapper().getMapping(obfEntry);
+		EntryMapping mapping = this.controller.getProject().getRemapper().getMapping(obfEntry);
 
-		// todo figure out how to toggle back onto proposed - this will toggle back to obf
 		if (mapping.targetName() != null) {
-			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).clearDeobfName());
+			EntryRemapper remapper = this.controller.getProject().getRemapper();
+			EntryChange<? extends Entry<?>> change;
+			EntryMapping proposedMapping = remapper.getProposedMappings().get(obfEntry);
+			if (proposedMapping != null) {
+				change = EntryChange.modify(obfEntry).withDeobfName(proposedMapping.targetName()).withTokenType(proposedMapping.tokenType()).withSourcePluginId(proposedMapping.sourcePluginId());
+			} else {
+				change = EntryChange.modify(obfEntry).clearDeobfName();
+			}
+
+			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), change);
 		} else {
 			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).withDeobfName(obfEntry.getName()));
 		}

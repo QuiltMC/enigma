@@ -41,14 +41,14 @@ public class CheckMappingsCommand extends Command {
 
 		for (Set<ClassEntry> partition : idx.getIndex(PackageVisibilityIndex.class).getPartitions()) {
 			long packages = partition.stream()
-					.map(project.getMapper()::deobfuscate)
+					.map(project.getRemapper()::deobfuscate)
 					.map(ClassEntry::getPackageName)
 					.distinct()
 					.count();
 			if (packages > 1) {
 				error = true;
 				Logger.error("Must be in one package:\n{}", () -> partition.stream()
-						.map(project.getMapper()::deobfuscate)
+						.map(project.getRemapper()::deobfuscate)
 						.map(ClassEntry::toString)
 						.sorted()
 						.collect(Collectors.joining("\n"))

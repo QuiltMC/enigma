@@ -91,7 +91,7 @@ public class EnigmaProject {
 		this.jarChecksum = jarChecksum;
 
 		this.mappingsIndex = mappingsIndex;
-		this.mapper = EntryRemapper.mapped(jarIndex, this.mappingsIndex, proposedNames, this.enigma.getNameProposalServices());
+		this.mapper = EntryRemapper.mapped(jarIndex, this.mappingsIndex, proposedNames, new HashEntryTree<>(), this.enigma.getNameProposalServices());
 	}
 
 	/**
@@ -123,10 +123,10 @@ public class EnigmaProject {
 			EntryTree<EntryMapping> mergedTree = EntryTreeUtil.merge(jarProposedMappings, mappings);
 
 			this.mappingsIndex.indexMappings(mergedTree, progress);
-			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, mergedTree, this.enigma.getNameProposalServices());
+			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, jarProposedMappings, mappings, this.enigma.getNameProposalServices());
 		} else if (!jarProposedMappings.isEmpty()) {
 			this.mappingsIndex.indexMappings(jarProposedMappings, progress);
-			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, jarProposedMappings, this.enigma.getNameProposalServices());
+			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, jarProposedMappings, new HashEntryTree<>(), this.enigma.getNameProposalServices());
 		} else {
 			this.mapper = EntryRemapper.empty(this.jarIndex, this.enigma.getNameProposalServices());
 		}
@@ -159,7 +159,7 @@ public class EnigmaProject {
 		return this.jarChecksum;
 	}
 
-	public EntryRemapper getMapper() {
+	public EntryRemapper getRemapper() {
 		return this.mapper;
 	}
 

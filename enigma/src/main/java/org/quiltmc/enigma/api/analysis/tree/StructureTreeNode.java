@@ -25,7 +25,7 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 	private final ParentedEntry<?> entry;
 
 	public StructureTreeNode(EnigmaProject project, ClassEntry parentEntry, ParentedEntry<?> entry) {
-		this.mapper = project.getMapper();
+		this.mapper = project.getRemapper();
 		this.parentEntry = parentEntry;
 		this.entry = entry;
 	}
@@ -56,19 +56,19 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 		children = switch (options.documentationVisibility()) {
 			case ALL -> children;
 			// TODO remove EntryRemapper.deobfuscate() calls when javadocs will no longer be tied to deobfuscation
-			case DOCUMENTED -> children.filter(e -> (e instanceof ClassEntry) || (project.getMapper().deobfuscate(e).getJavadocs() != null && !project.getMapper().deobfuscate(e).getJavadocs().isBlank()));
-			case NON_DOCUMENTED -> children.filter(e -> (e instanceof ClassEntry) || (project.getMapper().deobfuscate(e).getJavadocs() == null || project.getMapper().deobfuscate(e).getJavadocs().isBlank()));
+			case DOCUMENTED -> children.filter(e -> (e instanceof ClassEntry) || (project.getRemapper().deobfuscate(e).getJavadocs() != null && !project.getRemapper().deobfuscate(e).getJavadocs().isBlank()));
+			case NON_DOCUMENTED -> children.filter(e -> (e instanceof ClassEntry) || (project.getRemapper().deobfuscate(e).getJavadocs() == null || project.getRemapper().deobfuscate(e).getJavadocs().isBlank()));
 		};
 
 		children = switch (options.sortingOrder()) {
 			case DEFAULT -> children;
 			case A_Z -> children.sorted(Comparator.comparing(e -> (e instanceof MethodEntry m && m.isConstructor())
 					// compare the class name when the entry is a constructor
-					? project.getMapper().deobfuscate(e.getParent()).getSimpleName().toLowerCase()
-					: project.getMapper().deobfuscate(e).getSimpleName().toLowerCase()));
+					? project.getRemapper().deobfuscate(e.getParent()).getSimpleName().toLowerCase()
+					: project.getRemapper().deobfuscate(e).getSimpleName().toLowerCase()));
 			case Z_A -> children.sorted(Comparator.comparing(e -> (e instanceof MethodEntry m && m.isConstructor())
-					? project.getMapper().deobfuscate(((ParentedEntry<?>) e).getParent()).getSimpleName().toLowerCase()
-					: project.getMapper().deobfuscate((ParentedEntry<?>) e).getSimpleName().toLowerCase())
+					? project.getRemapper().deobfuscate(((ParentedEntry<?>) e).getParent()).getSimpleName().toLowerCase()
+					: project.getRemapper().deobfuscate((ParentedEntry<?>) e).getSimpleName().toLowerCase())
 					.reversed());
 		};
 

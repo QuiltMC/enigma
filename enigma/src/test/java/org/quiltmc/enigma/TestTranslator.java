@@ -34,7 +34,7 @@ public class TestTranslator {
 				TestUtil.getResource("/translation.mappings"),
 				ProgressListener.none());
 		project.setMappings(mappings, ProgressListener.none());
-		deobfuscator = project.getMapper().getDeobfuscator();
+		deobfuscator = project.getRemapper().getDeobfuscator();
 	}
 
 	@Test
