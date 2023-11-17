@@ -56,7 +56,6 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 
 		ctx.registerService("enigma:enum_initializer_indexer", JarIndexerService.TYPE, ctx1 -> JarIndexerService.fromVisitor(visitor));
 
-		// todo these might toss javadoc?
 		String id = "enigma:enum_name_proposer";
 		ctx.registerService(id, NameProposalService.TYPE, ctx1 -> new NameProposalFunction() {
 			@Override

@@ -80,15 +80,15 @@ public class Enigma {
 
 		progress.step(i, I18n.translate("progress.jar.custom_indexing.finished"));
 
-		var nameProposalServices = this.services.getWithIds(NameProposalService.TYPE);
-		progress.init(nameProposalServices.size(), I18n.translate("progress.proposal"));
+		var nameProposalServices = this.getNameProposalServices();
+		progress.init(nameProposalServices.size(), I18n.translate("progress.jar.name_proposal"));
 
 		EntryTree<EntryMapping> proposedNames = new HashEntryTree<>();
 
 		int j = 1;
 		for (var service : nameProposalServices) {
-			progress.step(j++, I18n.translateFormatted("progress.jar.custom_indexing.indexer", service.id()));
-			Map<Entry<?>, EntryMapping> proposed = service.service().getProposedNames(index);
+			progress.step(j++, I18n.translateFormatted("progress.jar.name_proposal"));
+			Map<Entry<?>, EntryMapping> proposed = service.getProposedNames(index);
 
 			if (proposed != null) {
 				for (var entry : proposed.entrySet()) {
@@ -101,7 +101,7 @@ public class Enigma {
 			}
 		}
 
-		progress.step(j, I18n.translate("progress.jar.custom_indexing.finished"));
+		progress.step(j, I18n.translate("progress.jar.name_proposal.finished"));
 
 		MappingsIndex mappingsIndex = MappingsIndex.empty();
 		mappingsIndex.indexMappings(proposedNames, progress);
@@ -194,8 +194,27 @@ public class Enigma {
 			};
 		}
 
+		/**
+		 * Orders the services into the same order they were declared in the {@link EnigmaProfile profile}.
+		 * @return the service container, with services ordered
+		 */
 		EnigmaServices buildServices() {
-			return new EnigmaServices(this.services.build());
+			ImmutableListMultimap<EnigmaServiceType<?>, EnigmaServices.RegisteredService<?>> builtServices = this.services.build();
+			ImmutableListMultimap.Builder<EnigmaServiceType<?>, EnigmaServices.RegisteredService<?>> orderedServices = ImmutableListMultimap.builder();
+			for (EnigmaServiceType<?> type : builtServices.keySet()) {
+				List<EnigmaProfile.Service> serviceProfiles = this.profile.getServiceProfiles(type);
+
+				for (EnigmaProfile.Service service : serviceProfiles) {
+					for (EnigmaServices.RegisteredService<?> registeredService : builtServices.get(type)) {
+						if (service.matches(registeredService.id())) {
+							orderedServices.put(type, registeredService);
+							break;
+						}
+					}
+				}
+			}
+
+			return new EnigmaServices(orderedServices.build());
 		}
 	}
 
