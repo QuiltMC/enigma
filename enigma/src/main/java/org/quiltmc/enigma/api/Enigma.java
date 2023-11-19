@@ -69,13 +69,13 @@ public class Enigma {
 
 		index.indexJar(scope, classProvider, progress);
 
-		var indexers = this.services.getWithIds(JarIndexerService.TYPE);
+		var indexers = this.services.get(JarIndexerService.TYPE);
 		progress.init(indexers.size(), I18n.translate("progress.jar.custom_indexing"));
 
 		int i = 1;
 		for (var service : indexers) {
-			progress.step(i++, I18n.translateFormatted("progress.jar.custom_indexing.indexer", service.id()));
-			service.service().acceptJar(scope, classProvider, index);
+			progress.step(i++, I18n.translateFormatted("progress.jar.custom_indexing.indexer", service.getId()));
+			service.acceptJar(scope, classProvider, index);
 		}
 
 		progress.step(i, I18n.translate("progress.jar.custom_indexing.finished"));
@@ -87,7 +87,7 @@ public class Enigma {
 
 		int j = 1;
 		for (var service : nameProposalServices) {
-			progress.step(j++, I18n.translateFormatted("progress.jar.name_proposal"));
+			progress.step(j++, I18n.translateFormatted("progress.jar.name_proposal.proposer", service.getId()));
 			Map<Entry<?>, EntryMapping> proposed = service.getProposedNames(index);
 
 			if (proposed != null) {
@@ -123,7 +123,7 @@ public class Enigma {
 	 * @return the ordered list of services
 	 */
 	public List<NameProposalService> getNameProposalServices() {
-		var proposalServices = new ArrayList<>(this.services.getWithIds(NameProposalService.TYPE).stream().map(EnigmaServices.RegisteredService::service).toList());
+		var proposalServices = new ArrayList<>(this.services.get(NameProposalService.TYPE));
 		Collections.reverse(proposalServices);
 		return proposalServices;
 	}
@@ -161,20 +161,20 @@ public class Enigma {
 	private static class PluginContext implements EnigmaPluginContext {
 		private final EnigmaProfile profile;
 
-		private final ImmutableListMultimap.Builder<EnigmaServiceType<?>, EnigmaServices.RegisteredService<?>> services = ImmutableListMultimap.builder();
+		private final ImmutableListMultimap.Builder<EnigmaServiceType<?>, EnigmaService> services = ImmutableListMultimap.builder();
 
 		PluginContext(EnigmaProfile profile) {
 			this.profile = profile;
 		}
 
 		@Override
-		public <T extends EnigmaService> void registerService(String id, EnigmaServiceType<T> serviceType, EnigmaServiceFactory<T> factory) {
+		public <T extends EnigmaService> void registerService(EnigmaServiceType<T> serviceType, EnigmaServiceFactory<T> factory) {
 			List<EnigmaProfile.Service> serviceProfiles = this.profile.getServiceProfiles(serviceType);
 
 			for (EnigmaProfile.Service serviceProfile : serviceProfiles) {
-				if (serviceProfile.matches(id)) {
-					T service = factory.create(this.getServiceContext(serviceProfile));
-					this.services.put(serviceType, new EnigmaServices.RegisteredService<>(id, service));
+				T service = factory.create(this.getServiceContext(serviceProfile));
+				if (serviceProfile.matches(service.getId())) {
+					this.services.put(serviceType, service);
 					break;
 				}
 			}
@@ -199,14 +199,14 @@ public class Enigma {
 		 * @return the service container, with services ordered
 		 */
 		EnigmaServices buildServices() {
-			ImmutableListMultimap<EnigmaServiceType<?>, EnigmaServices.RegisteredService<?>> builtServices = this.services.build();
-			ImmutableListMultimap.Builder<EnigmaServiceType<?>, EnigmaServices.RegisteredService<?>> orderedServices = ImmutableListMultimap.builder();
+			ImmutableListMultimap<EnigmaServiceType<?>, EnigmaService> builtServices = this.services.build();
+			ImmutableListMultimap.Builder<EnigmaServiceType<?>, EnigmaService> orderedServices = ImmutableListMultimap.builder();
 			for (EnigmaServiceType<?> type : builtServices.keySet()) {
 				List<EnigmaProfile.Service> serviceProfiles = this.profile.getServiceProfiles(type);
 
 				for (EnigmaProfile.Service service : serviceProfiles) {
-					for (EnigmaServices.RegisteredService<?> registeredService : builtServices.get(type)) {
-						if (service.matches(registeredService.id())) {
+					for (EnigmaService registeredService : builtServices.get(type)) {
+						if (service.matches(registeredService.getId())) {
 							orderedServices.put(type, registeredService);
 							break;
 						}

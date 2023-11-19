@@ -88,7 +88,7 @@ public class TestNameProposal {
 
 		private static void nameAllFields(EnigmaPluginContext ctx, String prefix) {
 			String id = "test:name_all_fields_" + prefix;
-			ctx.registerService(id, NameProposalService.TYPE, ctx1 -> new TestNameProposer(prefix, id));
+			ctx.registerService(NameProposalService.TYPE, ctx1 -> new TestNameProposer(prefix, id));
 		}
 
 		private record TestNameProposer(String prefix, String id) implements NameProposalService {
@@ -97,7 +97,7 @@ public class TestNameProposal {
 				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
 				AtomicInteger i = new AtomicInteger();
 
-				index.getIndex(EntryIndex.class).getFields().forEach(field -> mappings.put(field, new EntryMapping(this.prefix + (i.getAndIncrement()), null, TokenType.JAR_PROPOSED, this.id)));
+				index.getIndex(EntryIndex.class).getFields().forEach(field -> mappings.put(field, this.createMapping(this.prefix + (i.getAndIncrement()), TokenType.JAR_PROPOSED)));
 
 				return mappings;
 			}
@@ -105,6 +105,11 @@ public class TestNameProposal {
 			@Override
 			public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
 				return null;
+			}
+
+			@Override
+			public String getId() {
+				return this.id;
 			}
 		}
 	}

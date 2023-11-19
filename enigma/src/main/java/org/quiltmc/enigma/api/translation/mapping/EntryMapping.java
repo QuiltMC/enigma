@@ -17,6 +17,8 @@ public record EntryMapping(
 	}
 
 	public EntryMapping {
+		validateSourcePluginId(sourcePluginId);
+
 		if (tokenType == TokenType.OBFUSCATED && targetName != null) {
 			throw new RuntimeException("cannot create a named mapping with an obfuscated token type!");
 		} else if (targetName == null && tokenType != TokenType.OBFUSCATED) {
@@ -27,6 +29,12 @@ public record EntryMapping(
 			throw new RuntimeException("cannot create a proposed mapping with no source plugin ID!");
 		} else if (tokenType.isProposed() && targetName == null) {
 			throw new RuntimeException("cannot create a proposed mapping with no name!");
+		}
+	}
+
+	private static void validateSourcePluginId(String id) {
+		if (id != null && !id.matches("([a-z0-9_]+:[a-z0-9_]+)")) {
+			throw new IllegalArgumentException("invalid plugin ID: '" + id + "! plugin ID should be all lowercase, only contain letters and numbers, and be namespaced separated by a colon.");
 		}
 	}
 

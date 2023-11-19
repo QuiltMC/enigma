@@ -39,4 +39,18 @@ public interface NameProposalService extends EnigmaService {
 	 */
 	@Nullable
 	Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping);
+
+	/**
+	 * Creates a proposed mapping, with no javadoc and using {@link #getId()} as the source plugin ID.
+	 * @param name the name
+	 * @param tokenType the token type - must be proposed!
+	 * @return the newly created mapping
+	 */
+	default EntryMapping createMapping(String name, TokenType tokenType) {
+		if (!tokenType.isProposed()) {
+			throw new IllegalArgumentException("token type must be proposed!");
+		}
+
+		return new EntryMapping(name, null, tokenType, this.getId());
+	}
 }
