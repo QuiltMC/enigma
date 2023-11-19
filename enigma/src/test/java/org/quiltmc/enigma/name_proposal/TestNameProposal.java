@@ -18,9 +18,9 @@ import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.file.Path;
@@ -34,7 +34,7 @@ public class TestNameProposal {
 	private static EnigmaProject project;
 
 	@BeforeAll
-	public static void setupEnigma() throws IOException {
+	public static void setupEnigma() {
 		Reader r = new StringReader("""
 				{
 					"services": {
@@ -54,8 +54,14 @@ public class TestNameProposal {
 						]
 					}
 				}""");
-		Enigma enigma = Enigma.builder().setProfile(EnigmaProfile.parse(r)).setPlugins(List.of(new TestPlugin())).build();
-		project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
+
+		try {
+			EnigmaProfile profile = EnigmaProfile.parse(r);
+			Enigma enigma = Enigma.builder().setProfile(profile).setPlugins(List.of(new TestPlugin())).build();
+			project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
+		} catch (Exception e) {
+			Logger.error(e, "Failed to open jar!");
+		}
 	}
 
 	@Test

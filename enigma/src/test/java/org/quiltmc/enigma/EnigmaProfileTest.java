@@ -1,5 +1,6 @@
 package org.quiltmc.enigma;
 
+import com.google.gson.JsonSyntaxException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.api.EnigmaProfile;
@@ -72,5 +73,15 @@ public class EnigmaProfileTest {
 		Assertions.assertEquals(3, nameProposers.size());
 		EnigmaProfile.Service fooService = nameProposers.get(2);
 		Assertions.assertTrue(fooService.getArgument("example").map(Either::isLeft).orElse(false));
+	}
+
+	@Test
+	public void testMalformedJson() {
+		Reader r = new StringReader("""
+				{
+					"q" "w"
+				}""");
+
+		Assertions.assertThrows(JsonSyntaxException.class, () -> EnigmaProfile.parse(r));
 	}
 }
