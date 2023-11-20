@@ -1,7 +1,6 @@
 package org.quiltmc.enigma.translation.mapping;
 
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
@@ -28,27 +27,27 @@ public class TestReadWriteCycle {
 
 	private final Pair<ClassEntry, EntryMapping> testClazz = new Pair<>(
 			new ClassEntry("a/b/c"),
-			new EntryMapping("alpha/beta/charlie", "this is a test class", TokenType.DEOBFUSCATED, null)
+			new EntryMapping("alpha/beta/charlie", "this is a test class")
 	);
 
 	private final Pair<FieldEntry, EntryMapping> testField1 = new Pair<>(
 			FieldEntry.parse("a/b/c", "field1", "I"),
-			new EntryMapping("mapped1", "this is field 1", TokenType.DEOBFUSCATED, null)
+			new EntryMapping("mapped1", "this is field 1")
 	);
 
 	private final Pair<FieldEntry, EntryMapping> testField2 = new Pair<>(
 			FieldEntry.parse("a/b/c", "field2", "I"),
-			new EntryMapping("mapped2", "this is field 2", TokenType.DEOBFUSCATED, null)
+			new EntryMapping("mapped2", "this is field 2")
 	);
 
 	private final Pair<MethodEntry, EntryMapping> testMethod1 = new Pair<>(
 			MethodEntry.parse("a/b/c", "method1", "()V"),
-			new EntryMapping("mapped3", "this is method1", TokenType.DEOBFUSCATED, null)
+			new EntryMapping("mapped3", "this is method1")
 	);
 
 	private final Pair<MethodEntry, EntryMapping> testMethod2 = new Pair<>(
 			MethodEntry.parse("a/b/c", "method2", "()V"),
-			new EntryMapping("mapped4", "this is method 2", TokenType.DEOBFUSCATED, null)
+			new EntryMapping("mapped4", "this is method 2")
 	);
 
 	private void insertMapping(EntryTree<EntryMapping> mappings, Pair<? extends Entry<?>, EntryMapping> mappingPair) {

@@ -199,7 +199,7 @@ public class Enigma {
 		 * @return the service container, with services ordered
 		 */
 		EnigmaServices buildServices() {
-			ImmutableListMultimap<EnigmaServiceType<?>, EnigmaServices.RegisteredService<?>> builtServices = this.services.build();
+			var builtServices = this.services.build();
 			ImmutableListMultimap.Builder<EnigmaServiceType<?>, EnigmaServices.RegisteredService<?>> orderedServices = ImmutableListMultimap.builder();
 			for (EnigmaServiceType<?> type : builtServices.keySet()) {
 				List<EnigmaProfile.Service> serviceProfiles = this.profile.getServiceProfiles(type);
