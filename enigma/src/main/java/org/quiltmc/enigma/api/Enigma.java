@@ -200,13 +200,13 @@ public class Enigma {
 		 */
 		EnigmaServices buildServices() {
 			var builtServices = this.services.build();
-			ImmutableListMultimap.Builder<EnigmaServiceType<?>, EnigmaServices.RegisteredService<?>> orderedServices = ImmutableListMultimap.builder();
+			ImmutableListMultimap.Builder<EnigmaServiceType<?>, EnigmaService> orderedServices = ImmutableListMultimap.builder();
 			for (EnigmaServiceType<?> type : builtServices.keySet()) {
 				List<EnigmaProfile.Service> serviceProfiles = this.profile.getServiceProfiles(type);
 
 				for (EnigmaProfile.Service service : serviceProfiles) {
-					for (EnigmaServices.RegisteredService<?> registeredService : builtServices.get(type)) {
-						if (service.matches(registeredService.id())) {
+					for (EnigmaService registeredService : builtServices.get(type)) {
+						if (service.matches(registeredService.getId())) {
 							orderedServices.put(type, registeredService);
 							break;
 						}
