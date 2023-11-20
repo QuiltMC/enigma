@@ -17,9 +17,11 @@ import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.Utils;
+import org.quiltmc.enigma.util.validation.ValidationContext;
 import org.tinylog.Logger;
 
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
@@ -79,6 +81,35 @@ public class InsertProposedMappingsCommand extends Command {
 
 		if (debug) {
 			writeDebugDelta(mappings, output);
+		}
+	}
+
+	/**
+	 * Adds all mappings proposed by the provided services, both bytecode-based and dynamic, to the project.
+	 * @param nameProposalServices the name proposal services to run
+	 * @param project the project
+	 * @return the full mappings of the project
+	 */
+	@SuppressWarnings("unused")
+	public static EntryTree<EntryMapping> exec(NameProposalService[] nameProposalServices, EnigmaProject project) {
+		for (NameProposalService service : nameProposalServices) {
+			Map<Entry<?>, EntryMapping> jarMappings = service.getProposedNames(project.getJarIndex());
+			Map<Entry<?>, EntryMapping> dynamicMappings = service.getDynamicProposedNames(project.getRemapper(), null, null, null);
+
+			insertMappings(jarMappings, project);
+			insertMappings(dynamicMappings, project);
+		}
+
+		return project.getRemapper().getMappings();
+	}
+
+	private static void insertMappings(@Nullable Map<Entry<?>, EntryMapping> mappings, EnigmaProject project) {
+		if (mappings != null) {
+			for (var entry : mappings.entrySet()) {
+				if (entry.getValue() != null) {
+					project.getRemapper().putMapping(new ValidationContext(null), entry.getKey(), entry.getValue());
+				}
+			}
 		}
 	}
 

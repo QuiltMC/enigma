@@ -137,7 +137,7 @@ public class NavigatorPanel extends JPanel {
 	public void updateTokenType(Entry<?> target) {
 		TokenType tokenType = this.getTokenType(target);
 		for (var entry : this.entries.entrySet()) {
-			if (entry.getValue().remove(target)) {
+			if (entry.getValue() != null && entry.getValue().remove(target)) {
 				break;
 			}
 		}

@@ -80,7 +80,7 @@ public class EnigmaProject {
 	private MappingsIndex mappingsIndex;
 	private final byte[] jarChecksum;
 
-	private EntryRemapper mapper;
+	private EntryRemapper remapper;
 
 	public EnigmaProject(Enigma enigma, Path jarPath, ClassProvider classProvider, JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedNames, byte[] jarChecksum) {
 		Preconditions.checkArgument(jarChecksum.length == 20);
@@ -91,7 +91,7 @@ public class EnigmaProject {
 		this.jarChecksum = jarChecksum;
 
 		this.mappingsIndex = mappingsIndex;
-		this.mapper = EntryRemapper.mapped(jarIndex, this.mappingsIndex, proposedNames, new HashEntryTree<>(), this.enigma.getNameProposalServices());
+		this.remapper = EntryRemapper.mapped(jarIndex, this.mappingsIndex, proposedNames, new HashEntryTree<>(), this.enigma.getNameProposalServices());
 	}
 
 	/**
@@ -104,8 +104,8 @@ public class EnigmaProject {
 		EntryTree<EntryMapping> jarProposedMappings = new HashEntryTree<>();
 
 		// keep bytecode-based proposed names, to avoid unnecessary recalculation
-		if (this.mapper != null) {
-			EntryTree<EntryMapping> oldMappings = this.mapper.getProposedMappings();
+		if (this.remapper != null) {
+			EntryTree<EntryMapping> oldMappings = this.remapper.getProposedMappings();
 			Iterator<EntryTreeNode<EntryMapping>> iterator = oldMappings.iterator();
 
 			iterator.forEachRemaining(node -> {
@@ -123,16 +123,16 @@ public class EnigmaProject {
 			EntryTree<EntryMapping> mergedTree = EntryTreeUtil.merge(jarProposedMappings, mappings);
 
 			this.mappingsIndex.indexMappings(mergedTree, progress);
-			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, jarProposedMappings, mappings, this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, jarProposedMappings, mappings, this.enigma.getNameProposalServices());
 		} else if (!jarProposedMappings.isEmpty()) {
 			this.mappingsIndex.indexMappings(jarProposedMappings, progress);
-			this.mapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, jarProposedMappings, new HashEntryTree<>(), this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, jarProposedMappings, new HashEntryTree<>(), this.enigma.getNameProposalServices());
 		} else {
-			this.mapper = EntryRemapper.empty(this.jarIndex, this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.empty(this.jarIndex, this.enigma.getNameProposalServices());
 		}
 
 		// update dynamically proposed names
-		this.mapper.insertDynamicallyProposedMappings(null, null, null);
+		this.remapper.insertDynamicallyProposedMappings(null, null, null);
 	}
 
 	public Enigma getEnigma() {
@@ -160,11 +160,11 @@ public class EnigmaProject {
 	}
 
 	public EntryRemapper getRemapper() {
-		return this.mapper;
+		return this.remapper;
 	}
 
 	public void dropMappings(ProgressListener progress) {
-		DeltaTrackingTree<EntryMapping> mappings = this.mapper.getDeobfMappings();
+		DeltaTrackingTree<EntryMapping> mappings = this.remapper.getDeobfMappings();
 
 		Collection<Entry<?>> dropped = this.dropMappings(mappings, progress);
 		for (Entry<?> entry : dropped) {
@@ -259,7 +259,7 @@ public class EnigmaProject {
 			}
 		}
 
-		EntryMapping mapping = this.mapper.getMapping(entry);
+		EntryMapping mapping = this.remapper.getMapping(entry);
 		return mapping.tokenType() == TokenType.OBFUSCATED;
 	}
 
@@ -276,7 +276,7 @@ public class EnigmaProject {
 	public JarExport exportRemappedJar(ProgressListener progress) {
 		Collection<ClassEntry> classEntries = this.jarIndex.getIndex(EntryIndex.class).getClasses();
 		ClassProvider fixingClassProvider = new ObfuscationFixClassProvider(this.classProvider, this.jarIndex);
-		Translator deobfuscator = this.mapper.getDeobfuscator();
+		Translator deobfuscator = this.remapper.getDeobfuscator();
 
 		AtomicInteger count = new AtomicInteger();
 		progress.init(classEntries.size(), I18n.translate("progress.classes.deobfuscating"));
@@ -298,7 +298,7 @@ public class EnigmaProject {
 				.filter(Objects::nonNull)
 				.collect(Collectors.toMap(n -> n.name, Functions.identity()));
 
-		return new JarExport(this.mapper, compiled);
+		return new JarExport(this.remapper, compiled);
 	}
 
 	public static final class JarExport {

@@ -18,6 +18,8 @@ import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.util.validation.ValidationContext;
 import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
@@ -27,6 +29,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestNameProposal {
@@ -50,6 +53,9 @@ public class TestNameProposal {
 							},
 							{
 								"id": "test:name_all_fields_d"
+							},
+							{
+								"id": "test:q_to_w"
 							}
 						]
 					}
@@ -77,6 +83,26 @@ public class TestNameProposal {
 		});
 	}
 
+	@Test
+	public void testJarNameProposal() {
+		project.getJarIndex().getIndex(EntryIndex.class).getFields().forEach(field -> {
+			EntryMapping mapping = project.getRemapper().getMapping(field);
+			Assertions.assertTrue(mapping.targetName() != null && mapping.tokenType() == TokenType.JAR_PROPOSED && mapping.sourcePluginId() != null, "Entry '" + field + "' did not have a proposed name (mapping: '" + mapping + "' !");
+		});
+	}
+
+	@Test
+	public void testDynamicNameProposal() {
+		Optional<FieldEntry> entry = project.getJarIndex().getIndex(EntryIndex.class).getFields().stream().findFirst();
+
+		if (entry.isEmpty()) {
+			throw new RuntimeException("didn't find any fields");
+		}
+
+		project.getRemapper().putMapping(new ValidationContext(null), entry.get(), new EntryMapping("q", null, TokenType.DEOBFUSCATED, null));
+		Assertions.assertEquals(new EntryMapping("w", null, TokenType.DYNAMIC_PROPOSED, "test:q_to_w"), project.getRemapper().getMapping(entry.get()));
+	}
+
 	private static class TestPlugin implements EnigmaPlugin {
 		@Override
 		public void init(EnigmaPluginContext ctx) {
@@ -84,20 +110,23 @@ public class TestNameProposal {
 			nameAllFields(ctx, "a");
 			nameAllFields(ctx, "c");
 			nameAllFields(ctx, "b");
+
+			String id = "test:q_to_w";
+			ctx.registerService(id, NameProposalService.TYPE, ctx1 -> new TestDynamicNameProposer(id));
 		}
 
 		private static void nameAllFields(EnigmaPluginContext ctx, String prefix) {
 			String id = "test:name_all_fields_" + prefix;
-			ctx.registerService(NameProposalService.TYPE, ctx1 -> new TestNameProposer(prefix, id));
+			ctx.registerService(id, NameProposalService.TYPE, ctx1 -> new TestJarNameProposer(prefix, id));
 		}
 
-		private record TestNameProposer(String prefix, String id) implements NameProposalService {
+		private record TestJarNameProposer(String prefix, String id) implements NameProposalService {
 			@Override
 			public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
 				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
 				AtomicInteger i = new AtomicInteger();
 
-				index.getIndex(EntryIndex.class).getFields().forEach(field -> mappings.put(field, this.createMapping(this.prefix + (i.getAndIncrement()), TokenType.JAR_PROPOSED)));
+				index.getIndex(EntryIndex.class).getFields().forEach(field -> mappings.put(field, new EntryMapping(this.prefix + (i.getAndIncrement()), null, TokenType.JAR_PROPOSED, this.id)));
 
 				return mappings;
 			}
@@ -106,10 +135,25 @@ public class TestNameProposal {
 			public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
 				return null;
 			}
+		}
+
+		private record TestDynamicNameProposer(String id) implements NameProposalService {
+			@Override
+			public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
+				return null;
+			}
 
 			@Override
-			public String getId() {
-				return this.id;
+			public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
+				if (obfEntry != null && oldMapping != null && newMapping != null) {
+					if (newMapping.targetName() != null && newMapping.targetName().equals("q")) {
+						Map<Entry<?>, EntryMapping> map = new HashMap<>();
+						map.put(obfEntry, new EntryMapping("w", null, TokenType.DYNAMIC_PROPOSED, this.id));
+						return map;
+					}
+				}
+
+				return null;
 			}
 		}
 	}

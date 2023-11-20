@@ -16,6 +16,10 @@ public record EntryMapping(
 		this(targetName, null, targetName == null ? TokenType.OBFUSCATED : TokenType.DEOBFUSCATED, null);
 	}
 
+	public EntryMapping(@Nullable String targetName, @Nullable String javadoc) {
+		this(targetName, javadoc, targetName == null ? TokenType.OBFUSCATED : TokenType.DEOBFUSCATED, null);
+	}
+
 	public EntryMapping {
 		validateSourcePluginId(sourcePluginId);
 

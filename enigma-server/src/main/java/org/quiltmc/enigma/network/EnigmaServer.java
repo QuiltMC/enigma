@@ -47,7 +47,7 @@ public abstract class EnigmaServer {
 	private final char[] password;
 
 	public static final int DUMMY_SYNC_ID = 0;
-	private final EntryRemapper mappings;
+	private final EntryRemapper remapper;
 	private final Map<Entry<?>, Integer> syncIds = new HashMap<>();
 	private final Map<Integer, Entry<?>> inverseSyncIds = new HashMap<>();
 	private final Map<Integer, Set<Socket>> clientsNeedingConfirmation = new HashMap<>();
@@ -55,10 +55,10 @@ public abstract class EnigmaServer {
 
 	private static int nextIoId = 0;
 
-	public EnigmaServer(byte[] jarChecksum, char[] password, EntryRemapper mappings, int port) {
+	public EnigmaServer(byte[] jarChecksum, char[] password, EntryRemapper remapper, int port) {
 		this.jarChecksum = jarChecksum;
 		this.password = password;
-		this.mappings = mappings;
+		this.remapper = remapper;
 		this.port = port;
 	}
 
@@ -259,7 +259,7 @@ public abstract class EnigmaServer {
 	}
 
 	public void sendCorrectMapping(Socket client, Entry<?> entry) {
-		EntryMapping oldMapping = this.mappings.getMapping(entry);
+		EntryMapping oldMapping = this.remapper.getMapping(entry);
 		String oldName = oldMapping.targetName();
 		if (oldName == null) {
 			this.sendPacket(client, new EntryChangeS2CPacket(DUMMY_SYNC_ID, EntryChange.modify(entry).clearDeobfName()));
@@ -287,7 +287,7 @@ public abstract class EnigmaServer {
 	}
 
 	public EntryRemapper getRemapper() {
-		return this.mappings;
+		return this.remapper;
 	}
 
 	public void sendMessage(ServerMessage message) {
