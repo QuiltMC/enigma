@@ -87,7 +87,7 @@ public class TestNameProposal {
 	public void testJarNameProposal() {
 		project.getJarIndex().getIndex(EntryIndex.class).getFields().forEach(field -> {
 			EntryMapping mapping = project.getRemapper().getMapping(field);
-			Assertions.assertTrue(mapping.targetName() == null || mapping.tokenType() != TokenType.JAR_PROPOSED, "Entry '" + field + "' did not have a proposed name!");
+			Assertions.assertTrue(mapping.targetName() != null && mapping.tokenType() == TokenType.JAR_PROPOSED && mapping.sourcePluginId() != null, "Entry '" + field + "' did not have a proposed name (mapping: '" + mapping + "' !");
 		});
 	}
 
