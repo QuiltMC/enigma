@@ -16,6 +16,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 
 public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable<MethodEntry> {
+	@Nonnull
 	protected final MethodDescriptor descriptor;
 
 	public MethodEntry(ClassEntry parent, String name, MethodDescriptor descriptor) {
@@ -49,27 +50,43 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	}
 
 	/**
-	 * Creates an iterator of all parameters in this method. Unmapped args will have no name, and javadoc is ignored.
+	 * Get a list of all parameters in this method.
+	 *
+	 * @param index the entry index
+	 * @return a list of this method's parameters
+	 */
+	public List<LocalVariableEntry> getParameters(EntryIndex index) {
+		List<LocalVariableEntry> parameters = new ArrayList<>();
+		AccessFlags flags = index.getMethodAccess(this);
+
+		if (flags != null) {
+			int i = flags.isStatic() ? 0 : 1;
+
+			for (ArgumentDescriptor arg : this.descriptor.getArgumentDescs()) {
+				LocalVariableEntry argEntry = new LocalVariableEntry(this, i, "", true, null);
+				parameters.add(argEntry);
+
+				i += arg.getSize();
+			}
+		}
+
+		return parameters;
+	}
+
+	/**
+	 * Creates an iterator of all parameters in this method, also doing translation. Unmapped args will have no name, and javadoc is ignored.
+	 *
 	 * @param index the entry index
 	 * @param deobfuscator a translator
-	 * @return an iterator of this method's parameters
+	 * @return an iterator of this method's translated parameters
 	 */
 	public Iterator<LocalVariableEntry> getParameterIterator(EntryIndex index, Translator deobfuscator) {
 		List<LocalVariableEntry> parameters = new ArrayList<>();
 
-		MethodDescriptor desc = this.getDesc();
-		AccessFlags flags = index.getMethodAccess(this);
+		for (LocalVariableEntry arg : this.getParameters(index)) {
+			LocalVariableEntry translatedArg = deobfuscator.translate(arg);
 
-		if (desc != null && flags != null) {
-			int argIndex = flags.isStatic() ? 0 : 1;
-
-			for (ArgumentDescriptor arg : desc.getArgumentDescs()) {
-				LocalVariableEntry argEntry = new LocalVariableEntry(this, argIndex, "", true, null);
-				LocalVariableEntry translatedArgEntry = deobfuscator.translate(argEntry);
-
-				parameters.add(translatedArgEntry == null ? argEntry : translatedArgEntry);
-				argIndex += arg.getSize();
-			}
+			parameters.add(translatedArg == null ? arg : translatedArg);
 		}
 
 		return parameters.iterator();
