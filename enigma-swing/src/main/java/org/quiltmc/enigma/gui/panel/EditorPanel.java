@@ -22,7 +22,7 @@ import org.quiltmc.enigma.gui.highlight.SelectionHighlightPainter;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
-import org.quiltmc.enigma.api.source.RenamableTokenType;
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
@@ -99,7 +99,7 @@ public class EditorPanel {
 
 	public LookAndFeel editorLaf;
 	private int fontSize = 12;
-	private Map<RenamableTokenType, BoxHighlightPainter> boxHighlightPainters;
+	private Map<TokenType, BoxHighlightPainter> boxHighlightPainters;
 
 	private final List<EditorActionListener> listeners = new ArrayList<>();
 
@@ -187,7 +187,7 @@ public class EditorPanel {
 
 				if (!event.isControlDown() && !event.isAltDown() && Character.isJavaIdentifierPart(event.getKeyChar())) {
 					EnigmaProject project = gui.getController().getProject();
-					EntryReference<Entry<?>, Entry<?>> reference = project.getMapper().deobfuscate(EditorPanel.this.cursorReference);
+					EntryReference<Entry<?>, Entry<?>> reference = project.getRemapper().deobfuscate(EditorPanel.this.cursorReference);
 					Entry<?> entry = reference.getNameableEntry();
 
 					String name = String.valueOf(event.getKeyChar());
@@ -410,7 +410,7 @@ public class EditorPanel {
 			return;
 		}
 
-		EntryRemapper mapper = this.controller.getProject().getMapper();
+		EntryRemapper mapper = this.controller.getProject().getRemapper();
 		Token token = this.getToken(pos);
 
 		this.setCursorReference(this.getReference(token));
@@ -507,14 +507,14 @@ public class EditorPanel {
 		}
 	}
 
-	public void setHighlightedTokens(Map<RenamableTokenType, ? extends Collection<Token>> tokens) {
+	public void setHighlightedTokens(Map<TokenType, ? extends Collection<Token>> tokens) {
 		// remove any old highlighters
 		this.editor.getHighlighter().removeAllHighlights();
 
 		if (this.boxHighlightPainters != null) {
-			BoxHighlightPainter proposedPainter = this.boxHighlightPainters.get(RenamableTokenType.PROPOSED);
+			BoxHighlightPainter proposedPainter = this.boxHighlightPainters.get(TokenType.JAR_PROPOSED);
 
-			for (RenamableTokenType type : tokens.keySet()) {
+			for (TokenType type : tokens.keySet()) {
 				BoxHighlightPainter painter = this.boxHighlightPainters.get(type);
 
 				if (painter != null) {

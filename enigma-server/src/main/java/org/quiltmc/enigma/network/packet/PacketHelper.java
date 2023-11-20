@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.network.packet;
 
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
@@ -145,17 +146,31 @@ public class PacketHelper {
 		EntryChange<?> change = EntryChange.modify(e);
 
 		int flags = input.readUnsignedByte();
-		TristateChange.Type deobfNameT = TristateChange.Type.values()[flags & 0x3];
-		TristateChange.Type javadocT = TristateChange.Type.values()[flags >> 2 & 0x3];
+		TristateChange.Type deobfNameType = TristateChange.Type.values()[flags & 0x3];
+		TristateChange.Type javadocType = TristateChange.Type.values()[flags >> 2 & 0x3];
+		TristateChange.Type tokenTypeType = TristateChange.Type.values()[flags >> 4 & 0x3];
+		TristateChange.Type pluginIdType = TristateChange.Type.values()[flags >> 6 & 0x3];
 
-		switch (deobfNameT) {
+		switch (deobfNameType) {
 			case RESET -> change = change.clearDeobfName();
 			case SET -> change = change.withDeobfName(readString(input));
 		}
 
-		change = switch (javadocT) {
+		change = switch (javadocType) {
 			case RESET -> change.clearJavadoc();
 			case SET -> change.withJavadoc(readString(input));
+			default -> change;
+		};
+
+		change = switch (tokenTypeType) {
+			case RESET -> throw new RuntimeException("cannot remove token type!");
+			case SET -> change.withTokenType(readTokenType(input));
+			default -> change;
+		};
+
+		change = switch (pluginIdType) {
+			case RESET -> change.clearSourcePluginId();
+			case SET -> change.withSourcePluginId(readString(input));
 			default -> change;
 		};
 
@@ -165,7 +180,9 @@ public class PacketHelper {
 	public static void writeEntryChange(DataOutput output, EntryChange<?> change) throws IOException {
 		writeEntry(output, change.getTarget());
 		int flags = change.getDeobfName().getType().ordinal()
-				| change.getJavadoc().getType().ordinal() << 2;
+				| change.getJavadoc().getType().ordinal() << 2
+				| change.getTokenType().getType().ordinal() << 4
+				| change.getSourcePluginId().getType().ordinal() << 6;
 
 		output.writeByte(flags);
 
@@ -176,5 +193,26 @@ public class PacketHelper {
 		if (change.getJavadoc().isSet()) {
 			writeString(output, change.getJavadoc().getNewValue());
 		}
+
+		if (change.getTokenType().isSet()) {
+			writeTokenType(output, change.getTokenType().getNewValue());
+		}
+
+		if (change.getSourcePluginId().isSet()) {
+			writeString(output, change.getSourcePluginId().getNewValue());
+		}
+	}
+
+	public static void writeTokenType(DataOutput output, TokenType tokenType) throws IOException {
+		output.writeShort(tokenType.ordinal());
+	}
+
+	public static TokenType readTokenType(DataInput input) throws IOException {
+		int ordinal = input.readUnsignedShort();
+		if (ordinal >= TokenType.values().length) {
+			throw new RuntimeException("Attempted to read invalid token type: " + ordinal + " (maximum value is " + (TokenType.values().length - 1) + ")!");
+		}
+
+		return TokenType.values()[ordinal];
 	}
 }

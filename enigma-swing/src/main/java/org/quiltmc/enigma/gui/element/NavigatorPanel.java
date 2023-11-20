@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.element;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.util.GuiUtil;
-import org.quiltmc.enigma.api.source.RenamableTokenType;
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
 import javax.annotation.Nullable;
@@ -22,15 +22,14 @@ import java.util.Map;
  * A panel with buttons to navigate to the next and previous items in its entry collection.
  */
 public class NavigatorPanel extends JPanel {
-	private static final RenamableTokenType[] SUPPORTED_TOKEN_TYPES = {RenamableTokenType.OBFUSCATED, RenamableTokenType.PROPOSED, RenamableTokenType.DEOBFUSCATED};
+	private static final TokenType[] SUPPORTED_TOKEN_TYPES = {TokenType.OBFUSCATED, TokenType.JAR_PROPOSED, TokenType.DYNAMIC_PROPOSED, TokenType.DEOBFUSCATED};
 
 	private final Gui gui;
 	private final JLabel statsLabel;
-	private final Map<RenamableTokenType, List<Entry<?>>> entries = new HashMap<>();
-	private final Map<Entry<?>, RenamableTokenType> tokenTypes = new HashMap<>();
+	private final Map<TokenType, List<Entry<?>>> entries = new HashMap<>();
 
 	private int currentIndex = 0;
-	private RenamableTokenType selectedType;
+	private TokenType selectedType;
 
 	/**
 	 * Creates a new navigator panel.
@@ -41,16 +40,16 @@ public class NavigatorPanel extends JPanel {
 		this.gui = gui;
 		this.statsLabel = new JLabel("0/0");
 
-		JComboBox<RenamableTokenType> typeSelector = new JComboBox<>(SUPPORTED_TOKEN_TYPES);
+		JComboBox<TokenType> typeSelector = new JComboBox<>(SUPPORTED_TOKEN_TYPES);
 		typeSelector.addItemListener(event -> {
 			if (event.getStateChange() == ItemEvent.SELECTED) {
-				this.selectedType = (RenamableTokenType) event.getItem();
+				this.selectedType = (TokenType) event.getItem();
 				this.onTypeChange();
 			}
 		});
-		this.selectedType = RenamableTokenType.OBFUSCATED;
+		this.selectedType = TokenType.OBFUSCATED;
 
-		for (RenamableTokenType type : SUPPORTED_TOKEN_TYPES) {
+		for (TokenType type : SUPPORTED_TOKEN_TYPES) {
 			this.entries.put(type, new ArrayList<>());
 		}
 
@@ -109,22 +108,8 @@ public class NavigatorPanel extends JPanel {
 	}
 
 	private void tryNavigate() {
-		this.updateTokenType(this.entries.get(this.selectedType).get(this.currentIndex));
-		this.updateStatsLabel();
 		this.gui.getController().navigateTo(this.entries.get(this.selectedType).get(this.currentIndex));
-	}
-
-	/**
-	 * Removes all data from this navigator and updates its UI.
-	 * Keeps selected type intact.
-	 */
-	public void clear() {
-		this.tokenTypes.clear();
-		for (var list : this.entries.values()) {
-			list.clear();
-		}
-
-		this.currentIndex = 0;
+		this.updateStatsLabel();
 	}
 
 	/**
@@ -134,12 +119,11 @@ public class NavigatorPanel extends JPanel {
 	public void addEntry(@Nullable Entry<?> entry) {
 		EnigmaProject project = this.gui.getController().getProject();
 		if (entry != null && project.isRenamable(entry) && project.isNavigable(entry)) {
-			RenamableTokenType tokenType = this.getTokenType(entry);
+			TokenType tokenType = this.getTokenType(entry);
 			List<Entry<?>> entries = this.entries.get(tokenType);
 
 			if (!entries.contains(entry)) {
 				entries.add(entry);
-				this.tokenTypes.put(entry, tokenType);
 				this.updateStatsLabel();
 			}
 		}
@@ -151,27 +135,20 @@ public class NavigatorPanel extends JPanel {
 	 * @param target the entry to check
 	 */
 	public void updateTokenType(Entry<?> target) {
-		RenamableTokenType tokenType = this.getTokenType(target);
-		RenamableTokenType oldType = this.tokenTypes.get(target);
-
-		if (tokenType != oldType) {
-			this.entries.get(oldType).remove(target);
-			this.entries.get(tokenType).add(target);
-			this.tokenTypes.put(target, tokenType);
-			this.updateStatsLabel();
-		}
-	}
-
-	private RenamableTokenType getTokenType(Entry<?> target) {
-		EnigmaProject project = this.gui.getController().getProject();
-		RenamableTokenType tokenType = project.getMapper().extendedDeobfuscate(target).getType();
-		if (tokenType == RenamableTokenType.OBFUSCATED) {
-			if (project.hasProposedName(target)) {
-				tokenType = RenamableTokenType.PROPOSED;
+		TokenType tokenType = this.getTokenType(target);
+		for (var entry : this.entries.entrySet()) {
+			if (entry.getValue() != null && entry.getValue().remove(target)) {
+				break;
 			}
 		}
 
-		return tokenType;
+		this.entries.get(tokenType).add(target);
+		this.updateStatsLabel();
+	}
+
+	private TokenType getTokenType(Entry<?> target) {
+		EnigmaProject project = this.gui.getController().getProject();
+		return project.getRemapper().getMapping(target).tokenType();
 	}
 
 	private void updateStatsLabel() {

@@ -1,20 +1,20 @@
 package org.quiltmc.enigma.api.translation;
 
-import org.quiltmc.enigma.api.source.RenamableTokenType;
+import org.quiltmc.enigma.api.source.TokenType;
 
 import java.util.Objects;
 import java.util.function.Function;
 
 public final class TranslateResult<T> {
-	private final RenamableTokenType type;
+	private final TokenType type;
 	private final T value;
 
-	private TranslateResult(RenamableTokenType type, T value) {
+	private TranslateResult(TokenType type, T value) {
 		this.type = type;
 		this.value = value;
 	}
 
-	public static <T> TranslateResult<T> of(RenamableTokenType type, T value) {
+	public static <T> TranslateResult<T> of(TokenType type, T value) {
 		Objects.requireNonNull(type, "type must not be null");
 		return new TranslateResult<>(type, value);
 	}
@@ -27,18 +27,14 @@ public final class TranslateResult<T> {
 	}
 
 	public static <T> TranslateResult<T> obfuscated(T value) {
-		return TranslateResult.of(RenamableTokenType.OBFUSCATED, value);
+		return TranslateResult.of(TokenType.OBFUSCATED, value);
 	}
 
 	public static <T> TranslateResult<T> deobfuscated(T value) {
-		return TranslateResult.of(RenamableTokenType.DEOBFUSCATED, value);
+		return TranslateResult.of(TokenType.DEOBFUSCATED, value);
 	}
 
-	public static <T> TranslateResult<T> proposed(T value) {
-		return TranslateResult.of(RenamableTokenType.PROPOSED, value);
-	}
-
-	public RenamableTokenType getType() {
+	public TokenType getType() {
 		return this.type;
 	}
 
@@ -51,15 +47,11 @@ public final class TranslateResult<T> {
 	}
 
 	public boolean isObfuscated() {
-		return this.type == RenamableTokenType.OBFUSCATED;
+		return this.type == TokenType.OBFUSCATED;
 	}
 
 	public boolean isDeobfuscated() {
-		return this.type == RenamableTokenType.DEOBFUSCATED;
-	}
-
-	public boolean isProposed() {
-		return this.type == RenamableTokenType.PROPOSED;
+		return this.type == TokenType.DEOBFUSCATED;
 	}
 
 	@Override

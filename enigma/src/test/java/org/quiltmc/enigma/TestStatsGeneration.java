@@ -71,10 +71,10 @@ public class TestStatsGeneration {
 		for (Entry<?> entry : entries) {
 			EntryChange<? extends Entry<?>> change = EntryChange.modify(entry).withDeobfName("a" + i);
 
-			EntryMapping prev = project.getMapper().getDeobfMapping(entry);
+			EntryMapping prev = project.getRemapper().getMapping(entry);
 			EntryMapping mapping = EntryUtil.applyChange(prev, change);
 
-			project.getMapper().putMapping(new ValidationContext(null), entry, mapping);
+			project.getRemapper().putMapping(new ValidationContext(null), entry, mapping);
 			i++;
 		}
 	}

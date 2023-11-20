@@ -1,7 +1,6 @@
 package org.quiltmc.enigma.api.analysis.tree;
 
 import org.quiltmc.enigma.api.EnigmaProject;
-import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
@@ -18,18 +17,15 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 public class StructureTreeNode extends DefaultMutableTreeNode {
-	private final List<NameProposalService> nameProposalServices;
 	private final EntryRemapper mapper;
 	private final ClassEntry parentEntry;
 	private final ParentedEntry<?> entry;
 
 	public StructureTreeNode(EnigmaProject project, ClassEntry parentEntry, ParentedEntry<?> entry) {
-		this.nameProposalServices = project.getEnigma().getServices().get(NameProposalService.TYPE);
-		this.mapper = project.getMapper();
+		this.mapper = project.getRemapper();
 		this.parentEntry = parentEntry;
 		this.entry = entry;
 	}
@@ -60,19 +56,19 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 		children = switch (options.documentationVisibility()) {
 			case ALL -> children;
 			// TODO remove EntryRemapper.deobfuscate() calls when javadocs will no longer be tied to deobfuscation
-			case DOCUMENTED -> children.filter(e -> (e instanceof ClassEntry) || (project.getMapper().deobfuscate(e).getJavadocs() != null && !project.getMapper().deobfuscate(e).getJavadocs().isBlank()));
-			case NON_DOCUMENTED -> children.filter(e -> (e instanceof ClassEntry) || (project.getMapper().deobfuscate(e).getJavadocs() == null || project.getMapper().deobfuscate(e).getJavadocs().isBlank()));
+			case DOCUMENTED -> children.filter(e -> (e instanceof ClassEntry) || (project.getRemapper().deobfuscate(e).getJavadocs() != null && !project.getRemapper().deobfuscate(e).getJavadocs().isBlank()));
+			case NON_DOCUMENTED -> children.filter(e -> (e instanceof ClassEntry) || (project.getRemapper().deobfuscate(e).getJavadocs() == null || project.getRemapper().deobfuscate(e).getJavadocs().isBlank()));
 		};
 
 		children = switch (options.sortingOrder()) {
 			case DEFAULT -> children;
 			case A_Z -> children.sorted(Comparator.comparing(e -> (e instanceof MethodEntry m && m.isConstructor())
 					// compare the class name when the entry is a constructor
-					? project.getMapper().deobfuscate(e.getParent()).getSimpleName().toLowerCase()
-					: project.getMapper().deobfuscate(e).getSimpleName().toLowerCase()));
+					? project.getRemapper().deobfuscate(e.getParent()).getSimpleName().toLowerCase()
+					: project.getRemapper().deobfuscate(e).getSimpleName().toLowerCase()));
 			case Z_A -> children.sorted(Comparator.comparing(e -> (e instanceof MethodEntry m && m.isConstructor())
-					? project.getMapper().deobfuscate(((ParentedEntry<?>) e).getParent()).getSimpleName().toLowerCase()
-					: project.getMapper().deobfuscate((ParentedEntry<?>) e).getSimpleName().toLowerCase())
+					? project.getRemapper().deobfuscate(((ParentedEntry<?>) e).getParent()).getSimpleName().toLowerCase()
+					: project.getRemapper().deobfuscate((ParentedEntry<?>) e).getSimpleName().toLowerCase())
 					.reversed());
 		};
 
@@ -92,16 +88,6 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 	public String toString() {
 		TranslateResult<ParentedEntry<?>> translateResult = this.mapper.extendedDeobfuscate(this.entry);
 		String result = translateResult.getValue().getName();
-
-		if (translateResult.isObfuscated() && !this.nameProposalServices.isEmpty()) {
-			for (NameProposalService service : this.nameProposalServices) {
-				Optional<String> proposedName = service.proposeName(this.entry, this.mapper);
-
-				if (proposedName.isPresent()) {
-					result = proposedName.get();
-				}
-			}
-		}
 
 		if (this.entry instanceof FieldDefEntry) {
 			FieldDefEntry field = (FieldDefEntry) translateResult.getValue();

@@ -18,7 +18,7 @@ public class TestComments {
 
 	@Test
 	public void testParseAndWrite() throws IOException, MappingParseException {
-		MappingSaveParameters params = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+		MappingSaveParameters params = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
 		EntryTree<EntryMapping> mappings = EnigmaMappingsReader.DIRECTORY.read(
 						DIRECTORY);
 

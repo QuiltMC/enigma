@@ -33,7 +33,7 @@ import java.util.Optional;
 public final class EnigmaProfile {
 	public static final EnigmaProfile EMPTY = new EnigmaProfile(new ServiceContainer(Map.of()));
 
-	private static final MappingSaveParameters DEFAULT_MAPPING_SAVE_PARAMETERS = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+	private static final MappingSaveParameters DEFAULT_MAPPING_SAVE_PARAMETERS = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
 	private static final Gson GSON = new GsonBuilder()
 			.registerTypeAdapter(ServiceContainer.class, (JsonDeserializer<ServiceContainer>) EnigmaProfile::loadServiceContainer)
 			.create();

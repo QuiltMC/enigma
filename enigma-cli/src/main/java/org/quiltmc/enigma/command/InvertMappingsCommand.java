@@ -40,7 +40,7 @@ public class InvertMappingsCommand extends Command {
 	}
 
 	public static void run(Path sourceFile, String resultFormat, Path resultFile) throws MappingParseException, IOException {
-		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
 		MappingFormat format = MappingFormat.parseFromFile(sourceFile);
 
 		EntryTree<EntryMapping> source = format.read(sourceFile);

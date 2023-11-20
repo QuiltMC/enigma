@@ -352,7 +352,7 @@ public class SearchDialog {
 		}
 
 		public static SearchEntryImpl from(ParentedEntry<?> e, GuiController controller) {
-			ParentedEntry<?> deobf = controller.getProject().getMapper().deobfuscate(e);
+			ParentedEntry<?> deobf = controller.getProject().getRemapper().deobfuscate(e);
 			if (deobf.equals(e)) deobf = null;
 			return new SearchEntryImpl(e, deobf);
 		}

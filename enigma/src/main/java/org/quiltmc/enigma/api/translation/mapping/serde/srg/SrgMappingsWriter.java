@@ -33,6 +33,8 @@ public enum SrgMappingsWriter implements MappingsWriter {
 
 	@Override
 	public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
+		EntryTree<EntryMapping> writtenMappings = MappingsWriter.filterMappings(mappings, saveParameters);
+
 		try {
 			Files.deleteIfExists(path);
 			Files.createFile(path);
@@ -44,7 +46,7 @@ public enum SrgMappingsWriter implements MappingsWriter {
 		List<String> fieldLines = new ArrayList<>();
 		List<String> methodLines = new ArrayList<>();
 
-		List<? extends Entry<?>> rootEntries = Lists.newArrayList(mappings).stream()
+		List<? extends Entry<?>> rootEntries = Lists.newArrayList(writtenMappings).stream()
 				.map(EntryTreeNode::getEntry)
 				.toList();
 		progress.init(rootEntries.size(), I18n.translate("progress.mappings.srg_file.generating"));
@@ -52,7 +54,7 @@ public enum SrgMappingsWriter implements MappingsWriter {
 		int steps = 0;
 		for (Entry<?> entry : this.sorted(rootEntries)) {
 			progress.step(steps++, entry.getName());
-			this.writeEntry(classLines, fieldLines, methodLines, mappings, entry);
+			this.writeEntry(classLines, fieldLines, methodLines, writtenMappings, entry);
 		}
 
 		progress.init(3, I18n.translate("progress.mappings.srg_file.writing"));

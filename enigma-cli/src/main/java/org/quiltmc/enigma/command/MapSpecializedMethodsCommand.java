@@ -53,7 +53,7 @@ public class MapSpecializedMethodsCommand extends Command {
 		boolean debug = shouldDebug(new MapSpecializedMethodsCommand().getName());
 		JarIndex jarIndex = loadJar(jar);
 
-		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
 		MappingFormat sourceFormat = MappingFormat.parseFromFile(sourcePath);
 		EntryTree<EntryMapping> source = sourceFormat.read(sourcePath);
 

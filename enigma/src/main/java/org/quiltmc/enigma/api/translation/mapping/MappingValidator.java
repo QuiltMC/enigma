@@ -40,7 +40,7 @@ public class MappingValidator {
 		PackageIndex packageIndex = this.mappingsIndex.getIndex(PackageIndex.class);
 		if (entry instanceof ClassEntry) {
 			String packageName = ClassEntry.getParentPackage(name);
-			if (!packageIndex.getPackageNames().contains(packageName)) {
+			if (packageName != null && !packageIndex.getPackageNames().contains(packageName)) {
 				vc.raise(Message.NEW_PACKAGE, packageName);
 			}
 		}

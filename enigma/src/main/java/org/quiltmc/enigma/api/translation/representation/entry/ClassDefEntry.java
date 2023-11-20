@@ -1,7 +1,6 @@
 package org.quiltmc.enigma.api.translation.representation.entry;
 
 import com.google.common.base.Preconditions;
-import org.quiltmc.enigma.api.source.RenamableTokenType;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -78,7 +77,7 @@ public class ClassDefEntry extends ClassEntry implements DefEntry<ClassEntry> {
 		ClassEntry[] translatedInterfaces = Arrays.stream(this.interfaces).map(translator::translate).toArray(ClassEntry[]::new);
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
-				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
+				mapping.tokenType(),
 				new ClassDefEntry(this.parent, translatedName, translatedSignature, this.access, translatedSuper, translatedInterfaces, docs)
 		);
 	}

@@ -7,8 +7,6 @@ import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.api.translation.mapping.serde.enigma.EnigmaMappingsReader;
 import org.quiltmc.enigma.api.translation.mapping.serde.enigma.EnigmaMappingsWriter;
 import org.quiltmc.enigma.api.translation.mapping.serde.proguard.ProguardMappingsReader;
-import org.quiltmc.enigma.api.translation.mapping.serde.recaf.RecafMappingsReader;
-import org.quiltmc.enigma.api.translation.mapping.serde.recaf.RecafMappingsWriter;
 import org.quiltmc.enigma.api.translation.mapping.serde.srg.SrgMappingsWriter;
 import org.quiltmc.enigma.api.translation.mapping.serde.tinyv2.TinyV2Reader;
 import org.quiltmc.enigma.api.translation.mapping.serde.tinyv2.TinyV2Writer;
@@ -25,8 +23,7 @@ public enum MappingFormat {
 	ENIGMA_ZIP(EnigmaMappingsWriter.ZIP, EnigmaMappingsReader.ZIP),
 	TINY_V2(new TinyV2Writer("intermediary", "named"), new TinyV2Reader()),
 	SRG_FILE(SrgMappingsWriter.INSTANCE, null),
-	PROGUARD(null, ProguardMappingsReader.INSTANCE),
-	RECAF(RecafMappingsWriter.INSTANCE, RecafMappingsReader.INSTANCE);
+	PROGUARD(null, ProguardMappingsReader.INSTANCE);
 
 	private final MappingsWriter writer;
 	private final MappingsReader reader;
@@ -94,47 +91,33 @@ public enum MappingFormat {
 	}
 
 	/**
-	 * Determines the mapping format of the provided file. Checks all formats, and returns {@link #RECAF} if none match.
+	 * Determines the mapping format of the provided file. Checks all formats, and returns {@link #PROGUARD} if none match.
 	 * @param file the file to analyse
 	 * @apiNote Any directory is considered to be the {@link #ENIGMA_DIRECTORY} format.
-	 * Recaf and Proguard formats are not determined by file extension,
-	 * but we only check for Proguard, Recaf being the fallback.
+	 * Proguard does not have an explicit file extension, so it is the fallback.
 	 * @return the mapping format of the file.
 	 */
 	public static MappingFormat parseFromFile(Path file) {
 		if (Files.isDirectory(file)) {
 			return ENIGMA_DIRECTORY;
 		} else {
-			try {
-				switch (MoreFiles.getFileExtension(file).toLowerCase()) {
-					case "zip" -> {
-						return ENIGMA_ZIP;
-					}
-					case "mapping" -> {
-						return ENIGMA_FILE;
-					}
-					case "tiny" -> {
-						return TINY_V2;
-					}
-					case "tsrg" -> {
-						return SRG_FILE;
-					}
-					default -> {
-						// check for proguard. Recaf is the default if we don't match proguard here
-						String contents = Files.readString(file);
-						String firstLine = contents.split("\n")[0];
-						String[] splitFirstLine = firstLine.split(" ");
-
-						if (splitFirstLine.length == 3 && splitFirstLine[1].equals("->") && splitFirstLine[2].endsWith(":")) {
-							return PROGUARD;
-						}
-					}
+			switch (MoreFiles.getFileExtension(file).toLowerCase()) {
+				case "zip" -> {
+					return ENIGMA_ZIP;
 				}
-			} catch (IOException e) {
-				throw new RuntimeException("failed to read file \"" + file + "\" to parse mapping format!", e);
+				case "mapping", "mappings" -> {
+					return ENIGMA_FILE;
+				}
+				case "tiny" -> {
+					return TINY_V2;
+				}
+				case "tsrg" -> {
+					return SRG_FILE;
+				}
+				default -> {
+					return PROGUARD;
+				}
 			}
 		}
-
-		return RECAF;
 	}
 }

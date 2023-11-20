@@ -4,16 +4,19 @@ import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaPluginContext;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.service.JarIndexerService;
 import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.source.DecompilerService;
 import org.quiltmc.enigma.api.source.Decompilers;
+import org.quiltmc.enigma.api.source.TokenType;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
-import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
-import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.jetbrains.java.decompiler.util.Pair;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -30,13 +33,14 @@ import org.objectweb.asm.tree.analysis.Frame;
 import org.objectweb.asm.tree.analysis.SourceInterpreter;
 import org.objectweb.asm.tree.analysis.SourceValue;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 public final class BuiltinPlugin implements EnigmaPlugin {
 	@Override
@@ -51,22 +55,43 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 		final EnumFieldNameFindingVisitor visitor = new EnumFieldNameFindingVisitor(names);
 
 		ctx.registerService("enigma:enum_initializer_indexer", JarIndexerService.TYPE, ctx1 -> JarIndexerService.fromVisitor(visitor));
-		ctx.registerService("enigma:enum_name_proposer", NameProposalService.TYPE, ctx1 -> (obfEntry, remapper) -> Optional.ofNullable(names.get(obfEntry)));
+
+		String id = "enigma:enum_name_proposer";
+		ctx.registerService(id, NameProposalService.TYPE, ctx1 -> new NameProposalFunction() {
+			@Override
+			public Map<Entry<?>, EntryMapping> apply(JarIndex jarIndex) {
+				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
+
+				jarIndex.getIndex(EntryIndex.class).getFields().forEach(field -> {
+					if (names.containsKey(field)) {
+						mappings.put(field, new EntryMapping(names.get(field), null, TokenType.JAR_PROPOSED, id));
+					}
+				});
+
+				return mappings;
+			}
+		});
 	}
 
 	private void registerSpecializedMethodNamingService(EnigmaPluginContext ctx) {
-		ctx.registerService("enigma:specialized_method_name_proposer", NameProposalService.TYPE, ctx1 -> (obfEntry, remapper) -> {
-			BridgeMethodIndex bridgeMethodIndex = remapper.getJarIndex().getIndex(BridgeMethodIndex.class);
-			if (obfEntry instanceof MethodEntry obfMethod) {
-				if (bridgeMethodIndex.isSpecializedMethod(obfMethod)) {
-					return Optional.ofNullable(bridgeMethodIndex.getBridgeFromSpecialized(obfMethod)).map(ParentedEntry::getName);
-				} else if (bridgeMethodIndex.isBridgeMethod(obfMethod)) {
-					// IndexEntryResolver#resolveEntry can return the bridge method, so we can just use the name
-					return Optional.of(obfEntry.getName());
-				}
-			}
+		String id = "enigma:specialized_method_name_proposer";
 
-			return Optional.empty();
+		ctx.registerService(id, NameProposalService.TYPE, ctx1 -> new NameProposalFunction() {
+				@Override
+				public Map<Entry<?>, EntryMapping> apply(JarIndex jarIndex) {
+					BridgeMethodIndex bridgeMethodIndex = jarIndex.getIndex(BridgeMethodIndex.class);
+					Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
+
+					bridgeMethodIndex.getSpecializedToBridge().forEach((specialized, bridge) -> {
+						EntryMapping mapping = new EntryMapping(bridge.getName(), null, TokenType.JAR_PROPOSED, id);
+
+						mappings.put(specialized, mapping);
+						// IndexEntryResolver#resolveEntry can return the bridge method, so we can just use the name
+						mappings.put(bridge, mapping);
+					});
+
+					return mappings;
+				}
 		});
 	}
 
@@ -75,6 +100,18 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 		ctx.registerService("enigma:procyon", DecompilerService.TYPE, ctx1 -> Decompilers.PROCYON);
 		ctx.registerService("enigma:cfr", DecompilerService.TYPE, ctx1 -> Decompilers.CFR);
 		ctx.registerService("enigma:bytecode", DecompilerService.TYPE, ctx1 -> Decompilers.BYTECODE);
+	}
+
+	private abstract static class NameProposalFunction implements NameProposalService, Function<JarIndex, Map<Entry<?>, EntryMapping>> {
+		@Override
+		public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
+			return this.apply(index);
+		}
+
+		@Override
+		public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
+			return null;
+		}
 	}
 
 	private static final class EnumFieldNameFindingVisitor extends ClassVisitor {

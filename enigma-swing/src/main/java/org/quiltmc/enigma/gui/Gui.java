@@ -3,6 +3,8 @@ package org.quiltmc.enigma.gui;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.analysis.EntryReference;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.gui.config.NetConfig;
 import org.quiltmc.enigma.gui.config.Themes;
 import org.quiltmc.enigma.gui.config.UiConfig;
@@ -460,10 +462,21 @@ public class Gui {
 	}
 
 	public void toggleMappingFromEntry(Entry<?> obfEntry) {
-		if (this.controller.getProject().getMapper().getDeobfMapping(obfEntry).targetName() != null) {
-			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).clearDeobfName());
+		EntryMapping mapping = this.controller.getProject().getRemapper().getMapping(obfEntry);
+
+		if (mapping.targetName() != null) {
+			EntryRemapper remapper = this.controller.getProject().getRemapper();
+			EntryChange<? extends Entry<?>> change;
+			EntryMapping proposedMapping = remapper.getProposedMappings().get(obfEntry);
+			if (proposedMapping != null) {
+				change = EntryChange.modify(obfEntry).withDeobfName(proposedMapping.targetName()).withTokenType(proposedMapping.tokenType()).withSourcePluginId(proposedMapping.sourcePluginId());
+			} else {
+				change = EntryChange.modify(obfEntry).clearDeobfName();
+			}
+
+			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), change);
 		} else {
-			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).withDefaultDeobfName(this.getController().getProject()));
+			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).withDeobfName(obfEntry.getName()));
 		}
 	}
 

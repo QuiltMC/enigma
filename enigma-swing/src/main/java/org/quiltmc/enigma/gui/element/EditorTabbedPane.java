@@ -26,7 +26,7 @@ public class EditorTabbedPane {
 
 	private final EditorTabPopupMenu editorTabPopupMenu;
 	private final Gui gui;
-	private final NavigatorPanel navigator;
+	private NavigatorPanel navigator;
 
 	public EditorTabbedPane(Gui gui) {
 		this.gui = gui;
@@ -41,7 +41,7 @@ public class EditorTabbedPane {
 		EditorPanel editorPanel = this.editors.computeIfAbsent(entry, e -> {
 			ClassHandle ch = this.gui.getController().getClassHandleProvider().openClass(entry);
 			if (ch == null) return null;
-			this.navigator.clear();
+			this.navigator = new NavigatorPanel(this.gui);
 			EditorPanel ed = new EditorPanel(this.gui, this.navigator);
 			ed.setup();
 			ed.setClassHandle(ch);
