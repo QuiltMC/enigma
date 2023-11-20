@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.api.analysis.tree;
 
-import org.quiltmc.enigma.api.analysis.index.EntryIndex;
-import org.quiltmc.enigma.api.analysis.index.InheritanceIndex;
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
@@ -52,8 +52,8 @@ public class MethodInheritanceTreeNode extends AbstractMethodTreeNode {
 	 */
 	public boolean load(JarIndex index) {
 		// get all the child nodes
-		EntryIndex entryIndex = index.getEntryIndex();
-		InheritanceIndex inheritanceIndex = index.getInheritanceIndex();
+		EntryIndex entryIndex = index.getIndex(EntryIndex.class);
+		InheritanceIndex inheritanceIndex = index.getIndex(InheritanceIndex.class);
 
 		boolean ret = false;
 		for (ClassEntry inheritorEntry : inheritanceIndex.getChildren(this.entry.getParent())) {

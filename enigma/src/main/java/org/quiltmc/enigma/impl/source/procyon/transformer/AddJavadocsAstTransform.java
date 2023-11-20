@@ -57,7 +57,7 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 		}
 
 		private <T extends AstNode> Comment[] getComments(T node, Function<T, Entry<?>> retriever) {
-			final EntryMapping mapping = this.remapper.getDeobfMapping(retriever.apply(node));
+			final EntryMapping mapping = this.remapper.getMapping(retriever.apply(node));
 			final String docs = Strings.emptyToNull(mapping.javadoc());
 			return docs == null ? null : Stream.of(docs.split("\\R")).map(st -> new Comment(st,
 					CommentType.Documentation)).toArray(Comment[]::new);
@@ -65,7 +65,7 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 
 		private Comment[] getParameterComments(ParameterDeclaration node, Function<ParameterDeclaration, Entry<?>> retriever) {
 			Entry<?> entry = retriever.apply(node);
-			final EntryMapping mapping = this.remapper.getDeobfMapping(entry);
+			final EntryMapping mapping = this.remapper.getMapping(entry);
 			final Comment[] ret = this.getComments(node, retriever);
 			if (ret != null) {
 				final String paramPrefix = "@param " + (mapping.targetName() != null ? mapping.targetName() : entry.getName()) + " ";

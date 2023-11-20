@@ -23,7 +23,7 @@ import java.io.IOException;
  * Tests that a MappingFormat can write out a fixed set of mappings and read them back without losing any information.
  */
 public class TestReadWriteCycle {
-	private final MappingSaveParameters parameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+	private final MappingSaveParameters parameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
 
 	private final Pair<ClassEntry, EntryMapping> testClazz = new Pair<>(
 			new ClassEntry("a/b/c"),

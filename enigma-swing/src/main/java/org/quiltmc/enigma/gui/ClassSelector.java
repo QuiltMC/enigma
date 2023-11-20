@@ -111,7 +111,7 @@ public class ClassSelector extends JTree {
 		}
 
 		// update the tree control
-		this.packageManager = new NestedPackages(classEntries, this.comparator, this.controller.getProject().getMapper());
+		this.packageManager = new NestedPackages(classEntries, this.comparator, this.controller.getProject().getRemapper());
 		this.setModel(new DefaultTreeModel(this.packageManager.getRoot()));
 
 		this.restoreExpansionState(state);

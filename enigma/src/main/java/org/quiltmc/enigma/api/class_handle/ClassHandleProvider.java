@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.api.class_handle;
 
 import org.quiltmc.enigma.api.EnigmaProject;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
@@ -58,7 +59,7 @@ public final class ClassHandleProvider {
 	 */
 	@Nullable
 	public ClassHandle openClass(ClassEntry entry) {
-		if (!this.project.getJarIndex().getEntryIndex().hasClass(entry)) return null;
+		if (!this.project.getJarIndex().getIndex(EntryIndex.class).hasClass(entry)) return null;
 
 		return Utils.withLock(this.lock.writeLock(), () -> {
 			Entry e = this.handles.computeIfAbsent(entry, entry1 -> new Entry(this, entry1));
@@ -196,7 +197,7 @@ public final class ClassHandleProvider {
 		private Entry(ClassHandleProvider p, ClassEntry entry) {
 			this.p = p;
 			this.entry = entry;
-			this.deobfRef = p.project.getMapper().deobfuscate(entry);
+			this.deobfRef = p.project.getRemapper().deobfuscate(entry);
 			this.invalidate();
 		}
 
@@ -212,7 +213,7 @@ public final class ClassHandleProvider {
 		}
 
 		private void checkDeobfRefForUpdate() {
-			ClassEntry newDeobf = this.p.project.getMapper().deobfuscate(this.entry);
+			ClassEntry newDeobf = this.p.project.getRemapper().deobfuscate(this.entry);
 			if (!Objects.equals(this.deobfRef, newDeobf)) {
 				this.deobfRef = newDeobf;
 				// copy the list so we don't call event listener code with the lock active
@@ -256,7 +257,7 @@ public final class ClassHandleProvider {
 			int v = this.javadocVersion.incrementAndGet();
 			return f.thenApplyAsync(res -> {
 				if (res == null || this.javadocVersion.get() != v) return null;
-				Result<Source, ClassHandleError> jdSource = res.map(s -> s.withJavadocs(this.p.project.getMapper()));
+				Result<Source, ClassHandleError> jdSource = res.map(s -> s.withJavadocs(this.p.project.getRemapper()));
 				Utils.withLock(this.lock.readLock(), () -> new ArrayList<>(this.handles)).forEach(h -> h.onDocsChanged(jdSource));
 				return jdSource;
 			}, this.p.pool);
@@ -268,7 +269,7 @@ public final class ClassHandleProvider {
 				if (res == null || this.indexVersion.get() != v) return null;
 				return res.andThen(jdSource -> {
 					SourceIndex index = jdSource.index();
-					index.resolveReferences(this.p.project.getMapper().getObfResolver());
+					index.resolveReferences(this.p.project.getRemapper().getObfResolver());
 					DecompiledClassSource source = new DecompiledClassSource(this.entry, index);
 					return Result.ok(source);
 				});
@@ -279,7 +280,7 @@ public final class ClassHandleProvider {
 			int v = this.mappedVersion.incrementAndGet();
 			f.thenApplyAsync(res -> {
 				if (res == null || this.mappedVersion.get() != v) return null;
-				return res.andThen(source -> Result.ok(source.remapSource(this.p.project, this.p.project.getMapper().getDeobfuscator())));
+				return res.andThen(source -> Result.ok(source.remapSource(this.p.project, this.p.project.getRemapper().getDeobfuscator())));
 			}, this.p.pool).whenComplete((res, e) -> {
 				if (e != null) res = Result.err(ClassHandleError.remap(e));
 				if (res == null) return;

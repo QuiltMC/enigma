@@ -1,12 +1,16 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
+import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.translation.MappingTranslator;
 import org.quiltmc.enigma.api.translation.Translatable;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.tree.DeltaTrackingTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeUtil;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
@@ -20,33 +24,42 @@ import java.util.Objects;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class EntryRemapper {
-	private final DeltaTrackingTree<EntryMapping> obfToDeobf;
+	private final DeltaTrackingTree<EntryMapping> deobfNames;
+	private final DeltaTrackingTree<EntryMapping> proposedNames;
+	private final DeltaTrackingTree<EntryMapping> mergedNames;
 
 	private final EntryResolver obfResolver;
 	private final Translator deobfuscator;
 	private final JarIndex jarIndex;
+	private final MappingsIndex mappingsIndex;
 
 	private final MappingValidator validator;
+	private final List<NameProposalService> proposalServices;
 
-	private EntryRemapper(JarIndex jarIndex, EntryTree<EntryMapping> obfToDeobf) {
-		this.obfToDeobf = new DeltaTrackingTree<>(obfToDeobf);
+	private EntryRemapper(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
+		this.deobfNames = new DeltaTrackingTree<>(deobfMappings);
+		this.proposedNames = new DeltaTrackingTree<>(proposedMappings);
+		this.mergedNames = new DeltaTrackingTree<>(EntryTreeUtil.merge(proposedMappings, deobfMappings));
 
 		this.obfResolver = jarIndex.getEntryResolver();
 
-		this.deobfuscator = new MappingTranslator(obfToDeobf, this.obfResolver);
+		this.deobfuscator = new MappingTranslator(this.mergedNames, this.obfResolver);
 		this.jarIndex = jarIndex;
+		this.mappingsIndex = mappingsIndex;
 
-		this.validator = new MappingValidator(this.deobfuscator, jarIndex);
+		this.validator = new MappingValidator(this.deobfuscator, jarIndex, mappingsIndex);
+		this.proposalServices = proposalServices;
 	}
 
-	public static EntryRemapper mapped(JarIndex index, EntryTree<EntryMapping> obfToDeobf) {
-		return new EntryRemapper(index, obfToDeobf);
+	public static EntryRemapper mapped(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
+		return new EntryRemapper(jarIndex, mappingsIndex, proposedMappings, deobfMappings, proposalServices);
 	}
 
-	public static EntryRemapper empty(JarIndex index) {
-		return new EntryRemapper(index, new HashEntryTree<>());
+	public static EntryRemapper empty(JarIndex index, List<NameProposalService> proposalServices) {
+		return new EntryRemapper(index, MappingsIndex.empty(), new HashEntryTree<>(), new HashEntryTree<>(), proposalServices);
 	}
 
 	public void validatePutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping) {
@@ -65,7 +78,8 @@ public class EntryRemapper {
 		//	mapRecordComponentGetter(vc, fieldEntry.getParent(), fieldEntry, deobfMapping);
 		//}
 
-		boolean renaming = !Objects.equals(this.getDeobfMapping(obfuscatedEntry).targetName(), deobfMapping.targetName());
+		EntryMapping oldMapping = this.getMapping(obfuscatedEntry);
+		boolean renaming = !Objects.equals(oldMapping.targetName(), deobfMapping.targetName());
 
 		Collection<Entry<?>> resolvedEntries = this.obfResolver.resolveEntry(obfuscatedEntry, renaming ? ResolutionStrategy.RESOLVE_ROOT : ResolutionStrategy.RESOLVE_CLOSEST);
 
@@ -79,23 +93,28 @@ public class EntryRemapper {
 
 		for (Entry<?> resolvedEntry : resolvedEntries) {
 			if (deobfMapping.equals(EntryMapping.DEFAULT)) {
-				this.obfToDeobf.insert(resolvedEntry, null);
+				this.insertName(resolvedEntry, null);
 			} else {
-				this.obfToDeobf.insert(resolvedEntry, deobfMapping);
+				this.insertName(resolvedEntry, deobfMapping);
 			}
 		}
+
+		this.insertDynamicallyProposedMappings(obfuscatedEntry, oldMapping, deobfMapping);
+		this.mappingsIndex.reindexEntry(deobfMapping, obfuscatedEntry);
 	}
 
 	// todo this needs to be fixed for hashed mappings!
 	// note: just supressing warnings until it's fixed
 	@SuppressWarnings("all")
 	private void mapRecordComponentGetter(ValidationContext vc, ClassEntry classEntry, FieldEntry fieldEntry, EntryMapping fieldMapping) {
-		if (!this.jarIndex.getEntryIndex().getDefinition(classEntry).isRecord() || this.jarIndex.getEntryIndex().getFieldAccess(fieldEntry).isStatic()) {
+		EntryIndex entryIndex = this.jarIndex.getIndex(EntryIndex.class);
+
+		if (!entryIndex.getDefinition(classEntry).isRecord() || entryIndex.getFieldAccess(fieldEntry).isStatic()) {
 			return;
 		}
 
 		// Find all the methods in this record class
-		List<MethodEntry> classMethods = this.jarIndex.getEntryIndex().getMethods().stream()
+		List<MethodEntry> classMethods = entryIndex.getMethods().stream()
 				.filter(entry -> classEntry.equals(entry.getParent()))
 				.toList();
 
@@ -118,9 +137,33 @@ public class EntryRemapper {
 		this.doPutMapping(vc, methodEntry, new EntryMapping(fieldMapping.targetName()), false);
 	}
 
+	private void insertName(Entry<?> entry, @Nullable EntryMapping mapping) {
+		this.mergedNames.insert(entry, mapping);
+		if (mapping != null) {
+			if (mapping.tokenType().isProposed()) {
+				this.proposedNames.insert(entry, mapping);
+			} else {
+				this.deobfNames.insert(entry, mapping);
+			}
+		}
+	}
+
+	/**
+	 * Runs {@link NameProposalService#getDynamicProposedNames(EntryRemapper, Entry, EntryMapping, EntryMapping)} over the names stored in this remapper,
+	 * inserting all mappings generated.
+	 */
+	public void insertDynamicallyProposedMappings(@Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
+		for (var service : this.proposalServices) {
+			var proposedNames = service.getDynamicProposedNames(this, obfEntry, oldMapping, newMapping);
+			if (proposedNames != null) {
+				proposedNames.forEach(this::insertName);
+			}
+		}
+	}
+
 	@Nonnull
-	public EntryMapping getDeobfMapping(Entry<?> entry) {
-		EntryMapping entryMapping = this.obfToDeobf.get(entry);
+	public EntryMapping getMapping(Entry<?> entry) {
+		EntryMapping entryMapping = this.mergedNames.get(entry);
 		return entryMapping == null ? EntryMapping.DEFAULT : entryMapping;
 	}
 
@@ -137,23 +180,43 @@ public class EntryRemapper {
 	}
 
 	public Stream<Entry<?>> getObfEntries() {
-		return this.obfToDeobf.getAllEntries();
+		return this.mergedNames.getAllEntries();
 	}
 
 	public Collection<Entry<?>> getObfChildren(Entry<?> obfuscatedEntry) {
-		return this.obfToDeobf.getChildren(obfuscatedEntry);
+		return this.mergedNames.getChildren(obfuscatedEntry);
 	}
 
-	public DeltaTrackingTree<EntryMapping> getObfToDeobf() {
-		return this.obfToDeobf;
+	/**
+	 * Gets all mappings, including both manually inserted and proposed names.
+	 * @return the merged mapping tree
+	 */
+	public DeltaTrackingTree<EntryMapping> getMappings() {
+		return this.mergedNames;
+	}
+
+	/**
+	 * Gets all manually inserted mappings.
+	 * @return the deobfuscated mapping tree
+	 */
+	public DeltaTrackingTree<EntryMapping> getDeobfMappings() {
+		return this.deobfNames;
+	}
+
+	/**
+	 * Gets all proposed mappings.
+	 * @return the proposed mapping tree
+	 */
+	public DeltaTrackingTree<EntryMapping> getProposedMappings() {
+		return this.proposedNames;
 	}
 
 	public MappingDelta<EntryMapping> takeMappingDelta() {
-		return this.obfToDeobf.takeDelta();
+		return this.mergedNames.takeDelta();
 	}
 
 	public boolean isDirty() {
-		return this.obfToDeobf.isDirty();
+		return this.mergedNames.isDirty();
 	}
 
 	public EntryResolver getObfResolver() {

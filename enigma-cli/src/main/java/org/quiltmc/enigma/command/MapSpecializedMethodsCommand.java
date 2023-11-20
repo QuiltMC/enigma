@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.command;
 
-import org.quiltmc.enigma.api.analysis.index.BridgeMethodIndex;
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.MappingTranslator;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -53,7 +53,7 @@ public class MapSpecializedMethodsCommand extends Command {
 		boolean debug = shouldDebug(new MapSpecializedMethodsCommand().getName());
 		JarIndex jarIndex = loadJar(jar);
 
-		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
 		MappingFormat sourceFormat = MappingFormat.parseFromFile(sourcePath);
 		EntryTree<EntryMapping> source = sourceFormat.read(sourcePath);
 
@@ -71,7 +71,7 @@ public class MapSpecializedMethodsCommand extends Command {
 	public static EntryTree<EntryMapping> run(JarIndex jarIndex, EntryTree<EntryMapping> source, boolean trackDelta) throws IOException, MappingParseException {
 		EntryTree<EntryMapping> result = new HashEntryTree<>();
 
-		BridgeMethodIndex bridgeMethodIndex = jarIndex.getBridgeMethodIndex();
+		BridgeMethodIndex bridgeMethodIndex = jarIndex.getIndex(BridgeMethodIndex.class);
 		Translator translator = new MappingTranslator(source, jarIndex.getEntryResolver());
 
 		// Copy all non-specialized methods

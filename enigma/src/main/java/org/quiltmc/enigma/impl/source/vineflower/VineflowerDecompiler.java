@@ -5,7 +5,8 @@ import org.quiltmc.enigma.api.source.Decompiler;
 import org.quiltmc.enigma.api.source.Source;
 import org.quiltmc.enigma.api.source.SourceSettings;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
-import org.checkerframework.checker.nullness.qual.Nullable;
+
+import javax.annotation.Nullable;
 
 public class VineflowerDecompiler implements Decompiler {
 	private final ClassProvider classProvider;

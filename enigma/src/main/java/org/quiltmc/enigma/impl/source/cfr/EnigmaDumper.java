@@ -29,8 +29,8 @@ import org.benf.cfr.reader.util.output.IllegalIdentifierDump;
 import org.benf.cfr.reader.util.output.MovableDumperContext;
 import org.benf.cfr.reader.util.output.StringStreamDumper;
 import org.benf.cfr.reader.util.output.TypeContext;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -147,7 +147,7 @@ public class EnigmaDumper extends StringStreamDumper {
 						continue;
 					}
 
-					EntryMapping mapping = this.mapper.getDeobfMapping(this.getFieldEntry(owner, field.getFieldName(), field.getField().getDescriptor()));
+					EntryMapping mapping = this.mapper.getMapping(this.getFieldEntry(owner, field.getFieldName(), field.getField().getDescriptor()));
 					if (mapping == null) {
 						continue;
 					}
@@ -159,7 +159,7 @@ public class EnigmaDumper extends StringStreamDumper {
 				}
 			}
 
-			EntryMapping mapping = this.mapper.getDeobfMapping(this.getClassEntry(owner));
+			EntryMapping mapping = this.mapper.getMapping(this.getClassEntry(owner));
 
 			String javadoc = null;
 			if (mapping != null) {
@@ -194,7 +194,7 @@ public class EnigmaDumper extends StringStreamDumper {
 		if (this.mapper != null) {
 			List<String> lines = new ArrayList<>();
 			MethodEntry methodEntry = this.getMethodEntry(method);
-			EntryMapping mapping = this.mapper.getDeobfMapping(methodEntry);
+			EntryMapping mapping = this.mapper.getMapping(methodEntry);
 			if (mapping != null) {
 				String javadoc = mapping.javadoc();
 				if (javadoc != null) {
@@ -207,7 +207,7 @@ public class EnigmaDumper extends StringStreamDumper {
 			if (children != null && !children.isEmpty()) {
 				for (Entry<?> each : children) {
 					if (each instanceof LocalVariableEntry) {
-						EntryMapping paramMapping = this.mapper.getDeobfMapping(each);
+						EntryMapping paramMapping = this.mapper.getMapping(each);
 						if (paramMapping != null) {
 							String javadoc = paramMapping.javadoc();
 							if (javadoc != null) {
@@ -235,7 +235,7 @@ public class EnigmaDumper extends StringStreamDumper {
 	public Dumper dumpFieldDoc(Field field, JavaTypeInstance owner) {
 		boolean recordComponent = this.isRecord(owner) && !field.testAccessFlag(AccessFlag.ACC_STATIC);
 		if (this.mapper != null && !recordComponent) {
-			EntryMapping mapping = this.mapper.getDeobfMapping(this.getFieldEntry(owner, field.getFieldName(), field.getDescriptor()));
+			EntryMapping mapping = this.mapper.getMapping(this.getFieldEntry(owner, field.getFieldName(), field.getDescriptor()));
 			if (mapping != null) {
 				String javadoc = mapping.javadoc();
 				if (javadoc != null) {

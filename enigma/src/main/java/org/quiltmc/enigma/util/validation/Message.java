@@ -18,6 +18,7 @@ public class Message {
 
 	public static final Message SHADOWED_NAME_CLASS = create(Type.WARNING, "shadowed_name_class");
 	public static final Message SHADOWED_NAME = create(Type.WARNING, "shadowed_unique_name");
+	public static final Message NEW_PACKAGE = create(Type.WARNING, "new_package");
 
 	public static final Message SERVER_STARTED = create(Type.INFO, "server_started");
 	public static final Message CONNECTED_TO_SERVER = create(Type.INFO, "connected_to_server");

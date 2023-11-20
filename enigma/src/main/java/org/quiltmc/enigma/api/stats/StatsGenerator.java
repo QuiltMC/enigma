@@ -3,7 +3,7 @@ package org.quiltmc.enigma.api.stats;
 import com.google.common.base.Preconditions;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.api.analysis.index.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.ArgumentDescriptor;
@@ -39,7 +39,7 @@ public class StatsGenerator {
 
 	public StatsGenerator(EnigmaProject project) {
 		this.project = project;
-		this.entryIndex = project.getJarIndex().getEntryIndex();
+		this.entryIndex = project.getJarIndex().getIndex(EntryIndex.class);
 		this.entryResolver = project.getJarIndex().getEntryResolver();
 	}
 
@@ -229,7 +229,7 @@ public class StatsGenerator {
 
 		if (renamable) {
 			if (obfuscated && !synthetic) {
-				String parent = this.project.getMapper().deobfuscate(entry.getTopLevelClass()).getName().replace('/', '.');
+				String parent = this.project.getRemapper().deobfuscate(entry.getTopLevelClass()).getName().replace('/', '.');
 
 				unmapped.computeIfAbsent(type, t -> new HashMap<>());
 				unmapped.get(type).put(parent, unmapped.get(type).getOrDefault(parent, 0) + 1);

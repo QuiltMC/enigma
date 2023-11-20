@@ -213,12 +213,20 @@ struct entry_change {
     if <javadoc_change == TRISTATE_CHANGE_SET> {
         utf javadoc;
     }
+    if <token_type_change == TRISTATE_CHANGE_SET> {
+        unsigned short token_type;
+    }
+    if <source_plugin_id_change == TRISTATE_CHANGE_SET> {
+        utf source_plugin_id;
+    }
 }
 ```
 - `entry`: The entry this change gets applied to.
 - `flags`: See definition of `entry_change_flags`.
 - `deobf_name`: The new deobfuscated name, if deobf_name_change == TRISTATE_CHANGE_SET
 - `javadoc`: The new javadoc, if javadoc_change == TRISTATE_CHANGE_SET
+- `token_type`: The new token type, if token_type_change == TRISTATE_CHANGE_SET
+- `source_plugin_id`: The ID of the plugin that proposed this entry's name, if source_plugin_id_change == TRISTATE_CHANGE_SET
 
 ### Login (client-to-server)
 ```c
@@ -278,9 +286,10 @@ struct SyncMappingsS2CPacket {
 }
 struct MappingNode {
     NoParentEntry obf_entry;
-    boolean is_named;
     utf name;
     utf javadoc;
+    unsigned short token_type;
+    utf source_plugin_id;
     unsigned short children_count;
     MappingNode children[children_count];
 }
@@ -290,7 +299,9 @@ typedef { Entry but without the has_parent or parent fields } NoParentEntry;
 - `obf_entry`: The value of a node, containing the obfuscated name and descriptor of the entry.
 - `name`: The deobfuscated name of the entry, if it exists, otherwise the empty string.
 - `javadoc`: The documentation for the entry, if it exists, otherwise the empty string.
-- `children`: The children of this node
+- `token_type`: The token type of the entry.
+- `source_plugin_id`: If the name is proposed, the ID of the plugin that proposed the name, otherwise the empty string.
+- `children`: The children of this node.
 
 ### Message (server-to-client)
 ```c

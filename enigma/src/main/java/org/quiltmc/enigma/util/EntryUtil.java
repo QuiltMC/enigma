@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.util;
 
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.mapping.EntryChange;
@@ -11,7 +12,7 @@ import javax.annotation.Nonnull;
 public class EntryUtil {
 	public static EntryMapping applyChange(ValidationContext vc, EntryRemapper remapper, EntryChange<?> change) {
 		Entry<?> target = change.getTarget();
-		EntryMapping prev = remapper.getDeobfMapping(target);
+		EntryMapping prev = remapper.getMapping(target);
 		EntryMapping mapping = EntryUtil.applyChange(prev, change);
 
 		remapper.putMapping(vc, target, mapping);
@@ -19,19 +20,44 @@ public class EntryUtil {
 		return mapping;
 	}
 
+	/**
+	 * Applies all changes to the given {@link EntryMapping}.
+	 * Does not modify the original mapping.
+	 * @param self the base mapping to apply changes to
+	 * @param change the changes to make
+	 * @return the updated mapping
+	 */
 	public static EntryMapping applyChange(@Nonnull EntryMapping self, EntryChange<?> change) {
+		// note: a bit more complicated than it needs to be, to avoid tripping over validation done on EntryMapping objects.
+		// this is a necessary sacrifice!
+
+		String name = self.targetName();
+		String javadoc = self.javadoc();
+		TokenType tokenType = self.tokenType();
+		String sourcePluginId = self.sourcePluginId();
+
 		if (change.getDeobfName().isSet()) {
-			self = self.withName(change.getDeobfName().getNewValue());
+			name = change.getDeobfName().getNewValue();
 		} else if (change.getDeobfName().isReset()) {
-			self = self.withName(null);
+			name = null;
 		}
 
 		if (change.getJavadoc().isSet()) {
-			self = self.withDocs(change.getJavadoc().getNewValue());
+			javadoc = change.getJavadoc().getNewValue();
 		} else if (change.getJavadoc().isReset()) {
-			self = self.withDocs(null);
+			javadoc = null;
 		}
 
-		return self;
+		if (change.getTokenType().isSet()) {
+			tokenType = change.getTokenType().getNewValue();
+		}
+
+		if (change.getSourcePluginId().isSet()) {
+			sourcePluginId = change.getSourcePluginId().getNewValue();
+		} else if (change.getSourcePluginId().isReset()) {
+			sourcePluginId = null;
+		}
+
+		return self.withName(name, tokenType, sourcePluginId).withJavadoc(javadoc);
 	}
 }

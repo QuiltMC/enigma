@@ -71,7 +71,7 @@ public class IdentifierPanel {
 	}
 
 	public void refreshReference() {
-		this.deobfEntry = this.entry == null ? null : this.gui.getController().getProject().getMapper().deobfuscate(this.entry);
+		this.deobfEntry = this.entry == null ? null : this.gui.getController().getProject().getRemapper().deobfuscate(this.entry);
 
 		// Prevent IdentifierPanel from being rebuilt if you didn't click off.
 		if (this.lastEntry == this.entry && this.nameField != null) {

@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.api.analysis.tree;
 
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
-import org.quiltmc.enigma.api.analysis.index.ReferenceIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.ReferenceIndex;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
@@ -47,7 +47,7 @@ public class FieldReferenceTreeNode extends DefaultMutableTreeNode implements Re
 	}
 
 	public void load(JarIndex index, boolean recurse) {
-		ReferenceIndex referenceIndex = index.getReferenceIndex();
+		ReferenceIndex referenceIndex = index.getIndex(ReferenceIndex.class);
 
 		// get all the child nodes
 		if (this.reference == null) {

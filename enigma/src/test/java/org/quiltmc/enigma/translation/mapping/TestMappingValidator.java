@@ -34,14 +34,14 @@ public class TestMappingValidator {
 	public static void beforeAll() throws Exception {
 		Enigma enigma = Enigma.create();
 		project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
-		remapper = project.getMapper();
+		remapper = project.getRemapper();
 	}
 
 	@BeforeEach
 	public void beforeEach(RepetitionInfo repetitionInfo) {
 		EntryTree<EntryMapping> mappings = new HashEntryTree<>();
-		project.setMappings(mappings);
-		remapper = project.getMapper();
+		project.setMappings(mappings, ProgressListener.none());
+		remapper = project.getRemapper();
 
 		// repeat with mapped classes
 		if (repetitionInfo.getCurrentRepetition() == 1) {

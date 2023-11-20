@@ -75,6 +75,6 @@ public class DropInvalidMappingsCommand extends Command {
 		}
 
 		MappingSaveParameters saveParameters = project.getEnigma().getProfile().getMappingSaveParameters();
-		format.write(project.getMapper().getObfToDeobf(), mappingsOut, ProgressListener.none(), saveParameters);
+		format.write(project.getRemapper().getMappings(), mappingsOut, ProgressListener.none(), saveParameters);
 	}
 }

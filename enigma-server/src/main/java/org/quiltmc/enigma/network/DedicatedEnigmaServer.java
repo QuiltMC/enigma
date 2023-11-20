@@ -8,6 +8,7 @@ import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
+import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.util.Utils;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -117,10 +118,10 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 			MappingFormat mappingFormat = MappingFormat.parseFromFile(mappingsFile);
 			EntryRemapper mappings;
 			if (!Files.exists(mappingsFile)) {
-				mappings = EntryRemapper.empty(project.getJarIndex());
+				mappings = EntryRemapper.mapped(project.getJarIndex(), project.getMappingsIndex(), project.getRemapper().getProposedMappings(), new HashEntryTree<>(), enigma.getNameProposalServices());
 			} else {
 				Logger.info("Reading mappings...");
-				mappings = EntryRemapper.mapped(project.getJarIndex(), mappingFormat.read(mappingsFile));
+				mappings = EntryRemapper.mapped(project.getJarIndex(), project.getMappingsIndex(), project.getRemapper().getProposedMappings(), mappingFormat.read(mappingsFile), enigma.getNameProposalServices());
 			}
 
 			PrintWriter log = new PrintWriter(Files.newBufferedWriter(logFile));
@@ -134,9 +135,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 			return;
 		}
 
-		// noinspection RedundantSuppression
-		// noinspection Convert2MethodRef - javac 8 bug
-		Executors.newScheduledThreadPool(1).scheduleAtFixedRate(() -> server.runOnThread(() -> server.saveMappings()), 0, 1, TimeUnit.MINUTES);
+		Executors.newScheduledThreadPool(1).scheduleAtFixedRate(() -> server.runOnThread(server::saveMappings), 0, 1, TimeUnit.MINUTES);
 		Runtime.getRuntime().addShutdownHook(new Thread(server::saveMappings));
 
 		while (true) {
@@ -155,7 +154,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 	}
 
 	private void saveMappings() {
-		this.mappingFormat.write(this.getMappings().getObfToDeobf(), this.getMappings().takeMappingDelta(), this.mappingsFile, ProgressListener.none(), this.profile.getMappingSaveParameters());
+		this.mappingFormat.write(this.getRemapper().getMappings(), this.getRemapper().takeMappingDelta(), this.mappingsFile, ProgressListener.none(), this.profile.getMappingSaveParameters());
 		this.log.flush();
 	}
 

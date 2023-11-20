@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.network.packet;
 
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.network.ClientPacketHandler;
 import org.quiltmc.enigma.network.EnigmaServer;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -37,7 +38,10 @@ public class SyncMappingsS2CPacket implements Packet<ClientPacketHandler> {
 		Entry<?> entry = PacketHelper.readEntry(input, parent, false);
 		String name = PacketHelper.readString(input);
 		String javadoc = PacketHelper.readString(input);
-		EntryMapping mapping = new EntryMapping(!name.isEmpty() ? name : null, !javadoc.isEmpty() ? javadoc : null);
+		TokenType tokenType = PacketHelper.readTokenType(input);
+		String sourcePluginId = PacketHelper.readString(input);
+
+		EntryMapping mapping = new EntryMapping(!name.isEmpty() ? name : null, !javadoc.isEmpty() ? javadoc : null, tokenType, !sourcePluginId.isEmpty() ? sourcePluginId : null);
 		this.mappings.insert(entry, mapping);
 		int size = input.readUnsignedShort();
 		for (int i = 0; i < size; i++) {
@@ -61,6 +65,9 @@ public class SyncMappingsS2CPacket implements Packet<ClientPacketHandler> {
 
 		PacketHelper.writeString(output, value.targetName() != null ? value.targetName() : "");
 		PacketHelper.writeString(output, value.javadoc() != null ? value.javadoc() : "");
+		PacketHelper.writeTokenType(output, value.tokenType());
+		PacketHelper.writeString(output, value.sourcePluginId() != null ? value.sourcePluginId() : "");
+
 		Collection<? extends EntryTreeNode<EntryMapping>> children = node.getChildNodes();
 		output.writeShort(children.size());
 		for (EntryTreeNode<EntryMapping> child : children) {

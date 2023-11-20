@@ -43,7 +43,9 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 	FILE {
 		@Override
 		public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
-			Collection<ClassEntry> classes = mappings.getRootNodes()
+			EntryTree<EntryMapping> writtenMappings = MappingsWriter.filterMappings(mappings, saveParameters);
+
+			Collection<ClassEntry> classes = writtenMappings.getRootNodes()
 					.filter(entry -> entry.getEntry() instanceof ClassEntry)
 					.map(entry -> (ClassEntry) entry.getEntry())
 					.toList();
@@ -54,7 +56,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 			try (PrintWriter writer = new LfPrintWriter(Files.newBufferedWriter(path))) {
 				for (ClassEntry classEntry : classes) {
 					progress.step(steps++, classEntry.getFullName());
-					this.writeRoot(writer, mappings, classEntry);
+					this.writeRoot(writer, writtenMappings, classEntry);
 				}
 			} catch (IOException e) {
 				Logger.error(e, "Error while writing mappings to file {}", path);
@@ -64,20 +66,22 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 	DIRECTORY {
 		@Override
 		public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
+			EntryTree<EntryMapping> writtenMappings = MappingsWriter.filterMappings(mappings, saveParameters);
+
 			Collection<ClassEntry> changedClasses = delta.getChangedRoots()
 					.filter(ClassEntry.class::isInstance)
 					.map(ClassEntry.class::cast)
 					.toList();
 
-			this.applyDeletions(path, changedClasses, mappings, delta.getBaseMappings(), saveParameters.fileNameFormat());
+			this.applyDeletions(path, changedClasses, writtenMappings, delta.getBaseMappings(), saveParameters.fileNameFormat());
 
-			changedClasses = changedClasses.stream().filter(entry -> !this.isClassEmpty(mappings, entry)).toList();
+			changedClasses = changedClasses.stream().filter(entry -> !this.isClassEmpty(writtenMappings, entry)).toList();
 
 			progress.init(changedClasses.size(), I18n.translate("progress.mappings.enigma_directory.writing"));
 
 			AtomicInteger steps = new AtomicInteger();
 
-			Translator translator = new MappingTranslator(mappings, VoidEntryResolver.INSTANCE);
+			Translator translator = new MappingTranslator(writtenMappings, VoidEntryResolver.INSTANCE);
 			changedClasses.parallelStream().forEach(classEntry -> {
 				progress.step(steps.getAndIncrement(), classEntry.getFullName());
 
@@ -92,7 +96,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 					Files.deleteIfExists(classPath);
 
 					try (PrintWriter writer = new LfPrintWriter(Files.newBufferedWriter(classPath))) {
-						this.writeRoot(writer, mappings, classEntry);
+						this.writeRoot(writer, writtenMappings, classEntry);
 					}
 				} catch (Exception e) {
 					Logger.error(e, "Failed to write class '{}'", classEntry.getFullName());

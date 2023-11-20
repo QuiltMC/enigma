@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.api.analysis.index;
+package org.quiltmc.enigma.api.analysis.index.jar;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -61,6 +61,11 @@ public class ReferenceIndex implements JarIndexer {
 		} else if (typeDescriptor.isArray()) {
 			this.indexFieldTypeDescriptor(field, typeDescriptor.getArrayType());
 		}
+	}
+
+	@Override
+	public void indexClassReference(MethodDefEntry callerEntry, ClassEntry referencedEntry, ReferenceTargetType targetType) {
+		this.referencesToClasses.put(referencedEntry, new EntryReference<>(referencedEntry, referencedEntry.getName(), callerEntry, targetType));
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
@@ -49,25 +50,25 @@ public class TestInnerClasses {
 	@Test
 	public void classTree() {
 		// root level
-		assertTrue(this.index.getEntryIndex().hasClass(CLASS_TREE_ROOT));
+		assertTrue(this.index.getIndex(EntryIndex.class).hasClass(CLASS_TREE_ROOT));
 
 		// level 1
 		ClassEntry fullClassEntry = new ClassEntry(CLASS_TREE_ROOT.getName()
 				+ "$" + CLASS_TREE_LEVEL_1.getSimpleName());
-		assertTrue(this.index.getEntryIndex().hasClass(fullClassEntry));
+		assertTrue(this.index.getIndex(EntryIndex.class).hasClass(fullClassEntry));
 
 		// level 2
 		fullClassEntry = new ClassEntry(CLASS_TREE_ROOT.getName()
 			+ "$" + CLASS_TREE_LEVEL_1.getSimpleName()
 			+ "$" + CLASS_TREE_LEVEL_2.getSimpleName());
-		assertTrue(this.index.getEntryIndex().hasClass(fullClassEntry));
+		assertTrue(this.index.getIndex(EntryIndex.class).hasClass(fullClassEntry));
 
 		// level 3
 		fullClassEntry = new ClassEntry(CLASS_TREE_ROOT.getName()
 			+ "$" + CLASS_TREE_LEVEL_1.getSimpleName()
 			+ "$" + CLASS_TREE_LEVEL_2.getSimpleName()
 			+ "$" + CLASS_TREE_LEVEL_3.getSimpleName());
-		assertTrue(this.index.getEntryIndex().hasClass(fullClassEntry));
+		assertTrue(this.index.getIndex(EntryIndex.class).hasClass(fullClassEntry));
 	}
 
 	private void decompile(ClassEntry classEntry) {

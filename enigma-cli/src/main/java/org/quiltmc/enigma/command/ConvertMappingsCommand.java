@@ -40,7 +40,7 @@ public class ConvertMappingsCommand extends Command {
 	}
 
 	public static void run(Path source, String resultFormat, Path output) throws MappingParseException, IOException {
-		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
 
 		MappingFormat format = MappingFormat.parseFromFile(source);
 		EntryTree<EntryMapping> mappings = format.read(source);

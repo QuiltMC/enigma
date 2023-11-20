@@ -3,6 +3,7 @@ package org.quiltmc.enigma;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.quiltmc.enigma.api.stats.StatType;
@@ -36,21 +37,21 @@ public class TestStatsGeneration {
 	@Test
 	void checkClassMapping() {
 		EnigmaProject project = openProject();
-		renameAll(project, project.getJarIndex().getEntryIndex().getClasses());
+		renameAll(project, project.getJarIndex().getIndex(EntryIndex.class).getClasses());
 		checkFullyMapped(project, StatType.CLASSES);
 	}
 
 	@Test
 	void checkMethodMapping() {
 		EnigmaProject project = openProject();
-		renameAll(project, project.getJarIndex().getEntryIndex().getMethods());
+		renameAll(project, project.getJarIndex().getIndex(EntryIndex.class).getMethods());
 		checkFullyMapped(project, StatType.METHODS);
 	}
 
 	@Test
 	void checkFieldMapping() {
 		EnigmaProject project = openProject();
-		renameAll(project, project.getJarIndex().getEntryIndex().getFields());
+		renameAll(project, project.getJarIndex().getIndex(EntryIndex.class).getFields());
 		checkFullyMapped(project, StatType.FIELDS);
 	}
 
@@ -58,9 +59,9 @@ public class TestStatsGeneration {
 	void checkOverallMapping() {
 		// note: does not check parameters. as this is the most fragile part of stats generation, it should be added to this test as soon as possible!
 		EnigmaProject project = openProject();
-		renameAll(project, project.getJarIndex().getEntryIndex().getClasses());
-		renameAll(project, project.getJarIndex().getEntryIndex().getFields());
-		renameAll(project, project.getJarIndex().getEntryIndex().getMethods());
+		renameAll(project, project.getJarIndex().getIndex(EntryIndex.class).getClasses());
+		renameAll(project, project.getJarIndex().getIndex(EntryIndex.class).getFields());
+		renameAll(project, project.getJarIndex().getIndex(EntryIndex.class).getMethods());
 		checkFullyMapped(project, StatType.METHODS, StatType.CLASSES, StatType.FIELDS);
 	}
 
@@ -70,10 +71,10 @@ public class TestStatsGeneration {
 		for (Entry<?> entry : entries) {
 			EntryChange<? extends Entry<?>> change = EntryChange.modify(entry).withDeobfName("a" + i);
 
-			EntryMapping prev = project.getMapper().getDeobfMapping(entry);
+			EntryMapping prev = project.getRemapper().getMapping(entry);
 			EntryMapping mapping = EntryUtil.applyChange(prev, change);
 
-			project.getMapper().putMapping(new ValidationContext(null), entry, mapping);
+			project.getRemapper().putMapping(new ValidationContext(null), entry, mapping);
 			i++;
 		}
 	}

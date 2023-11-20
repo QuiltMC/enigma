@@ -125,7 +125,7 @@ public class TestPackageRename {
 		gui.getController().openJar(JAR).thenRun(() -> gui.getController().openMappings(MappingFormat.ENIGMA_DIRECTORY, MAPPINGS).thenRun(latch::countDown));
 		latch.await();
 
-		deobfuscator = gui.getController().getProject().getMapper().getDeobfuscator();
+		deobfuscator = gui.getController().getProject().getRemapper().getDeobfuscator();
 		return gui.getDockerManager().getDocker(AllClassesDocker.class).getPopupMenu();
 	}
 

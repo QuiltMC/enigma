@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
+import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.tree.ClassImplementationsTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassInheritanceTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassReferenceTreeNode;
@@ -114,7 +116,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public boolean isDirty() {
-		return this.project != null && this.project.getMapper().isDirty();
+		return this.project != null && this.project.getRemapper().isDirty();
 	}
 
 	public CompletableFuture<Void> openJar(final Path jarPath) {
@@ -157,7 +159,7 @@ public class GuiController implements ClientPacketHandler {
 		return ProgressDialog.runOffThread(this.gui, progress -> {
 			try {
 				EntryTree<EntryMapping> mappings = format.read(path);
-				this.project.setMappings(mappings);
+				this.project.setMappings(mappings, progress);
 
 				this.loadedMappingFormat = format;
 				this.loadedMappingPath = path;
@@ -175,7 +177,7 @@ public class GuiController implements ClientPacketHandler {
 	public void openMappings(EntryTree<EntryMapping> mappings) {
 		if (this.project == null) return;
 
-		this.project.setMappings(mappings);
+		this.project.setMappings(mappings, new ProgressDialog(this.gui.getFrame()));
 		this.refreshClasses();
 		this.chp.invalidateJavadoc();
 	}
@@ -205,7 +207,7 @@ public class GuiController implements ClientPacketHandler {
 		}
 
 		return ProgressDialog.runOffThread(this.gui, progress -> {
-			EntryRemapper mapper = this.project.getMapper();
+			EntryRemapper mapper = this.project.getRemapper();
 			MappingSaveParameters saveParameters = this.enigma.getProfile().getMappingSaveParameters();
 
 			MappingDelta<EntryMapping> delta = mapper.takeMappingDelta();
@@ -215,9 +217,9 @@ public class GuiController implements ClientPacketHandler {
 			this.loadedMappingPath = path;
 
 			if (saveAll) {
-				format.write(mapper.getObfToDeobf(), path, progress, saveParameters);
+				format.write(mapper.getMappings(), path, progress, saveParameters);
 			} else {
-				format.write(mapper.getObfToDeobf(), delta, path, progress, saveParameters);
+				format.write(mapper.getMappings(), delta, path, progress, saveParameters);
 			}
 		});
 	}
@@ -225,7 +227,7 @@ public class GuiController implements ClientPacketHandler {
 	public void closeMappings() {
 		if (this.project == null) return;
 
-		this.project.setMappings(null);
+		this.project.setMappings(null, ProgressListener.none());
 
 		this.gui.setMappingsFile(null);
 		this.refreshClasses();
@@ -346,7 +348,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public List<Token> getTokensForReference(DecompiledClassSource source, EntryReference<Entry<?>, Entry<?>> reference) {
-		EntryRemapper mapper = this.project.getMapper();
+		EntryRemapper mapper = this.project.getRemapper();
 
 		SourceIndex index = source.getIndex();
 		return mapper.getObfResolver().resolveReference(reference, ResolutionStrategy.RESOLVE_CLOSEST)
@@ -406,9 +408,9 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void addSeparatedClasses(List<ClassEntry> obfClasses, List<ClassEntry> deobfClasses) {
-		EntryRemapper mapper = this.project.getMapper();
+		EntryRemapper mapper = this.project.getRemapper();
 
-		Collection<ClassEntry> classes = this.project.getJarIndex().getEntryIndex().getClasses();
+		Collection<ClassEntry> classes = this.project.getJarIndex().getIndex(EntryIndex.class).getClasses();
 		Stream<ClassEntry> visibleClasses = classes.stream()
 				.filter(entry -> !entry.isInnerClass());
 
@@ -440,24 +442,24 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public ClassInheritanceTreeNode getClassInheritance(ClassEntry entry) {
-		Translator translator = this.project.getMapper().getDeobfuscator();
+		Translator translator = this.project.getRemapper().getDeobfuscator();
 		ClassInheritanceTreeNode rootNode = this.indexTreeBuilder.buildClassInheritance(translator, entry);
 		return ClassInheritanceTreeNode.findNode(rootNode, entry);
 	}
 
 	public ClassImplementationsTreeNode getClassImplementations(ClassEntry entry) {
-		Translator translator = this.project.getMapper().getDeobfuscator();
+		Translator translator = this.project.getRemapper().getDeobfuscator();
 		return this.indexTreeBuilder.buildClassImplementations(translator, entry);
 	}
 
 	public MethodInheritanceTreeNode getMethodInheritance(MethodEntry entry) {
-		Translator translator = this.project.getMapper().getDeobfuscator();
+		Translator translator = this.project.getRemapper().getDeobfuscator();
 		MethodInheritanceTreeNode rootNode = this.indexTreeBuilder.buildMethodInheritance(translator, entry);
 		return MethodInheritanceTreeNode.findNode(rootNode, entry);
 	}
 
 	public MethodImplementationsTreeNode getMethodImplementations(MethodEntry entry) {
-		Translator translator = this.project.getMapper().getDeobfuscator();
+		Translator translator = this.project.getRemapper().getDeobfuscator();
 		List<MethodImplementationsTreeNode> rootNodes = this.indexTreeBuilder.buildMethodImplementations(translator, entry);
 		if (rootNodes.isEmpty()) {
 			return null;
@@ -471,21 +473,21 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public ClassReferenceTreeNode getClassReferences(ClassEntry entry) {
-		Translator deobfuscator = this.project.getMapper().getDeobfuscator();
+		Translator deobfuscator = this.project.getRemapper().getDeobfuscator();
 		ClassReferenceTreeNode rootNode = new ClassReferenceTreeNode(deobfuscator, entry);
 		rootNode.load(this.project.getJarIndex(), true);
 		return rootNode;
 	}
 
 	public FieldReferenceTreeNode getFieldReferences(FieldEntry entry) {
-		Translator translator = this.project.getMapper().getDeobfuscator();
+		Translator translator = this.project.getRemapper().getDeobfuscator();
 		FieldReferenceTreeNode rootNode = new FieldReferenceTreeNode(translator, entry);
 		rootNode.load(this.project.getJarIndex(), true);
 		return rootNode;
 	}
 
 	public MethodReferenceTreeNode getMethodReferences(MethodEntry entry, boolean recursive) {
-		Translator translator = this.project.getMapper().getDeobfuscator();
+		Translator translator = this.project.getRemapper().getDeobfuscator();
 		MethodReferenceTreeNode rootNode = new MethodReferenceTreeNode(translator, entry);
 		rootNode.load(this.project.getJarIndex(), true, recursive);
 		return rootNode;
@@ -524,8 +526,8 @@ public class GuiController implements ClientPacketHandler {
 
 	private void applyChange0(ValidationContext vc, EntryChange<?> change, boolean updateSwingState) {
 		Entry<?> target = change.getTarget();
-		EntryMapping prev = this.project.getMapper().getDeobfMapping(target);
-		EntryMapping mapping = EntryUtil.applyChange(vc, this.project.getMapper(), change);
+		EntryMapping prev = this.project.getRemapper().getMapping(target);
+		EntryMapping mapping = EntryUtil.applyChange(vc, this.project.getRemapper(), change);
 
 		if (vc.canProceed()) {
 			boolean renamed = !change.getDeobfName().isUnchanged();
@@ -613,7 +615,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void createServer(int port, char[] password) throws IOException {
-		this.server = new IntegratedEnigmaServer(this.project.getJarChecksum(), password, EntryRemapper.mapped(this.project.getJarIndex(), new HashEntryTree<>(this.project.getMapper().getObfToDeobf())), port);
+		this.server = new IntegratedEnigmaServer(this.project.getJarChecksum(), password, EntryRemapper.mapped(this.project.getJarIndex(), this.project.getMappingsIndex(), new HashEntryTree<>(this.project.getRemapper().getProposedMappings()), new HashEntryTree<>(this.project.getRemapper().getDeobfMappings()), this.project.getEnigma().getNameProposalServices()), port);
 		this.server.start();
 		this.client = new EnigmaClient(this, "127.0.0.1", port);
 		this.client.connect();

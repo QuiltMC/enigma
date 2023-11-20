@@ -104,7 +104,7 @@ public class DockerManager {
 	public <T extends Docker> T getDocker(Class<T> clazz) {
 		Docker panel = this.dockers.get(clazz);
 		if (panel != null) {
-			return (T) this.dockers.get(clazz);
+			return (T) panel;
 		} else {
 			throw new IllegalArgumentException("no docker registered for class " + clazz);
 		}

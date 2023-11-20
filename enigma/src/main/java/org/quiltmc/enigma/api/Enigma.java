@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.api;
 
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.service.EnigmaService;
 import org.quiltmc.enigma.api.service.EnigmaServiceContext;
 import org.quiltmc.enigma.api.service.EnigmaServiceFactory;
@@ -11,6 +12,13 @@ import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.CombiningClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
+import org.quiltmc.enigma.api.service.NameProposalService;
+import org.quiltmc.enigma.api.source.TokenType;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.util.Either;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Utils;
 import com.google.common.base.Preconditions;
@@ -19,7 +27,10 @@ import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
@@ -69,7 +80,33 @@ public class Enigma {
 
 		progress.step(i, I18n.translate("progress.jar.custom_indexing.finished"));
 
-		return new EnigmaProject(this, path, classProvider, index, Utils.zipSha1(path));
+		var nameProposalServices = this.getNameProposalServices();
+		progress.init(nameProposalServices.size(), I18n.translate("progress.jar.name_proposal"));
+
+		EntryTree<EntryMapping> proposedNames = new HashEntryTree<>();
+
+		int j = 1;
+		for (var service : nameProposalServices) {
+			progress.step(j++, I18n.translateFormatted("progress.jar.name_proposal"));
+			Map<Entry<?>, EntryMapping> proposed = service.getProposedNames(index);
+
+			if (proposed != null) {
+				for (var entry : proposed.entrySet()) {
+					if (entry.getValue().tokenType() != TokenType.JAR_PROPOSED) {
+						throw new RuntimeException("Token type of mapping " + entry.getValue() + " for entry " + entry.getKey() + " was " + entry.getValue().tokenType() + ", but should be " + TokenType.JAR_PROPOSED + "!");
+					}
+
+					proposedNames.insert(entry.getKey(), entry.getValue());
+				}
+			}
+		}
+
+		progress.step(j, I18n.translate("progress.jar.name_proposal.finished"));
+
+		MappingsIndex mappingsIndex = MappingsIndex.empty();
+		mappingsIndex.indexMappings(proposedNames, progress);
+
+		return new EnigmaProject(this, path, classProvider, index, mappingsIndex, proposedNames, Utils.zipSha1(path));
 	}
 
 	public EnigmaProfile getProfile() {
@@ -78,6 +115,17 @@ public class Enigma {
 
 	public EnigmaServices getServices() {
 		return this.services;
+	}
+
+	/**
+	 * Gets all registered {@link NameProposalService name proposal services}, in the order that they should be run.
+	 * This means that the first plugin declared in the profile will be run last -- that way, names it proposes take priority over those proposed by earlier-running plugins.
+	 * @return the ordered list of services
+	 */
+	public List<NameProposalService> getNameProposalServices() {
+		var proposalServices = new ArrayList<>(this.services.getWithIds(NameProposalService.TYPE).stream().map(EnigmaServices.RegisteredService::service).toList());
+		Collections.reverse(proposalServices);
+		return proposalServices;
 	}
 
 	public static class Builder {
@@ -135,7 +183,7 @@ public class Enigma {
 		private <T extends EnigmaService> EnigmaServiceContext<T> getServiceContext(EnigmaProfile.Service serviceProfile) {
 			return new EnigmaServiceContext<>() {
 				@Override
-				public Optional<String> getArgument(String key) {
+				public Optional<Either<String, List<String>>> getArgument(String key) {
 					return serviceProfile.getArgument(key);
 				}
 
@@ -146,8 +194,27 @@ public class Enigma {
 			};
 		}
 
+		/**
+		 * Orders the services into the same order they were declared in the {@link EnigmaProfile profile}.
+		 * @return the service container, with services ordered
+		 */
 		EnigmaServices buildServices() {
-			return new EnigmaServices(this.services.build());
+			var builtServices = this.services.build();
+			ImmutableListMultimap.Builder<EnigmaServiceType<?>, EnigmaServices.RegisteredService<?>> orderedServices = ImmutableListMultimap.builder();
+			for (EnigmaServiceType<?> type : builtServices.keySet()) {
+				List<EnigmaProfile.Service> serviceProfiles = this.profile.getServiceProfiles(type);
+
+				for (EnigmaProfile.Service service : serviceProfiles) {
+					for (EnigmaServices.RegisteredService<?> registeredService : builtServices.get(type)) {
+						if (service.matches(registeredService.id())) {
+							orderedServices.put(type, registeredService);
+							break;
+						}
+					}
+				}
+			}
+
+			return new EnigmaServices(orderedServices.build());
 		}
 	}
 

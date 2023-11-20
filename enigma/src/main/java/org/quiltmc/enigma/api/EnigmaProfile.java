@@ -13,6 +13,7 @@ import com.google.gson.reflect.TypeToken;
 import org.quiltmc.enigma.api.service.EnigmaServiceType;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
+import org.quiltmc.enigma.util.Either;
 import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
@@ -32,7 +33,7 @@ import java.util.Optional;
 public final class EnigmaProfile {
 	public static final EnigmaProfile EMPTY = new EnigmaProfile(new ServiceContainer(Map.of()));
 
-	private static final MappingSaveParameters DEFAULT_MAPPING_SAVE_PARAMETERS = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+	private static final MappingSaveParameters DEFAULT_MAPPING_SAVE_PARAMETERS = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
 	private static final Gson GSON = new GsonBuilder()
 			.registerTypeAdapter(ServiceContainer.class, (JsonDeserializer<ServiceContainer>) EnigmaProfile::loadServiceContainer)
 			.create();
@@ -118,9 +119,9 @@ public final class EnigmaProfile {
 
 	public static class Service {
 		private final String id;
-		private final Map<String, String> args;
+		private final Map<String, Either<String, List<String>>> args;
 
-		Service(String id, Map<String, String> args) {
+		Service(String id, Map<String, Either<String, List<String>>> args) {
 			this.id = id;
 			this.args = args;
 		}
@@ -129,7 +130,7 @@ public final class EnigmaProfile {
 			return this.id.equals(id);
 		}
 
-		public Optional<String> getArgument(String key) {
+		public Optional<Either<String, List<String>>> getArgument(String key) {
 			return this.args != null ? Optional.ofNullable(this.args.get(key)) : Optional.empty();
 		}
 	}

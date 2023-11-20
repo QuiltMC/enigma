@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.api.analysis.index;
+package org.quiltmc.enigma.api.analysis.index.jar;
 
 import com.google.common.collect.Maps;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;

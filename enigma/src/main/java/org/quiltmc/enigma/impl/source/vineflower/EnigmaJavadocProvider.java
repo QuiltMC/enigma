@@ -42,7 +42,7 @@ public class EnigmaJavadocProvider implements IFabricJavadocProvider {
 	@Override
 	public String getClassDoc(StructClass structClass) {
 		if (this.remapper != null) {
-			EntryMapping mapping = this.remapper.getDeobfMapping(getClassEntry(structClass));
+			EntryMapping mapping = this.remapper.getMapping(getClassEntry(structClass));
 			StringBuilder builder = new StringBuilder();
 
 			if (mapping.javadoc() != null) {
@@ -53,7 +53,7 @@ public class EnigmaJavadocProvider implements IFabricJavadocProvider {
 
 			if (isRecord(structClass)) {
 				for (StructRecordComponent component : structClass.getRecordComponents()) {
-					EntryMapping componentMapping = this.remapper.getDeobfMapping(getFieldEntry(structClass, component));
+					EntryMapping componentMapping = this.remapper.getMapping(getFieldEntry(structClass, component));
 
 					if (componentMapping.javadoc() != null) {
 						builder.append("\n@param ").append(mapping.targetName()).append(' ').append(componentMapping.javadoc());
@@ -74,7 +74,7 @@ public class EnigmaJavadocProvider implements IFabricJavadocProvider {
 	public String getFieldDoc(StructClass structClass, StructField structField) {
 		boolean component = isRecord(structClass) && !structField.hasModifier(Opcodes.ACC_STATIC);
 		if (this.remapper != null && !component) {
-			EntryMapping mapping = this.remapper.getDeobfMapping(getFieldEntry(structClass, structField));
+			EntryMapping mapping = this.remapper.getMapping(getFieldEntry(structClass, structField));
 			return mapping.javadoc();
 		}
 
@@ -85,7 +85,7 @@ public class EnigmaJavadocProvider implements IFabricJavadocProvider {
 	public String getMethodDoc(StructClass structClass, StructMethod structMethod) {
 		if (this.remapper != null) {
 			MethodEntry entry = getMethodEntry(structClass, structMethod);
-			EntryMapping mapping = this.remapper.getDeobfMapping(entry);
+			EntryMapping mapping = this.remapper.getMapping(entry);
 			StringBuilder builder = new StringBuilder();
 
 			if (mapping.javadoc() != null) {
@@ -99,7 +99,7 @@ public class EnigmaJavadocProvider implements IFabricJavadocProvider {
 			if (children != null && !children.isEmpty()) {
 				for (Entry<?> child : children) {
 					if (child instanceof LocalVariableEntry) {
-						EntryMapping paramMapping = this.remapper.getDeobfMapping(child);
+						EntryMapping paramMapping = this.remapper.getMapping(child);
 
 						if (paramMapping.javadoc() != null) {
 							builder.append("\n@param ").append(paramMapping.targetName()).append(' ').append(paramMapping.javadoc());

@@ -1,7 +1,7 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
-import org.quiltmc.enigma.api.analysis.index.PackageVisibilityIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.PackageVisibilityIndex;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
@@ -31,7 +31,7 @@ public class PackageVisibilityIndexTest {
 
 	@Test
 	public void test() {
-		PackageVisibilityIndex visibilityIndex = this.jarIndex.getPackageVisibilityIndex();
+		PackageVisibilityIndex visibilityIndex = this.jarIndex.getIndex(PackageVisibilityIndex.class);
 		assertThat(visibilityIndex.getPartition(BASE), containsInAnyOrder(BASE, SAME_PACKAGE_CHILD, SAME_PACKAGE_CHILD_INNER));
 		System.out.println(visibilityIndex.getPartitions());
 		assertThat(visibilityIndex.getPartitions(), containsInAnyOrder(

@@ -39,7 +39,7 @@ public class ProjectStatsResult implements StatsProvider {
 	}
 
 	private void updatePackage(ClassEntry obfEntry, StatsResult newStats) {
-		ClassEntry deobfuscated = this.project.getMapper().deobfuscate(obfEntry);
+		ClassEntry deobfuscated = this.project.getRemapper().deobfuscate(obfEntry);
 		ClassEntry classEntry = deobfuscated == null ? obfEntry : deobfuscated;
 
 		String packageName = classEntry.getPackageName() == null ? "" : classEntry.getPackageName();
@@ -120,7 +120,7 @@ public class ProjectStatsResult implements StatsProvider {
 		Map<ClassEntry, StatsResult> newStats = new HashMap<>();
 
 		for (var entry : this.stats.entrySet()) {
-			ClassEntry deobfuscated = this.project.getMapper().deobfuscate(entry.getKey());
+			ClassEntry deobfuscated = this.project.getRemapper().deobfuscate(entry.getKey());
 			ClassEntry classEntry = deobfuscated == null ? entry.getKey() : deobfuscated;
 
 			String packageName = classEntry.getPackageName() == null ? "" : classEntry.getPackageName();

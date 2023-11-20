@@ -15,7 +15,7 @@ public final class TestV2Main {
 	public static void main(String... args) throws Exception {
 		Path path = TestTinyV2InnerClasses.MAPPINGS;
 
-		MappingSaveParameters parameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+		MappingSaveParameters parameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
 
 		EntryTree<EntryMapping> tree = EnigmaMappingsReader.DIRECTORY.read(path);
 

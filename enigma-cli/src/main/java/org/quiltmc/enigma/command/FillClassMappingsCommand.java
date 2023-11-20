@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.command;
 
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.api.analysis.index.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
@@ -53,7 +53,7 @@ public class FillClassMappingsCommand extends Command {
 		JarIndex jarIndex = loadJar(jar);
 
 		Logger.info("Reading mappings...");
-		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
+		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
 		EntryTree<EntryMapping> sourceMappings = readMappings(source, ProgressListener.none());
 
 		EntryTree<EntryMapping> resultMappings = exec(jarIndex, sourceMappings, fillAll, debug);

@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
 import javax.annotation.Nullable;
@@ -7,6 +8,10 @@ import java.util.stream.Stream;
 
 public interface EntryMap<T> {
 	void insert(Entry<?> entry, T value);
+
+	default void insert(EntryTreeNode<T> node) {
+		this.insert(node.getEntry(), node.getValue());
+	}
 
 	@Nullable
 	T remove(Entry<?> entry);
