@@ -6,7 +6,7 @@ import org.quiltmc.enigma.api.analysis.tree.FieldReferenceTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.MethodReferenceTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ReferenceTreeNode;
 import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.config.UiConfig;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
@@ -26,7 +26,7 @@ public class CallsTreeCellRenderer extends DefaultTreeCellRenderer {
 		Component c = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 		EntryReference<?, ?> reference = ((ReferenceTreeNode<?, ?>) value).getReference();
 
-		this.setForeground(UiConfig.getTextColor());
+		this.setForeground(Config.getTextColor());
 
 		// if the node represents the method calling the entry
 		if (reference != null) {

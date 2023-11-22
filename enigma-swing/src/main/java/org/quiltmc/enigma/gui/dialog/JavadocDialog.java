@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.dialog;
 import com.google.common.base.Strings;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.gui.GuiController;
-import org.quiltmc.enigma.gui.config.UiConfig;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
@@ -65,7 +65,7 @@ public class JavadocDialog {
 				this.close();
 			}
 		}));
-		this.text.setFont(UiConfig.activeUseCustomFonts() ? UiConfig.getEditorFont() : UiConfig.getFallbackEditorFont());
+		this.text.setFont(Config.activeUseCustomFonts() ? Config.getEditorFont() : Config.getFallbackEditorFont());
 
 		// buttons panel
 		JPanel buttonsPanel = new JPanel();

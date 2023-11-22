@@ -1,18 +1,14 @@
 package org.quiltmc.enigma.gui.config;
 
-import org.quiltmc.enigma.api.config.ConfigContainer;
-import org.quiltmc.enigma.api.config.ConfigSection;
+import org.quiltmc.config.api.ReflectiveConfig;
+import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.config.keybind.KeyBind;
 
-public final class KeyBindsConfig {
+public final class KeyBindsConfig extends ReflectiveConfig.Section {
+
 	private KeyBindsConfig() {
 	}
 
-	private static final ConfigContainer cfg = ConfigContainer.getOrCreate("enigma/enigmakeybinds");
-
-	public static void save() {
-		cfg.save();
-	}
 
 	private static ConfigSection getSection(KeyBind keyBind) {
 		return keyBind.category().isEmpty() ? cfg.data() : cfg.data().section(keyBind.category());
@@ -24,5 +20,9 @@ public final class KeyBindsConfig {
 
 	public static void setKeyBind(KeyBind keyBind) {
 		getSection(keyBind).setArray(keyBind.name(), keyBind.serializeCombinations());
+	}
+
+	private static class KeyBindConfig extends ReflectiveConfig.Section {
+		public final TrackedValue
 	}
 }

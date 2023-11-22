@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.gui.dialog;
 
-import org.quiltmc.enigma.gui.config.UiConfig;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
@@ -19,16 +19,14 @@ import javax.swing.JDialog;
 import javax.swing.JList;
 
 public class FontDialog extends JDialog {
-	private static final List<String> CATEGORIES = List.of(
-			"Default",
-			"Default 2",
-			"Small",
-			"Editor"
+	private static final List<Font> FONTS = List.of(
+			Config.INSTANCE.getCurrentTheme().fonts.value().defaultFont.value(),
+			Config.INSTANCE.getCurrentTheme().fonts.value().small.value(),
+			Config.INSTANCE.getCurrentTheme().fonts.value().editor.value()
 	);
 
 	private static final List<String> CATEGORY_TEXTS = List.of(
 			"fonts.cat.default",
-			"fonts.cat.default2",
 			"fonts.cat.small",
 			"fonts.cat.editor"
 	);
@@ -39,12 +37,10 @@ public class FontDialog extends JDialog {
 	private final JButton okButton = new JButton(I18n.translate("prompt.ok"));
 	private final JButton cancelButton = new JButton(I18n.translate("prompt.cancel"));
 
-	private final Font[] fonts = CATEGORIES.stream().map(name -> UiConfig.getFont(name).orElseGet(() -> ScaleUtil.scaleFont(Font.decode(Font.DIALOG)))).toArray(Font[]::new);
-
 	public FontDialog(Frame owner) {
 		super(owner, "Fonts", true);
 
-		this.customCheckBox.setSelected(UiConfig.useCustomFonts());
+		this.customCheckBox.setSelected(Config.INSTANCE.useCustomFonts.value());
 
 		this.entries.setPreferredSize(ScaleUtil.getDimension(100, 0));
 
@@ -97,12 +93,12 @@ public class FontDialog extends JDialog {
 	}
 
 	private void apply() {
-		for (int i = 0; i < CATEGORIES.size(); i++) {
-			UiConfig.setFont(CATEGORIES.get(i), this.fonts[i]);
+		for (int i = 0; i < FONTS.size(); i++) {
+			Config.setFont(FONTS.get(i), this.fonts[i]);
 		}
 
-		UiConfig.setUseCustomFonts(this.customCheckBox.isSelected());
-		UiConfig.save();
+		Config.setUseCustomFonts(this.customCheckBox.isSelected());
+		Config.save();
 		ChangeDialog.show(this);
 		this.dispose();
 	}

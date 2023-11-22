@@ -7,8 +7,8 @@ import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.gui.config.DockerConfig;
 import org.quiltmc.enigma.gui.config.NetConfig;
-import org.quiltmc.enigma.gui.config.Themes;
-import org.quiltmc.enigma.gui.config.UiConfig;
+import org.quiltmc.enigma.gui.config.theme.Themes;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.JavadocDialog;
 import org.quiltmc.enigma.gui.dialog.SearchDialog;
 import org.quiltmc.enigma.gui.docker.AllClassesDocker;
@@ -70,7 +70,7 @@ import java.util.function.IntFunction;
 public class Gui {
 	private final MainWindow mainWindow;
 	private final GuiController controller;
-	private final UiConfig config;
+	private final Config config;
 
 	private ConnectionState connectionState;
 	private boolean isJarOpen;
@@ -103,7 +103,7 @@ public class Gui {
 	public final JFileChooser exportJarFileChooser;
 	public final SearchDialog searchDialog;
 
-	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean visible, UiConfig config) {
+	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean visible, Config config) {
 		this.config = config;
 		this.dockerManager = new DockerManager(this);
 		this.mainWindow = new MainWindow(this, Enigma.NAME);
@@ -197,7 +197,7 @@ public class Gui {
 		this.splitRight.setResizeWeight(1);
 		this.splitLeft.setResizeWeight(0);
 
-		if (UiConfig.getHostedDockers(this.dockerManager, Docker.Side.LEFT).isPresent() || UiConfig.getHostedDockers(this.dockerManager, Docker.Side.RIGHT).isPresent()) {
+		if (Config.getHostedDockers(this.dockerManager, Docker.Side.LEFT).isPresent() || Config.getHostedDockers(this.dockerManager, Docker.Side.RIGHT).isPresent()) {
 			this.dockerManager.restoreStateFromConfig();
 		} else {
 			this.dockerManager.setupDefaultConfiguration();
@@ -210,11 +210,11 @@ public class Gui {
 		JFrame frame = this.mainWindow.getFrame();
 		frame.addWindowListener(GuiUtil.onWindowClose(e -> this.close()));
 
-		frame.setSize(UiConfig.getWindowSize(UiConfig.MAIN_WINDOW, ScaleUtil.getDimension(1024, 576)));
+		frame.setSize(Config.getWindowSize(Config.MAIN_WINDOW, ScaleUtil.getDimension(1024, 576)));
 		frame.setMinimumSize(ScaleUtil.getDimension(640, 480));
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-		Point windowPos = UiConfig.getWindowPos(UiConfig.MAIN_WINDOW, null);
+		Point windowPos = Config.getWindowPos(Config.MAIN_WINDOW, null);
 		if (windowPos != null) {
 			frame.setLocation(windowPos);
 		} else {
@@ -521,11 +521,11 @@ public class Gui {
 	}
 
 	private void exit() {
-		UiConfig.setWindowPos(UiConfig.MAIN_WINDOW, this.mainWindow.getFrame().getLocationOnScreen());
-		UiConfig.setWindowSize(UiConfig.MAIN_WINDOW, this.mainWindow.getFrame().getSize());
+		Config.setWindowPos(Config.MAIN_WINDOW, this.mainWindow.getFrame().getLocationOnScreen());
+		Config.setWindowSize(Config.MAIN_WINDOW, this.mainWindow.getFrame().getSize());
 
 		this.dockerManager.saveStateToConfig();
-		UiConfig.save();
+		Config.save();
 
 		this.searchDialog.dispose();
 		this.mainWindow.getFrame().dispose();
@@ -621,17 +621,17 @@ public class Gui {
 		// popup notifications
 		switch (message.getType()) {
 			case CHAT -> {
-				if (UiConfig.getServerNotificationLevel().equals(NotificationManager.ServerNotificationLevel.FULL) && !message.user.equals(NetConfig.getUsername())) {
+				if (Config.getServerNotificationLevel().equals(NotificationManager.ServerNotificationLevel.FULL) && !message.user.equals(NetConfig.getUsername())) {
 					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_CHAT, message.translate()));
 				}
 			}
 			case CONNECT -> {
-				if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+				if (Config.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
 					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_USER_CONNECTED, message.translate()));
 				}
 			}
 			case DISCONNECT -> {
-				if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+				if (Config.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
 					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_USER_LEFT, message.translate()));
 				}
 			}
@@ -705,7 +705,7 @@ public class Gui {
 	}
 
 	public void openMostRecentFiles() {
-		var pair = UiConfig.getMostRecentFilePair();
+		var pair = Config.getMostRecentFilePair();
 
 		if (pair.isPresent()) {
 			this.getNotificationManager().notify(ParameterizedMessage.openedProject(pair.get().a().toString(), pair.get().b().toString()));

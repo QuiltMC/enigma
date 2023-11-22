@@ -9,9 +9,9 @@ import org.quiltmc.enigma.gui.BrowserCaret;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.GuiController;
-import org.quiltmc.enigma.gui.config.LookAndFeel;
-import org.quiltmc.enigma.gui.config.Themes;
-import org.quiltmc.enigma.gui.config.UiConfig;
+import org.quiltmc.enigma.gui.config.theme.LookAndFeel;
+import org.quiltmc.enigma.gui.config.theme.Themes;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.element.EditorPopupMenu;
 import org.quiltmc.enigma.gui.element.NavigatorPanel;
@@ -120,9 +120,9 @@ public class EditorPanel {
 		this.editor.setCaret(new BrowserCaret());
 		this.editor.setFont(ScaleUtil.getFont(this.editor.getFont().getFontName(), Font.PLAIN, this.fontSize));
 		this.editor.addCaretListener(event -> this.onCaretMove(event.getDot(), this.mouseIsPressed));
-		this.editor.setCaretColor(UiConfig.getCaretColor());
+		this.editor.setCaretColor(Config.getCaretColor());
 		this.editor.setContentType("text/enigma-sources");
-		this.editor.setBackground(UiConfig.getEditorBackgroundColor());
+		this.editor.setBackground(Config.getEditorBackgroundColor());
 
 		// set unit increment to height of one line, the amount scrolled per
 		// mouse wheel rotation is then controlled by OS settings
@@ -213,7 +213,7 @@ public class EditorPanel {
 		this.themeChangeListener = (laf, boxHighlightPainters) -> {
 			if ((this.editorLaf == null || this.editorLaf != laf)) {
 				this.editor.updateUI();
-				this.editor.setBackground(UiConfig.getEditorBackgroundColor());
+				this.editor.setBackground(Config.getEditorBackgroundColor());
 				if (this.editorLaf != null) {
 					this.classHandle.invalidateMapped();
 				}

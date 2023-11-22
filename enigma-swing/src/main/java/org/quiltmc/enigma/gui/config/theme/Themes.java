@@ -1,5 +1,6 @@
-package org.quiltmc.enigma.gui.config;
+package org.quiltmc.enigma.gui.config.theme;
 
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.event.ThemeChangeListener;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
@@ -19,24 +20,24 @@ public class Themes {
 	// Calling this after the UI is initialized (e.g. when the user changes
 	// theme settings) is currently not functional.
 	public static void setupTheme() {
-		LookAndFeel laf = UiConfig.getActiveLookAndFeel();
+		LookAndFeel laf = Config.getActiveLookAndFeel();
 		laf.setGlobalLAF();
-		UiConfig.setLookAndFeelDefaults(UiConfig.getLookAndFeel(), LookAndFeel.isDarkLaf());
-		UiConfig.snapshotConfig();
+		Config.setLookAndFeelDefaults(Config.getLookAndFeel(), LookAndFeel.isDarkLaf());
+		Config.snapshotConfig();
 		Themes.setFonts();
 		UIManager.put("ScrollBar.showButtons", true);
 		JEditorPane.registerEditorKitForContentType("text/enigma-sources", JavaSyntaxKit.class.getName());
 		Map<TokenType, BoxHighlightPainter> boxHighlightPainters = getBoxHighlightPainters();
 		listeners.forEach(l -> l.onThemeChanged(laf, boxHighlightPainters));
 		ScaleUtil.applyScaling();
-		UiConfig.save();
+		Config.save();
 	}
 
 	private static void setFonts() {
-		if (UiConfig.activeUseCustomFonts()) {
-			Font small = UiConfig.getSmallFont();
-			Font bold = UiConfig.getDefaultFont();
-			Font normal = UiConfig.getDefault2Font();
+		if (Config.activeUseCustomFonts()) {
+			Font small = Config.getSmallFont();
+			Font bold = Config.getDefaultFont();
+			Font normal = Config.getDefault2Font();
 
 			UIManager.put("CheckBox.font", bold);
 			UIManager.put("CheckBoxMenuItem.font", bold);
@@ -83,11 +84,11 @@ public class Themes {
 
 	public static Map<TokenType, BoxHighlightPainter> getBoxHighlightPainters() {
 		return Map.of(
-				TokenType.OBFUSCATED, BoxHighlightPainter.create(UiConfig.getObfuscatedColor(), UiConfig.getObfuscatedOutlineColor()),
-				TokenType.JAR_PROPOSED, BoxHighlightPainter.create(UiConfig.getProposedColor(), UiConfig.getProposedOutlineColor()),
-				TokenType.DYNAMIC_PROPOSED, BoxHighlightPainter.create(UiConfig.getProposedColor(), UiConfig.getProposedOutlineColor()),
-				TokenType.DEOBFUSCATED, BoxHighlightPainter.create(UiConfig.getDeobfuscatedColor(), UiConfig.getDeobfuscatedOutlineColor()),
-				TokenType.DEBUG, BoxHighlightPainter.create(UiConfig.getDebugTokenColor(), UiConfig.getDebugTokenOutlineColor())
+				TokenType.OBFUSCATED, BoxHighlightPainter.create(Config.getObfuscatedColor(), Config.getObfuscatedOutlineColor()),
+				TokenType.JAR_PROPOSED, BoxHighlightPainter.create(Config.getProposedColor(), Config.getProposedOutlineColor()),
+				TokenType.DYNAMIC_PROPOSED, BoxHighlightPainter.create(Config.getProposedColor(), Config.getProposedOutlineColor()),
+				TokenType.DEOBFUSCATED, BoxHighlightPainter.create(Config.getDeobfuscatedColor(), Config.getDeobfuscatedOutlineColor()),
+				TokenType.DEBUG, BoxHighlightPainter.create(Config.getDebugTokenColor(), Config.getDebugTokenOutlineColor())
 		);
 	}
 

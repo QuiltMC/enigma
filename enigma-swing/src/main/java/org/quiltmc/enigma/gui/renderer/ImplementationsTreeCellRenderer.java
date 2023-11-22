@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.renderer;
 import org.quiltmc.enigma.api.analysis.tree.ClassImplementationsTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.MethodImplementationsTreeNode;
 import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.config.UiConfig;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 
 import javax.swing.JTree;
@@ -21,7 +21,7 @@ public class ImplementationsTreeCellRenderer extends DefaultTreeCellRenderer {
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 		Component c = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
-		this.setForeground(UiConfig.getTextColor());
+		this.setForeground(Config.getTextColor());
 
 		if (value instanceof ClassImplementationsTreeNode node) {
 			this.setIcon(GuiUtil.getClassIcon(this.gui, node.getClassEntry()));

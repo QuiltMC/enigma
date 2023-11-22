@@ -1,8 +1,9 @@
-package org.quiltmc.enigma.gui.config;
+package org.quiltmc.enigma.gui.config.theme;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatSystemProperties;
+import org.quiltmc.enigma.gui.config.Config;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -35,7 +36,7 @@ public enum LookAndFeel {
 	public void setGlobalLAF() {
 		// Configure FlatLaf's UI scale to be our scale factor.
 		// This is also used for the SVG icons, so it applies even when some other LaF is active.
-		System.setProperty(FlatSystemProperties.UI_SCALE, Float.toString(UiConfig.getActiveScaleFactor()));
+		System.setProperty(FlatSystemProperties.UI_SCALE, Float.toString(Config.getActiveScaleFactor()));
 
 		try {
 			switch (this) {

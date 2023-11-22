@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.gui.docker.component;
 
-import org.quiltmc.enigma.gui.config.UiConfig;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.docker.DockerManager;
 
@@ -97,7 +97,7 @@ public class DockerSelector extends JPanel {
 		if (hoveredPanel != null) {
 			hoveredPanel.add(button);
 			button.setSide(this.side);
-			UiConfig.setDockerButtonLocation(button.getDocker(), new Docker.Location(this.side, hoveredPanel.equals(this.bottomSelector) ? Docker.VerticalLocation.BOTTOM : Docker.VerticalLocation.TOP));
+			Config.setDockerButtonLocation(button.getDocker(), new Docker.Location(this.side, hoveredPanel.equals(this.bottomSelector) ? Docker.VerticalLocation.BOTTOM : Docker.VerticalLocation.TOP));
 			return true;
 		}
 
@@ -111,7 +111,7 @@ public class DockerSelector extends JPanel {
 		if (this.hovered != null) {
 			Rectangle paintedBounds = this.getScreenBoundsFor(this.hovered);
 
-			Color color = UiConfig.getDockHighlightColor();
+			Color color = Config.getDockHighlightColor();
 			graphics.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 100));
 			graphics.fillRect(0, this.hovered.equals(this.bottomSelector) ? paintedBounds.height : 0, paintedBounds.width, paintedBounds.height);
 			this.repaint();

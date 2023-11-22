@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui.docker;
 
 import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.config.UiConfig;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.docker.component.DockerButton;
 import org.quiltmc.enigma.gui.docker.component.DockerSelector;
 import org.quiltmc.enigma.gui.docker.component.Draggable;
@@ -64,7 +64,7 @@ public class Dock extends JPanel {
 	 */
 	public void restoreState() {
 		// restore docker state
-		Optional<Map<Docker, Docker.VerticalLocation>> hostedDockers = UiConfig.getHostedDockers(this.gui.getDockerManager(), this.side);
+		Optional<Map<Docker, Docker.VerticalLocation>> hostedDockers = Config.getHostedDockers(this.gui.getDockerManager(), this.side);
 		hostedDockers.ifPresent(m -> m.forEach(this::host));
 
 		this.restoreDividerState(true);
@@ -78,25 +78,25 @@ public class Dock extends JPanel {
 	 * Saves the state of this dock to the config file.
 	 */
 	public void saveState() {
-		UiConfig.setHostedDockers(this.side, this.getDockers());
+		Config.setHostedDockers(this.side, this.getDockers());
 		this.saveDividerState();
 	}
 
 	public void restoreDividerState(boolean init) {
 		// restore vertical divider state
 		if (this.isSplit) {
-			this.splitPane.setDividerLocation(UiConfig.getVerticalDockDividerLocation(this.side));
+			this.splitPane.setDividerLocation(Config.getVerticalDockDividerLocation(this.side));
 		}
 
 		// restore horizontal divider state
 		JSplitPane parentSplitPane = this.getParentSplitPane();
-		int location = UiConfig.getHorizontalDividerLocation(this.side);
+		int location = Config.getHorizontalDividerLocation(this.side);
 
 		// hack fix: if the right dock is closed while the left dock is open, the divider location is saved as if the left dock is open,
 		// thereby offsetting the divider location by the width of the left dock. which means, if the right dock is reopened while the left dock is closed,
 		// the divider location is too far to the left by the width of the left dock. so here we offset the location to avoid that.
-		if (init && this.side == Docker.Side.RIGHT && !this.gui.getSplitLeft().getLeftComponent().isVisible() && UiConfig.getSavedWithLeftOpen()) {
-			location += UiConfig.getHorizontalDividerLocation(Docker.Side.LEFT);
+		if (init && this.side == Docker.Side.RIGHT && !this.gui.getSplitLeft().getLeftComponent().isVisible() && Config.getSavedWithLeftOpen()) {
+			location += Config.getHorizontalDividerLocation(Docker.Side.LEFT);
 		}
 
 		parentSplitPane.setDividerLocation(location);
@@ -106,16 +106,16 @@ public class Dock extends JPanel {
 		if (this.isVisible()) {
 			// save vertical divider state
 			if (this.isSplit) {
-				UiConfig.setVerticalDockDividerLocation(this.side, this.splitPane.getDividerLocation());
+				Config.setVerticalDockDividerLocation(this.side, this.splitPane.getDividerLocation());
 			}
 
 			// save horizontal divider state
 			JSplitPane parentSplitPane = this.getParentSplitPane();
-			UiConfig.setHorizontalDividerLocation(this.side, parentSplitPane.getDividerLocation());
+			Config.setHorizontalDividerLocation(this.side, parentSplitPane.getDividerLocation());
 
 			// hack
 			if (this.side == Docker.Side.RIGHT) {
-				UiConfig.setSavedWithLeftOpen(this.gui.getSplitLeft().getLeftComponent().isVisible());
+				Config.setSavedWithLeftOpen(this.gui.getSplitLeft().getLeftComponent().isVisible());
 			}
 		}
 	}
@@ -184,7 +184,7 @@ public class Dock extends JPanel {
 				parent.remove(button);
 				(verticalLocation == Docker.VerticalLocation.TOP ? selector.getTopSelector() : selector.getBottomSelector()).add(button);
 				button.setSide(this.side);
-				UiConfig.setDockerButtonLocation(docker, new Docker.Location(this.side, verticalLocation));
+				Config.setDockerButtonLocation(docker, new Docker.Location(this.side, verticalLocation));
 
 				button.getParent().revalidate();
 				button.getParent().repaint();
@@ -357,7 +357,7 @@ public class Dock extends JPanel {
 		if (this.hovered != null) {
 			Rectangle paintedBounds = this.getHighlightBoundsFor(new Point(0, 0), this.hovered);
 
-			Color color = UiConfig.getDockHighlightColor();
+			Color color = Config.getDockHighlightColor();
 			graphics.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 100));
 			graphics.fillRect(paintedBounds.x, paintedBounds.y, paintedBounds.width, paintedBounds.height);
 			this.repaint();

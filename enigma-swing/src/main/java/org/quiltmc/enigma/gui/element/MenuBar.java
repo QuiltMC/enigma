@@ -4,10 +4,10 @@ import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.NotificationManager;
 import org.quiltmc.enigma.gui.config.Decompiler;
-import org.quiltmc.enigma.gui.config.LookAndFeel;
+import org.quiltmc.enigma.gui.config.theme.LookAndFeel;
 import org.quiltmc.enigma.gui.config.NetConfig;
-import org.quiltmc.enigma.gui.config.Themes;
-import org.quiltmc.enigma.gui.config.UiConfig;
+import org.quiltmc.enigma.gui.config.theme.Themes;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.dialog.AboutDialog;
 import org.quiltmc.enigma.gui.dialog.ChangeDialog;
@@ -275,7 +275,7 @@ public class MenuBar {
 
 	private void onOpenJarClicked() {
 		JFileChooser d = this.gui.jarFileChooser;
-		d.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
+		d.setCurrentDirectory(new File(Config.getLastSelectedDir()));
 		d.setVisible(true);
 		int result = d.showOpenDialog(this.gui.getFrame());
 
@@ -292,12 +292,12 @@ public class MenuBar {
 				this.gui.getController().openJar(path);
 			}
 
-			UiConfig.setLastSelectedDir(d.getCurrentDirectory().getAbsolutePath());
+			Config.setLastSelectedDir(d.getCurrentDirectory().getAbsolutePath());
 		}
 	}
 
 	private void onMaxRecentFilesClicked() {
-		String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("menu.file.dialog.max_recent_projects.set"), UiConfig.getMaxRecentFiles());
+		String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("menu.file.dialog.max_recent_projects.set"), Config.getMaxRecentFiles());
 
 		if (input != null) {
 			try {
@@ -306,7 +306,7 @@ public class MenuBar {
 					throw new NumberFormatException();
 				}
 
-				UiConfig.setMaxRecentFiles(max);
+				Config.setMaxRecentFiles(max);
 			} catch (NumberFormatException e) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), I18n.translate("prompt.invalid_input"), I18n.translate("prompt.error"), JOptionPane.ERROR_MESSAGE);
 			}
@@ -346,15 +346,15 @@ public class MenuBar {
 	}
 
 	private void onExportSourceClicked() {
-		this.gui.exportSourceFileChooser.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
+		this.gui.exportSourceFileChooser.setCurrentDirectory(new File(Config.getLastSelectedDir()));
 		if (this.gui.exportSourceFileChooser.showSaveDialog(this.gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
-			UiConfig.setLastSelectedDir(this.gui.exportSourceFileChooser.getCurrentDirectory().toString());
+			Config.setLastSelectedDir(this.gui.exportSourceFileChooser.getCurrentDirectory().toString());
 			this.gui.getController().exportSource(this.gui.exportSourceFileChooser.getSelectedFile().toPath());
 		}
 	}
 
 	private void onExportJarClicked() {
-		this.gui.exportJarFileChooser.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
+		this.gui.exportJarFileChooser.setCurrentDirectory(new File(Config.getLastSelectedDir()));
 		this.gui.exportJarFileChooser.setVisible(true);
 		int result = this.gui.exportJarFileChooser.showSaveDialog(this.gui.getFrame());
 
@@ -365,13 +365,13 @@ public class MenuBar {
 		if (this.gui.exportJarFileChooser.getSelectedFile() != null) {
 			Path path = this.gui.exportJarFileChooser.getSelectedFile().toPath();
 			this.gui.getController().exportJar(path);
-			UiConfig.setLastSelectedDir(this.gui.exportJarFileChooser.getCurrentDirectory().getAbsolutePath());
+			Config.setLastSelectedDir(this.gui.exportJarFileChooser.getCurrentDirectory().getAbsolutePath());
 		}
 	}
 
 	private void onCustomScaleClicked() {
 		String answer = (String) JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("menu.view.scale.custom.title"), I18n.translate("menu.view.scale.custom.title"),
-				JOptionPane.QUESTION_MESSAGE, null, null, Float.toString(UiConfig.getScaleFactor() * 100));
+				JOptionPane.QUESTION_MESSAGE, null, null, Float.toString(Config.getScaleFactor() * 100));
 
 		if (answer == null) {
 			return;
@@ -412,7 +412,7 @@ public class MenuBar {
 		this.gui.getController().disconnectIfConnected(null);
 		try {
 			this.gui.getController().createClient(result.username(), result.address().address, result.address().port, result.password());
-			if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+			if (Config.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
 				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.CONNECTED_TO_SERVER, result.addressStr()));
 			}
 
@@ -442,7 +442,7 @@ public class MenuBar {
 		this.gui.getController().disconnectIfConnected(null);
 		try {
 			this.gui.getController().createServer(result.port(), result.password());
-			if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+			if (Config.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
 				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.SERVER_STARTED, result.port()));
 			}
 
@@ -460,10 +460,10 @@ public class MenuBar {
 	}
 
 	private void onOpenMappingsClicked() {
-		this.gui.enigmaMappingsFileChooser.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
+		this.gui.enigmaMappingsFileChooser.setCurrentDirectory(new File(Config.getLastSelectedDir()));
 		if (this.gui.enigmaMappingsFileChooser.showOpenDialog(this.gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
 			File selectedFile = this.gui.enigmaMappingsFileChooser.getSelectedFile();
-			UiConfig.setLastSelectedDir(this.gui.enigmaMappingsFileChooser.getCurrentDirectory().toString());
+			Config.setLastSelectedDir(this.gui.enigmaMappingsFileChooser.getCurrentDirectory().toString());
 
 			MappingFormat format = MappingFormat.parseFromFile(selectedFile.toPath());
 			if (format.getReader() != null) {
@@ -477,7 +477,7 @@ public class MenuBar {
 
 	public void reloadOpenRecentMenu(Gui gui) {
 		this.openRecentMenu.removeAll();
-		List<Pair<Path, Path>> recentFilePairs = UiConfig.getRecentFilePairs();
+		List<Pair<Path, Path>> recentFilePairs = Config.getRecentFilePairs();
 
 		// find the longest common prefix among all mappings files
 		// this is to clear the "/home/user/wherever-you-store-your-mappings-projects/" part of the path and only show relevant information
@@ -542,13 +542,13 @@ public class MenuBar {
 				item.addActionListener(event -> {
 					// TODO: Use a specific file chooser for it
 					if (gui.enigmaMappingsFileChooser.getCurrentDirectory() == null) {
-						gui.enigmaMappingsFileChooser.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
+						gui.enigmaMappingsFileChooser.setCurrentDirectory(new File(Config.getLastSelectedDir()));
 					}
 
 					if (gui.enigmaMappingsFileChooser.showSaveDialog(gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
 						gui.getController().saveMappings(gui.enigmaMappingsFileChooser.getSelectedFile().toPath(), format);
 						saveMappingsItem.setEnabled(true);
-						UiConfig.setLastSelectedDir(gui.enigmaMappingsFileChooser.getCurrentDirectory().toString());
+						Config.setLastSelectedDir(gui.enigmaMappingsFileChooser.getCurrentDirectory().toString());
 					}
 				});
 				saveMappingsAsMenu.add(item);
@@ -562,15 +562,15 @@ public class MenuBar {
 		for (Decompiler decompiler : Decompiler.values()) {
 			JRadioButtonMenuItem decompilerButton = new JRadioButtonMenuItem(decompiler.name);
 			decompilerGroup.add(decompilerButton);
-			if (decompiler.equals(UiConfig.getDecompiler())) {
+			if (decompiler.equals(Config.getDecompiler())) {
 				decompilerButton.setSelected(true);
 			}
 
 			decompilerButton.addActionListener(event -> {
 				gui.getController().setDecompiler(decompiler.service);
 
-				UiConfig.setDecompiler(decompiler);
-				UiConfig.save();
+				Config.setDecompiler(decompiler);
+				Config.save();
 			});
 			decompilerMenu.add(decompilerButton);
 		}
@@ -584,13 +584,13 @@ public class MenuBar {
 		for (LookAndFeel lookAndFeel : LookAndFeel.values()) {
 			JRadioButtonMenuItem themeButton = new JRadioButtonMenuItem(I18n.translate("menu.view.themes." + lookAndFeel.name().toLowerCase(Locale.ROOT)));
 			themeGroup.add(themeButton);
-			if (lookAndFeel.equals(UiConfig.getLookAndFeel())) {
+			if (lookAndFeel.equals(Config.getLookAndFeel())) {
 				themeButton.setSelected(true);
 			}
 
 			themeButton.addActionListener(e -> {
-				UiConfig.setLookAndFeel(lookAndFeel);
-				UiConfig.save();
+				Config.setLookAndFeel(lookAndFeel);
+				Config.save();
 				Themes.setupTheme();
 				ChangeDialog.show(gui.getFrame());
 			});
@@ -603,15 +603,15 @@ public class MenuBar {
 		for (String lang : I18n.getAvailableLanguages()) {
 			JRadioButtonMenuItem languageButton = new JRadioButtonMenuItem(I18n.getLanguageName(lang));
 			languageGroup.add(languageButton);
-			if (lang.equals(UiConfig.getLanguage())) {
+			if (lang.equals(Config.getLanguage())) {
 				languageButton.setSelected(true);
 			}
 
 			languageButton.addActionListener(event -> {
-				UiConfig.setLanguage(lang);
+				Config.setLanguage(lang);
 				I18n.setLanguage(lang);
 				LanguageUtil.dispatchLanguageChange();
-				UiConfig.save();
+				Config.save();
 			});
 			languagesMenu.add(languageButton);
 		}
@@ -631,7 +631,7 @@ public class MenuBar {
 				})
 				.collect(Collectors.toMap(Pair::a, Pair::b));
 
-		JRadioButtonMenuItem currentScaleButton = scaleButtons.get(UiConfig.getScaleFactor());
+		JRadioButtonMenuItem currentScaleButton = scaleButtons.get(Config.getScaleFactor());
 		if (currentScaleButton != null) {
 			currentScaleButton.setSelected(true);
 		}
@@ -653,11 +653,11 @@ public class MenuBar {
 			JRadioButtonMenuItem notificationsButton = new JRadioButtonMenuItem(level.getText());
 			notificationsGroup.add(notificationsButton);
 
-			if (level.equals(UiConfig.getServerNotificationLevel())) {
+			if (level.equals(Config.getServerNotificationLevel())) {
 				notificationsButton.setSelected(true);
 			}
 
-			notificationsButton.addActionListener(event -> UiConfig.setServerNotificationLevel(level));
+			notificationsButton.addActionListener(event -> Config.setServerNotificationLevel(level));
 
 			notificationsMenu.add(notificationsButton);
 		}
