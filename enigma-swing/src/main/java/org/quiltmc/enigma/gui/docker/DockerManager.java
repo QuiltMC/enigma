@@ -70,11 +70,11 @@ public class DockerManager {
 
 	/**
 	 * Restores the state of both docks to the version saved in the config.
-	 * @see Dock#restoreState()
+	 * @see Dock#restoreState(DockerManager)
 	 */
 	public void restoreStateFromConfig() {
-		this.leftDock.restoreState();
-		this.rightDock.restoreState();
+		this.leftDock.restoreState(this);
+		this.rightDock.restoreState(this);
 	}
 
 	/**

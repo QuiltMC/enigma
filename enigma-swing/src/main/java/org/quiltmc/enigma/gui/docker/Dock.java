@@ -62,10 +62,10 @@ public class Dock extends JPanel {
 	/**
 	 * Restores the state of this dock to the version saved in the config file.
 	 */
-	public void restoreState() {
+	public void restoreState(DockerManager manager) {
 		// restore docker state
-		Optional<Map<Docker, Docker.VerticalLocation>> hostedDockers = Config.getHostedDockers(this.gui.getDockerManager(), this.side);
-		hostedDockers.ifPresent(m -> m.forEach(this::host));
+		Map<String, Docker.Location> hostedDockers = Config.getDockerConfig().getHostedDockers(this.side);
+		hostedDockers.forEach((id, location) -> this.host(manager.getDocker(id), location.verticalLocation()));
 
 		this.restoreDividerState(true);
 
@@ -85,18 +85,18 @@ public class Dock extends JPanel {
 	public void restoreDividerState(boolean init) {
 		// restore vertical divider state
 		if (this.isSplit) {
-			this.splitPane.setDividerLocation(Config.getVerticalDockDividerLocation(this.side));
+			this.splitPane.setDividerLocation(Config.getDockerConfig().getVerticalDividerLocation(this.side));
 		}
 
 		// restore horizontal divider state
 		JSplitPane parentSplitPane = this.getParentSplitPane();
-		int location = Config.getHorizontalDividerLocation(this.side);
+		int location = Config.getDockerConfig().getHorizontalDividerLocation(this.side);
 
 		// hack fix: if the right dock is closed while the left dock is open, the divider location is saved as if the left dock is open,
 		// thereby offsetting the divider location by the width of the left dock. which means, if the right dock is reopened while the left dock is closed,
 		// the divider location is too far to the left by the width of the left dock. so here we offset the location to avoid that.
-		if (init && this.side == Docker.Side.RIGHT && !this.gui.getSplitLeft().getLeftComponent().isVisible() && Config.getSavedWithLeftOpen()) {
-			location += Config.getHorizontalDividerLocation(Docker.Side.LEFT);
+		if (init && this.side == Docker.Side.RIGHT && !this.gui.getSplitLeft().getLeftComponent().isVisible() && Config.getDockerConfig().savedWithLeftDockerOpen.value()) {
+			location += Config.getDockerConfig().getHorizontalDividerLocation(Docker.Side.LEFT);
 		}
 
 		parentSplitPane.setDividerLocation(location);
@@ -106,16 +106,16 @@ public class Dock extends JPanel {
 		if (this.isVisible()) {
 			// save vertical divider state
 			if (this.isSplit) {
-				Config.setVerticalDockDividerLocation(this.side, this.splitPane.getDividerLocation());
+				Config.getDockerConfig().setVerticalDividerLocation(this.side, this.splitPane.getDividerLocation());
 			}
 
 			// save horizontal divider state
 			JSplitPane parentSplitPane = this.getParentSplitPane();
-			Config.setHorizontalDividerLocation(this.side, parentSplitPane.getDividerLocation());
+			Config.getDockerConfig().setHorizontalDividerLocation(this.side, parentSplitPane.getDividerLocation());
 
 			// hack
 			if (this.side == Docker.Side.RIGHT) {
-				Config.setSavedWithLeftOpen(this.gui.getSplitLeft().getLeftComponent().isVisible());
+				Config.getDockerConfig().savedWithLeftDockerOpen.setValue(this.gui.getSplitLeft().getLeftComponent().isVisible(), true);
 			}
 		}
 	}
@@ -184,7 +184,7 @@ public class Dock extends JPanel {
 				parent.remove(button);
 				(verticalLocation == Docker.VerticalLocation.TOP ? selector.getTopSelector() : selector.getBottomSelector()).add(button);
 				button.setSide(this.side);
-				Config.setDockerButtonLocation(docker, new Docker.Location(this.side, verticalLocation));
+				Config.getDockerConfig().putDockerLocation(docker, this.side, verticalLocation);
 
 				button.getParent().revalidate();
 				button.getParent().repaint();
@@ -357,7 +357,7 @@ public class Dock extends JPanel {
 		if (this.hovered != null) {
 			Rectangle paintedBounds = this.getHighlightBoundsFor(new Point(0, 0), this.hovered);
 
-			Color color = Config.getDockHighlightColor();
+			Color color = Config.getCurrentColors().dockHighlight.value();
 			graphics.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 100));
 			graphics.fillRect(paintedBounds.x, paintedBounds.y, paintedBounds.width, paintedBounds.height);
 			this.repaint();

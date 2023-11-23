@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui.dialog;
 
 import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.config.NetConfig;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.network.EnigmaServer;
 import org.quiltmc.enigma.network.ServerAddress;
@@ -35,9 +35,9 @@ public class ConnectToServerDialog extends AbstractDialog {
 
 	@Override
 	protected List<Pair<String, Component>> createComponents() {
-		this.usernameField = new JTextField(NetConfig.getUsername());
-		this.ipField = new JTextField(NetConfig.getRemoteAddress());
-		this.passwordField = new JPasswordField(NetConfig.getPassword());
+		this.usernameField = new JTextField(Config.INSTANCE.getNetConfig().username.value());
+		this.ipField = new JTextField(Config.INSTANCE.getNetConfig().remoteAddress.value());
+		this.passwordField = new JPasswordField(Config.INSTANCE.getNetConfig().password.value());
 
 		this.usernameField.addActionListener(event -> this.confirm());
 		this.ipField.addActionListener(event -> this.confirm());

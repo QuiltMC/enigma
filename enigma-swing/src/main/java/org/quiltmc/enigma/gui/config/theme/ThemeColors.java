@@ -32,8 +32,10 @@ public class ThemeColors extends ReflectiveConfig.Section {
 	public final TrackedValue<Color> comment = this.value(new Color(0xFF339933, true));
 	public final TrackedValue<Color> text = this.value(new Color(0xFF000000, true));
 
-	private final TrackedValue<Color> debugToken = this.value(new Color(0xFFD9BEF9, true));
-	private final TrackedValue<Color> debugTokenOutline = this.value(new Color(0xFFBD93F9, true));
+	public final TrackedValue<Color> debugToken = this.value(new Color(0xFFD9BEF9, true));
+	public final TrackedValue<Color> debugTokenOutline = this.value(new Color(0xFFBD93F9, true));
+
+	public final TrackedValue<Color> dockHighlight = this.value(new Color(0xFF0000FF, true));
 
 	public void configure(boolean dark) {
 		if (dark) {

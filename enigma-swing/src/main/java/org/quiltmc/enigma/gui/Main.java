@@ -96,7 +96,7 @@ public class Main {
 
 			EnigmaProfile parsedProfile = EnigmaProfile.read(options.valueOf(profile));
 
-			I18n.setLanguage(Config.getLanguage());
+			I18n.setLanguage(Config.INSTANCE.language.value());
 			setDefaultSystemProperty("apple.laf.useScreenMenuBar", "true");
 			setDefaultSystemProperty("awt.useSystemAAFontSettings", "on");
 			setDefaultSystemProperty("swing.aatext", "true");
@@ -105,7 +105,7 @@ public class Main {
 
 			KeyBinds.loadConfig();
 
-			Gui gui = new Gui(parsedProfile, editables, true, config);
+			Gui gui = new Gui(parsedProfile, editables, true);
 			GuiController controller = gui.getController();
 
 			if (options.has("hide-progress-bars")) {

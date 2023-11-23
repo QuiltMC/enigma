@@ -20,75 +20,70 @@ public class Themes {
 	// Calling this after the UI is initialized (e.g. when the user changes
 	// theme settings) is currently not functional.
 	public static void setupTheme() {
-		LookAndFeel laf = Config.getActiveLookAndFeel();
+		LookAndFeel laf = Config.get().lookAndFeel.value();
 		laf.setGlobalLAF();
-		Config.setLookAndFeelDefaults(Config.getLookAndFeel(), LookAndFeel.isDarkLaf());
-		Config.snapshotConfig();
+		Config.getCurrentColors().configure(LookAndFeel.isDarkLaf());
 		Themes.setFonts();
 		UIManager.put("ScrollBar.showButtons", true);
 		JEditorPane.registerEditorKitForContentType("text/enigma-sources", JavaSyntaxKit.class.getName());
 		Map<TokenType, BoxHighlightPainter> boxHighlightPainters = getBoxHighlightPainters();
 		listeners.forEach(l -> l.onThemeChanged(laf, boxHighlightPainters));
 		ScaleUtil.applyScaling();
-		Config.save();
 	}
 
 	private static void setFonts() {
-		if (Config.activeUseCustomFonts()) {
-			Font small = Config.getSmallFont();
-			Font bold = Config.getDefaultFont();
-			Font normal = Config.getDefault2Font();
+		Font small = Config.getCurrentFonts().small.value();
+		Font bold = Config.getCurrentFonts().defaultFont.value();
 
-			UIManager.put("CheckBox.font", bold);
-			UIManager.put("CheckBoxMenuItem.font", bold);
-			UIManager.put("CheckBoxMenuItem.acceleratorFont", small);
-			UIManager.put("ColorChooser.font", normal);
-			UIManager.put("ComboBox.font", bold);
-			UIManager.put("DesktopIcon.font", bold);
-			UIManager.put("EditorPane.font", normal);
-			UIManager.put("InternalFrame.titleFont", bold);
-			UIManager.put("FormattedTextField.font", normal);
-			UIManager.put("Label.font", bold);
-			UIManager.put("List.font", bold);
-			UIManager.put("Menu.acceleratorFont", small);
-			UIManager.put("Menu.font", bold);
-			UIManager.put("MenuBar.font", bold);
-			UIManager.put("MenuItem.acceleratorFont", small);
-			UIManager.put("MenuItem.font", bold);
-			UIManager.put("OptionPane.font", normal);
-			UIManager.put("Panel.font", normal);
-			UIManager.put("PasswordField.font", normal);
-			UIManager.put("PopupMenu.font", bold);
-			UIManager.put("ProgressBar.font", bold);
-			UIManager.put("RadioButton.font", bold);
-			UIManager.put("RadioButtonMenuItem.acceleratorFont", small);
-			UIManager.put("RadioButtonMenuItem.font", bold);
-			UIManager.put("ScrollPane.font", normal);
-			UIManager.put("Slider.font", bold);
-			UIManager.put("Spinner.font", bold);
-			UIManager.put("TabbedPane.font", bold);
-			UIManager.put("Table.font", normal);
-			UIManager.put("TableHeader.font", normal);
-			UIManager.put("TextArea.font", normal);
-			UIManager.put("TextField.font", normal);
-			UIManager.put("TextPane.font", normal);
-			UIManager.put("TitledBorder.font", bold);
-			UIManager.put("ToggleButton.font", bold);
-			UIManager.put("ToolBar.font", bold);
-			UIManager.put("ToolTip.font", normal);
-			UIManager.put("Tree.font", normal);
-			UIManager.put("Viewport.font", normal);
-			UIManager.put("Button.font", bold);
-		}
+		UIManager.put("CheckBox.font", bold);
+		UIManager.put("CheckBoxMenuItem.font", bold);
+		UIManager.put("CheckBoxMenuItem.acceleratorFont", small);
+		UIManager.put("ColorChooser.font", bold); //
+		UIManager.put("ComboBox.font", bold);
+		UIManager.put("DesktopIcon.font", bold);
+		UIManager.put("EditorPane.font", bold); //
+		UIManager.put("InternalFrame.titleFont", bold);
+		UIManager.put("FormattedTextField.font", bold); //
+		UIManager.put("Label.font", bold);
+		UIManager.put("List.font", bold);
+		UIManager.put("Menu.acceleratorFont", small);
+		UIManager.put("Menu.font", bold);
+		UIManager.put("MenuBar.font", bold);
+		UIManager.put("MenuItem.acceleratorFont", small);
+		UIManager.put("MenuItem.font", bold);
+		UIManager.put("OptionPane.font", bold); //
+		UIManager.put("Panel.font", bold); //
+		UIManager.put("PasswordField.font", bold); //
+		UIManager.put("PopupMenu.font", bold);
+		UIManager.put("ProgressBar.font", bold);
+		UIManager.put("RadioButton.font", bold);
+		UIManager.put("RadioButtonMenuItem.acceleratorFont", small);
+		UIManager.put("RadioButtonMenuItem.font", bold);
+		UIManager.put("ScrollPane.font", bold); //
+		UIManager.put("Slider.font", bold);
+		UIManager.put("Spinner.font", bold);
+		UIManager.put("TabbedPane.font", bold);
+		UIManager.put("Table.font", bold); //
+		UIManager.put("TableHeader.font", bold); //
+		UIManager.put("TextArea.font", bold); //
+		UIManager.put("TextField.font", bold); //
+		UIManager.put("TextPane.font", bold); //
+		UIManager.put("TitledBorder.font", bold);
+		UIManager.put("ToggleButton.font", bold);
+		UIManager.put("ToolBar.font", bold);
+		UIManager.put("ToolTip.font", bold); //
+		UIManager.put("Tree.font", bold); //
+		UIManager.put("Viewport.font", bold); //
+		UIManager.put("Button.font", bold);
 	}
 
 	public static Map<TokenType, BoxHighlightPainter> getBoxHighlightPainters() {
 		return Map.of(
-				TokenType.OBFUSCATED, BoxHighlightPainter.create(Config.getObfuscatedColor(), Config.getObfuscatedOutlineColor()),
-				TokenType.JAR_PROPOSED, BoxHighlightPainter.create(Config.getProposedColor(), Config.getProposedOutlineColor()),
-				TokenType.DYNAMIC_PROPOSED, BoxHighlightPainter.create(Config.getProposedColor(), Config.getProposedOutlineColor()),
-				TokenType.DEOBFUSCATED, BoxHighlightPainter.create(Config.getDeobfuscatedColor(), Config.getDeobfuscatedOutlineColor()),
-				TokenType.DEBUG, BoxHighlightPainter.create(Config.getDebugTokenColor(), Config.getDebugTokenOutlineColor())
+				TokenType.OBFUSCATED, BoxHighlightPainter.create(Config.getCurrentColors().obfuscated.value(), Config.getCurrentColors().obfuscatedOutline.value()),
+				TokenType.JAR_PROPOSED, BoxHighlightPainter.create(Config.getCurrentColors().proposed.value(), Config.getCurrentColors().proposedOutline.value()),
+				TokenType.DYNAMIC_PROPOSED, BoxHighlightPainter.create(Config.getCurrentColors().proposed.value(), Config.getCurrentColors().proposedOutline.value()),
+				TokenType.DEOBFUSCATED, BoxHighlightPainter.create(Config.getCurrentColors().deobfuscated.value(), Config.getCurrentColors().deobfuscatedOutline.value()),
+				TokenType.DEBUG, BoxHighlightPainter.create(Config.getCurrentColors().debugToken.value(), Config.getCurrentColors().debugTokenOutline.value())
 		);
 	}
 

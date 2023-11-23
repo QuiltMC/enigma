@@ -2,27 +2,18 @@ package org.quiltmc.enigma.gui.config;
 
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.values.TrackedValue;
+import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.enigma.gui.config.keybind.KeyBind;
 
 public final class KeyBindsConfig extends ReflectiveConfig.Section {
+	public final TrackedValue<ValueMap<String[]>> keyCodes = this.map(new String[]{""}).build();
 
-	private KeyBindsConfig() {
+	public String[] getKeyBindCodes(KeyBind keyBind) {
+		String[] codes = this.keyCodes.value().get(keyBind.name());
+		return codes.length == 0 ? keyBind.serializeCombinations() : codes;
 	}
 
-
-	private static ConfigSection getSection(KeyBind keyBind) {
-		return keyBind.category().isEmpty() ? cfg.data() : cfg.data().section(keyBind.category());
-	}
-
-	public static String[] getKeyBindCodes(KeyBind keyBind) {
-		return getSection(keyBind).getArray(keyBind.name()).orElse(keyBind.serializeCombinations());
-	}
-
-	public static void setKeyBind(KeyBind keyBind) {
-		getSection(keyBind).setArray(keyBind.name(), keyBind.serializeCombinations());
-	}
-
-	private static class KeyBindConfig extends ReflectiveConfig.Section {
-		public final TrackedValue
+	public void setKeyBind(KeyBind keyBind) {
+		this.keyCodes.value().put(keyBind.name(), keyBind.serializeCombinations());
 	}
 }

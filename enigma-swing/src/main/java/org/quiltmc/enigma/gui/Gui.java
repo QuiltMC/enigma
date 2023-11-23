@@ -70,7 +70,6 @@ import java.util.function.IntFunction;
 public class Gui {
 	private final MainWindow mainWindow;
 	private final GuiController controller;
-	private final Config config;
 
 	private ConnectionState connectionState;
 	private boolean isJarOpen;
@@ -103,8 +102,7 @@ public class Gui {
 	public final JFileChooser exportJarFileChooser;
 	public final SearchDialog searchDialog;
 
-	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean visible, Config config) {
-		this.config = config;
+	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean visible) {
 		this.dockerManager = new DockerManager(this);
 		this.mainWindow = new MainWindow(this, Enigma.NAME);
 		this.centerPanel = new JPanel(new BorderLayout());
@@ -150,8 +148,8 @@ public class Gui {
 		this.dockerManager.registerDocker(new AllClassesDocker(this));
 		this.dockerManager.registerDocker(new DeobfuscatedClassesDocker(this));
 
-		if (this.config.dockerConfig.dockerLocations.value().isEmpty()) {
-			this.config.dockerConfig.dockerLocations.value().setValue(DockerConfig.getDefaultLocations(this.dockerManager));
+		if (Config.INSTANCE.getDockerConfig().dockerLocations.value().isEmpty()) {
+			Config.INSTANCE.getDockerConfig().dockerLocations.value().setValue(DockerConfig.getDefaultLocations(this.dockerManager));
 		}
 
 		// set default docker sizes
@@ -197,7 +195,8 @@ public class Gui {
 		this.splitRight.setResizeWeight(1);
 		this.splitLeft.setResizeWeight(0);
 
-		if (Config.getHostedDockers(this.dockerManager, Docker.Side.LEFT).isPresent() || Config.getHostedDockers(this.dockerManager, Docker.Side.RIGHT).isPresent()) {
+		// todo probably doesn't work
+		if (!Config.INSTANCE.dockerConfig.value().getHostedDockers(Docker.Side.LEFT).isEmpty() || !Config.INSTANCE.dockerConfig.value().getHostedDockers(Docker.Side.RIGHT).isEmpty()) {
 			this.dockerManager.restoreStateFromConfig();
 		} else {
 			this.dockerManager.setupDefaultConfiguration();
@@ -210,16 +209,12 @@ public class Gui {
 		JFrame frame = this.mainWindow.getFrame();
 		frame.addWindowListener(GuiUtil.onWindowClose(e -> this.close()));
 
-		frame.setSize(Config.getWindowSize(Config.MAIN_WINDOW, ScaleUtil.getDimension(1024, 576)));
+		frame.setSize(Config.get().windowSize.value());
 		frame.setMinimumSize(ScaleUtil.getDimension(640, 480));
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-		Point windowPos = Config.getWindowPos(Config.MAIN_WINDOW, null);
-		if (windowPos != null) {
-			frame.setLocation(windowPos);
-		} else {
-			frame.setLocationRelativeTo(null);
-		}
+		Point windowPos = Config.get().windowPos.value();
+		frame.setLocation(windowPos);
 
 		this.retranslateUi();
 	}
@@ -521,11 +516,11 @@ public class Gui {
 	}
 
 	private void exit() {
-		Config.setWindowPos(Config.MAIN_WINDOW, this.mainWindow.getFrame().getLocationOnScreen());
-		Config.setWindowSize(Config.MAIN_WINDOW, this.mainWindow.getFrame().getSize());
+		Config.get().windowPos.setValue(this.mainWindow.getFrame().getLocationOnScreen(), true);
+		Config.get().windowSize.setValue(this.mainWindow.getFrame().getSize(), true);
 
 		this.dockerManager.saveStateToConfig();
-		Config.save();
+		Config.INSTANCE.save();
 
 		this.searchDialog.dispose();
 		this.mainWindow.getFrame().dispose();
@@ -621,17 +616,17 @@ public class Gui {
 		// popup notifications
 		switch (message.getType()) {
 			case CHAT -> {
-				if (Config.getServerNotificationLevel().equals(NotificationManager.ServerNotificationLevel.FULL) && !message.user.equals(NetConfig.getUsername())) {
+				if (Config.INSTANCE.serverNotificationLevel.value() == NotificationManager.ServerNotificationLevel.FULL && !message.user.equals(Config.INSTANCE.net.value().username.value())) {
 					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_CHAT, message.translate()));
 				}
 			}
 			case CONNECT -> {
-				if (Config.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+				if (Config.INSTANCE.serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
 					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_USER_CONNECTED, message.translate()));
 				}
 			}
 			case DISCONNECT -> {
-				if (Config.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+				if (Config.INSTANCE.serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
 					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_USER_LEFT, message.translate()));
 				}
 			}
@@ -705,7 +700,7 @@ public class Gui {
 	}
 
 	public void openMostRecentFiles() {
-		var pair = Config.getMostRecentFilePair();
+		var pair = Config.INSTANCE.getMostRecentFilePair();
 
 		if (pair.isPresent()) {
 			this.getNotificationManager().notify(ParameterizedMessage.openedProject(pair.get().a().toString(), pair.get().b().toString()));

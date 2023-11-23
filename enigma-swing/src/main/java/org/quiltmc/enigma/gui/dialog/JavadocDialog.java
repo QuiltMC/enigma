@@ -65,7 +65,7 @@ public class JavadocDialog {
 				this.close();
 			}
 		}));
-		this.text.setFont(Config.activeUseCustomFonts() ? Config.getEditorFont() : Config.getFallbackEditorFont());
+		this.text.setFont(Config.INSTANCE.getCurrentFonts().editor.value());
 
 		// buttons panel
 		JPanel buttonsPanel = new JPanel();

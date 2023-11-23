@@ -21,7 +21,7 @@ public class ImplementationsTreeCellRenderer extends DefaultTreeCellRenderer {
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 		Component c = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
-		this.setForeground(Config.getTextColor());
+		this.setForeground(Config.getCurrentColors().text.value());
 
 		if (value instanceof ClassImplementationsTreeNode node) {
 			this.setIcon(GuiUtil.getClassIcon(this.gui, node.getClassEntry()));

@@ -125,7 +125,7 @@ public class GuiController implements ClientPacketHandler {
 		return ProgressDialog.runOffThread(this.gui, progress -> {
 			this.project = this.enigma.openJar(jarPath, new ClasspathClassProvider(), progress);
 			this.indexTreeBuilder = new IndexTreeBuilder(this.project.getJarIndex());
-			this.chp = new ClassHandleProvider(this.project, Config.getDecompiler().service);
+			this.chp = new ClassHandleProvider(this.project, Config.INSTANCE.decompiler.value().decompiler.value().service);
 			this.statsGenerator = new StatsGenerator(this.project);
 
 			SwingUtilities.invokeLater(() -> {
@@ -557,7 +557,7 @@ public class GuiController implements ClientPacketHandler {
 	public void openStatsTree(Set<StatType> includedTypes) {
 		ProgressDialog.runOffThread(this.gui, progress -> {
 			StatsResult overall = this.getStatsGenerator().getResultNullable().getOverall();
-			StatsTree<Integer> tree = overall.buildTree(Config.getLastTopLevelPackage(), includedTypes);
+			StatsTree<Integer> tree = overall.buildTree(Config.INSTANCE.lastTopLevelPackage.value(), includedTypes);
 			String treeJson = GSON.toJson(tree.root);
 
 			try {
@@ -619,7 +619,7 @@ public class GuiController implements ClientPacketHandler {
 		this.server.start();
 		this.client = new EnigmaClient(this, "127.0.0.1", port);
 		this.client.connect();
-		this.client.sendPacket(new LoginC2SPacket(this.project.getJarChecksum(), password, NetConfig.getUsername()));
+		this.client.sendPacket(new LoginC2SPacket(this.project.getJarChecksum(), password, Config.INSTANCE.getNetConfig().username.value()));
 		this.gui.setConnectionState(ConnectionState.HOSTING);
 	}
 
@@ -648,7 +648,7 @@ public class GuiController implements ClientPacketHandler {
 		});
 
 		this.gui.setUserList(new ArrayList<>());
-		if (Config.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+		if (Config.INSTANCE.serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
 			this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.LEFT_SERVER));
 		}
 
