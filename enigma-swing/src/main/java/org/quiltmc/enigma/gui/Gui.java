@@ -614,17 +614,17 @@ public class Gui {
 		// popup notifications
 		switch (message.getType()) {
 			case CHAT -> {
-				if (Config.INSTANCE.serverNotificationLevel.value() == NotificationManager.ServerNotificationLevel.FULL && !message.user.equals(Config.INSTANCE.net.value().username.value())) {
+				if (Config.get().serverNotificationLevel.value() == NotificationManager.ServerNotificationLevel.FULL && !message.user.equals(Config.get().net.value().username.value())) {
 					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_CHAT, message.translate()));
 				}
 			}
 			case CONNECT -> {
-				if (Config.INSTANCE.serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
+				if (Config.get().serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
 					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_USER_CONNECTED, message.translate()));
 				}
 			}
 			case DISCONNECT -> {
-				if (Config.INSTANCE.serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
+				if (Config.get().serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
 					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_USER_LEFT, message.translate()));
 				}
 			}

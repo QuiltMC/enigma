@@ -101,7 +101,7 @@ public final class KeyBinds {
 			KeyBind editedKeyBind = editableKeyBinds.get(i);
 			if (!editedKeyBind.equals(keyBind)) {
 				keyBind.setFrom(editedKeyBind);
-				Config.INSTANCE.keyBinds.value().setKeyBind(editedKeyBind);
+				Config.keyBinds().setKeyBind(editedKeyBind);
 			}
 		}
 	}
@@ -114,7 +114,7 @@ public final class KeyBinds {
 
 	public static void resetToDefault(KeyBind keyBind) {
 		// Ensure the key bind is editable
-		if (!editableKeyBinds.contains(keyBind)) {
+		if (!getEditableKeyBinds().contains(keyBind)) {
 			return;
 		}
 

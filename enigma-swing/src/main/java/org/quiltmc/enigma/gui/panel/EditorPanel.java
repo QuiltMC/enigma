@@ -120,9 +120,9 @@ public class EditorPanel {
 		this.editor.setCaret(new BrowserCaret());
 		this.editor.setFont(ScaleUtil.getFont(this.editor.getFont().getFontName(), Font.PLAIN, this.fontSize));
 		this.editor.addCaretListener(event -> this.onCaretMove(event.getDot(), this.mouseIsPressed));
-		this.editor.setCaretColor(Config.INSTANCE.currentColors().caret.value());
+		this.editor.setCaretColor(Config.currentColors().caret.value());
 		this.editor.setContentType("text/enigma-sources");
-		this.editor.setBackground(Config.INSTANCE.currentColors().editorBackground.value());
+		this.editor.setBackground(Config.currentColors().editorBackground.value());
 
 		// set unit increment to height of one line, the amount scrolled per
 		// mouse wheel rotation is then controlled by OS settings
@@ -213,7 +213,7 @@ public class EditorPanel {
 		this.themeChangeListener = (laf, boxHighlightPainters) -> {
 			if ((this.editorLaf == null || this.editorLaf != laf)) {
 				this.editor.updateUI();
-				this.editor.setBackground(Config.INSTANCE.currentColors().editorBackground.value());
+				this.editor.setBackground(Config.currentColors().editorBackground.value());
 				if (this.editorLaf != null) {
 					this.classHandle.invalidateMapped();
 				}

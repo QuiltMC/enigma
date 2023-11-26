@@ -65,12 +65,12 @@ public class StatsDialog {
 		contentPane.add(topLevelPackageOption, cb1.pos(0, result.getOverall().getTypes().size() + 1).build());
 
 		JTextField topLevelPackage = new JTextField();
-		topLevelPackage.setText(Config.INSTANCE.lastTopLevelPackage.value());
+		topLevelPackage.setText(Config.get().lastTopLevelPackage.value());
 		contentPane.add(topLevelPackage, cb1.pos(0, result.getOverall().getTypes().size() + 2).fill(GridBagConstraints.HORIZONTAL).build());
 
 		// show synthetic members option
 		JCheckBox syntheticParametersOption = new JCheckBox(I18n.translate("menu.file.stats.synthetic_parameters"));
-		syntheticParametersOption.setSelected(Config.INSTANCE.shouldIncludeSyntheticParameters.value());
+		syntheticParametersOption.setSelected(Config.get().shouldIncludeSyntheticParameters.value());
 		contentPane.add(syntheticParametersOption, cb1.pos(0, result.getOverall().getTypes().size() + 4).build());
 
 		// show filter button
@@ -78,10 +78,10 @@ public class StatsDialog {
 		filterButton.addActionListener(action -> {
 			dialog.dispose();
 			ProgressDialog.runOffThread(gui, listener -> {
-				Config.INSTANCE.lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
+				Config.get().lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
 
-				ProjectStatsResult projectResult = gui.getController().getStatsGenerator().getResult(syntheticParametersOption.isSelected()).filter(Config.INSTANCE.lastTopLevelPackage.value());
-				SwingUtilities.invokeLater(() -> show(gui, projectResult, Config.INSTANCE.lastTopLevelPackage.value()));
+				ProjectStatsResult projectResult = gui.getController().getStatsGenerator().getResult(syntheticParametersOption.isSelected()).filter(Config.get().lastTopLevelPackage.value());
+				SwingUtilities.invokeLater(() -> show(gui, projectResult, Config.get().lastTopLevelPackage.value()));
 			});
 		});
 		contentPane.add(filterButton, cb1.pos(0, result.getOverall().getTypes().size() + 3).anchor(GridBagConstraints.EAST).build());
@@ -92,8 +92,8 @@ public class StatsDialog {
 		button.addActionListener(action -> {
 			dialog.dispose();
 
-			Config.INSTANCE.lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
-			Config.INSTANCE.shouldIncludeSyntheticParameters.setValue(syntheticParametersOption.isSelected(), true);
+			Config.get().lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
+			Config.get().shouldIncludeSyntheticParameters.setValue(syntheticParametersOption.isSelected(), true);
 
 			generateStats(gui, checkboxes);
 		});

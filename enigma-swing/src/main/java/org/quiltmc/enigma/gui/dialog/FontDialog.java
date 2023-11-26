@@ -35,22 +35,22 @@ public class FontDialog extends JDialog {
 	private final JList<String> entries = new JList<>(CATEGORY_TEXTS.stream().map(I18n::translate).toArray(String[]::new));
 	private final FontChooser chooser = new FontChooser(Font.decode(Font.DIALOG));
 	private final JCheckBox customCheckBox = new JCheckBox(I18n.translate("fonts.use_custom"));
-	private final JButton okButton = new JButton(I18n.translate("prompt.ok"));
-	private final JButton cancelButton = new JButton(I18n.translate("prompt.cancel"));
 	private final Font[] fontValues = new Font[]{FONTS.get(0).value(), FONTS.get(1).value(), FONTS.get(2).value()};
 
 	public FontDialog(Frame owner) {
 		super(owner, "Fonts", true);
 
-		this.customCheckBox.setSelected(Config.INSTANCE.useCustomFonts.value());
+		this.customCheckBox.setSelected(Config.get().useCustomFonts.value());
 
 		this.entries.setPreferredSize(ScaleUtil.getDimension(100, 0));
 
 		this.entries.addListSelectionListener(e -> this.categoryChanged());
 		this.chooser.addChangeListener(e -> this.selectedFontChanged());
 		this.customCheckBox.addActionListener(e -> this.customFontsClicked());
-		this.okButton.addActionListener(e -> this.apply());
-		this.cancelButton.addActionListener(e -> this.cancel());
+		JButton okButton = new JButton(I18n.translate("prompt.ok"));
+		okButton.addActionListener(e -> this.apply());
+		JButton cancelButton = new JButton(I18n.translate("prompt.cancel"));
+		cancelButton.addActionListener(e -> this.cancel());
 
 		Container contentPane = this.getContentPane();
 		contentPane.setLayout(new GridBagLayout());
@@ -61,8 +61,8 @@ public class FontDialog extends JDialog {
 		contentPane.add(this.entries, cb.pos(0, 0).weight(0.0, 1.0).fill(GridBagConstraints.BOTH).build());
 		contentPane.add(this.chooser, cb.pos(1, 0).weight(1.0, 1.0).fill(GridBagConstraints.BOTH).size(2, 1).build());
 		contentPane.add(this.customCheckBox, cb.pos(0, 1).anchor(GridBagConstraints.WEST).size(2, 1).build());
-		contentPane.add(this.okButton, cb.pos(1, 1).anchor(GridBagConstraints.EAST).weight(1.0, 0.0).build());
-		contentPane.add(this.cancelButton, cb.pos(2, 1).anchor(GridBagConstraints.EAST).weight(0.0, 0.0).build());
+		contentPane.add(okButton, cb.pos(1, 1).anchor(GridBagConstraints.EAST).weight(1.0, 0.0).build());
+		contentPane.add(cancelButton, cb.pos(2, 1).anchor(GridBagConstraints.EAST).weight(0.0, 0.0).build());
 
 		this.updateUiState();
 

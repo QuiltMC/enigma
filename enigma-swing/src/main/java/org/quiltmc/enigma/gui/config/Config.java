@@ -1,8 +1,15 @@
 package org.quiltmc.enigma.gui.config;
 
+import com.electronwill.nightconfig.toml.TomlParser;
+import com.electronwill.nightconfig.toml.TomlWriter;
 import org.quiltmc.config.api.ReflectiveConfig;
+import org.quiltmc.config.api.values.ComplexConfigValue;
+import org.quiltmc.config.api.values.ConfigSerializableObject;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.config.api.values.ValueList;
+import org.quiltmc.config.api.values.ValueMap;
+import org.quiltmc.config.implementor_api.ConfigEnvironment;
+import org.quiltmc.config.implementor_api.ConfigFactory;
 import org.quiltmc.enigma.gui.NotificationManager;
 import org.quiltmc.enigma.gui.config.theme.LookAndFeel;
 import org.quiltmc.enigma.gui.config.theme.Theme;
@@ -19,7 +26,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public final class Config extends ReflectiveConfig {
-	public static final Config INSTANCE = new Config();
+	private static final ConfigEnvironment ENVIRONMENT = new ConfigEnvironment(ConfigPaths.getConfigPathRoot(), "toml", new NightConfigSerializer<>("toml", new TomlParser(), new TomlWriter()));
+	private static final Config INSTANCE = ConfigFactory.create(ENVIRONMENT, "enigma", "main", Config.class);
 
 	public Config() {
 		updateSyntaxpain();
@@ -97,13 +105,31 @@ public final class Config extends ReflectiveConfig {
 		return INSTANCE.recentProjects.value().get(0);
 	}
 
-	public record RecentProject(String jarPath, String mappingsPath) {
+	public record RecentProject(String jarPath, String mappingsPath) implements ConfigSerializableObject<ValueMap<String>> {
 		public Path getJarPath() {
 			return Paths.get(this.jarPath);
 		}
 
 		public Path getMappingsPath() {
 			return Paths.get(this.mappingsPath);
+		}
+
+		@Override
+		public RecentProject convertFrom(ValueMap<String> representation) {
+			return new RecentProject(representation.get("jarPath"), representation.get("mappingsPath"));
+		}
+
+		@Override
+		public ValueMap<String> getRepresentation() {
+			return ValueMap.builder("")
+				.put("jarPath", this.jarPath)
+				.put("mappingsPath", this.mappingsPath)
+				.build();
+		}
+
+		@Override
+		public ComplexConfigValue copy() {
+			return this;
 		}
 	}
 

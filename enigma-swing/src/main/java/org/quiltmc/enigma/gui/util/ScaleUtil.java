@@ -22,12 +22,12 @@ public class ScaleUtil {
 	private static final List<ScaleChangeListener> listeners = new ArrayList<>();
 
 	public static void setScaleFactor(float scaleFactor) {
-		float oldScale = Config.INSTANCE.scaleFactor.value();
+		float oldScale = Config.get().scaleFactor.value();
 		float clamped = Math.min(Math.max(0.25f, scaleFactor), 10.0f);
-		Config.INSTANCE.scaleFactor.setValue(clamped, true);
-		rescaleFontInConfig(Config.INSTANCE.currentFonts().defaultFont, oldScale);
-		rescaleFontInConfig(Config.INSTANCE.currentFonts().small, oldScale);
-		rescaleFontInConfig(Config.INSTANCE.currentFonts().editor, oldScale);
+		Config.get().scaleFactor.setValue(clamped, true);
+		rescaleFontInConfig(Config.currentFonts().defaultFont, oldScale);
+		rescaleFontInConfig(Config.currentFonts().small, oldScale);
+		rescaleFontInConfig(Config.currentFonts().editor, oldScale);
 		listeners.forEach(l -> l.onScaleChanged(clamped, oldScale));
 	}
 
@@ -52,7 +52,7 @@ public class ScaleUtil {
 	}
 
 	public static Font scaleFont(Font font) {
-		return createTweakerForCurrentLook(Config.INSTANCE.scaleFactor.value()).modifyFont("", font);
+		return createTweakerForCurrentLook(Config.get().scaleFactor.value()).modifyFont("", font);
 	}
 
 	private static void rescaleFontInConfig(TrackedValue<Font> font, float oldScale) {
@@ -61,20 +61,20 @@ public class ScaleUtil {
 
 	// This does not use the font that's currently active in the UI!
 	private static Font rescaleFont(Font font, float oldScale) {
-		float newSize = Math.round(font.getSize() / oldScale * Config.INSTANCE.scaleFactor.value());
+		float newSize = Math.round(font.getSize() / oldScale * Config.get().scaleFactor.value());
 		return font.deriveFont(newSize);
 	}
 
 	public static float scale(float f) {
-		return f * Config.INSTANCE.scaleFactor.value();
+		return f * Config.get().scaleFactor.value();
 	}
 
 	public static float invert(float f) {
-		return f / Config.INSTANCE.scaleFactor.value();
+		return f / Config.get().scaleFactor.value();
 	}
 
 	public static int scale(int i) {
-		return (int) (i * Config.INSTANCE.scaleFactor.value());
+		return (int) (i * Config.get().scaleFactor.value());
 	}
 
 	public static Border createEmptyBorder(int top, int left, int bottom, int right) {
@@ -82,17 +82,17 @@ public class ScaleUtil {
 	}
 
 	public static int invert(int i) {
-		return (int) (i / Config.INSTANCE.scaleFactor.value());
+		return (int) (i / Config.get().scaleFactor.value());
 	}
 
 	public static void applyScaling() {
-		double scale = Config.INSTANCE.scaleFactor.value();
+		double scale = Config.get().scaleFactor.value();
 
-		if (Config.INSTANCE.activeLookAndFeel.needsScaling()) {
+		if (Config.get().activeLookAndFeel.needsScaling()) {
 			UiDefaultsScaler.updateAndApplyGlobalScaling((int) (100 * scale), true);
 		}
 
-		Font font = Config.INSTANCE.currentFonts().editor.value();
+		Font font = Config.currentFonts().editor.value();
 		font = font.deriveFont((float) (12 * scale));
 		SyntaxpainConfiguration.setEditorFont(font);
 	}
