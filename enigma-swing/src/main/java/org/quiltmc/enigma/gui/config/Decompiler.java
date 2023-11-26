@@ -5,7 +5,6 @@ import org.quiltmc.enigma.gui.dialog.decompiler.VineflowerSettingsDialog;
 import org.quiltmc.enigma.api.source.DecompilerService;
 import org.quiltmc.enigma.api.source.Decompilers;
 
-import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.swing.JDialog;
 

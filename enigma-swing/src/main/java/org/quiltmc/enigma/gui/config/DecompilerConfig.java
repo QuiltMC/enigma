@@ -18,8 +18,7 @@ public class DecompilerConfig extends ReflectiveConfig.Section {
 	}
 
 	public static void updateVineflowerValues(Map<String, Object> options) {
-		VineflowerSection section = // statically get it
-		null;
+		VineflowerSection section = getVineflowerSection();
 
 		for (Map.Entry<String, Object> entry : options.entrySet()) {
 			if (entry.getValue() instanceof String s) {
@@ -33,8 +32,7 @@ public class DecompilerConfig extends ReflectiveConfig.Section {
 	}
 
 	public static VineflowerSection getVineflowerSection() {
-		// todo
-		return null;
+		return Config.decompiler().vineflowerSection.value();
 	}
 
 	public static void bootstrap() {

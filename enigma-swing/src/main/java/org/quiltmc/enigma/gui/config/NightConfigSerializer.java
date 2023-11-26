@@ -53,7 +53,7 @@ public final class NightConfigSerializer<C extends CommentedConfig> implements S
 		for (TrackedValue<?> trackedValue : config.values()) {
 			if (read.contains(trackedValue.key().toString())) {
 				((TrackedValue) trackedValue).setValue(MarshallingUtils.coerce(read.get(trackedValue.key().toString()), trackedValue.getDefaultValue(), (CommentedConfig c, MarshallingUtils.MapEntryConsumer entryConsumer) ->
-					c.entrySet().forEach(e -> entryConsumer.put(e.getKey(), e.getValue()))), false);
+						c.entrySet().forEach(e -> entryConsumer.put(e.getKey(), e.getValue()))), false);
 			}
 		}
 	}
