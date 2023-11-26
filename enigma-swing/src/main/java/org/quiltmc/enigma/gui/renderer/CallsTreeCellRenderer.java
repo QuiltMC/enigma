@@ -26,7 +26,7 @@ public class CallsTreeCellRenderer extends DefaultTreeCellRenderer {
 		Component c = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 		EntryReference<?, ?> reference = ((ReferenceTreeNode<?, ?>) value).getReference();
 
-		this.setForeground(Config.INSTANCE.getCurrentColors().text.value());
+		this.setForeground(Config.INSTANCE.currentColors().text.value());
 
 		// if the node represents the method calling the entry
 		if (reference != null) {

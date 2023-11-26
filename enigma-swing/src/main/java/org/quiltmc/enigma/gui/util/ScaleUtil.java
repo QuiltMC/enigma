@@ -25,9 +25,9 @@ public class ScaleUtil {
 		float oldScale = Config.INSTANCE.scaleFactor.value();
 		float clamped = Math.min(Math.max(0.25f, scaleFactor), 10.0f);
 		Config.INSTANCE.scaleFactor.setValue(clamped, true);
-		rescaleFontInConfig(Config.INSTANCE.getCurrentFonts().defaultFont, oldScale);
-		rescaleFontInConfig(Config.INSTANCE.getCurrentFonts().small, oldScale);
-		rescaleFontInConfig(Config.INSTANCE.getCurrentFonts().editor, oldScale);
+		rescaleFontInConfig(Config.INSTANCE.currentFonts().defaultFont, oldScale);
+		rescaleFontInConfig(Config.INSTANCE.currentFonts().small, oldScale);
+		rescaleFontInConfig(Config.INSTANCE.currentFonts().editor, oldScale);
 		listeners.forEach(l -> l.onScaleChanged(clamped, oldScale));
 	}
 
@@ -92,7 +92,7 @@ public class ScaleUtil {
 			UiDefaultsScaler.updateAndApplyGlobalScaling((int) (100 * scale), true);
 		}
 
-		Font font = Config.INSTANCE.getCurrentFonts().editor.value();
+		Font font = Config.INSTANCE.currentFonts().editor.value();
 		font = font.deriveFont((float) (12 * scale));
 		SyntaxpainConfiguration.setEditorFont(font);
 	}

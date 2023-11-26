@@ -5,7 +5,6 @@ import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.NotificationManager;
 import org.quiltmc.enigma.gui.config.Decompiler;
 import org.quiltmc.enigma.gui.config.theme.LookAndFeel;
-import org.quiltmc.enigma.gui.config.NetConfig;
 import org.quiltmc.enigma.gui.config.theme.Themes;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
@@ -412,13 +411,13 @@ public class MenuBar {
 		this.gui.getController().disconnectIfConnected(null);
 		try {
 			this.gui.getController().createClient(result.username(), result.address().address, result.address().port, result.password());
-			if (Config.INSTANCE.serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
+			if (Config.get().serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
 				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.CONNECTED_TO_SERVER, result.addressStr()));
 			}
 
-			Config.INSTANCE.getNetConfig().username.setValue(result.username(), true);
-			Config.INSTANCE.getNetConfig().remoteAddress.setValue(result.addressStr(), true);
-			Config.INSTANCE.getNetConfig().password.setValue(String.valueOf(result.password()), true);
+			Config.net().username.setValue(result.username(), true);
+			Config.net().remoteAddress.setValue(result.addressStr(), true);
+			Config.net().password.setValue(String.valueOf(result.password()), true);
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), e.toString(), I18n.translate("menu.collab.connect.error"), JOptionPane.ERROR_MESSAGE);
 			this.gui.getController().disconnectIfConnected(null);
@@ -445,8 +444,8 @@ public class MenuBar {
 				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.SERVER_STARTED, result.port()));
 			}
 
-			Config.INSTANCE.getNetConfig().serverPort.setValue(result.port(), true);
-			Config.INSTANCE.getNetConfig().serverPassword.setValue(String.valueOf(result.password()), true);
+			Config.net().serverPort.setValue(result.port(), true);
+			Config.net().serverPassword.setValue(String.valueOf(result.password()), true);
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), e.toString(), I18n.translate("menu.collab.server.start.error"), JOptionPane.ERROR_MESSAGE);
 			this.gui.getController().disconnectIfConnected(null);
@@ -475,14 +474,14 @@ public class MenuBar {
 
 	public void reloadOpenRecentMenu(Gui gui) {
 		this.openRecentMenu.removeAll();
-		List<Pair<Path, Path>> recentFilePairs = Config.getRecentFilePairs();
+		List<Config.RecentProject> recentFilePairs = Config.get().recentProjects.value();
 
 		// find the longest common prefix among all mappings files
 		// this is to clear the "/home/user/wherever-you-store-your-mappings-projects/" part of the path and only show relevant information
 		Path prefix = null;
 
 		if (recentFilePairs.size() > 1) {
-			List<Path> recentFiles = recentFilePairs.stream().map(Pair::b).sorted().toList();
+			List<Path> recentFiles = recentFilePairs.stream().map(Config.RecentProject::getMappingsPath).sorted().toList();
 			prefix = recentFiles.get(0);
 
 			for (int i = 1; i < recentFiles.size(); i++) {
@@ -494,23 +493,23 @@ public class MenuBar {
 			}
 		}
 
-		for (Pair<Path, Path> recent : recentFilePairs) {
-			if (!Files.exists(recent.a()) || !Files.exists(recent.b())) {
+		for (Config.RecentProject recent : recentFilePairs) {
+			if (!Files.exists(recent.getJarPath()) || !Files.exists(recent.getMappingsPath())) {
 				continue;
 			}
 
-			String jarName = recent.a().getFileName().toString();
+			String jarName = recent.getJarPath().getFileName().toString();
 
 			// if there's no common prefix, just show the last directory in the tree
 			String mappingsName;
 			if (prefix != null) {
-				mappingsName = prefix.relativize(recent.b()).toString();
+				mappingsName = prefix.relativize(recent.getMappingsPath()).toString();
 			} else {
-				mappingsName = recent.b().getFileName().toString();
+				mappingsName = recent.getMappingsPath().getFileName().toString();
 			}
 
 			JMenuItem item = new JMenuItem(jarName + " -> " + mappingsName);
-			item.addActionListener(event -> gui.getController().openJar(recent.a()).whenComplete((v, t) -> gui.getController().openMappings(recent.b())));
+			item.addActionListener(event -> gui.getController().openJar(recent.getJarPath()).whenComplete((v, t) -> gui.getController().openMappings(recent.getMappingsPath())));
 			this.openRecentMenu.add(item);
 		}
 	}
@@ -560,14 +559,14 @@ public class MenuBar {
 		for (Decompiler decompiler : Decompiler.values()) {
 			JRadioButtonMenuItem decompilerButton = new JRadioButtonMenuItem(decompiler.name);
 			decompilerGroup.add(decompilerButton);
-			if (decompiler.equals(Config.getDecompilerConfig().decompiler.value())) {
+			if (decompiler.equals(Config.decompiler().decompiler.value())) {
 				decompilerButton.setSelected(true);
 			}
 
 			decompilerButton.addActionListener(event -> {
 				gui.getController().setDecompiler(decompiler.service);
 
-				Config.getDecompilerConfig().decompiler.setValue(decompiler, true);
+				Config.decompiler().decompiler.setValue(decompiler, true);
 			});
 			decompilerMenu.add(decompilerButton);
 		}

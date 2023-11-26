@@ -121,7 +121,7 @@ public class DockerButton extends JToggleButton implements Draggable {
 
 		// setup text
 		String translatedText = this.textSupplier.get();
-		Font font = Config.getCurrentFonts().defaultFont.value();
+		Font font = Config.currentFonts().defaultFont.value();
 		if (Config.get().lookAndFeel.value().equals(LookAndFeel.SYSTEM)) {
 			font = font.deriveFont(Font.BOLD);
 		}

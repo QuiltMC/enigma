@@ -70,7 +70,7 @@ public abstract class Docker extends JPanel {
 	 * @return the position of the docker's button in the selector panels. this also represents where the docker will open when its button is clicked cannot use {@link Docker.VerticalLocation#FULL}
 	 */
 	public final Location getButtonLocation() {
-		return Config.getDockerConfig().getDockerLocation(this.getId());
+		return Config.dockers().getLocation(this.getId());
 	}
 
 	public abstract Location getPreferredButtonLocation();

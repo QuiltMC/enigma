@@ -78,15 +78,6 @@ public class DockerManager {
 	}
 
 	/**
-	 * Saves the state of both docks to the config file.
-	 * @see Dock#saveState()
-	 */
-	public void saveStateToConfig() {
-		this.leftDock.saveState();
-		this.rightDock.saveState();
-	}
-
-	/**
 	 * Registers a new docker to be available in the GUI.
 	 * @param docker the docker to be registered
 	 */

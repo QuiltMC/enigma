@@ -3,7 +3,6 @@ package org.quiltmc.enigma.gui.config;
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.config.api.values.ValueList;
-import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.enigma.gui.NotificationManager;
 import org.quiltmc.enigma.gui.config.theme.LookAndFeel;
 import org.quiltmc.enigma.gui.config.theme.Theme;
@@ -16,18 +15,20 @@ import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public final class Config extends ReflectiveConfig {
 	public static final Config INSTANCE = new Config();
 
 	public Config() {
-		this.updateSyntaxpain();
+		updateSyntaxpain();
 	}
 
 	public final TrackedValue<String> language = this.value(I18n.DEFAULT_LANGUAGE);
 	public final TrackedValue<Float> scaleFactor = this.value(1.0f);
 	public final TrackedValue<Integer> maxRecentFiles = this.value(10);
-	public final TrackedValue<ValueList<RecentProject>> recentFiles = this.list(new RecentProject("", ""));
+	public final TrackedValue<ValueList<RecentProject>> recentProjects = this.list(new RecentProject("", ""));
 	public final TrackedValue<NotificationManager.ServerNotificationLevel> serverNotificationLevel = this.value(NotificationManager.ServerNotificationLevel.FULL);
 	public final TrackedValue<Boolean> useCustomFonts = this.value(false);
 	public final TrackedValue<Dimension> windowSize = this.value(ScaleUtil.getDimension(1024, 576));
@@ -54,23 +55,23 @@ public final class Config extends ReflectiveConfig {
 		return INSTANCE;
 	}
 
-	public static DockerConfig getDockerConfig() {
+	public static DockerConfig dockers() {
 		return INSTANCE.dockerConfig.value();
 	}
 
-	public static KeyBindsConfig getKeyBindsConfig() {
+	public static KeyBindsConfig keyBinds() {
 		return INSTANCE.keyBinds.value();
 	}
 
-	public static NetConfig getNetConfig() {
+	public static NetConfig net() {
 		return INSTANCE.net.value();
 	}
 
-	public static DecompilerConfig getDecompilerConfig() {
+	public static DecompilerConfig decompiler() {
 		return INSTANCE.decompiler.value();
 	}
 
-	public static Theme getCurrentTheme() {
+	public static Theme currentTheme() {
 		return switch (INSTANCE.activeLookAndFeel) {
 			case DEFAULT -> INSTANCE.defaultTheme.value();
 			case DARCULA -> INSTANCE.darculaTheme.value();
@@ -80,24 +81,38 @@ public final class Config extends ReflectiveConfig {
 		};
 	}
 
-	public static ThemeColors getCurrentColors() {
-		return getCurrentTheme().colors.value();
+	public static ThemeColors currentColors() {
+		return currentTheme().colors.value();
 	}
 
-	public static ThemeFonts getCurrentFonts() {
-		return getCurrentTheme().fonts.value();
+	public static ThemeFonts currentFonts() {
+		return currentTheme().fonts.value();
+	}
+
+	public static void insertRecentProject(String jarPath, String mappingsPath) {
+		INSTANCE.recentProjects.value().add(0, new RecentProject(jarPath, mappingsPath));
+	}
+
+	public static RecentProject getMostRecentProject() {
+		return INSTANCE.recentProjects.value().get(0);
 	}
 
 	public record RecentProject(String jarPath, String mappingsPath) {
+		public Path getJarPath() {
+			return Paths.get(this.jarPath);
+		}
 
+		public Path getMappingsPath() {
+			return Paths.get(this.mappingsPath);
+		}
 	}
 
 	/**
 	 * Updates the backend library Syntaxpain, used for code highlighting and other editor things.
 	 */
-	private void updateSyntaxpain() {
-		ThemeFonts fonts = this.getCurrentTheme().fonts.value();
-		ThemeColors colors = this.getCurrentTheme().colors.value();
+	private static void updateSyntaxpain() {
+		ThemeFonts fonts = currentFonts();
+		ThemeColors colors = currentColors();
 
 		SyntaxpainConfiguration.setEditorFont(fonts.editor.value());
 		SyntaxpainConfiguration.setQuickFindDialogFactory(EnigmaQuickFindDialog::new);

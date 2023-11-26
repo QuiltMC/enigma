@@ -6,7 +6,6 @@ import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.gui.config.DockerConfig;
-import org.quiltmc.enigma.gui.config.NetConfig;
 import org.quiltmc.enigma.gui.config.theme.Themes;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.JavadocDialog;
@@ -148,8 +147,8 @@ public class Gui {
 		this.dockerManager.registerDocker(new AllClassesDocker(this));
 		this.dockerManager.registerDocker(new DeobfuscatedClassesDocker(this));
 
-		if (Config.INSTANCE.getDockerConfig().dockerLocations.value().isEmpty()) {
-			Config.INSTANCE.getDockerConfig().dockerLocations.value().setValue(DockerConfig.getDefaultLocations(this.dockerManager));
+		if (Config.dockers().dockerLocations.value().isEmpty()) {
+			Config.dockers().dockerLocations.value().setValue(DockerConfig.getDefaultLocations(this.dockerManager));
 		}
 
 		// set default docker sizes
@@ -196,7 +195,7 @@ public class Gui {
 		this.splitLeft.setResizeWeight(0);
 
 		// todo probably doesn't work
-		if (!Config.INSTANCE.dockerConfig.value().getHostedDockers(Docker.Side.LEFT).isEmpty() || !Config.INSTANCE.dockerConfig.value().getHostedDockers(Docker.Side.RIGHT).isEmpty()) {
+		if (!Config.dockers().getLocations(Docker.Side.LEFT).isEmpty() || !Config.dockers().getLocations(Docker.Side.RIGHT).isEmpty()) {
 			this.dockerManager.restoreStateFromConfig();
 		} else {
 			this.dockerManager.setupDefaultConfiguration();
@@ -519,8 +518,7 @@ public class Gui {
 		Config.get().windowPos.setValue(this.mainWindow.getFrame().getLocationOnScreen(), true);
 		Config.get().windowSize.setValue(this.mainWindow.getFrame().getSize(), true);
 
-		this.dockerManager.saveStateToConfig();
-		Config.INSTANCE.save();
+		Config.get().save();
 
 		this.searchDialog.dispose();
 		this.mainWindow.getFrame().dispose();
@@ -700,11 +698,11 @@ public class Gui {
 	}
 
 	public void openMostRecentFiles() {
-		var pair = Config.INSTANCE.getMostRecentFilePair();
+		Config.RecentProject project = Config.getMostRecentProject();
 
-		if (pair.isPresent()) {
-			this.getNotificationManager().notify(ParameterizedMessage.openedProject(pair.get().a().toString(), pair.get().b().toString()));
-			this.controller.openJar(pair.get().a()).whenComplete((v, t) -> this.controller.openMappings(pair.get().b()));
+		if (project != null) {
+			this.getNotificationManager().notify(ParameterizedMessage.openedProject(project.jarPath(), project.mappingsPath()));
+			this.controller.openJar(project.getJarPath()).whenComplete((v, t) -> this.controller.openMappings(project.getMappingsPath()));
 		}
 	}
 }

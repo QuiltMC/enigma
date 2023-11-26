@@ -22,7 +22,6 @@ import org.quiltmc.enigma.api.service.ObfuscationTestService;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.class_handle.ClassHandleProvider;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
-import org.quiltmc.enigma.gui.config.NetConfig;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.ProgressDialog;
 import org.quiltmc.enigma.gui.docker.CollabDocker;
@@ -153,7 +152,7 @@ public class GuiController implements ClientPacketHandler {
 		}
 
 		this.gui.setMappingsFile(path);
-		Config.addRecentFilePair(this.project.getJarPath(), path);
+		Config.insertRecentProject(this.project.getJarPath().toString(), path.toString());
 		this.gui.getMenuBar().reloadOpenRecentMenu(this.gui);
 
 		return ProgressDialog.runOffThread(this.gui, progress -> {
@@ -619,7 +618,7 @@ public class GuiController implements ClientPacketHandler {
 		this.server.start();
 		this.client = new EnigmaClient(this, "127.0.0.1", port);
 		this.client.connect();
-		this.client.sendPacket(new LoginC2SPacket(this.project.getJarChecksum(), password, Config.INSTANCE.getNetConfig().username.value()));
+		this.client.sendPacket(new LoginC2SPacket(this.project.getJarChecksum(), password, Config.INSTANCE.net().username.value()));
 		this.gui.setConnectionState(ConnectionState.HOSTING);
 	}
 

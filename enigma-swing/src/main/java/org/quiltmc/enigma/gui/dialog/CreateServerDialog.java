@@ -32,8 +32,8 @@ public class CreateServerDialog extends AbstractDialog {
 
 	@Override
 	protected List<Pair<String, Component>> createComponents() {
-		this.portField = new JTextField(Integer.toString(Config.INSTANCE.getNetConfig().serverPort.value()));
-		this.passwordField = new JPasswordField(Config.INSTANCE.getNetConfig().serverPassword.value());
+		this.portField = new JTextField(Integer.toString(Config.INSTANCE.net().serverPort.value()));
+		this.passwordField = new JPasswordField(Config.INSTANCE.net().serverPassword.value());
 
 		this.portField.addActionListener(event -> this.confirm());
 		this.passwordField.addActionListener(event -> this.confirm());

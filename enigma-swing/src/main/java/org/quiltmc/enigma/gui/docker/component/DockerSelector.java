@@ -97,7 +97,7 @@ public class DockerSelector extends JPanel {
 		if (hoveredPanel != null) {
 			hoveredPanel.add(button);
 			button.setSide(this.side);
-			Config.getDockerConfig().putDockerLocation(button.getDocker(), this.side, hoveredPanel.equals(this.bottomSelector) ? Docker.VerticalLocation.BOTTOM : Docker.VerticalLocation.TOP);
+			Config.dockers().putLocation(button.getDocker(), this.side, hoveredPanel.equals(this.bottomSelector) ? Docker.VerticalLocation.BOTTOM : Docker.VerticalLocation.TOP);
 			return true;
 		}
 
@@ -111,7 +111,7 @@ public class DockerSelector extends JPanel {
 		if (this.hovered != null) {
 			Rectangle paintedBounds = this.getScreenBoundsFor(this.hovered);
 
-			Color color = Config.getCurrentColors().dockHighlight.value();
+			Color color = Config.currentColors().dockHighlight.value();
 			graphics.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 100));
 			graphics.fillRect(0, this.hovered.equals(this.bottomSelector) ? paintedBounds.height : 0, paintedBounds.width, paintedBounds.height);
 			this.repaint();

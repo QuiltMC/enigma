@@ -22,7 +22,7 @@ public class Themes {
 	public static void setupTheme() {
 		LookAndFeel laf = Config.get().lookAndFeel.value();
 		laf.setGlobalLAF();
-		Config.getCurrentColors().configure(LookAndFeel.isDarkLaf());
+		Config.currentColors().configure(LookAndFeel.isDarkLaf());
 		Themes.setFonts();
 		UIManager.put("ScrollBar.showButtons", true);
 		JEditorPane.registerEditorKitForContentType("text/enigma-sources", JavaSyntaxKit.class.getName());
@@ -32,8 +32,8 @@ public class Themes {
 	}
 
 	private static void setFonts() {
-		Font small = Config.getCurrentFonts().small.value();
-		Font bold = Config.getCurrentFonts().defaultFont.value();
+		Font small = Config.currentFonts().small.value();
+		Font bold = Config.currentFonts().defaultFont.value();
 
 		UIManager.put("CheckBox.font", bold);
 		UIManager.put("CheckBoxMenuItem.font", bold);
@@ -79,11 +79,11 @@ public class Themes {
 
 	public static Map<TokenType, BoxHighlightPainter> getBoxHighlightPainters() {
 		return Map.of(
-				TokenType.OBFUSCATED, BoxHighlightPainter.create(Config.getCurrentColors().obfuscated.value(), Config.getCurrentColors().obfuscatedOutline.value()),
-				TokenType.JAR_PROPOSED, BoxHighlightPainter.create(Config.getCurrentColors().proposed.value(), Config.getCurrentColors().proposedOutline.value()),
-				TokenType.DYNAMIC_PROPOSED, BoxHighlightPainter.create(Config.getCurrentColors().proposed.value(), Config.getCurrentColors().proposedOutline.value()),
-				TokenType.DEOBFUSCATED, BoxHighlightPainter.create(Config.getCurrentColors().deobfuscated.value(), Config.getCurrentColors().deobfuscatedOutline.value()),
-				TokenType.DEBUG, BoxHighlightPainter.create(Config.getCurrentColors().debugToken.value(), Config.getCurrentColors().debugTokenOutline.value())
+				TokenType.OBFUSCATED, BoxHighlightPainter.create(Config.currentColors().obfuscated.value(), Config.currentColors().obfuscatedOutline.value()),
+				TokenType.JAR_PROPOSED, BoxHighlightPainter.create(Config.currentColors().proposed.value(), Config.currentColors().proposedOutline.value()),
+				TokenType.DYNAMIC_PROPOSED, BoxHighlightPainter.create(Config.currentColors().proposed.value(), Config.currentColors().proposedOutline.value()),
+				TokenType.DEOBFUSCATED, BoxHighlightPainter.create(Config.currentColors().deobfuscated.value(), Config.currentColors().deobfuscatedOutline.value()),
+				TokenType.DEBUG, BoxHighlightPainter.create(Config.currentColors().debugToken.value(), Config.currentColors().debugTokenOutline.value())
 		);
 	}
 

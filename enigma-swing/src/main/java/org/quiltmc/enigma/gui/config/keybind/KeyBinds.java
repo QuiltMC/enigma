@@ -1,7 +1,6 @@
 package org.quiltmc.enigma.gui.config.keybind;
 
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.config.KeyBindsConfig;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -90,7 +89,7 @@ public final class KeyBinds {
 
 	public static void loadConfig() {
 		for (KeyBind keyBind : CONFIGURABLE_KEY_BINDS) {
-			keyBind.deserializeCombinations(Config.INSTANCE.keyBinds.value().getKeyBindCodes(keyBind));
+			keyBind.deserializeCombinations(Config.keyBinds().getKeyBindCodes(keyBind));
 		}
 
 		resetEditableKeyBinds();

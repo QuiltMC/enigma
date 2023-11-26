@@ -14,15 +14,10 @@ import org.quiltmc.enigma.gui.docker.InheritanceTreeDocker;
 import org.quiltmc.enigma.gui.docker.NotificationsDocker;
 import org.quiltmc.enigma.gui.docker.ObfuscatedClassesDocker;
 import org.quiltmc.enigma.gui.docker.StructureDocker;
-import org.quiltmc.enigma.util.Pair;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-// todo use ComplexConfigValue for pairs
 public class DockerConfig extends ReflectiveConfig.Section {
 	public final TrackedValue<Integer> leftVerticalDividerLocation = this.value(300);
 	public final TrackedValue<Integer> rightVerticalDividerLocation = this.value(300);
@@ -32,19 +27,19 @@ public class DockerConfig extends ReflectiveConfig.Section {
 
 	public final TrackedValue<ValueMap<Docker.Location>> dockerLocations = this.map(new Docker.Location(Docker.Side.LEFT, Docker.VerticalLocation.TOP)).build();
 
-	public Docker.Location getDockerLocation(String id) {
-		return this.dockerLocations.value().get(id);
-	}
-
-	public void putDockerLocation(String id, Docker.Location location) {
+	public void putLocation(String id, Docker.Location location) {
 		this.dockerLocations.value().put(id, location);
 	}
 
-	public void putDockerLocation(Docker docker, Docker.Side side, Docker.VerticalLocation verticalLocation) {
-		this.putDockerLocation(docker.getId(), new Docker.Location(side, verticalLocation));
+	public void putLocation(Docker docker, Docker.Side side, Docker.VerticalLocation verticalLocation) {
+		this.putLocation(docker.getId(), new Docker.Location(side, verticalLocation));
 	}
 
-	public Map<String, Docker.Location> getHostedDockers(Docker.Side side) {
+	public Docker.Location getLocation(String id) {
+		return this.dockerLocations.value().get(id);
+	}
+
+	public Map<String, Docker.Location> getLocations(Docker.Side side) {
 		return this.dockerLocations.value().entrySet().stream().filter((entry) -> entry.getValue().side() == side).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 
@@ -76,18 +71,18 @@ public class DockerConfig extends ReflectiveConfig.Section {
 		DockerConfig defaultConfig = new DockerConfig();
 
 		// left
-		defaultConfig.putDockerLocation(manager.getDocker(ObfuscatedClassesDocker.class), Docker.Side.LEFT, Docker.VerticalLocation.TOP);
-		defaultConfig.putDockerLocation(manager.getDocker(ClassesDocker.class), Docker.Side.LEFT, Docker.VerticalLocation.TOP);
-		defaultConfig.putDockerLocation(manager.getDocker(DeobfuscatedClassesDocker.class), Docker.Side.LEFT, Docker.VerticalLocation.BOTTOM);
+		defaultConfig.putLocation(manager.getDocker(ObfuscatedClassesDocker.class), Docker.Side.LEFT, Docker.VerticalLocation.TOP);
+		defaultConfig.putLocation(manager.getDocker(ClassesDocker.class), Docker.Side.LEFT, Docker.VerticalLocation.TOP);
+		defaultConfig.putLocation(manager.getDocker(DeobfuscatedClassesDocker.class), Docker.Side.LEFT, Docker.VerticalLocation.BOTTOM);
 
 		// right
-		defaultConfig.putDockerLocation(manager.getDocker(StructureDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.TOP);
-		defaultConfig.putDockerLocation(manager.getDocker(InheritanceTreeDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.TOP);
-		defaultConfig.putDockerLocation(manager.getDocker(ImplementationsTreeDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.TOP);
-		defaultConfig.putDockerLocation(manager.getDocker(CallsTreeDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.TOP);
+		defaultConfig.putLocation(manager.getDocker(StructureDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.TOP);
+		defaultConfig.putLocation(manager.getDocker(InheritanceTreeDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.TOP);
+		defaultConfig.putLocation(manager.getDocker(ImplementationsTreeDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.TOP);
+		defaultConfig.putLocation(manager.getDocker(CallsTreeDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.TOP);
 
-		defaultConfig.putDockerLocation(manager.getDocker(CollabDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.BOTTOM);
-		defaultConfig.putDockerLocation(manager.getDocker(NotificationsDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.BOTTOM);
+		defaultConfig.putLocation(manager.getDocker(CollabDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.BOTTOM);
+		defaultConfig.putLocation(manager.getDocker(NotificationsDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.BOTTOM);
 
 		return defaultConfig.dockerLocations;
 	}

@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.dialog;
 
+import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
@@ -19,10 +20,10 @@ import javax.swing.JDialog;
 import javax.swing.JList;
 
 public class FontDialog extends JDialog {
-	private static final List<Font> FONTS = List.of(
-			Config.INSTANCE.getCurrentTheme().fonts.value().defaultFont.value(),
-			Config.INSTANCE.getCurrentTheme().fonts.value().small.value(),
-			Config.INSTANCE.getCurrentTheme().fonts.value().editor.value()
+	private static final List<TrackedValue<Font>> FONTS = List.of(
+			Config.currentFonts().defaultFont,
+			Config.currentFonts().small,
+			Config.currentFonts().editor
 	);
 
 	private static final List<String> CATEGORY_TEXTS = List.of(
@@ -36,6 +37,7 @@ public class FontDialog extends JDialog {
 	private final JCheckBox customCheckBox = new JCheckBox(I18n.translate("fonts.use_custom"));
 	private final JButton okButton = new JButton(I18n.translate("prompt.ok"));
 	private final JButton cancelButton = new JButton(I18n.translate("prompt.cancel"));
+	private final Font[] fontValues = new Font[]{FONTS.get(0).value(), FONTS.get(1).value(), FONTS.get(2).value()};
 
 	public FontDialog(Frame owner) {
 		super(owner, "Fonts", true);
@@ -76,14 +78,14 @@ public class FontDialog extends JDialog {
 		this.updateUiState();
 		int selectedIndex = this.entries.getSelectedIndex();
 		if (selectedIndex != -1) {
-			this.chooser.setSelectedFont(this.fonts[selectedIndex]);
+			this.chooser.setSelectedFont(this.fontValues[selectedIndex]);
 		}
 	}
 
 	private void selectedFontChanged() {
 		int selectedIndex = this.entries.getSelectedIndex();
 		if (selectedIndex != -1) {
-			this.fonts[selectedIndex] = this.chooser.getSelectedFont();
+			this.fontValues[selectedIndex] = this.chooser.getSelectedFont();
 		}
 	}
 
@@ -94,11 +96,10 @@ public class FontDialog extends JDialog {
 
 	private void apply() {
 		for (int i = 0; i < FONTS.size(); i++) {
-			Config.setFont(FONTS.get(i), this.fonts[i]);
+			FONTS.get(i).setValue(this.fontValues[i], true);
 		}
 
-		Config.setUseCustomFonts(this.customCheckBox.isSelected());
-		Config.save();
+		Config.get().useCustomFonts.setValue(this.customCheckBox.isSelected(), true);
 		ChangeDialog.show(this);
 		this.dispose();
 	}

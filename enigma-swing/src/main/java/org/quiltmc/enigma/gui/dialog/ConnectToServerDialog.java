@@ -35,9 +35,9 @@ public class ConnectToServerDialog extends AbstractDialog {
 
 	@Override
 	protected List<Pair<String, Component>> createComponents() {
-		this.usernameField = new JTextField(Config.INSTANCE.getNetConfig().username.value());
-		this.ipField = new JTextField(Config.INSTANCE.getNetConfig().remoteAddress.value());
-		this.passwordField = new JPasswordField(Config.INSTANCE.getNetConfig().password.value());
+		this.usernameField = new JTextField(Config.INSTANCE.net().username.value());
+		this.ipField = new JTextField(Config.INSTANCE.net().remoteAddress.value());
+		this.passwordField = new JPasswordField(Config.INSTANCE.net().password.value());
 
 		this.usernameField.addActionListener(event -> this.confirm());
 		this.ipField.addActionListener(event -> this.confirm());

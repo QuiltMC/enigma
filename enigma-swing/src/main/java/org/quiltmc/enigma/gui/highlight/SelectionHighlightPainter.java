@@ -18,7 +18,7 @@ public class SelectionHighlightPainter implements Highlighter.HighlightPainter {
 		// draw a thick border
 		Graphics2D g2d = (Graphics2D) g;
 		Rectangle bounds = BoxHighlightPainter.getBounds(text, start, end);
-		g2d.setColor(Config.getCurrentColors().selectionHighlight.value());
+		g2d.setColor(Config.currentColors().selectionHighlight.value());
 		g2d.setStroke(new BasicStroke(2.0f));
 		g2d.drawRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 4, 4);
 	}
