@@ -89,7 +89,7 @@ public final class KeyBinds {
 
 	public static void loadConfig() {
 		for (KeyBind keyBind : CONFIGURABLE_KEY_BINDS) {
-			keyBind.deserializeCombinations(Config.keyBinds().getKeyBindCodes(keyBind));
+			keyBind.deserializeCombinations(Config.keyBinds().getKeyCodes(keyBind));
 		}
 
 		resetEditableKeyBinds();
@@ -101,7 +101,7 @@ public final class KeyBinds {
 			KeyBind editedKeyBind = editableKeyBinds.get(i);
 			if (!editedKeyBind.equals(keyBind)) {
 				keyBind.setFrom(editedKeyBind);
-				Config.keyBinds().setKeyBind(editedKeyBind);
+				Config.keyBinds().setBind(editedKeyBind);
 			}
 		}
 	}

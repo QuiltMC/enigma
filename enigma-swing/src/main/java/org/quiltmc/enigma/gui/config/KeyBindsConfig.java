@@ -8,12 +8,12 @@ import org.quiltmc.enigma.gui.config.keybind.KeyBind;
 public final class KeyBindsConfig extends ReflectiveConfig.Section {
 	public final TrackedValue<ValueMap<String[]>> keyCodes = this.map(new String[]{""}).build();
 
-	public String[] getKeyBindCodes(KeyBind keyBind) {
+	public String[] getKeyCodes(KeyBind keyBind) {
 		String[] codes = this.keyCodes.value().get(keyBind.name());
 		return codes.length == 0 ? keyBind.serializeCombinations() : codes;
 	}
 
-	public void setKeyBind(KeyBind keyBind) {
+	public void setBind(KeyBind keyBind) {
 		this.keyCodes.value().put(keyBind.name(), keyBind.serializeCombinations());
 	}
 }

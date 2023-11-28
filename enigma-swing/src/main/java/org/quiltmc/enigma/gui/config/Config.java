@@ -16,7 +16,6 @@ import org.quiltmc.enigma.gui.config.theme.Theme;
 import org.quiltmc.enigma.gui.config.theme.ThemeColors;
 import org.quiltmc.enigma.gui.config.theme.ThemeFonts;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindDialog;
-import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
@@ -30,7 +29,7 @@ public final class Config extends ReflectiveConfig {
 	private static final Config INSTANCE = ConfigFactory.create(ENVIRONMENT, "enigma", "main", Config.class);
 
 	public Config() {
-		updateSyntaxpain();
+		//updateSyntaxpain();
 	}
 
 	public final TrackedValue<String> language = this.value(I18n.DEFAULT_LANGUAGE);
@@ -39,8 +38,8 @@ public final class Config extends ReflectiveConfig {
 	public final TrackedValue<ValueList<RecentProject>> recentProjects = this.list(new RecentProject("", ""));
 	public final TrackedValue<NotificationManager.ServerNotificationLevel> serverNotificationLevel = this.value(NotificationManager.ServerNotificationLevel.FULL);
 	public final TrackedValue<Boolean> useCustomFonts = this.value(false);
-	public final TrackedValue<Dimension> windowSize = this.value(ScaleUtil.getDimension(1024, 576));
-	public final TrackedValue<Point> windowPos = this.value(new Point());
+	public final TrackedValue<Vec2i> windowSize = this.value(new Vec2i(1024, 576));
+	public final TrackedValue<Vec2i> windowPos = this.value(new Vec2i(0, 0));
 	public final TrackedValue<String> lastSelectedDir = this.value("");
 	public final TrackedValue<String> lastTopLevelPackage = this.value("");
 	public final TrackedValue<Boolean> shouldIncludeSyntheticParameters = this.value(false);
@@ -51,7 +50,7 @@ public final class Config extends ReflectiveConfig {
 
 	public final TrackedValue<LookAndFeel> lookAndFeel = this.value(LookAndFeel.DEFAULT);
 	// todo laf can't be changed while running
-	public final LookAndFeel activeLookAndFeel = this.lookAndFeel.value();
+	public final transient LookAndFeel activeLookAndFeel = this.lookAndFeel.value();
 
 	public final TrackedValue<Theme> defaultTheme = this.value(new Theme(LookAndFeel.DEFAULT));
 	public final TrackedValue<Theme> darculaTheme = this.value(new Theme(LookAndFeel.DEFAULT));
@@ -124,6 +123,42 @@ public final class Config extends ReflectiveConfig {
 			return ValueMap.builder("")
 				.put("jarPath", this.jarPath)
 				.put("mappingsPath", this.mappingsPath)
+				.build();
+		}
+
+		@Override
+		public ComplexConfigValue copy() {
+			return this;
+		}
+	}
+
+	public record Vec2i(int x, int y) implements ConfigSerializableObject<ValueMap<Integer>> {
+		public Dimension toDimension() {
+			return new Dimension(this.x, this.y);
+		}
+
+		public static Vec2i fromDimension(Dimension dimension) {
+			return new Vec2i(dimension.width, dimension.height);
+		}
+
+		public Point toPoint() {
+			return new Point(this.x, this.y);
+		}
+
+		public static Vec2i fromPoint(Point point) {
+			return new Vec2i(point.x, point.y);
+		}
+
+		@Override
+		public Vec2i convertFrom(ValueMap<Integer> representation) {
+			return new Vec2i(representation.get("x"), representation.get("y"));
+		}
+
+		@Override
+		public ValueMap<Integer> getRepresentation() {
+			return ValueMap.builder(0)
+				.put("x", this.x)
+				.put("y", this.y)
 				.build();
 		}
 

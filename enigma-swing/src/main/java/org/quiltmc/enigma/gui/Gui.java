@@ -208,11 +208,11 @@ public class Gui {
 		JFrame frame = this.mainWindow.getFrame();
 		frame.addWindowListener(GuiUtil.onWindowClose(e -> this.close()));
 
-		frame.setSize(Config.get().windowSize.value());
+		frame.setSize(Config.get().windowSize.value().toDimension());
 		frame.setMinimumSize(ScaleUtil.getDimension(640, 480));
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-		Point windowPos = Config.get().windowPos.value();
+		Point windowPos = Config.get().windowPos.value().toPoint();
 		frame.setLocation(windowPos);
 
 		this.retranslateUi();
@@ -515,8 +515,8 @@ public class Gui {
 	}
 
 	private void exit() {
-		Config.get().windowPos.setValue(this.mainWindow.getFrame().getLocationOnScreen(), true);
-		Config.get().windowSize.setValue(this.mainWindow.getFrame().getSize(), true);
+		Config.get().windowPos.setValue(Config.Vec2i.fromPoint(this.mainWindow.getFrame().getLocationOnScreen()), true);
+		Config.get().windowSize.setValue(Config.Vec2i.fromDimension(this.mainWindow.getFrame().getSize()), true);
 
 		Config.get().save();
 
