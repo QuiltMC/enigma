@@ -42,7 +42,10 @@ public class StatsDialog {
 
 		Map<StatType, JCheckBox> checkboxes = new EnumMap<>(StatType.class);
 
-		final int[] i = {0};
+		String overallText = I18n.translate("menu.file.stats.overall") + " - " + String.format("%.2f%%", result.getPercentage(StatType.values()));
+		contentPane.add(new JLabel(overallText), GridBagConstraintsBuilder.create().width(20).anchor(GridBagConstraints.CENTER).build());
+
+		final int[] i = {1};
 		result.getOverall().getTypes().stream().sorted(Comparator.comparing(StatType::getName)).forEach(type -> {
 			JCheckBox checkBox = new JCheckBox(type.getName());
 			checkboxes.put(type, checkBox);
