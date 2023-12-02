@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.gui.docker;
 
+import org.quiltmc.config.api.values.ComplexConfigValue;
+import org.quiltmc.config.api.values.ConfigSerializableObject;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.docker.component.DockerButton;
@@ -70,7 +72,8 @@ public abstract class Docker extends JPanel {
 	 * @return the position of the docker's button in the selector panels. this also represents where the docker will open when its button is clicked cannot use {@link Docker.VerticalLocation#FULL}
 	 */
 	public final Location getButtonLocation() {
-		return Config.dockers().getLocation(this.getId());
+		Location savedLocation = Config.dockers().getLocation(this.getId());
+		return savedLocation == null ? this.getPreferredButtonLocation() : savedLocation;
 	}
 
 	public abstract Location getPreferredButtonLocation();
@@ -103,10 +106,25 @@ public abstract class Docker extends JPanel {
 	 * @param side the side of the screen, either right or left
 	 * @param verticalLocation the vertical location of the docker, being full, top or bottom
 	 */
-	public record Location(Side side, VerticalLocation verticalLocation) {
+	public record Location(Side side, VerticalLocation verticalLocation) implements ConfigSerializableObject<String> {
 		@Override
 		public String toString() {
-			return this.side.name().toLowerCase() + ";" + this.verticalLocation.name().toLowerCase();
+			return this.side.name() + ";" + this.verticalLocation.name();
+		}
+
+		@Override
+		public ConfigSerializableObject<String> convertFrom(String representation) {
+			return new Location(Side.valueOf(representation.split(";")[0]), VerticalLocation.valueOf(representation.split(";")[0]));
+		}
+
+		@Override
+		public String getRepresentation() {
+			return this.toString();
+		}
+
+		@Override
+		public ComplexConfigValue copy() {
+			return this;
 		}
 	}
 

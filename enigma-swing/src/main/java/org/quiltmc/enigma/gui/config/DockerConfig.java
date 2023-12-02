@@ -15,10 +15,11 @@ import org.quiltmc.enigma.gui.docker.NotificationsDocker;
 import org.quiltmc.enigma.gui.docker.ObfuscatedClassesDocker;
 import org.quiltmc.enigma.gui.docker.StructureDocker;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class DockerConfig extends ReflectiveConfig.Section {
+public class DockerConfig extends ReflectiveConfig {
 	public final TrackedValue<Integer> leftVerticalDividerLocation = this.value(300);
 	public final TrackedValue<Integer> rightVerticalDividerLocation = this.value(300);
 	public final TrackedValue<Integer> leftHorizontalDividerLocation = this.value(300);
@@ -35,6 +36,7 @@ public class DockerConfig extends ReflectiveConfig.Section {
 		this.putLocation(docker.getId(), new Docker.Location(side, verticalLocation));
 	}
 
+	@Nullable
 	public Docker.Location getLocation(String id) {
 		return this.dockerLocations.value().get(id);
 	}

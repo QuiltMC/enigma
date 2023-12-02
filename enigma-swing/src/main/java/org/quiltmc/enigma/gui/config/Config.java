@@ -13,8 +13,6 @@ import org.quiltmc.config.implementor_api.ConfigFactory;
 import org.quiltmc.enigma.gui.NotificationManager;
 import org.quiltmc.enigma.gui.config.theme.LookAndFeel;
 import org.quiltmc.enigma.gui.config.theme.Theme;
-import org.quiltmc.enigma.gui.config.theme.ThemeColors;
-import org.quiltmc.enigma.gui.config.theme.ThemeFonts;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindDialog;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
@@ -26,7 +24,11 @@ import java.nio.file.Paths;
 
 public final class Config extends ReflectiveConfig {
 	private static final ConfigEnvironment ENVIRONMENT = new ConfigEnvironment(ConfigPaths.getConfigPathRoot(), "toml", new NightConfigSerializer<>("toml", new TomlParser(), new TomlWriter()));
-	private static final Config INSTANCE = ConfigFactory.create(ENVIRONMENT, "enigma", "main", Config.class);
+	private static final Config MAIN = ConfigFactory.create(ENVIRONMENT, "enigma", "main", Config.class);
+	private static final KeyBindsConfig KEYBINDS = ConfigFactory.create(ENVIRONMENT, "enigma", "keybinds", KeyBindsConfig.class);
+	private static final NetConfig NET = ConfigFactory.create(ENVIRONMENT, "enigma", "net", NetConfig.class);
+	private static final DockerConfig DOCKER = ConfigFactory.create(ENVIRONMENT, "enigma", "docker", DockerConfig.class);
+	private static final DecompilerConfig DECOMPILER = ConfigFactory.create(ENVIRONMENT, "enigma", "decompiler", DecompilerConfig.class);
 
 	public Config() {
 		//updateSyntaxpain();
@@ -43,65 +45,61 @@ public final class Config extends ReflectiveConfig {
 	public final TrackedValue<String> lastSelectedDir = this.value("");
 	public final TrackedValue<String> lastTopLevelPackage = this.value("");
 	public final TrackedValue<Boolean> shouldIncludeSyntheticParameters = this.value(false);
-	public final TrackedValue<KeyBindsConfig> keyBinds = this.value(new KeyBindsConfig());
-	public final TrackedValue<NetConfig> net = this.value(new NetConfig());
-	public final TrackedValue<DecompilerConfig> decompiler = this.value(new DecompilerConfig());
-	public final TrackedValue<DockerConfig> dockerConfig = this.value(new DockerConfig());
 
 	public final TrackedValue<LookAndFeel> lookAndFeel = this.value(LookAndFeel.DEFAULT);
 	// todo laf can't be changed while running
 	public final transient LookAndFeel activeLookAndFeel = this.lookAndFeel.value();
 
-	public final TrackedValue<Theme> defaultTheme = this.value(new Theme(LookAndFeel.DEFAULT));
-	public final TrackedValue<Theme> darculaTheme = this.value(new Theme(LookAndFeel.DEFAULT));
-	public final TrackedValue<Theme> metalTheme = this.value(new Theme(LookAndFeel.METAL));
-	public final TrackedValue<Theme> systemTheme = this.value(new Theme(LookAndFeel.SYSTEM));
-	public final TrackedValue<Theme> noneTheme = this.value(new Theme(LookAndFeel.NONE));
+	public final Theme defaultTheme = new Theme(LookAndFeel.DEFAULT);
+	public final Theme darculaTheme = new Theme(LookAndFeel.DARCULA);
+	public final Theme metalTheme = new Theme(LookAndFeel.METAL);
+	public final Theme systemTheme = new Theme(LookAndFeel.SYSTEM);
+	public final Theme noneTheme = new Theme(LookAndFeel.NONE);
 
 	public static Config get() {
-		return INSTANCE;
+		return MAIN;
 	}
 
 	public static DockerConfig dockers() {
-		return INSTANCE.dockerConfig.value();
+		return DOCKER;
 	}
 
 	public static KeyBindsConfig keyBinds() {
-		return INSTANCE.keyBinds.value();
+		return KEYBINDS;
 	}
 
 	public static NetConfig net() {
-		return INSTANCE.net.value();
+		return NET;
 	}
 
 	public static DecompilerConfig decompiler() {
-		return INSTANCE.decompiler.value();
+		return DECOMPILER;
 	}
 
 	public static Theme currentTheme() {
-		return switch (INSTANCE.activeLookAndFeel) {
-			case DEFAULT -> INSTANCE.defaultTheme.value();
-			case DARCULA -> INSTANCE.darculaTheme.value();
-			case METAL -> INSTANCE.metalTheme.value();
-			case SYSTEM -> INSTANCE.systemTheme.value();
-			case NONE -> INSTANCE.noneTheme.value();
+		return switch (MAIN.activeLookAndFeel) {
+			case DEFAULT -> MAIN.defaultTheme;
+			case DARCULA -> MAIN.darculaTheme;
+			case METAL -> MAIN.metalTheme;
+			case SYSTEM -> MAIN.systemTheme;
+			case NONE -> MAIN.noneTheme;
 		};
 	}
 
-	public static ThemeColors currentColors() {
-		return currentTheme().colors.value();
+	public static Theme.Colors currentColors() {
+		return currentTheme().colors;
 	}
 
-	public static ThemeFonts currentFonts() {
-		return currentTheme().fonts.value();
+	public static Theme.Fonts currentFonts() {
+		return currentTheme().fonts;
 	}
 
 	public static void insertRecentProject(String jarPath, String mappingsPath) {
-		INSTANCE.recentProjects.value().add(0, new RecentProject(jarPath, mappingsPath));
+		MAIN.recentProjects.value().add(0, new RecentProject(jarPath, mappingsPath));
 	}
 
 	public static RecentProject getMostRecentProject() {
-		return INSTANCE.recentProjects.value().get(0);
+		return MAIN.recentProjects.value().get(0);
 	}
 
 	public record RecentProject(String jarPath, String mappingsPath) implements ConfigSerializableObject<ValueMap<String>> {
@@ -172,8 +170,8 @@ public final class Config extends ReflectiveConfig {
 	 * Updates the backend library Syntaxpain, used for code highlighting and other editor things.
 	 */
 	private static void updateSyntaxpain() {
-		ThemeFonts fonts = currentFonts();
-		ThemeColors colors = currentColors();
+		Theme.Fonts fonts = currentFonts();
+		Theme.Colors colors = currentColors();
 
 		SyntaxpainConfiguration.setEditorFont(fonts.editor.value());
 		SyntaxpainConfiguration.setQuickFindDialogFactory(EnigmaQuickFindDialog::new);

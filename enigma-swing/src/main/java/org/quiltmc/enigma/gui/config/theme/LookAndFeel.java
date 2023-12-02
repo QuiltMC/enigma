@@ -3,6 +3,8 @@ package org.quiltmc.enigma.gui.config.theme;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatSystemProperties;
+import org.quiltmc.config.api.values.ComplexConfigValue;
+import org.quiltmc.config.api.values.ConfigSerializableObject;
 import org.quiltmc.enigma.gui.config.Config;
 
 import java.awt.Color;
@@ -12,7 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
-public enum LookAndFeel {
+public enum LookAndFeel implements ConfigSerializableObject<Integer> {
 	DEFAULT(false),
 	DARCULA(false),
 	METAL(true),
@@ -65,5 +67,20 @@ public enum LookAndFeel {
 		// convert the color we got to grayscale
 		int b = (int) (0.3 * c.getRed() + 0.59 * c.getGreen() + 0.11 * c.getBlue());
 		return b < 85;
+	}
+
+	@Override
+	public ConfigSerializableObject<Integer> convertFrom(Integer representation) {
+		return values()[representation];
+	}
+
+	@Override
+	public Integer getRepresentation() {
+		return this.ordinal();
+	}
+
+	@Override
+	public ComplexConfigValue copy() {
+		return this;
 	}
 }
