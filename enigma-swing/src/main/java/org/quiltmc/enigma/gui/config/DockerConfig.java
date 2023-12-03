@@ -3,6 +3,7 @@ package org.quiltmc.enigma.gui.config;
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.config.api.values.ValueMap;
+import org.quiltmc.enigma.gui.docker.AllClassesDocker;
 import org.quiltmc.enigma.gui.docker.CallsTreeDocker;
 import org.quiltmc.enigma.gui.docker.ClassesDocker;
 import org.quiltmc.enigma.gui.docker.CollabDocker;
@@ -16,6 +17,7 @@ import org.quiltmc.enigma.gui.docker.ObfuscatedClassesDocker;
 import org.quiltmc.enigma.gui.docker.StructureDocker;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -27,6 +29,10 @@ public class DockerConfig extends ReflectiveConfig {
 	public final TrackedValue<Boolean> savedWithLeftDockerOpen = this.value(true);
 
 	public final TrackedValue<ValueMap<Docker.Location>> dockerLocations = this.map(new Docker.Location(Docker.Side.LEFT, Docker.VerticalLocation.TOP)).build();
+
+	public void putLocation(Docker docker, Docker.Location location) {
+		this.putLocation(docker.getId(), location);
+	}
 
 	public void putLocation(String id, Docker.Location location) {
 		this.dockerLocations.value().put(id, location);
@@ -69,23 +75,23 @@ public class DockerConfig extends ReflectiveConfig {
 		}
 	}
 
-	public static TrackedValue<ValueMap<Docker.Location>> getDefaultLocations(DockerManager manager) {
-		DockerConfig defaultConfig = new DockerConfig();
+	public static Map<Docker, Docker.Location> getDefaultLocations(DockerManager manager) {
+		Map<Docker, Docker.Location> locations = new HashMap<>();
 
 		// left
-		defaultConfig.putLocation(manager.getDocker(ObfuscatedClassesDocker.class), Docker.Side.LEFT, Docker.VerticalLocation.TOP);
-		defaultConfig.putLocation(manager.getDocker(ClassesDocker.class), Docker.Side.LEFT, Docker.VerticalLocation.TOP);
-		defaultConfig.putLocation(manager.getDocker(DeobfuscatedClassesDocker.class), Docker.Side.LEFT, Docker.VerticalLocation.BOTTOM);
+		locations.put(manager.getDocker(ObfuscatedClassesDocker.class), new Docker.Location(Docker.Side.LEFT, Docker.VerticalLocation.TOP));
+		locations.put(manager.getDocker(AllClassesDocker.class), new Docker.Location(Docker.Side.LEFT, Docker.VerticalLocation.TOP));
+		locations.put(manager.getDocker(DeobfuscatedClassesDocker.class), new Docker.Location(Docker.Side.LEFT, Docker.VerticalLocation.BOTTOM));
 
 		// right
-		defaultConfig.putLocation(manager.getDocker(StructureDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.TOP);
-		defaultConfig.putLocation(manager.getDocker(InheritanceTreeDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.TOP);
-		defaultConfig.putLocation(manager.getDocker(ImplementationsTreeDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.TOP);
-		defaultConfig.putLocation(manager.getDocker(CallsTreeDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.TOP);
+		locations.put(manager.getDocker(StructureDocker.class), new Docker.Location(Docker.Side.RIGHT, Docker.VerticalLocation.TOP));
+		locations.put(manager.getDocker(InheritanceTreeDocker.class), new Docker.Location(Docker.Side.RIGHT, Docker.VerticalLocation.TOP));
+		locations.put(manager.getDocker(ImplementationsTreeDocker.class), new Docker.Location(Docker.Side.RIGHT, Docker.VerticalLocation.TOP));
+		locations.put(manager.getDocker(CallsTreeDocker.class), new Docker.Location(Docker.Side.RIGHT, Docker.VerticalLocation.TOP));
 
-		defaultConfig.putLocation(manager.getDocker(CollabDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.BOTTOM);
-		defaultConfig.putLocation(manager.getDocker(NotificationsDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.BOTTOM);
+		locations.put(manager.getDocker(CollabDocker.class), new Docker.Location(Docker.Side.RIGHT, Docker.VerticalLocation.BOTTOM));
+		locations.put(manager.getDocker(NotificationsDocker.class), new Docker.Location(Docker.Side.RIGHT, Docker.VerticalLocation.BOTTOM));
 
-		return defaultConfig.dockerLocations;
+		return locations;
 	}
 }

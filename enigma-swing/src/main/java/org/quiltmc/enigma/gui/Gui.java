@@ -148,7 +148,9 @@ public class Gui {
 		this.dockerManager.registerDocker(new DeobfuscatedClassesDocker(this));
 
 		if (Config.dockers().dockerLocations.value().isEmpty()) {
-			Config.dockers().dockerLocations.value().setValue(DockerConfig.getDefaultLocations(this.dockerManager));
+			for (var entry : DockerConfig.getDefaultLocations(this.dockerManager).entrySet()) {
+				Config.dockers().putLocation(entry.getKey(), entry.getValue());
+			}
 		}
 
 		// set default docker sizes

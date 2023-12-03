@@ -114,7 +114,7 @@ public abstract class Docker extends JPanel {
 
 		@Override
 		public ConfigSerializableObject<String> convertFrom(String representation) {
-			return new Location(Side.valueOf(representation.split(";")[0]), VerticalLocation.valueOf(representation.split(";")[0]));
+			return new Location(Side.valueOf(representation.split(";")[0]), VerticalLocation.valueOf(representation.split(";")[1]));
 		}
 
 		@Override
