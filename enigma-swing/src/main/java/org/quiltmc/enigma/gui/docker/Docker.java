@@ -130,6 +130,7 @@ public abstract class Docker extends JPanel {
 
 	/**
 	 * Represents the side of the screen a docker is located on.
+	 * @implNote these names cannot be changed without breaking configurations
 	 */
 	public enum Side {
 		LEFT,
@@ -138,6 +139,7 @@ public abstract class Docker extends JPanel {
 
 	/**
 	 * Represents the occupied vertical location of a docker.
+	 * @implNote these names cannot be changed without breaking configurations
 	 */
 	public enum VerticalLocation {
 		TOP,

@@ -5,7 +5,6 @@ import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.enigma.gui.docker.AllClassesDocker;
 import org.quiltmc.enigma.gui.docker.CallsTreeDocker;
-import org.quiltmc.enigma.gui.docker.ClassesDocker;
 import org.quiltmc.enigma.gui.docker.CollabDocker;
 import org.quiltmc.enigma.gui.docker.DeobfuscatedClassesDocker;
 import org.quiltmc.enigma.gui.docker.Docker;

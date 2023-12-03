@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.dialog;
 
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.config.theme.Theme;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
@@ -20,7 +21,7 @@ import javax.swing.JDialog;
 import javax.swing.JList;
 
 public class FontDialog extends JDialog {
-	private static final List<TrackedValue<Font>> FONTS = List.of(
+	private static final List<TrackedValue<Theme.Fonts.SerializableFont>> FONTS = List.of(
 			Config.currentFonts().defaultFont,
 			Config.currentFonts().small,
 			Config.currentFonts().editor
@@ -35,7 +36,7 @@ public class FontDialog extends JDialog {
 	private final JList<String> entries = new JList<>(CATEGORY_TEXTS.stream().map(I18n::translate).toArray(String[]::new));
 	private final FontChooser chooser = new FontChooser(Font.decode(Font.DIALOG));
 	private final JCheckBox customCheckBox = new JCheckBox(I18n.translate("fonts.use_custom"));
-	private final Font[] fontValues = new Font[]{FONTS.get(0).value(), FONTS.get(1).value(), FONTS.get(2).value()};
+	private final Theme.Fonts.SerializableFont[] fontValues = new Theme.Fonts.SerializableFont[]{FONTS.get(0).value(), FONTS.get(1).value(), FONTS.get(2).value()};
 
 	public FontDialog(Frame owner) {
 		super(owner, "Fonts", true);
@@ -85,7 +86,7 @@ public class FontDialog extends JDialog {
 	private void selectedFontChanged() {
 		int selectedIndex = this.entries.getSelectedIndex();
 		if (selectedIndex != -1) {
-			this.fontValues[selectedIndex] = this.chooser.getSelectedFont();
+			this.fontValues[selectedIndex] = new Theme.Fonts.SerializableFont(this.chooser.getSelectedFont());
 		}
 	}
 

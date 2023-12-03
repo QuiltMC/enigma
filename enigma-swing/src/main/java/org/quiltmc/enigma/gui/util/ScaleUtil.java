@@ -7,6 +7,7 @@ import com.github.swingdpi.plaf.NimbusTweaker;
 import com.github.swingdpi.plaf.WindowsTweaker;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.config.theme.Theme;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
 import java.awt.Dimension;
@@ -55,8 +56,8 @@ public class ScaleUtil {
 		return createTweakerForCurrentLook(Config.get().scaleFactor.value()).modifyFont("", font);
 	}
 
-	private static void rescaleFontInConfig(TrackedValue<Font> font, float oldScale) {
-		font.setValue(rescaleFont(font.value(), oldScale), true);
+	private static void rescaleFontInConfig(TrackedValue<Theme.Fonts.SerializableFont> font, float oldScale) {
+		font.setValue(new Theme.Fonts.SerializableFont(rescaleFont(font.value(), oldScale)), true);
 	}
 
 	// This does not use the font that's currently active in the UI!

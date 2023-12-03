@@ -5,7 +5,6 @@ import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.config.api.values.ValueMap;
-import org.quiltmc.enigma.gui.util.ScaleUtil;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -20,11 +19,11 @@ public class Theme extends ReflectiveConfig.Section {
 	public final Fonts fonts = new Fonts();
 
 	public static class Fonts extends ReflectiveConfig.Section {
-		public final TrackedValue<Font> defaultFont = this.value(new SerializableFont(Font.decode(Font.DIALOG).deriveFont(Font.BOLD)));
-		public final TrackedValue<Font> small = this.value(new SerializableFont(Font.decode(Font.DIALOG)));
-		public final TrackedValue<Font> editor = this.value(new SerializableFont(Font.decode(Font.MONOSPACED)));
+		public final TrackedValue<SerializableFont> defaultFont = this.value(new SerializableFont(Font.decode(Font.DIALOG).deriveFont(Font.BOLD)));
+		public final TrackedValue<SerializableFont> small = this.value(new SerializableFont(Font.decode(Font.DIALOG)));
+		public final TrackedValue<SerializableFont> editor = this.value(new SerializableFont(Font.decode(Font.MONOSPACED)));
 
-		private static class SerializableFont extends Font implements ConfigSerializableObject<ValueMap<String>> {
+		public static class SerializableFont extends Font implements ConfigSerializableObject<ValueMap<String>> {
 			public SerializableFont(Font font) {
 				this(font.getName(), font.getStyle(), font.getSize());
 			}
@@ -59,41 +58,41 @@ public class Theme extends ReflectiveConfig.Section {
 	}
 
 	public static class Colors extends ReflectiveConfig.Section {
-		public final TrackedValue<Color> lineNumbersForeground = this.value(new SerializableColor(0xFF333300));
-		public final TrackedValue<Color> lineNumbersBackground = this.value(new SerializableColor(0xFFEEEEFF));
-		public final TrackedValue<Color> lineNumbersSelected = this.value(new SerializableColor(0xFFCCCCEE));
+		public final TrackedValue<SerializableColor> lineNumbersForeground = this.value(new SerializableColor(0xFF333300));
+		public final TrackedValue<SerializableColor> lineNumbersBackground = this.value(new SerializableColor(0xFFEEEEFF));
+		public final TrackedValue<SerializableColor> lineNumbersSelected = this.value(new SerializableColor(0xFFCCCCEE));
 
-		public final TrackedValue<Color> obfuscated = this.value(new SerializableColor(0xFFFFDCDC));
-		public final TrackedValue<Color> obfuscatedOutline = this.value(new SerializableColor(0xFFA05050));
+		public final TrackedValue<SerializableColor> obfuscated = this.value(new SerializableColor(0xFFFFDCDC));
+		public final TrackedValue<SerializableColor> obfuscatedOutline = this.value(new SerializableColor(0xFFA05050));
 
-		public final TrackedValue<Color> proposed = this.value(new SerializableColor(0xFF000000));
-		public final TrackedValue<Color> proposedOutline = this.value(new SerializableColor(0xBF000000));
+		public final TrackedValue<SerializableColor> proposed = this.value(new SerializableColor(0xFF000000));
+		public final TrackedValue<SerializableColor> proposedOutline = this.value(new SerializableColor(0xBF000000));
 
-		public final TrackedValue<Color> deobfuscated = this.value(new SerializableColor(0xFFDCFFDC));
-		public final TrackedValue<Color> deobfuscatedOutline = this.value(new SerializableColor(0xFF50A050));
+		public final TrackedValue<SerializableColor> deobfuscated = this.value(new SerializableColor(0xFFDCFFDC));
+		public final TrackedValue<SerializableColor> deobfuscatedOutline = this.value(new SerializableColor(0xFF50A050));
 
-		public final TrackedValue<Color> editorBackground = this.value(new SerializableColor(0xFF50A050));
-		public final TrackedValue<Color> highlight = this.value(new SerializableColor(0xFF50A050));
-		public final TrackedValue<Color> caret = this.value(new SerializableColor(0xFF50A050));
-		public final TrackedValue<Color> selectionHighlight = this.value(new SerializableColor(0xFF50A050));
-		public final TrackedValue<Color> string = this.value(new SerializableColor(0xFFCC6600));
-		public final TrackedValue<Color> number = this.value(new SerializableColor(0xFF999933));
-		public final TrackedValue<Color> operator = this.value(new SerializableColor(0xFF000000));
-		public final TrackedValue<Color> delimiter = this.value(new SerializableColor(0xFF000000));
-		public final TrackedValue<Color> type = this.value(new SerializableColor(0xFF000000));
-		public final TrackedValue<Color> identifier = this.value(new SerializableColor(0xFF000000));
-		public final TrackedValue<Color> comment = this.value(new SerializableColor(0xFF339933));
-		public final TrackedValue<Color> text = this.value(new SerializableColor(0xFF000000));
+		public final TrackedValue<SerializableColor> editorBackground = this.value(new SerializableColor(0xFF50A050));
+		public final TrackedValue<SerializableColor> highlight = this.value(new SerializableColor(0xFF50A050));
+		public final TrackedValue<SerializableColor> caret = this.value(new SerializableColor(0xFF50A050));
+		public final TrackedValue<SerializableColor> selectionHighlight = this.value(new SerializableColor(0xFF50A050));
+		public final TrackedValue<SerializableColor> string = this.value(new SerializableColor(0xFFCC6600));
+		public final TrackedValue<SerializableColor> number = this.value(new SerializableColor(0xFF999933));
+		public final TrackedValue<SerializableColor> operator = this.value(new SerializableColor(0xFF000000));
+		public final TrackedValue<SerializableColor> delimiter = this.value(new SerializableColor(0xFF000000));
+		public final TrackedValue<SerializableColor> type = this.value(new SerializableColor(0xFF000000));
+		public final TrackedValue<SerializableColor> identifier = this.value(new SerializableColor(0xFF000000));
+		public final TrackedValue<SerializableColor> comment = this.value(new SerializableColor(0xFF339933));
+		public final TrackedValue<SerializableColor> text = this.value(new SerializableColor(0xFF000000));
 
-		public final TrackedValue<Color> debugToken = this.value(new SerializableColor(0xFFD9BEF9));
-		public final TrackedValue<Color> debugTokenOutline = this.value(new SerializableColor(0xFFBD93F9));
+		public final TrackedValue<SerializableColor> debugToken = this.value(new SerializableColor(0xFFD9BEF9));
+		public final TrackedValue<SerializableColor> debugTokenOutline = this.value(new SerializableColor(0xFFBD93F9));
 
-		public final TrackedValue<Color> dockHighlight = this.value(new SerializableColor(0xFF0000FF));
+		public final TrackedValue<SerializableColor> dockHighlight = this.value(new SerializableColor(0xFF0000FF));
 
 		private static class SerializableColor extends Color implements ConfigSerializableObject<Integer> {
 			private final int rgba;
 
-			public SerializableColor(int rgba) {
+			SerializableColor(int rgba) {
 				super(rgba, true);
 				this.rgba = rgba;
 			}
