@@ -29,6 +29,7 @@ public class Themes {
 		Map<TokenType, BoxHighlightPainter> boxHighlightPainters = getBoxHighlightPainters();
 		listeners.forEach(l -> l.onThemeChanged(laf, boxHighlightPainters));
 		ScaleUtil.applyScaling();
+		Config.updateSyntaxpain();
 	}
 
 	private static void setFonts() {

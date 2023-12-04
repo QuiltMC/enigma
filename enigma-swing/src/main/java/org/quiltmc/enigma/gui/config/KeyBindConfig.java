@@ -6,7 +6,7 @@ import org.quiltmc.config.api.values.ValueList;
 import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.enigma.gui.config.keybind.KeyBind;
 
-public final class KeyBindsConfig extends ReflectiveConfig {
+public final class KeyBindConfig extends ReflectiveConfig {
 	public final TrackedValue<ValueMap<ValueList<String>>> keyCodes = this.map(ValueList.create("")).build();
 
 	public String[] getKeyCodes(KeyBind keyBind) {

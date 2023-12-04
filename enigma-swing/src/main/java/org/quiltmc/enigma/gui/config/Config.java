@@ -23,16 +23,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public final class Config extends ReflectiveConfig {
-	private static final ConfigEnvironment ENVIRONMENT = new ConfigEnvironment(ConfigPaths.getConfigPathRoot(), "toml", new NightConfigSerializer<>("toml", new TomlParser(), new TomlWriter()));
-	private static final Config MAIN = ConfigFactory.create(ENVIRONMENT, "enigma", "main", Config.class);
-	private static final KeyBindsConfig KEYBINDS = ConfigFactory.create(ENVIRONMENT, "enigma", "keybinds", KeyBindsConfig.class);
-	private static final NetConfig NET = ConfigFactory.create(ENVIRONMENT, "enigma", "net", NetConfig.class);
-	private static final DockerConfig DOCKER = ConfigFactory.create(ENVIRONMENT, "enigma", "docker", DockerConfig.class);
-	private static final DecompilerConfig DECOMPILER = ConfigFactory.create(ENVIRONMENT, "enigma", "decompiler", DecompilerConfig.class);
+	private static final String FORMAT = "toml";
+	private static final String FAMILY = "enigma";
 
-	public Config() {
-		//updateSyntaxpain();
-	}
+	private static final ConfigEnvironment ENVIRONMENT = new ConfigEnvironment(ConfigPaths.getConfigPathRoot(), FORMAT, new NightConfigSerializer<>(FORMAT, new TomlParser(), new TomlWriter()));
+	private static final Config MAIN = ConfigFactory.create(ENVIRONMENT, FAMILY, "main", Config.class);
+	private static final KeyBindConfig KEYBIND = ConfigFactory.create(ENVIRONMENT, FAMILY, "keybind", KeyBindConfig.class);
+	private static final NetConfig NET = ConfigFactory.create(ENVIRONMENT, FAMILY, "net", NetConfig.class);
+	private static final DockerConfig DOCKER = ConfigFactory.create(ENVIRONMENT, FAMILY, "docker", DockerConfig.class);
+	private static final DecompilerConfig DECOMPILER = ConfigFactory.create(ENVIRONMENT, FAMILY, "decompiler", DecompilerConfig.class);
 
 	public final TrackedValue<String> language = this.value(I18n.DEFAULT_LANGUAGE);
 	public final TrackedValue<Float> scaleFactor = this.value(1.0f);
@@ -64,8 +63,8 @@ public final class Config extends ReflectiveConfig {
 		return DOCKER;
 	}
 
-	public static KeyBindsConfig keyBinds() {
-		return KEYBINDS;
+	public static KeyBindConfig keyBinds() {
+		return KEYBIND;
 	}
 
 	public static NetConfig net() {
@@ -169,7 +168,7 @@ public final class Config extends ReflectiveConfig {
 	/**
 	 * Updates the backend library Syntaxpain, used for code highlighting and other editor things.
 	 */
-	private static void updateSyntaxpain() {
+	public static void updateSyntaxpain() {
 		Theme.Fonts fonts = currentFonts();
 		Theme.Colors colors = currentColors();
 
