@@ -124,7 +124,7 @@ public class GuiController implements ClientPacketHandler {
 		return ProgressDialog.runOffThread(this.gui, progress -> {
 			this.project = this.enigma.openJar(jarPath, new ClasspathClassProvider(), progress);
 			this.indexTreeBuilder = new IndexTreeBuilder(this.project.getJarIndex());
-			this.chp = new ClassHandleProvider(this.project, Config.decompiler().decompiler.value().service);
+			this.chp = new ClassHandleProvider(this.project, Config.decompiler().activeDecompiler.value().service);
 			this.statsGenerator = new StatsGenerator(this.project);
 
 			SwingUtilities.invokeLater(() -> {
@@ -556,7 +556,7 @@ public class GuiController implements ClientPacketHandler {
 	public void openStatsTree(Set<StatType> includedTypes) {
 		ProgressDialog.runOffThread(this.gui, progress -> {
 			StatsResult overall = this.getStatsGenerator().getResultNullable().getOverall();
-			StatsTree<Integer> tree = overall.buildTree(Config.get().lastTopLevelPackage.value(), includedTypes);
+			StatsTree<Integer> tree = overall.buildTree(Config.get().stats.lastTopLevelPackage.value(), includedTypes);
 			String treeJson = GSON.toJson(tree.root);
 
 			try {

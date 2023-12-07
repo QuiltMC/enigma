@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.gui.config;
 
-import com.electronwill.nightconfig.toml.TomlParser;
-import com.electronwill.nightconfig.toml.TomlWriter;
 import org.quiltmc.config.api.ReflectiveConfig;
+import org.quiltmc.config.api.annotations.SerializedName;
+import org.quiltmc.config.api.serializer.TomlSerializer;
 import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
 import org.quiltmc.config.api.values.TrackedValue;
@@ -26,33 +26,46 @@ public final class Config extends ReflectiveConfig {
 	private static final String FORMAT = "toml";
 	private static final String FAMILY = "enigma";
 
-	private static final ConfigEnvironment ENVIRONMENT = new ConfigEnvironment(ConfigPaths.getConfigPathRoot(), FORMAT, new NightConfigSerializer<>(FORMAT, new TomlParser(), new TomlWriter()));
+	private static final ConfigEnvironment ENVIRONMENT = new ConfigEnvironment(ConfigPaths.getConfigPathRoot(), FORMAT, new TomlSerializer());
 	private static final Config MAIN = ConfigFactory.create(ENVIRONMENT, FAMILY, "main", Config.class);
 	private static final KeyBindConfig KEYBIND = ConfigFactory.create(ENVIRONMENT, FAMILY, "keybind", KeyBindConfig.class);
 	private static final NetConfig NET = ConfigFactory.create(ENVIRONMENT, FAMILY, "net", NetConfig.class);
 	private static final DockerConfig DOCKER = ConfigFactory.create(ENVIRONMENT, FAMILY, "docker", DockerConfig.class);
 	private static final DecompilerConfig DECOMPILER = ConfigFactory.create(ENVIRONMENT, FAMILY, "decompiler", DecompilerConfig.class);
 
+	@SerializedName("language")
 	public final TrackedValue<String> language = this.value(I18n.DEFAULT_LANGUAGE);
+	@SerializedName("scale_factor")
 	public final TrackedValue<Float> scaleFactor = this.value(1.0f);
+	@SerializedName("max_recent_files")
 	public final TrackedValue<Integer> maxRecentFiles = this.value(10);
+	@SerializedName("recent_projects")
 	public final TrackedValue<ValueList<RecentProject>> recentProjects = this.list(new RecentProject("", ""));
+	@SerializedName("server_notification_level")
 	public final TrackedValue<NotificationManager.ServerNotificationLevel> serverNotificationLevel = this.value(NotificationManager.ServerNotificationLevel.FULL);
+	@SerializedName("use_custom_fonts")
 	public final TrackedValue<Boolean> useCustomFonts = this.value(false);
+	@SerializedName("window_size")
 	public final TrackedValue<Vec2i> windowSize = this.value(new Vec2i(1024, 576));
+	@SerializedName("window_pos")
 	public final TrackedValue<Vec2i> windowPos = this.value(new Vec2i(0, 0));
-	public final TrackedValue<String> lastSelectedDir = this.value("");
-	public final TrackedValue<String> lastTopLevelPackage = this.value("");
-	public final TrackedValue<Boolean> shouldIncludeSyntheticParameters = this.value(false);
 
+	public final StatsSection stats = new StatsSection();
+
+	@SerializedName("look_and_feel")
 	public final TrackedValue<LookAndFeel> lookAndFeel = this.value(LookAndFeel.DEFAULT);
 	// todo laf can't be changed while running
 	public final transient LookAndFeel activeLookAndFeel = this.lookAndFeel.value();
 
+	@SerializedName("default_theme")
 	public final Theme defaultTheme = new Theme(LookAndFeel.DEFAULT);
+	@SerializedName("darcula_theme")
 	public final Theme darculaTheme = new Theme(LookAndFeel.DARCULA);
+	@SerializedName("metal_theme")
 	public final Theme metalTheme = new Theme(LookAndFeel.METAL);
+	@SerializedName("system_theme")
 	public final Theme systemTheme = new Theme(LookAndFeel.SYSTEM);
+	@SerializedName("none_theme")
 	public final Theme noneTheme = new Theme(LookAndFeel.NONE);
 
 	public static Config get() {

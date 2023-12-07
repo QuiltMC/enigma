@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.config;
 
 import org.quiltmc.config.api.ReflectiveConfig;
+import org.quiltmc.config.api.annotations.SerializedName;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.enigma.gui.docker.AllClassesDocker;
@@ -21,12 +22,18 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class DockerConfig extends ReflectiveConfig {
+	@SerializedName("left_vertical_divider_location")
 	public final TrackedValue<Integer> leftVerticalDividerLocation = this.value(300);
+	@SerializedName("right_vertical_divider_location")
 	public final TrackedValue<Integer> rightVerticalDividerLocation = this.value(300);
+	@SerializedName("left_horizontal_divider_location")
 	public final TrackedValue<Integer> leftHorizontalDividerLocation = this.value(300);
+	@SerializedName("right_horizontal_divider_location")
 	public final TrackedValue<Integer> rightHorizontalDividerLocation = this.value(700);
+	@SerializedName("saved_with_left_docker_open")
 	public final TrackedValue<Boolean> savedWithLeftDockerOpen = this.value(true);
 
+	@SerializedName("docker_locations")
 	public final TrackedValue<ValueMap<Docker.Location>> dockerLocations = this.map(new Docker.Location(Docker.Side.LEFT, Docker.VerticalLocation.TOP)).build();
 
 	public void putLocation(Docker docker, Docker.Location location) {

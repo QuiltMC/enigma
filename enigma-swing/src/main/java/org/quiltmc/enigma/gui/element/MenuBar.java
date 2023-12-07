@@ -274,7 +274,7 @@ public class MenuBar {
 
 	private void onOpenJarClicked() {
 		JFileChooser d = this.gui.jarFileChooser;
-		d.setCurrentDirectory(new File(Config.get().lastSelectedDir.value()));
+		d.setCurrentDirectory(new File(Config.get().stats.lastSelectedDir.value()));
 		d.setVisible(true);
 		int result = d.showOpenDialog(this.gui.getFrame());
 
@@ -291,7 +291,7 @@ public class MenuBar {
 				this.gui.getController().openJar(path);
 			}
 
-			Config.get().lastSelectedDir.setValue(d.getCurrentDirectory().getAbsolutePath(), true);
+			Config.get().stats.lastSelectedDir.setValue(d.getCurrentDirectory().getAbsolutePath(), true);
 		}
 	}
 
@@ -345,15 +345,15 @@ public class MenuBar {
 	}
 
 	private void onExportSourceClicked() {
-		this.gui.exportSourceFileChooser.setCurrentDirectory(new File(Config.get().lastSelectedDir.value()));
+		this.gui.exportSourceFileChooser.setCurrentDirectory(new File(Config.get().stats.lastSelectedDir.value()));
 		if (this.gui.exportSourceFileChooser.showSaveDialog(this.gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
-			Config.get().lastSelectedDir.setValue(this.gui.exportSourceFileChooser.getCurrentDirectory().toString(), true);
+			Config.get().stats.lastSelectedDir.setValue(this.gui.exportSourceFileChooser.getCurrentDirectory().toString(), true);
 			this.gui.getController().exportSource(this.gui.exportSourceFileChooser.getSelectedFile().toPath());
 		}
 	}
 
 	private void onExportJarClicked() {
-		this.gui.exportJarFileChooser.setCurrentDirectory(new File(Config.get().lastSelectedDir.value()));
+		this.gui.exportJarFileChooser.setCurrentDirectory(new File(Config.get().stats.lastSelectedDir.value()));
 		this.gui.exportJarFileChooser.setVisible(true);
 		int result = this.gui.exportJarFileChooser.showSaveDialog(this.gui.getFrame());
 
@@ -364,7 +364,7 @@ public class MenuBar {
 		if (this.gui.exportJarFileChooser.getSelectedFile() != null) {
 			Path path = this.gui.exportJarFileChooser.getSelectedFile().toPath();
 			this.gui.getController().exportJar(path);
-			Config.get().lastSelectedDir.setValue(this.gui.exportJarFileChooser.getCurrentDirectory().getAbsolutePath(), true);
+			Config.get().stats.lastSelectedDir.setValue(this.gui.exportJarFileChooser.getCurrentDirectory().getAbsolutePath(), true);
 		}
 	}
 
@@ -457,10 +457,10 @@ public class MenuBar {
 	}
 
 	private void onOpenMappingsClicked() {
-		this.gui.enigmaMappingsFileChooser.setCurrentDirectory(new File(Config.get().lastSelectedDir.value()));
+		this.gui.enigmaMappingsFileChooser.setCurrentDirectory(new File(Config.get().stats.lastSelectedDir.value()));
 		if (this.gui.enigmaMappingsFileChooser.showOpenDialog(this.gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
 			File selectedFile = this.gui.enigmaMappingsFileChooser.getSelectedFile();
-			Config.get().lastSelectedDir.setValue(this.gui.enigmaMappingsFileChooser.getCurrentDirectory().toString(), true);
+			Config.get().stats.lastSelectedDir.setValue(this.gui.enigmaMappingsFileChooser.getCurrentDirectory().toString(), true);
 
 			MappingFormat format = MappingFormat.parseFromFile(selectedFile.toPath());
 			if (format.getReader() != null) {
@@ -539,13 +539,13 @@ public class MenuBar {
 				item.addActionListener(event -> {
 					// TODO: Use a specific file chooser for it
 					if (gui.enigmaMappingsFileChooser.getCurrentDirectory() == null) {
-						gui.enigmaMappingsFileChooser.setCurrentDirectory(new File(Config.get().lastSelectedDir.value()));
+						gui.enigmaMappingsFileChooser.setCurrentDirectory(new File(Config.get().stats.lastSelectedDir.value()));
 					}
 
 					if (gui.enigmaMappingsFileChooser.showSaveDialog(gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
 						gui.getController().saveMappings(gui.enigmaMappingsFileChooser.getSelectedFile().toPath(), format);
 						saveMappingsItem.setEnabled(true);
-						Config.get().lastSelectedDir.setValue(gui.enigmaMappingsFileChooser.getCurrentDirectory().toString(), true);
+						Config.get().stats.lastSelectedDir.setValue(gui.enigmaMappingsFileChooser.getCurrentDirectory().toString(), true);
 					}
 				});
 				saveMappingsAsMenu.add(item);
@@ -559,14 +559,14 @@ public class MenuBar {
 		for (Decompiler decompiler : Decompiler.values()) {
 			JRadioButtonMenuItem decompilerButton = new JRadioButtonMenuItem(decompiler.name);
 			decompilerGroup.add(decompilerButton);
-			if (decompiler.equals(Config.decompiler().decompiler.value())) {
+			if (decompiler.equals(Config.decompiler().activeDecompiler.value())) {
 				decompilerButton.setSelected(true);
 			}
 
 			decompilerButton.addActionListener(event -> {
 				gui.getController().setDecompiler(decompiler.service);
 
-				Config.decompiler().decompiler.setValue(decompiler, true);
+				Config.decompiler().activeDecompiler.setValue(decompiler, true);
 			});
 			decompilerMenu.add(decompilerButton);
 		}
