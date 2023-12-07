@@ -77,7 +77,13 @@ public class EntryIndex implements JarIndexer {
 		} else if (entry instanceof FieldEntry fieldEntry) {
 			return this.hasField(fieldEntry);
 		} else if (entry instanceof LocalVariableEntry localVariableEntry) {
-			return this.hasMethod(localVariableEntry.getParent());
+			MethodEntry parent = localVariableEntry.getParent();
+			if (this.hasMethod(parent)) {
+				// TODO: Check using max_locals from the Code attribute (JVMS§4.7.3)
+				AccessFlags parentAccess = this.getMethodAccess(parent);
+				int startIndex = parentAccess != null && parentAccess.isStatic() ? 0 : 1;
+				return localVariableEntry.getIndex() >= startIndex;
+			}
 		}
 
 		return false;

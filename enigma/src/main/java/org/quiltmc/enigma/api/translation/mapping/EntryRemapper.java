@@ -148,6 +148,13 @@ public class EntryRemapper {
 		}
 	}
 
+	private void insertDynamicallyProposedMapping(Entry<?> entry, @Nullable EntryMapping mapping) {
+		this.insertName(entry, mapping);
+		if (mapping == null) {
+			this.proposedNames.insert(entry, null);
+		}
+	}
+
 	/**
 	 * Runs {@link NameProposalService#getDynamicProposedNames(EntryRemapper, Entry, EntryMapping, EntryMapping)} over the names stored in this remapper,
 	 * inserting all mappings generated.
@@ -156,7 +163,7 @@ public class EntryRemapper {
 		for (var service : this.proposalServices) {
 			var proposedNames = service.getDynamicProposedNames(this, obfEntry, oldMapping, newMapping);
 			if (proposedNames != null) {
-				proposedNames.forEach(this::insertName);
+				proposedNames.forEach(this::insertDynamicallyProposedMapping);
 			}
 		}
 	}

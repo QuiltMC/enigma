@@ -64,6 +64,12 @@ public class IndexEntryResolver implements EntryResolver {
 		return Collections.singleton(entry);
 	}
 
+	/**
+	 * Get a direct child of any class that is an ancestor of the given entry.
+	 *
+	 * @param entry the descendant of a class
+	 * @return the direct child of a class, which is an ancestor of the given entry or the entry itself
+	 */
 	@Nullable
 	private Entry<ClassEntry> getClassChild(Entry<?> entry) {
 		if (entry instanceof ClassEntry) {
@@ -87,6 +93,7 @@ public class IndexEntryResolver implements EntryResolver {
 	private Set<Entry<ClassEntry>> resolveChildEntry(Entry<ClassEntry> entry, ResolutionStrategy strategy) {
 		ClassEntry ownerClass = entry.getParent();
 
+		// Resolve specialized methods using their bridges
 		if (entry instanceof MethodEntry methodEntry) {
 			MethodEntry bridgeMethod = this.bridgeMethodIndex.getBridgeFromSpecialized(methodEntry);
 			if (bridgeMethod != null && ownerClass.equals(bridgeMethod.getParent())) {
