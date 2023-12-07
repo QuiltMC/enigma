@@ -14,6 +14,7 @@ import java.util.Collection;
  * An {@link EntryMapping entry mapping} {@link EntryTree tree} that represents both a main and a secondary tree.
  * The secondary tree is used for entries that aren't contained in the main one, and methods to alter or retrieve values
  * from one or both of them are also provided.
+ *
  * <p>
  * Removing an entry by default removes from both the main and secondary trees.
  */
@@ -84,7 +85,6 @@ public abstract class MergedEntryMappingTree implements EntryTree<EntryMapping> 
 	public Pair<EntryMapping, EntryMapping> getBoth(Entry<?> entry) {
 		return new Pair<>(this.getMain(entry), this.getSecondary(entry));
 	}
-
 
 	public EntryMapping getMain(Entry<?> entry) {
 		return this.mainTree.get(entry);
