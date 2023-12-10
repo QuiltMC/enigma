@@ -86,13 +86,13 @@ public class Theme extends ReflectiveConfig.Section {
 		public final TrackedValue<SerializableColor> deobfuscatedOutline = this.value(new SerializableColor(0xFF50A050));
 
 		@SerializedName("editor_background")
-		public final TrackedValue<SerializableColor> editorBackground = this.value(new SerializableColor(0xFF50A050));
+		public final TrackedValue<SerializableColor> editorBackground = this.value(new SerializableColor(0xFFFFFFFF));
 		@SerializedName("highlight")
-		public final TrackedValue<SerializableColor> highlight = this.value(new SerializableColor(0xFF50A050));
+		public final TrackedValue<SerializableColor> highlight = this.value(new SerializableColor(0xFF3333EE));
 		@SerializedName("caret")
-		public final TrackedValue<SerializableColor> caret = this.value(new SerializableColor(0xFF50A050));
+		public final TrackedValue<SerializableColor> caret = this.value(new SerializableColor(0xFF000000));
 		@SerializedName("selection_highlight")
-		public final TrackedValue<SerializableColor> selectionHighlight = this.value(new SerializableColor(0xFF50A050));
+		public final TrackedValue<SerializableColor> selectionHighlight = this.value(new SerializableColor(0xFF000000));
 		@SerializedName("string")
 		public final TrackedValue<SerializableColor> string = this.value(new SerializableColor(0xFFCC6600));
 		@SerializedName("number")

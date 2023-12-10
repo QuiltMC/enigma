@@ -16,7 +16,6 @@ dependencies {
 	implementation libs.quilt.config
 	implementation libs.swing.dpi
 	implementation libs.fontchooser
-	implementation libs.bundles.night.config
 	testImplementation(testFixtures(project(':enigma')))
 }
 

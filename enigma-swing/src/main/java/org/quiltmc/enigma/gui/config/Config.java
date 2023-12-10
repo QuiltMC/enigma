@@ -26,7 +26,7 @@ public final class Config extends ReflectiveConfig {
 	private static final String FORMAT = "toml";
 	private static final String FAMILY = "enigma";
 
-	private static final ConfigEnvironment ENVIRONMENT = new ConfigEnvironment(ConfigPaths.getConfigPathRoot(), FORMAT, new TomlSerializer());
+	private static final ConfigEnvironment ENVIRONMENT = new ConfigEnvironment(ConfigPaths.getConfigPathRoot(), FORMAT, TomlSerializer.INSTANCE);
 	private static final Config MAIN = ConfigFactory.create(ENVIRONMENT, FAMILY, "main", Config.class);
 	private static final KeyBindConfig KEYBIND = ConfigFactory.create(ENVIRONMENT, FAMILY, "keybind", KeyBindConfig.class);
 	private static final NetConfig NET = ConfigFactory.create(ENVIRONMENT, FAMILY, "net", NetConfig.class);
@@ -54,8 +54,6 @@ public final class Config extends ReflectiveConfig {
 
 	@SerializedName("look_and_feel")
 	public final TrackedValue<LookAndFeel> lookAndFeel = this.value(LookAndFeel.DEFAULT);
-	// todo laf can't be changed while running
-	public final transient LookAndFeel activeLookAndFeel = this.lookAndFeel.value();
 
 	@SerializedName("default_theme")
 	public final Theme defaultTheme = new Theme(LookAndFeel.DEFAULT);
@@ -68,7 +66,7 @@ public final class Config extends ReflectiveConfig {
 	@SerializedName("none_theme")
 	public final Theme noneTheme = new Theme(LookAndFeel.NONE);
 
-	public static Config get() {
+	public static Config main() {
 		return MAIN;
 	}
 
@@ -89,7 +87,7 @@ public final class Config extends ReflectiveConfig {
 	}
 
 	public static Theme currentTheme() {
-		return switch (MAIN.activeLookAndFeel) {
+		return switch (MAIN.lookAndFeel.value()) {
 			case DEFAULT -> MAIN.defaultTheme;
 			case DARCULA -> MAIN.darculaTheme;
 			case METAL -> MAIN.metalTheme;

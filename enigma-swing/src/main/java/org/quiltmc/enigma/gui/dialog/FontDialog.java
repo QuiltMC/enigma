@@ -41,7 +41,7 @@ public class FontDialog extends JDialog {
 	public FontDialog(Frame owner) {
 		super(owner, "Fonts", true);
 
-		this.customCheckBox.setSelected(Config.get().useCustomFonts.value());
+		this.customCheckBox.setSelected(Config.main().useCustomFonts.value());
 
 		this.entries.setPreferredSize(ScaleUtil.getDimension(100, 0));
 
@@ -100,7 +100,7 @@ public class FontDialog extends JDialog {
 			FONTS.get(i).setValue(this.fontValues[i], true);
 		}
 
-		Config.get().useCustomFonts.setValue(this.customCheckBox.isSelected(), true);
+		Config.main().useCustomFonts.setValue(this.customCheckBox.isSelected(), true);
 		ChangeDialog.show(this);
 		this.dispose();
 	}

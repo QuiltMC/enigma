@@ -210,11 +210,11 @@ public class Gui {
 		JFrame frame = this.mainWindow.getFrame();
 		frame.addWindowListener(GuiUtil.onWindowClose(e -> this.close()));
 
-		frame.setSize(Config.get().windowSize.value().toDimension());
+		frame.setSize(Config.main().windowSize.value().toDimension());
 		frame.setMinimumSize(ScaleUtil.getDimension(640, 480));
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-		Point windowPos = Config.get().windowPos.value().toPoint();
+		Point windowPos = Config.main().windowPos.value().toPoint();
 		frame.setLocation(windowPos);
 
 		this.retranslateUi();
@@ -517,10 +517,10 @@ public class Gui {
 	}
 
 	private void exit() {
-		Config.get().windowPos.setValue(Config.Vec2i.fromPoint(this.mainWindow.getFrame().getLocationOnScreen()), true);
-		Config.get().windowSize.setValue(Config.Vec2i.fromDimension(this.mainWindow.getFrame().getSize()), true);
+		Config.main().windowPos.setValue(Config.Vec2i.fromPoint(this.mainWindow.getFrame().getLocationOnScreen()), true);
+		Config.main().windowSize.setValue(Config.Vec2i.fromDimension(this.mainWindow.getFrame().getSize()), true);
 
-		Config.get().save();
+		Config.main().save();
 
 		this.searchDialog.dispose();
 		this.mainWindow.getFrame().dispose();
@@ -616,17 +616,17 @@ public class Gui {
 		// popup notifications
 		switch (message.getType()) {
 			case CHAT -> {
-				if (Config.get().serverNotificationLevel.value() == NotificationManager.ServerNotificationLevel.FULL && !message.user.equals(Config.net().username.value())) {
+				if (Config.main().serverNotificationLevel.value() == NotificationManager.ServerNotificationLevel.FULL && !message.user.equals(Config.net().username.value())) {
 					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_CHAT, message.translate()));
 				}
 			}
 			case CONNECT -> {
-				if (Config.get().serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
+				if (Config.main().serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
 					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_USER_CONNECTED, message.translate()));
 				}
 			}
 			case DISCONNECT -> {
-				if (Config.get().serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
+				if (Config.main().serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
 					this.notificationManager.notify(new ParameterizedMessage(Message.MULTIPLAYER_USER_LEFT, message.translate()));
 				}
 			}

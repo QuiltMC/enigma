@@ -556,7 +556,7 @@ public class GuiController implements ClientPacketHandler {
 	public void openStatsTree(Set<StatType> includedTypes) {
 		ProgressDialog.runOffThread(this.gui, progress -> {
 			StatsResult overall = this.getStatsGenerator().getResultNullable().getOverall();
-			StatsTree<Integer> tree = overall.buildTree(Config.get().stats.lastTopLevelPackage.value(), includedTypes);
+			StatsTree<Integer> tree = overall.buildTree(Config.main().stats.lastTopLevelPackage.value(), includedTypes);
 			String treeJson = GSON.toJson(tree.root);
 
 			try {
@@ -647,7 +647,7 @@ public class GuiController implements ClientPacketHandler {
 		});
 
 		this.gui.setUserList(new ArrayList<>());
-		if (Config.get().serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
+		if (Config.main().serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
 			this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.LEFT_SERVER));
 		}
 

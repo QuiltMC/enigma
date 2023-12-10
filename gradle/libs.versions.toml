@@ -10,8 +10,7 @@ syntaxpain = "0.1.1"
 swing_dpi = "0.10"
 fontchooser = "2.5.2"
 tinylog = "2.6.2"
-quilt_config = "1.1.0"
-night_config = "3.6.5"
+quilt_config = "1.2.0"
 
 vineflower = "1.10.0-20230713.053900-2"
 cfr = "0.2.1"
@@ -35,8 +34,6 @@ tinylog_api = { module = "org.tinylog:tinylog-api", version.ref = "tinylog" }
 tinylog_impl = { module = "org.tinylog:tinylog-impl", version.ref = "tinylog" }
 
 quilt_config = { module = "org.quiltmc:quilt-config", version.ref = "quilt_config" }
-night_config_core = { module = "com.electronwill.night-config:core", version.ref = "night_config" }
-night_config_toml = { module = "com.electronwill.night-config:toml", version.ref = "night_config" }
 
 jopt = { module = "net.sf.jopt-simple:jopt-simple", version.ref = "jopt" }
 flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }
@@ -58,7 +55,6 @@ jimfs = { module = "com.google.jimfs:jimfs", version.ref = "jimfs" }
 [bundles]
 asm = ["asm", "asm_commons", "asm_tree", "asm_util"]
 tinylog = ["tinylog_api", "tinylog_impl"]
-night_config = ["night_config_core", "night_config_toml"]
 
 [plugins]
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }

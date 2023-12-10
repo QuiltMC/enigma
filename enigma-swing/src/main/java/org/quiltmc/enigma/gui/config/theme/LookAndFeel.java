@@ -38,7 +38,7 @@ public enum LookAndFeel implements ConfigSerializableObject<Integer> {
 	public void setGlobalLAF() {
 		// Configure FlatLaf's UI scale to be our scale factor.
 		// This is also used for the SVG icons, so it applies even when some other LaF is active.
-		System.setProperty(FlatSystemProperties.UI_SCALE, Float.toString(Config.get().scaleFactor.value()));
+		System.setProperty(FlatSystemProperties.UI_SCALE, Float.toString(Config.main().scaleFactor.value()));
 
 		try {
 			switch (this) {

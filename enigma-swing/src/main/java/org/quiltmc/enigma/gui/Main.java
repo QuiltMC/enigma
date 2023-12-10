@@ -96,7 +96,7 @@ public class Main {
 
 			EnigmaProfile parsedProfile = EnigmaProfile.read(options.valueOf(profile));
 
-			I18n.setLanguage(Config.get().language.value());
+			I18n.setLanguage(Config.main().language.value());
 			setDefaultSystemProperty("apple.laf.useScreenMenuBar", "true");
 			setDefaultSystemProperty("awt.useSystemAAFontSettings", "on");
 			setDefaultSystemProperty("swing.aatext", "true");
@@ -131,7 +131,7 @@ public class Main {
 								gui.getNotificationManager().notify(ParameterizedMessage.openedProject(jarPath.toString(), mappingsPath.toString()));
 							} else {
 								// search for mappings that are associated with the jar
-								for (Config.RecentProject recentProject : Config.get().recentProjects.value()) {
+								for (Config.RecentProject recentProject : Config.main().recentProjects.value()) {
 									if (recentProject.getJarPath().equals(jarPath)) {
 										gui.getNotificationManager().notify(ParameterizedMessage.openedProject(recentProject.jarPath(), recentProject.mappingsPath()));
 										gui.getController().openMappings(recentProject.getMappingsPath());

@@ -20,7 +20,7 @@ public class Themes {
 	// Calling this after the UI is initialized (e.g. when the user changes
 	// theme settings) is currently not functional.
 	public static void setupTheme() {
-		LookAndFeel laf = Config.get().lookAndFeel.value();
+		LookAndFeel laf = Config.main().lookAndFeel.value();
 		laf.setGlobalLAF();
 		Config.currentColors().configure(LookAndFeel.isDarkLaf());
 		Themes.setFonts();
