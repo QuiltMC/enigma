@@ -131,7 +131,7 @@ public class Gui {
 		this.setupUi();
 
 		LanguageUtil.addListener(this::retranslateUi);
-		Themes.addListener((lookAndFeel, boxHighlightPainters) -> SwingUtilities.updateComponentTreeUI(this.getFrame()));
+		//Themes.addListener((lookAndFeel, boxHighlightPainters) -> SwingUtilities.updateComponentTreeUI(this.getFrame()));
 
 		this.mainWindow.setVisible(visible);
 	}

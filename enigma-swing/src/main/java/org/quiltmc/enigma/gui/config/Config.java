@@ -97,11 +97,11 @@ public final class Config extends ReflectiveConfig {
 
 	public static Theme currentTheme() {
 		return switch (activeLookAndFeel) {
-			case DEFAULT -> MAIN.defaultTheme;
-			case DARCULA -> MAIN.darculaTheme;
-			case METAL -> MAIN.metalTheme;
-			case SYSTEM -> MAIN.systemTheme;
-			case NONE -> MAIN.noneTheme;
+			case DEFAULT -> main().defaultTheme;
+			case DARCULA -> main().darculaTheme;
+			case METAL -> main().metalTheme;
+			case SYSTEM -> main().systemTheme;
+			case NONE -> main().noneTheme;
 		};
 	}
 
@@ -114,11 +114,11 @@ public final class Config extends ReflectiveConfig {
 	}
 
 	public static void insertRecentProject(String jarPath, String mappingsPath) {
-		MAIN.recentProjects.value().add(0, new RecentProject(jarPath, mappingsPath));
+		main().recentProjects.value().add(0, new RecentProject(jarPath, mappingsPath));
 	}
 
 	public static RecentProject getMostRecentProject() {
-		return MAIN.recentProjects.value().get(0);
+		return main().recentProjects.value().get(0);
 	}
 
 	public record RecentProject(String jarPath, String mappingsPath) implements ConfigSerializableObject<ValueMap<String>> {

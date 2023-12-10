@@ -15,8 +15,6 @@ import javax.swing.JEditorPane;
 import javax.swing.UIManager;
 
 public class Themes {
-	private static final Set<ThemeChangeListener> listeners = new HashSet<>();
-
 	// Calling this after the UI is initialized (e.g. when the user changes
 	// theme settings) is currently not functional.
 	public static void setupTheme() {
@@ -27,8 +25,6 @@ public class Themes {
 		Themes.setFonts();
 		UIManager.put("ScrollBar.showButtons", true);
 		JEditorPane.registerEditorKitForContentType("text/enigma-sources", JavaSyntaxKit.class.getName());
-		Map<TokenType, BoxHighlightPainter> boxHighlightPainters = getBoxHighlightPainters();
-		listeners.forEach(l -> l.onThemeChanged(laf, boxHighlightPainters));
 		ScaleUtil.applyScaling();
 		Config.updateSyntaxpain();
 	}
@@ -87,13 +83,5 @@ public class Themes {
 				TokenType.DEOBFUSCATED, BoxHighlightPainter.create(Config.currentColors().deobfuscated.value(), Config.currentColors().deobfuscatedOutline.value()),
 				TokenType.DEBUG, BoxHighlightPainter.create(Config.currentColors().debugToken.value(), Config.currentColors().debugTokenOutline.value())
 		);
-	}
-
-	public static void addListener(ThemeChangeListener listener) {
-		listeners.add(listener);
-	}
-
-	public static void removeListener(ThemeChangeListener listener) {
-		listeners.remove(listener);
 	}
 }
