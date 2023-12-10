@@ -6,7 +6,6 @@ import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.gui.config.DockerConfig;
-import org.quiltmc.enigma.gui.config.theme.Themes;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.JavadocDialog;
 import org.quiltmc.enigma.gui.dialog.SearchDialog;
@@ -131,7 +130,6 @@ public class Gui {
 		this.setupUi();
 
 		LanguageUtil.addListener(this::retranslateUi);
-		//Themes.addListener((lookAndFeel, boxHighlightPainters) -> SwingUtilities.updateComponentTreeUI(this.getFrame()));
 
 		this.mainWindow.setVisible(visible);
 	}
@@ -196,12 +194,7 @@ public class Gui {
 		this.splitRight.setResizeWeight(1);
 		this.splitLeft.setResizeWeight(0);
 
-		// todo probably doesn't work
-		if (!Config.dockers().getLocations(Docker.Side.LEFT).isEmpty() || !Config.dockers().getLocations(Docker.Side.RIGHT).isEmpty()) {
-			this.dockerManager.restoreStateFromConfig();
-		} else {
-			this.dockerManager.setupDefaultConfiguration();
-		}
+		this.dockerManager.restoreStateFromConfig();
 
 		// init state
 		this.setConnectionState(ConnectionState.NOT_CONNECTED);
@@ -517,6 +510,8 @@ public class Gui {
 	}
 
 	private void exit() {
+		this.dockerManager.getLeftDock().saveDividerState();
+		this.dockerManager.getRightDock().saveDividerState();
 		Config.main().windowPos.setValue(Config.Vec2i.fromPoint(this.mainWindow.getFrame().getLocationOnScreen()), true);
 		Config.main().windowSize.setValue(Config.Vec2i.fromDimension(this.mainWindow.getFrame().getSize()), true);
 

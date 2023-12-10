@@ -59,16 +59,6 @@ public class DockerManager {
 	}
 
 	/**
-	 * Sets up the default configuration of the docks. This corresponds to the default layout the GUI before the introduction of the docker system.
-	 */
-	public void setupDefaultConfiguration() {
-		this.host(this.getDocker(ObfuscatedClassesDocker.class), Docker.Side.LEFT, Docker.VerticalLocation.TOP);
-		this.host(this.getDocker(DeobfuscatedClassesDocker.class), Docker.Side.LEFT, Docker.VerticalLocation.BOTTOM);
-
-		this.host(this.getDocker(StructureDocker.class), Docker.Side.RIGHT, Docker.VerticalLocation.FULL);
-	}
-
-	/**
 	 * Restores the state of both docks to the version saved in the config.
 	 * @see Dock#restoreState(DockerManager)
 	 */
