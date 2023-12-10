@@ -89,7 +89,7 @@ public class ScaleUtil {
 	public static void applyScaling() {
 		double scale = Config.main().scaleFactor.value();
 
-		if (Config.main().lookAndFeel.value().needsScaling()) {
+		if (Config.activeLookAndFeel.needsScaling()) {
 			UiDefaultsScaler.updateAndApplyGlobalScaling((int) (100 * scale), true);
 		}
 

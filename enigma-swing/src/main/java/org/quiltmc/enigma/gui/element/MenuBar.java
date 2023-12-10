@@ -5,7 +5,6 @@ import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.NotificationManager;
 import org.quiltmc.enigma.gui.config.Decompiler;
 import org.quiltmc.enigma.gui.config.theme.LookAndFeel;
-import org.quiltmc.enigma.gui.config.theme.Themes;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.dialog.AboutDialog;
@@ -586,7 +585,6 @@ public class MenuBar {
 
 			themeButton.addActionListener(e -> {
 				Config.main().lookAndFeel.setValue(lookAndFeel, true);
-				Themes.setupTheme();
 				ChangeDialog.show(gui.getFrame());
 			});
 			themesMenu.add(themeButton);

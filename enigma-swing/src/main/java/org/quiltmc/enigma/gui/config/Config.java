@@ -52,8 +52,16 @@ public final class Config extends ReflectiveConfig {
 
 	public final StatsSection stats = new StatsSection();
 
+	/**
+	 * The look and feel stored in the config: do not use this unless setting! Use {@link #activeLookAndFeel} instead,
+	 * since look and feel is final once loaded.
+	 */
 	@SerializedName("look_and_feel")
 	public final TrackedValue<LookAndFeel> lookAndFeel = this.value(LookAndFeel.DEFAULT);
+	/**
+	 * Look and feel is not modifiable at runtime. I have tried and failed multiple times to get this running.
+	 */
+	public static LookAndFeel activeLookAndFeel;
 
 	@SerializedName("default_theme")
 	public final Theme defaultTheme = new Theme(LookAndFeel.DEFAULT);
@@ -66,6 +74,7 @@ public final class Config extends ReflectiveConfig {
 	@SerializedName("none_theme")
 	public final Theme noneTheme = new Theme(LookAndFeel.NONE);
 
+	@SuppressWarnings("all")
 	public static Config main() {
 		return MAIN;
 	}
@@ -87,7 +96,7 @@ public final class Config extends ReflectiveConfig {
 	}
 
 	public static Theme currentTheme() {
-		return switch (MAIN.lookAndFeel.value()) {
+		return switch (activeLookAndFeel) {
 			case DEFAULT -> MAIN.defaultTheme;
 			case DARCULA -> MAIN.darculaTheme;
 			case METAL -> MAIN.metalTheme;

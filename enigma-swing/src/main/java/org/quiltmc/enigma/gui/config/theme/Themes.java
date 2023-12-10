@@ -21,6 +21,7 @@ public class Themes {
 	// theme settings) is currently not functional.
 	public static void setupTheme() {
 		LookAndFeel laf = Config.main().lookAndFeel.value();
+		Config.activeLookAndFeel = laf;
 		laf.setGlobalLAF();
 		Config.currentColors().configure(LookAndFeel.isDarkLaf());
 		Themes.setFonts();
