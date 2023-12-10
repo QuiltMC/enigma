@@ -5,7 +5,6 @@ import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
-import org.quiltmc.enigma.gui.config.DockerConfig;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.JavadocDialog;
 import org.quiltmc.enigma.gui.dialog.SearchDialog;
@@ -145,10 +144,8 @@ public class Gui {
 		this.dockerManager.registerDocker(new AllClassesDocker(this));
 		this.dockerManager.registerDocker(new DeobfuscatedClassesDocker(this));
 
-		if (Config.dockers().dockerLocations.value().isEmpty()) {
-			for (var entry : DockerConfig.getDefaultLocations(this.dockerManager).entrySet()) {
-				Config.dockers().putLocation(entry.getKey(), entry.getValue());
-			}
+		if (Config.dockers().buttonLocations.value().isEmpty()) {
+			Config.dockers().updateButtonLocations(this.dockerManager);
 		}
 
 		// set default docker sizes

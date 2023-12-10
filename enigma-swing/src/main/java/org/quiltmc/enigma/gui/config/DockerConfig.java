@@ -2,24 +2,16 @@ package org.quiltmc.enigma.gui.config;
 
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.annotations.SerializedName;
+import org.quiltmc.config.api.values.ComplexConfigValue;
+import org.quiltmc.config.api.values.ConfigSerializableObject;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.config.api.values.ValueMap;
-import org.quiltmc.enigma.gui.docker.AllClassesDocker;
-import org.quiltmc.enigma.gui.docker.CallsTreeDocker;
-import org.quiltmc.enigma.gui.docker.CollabDocker;
-import org.quiltmc.enigma.gui.docker.DeobfuscatedClassesDocker;
 import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.docker.DockerManager;
-import org.quiltmc.enigma.gui.docker.ImplementationsTreeDocker;
-import org.quiltmc.enigma.gui.docker.InheritanceTreeDocker;
-import org.quiltmc.enigma.gui.docker.NotificationsDocker;
-import org.quiltmc.enigma.gui.docker.ObfuscatedClassesDocker;
-import org.quiltmc.enigma.gui.docker.StructureDocker;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class DockerConfig extends ReflectiveConfig {
 	@SerializedName("left_vertical_divider_location")
@@ -33,28 +25,28 @@ public class DockerConfig extends ReflectiveConfig {
 	@SerializedName("saved_with_left_docker_open")
 	public final TrackedValue<Boolean> savedWithLeftDockerOpen = this.value(true);
 
-	@SerializedName("docker_locations")
-	public final TrackedValue<ValueMap<Docker.Location>> dockerLocations = this.map(new Docker.Location(Docker.Side.LEFT, Docker.VerticalLocation.TOP)).build();
+	@SerializedName("button_locations")
+	public final TrackedValue<ValueMap<Docker.Location>> buttonLocations = this.map(new Docker.Location(Docker.Side.LEFT, Docker.VerticalLocation.TOP)).build();
+	@SerializedName("left_dockers")
+	public final TrackedValue<SelectedDockers> leftDockers = this.value(new SelectedDockers("", "", "all_classes"));
+	@SerializedName("right_dockers")
+	public final TrackedValue<SelectedDockers> rightDockers = this.value(new SelectedDockers("", "", "structure"));
 
-	public void putLocation(Docker docker, Docker.Location location) {
-		this.putLocation(docker.getId(), location);
+	public SelectedDockers getSelectedDockers(Docker.Side side) {
+		return side == Docker.Side.LEFT ? this.leftDockers.value() : this.rightDockers.value();
 	}
 
-	public void putLocation(String id, Docker.Location location) {
-		this.dockerLocations.value().put(id, location);
+	public void putButtonLocation(String id, Docker.Location location) {
+		this.buttonLocations.value().put(id, location);
 	}
 
-	public void putLocation(Docker docker, Docker.Side side, Docker.VerticalLocation verticalLocation) {
-		this.putLocation(docker.getId(), new Docker.Location(side, verticalLocation));
+	public void putButtonLocation(Docker docker, Docker.Side side, Docker.VerticalLocation verticalLocation) {
+		this.putButtonLocation(docker.getId(), new Docker.Location(side, verticalLocation));
 	}
 
 	@Nullable
-	public Docker.Location getLocation(String id) {
-		return this.dockerLocations.value().get(id);
-	}
-
-	public Map<String, Docker.Location> getLocations(Docker.Side side) {
-		return this.dockerLocations.value().entrySet().stream().filter((entry) -> entry.getValue().side() == side).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+	public Docker.Location getButtonLocation(String id) {
+		return this.buttonLocations.value().get(id);
 	}
 
 	public int getVerticalDividerLocation(Docker.Side side) {
@@ -81,23 +73,75 @@ public class DockerConfig extends ReflectiveConfig {
 		}
 	}
 
-	public static Map<Docker, Docker.Location> getDefaultLocations(DockerManager manager) {
-		Map<Docker, Docker.Location> locations = new HashMap<>();
+	public void updateButtonLocations(DockerManager manager) {
+		for (Docker docker : manager.getDockers()) {
+			this.putButtonLocation(docker.getId(), docker.getPreferredButtonLocation());
+		}
+	}
 
-		// left
-		locations.put(manager.getDocker(ObfuscatedClassesDocker.class), new Docker.Location(Docker.Side.LEFT, Docker.VerticalLocation.TOP));
-		locations.put(manager.getDocker(AllClassesDocker.class), new Docker.Location(Docker.Side.LEFT, Docker.VerticalLocation.TOP));
-		locations.put(manager.getDocker(DeobfuscatedClassesDocker.class), new Docker.Location(Docker.Side.LEFT, Docker.VerticalLocation.BOTTOM));
+	public static class SelectedDockers implements ConfigSerializableObject<ValueMap<String>> {
+		private String top;
+		private String bottom;
+		private String full;
 
-		// right
-		locations.put(manager.getDocker(StructureDocker.class), new Docker.Location(Docker.Side.RIGHT, Docker.VerticalLocation.TOP));
-		locations.put(manager.getDocker(InheritanceTreeDocker.class), new Docker.Location(Docker.Side.RIGHT, Docker.VerticalLocation.TOP));
-		locations.put(manager.getDocker(ImplementationsTreeDocker.class), new Docker.Location(Docker.Side.RIGHT, Docker.VerticalLocation.TOP));
-		locations.put(manager.getDocker(CallsTreeDocker.class), new Docker.Location(Docker.Side.RIGHT, Docker.VerticalLocation.TOP));
+		public SelectedDockers(String top, String bottom, String full) {
+			this.top = top;
+			this.bottom = bottom;
+			this.full = full;
+		}
 
-		locations.put(manager.getDocker(CollabDocker.class), new Docker.Location(Docker.Side.RIGHT, Docker.VerticalLocation.BOTTOM));
-		locations.put(manager.getDocker(NotificationsDocker.class), new Docker.Location(Docker.Side.RIGHT, Docker.VerticalLocation.BOTTOM));
+		public void add(String id, Docker.VerticalLocation location) {
+			switch (location) {
+				case TOP -> {
+					this.full = "";
+					this.top = id;
+				}
+				case BOTTOM -> {
+					this.full = "";
+					this.bottom = id;
+				}
+				case FULL -> {
+					this.top = "";
+					this.bottom = "";
+					this.full = id;
+				}
+			}
+		}
 
-		return locations;
+		public Map<String, Docker.VerticalLocation> asMap() {
+			Map<String, Docker.VerticalLocation> map = new HashMap<>();
+			if (!this.top.isBlank()) {
+				map.put(this.top, Docker.VerticalLocation.TOP);
+			}
+
+			if (!this.bottom.isBlank()) {
+				map.put(this.bottom, Docker.VerticalLocation.BOTTOM);
+			}
+
+			if (!this.full.isBlank()) {
+				map.put(this.full, Docker.VerticalLocation.FULL);
+			}
+
+			return map;
+		}
+
+		@Override
+		public SelectedDockers convertFrom(ValueMap<String> representation) {
+			return new SelectedDockers(representation.get("top"), representation.get("bottom"), representation.get("full"));
+		}
+
+		@Override
+		public ValueMap<String> getRepresentation() {
+			return ValueMap.builder("")
+				.put("top", this.top)
+				.put("bottom", this.bottom)
+				.put("full", this.full)
+				.build();
+		}
+
+		@Override
+		public ComplexConfigValue copy() {
+			return this;
+		}
 	}
 }

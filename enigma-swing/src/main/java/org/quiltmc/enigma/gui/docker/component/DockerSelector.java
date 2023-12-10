@@ -97,7 +97,7 @@ public class DockerSelector extends JPanel {
 		if (hoveredPanel != null) {
 			hoveredPanel.add(button);
 			button.setSide(this.side);
-			Config.dockers().putLocation(button.getDocker(), this.side, hoveredPanel.equals(this.bottomSelector) ? Docker.VerticalLocation.BOTTOM : Docker.VerticalLocation.TOP);
+			Config.dockers().putButtonLocation(button.getDocker(), this.side, hoveredPanel.equals(this.bottomSelector) ? Docker.VerticalLocation.BOTTOM : Docker.VerticalLocation.TOP);
 			return true;
 		}
 

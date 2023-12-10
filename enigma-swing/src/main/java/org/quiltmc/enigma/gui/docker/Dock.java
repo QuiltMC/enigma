@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.docker;
 
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.config.DockerConfig;
 import org.quiltmc.enigma.gui.docker.component.DockerButton;
 import org.quiltmc.enigma.gui.docker.component.DockerSelector;
 import org.quiltmc.enigma.gui.docker.component.Draggable;
@@ -17,7 +18,6 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -63,8 +63,8 @@ public class Dock extends JPanel {
 	 */
 	public void restoreState(DockerManager manager) {
 		// restore docker state
-		Map<String, Docker.Location> hostedDockers = Config.dockers().getLocations(this.side);
-		hostedDockers.forEach((id, location) -> this.host(manager.getDocker(id), location.verticalLocation()));
+		DockerConfig.SelectedDockers hostedDockers = Config.dockers().getSelectedDockers(this.side);
+		hostedDockers.asMap().forEach((id, location) -> this.host(manager.getDocker(id), location));
 
 		this.restoreDividerState(true);
 
@@ -135,6 +135,8 @@ public class Dock extends JPanel {
 	}
 
 	public void host(Docker docker, Docker.VerticalLocation verticalLocation, boolean avoidEmptySpace) {
+		Config.dockers().getSelectedDockers(this.side).add(docker.getId(), verticalLocation);
+
 		Dock dock = Util.findDock(docker);
 		if (dock != null) {
 			dock.removeDocker(verticalLocation, avoidEmptySpace);
@@ -175,7 +177,7 @@ public class Dock extends JPanel {
 				parent.remove(button);
 				(verticalLocation == Docker.VerticalLocation.TOP ? selector.getTopSelector() : selector.getBottomSelector()).add(button);
 				button.setSide(this.side);
-				Config.dockers().putLocation(docker, this.side, verticalLocation);
+				Config.dockers().putButtonLocation(docker, this.side, verticalLocation);
 
 				button.getParent().revalidate();
 				button.getParent().repaint();
