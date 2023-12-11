@@ -17,10 +17,8 @@
 	"editor.decompile_error": "Ein Fehler ist während des Dekompilierens aufgetreten.",
 	"editor.remap_error": "Ein Fehler ist während des Remappens aufgetreten.",
 
-	"fonts.cat.default": "Standard",
 	"fonts.cat.small": "Klein",
 	"fonts.cat.editor": "Editor",
-	"fonts.use_custom": "Benutzerdefinierte Schriftarten verwenden",
 
 	"prompt.ok": "OK",
 	"prompt.cancel": "Abbrechen",

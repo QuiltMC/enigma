@@ -144,10 +144,8 @@
 	"javadocs.edit": "Javadocを編集",
 	"javadocs.instruction": "このJavadocを編集",
 
-	"fonts.cat.default": "デフォルト",
 	"fonts.cat.small": "スモール",
 	"fonts.cat.editor": "エディタ",
-	"fonts.use_custom": "カスタムフォントを使う",
 
 	"prompt.ok": "OK",
 	"prompt.cancel": "キャンセル",

@@ -22,8 +22,10 @@ public class Theme extends ReflectiveConfig.Section {
 	public final Fonts fonts = new Fonts();
 
 	public static class Fonts extends ReflectiveConfig.Section {
-		@SerializedName("default")
-		public final TrackedValue<SerializableFont> defaultFont = this.value(new SerializableFont(Font.decode(Font.DIALOG).deriveFont(Font.BOLD)));
+		@SerializedName("default_bold")
+		public final TrackedValue<SerializableFont> defaultBold = this.value(new SerializableFont(Font.decode(Font.DIALOG).deriveFont(Font.BOLD)));
+		@SerializedName("default_normal")
+		public final TrackedValue<SerializableFont> defaultNormal = this.value(new SerializableFont(Font.decode(Font.DIALOG)));
 		@SerializedName("small")
 		public final TrackedValue<SerializableFont> small = this.value(new SerializableFont(Font.decode(Font.DIALOG)));
 		@SerializedName("editor")
@@ -63,6 +65,9 @@ public class Theme extends ReflectiveConfig.Section {
 		}
 	}
 
+	/**
+	 * Default values are for light themes.
+	 */
 	public static class Colors extends ReflectiveConfig.Section {
 		@SerializedName("line_numbers_foreground")
 		public final TrackedValue<SerializableColor> lineNumbersForeground = this.value(new SerializableColor(0xFF333300));
@@ -76,7 +81,7 @@ public class Theme extends ReflectiveConfig.Section {
 		public final TrackedValue<SerializableColor> obfuscatedOutline = this.value(new SerializableColor(0xFFA05050));
 
 		@SerializedName("proposed")
-		public final TrackedValue<SerializableColor> proposed = this.value(new SerializableColor(0xFF000000));
+		public final TrackedValue<SerializableColor> proposed = this.value(new SerializableColor(0x27000000));
 		@SerializedName("proposed_outline")
 		public final TrackedValue<SerializableColor> proposedOutline = this.value(new SerializableColor(0xBF000000));
 

@@ -1,16 +1,13 @@
 package org.quiltmc.enigma.gui.config.theme;
 
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.event.ThemeChangeListener;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.syntaxpain.JavaSyntaxKit;
 
 import java.awt.Font;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.JEditorPane;
 import javax.swing.UIManager;
 
@@ -31,17 +28,18 @@ public class Themes {
 
 	private static void setFonts() {
 		Font small = Config.currentFonts().small.value();
-		Font bold = Config.currentFonts().defaultFont.value();
+		Font bold = Config.currentFonts().defaultBold.value();
+		Font normal = Config.currentFonts().defaultNormal.value();
 
 		UIManager.put("CheckBox.font", bold);
 		UIManager.put("CheckBoxMenuItem.font", bold);
 		UIManager.put("CheckBoxMenuItem.acceleratorFont", small);
-		UIManager.put("ColorChooser.font", bold); //
+		UIManager.put("ColorChooser.font", normal);
 		UIManager.put("ComboBox.font", bold);
 		UIManager.put("DesktopIcon.font", bold);
-		UIManager.put("EditorPane.font", bold); //
+		UIManager.put("EditorPane.font", normal);
 		UIManager.put("InternalFrame.titleFont", bold);
-		UIManager.put("FormattedTextField.font", bold); //
+		UIManager.put("FormattedTextField.font", normal);
 		UIManager.put("Label.font", bold);
 		UIManager.put("List.font", bold);
 		UIManager.put("Menu.acceleratorFont", small);
@@ -49,29 +47,29 @@ public class Themes {
 		UIManager.put("MenuBar.font", bold);
 		UIManager.put("MenuItem.acceleratorFont", small);
 		UIManager.put("MenuItem.font", bold);
-		UIManager.put("OptionPane.font", bold); //
-		UIManager.put("Panel.font", bold); //
-		UIManager.put("PasswordField.font", bold); //
+		UIManager.put("OptionPane.font", normal);
+		UIManager.put("Panel.font", normal);
+		UIManager.put("PasswordField.font", normal);
 		UIManager.put("PopupMenu.font", bold);
 		UIManager.put("ProgressBar.font", bold);
 		UIManager.put("RadioButton.font", bold);
 		UIManager.put("RadioButtonMenuItem.acceleratorFont", small);
 		UIManager.put("RadioButtonMenuItem.font", bold);
-		UIManager.put("ScrollPane.font", bold); //
+		UIManager.put("ScrollPane.font", normal);
 		UIManager.put("Slider.font", bold);
 		UIManager.put("Spinner.font", bold);
 		UIManager.put("TabbedPane.font", bold);
-		UIManager.put("Table.font", bold); //
-		UIManager.put("TableHeader.font", bold); //
-		UIManager.put("TextArea.font", bold); //
-		UIManager.put("TextField.font", bold); //
-		UIManager.put("TextPane.font", bold); //
+		UIManager.put("Table.font", normal);
+		UIManager.put("TableHeader.font", normal);
+		UIManager.put("TextArea.font", normal);
+		UIManager.put("TextField.font", normal);
+		UIManager.put("TextPane.font", normal);
 		UIManager.put("TitledBorder.font", bold);
 		UIManager.put("ToggleButton.font", bold);
 		UIManager.put("ToolBar.font", bold);
-		UIManager.put("ToolTip.font", bold); //
-		UIManager.put("Tree.font", bold); //
-		UIManager.put("Viewport.font", bold); //
+		UIManager.put("ToolTip.font", normal);
+		UIManager.put("Tree.font", normal);
+		UIManager.put("Viewport.font", normal);
 		UIManager.put("Button.font", bold);
 	}
 

@@ -26,7 +26,8 @@ public class ScaleUtil {
 		float oldScale = Config.main().scaleFactor.value();
 		float clamped = Math.min(Math.max(0.25f, scaleFactor), 10.0f);
 		Config.main().scaleFactor.setValue(clamped, true);
-		rescaleFontInConfig(Config.currentFonts().defaultFont, oldScale);
+		rescaleFontInConfig(Config.currentFonts().defaultBold, oldScale);
+		rescaleFontInConfig(Config.currentFonts().defaultNormal, oldScale);
 		rescaleFontInConfig(Config.currentFonts().small, oldScale);
 		rescaleFontInConfig(Config.currentFonts().editor, oldScale);
 		listeners.forEach(l -> l.onScaleChanged(clamped, oldScale));
