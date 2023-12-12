@@ -93,11 +93,19 @@ public class DockerConfig extends ReflectiveConfig {
 		public void add(String id, Docker.VerticalLocation location) {
 			switch (location) {
 				case TOP -> {
-					this.full = "";
+					if (!this.full.isBlank()) {
+						this.bottom = this.full;
+						this.full = "";
+					}
+
 					this.top = id;
 				}
 				case BOTTOM -> {
-					this.full = "";
+					if (!this.full.isBlank()) {
+						this.top = this.full;
+						this.full = "";
+					}
+
 					this.bottom = id;
 				}
 				case FULL -> {
