@@ -164,7 +164,7 @@ public class EnigmaProject {
 	}
 
 	public void dropMappings(ProgressListener progress) {
-		DeltaTrackingTree<EntryMapping> mappings = this.remapper.getDeobfMappings();
+		DeltaTrackingTree<EntryMapping> mappings = this.remapper.getMappings();
 
 		Collection<Entry<?>> dropped = this.dropMappings(mappings, progress);
 		for (Entry<?> entry : dropped) {

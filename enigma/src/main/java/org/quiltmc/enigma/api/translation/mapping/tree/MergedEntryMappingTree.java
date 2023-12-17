@@ -8,7 +8,11 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.util.Pair;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * An {@link EntryMapping entry mapping} {@link EntryTree tree} that represents both a main and a secondary tree.
@@ -18,8 +22,7 @@ import java.util.Collection;
  * <p>
  * Removing an entry by default removes from both the main and secondary trees.
  */
-// TODO: make non abstract
-public abstract class MergedEntryMappingTree implements EntryTree<EntryMapping> {
+public class MergedEntryMappingTree implements EntryTree<EntryMapping> {
 	private final EntryTree<EntryMapping> mainTree;
 	private final EntryTree<EntryMapping> secondaryTree;
 
@@ -99,6 +102,11 @@ public abstract class MergedEntryMappingTree implements EntryTree<EntryMapping> 
 		return this.mainContains(entry) || this.secondaryContains(entry);
 	}
 
+	@Override
+	public Stream<Entry<?>> getAllEntries() {
+		return null;
+	}
+
 	public boolean bothContain(Entry<?> entry) {
 		return this.mainContains(entry) && this.secondaryContains(entry);
 	}
@@ -155,16 +163,6 @@ public abstract class MergedEntryMappingTree implements EntryTree<EntryMapping> 
 		return this.secondaryTree.getSiblings(entry);
 	}
 
-	@Override
-	public EntryTreeNode<EntryMapping> findNode(Entry<?> entry) {
-		var main = this.findMainNode(entry);
-		if (main == null || main.isEmpty()) {
-			return this.findSecondaryNode(entry);
-		}
-
-		return main;
-	}
-
 	public Pair<EntryTreeNode<EntryMapping>, EntryTreeNode<EntryMapping>> findBothNodes(Entry<?> entry) {
 		return new Pair<>(this.findMainNode(entry), this.findSecondaryNode(entry));
 	}
@@ -177,11 +175,30 @@ public abstract class MergedEntryMappingTree implements EntryTree<EntryMapping> 
 		return this.secondaryTree.findNode(entry);
 	}
 
-	// TODO: iterator()
+	@Override
+	public EntryTreeNode<EntryMapping> findNode(Entry<?> entry) {
+		var main = this.findMainNode(entry);
+		if (main == null || main.isEmpty()) {
+			return this.findSecondaryNode(entry);
+		}
 
-	// TODO: getAllEntries()
+		return main;
+	}
 
-	// TODO: getRootNodes()
+	@Override
+	public Stream<EntryTreeNode<EntryMapping>> getRootNodes() {
+		List<EntryTreeNode<EntryMapping>> nodes = new ArrayList<>(this.mainTree.getRootNodes().toList());
+		nodes.addAll(this.secondaryTree.getRootNodes().toList());
+		return nodes.stream();
+	}
+
+	@Override
+	public Iterator<EntryTreeNode<EntryMapping>> iterator() {
+		List<EntryTreeNode<EntryMapping>> nodes = new ArrayList<>();
+		this.mainTree.iterator().forEachRemaining(nodes::add);
+		this.secondaryTree.iterator().forEachRemaining(nodes::add);
+		return nodes.iterator();
+	}
 
 	@Override
 	public boolean isEmpty() {
@@ -200,13 +217,12 @@ public abstract class MergedEntryMappingTree implements EntryTree<EntryMapping> 
 		return this.secondaryTree.isEmpty();
 	}
 
-	// TODO
-	// @Override
-	// public MergedEntryMappingTree translate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
-	// 	var main = this.translateMain(translator, resolver, mappings);
-	// 	var secondary = this.translateSecondary(translator, resolver, mappings);
-	// 	return new MergedEntryMappingTree(main, secondary);
-	// }
+	@Override
+	public MergedEntryMappingTree translate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
+		var main = this.translateMain(translator, resolver, mappings);
+		var secondary = this.translateSecondary(translator, resolver, mappings);
+		return new MergedEntryMappingTree(main, secondary);
+	}
 
 	public EntryTree<EntryMapping> translateMain(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
 		return this.mainTree.translate(translator, resolver, mappings);
