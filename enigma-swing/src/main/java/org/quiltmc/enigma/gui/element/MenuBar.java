@@ -295,7 +295,7 @@ public class MenuBar {
 	}
 
 	private void onMaxRecentFilesClicked() {
-		String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("menu.file.dialog.max_recent_projects.set"), Config.main().maxRecentFiles.value());
+		String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("menu.file.dialog.max_recent_projects.set"), Config.main().maxRecentProjects.value());
 
 		if (input != null) {
 			try {
@@ -304,7 +304,7 @@ public class MenuBar {
 					throw new NumberFormatException();
 				}
 
-				Config.main().maxRecentFiles.setValue(max, true);
+				Config.main().maxRecentProjects.setValue(max, true);
 			} catch (NumberFormatException e) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), I18n.translate("prompt.invalid_input"), I18n.translate("prompt.error"), JOptionPane.ERROR_MESSAGE);
 			}

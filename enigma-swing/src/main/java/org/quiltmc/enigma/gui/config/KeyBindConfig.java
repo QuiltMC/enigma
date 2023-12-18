@@ -13,7 +13,7 @@ public final class KeyBindConfig extends ReflectiveConfig {
 
 	public String[] getKeyCodes(KeyBind keyBind) {
 		ValueList<String> codes = this.keyCodes.value().get(keyBind.name());
-		return (codes == null || codes.size() == 0) ? keyBind.serializeCombinations() : codes.toArray(String[]::new);
+		return (codes == null || codes.isEmpty()) ? keyBind.serializeCombinations() : codes.toArray(String[]::new);
 	}
 
 	public void setBind(KeyBind keyBind) {

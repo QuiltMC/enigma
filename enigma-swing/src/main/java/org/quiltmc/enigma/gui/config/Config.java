@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.config;
 
 import org.quiltmc.config.api.ReflectiveConfig;
+import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.annotations.SerializedName;
 import org.quiltmc.config.api.serializer.TomlSerializer;
 import org.quiltmc.config.api.values.ComplexConfigValue;
@@ -22,6 +23,11 @@ import java.awt.Point;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * The Enigma config is separated into five different files: {@link Config the main config (this one)},
+ * {@link NetConfig the networking configuration}, {@link KeyBindConfig the keybinding configuration},
+ * {@link DockerConfig the docker configuration}, and {@link DecompilerConfig the decompiler configuration}.
+ */
 public final class Config extends ReflectiveConfig {
 	private static final String FORMAT = "toml";
 	private static final String FAMILY = "enigma";
@@ -34,20 +40,24 @@ public final class Config extends ReflectiveConfig {
 	private static final DecompilerConfig DECOMPILER = ConfigFactory.create(ENVIRONMENT, FAMILY, "decompiler", DecompilerConfig.class);
 
 	@SerializedName("language")
+	@Comment("The currently assigned UI language. This will be an ISO-639 two-letter language code, followed by an underscore and an ISO 3166-1 alpha-2 two-letter country code.")
 	public final TrackedValue<String> language = this.value(I18n.DEFAULT_LANGUAGE);
 	@SerializedName("scale_factor")
+	@Comment("A float representing the current size of the UI. 1.0 represents 100% scaling.")
 	public final TrackedValue<Float> scaleFactor = this.value(1.0f);
-	@SerializedName("max_recent_files")
-	public final TrackedValue<Integer> maxRecentFiles = this.value(10);
+	@SerializedName("max_recent_projects")
+	@Comment("The maximum number of saved recent projects, for quickly reopening.")
+	public final TrackedValue<Integer> maxRecentProjects = this.value(10);
 	@SerializedName("recent_projects")
 	public final TrackedValue<ValueList<RecentProject>> recentProjects = this.list(new RecentProject("", ""));
 	@SerializedName("server_notification_level")
+	@Comment("Modifies how many notifications you'll get while part of a multiplayer mapping server.")
 	public final TrackedValue<NotificationManager.ServerNotificationLevel> serverNotificationLevel = this.value(NotificationManager.ServerNotificationLevel.FULL);
-	@SerializedName("use_custom_fonts")
-	public final TrackedValue<Boolean> useCustomFonts = this.value(false);
 	@SerializedName("window_size")
+	@Comment("How big the Enigma window will open, in pixels.")
 	public final TrackedValue<Vec2i> windowSize = this.value(new Vec2i(1024, 576));
 	@SerializedName("window_pos")
+	@Comment("The position the top-left corner of Enigma's window will be the next time it opens, in pixels.")
 	public final TrackedValue<Vec2i> windowPos = this.value(new Vec2i(0, 0));
 
 	public final StatsSection stats = new StatsSection();

@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.config;
 
 import org.quiltmc.config.api.ReflectiveConfig;
+import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.annotations.SerializedName;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.config.api.values.ValueMap;
@@ -17,11 +18,11 @@ public class DecompilerConfig extends ReflectiveConfig {
 
 	@SerializedName("active_decompiler")
 	public final TrackedValue<Decompiler> activeDecompiler = this.value(Decompiler.VINEFLOWER);
+	@Comment("The options passed to the Vineflower decompiler. What these do can be found here: https://vineflower.org/usage/.")
 	public final VineflowerSection vineflower = new VineflowerSection();
 
 	public static final class VineflowerSection extends Section {
 		@SerializedName("string_values")
-
 		public final TrackedValue<ValueMap<String>> stringValues = this.map("").build();
 		@SerializedName("int_values")
 		public final TrackedValue<ValueMap<Integer>> intValues = this.map(0).build();
