@@ -37,7 +37,7 @@ public class Decompilers {
 
 		@Override
 		public String getId() {
-			return null;
+			return "enigma:cfr";
 		}
 	};
 	public static final DecompilerService BYTECODE = new DecompilerService() {
