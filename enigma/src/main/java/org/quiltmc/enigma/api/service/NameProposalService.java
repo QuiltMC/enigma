@@ -43,7 +43,7 @@ public interface NameProposalService extends EnigmaService {
 	/**
 	 * Creates a proposed mapping, with no javadoc and using {@link #getId()} as the source plugin ID.
 	 * @param name the name
-	 * @param tokenType the token type - must be proposed!
+	 * @param tokenType the token type - must be either {@link TokenType#JAR_PROPOSED} or {@link TokenType#DYNAMIC_PROPOSED}
 	 * @return the newly created mapping
 	 */
 	default EntryMapping createMapping(String name, TokenType tokenType) {

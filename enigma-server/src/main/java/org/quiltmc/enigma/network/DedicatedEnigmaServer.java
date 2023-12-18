@@ -105,7 +105,6 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 
 		Path logFile = parsedArgs.valueOf(logFileOpt);
 
-		// todo get jar proposed mappings here
 		Logger.info("Starting Enigma server");
 		DedicatedEnigmaServer server;
 		try {
