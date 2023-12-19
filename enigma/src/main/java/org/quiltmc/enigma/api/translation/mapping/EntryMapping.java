@@ -37,8 +37,8 @@ public record EntryMapping(
 	}
 
 	private static void validateSourcePluginId(String id) {
-		if (id != null && !id.matches("([a-z0-9_]+:[a-z0-9_]+)")) {
-			throw new IllegalArgumentException("invalid plugin ID: '" + id + "! plugin ID should be all lowercase, only contain letters and numbers, and be namespaced separated by a colon.");
+		if (id != null && !id.matches("([a-z0-9_]+:[a-z0-9_/]+)")) {
+			throw new IllegalArgumentException("invalid plugin ID: '" + id + "! plugin ID should be all lowercase, only contain letters, numbers, underscores and slashes, and be namespaced separated by a colon.");
 		}
 	}
 

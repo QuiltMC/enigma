@@ -6,49 +6,25 @@ import org.quiltmc.enigma.impl.source.cfr.CfrDecompiler;
 import org.quiltmc.enigma.impl.source.procyon.ProcyonDecompiler;
 import org.quiltmc.enigma.impl.source.vineflower.VineflowerDecompiler;
 
+import java.util.function.BiFunction;
+
 public class Decompilers {
-	public static final DecompilerService VINEFLOWER = new DecompilerService() {
-		@Override
-		public Decompiler create(ClassProvider classProvider, SourceSettings settings) {
-			return new VineflowerDecompiler(classProvider, settings);
-		}
+	public static final DecompilerService VINEFLOWER = create("enigma:vineflower", VineflowerDecompiler::new);
+	public static final DecompilerService PROCYON = create("enigma:procyon", ProcyonDecompiler::new);
+	public static final DecompilerService CFR = create("enigma:cfr", CfrDecompiler::new);
+	public static final DecompilerService BYTECODE = create("enigma:bytecode", BytecodeDecompiler::new);
 
-		@Override
-		public String getId() {
-			return "enigma:vineflower";
-		}
-	};
-	public static final DecompilerService PROCYON = new DecompilerService() {
-		@Override
-		public Decompiler create(ClassProvider classProvider, SourceSettings settings) {
-			return new ProcyonDecompiler(classProvider, settings);
-		}
+	private static DecompilerService create(String id, BiFunction<ClassProvider, SourceSettings, Decompiler> factory) {
+		return new DecompilerService() {
+			@Override
+			public Decompiler create(ClassProvider classProvider, SourceSettings settings) {
+				return factory.apply(classProvider, settings);
+			}
 
-		@Override
-		public String getId() {
-			return "enigma:procyon";
-		}
-	};
-	public static final DecompilerService CFR = new DecompilerService() {
-		@Override
-		public Decompiler create(ClassProvider classProvider, SourceSettings settings) {
-			return new CfrDecompiler(classProvider, settings);
-		}
-
-		@Override
-		public String getId() {
-			return "enigma:cfr";
-		}
-	};
-	public static final DecompilerService BYTECODE = new DecompilerService() {
-		@Override
-		public Decompiler create(ClassProvider classProvider, SourceSettings settings) {
-			return new BytecodeDecompiler(classProvider, settings);
-		}
-
-		@Override
-		public String getId() {
-			return "enigma:bytecode";
-		}
-	};
+			@Override
+			public String getId() {
+				return id;
+			}
+		};
+	}
 }

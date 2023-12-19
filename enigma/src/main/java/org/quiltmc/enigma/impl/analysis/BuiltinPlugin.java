@@ -6,7 +6,6 @@ import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaPluginContext;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
-import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.service.JarIndexerService;
 import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.source.DecompilerService;
@@ -41,7 +40,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 public final class BuiltinPlugin implements EnigmaPlugin {
 	@Override
@@ -55,17 +53,8 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 		final Map<Entry<?>, String> names = new HashMap<>();
 		final EnumFieldNameFindingVisitor visitor = new EnumFieldNameFindingVisitor(names);
 
-		ctx.registerService(JarIndexerService.TYPE, ctx1 -> new JarIndexerService() {
-			@Override
-			public void acceptJar(Set<String> scope, ClassProvider classProvider, JarIndex jarIndex) {
-				JarIndexerService.fromVisitor(visitor, "enigma:enum_field_name_finding_visitor").acceptJar(scope, classProvider, jarIndex);
-			}
 
-			@Override
-			public String getId() {
-				return "enigma:enum_initializer_indexer";
-			}
-		});
+		ctx.registerService(JarIndexerService.TYPE, ctx1 -> JarIndexerService.fromVisitor(visitor, "enigma:enum_initializer_indexer"));
 
 		ctx.registerService(NameProposalService.TYPE, ctx1 -> new NameProposalService() {
 			@Override
@@ -128,18 +117,6 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 		ctx.registerService(DecompilerService.TYPE, ctx1 -> Decompilers.PROCYON);
 		ctx.registerService(DecompilerService.TYPE, ctx1 -> Decompilers.CFR);
 		ctx.registerService(DecompilerService.TYPE, ctx1 -> Decompilers.BYTECODE);
-	}
-
-	private abstract static class NameProposalFunction implements NameProposalService, Function<JarIndex, Map<Entry<?>, EntryMapping>> {
-		@Override
-		public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
-			return this.apply(index);
-		}
-
-		@Override
-		public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
-			return null;
-		}
 	}
 
 	private static final class EnumFieldNameFindingVisitor extends ClassVisitor {
