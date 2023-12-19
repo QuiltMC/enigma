@@ -111,13 +111,12 @@ public class TestNameProposal {
 			nameAllFields(ctx, "c");
 			nameAllFields(ctx, "b");
 
-			String id = "test:q_to_w";
-			ctx.registerService(id, NameProposalService.TYPE, ctx1 -> new TestDynamicNameProposer(id));
+			ctx.registerService(NameProposalService.TYPE, ctx1 -> new TestDynamicNameProposer("test:q_to_w"));
 		}
 
 		private static void nameAllFields(EnigmaPluginContext ctx, String prefix) {
 			String id = "test:name_all_fields_" + prefix;
-			ctx.registerService(id, NameProposalService.TYPE, ctx1 -> new TestJarNameProposer(prefix, id));
+			ctx.registerService(NameProposalService.TYPE, ctx1 -> new TestJarNameProposer(prefix, id));
 		}
 
 		private record TestJarNameProposer(String prefix, String id) implements NameProposalService {
@@ -134,6 +133,11 @@ public class TestNameProposal {
 			@Override
 			public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
 				return null;
+			}
+
+			@Override
+			public String getId() {
+				return this.id;
 			}
 		}
 
@@ -154,6 +158,11 @@ public class TestNameProposal {
 				}
 
 				return null;
+			}
+
+			@Override
+			public String getId() {
+				return this.id;
 			}
 		}
 	}

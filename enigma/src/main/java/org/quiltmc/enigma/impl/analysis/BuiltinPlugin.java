@@ -40,7 +40,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 public final class BuiltinPlugin implements EnigmaPlugin {
 	@Override
@@ -54,64 +53,69 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 		final Map<Entry<?>, String> names = new HashMap<>();
 		final EnumFieldNameFindingVisitor visitor = new EnumFieldNameFindingVisitor(names);
 
-		ctx.registerService("enigma:enum_initializer_indexer", JarIndexerService.TYPE, ctx1 -> JarIndexerService.fromVisitor(visitor));
+		ctx.registerService(JarIndexerService.TYPE, ctx1 -> JarIndexerService.fromVisitor(visitor, "enigma:enum_initializer_indexer"));
 
-		String id = "enigma:enum_name_proposer";
-		ctx.registerService(id, NameProposalService.TYPE, ctx1 -> new NameProposalFunction() {
+		ctx.registerService(NameProposalService.TYPE, ctx1 -> new NameProposalService() {
 			@Override
-			public Map<Entry<?>, EntryMapping> apply(JarIndex jarIndex) {
+			public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
 				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
 
-				jarIndex.getIndex(EntryIndex.class).getFields().forEach(field -> {
+				index.getIndex(EntryIndex.class).getFields().forEach(field -> {
 					if (names.containsKey(field)) {
-						mappings.put(field, new EntryMapping(names.get(field), null, TokenType.JAR_PROPOSED, id));
+						mappings.put(field, this.createMapping(names.get(field), TokenType.JAR_PROPOSED));
 					}
 				});
 
 				return mappings;
 			}
+
+			@Override
+			public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
+				return null;
+			}
+
+			@Override
+			public String getId() {
+				return "enigma:enum_name_proposer";
+			}
 		});
 	}
 
 	private void registerSpecializedMethodNamingService(EnigmaPluginContext ctx) {
-		String id = "enigma:specialized_method_name_proposer";
+		ctx.registerService(NameProposalService.TYPE, ctx1 -> new NameProposalService() {
+			@Override
+			public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
+				BridgeMethodIndex bridgeMethodIndex = index.getIndex(BridgeMethodIndex.class);
+				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
 
-		ctx.registerService(id, NameProposalService.TYPE, ctx1 -> new NameProposalFunction() {
-				@Override
-				public Map<Entry<?>, EntryMapping> apply(JarIndex jarIndex) {
-					BridgeMethodIndex bridgeMethodIndex = jarIndex.getIndex(BridgeMethodIndex.class);
-					Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
+				bridgeMethodIndex.getSpecializedToBridge().forEach((specialized, bridge) -> {
+					EntryMapping mapping = this.createMapping(bridge.getName(), TokenType.JAR_PROPOSED);
 
-					bridgeMethodIndex.getSpecializedToBridge().forEach((specialized, bridge) -> {
-						EntryMapping mapping = new EntryMapping(bridge.getName(), null, TokenType.JAR_PROPOSED, id);
+					mappings.put(specialized, mapping);
+					// IndexEntryResolver#resolveEntry can return the bridge method, so we can just use the name
+					mappings.put(bridge, mapping);
+				});
 
-						mappings.put(specialized, mapping);
-						// IndexEntryResolver#resolveEntry can return the bridge method, so we can just use the name
-						mappings.put(bridge, mapping);
-					});
+				return mappings;
+			}
 
-					return mappings;
-				}
+			@Override
+			public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
+				return null;
+			}
+
+			@Override
+			public String getId() {
+				return "enigma:specialized_method_name_proposer";
+			}
 		});
 	}
 
 	private void registerDecompilerServices(EnigmaPluginContext ctx) {
-		ctx.registerService("enigma:vineflower", DecompilerService.TYPE, ctx1 -> Decompilers.VINEFLOWER);
-		ctx.registerService("enigma:procyon", DecompilerService.TYPE, ctx1 -> Decompilers.PROCYON);
-		ctx.registerService("enigma:cfr", DecompilerService.TYPE, ctx1 -> Decompilers.CFR);
-		ctx.registerService("enigma:bytecode", DecompilerService.TYPE, ctx1 -> Decompilers.BYTECODE);
-	}
-
-	private abstract static class NameProposalFunction implements NameProposalService, Function<JarIndex, Map<Entry<?>, EntryMapping>> {
-		@Override
-		public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
-			return this.apply(index);
-		}
-
-		@Override
-		public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
-			return null;
-		}
+		ctx.registerService(DecompilerService.TYPE, ctx1 -> Decompilers.VINEFLOWER);
+		ctx.registerService(DecompilerService.TYPE, ctx1 -> Decompilers.PROCYON);
+		ctx.registerService(DecompilerService.TYPE, ctx1 -> Decompilers.CFR);
+		ctx.registerService(DecompilerService.TYPE, ctx1 -> Decompilers.BYTECODE);
 	}
 
 	private static final class EnumFieldNameFindingVisitor extends ClassVisitor {
