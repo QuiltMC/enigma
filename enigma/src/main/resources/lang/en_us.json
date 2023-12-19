@@ -207,11 +207,10 @@
 	"javadocs.edit": "Edit Javadocs",
 	"javadocs.instruction": "Edit javadocs here.",
 
-	"fonts.cat.default": "Default",
-	"fonts.cat.default2": "Default 2",
+	"fonts.cat.default_normal": "Default (normal)",
+	"fonts.cat.default_bold": "Default (bold)",
 	"fonts.cat.small": "Small",
 	"fonts.cat.editor": "Editor",
-	"fonts.use_custom": "Use Custom Fonts",
 
 	"prompt.ok": "OK",
 	"prompt.cancel": "Cancel",

@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui.dialog;
 
 import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.config.NetConfig;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.network.EnigmaServer;
 import org.quiltmc.enigma.util.Pair;
@@ -32,8 +32,8 @@ public class CreateServerDialog extends AbstractDialog {
 
 	@Override
 	protected List<Pair<String, Component>> createComponents() {
-		this.portField = new JTextField(Integer.toString(NetConfig.getServerPort()));
-		this.passwordField = new JPasswordField(NetConfig.getServerPassword());
+		this.portField = new JTextField(Integer.toString(Config.net().serverPort.value()));
+		this.passwordField = new JPasswordField(Config.net().serverPassword.value());
 
 		this.portField.addActionListener(event -> this.confirm());
 		this.passwordField.addActionListener(event -> this.confirm());

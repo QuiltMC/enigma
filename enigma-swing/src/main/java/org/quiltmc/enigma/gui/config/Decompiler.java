@@ -5,7 +5,6 @@ import org.quiltmc.enigma.gui.dialog.decompiler.VineflowerSettingsDialog;
 import org.quiltmc.enigma.api.source.DecompilerService;
 import org.quiltmc.enigma.api.source.Decompilers;
 
-import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.swing.JDialog;
 
@@ -14,8 +13,6 @@ public enum Decompiler {
 	CFR("CFR", Decompilers.CFR),
 	PROCYON("Procyon", Decompilers.PROCYON),
 	BYTECODE("Bytecode", Decompilers.BYTECODE);
-
-	private static final Map<String, Decompiler> LEGACY_ALIASES = Map.of("QUILTFLOWER", VINEFLOWER);
 
 	public final DecompilerService service;
 	public final String name;
@@ -29,17 +26,5 @@ public enum Decompiler {
 		this.name = name;
 		this.service = service;
 		this.settingsDialog = settingsDialog;
-	}
-
-	public static Decompiler valueOfLegacy(String name) {
-		if (LEGACY_ALIASES.containsKey(name)) {
-			return LEGACY_ALIASES.get(name);
-		}
-
-		return valueOf(name);
-	}
-
-	static {
-		DecompilerConfig.bootstrap();
 	}
 }

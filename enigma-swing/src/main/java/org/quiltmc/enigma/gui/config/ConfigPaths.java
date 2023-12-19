@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.impl.config;
+package org.quiltmc.enigma.gui.config;
 
 import org.quiltmc.enigma.util.Os;
 
@@ -6,11 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class ConfigPaths {
-	public static Path getConfigFilePath(String name) {
-		String fileName = Os.getOs() == Os.LINUX ? String.format("%src", name) : String.format("%s.ini", name);
-		return getConfigPathRoot().resolve(fileName);
-	}
-
 	public static Path getConfigPathRoot() {
 		switch (Os.getOs()) {
 			case LINUX -> {

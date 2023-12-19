@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui.dialog;
 
 import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.config.UiConfig;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
@@ -68,12 +68,12 @@ public class StatsDialog {
 		contentPane.add(topLevelPackageOption, cb1.pos(0, result.getOverall().getTypes().size() + 1).build());
 
 		JTextField topLevelPackage = new JTextField();
-		topLevelPackage.setText(UiConfig.getLastTopLevelPackage());
+		topLevelPackage.setText(Config.main().stats.lastTopLevelPackage.value());
 		contentPane.add(topLevelPackage, cb1.pos(0, result.getOverall().getTypes().size() + 2).fill(GridBagConstraints.HORIZONTAL).build());
 
 		// show synthetic members option
 		JCheckBox syntheticParametersOption = new JCheckBox(I18n.translate("menu.file.stats.synthetic_parameters"));
-		syntheticParametersOption.setSelected(UiConfig.shouldIncludeSyntheticParameters());
+		syntheticParametersOption.setSelected(Config.main().stats.shouldIncludeSyntheticParameters.value());
 		contentPane.add(syntheticParametersOption, cb1.pos(0, result.getOverall().getTypes().size() + 4).build());
 
 		// show filter button
@@ -81,11 +81,10 @@ public class StatsDialog {
 		filterButton.addActionListener(action -> {
 			dialog.dispose();
 			ProgressDialog.runOffThread(gui, listener -> {
-				UiConfig.setLastTopLevelPackage(topLevelPackage.getText());
-				UiConfig.save();
+				Config.main().stats.lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
 
-				ProjectStatsResult projectResult = gui.getController().getStatsGenerator().getResult(syntheticParametersOption.isSelected()).filter(UiConfig.getLastTopLevelPackage());
-				SwingUtilities.invokeLater(() -> show(gui, projectResult, UiConfig.getLastTopLevelPackage()));
+				ProjectStatsResult projectResult = gui.getController().getStatsGenerator().getResult(syntheticParametersOption.isSelected()).filter(Config.main().stats.lastTopLevelPackage.value());
+				SwingUtilities.invokeLater(() -> show(gui, projectResult, Config.main().stats.lastTopLevelPackage.value()));
 			});
 		});
 		contentPane.add(filterButton, cb1.pos(0, result.getOverall().getTypes().size() + 3).anchor(GridBagConstraints.EAST).build());
@@ -96,9 +95,8 @@ public class StatsDialog {
 		button.addActionListener(action -> {
 			dialog.dispose();
 
-			UiConfig.setLastTopLevelPackage(topLevelPackage.getText());
-			UiConfig.setIncludeSyntheticParameters(syntheticParametersOption.isSelected());
-			UiConfig.save();
+			Config.main().stats.lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
+			Config.main().stats.shouldIncludeSyntheticParameters.setValue(syntheticParametersOption.isSelected(), true);
 
 			generateStats(gui, checkboxes);
 		});

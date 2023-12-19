@@ -1,8 +1,11 @@
-package org.quiltmc.enigma.gui.config;
+package org.quiltmc.enigma.gui.config.theme;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatSystemProperties;
+import org.quiltmc.config.api.values.ComplexConfigValue;
+import org.quiltmc.config.api.values.ConfigSerializableObject;
+import org.quiltmc.enigma.gui.config.Config;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -11,7 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
-public enum LookAndFeel {
+public enum LookAndFeel implements ConfigSerializableObject<Integer> {
 	DEFAULT(false),
 	DARCULA(false),
 	METAL(true),
@@ -35,7 +38,7 @@ public enum LookAndFeel {
 	public void setGlobalLAF() {
 		// Configure FlatLaf's UI scale to be our scale factor.
 		// This is also used for the SVG icons, so it applies even when some other LaF is active.
-		System.setProperty(FlatSystemProperties.UI_SCALE, Float.toString(UiConfig.getActiveScaleFactor()));
+		System.setProperty(FlatSystemProperties.UI_SCALE, Float.toString(Config.main().scaleFactor.value()));
 
 		try {
 			switch (this) {
@@ -64,5 +67,20 @@ public enum LookAndFeel {
 		// convert the color we got to grayscale
 		int b = (int) (0.3 * c.getRed() + 0.59 * c.getGreen() + 0.11 * c.getBlue());
 		return b < 85;
+	}
+
+	@Override
+	public ConfigSerializableObject<Integer> convertFrom(Integer representation) {
+		return values()[representation];
+	}
+
+	@Override
+	public Integer getRepresentation() {
+		return this.ordinal();
+	}
+
+	@Override
+	public ComplexConfigValue copy() {
+		return this;
 	}
 }
