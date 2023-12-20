@@ -47,7 +47,7 @@ def registerTestTask(String name) {
 
 		def jar = project(":enigma").file("build/test-obf/${name}.jar")
 		def mappings = file("mappings/${name}")
-		args('-jar', jar, '-mappings', mappings)
+		args('-jar', jar, '-mappings', mappings, '--development')
 		doFirst {
 			mappings.mkdirs()
 		}

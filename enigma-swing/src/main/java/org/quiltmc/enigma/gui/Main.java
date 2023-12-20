@@ -53,7 +53,7 @@ public class Main {
 		parser.acceptsAll(List.of("edit-javadocs", "d"), "Enable editing Javadocs");
 		parser.acceptsAll(List.of("no-edit-javadocs", "D"), "Disable editing Javadocs");
 
-		parser.accepts("single-class-tree", "Unify the deobfuscated and obfuscated class panels");
+		parser.accepts("development", "Enable extra options and information for development");
 
 		parser.accepts("help", "Displays help information");
 
@@ -63,6 +63,10 @@ public class Main {
 			if (options.has("help")) {
 				parser.printHelpOn(System.out);
 				return;
+			}
+
+			if (options.has("development")) {
+				System.setProperty("enigma.development", "true");
 			}
 
 			Set<EditableType> editables = EnumSet.allOf(EditableType.class);

@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.element;
 
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.NotificationManager;
@@ -22,7 +23,7 @@ import org.quiltmc.enigma.gui.dialog.keybind.ConfigureKeyBindsDialog;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.LanguageUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
+import org.quiltmc.enigma.util.EntryTreePrinter;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Pair;
 import org.quiltmc.enigma.util.validation.Message;
@@ -30,14 +31,23 @@ import org.quiltmc.enigma.util.validation.ParameterizedMessage;
 
 import javax.annotation.Nullable;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.WindowConstants;
+import java.awt.BorderLayout;
+import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -92,6 +102,10 @@ public class MenuBar {
 	private final JMenu helpMenu = new JMenu();
 	private final JMenuItem aboutItem = new JMenuItem();
 	private final JMenuItem githubItem = new JMenuItem();
+
+	// Enabled with system property "enigma.development" or "--development" flag
+	private final JMenu devMenu = new JMenu();
+	private final JMenuItem printMappingTreeItem = new JMenuItem();
 
 	private final Gui gui;
 
@@ -162,6 +176,11 @@ public class MenuBar {
 		this.helpMenu.add(this.githubItem);
 		ui.add(this.helpMenu);
 
+		this.devMenu.add(this.printMappingTreeItem);
+		if (System.getProperty("enigma.development", "false").equalsIgnoreCase("true")) {
+			ui.add(this.devMenu);
+		}
+
 		this.setKeyBinds();
 
 		this.jarOpenItem.addActionListener(e -> this.onOpenJarClicked());
@@ -190,6 +209,7 @@ public class MenuBar {
 		this.startServerItem.addActionListener(e -> this.onStartServerClicked());
 		this.aboutItem.addActionListener(e -> AboutDialog.show(this.gui.getFrame()));
 		this.githubItem.addActionListener(e -> this.onGithubClicked());
+		this.printMappingTreeItem.addActionListener(e -> this.onPrintMappingTreeClicked());
 	}
 
 	public void setKeyBinds() {
@@ -224,6 +244,7 @@ public class MenuBar {
 		this.exportSourceItem.setEnabled(jarOpen);
 		this.exportJarItem.setEnabled(jarOpen);
 		this.statsItem.setEnabled(jarOpen);
+		this.printMappingTreeItem.setEnabled(jarOpen);
 	}
 
 	public void retranslateUi() {
@@ -271,6 +292,9 @@ public class MenuBar {
 		this.helpMenu.setText(I18n.translate("menu.help"));
 		this.aboutItem.setText(I18n.translate("menu.help.about"));
 		this.githubItem.setText(I18n.translate("menu.help.github"));
+
+		this.devMenu.setText("Dev");
+		this.printMappingTreeItem.setText("Print mapping tree");
 	}
 
 	private void onOpenJarClicked() {
@@ -457,6 +481,27 @@ public class MenuBar {
 
 	private void onGithubClicked() {
 		GuiUtil.openUrl("https://github.com/QuiltMC/Enigma");
+	}
+
+	private void onPrintMappingTreeClicked() {
+		var mappings = this.gui.getController().getProject().getRemapper().getMappings();
+
+		StringWriter text = new StringWriter();
+		EntryTreePrinter.print(new PrintWriter(text), mappings);
+
+		var frame = new JFrame("Mapping Tree");
+		var pane = frame.getContentPane();
+		pane.setLayout(new BorderLayout());
+
+		var textArea = new JTextArea(text.toString());
+		textArea.setFont(ScaleUtil.getFont(Font.MONOSPACED, Font.PLAIN, 12));
+		pane.add(new JScrollPane(textArea), BorderLayout.CENTER);
+		pane.add(new JButton("Close"), BorderLayout.SOUTH);
+
+		frame.setSize(ScaleUtil.getDimension(1200, 400));
+		frame.setLocationRelativeTo(this.gui.getFrame());
+		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		frame.setVisible(true);
 	}
 
 	private void onOpenMappingsClicked() {
