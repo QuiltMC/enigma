@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,11 +38,50 @@ public final class TinyV2Writer implements MappingsWriter {
 		this.deobfHeader = deobfHeader;
 	}
 
-	@Override
-	public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
-		EntryTree<EntryMapping> writtenMappings = MappingsWriter.filterMappings(mappings, saveParameters);
+	private static int getEntryKind(Entry<?> e) {
+		// field < method < class
+		if (e instanceof FieldEntry) {
+			return 0;
+		} else if (e instanceof MethodEntry) {
+			return 1;
+		} else if (e instanceof ClassEntry) {
+			return 2;
+		}
 
-		List<EntryTreeNode<EntryMapping>> classes = StreamSupport.stream(writtenMappings.spliterator(), false).filter(node -> node.getEntry() instanceof ClassEntry).toList();
+		return -1;
+	}
+
+	private static Comparator<EntryTreeNode<EntryMapping>> mappingComparator() {
+		return Comparator.<EntryTreeNode<EntryMapping>>comparingInt(n -> getEntryKind(n.getEntry()))
+			.thenComparing(EntryTreeNode::getEntry, (o1, o2) -> {
+				if (o1 instanceof FieldEntry f1 && o2 instanceof FieldEntry f2) {
+					return f1.compareTo(f2);
+				} else if (o1 instanceof MethodEntry m1 && o2 instanceof MethodEntry m2) {
+					return m1.compareTo(m2);
+				} else if (o1 instanceof ClassEntry c1 && o2 instanceof ClassEntry c2) {
+					return c1.compareTo(c2);
+				} else if (o1 instanceof LocalVariableEntry v1 && o2 instanceof LocalVariableEntry v2) {
+					return v1.compareTo(v2);
+				} else {
+					Entry<?> p1 = o1.getParent();
+					Entry<?> p2 = o2.getParent();
+					if (p1 instanceof ClassEntry c1 && p2 instanceof ClassEntry c2) {
+						return c1.compareTo(c2);
+					} else if (p1 instanceof MethodEntry m1 && p2 instanceof MethodEntry m2) {
+						return m1.compareTo(m2);
+					}
+
+					return -1;
+				}
+			});
+	}
+
+	@Override
+	public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters parameters) {
+		List<EntryTreeNode<EntryMapping>> classes = StreamSupport.stream(mappings.spliterator(), false)
+				.filter(node -> node.getEntry() instanceof ClassEntry)
+				.sorted(mappingComparator())
+				.toList();
 
 		try (PrintWriter writer = new LfPrintWriter(Files.newBufferedWriter(path))) {
 			writer.println("tiny\t2\t" + MINOR_VERSION + "\t" + this.obfHeader + "\t" + this.deobfHeader);
@@ -49,7 +89,7 @@ public final class TinyV2Writer implements MappingsWriter {
 			// no escape names
 
 			for (EntryTreeNode<EntryMapping> node : classes) {
-				this.writeClass(writer, node, writtenMappings);
+				this.writeClass(writer, node, mappings);
 			}
 		} catch (IOException ex) {
 			Logger.error(ex, "Failed to write mappings to {}", path);
@@ -83,7 +123,7 @@ public final class TinyV2Writer implements MappingsWriter {
 
 		this.writeComment(writer, node.getValue(), 1);
 
-		for (EntryTreeNode<EntryMapping> child : node.getChildNodes()) {
+		for (EntryTreeNode<EntryMapping> child : node.getChildNodes().stream().sorted(mappingComparator()).toList()) {
 			Entry<?> entry = child.getEntry();
 			if (entry instanceof FieldEntry) {
 				this.writeField(writer, child);
@@ -114,7 +154,7 @@ public final class TinyV2Writer implements MappingsWriter {
 
 		this.writeComment(writer, mapping, 2);
 
-		for (EntryTreeNode<EntryMapping> child : node.getChildNodes()) {
+		for (EntryTreeNode<EntryMapping> child : node.getChildNodes().stream().sorted(mappingComparator()).toList()) {
 			Entry<?> entry = child.getEntry();
 			if (entry instanceof LocalVariableEntry) {
 				this.writeParameter(writer, child);

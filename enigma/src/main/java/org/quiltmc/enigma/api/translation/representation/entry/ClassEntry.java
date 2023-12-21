@@ -235,12 +235,16 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public int compareTo(ClassEntry entry) {
+		String packageName = this.getPackageName();
+		String otherPackageName = entry.getPackageName();
+
+		int p = packageName.compareTo(otherPackageName);
+		if (p != 0) {
+			return p;
+		}
+
 		String name = this.getFullName();
 		String otherFullName = entry.getFullName();
-
-		if (name.length() != otherFullName.length()) {
-			return name.length() - otherFullName.length();
-		}
 
 		return name.compareTo(otherFullName);
 	}
