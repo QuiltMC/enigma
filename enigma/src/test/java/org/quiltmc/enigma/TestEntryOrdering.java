@@ -1,8 +1,8 @@
-package cuchaz.enigma;
+package org.quiltmc.enigma;
 
-import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 
 import java.util.ArrayList;
 import java.util.Collections;

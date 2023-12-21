@@ -1,19 +1,20 @@
-package cuchaz.enigma.translation.mapping;
+package org.quiltmc.enigma.translation.mapping;
 
-import cuchaz.enigma.ProgressListener;
-import cuchaz.enigma.translation.mapping.serde.MappingFormat;
-import cuchaz.enigma.translation.mapping.tree.EntryTree;
-import cuchaz.enigma.translation.mapping.tree.HashEntryTree;
-import cuchaz.enigma.translation.representation.ArgumentDescriptor;
-import cuchaz.enigma.translation.representation.MethodDescriptor;
-import cuchaz.enigma.translation.representation.ParameterAccessFlags;
-import cuchaz.enigma.translation.representation.TypeDescriptor;
-import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.translation.representation.entry.FieldEntry;
-import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
+import org.quiltmc.enigma.api.translation.representation.ArgumentDescriptor;
+import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
+import org.quiltmc.enigma.api.translation.representation.ParameterAccessFlags;
+import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,7 +37,7 @@ public class TestDeterministicWrite {
 			String content = Files.readString(file);
 			if (prev != null) Assertions.assertEquals(prev, content, "Iteration " + i + " has a different result from the previous one");
 			prev = content;
-			mappings = MappingFormat.TINY_V2.read(file, ProgressListener.none(), null);
+			mappings = MappingFormat.TINY_V2.read(file, ProgressListener.none());
 		}
 	}
 
