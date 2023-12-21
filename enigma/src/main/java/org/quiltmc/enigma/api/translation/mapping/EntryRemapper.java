@@ -28,6 +28,7 @@ import javax.annotation.Nullable;
 
 public class EntryRemapper {
 	private final EntryTree<EntryMapping> deobfMappings;
+	private final EntryTree<EntryMapping> jarProposedMappings;
 	private final EntryTree<EntryMapping> proposedMappings;
 	private final DeltaTrackingTree<EntryMapping> mappings;
 
@@ -39,10 +40,11 @@ public class EntryRemapper {
 	private final MappingValidator validator;
 	private final List<NameProposalService> proposalServices;
 
-	private EntryRemapper(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
+	private EntryRemapper(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> jarProposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
 		this.deobfMappings = deobfMappings;
-		this.proposedMappings = proposedMappings;
-		this.mappings = new DeltaTrackingTree<>(new MergedEntryMappingTree(deobfMappings, proposedMappings));
+		this.jarProposedMappings = jarProposedMappings;
+		this.proposedMappings = new HashEntryTree<>(jarProposedMappings);
+		this.mappings = new DeltaTrackingTree<>(new MergedEntryMappingTree(deobfMappings, this.proposedMappings));
 
 		this.obfResolver = jarIndex.getEntryResolver();
 
@@ -198,6 +200,14 @@ public class EntryRemapper {
 	 */
 	public EntryTree<EntryMapping> getProposedMappings() {
 		return this.proposedMappings;
+	}
+
+	/**
+	 * Gets mappings proposed at the jar indexing stage.
+	 * @return the proposed mapping tree
+	 */
+	public EntryTree<EntryMapping> getJarProposedMappings() {
+		return this.jarProposedMappings;
 	}
 
 	public MappingDelta<EntryMapping> takeMappingDelta() {

@@ -9,7 +9,6 @@ import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.service.ObfuscationTestService;
 import org.quiltmc.enigma.api.source.TokenType;
-import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeUtil;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
@@ -45,7 +44,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -101,21 +99,8 @@ public class EnigmaProject {
 	 * @param progress a progress listener for indexing
 	 */
 	public void setMappings(@Nullable EntryTree<EntryMapping> mappings, ProgressListener progress) {
-		EntryTree<EntryMapping> jarProposedMappings = new HashEntryTree<>();
-
 		// keep bytecode-based proposed names, to avoid unnecessary recalculation
-		if (this.remapper != null) {
-			EntryTree<EntryMapping> oldMappings = this.remapper.getProposedMappings();
-			Iterator<EntryTreeNode<EntryMapping>> iterator = oldMappings.iterator();
-
-			iterator.forEachRemaining(node -> {
-				EntryMapping mapping = node.getValue();
-
-				if (mapping != null && mapping.tokenType() == TokenType.JAR_PROPOSED) {
-					jarProposedMappings.insert(node.getEntry(), mapping);
-				}
-			});
-		}
+		EntryTree<EntryMapping> jarProposedMappings = this.remapper != null ? this.remapper.getJarProposedMappings() : new HashEntryTree<>();
 
 		this.mappingsIndex = MappingsIndex.empty();
 
