@@ -2,8 +2,8 @@ package org.quiltmc.enigma.gui;
 
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
-import org.quiltmc.enigma.gui.config.Themes;
-import org.quiltmc.enigma.gui.config.UiConfig;
+import org.quiltmc.enigma.gui.config.theme.Themes;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.CrashDialog;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.validation.Message;
@@ -100,7 +100,7 @@ public class Main {
 
 			EnigmaProfile parsedProfile = EnigmaProfile.read(options.valueOf(profile));
 
-			I18n.setLanguage(UiConfig.getLanguage());
+			I18n.setLanguage(Config.main().language.value());
 			setDefaultSystemProperty("apple.laf.useScreenMenuBar", "true");
 			setDefaultSystemProperty("awt.useSystemAAFontSettings", "on");
 			setDefaultSystemProperty("swing.aatext", "true");
@@ -135,10 +135,10 @@ public class Main {
 								gui.getNotificationManager().notify(ParameterizedMessage.openedProject(jarPath.toString(), mappingsPath.toString()));
 							} else {
 								// search for mappings that are associated with the jar
-								for (var pair : UiConfig.getRecentFilePairs()) {
-									if (pair.a().equals(jarPath)) {
-										gui.getNotificationManager().notify(ParameterizedMessage.openedProject(pair.a().toString(), pair.b().toString()));
-										gui.getController().openMappings(pair.b());
+								for (Config.RecentProject recentProject : Config.main().recentProjects.value()) {
+									if (recentProject.getJarPath().equals(jarPath)) {
+										gui.getNotificationManager().notify(ParameterizedMessage.openedProject(recentProject.jarPath(), recentProject.mappingsPath()));
+										gui.getController().openMappings(recentProject.getMappingsPath());
 										break;
 									}
 								}

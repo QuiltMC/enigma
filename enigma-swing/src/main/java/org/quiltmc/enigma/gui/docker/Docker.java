@@ -1,7 +1,9 @@
 package org.quiltmc.enigma.gui.docker;
 
+import org.quiltmc.config.api.values.ComplexConfigValue;
+import org.quiltmc.config.api.values.ConfigSerializableObject;
 import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.config.UiConfig;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.docker.component.DockerButton;
 import org.quiltmc.enigma.gui.docker.component.DockerTitleBar;
 import org.quiltmc.enigma.util.I18n;
@@ -70,7 +72,8 @@ public abstract class Docker extends JPanel {
 	 * @return the position of the docker's button in the selector panels. this also represents where the docker will open when its button is clicked cannot use {@link Docker.VerticalLocation#FULL}
 	 */
 	public final Location getButtonLocation() {
-		return UiConfig.getButtonLocation(this);
+		Location savedLocation = Config.dockers().getButtonLocation(this.getId());
+		return savedLocation == null ? this.getPreferredButtonLocation() : savedLocation;
 	}
 
 	public abstract Location getPreferredButtonLocation();
@@ -103,20 +106,31 @@ public abstract class Docker extends JPanel {
 	 * @param side the side of the screen, either right or left
 	 * @param verticalLocation the vertical location of the docker, being full, top or bottom
 	 */
-	public record Location(Side side, VerticalLocation verticalLocation) {
-		public static Location parse(String string) {
-			String[] parts = string.split(UiConfig.PAIR_SEPARATOR);
-			return new Location(Side.valueOf(parts[0].toUpperCase()), VerticalLocation.valueOf(parts[1].toUpperCase()));
+	public record Location(Side side, VerticalLocation verticalLocation) implements ConfigSerializableObject<String> {
+		@Override
+		public String toString() {
+			return this.side.name() + ";" + this.verticalLocation.name();
 		}
 
 		@Override
-		public String toString() {
-			return this.side.name().toLowerCase() + UiConfig.PAIR_SEPARATOR + this.verticalLocation.name().toLowerCase();
+		public ConfigSerializableObject<String> convertFrom(String representation) {
+			return new Location(Side.valueOf(representation.split(";")[0]), VerticalLocation.valueOf(representation.split(";")[1]));
+		}
+
+		@Override
+		public String getRepresentation() {
+			return this.toString();
+		}
+
+		@Override
+		public ComplexConfigValue copy() {
+			return this;
 		}
 	}
 
 	/**
 	 * Represents the side of the screen a docker is located on.
+	 * @implNote these names cannot be changed without breaking configurations
 	 */
 	public enum Side {
 		LEFT,
@@ -125,6 +139,7 @@ public abstract class Docker extends JPanel {
 
 	/**
 	 * Represents the occupied vertical location of a docker.
+	 * @implNote these names cannot be changed without breaking configurations
 	 */
 	public enum VerticalLocation {
 		TOP,

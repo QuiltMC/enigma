@@ -191,11 +191,8 @@
 	"javadocs.edit": "Éditer les Javadocs",
 	"javadocs.instruction": "Éditer les Javadocs ici.",
 
-	"fonts.cat.default": "Par défaut",
-	"fonts.cat.default2": "Par défaut 2",
 	"fonts.cat.small": "Petit",
 	"fonts.cat.editor": "Éditeur",
-	"fonts.use_custom": "Utiliser des polices personnalisées",
 
 	"prompt.ok": "OK",
 	"prompt.cancel": "Annuler",

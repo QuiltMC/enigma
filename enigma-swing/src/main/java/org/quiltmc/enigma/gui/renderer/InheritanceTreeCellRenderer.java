@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.renderer;
 import org.quiltmc.enigma.api.analysis.tree.ClassInheritanceTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.MethodInheritanceTreeNode;
 import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.config.UiConfig;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 
 import java.awt.Component;
@@ -23,7 +23,7 @@ public class InheritanceTreeCellRenderer extends DefaultTreeCellRenderer {
 		Component ret = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 
 		if (!(value instanceof MethodInheritanceTreeNode node) || node.isImplemented()) {
-			ret.setForeground(UiConfig.getTextColor());
+			ret.setForeground(Config.currentColors().text.value());
 			ret.setFont(ret.getFont().deriveFont(Font.PLAIN));
 			if (value instanceof ClassInheritanceTreeNode) {
 				this.setIcon(GuiUtil.getClassIcon(this.gui, ((ClassInheritanceTreeNode) value).getClassEntry()));
@@ -31,7 +31,7 @@ public class InheritanceTreeCellRenderer extends DefaultTreeCellRenderer {
 				this.setIcon(GuiUtil.getMethodIcon(((MethodInheritanceTreeNode) value).getMethodEntry()));
 			}
 		} else {
-			ret.setForeground(UiConfig.getNumberColor());
+			ret.setForeground(Config.currentColors().number.value());
 			ret.setFont(ret.getFont().deriveFont(Font.ITALIC));
 			this.setIcon(GuiUtil.CLASS_ICON);
 		}

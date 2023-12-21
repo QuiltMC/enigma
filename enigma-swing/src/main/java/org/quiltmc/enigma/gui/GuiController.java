@@ -22,8 +22,7 @@ import org.quiltmc.enigma.api.service.ObfuscationTestService;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.class_handle.ClassHandleProvider;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
-import org.quiltmc.enigma.gui.config.NetConfig;
-import org.quiltmc.enigma.gui.config.UiConfig;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.ProgressDialog;
 import org.quiltmc.enigma.gui.docker.CollabDocker;
 import org.quiltmc.enigma.api.stats.StatType;
@@ -125,7 +124,7 @@ public class GuiController implements ClientPacketHandler {
 		return ProgressDialog.runOffThread(this.gui, progress -> {
 			this.project = this.enigma.openJar(jarPath, new ClasspathClassProvider(), progress);
 			this.indexTreeBuilder = new IndexTreeBuilder(this.project.getJarIndex());
-			this.chp = new ClassHandleProvider(this.project, UiConfig.getDecompiler().service);
+			this.chp = new ClassHandleProvider(this.project, Config.decompiler().activeDecompiler.value().service);
 			this.statsGenerator = new StatsGenerator(this.project);
 
 			SwingUtilities.invokeLater(() -> {
@@ -153,7 +152,7 @@ public class GuiController implements ClientPacketHandler {
 		}
 
 		this.gui.setMappingsFile(path);
-		UiConfig.addRecentFilePair(this.project.getJarPath(), path);
+		Config.insertRecentProject(this.project.getJarPath().toString(), path.toString());
 		this.gui.getMenuBar().reloadOpenRecentMenu(this.gui);
 
 		return ProgressDialog.runOffThread(this.gui, progress -> {
@@ -557,7 +556,7 @@ public class GuiController implements ClientPacketHandler {
 	public void openStatsTree(Set<StatType> includedTypes) {
 		ProgressDialog.runOffThread(this.gui, progress -> {
 			StatsResult overall = this.getStatsGenerator().getResultNullable().getOverall();
-			StatsTree<Integer> tree = overall.buildTree(UiConfig.getLastTopLevelPackage(), includedTypes);
+			StatsTree<Integer> tree = overall.buildTree(Config.main().stats.lastTopLevelPackage.value(), includedTypes);
 			String treeJson = GSON.toJson(tree.root);
 
 			try {
@@ -619,7 +618,7 @@ public class GuiController implements ClientPacketHandler {
 		this.server.start();
 		this.client = new EnigmaClient(this, "127.0.0.1", port);
 		this.client.connect();
-		this.client.sendPacket(new LoginC2SPacket(this.project.getJarChecksum(), password, NetConfig.getUsername()));
+		this.client.sendPacket(new LoginC2SPacket(this.project.getJarChecksum(), password, Config.net().username.value()));
 		this.gui.setConnectionState(ConnectionState.HOSTING);
 	}
 
@@ -648,7 +647,7 @@ public class GuiController implements ClientPacketHandler {
 		});
 
 		this.gui.setUserList(new ArrayList<>());
-		if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+		if (Config.main().serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
 			this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.LEFT_SERVER));
 		}
 

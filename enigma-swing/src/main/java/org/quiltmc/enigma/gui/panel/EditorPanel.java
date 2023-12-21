@@ -9,14 +9,12 @@ import org.quiltmc.enigma.gui.BrowserCaret;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.GuiController;
-import org.quiltmc.enigma.gui.config.LookAndFeel;
-import org.quiltmc.enigma.gui.config.Themes;
-import org.quiltmc.enigma.gui.config.UiConfig;
+import org.quiltmc.enigma.gui.config.theme.Themes;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.element.EditorPopupMenu;
 import org.quiltmc.enigma.gui.element.NavigatorPanel;
 import org.quiltmc.enigma.gui.event.EditorActionListener;
-import org.quiltmc.enigma.gui.event.ThemeChangeListener;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.gui.highlight.SelectionHighlightPainter;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
@@ -97,13 +95,10 @@ public class EditorPanel {
 	private boolean mouseIsPressed = false;
 	private boolean shouldNavigateOnClick;
 
-	public LookAndFeel editorLaf;
 	private int fontSize = 12;
-	private Map<TokenType, BoxHighlightPainter> boxHighlightPainters;
+	private final Map<TokenType, BoxHighlightPainter> boxHighlightPainters;
 
 	private final List<EditorActionListener> listeners = new ArrayList<>();
-
-	private final ThemeChangeListener themeChangeListener;
 
 	private ClassHandle classHandle;
 	private DecompiledClassSource source;
@@ -120,9 +115,9 @@ public class EditorPanel {
 		this.editor.setCaret(new BrowserCaret());
 		this.editor.setFont(ScaleUtil.getFont(this.editor.getFont().getFontName(), Font.PLAIN, this.fontSize));
 		this.editor.addCaretListener(event -> this.onCaretMove(event.getDot(), this.mouseIsPressed));
-		this.editor.setCaretColor(UiConfig.getCaretColor());
+		this.editor.setCaretColor(Config.currentColors().caret.value());
 		this.editor.setContentType("text/enigma-sources");
-		this.editor.setBackground(UiConfig.getEditorBackgroundColor());
+		this.editor.setBackground(Config.currentColors().editorBackground.value());
 
 		// set unit increment to height of one line, the amount scrolled per
 		// mouse wheel rotation is then controlled by OS settings
@@ -210,20 +205,6 @@ public class EditorPanel {
 
 		this.retryButton.addActionListener(e -> this.redecompileClass());
 
-		this.themeChangeListener = (laf, boxHighlightPainters) -> {
-			if ((this.editorLaf == null || this.editorLaf != laf)) {
-				this.editor.updateUI();
-				this.editor.setBackground(UiConfig.getEditorBackgroundColor());
-				if (this.editorLaf != null) {
-					this.classHandle.invalidateMapped();
-				}
-
-				this.editorLaf = laf;
-			}
-
-			this.boxHighlightPainters = boxHighlightPainters;
-		};
-
 		this.ui.putClientProperty(EditorPanel.class, this);
 	}
 
@@ -289,12 +270,7 @@ public class EditorPanel {
 		this.listeners.forEach(l -> l.onClassHandleChanged(this, old, handle));
 	}
 
-	public void setup() {
-		Themes.addListener(this.themeChangeListener);
-	}
-
 	public void destroy() {
-		Themes.removeListener(this.themeChangeListener);
 		this.classHandle.close();
 	}
 
