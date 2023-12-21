@@ -5,230 +5,131 @@ import org.quiltmc.enigma.api.translation.mapping.EntryMap;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
-import org.quiltmc.enigma.util.Pair;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * An {@link EntryMapping entry mapping} {@link EntryTree tree} that represents both a main and a secondary tree.
- * The secondary tree is used for entries that aren't contained in the main one, and methods to alter or retrieve values
- * from one or both of them are also provided.
+ * The secondary tree is used to provide entries that aren't present in the main one. Both trees are used by reference,
+ * which means changes made directly to either of them, will also be reflected in the merged tree.
  *
  * <p>
- * Removing an entry by default removes from both the main and secondary trees.
+ * Writing to the merged tree will only apply the changes to the main tree, while reading from it will include values
+ * from both trees.
  */
-public class MergedEntryMappingTree implements EntryTree<EntryMapping> {
-	private final EntryTree<EntryMapping> mainTree;
-	private final EntryTree<EntryMapping> secondaryTree;
-
-	public MergedEntryMappingTree(EntryTree<EntryMapping> mainTree, EntryTree<EntryMapping> secondaryTree) {
-		this.mainTree = mainTree;
-		this.secondaryTree = secondaryTree;
-	}
-
+public record MergedEntryMappingTree(EntryTree<EntryMapping> mainTree, EntryTree<EntryMapping> secondaryTree) implements EntryTree<EntryMapping> {
 	@Override
 	public void insert(Entry<?> entry, EntryMapping value) {
 		this.mainTree.insert(entry, value);
-		if (value == null) {
-			this.insertSecondary(entry, null);
-		}
-	}
-
-	public void insertBoth(Entry<?> entry, EntryMapping value) {
-		this.insert(entry, value);
-		if (value != null) {
-			this.insertSecondary(entry, value);
-		}
-	}
-
-	public void insertMain(Entry<?> entry, EntryMapping value) {
-		this.insert(entry, value);
-	}
-
-	public void insertSecondary(Entry<?> entry, EntryMapping value) {
-		this.secondaryTree.insert(entry, value);
 	}
 
 	@Nullable
 	@Override
 	public EntryMapping remove(Entry<?> entry) {
-		EntryMapping main = this.removeMain(entry);
-		this.removeSecondary(entry);
-		return main;
-	}
-
-	public Pair<EntryMapping, EntryMapping> removeBoth(Entry<?> entry) {
-		return new Pair<>(this.removeMain(entry), this.removeSecondary(entry));
-	}
-
-	public EntryMapping removeMain(Entry<?> entry) {
 		return this.mainTree.remove(entry);
-	}
-
-	public EntryMapping removeSecondary(Entry<?> entry) {
-		return this.secondaryTree.remove(entry);
 	}
 
 	@Nullable
 	@Override
 	public EntryMapping get(Entry<?> entry) {
-		EntryMapping main = this.getMain(entry);
+		EntryMapping main = this.mainTree.get(entry);
 		if (main == null) {
-			return this.getSecondary(entry);
+			return this.secondaryTree.get(entry);
 		}
 
 		return main;
-	}
-
-	public Pair<EntryMapping, EntryMapping> getBoth(Entry<?> entry) {
-		return new Pair<>(this.getMain(entry), this.getSecondary(entry));
-	}
-
-	public EntryMapping getMain(Entry<?> entry) {
-		return this.mainTree.get(entry);
-	}
-
-	public EntryMapping getSecondary(Entry<?> entry) {
-		return this.secondaryTree.get(entry);
 	}
 
 	@Override
 	public boolean contains(Entry<?> entry) {
-		return this.mainContains(entry) || this.secondaryContains(entry);
-	}
-
-	@Override
-	public Stream<Entry<?>> getAllEntries() {
-		return null;
-	}
-
-	public boolean bothContain(Entry<?> entry) {
-		return this.mainContains(entry) && this.secondaryContains(entry);
-	}
-
-	public boolean mainContains(Entry<?> entry) {
-		return this.mainTree.contains(entry);
-	}
-
-	public boolean secondaryContains(Entry<?> entry) {
-		return this.secondaryTree.contains(entry);
+		return this.mainTree.contains(entry) || this.secondaryTree.contains(entry);
 	}
 
 	@Override
 	public Collection<Entry<?>> getChildren(Entry<?> entry) {
-		var main = this.getMainChildren(entry);
-		if (main == null || main.isEmpty()) {
-			return this.getSecondaryChildren(entry);
+		var leaf = this.findNode(entry);
+		if (leaf == null) {
+			return Collections.emptyList();
 		}
 
-		return main;
-	}
-
-	public Pair<Collection<Entry<?>>, Collection<Entry<?>>> getBothChildren(Entry<?> entry) {
-		return new Pair<>(this.getMainChildren(entry), this.getSecondaryChildren(entry));
-	}
-
-	public Collection<Entry<?>> getMainChildren(Entry<?> entry) {
-		return this.mainTree.getChildren(entry);
-	}
-
-	public Collection<Entry<?>> getSecondaryChildren(Entry<?> entry) {
-		return this.secondaryTree.getChildren(entry);
+		return leaf.getChildren();
 	}
 
 	@Override
 	public Collection<Entry<?>> getSiblings(Entry<?> entry) {
-		var main = this.getMainSiblings(entry);
-		if (main == null || main.isEmpty()) {
-			return this.getSecondarySiblings(entry);
+		Entry<?> parent = entry.getParent();
+		if (parent == null) {
+			return getSiblings(entry, this.getRootNodes().map(EntryTreeNode::getEntry).collect(Collectors.toSet()));
 		}
 
-		return main;
+		return getSiblings(entry, this.getChildren(parent));
 	}
 
-	public Pair<Collection<Entry<?>>, Collection<Entry<?>>> getBothSiblings(Entry<?> entry) {
-		return new Pair<>(this.getMainSiblings(entry), this.getSecondarySiblings(entry));
-	}
-
-	public Collection<Entry<?>> getMainSiblings(Entry<?> entry) {
-		return this.mainTree.getSiblings(entry);
-	}
-
-	public Collection<Entry<?>> getSecondarySiblings(Entry<?> entry) {
-		return this.secondaryTree.getSiblings(entry);
-	}
-
-	public Pair<EntryTreeNode<EntryMapping>, EntryTreeNode<EntryMapping>> findBothNodes(Entry<?> entry) {
-		return new Pair<>(this.findMainNode(entry), this.findSecondaryNode(entry));
-	}
-
-	public EntryTreeNode<EntryMapping> findMainNode(Entry<?> entry) {
-		return this.mainTree.findNode(entry);
-	}
-
-	public EntryTreeNode<EntryMapping> findSecondaryNode(Entry<?> entry) {
-		return this.secondaryTree.findNode(entry);
+	private static Collection<Entry<?>> getSiblings(Entry<?> entry, Collection<Entry<?>> generation) {
+		var siblings = new HashSet<>(generation);
+		siblings.remove(entry);
+		return siblings;
 	}
 
 	@Override
 	public EntryTreeNode<EntryMapping> findNode(Entry<?> entry) {
-		var main = this.findMainNode(entry);
-		if (main == null || main.isEmpty()) {
-			return this.findSecondaryNode(entry);
+		var main = this.mainTree.findNode(entry);
+		var secondary = this.secondaryTree.findNode(entry);
+
+		if (main != null && secondary != null) {
+			return new MergedMappingTreeNode(main, secondary);
+		} else if (main == null) {
+			return secondary;
 		}
 
 		return main;
 	}
 
-	@Override
-	public Stream<EntryTreeNode<EntryMapping>> getRootNodes() {
-		List<EntryTreeNode<EntryMapping>> nodes = new ArrayList<>(this.mainTree.getRootNodes().toList());
-		nodes.addAll(this.secondaryTree.getRootNodes().toList());
-		return nodes.stream();
+	static Stream<EntryTreeNode<EntryMapping>> mergeNodeStreams(Stream<EntryTreeNode<EntryMapping>> mainNodes, Stream<EntryTreeNode<EntryMapping>> secondaryNodes) {
+		Map<Entry<?>, EntryTreeNode<EntryMapping>> nodes = new HashMap<>();
+
+		mainNodes.forEach(mainNode -> nodes.put(mainNode.getEntry(), mainNode));
+		secondaryNodes.forEach(secondaryNode -> nodes.merge(secondaryNode.getEntry(), secondaryNode, MergedMappingTreeNode::new));
+
+		return nodes.values().stream();
 	}
 
 	@Override
+	public Stream<EntryTreeNode<EntryMapping>> getRootNodes() {
+		return mergeNodeStreams(this.mainTree.getRootNodes(), this.secondaryTree.getRootNodes());
+	}
+
+	@Nonnull
+	@Override
 	public Iterator<EntryTreeNode<EntryMapping>> iterator() {
-		List<EntryTreeNode<EntryMapping>> nodes = new ArrayList<>();
-		this.mainTree.iterator().forEachRemaining(nodes::add);
-		this.secondaryTree.iterator().forEachRemaining(nodes::add);
-		return nodes.iterator();
+		return this.getRootNodes().flatMap(n -> n.getNodesRecursively().stream())
+			.map(n -> (EntryTreeNode<EntryMapping>) n) // ? extends EntryTreeNode<EntryMapping> -> EntryTreeNode<EntryMapping>
+			.iterator();
+	}
+
+	@Override
+	public Stream<Entry<?>> getAllEntries() {
+		return this.getRootNodes().flatMap(n -> n.getChildrenRecursively().stream());
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return this.isMainEmpty() && this.isSecondaryEmpty();
-	}
-
-	public boolean isAnyTreeEmpty() {
-		return this.isMainEmpty() || this.isSecondaryEmpty();
-	}
-
-	private boolean isMainEmpty() {
-		return this.mainTree.isEmpty();
-	}
-
-	private boolean isSecondaryEmpty() {
-		return this.secondaryTree.isEmpty();
+		return this.mainTree.isEmpty() && this.secondaryTree.isEmpty();
 	}
 
 	@Override
 	public MergedEntryMappingTree translate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
-		var main = this.translateMain(translator, resolver, mappings);
-		var secondary = this.translateSecondary(translator, resolver, mappings);
+		var main = this.mainTree.translate(translator, resolver, mappings);
+		var secondary = this.secondaryTree.translate(translator, resolver, mappings);
 		return new MergedEntryMappingTree(main, secondary);
-	}
-
-	public EntryTree<EntryMapping> translateMain(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
-		return this.mainTree.translate(translator, resolver, mappings);
-	}
-
-	public EntryTree<EntryMapping> translateSecondary(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
-		return this.secondaryTree.translate(translator, resolver, mappings);
 	}
 }

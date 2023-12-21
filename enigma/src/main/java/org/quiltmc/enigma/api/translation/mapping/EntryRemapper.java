@@ -27,6 +27,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class EntryRemapper {
+	private final EntryTree<EntryMapping> deobfMappings;
+	private final EntryTree<EntryMapping> proposedMappings;
 	private final DeltaTrackingTree<EntryMapping> mappings;
 
 	private final EntryResolver obfResolver;
@@ -38,6 +40,8 @@ public class EntryRemapper {
 	private final List<NameProposalService> proposalServices;
 
 	private EntryRemapper(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
+		this.deobfMappings = deobfMappings;
+		this.proposedMappings = proposedMappings;
 		this.mappings = new DeltaTrackingTree<>(new MergedEntryMappingTree(deobfMappings, proposedMappings));
 
 		this.obfResolver = jarIndex.getEntryResolver();
@@ -141,7 +145,7 @@ public class EntryRemapper {
 		for (var service : this.proposalServices) {
 			var proposedNames = service.getDynamicProposedNames(this, obfEntry, oldMapping, newMapping);
 			if (proposedNames != null) {
-				proposedNames.forEach(this.mappings::insert);
+				proposedNames.forEach(this.proposedMappings::insert);
 			}
 		}
 	}
@@ -185,14 +189,7 @@ public class EntryRemapper {
 	 * @return the deobfuscated mapping tree
 	 */
 	public EntryTree<EntryMapping> getDeobfMappings() {
-		EntryTree<EntryMapping> deobf = new HashEntryTree<>();
-		this.mappings.forEach(node -> {
-			if (node.getValue() != null && !node.getValue().tokenType().isProposed()) {
-				deobf.insert(node);
-			}
-		});
-
-		return deobf;
+		return this.deobfMappings;
 	}
 
 	/**
@@ -200,14 +197,7 @@ public class EntryRemapper {
 	 * @return the proposed mapping tree
 	 */
 	public EntryTree<EntryMapping> getProposedMappings() {
-		EntryTree<EntryMapping> proposed = new HashEntryTree<>();
-		this.mappings.forEach(node -> {
-			if (node.getValue() != null && node.getValue().tokenType().isProposed()) {
-				proposed.insert(node);
-			}
-		});
-
-		return proposed;
+		return this.proposedMappings;
 	}
 
 	public MappingDelta<EntryMapping> takeMappingDelta() {
