@@ -492,7 +492,9 @@ public class MenuBar {
 		var textArea = new JTextArea(text.toString());
 		textArea.setFont(ScaleUtil.getFont(Font.MONOSPACED, Font.PLAIN, 12));
 		pane.add(new JScrollPane(textArea), BorderLayout.CENTER);
-		pane.add(new JButton("Close"), BorderLayout.SOUTH);
+		var button = new JButton("Close");
+		button.addActionListener(e -> frame.dispose());
+		pane.add(button, BorderLayout.SOUTH);
 
 		frame.setSize(ScaleUtil.getDimension(1200, 400));
 		frame.setLocationRelativeTo(this.gui.getFrame());
