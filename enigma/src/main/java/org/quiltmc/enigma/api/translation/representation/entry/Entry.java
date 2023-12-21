@@ -109,23 +109,23 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 * <pre>
 	 * {@code
 	 * public class D {
-	 * 	 public int name;
-	 * 	 public String a;
+	 * 	public int name;
+	 * 	public String a;
 	 *
-	 *  	public void b() {
-	 *  	}
+	 * 	public void b() {
+	 * 	}
 	 *
-	 * 	 public class D.E {
+	 * 	public class D.E {
 	 * 		public int name;
 	 *
 	 * 		public void b() {
-	 *         }
-	 *  	}
-	 *  }
-	 *  }
-	 *  </pre>
-	 *  In this example, {@code D.E.name} shadows {@code D.name} and {@code D.E.b} shadows {@code D.b}.
-	 *  This means that calling either one from {@code D.E} will use the shadowed entry instead of the original.
+	 * 		}
+	 * 	}
+	 * }
+	 * }
+	 * </pre>
+	 * In this example, {@code D.E.name} shadows {@code D.name} and {@code D.E.b} shadows {@code D.b}.
+	 * This means that calling either one from {@code D.E} will use the shadowed entry instead of the original.
 	 */
 	boolean canShadow(Entry<?> entry);
 
@@ -158,6 +158,15 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 		return Objects.requireNonNull(last, () -> String.format("%s has no top level class?", this));
 	}
 
+	/**
+	 * Get the complete ancestry list of this entry, including itself.
+	 * Searches recursively: an entry is considered an ancestor if it's the parent of the current entry or any of its parents.
+	 * The ancestry of any ancestor is guaranteed to be a subset of this entry's one.
+	 *
+	 * @return the ancestry list, from outermost to innermost, with this entry as the last one
+	 * @see #findAncestor(Class)
+	 * @see #replaceAncestor(Entry, Entry)
+	 */
 	default List<Entry<?>> getAncestry() {
 		P parent = this.getParent();
 		List<Entry<?>> entries = new ArrayList<>();
@@ -169,6 +178,15 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 		return entries;
 	}
 
+	/**
+	 * Find the closest ancestor of the given entry type.
+	 *
+	 * @param <E> the entry type to search for
+	 * @param type the class of the entry type to search for
+	 * @return the closest ancestor entry of the given type
+	 * @see #getAncestry()
+	 * @see #replaceAncestor(Entry, Entry)
+	 */
 	@Nullable
 	@SuppressWarnings("unchecked")
 	default <E extends Entry<?>> E findAncestor(Class<E> type) {
@@ -183,6 +201,18 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 		return null;
 	}
 
+	/**
+	 * Replaces an entry in the ancestry of this entry.
+	 * If the target entry is this one, returns the replacement instead.
+	 * If the target and replacement entries are the same, returns this entry without changes.
+	 *
+	 * @param <E> the type of the entry to replace
+	 * @param target the entry to replace
+	 * @param replacement the replacement entry
+	 * @return an entry with the same ancestry as this one, with the replacement applied
+	 * @see #getAncestry()
+	 * @see #findAncestor(Class)
+	 */
 	@SuppressWarnings("unchecked")
 	default <E extends Entry<?>> Entry<P> replaceAncestor(E target, E replacement) {
 		if (replacement.equals(target)) {

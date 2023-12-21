@@ -19,6 +19,7 @@ import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 import org.tinylog.Logger;
 
@@ -28,6 +29,7 @@ import java.io.StringReader;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -55,7 +57,7 @@ public class TestNameProposal {
 								"id": "test:name_all_fields_d"
 							},
 							{
-								"id": "test:q_to_w"
+								"id": "test:owner_name"
 							}
 						]
 					}
@@ -99,8 +101,17 @@ public class TestNameProposal {
 			throw new RuntimeException("didn't find any fields");
 		}
 
-		project.getRemapper().putMapping(new ValidationContext(null), entry.get(), new EntryMapping("q", null, TokenType.DEOBFUSCATED, null));
-		Assertions.assertEquals(new EntryMapping("w", null, TokenType.DYNAMIC_PROPOSED, "test:q_to_w"), project.getRemapper().getMapping(entry.get()));
+		project.getRemapper().putMapping(new ValidationContext(null), entry.get(), new EntryMapping("query", null, TokenType.DEOBFUSCATED, null));
+		Assertions.assertEquals(new EntryMapping("QueryOwner", null, TokenType.DYNAMIC_PROPOSED, "test:owner_name"), project.getRemapper().getMapping(entry.get().getParent()));
+
+		Optional<MethodEntry> entry2 = project.getJarIndex().getIndex(EntryIndex.class).getMethods().stream().findFirst();
+
+		if (entry2.isEmpty()) {
+			throw new RuntimeException("didn't find any methods");
+		}
+
+		project.getRemapper().putMapping(new ValidationContext(null), entry2.get(), new EntryMapping("testFoo", null, TokenType.DEOBFUSCATED, null));
+		Assertions.assertEquals(new EntryMapping("TestFooOwner", null, TokenType.DYNAMIC_PROPOSED, "test:owner_name"), project.getRemapper().getMapping(entry.get().getParent()));
 	}
 
 	private static class TestPlugin implements EnigmaPlugin {
@@ -111,7 +122,7 @@ public class TestNameProposal {
 			nameAllFields(ctx, "c");
 			nameAllFields(ctx, "b");
 
-			ctx.registerService(NameProposalService.TYPE, ctx1 -> new TestDynamicNameProposer("test:q_to_w"));
+			ctx.registerService(NameProposalService.TYPE, ctx1 -> new TestDynamicNameProposer("test:owner_name"));
 		}
 
 		private static void nameAllFields(EnigmaPluginContext ctx, String prefix) {
@@ -150,10 +161,10 @@ public class TestNameProposal {
 			@Override
 			public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
 				if (obfEntry != null && oldMapping != null && newMapping != null) {
-					if (newMapping.targetName() != null && newMapping.targetName().equals("q")) {
-						Map<Entry<?>, EntryMapping> map = new HashMap<>();
-						map.put(obfEntry, new EntryMapping("w", null, TokenType.DYNAMIC_PROPOSED, this.id));
-						return map;
+					var name = newMapping.targetName();
+					if (name != null && !name.isEmpty() && obfEntry.getParent() != null) {
+						name = name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1) + "Owner";
+						return Map.of(obfEntry.getParent(), new EntryMapping(name, null, TokenType.DYNAMIC_PROPOSED, this.id));
 					}
 				}
 

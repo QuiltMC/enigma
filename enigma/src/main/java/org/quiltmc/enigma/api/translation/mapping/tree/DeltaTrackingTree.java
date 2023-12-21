@@ -107,4 +107,9 @@ public class DeltaTrackingTree<T> implements EntryTree<T> {
 	public boolean isDirty() {
 		return !this.changes.isEmpty();
 	}
+
+	@Override
+	public String toString() {
+		return "DeltaTrackingTree[" + this.delegate + "]";
+	}
 }
