@@ -535,7 +535,7 @@ public class GuiController implements ClientPacketHandler {
 				this.gui.getActiveEditor().onRename(target);
 			}
 
-			if (!Objects.equals(prev.targetName(), mapping.targetName())) {
+			if (!Objects.equals(prev.targetName(), mapping.targetName()) || !Objects.equals(prev.tokenType(), mapping.tokenType())) {
 				this.chp.invalidateMapped();
 			}
 

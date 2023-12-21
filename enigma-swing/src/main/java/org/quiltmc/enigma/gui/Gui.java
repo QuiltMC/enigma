@@ -3,6 +3,7 @@ package org.quiltmc.enigma.gui;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.analysis.EntryReference;
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.gui.config.Config;
@@ -457,20 +458,24 @@ public class Gui {
 	public void toggleMappingFromEntry(Entry<?> obfEntry) {
 		EntryMapping mapping = this.controller.getProject().getRemapper().getMapping(obfEntry);
 
+		EntryChange<?> change = EntryChange.modify(obfEntry);
 		if (mapping.targetName() != null) {
-			EntryRemapper remapper = this.controller.getProject().getRemapper();
-			EntryChange<? extends Entry<?>> change;
-			EntryMapping proposedMapping = remapper.getProposedMappings().get(obfEntry);
-			if (proposedMapping != null) {
-				change = EntryChange.modify(obfEntry).withDeobfName(proposedMapping.targetName()).withTokenType(proposedMapping.tokenType()).withSourcePluginId(proposedMapping.sourcePluginId());
+			if (mapping.tokenType().isProposed()) {
+				change = change.withTokenType(TokenType.DEOBFUSCATED).clearSourcePluginId();
 			} else {
-				change = EntryChange.modify(obfEntry).clearDeobfName();
+				EntryRemapper remapper = this.controller.getProject().getRemapper();
+				EntryMapping proposedMapping = remapper.getProposedMappings().get(obfEntry);
+				if (proposedMapping != null) {
+					change = change.withDeobfName(proposedMapping.targetName()).withTokenType(proposedMapping.tokenType()).withSourcePluginId(proposedMapping.sourcePluginId());
+				} else {
+					change = change.clearDeobfName();
+				}
 			}
-
-			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), change);
 		} else {
-			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).withDeobfName(obfEntry.getName()));
+			change = change.withDeobfName(obfEntry.getName());
 		}
+
+		this.controller.applyChange(new ValidationContext(this.getNotificationManager()), change);
 	}
 
 	public void showDiscardDiag(IntFunction<Void> callback, String... options) {
