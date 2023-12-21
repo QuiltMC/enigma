@@ -50,7 +50,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	}
 
 	/**
-	 * Get a list of all parameters in this method.
+	 * Get a list of all parameters in this method. All parameters will have an empty name.
 	 *
 	 * @param index the entry index
 	 * @return a list of this method's parameters
@@ -74,7 +74,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	}
 
 	/**
-	 * Creates an iterator of all parameters in this method, also doing translation. Unmapped args will have no name, and javadoc is ignored.
+	 * Creates an iterator of all parameters in this method, also doing translation. Unmapped args will have an empty name, and javadoc is ignored.
 	 *
 	 * @param index the entry index
 	 * @param deobfuscator a translator

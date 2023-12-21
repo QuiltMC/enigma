@@ -160,7 +160,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 
 	/**
 	 * Get the complete ancestry list of this entry, including itself.
-	 * An entry is considered an ancestor if it's the parent of the current entry, or another ancestor of it.
+	 * Searches recursively: an entry is considered an ancestor if it's the parent of the current entry or any of its parents.
 	 * The ancestry of any ancestor is guaranteed to be a subset of this entry's one.
 	 *
 	 * @return the ancestry list, from outermost to innermost, with this entry as the last one
@@ -182,7 +182,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 * Find the closest ancestor of the given entry type.
 	 *
 	 * @param <E> the entry type to search for
-	 * @param type the class of the entry type to search for.
+	 * @param type the class of the entry type to search for
 	 * @return the closest ancestor entry of the given type
 	 * @see #getAncestry()
 	 * @see #replaceAncestor(Entry, Entry)
@@ -202,14 +202,14 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	}
 
 	/**
-	 * Replace an entry in the ancestry of this one.
+	 * Replaces an entry in the ancestry of this entry.
 	 * If the target entry is this one, returns the replacement instead.
 	 * If the target and replacement entries are the same, returns this entry without changes.
 	 *
 	 * @param <E> the type of the entry to replace
 	 * @param target the entry to replace
 	 * @param replacement the replacement entry
-	 * @return an entry with the same ancestry as this one, with the replacement applied.
+	 * @return an entry with the same ancestry as this one, with the replacement applied
 	 * @see #getAncestry()
 	 * @see #findAncestor(Class)
 	 */
