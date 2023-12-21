@@ -203,7 +203,7 @@ public class EntryRemapper {
 	}
 
 	/**
-	 * Gets proposed mappings at the jar indexing stage.
+	 * Gets mappings proposed at the jar indexing stage.
 	 * @return the proposed mapping tree
 	 */
 	public EntryTree<EntryMapping> getJarProposedMappings() {
