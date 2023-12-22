@@ -88,6 +88,34 @@ public enum EnigmaMappingsReader implements MappingsReader {
 		}
 	};
 
+	/**
+	 * Reads multiple Enigma mapping files.
+	 *
+	 * @param progress the progress listener
+	 * @param paths	the Enigma files to read; cannot be empty
+	 * @return the parsed mappings
+	 * @throws MappingParseException	if a mapping file cannot be parsed
+	 * @throws IOException			  if an IO error occurs
+	 * @throws IllegalArgumentException if there are no paths to read
+	 */
+	public static EntryTree<EntryMapping> readFiles(ProgressListener progress, Path... paths) throws MappingParseException, IOException {
+		EntryTree<EntryMapping> mappings = new HashEntryTree<>();
+
+		if (paths.length == 0) {
+			throw new IllegalArgumentException("No paths to read mappings from");
+		}
+
+		progress.init(paths.length, I18n.translate("progress.mappings.enigma_directory.loading"));
+		int step = 0;
+
+		for (Path file : paths) {
+			progress.step(step++, paths.toString());
+			readFile(file, mappings);
+		}
+
+		return mappings;
+	}
+
 	private static void readFile(Path path, EntryTree<EntryMapping> mappings) throws IOException, MappingParseException {
 		List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
 		Deque<MappingPair<?, RawEntryMapping>> mappingStack = new ArrayDeque<>();
