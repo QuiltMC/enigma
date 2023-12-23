@@ -13,13 +13,16 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.util.Either;
+import org.quiltmc.enigma.util.Pair;
 
+import java.io.PrintWriter;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
 
 public class EnigmaTextifier extends Textifier {
-	private final SourceIndex sourceIndex;
-
 	sealed interface QueuedToken {
 		record Declaration(Entry<?> entry) implements QueuedToken {
 		}
@@ -43,7 +46,7 @@ public class EnigmaTextifier extends Textifier {
 		record OffsetToken(int offset, String text, QueuedToken token) implements QueuedToken {
 		}
 
-		record Multiple(QueuedToken... tokens) implements QueuedToken {
+		record Array(QueuedToken... tokens) implements QueuedToken {
 		}
 
 		record Skip() implements QueuedToken {
@@ -54,14 +57,24 @@ public class EnigmaTextifier extends Textifier {
 		}
 	}
 
-	/**
-	 * A queue to collect tokens on {@link #appendDescriptor(int, String)}.
-	 */
+	record PartialToken(int start, String text, Either<Entry<?>, Pair<Entry<?>, Entry<?>>> declarationOrReference) {
+		PartialToken(int start, String text, Entry<?> entry) {
+			this(start, text, Either.left(entry));
+		}
+
+		PartialToken(int start, String text, Entry<?> entry, Entry<?> context) {
+			this(start, text, Either.right(new Pair<>(entry, context)));
+		}
+	}
+
+	private final SourceIndex sourceIndex;
+
 	private final Deque<QueuedToken> tokenQueue = new ArrayDeque<>();
+	private final List<List<PartialToken>> tokensPerText = new ArrayList<>();
 
 	private ClassEntry currentClass;
 	private MethodEntry currentMethod;
-	private int currentOffset = 0;
+	private int totalOffset = 0;
 
 	public EnigmaTextifier(SourceIndex sourceIndex) {
 		super(Enigma.ASM_VERSION);
@@ -70,20 +83,11 @@ public class EnigmaTextifier extends Textifier {
 
 	public void clearText() {
 		this.text.clear();
-	}
-
-	private void updateOffset() {
-		if (this.text.isEmpty()) {
-			return;
-		}
-
-		var lastText = this.text.get(this.text.size() - 1);
-		if (lastText instanceof String s) {
-			this.currentOffset += s.length();
-		}
+		this.tokensPerText.clear();
 	}
 
 	// region class printer
+
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 		this.currentClass = new ClassEntry(name);
@@ -101,20 +105,16 @@ public class EnigmaTextifier extends Textifier {
 		}
 
 		super.visit(version, access, name, signature, superName, interfaces);
-		this.updateOffset();
 	}
 
 	@Override
 	public void visitSource(String file, String debug) {
 		super.visitSource(file, debug);
-		this.updateOffset();
 	}
 
 	@Override
 	public Printer visitModule(String name, int access, String version) {
-		var r = super.visitModule(name, access, version);
-		this.updateOffset();
-		return r; // TODO
+		return super.visitModule(name, access, version); // TODO
 	}
 
 	@Override
@@ -122,7 +122,6 @@ public class EnigmaTextifier extends Textifier {
 		this.queueToken(new QueuedToken.Reference(new ClassEntry(nestHost), this.currentMethod)); // nest host
 
 		super.visitNestHost(nestHost);
-		this.updateOffset();
 	}
 
 	@Override
@@ -132,7 +131,7 @@ public class EnigmaTextifier extends Textifier {
 		this.queueToken(new QueuedToken.Reference(ownerEntry, this.currentMethod)); // outer class
 
 		if (name != null) {
-			this.queueToken(new QueuedToken.Multiple(
+			this.queueToken(new QueuedToken.Array(
 				new QueuedToken.OffsetToken(-name.length() - 1, name,
 					new QueuedToken.Reference(new MethodEntry(ownerEntry, name, new MethodDescriptor(descriptor)), this.currentMethod)), // enclosing method (by its name)
 				new QueuedToken.MethodDescriptor(descriptor, this.currentMethod) // enclosing method descriptor
@@ -140,26 +139,20 @@ public class EnigmaTextifier extends Textifier {
 		}
 
 		super.visitOuterClass(owner, name, descriptor);
-		this.updateOffset();
 	}
 
 	@Override
 	public Textifier visitClassAnnotation(String descriptor, boolean visible) {
-		var r = super.visitClassAnnotation(descriptor, visible);
-		this.updateOffset();
-		return r;
+		return super.visitClassAnnotation(descriptor, visible); // TODO
 	}
 
 	@Override
 	public Printer visitClassTypeAnnotation(int typeRef, TypePath typePath, String descriptor, boolean visible) {
-		var r = super.visitClassTypeAnnotation(typeRef, typePath, descriptor, visible);
-		this.updateOffset();
-		return r;
+		return super.visitClassTypeAnnotation(typeRef, typePath, descriptor, visible); // TODO
 	}
 
 	@Override
 	public void visitClassAttribute(Attribute attribute) {
-		this.currentOffset++; // can't do updateOffset since the last text after visiting is the attribute info, not the newline
 		super.visitClassAttribute(attribute);
 	}
 
@@ -167,14 +160,12 @@ public class EnigmaTextifier extends Textifier {
 	public void visitNestMember(String nestMember) {
 		this.queueToken(new QueuedToken.Reference(new ClassEntry(nestMember), this.currentMethod));
 		super.visitNestMember(nestMember);
-		this.currentOffset += this.stringBuilder.length();
 	}
 
 	@Override
 	public void visitPermittedSubclass(String permittedSubclass) {
 		this.queueToken(new QueuedToken.Reference(new ClassEntry(permittedSubclass), this.currentMethod));
 		super.visitPermittedSubclass(permittedSubclass);
-		this.currentOffset += this.stringBuilder.length();
 	}
 
 	@Override
@@ -183,7 +174,6 @@ public class EnigmaTextifier extends Textifier {
 		this.queueToken(new QueuedToken.Reference(new ClassEntry(name), this.currentMethod));
 		this.queueToken(outerName != null ? new QueuedToken.Reference(new ClassEntry(outerName), this.currentMethod) : new QueuedToken.Skip());
 		super.visitInnerClass(name, outerName, innerName, access);
-		this.currentOffset += this.stringBuilder.length();
 	}
 
 	@Override
@@ -192,15 +182,13 @@ public class EnigmaTextifier extends Textifier {
 			this.queueToken(new QueuedToken.Signature()); // component signature
 		}
 
-		this.queueToken(new QueuedToken.Multiple(
+		this.queueToken(new QueuedToken.Array(
 			new QueuedToken.MethodDescriptor(descriptor, this.currentMethod), // component descriptor
 			new QueuedToken.OffsetToken(descriptor.length() + 1, name,
 				new QueuedToken.Reference(new FieldEntry(this.currentClass, name, new TypeDescriptor(descriptor)), this.currentMethod)) // component field
 		));
 
-		var r = super.visitRecordComponent(name, descriptor, signature);
-		this.currentOffset += this.stringBuilder.length();
-		return r;
+		return super.visitRecordComponent(name, descriptor, signature); // TODO
 	}
 
 	@Override
@@ -209,15 +197,13 @@ public class EnigmaTextifier extends Textifier {
 			this.queueToken(new QueuedToken.Signature());
 		}
 
-		this.queueToken(new QueuedToken.Multiple(
+		this.queueToken(new QueuedToken.Array(
 			new QueuedToken.Descriptor(descriptor, this.currentMethod), // field descriptor
 			new QueuedToken.OffsetToken(descriptor.length() + 1, name,
 				new QueuedToken.Reference(new FieldEntry(this.currentClass, name, new TypeDescriptor(descriptor)), this.currentMethod)) // field (on its name)
 		));
 
-		var r = super.visitField(access, name, descriptor, signature, value);
-		this.currentOffset += this.stringBuilder.length();
-		return r; // TODO
+		return super.visitField(access, name, descriptor, signature, value); // TODO
 	}
 
 	@Override
@@ -226,7 +212,7 @@ public class EnigmaTextifier extends Textifier {
 			this.queueToken(new QueuedToken.Signature());
 		}
 
-		this.queueToken(new QueuedToken.Multiple(
+		this.queueToken(new QueuedToken.Array(
 			new QueuedToken.OffsetToken(-name.length(), name,
 				new QueuedToken.Reference(new MethodEntry(this.currentClass, name, new MethodDescriptor(descriptor)), this.currentMethod)), // method (on its name)
 			new QueuedToken.Descriptor(descriptor, this.currentMethod) // method descriptor
@@ -238,23 +224,16 @@ public class EnigmaTextifier extends Textifier {
 			}
 		}
 
-		var r = super.visitMethod(access, name, descriptor, signature, exceptions);
-		this.currentOffset += this.stringBuilder.length();
-		return r; // TODO
+		return super.visitMethod(access, name, descriptor, signature, exceptions); // TODO
 	}
 
 	@Override
 	public void visitClassEnd() {
 		super.visitClassEnd();
+		this.fillTokensPerText();
 	}
 
 	// endregion
-
-	@Override
-	public void visitAttribute(Attribute attribute) {
-		super.visitAttribute(attribute);
-		this.updateOffset();
-	}
 
 	private void queueToken(QueuedToken token) {
 		this.tokenQueue.add(token);
@@ -262,48 +241,114 @@ public class EnigmaTextifier extends Textifier {
 
 	@Override
 	protected void appendDescriptor(int type, String value) {
-		int tokenOffset = this.stringBuilder.length();
+		int tokenStart = this.stringBuilder.length();
 
 		super.appendDescriptor(type, value);
 
 		var queuedToken = this.tokenQueue.poll();
-		this.addToken(value, tokenOffset, queuedToken);
+		this.addToken(this.getCurrentTokens(), value, tokenStart, queuedToken);
 	}
 
-	private void addToken(String value, int tokenOffset, QueuedToken queuedToken) {
+	private void addToken(List<PartialToken> tokens, String text, int tokenStart, QueuedToken queuedToken) {
 		if (queuedToken == null || queuedToken.shouldSkip()) {
 			return;
-		} else if (queuedToken instanceof QueuedToken.Multiple multiple) {
-			for (var token : multiple.tokens) {
-				this.addToken(value, tokenOffset, token);
+		} else if (queuedToken instanceof QueuedToken.Array array) {
+			for (var token : array.tokens) {
+				this.addToken(tokens, text, tokenStart, token);
 			}
 
 			return;
 		} else if (queuedToken instanceof QueuedToken.OffsetToken t) {
-			this.addToken(t.text, tokenOffset + t.offset, t.token);
+			this.addToken(tokens, t.text, tokenStart + t.offset, t.token);
 			return;
 		}
 
-		int start = this.currentOffset + tokenOffset;
-		var token = new Token(start, start + value.length(), value);
-
 		// This would be far simpler with pattern matching
 		if (queuedToken instanceof QueuedToken.Declaration d) {
-			this.sourceIndex.addDeclaration(token, d.entry);
+			tokens.add(new PartialToken(tokenStart, text, d.entry));
 		} else if (queuedToken instanceof QueuedToken.Reference r) {
-			this.sourceIndex.addReference(token, r.entry, r.context);
+			tokens.add(new PartialToken(tokenStart, text, r.entry, r.context));
 		} else if (queuedToken instanceof QueuedToken.Descriptor d) {
-			token.start += 1;
-			token.end -= 1;
-			token.text = d.descriptor.substring(1, d.descriptor.length() - 1);
-			this.sourceIndex.addReference(token, new ClassEntry(token.text), d.context);
+			var clazz = d.descriptor.substring(1, d.descriptor.length() - 1);
+			tokens.add(new PartialToken(tokenStart + 1, clazz, new ClassEntry(clazz), d.context));
+		} else if (queuedToken instanceof QueuedToken.MethodDescriptor d) {
+			for (int i = 1; i < d.descriptor.length(); i++) {
+				char c = d.descriptor.charAt(i);
+				if (c == 'L') {
+					int start = i + 1;
+					int end = d.descriptor.indexOf(';', start);
+					var clazz = d.descriptor.substring(start, end);
+
+					tokens.add(new PartialToken(tokenStart + start, clazz, new ClassEntry(clazz), d.context));
+					i = end;
+				}
+			}
 		} else if (queuedToken instanceof QueuedToken.Signature s) {
 			// TODO
 		}
 	}
 
+	private List<PartialToken> getCurrentTokens() {
+		int texts = this.text.size();
+		if (this.tokensPerText.size() < texts) {
+			this.fillTokensPerText();
+		} else if (this.tokensPerText.size() > texts) {
+			return this.tokensPerText.get(texts);
+		}
+
+		List<PartialToken> tokens = new ArrayList<>();
+		this.tokensPerText.add(tokens);
+		return tokens;
+	}
+
+	private void fillTokensPerText() {
+		for (int i = this.tokensPerText.size(); i < this.text.size(); i++) {
+			this.tokensPerText.add(List.of());
+		}
+	}
+
+	@Override
+	public void print(PrintWriter printWriter) {
+		int offset = this.totalOffset;
+		for (int i = 0; i < this.text.size(); i++) {
+			var o = this.text.get(i);
+
+			if (o instanceof List<?> l) {
+				// TODO: Collect textifiers
+				offset = this.printInnerList(printWriter, l, offset);
+			} else {
+				var s = o.toString();
+				printWriter.print(s);
+
+				if (i > this.tokensPerText.size() - 1) {
+					throw new IllegalStateException("Too few token lists");
+				}
+
+				var tokens = this.tokensPerText.get(i);
+				for (var partialToken : tokens) {
+					int start = partialToken.start + offset;
+					var token = new Token(start, start + partialToken.text.length(), partialToken.text);
+					partialToken.declarationOrReference.ifLeft(e -> this.sourceIndex.addDeclaration(token, e));
+					partialToken.declarationOrReference.ifRight(p -> this.sourceIndex.addReference(token, p.a(), p.b()));
+				}
+
+				offset += s.length();
+			}
+		}
+
+		this.totalOffset = offset;
+	}
+
+	private int printInnerList(PrintWriter printWriter, List<?> list, int offset) {
+		return offset; // TODO
+	}
+
 	@Override
 	protected Textifier createTextifier() {
 		return super.createTextifier();
+	}
+
+	public void skipCharacters(int n) {
+		this.totalOffset += n;
 	}
 }

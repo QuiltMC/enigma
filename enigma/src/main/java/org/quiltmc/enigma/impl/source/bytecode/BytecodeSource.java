@@ -62,6 +62,7 @@ public class BytecodeSource implements Source {
 
 			textifier.clearText();
 			writer.println();
+			textifier.skipCharacters(1);
 			otherNode.accept(traceClassVisitor);
 		}
 
