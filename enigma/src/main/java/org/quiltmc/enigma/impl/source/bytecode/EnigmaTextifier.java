@@ -20,7 +20,9 @@ import java.io.PrintWriter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EnigmaTextifier extends Textifier {
 	sealed interface QueuedToken {
@@ -71,6 +73,7 @@ public class EnigmaTextifier extends Textifier {
 
 	private final Deque<QueuedToken> tokenQueue = new ArrayDeque<>();
 	private final List<List<PartialToken>> tokensPerText = new ArrayList<>();
+	private final Map<Integer, EnigmaTextifier> childTextifiers = new HashMap<>();
 
 	private ClassEntry currentClass;
 	private MethodEntry currentMethod;
@@ -84,6 +87,7 @@ public class EnigmaTextifier extends Textifier {
 	public void clearText() {
 		this.text.clear();
 		this.tokensPerText.clear();
+		this.childTextifiers.clear();
 	}
 
 	// region class printer
@@ -215,7 +219,7 @@ public class EnigmaTextifier extends Textifier {
 		this.queueToken(new QueuedToken.Array(
 			new QueuedToken.OffsetToken(-name.length(), name,
 				new QueuedToken.Reference(new MethodEntry(this.currentClass, name, new MethodDescriptor(descriptor)), this.currentMethod)), // method (on its name)
-			new QueuedToken.Descriptor(descriptor, this.currentMethod) // method descriptor
+			new QueuedToken.MethodDescriptor(descriptor, this.currentMethod) // method descriptor
 		));
 
 		if (exceptions != null) {
@@ -230,6 +234,56 @@ public class EnigmaTextifier extends Textifier {
 	@Override
 	public void visitClassEnd() {
 		super.visitClassEnd();
+		this.fillTokensPerText();
+	}
+
+	// endregion
+
+	// region module printer
+
+	@Override
+	public void visitModuleEnd() {
+		super.visitModuleEnd();
+		this.fillTokensPerText();
+	}
+
+	// endregion
+
+	// region annotation printer
+
+	@Override
+	public void visitAnnotationEnd() {
+		super.visitAnnotationEnd();
+		this.fillTokensPerText();
+	}
+
+	// endregion
+
+	// region record component printer
+
+	@Override
+	public void visitRecordComponentEnd() {
+		super.visitRecordComponentEnd();
+		this.fillTokensPerText();
+	}
+
+	// endregion
+
+	// region field printer
+
+	@Override
+	public void visitFieldEnd() {
+		super.visitFieldEnd();
+		this.fillTokensPerText();
+	}
+
+	// endregion
+
+	// region method printer
+
+	@Override
+	public void visitMethodEnd() {
+		super.visitMethodEnd();
 		this.fillTokensPerText();
 	}
 
@@ -309,13 +363,16 @@ public class EnigmaTextifier extends Textifier {
 
 	@Override
 	public void print(PrintWriter printWriter) {
+		this.printText(printWriter);
+	}
+
+	private void printText(PrintWriter printWriter) {
 		int offset = this.totalOffset;
 		for (int i = 0; i < this.text.size(); i++) {
 			var o = this.text.get(i);
 
 			if (o instanceof List<?> l) {
-				// TODO: Collect textifiers
-				offset = this.printInnerList(printWriter, l, offset);
+				offset = this.printChildTextifier(printWriter, l, offset, this.childTextifiers.get(i));
 			} else {
 				var s = o.toString();
 				printWriter.print(s);
@@ -339,13 +396,23 @@ public class EnigmaTextifier extends Textifier {
 		this.totalOffset = offset;
 	}
 
-	private int printInnerList(PrintWriter printWriter, List<?> list, int offset) {
-		return offset; // TODO
+	private int printChildTextifier(PrintWriter printWriter, List<?> text, int offset, EnigmaTextifier textifier) {
+		if (textifier == null) {
+			throw new IllegalStateException("null child textifier");
+		} else if (textifier.getText() != text) {
+			throw new IllegalStateException("The provided text doesn't correspond to the provided textifier");
+		}
+
+		textifier.totalOffset = offset;
+		textifier.printText(printWriter);
+		return textifier.totalOffset;
 	}
 
 	@Override
 	protected Textifier createTextifier() {
-		return super.createTextifier();
+		var textifier = new EnigmaTextifier(this.sourceIndex);
+		this.childTextifiers.put(this.text.size(), textifier);
+		return textifier;
 	}
 
 	public void skipCharacters(int n) {
