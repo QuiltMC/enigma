@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.impl.source.bytecode;
 
-import org.objectweb.asm.Attribute;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.TypePath;
@@ -37,7 +36,7 @@ public class EnigmaTextifier extends Textifier {
 		record Descriptor(String descriptor) implements QueuedToken {
 			@Override
 			public boolean shouldSkip() {
-				return !this.descriptor.startsWith("L");
+				return !this.descriptor.contains("L");
 			}
 		}
 
@@ -410,7 +409,7 @@ public class EnigmaTextifier extends Textifier {
 		} else if (queuedToken instanceof QueuedToken.Reference r) {
 			tokens.add(new PartialToken(tokenStart, text, r.entry, r.context));
 		} else if (queuedToken instanceof QueuedToken.Descriptor d) {
-			var clazz = d.descriptor.substring(1, d.descriptor.length() - 1);
+			var clazz = d.descriptor.substring(d.descriptor.indexOf('L'), d.descriptor.length() - 1);
 			tokens.add(new PartialToken(tokenStart + 1, clazz, new ClassEntry(clazz), null));
 		} else if (queuedToken instanceof QueuedToken.MethodDescriptor d) {
 			for (int i = 1; i < d.descriptor.length(); i++) {

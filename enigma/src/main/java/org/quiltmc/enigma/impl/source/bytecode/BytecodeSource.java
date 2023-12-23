@@ -1,7 +1,5 @@
 package org.quiltmc.enigma.impl.source.bytecode;
 
-import org.quiltmc.enigma.api.Enigma;
-import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.api.source.Source;
 import org.quiltmc.enigma.api.source.SourceIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
@@ -43,23 +41,9 @@ public class BytecodeSource implements Source {
 
 		TraceClassVisitor traceClassVisitor = new TraceClassVisitor(null, textifier, writer);
 
-		ClassNode node = this.classNode;
-
-		// if (this.remapper != null) {
-		// 	ClassNode translatedNode = new ClassNode();
-		// 	node.accept(new TranslationClassVisitor(this.remapper.getDeobfuscator(), Enigma.ASM_VERSION, translatedNode));
-		// 	node = translatedNode;
-		// }
-
-		node.accept(traceClassVisitor);
+		this.classNode.accept(traceClassVisitor);
 
 		for (ClassNode otherNode : this.innerClassNodes) {
-			// if (this.remapper != null) {
-			// 	ClassNode translatedNode = new ClassNode();
-			// 	otherNode.accept(new TranslationClassVisitor(this.remapper.getDeobfuscator(), Enigma.ASM_VERSION, translatedNode));
-			// 	otherNode = translatedNode;
-			// }
-
 			textifier.clearText();
 			writer.println();
 			textifier.skipCharacters(1);
