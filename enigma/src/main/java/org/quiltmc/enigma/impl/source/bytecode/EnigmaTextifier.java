@@ -1,6 +1,8 @@
 package org.quiltmc.enigma.impl.source.bytecode;
 
 import org.objectweb.asm.Attribute;
+import org.objectweb.asm.Handle;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.TypePath;
 import org.objectweb.asm.util.Printer;
 import org.quiltmc.enigma.api.Enigma;
@@ -32,14 +34,14 @@ public class EnigmaTextifier extends Textifier {
 		record Reference(Entry<?> entry, Entry<?> context) implements QueuedToken {
 		}
 
-		record Descriptor(String descriptor, Entry<?> context) implements QueuedToken {
+		record Descriptor(String descriptor) implements QueuedToken {
 			@Override
 			public boolean shouldSkip() {
 				return !this.descriptor.startsWith("L");
 			}
 		}
 
-		record MethodDescriptor(String descriptor, Entry<?> context) implements QueuedToken {
+		record MethodDescriptor(String descriptor) implements QueuedToken {
 		}
 
 		record Signature() implements QueuedToken {
@@ -114,16 +116,6 @@ public class EnigmaTextifier extends Textifier {
 	}
 
 	@Override
-	public void visitSource(String file, String debug) {
-		super.visitSource(file, debug);
-	}
-
-	@Override
-	public Printer visitModule(String name, int access, String version) {
-		return super.visitModule(name, access, version);
-	}
-
-	@Override
 	public void visitNestHost(String nestHost) {
 		this.queueToken(new QueuedToken.Reference(new ClassEntry(nestHost), this.currentMethod)); // nest host
 
@@ -140,7 +132,7 @@ public class EnigmaTextifier extends Textifier {
 			this.queueToken(new QueuedToken.Array(
 				new QueuedToken.OffsetToken(-name.length() - 1, name,
 					new QueuedToken.Reference(new MethodEntry(ownerEntry, name, new MethodDescriptor(descriptor)), this.currentMethod)), // enclosing method (by its name)
-				new QueuedToken.MethodDescriptor(descriptor, this.currentMethod) // enclosing method descriptor
+				new QueuedToken.MethodDescriptor(descriptor) // enclosing method descriptor
 			));
 		}
 
@@ -148,29 +140,16 @@ public class EnigmaTextifier extends Textifier {
 	}
 
 	@Override
-	public Textifier visitClassAnnotation(String descriptor, boolean visible) {
-		return super.visitClassAnnotation(descriptor, visible); // TODO
-	}
-
-	@Override
-	public Printer visitClassTypeAnnotation(int typeRef, TypePath typePath, String descriptor, boolean visible) {
-		return super.visitClassTypeAnnotation(typeRef, typePath, descriptor, visible); // TODO
-	}
-
-	@Override
-	public void visitClassAttribute(Attribute attribute) {
-		super.visitClassAttribute(attribute);
-	}
-
-	@Override
 	public void visitNestMember(String nestMember) {
 		this.queueToken(new QueuedToken.Reference(new ClassEntry(nestMember), this.currentMethod));
+
 		super.visitNestMember(nestMember);
 	}
 
 	@Override
 	public void visitPermittedSubclass(String permittedSubclass) {
 		this.queueToken(new QueuedToken.Reference(new ClassEntry(permittedSubclass), this.currentMethod));
+
 		super.visitPermittedSubclass(permittedSubclass);
 	}
 
@@ -179,6 +158,7 @@ public class EnigmaTextifier extends Textifier {
 		// JVMS§4.7.6
 		this.queueToken(new QueuedToken.Reference(new ClassEntry(name), this.currentMethod));
 		this.queueToken(outerName != null ? new QueuedToken.Reference(new ClassEntry(outerName), this.currentMethod) : new QueuedToken.Skip());
+
 		super.visitInnerClass(name, outerName, innerName, access);
 	}
 
@@ -189,12 +169,12 @@ public class EnigmaTextifier extends Textifier {
 		}
 
 		this.queueToken(new QueuedToken.Array(
-			new QueuedToken.MethodDescriptor(descriptor, this.currentMethod), // component descriptor
+			new QueuedToken.MethodDescriptor(descriptor), // component descriptor
 			new QueuedToken.OffsetToken(descriptor.length() + 1, name,
 				new QueuedToken.Reference(new FieldEntry(this.currentClass, name, new TypeDescriptor(descriptor)), this.currentMethod)) // component field
 		));
 
-		return super.visitRecordComponent(name, descriptor, signature); // TODO
+		return super.visitRecordComponent(name, descriptor, signature);
 	}
 
 	@Override
@@ -204,12 +184,12 @@ public class EnigmaTextifier extends Textifier {
 		}
 
 		this.queueToken(new QueuedToken.Array(
-			new QueuedToken.Descriptor(descriptor, this.currentMethod), // field descriptor
+			new QueuedToken.Descriptor(descriptor), // field descriptor
 			new QueuedToken.OffsetToken(descriptor.length() + 1, name,
 				new QueuedToken.Reference(new FieldEntry(this.currentClass, name, new TypeDescriptor(descriptor)), this.currentMethod)) // field (on its name)
 		));
 
-		return super.visitField(access, name, descriptor, signature, value); // TODO
+		return super.visitField(access, name, descriptor, signature, value);
 	}
 
 	@Override
@@ -218,10 +198,11 @@ public class EnigmaTextifier extends Textifier {
 			this.queueToken(new QueuedToken.Signature());
 		}
 
+		var entry = new MethodEntry(this.currentClass, name, new MethodDescriptor(descriptor));
 		this.queueToken(new QueuedToken.Array(
 			new QueuedToken.OffsetToken(-name.length(), name,
-				new QueuedToken.Reference(new MethodEntry(this.currentClass, name, new MethodDescriptor(descriptor)), this.currentMethod)), // method (on its name)
-			new QueuedToken.MethodDescriptor(descriptor, this.currentMethod) // method descriptor
+				new QueuedToken.Reference(entry, this.currentMethod)), // method (on its name)
+			new QueuedToken.MethodDescriptor(descriptor) // method descriptor
 		));
 
 		if (exceptions != null) {
@@ -230,7 +211,9 @@ public class EnigmaTextifier extends Textifier {
 			}
 		}
 
-		return super.visitMethod(access, name, descriptor, signature, exceptions); // TODO
+		var child = super.visitMethod(access, name, descriptor, signature, exceptions);
+		((EnigmaTextifier) child).currentMethod = entry;
+		return child;
 	}
 
 	@Override
@@ -261,7 +244,7 @@ public class EnigmaTextifier extends Textifier {
 
 	@Override
 	public Textifier visitAnnotation(String name, String descriptor) {
-		this.queueToken(new QueuedToken.Descriptor(descriptor, this.currentMethod));
+		this.queueToken(new QueuedToken.Descriptor(descriptor));
 
 		return super.visitAnnotation(name, descriptor);
 	}
@@ -297,6 +280,77 @@ public class EnigmaTextifier extends Textifier {
 	// region method printer
 
 	@Override
+	public void visitTypeInsn(int opcode, String type) {
+		this.queueToken(new QueuedToken.Reference(new ClassEntry(type), this.currentMethod));
+
+		super.visitTypeInsn(opcode, type);
+	}
+
+	@Override
+	public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
+		var clazz = new ClassEntry(owner);
+		this.queueToken(new QueuedToken.Array(
+			new QueuedToken.Reference(clazz, this.currentMethod), // field owner
+			new QueuedToken.OffsetToken(owner.length() + 1, name,
+				new QueuedToken.Reference(new FieldEntry(clazz, name, new TypeDescriptor(descriptor)), this.currentMethod)) // field (by its name)
+		));
+		this.queueToken(new QueuedToken.Descriptor(descriptor)); // field descriptor
+
+		super.visitFieldInsn(opcode, owner, name, descriptor);
+	}
+
+	@Override
+	public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+		var clazz = new ClassEntry(owner);
+		this.queueToken(new QueuedToken.Array(
+			new QueuedToken.Reference(clazz, this.currentMethod), // method owner
+			new QueuedToken.OffsetToken(owner.length() + 1, name,
+				new QueuedToken.Reference(new MethodEntry(clazz, name, new MethodDescriptor(descriptor)), this.currentMethod)) // method (by its name)
+		));
+		this.queueToken(new QueuedToken.MethodDescriptor(descriptor)); // method descriptor
+
+		super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+	}
+
+	@Override
+	public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
+		// TODO
+		super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+	}
+
+	@Override
+	public void visitMultiANewArrayInsn(String descriptor, int numDimensions) {
+		this.queueToken(new QueuedToken.Descriptor(descriptor));
+
+		super.visitMultiANewArrayInsn(descriptor, numDimensions);
+	}
+
+	@Override
+	public Printer visitTryCatchAnnotation(int typeRef, TypePath typePath, String descriptor, boolean visible) {
+		this.queueToken(new QueuedToken.Descriptor(descriptor));
+
+		return super.visitTryCatchAnnotation(typeRef, typePath, descriptor, visible);
+	}
+
+	@Override
+	public void visitLocalVariable(String name, String descriptor, String signature, Label start, Label end, int index) {
+		this.queueToken(new QueuedToken.Descriptor(descriptor));
+
+		if (signature != null) {
+			this.queueToken(new QueuedToken.Signature());
+		}
+
+		super.visitLocalVariable(name, descriptor, signature, start, end, index);
+	}
+
+	@Override
+	public Printer visitLocalVariableAnnotation(int typeRef, TypePath typePath, Label[] start, Label[] end, int[] index, String descriptor, boolean visible) {
+		this.queueToken(new QueuedToken.Descriptor(descriptor));
+
+		return super.visitLocalVariableAnnotation(typeRef, typePath, start, end, index, descriptor, visible);
+	}
+
+	@Override
 	public void visitMethodEnd() {
 		super.visitMethodEnd();
 		this.fillTokensPerText();
@@ -308,14 +362,14 @@ public class EnigmaTextifier extends Textifier {
 
 	@Override
 	public Textifier visitAnnotation(String descriptor, boolean visible) {
-		this.queueToken(new QueuedToken.Descriptor(descriptor, this.currentMethod));
+		this.queueToken(new QueuedToken.Descriptor(descriptor));
 
 		return super.visitAnnotation(descriptor, visible);
 	}
 
 	@Override
 	public Textifier visitTypeAnnotation(int typeRef, TypePath typePath, String descriptor, boolean visible) {
-		this.queueToken(new QueuedToken.Descriptor(descriptor, this.currentMethod));
+		this.queueToken(new QueuedToken.Descriptor(descriptor));
 
 		return super.visitTypeAnnotation(typeRef, typePath, descriptor, visible);
 	}
@@ -357,7 +411,7 @@ public class EnigmaTextifier extends Textifier {
 			tokens.add(new PartialToken(tokenStart, text, r.entry, r.context));
 		} else if (queuedToken instanceof QueuedToken.Descriptor d) {
 			var clazz = d.descriptor.substring(1, d.descriptor.length() - 1);
-			tokens.add(new PartialToken(tokenStart + 1, clazz, new ClassEntry(clazz), d.context));
+			tokens.add(new PartialToken(tokenStart + 1, clazz, new ClassEntry(clazz), null));
 		} else if (queuedToken instanceof QueuedToken.MethodDescriptor d) {
 			for (int i = 1; i < d.descriptor.length(); i++) {
 				char c = d.descriptor.charAt(i);
@@ -366,7 +420,7 @@ public class EnigmaTextifier extends Textifier {
 					int end = d.descriptor.indexOf(';', start);
 					var clazz = d.descriptor.substring(start, end);
 
-					tokens.add(new PartialToken(tokenStart + start, clazz, new ClassEntry(clazz), d.context));
+					tokens.add(new PartialToken(tokenStart + start, clazz, new ClassEntry(clazz), null));
 					i = end;
 				}
 			}
@@ -444,6 +498,7 @@ public class EnigmaTextifier extends Textifier {
 	@Override
 	protected Textifier createTextifier() {
 		var textifier = new EnigmaTextifier(this.sourceIndex);
+		textifier.currentClass = this.currentClass;
 		this.childTextifiers.put(this.text.size(), textifier);
 		return textifier;
 	}
