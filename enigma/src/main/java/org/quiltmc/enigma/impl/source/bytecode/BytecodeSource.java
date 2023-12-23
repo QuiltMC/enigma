@@ -45,11 +45,11 @@ public class BytecodeSource implements Source {
 
 		ClassNode node = this.classNode;
 
-		if (this.remapper != null) {
-			ClassNode translatedNode = new ClassNode();
-			node.accept(new TranslationClassVisitor(this.remapper.getDeobfuscator(), Enigma.ASM_VERSION, translatedNode));
-			node = translatedNode;
-		}
+		// if (this.remapper != null) {
+		// 	ClassNode translatedNode = new ClassNode();
+		// 	node.accept(new TranslationClassVisitor(this.remapper.getDeobfuscator(), Enigma.ASM_VERSION, translatedNode));
+		// 	node = translatedNode;
+		// }
 
 		node.accept(traceClassVisitor);
 
