@@ -69,6 +69,8 @@ public class EnigmaTextifier extends Textifier {
 		}
 	}
 
+	private static final String MODULE_WARNING = "  // Warning: Modules are not supported\n";
+
 	private final SourceIndex sourceIndex;
 
 	private final Deque<QueuedToken> tokenQueue = new ArrayDeque<>();
@@ -118,7 +120,7 @@ public class EnigmaTextifier extends Textifier {
 
 	@Override
 	public Printer visitModule(String name, int access, String version) {
-		return super.visitModule(name, access, version); // TODO
+		return super.visitModule(name, access, version);
 	}
 
 	@Override
@@ -242,6 +244,12 @@ public class EnigmaTextifier extends Textifier {
 	// region module printer
 
 	@Override
+	public void visitMainClass(String mainClass) {
+		this.text.add(MODULE_WARNING);
+		super.visitMainClass(mainClass);
+	}
+
+	@Override
 	public void visitModuleEnd() {
 		super.visitModuleEnd();
 		this.fillTokensPerText();
@@ -250,6 +258,13 @@ public class EnigmaTextifier extends Textifier {
 	// endregion
 
 	// region annotation printer
+
+	@Override
+	public Textifier visitAnnotation(String name, String descriptor) {
+		this.queueToken(new QueuedToken.Descriptor(descriptor, this.currentMethod));
+
+		return super.visitAnnotation(name, descriptor);
+	}
 
 	@Override
 	public void visitAnnotationEnd() {
@@ -285,6 +300,24 @@ public class EnigmaTextifier extends Textifier {
 	public void visitMethodEnd() {
 		super.visitMethodEnd();
 		this.fillTokensPerText();
+	}
+
+	// endregion
+
+	// region printer extra
+
+	@Override
+	public Textifier visitAnnotation(String descriptor, boolean visible) {
+		this.queueToken(new QueuedToken.Descriptor(descriptor, this.currentMethod));
+
+		return super.visitAnnotation(descriptor, visible);
+	}
+
+	@Override
+	public Textifier visitTypeAnnotation(int typeRef, TypePath typePath, String descriptor, boolean visible) {
+		this.queueToken(new QueuedToken.Descriptor(descriptor, this.currentMethod));
+
+		return super.visitTypeAnnotation(typeRef, typePath, descriptor, visible);
 	}
 
 	// endregion

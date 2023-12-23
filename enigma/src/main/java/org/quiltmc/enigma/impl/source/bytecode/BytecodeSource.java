@@ -54,11 +54,11 @@ public class BytecodeSource implements Source {
 		node.accept(traceClassVisitor);
 
 		for (ClassNode otherNode : this.innerClassNodes) {
-			if (this.remapper != null) {
-				ClassNode translatedNode = new ClassNode();
-				otherNode.accept(new TranslationClassVisitor(this.remapper.getDeobfuscator(), Enigma.ASM_VERSION, translatedNode));
-				otherNode = translatedNode;
-			}
+			// if (this.remapper != null) {
+			// 	ClassNode translatedNode = new ClassNode();
+			// 	otherNode.accept(new TranslationClassVisitor(this.remapper.getDeobfuscator(), Enigma.ASM_VERSION, translatedNode));
+			// 	otherNode = translatedNode;
+			// }
 
 			textifier.clearText();
 			writer.println();
