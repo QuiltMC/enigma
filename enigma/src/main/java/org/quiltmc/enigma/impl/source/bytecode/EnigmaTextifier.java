@@ -97,17 +97,17 @@ public class EnigmaTextifier extends Textifier {
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-		this.currentClass = new ClassEntry(name);
+		this.currentClass = new BytecodeClassEntry(name);
 
 		this.queueToken(new QueuedToken.Signature()); // class signature
 		this.queueToken(new QueuedToken.Declaration(this.currentClass)); // class name
 		if (superName != null && !"java/lang/Object".equals(superName)) {
-			this.queueToken(new QueuedToken.Reference(new ClassEntry(superName), this.currentMethod)); // extended class name
+			this.queueToken(new QueuedToken.Reference(new BytecodeClassEntry(superName), this.currentMethod)); // extended class name
 		}
 
 		if (interfaces != null) {
 			for (String interfaceName : interfaces) {
-				this.queueToken(new QueuedToken.Reference(new ClassEntry(interfaceName), this.currentMethod)); // implemented interface name
+				this.queueToken(new QueuedToken.Reference(new BytecodeClassEntry(interfaceName), this.currentMethod)); // implemented interface name
 			}
 		}
 
@@ -116,7 +116,7 @@ public class EnigmaTextifier extends Textifier {
 
 	@Override
 	public void visitNestHost(String nestHost) {
-		this.queueToken(new QueuedToken.Reference(new ClassEntry(nestHost), this.currentMethod)); // nest host
+		this.queueToken(new QueuedToken.Reference(new BytecodeClassEntry(nestHost), this.currentMethod)); // nest host
 
 		super.visitNestHost(nestHost);
 	}
@@ -124,7 +124,7 @@ public class EnigmaTextifier extends Textifier {
 	@Override
 	public void visitOuterClass(String owner, String name, String descriptor) {
 		// JVMS§4.7.7
-		var ownerEntry = new ClassEntry(owner);
+		var ownerEntry = new BytecodeClassEntry(owner);
 		this.queueToken(new QueuedToken.Reference(ownerEntry, this.currentMethod)); // outer class
 
 		if (name != null) {
@@ -140,14 +140,14 @@ public class EnigmaTextifier extends Textifier {
 
 	@Override
 	public void visitNestMember(String nestMember) {
-		this.queueToken(new QueuedToken.Reference(new ClassEntry(nestMember), this.currentMethod));
+		this.queueToken(new QueuedToken.Reference(new BytecodeClassEntry(nestMember), this.currentMethod));
 
 		super.visitNestMember(nestMember);
 	}
 
 	@Override
 	public void visitPermittedSubclass(String permittedSubclass) {
-		this.queueToken(new QueuedToken.Reference(new ClassEntry(permittedSubclass), this.currentMethod));
+		this.queueToken(new QueuedToken.Reference(new BytecodeClassEntry(permittedSubclass), this.currentMethod));
 
 		super.visitPermittedSubclass(permittedSubclass);
 	}
@@ -155,8 +155,8 @@ public class EnigmaTextifier extends Textifier {
 	@Override
 	public void visitInnerClass(String name, String outerName, String innerName, int access) {
 		// JVMS§4.7.6
-		this.queueToken(new QueuedToken.Reference(new ClassEntry(name), this.currentMethod));
-		this.queueToken(outerName != null ? new QueuedToken.Reference(new ClassEntry(outerName), this.currentMethod) : new QueuedToken.Skip());
+		this.queueToken(new QueuedToken.Reference(new BytecodeClassEntry(name), this.currentMethod));
+		this.queueToken(outerName != null ? new QueuedToken.Reference(new BytecodeClassEntry(outerName), this.currentMethod) : new QueuedToken.Skip());
 
 		super.visitInnerClass(name, outerName, innerName, access);
 	}
@@ -206,7 +206,7 @@ public class EnigmaTextifier extends Textifier {
 
 		if (exceptions != null) {
 			for (var exception : exceptions) {
-				this.queueToken(new QueuedToken.Reference(new ClassEntry(exception), this.currentMethod)); // thrown exception
+				this.queueToken(new QueuedToken.Reference(new BytecodeClassEntry(exception), this.currentMethod)); // thrown exception
 			}
 		}
 
@@ -280,14 +280,14 @@ public class EnigmaTextifier extends Textifier {
 
 	@Override
 	public void visitTypeInsn(int opcode, String type) {
-		this.queueToken(new QueuedToken.Reference(new ClassEntry(type), this.currentMethod));
+		this.queueToken(new QueuedToken.Reference(new BytecodeClassEntry(type), this.currentMethod));
 
 		super.visitTypeInsn(opcode, type);
 	}
 
 	@Override
 	public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
-		var clazz = new ClassEntry(owner);
+		var clazz = new BytecodeClassEntry(owner);
 		this.queueToken(new QueuedToken.Array(
 			new QueuedToken.Reference(clazz, this.currentMethod), // field owner
 			new QueuedToken.OffsetToken(owner.length() + 1, name,
@@ -300,7 +300,7 @@ public class EnigmaTextifier extends Textifier {
 
 	@Override
 	public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-		var clazz = new ClassEntry(owner);
+		var clazz = new BytecodeClassEntry(owner);
 		this.queueToken(new QueuedToken.Array(
 			new QueuedToken.Reference(clazz, this.currentMethod), // method owner
 			new QueuedToken.OffsetToken(owner.length() + 1, name,
@@ -410,7 +410,7 @@ public class EnigmaTextifier extends Textifier {
 			tokens.add(new PartialToken(tokenStart, text, r.entry, r.context));
 		} else if (queuedToken instanceof QueuedToken.Descriptor d) {
 			var clazz = d.descriptor.substring(d.descriptor.indexOf('L') + 1, d.descriptor.length() - 1);
-			tokens.add(new PartialToken(tokenStart + 1, clazz, new ClassEntry(clazz), null));
+			tokens.add(new PartialToken(tokenStart + 1, clazz, new BytecodeClassEntry(clazz), null));
 		} else if (queuedToken instanceof QueuedToken.MethodDescriptor d) {
 			for (int i = 1; i < d.descriptor.length(); i++) {
 				char c = d.descriptor.charAt(i);
@@ -419,12 +419,10 @@ public class EnigmaTextifier extends Textifier {
 					int end = d.descriptor.indexOf(';', start);
 					var clazz = d.descriptor.substring(start, end);
 
-					tokens.add(new PartialToken(tokenStart + start, clazz, new ClassEntry(clazz), null));
+					tokens.add(new PartialToken(tokenStart + start, clazz, new BytecodeClassEntry(clazz), null));
 					i = end;
 				}
 			}
-		} else if (queuedToken instanceof QueuedToken.Signature s) {
-			// TODO
 		}
 	}
 
