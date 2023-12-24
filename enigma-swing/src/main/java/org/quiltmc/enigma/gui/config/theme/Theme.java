@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.config.theme;
 
 import org.quiltmc.config.api.ReflectiveConfig;
+import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.annotations.SerializedName;
 import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
@@ -16,6 +17,7 @@ public class Theme extends ReflectiveConfig.Section {
 		this.lookAndFeel = lookAndFeel;
 	}
 
+	@Comment("Colors are encoded in the RGBA format.")
 	@SerializedName("colors")
 	public final Colors colors = new Colors();
 	@SerializedName("fonts")
@@ -61,6 +63,11 @@ public class Theme extends ReflectiveConfig.Section {
 			@Override
 			public ComplexConfigValue copy() {
 				return new SerializableFont(this.name, this.style, this.size);
+			}
+
+			@Override
+			public String toString() {
+				return "SerializableFont" + "[name=" + this.name + ",style=" + this.style + ",size=" + this.size + "]";
 			}
 		}
 	}
@@ -123,27 +130,35 @@ public class Theme extends ReflectiveConfig.Section {
 		@SerializedName("dock_highlight")
 		public final TrackedValue<SerializableColor> dockHighlight = this.value(new SerializableColor(0xFF0000FF));
 
-		private static class SerializableColor extends Color implements ConfigSerializableObject<Integer> {
-			private final int rgba;
-
+		public static class SerializableColor extends Color implements ConfigSerializableObject<String> {
 			SerializableColor(int rgba) {
 				super(rgba, true);
-				this.rgba = rgba;
 			}
 
 			@Override
-			public ConfigSerializableObject<Integer> convertFrom(Integer representation) {
-				return new SerializableColor(representation);
+			public SerializableColor convertFrom(String representation) {
+				return new SerializableColor(new Color(
+					Integer.valueOf(representation.substring(0, 2), 16),
+					Integer.valueOf(representation.substring(2, 4), 16),
+					Integer.valueOf(representation.substring(4, 6), 16),
+					Integer.valueOf(representation.substring(6, 8), 16)
+				).getRGB());
 			}
 
 			@Override
-			public Integer getRepresentation() {
-				return this.rgba;
+			public String getRepresentation() {
+				int rgba = (this.getRGB() << 8) | this.getAlpha();
+				return String.format("%08X", rgba);
 			}
 
 			@Override
 			public ComplexConfigValue copy() {
-				return new SerializableColor(this.rgba);
+				return new SerializableColor(this.getRGB());
+			}
+
+			@Override
+			public String toString() {
+				return "SerializableColor" + "[r=" + this.getRed() + ",g=" + this.getGreen() + ",b=" + this.getBlue() + ",a=" + this.getAlpha() + "]" + " (hex=" + this.getRepresentation() + ")";
 			}
 		}
 

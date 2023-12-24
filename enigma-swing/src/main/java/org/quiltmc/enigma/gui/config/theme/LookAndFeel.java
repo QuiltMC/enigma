@@ -14,7 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
-public enum LookAndFeel implements ConfigSerializableObject<Integer> {
+public enum LookAndFeel implements ConfigSerializableObject<String> {
 	DEFAULT(false),
 	DARCULA(false),
 	METAL(true),
@@ -70,13 +70,13 @@ public enum LookAndFeel implements ConfigSerializableObject<Integer> {
 	}
 
 	@Override
-	public ConfigSerializableObject<Integer> convertFrom(Integer representation) {
-		return values()[representation];
+	public LookAndFeel convertFrom(String representation) {
+		return LookAndFeel.valueOf(representation);
 	}
 
 	@Override
-	public Integer getRepresentation() {
-		return this.ordinal();
+	public String getRepresentation() {
+		return this.name();
 	}
 
 	@Override
