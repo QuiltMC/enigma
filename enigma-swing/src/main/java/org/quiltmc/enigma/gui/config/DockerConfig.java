@@ -160,11 +160,11 @@ public class DockerConfig extends ReflectiveConfig {
 
 		@Override
 		public String toString() {
-			return "SelectedDockers[" +
-				"top='" + this.top + '\'' +
-				", bottom='" + this.bottom + '\'' +
-				", full='" + this.full + '\'' +
-				']';
+			return "SelectedDockers["
+				+ "top='" + this.top + "'"
+				+ ", bottom='" + this.bottom + "'"
+				+ ", full='" + this.full + "'"
+				+ "]";
 		}
 	}
 }
