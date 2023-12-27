@@ -27,9 +27,9 @@ public class Themes {
 	}
 
 	private static void setFonts() {
-		Font small = Config.currentFonts().small.value();
-		Font bold = Config.currentFonts().defaultBold.value();
-		Font normal = Config.currentFonts().defaultNormal.value();
+		Font small = ScaleUtil.scaleFont(Config.currentFonts().small.value());
+		Font bold = ScaleUtil.scaleFont(Config.currentFonts().defaultBold.value());
+		Font normal = ScaleUtil.scaleFont(Config.currentFonts().defaultNormal.value());
 
 		UIManager.put("CheckBox.font", bold);
 		UIManager.put("CheckBoxMenuItem.font", bold);
