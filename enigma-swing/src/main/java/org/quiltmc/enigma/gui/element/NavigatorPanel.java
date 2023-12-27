@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.element;
 
 import org.quiltmc.enigma.api.EnigmaProject;
+import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.api.source.TokenType;
@@ -147,8 +148,11 @@ public class NavigatorPanel extends JPanel {
 	}
 
 	private TokenType getTokenType(Entry<?> target) {
+		// make sure we're checking from the root of the inheritance tree
 		EnigmaProject project = this.gui.getController().getProject();
-		return project.getRemapper().getMapping(target).tokenType();
+		Entry<?> rootEntry = project.getRemapper().getObfResolver().resolveFirstEntry(target, ResolutionStrategy.RESOLVE_ROOT);
+
+		return project.getRemapper().getMapping(rootEntry).tokenType();
 	}
 
 	private void updateStatsLabel() {
