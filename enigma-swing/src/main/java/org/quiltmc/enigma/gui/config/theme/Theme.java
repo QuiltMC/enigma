@@ -175,7 +175,7 @@ public class Theme extends ReflectiveConfig.Section {
 				setIfAbsent(this.proposedOutline, new SerializableColor(0x80606366));
 
 				setIfAbsent(this.deobfuscated, new SerializableColor(0x4D50FA7B));
-				setIfAbsent(this.deobfuscatedOutline, new SerializableColor(0x50FA7B));
+				setIfAbsent(this.deobfuscatedOutline, new SerializableColor(0x8050FA7B));
 
 				setIfAbsent(this.editorBackground, new SerializableColor(0xFF282A36));
 				setIfAbsent(this.highlight, new SerializableColor(0xFFFF79C6));
