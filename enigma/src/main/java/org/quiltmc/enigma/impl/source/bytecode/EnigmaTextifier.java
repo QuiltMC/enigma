@@ -2,6 +2,7 @@ package org.quiltmc.enigma.impl.source.bytecode;
 
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.TypePath;
 import org.objectweb.asm.util.Printer;
 import org.quiltmc.enigma.api.Enigma;
@@ -312,9 +313,24 @@ public class EnigmaTextifier extends Textifier {
 	}
 
 	@Override
-	public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
-		// TODO
-		super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+	public void visitInvokeDynamicInsn(String name, String descriptor, Handle bsmHandle, Object... bootstrapMethodArguments) {
+		this.queueToken(new QueuedToken.Descriptor(descriptor)); // indy descriptor
+
+		// bsm
+		boolean isMethodHandle = bsmHandle.getTag() >= Opcodes.H_INVOKEVIRTUAL && bsmHandle.getTag() <= Opcodes.H_INVOKEINTERFACE;
+		var bsmOwner = new ClassEntry(bsmHandle.getOwner());
+		var desc = bsmHandle.getDesc();
+		this.queueToken(new QueuedToken.Array(
+			new QueuedToken.Reference(bsmOwner, null), // bsm owner
+			new QueuedToken.OffsetToken(bsmOwner.getFullName().length() + 1, bsmHandle.getName(),
+				new QueuedToken.Reference(isMethodHandle
+					? new MethodEntry(bsmOwner, bsmHandle.getName(), new MethodDescriptor(desc)) // bsm handle method
+					: new FieldEntry(bsmOwner, bsmHandle.getName(), new TypeDescriptor(desc)), this.currentMethod)) // bsm handle field
+		));
+
+		this.queueToken(isMethodHandle ? new QueuedToken.MethodDescriptor(desc) : new QueuedToken.Descriptor(desc)); // bsm handle descriptor
+
+		super.visitInvokeDynamicInsn(name, descriptor, bsmHandle, bootstrapMethodArguments);
 	}
 
 	@Override
