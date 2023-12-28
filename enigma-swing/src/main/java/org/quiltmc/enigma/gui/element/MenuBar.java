@@ -105,6 +105,7 @@ public class MenuBar {
 	// Enabled with system property "enigma.development" or "--development" flag
 	private final JMenu devMenu = new JMenu();
 	private final JCheckBoxMenuItem showMappingSourcePluginItem = new JCheckBoxMenuItem();
+	private final JCheckBoxMenuItem debugTokenHighlightsItem = new JCheckBoxMenuItem();
 	private final JMenuItem printMappingTreeItem = new JMenuItem();
 
 	private final Gui gui;
@@ -177,6 +178,7 @@ public class MenuBar {
 		ui.add(this.helpMenu);
 
 		this.devMenu.add(this.showMappingSourcePluginItem);
+		this.devMenu.add(this.debugTokenHighlightsItem);
 		this.devMenu.add(this.printMappingTreeItem);
 		if (System.getProperty("enigma.development", "false").equalsIgnoreCase("true")) {
 			ui.add(this.devMenu);
@@ -211,6 +213,7 @@ public class MenuBar {
 		this.aboutItem.addActionListener(e -> AboutDialog.show(this.gui.getFrame()));
 		this.githubItem.addActionListener(e -> this.onGithubClicked());
 		this.showMappingSourcePluginItem.addActionListener(e -> this.onShowMappingSourcePluginClicked());
+		this.debugTokenHighlightsItem.addActionListener(e -> this.onDebugTokenHighlightsClicked());
 		this.printMappingTreeItem.addActionListener(e -> this.onPrintMappingTreeClicked());
 	}
 
@@ -297,6 +300,7 @@ public class MenuBar {
 
 		this.devMenu.setText("Dev");
 		this.showMappingSourcePluginItem.setText("Show mapping source plugin");
+		this.debugTokenHighlightsItem.setText("Debug token highlights");
 		this.printMappingTreeItem.setText("Print mapping tree");
 	}
 
@@ -487,6 +491,11 @@ public class MenuBar {
 	private void onShowMappingSourcePluginClicked() {
 		var value = this.showMappingSourcePluginItem.getState();
 		Config.main().development.showMappingSourcePlugin.setValue(value, true);
+	}
+
+	private void onDebugTokenHighlightsClicked() {
+		var value = this.debugTokenHighlightsItem.getState();
+		Config.main().development.debugTokenHighlights.setValue(value, true);
 	}
 
 	private void onPrintMappingTreeClicked() {
