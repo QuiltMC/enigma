@@ -26,6 +26,7 @@ import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Pair;
 import org.quiltmc.enigma.util.validation.Message;
 import org.quiltmc.enigma.util.validation.ParameterizedMessage;
+import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import javax.swing.ButtonGroup;
@@ -37,6 +38,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -501,7 +503,7 @@ public class MenuBar {
 	private void onPrintMappingTreeClicked() {
 		var mappings = this.gui.getController().getProject().getRemapper().getMappings();
 
-		StringWriter text = new StringWriter();
+		var text = new StringWriter();
 		EntryTreePrinter.print(new PrintWriter(text), mappings);
 
 		var frame = new JFrame("Mapping Tree");
@@ -511,9 +513,28 @@ public class MenuBar {
 		var textArea = new JTextArea(text.toString());
 		textArea.setFont(ScaleUtil.getFont(Font.MONOSPACED, Font.PLAIN, 12));
 		pane.add(new JScrollPane(textArea), BorderLayout.CENTER);
-		var button = new JButton("Close");
-		button.addActionListener(e -> frame.dispose());
-		pane.add(button, BorderLayout.SOUTH);
+
+		var buttonPane = new JPanel();
+
+		var saveButton = new JButton("Save");
+		saveButton.addActionListener(e -> {
+			var chooser = new JFileChooser();
+			chooser.setSelectedFile(new File("mapping_tree.txt"));
+			if (chooser.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
+				try {
+					Files.writeString(chooser.getSelectedFile().toPath(), text.toString());
+				} catch (IOException ex) {
+					Logger.error(ex, "Failed to save the mapping tree");
+				}
+			}
+		});
+		buttonPane.add(saveButton);
+
+		var closeButton = new JButton("Close");
+		closeButton.addActionListener(e -> frame.dispose());
+		buttonPane.add(closeButton);
+
+		pane.add(buttonPane, BorderLayout.SOUTH);
 
 		frame.setSize(ScaleUtil.getDimension(1200, 400));
 		frame.setLocationRelativeTo(this.gui.getFrame());
