@@ -186,7 +186,7 @@ public class EnigmaTextifier extends Textifier {
 		this.queueToken(new QueuedToken.Array(
 			new QueuedToken.Descriptor(descriptor), // field descriptor
 			new QueuedToken.OffsetToken(descriptor.length() + 1, name,
-				new QueuedToken.Reference(new FieldEntry(this.currentClass, name, new TypeDescriptor(descriptor)), this.currentMethod)) // field (on its name)
+				new QueuedToken.Declaration(new FieldEntry(this.currentClass, name, new TypeDescriptor(descriptor)))) // field (on its name)
 		));
 
 		return super.visitField(access, name, descriptor, signature, value);
@@ -201,7 +201,7 @@ public class EnigmaTextifier extends Textifier {
 		var entry = new MethodEntry(this.currentClass, name, new MethodDescriptor(descriptor));
 		this.queueToken(new QueuedToken.Array(
 			new QueuedToken.OffsetToken(-name.length(), name,
-				new QueuedToken.Reference(entry, this.currentMethod)), // method (on its name)
+				new QueuedToken.Declaration(entry)), // method (on its name)
 			new QueuedToken.MethodDescriptor(descriptor) // method descriptor
 		));
 
