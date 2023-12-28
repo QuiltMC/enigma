@@ -33,7 +33,7 @@ public class BytecodeSource implements Source {
 
 	@Override
 	public SourceIndex index() {
-		SourceIndex index = new SourceIndex();
+		SourceIndex index = new BytecodeSourceIndex();
 
 		EnigmaTextifier textifier = new EnigmaTextifier(index);
 		StringWriter out = new StringWriter();

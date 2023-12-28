@@ -21,10 +21,17 @@ public class SourceIndex {
 	private final Multimap<EntryReference<Entry<?>, Entry<?>>, Token> referenceToTokens;
 	private final Map<Entry<?>, Token> declarationToToken;
 
-	public SourceIndex() {
+	public final boolean remapToNameable;
+
+	protected SourceIndex(boolean remapToNameable) {
 		this.tokenToReference = new TreeMap<>();
 		this.referenceToTokens = HashMultimap.create();
 		this.declarationToToken = new LinkedHashMap<>();
+		this.remapToNameable = remapToNameable;
+	}
+
+	public SourceIndex() {
+		this(true);
 	}
 
 	public SourceIndex(String source) {

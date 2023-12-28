@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements Translatable {
-	private static final List<String> CONSTRUCTOR_NON_NAMES = Arrays.asList("this", "super", "static");
+	private static final List<String> CONSTRUCTOR_NON_NAMES = Arrays.asList("this", "super", "static", "<init>", "<clinit>");
 	public final E entry;
 	public final C context;
 	public final ReferenceTargetType targetType;
