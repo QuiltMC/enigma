@@ -8,7 +8,6 @@
 	"mapping_format.tiny_file": "Tiny 文件",
 	"mapping_format.srg_file": "SRG 文件",
 	"mapping_format.proguard": "Proguard 文件",
-	"mapping_format.recaf": "Recaf 文件",
 	"type.methods": "方法",
 	"type.fields": "字段",
 	"type.parameters": "参数",
@@ -65,7 +64,6 @@
 	"info_panel.identifier.class": "类",
 	"info_panel.identifier.type_descriptor": "类型描述符",
 	"info_panel.identifier.method_descriptor": "方法描述符",
-	"info_panel.identifier.modifier": "修饰符",
 	"info_panel.identifier.index": "索引",
 	"info_panel.editor.class.decompiling": "（反编译中...）",
 	"info_panel.editor.class.not_found": "找不到类：",
@@ -90,7 +88,6 @@
 	"progress.mappings.srg_file.generating": "生成映射",
 	"progress.mappings.srg_file.writing": "写出映射",
 	"progress.stats": "生成统计范围",
-	"progress.stats.data": "生成数据",
 
 	"javadocs.edit": "编辑注释",
 	"javadocs.instruction": "在此处编辑编辑注释。",

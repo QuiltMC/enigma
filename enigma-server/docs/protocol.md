@@ -29,7 +29,7 @@ Client     Server
    has received the mappings and is in sync with the server. Once the server receives this packet, the client will be
    allowed to modify mappings.
 
-The server will not accept any other packets from the client until this entire exchange has been completed. 
+The server will not accept any other packets from the client until this entire exchange has been completed.
 
 ## Kicking clients
 When the server kicks a client, it may optionally send a `Kick` packet immediately before closing the connection, which
@@ -94,7 +94,7 @@ struct utf {
 ```
 - `length`: The number of bytes in the UTF-8 encoding of the string. Note, this may not be the same as the number of
             Unicode characters in the string.
-- `data`: A standard UTF-8 encoded byte array representing the string. 
+- `data`: A standard UTF-8 encoded byte array representing the string.
 
 ### The Entry struct
 ```c
@@ -198,19 +198,10 @@ typedef enum tristate_change {
     TRISTATE_CHANGE_SET = 2
 } tristate_change_t;
 
-typedef enum access_modifier {
-    ACCESS_MODIFIER_UNCHANGED = 0,
-    ACCESS_MODIFIER_PUBLIC = 1,
-    ACCESS_MODIFIER_PROTECTED = 2,
-    ACCESS_MODIFIER_PRIVATE = 3
-} access_modifier_t;
-
-// Contains 4 packed values:
+// Contains 2 packed values:
 // bitmask   type
-// 00000011  tristate_change_t deobf_name_change;
-// 00001100  tristate_change_t access_change;
-// 00110000  tristate_change_t javadoc_change;
-// 11000000  access_modifier_t access_modifiers;
+// 0011  tristate_change_t deobf_name_change;
+// 1100  tristate_change_t javadoc_change;
 typedef uint8_t entry_change_flags;
 
 struct entry_change {
@@ -222,13 +213,20 @@ struct entry_change {
     if <javadoc_change == TRISTATE_CHANGE_SET> {
         utf javadoc;
     }
+    if <token_type_change == TRISTATE_CHANGE_SET> {
+        unsigned short token_type;
+    }
+    if <source_plugin_id_change == TRISTATE_CHANGE_SET> {
+        utf source_plugin_id;
+    }
 }
 ```
 - `entry`: The entry this change gets applied to.
 - `flags`: See definition of `entry_change_flags`.
 - `deobf_name`: The new deobfuscated name, if deobf_name_change == TRISTATE_CHANGE_SET
 - `javadoc`: The new javadoc, if javadoc_change == TRISTATE_CHANGE_SET
-- `access_modifiers`: The new access modifier, if access_change == TRISTATE_CHANGE_SET (otherwise 0)
+- `token_type`: The new token type, if token_type_change == TRISTATE_CHANGE_SET
+- `source_plugin_id`: The ID of the plugin that proposed this entry's name, if source_plugin_id_change == TRISTATE_CHANGE_SET
 
 ### Login (client-to-server)
 ```c
@@ -288,9 +286,10 @@ struct SyncMappingsS2CPacket {
 }
 struct MappingNode {
     NoParentEntry obf_entry;
-    boolean is_named;
     utf name;
     utf javadoc;
+    unsigned short token_type;
+    utf source_plugin_id;
     unsigned short children_count;
     MappingNode children[children_count];
 }
@@ -300,7 +299,9 @@ typedef { Entry but without the has_parent or parent fields } NoParentEntry;
 - `obf_entry`: The value of a node, containing the obfuscated name and descriptor of the entry.
 - `name`: The deobfuscated name of the entry, if it exists, otherwise the empty string.
 - `javadoc`: The documentation for the entry, if it exists, otherwise the empty string.
-- `children`: The children of this node
+- `token_type`: The token type of the entry.
+- `source_plugin_id`: If the name is proposed, the ID of the plugin that proposed the name, otherwise the empty string.
+- `children`: The children of this node.
 
 ### Message (server-to-client)
 ```c

@@ -8,7 +8,6 @@
 	"mapping_format.tiny_file": "Tiny ファイル",
 	"mapping_format.srg_file": "SRG ファイル",
 	"mapping_format.proguard": "Proguard",
-	"mapping_format.recaf": "Recaf",
 	"type.methods": "メソッド",
 	"type.fields": "フィールド",
 	"type.parameters": "パラメータ",
@@ -102,7 +101,6 @@
 	"info_panel.identifier.class": "クラス",
 	"info_panel.identifier.type_descriptor": "型記述子",
 	"info_panel.identifier.method_descriptor": "メソッド記述子",
-	"info_panel.identifier.modifier":	"修飾子",
 	"info_panel.identifier.index": "Index",
 	"info_panel.editor.class.decompiling": "(デコンパイル中...)",
 	"info_panel.editor.class.not_found": "クラスを見つけられません:",
@@ -142,16 +140,12 @@
 	"progress.mappings.srg_file.generating": "マッピングの作成中",
 	"progress.mappings.srg_file.writing": "マッピングの書き出し中",
 	"progress.stats": "統計情報を作成中",
-	"progress.stats.data": "データの作成中",
 
 	"javadocs.edit": "Javadocを編集",
 	"javadocs.instruction": "このJavadocを編集",
 
-	"fonts.cat.default": "デフォルト",
-	"fonts.cat.default2": "デフォルト 2",
 	"fonts.cat.small": "スモール",
 	"fonts.cat.editor": "エディタ",
-	"fonts.use_custom": "カスタムフォントを使う",
 
 	"prompt.ok": "OK",
 	"prompt.cancel": "キャンセル",

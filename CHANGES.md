@@ -8,11 +8,11 @@ We'll only be cataloguing major changes, since there are countless bug fixes to 
 
 - added multiplayer support
 - reworked gradle setup
+- changed package from `cuchaz.enigma` to `org.quiltmc.enigma`
 
 ### enigma
 
 - implemented support for new mapping formats, such as enigma's directory format and fabric's tiny
-- implemented support for remapping local variables
 - ported to an ASM backend
 - piles of minor optimisations
 - index references of fields and methods

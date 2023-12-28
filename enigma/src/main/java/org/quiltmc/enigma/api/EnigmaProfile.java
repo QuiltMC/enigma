@@ -1,0 +1,149 @@
+package org.quiltmc.enigma.api;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
+import org.quiltmc.enigma.api.service.EnigmaServiceType;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
+import org.quiltmc.enigma.util.Either;
+import org.tinylog.Logger;
+
+import javax.annotation.Nullable;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+public final class EnigmaProfile {
+	public static final EnigmaProfile EMPTY = new EnigmaProfile(new ServiceContainer(Map.of()));
+
+	private static final MappingSaveParameters DEFAULT_MAPPING_SAVE_PARAMETERS = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
+	private static final Gson GSON = new GsonBuilder()
+			.registerTypeAdapter(ServiceContainer.class, (JsonDeserializer<ServiceContainer>) EnigmaProfile::loadServiceContainer)
+			.create();
+	private static final Type SERVICE_LIST_TYPE = new TypeToken<List<Service>>() {
+	}.getType();
+
+	@SerializedName("services")
+	private final ServiceContainer serviceProfiles;
+
+	@SerializedName("mapping_save_parameters")
+	private final MappingSaveParameters mappingSaveParameters = null;
+
+	@Nullable
+	private Path sourcePath;
+
+	private EnigmaProfile(ServiceContainer serviceProfiles) {
+		this.serviceProfiles = serviceProfiles;
+	}
+
+	public static EnigmaProfile read(@Nullable Path file) throws IOException {
+		if (file != null) {
+			try (BufferedReader reader = Files.newBufferedReader(file)) {
+				return EnigmaProfile.parse(reader).withSourcePath(file.toAbsolutePath());
+			}
+		} else {
+			try (BufferedReader reader = new BufferedReader(new InputStreamReader(EnigmaProfile.class.getResourceAsStream("/profile.json"), StandardCharsets.UTF_8))) {
+				return EnigmaProfile.parse(reader);
+			} catch (IOException ex) {
+				Logger.warn("Failed to load default profile, will use empty profile: {}", ex.getMessage());
+				return EnigmaProfile.EMPTY;
+			}
+		}
+	}
+
+	public static EnigmaProfile parse(Reader reader) {
+		return GSON.fromJson(reader, EnigmaProfile.class);
+	}
+
+	private static ServiceContainer loadServiceContainer(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+		if (!json.isJsonObject()) {
+			throw new JsonParseException("services must be an Object!");
+		}
+
+		JsonObject object = json.getAsJsonObject();
+
+		ImmutableMap.Builder<String, List<Service>> builder = ImmutableMap.builder();
+
+		for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+			JsonElement value = entry.getValue();
+			if (value.isJsonObject()) {
+				builder.put(entry.getKey(), Collections.singletonList(GSON.fromJson(value, Service.class)));
+			} else if (value.isJsonArray()) {
+				builder.put(entry.getKey(), GSON.fromJson(value, SERVICE_LIST_TYPE));
+			} else {
+				throw new JsonParseException(String.format("Don't know how to convert %s to a list of service!", value));
+			}
+		}
+
+		return new ServiceContainer(builder.build());
+	}
+
+	public List<Service> getServiceProfiles(EnigmaServiceType<?> serviceType) {
+		return this.serviceProfiles.get(serviceType.key);
+	}
+
+	public MappingSaveParameters getMappingSaveParameters() {
+		//noinspection ConstantConditions
+		return this.mappingSaveParameters == null ? EnigmaProfile.DEFAULT_MAPPING_SAVE_PARAMETERS : this.mappingSaveParameters;
+	}
+
+	private EnigmaProfile withSourcePath(Path sourcePath) {
+		this.sourcePath = sourcePath;
+		return this;
+	}
+
+	public Path resolvePath(Path path) {
+		if (this.sourcePath == null) {
+			return path;
+		}
+
+		return this.sourcePath.getParent().resolve(path);
+	}
+
+	public static class Service {
+		private final String id;
+		private final Map<String, Either<String, List<String>>> args;
+
+		Service(String id, Map<String, Either<String, List<String>>> args) {
+			this.id = id;
+			this.args = args;
+		}
+
+		public boolean matches(String id) {
+			return this.id.equals(id);
+		}
+
+		public Optional<Either<String, List<String>>> getArgument(String key) {
+			return this.args != null ? Optional.ofNullable(this.args.get(key)) : Optional.empty();
+		}
+	}
+
+	static final class ServiceContainer {
+		private final Map<String, List<Service>> services;
+
+		ServiceContainer(Map<String, List<Service>> services) {
+			this.services = services;
+		}
+
+		List<Service> get(String key) {
+			return this.services.getOrDefault(key, Collections.emptyList());
+		}
+	}
+}

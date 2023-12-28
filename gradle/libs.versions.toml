@@ -3,13 +3,14 @@ shadow = "8.1.1"
 
 guava = "32.0.1-jre"
 gson = "2.10.1"
-asm = "9.4"
+asm = "9.6"
 jopt = "6.0-alpha-3"
-flatlaf = "3.1.1"
-syntaxpane = "1.2.1"
+flatlaf = "3.2.5"
+syntaxpain = "0.1.1"
 swing_dpi = "0.10"
 fontchooser = "2.5.2"
 tinylog = "2.6.2"
+quilt_config = "1.2.0-beta.3"
 
 vineflower = "1.10.0-20230713.053900-2"
 cfr = "0.2.1"
@@ -32,10 +33,12 @@ asm_util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
 tinylog_api = { module = "org.tinylog:tinylog-api", version.ref = "tinylog" }
 tinylog_impl = { module = "org.tinylog:tinylog-impl", version.ref = "tinylog" }
 
+quilt_config = { module = "org.quiltmc:quilt-config", version.ref = "quilt_config" }
+
 jopt = { module = "net.sf.jopt-simple:jopt-simple", version.ref = "jopt" }
 flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }
 flatlaf_extras = { module = "com.formdev:flatlaf-extras", version.ref = "flatlaf" }
-syntaxpane = { module = "de.sciss:syntaxpane", version.ref = "syntaxpane" }
+syntaxpain = { module = "org.quiltmc:syntaxpain", version.ref = "syntaxpain" }
 swing_dpi = { module = "com.github.lukeu:swing-dpi", version.ref = "swing_dpi" }
 fontchooser = { module = "org.drjekyll:fontchooser", version.ref = "fontchooser" }
 
