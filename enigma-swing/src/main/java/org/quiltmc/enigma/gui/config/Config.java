@@ -18,6 +18,7 @@ import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindDialog;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
+import javax.annotation.Nullable;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.nio.file.Path;
@@ -127,8 +128,13 @@ public final class Config extends ReflectiveConfig {
 		main().recentProjects.value().add(0, new RecentProject(jarPath, mappingsPath));
 	}
 
+	@Nullable
 	public static RecentProject getMostRecentProject() {
-		return main().recentProjects.value().get(0);
+		if (!main().recentProjects.value().isEmpty()) {
+			return main().recentProjects.value().get(0);
+		} else {
+			return null;
+		}
 	}
 
 	public record RecentProject(String jarPath, String mappingsPath) implements ConfigSerializableObject<ValueMap<String>> {

@@ -54,7 +54,13 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 
 			@Override
 			public void done() {
-				((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(generator.getResultNullable(), ClassSelectorClassNode.this.getObfEntry()));
+				try {
+					((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(generator.getResultNullable(), ClassSelectorClassNode.this.getObfEntry()));
+				} catch (NullPointerException ignored) {
+					// do nothing. this seems to be a race condition, likely a bug in FlatLAF caused by us suppressing the default tree icons
+					// ignoring this error should never cause issues since it only occurs at startup
+				}
+
 				SwingUtilities.invokeLater(() -> selector.reload(ClassSelectorClassNode.this, false));
 			}
 		};
