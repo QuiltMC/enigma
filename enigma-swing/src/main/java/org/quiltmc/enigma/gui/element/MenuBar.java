@@ -30,6 +30,7 @@ import org.quiltmc.enigma.util.validation.ParameterizedMessage;
 import javax.annotation.Nullable;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -103,6 +104,7 @@ public class MenuBar {
 
 	// Enabled with system property "enigma.development" or "--development" flag
 	private final JMenu devMenu = new JMenu();
+	private final JCheckBoxMenuItem showMappingSourcePluginItem = new JCheckBoxMenuItem();
 	private final JMenuItem printMappingTreeItem = new JMenuItem();
 
 	private final Gui gui;
@@ -174,6 +176,7 @@ public class MenuBar {
 		this.helpMenu.add(this.githubItem);
 		ui.add(this.helpMenu);
 
+		this.devMenu.add(this.showMappingSourcePluginItem);
 		this.devMenu.add(this.printMappingTreeItem);
 		if (System.getProperty("enigma.development", "false").equalsIgnoreCase("true")) {
 			ui.add(this.devMenu);
@@ -207,6 +210,7 @@ public class MenuBar {
 		this.startServerItem.addActionListener(e -> this.onStartServerClicked());
 		this.aboutItem.addActionListener(e -> AboutDialog.show(this.gui.getFrame()));
 		this.githubItem.addActionListener(e -> this.onGithubClicked());
+		this.showMappingSourcePluginItem.addActionListener(e -> this.onShowMappingSourcePluginClicked());
 		this.printMappingTreeItem.addActionListener(e -> this.onPrintMappingTreeClicked());
 	}
 
@@ -292,6 +296,7 @@ public class MenuBar {
 		this.githubItem.setText(I18n.translate("menu.help.github"));
 
 		this.devMenu.setText("Dev");
+		this.showMappingSourcePluginItem.setText("Show mapping source plugin");
 		this.printMappingTreeItem.setText("Print mapping tree");
 	}
 
@@ -477,6 +482,11 @@ public class MenuBar {
 
 	private void onGithubClicked() {
 		GuiUtil.openUrl("https://github.com/QuiltMC/Enigma");
+	}
+
+	private void onShowMappingSourcePluginClicked() {
+		var value = this.showMappingSourcePluginItem.getState();
+		Config.main().development.showMappingSourcePlugin.setValue(value, true);
 	}
 
 	private void onPrintMappingTreeClicked() {
