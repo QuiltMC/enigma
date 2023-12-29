@@ -125,7 +125,10 @@ public final class Config extends ReflectiveConfig {
 	}
 
 	public static void insertRecentProject(String jarPath, String mappingsPath) {
-		main().recentProjects.value().add(0, new RecentProject(jarPath, mappingsPath));
+		RecentProject project = new RecentProject(jarPath, mappingsPath);
+		if (!main().recentProjects.value().contains(project)) {
+			main().recentProjects.value().add(0, new RecentProject(jarPath, mappingsPath));
+		}
 	}
 
 	@Nullable
