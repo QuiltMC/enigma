@@ -252,6 +252,9 @@ public class MenuBar {
 		this.exportJarItem.setEnabled(jarOpen);
 		this.statsItem.setEnabled(jarOpen);
 		this.printMappingTreeItem.setEnabled(jarOpen);
+
+		this.showMappingSourcePluginItem.setState(Config.main().development.showMappingSourcePlugin.value());
+		this.debugTokenHighlightsItem.setState(Config.main().development.debugTokenHighlights.value());
 	}
 
 	public void retranslateUi() {
@@ -301,11 +304,9 @@ public class MenuBar {
 		this.githubItem.setText(I18n.translate("menu.help.github"));
 
 		this.devMenu.setText("Dev");
-		this.showMappingSourcePluginItem.setText("Show mapping source plugin");
-		this.showMappingSourcePluginItem.setState(Config.main().development.showMappingSourcePlugin.value());
-		this.debugTokenHighlightsItem.setText("Debug token highlights");
-		this.debugTokenHighlightsItem.setState(Config.main().development.debugTokenHighlights.value());
-		this.printMappingTreeItem.setText("Print mapping tree");
+		this.showMappingSourcePluginItem.setText(I18n.translate("dev.menu.show_mapping_source_plugin"));
+		this.debugTokenHighlightsItem.setText(I18n.translate("dev.menu.debug_token_highlights"));
+		this.printMappingTreeItem.setText(I18n.translate("dev.menu.print_mapping_tree"));
 	}
 
 	private void onOpenJarClicked() {
@@ -508,7 +509,7 @@ public class MenuBar {
 		var text = new StringWriter();
 		EntryTreePrinter.print(new PrintWriter(text), mappings);
 
-		var frame = new JFrame("Mapping Tree");
+		var frame = new JFrame(I18n.translate("dev.mapping_tree"));
 		var pane = frame.getContentPane();
 		pane.setLayout(new BorderLayout());
 
@@ -518,7 +519,7 @@ public class MenuBar {
 
 		var buttonPane = new JPanel();
 
-		var saveButton = new JButton("Save");
+		var saveButton = new JButton(I18n.translate("prompt.save"));
 		saveButton.addActionListener(e -> {
 			var chooser = new JFileChooser();
 			chooser.setSelectedFile(new File("mapping_tree.txt"));
@@ -532,7 +533,7 @@ public class MenuBar {
 		});
 		buttonPane.add(saveButton);
 
-		var closeButton = new JButton("Close");
+		var closeButton = new JButton(I18n.translate("prompt.ok"));
 		closeButton.addActionListener(e -> frame.dispose());
 		buttonPane.add(closeButton);
 
