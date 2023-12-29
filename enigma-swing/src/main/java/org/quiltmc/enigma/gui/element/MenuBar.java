@@ -302,7 +302,9 @@ public class MenuBar {
 
 		this.devMenu.setText("Dev");
 		this.showMappingSourcePluginItem.setText("Show mapping source plugin");
+		this.showMappingSourcePluginItem.setState(Config.main().development.showMappingSourcePlugin.value());
 		this.debugTokenHighlightsItem.setText("Debug token highlights");
+		this.debugTokenHighlightsItem.setState(Config.main().development.debugTokenHighlights.value());
 		this.printMappingTreeItem.setText("Print mapping tree");
 	}
 
