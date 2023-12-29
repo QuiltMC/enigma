@@ -154,7 +154,7 @@ public class IdentifierPanel {
 
 			if (Config.main().development.showMappingSourcePlugin.value()) {
 				var mapping = this.gui.getController().getProject().getRemapper().getMapping(this.entry);
-				th.addStringRow("Source plugin", mapping.sourcePluginId());
+				th.addStringRow(I18n.translate("dev.source_plugin"), mapping.sourcePluginId());
 			}
 		}
 
