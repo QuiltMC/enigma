@@ -6,7 +6,6 @@ import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,14 +29,9 @@ public class PackageIndex implements MappingsIndexer {
 		if (name != null) {
 			// index all different versions of the package name
 			// note we're not avoiding duplicates: otherwise reindexing would erroneously remove package names
-			List<String> names = new ArrayList<>();
 			while (name != null && name.contains("/")) {
 				name = ClassEntry.getParentPackage(name);
-				names.add(name);
-			}
-
-			for (String p : names) {
-				this.packageNames.put(entry, p);
+				this.packageNames.put(entry, name);
 			}
 		}
 	}
