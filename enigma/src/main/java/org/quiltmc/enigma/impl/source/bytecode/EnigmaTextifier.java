@@ -425,8 +425,9 @@ public class EnigmaTextifier extends Textifier {
 		} else if (queuedToken instanceof QueuedToken.Reference r) {
 			tokens.add(new PartialToken(tokenStart, text, r.entry, r.context));
 		} else if (queuedToken instanceof QueuedToken.Descriptor d) {
-			var clazz = d.descriptor.substring(d.descriptor.indexOf('L') + 1, d.descriptor.length() - 1);
-			tokens.add(new PartialToken(tokenStart + 1, clazz, new BytecodeClassEntry(clazz), null));
+			int clazzStart = d.descriptor.indexOf('L') + 1;
+			var clazz = d.descriptor.substring(clazzStart, d.descriptor.length() - 1);
+			tokens.add(new PartialToken(tokenStart + clazzStart, clazz, new BytecodeClassEntry(clazz), null));
 		} else if (queuedToken instanceof QueuedToken.MethodDescriptor d) {
 			for (int i = 1; i < d.descriptor.length(); i++) {
 				char c = d.descriptor.charAt(i);
