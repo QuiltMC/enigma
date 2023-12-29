@@ -126,8 +126,15 @@ public final class Config extends ReflectiveConfig {
 
 	public static void insertRecentProject(String jarPath, String mappingsPath) {
 		RecentProject project = new RecentProject(jarPath, mappingsPath);
-		if (!main().recentProjects.value().contains(project)) {
-			main().recentProjects.value().add(0, new RecentProject(jarPath, mappingsPath));
+		ValueList<RecentProject> projects = main().recentProjects.value();
+
+		// add project, shifting to top if already on the list
+		projects.remove(project);
+		projects.add(0, new RecentProject(jarPath, mappingsPath));
+
+		// remove the oldest project according to max values
+		if (projects.size() > main().maxRecentProjects.value()) {
+			projects.remove(projects.size() - 1);
 		}
 	}
 
