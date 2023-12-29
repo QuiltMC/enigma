@@ -10,12 +10,11 @@ import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.I18n;
-import org.quiltmc.enigma.util.Pair;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A consolidated {@link MappingsIndexer} that can be configured to use as many separate indexers as you like.
@@ -68,25 +67,28 @@ public class MappingsIndex implements MappingsIndexer {
 	public void indexMappings(EntryTree<EntryMapping> mappings, ProgressListener progress) {
 		this.progress = progress;
 
-		Set<Pair<Entry<?>, EntryMapping>> entries = new HashSet<>();
+		Collection<EntryTreeNode<EntryMapping>> nodes = new ArrayList<>();
+		for (EntryTreeNode<EntryMapping> node : mappings.getRootNodes().toList()) {
+			nodes.addAll(node.getNodesRecursively());
+		}
 
-		mappings.getRootNodes().forEach(node -> handleNode(node, entries));
-
-		this.work = entries.isEmpty() ? 1 : entries.size();
+		this.work = nodes.isEmpty() ? 1 : nodes.size();
 		this.progress.init(this.work, I18n.translate("progress.mappings.indexing.mappings"));
 
-		for (var pair : entries) {
-			Entry<?> entry = pair.a();
-			EntryMapping mapping = pair.b();
+		for (var node : nodes) {
+			Entry<?> entry = node.getEntry();
+			EntryMapping mapping = node.getValue();
 
-			if (entry instanceof ClassEntry classEntry) {
-				this.indexClassMapping(mapping, classEntry);
-			} else if (entry instanceof MethodEntry methodEntry) {
-				this.indexMethodMapping(mapping, methodEntry);
-			} else if (entry instanceof FieldEntry fieldEntry) {
-				this.indexFieldMapping(mapping, fieldEntry);
-			} else if (entry instanceof LocalVariableEntry localVariableEntry) {
-				this.indexLocalVariableMapping(mapping, localVariableEntry);
+			if (mapping != null) {
+				if (entry instanceof ClassEntry classEntry) {
+					this.indexClassMapping(mapping, classEntry);
+				} else if (entry instanceof MethodEntry methodEntry) {
+					this.indexMethodMapping(mapping, methodEntry);
+				} else if (entry instanceof FieldEntry fieldEntry) {
+					this.indexFieldMapping(mapping, fieldEntry);
+				} else if (entry instanceof LocalVariableEntry localVariableEntry) {
+					this.indexLocalVariableMapping(mapping, localVariableEntry);
+				}
 			}
 
 			this.progress.step(this.work++, I18n.translate("progress.mappings.indexing.mappings"));
@@ -96,14 +98,6 @@ public class MappingsIndex implements MappingsIndexer {
 
 		this.progress = null;
 		this.work = 0;
-	}
-
-	private static void handleNode(EntryTreeNode<EntryMapping> node, Set<Pair<Entry<?>, EntryMapping>> entries) {
-		if (!node.getChildNodes().isEmpty()) {
-			node.getChildNodes().forEach(child -> handleNode(child, entries));
-		} else {
-			entries.add(new Pair<>(node.getEntry(), node.getValue()));
-		}
 	}
 
 	public void indexClassMapping(EntryMapping mapping, ClassEntry entry) {

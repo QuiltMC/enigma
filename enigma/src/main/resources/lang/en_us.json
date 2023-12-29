@@ -266,7 +266,7 @@
 	"validation.message.field_length_out_of_range": "Value must be less than %d characters long.",
 	"validation.message.non_unique_name_class": "Name '%s' is not unique in '%s'.",
 	"validation.message.non_unique_name": "Name '%s' is not unique.",
-	"validation.message.new_package": "This rename will create a new package: '%s'",
+	"validation.message.new_package": "This rename will be the first mapped class in the package '%s'",
 	"validation.message.illegal_class_name": "'%s' is not a valid class name.",
 	"validation.message.illegal_identifier": "'%s' is not a valid identifier.",
 	"validation.message.illegal_identifier.long": "Invalid character '%2$s' at position %3$d.",

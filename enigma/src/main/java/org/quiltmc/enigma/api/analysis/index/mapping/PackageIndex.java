@@ -1,35 +1,51 @@
 package org.quiltmc.enigma.api.analysis.index.mapping;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * An indexer that saves the names of all currently existing packages.
  */
 public class PackageIndex implements MappingsIndexer {
-	private final Map<ClassEntry, String> packageNames = new HashMap<>();
+	private final Multimap<ClassEntry, String> packageNames = HashMultimap.create();
 
 	@Override
 	public void indexClassMapping(EntryMapping mapping, ClassEntry entry) {
-		if (mapping.targetName() == null) {
+		// only index for top-level classes
+		if (entry.isInnerClass()) {
 			return;
 		}
 
-		String packageName = ClassEntry.getParentPackage(mapping.targetName());
-		if (!entry.isInnerClass() && !this.packageNames.containsValue(packageName)) {
-			this.packageNames.put(entry, packageName);
+		String name = mapping.targetName();
+		if (name == null) {
+			name = entry.getFullName();
+		}
+
+		if (name != null) {
+			// index all different versions of the package name
+			// note we're not avoiding duplicates: otherwise reindexing would erroneously remove package names
+			List<String> names = new ArrayList<>();
+			while (name != null && name.contains("/")) {
+				name = ClassEntry.getParentPackage(name);
+				names.add(name);
+			}
+
+			for (String p : names) {
+				this.packageNames.put(entry, p);
+			}
 		}
 	}
 
 	@Override
 	public void reindexEntry(EntryMapping newMapping, Entry<?> entry) {
 		if (entry instanceof ClassEntry classEntry) {
-			this.packageNames.remove(classEntry);
+			this.packageNames.removeAll(classEntry);
 			this.indexClassMapping(newMapping, classEntry);
 		}
 	}
