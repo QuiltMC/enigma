@@ -46,7 +46,7 @@ public final class EntryTreePrinter {
 		var iterator = node.getChildNodes().iterator();
 		while (iterator.hasNext()) {
 			var child = iterator.next();
-			var childIndent = indent + (hasNext ? "│\u00A0\u00A0 " : "    "); // \u00A0 is non-breaking space
+			var childIndent = indent + (hasNext ? "│   " : "    ");
 
 			this.printNode(child, iterator.hasNext(), childIndent);
 		}
