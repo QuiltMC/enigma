@@ -45,7 +45,7 @@ public class EnigmaTextifier extends Textifier {
 		}
 
 		record Signature() implements QueuedToken {
-		} // TODO
+		}
 
 		record OffsetToken(int offset, String text, QueuedToken token) implements QueuedToken {
 		}
