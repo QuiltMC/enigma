@@ -31,7 +31,7 @@
 - normalised all command names to `kebab-case`
 ## ui
 - statistics got a huge rework
- - stat icons in the class tree dockers have been expanded to now show on packages as well as classes
+  - stat icons in the class tree dockers have been expanded to now show on packages as well as classes
   - optimise stat regeneration for single classes
   - stats are now stored persistently across the user interfaces
     - the stats dialog and stats tree now open instantly instead of making you wait for generation
