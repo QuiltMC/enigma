@@ -63,6 +63,9 @@ public final class Config extends ReflectiveConfig {
 
 	public final StatsSection stats = new StatsSection();
 
+	@Comment("You shouldn't enable options in this section unless you know what you're doing")
+	public final DevSection development = new DevSection();
+
 	/**
 	 * The look and feel stored in the config: do not use this unless setting! Use {@link #activeLookAndFeel} instead,
 	 * since look and feel is final once loaded.

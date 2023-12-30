@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.panel;
 
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.element.ConvertingTextField;
 import org.quiltmc.enigma.gui.event.ConvertingTextFieldListener;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
@@ -149,6 +150,11 @@ public class IdentifierPanel {
 				th.addStringRow(I18n.translate("info_panel.identifier.index"), Integer.toString(lve.getIndex()));
 			} else {
 				throw new IllegalStateException("unreachable");
+			}
+
+			if (Config.main().development.showMappingSourcePlugin.value()) {
+				var mapping = this.gui.getController().getProject().getRemapper().getMapping(this.entry);
+				th.addStringRow(I18n.translate("dev.source_plugin"), mapping.sourcePluginId());
 			}
 		}
 

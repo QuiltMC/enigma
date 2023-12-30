@@ -343,5 +343,11 @@
 	"notification.type.info": "Info",
 	"notification.level.none": "No server notifications",
 	"notification.level.no_chat": "No chat messages",
-	"notification.level.full": "All server notifications"
+	"notification.level.full": "All server notifications",
+
+	"dev.menu.show_mapping_source_plugin": "Show mapping source plugin",
+	"dev.menu.debug_token_highlights": "Debug token highlights",
+	"dev.menu.print_mapping_tree": "Print mapping tree",
+	"dev.mapping_tree": "Mapping tree",
+	"dev.source_plugin": "Source plugin"
 }

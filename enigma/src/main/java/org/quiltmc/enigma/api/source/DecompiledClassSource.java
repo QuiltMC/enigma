@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DecompiledClassSource {
-	protected static final boolean DEBUG_TOKEN_HIGHLIGHTS = false;
+	public static boolean DEBUG_TOKEN_HIGHLIGHTS = false;
 
 	private final ClassEntry classEntry;
 
