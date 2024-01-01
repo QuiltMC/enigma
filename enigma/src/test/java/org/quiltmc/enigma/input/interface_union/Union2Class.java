@@ -12,6 +12,7 @@ public class Union2Class extends CClass implements BInterface {
 		return 6.02e23;
 	}
 
+	// BInterface + CClass
 	@Override
 	public boolean methodBar() {
 		return new Random().nextExponential() > 2.0;

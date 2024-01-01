@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.service.NameProposalService;
@@ -19,9 +20,15 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.validation.Message;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -83,7 +90,7 @@ public class EntryRemapper {
 		EntryMapping oldMapping = this.getMapping(obfuscatedEntry);
 		boolean renaming = !Objects.equals(oldMapping.targetName(), deobfMapping.targetName());
 
-		Collection<Entry<?>> resolvedEntries = this.obfResolver.resolveEntry(obfuscatedEntry, renaming ? ResolutionStrategy.RESOLVE_ROOT : ResolutionStrategy.RESOLVE_CLOSEST);
+		Collection<Entry<?>> resolvedEntries = renaming ? resolveAllRoots(obfuscatedEntry) : this.obfResolver.resolveEntry(obfuscatedEntry, ResolutionStrategy.RESOLVE_CLOSEST);
 
 		if (renaming && deobfMapping.targetName() != null) {
 			for (Entry<?> resolvedEntry : resolvedEntries) {
@@ -103,6 +110,38 @@ public class EntryRemapper {
 
 		this.insertDynamicallyProposedMappings(obfuscatedEntry, oldMapping, deobfMapping);
 		this.mappingsIndex.reindexEntry(deobfMapping, obfuscatedEntry);
+	}
+
+	private Collection<Entry<?>> resolveAllRoots(Entry<?> obfuscatedEntry) {
+		if (!(obfuscatedEntry instanceof MethodEntry methodEntry)) {
+			return this.obfResolver.resolveEntry(obfuscatedEntry, ResolutionStrategy.RESOLVE_ROOT);
+		}
+
+		InheritanceIndex inheritanceIndex = this.jarIndex.getIndex(InheritanceIndex.class);
+		var owner = methodEntry.getParent();
+		var descendants = inheritanceIndex.getDescendants(owner);
+		var knownParents = new HashSet<>(inheritanceIndex.getParents(owner));
+
+		List<ClassEntry> classes = new ArrayList<>();
+		for (ClassEntry descendant : descendants) {
+			var parents = inheritanceIndex.getParents(descendant);
+			if (parents.size() > 1) { // one of them is one of the owner's descendants
+				Set<ClassEntry> otherParents = new HashSet<>(parents);
+				otherParents.removeAll(descendants);
+				otherParents.removeAll(knownParents);
+				if (!otherParents.isEmpty()) {
+					classes.add(descendant);
+					knownParents.addAll(otherParents);
+				}
+			}
+		}
+
+		Set<Entry<?>> resolution = new HashSet<>(this.obfResolver.resolveEntry(obfuscatedEntry, ResolutionStrategy.RESOLVE_ROOT));
+		for (ClassEntry clazz : classes) {
+			resolution.addAll(this.obfResolver.resolveEntry(methodEntry.withParent(clazz), ResolutionStrategy.RESOLVE_ROOT));
+		}
+
+		return resolution;
 	}
 
 	// todo this needs to be fixed for hashed mappings!

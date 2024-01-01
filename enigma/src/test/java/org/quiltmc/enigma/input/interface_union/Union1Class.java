@@ -8,6 +8,7 @@ public class Union1Class implements AInterface, BInterface {
 		return 32767;
 	}
 
+	// AInterface + BInterface
 	@Override
 	public void methodFoo() {
 		System.out.println("foo");

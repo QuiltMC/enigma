@@ -9,4 +9,6 @@ public record Union3Record(double baz) implements AInterface {
 	@Override
 	public void methodFoo() {
 	}
+
+	// AInterface -> baz()
 }
