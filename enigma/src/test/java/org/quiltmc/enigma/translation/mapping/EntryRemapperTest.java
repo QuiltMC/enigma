@@ -48,47 +48,59 @@ public class EntryRemapperTest {
 	@Test
 	public void testUnionRename() {
 		var name = "unionAB";
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("d", "a", "()V"), new EntryMapping(name));
+		remapper.putMapping(newVC(), TestEntryFactory.newMethod("e", "a", "()V"), new EntryMapping(name));
 
-		assertName(TestEntryFactory.newMethod("d", "a", "()V"), name);
+		assertName(TestEntryFactory.newMethod("e", "a", "()V"), name);
 		assertName(TestEntryFactory.newMethod("a", "a", "()V"), name);
 		assertName(TestEntryFactory.newMethod("b", "a", "()V"), name);
 
 		name = "unionBC";
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("e", "a", "()Z"), new EntryMapping(name));
+		remapper.putMapping(newVC(), TestEntryFactory.newMethod("f", "a", "()Z"), new EntryMapping(name));
 
-		assertName(TestEntryFactory.newMethod("e", "a", "()Z"), name);
+		assertName(TestEntryFactory.newMethod("f", "a", "()Z"), name);
 		assertName(TestEntryFactory.newMethod("b", "a", "()Z"), name);
 		assertName(TestEntryFactory.newMethod("c", "a", "()Z"), name);
 
 		name = "unionA3";
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("f", "a", "()D"), new EntryMapping(name));
+		remapper.putMapping(newVC(), TestEntryFactory.newMethod("g", "a", "()D"), new EntryMapping(name));
 
-		assertName(TestEntryFactory.newMethod("f", "a", "()D"), name);
+		assertName(TestEntryFactory.newMethod("g", "a", "()D"), name);
 		assertName(TestEntryFactory.newMethod("a", "a", "()D"), name);
 	}
 
 	@Test
 	public void testElementRename() {
 		var name = "unionAB";
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("a", "a", "()V"), new EntryMapping(name));
+		remapper.putMapping(newVC(), TestEntryFactory.newMethod("e", "a", "()V"), new EntryMapping(name));
 
 		assertName(TestEntryFactory.newMethod("a", "a", "()V"), name);
-		assertName(TestEntryFactory.newMethod("d", "a", "()V"), name);
+		assertName(TestEntryFactory.newMethod("e", "a", "()V"), name);
 		assertName(TestEntryFactory.newMethod("b", "a", "()V"), name);
 
 		name = "unionBC";
 		remapper.putMapping(newVC(), TestEntryFactory.newMethod("b", "a", "()Z"), new EntryMapping(name));
 
 		assertName(TestEntryFactory.newMethod("b", "a", "()Z"), name);
-		assertName(TestEntryFactory.newMethod("e", "a", "()Z"), name);
+		assertName(TestEntryFactory.newMethod("f", "a", "()Z"), name);
 		assertName(TestEntryFactory.newMethod("c", "a", "()Z"), name);
 
 		name = "unionA3";
 		remapper.putMapping(newVC(), TestEntryFactory.newMethod("a", "a", "()D"), new EntryMapping(name));
 
 		assertName(TestEntryFactory.newMethod("a", "a", "()D"), name);
-		assertName(TestEntryFactory.newMethod("f", "a", "()D"), name);
+		assertName(TestEntryFactory.newMethod("g", "a", "()D"), name);
+
+		name = "unionCD";
+		remapper.putMapping(newVC(), TestEntryFactory.newMethod("c", "a", "()F"), new EntryMapping(name));
+
+		assertName(TestEntryFactory.newMethod("c", "a", "()F"), name);
+		assertName(TestEntryFactory.newMethod("d", "a", "()F"), name);
+
+		name = "unionDC";
+		remapper.putMapping(newVC(), TestEntryFactory.newMethod("d", "a", "()F"), new EntryMapping(name));
+
+		assertName(TestEntryFactory.newMethod("d", "a", "()F"), name);
+		assertName(TestEntryFactory.newMethod("c", "a", "()F"), name);
 	}
 
 	private static ValidationContext newVC() {
