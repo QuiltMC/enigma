@@ -87,7 +87,7 @@ public class EntryRemapper {
 		EntryMapping oldMapping = this.getMapping(obfuscatedEntry);
 		boolean renaming = !Objects.equals(oldMapping.targetName(), deobfMapping.targetName());
 
-		Collection<Entry<?>> resolvedEntries = renaming ? resolveAllRoots(obfuscatedEntry) : this.obfResolver.resolveEntry(obfuscatedEntry, ResolutionStrategy.RESOLVE_CLOSEST);
+		Collection<Entry<?>> resolvedEntries = renaming ? this.resolveAllRoots(obfuscatedEntry) : this.obfResolver.resolveEntry(obfuscatedEntry, ResolutionStrategy.RESOLVE_CLOSEST);
 
 		if (renaming && deobfMapping.targetName() != null) {
 			for (Entry<?> resolvedEntry : resolvedEntries) {
