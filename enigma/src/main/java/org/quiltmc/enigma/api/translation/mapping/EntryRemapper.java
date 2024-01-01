@@ -119,6 +119,9 @@ public class EntryRemapper {
 		var descendants = inheritanceIndex.getDescendants(owner);
 		var knownParents = new HashSet<>(inheritanceIndex.getParents(owner));
 
+		// Find all classes with an "unknown" parent, so we can also resolve the method from there and find other definitions
+		// If interfaces A and B define method `void foo()`, a class C may implement both interfaces, having a single method `void foo()`
+		// and effectively "joining" the two interface methods, so you have to keep both "in sync"
 		List<ClassEntry> classes = new ArrayList<>();
 		for (ClassEntry descendant : descendants) {
 			var parents = inheritanceIndex.getParents(descendant);
