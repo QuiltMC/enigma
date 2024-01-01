@@ -111,7 +111,7 @@ public class TestNameProposal {
 		}
 
 		project.getRemapper().putMapping(new ValidationContext(null), entry2.get(), new EntryMapping("testFoo", null, TokenType.DEOBFUSCATED, null));
-		Assertions.assertEquals(new EntryMapping("TestFooOwner", null, TokenType.DYNAMIC_PROPOSED, "test:owner_name"), project.getRemapper().getMapping(entry.get().getParent()));
+		Assertions.assertEquals(new EntryMapping("TestFooOwner", null, TokenType.DYNAMIC_PROPOSED, "test:owner_name"), project.getRemapper().getMapping(entry2.get().getParent()));
 	}
 
 	private static class TestPlugin implements EnigmaPlugin {
