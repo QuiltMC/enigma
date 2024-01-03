@@ -149,8 +149,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 		while (indentation < mappingStack.size()) {
 			MappingPair<?, RawEntryMapping> pair = mappingStack.pop();
 			if (pair.getMapping() != null) {
-				EntryMapping mapping = pair.getMapping().bake();
-				mappings.insert(pair.getEntry(), mapping.equals(EntryMapping.DEFAULT) ? null : mapping);
+				mappings.insert(pair.getEntry(), pair.getMapping().bake());
 			}
 		}
 	}

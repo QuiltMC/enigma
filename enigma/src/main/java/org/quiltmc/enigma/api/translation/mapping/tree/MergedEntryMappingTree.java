@@ -42,7 +42,7 @@ public record MergedEntryMappingTree(EntryTree<EntryMapping> mainTree, EntryTree
 	@Override
 	public EntryMapping get(Entry<?> entry) {
 		EntryMapping main = this.mainTree.get(entry);
-		if (main == null) {
+		if (main == null || main.equals(EntryMapping.DEFAULT)) {
 			return this.secondaryTree.get(entry);
 		}
 
