@@ -6,6 +6,7 @@ import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.JavadocDialog;
 import org.quiltmc.enigma.gui.dialog.SearchDialog;
@@ -456,15 +457,16 @@ public class Gui {
 	}
 
 	public void toggleMappingFromEntry(Entry<?> obfEntry) {
-		EntryMapping mapping = this.controller.getProject().getRemapper().getMapping(obfEntry);
+		EntryRemapper remapper = this.controller.getProject().getRemapper();
+		Entry<?> resolvedEntry = remapper.getObfResolver().resolveFirstEntry(obfEntry, ResolutionStrategy.RESOLVE_ROOT);
+		EntryMapping mapping = remapper.getMapping(resolvedEntry);
 
-		EntryChange<?> change = EntryChange.modify(obfEntry);
+		EntryChange<?> change = EntryChange.modify(resolvedEntry);
 		if (mapping.targetName() != null) {
 			if (mapping.tokenType().isProposed()) {
 				change = change.withTokenType(TokenType.DEOBFUSCATED).clearSourcePluginId();
 			} else {
-				EntryRemapper remapper = this.controller.getProject().getRemapper();
-				EntryMapping proposedMapping = remapper.getProposedMappings().get(obfEntry);
+				EntryMapping proposedMapping = remapper.getProposedMappings().get(resolvedEntry);
 				if (proposedMapping != null) {
 					change = change.withDeobfName(proposedMapping.targetName()).withTokenType(proposedMapping.tokenType()).withSourcePluginId(proposedMapping.sourcePluginId());
 				} else {
