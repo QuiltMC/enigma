@@ -494,7 +494,7 @@ public class GuiController implements ClientPacketHandler {
 
 	@Override
 	public boolean applyChangeFromServer(EntryChange<?> change) {
-		ValidationContext vc = new ValidationContext(this.gui.getNotificationManager());
+		ValidationContext vc = new ValidationContext(this.gui.getNotificationManager(), false);
 		this.applyChange0(vc, change, true);
 		this.gui.updateStructure(this.gui.getActiveEditor());
 
