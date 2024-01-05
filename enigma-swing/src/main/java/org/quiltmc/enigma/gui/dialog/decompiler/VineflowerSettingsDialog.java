@@ -136,7 +136,7 @@ public class VineflowerSettingsDialog extends JDialog {
 		VineflowerPreferences.OPTIONS.clear();
 		VineflowerPreferences.OPTIONS.putAll(this.options);
 
-		DecompilerConfig.updateVineflowerValues(VineflowerPreferences.OPTIONS);
+		DecompilerConfig.updateVineflowerValues(new HashMap<>(VineflowerPreferences.OPTIONS));
 		this.dispose();
 	}
 }

@@ -50,6 +50,10 @@ public class DecompilerConfig extends ReflectiveConfig {
 	}
 
 	public static void updateVineflowerValues(Map<String, Object> options) {
+		Config.decompiler().vineflower.stringValues.value().clear();
+		Config.decompiler().vineflower.intValues.value().clear();
+		Config.decompiler().vineflower.booleanValues.value().clear();
+
 		for (Map.Entry<String, Object> entry : options.entrySet()) {
 			if (entry.getValue() instanceof String s) {
 				Config.decompiler().vineflower.stringValues.value().put(entry.getKey(), s);
