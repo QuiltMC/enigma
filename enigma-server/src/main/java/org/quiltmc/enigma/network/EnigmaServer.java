@@ -1,11 +1,11 @@
 package org.quiltmc.enigma.network;
 
-import org.quiltmc.enigma.network.packet.EntryChangeS2CPacket;
-import org.quiltmc.enigma.network.packet.KickS2CPacket;
-import org.quiltmc.enigma.network.packet.MessageS2CPacket;
+import org.quiltmc.enigma.network.packet.s2c.EntryChangeS2CPacket;
+import org.quiltmc.enigma.network.packet.s2c.KickS2CPacket;
+import org.quiltmc.enigma.network.packet.s2c.MessageS2CPacket;
 import org.quiltmc.enigma.network.packet.Packet;
 import org.quiltmc.enigma.network.packet.PacketRegistry;
-import org.quiltmc.enigma.network.packet.UserListS2CPacket;
+import org.quiltmc.enigma.network.packet.s2c.UserListS2CPacket;
 import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;

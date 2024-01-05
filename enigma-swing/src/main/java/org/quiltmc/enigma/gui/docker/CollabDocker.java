@@ -2,7 +2,7 @@ package org.quiltmc.enigma.gui.docker;
 
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.docker.component.DockerTitleBar;
-import org.quiltmc.enigma.network.packet.MessageC2SPacket;
+import org.quiltmc.enigma.network.packet.c2s.MessageC2SPacket;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.AbstractAction;

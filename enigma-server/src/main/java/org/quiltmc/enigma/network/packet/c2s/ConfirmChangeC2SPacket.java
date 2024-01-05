@@ -1,6 +1,7 @@
-package org.quiltmc.enigma.network.packet;
+package org.quiltmc.enigma.network.packet.c2s;
 
 import org.quiltmc.enigma.network.ServerPacketHandler;
+import org.quiltmc.enigma.network.packet.Packet;
 
 import java.io.DataInput;
 import java.io.DataOutput;

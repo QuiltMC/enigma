@@ -1,8 +1,11 @@
-package org.quiltmc.enigma.network.packet;
+package org.quiltmc.enigma.network.packet.c2s;
 
 import org.quiltmc.enigma.network.ServerMessage;
 import org.quiltmc.enigma.network.ServerPacketHandler;
 import org.quiltmc.enigma.api.translation.mapping.EntryChange;
+import org.quiltmc.enigma.network.packet.s2c.EntryChangeS2CPacket;
+import org.quiltmc.enigma.network.packet.Packet;
+import org.quiltmc.enigma.network.packet.PacketHelper;
 import org.quiltmc.enigma.util.EntryUtil;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 

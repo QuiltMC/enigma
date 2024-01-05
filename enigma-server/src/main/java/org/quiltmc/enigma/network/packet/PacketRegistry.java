@@ -2,6 +2,15 @@ package org.quiltmc.enigma.network.packet;
 
 import org.quiltmc.enigma.network.ClientPacketHandler;
 import org.quiltmc.enigma.network.ServerPacketHandler;
+import org.quiltmc.enigma.network.packet.c2s.ConfirmChangeC2SPacket;
+import org.quiltmc.enigma.network.packet.c2s.EntryChangeC2SPacket;
+import org.quiltmc.enigma.network.packet.c2s.LoginC2SPacket;
+import org.quiltmc.enigma.network.packet.c2s.MessageC2SPacket;
+import org.quiltmc.enigma.network.packet.s2c.EntryChangeS2CPacket;
+import org.quiltmc.enigma.network.packet.s2c.KickS2CPacket;
+import org.quiltmc.enigma.network.packet.s2c.MessageS2CPacket;
+import org.quiltmc.enigma.network.packet.s2c.SyncMappingsS2CPacket;
+import org.quiltmc.enigma.network.packet.s2c.UserListS2CPacket;
 
 import java.io.DataInput;
 import java.io.IOException;

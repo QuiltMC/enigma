@@ -1,17 +1,15 @@
-package org.quiltmc.enigma.network.packet;
+package org.quiltmc.enigma.network.packet.c2s;
 
 import org.quiltmc.enigma.network.ServerPacketHandler;
 import org.quiltmc.enigma.network.ServerMessage;
+import org.quiltmc.enigma.network.packet.Packet;
+import org.quiltmc.enigma.network.packet.PacketHelper;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
 public record MessageC2SPacket(String message) implements Packet<ServerPacketHandler> {
-	public MessageC2SPacket(String message) {
-		this.message = message;
-	}
-
 	public MessageC2SPacket(DataInput input) throws IOException {
 		this(PacketHelper.readString(input));
 	}
