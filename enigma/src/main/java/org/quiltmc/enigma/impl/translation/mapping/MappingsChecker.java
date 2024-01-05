@@ -7,17 +7,14 @@ import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
-import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
-import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
-import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class MappingsChecker {
@@ -33,15 +30,12 @@ public class MappingsChecker {
 		Dropped dropped = new Dropped();
 
 		// HashEntryTree#getAllEntries filters out empty classes
-		Stream<Entry<?>> allEntries = StreamSupport.stream(this.mappings.spliterator(), false).map(EntryTreeNode::getEntry);
-		Collection<Entry<?>> obfEntries = allEntries
-				.filter(e -> e instanceof ClassEntry || e instanceof MethodEntry || e instanceof FieldEntry || e instanceof LocalVariableEntry)
-				.toList();
+		List<? extends Entry<?>> entries = StreamSupport.stream(this.mappings.spliterator(), false).map(EntryTreeNode::getEntry).toList();
 
-		progress.init(obfEntries.size(), "Checking for dropped mappings");
+		progress.init(entries.size(), "Checking for dropped mappings");
 
 		int steps = 0;
-		for (Entry<?> entry : obfEntries) {
+		for (Entry<?> entry : entries) {
 			progress.step(steps++, entry.toString());
 			dropper.accept(dropped, entry);
 		}
