@@ -1,5 +1,8 @@
 package org.quiltmc.enigma;
 
+import org.quiltmc.enigma.util.validation.ParameterizedMessage;
+import org.quiltmc.enigma.util.validation.ValidationContext;
+
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 
@@ -21,5 +24,22 @@ public final class TestUtil {
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static ValidationContext newVC() {
+		return new ValidationContext(notifier());
+	}
+
+	private static ValidationContext.Notifier notifier() {
+		return new ValidationContext.Notifier() {
+			@Override
+			public void notify(ParameterizedMessage message) {
+			}
+
+			@Override
+			public boolean verifyWarning(ParameterizedMessage message) {
+				return true;
+			}
+		};
 	}
 }
