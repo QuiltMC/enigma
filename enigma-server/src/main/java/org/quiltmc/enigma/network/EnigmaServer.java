@@ -131,6 +131,10 @@ public abstract class EnigmaServer {
 	}
 
 	public void kick(Socket client, String reason) {
+		this.kick(client, reason, true);
+	}
+
+	public void kick(Socket client, String reason, boolean notifyOthers) {
 		if (!this.clients.remove(client)) {
 			return;
 		}
@@ -151,7 +155,9 @@ public abstract class EnigmaServer {
 
 		if (username != null) {
 			Logger.info("Kicked " + username + " because " + reason);
-			this.sendMessage(ServerMessage.disconnect(username));
+			if (notifyOthers) {
+				this.sendMessage(ServerMessage.disconnect(username));
+			}
 		}
 
 		this.sendUsernamePacket();

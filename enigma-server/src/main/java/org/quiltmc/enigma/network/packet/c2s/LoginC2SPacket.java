@@ -57,17 +57,17 @@ public class LoginC2SPacket implements Packet<ServerPacketHandler> {
 		handler.server().log(this.username + " logged in with IP " + handler.client().getInetAddress().toString() + ":" + handler.client().getPort());
 
 		if (!Arrays.equals(this.password, handler.server().getPassword())) {
-			handler.server().kick(handler.client(), "disconnect.wrong_password");
+			handler.server().kick(handler.client(), "disconnect.wrong_password", false);
 			return;
 		}
 
 		if (usernameTaken) {
-			handler.server().kick(handler.client(), "disconnect.username_taken");
+			handler.server().kick(handler.client(), "disconnect.username_taken", false);
 			return;
 		}
 
 		if (!Arrays.equals(this.jarChecksum, handler.server().getJarChecksum())) {
-			handler.server().kick(handler.client(), "disconnect.wrong_jar");
+			handler.server().kick(handler.client(), "disconnect.wrong_jar", false);
 			return;
 		}
 
