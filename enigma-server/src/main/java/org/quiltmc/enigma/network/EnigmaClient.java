@@ -42,12 +42,11 @@ public class EnigmaClient {
 						break;
 					}
 
-					Packet<ClientPacketHandler> packet = PacketRegistry.createS2CPacket(packetId);
+					Packet<ClientPacketHandler> packet = PacketRegistry.readS2CPacket(packetId, input);
 					if (packet == null) {
 						throw new IOException("Received invalid packet id " + packetId);
 					}
 
-					packet.read(input);
 					SwingUtilities.invokeLater(() -> packet.handle(this.controller));
 				}
 			} catch (IOException e) {

@@ -16,11 +16,6 @@ import java.util.Collection;
 import java.util.List;
 
 public record SyncMappingsS2CPacket(EntryTree<EntryMapping> mappings) implements Packet<ClientPacketHandler> {
-	@Deprecated
-	SyncMappingsS2CPacket() {
-		this(new HashEntryTree<>());
-	}
-
 	public SyncMappingsS2CPacket(DataInput input) throws IOException {
 		this(new HashEntryTree<>());
 
@@ -28,10 +23,6 @@ public record SyncMappingsS2CPacket(EntryTree<EntryMapping> mappings) implements
 		for (int i = 0; i < size; i++) {
 			this.readEntryTreeNode(input, null);
 		}
-	}
-
-	@Override
-	public void read(DataInput input) throws IOException {
 	}
 
 	private void readEntryTreeNode(DataInput input, Entry<?> parent) throws IOException {

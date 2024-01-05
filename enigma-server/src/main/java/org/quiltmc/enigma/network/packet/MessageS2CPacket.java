@@ -8,17 +8,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 public record MessageS2CPacket(ServerMessage message) implements Packet<ClientPacketHandler> {
-	@Deprecated
-	MessageS2CPacket() {
-		this(ServerMessage.chat("foo", "bar"));
-	}
-
 	public MessageS2CPacket(DataInput input) throws IOException {
 		this(ServerMessage.read(input));
-	}
-
-	@Override
-	public void read(DataInput input) throws IOException {
 	}
 
 	@Override

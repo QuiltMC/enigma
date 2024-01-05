@@ -94,12 +94,11 @@ public abstract class EnigmaServer {
 						break;
 					}
 
-					Packet<ServerPacketHandler> packet = PacketRegistry.createC2SPacket(packetId);
+					Packet<ServerPacketHandler> packet = PacketRegistry.readC2SPacket(packetId, input);
 					if (packet == null) {
 						throw new IOException("Received invalid packet id " + packetId);
 					}
 
-					packet.read(input);
 					this.runOnThread(() -> packet.handle(new ServerPacketHandler(client, this)));
 				}
 			} catch (IOException e) {

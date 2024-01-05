@@ -7,17 +7,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 public record KickS2CPacket(String reason) implements Packet<ClientPacketHandler> {
-	@Deprecated
-	KickS2CPacket() {
-		this("foo");
-	}
-
 	public KickS2CPacket(DataInput input) throws IOException {
 		this(PacketHelper.readString(input));
-	}
-
-	@Override
-	public void read(DataInput input) throws IOException {
 	}
 
 	@Override

@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.network.packet;
 
-import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.network.ServerMessage;
 import org.quiltmc.enigma.network.ServerPacketHandler;
 import org.quiltmc.enigma.api.translation.mapping.EntryChange;
@@ -12,17 +11,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 public record EntryChangeC2SPacket(EntryChange<?> change) implements Packet<ServerPacketHandler> {
-	@Deprecated
-	EntryChangeC2SPacket() {
-		this(EntryChange.modify(new ClassEntry("foo")));
-	}
-
 	public EntryChangeC2SPacket(DataInput input) throws IOException {
 		this(PacketHelper.readEntryChange(input));
-	}
-
-	@Override
-	public void read(DataInput input) throws IOException {
 	}
 
 	@Override

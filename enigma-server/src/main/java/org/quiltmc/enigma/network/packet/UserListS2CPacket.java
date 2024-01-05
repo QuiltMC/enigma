@@ -9,11 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserListS2CPacket implements Packet<ClientPacketHandler> {
-	private List<String> users;
-
-	@Deprecated
-	UserListS2CPacket() {
-	}
+	private final List<String> users;
 
 	public UserListS2CPacket(List<String> users) {
 		this.users = users;
@@ -25,10 +21,6 @@ public class UserListS2CPacket implements Packet<ClientPacketHandler> {
 		for (int i = 0; i < len; i++) {
 			this.users.add(PacketHelper.readString(input));
 		}
-	}
-
-	@Override
-	public void read(DataInput input) throws IOException {
 	}
 
 	@Override

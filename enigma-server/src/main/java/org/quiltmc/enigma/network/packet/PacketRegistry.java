@@ -3,24 +3,25 @@ package org.quiltmc.enigma.network.packet;
 import org.quiltmc.enigma.network.ClientPacketHandler;
 import org.quiltmc.enigma.network.ServerPacketHandler;
 
+import java.io.DataInput;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class PacketRegistry {
-	private static final Map<Class<? extends Packet<ServerPacketHandler>>, Integer> c2sPacketIds = new HashMap<>();
-	private static final Map<Integer, Supplier<? extends Packet<ServerPacketHandler>>> c2sPacketCreators = new HashMap<>();
-	private static final Map<Class<? extends Packet<ClientPacketHandler>>, Integer> s2cPacketIds = new HashMap<>();
-	private static final Map<Integer, Supplier<? extends Packet<ClientPacketHandler>>> s2cPacketCreators = new HashMap<>();
+	private static final Map<Class<? extends Packet<ServerPacketHandler>>, Integer> C2S_PACKET_IDS = new HashMap<>();
+	private static final Map<Integer, DataFunction<? extends Packet<ServerPacketHandler>>> C2S_PACKET_READERS = new HashMap<>();
+	private static final Map<Class<? extends Packet<ClientPacketHandler>>, Integer> S2C_PACKET_IDS = new HashMap<>();
+	private static final Map<Integer, DataFunction<? extends Packet<ClientPacketHandler>>> S2C_PACKET_READERS = new HashMap<>();
 
-	private static <T extends Packet<ServerPacketHandler>> void registerC2S(int id, Class<T> clazz, Supplier<T> creator) {
-		c2sPacketIds.put(clazz, id);
-		c2sPacketCreators.put(id, creator);
+	private static <T extends Packet<ServerPacketHandler>> void registerC2S(int id, Class<T> clazz, DataFunction<T> reader) {
+		C2S_PACKET_IDS.put(clazz, id);
+		C2S_PACKET_READERS.put(id, reader);
 	}
 
-	private static <T extends Packet<ClientPacketHandler>> void registerS2C(int id, Class<T> clazz, Supplier<T> creator) {
-		s2cPacketIds.put(clazz, id);
-		s2cPacketCreators.put(id, creator);
+	private static <T extends Packet<ClientPacketHandler>> void registerS2C(int id, Class<T> clazz, DataFunction<T> reader) {
+		S2C_PACKET_IDS.put(clazz, id);
+		S2C_PACKET_READERS.put(id, reader);
 	}
 
 	static {
@@ -37,20 +38,25 @@ public class PacketRegistry {
 	}
 
 	public static int getC2SId(Packet<ServerPacketHandler> packet) {
-		return c2sPacketIds.get(packet.getClass());
+		return C2S_PACKET_IDS.get(packet.getClass());
 	}
 
-	public static Packet<ServerPacketHandler> createC2SPacket(int id) {
-		Supplier<? extends Packet<ServerPacketHandler>> creator = c2sPacketCreators.get(id);
-		return creator == null ? null : creator.get();
+	public static Packet<ServerPacketHandler> readC2SPacket(int id, DataInput input) throws IOException {
+		DataFunction<? extends Packet<ServerPacketHandler>> reader = C2S_PACKET_READERS.get(id);
+		return reader == null ? null : reader.apply(input);
 	}
 
 	public static int getS2CId(Packet<ClientPacketHandler> packet) {
-		return s2cPacketIds.get(packet.getClass());
+		return S2C_PACKET_IDS.get(packet.getClass());
 	}
 
-	public static Packet<ClientPacketHandler> createS2CPacket(int id) {
-		Supplier<? extends Packet<ClientPacketHandler>> creator = s2cPacketCreators.get(id);
-		return creator == null ? null : creator.get();
+	public static Packet<ClientPacketHandler> readS2CPacket(int id, DataInput input) throws IOException {
+		DataFunction<? extends Packet<ClientPacketHandler>> reader = S2C_PACKET_READERS.get(id);
+		return reader == null ? null : reader.apply(input);
+	}
+
+	@FunctionalInterface
+	private interface DataFunction<R> {
+		R apply(DataInput input) throws IOException;
 	}
 }

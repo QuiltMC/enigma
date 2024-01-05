@@ -8,21 +8,12 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 public record MessageC2SPacket(String message) implements Packet<ServerPacketHandler> {
-	@Deprecated
-	MessageC2SPacket() {
-		this("foo");
-	}
-
 	public MessageC2SPacket(String message) {
 		this.message = message;
 	}
 
 	public MessageC2SPacket(DataInput input) throws IOException {
 		this(PacketHelper.readString(input));
-	}
-
-	@Override
-	public void read(DataInput input) throws IOException {
 	}
 
 	@Override

@@ -10,13 +10,9 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class LoginC2SPacket implements Packet<ServerPacketHandler> {
-	private byte[] jarChecksum;
-	private char[] password;
-	private String username;
-
-	@Deprecated
-	LoginC2SPacket() {
-	}
+	private final byte[] jarChecksum;
+	private final char[] password;
+	private final String username;
 
 	public LoginC2SPacket(byte[] jarChecksum, char[] password, String username) {
 		this.jarChecksum = jarChecksum;
@@ -37,10 +33,6 @@ public class LoginC2SPacket implements Packet<ServerPacketHandler> {
 		}
 
 		this.username = PacketHelper.readString(input);
-	}
-
-	@Override
-	public void read(DataInput input) throws IOException {
 	}
 
 	@Override
