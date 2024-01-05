@@ -123,7 +123,7 @@ public abstract class Command {
 	 * @return the argument, as a string
 	 */
 	protected String getArg(String[] args, int index) {
-		if (index < args.length && index < this.allArguments.size()) {
+		if (index < this.allArguments.size()) {
 			return getArg(args, index, this.allArguments.get(index));
 		} else {
 			throw new RuntimeException("arg index is outside of range of possible arguments! (index: " + index + ", allowed arg count: " + this.allArguments.size() + ")");
