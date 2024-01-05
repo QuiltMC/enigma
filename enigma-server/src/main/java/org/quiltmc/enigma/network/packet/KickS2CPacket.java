@@ -17,7 +17,7 @@ public record KickS2CPacket(String reason) implements Packet<ClientPacketHandler
 	}
 
 	@Override
-	public void handle(ClientPacketHandler controller) {
-		controller.disconnectIfConnected(this.reason);
+	public void handle(ClientPacketHandler handler) {
+		handler.disconnectIfConnected(this.reason);
 	}
 }

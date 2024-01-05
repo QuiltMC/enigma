@@ -4,7 +4,6 @@ import org.quiltmc.enigma.network.packet.Packet;
 import org.quiltmc.enigma.network.packet.PacketRegistry;
 import org.tinylog.Logger;
 
-import javax.swing.SwingUtilities;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
@@ -14,16 +13,16 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 
-public class EnigmaClient {
-	private final ClientPacketHandler controller;
+public abstract class EnigmaClient {
+	private final ClientPacketHandler handler;
 
 	private final String ip;
 	private final int port;
 	private Socket socket;
 	private DataOutput output;
 
-	public EnigmaClient(ClientPacketHandler controller, String ip, int port) {
-		this.controller = controller;
+	public EnigmaClient(ClientPacketHandler handler, String ip, int port) {
+		this.handler = handler;
 		this.ip = ip;
 		this.port = port;
 	}
@@ -47,10 +46,10 @@ public class EnigmaClient {
 						throw new IOException("Received invalid packet id " + packetId);
 					}
 
-					SwingUtilities.invokeLater(() -> packet.handle(this.controller));
+					this.runOnThread(() -> packet.handle(this.handler));
 				}
 			} catch (IOException e) {
-				this.controller.disconnectIfConnected(e.toString());
+				this.handler.disconnectIfConnected(e.toString());
 			}
 		});
 		thread.setName("Client I/O thread");
@@ -73,7 +72,9 @@ public class EnigmaClient {
 			this.output.writeByte(PacketRegistry.getC2SId(packet));
 			packet.write(this.output);
 		} catch (IOException e) {
-			this.controller.disconnectIfConnected(e.toString());
+			this.handler.disconnectIfConnected(e.toString());
 		}
 	}
+
+	protected abstract void runOnThread(Runnable task);
 }

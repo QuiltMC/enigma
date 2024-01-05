@@ -67,8 +67,8 @@ public record SyncMappingsS2CPacket(EntryTree<EntryMapping> mappings) implements
 	}
 
 	@Override
-	public void handle(ClientPacketHandler controller) {
-		controller.openMappings(this.mappings);
-		controller.sendPacket(new ConfirmChangeC2SPacket(EnigmaServer.DUMMY_SYNC_ID));
+	public void handle(ClientPacketHandler handler) {
+		handler.openMappings(this.mappings);
+		handler.sendPacket(new ConfirmChangeC2SPacket(EnigmaServer.DUMMY_SYNC_ID));
 	}
 }
