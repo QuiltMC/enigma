@@ -7,19 +7,18 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class MessageS2CPacket implements Packet<ClientPacketHandler> {
-	private ServerMessage message;
-
+public record MessageS2CPacket(ServerMessage message) implements Packet<ClientPacketHandler> {
+	@Deprecated
 	MessageS2CPacket() {
+		this(ServerMessage.chat("foo", "bar"));
 	}
 
-	public MessageS2CPacket(ServerMessage message) {
-		this.message = message;
+	public MessageS2CPacket(DataInput input) throws IOException {
+		this(ServerMessage.read(input));
 	}
 
 	@Override
 	public void read(DataInput input) throws IOException {
-		this.message = ServerMessage.read(input);
 	}
 
 	@Override

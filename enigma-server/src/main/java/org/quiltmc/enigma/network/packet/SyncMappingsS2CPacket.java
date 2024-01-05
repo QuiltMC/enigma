@@ -15,23 +15,23 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-public class SyncMappingsS2CPacket implements Packet<ClientPacketHandler> {
-	private EntryTree<EntryMapping> mappings;
-
+public record SyncMappingsS2CPacket(EntryTree<EntryMapping> mappings) implements Packet<ClientPacketHandler> {
+	@Deprecated
 	SyncMappingsS2CPacket() {
+		this(new HashEntryTree<>());
 	}
 
-	public SyncMappingsS2CPacket(EntryTree<EntryMapping> mappings) {
-		this.mappings = mappings;
-	}
+	public SyncMappingsS2CPacket(DataInput input) throws IOException {
+		this(new HashEntryTree<>());
 
-	@Override
-	public void read(DataInput input) throws IOException {
-		this.mappings = new HashEntryTree<>();
 		int size = input.readInt();
 		for (int i = 0; i < size; i++) {
 			this.readEntryTreeNode(input, null);
 		}
+	}
+
+	@Override
+	public void read(DataInput input) throws IOException {
 	}
 
 	private void readEntryTreeNode(DataInput input, Entry<?> parent) throws IOException {

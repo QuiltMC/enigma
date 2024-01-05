@@ -11,6 +11,7 @@ import java.util.List;
 public class UserListS2CPacket implements Packet<ClientPacketHandler> {
 	private List<String> users;
 
+	@Deprecated
 	UserListS2CPacket() {
 	}
 
@@ -18,13 +19,16 @@ public class UserListS2CPacket implements Packet<ClientPacketHandler> {
 		this.users = users;
 	}
 
-	@Override
-	public void read(DataInput input) throws IOException {
+	public UserListS2CPacket(DataInput input) throws IOException {
 		int len = input.readUnsignedShort();
 		this.users = new ArrayList<>(len);
 		for (int i = 0; i < len; i++) {
 			this.users.add(PacketHelper.readString(input));
 		}
+	}
+
+	@Override
+	public void read(DataInput input) throws IOException {
 	}
 
 	@Override

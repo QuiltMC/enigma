@@ -6,19 +6,18 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class ConfirmChangeC2SPacket implements Packet<ServerPacketHandler> {
-	private int syncId;
-
+public record ConfirmChangeC2SPacket(int syncId) implements Packet<ServerPacketHandler> {
+	@Deprecated
 	ConfirmChangeC2SPacket() {
+		this(-1);
 	}
 
-	public ConfirmChangeC2SPacket(int syncId) {
-		this.syncId = syncId;
+	public ConfirmChangeC2SPacket(DataInput input) throws IOException {
+		this(input.readUnsignedShort());
 	}
 
 	@Override
 	public void read(DataInput input) throws IOException {
-		this.syncId = input.readUnsignedShort();
 	}
 
 	@Override

@@ -24,8 +24,8 @@ Client     Server
 ```
 1. On connect, the client sends a login packet to the server. This allows the server to test the validity of the client,
    as well as allowing the client to declare metadata about itself, such as the username.
-1. After validating the login packet, the server sends all its mappings to the client, and the client will apply them.
-1. Upon receiving the mappings, the client sends a `ConfirmChange` packet with `sync_id` set to 0, to confirm that it
+2. After validating the login packet, the server sends all its mappings to the client, and the client will apply them.
+3. Upon receiving the mappings, the client sends a `ConfirmChangeC2S` packet with `sync_id` set to 0, to confirm that it
    has received the mappings and is in sync with the server. Once the server receives this packet, the client will be
    allowed to modify mappings.
 
@@ -37,32 +37,31 @@ contains the reason why the client was kicked (so the client can display it to t
 the server may simply terminate the connection.
 
 ## Changing mappings
-This section uses the example of renaming, but the same pattern applies to all mapping changes.
 ```
-Client A   Server    Client B
-|           |               |
-| RenameC2S |               |
-| >>>>>>>>> |               |
-|           |               |
-|           |   RenameS2C   |
-|           | >>>>>>>>>>>>> |
-|           |               |
-|           | ConfirmChange |
-|           | <<<<<<<<<<<<< |
+Client A       Server        Client B
+|                |                  |
+| EntryChangeC2S |                  |
+| >>>>>>>>>>>>>> |                  |
+|                |                  |
+|                |  EntryChangeS2C  |
+|                | >>>>>>>>>>>>>>>> |
+|                |                  |
+|                | ConfirmChangeC2S |
+|                | <<<<<<<<<<<<<<<< |
 ```
 
 1. Client A validates the name and updates the mapping client-side to give the impression there is no latency >:)
-1. Client A sends a rename packet to the server, notifying it of the rename.
-1. The server assesses the validity of the rename. If it is invalid for whatever reason (e.g. the mapping was locked or
+2. Client A sends an entry change packet to the server, notifying it of the change.
+3. The server assesses the validity of the change. If it is invalid for whatever reason (e.g. the mapping was locked or
    the name contains invalid characters), then the server sends an appropriate packet back to client A to revert the
-   change, with `sync_id` set to 0. The server will ignore any `ConfirmChange` packets it receives in response to this.
-1. If the rename was valid, the server will lock all clients except client A from being able to modify this mapping, and
-   then send an appropriate packet to all clients except client A notifying them of this rename. The `sync_id` will be a
+   change, with `sync_id` set to 0. The server will ignore any `ConfirmChangeC2S` packets it receives in response to this.
+4. If the change was valid, the server will lock all clients except client A from being able to modify this mapping, and
+   then send an appropriate packet to all clients except client A notifying them of this change. The `sync_id` will be a
    unique non-zero value identifying this change.
-1. Each client responds to this packet by updating their mappings locally to reflect this change, then sending a
-   `ConfirmChange` packet with the same `sync_id` as the one in the packet they received, to confirm that they have
+5. Each client responds to this packet by updating their mappings locally to reflect this change, then sending a
+   `ConfirmChangeC2S` packet with the same `sync_id` as the one in the packet they received, to confirm that they have
    received the change.
-1. When the server receives the `ConfirmChange` packet, and another change to that mapping hasn't occurred since, the
+6. When the server receives the `ConfirmChangeC2S` packet, and another change to that mapping hasn't occurred since, the
    server will unlock that mapping for that client and allow them to make changes again.
 
 ## Packets

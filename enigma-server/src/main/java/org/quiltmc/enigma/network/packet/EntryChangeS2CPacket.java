@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.network.packet;
 
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.network.ClientPacketHandler;
 import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 
@@ -7,22 +8,18 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class EntryChangeS2CPacket implements Packet<ClientPacketHandler> {
-	private int syncId;
-	private EntryChange<?> change;
-
-	public EntryChangeS2CPacket(int syncId, EntryChange<?> change) {
-		this.syncId = syncId;
-		this.change = change;
+public record EntryChangeS2CPacket(int syncId, EntryChange<?> change) implements Packet<ClientPacketHandler> {
+	@Deprecated
+	EntryChangeS2CPacket() {
+		this(-1, EntryChange.modify(new ClassEntry("foo")));
 	}
 
-	EntryChangeS2CPacket() {
+	public EntryChangeS2CPacket(DataInput input) throws IOException {
+		this(input.readUnsignedShort(), PacketHelper.readEntryChange(input));
 	}
 
 	@Override
 	public void read(DataInput input) throws IOException {
-		this.syncId = input.readUnsignedShort();
-		this.change = PacketHelper.readEntryChange(input);
 	}
 
 	@Override

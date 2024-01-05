@@ -6,19 +6,18 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class KickS2CPacket implements Packet<ClientPacketHandler> {
-	private String reason;
-
+public record KickS2CPacket(String reason) implements Packet<ClientPacketHandler> {
+	@Deprecated
 	KickS2CPacket() {
+		this("foo");
 	}
 
-	public KickS2CPacket(String reason) {
-		this.reason = reason;
+	public KickS2CPacket(DataInput input) throws IOException {
+		this(PacketHelper.readString(input));
 	}
 
 	@Override
 	public void read(DataInput input) throws IOException {
-		this.reason = PacketHelper.readString(input);
 	}
 
 	@Override
