@@ -15,8 +15,6 @@ import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
-import org.quiltmc.enigma.util.validation.ParameterizedMessage;
-import org.quiltmc.enigma.util.validation.ValidationContext;
 
 import java.nio.file.Path;
 
@@ -48,21 +46,21 @@ public class EntryRemapperTest {
 	@Test
 	public void testUnionRename() {
 		var name = "unionAB";
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("e", "a", "()V"), new EntryMapping(name));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newMethod("e", "a", "()V"), new EntryMapping(name));
 
 		assertName(TestEntryFactory.newMethod("e", "a", "()V"), name);
 		assertName(TestEntryFactory.newMethod("a", "a", "()V"), name);
 		assertName(TestEntryFactory.newMethod("b", "a", "()V"), name);
 
 		name = "unionBC";
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("f", "a", "()Z"), new EntryMapping(name));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newMethod("f", "a", "()Z"), new EntryMapping(name));
 
 		assertName(TestEntryFactory.newMethod("f", "a", "()Z"), name);
 		assertName(TestEntryFactory.newMethod("b", "a", "()Z"), name);
 		assertName(TestEntryFactory.newMethod("c", "a", "()Z"), name);
 
 		name = "unionA3";
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("g", "a", "()D"), new EntryMapping(name));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newMethod("g", "a", "()D"), new EntryMapping(name));
 
 		assertName(TestEntryFactory.newMethod("g", "a", "()D"), name);
 		assertName(TestEntryFactory.newMethod("a", "a", "()D"), name);
@@ -71,52 +69,35 @@ public class EntryRemapperTest {
 	@Test
 	public void testElementRename() {
 		var name = "unionAB";
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("e", "a", "()V"), new EntryMapping(name));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newMethod("e", "a", "()V"), new EntryMapping(name));
 
 		assertName(TestEntryFactory.newMethod("a", "a", "()V"), name);
 		assertName(TestEntryFactory.newMethod("e", "a", "()V"), name);
 		assertName(TestEntryFactory.newMethod("b", "a", "()V"), name);
 
 		name = "unionBC";
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("b", "a", "()Z"), new EntryMapping(name));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newMethod("b", "a", "()Z"), new EntryMapping(name));
 
 		assertName(TestEntryFactory.newMethod("b", "a", "()Z"), name);
 		assertName(TestEntryFactory.newMethod("f", "a", "()Z"), name);
 		assertName(TestEntryFactory.newMethod("c", "a", "()Z"), name);
 
 		name = "unionA3";
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("a", "a", "()D"), new EntryMapping(name));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newMethod("a", "a", "()D"), new EntryMapping(name));
 
 		assertName(TestEntryFactory.newMethod("a", "a", "()D"), name);
 		assertName(TestEntryFactory.newMethod("g", "a", "()D"), name);
 
 		name = "unionCD";
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("c", "a", "()F"), new EntryMapping(name));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newMethod("c", "a", "()F"), new EntryMapping(name));
 
 		assertName(TestEntryFactory.newMethod("c", "a", "()F"), name);
 		assertName(TestEntryFactory.newMethod("d", "a", "()F"), name);
 
 		name = "unionDC";
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("d", "a", "()F"), new EntryMapping(name));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newMethod("d", "a", "()F"), new EntryMapping(name));
 
 		assertName(TestEntryFactory.newMethod("d", "a", "()F"), name);
 		assertName(TestEntryFactory.newMethod("c", "a", "()F"), name);
-	}
-
-	private static ValidationContext newVC() {
-		return new ValidationContext(notifier());
-	}
-
-	private static ValidationContext.Notifier notifier() {
-		return new ValidationContext.Notifier() {
-			@Override
-			public void notify(ParameterizedMessage message) {
-			}
-
-			@Override
-			public boolean verifyWarning(ParameterizedMessage message) {
-				return true;
-			}
-		};
 	}
 }

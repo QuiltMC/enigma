@@ -45,33 +45,33 @@ public class TestMappingValidator {
 
 		// repeat with mapped classes
 		if (repetitionInfo.getCurrentRepetition() == 1) {
-			remapper.putMapping(newVC(), TestEntryFactory.newClass("a"), new EntryMapping("BaseClass"));
-			remapper.putMapping(newVC(), TestEntryFactory.newClass("b"), new EntryMapping("SuperClass"));
+			remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newClass("a"), new EntryMapping("BaseClass"));
+			remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newClass("b"), new EntryMapping("SuperClass"));
 		}
 	}
 
 	@RepeatedTest(value = 2, name = REPEATED_TEST_NAME)
 	public void shadowPrivateFields() {
 		// static fields
-		remapper.putMapping(newVC(), TestEntryFactory.newField("b", "a", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newField("b", "a", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = TestUtil.newVC();
 		remapper.validatePutMapping(vc, TestEntryFactory.newField("a", "c", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
 
 		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
 
 		// final fields
-		remapper.putMapping(newVC(), TestEntryFactory.newField("b", "a", "I"), new EntryMapping("field01"));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newField("b", "a", "I"), new EntryMapping("field01"));
 
-		vc = new ValidationContext(notifier());
+		vc = TestUtil.newVC();
 		remapper.validatePutMapping(vc, TestEntryFactory.newField("a", "a", "I"), new EntryMapping("field01"));
 
 		assertMessages(vc);
 
 		// instance fields
-		remapper.putMapping(newVC(), TestEntryFactory.newField("b", "b", "I"), new EntryMapping("field02"));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newField("b", "b", "I"), new EntryMapping("field02"));
 
-		vc = new ValidationContext(notifier());
+		vc = TestUtil.newVC();
 		remapper.validatePutMapping(vc, TestEntryFactory.newField("a", "b", "I"), new EntryMapping("field02"));
 
 		assertMessages(vc);
@@ -80,17 +80,17 @@ public class TestMappingValidator {
 	@RepeatedTest(value = 2, name = REPEATED_TEST_NAME)
 	public void shadowPublicFields() {
 		// static fields
-		remapper.putMapping(newVC(), TestEntryFactory.newField("b", "b", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newField("b", "b", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = TestUtil.newVC();
 		remapper.validatePutMapping(vc, TestEntryFactory.newField("a", "a", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
 
 		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
 
 		// default fields
-		remapper.putMapping(newVC(), TestEntryFactory.newField("b", "b", "Z"), new EntryMapping("field05"));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newField("b", "b", "Z"), new EntryMapping("field05"));
 
-		vc = new ValidationContext(notifier());
+		vc = TestUtil.newVC();
 		remapper.validatePutMapping(vc, TestEntryFactory.newField("a", "a", "Z"), new EntryMapping("field05"));
 
 		assertMessages(vc);
@@ -99,17 +99,17 @@ public class TestMappingValidator {
 	@RepeatedTest(value = 2, name = REPEATED_TEST_NAME)
 	public void shadowMethods() {
 		// static methods
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("b", "c", "()V"), new EntryMapping("method01"));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newMethod("b", "c", "()V"), new EntryMapping("method01"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = TestUtil.newVC();
 		remapper.validatePutMapping(vc, TestEntryFactory.newMethod("a", "a", "()V"), new EntryMapping("method01"));
 
 		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
 
 		// private methods
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("b", "a", "()V"), new EntryMapping("method02"));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newMethod("b", "a", "()V"), new EntryMapping("method02"));
 
-		vc = new ValidationContext(notifier());
+		vc = TestUtil.newVC();
 		remapper.validatePutMapping(vc, TestEntryFactory.newMethod("a", "d", "()V"), new EntryMapping("method02"));
 
 		assertMessages(vc);
@@ -117,16 +117,16 @@ public class TestMappingValidator {
 
 	@RepeatedTest(value = 2, name = REPEATED_TEST_NAME)
 	public void nonUniqueFields() {
-		remapper.putMapping(newVC(), TestEntryFactory.newField("a", "a", "I"), new EntryMapping("field01"));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newField("a", "a", "I"), new EntryMapping("field01"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = TestUtil.newVC();
 		remapper.validatePutMapping(vc, TestEntryFactory.newField("a", "b", "I"), new EntryMapping("field01"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 
-		remapper.putMapping(newVC(), TestEntryFactory.newField("a", "c", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newField("a", "c", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
 
-		vc = new ValidationContext(notifier());
+		vc = TestUtil.newVC();
 		remapper.validatePutMapping(vc, TestEntryFactory.newField("a", "a", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
@@ -134,14 +134,14 @@ public class TestMappingValidator {
 
 	@RepeatedTest(value = 2, name = REPEATED_TEST_NAME)
 	public void nonUniqueMethods() {
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("a", "a", "()V"), new EntryMapping("method01"));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newMethod("a", "a", "()V"), new EntryMapping("method01"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = TestUtil.newVC();
 		remapper.validatePutMapping(vc, TestEntryFactory.newMethod("a", "b", "()V"), new EntryMapping("method01"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 
-		vc = new ValidationContext(notifier());
+		vc = TestUtil.newVC();
 		remapper.validatePutMapping(vc, TestEntryFactory.newMethod("a", "d", "()V"), new EntryMapping("method01"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
@@ -150,25 +150,25 @@ public class TestMappingValidator {
 	@RepeatedTest(value = 2, name = REPEATED_TEST_NAME)
 	public void conflictingMethods() {
 		// "overriding" w/different return descriptor
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("b", "a", "()Z"), new EntryMapping("method01"));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newMethod("b", "a", "()Z"), new EntryMapping("method01"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = TestUtil.newVC();
 		remapper.validatePutMapping(vc, TestEntryFactory.newMethod("a", "b", "()V"), new EntryMapping("method01"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 
 		// "overriding" a static method
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("b", "c", "()V"), new EntryMapping("method02"));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newMethod("b", "c", "()V"), new EntryMapping("method02"));
 
-		vc = new ValidationContext(notifier());
+		vc = TestUtil.newVC();
 		remapper.validatePutMapping(vc, TestEntryFactory.newMethod("a", "b", "()V"), new EntryMapping("method02"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 
 		// "overriding" when the original methods were not related
-		remapper.putMapping(newVC(), TestEntryFactory.newMethod("b", "b", "()I"), new EntryMapping("method03"));
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newMethod("b", "b", "()I"), new EntryMapping("method03"));
 
-		vc = new ValidationContext(notifier());
+		vc = TestUtil.newVC();
 		remapper.validatePutMapping(vc, TestEntryFactory.newMethod("a", "a", "()I"), new EntryMapping("method03"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
@@ -186,22 +186,5 @@ public class TestMappingValidator {
 			ParameterizedMessage msg = vc.getMessages().get(i);
 			assertThat(msg.message(), is(messages[i]));
 		}
-	}
-
-	private static ValidationContext newVC() {
-		return new ValidationContext(notifier());
-	}
-
-	private static ValidationContext.Notifier notifier() {
-		return new ValidationContext.Notifier() {
-			@Override
-			public void notify(ParameterizedMessage message) {
-			}
-
-			@Override
-			public boolean verifyWarning(ParameterizedMessage message) {
-				return true;
-			}
-		};
 	}
 }
