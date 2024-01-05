@@ -58,10 +58,37 @@
 - added some neat debug utils if you run with the `--development` flag
   - currently, this includes a view of the internal mapping tree
 - removed access modifier editing
-# fixes
+## fixes
 - fix yet more bugs with statistic accuracy
 - fix the cancel button in the "rename package" window causing a crash
 - fix documenting constructors (from Fabric upstream, with permission!)
 - fix an untranslated string that could appear in logs (`tiny_v2.loading` for the curious)
 - fix a rare NPE on startup (that weird one with the icons. I saw it like 1/20 times. if you're like me you're very happy about this. if you're not that's ok I love everyone)
 - fix some issues with incorrect server docs
+
+# 2.1.0
+
+## new features 
+- added new development options!
+	- added an option to enable debug token highlighting
+	- added an option to show the source plugin of proposed mappings in the identifier panel
+	- remember to have these options available you need to run enigma with the `--development` flag!
+- added tokenization to the bytecode view
+	- this allows you to rename entries and more clearly see what is obfuscated and deobfuscated when viewing the bytecode!
+- added syncing of names between method declarations in interfaces
+	- sometimes, a class will implement methods with the same names and signatures from two different interfaces. previously, this would break the mappings if you renamed one of those as enigma wasn't aware that they needed to match. now it's smarter!
+
+## bugfixes. a lot of them
+- fixed the server asking all users to verify warnings instead of just the mapper who caused the warning
+- fixed mappings sync on the server sending proposed mappings
+- fixed some issues with `drop-invalid-mappings`
+- fixed an inverted condition when parsing arguments in the CLI
+- fixed toggling between obfuscated and deobfuscated on parameters of bridge methods
+- fixed vineflower settings not being properly applied and saved
+- fixed the merged mapping tree occasionally prioritising empty mappings over real ones
+- fixed incorrect bytecode tokens on arrays
+- fixed recent projects adding duplicate entries when the same project is opened twice
+- fixed old recent projects beyond the limit not being removed
+- fixed a startup crash when no recent projects are present
+- fixed a startup crash likely caused by a bug in FlatLAF
+- fixed the package index being quite broken and not properly tracking all packages
