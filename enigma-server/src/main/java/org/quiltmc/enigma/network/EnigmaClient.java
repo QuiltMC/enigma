@@ -14,6 +14,8 @@ import java.net.Socket;
 import java.net.SocketException;
 
 public abstract class EnigmaClient {
+	protected boolean logPackets = false;
+
 	private final ClientPacketHandler handler;
 
 	private final String ip;
@@ -46,6 +48,10 @@ public abstract class EnigmaClient {
 						throw new IOException("Received invalid packet id " + packetId);
 					}
 
+					if (this.logPackets) {
+						Logger.info("Received packet {} (id {})", packet, packetId);
+					}
+
 					this.runOnThread(() -> packet.handle(this.handler));
 				}
 			} catch (IOException e) {
@@ -71,6 +77,10 @@ public abstract class EnigmaClient {
 		try {
 			this.output.writeByte(PacketRegistry.getC2SId(packet));
 			packet.write(this.output);
+
+			if (this.logPackets) {
+				Logger.info("Sent packet {}", packet);
+			}
 		} catch (IOException e) {
 			this.handler.disconnectIfConnected(e.toString());
 		}

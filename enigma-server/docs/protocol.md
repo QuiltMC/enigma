@@ -11,16 +11,16 @@ Strings, see below.
 
 ## Login protocol
 ```
-Client     Server
-|               |
-|     Login     |
-| >>>>>>>>>>>>> |
-|               |
-| SyncMappings  |
-| <<<<<<<<<<<<< |
-|               |
-| ConfirmChange |
-| >>>>>>>>>>>>> |
+Client        Server
+|                  |
+|     LoginC2S     |
+| >>>>>>>>>>>>>>>> |
+|                  |
+| SyncMappingsS2C  |
+| <<<<<<<<<<<<<<<< |
+|                  |
+| ConfirmChangeC2S |
+| >>>>>>>>>>>>>>>> |
 ```
 1. On connect, the client sends a login packet to the server. This allows the server to test the validity of the client,
    as well as allowing the client to declare metadata about itself, such as the username.
