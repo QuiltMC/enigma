@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.network;
 
-import org.quiltmc.enigma.network.packet.PacketHelper;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.network.packet.PacketHelper;
 import org.quiltmc.enigma.util.I18n;
 
 import java.io.DataInput;

@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.network.packet.c2s;
 
-import org.quiltmc.enigma.network.ServerPacketHandler;
 import org.quiltmc.enigma.network.ServerMessage;
+import org.quiltmc.enigma.network.ServerPacketHandler;
 import org.quiltmc.enigma.network.packet.Packet;
 import org.quiltmc.enigma.network.packet.PacketHelper;
 

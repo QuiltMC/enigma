@@ -1,13 +1,13 @@
 package org.quiltmc.enigma.network.packet.s2c;
 
 import org.quiltmc.enigma.api.source.TokenType;
-import org.quiltmc.enigma.network.ClientPacketHandler;
-import org.quiltmc.enigma.network.EnigmaServer;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.network.ClientPacketHandler;
+import org.quiltmc.enigma.network.EnigmaServer;
 import org.quiltmc.enigma.network.packet.Packet;
 import org.quiltmc.enigma.network.packet.PacketHelper;
 import org.quiltmc.enigma.network.packet.c2s.ConfirmChangeC2SPacket;
