@@ -347,6 +347,7 @@
 
 	"dev.menu.show_mapping_source_plugin": "Show mapping source plugin",
 	"dev.menu.debug_token_highlights": "Debug token highlights",
+	"dev.menu.log_client_packets": "Log client packets",
 	"dev.menu.print_mapping_tree": "Print mapping tree",
 	"dev.mapping_tree": "Mapping tree",
 	"dev.source_plugin": "Source plugin"
