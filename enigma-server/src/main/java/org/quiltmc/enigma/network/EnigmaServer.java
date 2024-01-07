@@ -32,6 +32,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class EnigmaServer {
 	public static final int DEFAULT_PORT = 34712;
+	// Testing protocol versions are in hex: 0xMmVV => Major (4 bits), minor (4 bits), sub-Version (8 bits)
+	// Components are independent of the enigma version, i.e. enigma 2.1.0 isn't protocol 0x2100
 	public static final int PROTOCOL_VERSION = 0x1001;
 	public static final int CHECKSUM_SIZE = 20;
 	public static final int MAX_PASSWORD_LENGTH = 255; // length is written as a byte in the login packet
