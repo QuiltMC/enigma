@@ -65,7 +65,7 @@ public abstract class EnigmaServer {
 
 	public void start() throws IOException {
 		this.socket = new ServerSocket(this.port);
-		this.log("Server started on " + this.socket.getInetAddress() + ":" + this.port);
+		this.log("Server started on " + this.socket.getInetAddress() + ":" + this.socket.getLocalPort()); // Port 0 is automatically allocated
 		Thread thread = new Thread(() -> {
 			try {
 				while (!this.socket.isClosed()) {
