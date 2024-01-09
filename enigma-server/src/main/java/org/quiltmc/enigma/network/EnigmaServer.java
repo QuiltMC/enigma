@@ -135,7 +135,7 @@ public abstract class EnigmaServer {
 	}
 
 	public void kick(Socket client, String reason) {
-		this.kick(client, reason, true);
+		this.kick(client, reason, !this.unapprovedClients.contains(client)); // Notify others only if the client logged in
 	}
 
 	public void kick(Socket client, String reason, boolean notifyOthers) {
