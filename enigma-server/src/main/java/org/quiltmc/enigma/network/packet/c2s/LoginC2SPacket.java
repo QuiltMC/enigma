@@ -52,7 +52,12 @@ public class LoginC2SPacket implements Packet<ServerPacketHandler> {
 
 	@Override
 	public void handle(ServerPacketHandler handler) {
-		boolean usernameTaken = handler.server().isUsernameTaken(this.username);
+		if (!handler.server().isUsernameValid(this.username)) {
+			handler.server().log("Client connected with invalid username, with IP " + handler.client().getInetAddress().toString() + ":" + handler.client().getPort());
+			handler.server().kick(handler.client(), "disconnect.invalid_username", false);
+			return;
+		}
+
 		handler.server().log(this.username + " connected with IP " + handler.client().getInetAddress().toString() + ":" + handler.client().getPort());
 
 		if (!Arrays.equals(this.password, handler.server().getPassword())) {
@@ -60,7 +65,7 @@ public class LoginC2SPacket implements Packet<ServerPacketHandler> {
 			return;
 		}
 
-		if (usernameTaken) {
+		if (handler.server().isUsernameTaken(this.username)) {
 			handler.server().kick(handler.client(), "disconnect.username_taken", false);
 			return;
 		}

@@ -245,6 +245,7 @@
 	"disconnect.wrong_jar": "Jar checksums don't match (you have the wrong jar)!",
 	"disconnect.wrong_password": "Incorrect password",
 	"disconnect.username_taken": "Username is taken",
+	"disconnect.invalid_username": "Username contains invalid characters",
 
 	"message.chat.text": "%s: %s",
 	"message.connect.text": "[+] %s",

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Pattern;
 
 public abstract class EnigmaServer {
 	public static final int DEFAULT_PORT = 34712;
@@ -38,6 +39,7 @@ public abstract class EnigmaServer {
 	public static final int PROTOCOL_VERSION = 0x1002;
 	public static final int CHECKSUM_SIZE = 20;
 	public static final int MAX_PASSWORD_LENGTH = 255; // length is written as a byte in the login packet
+	public static final Pattern USERNAME_REGEX = Pattern.compile("^[a-z_][^(;:\"<>*+=\\\\|?,)]{2,31}$");
 
 	private final int port;
 	private ServerSocket socket;
@@ -171,6 +173,10 @@ public abstract class EnigmaServer {
 
 	public boolean isUsernameTaken(String username) {
 		return this.usernames.containsValue(username);
+	}
+
+	public boolean isUsernameValid(String username) {
+		return USERNAME_REGEX.matcher(username).matches();
 	}
 
 	public void setUsername(Socket client, String username) {
