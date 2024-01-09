@@ -25,6 +25,7 @@ Client        Server
 1. On connect, the client sends a login packet to the server. This allows the server to test the validity of the client,
    as well as allowing the client to declare metadata about itself, such as the username.
 2. After validating the login packet, the server sends all its mappings to the client, and the client will apply them.
+   - Just before the mappings are sent, the server sends the new user list to every connected client
 3. Upon receiving the mappings, the client sends a `ConfirmChangeC2S` packet with `sync_id` set to 0, to confirm that it
    has received the mappings and is in sync with the server. Once the server receives this packet, the client will be
    allowed to modify mappings.
@@ -34,7 +35,8 @@ The server will not accept any other packets from the client until this entire e
 ## Kicking clients
 When the server kicks a client, it may optionally send a `Kick` packet immediately before closing the connection, which
 contains the reason why the client was kicked (so the client can display it to the user). This is not required though -
-the server may simply terminate the connection.
+the server may simply terminate the connection. After the connection is closed, the server should send the new user list
+to the other connected clients.
 
 ## Changing mappings
 ```
@@ -238,7 +240,7 @@ struct LoginC2SPacket {
 }
 ```
 - `protocol_version`: the version of the protocol. If the version does not match on the server, then the client will be
-                      kicked immediately. Currently always equal to 0.
+                      kicked immediately.
 - `checksum`: the SHA-1 hash of the JAR file the client has open. If this does not match the SHA-1 hash of the JAR file
               the server has open, the client will be kicked.
 - `password`: the password needed to log into the server. Note that each `char` is 2 bytes, as per the Java data type.
