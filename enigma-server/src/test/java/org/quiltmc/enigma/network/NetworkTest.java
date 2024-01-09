@@ -62,7 +62,9 @@ public class NetworkTest {
 		var confirmed = server.waitChangeConfirmation(server.getClients().get(0), 1)
 				.await(3, TimeUnit.SECONDS);
 
+		Assertions.assertNotEquals(0, handler.disconnectFromServerLatch.getCount(), "The client was disconnected by the server");
 		Assertions.assertTrue(confirmed, "Timed out waiting for the change confirmation");
+		client.disconnect();
 	}
 
 	@Test
@@ -71,10 +73,58 @@ public class NetworkTest {
 		var client = connectClient(handler);
 		handler.client = client;
 
-		handler.disconnectFromServerLatch = new CountDownLatch(1);
 		client.sendPacket(new LoginC2SPacket(checksum, PASSWORD.toCharArray(), "<span style=\"color: lavender\">eve</span>"));
 		var disconnected = handler.disconnectFromServerLatch.await(3, TimeUnit.SECONDS);
 
 		Assertions.assertTrue(disconnected, "Timed out waiting for the server to kick the client");
+		client.disconnect();
+	}
+
+	@Test
+	public void testWrongPassword() throws IOException, InterruptedException {
+		var handler = new DummyClientPacketHandler();
+		var client = connectClient(handler);
+		handler.client = client;
+
+		client.sendPacket(new LoginC2SPacket(checksum, "password".toCharArray(), "eve"));
+		var disconnected = handler.disconnectFromServerLatch.await(3, TimeUnit.SECONDS);
+
+		Assertions.assertTrue(disconnected, "Timed out waiting for the server to kick the client");
+		client.disconnect();
+	}
+
+	@Test
+	public void testTakenUsername() throws IOException, InterruptedException {
+		var packet = new LoginC2SPacket(checksum, PASSWORD.toCharArray(), "alice");
+
+		var handler = new DummyClientPacketHandler();
+		var client = connectClient(handler);
+		handler.client = client;
+		client.sendPacket(packet);
+
+		var handler2 = new DummyClientPacketHandler();
+		var client2 = connectClient(handler2);
+		handler2.client = client2;
+
+		client2.sendPacket(packet);
+		var disconnected = handler2.disconnectFromServerLatch.await(3, TimeUnit.SECONDS);
+
+		Assertions.assertTrue(disconnected, "Timed out waiting for the server to kick the client");
+		client.disconnect();
+		client2.disconnect();
+	}
+
+	@Test
+	public void testWrongChecksum() throws IOException, InterruptedException {
+		var handler = new DummyClientPacketHandler();
+		var client = connectClient(handler);
+		handler.client = client;
+
+		handler.disconnectFromServerLatch = new CountDownLatch(1);
+		client.sendPacket(new LoginC2SPacket(new byte[EnigmaServer.CHECKSUM_SIZE], PASSWORD.toCharArray(), "eve"));
+		var disconnected = handler.disconnectFromServerLatch.await(3, TimeUnit.SECONDS);
+
+		Assertions.assertTrue(disconnected, "Timed out waiting for the server to kick the client");
+		client.disconnect();
 	}
 }

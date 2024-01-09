@@ -10,7 +10,7 @@ import java.util.concurrent.CountDownLatch;
 
 public class DummyClientPacketHandler implements ClientPacketHandler {
 	TestEnigmaClient client;
-	CountDownLatch disconnectFromServerLatch;
+	CountDownLatch disconnectFromServerLatch = new CountDownLatch(1);
 
 	@Override
 	public void openMappings(EntryTree<EntryMapping> mappings) {
