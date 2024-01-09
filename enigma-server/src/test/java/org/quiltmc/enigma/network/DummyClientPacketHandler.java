@@ -6,9 +6,11 @@ import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.network.packet.Packet;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class DummyClientPacketHandler implements ClientPacketHandler {
 	TestEnigmaClient client;
+	CountDownLatch disconnectFromServerLatch;
 
 	@Override
 	public void openMappings(EntryTree<EntryMapping> mappings) {
@@ -21,6 +23,13 @@ public class DummyClientPacketHandler implements ClientPacketHandler {
 
 	@Override
 	public void disconnectIfConnected(String reason) {
+		if (this.client != null) {
+			this.client.disconnect();
+		}
+
+		if (this.disconnectFromServerLatch != null) {
+			this.disconnectFromServerLatch.countDown();
+		}
 	}
 
 	@Override

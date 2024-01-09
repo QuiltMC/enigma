@@ -15,6 +15,7 @@ import org.quiltmc.enigma.util.Utils;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class NetworkTest {
@@ -54,13 +55,26 @@ public class NetworkTest {
 		var client = connectClient(handler);
 		handler.client = client;
 
-		Assertions.assertEquals(1, server.getClients().size());
-		Assertions.assertEquals(1, server.getUnapprovedClients().size());
+		Assertions.assertFalse(server.getClients().isEmpty());
+		Assertions.assertFalse(server.getUnapprovedClients().isEmpty());
 
 		client.sendPacket(new LoginC2SPacket(checksum, PASSWORD.toCharArray(), "alice"));
 		var confirmed = server.waitChangeConfirmation(server.getClients().get(0), 1)
 				.await(3, TimeUnit.SECONDS);
 
 		Assertions.assertTrue(confirmed, "Timed out waiting for the change confirmation");
+	}
+
+	@Test
+	public void testInvalidUsername() throws IOException, InterruptedException {
+		var handler = new DummyClientPacketHandler();
+		var client = connectClient(handler);
+		handler.client = client;
+
+		handler.disconnectFromServerLatch = new CountDownLatch(1);
+		client.sendPacket(new LoginC2SPacket(checksum, PASSWORD.toCharArray(), "<span style=\"color: lavender\">eve</span>"));
+		var disconnected = handler.disconnectFromServerLatch.await(3, TimeUnit.SECONDS);
+
+		Assertions.assertTrue(disconnected, "Timed out waiting for the server to kick the client");
 	}
 }
