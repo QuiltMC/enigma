@@ -8,8 +8,8 @@ import javax.swing.SwingUtilities;
 public class IntegratedEnigmaClient extends EnigmaClient {
 	public static boolean LOG_PACKETS = false;
 
-	public IntegratedEnigmaClient(ClientPacketHandler controller, String ip, int port) {
-		super(controller, ip, port);
+	public IntegratedEnigmaClient(ClientPacketHandler handler, String ip, int port) {
+		super(handler, ip, port);
 		this.logPackets = LOG_PACKETS;
 	}
 

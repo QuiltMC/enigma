@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.network;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
@@ -42,6 +43,7 @@ public abstract class EnigmaServer {
 	private ServerSocket socket;
 	private final List<Socket> clients = new CopyOnWriteArrayList<>();
 	private final Map<Socket, String> usernames = new HashMap<>();
+	// Clients are only approved once they finish the login exchange by confirming the mapping sync
 	private final Set<Socket> unapprovedClients = new HashSet<>();
 
 	private final byte[] jarChecksum;
@@ -297,6 +299,26 @@ public abstract class EnigmaServer {
 
 	public EntryRemapper getRemapper() {
 		return this.remapper;
+	}
+
+	@VisibleForTesting
+	int getPort() {
+		return this.port;
+	}
+
+	@VisibleForTesting
+	int getActualPort() {
+		return this.socket != null ? this.socket.getLocalPort() : this.getPort();
+	}
+
+	@VisibleForTesting
+	List<Socket> getClients() {
+		return this.clients;
+	}
+
+	@VisibleForTesting
+	public Set<Socket> getUnapprovedClients() {
+		return this.unapprovedClients;
 	}
 
 	public void sendMessage(ServerMessage message) {

@@ -7,6 +7,8 @@ plugins {
 dependencies {
 	shadow(implementation project(':enigma'))
 	implementation libs.jopt
+
+	testImplementation testFixtures(project(':enigma'))
 }
 
 mainClassName = 'org.quiltmc.enigma.network.DedicatedEnigmaServer'
