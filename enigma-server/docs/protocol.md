@@ -131,7 +131,7 @@ struct Entry {
 - `index`: The index of the local variable in the local variable table.
 - `parameter`: Whether the local variable is a parameter.
 
-### The Message struct
+### The ServerMessage struct
 ```c
 enum MessageType {
     MESSAGE_CHAT = 0,
@@ -144,7 +144,7 @@ enum MessageType {
 };
 typedef unsigned byte message_type_t;
 
-struct Message {
+struct ServerMessage {
     message_type_t type;
     union { // Note that the size of this varies depending on type, it is not constant size
         struct {
@@ -241,8 +241,8 @@ struct LoginC2SPacket {
 ```
 - `protocol_version`: the version of the protocol. If the version does not match on the server, then the client will be
                       kicked immediately.
-- `checksum`: the SHA-1 hash of the JAR file the client has open. If this does not match the SHA-1 hash of the JAR file
-              the server has open, the client will be kicked.
+- `checksum`: the SHA-1 hash of the sorted class files in the JAR file the client has open. If this does not match the
+              SHA-1 hash of the JAR file the server has open, the client will be kicked.
 - `password`: the password needed to log into the server. Note that each `char` is 2 bytes, as per the Java data type.
               If this password is incorrect, the client will be kicked.
 - `username`: the username of the user logging in. If the username is not unique, the client will be kicked.
@@ -307,7 +307,7 @@ typedef { Entry but without the has_parent or parent fields } NoParentEntry;
 ### Message (server-to-client)
 ```c
 struct MessageS2CPacket {
-    Message message;
+    ServerMessage message;
 }
 ```
 
