@@ -52,6 +52,8 @@ public abstract class ServerMessage {
 
 		Type type = Type.values()[typeId];
 		String user = PacketHelper.readString(input);
+
+		Entry<?> entry;
 		switch (type) {
 			case CHAT:
 				String message = PacketHelper.readString(input);
@@ -61,7 +63,7 @@ public abstract class ServerMessage {
 			case DISCONNECT:
 				return disconnect(user);
 			case EDIT_DOCS:
-				Entry<?> entry = PacketHelper.readEntry(input);
+				entry = PacketHelper.readEntry(input);
 				return editDocs(user, entry);
 			case MARK_DEOBF:
 				entry = PacketHelper.readEntry(input);

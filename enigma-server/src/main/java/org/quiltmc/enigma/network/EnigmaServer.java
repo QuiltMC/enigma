@@ -85,6 +85,8 @@ public abstract class EnigmaServer {
 	private void acceptClient() throws IOException {
 		Socket client = this.socket.accept();
 		this.clients.add(client);
+		this.unapprovedClients.add(client);
+
 		Thread thread = new Thread(() -> {
 			try {
 				DataInput input = new DataInputStream(client.getInputStream());
@@ -250,6 +252,7 @@ public abstract class EnigmaServer {
 	}
 
 	public void confirmChange(Socket client, int syncId) {
+		// If a client has a username, it has been approved
 		if (this.usernames.containsKey(client)) {
 			this.unapprovedClients.remove(client);
 		}
