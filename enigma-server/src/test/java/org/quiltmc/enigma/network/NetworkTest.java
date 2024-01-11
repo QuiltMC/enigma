@@ -11,6 +11,7 @@ import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.network.packet.c2s.LoginC2SPacket;
+import org.quiltmc.enigma.network.packet.c2s.MessageC2SPacket;
 import org.quiltmc.enigma.util.Utils;
 
 import java.io.IOException;
@@ -126,5 +127,20 @@ public class NetworkTest {
 
 		Assertions.assertTrue(disconnected, "Timed out waiting for the server to kick the client");
 		client.disconnect();
+	}
+
+	@Test
+	public void testUnapprovedMessage() throws IOException, InterruptedException {
+		var handler = new DummyClientPacketHandler();
+		var client = connectClient(handler);
+		handler.client = client;
+
+		client.sendPacket(new MessageC2SPacket("I am in your (walls) server :3"));
+		server.sendMessageLatch = new CountDownLatch(1);
+		var sent = client.packetSentLatch.await(1, TimeUnit.SECONDS);
+		Assertions.assertTrue(sent, "Failed to send packet");
+
+		var handled = server.sendMessageLatch.await(2, TimeUnit.SECONDS);
+		Assertions.assertFalse(handled, "The server handled an unapproved message!");
 	}
 }

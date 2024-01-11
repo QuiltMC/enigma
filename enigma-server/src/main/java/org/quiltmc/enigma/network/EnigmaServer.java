@@ -36,7 +36,7 @@ public abstract class EnigmaServer {
 	public static final int DEFAULT_PORT = 34712;
 	// Testing protocol versions are in hex: 0xMmVV => Major (4 bits), minor (4 bits), sub-Version (8 bits)
 	// Components are independent of the enigma version, i.e. enigma 2.1.0 isn't protocol 0x2100
-	public static final int PROTOCOL_VERSION = 0x1002;
+	public static final int PROTOCOL_VERSION = 0x1003;
 	public static final int CHECKSUM_SIZE = 20;
 	public static final int MAX_PASSWORD_LENGTH = 255; // length is written as a byte in the login packet
 	public static final Pattern USERNAME_REGEX = Pattern.compile("^[a-z_][^(;:\"<>*+=\\\\|?,)]{2,31}$");
@@ -139,7 +139,7 @@ public abstract class EnigmaServer {
 	}
 
 	public void kick(Socket client, String reason) {
-		this.kick(client, reason, !this.unapprovedClients.contains(client)); // Notify others only if the client logged in
+		this.kick(client, reason, this.isClientApproved(client)); // Notify others only if the client logged in
 	}
 
 	public void kick(Socket client, String reason, boolean notifyOthers) {
@@ -194,6 +194,10 @@ public abstract class EnigmaServer {
 		return this.usernames.get(client);
 	}
 
+	public boolean isClientApproved(Socket client) {
+		return !this.unapprovedClients.contains(client);
+	}
+
 	public void sendPacket(Socket client, Packet<ClientPacketHandler> packet) {
 		if (!client.isClosed()) {
 			int packetId = PacketRegistry.getS2CId(packet);
@@ -225,7 +229,7 @@ public abstract class EnigmaServer {
 	}
 
 	public boolean canModifyEntry(Socket client, Entry<?> entry) {
-		if (this.unapprovedClients.contains(client)) {
+		if (!this.isClientApproved(client)) {
 			return false;
 		}
 

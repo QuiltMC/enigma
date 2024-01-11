@@ -14,6 +14,8 @@ public class TestEnigmaServer extends EnigmaServer {
 	private final Map<Socket, CountDownLatch> changeConfirmationLatches = new ConcurrentHashMap<>();
 	private final BlockingQueue<Runnable> tasks = new LinkedBlockingDeque<>();
 
+	CountDownLatch sendMessageLatch;
+
 	public TestEnigmaServer(byte[] jarChecksum, char[] password, EntryRemapper remapper, int port) {
 		super(jarChecksum, password, remapper, port);
 	}
@@ -55,5 +57,14 @@ public class TestEnigmaServer extends EnigmaServer {
 		var latch = new CountDownLatch(count);
 		this.changeConfirmationLatches.put(client, latch);
 		return latch;
+	}
+
+	@Override
+	public void sendMessage(ServerMessage message) {
+		if (this.sendMessageLatch != null) {
+			this.sendMessageLatch.countDown();
+		}
+
+		super.sendMessage(message);
 	}
 }

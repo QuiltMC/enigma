@@ -21,6 +21,10 @@ public record MessageC2SPacket(String message) implements Packet<ServerPacketHan
 
 	@Override
 	public void handle(ServerPacketHandler handler) {
+		if (!handler.isClientApproved()) {
+			return;
+		}
+
 		String trimmedMessage = this.message.trim();
 		if (!trimmedMessage.isEmpty()) {
 			handler.server().sendMessage(ServerMessage.chat(handler.server().getUsername(handler.client()), trimmedMessage));

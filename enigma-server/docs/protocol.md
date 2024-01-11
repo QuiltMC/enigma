@@ -30,7 +30,8 @@ Client        Server
    has received the mappings and is in sync with the server. Once the server receives this packet, the client will be
    allowed to modify mappings.
 
-The server will not accept any other packets from the client until this entire exchange has been completed.
+The server will ignore any other packets from the client until this entire exchange has been completed, and may kick the
+client if any other packet is received during this stage.
 
 ## Kicking clients
 When the server kicks a client, it may optionally send a `Kick` packet immediately before closing the connection, which
