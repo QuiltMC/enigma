@@ -107,7 +107,13 @@ public abstract class EnigmaServer {
 						throw new IOException("Received invalid packet id " + packetId);
 					}
 
-					this.runOnThread(() -> packet.handle(new ServerPacketHandler(client, this)));
+					this.runOnThread(() -> {
+						try {
+							packet.handle(new ServerPacketHandler(client, this));
+						} catch (Exception e) {
+							Logger.error(e, "Failed to handle packet!");
+						}
+					});
 				}
 			} catch (IOException e) {
 				this.kick(client, e.toString());

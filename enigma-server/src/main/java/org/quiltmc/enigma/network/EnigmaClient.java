@@ -52,7 +52,13 @@ public abstract class EnigmaClient {
 						Logger.info("Received packet {} (id {})", packet, packetId);
 					}
 
-					this.runOnThread(() -> packet.handle(this.handler));
+					this.runOnThread(() -> {
+						try {
+							packet.handle(this.handler);
+						} catch (Exception e) {
+							Logger.error(e, "Failed to handle packet!");
+						}
+					});
 				}
 			} catch (IOException e) {
 				this.handler.disconnectIfConnected(e.toString());
