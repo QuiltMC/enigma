@@ -43,12 +43,29 @@ def registerTestTask(String name) {
 	tasks.register("${taskName}TestGui", JavaExec.class) {
 		group("test")
 		dependsOn(":enigma:${taskName}TestObf")
+		dependsOn(":enigma:processResources")
 		mainClass = mainClassName
-		classpath = sourceSets.main.runtimeClasspath
+		classpath = sourceSets.test.runtimeClasspath
 
 		def jar = project(":enigma").file("build/test-obf/${name}.jar")
+		def profile = project(":enigma").file("build/resources/testFixtures/profile.json")
 		def mappings = file("mappings/${name}")
-		args('-jar', jar, '-mappings', mappings, '--development')
+		args('-jar', jar, '-mappings', mappings, '-profile', profile, '--development')
+		doFirst {
+			mappings.mkdirs()
+		}
+	}
+
+	tasks.register("${taskName}TestGui2", JavaExec.class) {
+		group("test")
+		dependsOn(":enigma:${taskName}TestObf")
+		mainClass = mainClassName
+		classpath = sourceSets.test.runtimeClasspath
+
+		def jar = project(":enigma").file("build/test-obf/${name}.jar")
+		def profile = project(":enigma").file("build/resources/testFixtures/profile.json")
+		def mappings = file("mappings/${name}2")
+		args('-jar', jar, '-mappings', mappings, '-profile', profile, '--development')
 		doFirst {
 			mappings.mkdirs()
 		}
