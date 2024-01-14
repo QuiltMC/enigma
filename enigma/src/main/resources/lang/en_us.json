@@ -141,6 +141,7 @@
 	"info_panel.identifier.class": "Class",
 	"info_panel.identifier.superclass": "Superclass",
 	"info_panel.identifier.obfuscated": "Obfuscated Name",
+	"info_panel.identifier.type": "Type",
 	"info_panel.identifier.type_descriptor": "Type Descriptor",
 	"info_panel.identifier.method_descriptor": "Method Descriptor",
 	"info_panel.identifier.index": "Index",
