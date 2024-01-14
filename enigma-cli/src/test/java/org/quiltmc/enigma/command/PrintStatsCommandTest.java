@@ -13,6 +13,7 @@ public class PrintStatsCommandTest {
 
 	@Test
 	public void test() throws Exception {
+		// just here to manually verify output
 		PrintStatsCommand.run(JAR, MAPPINGS, null, null);
 	}
 }
