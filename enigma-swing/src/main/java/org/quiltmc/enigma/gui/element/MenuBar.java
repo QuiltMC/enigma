@@ -450,11 +450,12 @@ public class MenuBar {
 
 		this.gui.getController().disconnectIfConnected(null);
 		try {
-			this.gui.getController().createServer(result.port(), result.password());
+			this.gui.getController().createServer(result.username(), result.port(), result.password());
 			if (Config.main().serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
 				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.SERVER_STARTED, result.port()));
 			}
 
+			Config.net().username.setValue(result.username(), true);
 			Config.net().serverPort.setValue(result.port(), true);
 			Config.net().serverPassword.setValue(String.valueOf(result.password()), true);
 		} catch (IOException e) {

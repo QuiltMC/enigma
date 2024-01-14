@@ -182,6 +182,10 @@ public abstract class EnigmaServer {
 	}
 
 	public boolean isUsernameValid(String username) {
+		return usernameMatchesRegex(username);
+	}
+
+	public static boolean usernameMatchesRegex(String username) {
 		return USERNAME_REGEX.matcher(username).matches();
 	}
 

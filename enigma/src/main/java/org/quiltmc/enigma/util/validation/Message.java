@@ -5,6 +5,7 @@ import org.quiltmc.enigma.util.I18n;
 public class Message {
 	public static final Message EMPTY_FIELD = create(Type.ERROR, "empty_field");
 	public static final Message INVALID_IP = create(Type.ERROR, "invalid_ip");
+	public static final Message INVALID_USERNAME = create(Type.ERROR, "invalid_username");
 	public static final Message NOT_INT = create(Type.ERROR, "not_int");
 	public static final Message FIELD_OUT_OF_RANGE_INT = create(Type.ERROR, "field_out_of_range_int");
 	public static final Message FIELD_LENGTH_OUT_OF_RANGE = create(Type.ERROR, "field_length_out_of_range");
