@@ -116,6 +116,10 @@ public class IdentifierPanel {
 				String name = ce.isInnerClass() ? ce.getName() : ce.getFullName();
 				this.nameField = th.addRenameTextField(EditableType.CLASS, name);
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
+
+				if (ce.getParent() != null) {
+					th.addCopiableStringRow(I18n.translate("info_panel.identifier.superclass"), ce.getParent().getName());
+				}
 			} else if (this.deobfEntry instanceof FieldEntry fe) {
 				this.nameField = th.addRenameTextField(EditableType.FIELD, fe.getName());
 				th.addStringRow(I18n.translate("info_panel.identifier.class"), fe.getParent().getFullName());
