@@ -56,8 +56,9 @@ Client A       Server        Client B
 1. Client A validates the name and updates the mapping client-side to give the impression there is no latency >:)
 2. Client A sends an entry change packet to the server, notifying it of the change.
 3. The server assesses the validity of the change. If it is invalid for whatever reason (e.g. the mapping was locked or
-   the name contains invalid characters), then the server sends an appropriate packet back to client A to revert the
-   change, with `sync_id` set to 0. The server will ignore any `ConfirmChangeC2S` packets it receives in response to this.
+   the name contains invalid characters), then the server sends an appropriate packet back to client A to reset the
+   mapping back to the same state as the server, with `sync_id` set to 0. The server will ignore any `ConfirmChangeC2S`
+   packets it receives in response to this.
 4. If the change was valid, the server will lock all clients except client A from being able to modify this mapping, and
    then send an appropriate packet to all clients except client A notifying them of this change. The `sync_id` will be a
    unique non-zero value identifying this change.

@@ -11,6 +11,7 @@ import org.quiltmc.enigma.network.packet.s2c.EntryChangeS2CPacket;
 import org.quiltmc.enigma.network.packet.s2c.KickS2CPacket;
 import org.quiltmc.enigma.network.packet.s2c.MessageS2CPacket;
 import org.quiltmc.enigma.network.packet.s2c.UserListS2CPacket;
+import org.quiltmc.enigma.util.EntryUtil;
 import org.tinylog.Logger;
 
 import java.io.DataInput;
@@ -293,13 +294,10 @@ public abstract class EnigmaServer {
 	}
 
 	public void sendCorrectMapping(Socket client, Entry<?> entry) {
-		EntryMapping oldMapping = this.remapper.getMapping(entry);
-		String oldName = oldMapping.targetName();
-		if (oldName == null) {
-			this.sendPacket(client, new EntryChangeS2CPacket(DUMMY_SYNC_ID, EntryChange.modify(entry).clearDeobfName()));
-		} else {
-			this.sendPacket(client, new EntryChangeS2CPacket(0, EntryChange.modify(entry).withDeobfName(oldName)));
-		}
+		EntryMapping correctMapping = this.remapper.getMapping(entry);
+		EntryChange<Entry<?>> change = EntryUtil.changeFromMapping(entry, correctMapping);
+
+		this.sendPacket(client, new EntryChangeS2CPacket(DUMMY_SYNC_ID, change));
 	}
 
 	protected abstract void runOnThread(Runnable task);

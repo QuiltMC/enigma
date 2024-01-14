@@ -23,7 +23,9 @@ public record EntryMapping(
 	public EntryMapping {
 		validateSourcePluginId(sourcePluginId);
 
-		if (tokenType == TokenType.OBFUSCATED && targetName != null) {
+		if (tokenType == null) {
+			throw new RuntimeException("cannot create a mapping without a token type!");
+		} else if (tokenType == TokenType.OBFUSCATED && targetName != null) {
 			throw new RuntimeException("cannot create a named mapping with an obfuscated token type!");
 		} else if (targetName == null && tokenType != TokenType.OBFUSCATED) {
 			throw new RuntimeException("cannot create a non-obfuscated mapping with no name!");
