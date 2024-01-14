@@ -120,6 +120,7 @@ public class Main {
 		register(new DropInvalidMappingsCommand());
 		register(new FillClassMappingsCommand());
 		register(new HelpCommand());
+		register(new PrintStatsCommand());
 	}
 
 	private static final class CommandHelpException extends IllegalArgumentException {
