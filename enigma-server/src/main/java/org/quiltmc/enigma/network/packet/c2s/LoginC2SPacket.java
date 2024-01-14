@@ -78,7 +78,7 @@ public class LoginC2SPacket implements Packet<ServerPacketHandler> {
 		handler.server().setUsername(handler.client(), this.username);
 		handler.server().log(this.username + " successfully logged in");
 
-		handler.server().sendPacket(handler.client(), new SyncMappingsS2CPacket(handler.server().getRemapper().getDeobfMappings()));
+		handler.sendPacket(new SyncMappingsS2CPacket(handler.server().getRemapper().getDeobfMappings()));
 		handler.server().sendMessage(ServerMessage.connect(this.username));
 	}
 }

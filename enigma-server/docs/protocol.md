@@ -200,10 +200,12 @@ typedef enum tristate_change {
     TRISTATE_CHANGE_SET = 2
 } tristate_change_t;
 
-// Contains 2 packed values:
+// Contains 4 packed values:
 // bitmask   type
-// 0011  tristate_change_t deobf_name_change;
-// 1100  tristate_change_t javadoc_change;
+// 00000011  tristate_change_t deobf_name_change;
+// 00001100  tristate_change_t javadoc_change;
+// 00110000  tristate_change_t token_type_change;
+// 11000000  tristate_change_t source_plugin_id_change;
 typedef uint8_t entry_change_flags;
 
 struct entry_change {
