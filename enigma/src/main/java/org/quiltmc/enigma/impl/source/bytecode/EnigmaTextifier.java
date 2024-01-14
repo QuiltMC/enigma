@@ -3,6 +3,7 @@ package org.quiltmc.enigma.impl.source.bytecode;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.TypePath;
 import org.objectweb.asm.util.Printer;
 import org.quiltmc.enigma.api.Enigma;
@@ -312,23 +313,35 @@ public class EnigmaTextifier extends Textifier {
 		super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
 	}
 
+	private void queueHandleTokens(Handle handle) {
+		boolean isMethodHandle = handle.getTag() >= Opcodes.H_INVOKEVIRTUAL && handle.getTag() <= Opcodes.H_INVOKEINTERFACE;
+		var owner = new ClassEntry(handle.getOwner());
+		var desc = handle.getDesc();
+
+		this.queueToken(new QueuedToken.Array(
+			new QueuedToken.Reference(owner, null), // handle owner
+			new QueuedToken.OffsetToken(owner.getFullName().length() + 1, handle.getName(),
+				new QueuedToken.Reference(isMethodHandle
+					? new MethodEntry(owner, handle.getName(), new MethodDescriptor(desc)) // handle method (on its name)
+					: new FieldEntry(owner, handle.getName(), new TypeDescriptor(desc)), this.currentMethod)) // handle field (on its name)
+		));
+		this.queueToken(isMethodHandle ? new QueuedToken.MethodDescriptor(desc) : new QueuedToken.Descriptor(desc)); // handle descriptor
+	}
+
 	@Override
 	public void visitInvokeDynamicInsn(String name, String descriptor, Handle bsmHandle, Object... bootstrapMethodArguments) {
 		this.queueToken(new QueuedToken.Descriptor(descriptor)); // indy descriptor
 
 		// bsm
-		boolean isMethodHandle = bsmHandle.getTag() >= Opcodes.H_INVOKEVIRTUAL && bsmHandle.getTag() <= Opcodes.H_INVOKEINTERFACE;
-		var bsmOwner = new ClassEntry(bsmHandle.getOwner());
-		var desc = bsmHandle.getDesc();
-		this.queueToken(new QueuedToken.Array(
-			new QueuedToken.Reference(bsmOwner, null), // bsm owner
-			new QueuedToken.OffsetToken(bsmOwner.getFullName().length() + 1, bsmHandle.getName(),
-				new QueuedToken.Reference(isMethodHandle
-					? new MethodEntry(bsmOwner, bsmHandle.getName(), new MethodDescriptor(desc)) // bsm handle method
-					: new FieldEntry(bsmOwner, bsmHandle.getName(), new TypeDescriptor(desc)), this.currentMethod)) // bsm handle field
-		));
+		this.queueHandleTokens(bsmHandle);
 
-		this.queueToken(isMethodHandle ? new QueuedToken.MethodDescriptor(desc) : new QueuedToken.Descriptor(desc)); // bsm handle descriptor
+		for (var bsmArg : bootstrapMethodArguments) {
+			if (bsmArg instanceof Type type && type.getSort() == Type.METHOD) {
+				this.queueToken(new QueuedToken.MethodDescriptor(type.getDescriptor()));
+			} else if (bsmArg instanceof Handle handle) {
+				this.queueHandleTokens(handle);
+			}
+		}
 
 		super.visitInvokeDynamicInsn(name, descriptor, bsmHandle, bootstrapMethodArguments);
 	}
