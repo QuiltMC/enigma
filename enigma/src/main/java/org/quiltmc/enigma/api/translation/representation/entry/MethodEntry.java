@@ -63,7 +63,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 			int i = flags.isStatic() ? 0 : 1;
 
 			for (ArgumentDescriptor arg : this.descriptor.getArgumentDescs()) {
-				LocalVariableEntry argEntry = new LocalVariableEntry(this, i, "", true, null);
+				LocalVariableEntry argEntry = new LocalVariableEntry(this, i);
 				parameters.add(argEntry);
 
 				i += arg.getSize();

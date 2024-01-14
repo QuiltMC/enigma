@@ -22,6 +22,10 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 		this.parameter = parameter;
 	}
 
+	public LocalVariableEntry(MethodEntry parent, int index) {
+		this(parent, index, "", true, null);
+	}
+
 	@Override
 	public Class<MethodEntry> getParentType() {
 		return MethodEntry.class;

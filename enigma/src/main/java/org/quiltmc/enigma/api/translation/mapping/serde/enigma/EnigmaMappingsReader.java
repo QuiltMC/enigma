@@ -310,7 +310,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 			throw new RuntimeException("Method arg must be a child of a method!");
 		}
 
-		LocalVariableEntry obfuscatedEntry = new LocalVariableEntry(ownerEntry, Integer.parseInt(tokens[1]), "", true, null);
+		LocalVariableEntry obfuscatedEntry = new LocalVariableEntry(ownerEntry, Integer.parseInt(tokens[1]));
 		String mapping = tokens[2];
 
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
