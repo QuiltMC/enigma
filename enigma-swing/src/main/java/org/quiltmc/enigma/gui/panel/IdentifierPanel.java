@@ -1,5 +1,10 @@
 package org.quiltmc.enigma.gui.panel;
 
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.translation.representation.AccessFlags;
+import org.quiltmc.enigma.api.translation.representation.ArgumentDescriptor;
+import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
@@ -118,7 +123,7 @@ public class IdentifierPanel {
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
 
 				if (ce.getParent() != null) {
-					th.addCopiableStringRow(I18n.translate("info_panel.identifier.superclass"), ce.getParent().getName());
+					th.addCopiableStringRow(I18n.translate("info_panel.identifier.superclass"), ce.getParent().getFullName());
 				}
 			} else if (this.deobfEntry instanceof FieldEntry fe) {
 				this.nameField = th.addRenameTextField(EditableType.FIELD, fe.getName());
@@ -152,6 +157,41 @@ public class IdentifierPanel {
 				th.addStringRow(I18n.translate("info_panel.identifier.class"), lve.getContainingClass().getFullName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method"), lve.getParent().getName());
 				th.addStringRow(I18n.translate("info_panel.identifier.index"), Integer.toString(lve.getIndex()));
+
+				// type
+				JarIndex index = this.gui.getController().getProject().getJarIndex();
+				AccessFlags access = index.getIndex(EntryIndex.class).getMethodAccess(lve.getParent());
+				int i = access == null || access.isStatic() ? 0 : 1;
+				var args = lve.getParent().getDesc().getArgumentDescs();
+
+				for (ArgumentDescriptor arg : args) {
+					var primitive = TypeDescriptor.Primitive.get(arg.toString().charAt(0));
+
+					if (i == lve.getIndex()) {
+						String niceType;
+						if (primitive != null) {
+							niceType = arg + " (" + primitive.getKeyword() + ")";
+						} else {
+							// type will look like "LClassName;", with an optional [ at the start to denote an array
+							String raw = arg.toString();
+							// strip semicolon (;) from the end
+							raw = raw.substring(0, raw.length() - 1);
+							// handle arrays: add "[]" to the end and strip "["
+							while (raw.startsWith("[")) {
+								raw = raw.substring(1) + "[]";
+							}
+
+							// strip "L"
+							raw = raw.substring(1);
+							niceType = raw;
+						}
+
+						th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), niceType);
+						break;
+					}
+
+					i += primitive == null ? 1 : primitive.getSize();
+				}
 			} else {
 				throw new IllegalStateException("unreachable");
 			}

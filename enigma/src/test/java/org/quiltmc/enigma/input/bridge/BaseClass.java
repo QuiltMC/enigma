@@ -62,6 +62,10 @@ public class BaseClass {
 		return new BaseClass(xz, 0, xz);
 	}
 
+	public BaseClass whee(long xyz, int q, int w) {
+		return new BaseClass((int) xyz, (int) xyz, (int) xyz);
+	}
+
 	// b(II)La;
 	public BaseClass baz(int xz, int y) {
 		if (y == 0) {
