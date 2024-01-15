@@ -262,7 +262,7 @@
 
 	"validation.message.empty_field": "This field is required.",
 	"validation.message.invalid_ip": "Invalid IP/Port combination.",
-	"validation.message.invalid_username": "Invalid username.",
+	"validation.message.invalid_username": "Invalid username. It must start with a letter or underscore, and be 3-32 characters long.",
 	"validation.message.not_int": "Value must be an integer.",
 	"validation.message.field_out_of_range_int": "Value must be an integer between %d and %d.",
 	"validation.message.field_length_out_of_range": "Value must be less than %d characters long.",
