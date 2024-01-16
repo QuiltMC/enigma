@@ -31,6 +31,8 @@ public class CallsTreeDocker extends Docker {
 	private final JTree tree = new JTree();
 	private final JList<Token> tokens = new JList<>();
 
+	private final JSplitPane contentPane;
+
 	public CallsTreeDocker(Gui gui) {
 		super(gui);
 		this.tree.setModel(null);
@@ -46,16 +48,16 @@ public class CallsTreeDocker extends Docker {
 		this.tokens.setPreferredSize(ScaleUtil.getDimension(0, 200));
 		this.tokens.setMinimumSize(ScaleUtil.getDimension(0, 200));
 
-		JSplitPane contentPane = new JSplitPane(
+		this.contentPane = new JSplitPane(
 				JSplitPane.VERTICAL_SPLIT,
 				true,
 				new JScrollPane(this.tree),
 				new JScrollPane(this.tokens)
 		);
 
-		contentPane.setResizeWeight(1); // let the top side take all the slack
-		contentPane.resetToPreferredSizes();
-		this.add(contentPane, BorderLayout.CENTER);
+		this.contentPane.setResizeWeight(1); // let the top side take all the slack
+		this.contentPane.resetToPreferredSizes();
+		this.add(this.contentPane, BorderLayout.CENTER);
 	}
 
 	public void showCalls(Entry<?> entry, boolean recurse) {
@@ -77,10 +79,23 @@ public class CallsTreeDocker extends Docker {
 	public void showTokens(Collection<Token> tokens) {
 		this.tokens.setListData(new Vector<>(tokens));
 		this.tokens.setSelectedIndex(0);
+		this.updateContentSize();
 	}
 
 	public void clearTokens() {
 		this.tokens.setListData(new Vector<>());
+		this.updateContentSize();
+	}
+
+	public void updateContentSize() {
+		int tokenCount = this.tokens.getModel().getSize();
+		if (tokenCount == 0) {
+			this.contentPane.setResizeWeight(1);
+			this.contentPane.resetToPreferredSizes();
+		} else {
+			this.contentPane.setResizeWeight(0.75);
+			this.contentPane.resetToPreferredSizes();
+		}
 	}
 
 	@SuppressWarnings("unchecked")
