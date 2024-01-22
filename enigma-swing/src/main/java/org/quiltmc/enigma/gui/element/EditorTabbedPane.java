@@ -43,6 +43,7 @@ public class EditorTabbedPane {
 			if (ch == null) return null;
 			this.navigator = new NavigatorPanel(this.gui);
 			EditorPanel ed = new EditorPanel(this.gui, this.navigator);
+			ed.getEditor().updateUI();
 			ed.setClassHandle(ch);
 			this.openFiles.addTab(ed.getFileName(), ed.getUi());
 
