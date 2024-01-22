@@ -19,11 +19,11 @@ public class Themes {
 		Config.activeLookAndFeel = laf;
 		laf.setGlobalLAF();
 		Config.currentColors().configure(LookAndFeel.isDarkLaf());
+		Config.updateSyntaxpain();
 		Themes.setFonts();
 		UIManager.put("ScrollBar.showButtons", true);
 		JEditorPane.registerEditorKitForContentType("text/enigma-sources", JavaSyntaxKit.class.getName());
 		ScaleUtil.applyScaling();
-		Config.updateSyntaxpain();
 	}
 
 	private static void setFonts() {
