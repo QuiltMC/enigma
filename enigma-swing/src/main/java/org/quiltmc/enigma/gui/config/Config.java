@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.config;
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.annotations.SerializedName;
-import org.quiltmc.config.api.serializer.TomlSerializer;
+import org.quiltmc.config.api.serializers.TomlSerializer;
 import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
 import org.quiltmc.config.api.values.TrackedValue;

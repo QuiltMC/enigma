@@ -13,7 +13,7 @@ dependencies {
 	implementation libs.jopt
 	implementation libs.flatlaf
 	implementation libs.flatlaf.extras // for SVG icons
-	implementation libs.quilt.config
+	implementation libs.bundles.quilt.config
 	implementation libs.swing.dpi
 	implementation libs.fontchooser
 	testImplementation(testFixtures(project(':enigma')))
