@@ -132,7 +132,7 @@ public class SyntaxView extends PlainView {
 	}
 
 	/**
-	 * Sets the Rendering Hints o nthe Graphics.  This is used so that
+	 * Sets the Rendering Hints on the Graphics. This is used so that
 	 * any painters can set the Rendering Hits to match the view.
 	 */
 	public static void setRenderingHits(Graphics2D g2d) {
