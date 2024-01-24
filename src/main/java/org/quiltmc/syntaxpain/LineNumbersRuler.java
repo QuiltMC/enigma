@@ -190,18 +190,15 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 		}
 	}
 
-	//
-//  Implement CaretListener interface
-//
 	@Override
 	public void caretUpdate(CaretEvent e) {
-		//  Get the line the caret is positioned on
+		// Get the line the caret is positioned on
 
 		int caretPosition = this.editor.getCaretPosition();
 		Element root = this.editor.getDocument().getDefaultRootElement();
 		int currentLine = root.getElementIndex(caretPosition);
 
-		//  Need to repaint so the correct line number can be highlighted
+		// Need to repaint so the correct line number can be highlighted
 
 		if (this.lastLine != currentLine) {
 			this.repaint();
@@ -211,17 +208,17 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 
 	@Override
 	public void changedUpdate(DocumentEvent e) {
-		documentChanged();
+		this.documentChanged();
 	}
 
 	@Override
 	public void insertUpdate(DocumentEvent e) {
-		documentChanged();
+		this.documentChanged();
 	}
 
 	@Override
 	public void removeUpdate(DocumentEvent e) {
-		documentChanged();
+		this.documentChanged();
 	}
 
 	private void documentChanged() {
@@ -229,15 +226,15 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 		// the DocumentEvent is fired
 
 		SwingUtilities.invokeLater(() -> {
-			int preferredHeight = editor.getPreferredSize().height;
+			int preferredHeight = this.editor.getPreferredSize().height;
 
 			// Document change has caused a change in the number of lines.
 			// Repaint to reflect the new line numbers
 
-			if (lastHeight != preferredHeight) {
-				setPreferredWidth(false);
+			if (this.lastHeight != preferredHeight) {
+				this.setPreferredWidth(false);
 				repaint();
-				lastHeight = preferredHeight;
+				this.lastHeight = preferredHeight;
 			}
 		});
 	}
