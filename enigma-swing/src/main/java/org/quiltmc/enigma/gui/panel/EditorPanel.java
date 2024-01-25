@@ -462,8 +462,6 @@ public class EditorPanel {
 			this.source = source;
 			this.editor.getHighlighter().removeAllHighlights();
 			this.editor.setText(source.toString());
-			// todo maybe?
-			this.editor.setContentType("text/enigma-sources");
 
 			this.setHighlightedTokens(source.getHighlightedTokens());
 			if (this.source != null) {
