@@ -35,7 +35,7 @@ public class VineflowerPreferences {
 						 */
 
 						""",
-			IFernflowerPreferences.INDENT_STRING, "	",
+			IFernflowerPreferences.INDENT_STRING, "    ",
 			IFernflowerPreferences.LOG_LEVEL, IFernflowerLogger.Severity.WARN.name(),
 			IFernflowerPreferences.NEW_LINE_SEPARATOR, "1", // Always use LF
 
