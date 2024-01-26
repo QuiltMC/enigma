@@ -12,7 +12,7 @@ fontchooser = "2.5.2"
 tinylog = "2.6.2"
 quilt_config = "1.2.0"
 
-vineflower = "1.10.0-20230713.053900-2"
+vineflower = "1.10.0-20240126.053810-85"
 cfr = "0.2.1"
 procyon = "0.6.0"
 
