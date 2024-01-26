@@ -17,6 +17,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 public class CreateServerDialog extends AbstractDialog {
+	private JTextField usernameField;
 	private JTextField portField;
 	private JPasswordField passwordField;
 
@@ -32,13 +33,16 @@ public class CreateServerDialog extends AbstractDialog {
 
 	@Override
 	protected List<Pair<String, Component>> createComponents() {
+		this.usernameField = new JTextField(Config.net().username.value());
 		this.portField = new JTextField(Integer.toString(Config.net().serverPort.value()));
 		this.passwordField = new JPasswordField(Config.net().serverPassword.value());
 
+		this.usernameField.addActionListener(event -> this.confirm());
 		this.portField.addActionListener(event -> this.confirm());
 		this.passwordField.addActionListener(event -> this.confirm());
 
 		return Arrays.asList(
+				new Pair<>("prompt.connect.username", this.usernameField),
 				new Pair<>("prompt.create_server.port", this.portField),
 				new Pair<>("prompt.password", this.passwordField)
 		);
@@ -49,6 +53,8 @@ public class CreateServerDialog extends AbstractDialog {
 		StandardValidation.isIntInRange(this.vc, this.portField.getText(), 0, 65535);
 		if (this.passwordField.getPassword().length > EnigmaServer.MAX_PASSWORD_LENGTH) {
 			this.vc.raise(Message.FIELD_LENGTH_OUT_OF_RANGE, EnigmaServer.MAX_PASSWORD_LENGTH);
+		} else if (StandardValidation.notBlank(this.vc, this.usernameField.getText()) && !EnigmaServer.usernameMatchesRegex(this.usernameField.getText())) {
+			this.vc.raise(Message.INVALID_USERNAME);
 		}
 	}
 
@@ -58,6 +64,7 @@ public class CreateServerDialog extends AbstractDialog {
 		this.validateInputs();
 		if (!this.vc.canProceed()) return null;
 		return new Result(
+				this.usernameField.getText(),
 				Integer.parseInt(this.portField.getText()),
 				this.passwordField.getPassword()
 		);
@@ -73,6 +80,6 @@ public class CreateServerDialog extends AbstractDialog {
 		return r;
 	}
 
-	public record Result(int port, char[] password) {
+	public record Result(String username, int port, char[] password) {
 	}
 }

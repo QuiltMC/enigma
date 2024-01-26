@@ -1,13 +1,16 @@
-package org.quiltmc.enigma.network.packet;
+package org.quiltmc.enigma.network.packet.s2c;
 
 import org.quiltmc.enigma.api.source.TokenType;
-import org.quiltmc.enigma.network.ClientPacketHandler;
-import org.quiltmc.enigma.network.EnigmaServer;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.network.ClientPacketHandler;
+import org.quiltmc.enigma.network.EnigmaServer;
+import org.quiltmc.enigma.network.packet.Packet;
+import org.quiltmc.enigma.network.packet.PacketHelper;
+import org.quiltmc.enigma.network.packet.c2s.ConfirmChangeC2SPacket;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -15,19 +18,10 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-public class SyncMappingsS2CPacket implements Packet<ClientPacketHandler> {
-	private EntryTree<EntryMapping> mappings;
+public record SyncMappingsS2CPacket(EntryTree<EntryMapping> mappings) implements Packet<ClientPacketHandler> {
+	public SyncMappingsS2CPacket(DataInput input) throws IOException {
+		this(new HashEntryTree<>());
 
-	SyncMappingsS2CPacket() {
-	}
-
-	public SyncMappingsS2CPacket(EntryTree<EntryMapping> mappings) {
-		this.mappings = mappings;
-	}
-
-	@Override
-	public void read(DataInput input) throws IOException {
-		this.mappings = new HashEntryTree<>();
 		int size = input.readInt();
 		for (int i = 0; i < size; i++) {
 			this.readEntryTreeNode(input, null);
@@ -76,8 +70,8 @@ public class SyncMappingsS2CPacket implements Packet<ClientPacketHandler> {
 	}
 
 	@Override
-	public void handle(ClientPacketHandler controller) {
-		controller.openMappings(this.mappings);
-		controller.sendPacket(new ConfirmChangeC2SPacket(EnigmaServer.DUMMY_SYNC_ID));
+	public void handle(ClientPacketHandler handler) {
+		handler.openMappings(this.mappings);
+		handler.sendPacket(new ConfirmChangeC2SPacket(EnigmaServer.DUMMY_SYNC_ID));
 	}
 }

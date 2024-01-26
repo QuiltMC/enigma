@@ -21,34 +21,21 @@ import org.quiltmc.enigma.gui.dialog.keybind.ConfigureKeyBindsDialog;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.LanguageUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.util.EntryTreePrinter;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Pair;
 import org.quiltmc.enigma.util.validation.Message;
 import org.quiltmc.enigma.util.validation.ParameterizedMessage;
-import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.WindowConstants;
-import java.awt.BorderLayout;
-import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -105,15 +92,13 @@ public class MenuBar {
 	private final JMenuItem githubItem = new JMenuItem();
 
 	// Enabled with system property "enigma.development" or "--development" flag
-	private final JMenu devMenu = new JMenu();
-	private final JCheckBoxMenuItem showMappingSourcePluginItem = new JCheckBoxMenuItem();
-	private final JCheckBoxMenuItem debugTokenHighlightsItem = new JCheckBoxMenuItem();
-	private final JMenuItem printMappingTreeItem = new JMenuItem();
+	private final DevMenu devMenu;
 
 	private final Gui gui;
 
 	public MenuBar(Gui gui) {
 		this.gui = gui;
+		this.devMenu = new DevMenu(gui);
 
 		JMenuBar ui = gui.getMainWindow().getMenuBar();
 
@@ -179,9 +164,6 @@ public class MenuBar {
 		this.helpMenu.add(this.githubItem);
 		ui.add(this.helpMenu);
 
-		this.devMenu.add(this.showMappingSourcePluginItem);
-		this.devMenu.add(this.debugTokenHighlightsItem);
-		this.devMenu.add(this.printMappingTreeItem);
 		if (System.getProperty("enigma.development", "false").equalsIgnoreCase("true")) {
 			ui.add(this.devMenu);
 		}
@@ -214,9 +196,6 @@ public class MenuBar {
 		this.startServerItem.addActionListener(e -> this.onStartServerClicked());
 		this.aboutItem.addActionListener(e -> AboutDialog.show(this.gui.getFrame()));
 		this.githubItem.addActionListener(e -> this.onGithubClicked());
-		this.showMappingSourcePluginItem.addActionListener(e -> this.onShowMappingSourcePluginClicked());
-		this.debugTokenHighlightsItem.addActionListener(e -> this.onDebugTokenHighlightsClicked());
-		this.printMappingTreeItem.addActionListener(e -> this.onPrintMappingTreeClicked());
 	}
 
 	public void setKeyBinds() {
@@ -251,10 +230,8 @@ public class MenuBar {
 		this.exportSourceItem.setEnabled(jarOpen);
 		this.exportJarItem.setEnabled(jarOpen);
 		this.statsItem.setEnabled(jarOpen);
-		this.printMappingTreeItem.setEnabled(jarOpen);
 
-		this.showMappingSourcePluginItem.setState(Config.main().development.showMappingSourcePlugin.value());
-		this.debugTokenHighlightsItem.setState(Config.main().development.debugTokenHighlights.value());
+		this.devMenu.updateUiState();
 	}
 
 	public void retranslateUi() {
@@ -303,10 +280,7 @@ public class MenuBar {
 		this.aboutItem.setText(I18n.translate("menu.help.about"));
 		this.githubItem.setText(I18n.translate("menu.help.github"));
 
-		this.devMenu.setText("Dev");
-		this.showMappingSourcePluginItem.setText(I18n.translate("dev.menu.show_mapping_source_plugin"));
-		this.debugTokenHighlightsItem.setText(I18n.translate("dev.menu.debug_token_highlights"));
-		this.printMappingTreeItem.setText(I18n.translate("dev.menu.print_mapping_tree"));
+		this.devMenu.retranslateUi();
 	}
 
 	private void onOpenJarClicked() {
@@ -476,11 +450,12 @@ public class MenuBar {
 
 		this.gui.getController().disconnectIfConnected(null);
 		try {
-			this.gui.getController().createServer(result.port(), result.password());
+			this.gui.getController().createServer(result.username(), result.port(), result.password());
 			if (Config.main().serverNotificationLevel.value() != NotificationManager.ServerNotificationLevel.NONE) {
 				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.SERVER_STARTED, result.port()));
 			}
 
+			Config.net().username.setValue(result.username(), true);
 			Config.net().serverPort.setValue(result.port(), true);
 			Config.net().serverPassword.setValue(String.valueOf(result.password()), true);
 		} catch (IOException e) {
@@ -491,58 +466,6 @@ public class MenuBar {
 
 	private void onGithubClicked() {
 		GuiUtil.openUrl("https://github.com/QuiltMC/Enigma");
-	}
-
-	private void onShowMappingSourcePluginClicked() {
-		var value = this.showMappingSourcePluginItem.getState();
-		Config.main().development.showMappingSourcePlugin.setValue(value, true);
-	}
-
-	private void onDebugTokenHighlightsClicked() {
-		var value = this.debugTokenHighlightsItem.getState();
-		Config.main().development.debugTokenHighlights.setValue(value, true);
-	}
-
-	private void onPrintMappingTreeClicked() {
-		var mappings = this.gui.getController().getProject().getRemapper().getMappings();
-
-		var text = new StringWriter();
-		EntryTreePrinter.print(new PrintWriter(text), mappings);
-
-		var frame = new JFrame(I18n.translate("dev.mapping_tree"));
-		var pane = frame.getContentPane();
-		pane.setLayout(new BorderLayout());
-
-		var textArea = new JTextArea(text.toString());
-		textArea.setFont(ScaleUtil.getFont(Font.MONOSPACED, Font.PLAIN, 12));
-		pane.add(new JScrollPane(textArea), BorderLayout.CENTER);
-
-		var buttonPane = new JPanel();
-
-		var saveButton = new JButton(I18n.translate("prompt.save"));
-		saveButton.addActionListener(e -> {
-			var chooser = new JFileChooser();
-			chooser.setSelectedFile(new File("mapping_tree.txt"));
-			if (chooser.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
-				try {
-					Files.writeString(chooser.getSelectedFile().toPath(), text.toString());
-				} catch (IOException ex) {
-					Logger.error(ex, "Failed to save the mapping tree");
-				}
-			}
-		});
-		buttonPane.add(saveButton);
-
-		var closeButton = new JButton(I18n.translate("prompt.ok"));
-		closeButton.addActionListener(e -> frame.dispose());
-		buttonPane.add(closeButton);
-
-		pane.add(buttonPane, BorderLayout.SOUTH);
-
-		frame.setSize(ScaleUtil.getDimension(1200, 400));
-		frame.setLocationRelativeTo(this.gui.getFrame());
-		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		frame.setVisible(true);
 	}
 
 	private void onOpenMappingsClicked() {

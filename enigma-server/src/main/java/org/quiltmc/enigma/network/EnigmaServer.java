@@ -1,15 +1,17 @@
 package org.quiltmc.enigma.network;
 
-import org.quiltmc.enigma.network.packet.EntryChangeS2CPacket;
-import org.quiltmc.enigma.network.packet.KickS2CPacket;
-import org.quiltmc.enigma.network.packet.MessageS2CPacket;
-import org.quiltmc.enigma.network.packet.Packet;
-import org.quiltmc.enigma.network.packet.PacketRegistry;
-import org.quiltmc.enigma.network.packet.UserListS2CPacket;
+import com.google.common.annotations.VisibleForTesting;
 import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.network.packet.Packet;
+import org.quiltmc.enigma.network.packet.PacketRegistry;
+import org.quiltmc.enigma.network.packet.s2c.EntryChangeS2CPacket;
+import org.quiltmc.enigma.network.packet.s2c.KickS2CPacket;
+import org.quiltmc.enigma.network.packet.s2c.MessageS2CPacket;
+import org.quiltmc.enigma.network.packet.s2c.UserListS2CPacket;
+import org.quiltmc.enigma.util.EntryUtil;
 import org.tinylog.Logger;
 
 import java.io.DataInput;
@@ -29,17 +31,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Pattern;
 
 public abstract class EnigmaServer {
 	public static final int DEFAULT_PORT = 34712;
-	public static final int PROTOCOL_VERSION = 1;
+	// Testing protocol versions are in hex: 0xMmVV => Major (4 bits), minor (4 bits), sub-Version (8 bits)
+	// Components are independent of the enigma version, i.e. enigma 2.1.0 isn't protocol 0x2100
+	public static final int PROTOCOL_VERSION = 2;
 	public static final int CHECKSUM_SIZE = 20;
 	public static final int MAX_PASSWORD_LENGTH = 255; // length is written as a byte in the login packet
+	public static final Pattern USERNAME_REGEX = Pattern.compile("^[A-Za-z_][^(;:\"<>*+=\\\\|?,)]{2,31}$");
 
 	private final int port;
 	private ServerSocket socket;
 	private final List<Socket> clients = new CopyOnWriteArrayList<>();
 	private final Map<Socket, String> usernames = new HashMap<>();
+	// Clients are only approved once they finish the login exchange by confirming the mapping sync
 	private final Set<Socket> unapprovedClients = new HashSet<>();
 
 	private final byte[] jarChecksum;
@@ -63,7 +70,7 @@ public abstract class EnigmaServer {
 
 	public void start() throws IOException {
 		this.socket = new ServerSocket(this.port);
-		this.log("Server started on " + this.socket.getInetAddress() + ":" + this.port);
+		this.log("Server started on " + this.socket.getInetAddress() + ":" + this.socket.getLocalPort()); // Port 0 is automatically allocated
 		Thread thread = new Thread(() -> {
 			try {
 				while (!this.socket.isClosed()) {
@@ -72,7 +79,7 @@ public abstract class EnigmaServer {
 			} catch (SocketException e) {
 				Logger.info("Server closed");
 			} catch (IOException e) {
-				Logger.error("Failed to accept client!", e);
+				Logger.error(e, "Failed to accept client!");
 			}
 		});
 		thread.setName("Server client listener");
@@ -83,6 +90,8 @@ public abstract class EnigmaServer {
 	private void acceptClient() throws IOException {
 		Socket client = this.socket.accept();
 		this.clients.add(client);
+		this.unapprovedClients.add(client);
+
 		Thread thread = new Thread(() -> {
 			try {
 				DataInput input = new DataInputStream(client.getInputStream());
@@ -94,17 +103,22 @@ public abstract class EnigmaServer {
 						break;
 					}
 
-					Packet<ServerPacketHandler> packet = PacketRegistry.createC2SPacket(packetId);
+					Packet<ServerPacketHandler> packet = PacketRegistry.readC2SPacket(packetId, input);
 					if (packet == null) {
 						throw new IOException("Received invalid packet id " + packetId);
 					}
 
-					packet.read(input);
-					this.runOnThread(() -> packet.handle(new ServerPacketHandler(client, this)));
+					this.runOnThread(() -> {
+						try {
+							packet.handle(new ServerPacketHandler(client, this));
+						} catch (Exception e) {
+							Logger.error(e, "Failed to handle packet!");
+						}
+					});
 				}
 			} catch (IOException e) {
 				this.kick(client, e.toString());
-				Logger.error("Failed to read packet from client!", e);
+				Logger.error(e, "Failed to read packet from client!");
 				return;
 			}
 
@@ -132,6 +146,10 @@ public abstract class EnigmaServer {
 	}
 
 	public void kick(Socket client, String reason) {
+		this.kick(client, reason, this.isClientApproved(client)); // Notify others only if the client logged in
+	}
+
+	public void kick(Socket client, String reason, boolean notifyOthers) {
 		if (!this.clients.remove(client)) {
 			return;
 		}
@@ -147,19 +165,29 @@ public abstract class EnigmaServer {
 		try {
 			client.close();
 		} catch (IOException e) {
-			Logger.error("Failed to close server client socket!", e);
+			Logger.error(e, "Failed to close server client socket!");
 		}
 
 		if (username != null) {
-			Logger.info("Kicked " + username + " because " + reason);
-			this.sendMessage(ServerMessage.disconnect(username));
-		}
+			this.log("Kicked " + username + " because " + reason);
+			if (notifyOthers) {
+				this.sendMessage(ServerMessage.disconnect(username));
+			}
 
-		this.sendUsernamePacket();
+			this.sendUsernamePacket();
+		}
 	}
 
 	public boolean isUsernameTaken(String username) {
 		return this.usernames.containsValue(username);
+	}
+
+	public boolean isUsernameValid(String username) {
+		return usernameMatchesRegex(username);
+	}
+
+	public static boolean usernameMatchesRegex(String username) {
+		return USERNAME_REGEX.matcher(username).matches();
 	}
 
 	public void setUsername(Socket client, String username) {
@@ -177,6 +205,10 @@ public abstract class EnigmaServer {
 		return this.usernames.get(client);
 	}
 
+	public boolean isClientApproved(Socket client) {
+		return !this.unapprovedClients.contains(client);
+	}
+
 	public void sendPacket(Socket client, Packet<ClientPacketHandler> packet) {
 		if (!client.isClosed()) {
 			int packetId = PacketRegistry.getS2CId(packet);
@@ -187,7 +219,7 @@ public abstract class EnigmaServer {
 			} catch (IOException e) {
 				if (!(packet instanceof KickS2CPacket)) {
 					this.kick(client, e.toString());
-					Logger.error("Failed to send packet to client!", e);
+					Logger.error(e, "Failed to send packet to client!");
 				}
 			}
 		}
@@ -195,20 +227,22 @@ public abstract class EnigmaServer {
 
 	public void sendToAll(Packet<ClientPacketHandler> packet) {
 		for (Socket client : this.clients) {
-			this.sendPacket(client, packet);
+			if (this.isClientApproved(client)) {
+				this.sendPacket(client, packet);
+			}
 		}
 	}
 
 	public void sendToAllExcept(Socket excluded, Packet<ClientPacketHandler> packet) {
 		for (Socket client : this.clients) {
-			if (client != excluded) {
+			if (client != excluded && this.isClientApproved(client)) {
 				this.sendPacket(client, packet);
 			}
 		}
 	}
 
 	public boolean canModifyEntry(Socket client, Entry<?> entry) {
-		if (this.unapprovedClients.contains(client)) {
+		if (!this.isClientApproved(client)) {
 			return false;
 		}
 
@@ -238,11 +272,13 @@ public abstract class EnigmaServer {
 		this.inverseSyncIds.put(syncId, entry);
 		Set<Socket> clients = new HashSet<>(this.clients);
 		clients.remove(exception);
+		clients.removeAll(this.unapprovedClients);
 		this.clientsNeedingConfirmation.put(syncId, clients);
 		return syncId;
 	}
 
 	public void confirmChange(Socket client, int syncId) {
+		// If a client has a username, it has been approved
 		if (this.usernames.containsKey(client)) {
 			this.unapprovedClients.remove(client);
 		}
@@ -258,13 +294,10 @@ public abstract class EnigmaServer {
 	}
 
 	public void sendCorrectMapping(Socket client, Entry<?> entry) {
-		EntryMapping oldMapping = this.remapper.getMapping(entry);
-		String oldName = oldMapping.targetName();
-		if (oldName == null) {
-			this.sendPacket(client, new EntryChangeS2CPacket(DUMMY_SYNC_ID, EntryChange.modify(entry).clearDeobfName()));
-		} else {
-			this.sendPacket(client, new EntryChangeS2CPacket(0, EntryChange.modify(entry).withDeobfName(oldName)));
-		}
+		EntryMapping correctMapping = this.remapper.getMapping(entry);
+		EntryChange<Entry<?>> change = EntryUtil.changeFromMapping(entry, correctMapping);
+
+		this.sendPacket(client, new EntryChangeS2CPacket(DUMMY_SYNC_ID, change));
 	}
 
 	protected abstract void runOnThread(Runnable task);
@@ -289,8 +322,28 @@ public abstract class EnigmaServer {
 		return this.remapper;
 	}
 
+	@VisibleForTesting
+	int getPort() {
+		return this.port;
+	}
+
+	@VisibleForTesting
+	int getActualPort() {
+		return this.socket != null ? this.socket.getLocalPort() : this.getPort();
+	}
+
+	@VisibleForTesting
+	List<Socket> getClients() {
+		return this.clients;
+	}
+
+	@VisibleForTesting
+	public Set<Socket> getUnapprovedClients() {
+		return this.unapprovedClients;
+	}
+
 	public void sendMessage(ServerMessage message) {
-		Logger.info("[chat] {}", message.translate());
+		this.log("[chat] " + message.translate());
 		this.sendToAll(new MessageS2CPacket(message));
 	}
 }

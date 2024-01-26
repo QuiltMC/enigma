@@ -12,6 +12,7 @@ import org.quiltmc.enigma.api.analysis.tree.ClassInheritanceTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassReferenceTreeNode;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.tree.FieldReferenceTreeNode;
+import org.quiltmc.enigma.gui.network.IntegratedEnigmaClient;
 import org.quiltmc.enigma.impl.analysis.IndexTreeBuilder;
 import org.quiltmc.enigma.api.analysis.tree.MethodImplementationsTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.MethodInheritanceTreeNode;
@@ -30,11 +31,11 @@ import org.quiltmc.enigma.gui.util.History;
 import org.quiltmc.enigma.network.ClientPacketHandler;
 import org.quiltmc.enigma.network.EnigmaClient;
 import org.quiltmc.enigma.network.EnigmaServer;
-import org.quiltmc.enigma.network.IntegratedEnigmaServer;
+import org.quiltmc.enigma.gui.network.IntegratedEnigmaServer;
 import org.quiltmc.enigma.network.ServerMessage;
 import org.quiltmc.enigma.network.ServerPacketHandler;
-import org.quiltmc.enigma.network.packet.EntryChangeC2SPacket;
-import org.quiltmc.enigma.network.packet.LoginC2SPacket;
+import org.quiltmc.enigma.network.packet.c2s.EntryChangeC2SPacket;
+import org.quiltmc.enigma.network.packet.c2s.LoginC2SPacket;
 import org.quiltmc.enigma.network.packet.Packet;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.source.DecompilerService;
@@ -607,18 +608,18 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void createClient(String username, String ip, int port, char[] password) throws IOException {
-		this.client = new EnigmaClient(this, ip, port);
+		this.client = new IntegratedEnigmaClient(this, ip, port);
 		this.client.connect();
 		this.client.sendPacket(new LoginC2SPacket(this.project.getJarChecksum(), password, username));
 		this.gui.setConnectionState(ConnectionState.CONNECTED);
 	}
 
-	public void createServer(int port, char[] password) throws IOException {
+	public void createServer(String username, int port, char[] password) throws IOException {
 		this.server = new IntegratedEnigmaServer(this.project.getJarChecksum(), password, EntryRemapper.mapped(this.project.getJarIndex(), this.project.getMappingsIndex(), new HashEntryTree<>(this.project.getRemapper().getJarProposedMappings()), new HashEntryTree<>(this.project.getRemapper().getDeobfMappings()), this.project.getEnigma().getNameProposalServices()), port);
 		this.server.start();
-		this.client = new EnigmaClient(this, "127.0.0.1", port);
+		this.client = new IntegratedEnigmaClient(this, "127.0.0.1", port);
 		this.client.connect();
-		this.client.sendPacket(new LoginC2SPacket(this.project.getJarChecksum(), password, Config.net().username.value()));
+		this.client.sendPacket(new LoginC2SPacket(this.project.getJarChecksum(), password, username));
 		this.gui.setConnectionState(ConnectionState.HOSTING);
 	}
 

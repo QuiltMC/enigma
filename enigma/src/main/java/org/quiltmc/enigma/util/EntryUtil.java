@@ -60,4 +60,30 @@ public class EntryUtil {
 
 		return self.withName(name, tokenType, sourcePluginId).withJavadoc(javadoc);
 	}
+
+	public static <E extends Entry<?>> EntryChange<E> changeFromMapping(E entry, EntryMapping mapping) {
+		EntryChange<E> change = EntryChange.modify(entry);
+
+		if (mapping.targetName() != null) {
+			change = change.withDeobfName(mapping.targetName());
+		} else {
+			change = change.clearDeobfName();
+		}
+
+		if (mapping.javadoc() != null) {
+			change = change.withDeobfName(mapping.javadoc());
+		} else {
+			change = change.clearJavadoc();
+		}
+
+		change = change.withTokenType(mapping.tokenType());
+
+		if (mapping.sourcePluginId() != null) {
+			change = change.withSourcePluginId(mapping.sourcePluginId());
+		} else {
+			change = change.clearSourcePluginId();
+		}
+
+		return change;
+	}
 }

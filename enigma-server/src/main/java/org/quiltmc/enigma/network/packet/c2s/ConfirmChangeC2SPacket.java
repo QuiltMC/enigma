@@ -1,24 +1,15 @@
-package org.quiltmc.enigma.network.packet;
+package org.quiltmc.enigma.network.packet.c2s;
 
 import org.quiltmc.enigma.network.ServerPacketHandler;
+import org.quiltmc.enigma.network.packet.Packet;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class ConfirmChangeC2SPacket implements Packet<ServerPacketHandler> {
-	private int syncId;
-
-	ConfirmChangeC2SPacket() {
-	}
-
-	public ConfirmChangeC2SPacket(int syncId) {
-		this.syncId = syncId;
-	}
-
-	@Override
-	public void read(DataInput input) throws IOException {
-		this.syncId = input.readUnsignedShort();
+public record ConfirmChangeC2SPacket(int syncId) implements Packet<ServerPacketHandler> {
+	public ConfirmChangeC2SPacket(DataInput input) throws IOException {
+		this(input.readUnsignedShort());
 	}
 
 	@Override

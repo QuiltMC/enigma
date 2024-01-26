@@ -1,8 +1,11 @@
-package org.quiltmc.enigma.network.packet;
+package org.quiltmc.enigma.network.packet.c2s;
 
 import org.quiltmc.enigma.network.EnigmaServer;
-import org.quiltmc.enigma.network.ServerPacketHandler;
 import org.quiltmc.enigma.network.ServerMessage;
+import org.quiltmc.enigma.network.ServerPacketHandler;
+import org.quiltmc.enigma.network.packet.Packet;
+import org.quiltmc.enigma.network.packet.PacketHelper;
+import org.quiltmc.enigma.network.packet.s2c.SyncMappingsS2CPacket;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -10,12 +13,9 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class LoginC2SPacket implements Packet<ServerPacketHandler> {
-	private byte[] jarChecksum;
-	private char[] password;
-	private String username;
-
-	LoginC2SPacket() {
-	}
+	private final byte[] jarChecksum;
+	private final char[] password;
+	private final String username;
 
 	public LoginC2SPacket(byte[] jarChecksum, char[] password, String username) {
 		this.jarChecksum = jarChecksum;
@@ -23,8 +23,7 @@ public class LoginC2SPacket implements Packet<ServerPacketHandler> {
 		this.username = username;
 	}
 
-	@Override
-	public void read(DataInput input) throws IOException {
+	public LoginC2SPacket(DataInput input) throws IOException {
 		if (input.readUnsignedShort() != EnigmaServer.PROTOCOL_VERSION) {
 			throw new IOException("Mismatching protocol");
 		}
@@ -53,26 +52,33 @@ public class LoginC2SPacket implements Packet<ServerPacketHandler> {
 
 	@Override
 	public void handle(ServerPacketHandler handler) {
-		boolean usernameTaken = handler.server().isUsernameTaken(this.username);
-		handler.server().setUsername(handler.client(), this.username);
-		handler.server().log(this.username + " logged in with IP " + handler.client().getInetAddress().toString() + ":" + handler.client().getPort());
-
-		if (!Arrays.equals(this.password, handler.server().getPassword())) {
-			handler.server().kick(handler.client(), "disconnect.wrong_password");
+		if (!handler.server().isUsernameValid(this.username)) {
+			handler.server().log("Client connected with invalid username, with IP " + handler.client().getInetAddress().toString() + ":" + handler.client().getPort());
+			handler.server().kick(handler.client(), "disconnect.invalid_username", false);
 			return;
 		}
 
-		if (usernameTaken) {
-			handler.server().kick(handler.client(), "disconnect.username_taken");
+		handler.server().log(this.username + " connected with IP " + handler.client().getInetAddress().toString() + ":" + handler.client().getPort());
+
+		if (!Arrays.equals(this.password, handler.server().getPassword())) {
+			handler.server().kick(handler.client(), "disconnect.wrong_password", false);
+			return;
+		}
+
+		if (handler.server().isUsernameTaken(this.username)) {
+			handler.server().kick(handler.client(), "disconnect.username_taken", false);
 			return;
 		}
 
 		if (!Arrays.equals(this.jarChecksum, handler.server().getJarChecksum())) {
-			handler.server().kick(handler.client(), "disconnect.wrong_jar");
+			handler.server().kick(handler.client(), "disconnect.wrong_jar", false);
 			return;
 		}
 
-		handler.server().sendPacket(handler.client(), new SyncMappingsS2CPacket(handler.server().getRemapper().getDeobfMappings()));
+		handler.server().setUsername(handler.client(), this.username);
+		handler.server().log(this.username + " successfully logged in");
+
+		handler.sendPacket(new SyncMappingsS2CPacket(handler.server().getRemapper().getDeobfMappings()));
 		handler.server().sendMessage(ServerMessage.connect(this.username));
 	}
 }

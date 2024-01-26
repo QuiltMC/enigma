@@ -1,6 +1,8 @@
-package org.quiltmc.enigma.network.packet;
+package org.quiltmc.enigma.network.packet.s2c;
 
 import org.quiltmc.enigma.network.ClientPacketHandler;
+import org.quiltmc.enigma.network.packet.Packet;
+import org.quiltmc.enigma.network.packet.PacketHelper;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -9,17 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserListS2CPacket implements Packet<ClientPacketHandler> {
-	private List<String> users;
-
-	UserListS2CPacket() {
-	}
+	private final List<String> users;
 
 	public UserListS2CPacket(List<String> users) {
 		this.users = users;
 	}
 
-	@Override
-	public void read(DataInput input) throws IOException {
+	public UserListS2CPacket(DataInput input) throws IOException {
 		int len = input.readUnsignedShort();
 		this.users = new ArrayList<>(len);
 		for (int i = 0; i < len; i++) {

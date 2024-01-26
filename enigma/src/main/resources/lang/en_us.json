@@ -247,6 +247,7 @@
 	"disconnect.wrong_jar": "Jar checksums don't match (you have the wrong jar)!",
 	"disconnect.wrong_password": "Incorrect password",
 	"disconnect.username_taken": "Username is taken",
+	"disconnect.invalid_username": "Username contains invalid characters",
 
 	"message.chat.text": "%s: %s",
 	"message.connect.text": "[+] %s",
@@ -263,6 +264,7 @@
 
 	"validation.message.empty_field": "This field is required.",
 	"validation.message.invalid_ip": "Invalid IP/Port combination.",
+	"validation.message.invalid_username": "Invalid username. It must start with a letter or underscore, and be 3-32 characters long.",
 	"validation.message.not_int": "Value must be an integer.",
 	"validation.message.field_out_of_range_int": "Value must be an integer between %d and %d.",
 	"validation.message.field_length_out_of_range": "Value must be less than %d characters long.",
@@ -349,6 +351,7 @@
 
 	"dev.menu.show_mapping_source_plugin": "Show mapping source plugin",
 	"dev.menu.debug_token_highlights": "Debug token highlights",
+	"dev.menu.log_client_packets": "Log client packets",
 	"dev.menu.print_mapping_tree": "Print mapping tree",
 	"dev.mapping_tree": "Mapping tree",
 	"dev.source_plugin": "Source plugin"

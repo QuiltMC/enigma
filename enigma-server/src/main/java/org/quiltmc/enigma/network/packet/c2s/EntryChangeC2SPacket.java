@@ -1,8 +1,11 @@
-package org.quiltmc.enigma.network.packet;
+package org.quiltmc.enigma.network.packet.c2s;
 
+import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 import org.quiltmc.enigma.network.ServerMessage;
 import org.quiltmc.enigma.network.ServerPacketHandler;
-import org.quiltmc.enigma.api.translation.mapping.EntryChange;
+import org.quiltmc.enigma.network.packet.Packet;
+import org.quiltmc.enigma.network.packet.PacketHelper;
+import org.quiltmc.enigma.network.packet.s2c.EntryChangeS2CPacket;
 import org.quiltmc.enigma.util.EntryUtil;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 
@@ -10,19 +13,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class EntryChangeC2SPacket implements Packet<ServerPacketHandler> {
-	private EntryChange<?> change;
-
-	EntryChangeC2SPacket() {
-	}
-
-	public EntryChangeC2SPacket(EntryChange<?> change) {
-		this.change = change;
-	}
-
-	@Override
-	public void read(DataInput input) throws IOException {
-		this.change = PacketHelper.readEntryChange(input);
+public record EntryChangeC2SPacket(EntryChange<?> change) implements Packet<ServerPacketHandler> {
+	public EntryChangeC2SPacket(DataInput input) throws IOException {
+		this(PacketHelper.readEntryChange(input));
 	}
 
 	@Override

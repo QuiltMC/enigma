@@ -1,6 +1,7 @@
-package org.quiltmc.enigma.network;
+package org.quiltmc.enigma.gui.network;
 
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.network.EnigmaServer;
 
 import javax.swing.SwingUtilities;
 
