@@ -238,9 +238,11 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		String packageName = this.getPackageName();
 		String otherPackageName = entry.getPackageName();
 
-		int p = packageName.compareTo(otherPackageName);
-		if (p != 0) {
-			return p;
+		if (packageName != null && otherPackageName != null) {
+			int p = packageName.compareTo(otherPackageName);
+			if (p != 0) {
+				return p;
+			}
 		}
 
 		String name = this.getFullName();
