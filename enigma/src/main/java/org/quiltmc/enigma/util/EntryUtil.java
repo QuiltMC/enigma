@@ -71,7 +71,7 @@ public class EntryUtil {
 		}
 
 		if (mapping.javadoc() != null) {
-			change = change.withDeobfName(mapping.javadoc());
+			change = change.withJavadoc(mapping.javadoc());
 		} else {
 			change = change.clearJavadoc();
 		}
