@@ -20,7 +20,7 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
-public class ProgressDialog implements ProgressListener, AutoCloseable {
+public class ProgressDialog extends ProgressListener implements AutoCloseable {
 	private final JDialog dialog;
 	private final JLabel labelTitle = new JLabel();
 	private final JLabel labelText = GuiUtil.unboldLabel(new JLabel());
@@ -103,6 +103,7 @@ public class ProgressDialog implements ProgressListener, AutoCloseable {
 
 	@Override
 	public void init(int totalWork, String title) {
+		super.init(totalWork, title);
 		SwingUtilities.invokeLater(() -> {
 			this.labelTitle.setText(title);
 			this.progress.setMinimum(0);
@@ -112,11 +113,12 @@ public class ProgressDialog implements ProgressListener, AutoCloseable {
 	}
 
 	@Override
-	public void step(int numDone, String message) {
+	public void step(int workDone, String message) {
+		super.step(workDone, message);
 		SwingUtilities.invokeLater(() -> {
 			this.labelText.setText(message);
-			if (numDone != -1) {
-				this.progress.setValue(numDone);
+			if (workDone != -1) {
+				this.progress.setValue(workDone);
 				this.progress.setIndeterminate(false);
 			} else {
 				this.progress.setIndeterminate(true);

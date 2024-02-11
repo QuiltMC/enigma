@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.dialog;
 
+import org.quiltmc.enigma.api.stats.StatsGenerator;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
@@ -27,6 +28,12 @@ import javax.swing.SwingUtilities;
 public class StatsDialog {
 	public static void show(Gui gui) {
 		ProgressDialog.runOffThread(gui, listener -> {
+			StatsGenerator generator = gui.getController().getStatsGenerator();
+
+			if (generator.getProgress() != null) {
+				listener.sync(generator.getProgress());
+			}
+
 			ProjectStatsResult result = gui.getController().getStatsGenerator().getResult(false);
 			SwingUtilities.invokeLater(() -> show(gui, result, ""));
 		});

@@ -33,8 +33,9 @@ public class StatsGenerator {
 	private final EnigmaProject project;
 	private final EntryIndex entryIndex;
 	private final EntryResolver entryResolver;
-	private ProjectStatsResult result = null;
 
+	private ProjectStatsResult result = null;
+	private ProgressListener listener;
 	private CountDownLatch generationLatch = null;
 
 	public StatsGenerator(EnigmaProject project) {
@@ -47,6 +48,7 @@ public class StatsGenerator {
 	 * Gets the latest generated stats.
 	 * @return the stats, or {@code null} if not yet generated
 	 */
+	@Nullable
 	public ProjectStatsResult getResultNullable() {
 		return this.result;
 	}
@@ -57,10 +59,19 @@ public class StatsGenerator {
 	 */
 	public ProjectStatsResult getResult(boolean includeSynthetic) {
 		if (this.result == null) {
-			return this.generateForClassTree(ProgressListener.none(), null, includeSynthetic);
+			return this.generateForClass(ProgressListener.none(), null, includeSynthetic);
 		}
 
 		return this.result;
+	}
+
+	/**
+	 * If stats are currently being generated, returns the progress listener.
+	 * @return the current progress
+	 */
+	@Nullable
+	public ProgressListener getProgress() {
+		return this.listener;
 	}
 
 	/**
@@ -70,7 +81,7 @@ public class StatsGenerator {
 	 * @param includeSynthetic whether to include synthetic methods
 	 * @return the generated {@link StatsResult} for the provided class
 	 */
-	public ProjectStatsResult generateForClassTree(ProgressListener progress, ClassEntry entry, boolean includeSynthetic) {
+	public ProjectStatsResult generateForClass(ProgressListener progress, ClassEntry entry, boolean includeSynthetic) {
 		return this.generate(progress, EnumSet.allOf(StatType.class), entry, includeSynthetic);
 	}
 
@@ -95,6 +106,7 @@ public class StatsGenerator {
 	 * @return the generated {@link ProjectStatsResult} for the provided class or package
 	 */
 	public ProjectStatsResult generate(ProgressListener progress, Set<StatType> includedTypes, @Nullable ClassEntry classEntry, boolean includeSynthetic) {
+		this.listener = progress;
 		includedTypes = EnumSet.copyOf(includedTypes);
 		Map<ClassEntry, StatsResult> stats = this.result == null ? new HashMap<>() : this.result.getStats();
 
@@ -129,6 +141,8 @@ public class StatsGenerator {
 			stats.put(classEntry, this.generate(includedTypes, classEntry, includeSynthetic));
 			this.result = new ProjectStatsResult(this.project, stats);
 		}
+
+		this.listener = null;
 
 		return this.result;
 	}

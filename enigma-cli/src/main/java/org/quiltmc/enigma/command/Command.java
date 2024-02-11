@@ -274,29 +274,29 @@ public abstract class Command {
 		Logger.debug("Wrote debug output to {}", debugOutput.toAbsolutePath());
 	}
 
-	public static class ConsoleProgressListener implements ProgressListener {
+	public static class ConsoleProgressListener extends ProgressListener {
 		private static final int REPORT_TIME = 5000; // 5s
 
-		private int totalWork;
 		private long startTime;
 		private long lastReportTime;
 
 		@Override
 		public void init(int totalWork, String title) {
-			this.totalWork = totalWork;
+			super.init(totalWork, title);
 			this.startTime = System.currentTimeMillis();
 			this.lastReportTime = this.startTime;
 			Logger.info(title);
 		}
 
 		@Override
-		public void step(int numDone, String message) {
+		public void step(int workDone, String message) {
+			super.step(workDone, message);
 			long now = System.currentTimeMillis();
-			boolean isLastUpdate = numDone == this.totalWork;
+			boolean isLastUpdate = workDone == this.totalWork;
 			boolean shouldReport = isLastUpdate || now - this.lastReportTime > REPORT_TIME;
 
 			if (shouldReport) {
-				int percent = numDone * 100 / this.totalWork;
+				int percent = workDone * 100 / this.totalWork;
 				Logger.info("\tProgress: {}%", percent);
 				this.lastReportTime = now;
 			}
