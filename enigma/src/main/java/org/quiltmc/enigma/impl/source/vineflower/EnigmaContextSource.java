@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.impl.source.vineflower;
 
+import org.jetbrains.java.decompiler.main.extern.IFernflowerPreferences;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.util.AsmUtil;
 import org.jetbrains.java.decompiler.main.extern.IContextSource;
@@ -11,6 +12,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class EnigmaContextSource implements IContextSource {
 	private final IContextSource external = new ExternalContextSource();
@@ -40,7 +42,12 @@ public class EnigmaContextSource implements IContextSource {
 		this.classNames = new ArrayList<>();
 		String root = this.name.contains("$") ? this.name.substring(0, this.name.indexOf("$")) : this.name;
 		this.classNames.add(root);
-		this.classNames.addAll(this.classProvider.getClasses(root).stream().filter(s -> s.contains("$")).toList());
+
+		Map<String, Object> options = VineflowerPreferences.getEffectiveOptions();
+		if (!options.containsKey(IFernflowerPreferences.DECOMPILE_INNER)
+			|| "1".equals(options.get(IFernflowerPreferences.DECOMPILE_INNER))) {
+			this.classNames.addAll(this.classProvider.getClasses(root).stream().filter(s -> s.contains("$")).toList());
+		}
 	}
 
 	@Override
