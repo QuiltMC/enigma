@@ -45,7 +45,7 @@ public class EnigmaContextSource implements IContextSource {
 
 		Map<String, Object> options = VineflowerPreferences.getEffectiveOptions();
 		if (!options.containsKey(IFernflowerPreferences.DECOMPILE_INNER)
-			|| "1".equals(options.get(IFernflowerPreferences.DECOMPILE_INNER))) {
+				|| "1".equals(options.get(IFernflowerPreferences.DECOMPILE_INNER))) {
 			this.classNames.addAll(this.classProvider.getClasses(root).stream().filter(s -> s.contains("$")).toList());
 		}
 	}
