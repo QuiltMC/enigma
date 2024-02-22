@@ -26,11 +26,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MappingValidator {
+	private final EntryResolver resolver;
 	private final Translator deobfuscator;
 	private final JarIndex jarIndex;
 	private final MappingsIndex mappingsIndex;
 
-	public MappingValidator(Translator deobfuscator, JarIndex jarIndex, MappingsIndex mappingsIndex) {
+	public MappingValidator(EntryResolver resolver, Translator deobfuscator, JarIndex jarIndex, MappingsIndex mappingsIndex) {
+		this.resolver = resolver;
 		this.deobfuscator = deobfuscator;
 		this.jarIndex = jarIndex;
 		this.mappingsIndex = mappingsIndex;
@@ -91,6 +93,10 @@ public class MappingValidator {
 		for (ClassEntry ancestor : this.jarIndex.getIndex(InheritanceIndex.class).getAncestors(containingClass)) {
 			siblings.addAll(this.jarIndex.getChildrenByClass().get(ancestor));
 		}
+
+		// remove equivalent entries -- this can sometimes happen and break mark as deobf/obf
+		// noinspection all
+		siblings.removeAll(this.resolver.resolveEquivalentEntries(entry));
 
 		// collect deobfuscated versions
 		Map<Entry<?>, Entry<?>> deobfSiblings = siblings.stream()

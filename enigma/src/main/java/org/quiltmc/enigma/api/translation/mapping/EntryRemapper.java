@@ -56,7 +56,7 @@ public class EntryRemapper {
 		this.jarIndex = jarIndex;
 		this.mappingsIndex = mappingsIndex;
 
-		this.validator = new MappingValidator(this.deobfuscator, jarIndex, mappingsIndex);
+		this.validator = new MappingValidator(this.obfResolver, this.deobfuscator, jarIndex, mappingsIndex);
 		this.proposalServices = proposalServices;
 	}
 
