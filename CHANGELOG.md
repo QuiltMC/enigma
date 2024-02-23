@@ -92,3 +92,34 @@
 - fixed a startup crash when no recent projects are present
 - fixed a startup crash likely caused by a bug in FlatLAF
 - fixed the package index being quite broken and not properly tracking all packages
+
+# 2.2.0
+- added more info to the identifier panel:
+  - for inner classes, the name of their parent class is now displayed
+  - for parameters, their type is now shown. this is super helpful for mapping lambdas where you can't see their type!
+- made some big changes and cleanups to the enigma server!
+  - the protocol version is now `2`!
+  - made lots of architectural changes to streamline the code
+  - greatly improved the way client approval is handled
+  - added a development option to log packets
+  - added a username field to the server creation dialog
+  - added validation for the client's username
+  - fixed lots of possible crashes (if you wanted to, it would be trivially easy to crash an enigma <`2.2.0` server with a custom client)
+  - added lots of new tests to make sure everything is working!
+- added a new command: `print-stats`
+  - this command generates and prints mapping stats for on-the-go mappers who can't be bothered to crack open the swing GUI
+- added dynamic resizing for the calls tree docker's list of tokens 
+- added a new shortcut constructor for `LocalVariableEntry`
+- added tokenization of invokedynamic arguments (this means something if you're a nerd. we promise)
+- fixed some users not seeing indentation when using the vineflower decompiler
+- updated [syntaxpain](<https://github.com/QuiltMC/syntaxpain>) to `1.1.2`
+  - fixes the line ruler in the code view not automatically resizing
+- updated [quilt config](<https://github.com/QuiltMC/quilt-config>) to `1.2` 
+- updated [vineflower](<https://github.com/Vineflower/vineflower>) to the latest `1.10.0` snapshot
+
+# 2.2.1
+- make sure MappingValidator eliminates equivalent entries from consideration -- solves some false positives
+- remove an unnecessary null check for inner classes' outer classes (the java standard allows inner classes to have no outer class)
+- fixed crashes that could be caused by deselecting "decompile inner classes" in vineflower
+- fixed incorrect synchronisation of javadoc on servers
+- fixed a possible crash when writing mappings that include a packageless class
