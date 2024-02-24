@@ -14,6 +14,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
+import org.quiltmc.enigma.gui.util.WrapLayout;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.gui.search.SearchEntry;
 import org.quiltmc.enigma.gui.search.SearchUtil;
@@ -96,7 +97,7 @@ public class SearchDialog {
 		this.onlyExactMatchesCheckbox.addActionListener(e -> this.updateList());
 
 		JPanel checkboxes = new JPanel();
-		checkboxes.setLayout(new FlowLayout(FlowLayout.CENTER));
+		checkboxes.setLayout(new WrapLayout(FlowLayout.CENTER));
 
 		this.classesCheckBox = new JCheckBox(I18n.translate("prompt.search.classes"));
 		this.classesCheckBox.addMouseListener(this.createCheckboxListener(Type.CLASS));
@@ -342,8 +343,8 @@ public class SearchDialog {
 		}
 
 		@Override
-		public Type getType() {
-			return Type.get(this.obf);
+		public int getTypePriority() {
+			return Type.values().length - Type.get(this.obf).ordinal();
 		}
 
 		@Override
