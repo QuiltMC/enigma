@@ -1,7 +1,5 @@
 package org.quiltmc.enigma.gui.search;
 
-import org.quiltmc.enigma.gui.dialog.SearchDialog;
-
 import java.util.List;
 
 public interface SearchEntry {
@@ -15,5 +13,9 @@ public interface SearchEntry {
 	 */
 	String getIdentifier();
 
-	SearchDialog.Type getType();
+	/**
+	 * Returns the priority of the type of this entry. Entries with higher
+	 * priorities show up higher in the result list. Should be greater than zero.
+	 */
+	int getTypePriority();
 }

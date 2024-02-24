@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.gui.search;
 
-import org.quiltmc.enigma.gui.dialog.SearchDialog;
 import org.quiltmc.enigma.util.Pair;
 
 import java.util.ArrayList;
@@ -160,8 +159,7 @@ public class SearchUtil<T extends SearchEntry> {
 			}
 
 			// modify by type
-			int typeModifier = SearchDialog.Type.values().length - this.searchEntry.getType().ordinal() + 1;
-			return maxScore * (hits + 1) * typeModifier;
+			return maxScore * (hits + 1) * this.searchEntry.getTypePriority();
 		}
 
 		/**
@@ -211,7 +209,11 @@ public class SearchUtil<T extends SearchEntry> {
 		}
 
 		private static <K, V> void merge(Map<K, V> self, Map<K, V> source, BiFunction<V, V, V> combiner) {
-			source.forEach((k, v) -> self.compute(k, (_k, v1) -> v1 == null ? v : v == null ? v1 : combiner.apply(v, v1)));
+			source.forEach((k, v) -> {
+				if (v != null) {
+					self.merge(k, v, combiner);
+				}
+			});
 		}
 
 		public static <T extends SearchEntry> Entry<T> from(T e) {
