@@ -36,8 +36,8 @@ public class StatusBar {
 		this.permanentComponents.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 		JLabel progressMessage = new JLabel();
 		AtomicReference<String> title = new AtomicReference<>("");
-		progressBar.addTitleSetListener(title::set);
-		progressBar.addMessageUpdateListener((message, done) -> {
+		this.progressBar.addTitleSetListener(title::set);
+		this.progressBar.addMessageUpdateListener((message, done) -> {
 			progressMessage.setText(title + ": " + message);
 
 			if (done) {
