@@ -139,6 +139,24 @@ public class DocumentSearchData {
 			target.select(start, end);
 			return true;
 		} else {
+			if (this.isWrap()) {
+				// If there isn't a match before the cursor and wrapping is enabled, jump to the last one
+				while (matcher.find()) {
+					// Skip an already selected match
+					if (matcher.start() <= dot && matcher.end() >= dot) {
+						continue;
+					}
+
+					start = matcher.start();
+					end = matcher.end();
+				}
+
+				if (end > 0) {
+					target.select(start, end);
+					return true;
+				}
+			}
+
 			return false;
 		}
 	}

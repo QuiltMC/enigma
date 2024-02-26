@@ -13,6 +13,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import java.awt.Color;
 import java.awt.Container;
@@ -20,6 +21,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -199,18 +201,41 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 	}
 
 	private void prevButtonActionPerformed(ActionEvent e) {
-		if (this.searchData.get().doFindPrev(this.target.get())) {
+		JTextComponent target = this.target.get();
+		int caretPos = target.getCaretPosition();
+		if (this.searchData.get().doFindPrev(target)) {
 			this.statusLabel.setText(null);
+			this.prevCaretPos = caretPos;
+			this.fixOverlappedCaret();
 		} else {
 			this.statusLabel.setText("QuickFindDialog.NotFound");
 		}
 	}
 
 	private void nextButtonActionPerformed(ActionEvent e) {
-		if (this.searchData.get().doFindNext(this.target.get())) {
+		JTextComponent target = this.target.get();
+		int caretPos = target.getCaretPosition();
+		if (this.searchData.get().doFindNext(target)) {
 			this.statusLabel.setText(null);
+			this.prevCaretPos = caretPos;
+			this.fixOverlappedCaret();
 		} else {
 			this.statusLabel.setText("QuickFindDialog.NotFound");
+		}
+	}
+
+	private void fixOverlappedCaret() {
+		JTextComponent target = this.target.get();
+		try {
+			var caretViewPos = target.modelToView2D(target.getCaretPosition());
+			int caretY = (int) caretViewPos.getY();
+
+			if (caretY >= target.getVisibleRect().height - this.getHeight() * 2) {
+				int lineHeight = target.getFontMetrics(target.getFont()).getHeight();
+				target.scrollRectToVisible(new Rectangle((int) caretViewPos.getX(), caretY + lineHeight * 12, 1, 1));
+			}
+		} catch (BadLocationException ex) {
+			// ignore
 		}
 	}
 
