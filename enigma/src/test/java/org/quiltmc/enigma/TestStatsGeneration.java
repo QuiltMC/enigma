@@ -29,7 +29,7 @@ public class TestStatsGeneration {
 	@Test
 	void checkNoMappedEntriesByDefault() {
 		EnigmaProject project = openProject();
-		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.none(), Set.of(StatType.values()), null, false);
+		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), Set.of(StatType.values()), null, false);
 		assertThat(stats.getMapped(), equalTo(0));
 		assertThat(stats.getPercentage(), equalTo(0d));
 	}
@@ -82,14 +82,14 @@ public class TestStatsGeneration {
 	private static EnigmaProject openProject() {
 		try {
 			Enigma enigma = Enigma.create();
-			return enigma.openJar(JAR, new JarClassProvider(JAR), ProgressListener.none());
+			return enigma.openJar(JAR, new JarClassProvider(JAR), ProgressListener.createEmpty());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	private static void checkFullyMapped(EnigmaProject project, StatType... types) {
-		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.none(), Set.of(types), null, false);
+		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), Set.of(types), null, false);
 		assertThat(stats.getMapped(types), equalTo(stats.getMappable(types)));
 		assertThat(stats.getPercentage(types), equalTo(100d));
 	}

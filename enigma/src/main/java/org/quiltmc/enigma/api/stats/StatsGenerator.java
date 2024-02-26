@@ -35,7 +35,7 @@ public class StatsGenerator {
 	private final EntryResolver entryResolver;
 
 	private ProjectStatsResult result = null;
-	private ProgressListener listener;
+	private ProgressListener overallListener;
 	private CountDownLatch generationLatch = null;
 
 	public StatsGenerator(EnigmaProject project) {
@@ -59,7 +59,7 @@ public class StatsGenerator {
 	 */
 	public ProjectStatsResult getResult(boolean includeSynthetic) {
 		if (this.result == null) {
-			return this.generateForClass(ProgressListener.none(), null, includeSynthetic);
+			return this.generateForClass(ProgressListener.createEmpty(), null, includeSynthetic);
 		}
 
 		return this.result;
@@ -70,8 +70,8 @@ public class StatsGenerator {
 	 * @return the current progress
 	 */
 	@Nullable
-	public ProgressListener getProgress() {
-		return this.listener;
+	public ProgressListener getOverallProgress() {
+		return this.overallListener;
 	}
 
 	/**
@@ -106,7 +106,10 @@ public class StatsGenerator {
 	 * @return the generated {@link ProjectStatsResult} for the provided class or package
 	 */
 	public ProjectStatsResult generate(ProgressListener progress, Set<StatType> includedTypes, @Nullable ClassEntry classEntry, boolean includeSynthetic) {
-		this.listener = progress;
+		if (classEntry == null && this.overallListener == null) {
+			this.overallListener = progress;
+		}
+
 		includedTypes = EnumSet.copyOf(includedTypes);
 		Map<ClassEntry, StatsResult> stats = this.result == null ? new HashMap<>() : this.result.getStats();
 
@@ -118,7 +121,7 @@ public class StatsGenerator {
 						.stream().filter(entry -> !entry.isInnerClass()).toList();
 
 				int done = 0;
-				progress.init(classes.size(), I18n.translate("progress.stats"));
+				progress.init(classes.size() - 1, I18n.translate("progress.stats"));
 
 				for (ClassEntry entry : classes) {
 					progress.step(done++, I18n.translateFormatted("progress.stats.for", entry.getName()));
@@ -142,8 +145,7 @@ public class StatsGenerator {
 			this.result = new ProjectStatsResult(this.project, stats);
 		}
 
-		this.listener = null;
-
+		this.overallListener = null;
 		return this.result;
 	}
 

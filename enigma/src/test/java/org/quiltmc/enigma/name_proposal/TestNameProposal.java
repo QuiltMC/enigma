@@ -66,7 +66,7 @@ public class TestNameProposal {
 		try {
 			EnigmaProfile profile = EnigmaProfile.parse(r);
 			Enigma enigma = Enigma.builder().setProfile(profile).setPlugins(List.of(new TestPlugin())).build();
-			project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
+			project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
 		} catch (Exception e) {
 			Logger.error(e, "Failed to open jar!");
 		}

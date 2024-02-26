@@ -8,18 +8,20 @@ import java.util.List;
  * Allows syncing multiple progress indicators together.
  */
 public abstract class ProgressListener {
-	// 3.0: change this to a static field
+	/**
+	 * To be removed in 3.0. Use {@link #createEmpty()} instead.
+	 */
+	@Deprecated(forRemoval = true)
 	public static ProgressListener none() {
 		return new ProgressListener() {
-			@Override
-			public void init(int totalWork, String title) {
-				// none
-			}
+		};
+	}
 
-			@Override
-			public void step(int workDone, String message) {
-				// none
-			}
+	/**
+	 * @return a basic progress listener
+	 */
+	public static ProgressListener createEmpty() {
+		return new ProgressListener() {
 		};
 	}
 
@@ -43,6 +45,9 @@ public abstract class ProgressListener {
 	public void init(int totalWork, String title) {
 		this.totalWork = totalWork;
 		this.title = title;
+		for (ProgressListener listener : this.syncedListeners) {
+			listener.init(totalWork, title);
+		}
 	}
 
 	/**
@@ -66,6 +71,6 @@ public abstract class ProgressListener {
 	public void sync(ProgressListener listener) {
 		this.init(listener.totalWork, listener.title);
 		this.step(listener.workDone, listener.currentMessage);
-		listener.syncedListeners.add(listener);
+		listener.syncedListeners.add(this);
 	}
 }

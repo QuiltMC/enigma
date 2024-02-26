@@ -39,7 +39,7 @@ public class TestJarIndexBridgeMethods {
 		JarClassProvider jcp = new JarClassProvider(JAR);
 		this.classProvider = new CachingClassProvider(jcp);
 		this.index = JarIndex.empty();
-		this.index.indexJar(jcp.getClassNames(), this.classProvider, ProgressListener.none());
+		this.index.indexJar(jcp.getClassNames(), this.classProvider, ProgressListener.createEmpty());
 	}
 
 	@Test

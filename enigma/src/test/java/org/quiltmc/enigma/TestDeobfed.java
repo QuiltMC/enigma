@@ -27,10 +27,10 @@ public class TestDeobfed {
 		Enigma enigma = Enigma.create();
 
 		Files.createDirectories(DEOBF.getParent());
-		EnigmaProject obfProject = enigma.openJar(OBF, new ClasspathClassProvider(), ProgressListener.none());
-		obfProject.exportRemappedJar(ProgressListener.none()).write(DEOBF, ProgressListener.none());
+		EnigmaProject obfProject = enigma.openJar(OBF, new ClasspathClassProvider(), ProgressListener.createEmpty());
+		obfProject.exportRemappedJar(ProgressListener.createEmpty()).write(DEOBF, ProgressListener.createEmpty());
 
-		deobfProject = enigma.openJar(DEOBF, new ClasspathClassProvider(), ProgressListener.none());
+		deobfProject = enigma.openJar(DEOBF, new ClasspathClassProvider(), ProgressListener.createEmpty());
 	}
 
 	@Test

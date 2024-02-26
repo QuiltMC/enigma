@@ -26,14 +26,14 @@ public class EntryRemapperTest {
 	@BeforeAll
 	public static void beforeAll() throws Exception {
 		Enigma enigma = Enigma.create();
-		project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
+		project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
 		remapper = project.getRemapper();
 	}
 
 	@BeforeEach
 	public void beforeEach() {
 		EntryTree<EntryMapping> mappings = new HashEntryTree<>();
-		project.setMappings(mappings, ProgressListener.none());
+		project.setMappings(mappings, ProgressListener.createEmpty());
 		remapper = project.getRemapper();
 	}
 

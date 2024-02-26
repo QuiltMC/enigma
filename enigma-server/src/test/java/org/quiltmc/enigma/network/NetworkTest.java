@@ -29,7 +29,7 @@ public class NetworkTest {
 	@BeforeAll
 	public static void startServer() throws IOException {
 		Enigma enigma = Enigma.create();
-		EnigmaProject project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
+		EnigmaProject project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
 
 		checksum = Utils.zipSha1(JAR);
 		remapper = project.getRemapper();

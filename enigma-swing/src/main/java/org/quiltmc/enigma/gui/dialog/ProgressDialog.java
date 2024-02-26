@@ -5,6 +5,7 @@ import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.GuiUtil;
+import org.quiltmc.enigma.gui.util.ProgressBar;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
 
@@ -16,17 +17,18 @@ import java.util.concurrent.CompletableFuture;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
-public class ProgressDialog extends ProgressListener implements AutoCloseable {
+public class ProgressDialog extends ProgressBar implements AutoCloseable {
 	private final JDialog dialog;
-	private final JLabel labelTitle = new JLabel();
-	private final JLabel labelText = GuiUtil.unboldLabel(new JLabel());
-	private final JProgressBar progress = new JProgressBar();
 
 	public ProgressDialog(JFrame parent) {
+		JLabel labelTitle = new JLabel();
+		this.addTitleSetListener(labelTitle::setText);
+		JLabel labelText = GuiUtil.unboldLabel(new JLabel());
+		this.addMessageUpdateListener((message, done) -> labelText.setText(message));
+
 		// init frame
 		this.dialog = new JDialog(parent, String.format(I18n.translate("progress.operation"), Enigma.NAME));
 		Container pane = this.dialog.getContentPane();
@@ -38,15 +40,15 @@ public class ProgressDialog extends ProgressListener implements AutoCloseable {
 				.fill(GridBagConstraints.BOTH)
 				.weight(1.0, 0.0);
 
-		pane.add(this.labelTitle, cb.pos(0, 0).build());
-		pane.add(this.labelText, cb.pos(0, 1).build());
-		pane.add(this.progress, cb.pos(0, 2).weight(1.0, 1.0).build());
+		pane.add(labelTitle, cb.pos(0, 0).build());
+		pane.add(labelText, cb.pos(0, 1).build());
+		pane.add(this.delegate, cb.pos(0, 2).weight(1.0, 1.0).build());
 
 		// Set label text since otherwise the label height is 0, which makes the
 		// window size get set incorrectly
-		this.labelTitle.setText("Idle");
-		this.labelText.setText("Idle");
-		this.progress.setPreferredSize(ScaleUtil.getDimension(0, 20));
+		labelTitle.setText("Idle");
+		labelText.setText("Idle");
+		this.delegate.setPreferredSize(ScaleUtil.getDimension(0, 20));
 
 		// show the frame
 		this.dialog.setResizable(false);
@@ -99,31 +101,6 @@ public class ProgressDialog extends ProgressListener implements AutoCloseable {
 	@Override
 	public void close() {
 		SwingUtilities.invokeLater(this.dialog::dispose);
-	}
-
-	@Override
-	public void init(int totalWork, String title) {
-		super.init(totalWork, title);
-		SwingUtilities.invokeLater(() -> {
-			this.labelTitle.setText(title);
-			this.progress.setMinimum(0);
-			this.progress.setMaximum(totalWork);
-			this.progress.setValue(0);
-		});
-	}
-
-	@Override
-	public void step(int workDone, String message) {
-		super.step(workDone, message);
-		SwingUtilities.invokeLater(() -> {
-			this.labelText.setText(message);
-			if (workDone != -1) {
-				this.progress.setValue(workDone);
-				this.progress.setIndeterminate(false);
-			} else {
-				this.progress.setIndeterminate(true);
-			}
-		});
 	}
 
 	public interface ProgressRunnable {

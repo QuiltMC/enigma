@@ -33,7 +33,7 @@ public class TestInnerClasses {
 		JarClassProvider jcp = new JarClassProvider(JAR);
 		CachingClassProvider classProvider = new CachingClassProvider(jcp);
 		this.index = JarIndex.empty();
-		this.index.indexJar(jcp.getClassNames(), classProvider, ProgressListener.none());
+		this.index.indexJar(jcp.getClassNames(), classProvider, ProgressListener.createEmpty());
 		this.decompiler = Decompilers.CFR.create(classProvider, new SourceSettings(false, false));
 	}
 

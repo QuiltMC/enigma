@@ -26,7 +26,7 @@ public class PackageVisibilityIndexTest {
 	public PackageVisibilityIndexTest() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
 		this.jarIndex = JarIndex.empty();
-		this.jarIndex.indexJar(jcp.getClassNames(), jcp, ProgressListener.none());
+		this.jarIndex.indexJar(jcp.getClassNames(), jcp, ProgressListener.createEmpty());
 	}
 
 	@Test

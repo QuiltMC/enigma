@@ -659,7 +659,7 @@ public class Gui {
 	 */
 	public void updateUiState() {
 		this.menuBar.updateUiState();
-		this.connectionStatusLabel.setText(I18n.translate(this.connectionState == ConnectionState.NOT_CONNECTED ? "status.disconnected" : "status.connected"));
+		this.connectionStatusLabel.setText(I18n.translate("status.prefix") + I18n.translate(this.connectionState == ConnectionState.NOT_CONNECTED ? "status.disconnected" : "status.connected"));
 	}
 
 	public void retranslateUi() {

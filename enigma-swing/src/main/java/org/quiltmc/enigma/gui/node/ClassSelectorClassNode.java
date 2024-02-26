@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.node;
 
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.util.GuiUtil;
@@ -12,6 +13,7 @@ import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import java.util.Comparator;
+import java.util.EnumSet;
 
 public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	private final ClassEntry obfEntry;
@@ -45,8 +47,10 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 		SwingWorker<ClassSelectorClassNode, Void> iconUpdateWorker = new SwingWorker<>() {
 			@Override
 			protected ClassSelectorClassNode doInBackground() {
-				if (generator.getResultNullable() == null || updateIfPresent) {
-					generator.generateForClass(ProgressListener.none(), ClassSelectorClassNode.this.getObfEntry(), false);
+				if (generator.getResultNullable() == null && generator.getOverallProgress() == null) {
+					generator.generate(new ProgressListener() {}, EnumSet.allOf(StatType.class), false);
+				} else if (updateIfPresent) {
+					generator.generateForClass(new ProgressListener() {}, ClassSelectorClassNode.this.getObfEntry(), false);
 				}
 
 				return ClassSelectorClassNode.this;

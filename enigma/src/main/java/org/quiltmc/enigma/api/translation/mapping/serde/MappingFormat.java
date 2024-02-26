@@ -34,7 +34,7 @@ public enum MappingFormat {
 	}
 
 	public void write(EntryTree<EntryMapping> mappings, Path path, MappingSaveParameters saveParameters) {
-		this.write(mappings, MappingDelta.added(mappings), path, ProgressListener.none(), saveParameters);
+		this.write(mappings, MappingDelta.added(mappings), path, ProgressListener.createEmpty(), saveParameters);
 	}
 
 	public void write(EntryTree<EntryMapping> mappings, Path path, ProgressListener progressListener, MappingSaveParameters saveParameters) {
@@ -61,7 +61,7 @@ public enum MappingFormat {
 			throw new IllegalStateException(this.name() + " does not support reading");
 		}
 
-		return this.reader.read(path, ProgressListener.none());
+		return this.reader.read(path, ProgressListener.createEmpty());
 	}
 
 	/**

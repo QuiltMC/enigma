@@ -27,16 +27,22 @@ import javax.swing.SwingUtilities;
 
 public class StatsDialog {
 	public static void show(Gui gui) {
-		ProgressDialog.runOffThread(gui, listener -> {
-			StatsGenerator generator = gui.getController().getStatsGenerator();
+		StatsGenerator generator = gui.getController().getStatsGenerator();
+		ProjectStatsResult nullableResult = generator.getResultNullable();
 
-			if (generator.getProgress() != null) {
-				listener.sync(generator.getProgress());
-			}
+		if (nullableResult == null) {
+			ProgressDialog.runOffThread(gui, listener -> {
+				// hook into current stat generation progress
+				if (generator.getOverallProgress() != null) {
+					listener.sync(generator.getOverallProgress());
+				}
 
-			ProjectStatsResult result = gui.getController().getStatsGenerator().getResult(false);
-			SwingUtilities.invokeLater(() -> show(gui, result, ""));
-		});
+				ProjectStatsResult result = gui.getController().getStatsGenerator().getResult(false);
+				SwingUtilities.invokeLater(() -> show(gui, result, ""));
+			});
+		} else {
+			SwingUtilities.invokeLater(() -> show(gui, nullableResult, ""));
+		}
 	}
 
 	public static void show(Gui gui, ProjectStatsResult result, String packageName) {

@@ -1,9 +1,14 @@
 package org.quiltmc.enigma.gui.element;
 
+import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.gui.util.ProgressBar;
+import org.quiltmc.enigma.util.I18n;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.GridLayout;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -18,6 +23,7 @@ public class StatusBar {
 	private final JPanel leftPanel = new JPanel(new GridLayout(1, 1, 0, 0));
 	private final JPanel components = new JPanel();
 	private final JPanel permanentComponents = new JPanel();
+	private final ProgressBar progressBar = new ProgressBar();
 
 	private final JLabel temporaryMessage = new JLabel();
 	private final Timer timer = new Timer(0, e -> this.clearMessage());
@@ -28,6 +34,19 @@ public class StatusBar {
 		this.components.setLayout(new BoxLayout(this.components, BoxLayout.LINE_AXIS));
 		this.permanentComponents.setLayout(new BoxLayout(this.permanentComponents, BoxLayout.LINE_AXIS));
 		this.permanentComponents.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+		JLabel progressMessage = new JLabel();
+		AtomicReference<String> title = new AtomicReference<>("");
+		progressBar.addTitleSetListener(title::set);
+		progressBar.addMessageUpdateListener((message, done) -> {
+			progressMessage.setText(title + ": " + message);
+
+			if (done) {
+				progressMessage.setText(I18n.translate("status.idle"));
+			}
+		});
+
+		this.addPermanentComponent(this.progressBar.asJProgressBar());
+		this.addPermanentComponent(progressMessage);
 
 		this.leftPanel.add(this.components);
 		this.temporaryMessage.setHorizontalTextPosition(JLabel.LEFT);
@@ -67,6 +86,10 @@ public class StatusBar {
 			this.timer.setInitialDelay(timeout);
 			this.timer.start();
 		}
+	}
+
+	public void syncWith(ProgressListener listener) {
+		this.progressBar.sync(listener);
 	}
 
 	/**
@@ -118,6 +141,10 @@ public class StatusBar {
 	 * @param comp the component to add
 	 */
 	public void addPermanentComponent(Component comp) {
+		if (this.permanentComponents.getComponents().length != 0) {
+			this.permanentComponents.add(new JLabel("  |  "));
+		}
+
 		this.permanentComponents.add(comp);
 	}
 

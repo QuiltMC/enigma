@@ -54,14 +54,14 @@ public class FillClassMappingsCommand extends Command {
 
 		Logger.info("Reading mappings...");
 		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
-		EntryTree<EntryMapping> sourceMappings = readMappings(source, ProgressListener.none());
+		EntryTree<EntryMapping> sourceMappings = readMappings(source, ProgressListener.createEmpty());
 
 		EntryTree<EntryMapping> resultMappings = exec(jarIndex, sourceMappings, fillAll, debug);
 
 		Logger.info("Writing mappings...");
 		Utils.delete(result);
 		MappingsWriter writer = MappingCommandsUtil.getWriter(resultFormat);
-		writer.write(resultMappings, result, ProgressListener.none(), saveParameters);
+		writer.write(resultMappings, result, ProgressListener.createEmpty(), saveParameters);
 
 		if (debug) {
 			writeDebugDelta((DeltaTrackingTree<EntryMapping>) resultMappings, result);

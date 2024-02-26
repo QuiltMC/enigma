@@ -73,10 +73,10 @@ public class TestReadWriteCycle {
 		File tempFile = File.createTempFile("readWriteCycle", tmpNameSuffix);
 		tempFile.delete(); //remove the auto created file
 
-		mappingFormat.write(testMappings, tempFile.toPath(), ProgressListener.none(), this.parameters);
+		mappingFormat.write(testMappings, tempFile.toPath(), ProgressListener.createEmpty(), this.parameters);
 		Assertions.assertTrue(tempFile.exists(), "Written file not created");
 
-		EntryTree<EntryMapping> loadedMappings = mappingFormat.read(tempFile.toPath(), ProgressListener.none());
+		EntryTree<EntryMapping> loadedMappings = mappingFormat.read(tempFile.toPath(), ProgressListener.createEmpty());
 
 		Assertions.assertTrue(loadedMappings.contains(this.testClazz.a()), "Loaded mappings don't contain testClazz");
 		Assertions.assertTrue(loadedMappings.contains(this.testField1.a()), "Loaded mappings don't contain testField1");

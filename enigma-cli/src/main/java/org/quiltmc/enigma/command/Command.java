@@ -107,7 +107,7 @@ public abstract class Command {
 		Logger.info("Reading JAR...");
 		JarClassProvider classProvider = new JarClassProvider(jar);
 		JarIndex index = JarIndex.empty();
-		index.indexJar(classProvider.getClassNames(), new CachingClassProvider(classProvider), ProgressListener.none());
+		index.indexJar(classProvider.getClassNames(), new CachingClassProvider(classProvider), ProgressListener.createEmpty());
 
 		return index;
 	}

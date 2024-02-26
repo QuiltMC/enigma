@@ -36,7 +36,7 @@ public class TestJarIndexLoneClass {
 	public TestJarIndexLoneClass() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
 		this.index = JarIndex.empty();
-		this.index.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.none());
+		this.index.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.createEmpty());
 	}
 
 	@Test

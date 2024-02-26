@@ -11,6 +11,6 @@ public interface MappingsReader {
 	EntryTree<EntryMapping> read(Path path, ProgressListener progress) throws MappingParseException, IOException;
 
 	default EntryTree<EntryMapping> read(Path path) throws MappingParseException, IOException {
-		return this.read(path, ProgressListener.none());
+		return this.read(path, ProgressListener.createEmpty());
 	}
 }

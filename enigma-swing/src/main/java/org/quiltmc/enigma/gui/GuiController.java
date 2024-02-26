@@ -12,6 +12,7 @@ import org.quiltmc.enigma.api.analysis.tree.ClassInheritanceTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassReferenceTreeNode;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.tree.FieldReferenceTreeNode;
+import org.quiltmc.enigma.gui.dialog.CrashDialog;
 import org.quiltmc.enigma.gui.network.IntegratedEnigmaClient;
 import org.quiltmc.enigma.impl.analysis.IndexTreeBuilder;
 import org.quiltmc.enigma.api.analysis.tree.MethodImplementationsTreeNode;
@@ -78,6 +79,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -167,8 +169,15 @@ public class GuiController implements ClientPacketHandler {
 				this.refreshClasses();
 				this.chp.invalidateJavadoc();
 				this.statsGenerator = new StatsGenerator(this.project);
+				new Thread(() -> {
+					ProgressListener progressListener = ProgressListener.createEmpty();
+					this.gui.getMainWindow().getStatusBar().syncWith(progressListener);
+					this.statsGenerator.generate(progressListener, EnumSet.allOf(StatType.class), false);
+				}).start();
 			} catch (MappingParseException e) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), e.getMessage());
+			} catch (Exception e) {
+				CrashDialog.show(e);
 			}
 		});
 	}
@@ -227,7 +236,7 @@ public class GuiController implements ClientPacketHandler {
 	public void closeMappings() {
 		if (this.project == null) return;
 
-		this.project.setMappings(null, ProgressListener.none());
+		this.project.setMappings(null, ProgressListener.createEmpty());
 
 		this.gui.setMappingsFile(null);
 		this.refreshClasses();
