@@ -48,9 +48,9 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 			@Override
 			protected ClassSelectorClassNode doInBackground() {
 				if (generator.getResultNullable() == null && generator.getOverallProgress() == null) {
-					generator.generate(new ProgressListener() {}, EnumSet.allOf(StatType.class), false);
+					generator.generate(ProgressListener.createEmpty(), EnumSet.allOf(StatType.class), false);
 				} else if (updateIfPresent) {
-					generator.generateForClass(new ProgressListener() {}, ClassSelectorClassNode.this.getObfEntry(), false);
+					generator.generateForClass(ProgressListener.createEmpty(), ClassSelectorClassNode.this.getObfEntry(), false);
 				}
 
 				return ClassSelectorClassNode.this;
