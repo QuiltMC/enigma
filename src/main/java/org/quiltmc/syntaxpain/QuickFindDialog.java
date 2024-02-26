@@ -230,8 +230,9 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 			var caretViewPos = target.modelToView2D(target.getCaretPosition());
 			int caretY = (int) caretViewPos.getY();
 
-			if (caretY >= target.getVisibleRect().height - this.getHeight()) {
-				target.scrollRectToVisible(new Rectangle((int) caretViewPos.getX(), caretY + this.getHeight() * 2, 1, 1));
+			if (caretY >= target.getVisibleRect().height - this.getHeight() * 2) {
+				int lineHeight = target.getFontMetrics(target.getFont()).getHeight();
+				target.scrollRectToVisible(new Rectangle((int) caretViewPos.getX(), caretY + lineHeight * 12, 1, 1));
 			}
 		} catch (BadLocationException ex) {
 			// ignore
