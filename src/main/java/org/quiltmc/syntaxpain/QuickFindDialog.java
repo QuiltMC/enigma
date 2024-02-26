@@ -97,7 +97,7 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 				target.requestFocus();
 			}
 		};
-		// this.addWindowFocusListener(focusListener);
+		this.addWindowFocusListener(focusListener);
 
 		this.target = new WeakReference<>(target);
 
