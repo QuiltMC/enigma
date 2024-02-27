@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.config;
 
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.annotations.Comment;
+import org.quiltmc.config.api.annotations.Processor;
 import org.quiltmc.config.api.annotations.SerializedName;
 import org.quiltmc.config.api.serializers.TomlSerializer;
 import org.quiltmc.config.api.values.ComplexConfigValue;
@@ -42,6 +43,7 @@ public final class Config extends ReflectiveConfig {
 
 	@SerializedName("language")
 	@Comment("The currently assigned UI language. This will be an ISO-639 two-letter language code, followed by an underscore and an ISO 3166-1 alpha-2 two-letter country code.")
+	@Processor("grabPossibleLanguages")
 	public final TrackedValue<String> language = this.value(I18n.DEFAULT_LANGUAGE);
 	@SerializedName("scale_factor")
 	@Comment("A float representing the current size of the UI. 1.0 represents 100% scaling.")
@@ -148,6 +150,12 @@ public final class Config extends ReflectiveConfig {
 		} else {
 			return null;
 		}
+	}
+
+	@SuppressWarnings("unused")
+	public void grabPossibleLanguages(TrackedValue.Builder<String> builder) {
+		String possibleLanguages = "Supported languages: " + String.join(", ", I18n.getAvailableLanguages().toArray(new String[0]));
+		builder.metadata(Comment.TYPE, b -> b.add(possibleLanguages));
 	}
 
 	public record RecentProject(String jarPath, String mappingsPath) implements ConfigSerializableObject<ValueMap<String>> {
