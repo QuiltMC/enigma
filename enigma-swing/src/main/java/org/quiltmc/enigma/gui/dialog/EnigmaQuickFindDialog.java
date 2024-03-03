@@ -51,14 +51,16 @@ public class EnigmaQuickFindDialog extends QuickFindDialog {
 		this.wrapCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_WRAP.getKeyCode());
 
 		// make buttons icon-only
-		this.nextButton.setText("");
 		this.nextButton.setIcon(GuiUtil.getDownChevron());
-		this.prevButton.setText("");
 		this.prevButton.setIcon(GuiUtil.getUpChevron());
 
 		// translations
-		this.ignoreCaseCheckBox.setText(I18n.translate("editor.quick_find.ignore_case"));
-		this.regexCheckBox.setText(I18n.translate("editor.quick_find.use_regex"));
-		this.wrapCheckBox.setText(I18n.translate("editor.quick_find.wrap"));
+		this.ignoreCase = I18n.translate("editor.quick_find.ignore_case");
+		this.useRegex = I18n.translate("editor.quick_find.use_regex");
+		this.wrap = I18n.translate("editor.quick_find.wrap");
+		this.next = "";
+		this.prev = "";
+		this.notFound = I18n.translate("editor.quick_find.not_found");
+		this.translate();
 	}
 }
