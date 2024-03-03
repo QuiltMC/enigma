@@ -55,6 +55,14 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 	protected JCheckBox regexCheckBox;
 	protected JCheckBox wrapCheckBox;
 
+	protected String prev = "prev";
+	protected String next = "next";
+	protected String componentName = "QuickFindDialog";
+	protected String ignoreCase = "Ignore case";
+	protected String useRegex = "Use regex";
+	protected String wrap = "Wrap";
+	protected String notFound = "Not found";
+
 	public QuickFindDialog(JTextComponent target) {
 		this(target, DocumentSearchData.getFromEditor(target));
 	}
@@ -124,15 +132,14 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 		JToolBar toolBar = new JToolBar();
 		this.statusLabel = new JLabel();
 		this.searchField = new JTextField();
-		this.prevButton = new JButton("prev");
-		this.nextButton = new JButton("next");
-		this.ignoreCaseCheckBox = new JCheckBox();
-		this.regexCheckBox = new JCheckBox();
-		this.wrapCheckBox = new JCheckBox();
+		this.prevButton = new JButton(this.prev);
+		this.nextButton = new JButton(this.next);
+		this.ignoreCaseCheckBox = new JCheckBox(this.ignoreCase);
+		this.regexCheckBox = new JCheckBox(this.useRegex);
+		this.wrapCheckBox = new JCheckBox(this.wrap);
 
 		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		this.setBackground(Color.DARK_GRAY);
-		this.setName("QuickFindDialog");
 		this.setResizable(false);
 		this.setUndecorated(true);
 
@@ -165,29 +172,27 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 
 		toolBar.addSeparator();
 
-		this.ignoreCaseCheckBox.setText("Ignore case");
 		this.ignoreCaseCheckBox.setFocusable(false);
 		this.ignoreCaseCheckBox.setOpaque(false);
 		this.ignoreCaseCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
 		this.ignoreCaseCheckBox.addActionListener(this);
 		toolBar.add(this.ignoreCaseCheckBox);
 
-		this.regexCheckBox.setText("Use regex");
 		this.regexCheckBox.setFocusable(false);
 		this.regexCheckBox.setOpaque(false);
 		this.regexCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
 		this.regexCheckBox.addActionListener(this);
 		toolBar.add(this.regexCheckBox);
 
-		this.wrapCheckBox.setText("Wrap");
 		this.wrapCheckBox.setFocusable(false);
 		this.wrapCheckBox.setOpaque(false);
 		this.wrapCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
 		this.wrapCheckBox.addActionListener(this);
 		toolBar.add(this.wrapCheckBox);
 
-		this.statusLabel.setFont(this.statusLabel.getFont().deriveFont(this.statusLabel.getFont().getStyle() | Font.BOLD, this.statusLabel.getFont().getSize() - 2));
+		this.statusLabel.setFont(this.statusLabel.getFont().deriveFont(this.statusLabel.getFont().getStyle() | Font.BOLD));
 		this.statusLabel.setForeground(Color.RED);
+		toolBar.addSeparator();
 		toolBar.add(this.statusLabel);
 
 		GroupLayout layout = new GroupLayout(this.getContentPane());
@@ -197,6 +202,16 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
 				.addComponent(toolBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
 
+		this.translate();
+	}
+
+	protected void translate() {
+		this.nextButton.setText(this.next);
+		this.prevButton.setText(this.prev);
+		this.setName(this.componentName);
+		this.ignoreCaseCheckBox.setText(this.ignoreCase);
+		this.regexCheckBox.setText(this.useRegex);
+		this.wrapCheckBox.setText(this.wrap);
 		this.pack();
 	}
 
@@ -208,7 +223,7 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 			this.prevCaretPos = caretPos;
 			this.fixOverlappedCaret();
 		} else {
-			this.statusLabel.setText("QuickFindDialog.NotFound");
+			this.statusLabel.setText(this.notFound);
 		}
 	}
 
@@ -220,7 +235,7 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 			this.prevCaretPos = caretPos;
 			this.fixOverlappedCaret();
 		} else {
-			this.statusLabel.setText("QuickFindDialog.NotFound");
+			this.statusLabel.setText(this.notFound);
 		}
 	}
 
@@ -259,7 +274,7 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 		DocumentSearchData searchData = this.searchData.get();
 		String searchText = this.searchField.getText();
 
-		if (searchText == null || searchText.isEmpty()) {
+		if (searchText == null || searchText.isEmpty() || target == null || searchData == null) {
 			this.statusLabel.setText(null);
 			return;
 		}
@@ -273,7 +288,7 @@ public class QuickFindDialog extends JDialog implements DocumentListener, Action
 			// so we need to relocate to our saved pos before we call doFindNext
 			target.setCaretPosition(this.prevCaretPos);
 			if (!searchData.doFindNext(target)) {
-				this.statusLabel.setText("QuickFindDialog.NotFound");
+				this.statusLabel.setText(this.notFound);
 			} else {
 				this.statusLabel.setText(null);
 			}
