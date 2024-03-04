@@ -57,9 +57,9 @@ public class StatsGenerator {
 	 * Gets the latest generated stats, or generates them if not yet present.
 	 * @return the stats
 	 */
-	public ProjectStatsResult getResult(boolean includeSynthetic) {
+	public ProjectStatsResult getResult(Set<StatType> includedTypes, boolean includeSynthetic) {
 		if (this.result == null) {
-			return this.generateForClass(ProgressListener.createEmpty(), null, includeSynthetic);
+			return this.generate(ProgressListener.createEmpty(), includedTypes, includeSynthetic);
 		}
 
 		return this.result;
@@ -72,17 +72,6 @@ public class StatsGenerator {
 	@Nullable
 	public ProgressListener getOverallProgress() {
 		return this.overallListener;
-	}
-
-	/**
-	 * Generates stats for the given class. Includes all {@link StatType}s in the calculation.
-	 * @param progress a listener to update with current progress
-	 * @param entry the class to generate stats for
-	 * @param includeSynthetic whether to include synthetic methods
-	 * @return the generated {@link StatsResult} for the provided class
-	 */
-	public ProjectStatsResult generateForClass(ProgressListener progress, ClassEntry entry, boolean includeSynthetic) {
-		return this.generate(progress, EnumSet.allOf(StatType.class), entry, includeSynthetic);
 	}
 
 	/**
@@ -184,7 +173,7 @@ public class StatsGenerator {
 		entries.add(classEntry);
 
 		for (Entry<?> entry : entries) {
-			if (entry instanceof FieldEntry field) {
+			if (entry instanceof FieldEntry field && includedTypes.contains(StatType.FIELDS)) {
 				if (!((FieldDefEntry) field).getAccess().isSynthetic()) {
 					this.update(StatType.FIELDS, mappableCounts, unmappedCounts, field);
 				}
@@ -217,7 +206,7 @@ public class StatsGenerator {
 						}
 					}
 				}
-			} else if (entry instanceof ClassEntry clazz) {
+			} else if (entry instanceof ClassEntry clazz && includedTypes.contains(StatType.CLASSES)) {
 				this.update(StatType.CLASSES, mappableCounts, unmappedCounts, clazz);
 			}
 		}

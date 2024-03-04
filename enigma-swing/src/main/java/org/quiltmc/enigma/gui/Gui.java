@@ -269,6 +269,10 @@ public class Gui {
 		return this.crashHistory;
 	}
 
+	public Set<EditableType> getEditableTypes() {
+		return this.editableTypes;
+	}
+
 	public void addCrash(Throwable t) {
 		this.crashHistory.add(t);
 		this.menuBar.prepareCrashHistoryMenu();

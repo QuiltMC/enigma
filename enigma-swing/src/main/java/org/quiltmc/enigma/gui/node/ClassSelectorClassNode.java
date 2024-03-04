@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.gui.node;
 
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.gui.ClassSelector;
+import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
@@ -13,7 +13,6 @@ import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import java.util.Comparator;
-import java.util.EnumSet;
 
 public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	private final ClassEntry obfEntry;
@@ -48,9 +47,9 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 			@Override
 			protected ClassSelectorClassNode doInBackground() {
 				if (generator.getResultNullable() == null && generator.getOverallProgress() == null) {
-					generator.generate(ProgressListener.createEmpty(), EnumSet.allOf(StatType.class), false);
+					generator.generate(ProgressListener.createEmpty(), EditableType.toStatTypes(gui.getEditableTypes()), false);
 				} else if (updateIfPresent) {
-					generator.generateForClass(ProgressListener.createEmpty(), ClassSelectorClassNode.this.getObfEntry(), false);
+					generator.generate(ProgressListener.createEmpty(), EditableType.toStatTypes(gui.getEditableTypes()), ClassSelectorClassNode.this.getObfEntry(), false);
 				}
 
 				return ClassSelectorClassNode.this;
