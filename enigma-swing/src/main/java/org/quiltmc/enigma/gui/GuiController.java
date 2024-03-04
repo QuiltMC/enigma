@@ -171,7 +171,7 @@ public class GuiController implements ClientPacketHandler {
 				new Thread(() -> {
 					ProgressListener progressListener = ProgressListener.createEmpty();
 					this.gui.getMainWindow().getStatusBar().syncWith(progressListener);
-					this.statsGenerator.generate(progressListener, EditableType.toStatTypes(gui.getEditableTypes()), false);
+					this.statsGenerator.generate(progressListener, EditableType.toStatTypes(this.gui.getEditableTypes()), false);
 				}).start();
 			} catch (MappingParseException e) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), e.getMessage());
@@ -564,7 +564,7 @@ public class GuiController implements ClientPacketHandler {
 
 	public void openStatsTree(Set<StatType> includedTypes) {
 		ProgressDialog.runOffThread(this.gui, progress -> {
-			StatsResult overall = this.getStatsGenerator().getResult(EditableType.toStatTypes(gui.getEditableTypes()), false).getOverall();
+			StatsResult overall = this.getStatsGenerator().getResult(EditableType.toStatTypes(this.gui.getEditableTypes()), false).getOverall();
 			StatsTree<Integer> tree = overall.buildTree(Config.main().stats.lastTopLevelPackage.value(), includedTypes);
 			String treeJson = GSON.toJson(tree.root);
 
