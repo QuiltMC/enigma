@@ -99,7 +99,6 @@
 	"info_panel.identifier.method": "メソッド",
 	"info_panel.identifier.constructor": "コンストラクタ",
 	"info_panel.identifier.class": "クラス",
-	"info_panel.identifier.type_descriptor": "型記述子",
 	"info_panel.identifier.method_descriptor": "メソッド記述子",
 	"info_panel.identifier.index": "Index",
 	"info_panel.editor.class.decompiling": "(デコンパイル中...)",

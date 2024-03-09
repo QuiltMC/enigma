@@ -129,7 +129,7 @@ public class IdentifierPanel {
 				this.nameField = th.addRenameTextField(EditableType.FIELD, fe.getName());
 				th.addStringRow(I18n.translate("info_panel.identifier.class"), fe.getParent().getFullName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.type_descriptor"), fe.getDesc().toString());
+				th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), toReadableType(fe.getDesc()));
 			} else if (this.deobfEntry instanceof MethodEntry me) {
 				if (me.isConstructor()) {
 					ClassEntry ce = me.getParent();
@@ -165,31 +165,12 @@ public class IdentifierPanel {
 				var args = lve.getParent().getDesc().getArgumentDescs();
 
 				for (ArgumentDescriptor arg : args) {
-					var primitive = TypeDescriptor.Primitive.get(arg.toString().charAt(0));
-
 					if (i == lve.getIndex()) {
-						String niceType;
-						if (primitive != null) {
-							niceType = arg + " (" + primitive.getKeyword() + ")";
-						} else {
-							// type will look like "LClassName;", with an optional [ at the start to denote an array
-							String raw = arg.toString();
-							// strip semicolon (;) from the end
-							raw = raw.substring(0, raw.length() - 1);
-							// handle arrays: add "[]" to the end and strip "["
-							while (raw.startsWith("[")) {
-								raw = raw.substring(1) + "[]";
-							}
-
-							// strip "L"
-							raw = raw.substring(1);
-							niceType = raw;
-						}
-
-						th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), niceType);
+						th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), toReadableType(arg));
 						break;
 					}
 
+					var primitive = TypeDescriptor.Primitive.get(arg.toString().charAt(0));
 					i += primitive == null ? 1 : primitive.getSize();
 				}
 			} else {
@@ -241,6 +222,26 @@ public class IdentifierPanel {
 
 		this.ui.validate();
 		this.ui.repaint();
+	}
+
+	private static String toReadableType(TypeDescriptor descriptor) {
+		var primitive = TypeDescriptor.Primitive.get(descriptor.toString().charAt(0));
+
+		if (primitive != null) {
+			return descriptor + " (" + primitive.getKeyword() + ")";
+		} else {
+			String raw = descriptor.toString();
+			// type will look like "LClassName;", with an optional [ at the start to denote an array
+			// strip semicolon (;) from the end
+			raw = raw.substring(0, raw.length() - 1);
+			// handle arrays: add "[]" to the end and strip "["
+			while (raw.startsWith("[")) {
+				raw = raw.substring(1) + "[]";
+			}
+
+			// strip "L"
+			return raw.substring(1);
+		}
 	}
 
 	private void doRename(String newName) {
