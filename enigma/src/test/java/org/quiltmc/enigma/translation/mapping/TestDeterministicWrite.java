@@ -32,12 +32,12 @@ public class TestDeterministicWrite {
 		String prev = null;
 		for (int i = 0; i < 32; i++) {
 			Path file = dir.resolve(i + ".tiny");
-			MappingFormat.TINY_V2.write(mappings, file, ProgressListener.none(), null);
+			MappingFormat.TINY_V2.write(mappings, file, ProgressListener.createEmpty(), null);
 
 			String content = Files.readString(file);
 			if (prev != null) Assertions.assertEquals(prev, content, "Iteration " + i + " has a different result from the previous one");
 			prev = content;
-			mappings = MappingFormat.TINY_V2.read(file, ProgressListener.none());
+			mappings = MappingFormat.TINY_V2.read(file, ProgressListener.createEmpty());
 		}
 	}
 

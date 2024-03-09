@@ -269,6 +269,10 @@ public class Gui {
 		return this.crashHistory;
 	}
 
+	public Set<EditableType> getEditableTypes() {
+		return this.editableTypes;
+	}
+
 	public void addCrash(Throwable t) {
 		this.crashHistory.add(t);
 		this.menuBar.prepareCrashHistoryMenu();
@@ -659,7 +663,7 @@ public class Gui {
 	 */
 	public void updateUiState() {
 		this.menuBar.updateUiState();
-		this.connectionStatusLabel.setText(I18n.translate(this.connectionState == ConnectionState.NOT_CONNECTED ? "status.disconnected" : "status.connected"));
+		this.connectionStatusLabel.setText(I18n.translate("status.prefix") + I18n.translate(this.connectionState == ConnectionState.NOT_CONNECTED ? "status.disconnected" : "status.connected"));
 	}
 
 	public void retranslateUi() {

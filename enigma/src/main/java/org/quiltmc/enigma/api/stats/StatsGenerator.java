@@ -33,8 +33,9 @@ public class StatsGenerator {
 	private final EnigmaProject project;
 	private final EntryIndex entryIndex;
 	private final EntryResolver entryResolver;
-	private ProjectStatsResult result = null;
 
+	private ProjectStatsResult result = null;
+	private ProgressListener overallListener;
 	private CountDownLatch generationLatch = null;
 
 	public StatsGenerator(EnigmaProject project) {
@@ -47,6 +48,7 @@ public class StatsGenerator {
 	 * Gets the latest generated stats.
 	 * @return the stats, or {@code null} if not yet generated
 	 */
+	@Nullable
 	public ProjectStatsResult getResultNullable() {
 		return this.result;
 	}
@@ -55,23 +57,21 @@ public class StatsGenerator {
 	 * Gets the latest generated stats, or generates them if not yet present.
 	 * @return the stats
 	 */
-	public ProjectStatsResult getResult(boolean includeSynthetic) {
+	public ProjectStatsResult getResult(Set<StatType> includedTypes, boolean includeSynthetic) {
 		if (this.result == null) {
-			return this.generateForClassTree(ProgressListener.none(), null, includeSynthetic);
+			return this.generate(ProgressListener.createEmpty(), includedTypes, includeSynthetic);
 		}
 
 		return this.result;
 	}
 
 	/**
-	 * Generates stats for the given class. Includes all {@link StatType}s in the calculation.
-	 * @param progress a listener to update with current progress
-	 * @param entry the class to generate stats for
-	 * @param includeSynthetic whether to include synthetic methods
-	 * @return the generated {@link StatsResult} for the provided class
+	 * If stats are currently being generated, returns the progress listener.
+	 * @return the current progress
 	 */
-	public ProjectStatsResult generateForClassTree(ProgressListener progress, ClassEntry entry, boolean includeSynthetic) {
-		return this.generate(progress, EnumSet.allOf(StatType.class), entry, includeSynthetic);
+	@Nullable
+	public ProgressListener getOverallProgress() {
+		return this.overallListener;
 	}
 
 	/**
@@ -95,6 +95,10 @@ public class StatsGenerator {
 	 * @return the generated {@link ProjectStatsResult} for the provided class or package
 	 */
 	public ProjectStatsResult generate(ProgressListener progress, Set<StatType> includedTypes, @Nullable ClassEntry classEntry, boolean includeSynthetic) {
+		if (classEntry == null && this.overallListener == null) {
+			this.overallListener = progress;
+		}
+
 		includedTypes = EnumSet.copyOf(includedTypes);
 		Map<ClassEntry, StatsResult> stats = this.result == null ? new HashMap<>() : this.result.getStats();
 
@@ -106,7 +110,7 @@ public class StatsGenerator {
 						.stream().filter(entry -> !entry.isInnerClass()).toList();
 
 				int done = 0;
-				progress.init(classes.size(), I18n.translate("progress.stats"));
+				progress.init(classes.size() - 1, I18n.translate("progress.stats"));
 
 				for (ClassEntry entry : classes) {
 					progress.step(done++, I18n.translateFormatted("progress.stats.for", entry.getName()));
@@ -130,6 +134,7 @@ public class StatsGenerator {
 			this.result = new ProjectStatsResult(this.project, stats);
 		}
 
+		this.overallListener = null;
 		return this.result;
 	}
 
@@ -168,7 +173,7 @@ public class StatsGenerator {
 		entries.add(classEntry);
 
 		for (Entry<?> entry : entries) {
-			if (entry instanceof FieldEntry field) {
+			if (entry instanceof FieldEntry field && includedTypes.contains(StatType.FIELDS)) {
 				if (!((FieldDefEntry) field).getAccess().isSynthetic()) {
 					this.update(StatType.FIELDS, mappableCounts, unmappedCounts, field);
 				}
@@ -201,7 +206,7 @@ public class StatsGenerator {
 						}
 					}
 				}
-			} else if (entry instanceof ClassEntry clazz) {
+			} else if (entry instanceof ClassEntry clazz && includedTypes.contains(StatType.CLASSES)) {
 				this.update(StatType.CLASSES, mappableCounts, unmappedCounts, clazz);
 			}
 		}

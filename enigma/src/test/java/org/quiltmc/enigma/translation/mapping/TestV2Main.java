@@ -19,6 +19,6 @@ public final class TestV2Main {
 
 		EntryTree<EntryMapping> tree = EnigmaMappingsReader.DIRECTORY.read(path);
 
-		new TinyV2Writer("obf", "deobf").write(tree, Paths.get("currentYarn.tiny"), ProgressListener.none(), parameters);
+		new TinyV2Writer("obf", "deobf").write(tree, Paths.get("currentYarn.tiny"), ProgressListener.createEmpty(), parameters);
 	}
 }

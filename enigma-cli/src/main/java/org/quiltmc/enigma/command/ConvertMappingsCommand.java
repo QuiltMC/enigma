@@ -47,6 +47,6 @@ public class ConvertMappingsCommand extends Command {
 
 		Utils.delete(output);
 		MappingsWriter writer = MappingCommandsUtil.getWriter(resultFormat);
-		writer.write(mappings, output, ProgressListener.none(), saveParameters);
+		writer.write(mappings, output, ProgressListener.createEmpty(), saveParameters);
 	}
 }

@@ -113,7 +113,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 			EnigmaProfile profile = EnigmaProfile.read(profileFile);
 			Enigma enigma = Enigma.builder().setProfile(profile).build();
 			Logger.info("Indexing Jar...");
-			EnigmaProject project = enigma.openJar(jar, new ClasspathClassProvider(), ProgressListener.none());
+			EnigmaProject project = enigma.openJar(jar, new ClasspathClassProvider(), ProgressListener.createEmpty());
 
 			MappingFormat mappingFormat = MappingFormat.parseFromFile(mappingsFile);
 			EntryRemapper mappings;
@@ -154,7 +154,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 	}
 
 	private void saveMappings() {
-		this.mappingFormat.write(this.getRemapper().getMappings(), this.getRemapper().takeMappingDelta(), this.mappingsFile, ProgressListener.none(), this.profile.getMappingSaveParameters());
+		this.mappingFormat.write(this.getRemapper().getMappings(), this.getRemapper().takeMappingDelta(), this.mappingsFile, ProgressListener.createEmpty(), this.profile.getMappingSaveParameters());
 		this.log.flush();
 	}
 

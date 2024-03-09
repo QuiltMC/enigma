@@ -22,7 +22,7 @@ public class TestJarIndexEnums {
 	@Test
 	void checkEnumStats() {
 		EnigmaProject project = openProject();
-		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.none(), EnumSet.allOf(StatType.class), null, false);
+		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), EnumSet.allOf(StatType.class), null, false);
 
 		assertThat(stats.getMapped(StatType.CLASSES), equalTo(0));
 		assertThat(stats.getMapped(StatType.FIELDS), equalTo(0));
@@ -38,7 +38,7 @@ public class TestJarIndexEnums {
 	private static EnigmaProject openProject() {
 		try {
 			Enigma enigma = Enigma.create();
-			return enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
+			return enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

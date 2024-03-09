@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui;
 
+import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
@@ -7,6 +8,9 @@ import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntr
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public enum EditableType {
 	CLASS,
@@ -42,5 +46,20 @@ public enum EditableType {
 		}
 
 		return type;
+	}
+
+	@Nullable
+	public StatType toStatType() {
+		return switch (this) {
+			case CLASS -> StatType.CLASSES;
+			case METHOD -> StatType.METHODS;
+			case FIELD -> StatType.FIELDS;
+			case PARAMETER -> StatType.PARAMETERS;
+			default -> null;
+		};
+	}
+
+	public static Set<StatType> toStatTypes(Set<EditableType> editables) {
+		return editables.stream().map(EditableType::toStatType).filter(Objects::nonNull).collect(Collectors.toSet());
 	}
 }

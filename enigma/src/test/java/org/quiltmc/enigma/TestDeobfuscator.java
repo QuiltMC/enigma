@@ -17,7 +17,7 @@ public class TestDeobfuscator {
 
 	private EnigmaProject openProject() throws IOException {
 		Enigma enigma = Enigma.create();
-		return enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
+		return enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
 	}
 
 	@Test

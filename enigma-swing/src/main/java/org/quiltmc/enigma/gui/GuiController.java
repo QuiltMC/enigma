@@ -12,6 +12,7 @@ import org.quiltmc.enigma.api.analysis.tree.ClassInheritanceTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassReferenceTreeNode;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.tree.FieldReferenceTreeNode;
+import org.quiltmc.enigma.gui.dialog.CrashDialog;
 import org.quiltmc.enigma.gui.network.IntegratedEnigmaClient;
 import org.quiltmc.enigma.impl.analysis.IndexTreeBuilder;
 import org.quiltmc.enigma.api.analysis.tree.MethodImplementationsTreeNode;
@@ -167,8 +168,15 @@ public class GuiController implements ClientPacketHandler {
 				this.refreshClasses();
 				this.chp.invalidateJavadoc();
 				this.statsGenerator = new StatsGenerator(this.project);
+				new Thread(() -> {
+					ProgressListener progressListener = ProgressListener.createEmpty();
+					this.gui.getMainWindow().getStatusBar().syncWith(progressListener);
+					this.statsGenerator.generate(progressListener, EditableType.toStatTypes(this.gui.getEditableTypes()), false);
+				}).start();
 			} catch (MappingParseException e) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), e.getMessage());
+			} catch (Exception e) {
+				CrashDialog.show(e);
 			}
 		});
 	}
@@ -227,7 +235,7 @@ public class GuiController implements ClientPacketHandler {
 	public void closeMappings() {
 		if (this.project == null) return;
 
-		this.project.setMappings(null, ProgressListener.none());
+		this.project.setMappings(null, ProgressListener.createEmpty());
 
 		this.gui.setMappingsFile(null);
 		this.refreshClasses();
@@ -556,7 +564,7 @@ public class GuiController implements ClientPacketHandler {
 
 	public void openStatsTree(Set<StatType> includedTypes) {
 		ProgressDialog.runOffThread(this.gui, progress -> {
-			StatsResult overall = this.getStatsGenerator().getResultNullable().getOverall();
+			StatsResult overall = this.getStatsGenerator().getResult(EditableType.toStatTypes(this.gui.getEditableTypes()), false).getOverall();
 			StatsTree<Integer> tree = overall.buildTree(Config.main().stats.lastTopLevelPackage.value(), includedTypes);
 			String treeJson = GSON.toJson(tree.root);
 

@@ -22,7 +22,7 @@ public class TestInnerClassParameterStats {
 	@Test
 	public void testInnerClassParameterStats() {
 		EnigmaProject project = openProject();
-		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.none(), EnumSet.of(StatType.PARAMETERS), null, false);
+		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), EnumSet.of(StatType.PARAMETERS), null, false);
 		// 5/8 total parameters in our six classes are non-mappable, meaning that we should get 0/3 parameters mapped
 		// these non-mappable parameters come from non-static inner classes taking their enclosing class as a parameter
 		// they are currently manually excluded by a check in the stats generator
@@ -33,7 +33,7 @@ public class TestInnerClassParameterStats {
 	private static EnigmaProject openProject() {
 		try {
 			Enigma enigma = Enigma.create();
-			return enigma.openJar(JAR, new JarClassProvider(JAR), ProgressListener.none());
+			return enigma.openJar(JAR, new JarClassProvider(JAR), ProgressListener.createEmpty());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

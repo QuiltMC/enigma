@@ -51,7 +51,7 @@ public class DropInvalidMappingsCommand extends Command {
 
 		Logger.info("Dropping invalid mappings...");
 
-		project.dropMappings(ProgressListener.none());
+		project.dropMappings(ProgressListener.createEmpty());
 
 		Logger.info("Writing mappings...");
 
@@ -75,6 +75,6 @@ public class DropInvalidMappingsCommand extends Command {
 		}
 
 		MappingSaveParameters saveParameters = project.getEnigma().getProfile().getMappingSaveParameters();
-		format.write(project.getRemapper().getMappings(), mappingsOut, ProgressListener.none(), saveParameters);
+		format.write(project.getRemapper().getMappings(), mappingsOut, ProgressListener.createEmpty(), saveParameters);
 	}
 }

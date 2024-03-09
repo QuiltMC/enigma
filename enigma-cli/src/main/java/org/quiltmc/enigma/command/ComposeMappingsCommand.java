@@ -55,6 +55,6 @@ public class ComposeMappingsCommand extends Command {
 
 		Utils.delete(resultFile);
 		MappingsWriter writer = MappingCommandsUtil.getWriter(resultFormat);
-		writer.write(result, resultFile, ProgressListener.none(), saveParameters);
+		writer.write(result, resultFile, ProgressListener.createEmpty(), saveParameters);
 	}
 }

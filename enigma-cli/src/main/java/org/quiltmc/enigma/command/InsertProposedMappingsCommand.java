@@ -78,7 +78,7 @@ public class InsertProposedMappingsCommand extends Command {
 		Utils.delete(output);
 		MappingSaveParameters saveParameters = new MappingSaveParameters(enigma.getProfile().getMappingSaveParameters().fileNameFormat(), true);
 		MappingsWriter writer = MappingCommandsUtil.getWriter(resultFormat);
-		writer.write(mappings, output, ProgressListener.none(), saveParameters);
+		writer.write(mappings, output, ProgressListener.createEmpty(), saveParameters);
 
 		if (debug) {
 			writeDebugDelta(mappings, output);

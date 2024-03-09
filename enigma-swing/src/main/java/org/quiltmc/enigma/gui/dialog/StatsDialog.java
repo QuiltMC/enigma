@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.gui.dialog;
 
+import org.quiltmc.enigma.api.stats.StatsGenerator;
+import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
@@ -26,10 +28,22 @@ import javax.swing.SwingUtilities;
 
 public class StatsDialog {
 	public static void show(Gui gui) {
-		ProgressDialog.runOffThread(gui, listener -> {
-			ProjectStatsResult result = gui.getController().getStatsGenerator().getResult(false);
-			SwingUtilities.invokeLater(() -> show(gui, result, ""));
-		});
+		StatsGenerator generator = gui.getController().getStatsGenerator();
+		ProjectStatsResult nullableResult = generator.getResultNullable();
+
+		if (nullableResult == null) {
+			ProgressDialog.runOffThread(gui, listener -> {
+				// hook into current stat generation progress
+				if (generator.getOverallProgress() != null) {
+					listener.sync(generator.getOverallProgress());
+				}
+
+				ProjectStatsResult result = gui.getController().getStatsGenerator().getResult(EditableType.toStatTypes(gui.getEditableTypes()), false);
+				SwingUtilities.invokeLater(() -> show(gui, result, ""));
+			});
+		} else {
+			SwingUtilities.invokeLater(() -> show(gui, nullableResult, ""));
+		}
 	}
 
 	public static void show(Gui gui, ProjectStatsResult result, String packageName) {
@@ -83,7 +97,7 @@ public class StatsDialog {
 			ProgressDialog.runOffThread(gui, listener -> {
 				Config.main().stats.lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
 
-				ProjectStatsResult projectResult = gui.getController().getStatsGenerator().getResult(syntheticParametersOption.isSelected()).filter(Config.main().stats.lastTopLevelPackage.value());
+				ProjectStatsResult projectResult = gui.getController().getStatsGenerator().getResult(EditableType.toStatTypes(gui.getEditableTypes()), syntheticParametersOption.isSelected()).filter(Config.main().stats.lastTopLevelPackage.value());
 				SwingUtilities.invokeLater(() -> show(gui, projectResult, Config.main().stats.lastTopLevelPackage.value()));
 			});
 		});

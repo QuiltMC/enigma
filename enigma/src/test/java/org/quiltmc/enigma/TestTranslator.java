@@ -29,11 +29,11 @@ public class TestTranslator {
 	@BeforeAll
 	public static void beforeClass() throws Exception {
 		enigma = Enigma.create();
-		project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
+		project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
 		mappings = MappingFormat.ENIGMA_FILE.read(
 				TestUtil.getResource("/translation.mappings"),
-				ProgressListener.none());
-		project.setMappings(mappings, ProgressListener.none());
+				ProgressListener.createEmpty());
+		project.setMappings(mappings, ProgressListener.createEmpty());
 		deobfuscator = project.getRemapper().getDeobfuscator();
 	}
 

@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.node;
 
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.gui.ClassSelector;
+import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
@@ -45,8 +46,10 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 		SwingWorker<ClassSelectorClassNode, Void> iconUpdateWorker = new SwingWorker<>() {
 			@Override
 			protected ClassSelectorClassNode doInBackground() {
-				if (generator.getResultNullable() == null || updateIfPresent) {
-					generator.generateForClassTree(ProgressListener.none(), ClassSelectorClassNode.this.getObfEntry(), false);
+				if (generator.getResultNullable() == null && generator.getOverallProgress() == null) {
+					generator.generate(ProgressListener.createEmpty(), EditableType.toStatTypes(gui.getEditableTypes()), false);
+				} else if (updateIfPresent) {
+					generator.generate(ProgressListener.createEmpty(), EditableType.toStatTypes(gui.getEditableTypes()), ClassSelectorClassNode.this.getObfEntry(), false);
 				}
 
 				return ClassSelectorClassNode.this;

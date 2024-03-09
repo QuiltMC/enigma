@@ -257,10 +257,12 @@
 	"message.remove_mapping.text": "%s removed mappings for %s",
 	"message.rename.text": "%s renamed %s to %s",
 
-	"status.disconnected": "Disconnected.",
-	"status.connected": "Connected.",
-	"status.connected_user_count": "Connected (%d users).",
-	"status.ready": "Ready.",
+	"status.prefix": "Server status: ",
+	"status.disconnected": "Disconnected",
+	"status.connected": "Connected",
+	"status.connected_user_count": "Connected (%d users)",
+	"status.ready": "Ready",
+	"status.idle": "Idle",
 
 	"validation.message.empty_field": "This field is required.",
 	"validation.message.invalid_ip": "Invalid IP/Port combination.",
