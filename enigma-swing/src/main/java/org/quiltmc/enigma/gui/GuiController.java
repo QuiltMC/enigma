@@ -541,7 +541,7 @@ public class GuiController implements ClientPacketHandler {
 			boolean renamed = !change.getDeobfName().isUnchanged();
 			this.gui.updateStructure(this.gui.getActiveEditor());
 			if (this.gui.getActiveEditor() != null) {
-				this.gui.getActiveEditor().onRename(target);
+				this.gui.getActiveEditor().onRename();
 			}
 
 			if (!Objects.equals(prev.targetName(), mapping.targetName()) || !Objects.equals(prev.tokenType(), mapping.tokenType())) {

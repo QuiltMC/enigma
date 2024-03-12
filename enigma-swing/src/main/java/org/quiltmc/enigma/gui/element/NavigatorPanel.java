@@ -131,6 +131,20 @@ public class NavigatorPanel extends JPanel {
 	}
 
 	/**
+	 * Rechecks and updates all token types.
+	 * @see #updateTokenType(Entry)
+	 */
+	public void updateAllTokenTypes() {
+		for (var list : this.entries.values()) {
+			var copy = new ArrayList<>(list);
+
+			for (var target : copy) {
+				this.updateTokenType(target);
+			}
+		}
+	}
+
+	/**
 	 * Checks if the entry should be moved to a different token type, and updates it if so.
 	 * Assumes that the entry's old token type matches the currently selected token type.
 	 * @param target the entry to check

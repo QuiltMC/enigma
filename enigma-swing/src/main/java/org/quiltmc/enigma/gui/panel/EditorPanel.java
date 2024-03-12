@@ -208,8 +208,8 @@ public class EditorPanel {
 		this.ui.putClientProperty(EditorPanel.class, this);
 	}
 
-	public void onRename(Entry<?> target) {
-		this.navigatorPanel.updateTokenType(target);
+	public void onRename() {
+		this.navigatorPanel.updateAllTokenTypes();
 	}
 
 	@Nullable
