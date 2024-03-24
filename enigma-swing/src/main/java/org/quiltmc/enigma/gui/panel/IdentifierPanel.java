@@ -177,8 +177,8 @@ public class IdentifierPanel {
 				throw new IllegalStateException("unreachable");
 			}
 
-			if (Config.main().development.showMappingSourcePlugin.value()) {
-				var mapping = this.gui.getController().getProject().getRemapper().getMapping(this.entry);
+			var mapping = this.gui.getController().getProject().getRemapper().getMapping(this.entry);
+			if (Config.main().development.showMappingSourcePlugin.value() && mapping.tokenType().isProposed()) {
 				th.addStringRow(I18n.translate("dev.source_plugin"), mapping.sourcePluginId());
 			}
 		}
