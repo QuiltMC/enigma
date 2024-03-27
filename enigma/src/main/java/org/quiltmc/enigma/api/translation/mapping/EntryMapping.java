@@ -13,11 +13,11 @@ public record EntryMapping(
 	public static final EntryMapping DEFAULT = new EntryMapping(null, null, TokenType.OBFUSCATED, null);
 
 	public EntryMapping(@Nullable String targetName) {
-		this(targetName, null, targetName == null ? TokenType.OBFUSCATED : TokenType.DEOBFUSCATED, null);
+		this(trimWhitespace(targetName), null, targetName == null ? TokenType.OBFUSCATED : TokenType.DEOBFUSCATED, null);
 	}
 
 	public EntryMapping(@Nullable String targetName, @Nullable String javadoc) {
-		this(targetName, javadoc, targetName == null ? TokenType.OBFUSCATED : TokenType.DEOBFUSCATED, null);
+		this(trimWhitespace(targetName), javadoc, targetName == null ? TokenType.OBFUSCATED : TokenType.DEOBFUSCATED, null);
 	}
 
 	public EntryMapping {
@@ -38,22 +38,16 @@ public record EntryMapping(
 		}
 	}
 
-	private static void validateSourcePluginId(String id) {
-		if (id != null && !id.matches("([a-z0-9_]+:[a-z0-9_/]+)")) {
-			throw new IllegalArgumentException("invalid plugin ID: '" + id + "! plugin ID should be all lowercase, only contain letters, numbers, underscores and slashes, and be namespaced separated by a colon.");
-		}
-	}
-
 	public EntryMapping withName(@Nullable String newName) {
-		return new EntryMapping(newName, this.javadoc, this.tokenType, this.sourcePluginId);
+		return new EntryMapping(trimWhitespace(newName), this.javadoc, this.tokenType, this.sourcePluginId);
 	}
 
 	public EntryMapping withName(@Nullable String newName, TokenType tokenType) {
-		return new EntryMapping(newName, this.javadoc, tokenType, this.sourcePluginId);
+		return new EntryMapping(trimWhitespace(newName), this.javadoc, tokenType, this.sourcePluginId);
 	}
 
 	public EntryMapping withName(@Nullable String newName, TokenType tokenType, @Nullable String sourcePluginId) {
-		return new EntryMapping(newName, this.javadoc, tokenType, sourcePluginId);
+		return new EntryMapping(trimWhitespace(newName), this.javadoc, tokenType, sourcePluginId);
 	}
 
 	public EntryMapping withJavadoc(@Nullable String newDocs) {
@@ -72,6 +66,13 @@ public record EntryMapping(
 		return new EntryMapping(this.targetName, this.javadoc, this.tokenType, this.sourcePluginId);
 	}
 
+	/**
+	 * Merges two mappings, filling in empty values on the left with values from the right.
+	 * If a {@link #targetName} is picked up from the right mapping, its {@link #sourcePluginId} and {@link #tokenType} will be picked up as well.
+	 * @param leftMapping the left mapping
+	 * @param rightMapping the right mapping
+	 * @return a new mapping with the values merged
+	 */
 	public static EntryMapping merge(EntryMapping leftMapping, EntryMapping rightMapping) {
 		EntryMapping merged = leftMapping.copy();
 		if (leftMapping.targetName == null && rightMapping.targetName != null) {
@@ -83,5 +84,15 @@ public record EntryMapping(
 		}
 
 		return merged;
+	}
+
+	private static String trimWhitespace(@Nullable String string) {
+		return string == null ? null : string.strip();
+	}
+
+	private static void validateSourcePluginId(String id) {
+		if (id != null && !id.matches("([a-z0-9_]+:[a-z0-9_/]+)")) {
+			throw new IllegalArgumentException("invalid plugin ID: '" + id + "! plugin ID should be all lowercase, only contain letters, numbers, underscores and slashes, and be namespaced separated by a colon.");
+		}
 	}
 }
