@@ -84,8 +84,6 @@ public class JavaSyntaxKit extends DefaultEditorKit implements ViewFactory {
 
 		Color caretColor = SyntaxpainConfiguration.getTextColor();
 		editorPane.setCaretColor(caretColor);
-		Color selectionColor = new Color(0x99ccff);
-		editorPane.setSelectionColor(selectionColor);
 		this.addQuickFindAction(editorPane);
 		this.addComponents(editorPane);
 	}

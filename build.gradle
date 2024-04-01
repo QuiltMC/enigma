@@ -11,7 +11,7 @@ repositories {
 }
 
 group = 'org.quiltmc'
-version = '0.1.4'
+version = '0.1.5'
 
 // exclude auto-generated jflex lexer from checkstyle
 tasks.withType(Checkstyle).configureEach {
