@@ -5,7 +5,6 @@ import org.objectweb.asm.tree.TypeInsnNode;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.impl.analysis.IndexSimpleVerifier;
-import org.quiltmc.enigma.impl.analysis.InterpreterPair;
 import org.quiltmc.enigma.impl.analysis.MethodNodeWithAction;
 import org.quiltmc.enigma.api.analysis.ReferenceTargetType;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndexer;
@@ -30,8 +29,6 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.analysis.Analyzer;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
 import org.objectweb.asm.tree.analysis.BasicValue;
-import org.objectweb.asm.tree.analysis.SourceInterpreter;
-import org.objectweb.asm.tree.analysis.SourceValue;
 
 import java.util.List;
 
@@ -67,18 +64,19 @@ public class IndexReferenceVisitor extends ClassVisitor {
 		});
 	}
 
-	private static class MethodInterpreter extends InterpreterPair<BasicValue, SourceValue> {
+	// TODO: IndexSimpleVerifier might have issues
+	private static class MethodInterpreter extends IndexSimpleVerifier {
 		private final MethodDefEntry callerEntry;
 		private final JarIndexer indexer;
 
 		MethodInterpreter(MethodDefEntry callerEntry, JarIndexer indexer, EntryIndex entryIndex, InheritanceIndex inheritanceIndex) {
-			super(new IndexSimpleVerifier(entryIndex, inheritanceIndex), new SourceInterpreter());
+			super(entryIndex, inheritanceIndex);
 			this.callerEntry = callerEntry;
 			this.indexer = indexer;
 		}
 
 		@Override
-		public PairValue<BasicValue, SourceValue> newOperation(AbstractInsnNode insn) throws AnalyzerException {
+		public BasicValue newOperation(AbstractInsnNode insn) throws AnalyzerException {
 			if (insn.getOpcode() == Opcodes.GETSTATIC) {
 				FieldInsnNode field = (FieldInsnNode) insn;
 				this.indexer.indexFieldReference(this.callerEntry, FieldEntry.parse(field.owner, field.name, field.desc), ReferenceTargetType.none());
@@ -97,7 +95,7 @@ public class IndexReferenceVisitor extends ClassVisitor {
 		}
 
 		@Override
-		public PairValue<BasicValue, SourceValue> unaryOperation(AbstractInsnNode insn, PairValue<BasicValue, SourceValue> value) throws AnalyzerException {
+		public BasicValue unaryOperation(AbstractInsnNode insn, BasicValue value) throws AnalyzerException {
 			if (insn.getOpcode() == Opcodes.PUTSTATIC) {
 				FieldInsnNode field = (FieldInsnNode) insn;
 				this.indexer.indexFieldReference(this.callerEntry, FieldEntry.parse(field.owner, field.name, field.desc), ReferenceTargetType.none());
@@ -124,7 +122,7 @@ public class IndexReferenceVisitor extends ClassVisitor {
 		}
 
 		@Override
-		public PairValue<BasicValue, SourceValue> binaryOperation(AbstractInsnNode insn, PairValue<BasicValue, SourceValue> value1, PairValue<BasicValue, SourceValue> value2) throws AnalyzerException {
+		public BasicValue binaryOperation(AbstractInsnNode insn, BasicValue value1, BasicValue value2) throws AnalyzerException {
 			if (insn.getOpcode() == Opcodes.PUTFIELD) {
 				FieldInsnNode field = (FieldInsnNode) insn;
 				FieldEntry fieldEntry = FieldEntry.parse(field.owner, field.name, field.desc);
@@ -135,7 +133,7 @@ public class IndexReferenceVisitor extends ClassVisitor {
 		}
 
 		@Override
-		public PairValue<BasicValue, SourceValue> naryOperation(AbstractInsnNode insn, List<? extends PairValue<BasicValue, SourceValue>> values) throws AnalyzerException {
+		public BasicValue naryOperation(AbstractInsnNode insn, List<? extends BasicValue> values) throws AnalyzerException {
 			if (insn.getOpcode() == Opcodes.INVOKEINTERFACE || insn.getOpcode() == Opcodes.INVOKESPECIAL || insn.getOpcode() == Opcodes.INVOKEVIRTUAL) {
 				MethodInsnNode methodInsn = (MethodInsnNode) insn;
 				this.indexer.indexMethodReference(this.callerEntry, MethodEntry.parse(methodInsn.owner, methodInsn.name, methodInsn.desc), this.getReferenceTargetType(values.get(0), insn));
@@ -178,16 +176,16 @@ public class IndexReferenceVisitor extends ClassVisitor {
 			return super.naryOperation(insn, values);
 		}
 
-		private ReferenceTargetType getReferenceTargetType(PairValue<BasicValue, SourceValue> target, AbstractInsnNode insn) throws AnalyzerException {
-			if (target.left() == BasicValue.UNINITIALIZED_VALUE) {
+		private ReferenceTargetType getReferenceTargetType(BasicValue target, AbstractInsnNode insn) throws AnalyzerException {
+			if (target == BasicValue.UNINITIALIZED_VALUE) {
 				return ReferenceTargetType.uninitialized();
 			}
 
-			if (target.left().getType().getSort() == Type.OBJECT) {
-				return ReferenceTargetType.classType(new ClassEntry(target.left().getType().getInternalName()));
+			if (target.getType().getSort() == Type.OBJECT) {
+				return ReferenceTargetType.classType(new ClassEntry(target.getType().getInternalName()));
 			}
 
-			if (target.left().getType().getSort() == Type.ARRAY) {
+			if (target.getType().getSort() == Type.ARRAY) {
 				return ReferenceTargetType.classType(new ClassEntry("java/lang/Object"));
 			}
 
