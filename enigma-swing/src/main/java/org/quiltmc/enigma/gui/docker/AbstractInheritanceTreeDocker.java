@@ -6,30 +6,44 @@ import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.SingleTreeSelectionModel;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.util.I18n;
 
 import javax.annotation.Nullable;
-import javax.swing.JScrollPane;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import java.awt.BorderLayout;
 import java.awt.event.MouseEvent;
 
 public abstract class AbstractInheritanceTreeDocker extends Docker {
 	private final JTree tree = new JTree();
+	private final JLabel inactiveLabel = new JLabel();
+	private final JLabel notFoundLabel = new JLabel();
+	private final JPanel textPanel;
+	private final String inactiveTextKey;
+	private final String notFoundKey;
 
-	protected AbstractInheritanceTreeDocker(Gui gui, TreeCellRenderer cellRenderer) {
+	protected AbstractInheritanceTreeDocker(Gui gui, TreeCellRenderer cellRenderer, String inactiveTextKey, String notFoundKey) {
 		super(gui);
+
+		this.textPanel = new JPanel(new BorderLayout());
+		this.inactiveTextKey = inactiveTextKey;
+		this.notFoundKey = notFoundKey;
+		this.retranslateUi();
+		this.textPanel.add(this.inactiveLabel, BorderLayout.NORTH);
+		this.add(this.textPanel);
 
 		this.tree.setModel(null);
 		this.tree.setCellRenderer(cellRenderer);
 		this.tree.setSelectionModel(new SingleTreeSelectionModel());
 		this.tree.setShowsRootHandles(true);
 		this.tree.addMouseListener(GuiUtil.onMouseClick(this::onClick));
-
-		this.add(new JScrollPane(this.tree));
 	}
 
 	private void onClick(MouseEvent event) {
@@ -49,6 +63,17 @@ public abstract class AbstractInheritanceTreeDocker extends Docker {
 		}
 	}
 
+	private void setupTree(@Nullable TreeModel model) {
+		this.tree.setModel(model);
+		if (model != null) {
+			this.remove(this.textPanel);
+			this.add(this.tree);
+		} else {
+			this.textPanel.remove(this.inactiveLabel);
+			this.textPanel.add(this.notFoundLabel, BorderLayout.NORTH);
+		}
+	}
+
 	public void display(Entry<?> entry) {
 		this.tree.setModel(null);
 
@@ -57,9 +82,11 @@ public abstract class AbstractInheritanceTreeDocker extends Docker {
 		if (node != null) {
 			// show the tree at the root
 			TreePath path = GuiUtil.getPathToRoot(node);
-			this.tree.setModel(new DefaultTreeModel((TreeNode) path.getPathComponent(0)));
+			this.setupTree(new DefaultTreeModel((TreeNode) path.getPathComponent(0)));
 			this.tree.expandPath(path);
 			this.tree.setSelectionRow(this.tree.getRowForPath(path));
+		} else {
+			setupTree(null);
 		}
 
 		this.setVisible(true);
@@ -71,5 +98,11 @@ public abstract class AbstractInheritanceTreeDocker extends Docker {
 	@Override
 	public Location getPreferredButtonLocation() {
 		return new Location(Side.RIGHT, VerticalLocation.TOP);
+	}
+
+	@Override
+	public void retranslateUi() {
+		this.inactiveLabel.setText(I18n.translate(this.inactiveTextKey));
+		this.notFoundLabel.setText(I18n.translate(this.notFoundKey));
 	}
 }

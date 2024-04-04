@@ -11,7 +11,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 public class InheritanceTreeDocker extends AbstractInheritanceTreeDocker {
 	public InheritanceTreeDocker(Gui gui) {
-		super(gui, new InheritanceTreeCellRenderer(gui));
+		super(gui, new InheritanceTreeCellRenderer(gui), "docker.inheritance.inactive", "docker.inheritance.not_found");
 	}
 
 	@Nullable

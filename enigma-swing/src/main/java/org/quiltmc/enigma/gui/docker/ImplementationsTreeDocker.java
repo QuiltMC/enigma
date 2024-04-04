@@ -11,7 +11,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 public class ImplementationsTreeDocker extends AbstractInheritanceTreeDocker {
 	public ImplementationsTreeDocker(Gui gui) {
-		super(gui, new ImplementationsTreeCellRenderer(gui));
+		super(gui, new ImplementationsTreeCellRenderer(gui), "docker.implementations.inactive", "docker.implementations.not_found");
 	}
 
 	@Nullable
