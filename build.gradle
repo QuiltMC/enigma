@@ -17,14 +17,7 @@ subprojects {
 			url = "https://maven.quiltmc.org/repository/release/"
 		}
 		maven {
-			url = "https://maven.quiltmc.org/repository/snapshot/"
-		}
-		maven {
 			url = "https://maven.fabricmc.net/"
-		}
-		maven {
-			// Vineflower snapshots
-			url = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
 		}
 	}
 
