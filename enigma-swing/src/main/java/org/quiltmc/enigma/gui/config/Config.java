@@ -32,6 +32,7 @@ import java.nio.file.Paths;
  * {@link DockerConfig the docker configuration}, and {@link DecompilerConfig the decompiler configuration}.
  */
 @SerializedNameConvention(NamingSchemes.SNAKE_CASE)
+@Processor("processChange")
 public final class Config extends ReflectiveConfig {
 	private static final String FORMAT = "toml";
 	private static final String FAMILY = "enigma";
@@ -82,6 +83,17 @@ public final class Config extends ReflectiveConfig {
 	public final Theme metalTheme = new Theme(LookAndFeel.METAL);
 	public final Theme systemTheme = new Theme(LookAndFeel.SYSTEM);
 	public final Theme noneTheme = new Theme(LookAndFeel.NONE);
+
+	@SuppressWarnings("unused")
+	public void processChange(org.quiltmc.config.api.Config.Builder builder) {
+		builder.callback(config -> {
+			for (var value : config.values()) {
+				if (value.key().length() > 1 && value.key().getKeyComponent(0).equals("development") && value.value().equals(true)) {
+					development.anyEnabled = true;
+				}
+			}
+		});
+	}
 
 	@SuppressWarnings("all")
 	public static Config main() {

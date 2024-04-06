@@ -10,6 +10,8 @@ import org.quiltmc.enigma.gui.network.IntegratedEnigmaClient;
 
 @SerializedNameConvention(NamingSchemes.SNAKE_CASE)
 public class DevSection extends ReflectiveConfig.Section {
+	public transient boolean anyEnabled = false;
+
 	public final TrackedValue<Boolean> showMappingSourcePlugin = this.value(false);
 
 	@Processor("processDebugTokenHighlights")
