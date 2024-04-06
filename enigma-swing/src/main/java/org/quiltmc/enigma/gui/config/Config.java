@@ -3,7 +3,8 @@ package org.quiltmc.enigma.gui.config;
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.annotations.Processor;
-import org.quiltmc.config.api.annotations.SerializedName;
+import org.quiltmc.config.api.annotations.SerializedNameConvention;
+import org.quiltmc.config.api.metadata.NamingSchemes;
 import org.quiltmc.config.api.serializers.TomlSerializer;
 import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
@@ -30,6 +31,7 @@ import java.nio.file.Paths;
  * {@link NetConfig the networking configuration}, {@link KeyBindConfig the keybinding configuration},
  * {@link DockerConfig the docker configuration}, and {@link DecompilerConfig the decompiler configuration}.
  */
+@SerializedNameConvention(NamingSchemes.SNAKE_CASE)
 public final class Config extends ReflectiveConfig {
 	private static final String FORMAT = "toml";
 	private static final String FAMILY = "enigma";
@@ -41,25 +43,18 @@ public final class Config extends ReflectiveConfig {
 	private static final DockerConfig DOCKER = ConfigFactory.create(ENVIRONMENT, FAMILY, "docker", DockerConfig.class);
 	private static final DecompilerConfig DECOMPILER = ConfigFactory.create(ENVIRONMENT, FAMILY, "decompiler", DecompilerConfig.class);
 
-	@SerializedName("language")
 	@Comment("The currently assigned UI language. This will be an ISO-639 two-letter language code, followed by an underscore and an ISO 3166-1 alpha-2 two-letter country code.")
 	@Processor("grabPossibleLanguages")
 	public final TrackedValue<String> language = this.value(I18n.DEFAULT_LANGUAGE);
-	@SerializedName("scale_factor")
 	@Comment("A float representing the current size of the UI. 1.0 represents 100% scaling.")
 	public final TrackedValue<Float> scaleFactor = this.value(1.0f);
-	@SerializedName("max_recent_projects")
 	@Comment("The maximum number of saved recent projects, for quickly reopening.")
 	public final TrackedValue<Integer> maxRecentProjects = this.value(10);
-	@SerializedName("recent_projects")
 	public final TrackedValue<ValueList<RecentProject>> recentProjects = this.list(new RecentProject("", ""));
-	@SerializedName("server_notification_level")
 	@Comment("Modifies how many notifications you'll get while part of a multiplayer mapping server.")
 	public final TrackedValue<NotificationManager.ServerNotificationLevel> serverNotificationLevel = this.value(NotificationManager.ServerNotificationLevel.FULL);
-	@SerializedName("window_size")
 	@Comment("How big the Enigma window will open, in pixels.")
 	public final TrackedValue<Vec2i> windowSize = this.value(new Vec2i(1024, 576));
-	@SerializedName("window_pos")
 	@Comment("The position the top-left corner of Enigma's window will be the next time it opens, in pixels.")
 	public final TrackedValue<Vec2i> windowPos = this.value(new Vec2i(0, 0));
 
@@ -72,22 +67,16 @@ public final class Config extends ReflectiveConfig {
 	 * The look and feel stored in the config: do not use this unless setting! Use {@link #activeLookAndFeel} instead,
 	 * since look and feel is final once loaded.
 	 */
-	@SerializedName("look_and_feel")
 	public final TrackedValue<LookAndFeel> lookAndFeel = this.value(LookAndFeel.DEFAULT);
 	/**
 	 * Look and feel is not modifiable at runtime. I have tried and failed multiple times to get this running.
 	 */
 	public static LookAndFeel activeLookAndFeel;
 
-	@SerializedName("default_theme")
 	public final Theme defaultTheme = new Theme(LookAndFeel.DEFAULT);
-	@SerializedName("darcula_theme")
 	public final Theme darculaTheme = new Theme(LookAndFeel.DARCULA);
-	@SerializedName("metal_theme")
 	public final Theme metalTheme = new Theme(LookAndFeel.METAL);
-	@SerializedName("system_theme")
 	public final Theme systemTheme = new Theme(LookAndFeel.SYSTEM);
-	@SerializedName("none_theme")
 	public final Theme noneTheme = new Theme(LookAndFeel.NONE);
 
 	@SuppressWarnings("all")

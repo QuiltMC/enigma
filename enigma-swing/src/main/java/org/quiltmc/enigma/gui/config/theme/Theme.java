@@ -2,7 +2,8 @@ package org.quiltmc.enigma.gui.config.theme;
 
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.annotations.Comment;
-import org.quiltmc.config.api.annotations.SerializedName;
+import org.quiltmc.config.api.annotations.SerializedNameConvention;
+import org.quiltmc.config.api.metadata.NamingSchemes;
 import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
 import org.quiltmc.config.api.values.TrackedValue;
@@ -11,6 +12,7 @@ import org.quiltmc.config.api.values.ValueMap;
 import java.awt.Color;
 import java.awt.Font;
 
+@SerializedNameConvention(NamingSchemes.SNAKE_CASE)
 public class Theme extends ReflectiveConfig.Section {
 	public final transient LookAndFeel lookAndFeel;
 	public Theme(LookAndFeel lookAndFeel) {
@@ -18,19 +20,13 @@ public class Theme extends ReflectiveConfig.Section {
 	}
 
 	@Comment("Colors are encoded in the RGBA format.")
-	@SerializedName("colors")
 	public final Colors colors = new Colors();
-	@SerializedName("fonts")
 	public final Fonts fonts = new Fonts();
 
 	public static class Fonts extends ReflectiveConfig.Section {
-		@SerializedName("default_bold")
 		public final TrackedValue<SerializableFont> defaultBold = this.value(new SerializableFont(Font.decode(Font.DIALOG).deriveFont(Font.BOLD)));
-		@SerializedName("default_normal")
 		public final TrackedValue<SerializableFont> defaultNormal = this.value(new SerializableFont(Font.decode(Font.DIALOG)));
-		@SerializedName("small")
 		public final TrackedValue<SerializableFont> small = this.value(new SerializableFont(Font.decode(Font.DIALOG)));
-		@SerializedName("editor")
 		public final TrackedValue<SerializableFont> editor = this.value(new SerializableFont(Font.decode(Font.MONOSPACED)));
 
 		public static class SerializableFont extends Font implements ConfigSerializableObject<ValueMap<String>> {
@@ -76,58 +72,32 @@ public class Theme extends ReflectiveConfig.Section {
 	 * Default values are for light themes.
 	 */
 	public static class Colors extends ReflectiveConfig.Section {
-		@SerializedName("line_numbers_foreground")
 		public final TrackedValue<SerializableColor> lineNumbersForeground = this.value(new SerializableColor(0xFF333300));
-		@SerializedName("line_numbers_background")
 		public final TrackedValue<SerializableColor> lineNumbersBackground = this.value(new SerializableColor(0xFFEEEEFF));
-		@SerializedName("line_numbers_selected")
 		public final TrackedValue<SerializableColor> lineNumbersSelected = this.value(new SerializableColor(0xFFCCCCEE));
-		@SerializedName("obfuscated")
 		public final TrackedValue<SerializableColor> obfuscated = this.value(new SerializableColor(0xFFFFDCDC));
-		@SerializedName("obfuscated_outline")
 		public final TrackedValue<SerializableColor> obfuscatedOutline = this.value(new SerializableColor(0xFFA05050));
 
-		@SerializedName("proposed")
 		public final TrackedValue<SerializableColor> proposed = this.value(new SerializableColor(0x27000000));
-		@SerializedName("proposed_outline")
 		public final TrackedValue<SerializableColor> proposedOutline = this.value(new SerializableColor(0xBF000000));
 
-		@SerializedName("deobfuscated")
 		public final TrackedValue<SerializableColor> deobfuscated = this.value(new SerializableColor(0xFFDCFFDC));
-		@SerializedName("deobfuscated_outline")
 		public final TrackedValue<SerializableColor> deobfuscatedOutline = this.value(new SerializableColor(0xFF50A050));
 
-		@SerializedName("editor_background")
 		public final TrackedValue<SerializableColor> editorBackground = this.value(new SerializableColor(0xFFFFFFFF));
-		@SerializedName("highlight")
 		public final TrackedValue<SerializableColor> highlight = this.value(new SerializableColor(0xFF3333EE));
-		@SerializedName("caret")
 		public final TrackedValue<SerializableColor> caret = this.value(new SerializableColor(0xFF000000));
-		@SerializedName("selection_highlight")
 		public final TrackedValue<SerializableColor> selectionHighlight = this.value(new SerializableColor(0xFF000000));
-		@SerializedName("string")
 		public final TrackedValue<SerializableColor> string = this.value(new SerializableColor(0xFFCC6600));
-		@SerializedName("number")
 		public final TrackedValue<SerializableColor> number = this.value(new SerializableColor(0xFF999933));
-		@SerializedName("operator")
 		public final TrackedValue<SerializableColor> operator = this.value(new SerializableColor(0xFF000000));
-		@SerializedName("delimiter")
 		public final TrackedValue<SerializableColor> delimiter = this.value(new SerializableColor(0xFF000000));
-		@SerializedName("type")
 		public final TrackedValue<SerializableColor> type = this.value(new SerializableColor(0xFF000000));
-		@SerializedName("identifier")
 		public final TrackedValue<SerializableColor> identifier = this.value(new SerializableColor(0xFF000000));
-		@SerializedName("comment")
 		public final TrackedValue<SerializableColor> comment = this.value(new SerializableColor(0xFF339933));
-		@SerializedName("text")
 		public final TrackedValue<SerializableColor> text = this.value(new SerializableColor(0xFF000000));
-
-		@SerializedName("debug_token")
 		public final TrackedValue<SerializableColor> debugToken = this.value(new SerializableColor(0xFFD9BEF9));
-		@SerializedName("debug_token_outline")
 		public final TrackedValue<SerializableColor> debugTokenOutline = this.value(new SerializableColor(0xFFBD93F9));
-
-		@SerializedName("dock_highlight")
 		public final TrackedValue<SerializableColor> dockHighlight = this.value(new SerializableColor(0xFF0000FF));
 
 		public static class SerializableColor extends Color implements ConfigSerializableObject<String> {

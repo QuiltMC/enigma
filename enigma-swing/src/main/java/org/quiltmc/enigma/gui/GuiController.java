@@ -130,8 +130,8 @@ public class GuiController implements ClientPacketHandler {
 			this.statsGenerator = new StatsGenerator(this.project);
 
 			SwingUtilities.invokeLater(() -> {
-				this.gui.onFinishOpenJar(jarPath.getFileName().toString());
-				this.refreshClasses();
+				//this.gui.onFinishOpenJar(jarPath.getFileName().toString());
+				//this.refreshClasses();
 			});
 		});
 	}
