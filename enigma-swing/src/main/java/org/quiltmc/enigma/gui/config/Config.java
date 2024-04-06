@@ -89,7 +89,7 @@ public final class Config extends ReflectiveConfig {
 		builder.callback(config -> {
 			for (var value : config.values()) {
 				if (value.key().length() > 1 && value.key().getKeyComponent(0).equals("development") && value.value().equals(true)) {
-					development.anyEnabled = true;
+					this.development.anyEnabled = true;
 				}
 			}
 		});
