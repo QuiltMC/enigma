@@ -58,9 +58,13 @@ public final class Config extends ReflectiveConfig {
 	@Comment("The position the top-left corner of Enigma's window will be the next time it opens, in pixels.")
 	public final TrackedValue<Vec2i> windowPos = this.value(new Vec2i(0, 0));
 
+	@Comment("The settings for the statistics window.")
 	public final StatsSection stats = new StatsSection();
 
-	@Comment("You shouldn't enable options in this section unless you know what you're doing")
+	@Comment("Contains all features that can be toggled on or off.")
+	public final FeaturesSection features = new FeaturesSection();
+
+	@Comment("You shouldn't enable options in this section unless you know what you're doing!")
 	public final DevSection development = new DevSection();
 
 	/**
