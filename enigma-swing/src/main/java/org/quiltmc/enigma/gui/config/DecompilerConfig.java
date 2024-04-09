@@ -3,13 +3,15 @@ package org.quiltmc.enigma.gui.config;
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.annotations.Processor;
-import org.quiltmc.config.api.annotations.SerializedName;
+import org.quiltmc.config.api.annotations.SerializedNameConvention;
+import org.quiltmc.config.api.metadata.NamingSchemes;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.enigma.impl.source.vineflower.VineflowerPreferences;
 
 import java.util.Map;
 
+@SerializedNameConvention(NamingSchemes.SNAKE_CASE)
 public class DecompilerConfig extends ReflectiveConfig {
 	public DecompilerConfig() {
 		VineflowerPreferences.OPTIONS.putAll(this.vineflower.stringValues.value());
@@ -17,19 +19,15 @@ public class DecompilerConfig extends ReflectiveConfig {
 		VineflowerPreferences.OPTIONS.putAll(this.vineflower.booleanValues.value());
 	}
 
-	@SerializedName("active_decompiler")
 	public final TrackedValue<Decompiler> activeDecompiler = this.value(Decompiler.VINEFLOWER);
 	@Comment("The options passed to the Vineflower decompiler. What these do can be found here: https://vineflower.org/usage/.")
 	public final VineflowerSection vineflower = new VineflowerSection();
 
 	public static final class VineflowerSection extends Section {
-		@SerializedName("string_values")
 		@Processor("processStrings")
 		public final TrackedValue<ValueMap<String>> stringValues = this.map("").build();
-		@SerializedName("int_values")
 		@Processor("processIntegers")
 		public final TrackedValue<ValueMap<Integer>> intValues = this.map(0).build();
-		@SerializedName("boolean_values")
 		@Processor("processBooleans")
 		public final TrackedValue<ValueMap<Boolean>> booleanValues = this.map(true).build();
 

@@ -1,21 +1,22 @@
 package org.quiltmc.enigma.gui.config;
 
-import com.google.gson.annotations.SerializedName;
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.annotations.Processor;
+import org.quiltmc.config.api.annotations.SerializedNameConvention;
+import org.quiltmc.config.api.metadata.NamingSchemes;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.gui.network.IntegratedEnigmaClient;
 
+@SerializedNameConvention(NamingSchemes.SNAKE_CASE)
 public class DevSection extends ReflectiveConfig.Section {
-	@SerializedName("show_mapping_source_plugin")
+	public transient boolean anyEnabled = false;
+
 	public final TrackedValue<Boolean> showMappingSourcePlugin = this.value(false);
 
-	@SerializedName("debug_token_highlights")
 	@Processor("processDebugTokenHighlights")
 	public final TrackedValue<Boolean> debugTokenHighlights = this.value(false);
 
-	@SerializedName("log_client_packets")
 	@Processor("processLogClientPackets")
 	public final TrackedValue<Boolean> logClientPackets = this.value(false);
 

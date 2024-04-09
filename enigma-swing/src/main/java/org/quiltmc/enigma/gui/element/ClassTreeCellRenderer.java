@@ -3,6 +3,7 @@ package org.quiltmc.enigma.gui.element;
 import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.GuiController;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.node.ClassSelectorClassNode;
 import org.quiltmc.enigma.gui.node.ClassSelectorPackageNode;
 import org.quiltmc.enigma.gui.util.GuiUtil;
@@ -93,17 +94,21 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 			JLabel nodeLabel = new JLabel(icon);
 			panel.add(nodeLabel);
 
-			if (this.controller.getStatsGenerator() != null) {
-				ProjectStatsResult stats = this.controller.getStatsGenerator().getResultNullable();
-				if (stats == null) {
-					// calculate stats on a separate thread for performance reasons
-					this.setIcon(GuiUtil.PENDING_STATUS_ICON);
-					reloader.run();
+			if (Config.main().features.enableClassTreeStatIcons.value()) {
+				if (this.controller.getStatsGenerator() != null) {
+					ProjectStatsResult stats = this.controller.getStatsGenerator().getResultNullable();
+					if (stats == null) {
+						// calculate stats on a separate thread for performance reasons
+						this.setIcon(GuiUtil.PENDING_STATUS_ICON);
+						reloader.run();
+					} else {
+						this.setIcon(deobfuscationIconGetter.apply(stats));
+					}
 				} else {
-					this.setIcon(deobfuscationIconGetter.apply(stats));
+					this.setIcon(GuiUtil.PENDING_STATUS_ICON);
 				}
 			} else {
-				this.setIcon(GuiUtil.PENDING_STATUS_ICON);
+				this.setIcon(null);
 			}
 
 			panel.add(this);

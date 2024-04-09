@@ -164,7 +164,7 @@ public class MenuBar {
 		this.helpMenu.add(this.githubItem);
 		ui.add(this.helpMenu);
 
-		if (System.getProperty("enigma.development", "false").equalsIgnoreCase("true")) {
+		if (System.getProperty("enigma.development", "false").equalsIgnoreCase("true") || Config.main().development.anyEnabled) {
 			ui.add(this.devMenu);
 		}
 

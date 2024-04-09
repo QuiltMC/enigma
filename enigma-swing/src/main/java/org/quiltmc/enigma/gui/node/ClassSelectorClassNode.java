@@ -4,6 +4,7 @@ import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
@@ -68,7 +69,9 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 			}
 		};
 
-		SwingUtilities.invokeLater(iconUpdateWorker::execute);
+		if (Config.main().features.enableClassTreeStatIcons.value()) {
+			SwingUtilities.invokeLater(iconUpdateWorker::execute);
+		}
 	}
 
 	@Override

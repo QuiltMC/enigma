@@ -2,7 +2,8 @@ package org.quiltmc.enigma.gui.config;
 
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.annotations.Comment;
-import org.quiltmc.config.api.annotations.SerializedName;
+import org.quiltmc.config.api.annotations.SerializedNameConvention;
+import org.quiltmc.config.api.metadata.NamingSchemes;
 import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
 import org.quiltmc.config.api.values.TrackedValue;
@@ -14,28 +15,21 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+@SerializedNameConvention(NamingSchemes.SNAKE_CASE)
 public class DockerConfig extends ReflectiveConfig {
-	@SerializedName("left_vertical_divider_location")
 	public final TrackedValue<Integer> leftVerticalDividerLocation = this.value(300);
-	@SerializedName("right_vertical_divider_location")
 	public final TrackedValue<Integer> rightVerticalDividerLocation = this.value(300);
-	@SerializedName("left_horizontal_divider_location")
 	public final TrackedValue<Integer> leftHorizontalDividerLocation = this.value(300);
-	@SerializedName("right_horizontal_divider_location")
 	public final TrackedValue<Integer> rightHorizontalDividerLocation = this.value(700);
 	@Comment("A bodge to properly offset the right divider location depending on UI state.")
-	@SerializedName("saved_with_left_docker_open")
 	public final TrackedValue<Boolean> savedWithLeftDockerOpen = this.value(true);
 
 	@Comment("The location of each docker's button in the button sidebars.")
 	@Comment("Encoded with the side (RIGHT or LEFT) followed by a semicolon (;) and the vertical location (TOP or BOTTOM).")
-	@SerializedName("button_locations")
 	public final TrackedValue<ValueMap<Docker.Location>> buttonLocations = this.map(new Docker.Location(Docker.Side.LEFT, Docker.VerticalLocation.TOP)).build();
 	@Comment("The currently active dockers on the left side of the UI.")
-	@SerializedName("left_dockers")
 	public final TrackedValue<SelectedDockers> leftDockers = this.value(new SelectedDockers("", "", "all_classes"));
 	@Comment("The currently active dockers on the right side of the UI.")
-	@SerializedName("right_dockers")
 	public final TrackedValue<SelectedDockers> rightDockers = this.value(new SelectedDockers("", "", "structure"));
 
 	public SelectedDockers getSelectedDockers(Docker.Side side) {

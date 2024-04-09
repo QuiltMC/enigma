@@ -86,7 +86,7 @@ public abstract class AbstractInheritanceTreeDocker extends Docker {
 			this.tree.expandPath(path);
 			this.tree.setSelectionRow(this.tree.getRowForPath(path));
 		} else {
-			setupTree(null);
+			this.setupTree(null);
 		}
 
 		this.setVisible(true);
