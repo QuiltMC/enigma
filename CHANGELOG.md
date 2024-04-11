@@ -1,5 +1,7 @@
 # 2.0.0
-## main
+
+The largest Enigma update ever brings you dozens of changes across the user interface, the API, the command line!
+
 - changed package name to `org.quiltmc.enigma` instead of `cuchaz.enigma`
   - you'd be amazed at how much of a struggle this was. I love gradle
 - set up a separation between API and implementation classes, by moving them to the `org.quiltmc.enigma.api` and `org.quiltmc.enigma.impl` packages respectively
@@ -21,7 +23,8 @@
 - wrote up piles of documentation
 - removed support for the old Recaf and Tiny V1 mapping formats
 - removed old internal config API
-## command
+
+
 - implemented automatic format detection in all commands
 - greatly improved command help
   - include descriptions of what each argument does in errors
@@ -29,7 +32,8 @@
     - lists all possible commands
     - includes detailed descriptions of each command's function
 - normalised all command names to `kebab-case`
-## ui
+
+
 - statistics got a huge rework
   - stat icons in the class tree dockers have been expanded to now show on packages as well as classes
   - optimise stat regeneration for single classes
@@ -58,7 +62,8 @@
 - added some neat debug utils if you run with the `--development` flag
   - currently, this includes a view of the internal mapping tree
 - removed access modifier editing
-## fixes
+
+
 - fix yet more bugs with statistic accuracy
 - fix the cancel button in the "rename package" window causing a crash
 - fix documenting constructors (from Fabric upstream, with permission!)
@@ -68,7 +73,8 @@
 
 # 2.1.0
 
-## new features 
+As with any big release, Enigma 2.0 broke tons of things. We've cleaned up all the bugs and crashes as well as added a few features for the bytecode nerds with this release!
+
 - added new development options!
 	- added an option to enable debug token highlighting
 	- added an option to show the source plugin of proposed mappings in the identifier panel
@@ -77,8 +83,6 @@
 	- this allows you to rename entries and more clearly see what is obfuscated and deobfuscated when viewing the bytecode!
 - added syncing of names between method declarations in interfaces
 	- sometimes, a class will implement methods with the same names and signatures from two different interfaces. previously, this would break the mappings if you renamed one of those as enigma wasn't aware that they needed to match. now it's smarter!
-
-## bugfixes. a lot of them
 - fixed the server asking all users to verify warnings instead of just the mapper who caused the warning
 - fixed mappings sync on the server sending proposed mappings
 - fixed some issues with `drop-invalid-mappings`
@@ -94,6 +98,9 @@
 - fixed the package index being quite broken and not properly tracking all packages
 
 # 2.2.0
+
+2.2.0 brings tons of updates to the Enigma server, making it actually usable, improves the identifier panel, and adds a new `print-stats` command!
+
 - added more info to the identifier panel:
   - for inner classes, the name of their parent class is now displayed
   - for parameters, their type is now shown. this is super helpful for mapping lambdas where you can't see their type!
@@ -118,8 +125,40 @@
 - updated [vineflower](<https://github.com/Vineflower/vineflower>) to the latest `1.10.0` snapshot
 
 # 2.2.1
+
+The last release had a few bugs. They're gone now!
+
 - make sure MappingValidator eliminates equivalent entries from consideration -- solves some false positives
 - remove an unnecessary null check for inner classes' outer classes (the java standard allows inner classes to have no outer class)
 - fixed crashes that could be caused by deselecting "decompile inner classes" in vineflower
 - fixed incorrect synchronisation of javadoc on servers
 - fixed a possible crash when writing mappings that include a packageless class
+
+# 2.3.0
+
+As always, we've hard at work improving the beautiful software that helps mappers map. Today, we get to release all the fixes we've been working on for the last couple months!
+
+- added inactive states for inheritance tree dockers
+    - this includes the implementations docker and inheritance docker. when they have no inheritance to display, they will show messages informing the user of their state
+- added a progress bar in the bottom right corner to indicate stat generation progress
+    - this progress bar is usable for other work as well, and will be used to display other things in the future!
+- added prettier printing for field types in the identifier panel
+    - matches the printing used by lambda types
+- whitespace is now automatically stripped when creating `EntryMapping` objects
+- development options menu is now always shown if any development options are enabled
+- added a config option for disabling stat icons
+- fixed stat icons not matching the currently editable types
+- fixed stat generation having the wrong amount of total work
+- fixed entry navigator not updating after name proposal
+- fixed checkboxes not displaying properly in the search panel
+- added a processor to display all possible language choices in the config file
+- updated dependencies
+    - ASM: `9.6` -> `9.8-20240409.145119-3`
+        - this version is a snapshot. if you want to use enigma `2.3`, you'll need to include the ow2 snapshot repository in your buildscript via adding `maven { url = "https://repository.ow2.org/nexus/content/repositories/snapshots/" }` to your `repositories` block
+    - vineflower: `1.10.0-20240126.053810-85` -> `1.10.0`
+        - you can now *remove* the vineflower snapshot repository from your buildscripts!
+    -  quilt config: `1.2.0` -> `1.3.0`
+    -  syntaxpain: `0.1.2` -> `0.1.5`
+    -  cfr: `0.2.1` -> `0.2.2`
+    -  guava: `32.0.1` -> `33.0.0`
+    -  flatlaf: `3.2.5` -> `3.4`
