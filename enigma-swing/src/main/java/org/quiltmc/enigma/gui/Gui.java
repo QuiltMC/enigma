@@ -29,6 +29,7 @@ import org.quiltmc.enigma.gui.element.MenuBar;
 import org.quiltmc.enigma.gui.panel.EditorPanel;
 import org.quiltmc.enigma.gui.panel.IdentifierPanel;
 import org.quiltmc.enigma.gui.renderer.MessageListCellRenderer;
+import org.quiltmc.enigma.gui.util.ExtensionFileFilter;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.LanguageUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
@@ -95,8 +96,7 @@ public class Gui {
 	private final NotificationManager notificationManager;
 
 	public final JFileChooser jarFileChooser;
-	public final JFileChooser tinyMappingsFileChooser;
-	public final JFileChooser enigmaMappingsFileChooser;
+	public final JFileChooser mappingsFileChooser;
 	public final JFileChooser exportSourceFileChooser;
 	public final JFileChooser exportJarFileChooser;
 	public final SearchDialog searchDialog;
@@ -118,8 +118,7 @@ public class Gui {
 		this.splitRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.centerPanel, this.dockerManager.getRightDock());
 		this.splitLeft = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, this.dockerManager.getLeftDock(), this.splitRight);
 		this.jarFileChooser = new JFileChooser();
-		this.tinyMappingsFileChooser = new JFileChooser();
-		this.enigmaMappingsFileChooser = new JFileChooser();
+		this.mappingsFileChooser = new JFileChooser();
 		this.exportSourceFileChooser = new JFileChooser();
 		this.exportJarFileChooser = new JFileChooser();
 		this.connectionStatusLabel = new JLabel();
@@ -165,10 +164,6 @@ public class Gui {
 		this.setupDockers();
 
 		this.jarFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		this.tinyMappingsFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-		this.enigmaMappingsFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-		this.enigmaMappingsFileChooser.setAcceptAllFileFilterUsed(false);
 
 		this.exportSourceFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		this.exportSourceFileChooser.setAcceptAllFileFilterUsed(false);
@@ -367,7 +362,7 @@ public class Gui {
 	}
 
 	public void setMappingsFile(Path path) {
-		this.enigmaMappingsFileChooser.setSelectedFile(path != null ? path.toFile() : null);
+		this.mappingsFileChooser.setSelectedFile(path != null ? path.toFile() : null);
 		this.updateUiState();
 	}
 
@@ -491,8 +486,10 @@ public class Gui {
 	}
 
 	public CompletableFuture<Void> saveMapping() {
-		if (this.enigmaMappingsFileChooser.getSelectedFile() != null || this.enigmaMappingsFileChooser.showSaveDialog(this.mainWindow.getFrame()) == JFileChooser.APPROVE_OPTION) {
-			return this.controller.saveMappings(this.enigmaMappingsFileChooser.getSelectedFile().toPath());
+		ExtensionFileFilter.setupFileChooser(this.mappingsFileChooser, this.controller.getLoadedMappingFormat());
+
+		if (this.mappingsFileChooser.getSelectedFile() != null || this.mappingsFileChooser.showSaveDialog(this.mainWindow.getFrame()) == JFileChooser.APPROVE_OPTION) {
+			return this.controller.saveMappings(ExtensionFileFilter.getSavePath(this.mappingsFileChooser));
 		}
 
 		return CompletableFuture.completedFuture(null);

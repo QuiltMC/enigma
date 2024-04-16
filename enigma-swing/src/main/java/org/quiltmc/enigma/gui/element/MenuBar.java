@@ -18,6 +18,7 @@ import org.quiltmc.enigma.gui.dialog.SearchDialog;
 import org.quiltmc.enigma.gui.dialog.StatsDialog;
 import org.quiltmc.enigma.gui.dialog.decompiler.DecompilerSettingsDialog;
 import org.quiltmc.enigma.gui.dialog.keybind.ConfigureKeyBindsDialog;
+import org.quiltmc.enigma.gui.util.ExtensionFileFilter;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.LanguageUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
@@ -222,8 +223,7 @@ public class MenuBar {
 
 		this.jarCloseItem.setEnabled(jarOpen);
 		this.openMappingsItem.setEnabled(jarOpen);
-		this.saveMappingsItem.setEnabled(jarOpen && this.gui.enigmaMappingsFileChooser.getSelectedFile() != null && connectionState != ConnectionState.CONNECTED);
-		this.saveMappingsAsMenu.setEnabled(jarOpen);
+		this.saveMappingsItem.setEnabled(jarOpen && this.gui.mappingsFileChooser.getSelectedFile() != null && connectionState != ConnectionState.CONNECTED);		this.saveMappingsAsMenu.setEnabled(jarOpen);
 		this.closeMappingsItem.setEnabled(jarOpen);
 		this.reloadMappingsItem.setEnabled(jarOpen);
 		this.reloadAllItem.setEnabled(jarOpen);
@@ -324,7 +324,7 @@ public class MenuBar {
 	}
 
 	private void onSaveMappingsClicked() {
-		this.gui.getController().saveMappings(this.gui.enigmaMappingsFileChooser.getSelectedFile().toPath());
+		this.gui.getController().saveMappings(this.gui.mappingsFileChooser.getSelectedFile().toPath());
 	}
 
 	private void openMappingsDiscardPrompt(Runnable then) {
@@ -469,10 +469,10 @@ public class MenuBar {
 	}
 
 	private void onOpenMappingsClicked() {
-		this.gui.enigmaMappingsFileChooser.setCurrentDirectory(new File(Config.main().stats.lastSelectedDir.value()));
-		if (this.gui.enigmaMappingsFileChooser.showOpenDialog(this.gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
-			File selectedFile = this.gui.enigmaMappingsFileChooser.getSelectedFile();
-			Config.main().stats.lastSelectedDir.setValue(this.gui.enigmaMappingsFileChooser.getCurrentDirectory().toString(), true);
+		this.gui.mappingsFileChooser.setCurrentDirectory(new File(Config.main().stats.lastSelectedDir.value()));
+		if (this.gui.mappingsFileChooser.showOpenDialog(this.gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
+			File selectedFile = this.gui.mappingsFileChooser.getSelectedFile();
+			Config.main().stats.lastSelectedDir.setValue(this.gui.mappingsFileChooser.getCurrentDirectory().toString(), true);
 
 			MappingFormat format = MappingFormat.parseFromFile(selectedFile.toPath());
 			if (format.getReader() != null) {
@@ -549,15 +549,18 @@ public class MenuBar {
 			if (format.getWriter() != null) {
 				JMenuItem item = new JMenuItem(I18n.translate("mapping_format." + format.name().toLowerCase(Locale.ROOT)));
 				item.addActionListener(event -> {
-					// TODO: Use a specific file chooser for it
-					if (gui.enigmaMappingsFileChooser.getCurrentDirectory() == null) {
-						gui.enigmaMappingsFileChooser.setCurrentDirectory(new File(Config.main().stats.lastSelectedDir.value()));
+					JFileChooser fileChooser = gui.mappingsFileChooser;
+					ExtensionFileFilter.setupFileChooser(fileChooser, format);
+
+					if (fileChooser.getCurrentDirectory() == null) {
+						fileChooser.setCurrentDirectory(new File(Config.main().stats.lastSelectedDir.value()));
 					}
 
-					if (gui.enigmaMappingsFileChooser.showSaveDialog(gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
-						gui.getController().saveMappings(gui.enigmaMappingsFileChooser.getSelectedFile().toPath(), format);
+					if (fileChooser.showSaveDialog(gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
+						Path savePath = ExtensionFileFilter.getSavePath(fileChooser);
+						gui.getController().saveMappings(savePath, format);
 						saveMappingsItem.setEnabled(true);
-						Config.main().stats.lastSelectedDir.setValue(gui.enigmaMappingsFileChooser.getCurrentDirectory().toString(), true);
+						Config.main().stats.lastSelectedDir.setValue(fileChooser.getCurrentDirectory().toString());
 					}
 				});
 				saveMappingsAsMenu.add(item);

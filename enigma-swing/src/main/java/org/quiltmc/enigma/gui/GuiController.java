@@ -70,6 +70,7 @@ import org.quiltmc.enigma.util.validation.ParameterizedMessage;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 import org.tinylog.Logger;
 
+import javax.annotation.Nullable;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import java.awt.Desktop;
@@ -611,8 +612,14 @@ public class GuiController implements ClientPacketHandler {
 		return this.enigma;
 	}
 
+	@Nullable
 	public StatsGenerator getStatsGenerator() {
 		return this.statsGenerator;
+	}
+
+	@Nullable
+	public MappingFormat getLoadedMappingFormat() {
+		return loadedMappingFormat;
 	}
 
 	public void createClient(String username, String ip, int port, char[] password) throws IOException {

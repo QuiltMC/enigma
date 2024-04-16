@@ -11,26 +11,32 @@ import org.quiltmc.enigma.api.translation.mapping.serde.srg.SrgMappingsWriter;
 import org.quiltmc.enigma.api.translation.mapping.serde.tinyv2.TinyV2Reader;
 import org.quiltmc.enigma.api.translation.mapping.serde.tinyv2.TinyV2Writer;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.impl.translation.FileType;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Objects;
 
 public enum MappingFormat {
-	ENIGMA_FILE(EnigmaMappingsWriter.FILE, EnigmaMappingsReader.FILE),
-	ENIGMA_DIRECTORY(EnigmaMappingsWriter.DIRECTORY, EnigmaMappingsReader.DIRECTORY),
-	ENIGMA_ZIP(EnigmaMappingsWriter.ZIP, EnigmaMappingsReader.ZIP),
-	TINY_V2(new TinyV2Writer("intermediary", "named"), new TinyV2Reader()),
-	SRG_FILE(SrgMappingsWriter.INSTANCE, null),
-	PROGUARD(null, ProguardMappingsReader.INSTANCE);
+	ENIGMA_FILE(EnigmaMappingsWriter.FILE, EnigmaMappingsReader.FILE, FileType.ENIGMA_MAPPING),
+	ENIGMA_DIRECTORY(EnigmaMappingsWriter.DIRECTORY, EnigmaMappingsReader.DIRECTORY, FileType.ENIGMA_DIRECTORY),
+	ENIGMA_ZIP(EnigmaMappingsWriter.ZIP, EnigmaMappingsReader.ZIP, FileType.ENIGMA_ZIP),
+	TINY_V2(new TinyV2Writer("intermediary", "named"), new TinyV2Reader(), FileType.TINY_V2),
+	SRG_FILE(SrgMappingsWriter.INSTANCE, null, FileType.SRG),
+	PROGUARD(null, ProguardMappingsReader.INSTANCE, FileType.PROGUARD);
 
 	private final MappingsWriter writer;
 	private final MappingsReader reader;
+	private final FileType fileType;
 
-	MappingFormat(MappingsWriter writer, MappingsReader reader) {
+	MappingFormat(MappingsWriter writer, MappingsReader reader, FileType fileType) {
 		this.writer = writer;
 		this.reader = reader;
+		this.fileType = fileType;
 	}
 
 	public void write(EntryTree<EntryMapping> mappings, Path path, MappingSaveParameters saveParameters) {
@@ -90,34 +96,47 @@ public enum MappingFormat {
 		return this.reader;
 	}
 
+	public FileType getFileType() {
+		return this.fileType;
+	}
+
 	/**
-	 * Determines the mapping format of the provided file. Checks all formats, and returns {@link #PROGUARD} if none match.
+	 * Determines the mapping format of the provided file. Checks all formats according to their {@link #getFileType()} file extensions.
+	 * If the file is a directory, it will check the first file in the directory.
+	 * Will return {@link #PROGUARD} if no format is found for single files, and {@link #ENIGMA_DIRECTORY} if no format is found for directories.
 	 * @param file the file to analyse
-	 * @apiNote Any directory is considered to be the {@link #ENIGMA_DIRECTORY} format.
-	 * Proguard does not have an explicit file extension, so it is the fallback.
 	 * @return the mapping format of the file.
 	 */
 	public static MappingFormat parseFromFile(Path file) {
 		if (Files.isDirectory(file)) {
-			return ENIGMA_DIRECTORY;
+			try {
+				File firstFile = Arrays.stream(Objects.requireNonNull(file.toFile().listFiles())).findFirst().orElseThrow();
+
+				for (MappingFormat format : values()) {
+					if (!format.getFileType().isDirectory()) {
+						continue;
+					}
+
+					String extension = MoreFiles.getFileExtension(firstFile.toPath()).toLowerCase();
+					if (format.fileType.getExtensions().contains(extension)) {
+						return format;
+					}
+				}
+
+				return ENIGMA_DIRECTORY;
+			} catch (Exception e) {
+				return ENIGMA_DIRECTORY;
+			}
 		} else {
-			switch (MoreFiles.getFileExtension(file).toLowerCase()) {
-				case "zip" -> {
-					return ENIGMA_ZIP;
-				}
-				case "mapping", "mappings" -> {
-					return ENIGMA_FILE;
-				}
-				case "tiny" -> {
-					return TINY_V2;
-				}
-				case "tsrg" -> {
-					return SRG_FILE;
-				}
-				default -> {
-					return PROGUARD;
+			String extension = MoreFiles.getFileExtension(file).toLowerCase();
+
+			for (MappingFormat format : values()) {
+				if (format.fileType.getExtensions().contains(extension)) {
+					return format;
 				}
 			}
 		}
+
+		return PROGUARD;
 	}
 }
