@@ -19,11 +19,11 @@ public final class ExtensionFileFilter extends FileFilter {
 	 * Constructs an {@code ExtensionFileFilter}.
 	 *
 	 * @param formatName the human-readable name of the file format
-	 * @param extensions the file extensions with their leading dots (e.g. {@code .txt})
+	 * @param extensions the file extensions with no leading dots
 	 */
 	public ExtensionFileFilter(String formatName, List<String> extensions) {
 		this.formatName = formatName;
-		this.extensions = extensions;
+		this.extensions = extensions.stream().map(s -> "." + s).toList();
 	}
 
 	public List<String> getExtensions() {
