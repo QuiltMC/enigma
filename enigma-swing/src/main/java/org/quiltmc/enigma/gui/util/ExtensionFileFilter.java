@@ -27,7 +27,7 @@ public final class ExtensionFileFilter extends FileFilter {
 	}
 
 	public List<String> getExtensions() {
-		return extensions;
+		return this.extensions;
 	}
 
 	@Override
@@ -37,7 +37,7 @@ public final class ExtensionFileFilter extends FileFilter {
 			return true;
 		}
 
-		for (String extension : extensions) {
+		for (String extension : this.extensions) {
 			if (f.getName().endsWith(extension)) {
 				return true;
 			}
@@ -50,11 +50,11 @@ public final class ExtensionFileFilter extends FileFilter {
 	public String getDescription() {
 		var joiner = new StringJoiner(", ");
 
-		for (String extension : extensions) {
+		for (String extension : this.extensions) {
 			joiner.add("*" + extension);
 		}
 
-		return I18n.translateFormatted("menu.file.mappings.file_filter", formatName, joiner.toString());
+		return I18n.translateFormatted("menu.file.mappings.file_filter", this.formatName, joiner.toString());
 	}
 
 	/**

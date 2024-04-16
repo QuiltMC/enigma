@@ -619,7 +619,7 @@ public class GuiController implements ClientPacketHandler {
 
 	@Nullable
 	public MappingFormat getLoadedMappingFormat() {
-		return loadedMappingFormat;
+		return this.loadedMappingFormat;
 	}
 
 	public void createClient(String username, String ip, int port, char[] password) throws IOException {

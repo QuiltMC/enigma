@@ -47,7 +47,7 @@ public class ProgressBar extends ProgressListener {
 	@Override
 	public void step(int workDone, String message) {
 		super.step(workDone, message);
-		this.messageUpdateListeners.forEach(listener -> listener.accept(message, workDone == totalWork));
+		this.messageUpdateListeners.forEach(listener -> listener.accept(message, workDone == this.totalWork));
 
 		SwingUtilities.invokeLater(() -> {
 			if (workDone != -1) {
