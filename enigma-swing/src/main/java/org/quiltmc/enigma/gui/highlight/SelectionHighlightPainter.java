@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.highlight;
 
 import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.util.ScaleUtil;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics;
@@ -19,7 +20,9 @@ public class SelectionHighlightPainter implements Highlighter.HighlightPainter {
 		Graphics2D g2d = (Graphics2D) g;
 		Rectangle bounds = BoxHighlightPainter.getBounds(text, start, end);
 		g2d.setColor(Config.currentColors().selectionHighlight.value());
-		g2d.setStroke(new BasicStroke(2.0f));
-		g2d.drawRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 4, 4);
+		g2d.setStroke(new BasicStroke(ScaleUtil.scale(2.0f)));
+
+		int arcSize = ScaleUtil.scale(4);
+		g2d.drawRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, arcSize, arcSize);
 	}
 }
