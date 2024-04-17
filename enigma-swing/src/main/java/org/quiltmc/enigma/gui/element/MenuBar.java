@@ -471,6 +471,10 @@ public class MenuBar {
 
 	private void onOpenMappingsClicked() {
 		this.gui.mappingsFileChooser.setCurrentDirectory(new File(Config.main().stats.lastSelectedDir.value()));
+
+		List<MappingFormat> types = Arrays.stream(MappingFormat.values()).filter(format -> format.getReader() != null).toList();
+		ExtensionFileFilter.setupFileChooser(this.gui.mappingsFileChooser, types.toArray(new MappingFormat[0]));
+
 		if (this.gui.mappingsFileChooser.showOpenDialog(this.gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
 			File selectedFile = this.gui.mappingsFileChooser.getSelectedFile();
 			Config.main().stats.lastSelectedDir.setValue(this.gui.mappingsFileChooser.getCurrentDirectory().toString(), true);

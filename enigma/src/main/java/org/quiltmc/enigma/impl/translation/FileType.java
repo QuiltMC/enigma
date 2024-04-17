@@ -8,12 +8,12 @@ import java.util.List;
  * <p>If a file type has multiple extensions, the default for saving will be the first one.
  */
 public interface FileType {
-	FileType ENIGMA_MAPPING = new File(List.of("mapping", "mappings"));
+	FileType ENIGMA_MAPPING = new File("mapping", "mappings");
 	FileType ENIGMA_DIRECTORY = new Directory((File) ENIGMA_MAPPING);
-	FileType ENIGMA_ZIP = new File(List.of("zip"));
-	FileType PROGUARD = new File(List.of("txt"));
-	FileType SRG = new File(List.of("tsrg"));
-	FileType TINY_V2 = new File(List.of("tiny"));
+	FileType ENIGMA_ZIP = new File("zip");
+	FileType PROGUARD = new File("txt");
+	FileType SRG = new File("tsrg");
+	FileType TINY_V2 = new File("tiny");
 
 	/**
 	 * Gets all possible extensions for this type of mapping file.
@@ -39,6 +39,10 @@ public interface FileType {
 	}
 
 	record File(List<String> extensions) implements FileType {
+		public File(String... extensions) {
+			this(List.of(extensions));
+		}
+
 		@Override
 		public List<String> getExtensions() {
 			return this.extensions;

@@ -3,11 +3,11 @@ package org.quiltmc.enigma.gui.util;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
 import org.quiltmc.enigma.util.I18n;
 
-import javax.annotation.Nullable;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -23,7 +23,11 @@ public final class ExtensionFileFilter extends FileFilter {
 	 */
 	public ExtensionFileFilter(String formatName, List<String> extensions) {
 		this.formatName = formatName;
-		this.extensions = extensions.stream().map(s -> "." + s).toList();
+		this.extensions = extensions.stream().peek(s -> {
+			if (s.contains(".")) {
+				throw new IllegalArgumentException("extensions cannot contain dots!");
+			}
+		}).map(s -> "." + s).toList();
 	}
 
 	public List<String> getExtensions() {
@@ -62,25 +66,34 @@ public final class ExtensionFileFilter extends FileFilter {
 	 * and adds and selects a new filter based on the provided mapping format.
 	 *
 	 * @param fileChooser the file chooser to set up
-	 * @param format the mapping format to use. if {@code null}, the file chooser will accept only directories
+	 * @param formats the mapping formats to use. if empty, defaults to {@link MappingFormat#ENIGMA_DIRECTORY}
 	 */
-	public static void setupFileChooser(JFileChooser fileChooser, @Nullable MappingFormat format) {
-		if (format == null) {
-			format = MappingFormat.ENIGMA_DIRECTORY;
+	public static void setupFileChooser(JFileChooser fileChooser, MappingFormat... formats) {
+		if (formats.length == 0) {
+			formats = new MappingFormat[]{MappingFormat.ENIGMA_DIRECTORY};
 		}
 
 		// Remove previous custom filters.
 		fileChooser.resetChoosableFileFilters();
 
-		if (format.getFileType().isDirectory()) {
-			fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		} else {
-			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-			String formatName = I18n.translate("mapping_format." + format.name().toLowerCase());
-			var filter = new ExtensionFileFilter(formatName, format.getFileType().getExtensions());
-			// Add our new filter to the list...
+		for (MappingFormat format : formats) {
+			if (format.getFileType().isDirectory()) {
+				fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			} else {
+				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				String formatName = I18n.translate("mapping_format." + format.name().toLowerCase());
+				var filter = new ExtensionFileFilter(formatName, format.getFileType().getExtensions());
+				// Add our new filter to the list...
+				fileChooser.addChoosableFileFilter(filter);
+				// ...and choose it as the default.
+				fileChooser.setFileFilter(filter);
+			}
+		}
+
+		if (formats.length > 1) {
+			List<String> extensions = Arrays.stream(formats).flatMap(format -> format.getFileType().getExtensions().stream()).distinct().toList();
+			var filter = new ExtensionFileFilter(I18n.translate("mapping_format.all_formats"), extensions);
 			fileChooser.addChoosableFileFilter(filter);
-			// ...and choose it as the default.
 			fileChooser.setFileFilter(filter);
 		}
 	}
