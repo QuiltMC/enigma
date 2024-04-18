@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.api;
 
+import com.google.common.io.MoreFiles;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.service.EnigmaService;
@@ -13,8 +14,11 @@ import org.quiltmc.enigma.api.class_provider.CombiningClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
 import org.quiltmc.enigma.api.service.NameProposalService;
+import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.serde.FileType;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
@@ -24,13 +28,18 @@ import org.quiltmc.enigma.util.Utils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableListMultimap;
 import org.objectweb.asm.Opcodes;
+import org.tinylog.Logger;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
@@ -126,6 +135,61 @@ public class Enigma {
 		var proposalServices = new ArrayList<>(this.services.get(NameProposalService.TYPE));
 		Collections.reverse(proposalServices);
 		return proposalServices;
+	}
+
+	public List<ReadWriteService> getReadWriteServices() {
+		return this.services.get(ReadWriteService.TYPE);
+	}
+
+	public List<FileType> getSupportedFileTypes() {
+		return this.getReadWriteServices().stream().map(ReadWriteService::getFileType).toList();
+	}
+
+	public Optional<ReadWriteService> getReadWriteService(FileType fileType) {
+		return this.getReadWriteServices().stream().filter(service -> service.getFileType().equals(fileType)).findFirst();
+	}
+
+	public Optional<ReadWriteService> parseReadWriteService(Path path) {
+		return this.parseFileType(path).flatMap(this::getReadWriteService);
+	}
+
+	/**
+	 * Determines the mapping format of the provided path. Checks all formats according to their {@link FileType} file extensions.
+	 * If the path is a directory, it will check the first file in the directory.
+	 * @param path the path to analyse
+	 * @return the mapping format of the path
+	 */
+	public Optional<FileType> parseFileType(Path path) {
+		List<FileType> supportedTypes = this.getSupportedFileTypes();
+
+		if (Files.isDirectory(path)) {
+			try {
+				File firstFile = Arrays.stream(Objects.requireNonNull(path.toFile().listFiles())).findFirst().orElseThrow();
+
+				for (FileType type : supportedTypes) {
+					if (!type.isDirectory()) {
+						continue;
+					}
+
+					String extension = MoreFiles.getFileExtension(firstFile.toPath()).toLowerCase();
+					if (type.getExtensions().contains(extension)) {
+						return Optional.of(type);
+					}
+				}
+			} catch (Exception e) {
+				Logger.error(e, "Failed to determine mapping format of directory {}", path);
+			}
+		} else {
+			String extension = MoreFiles.getFileExtension(path).toLowerCase();
+
+			for (FileType type : supportedTypes) {
+				if (type.getExtensions().contains(extension)) {
+					return Optional.of(type);
+				}
+			}
+		}
+
+		return Optional.empty();
 	}
 
 	public static class Builder {

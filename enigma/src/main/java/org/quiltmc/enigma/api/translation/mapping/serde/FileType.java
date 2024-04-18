@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.impl.translation;
+package org.quiltmc.enigma.api.translation.mapping.serde;
 
 import java.util.List;
 
@@ -8,13 +8,6 @@ import java.util.List;
  * <p>If a file type has multiple extensions, the default for saving will be the first one.
  */
 public interface FileType {
-	FileType ENIGMA_MAPPING = new File("mapping", "mappings");
-	FileType ENIGMA_DIRECTORY = new Directory((File) ENIGMA_MAPPING);
-	FileType ENIGMA_ZIP = new File("zip");
-	FileType PROGUARD = new File("txt");
-	FileType SRG = new File("tsrg");
-	FileType TINY_V2 = new File("tiny");
-
 	/**
 	 * Gets all possible extensions for this type of mapping file.
 	 * If {@link #isDirectory()} is {@code true}, this will return the types of mapping allowed inside the directory.
