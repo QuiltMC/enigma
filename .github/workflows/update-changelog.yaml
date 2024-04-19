@@ -1,0 +1,18 @@
+name: Update HTML Changelog
+
+on:
+  push:
+    branches: [master]
+    paths:
+    - CHANGELOG.md
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Dispatch website rebuild
+      uses: benc-uk/workflow-dispatch@v1
+      with:
+        workflow: manual-publish.yaml
+        repo: quiltmc/quiltmc.org
+        token: "${{ secrets.COZY_PAT }}"
