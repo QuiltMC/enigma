@@ -115,13 +115,13 @@ As with any big release, Enigma 2.0 broke tons of things. We've cleaned up all t
   - added lots of new tests to make sure everything is working!
 - added a new command: `print-stats`
   - this command generates and prints mapping stats for on-the-go mappers who can't be bothered to crack open the swing GUI
-- added dynamic resizing for the calls tree docker's list of tokens 
+- added dynamic resizing for the calls tree docker's list of tokens
 - added a new shortcut constructor for `LocalVariableEntry`
 - added tokenization of invokedynamic arguments (this means something if you're a nerd. we promise)
 - fixed some users not seeing indentation when using the vineflower decompiler
 - updated [syntaxpain](<https://github.com/QuiltMC/syntaxpain>) to `1.1.2`
   - fixes the line ruler in the code view not automatically resizing
-- updated [quilt config](<https://github.com/QuiltMC/quilt-config>) to `1.2` 
+- updated [quilt config](<https://github.com/QuiltMC/quilt-config>) to `1.2`
 - updated [vineflower](<https://github.com/Vineflower/vineflower>) to the latest `1.10.0` snapshot
 
 # 2.2.1
@@ -162,3 +162,10 @@ As always, we've hard at work improving the beautiful software that helps mapper
     -  cfr: `0.2.1` -> `0.2.2`
     -  guava: `32.0.1` -> `33.0.0`
     -  flatlaf: `3.2.5` -> `3.4`
+
+# 2.3.1
+
+2.3.1 is your quickest bugfix release yet.
+
+- fixed fractional scaling not applying to docker buttons
+- fixed ASM artifact expiring
