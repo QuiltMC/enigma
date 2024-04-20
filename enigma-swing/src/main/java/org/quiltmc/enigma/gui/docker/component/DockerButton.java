@@ -3,6 +3,7 @@ package org.quiltmc.enigma.gui.docker.component;
 import org.quiltmc.enigma.gui.config.theme.LookAndFeel;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.docker.Docker;
+import org.quiltmc.enigma.gui.util.ScaleUtil;
 
 import javax.swing.JComponent;
 import javax.swing.JToggleButton;
@@ -130,10 +131,10 @@ public class DockerButton extends JToggleButton implements Draggable {
 		g2d.setFont(font);
 
 		// position
-		int textSize = (int) font.createGlyphVector(g2d.getFontRenderContext(), translatedText).getVisualBounds().getWidth() + 20;
+		int textSize = (int) font.createGlyphVector(g2d.getFontRenderContext(), translatedText).getVisualBounds().getWidth() + ScaleUtil.scale(20);
 		this.setPreferredSize(new Dimension(this.getPreferredSize().width, textSize));
-		int x = this.side == Docker.Side.RIGHT ? 10 : -textSize + 10;
-		int y = this.side == Docker.Side.RIGHT ? -10 : 20;
+		int x = this.side == Docker.Side.RIGHT ? ScaleUtil.scale(10) : -textSize + ScaleUtil.scale(10);
+		int y = this.side == Docker.Side.RIGHT ? -ScaleUtil.scale(10) : ScaleUtil.scale(20);
 
 		g2d.drawString(translatedText, x, y);
 		this.setSize(this.getPreferredSize());
