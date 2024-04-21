@@ -173,7 +173,7 @@ public class Enigma {
 
 	/**
 	 * Determines the mapping format of the provided path. Checks all formats according to their {@link FileType} file extensions.
-	 * If the path is a directory, it will check the first file in the directory.
+	 * If the path is a directory, it will check the first file in the directory. For directories, defaults to the enigma mappings format.
 	 * @param path the path to analyse
 	 * @return the mapping format of the path
 	 */
@@ -182,7 +182,7 @@ public class Enigma {
 
 		if (Files.isDirectory(path)) {
 			try {
-				File firstFile = Arrays.stream(Objects.requireNonNull(path.toFile().listFiles()))
+				Optional<File> firstFile = Arrays.stream(Objects.requireNonNull(path.toFile().listFiles()))
 					.flatMap(file -> {
 						if (file.isDirectory()) {
 							var files = file.listFiles();
@@ -195,19 +195,22 @@ public class Enigma {
 
 						return Stream.empty();
 					})
-					.findFirst()
-					.orElseThrow();
+					.findFirst();
 
-				for (FileType type : supportedTypes) {
-					if (!type.isDirectory()) {
-						continue;
-					}
+				if (firstFile.isPresent()) {
+					for (FileType type : supportedTypes) {
+						if (!type.isDirectory()) {
+							continue;
+						}
 
-					String extension = MoreFiles.getFileExtension(firstFile.toPath()).toLowerCase();
-					if (type.getExtensions().contains(extension)) {
-						return Optional.of(type);
+						String extension = MoreFiles.getFileExtension(firstFile.get().toPath()).toLowerCase();
+						if (type.getExtensions().contains(extension)) {
+							return Optional.of(type);
+						}
 					}
 				}
+
+				return this.getFileType("mappings", true);
 			} catch (Exception e) {
 				Logger.error(e, "Failed to determine mapping format of directory {}", path);
 			}
