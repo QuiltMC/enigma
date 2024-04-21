@@ -38,11 +38,12 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public enum EnigmaMappingsWriter implements MappingsWriter {
 	FILE {
 		@Override
-		public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
+		public void write(@Nullable String obfNamespace, @Nullable String deobfNamespace, EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
 			EntryTree<EntryMapping> writtenMappings = MappingsWriter.filterMappings(mappings, saveParameters);
 
 			Collection<ClassEntry> classes = writtenMappings.getRootNodes()
@@ -65,7 +66,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 	},
 	DIRECTORY {
 		@Override
-		public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
+		public void write(@Nullable String obfNamespace, @Nullable String deobfNamespace, EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
 			EntryTree<EntryMapping> writtenMappings = MappingsWriter.filterMappings(mappings, saveParameters);
 
 			Collection<ClassEntry> changedClasses = delta.getChangedRoots()
@@ -161,7 +162,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 	},
 	ZIP {
 		@Override
-		public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path zip, ProgressListener progress, MappingSaveParameters saveParameters) {
+		public void write(@Nullable String obfNamespace, @Nullable String deobfNamespace, EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path zip, ProgressListener progress, MappingSaveParameters saveParameters) {
 			try (FileSystem fs = FileSystems.newFileSystem(new URI("jar:file", null, zip.toUri().getPath(), ""), Collections.singletonMap("create", "true"))) {
 				DIRECTORY.write(mappings, delta, fs.getPath("/"), progress, saveParameters);
 			} catch (IOException e) {

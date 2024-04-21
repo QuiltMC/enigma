@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.ArgumentDescriptor;

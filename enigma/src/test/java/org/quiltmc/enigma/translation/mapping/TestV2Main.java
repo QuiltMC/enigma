@@ -2,6 +2,7 @@ package org.quiltmc.enigma.translation.mapping;
 
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.serde.enigma.EnigmaMappingsReader;
@@ -19,6 +20,6 @@ public final class TestV2Main {
 
 		EntryTree<EntryMapping> tree = EnigmaMappingsReader.DIRECTORY.read(path);
 
-		new TinyV2Writer("obf", "deobf").write(tree, Paths.get("currentYarn.tiny"), ProgressListener.createEmpty(), parameters);
+		new TinyV2Writer().write("obf", "deobf", tree, MappingDelta.added(tree), Paths.get("currentYarn.tiny"), ProgressListener.createEmpty(), parameters);
 	}
 }

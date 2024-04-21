@@ -1,10 +1,10 @@
 package org.quiltmc.enigma.translation.mapping;
 
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
@@ -55,7 +55,7 @@ public class TestReadWriteCycle {
 		mappings.insert(mappingPair.a(), mappingPair.b());
 	}
 
-	private void testReadWriteCycle(MappingFormat mappingFormat, String tmpNameSuffix) throws IOException, MappingParseException {
+	private void testReadWriteCycle(ReadWriteService readWriteService, String tmpNameSuffix) throws IOException, MappingParseException {
 		//construct some known mappings to test with
 		EntryTree<EntryMapping> testMappings = new HashEntryTree<>();
 		this.insertMapping(testMappings, this.testClazz);
@@ -73,10 +73,10 @@ public class TestReadWriteCycle {
 		File tempFile = File.createTempFile("readWriteCycle", tmpNameSuffix);
 		tempFile.delete(); //remove the auto created file
 
-		mappingFormat.write(testMappings, tempFile.toPath(), ProgressListener.createEmpty(), this.parameters);
+		readWriteService.write(testMappings, tempFile.toPath(), ProgressListener.createEmpty(), this.parameters);
 		Assertions.assertTrue(tempFile.exists(), "Written file not created");
 
-		EntryTree<EntryMapping> loadedMappings = mappingFormat.read(tempFile.toPath(), ProgressListener.createEmpty());
+		EntryTree<EntryMapping> loadedMappings = readWriteService.read(tempFile.toPath(), ProgressListener.createEmpty());
 
 		Assertions.assertTrue(loadedMappings.contains(this.testClazz.a()), "Loaded mappings don't contain testClazz");
 		Assertions.assertTrue(loadedMappings.contains(this.testField1.a()), "Loaded mappings don't contain testField1");

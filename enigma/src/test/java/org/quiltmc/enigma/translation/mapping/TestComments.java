@@ -1,7 +1,9 @@
 package org.quiltmc.enigma.translation.mapping;
 
 import org.quiltmc.enigma.TestUtil;
+import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
@@ -22,7 +24,6 @@ public class TestComments {
 		EntryTree<EntryMapping> mappings = EnigmaMappingsReader.DIRECTORY.read(
 						DIRECTORY);
 
-		new TinyV2Writer("intermediary", "named")
-						.write(mappings, DIRECTORY.resolve("convertedtiny.tiny"), params);
+		new TinyV2Writer().write("intermediary", "named", mappings, MappingDelta.added(mappings), DIRECTORY.resolve("convertedtiny.tiny"), ProgressListener.createEmpty(), params);
 	}
 }

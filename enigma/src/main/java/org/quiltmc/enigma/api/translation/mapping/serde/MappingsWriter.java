@@ -8,17 +8,22 @@ import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 
+import javax.annotation.Nullable;
 import java.nio.file.Path;
 
 public interface MappingsWriter {
-	void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters);
+	void write(@Nullable String obfNamespace, @Nullable String deobfNamespace, EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters);
+
+	default void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
+		this.write(null, null, mappings, delta, path, progress, saveParameters);
+	}
 
 	default void write(EntryTree<EntryMapping> mappings, Path path, MappingSaveParameters saveParameters) {
-		this.write(mappings, MappingDelta.added(mappings), path, ProgressListener.createEmpty(), saveParameters);
+		this.write(null, null, mappings, MappingDelta.added(mappings), path, ProgressListener.createEmpty(), saveParameters);
 	}
 
 	default void write(EntryTree<EntryMapping> mappings, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
-		this.write(mappings, MappingDelta.added(mappings), path, progress, saveParameters);
+		this.write(null, null, mappings, MappingDelta.added(mappings), path, progress, saveParameters);
 	}
 
 	/**
