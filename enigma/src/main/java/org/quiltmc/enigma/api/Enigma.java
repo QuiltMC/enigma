@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import org.objectweb.asm.Opcodes;
 import org.tinylog.Logger;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -251,6 +252,11 @@ public class Enigma {
 		public <T extends EnigmaService> void registerService(EnigmaServiceType<T> serviceType, EnigmaServiceFactory<T> factory) {
 			List<EnigmaProfile.Service> serviceProfiles = this.profile.getServiceProfiles(serviceType);
 
+			if (serviceProfiles.isEmpty() && serviceType.activeByDefault()) {
+				this.services.put(serviceType, factory.create(this.getServiceContext(null)));
+				return;
+			}
+
 			for (EnigmaProfile.Service serviceProfile : serviceProfiles) {
 				T service = factory.create(this.getServiceContext(serviceProfile));
 				if (serviceProfile.matches(service.getId())) {
@@ -260,11 +266,11 @@ public class Enigma {
 			}
 		}
 
-		private <T extends EnigmaService> EnigmaServiceContext<T> getServiceContext(EnigmaProfile.Service serviceProfile) {
+		private <T extends EnigmaService> EnigmaServiceContext<T> getServiceContext(@Nullable EnigmaProfile.Service serviceProfile) {
 			return new EnigmaServiceContext<>() {
 				@Override
 				public Optional<Either<String, List<String>>> getArgument(String key) {
-					return serviceProfile.getArgument(key);
+					return serviceProfile == null ? Optional.empty() : serviceProfile.getArgument(key);
 				}
 
 				@Override
@@ -283,6 +289,11 @@ public class Enigma {
 			ImmutableListMultimap.Builder<EnigmaServiceType<?>, EnigmaService> orderedServices = ImmutableListMultimap.builder();
 			for (EnigmaServiceType<?> type : builtServices.keySet()) {
 				List<EnigmaProfile.Service> serviceProfiles = this.profile.getServiceProfiles(type);
+
+				if (serviceProfiles.isEmpty() && type.activeByDefault()) {
+					orderedServices.putAll(type, builtServices.get(type));
+					continue;
+				}
 
 				for (EnigmaProfile.Service service : serviceProfiles) {
 					for (EnigmaService registeredService : builtServices.get(type)) {
