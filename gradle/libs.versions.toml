@@ -3,7 +3,7 @@ shadow = "8.1.1"
 
 guava = "33.0.0-jre"
 gson = "2.10.1"
-asm = "9.8-20240409.145119-3"
+asm = "9.8-SNAPSHOT"
 jopt = "6.0-alpha-3"
 flatlaf = "3.4"
 syntaxpain = "0.1.5"
