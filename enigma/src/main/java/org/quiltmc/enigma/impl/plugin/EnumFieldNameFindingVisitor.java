@@ -51,7 +51,7 @@ final class EnumFieldNameFindingVisitor extends ClassVisitor {
 	@Override
 	public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
 		if ((access & Opcodes.ACC_ENUM) != 0
-			&& !this.enumFields.add(Pair.of(name, descriptor))) {
+				&& !this.enumFields.add(Pair.of(name, descriptor))) {
 			throw new IllegalArgumentException("Found two enum fields with the same name \"" + name + "\" and desc \"" + descriptor + "\"!");
 		}
 
@@ -93,10 +93,10 @@ final class EnumFieldNameFindingVisitor extends ClassVisitor {
 				String s = null;
 
 				if (instr2.getOpcode() == Opcodes.PUTSTATIC
-					&& ((FieldInsnNode) instr2).owner.equals(owner)
-					&& this.enumFields.contains(Pair.of(((FieldInsnNode) instr2).name, ((FieldInsnNode) instr2).desc))
-					&& instr1.getOpcode() == Opcodes.INVOKESPECIAL
-					&& "<init>".equals(((MethodInsnNode) instr1).name)) {
+						&& ((FieldInsnNode) instr2).owner.equals(owner)
+						&& this.enumFields.contains(Pair.of(((FieldInsnNode) instr2).name, ((FieldInsnNode) instr2).desc))
+						&& instr1.getOpcode() == Opcodes.INVOKESPECIAL
+						&& "<init>".equals(((MethodInsnNode) instr1).name)) {
 					for (int j = 0; j < frames[i - 1].getStackSize(); j++) {
 						SourceValue sv = frames[i - 1].getStack(j);
 						for (AbstractInsnNode ci : sv.insns) {

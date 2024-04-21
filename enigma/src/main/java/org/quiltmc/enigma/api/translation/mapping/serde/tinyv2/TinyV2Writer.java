@@ -18,7 +18,6 @@ import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntr
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.tinylog.Logger;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -30,6 +29,7 @@ import java.util.List;
 import java.util.stream.StreamSupport;
 
 public final class TinyV2Writer implements MappingsWriter {
+	public static final MappingsWriter INSTANCE = new TinyV2Writer();
 	private static final String MINOR_VERSION = "0";
 
 	public TinyV2Writer() {

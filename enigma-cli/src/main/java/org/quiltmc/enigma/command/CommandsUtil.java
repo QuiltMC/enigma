@@ -11,7 +11,7 @@ public class CommandsUtil {
 	public static ReadWriteService getReadWriteService(Enigma enigma, Path file) {
 		var service = enigma.getReadWriteService(file);
 		if (service.isEmpty()) {
-			throw new UnsupportedOperationException("No reader/writer found for file \"" + file  + "\"");
+			throw new UnsupportedOperationException("No reader/writer found for file \"" + file + "\"");
 		}
 
 		return service.get();

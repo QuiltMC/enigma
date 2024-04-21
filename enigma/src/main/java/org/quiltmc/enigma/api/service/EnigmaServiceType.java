@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.api.service;
 
 public record EnigmaServiceType<T extends EnigmaService>(
-	String key,
-	boolean activeByDefault
+		String key,
+		boolean activeByDefault
 ) {
 	/**
 	 * The unique key of this service type.

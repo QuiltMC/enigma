@@ -5,10 +5,10 @@ import com.google.gson.annotations.SerializedName;
 import javax.annotation.Nullable;
 
 public record MappingSaveParameters(
-	@SerializedName("file_name_format") MappingFileNameFormat fileNameFormat,
-	@SerializedName("write_proposed_names") boolean writeProposedNames,
-	@SerializedName("obfuscated_namespace") @Nullable String obfuscatedNamespace,
-	@SerializedName("deobfuscated_namespace") @Nullable String deobfuscatedNamespace
+		@SerializedName("file_name_format") MappingFileNameFormat fileNameFormat,
+		@SerializedName("write_proposed_names") boolean writeProposedNames,
+		@SerializedName("obfuscated_namespace") @Nullable String obfuscatedNamespace,
+		@SerializedName("deobfuscated_namespace") @Nullable String deobfuscatedNamespace
 ) {
 	/**
 	 * Controls how individual files will be named in directory-based mapping formats.

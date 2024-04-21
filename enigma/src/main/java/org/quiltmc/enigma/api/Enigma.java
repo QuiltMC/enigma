@@ -151,7 +151,7 @@ public class Enigma {
 	}
 
 	public Optional<ReadWriteService> getReadWriteService(String extension) {
-		return getReadWriteService(extension, false);
+		return this.getReadWriteService(extension, false);
 	}
 
 	public Optional<ReadWriteService> getReadWriteService(String extension, boolean isDirectory) {
@@ -183,19 +183,19 @@ public class Enigma {
 		if (Files.isDirectory(path)) {
 			try {
 				Optional<File> firstFile = Arrays.stream(Objects.requireNonNull(path.toFile().listFiles()))
-					.flatMap(file -> {
-						if (file.isDirectory()) {
-							var files = file.listFiles();
-							if (files != null) {
-								return Arrays.stream(files);
+						.flatMap(file -> {
+							if (file.isDirectory()) {
+								var files = file.listFiles();
+								if (files != null) {
+									return Arrays.stream(files);
+								}
+							} else {
+								return Stream.of(file);
 							}
-						} else {
-							return Stream.of(file);
-						}
 
-						return Stream.empty();
-					})
-					.findFirst();
+							return Stream.empty();
+						})
+						.findFirst();
 
 				if (firstFile.isPresent()) {
 					for (FileType type : supportedTypes) {

@@ -38,7 +38,6 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public enum EnigmaMappingsWriter implements MappingsWriter {
 	FILE {
