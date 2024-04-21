@@ -2,6 +2,7 @@ package org.quiltmc.enigma.translation.mapping;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
@@ -25,18 +26,19 @@ public class TestDeterministicWrite {
 	@Test
 	public void testTinyV2() throws Exception {
 		Path dir = Files.createTempDirectory("enigmaDeterministicTinyV2-");
+		Enigma enigma = Enigma.create();
 
 		EntryTree<EntryMapping> mappings = randomMappingTree(1L);
 
 		String prev = null;
 		for (int i = 0; i < 32; i++) {
 			Path file = dir.resolve(i + ".tiny");
-			MappingFormat.TINY_V2.write(mappings, file, ProgressListener.createEmpty(), null);
+			enigma.getReadWriteService("tiny").get().write(mappings, file, ProgressListener.createEmpty(), null);
 
 			String content = Files.readString(file);
 			if (prev != null) Assertions.assertEquals(prev, content, "Iteration " + i + " has a different result from the previous one");
 			prev = content;
-			mappings = MappingFormat.TINY_V2.read(file, ProgressListener.createEmpty());
+			mappings = enigma.getReadWriteService("tiny").get().read(file, ProgressListener.createEmpty());
 		}
 	}
 

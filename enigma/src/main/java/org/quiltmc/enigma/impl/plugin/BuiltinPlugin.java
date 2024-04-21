@@ -7,7 +7,7 @@ import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.service.JarIndexerService;
 import org.quiltmc.enigma.api.service.NameProposalService;
-import org.quiltmc.enigma.api.source.DecompilerService;
+import org.quiltmc.enigma.api.service.DecompilerService;
 import org.quiltmc.enigma.api.source.Decompilers;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;

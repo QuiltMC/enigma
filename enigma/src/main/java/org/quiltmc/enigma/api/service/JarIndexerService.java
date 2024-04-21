@@ -8,7 +8,7 @@ import org.objectweb.asm.ClassVisitor;
 import java.util.Set;
 
 public interface JarIndexerService extends EnigmaService {
-	EnigmaServiceType<JarIndexerService> TYPE = EnigmaServiceType.create("jar_indexer");
+	EnigmaServiceType<JarIndexerService> TYPE = new EnigmaServiceType<>("jar_indexer", false);
 
 	void acceptJar(Set<String> scope, ClassProvider classProvider, JarIndex jarIndex);
 

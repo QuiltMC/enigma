@@ -144,12 +144,16 @@ public class Enigma {
 		return this.getReadWriteServices().stream().map(ReadWriteService::getFileType).toList();
 	}
 
-	public Optional<FileType> getFileType(String extension) {
-		return this.getSupportedFileTypes().stream().filter(type -> type.getExtensions().contains(extension)).findFirst();
+	public Optional<FileType> getFileType(String extension, boolean isDirectory) {
+		return this.getSupportedFileTypes().stream().filter(type -> type.getExtensions().contains(extension) && type.isDirectory() == isDirectory).findFirst();
 	}
 
 	public Optional<ReadWriteService> getReadWriteService(String extension) {
-		var fileType = this.getFileType(extension);
+		return getReadWriteService(extension, false);
+	}
+
+	public Optional<ReadWriteService> getReadWriteService(String extension, boolean isDirectory) {
+		var fileType = this.getFileType(extension, isDirectory);
 		if (fileType.isPresent()) {
 			return this.getReadWriteService(fileType.get());
 		}

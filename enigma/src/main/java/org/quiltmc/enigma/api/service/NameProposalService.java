@@ -13,7 +13,7 @@ import java.util.Map;
  * A name proposal service suggests default names for entries based on context from their types and surrounding mappings.
  */
 public interface NameProposalService extends EnigmaService {
-	EnigmaServiceType<NameProposalService> TYPE = EnigmaServiceType.create("name_proposal");
+	EnigmaServiceType<NameProposalService> TYPE = new EnigmaServiceType<>("name_proposal", false);
 
 	/**
 	 * Runs when a new JAR file is opened. Note that at this point, no mapping context will exist in the remapper.

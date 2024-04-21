@@ -20,10 +20,10 @@ public class TestComments {
 
 	@Test
 	public void testParseAndWrite() throws IOException, MappingParseException {
-		MappingSaveParameters params = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
+		MappingSaveParameters params = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, "intermediary", "named");
 		EntryTree<EntryMapping> mappings = EnigmaMappingsReader.DIRECTORY.read(
 						DIRECTORY);
 
-		new TinyV2Writer().write("intermediary", "named", mappings, MappingDelta.added(mappings), DIRECTORY.resolve("convertedtiny.tiny"), ProgressListener.createEmpty(), params);
+		new TinyV2Writer().write(mappings, MappingDelta.added(mappings), DIRECTORY.resolve("convertedtiny.tiny"), ProgressListener.createEmpty(), params);
 	}
 }

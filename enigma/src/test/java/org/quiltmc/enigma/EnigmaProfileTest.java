@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.service.JarIndexerService;
 import org.quiltmc.enigma.api.service.NameProposalService;
-import org.quiltmc.enigma.api.source.DecompilerService;
+import org.quiltmc.enigma.api.service.DecompilerService;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
 import org.quiltmc.enigma.util.Either;
 

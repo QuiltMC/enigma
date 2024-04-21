@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.translation.mapping;
 
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.api.source.TokenType;
@@ -24,7 +25,8 @@ import java.io.IOException;
  * Tests that a MappingFormat can write out a fixed set of mappings and read them back without losing any information.
  */
 public class TestReadWriteCycle {
-	private final MappingSaveParameters parameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
+	private final MappingSaveParameters parameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, null, null);
+	private final Enigma enigma = Enigma.create();
 
 	private final Pair<ClassEntry, EntryMapping> testClazz = new Pair<>(
 			new ClassEntry("a/b/c"),
@@ -101,21 +103,21 @@ public class TestReadWriteCycle {
 
 	@Test
 	public void testEnigmaFile() throws IOException, MappingParseException {
-		this.testReadWriteCycle(MappingFormat.ENIGMA_FILE, ".enigma");
+		this.testReadWriteCycle(this.enigma.getReadWriteService("mappings").get(), ".mapping");
 	}
 
 	@Test
 	public void testEnigmaDir() throws IOException, MappingParseException {
-		this.testReadWriteCycle(MappingFormat.ENIGMA_DIRECTORY, ".tmp");
+		this.testReadWriteCycle(this.enigma.getReadWriteService("mappings", true).get(), ".tmp");
 	}
 
 	@Test
 	public void testEnigmaZip() throws IOException, MappingParseException {
-		this.testReadWriteCycle(MappingFormat.ENIGMA_ZIP, ".zip");
+		this.testReadWriteCycle(this.enigma.getReadWriteService("zip").get(), ".zip");
 	}
 
 	@Test
 	public void testTinyV2() throws IOException, MappingParseException {
-		this.testReadWriteCycle(MappingFormat.TINY_V2, ".tiny");
+		this.testReadWriteCycle(this.enigma.getReadWriteService("tiny").get(), ".tiny");
 	}
 }

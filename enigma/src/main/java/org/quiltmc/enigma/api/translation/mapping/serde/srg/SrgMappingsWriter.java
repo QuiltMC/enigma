@@ -33,7 +33,7 @@ public enum SrgMappingsWriter implements MappingsWriter {
 	INSTANCE;
 
 	@Override
-	public void write(@Nullable String obfNamespace, @Nullable String deobfNamespace, EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
+	public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
 		EntryTree<EntryMapping> writtenMappings = MappingsWriter.filterMappings(mappings, saveParameters);
 
 		try {

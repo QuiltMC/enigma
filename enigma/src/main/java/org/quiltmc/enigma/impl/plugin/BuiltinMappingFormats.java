@@ -39,8 +39,8 @@ public class BuiltinMappingFormats {
 				static final TinyV2Writer writer = new TinyV2Writer();
 
 				@Override
-				public void write(@Nullable String obfNamespace, @Nullable String deobfNamespace, EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
-					writer.write(obfNamespace, deobfNamespace, mappings, delta, path, progress, saveParameters);
+				public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
+					writer.write(mappings, delta, path, progress, saveParameters);
 				}
 
 				@Override

@@ -39,7 +39,7 @@ import org.quiltmc.enigma.network.packet.c2s.EntryChangeC2SPacket;
 import org.quiltmc.enigma.network.packet.c2s.LoginC2SPacket;
 import org.quiltmc.enigma.network.packet.Packet;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
-import org.quiltmc.enigma.api.source.DecompilerService;
+import org.quiltmc.enigma.api.service.DecompilerService;
 import org.quiltmc.enigma.api.source.SourceIndex;
 import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.api.stats.StatsGenerator;

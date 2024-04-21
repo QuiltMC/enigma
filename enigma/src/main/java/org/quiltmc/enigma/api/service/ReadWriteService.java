@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public interface ReadWriteService extends EnigmaService, MappingsWriter, MappingsReader {
-	EnigmaServiceType<ReadWriteService> TYPE = EnigmaServiceType.create("read_write");
+	EnigmaServiceType<ReadWriteService> TYPE = new EnigmaServiceType<>("read_write", true);
 
 	FileType getFileType();
 
@@ -26,12 +26,12 @@ public interface ReadWriteService extends EnigmaService, MappingsWriter, Mapping
 	static ReadWriteService create(@Nullable MappingsReader reader, @Nullable MappingsWriter writer, FileType fileType, String id) {
 		return new ReadWriteService() {
 			@Override
-			public void write(@Nullable String obfNamespace, @Nullable String deobfNamespace, EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
+			public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
 				if (writer == null) {
 					throw new UnsupportedOperationException("This service does not support writing!");
 				}
 
-				writer.write(obfNamespace, deobfNamespace, mappings, delta, path, progress, saveParameters);
+				writer.write(mappings, delta, path, progress, saveParameters);
 			}
 
 			@Override

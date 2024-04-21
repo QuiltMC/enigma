@@ -4,7 +4,7 @@ import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
-import org.quiltmc.enigma.api.source.DecompilerService;
+import org.quiltmc.enigma.api.service.DecompilerService;
 import org.quiltmc.enigma.api.source.Decompilers;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.junit.jupiter.params.ParameterizedTest;

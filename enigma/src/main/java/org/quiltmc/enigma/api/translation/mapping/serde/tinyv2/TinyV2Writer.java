@@ -74,11 +74,13 @@ public final class TinyV2Writer implements MappingsWriter {
 	}
 
 	@Override
-	public void write(@Nullable String obfNamespace, @Nullable String deobfNamespace, EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters parameters) {
+	public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters parameters) {
+		String obfNamespace = parameters.obfuscatedNamespace();
 		if (obfNamespace == null) {
 			obfNamespace = "intermediary";
 		}
 
+		String deobfNamespace = parameters.deobfuscatedNamespace();
 		if (deobfNamespace == null) {
 			deobfNamespace = "named";
 		}
