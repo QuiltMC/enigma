@@ -29,7 +29,7 @@ public class TestTranslator {
 	public static void beforeClass() throws Exception {
 		enigma = Enigma.create();
 		project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
-		mappings = enigma.parseReadWriteService(Path.of("/translation.mappings")).get().read(
+		mappings = enigma.getReadWriteService(Path.of("/translation.mappings")).get().read(
 				TestUtil.getResource("/translation.mappings"),
 				ProgressListener.createEmpty());
 		project.setMappings(mappings, ProgressListener.createEmpty());

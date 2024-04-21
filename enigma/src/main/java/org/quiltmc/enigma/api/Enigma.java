@@ -44,6 +44,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public class Enigma {
 	public static final String NAME = "Enigma";
@@ -166,7 +167,7 @@ public class Enigma {
 		return this.getReadWriteServices().stream().filter(service -> service.getFileType().equals(fileType)).findFirst();
 	}
 
-	public Optional<ReadWriteService> parseReadWriteService(Path path) {
+	public Optional<ReadWriteService> getReadWriteService(Path path) {
 		return this.parseFileType(path).flatMap(this::getReadWriteService);
 	}
 
@@ -181,7 +182,21 @@ public class Enigma {
 
 		if (Files.isDirectory(path)) {
 			try {
-				File firstFile = Arrays.stream(Objects.requireNonNull(path.toFile().listFiles())).findFirst().orElseThrow();
+				File firstFile = Arrays.stream(Objects.requireNonNull(path.toFile().listFiles()))
+					.flatMap(file -> {
+						if (file.isDirectory()) {
+							var files = file.listFiles();
+							if (files != null) {
+								return Arrays.stream(files);
+							}
+						} else {
+							return Stream.of(file);
+						}
+
+						return Stream.empty();
+					})
+					.findFirst()
+					.orElseThrow();
 
 				for (FileType type : supportedTypes) {
 					if (!type.isDirectory()) {
