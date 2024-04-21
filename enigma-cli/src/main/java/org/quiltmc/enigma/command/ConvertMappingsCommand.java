@@ -1,32 +1,36 @@
 package org.quiltmc.enigma.command;
 
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingsReader;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.util.Utils;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 
 public class ConvertMappingsCommand extends Command {
 	public ConvertMappingsCommand() {
 		super(Argument.INPUT_MAPPINGS.required(),
-				Argument.OUTPUT_MAPPING_FORMAT.required(),
-				Argument.MAPPING_OUTPUT.required());
+				Argument.MAPPING_OUTPUT.required(),
+				Argument.OBFUSCATED_NAMESPACE.required(),
+				Argument.DEOBFUSCATED_NAMESPACE.required()
+		);
 	}
 
 	@Override
 	public void run(String... args) throws IOException, MappingParseException {
 		Path source = getReadablePath(this.getArg(args, 0));
-		String resultFormat = this.getArg(args, 1);
-		Path result = getWritablePath(this.getArg(args, 2));
+		Path result = getWritablePath(this.getArg(args, 1));
+		String obfuscatedNamespace = this.getArg(args, 2);
+		String deobfuscatedNamespace = this.getArg(args, 3);
 
-		run(source, resultFormat, result);
+		run(source, result, obfuscatedNamespace, deobfuscatedNamespace);
 	}
 
 	@Override
@@ -39,14 +43,14 @@ public class ConvertMappingsCommand extends Command {
 		return "Converts the provided mappings to a different format.";
 	}
 
-	public static void run(Path source, String resultFormat, Path output) throws MappingParseException, IOException {
-		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
+	public static void run(Path source, Path output, @Nullable String obfuscatedNamespace, @Nullable String deobfuscatedNamespace) throws MappingParseException, IOException {
+		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, obfuscatedNamespace, deobfuscatedNamespace);
 
-		MappingFormat format = MappingFormat.parseFromFile(source);
-		EntryTree<EntryMapping> mappings = format.read(source);
+		MappingsReader reader = CommandsUtil.getReader(createEnigma(), source);
+		EntryTree<EntryMapping> mappings = reader.read(source);
 
 		Utils.delete(output);
-		MappingsWriter writer = MappingCommandsUtil.getWriter(resultFormat);
+		MappingsWriter writer = CommandsUtil.getWriter(createEnigma(), output);
 		writer.write(mappings, output, ProgressListener.createEmpty(), saveParameters);
 	}
 }

@@ -2,8 +2,8 @@ package org.quiltmc.enigma.command;
 
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
 import org.tinylog.Logger;
 
 import java.io.IOException;
@@ -46,7 +46,7 @@ public class DropInvalidMappingsCommand extends Command {
 			return;
 		}
 
-		MappingFormat format = MappingFormat.parseFromFile(mappingsIn);
+		MappingsWriter writer = CommandsUtil.getWriter(createEnigma(), mappingsIn);
 		EnigmaProject project = openProject(jarIn, mappingsIn);
 
 		Logger.info("Dropping invalid mappings...");
@@ -75,6 +75,6 @@ public class DropInvalidMappingsCommand extends Command {
 		}
 
 		MappingSaveParameters saveParameters = project.getEnigma().getProfile().getMappingSaveParameters();
-		format.write(project.getRemapper().getMappings(), mappingsOut, ProgressListener.createEmpty(), saveParameters);
+		writer.write(project.getRemapper().getMappings(), mappingsOut, ProgressListener.createEmpty(), saveParameters);
 	}
 }

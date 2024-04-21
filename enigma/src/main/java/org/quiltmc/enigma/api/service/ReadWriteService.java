@@ -19,16 +19,38 @@ public interface ReadWriteService extends EnigmaService, MappingsWriter, Mapping
 
 	FileType getFileType();
 
-	static ReadWriteService create(MappingsReader reader, MappingsWriter writer, FileType fileType, String id) {
+	boolean supportsReading();
+
+	boolean supportsWriting();
+
+	static ReadWriteService create(@Nullable MappingsReader reader, @Nullable MappingsWriter writer, FileType fileType, String id) {
 		return new ReadWriteService() {
 			@Override
 			public void write(@Nullable String obfNamespace, @Nullable String deobfNamespace, EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters saveParameters) {
+				if (writer == null) {
+					throw new UnsupportedOperationException("This service does not support writing!");
+				}
+
 				writer.write(obfNamespace, deobfNamespace, mappings, delta, path, progress, saveParameters);
 			}
 
 			@Override
 			public EntryTree<EntryMapping> read(Path path, ProgressListener progress) throws MappingParseException, IOException {
+				if (reader == null) {
+					throw new UnsupportedOperationException("This service does not support reading!");
+				}
+
 				return reader.read(path, progress);
+			}
+
+			@Override
+			public boolean supportsReading() {
+				return reader != null;
+			}
+
+			@Override
+			public boolean supportsWriting() {
+				return writer != null;
 			}
 
 			@Override

@@ -144,6 +144,19 @@ public class Enigma {
 		return this.getReadWriteServices().stream().map(ReadWriteService::getFileType).toList();
 	}
 
+	public Optional<FileType> getFileType(String extension) {
+		return this.getSupportedFileTypes().stream().filter(type -> type.getExtensions().contains(extension)).findFirst();
+	}
+
+	public Optional<ReadWriteService> getReadWriteService(String extension) {
+		var fileType = this.getFileType(extension);
+		if (fileType.isPresent()) {
+			return this.getReadWriteService(fileType.get());
+		}
+
+		return Optional.empty();
+	}
+
 	public Optional<ReadWriteService> getReadWriteService(FileType fileType) {
 		return this.getReadWriteServices().stream().filter(service -> service.getFileType().equals(fileType)).findFirst();
 	}

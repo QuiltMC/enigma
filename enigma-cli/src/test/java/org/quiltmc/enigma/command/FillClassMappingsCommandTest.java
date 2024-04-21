@@ -1,8 +1,9 @@
 package org.quiltmc.enigma.command;
 
 import org.quiltmc.enigma.TestUtil;
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingsReader;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
@@ -47,9 +48,10 @@ public class FillClassMappingsCommandTest extends CommandTest {
 	@Test
 	public void test() throws Exception {
 		Path resultFile = Files.createTempFile("fillClassMappings", ".mappings");
-		FillClassMappingsCommand.run(JAR, MAPPINGS, resultFile, MappingFormat.ENIGMA_FILE.name(), false);
+		FillClassMappingsCommand.run(JAR, MAPPINGS, resultFile, false, null, null);
 
-		EntryTree<EntryMapping> result = MappingFormat.ENIGMA_FILE.read(resultFile);
+		MappingsReader reader = CommandsUtil.getReader(Enigma.create(), resultFile);
+		EntryTree<EntryMapping> result = reader.read(resultFile);
 
 		assertEquals("A_Anonymous", getName(result, A));
 		assertNotNull(result.findNode(A_ANONYMOUS));

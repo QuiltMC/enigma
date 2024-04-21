@@ -54,6 +54,16 @@ public class BuiltinMappingFormats {
 				}
 
 				@Override
+				public boolean supportsReading() {
+					return true;
+				}
+
+				@Override
+				public boolean supportsWriting() {
+					return true;
+				}
+
+				@Override
 				public String getId() {
 					return "tiny_v2";
 				}

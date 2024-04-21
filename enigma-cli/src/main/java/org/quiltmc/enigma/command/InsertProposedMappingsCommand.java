@@ -6,6 +6,7 @@ import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.service.NameProposalService;
+import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
@@ -31,8 +32,10 @@ public class InsertProposedMappingsCommand extends Command {
 		super(Argument.INPUT_JAR.required(),
 				Argument.INPUT_MAPPINGS.required(),
 				Argument.MAPPING_OUTPUT.required(),
-				Argument.OUTPUT_MAPPING_FORMAT.required(),
-				Argument.ENIGMA_PROFILE.optional());
+				Argument.ENIGMA_PROFILE.optional(),
+				Argument.OBFUSCATED_NAMESPACE.optional(),
+				Argument.DEOBFUSCATED_NAMESPACE.optional()
+		);
 	}
 
 	@Override
@@ -40,10 +43,11 @@ public class InsertProposedMappingsCommand extends Command {
 		Path inJar = getReadablePath(this.getArg(args, 0));
 		Path source = getReadablePath(this.getArg(args, 1));
 		Path output = getWritablePath(this.getArg(args, 2));
-		String resultFormat = this.getArg(args, 3);
-		Path profilePath = getReadablePath(this.getArg(args, 4));
+		Path profilePath = getReadablePath(this.getArg(args, 3));
+		String obfuscatedNamespace = this.getArg(args, 4);
+		String deobfuscatedNamespace = this.getArg(args, 5);
 
-		run(inJar, source, output, resultFormat, profilePath, null);
+		run(inJar, source, output, profilePath, null, obfuscatedNamespace, deobfuscatedNamespace);
 	}
 
 	@Override
@@ -56,14 +60,14 @@ public class InsertProposedMappingsCommand extends Command {
 		return "Adds all mappings proposed by the plugins on the classpath and declared in the profile into the given mappings.";
 	}
 
-	public static void run(Path inJar, Path source, Path output, String resultFormat, @Nullable Path profilePath, @Nullable Iterable<EnigmaPlugin> plugins) throws Exception {
+	public static void run(Path inJar, Path source, Path output, @Nullable Path profilePath, @Nullable Iterable<EnigmaPlugin> plugins, @Nullable String obfuscatedNamespace, @Nullable String deobfuscatedNamespace) throws Exception {
 		EnigmaProfile profile = EnigmaProfile.read(profilePath);
 		Enigma enigma = createEnigma(profile, plugins);
 
-		run(inJar, source, output, resultFormat, enigma);
+		run(inJar, source, output, enigma, obfuscatedNamespace, deobfuscatedNamespace);
 	}
 
-	public static void run(Path inJar, Path source, Path output, String resultFormat, Enigma enigma) throws Exception {
+	public static void run(Path inJar, Path source, Path output, Enigma enigma, @Nullable String obfuscatedNamespace, @Nullable String deobfuscatedNamespace) throws Exception {
 		boolean debug = shouldDebug(new InsertProposedMappingsCommand().getName());
 		int nameProposalServices = enigma.getServices().get(NameProposalService.TYPE).size();
 		if (nameProposalServices == 0) {
@@ -76,8 +80,9 @@ public class InsertProposedMappingsCommand extends Command {
 		printStats(project);
 
 		Utils.delete(output);
-		MappingSaveParameters saveParameters = new MappingSaveParameters(enigma.getProfile().getMappingSaveParameters().fileNameFormat(), true);
-		MappingsWriter writer = MappingCommandsUtil.getWriter(resultFormat);
+		MappingSaveParameters saveParameters = new MappingSaveParameters(enigma.getProfile().getMappingSaveParameters().fileNameFormat(), true, obfuscatedNamespace, deobfuscatedNamespace);
+
+		MappingsWriter writer = CommandsUtil.getWriter(enigma, output);
 		writer.write(mappings, output, ProgressListener.createEmpty(), saveParameters);
 
 		if (debug) {

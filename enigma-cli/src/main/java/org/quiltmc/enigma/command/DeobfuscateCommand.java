@@ -9,7 +9,8 @@ public class DeobfuscateCommand extends Command {
 	public DeobfuscateCommand() {
 		super(Argument.INPUT_JAR.required(),
 				Argument.OUTPUT_JAR.required(),
-				Argument.INPUT_MAPPINGS.optional());
+				Argument.INPUT_MAPPINGS.optional()
+		);
 	}
 
 	@Override

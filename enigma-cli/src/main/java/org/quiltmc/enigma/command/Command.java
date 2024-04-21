@@ -12,7 +12,7 @@ import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingsReader;
 import org.quiltmc.enigma.api.translation.mapping.tree.DeltaTrackingTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.tinylog.Logger;
@@ -123,7 +123,7 @@ public abstract class Command {
 	 * @return the argument, as a string
 	 */
 	protected String getArg(String[] args, int index) {
-		if (index < this.allArguments.size()) {
+		if (index < this.allArguments.size() && index >= 0) {
 			return getArg(args, index, this.allArguments.get(index));
 		} else {
 			throw new RuntimeException("arg index is outside of range of possible arguments! (index: " + index + ", allowed arg count: " + this.allArguments.size() + ")");
@@ -153,7 +153,7 @@ public abstract class Command {
 		if (fileMappings != null) {
 			Logger.info("Reading mappings...");
 
-			EntryTree<EntryMapping> mappings = readMappings(fileMappings, progress);
+			EntryTree<EntryMapping> mappings = readMappings(enigma, fileMappings, progress);
 
 			project.setMappings(mappings, new ConsoleProgressListener());
 		}
@@ -161,9 +161,9 @@ public abstract class Command {
 		return project;
 	}
 
-	protected static EntryTree<EntryMapping> readMappings(Path path, ProgressListener progress) throws MappingParseException, IOException {
-		MappingFormat format = MappingFormat.parseFromFile(path);
-		return format.read(path, progress);
+	protected static EntryTree<EntryMapping> readMappings(Enigma enigma, Path path, ProgressListener progress) throws MappingParseException, IOException {
+		MappingsReader reader = CommandsUtil.getReader(enigma, path);
+		return reader.read(path, progress);
 	}
 
 	protected static File getWritableFile(String path) {
