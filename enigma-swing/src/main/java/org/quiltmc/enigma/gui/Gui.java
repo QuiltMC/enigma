@@ -486,7 +486,7 @@ public class Gui {
 	}
 
 	public CompletableFuture<Void> saveMapping() {
-		ExtensionFileFilter.setupFileChooser(this.mappingsFileChooser, this.controller.getLoadedMappingFormat());
+		ExtensionFileFilter.setupFileChooser(this.getController().getGui(), this.mappingsFileChooser, this.controller.getReadWriteService());
 
 		if (this.mappingsFileChooser.getSelectedFile() != null || this.mappingsFileChooser.showSaveDialog(this.mainWindow.getFrame()) == JFileChooser.APPROVE_OPTION) {
 			return this.controller.saveMappings(ExtensionFileFilter.getSavePath(this.mappingsFileChooser));

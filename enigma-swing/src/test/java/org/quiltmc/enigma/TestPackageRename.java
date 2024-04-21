@@ -8,7 +8,6 @@ import org.quiltmc.enigma.gui.element.ClassSelectorPopupMenu;
 import org.quiltmc.enigma.gui.util.PackageRenamer;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
@@ -122,7 +121,7 @@ public class TestPackageRename {
 		gui.setShowsProgressBars(false);
 
 		CountDownLatch latch = new CountDownLatch(1);
-		gui.getController().openJar(JAR).thenRun(() -> gui.getController().openMappings(MappingFormat.ENIGMA_DIRECTORY, MAPPINGS).thenRun(latch::countDown));
+		gui.getController().openJar(JAR).thenRun(() -> gui.getController().openMappings(MAPPINGS).thenRun(latch::countDown));
 		latch.await();
 
 		deobfuscator = gui.getController().getProject().getRemapper().getDeobfuscator();

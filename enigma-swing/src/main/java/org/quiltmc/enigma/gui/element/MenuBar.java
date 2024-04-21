@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.gui.element;
 
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
+import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.NotificationManager;
@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -472,18 +473,22 @@ public class MenuBar {
 	private void onOpenMappingsClicked() {
 		this.gui.mappingsFileChooser.setCurrentDirectory(new File(Config.main().stats.lastSelectedDir.value()));
 
-		List<MappingFormat> types = Arrays.stream(MappingFormat.values()).filter(format -> format.getReader() != null).toList();
-		ExtensionFileFilter.setupFileChooser(this.gui.mappingsFileChooser, types.toArray(new MappingFormat[0]));
+		List<ReadWriteService> types = this.gui.getController().getEnigma().getReadWriteServices().stream().filter(ReadWriteService::supportsReading).toList();
+		ExtensionFileFilter.setupFileChooser(this.gui, this.gui.mappingsFileChooser, types.toArray(new ReadWriteService[0]));
 
 		if (this.gui.mappingsFileChooser.showOpenDialog(this.gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
 			File selectedFile = this.gui.mappingsFileChooser.getSelectedFile();
 			Config.main().stats.lastSelectedDir.setValue(this.gui.mappingsFileChooser.getCurrentDirectory().toString(), true);
 
-			MappingFormat format = MappingFormat.parseFromFile(selectedFile.toPath());
-			if (format.getReader() != null) {
-				this.gui.getController().openMappings(format, selectedFile.toPath());
+			Optional<ReadWriteService> format = this.gui.getController().getEnigma().getReadWriteService(selectedFile.toPath());
+			if (format.isPresent() && format.get().supportsReading()) {
+				this.gui.getController().openMappings(format.get(), selectedFile.toPath());
 			} else {
-				String nonParseableMessage = I18n.translateFormatted("menu.file.open.non_parseable", I18n.translate("mapping_format." + format.name().toLowerCase(Locale.ROOT)));
+				String nonParseableMessage = I18n.translateFormatted("menu.file.open.non_parseable.unsupported_format", selectedFile);
+				if (format.isPresent()) {
+					nonParseableMessage = I18n.translateFormatted("menu.file.open.non_parseable", I18n.translate("mapping_format." + format.get().getId().toLowerCase(Locale.ROOT)));
+				}
+
 				JOptionPane.showMessageDialog(this.gui.getFrame(), nonParseableMessage, I18n.translate("menu.file.open.cannot_open"), JOptionPane.ERROR_MESSAGE);
 			}
 		}
@@ -550,12 +555,12 @@ public class MenuBar {
 	}
 
 	private static void prepareSaveMappingsAsMenu(JMenu saveMappingsAsMenu, JMenuItem saveMappingsItem, Gui gui) {
-		for (MappingFormat format : MappingFormat.values()) {
-			if (format.getWriter() != null) {
-				JMenuItem item = new JMenuItem(I18n.translate("mapping_format." + format.name().toLowerCase(Locale.ROOT)));
+		for (ReadWriteService format : gui.getController().getEnigma().getReadWriteServices()) {
+			if (format.supportsWriting()) {
+				JMenuItem item = new JMenuItem(I18n.translate("mapping_format." + format.getId().toLowerCase(Locale.ROOT)));
 				item.addActionListener(event -> {
 					JFileChooser fileChooser = gui.mappingsFileChooser;
-					ExtensionFileFilter.setupFileChooser(fileChooser, format);
+					ExtensionFileFilter.setupFileChooser(gui, fileChooser, format);
 
 					if (fileChooser.getCurrentDirectory() == null) {
 						fileChooser.setCurrentDirectory(new File(Config.main().stats.lastSelectedDir.value()));

@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.util;
 
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
+import org.quiltmc.enigma.api.service.ReadWriteService;
+import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JFileChooser;
@@ -66,23 +67,23 @@ public final class ExtensionFileFilter extends FileFilter {
 	 * and adds and selects a new filter based on the provided mapping format.
 	 *
 	 * @param fileChooser the file chooser to set up
-	 * @param formats the mapping formats to use. if empty, defaults to {@link MappingFormat#ENIGMA_DIRECTORY}
+	 * @param services the read/write services to use. if empty, defaults to the current writer
 	 */
-	public static void setupFileChooser(JFileChooser fileChooser, MappingFormat... formats) {
-		if (formats.length == 0) {
-			formats = new MappingFormat[]{MappingFormat.ENIGMA_DIRECTORY};
+	public static void setupFileChooser(Gui gui, JFileChooser fileChooser, ReadWriteService... services) {
+		if (services.length == 0) {
+			services = new ReadWriteService[]{gui.getController().getReadWriteService()};
 		}
 
 		// Remove previous custom filters.
 		fileChooser.resetChoosableFileFilters();
 
-		for (MappingFormat format : formats) {
-			if (format.getFileType().isDirectory()) {
+		for (ReadWriteService service : services) {
+			if (service.getFileType().isDirectory()) {
 				fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			} else {
 				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-				String formatName = I18n.translate("mapping_format." + format.name().toLowerCase());
-				var filter = new ExtensionFileFilter(formatName, format.getFileType().getExtensions());
+				String formatName = I18n.translate("mapping_format." + service.getId().toLowerCase());
+				var filter = new ExtensionFileFilter(formatName, service.getFileType().getExtensions());
 				// Add our new filter to the list...
 				fileChooser.addChoosableFileFilter(filter);
 				// ...and choose it as the default.
@@ -90,8 +91,8 @@ public final class ExtensionFileFilter extends FileFilter {
 			}
 		}
 
-		if (formats.length > 1) {
-			List<String> extensions = Arrays.stream(formats).flatMap(format -> format.getFileType().getExtensions().stream()).distinct().toList();
+		if (services.length > 1) {
+			List<String> extensions = Arrays.stream(services).flatMap(format -> format.getFileType().getExtensions().stream()).distinct().toList();
 			var filter = new ExtensionFileFilter(I18n.translate("mapping_format.all_formats"), extensions);
 			fileChooser.addChoosableFileFilter(filter);
 			fileChooser.setFileFilter(filter);
