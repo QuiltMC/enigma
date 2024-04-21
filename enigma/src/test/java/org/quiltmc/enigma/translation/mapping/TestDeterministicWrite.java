@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.ArgumentDescriptor;
@@ -33,7 +35,7 @@ public class TestDeterministicWrite {
 		String prev = null;
 		for (int i = 0; i < 32; i++) {
 			Path file = dir.resolve(i + ".tiny");
-			enigma.getReadWriteService("tiny").get().write(mappings, file, ProgressListener.createEmpty(), null);
+			enigma.getReadWriteService("tiny").get().write(mappings, file, ProgressListener.createEmpty(), new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, null, null));
 
 			String content = Files.readString(file);
 			if (prev != null) Assertions.assertEquals(prev, content, "Iteration " + i + " has a different result from the previous one");
