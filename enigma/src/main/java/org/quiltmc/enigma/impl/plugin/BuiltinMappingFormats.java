@@ -24,7 +24,7 @@ public class BuiltinMappingFormats {
 				ctx1 -> ReadWriteService.create(EnigmaMappingsReader.ZIP, EnigmaMappingsWriter.ZIP, new FileType.File("zip"), "enigma_zip")
 		);
 		ctx.registerService(ReadWriteService.TYPE,
-				ctx1 -> ReadWriteService.create(TinyV2Reader.INSTANCE, TinyV2Writer.INSTANCE, new FileType.File("tinyv2"), "tinyv2")
+				ctx1 -> ReadWriteService.create(TinyV2Reader.INSTANCE, TinyV2Writer.INSTANCE, new FileType.File("tinyv2", "tiny"), "tiny_v2")
 		);
 		ctx.registerService(ReadWriteService.TYPE,
 				ctx1 -> ReadWriteService.create(null, SrgMappingsWriter.INSTANCE, new FileType.File("tsrg"), "srg_file")
