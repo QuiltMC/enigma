@@ -27,7 +27,7 @@ public class Theme extends ReflectiveConfig.Section {
 		public final TrackedValue<SerializableFont> defaultBold = this.value(new SerializableFont(Font.decode(Font.DIALOG).deriveFont(Font.BOLD)));
 		public final TrackedValue<SerializableFont> defaultNormal = this.value(new SerializableFont(Font.decode(Font.DIALOG)));
 		public final TrackedValue<SerializableFont> small = this.value(new SerializableFont(Font.decode(Font.DIALOG)));
-		public final TrackedValue<SerializableFont> editor = this.value(new SerializableFont(Font.decode(Font.MONOSPACED)));
+		public final TrackedValue<SerializableFont> editor = this.value(new SerializableFont(Font.decode(Font.MONOSPACED).deriveFont(12f)));
 
 		public static class SerializableFont extends Font implements ConfigSerializableObject<ValueMap<String>> {
 			public SerializableFont(Font font) {

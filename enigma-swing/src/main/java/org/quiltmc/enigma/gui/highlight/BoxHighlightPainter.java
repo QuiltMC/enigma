@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.gui.highlight;
 
+import org.quiltmc.enigma.gui.util.ScaleUtil;
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -31,10 +33,10 @@ public class BoxHighlightPainter implements Highlighter.HighlightPainter {
 			Rectangle2D.union(startRect, endRect, bounds);
 
 			// adjust the box so it looks nice
-			bounds.x -= 2;
-			bounds.width += 1;
-			bounds.y += 1;
-			bounds.height -= 2;
+			bounds.x -= ScaleUtil.scale(2);
+			bounds.width += ScaleUtil.scale(1);
+			bounds.y += ScaleUtil.scale(1);
+			bounds.height -= ScaleUtil.scale(2);
 
 			return bounds;
 		} catch (BadLocationException ex) {
@@ -46,15 +48,16 @@ public class BoxHighlightPainter implements Highlighter.HighlightPainter {
 	@Override
 	public void paint(Graphics g, int start, int end, Shape shape, JTextComponent text) {
 		Rectangle bounds = getBounds(text, start, end);
+		int arcSize = ScaleUtil.scale(4);
 
 		// fill the area
 		if (this.fillColor != null) {
 			g.setColor(this.fillColor);
-			g.fillRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 4, 4);
+			g.fillRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, arcSize, arcSize);
 		}
 
 		// draw a box around the area
 		g.setColor(this.borderColor);
-		g.drawRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 4, 4);
+		g.drawRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, arcSize, arcSize);
 	}
 }
