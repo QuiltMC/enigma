@@ -5,6 +5,7 @@ import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.serde.FileType;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Predicate;
 
 /**
  * Tests that a MappingFormat can write out a fixed set of mappings and read them back without losing any information.
@@ -103,21 +105,26 @@ public class TestReadWriteCycle {
 
 	@Test
 	public void testEnigmaFile() throws IOException, MappingParseException {
-		this.testReadWriteCycle(this.enigma.getReadWriteService("mappings").get(), ".mapping");
+		this.testReadWriteCycle(this.getService(file -> file.getExtensions().contains("mapping") && !file.isDirectory()), ".mapping");
 	}
 
 	@Test
 	public void testEnigmaDir() throws IOException, MappingParseException {
-		this.testReadWriteCycle(this.enigma.getReadWriteService("mappings", true).get(), ".tmp");
+		this.testReadWriteCycle(this.getService(file -> file.getExtensions().contains("mapping") && file.isDirectory()), ".tmp");
 	}
 
 	@Test
 	public void testEnigmaZip() throws IOException, MappingParseException {
-		this.testReadWriteCycle(this.enigma.getReadWriteService("zip").get(), ".zip");
+		this.testReadWriteCycle(this.getService(file -> file.getExtensions().contains("zip")), ".zip");
 	}
 
 	@Test
 	public void testTinyV2() throws IOException, MappingParseException {
-		this.testReadWriteCycle(this.enigma.getReadWriteService("tiny").get(), ".tiny");
+		this.testReadWriteCycle(this.getService(file -> file.getExtensions().contains("tiny")), ".tiny");
+	}
+
+	@SuppressWarnings("all")
+	private ReadWriteService getService(Predicate<FileType> predicate) {
+		return this.enigma.getReadWriteService(this.enigma.getSupportedFileTypes().stream().filter(predicate).findFirst().get()).get();
 	}
 }

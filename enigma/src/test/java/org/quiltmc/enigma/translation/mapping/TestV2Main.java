@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.translation.mapping;
 
-import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.MappingDelta;

@@ -146,23 +146,6 @@ public class Enigma {
 		return this.getReadWriteServices().stream().map(ReadWriteService::getFileType).toList();
 	}
 
-	public Optional<FileType> getFileType(String extension, boolean isDirectory) {
-		return this.getSupportedFileTypes().stream().filter(type -> type.getExtensions().contains(extension) && type.isDirectory() == isDirectory).findFirst();
-	}
-
-	public Optional<ReadWriteService> getReadWriteService(String extension) {
-		return this.getReadWriteService(extension, false);
-	}
-
-	public Optional<ReadWriteService> getReadWriteService(String extension, boolean isDirectory) {
-		var fileType = this.getFileType(extension, isDirectory);
-		if (fileType.isPresent()) {
-			return this.getReadWriteService(fileType.get());
-		}
-
-		return Optional.empty();
-	}
-
 	public Optional<ReadWriteService> getReadWriteService(FileType fileType) {
 		return this.getReadWriteServices().stream().filter(service -> service.getFileType().equals(fileType)).findFirst();
 	}
@@ -210,7 +193,7 @@ public class Enigma {
 					}
 				}
 
-				return this.getFileType("mappings", true);
+				return this.getSupportedFileTypes().stream().filter(type -> type.isDirectory() && type.getExtensions().contains("mapping")).findFirst();
 			} catch (Exception e) {
 				Logger.error(e, "Failed to determine mapping format of directory {}", path);
 			}
