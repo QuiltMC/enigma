@@ -138,18 +138,35 @@ public class Enigma {
 		return proposalServices;
 	}
 
+	/**
+	 * {@return all registered read/write services}
+	 */
 	public List<ReadWriteService> getReadWriteServices() {
 		return this.services.get(ReadWriteService.TYPE);
 	}
 
+	/**
+	 * Gets all supported {@link FileType file types} for reading or writing.
+	 * @return the list of supported file types
+	 */
 	public List<FileType> getSupportedFileTypes() {
 		return this.getReadWriteServices().stream().map(ReadWriteService::getFileType).toList();
 	}
 
+	/**
+	 * Gets the {@link ReadWriteService read/write service} for the provided {@link FileType file type}.
+	 * @param fileType the file type to get the service for
+	 * @return the read/write service for the file type
+	 */
 	public Optional<ReadWriteService> getReadWriteService(FileType fileType) {
 		return this.getReadWriteServices().stream().filter(service -> service.getFileType().equals(fileType)).findFirst();
 	}
 
+	/**
+	 * Parses the {@link FileType file type} of the provided path and returns the corresponding {@link ReadWriteService read/write service}
+	 * @param path the path to analyse
+	 * @return the read/write service for the file type of the path
+	 */
 	public Optional<ReadWriteService> getReadWriteService(Path path) {
 		return this.parseFileType(path).flatMap(this::getReadWriteService);
 	}
