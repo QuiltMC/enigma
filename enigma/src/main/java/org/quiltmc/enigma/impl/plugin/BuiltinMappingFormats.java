@@ -15,22 +15,22 @@ public class BuiltinMappingFormats {
 		FileType.File enigmaMapping = new FileType.File("mapping", "mappings");
 
 		ctx.registerService(ReadWriteService.TYPE,
-				ctx1 -> ReadWriteService.create(EnigmaMappingsReader.FILE, EnigmaMappingsWriter.FILE, enigmaMapping, "enigma_file")
+				ctx1 -> ReadWriteService.create(EnigmaMappingsReader.FILE, EnigmaMappingsWriter.FILE, enigmaMapping, "enigma:enigma_file")
 		);
 		ctx.registerService(ReadWriteService.TYPE,
-				ctx1 -> ReadWriteService.create(EnigmaMappingsReader.DIRECTORY, EnigmaMappingsWriter.DIRECTORY, new FileType.Directory(enigmaMapping), "enigma_directory")
+				ctx1 -> ReadWriteService.create(EnigmaMappingsReader.DIRECTORY, EnigmaMappingsWriter.DIRECTORY, new FileType.Directory(enigmaMapping), "enigma:enigma_directory")
 		);
 		ctx.registerService(ReadWriteService.TYPE,
-				ctx1 -> ReadWriteService.create(EnigmaMappingsReader.ZIP, EnigmaMappingsWriter.ZIP, new FileType.File("zip"), "enigma_zip")
+				ctx1 -> ReadWriteService.create(EnigmaMappingsReader.ZIP, EnigmaMappingsWriter.ZIP, new FileType.File("zip"), "enigma:enigma_zip")
 		);
 		ctx.registerService(ReadWriteService.TYPE,
-				ctx1 -> ReadWriteService.create(TinyV2Reader.INSTANCE, TinyV2Writer.INSTANCE, new FileType.File("tinyv2", "tiny"), "tiny_v2")
+				ctx1 -> ReadWriteService.create(TinyV2Reader.INSTANCE, TinyV2Writer.INSTANCE, new FileType.File("tinyv2", "tiny"), "enigma:tiny_v2")
 		);
 		ctx.registerService(ReadWriteService.TYPE,
-				ctx1 -> ReadWriteService.create(null, SrgMappingsWriter.INSTANCE, new FileType.File("tsrg"), "srg_file")
+				ctx1 -> ReadWriteService.create(null, SrgMappingsWriter.INSTANCE, new FileType.File("tsrg"), "enigma:srg_file")
 		);
 		ctx.registerService(ReadWriteService.TYPE,
-				ctx1 -> ReadWriteService.create(ProguardMappingsReader.INSTANCE, null, new FileType.File("txt"), "proguard")
+				ctx1 -> ReadWriteService.create(ProguardMappingsReader.INSTANCE, null, new FileType.File("txt"), "enigma:proguard")
 		);
 	}
 }

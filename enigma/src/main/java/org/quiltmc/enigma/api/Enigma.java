@@ -271,17 +271,22 @@ public class Enigma {
 			List<EnigmaProfile.Service> serviceProfiles = this.profile.getServiceProfiles(serviceType);
 
 			if (serviceProfiles.isEmpty() && serviceType.activeByDefault()) {
-				this.services.put(serviceType, factory.create(this.getServiceContext(null)));
+				this.putService(serviceType, factory.create(this.getServiceContext(null)));
 				return;
 			}
 
 			for (EnigmaProfile.Service serviceProfile : serviceProfiles) {
 				T service = factory.create(this.getServiceContext(serviceProfile));
 				if (serviceProfile.matches(service.getId())) {
-					this.services.put(serviceType, service);
+					this.putService(serviceType, service);
 					break;
 				}
 			}
+		}
+
+		private void putService(EnigmaServiceType<?> serviceType, EnigmaService service) {
+			this.validateRegistration(services.build(), serviceType, service);
+			this.services.put(serviceType, service);
 		}
 
 		private <T extends EnigmaService> EnigmaServiceContext<T> getServiceContext(@Nullable EnigmaProfile.Service serviceProfile) {
@@ -323,7 +328,36 @@ public class Enigma {
 				}
 			}
 
-			return new EnigmaServices(orderedServices.build());
+			var builtOrderedServices = orderedServices.build();
+			return new EnigmaServices(builtOrderedServices);
+		}
+
+		private void validateRegistration(ImmutableListMultimap<EnigmaServiceType<?>, EnigmaService> services, EnigmaServiceType<?> serviceType, EnigmaService service) {
+			this.validatePluginId(service.getId());
+
+			for (EnigmaService otherService : services.get(serviceType)) {
+				// all services
+				if (service.getId().equals(otherService.getId())) {
+					throw new IllegalStateException("Multiple services of type " + serviceType + " have the same ID: \"" + service.getId() + "\"");
+				}
+
+				// read write services
+				if (service instanceof ReadWriteService rwService
+						&& otherService instanceof ReadWriteService otherRwService
+						&& rwService.getFileType().isDirectory() == otherRwService.getFileType().isDirectory()) {
+					for (String extension : rwService.getFileType().getExtensions()) {
+						if (otherRwService.getFileType().getExtensions().contains(extension)) {
+							throw new IllegalStateException("Multiple read/write services found supporting the same extension: " + extension + " (id: " + service.getId() + ", other id: " + otherService.getId() + ")");
+						}
+					}
+				}
+			}
+		}
+
+		private void validatePluginId(String id) {
+			if (!id.matches("([a-z0-9_]+):([a-z0-9_]+((/[a-z0-9_]+)+)?)")) {
+				throw new IllegalArgumentException("Invalid plugin id: \"" + id + "\"\n" + "Refer to Javadoc on EnigmaService#getId for how to properly form a service ID.");
+			}
 		}
 	}
 

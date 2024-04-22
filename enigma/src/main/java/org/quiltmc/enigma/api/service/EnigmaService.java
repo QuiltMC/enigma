@@ -8,7 +8,7 @@ public interface EnigmaService {
 	 *     <li>Be all lowercase, with words separated by underscores. Slashes are allowed only after the namespace.</li>
 	 *     <li>Be constant and unique: it should never change.</li>
 	 * </ul>
-	 * <p>Examples: {@code enigma:cfr}, {@code enigma:enum_name_proposer}, {@code your_plugin:custom_indexer}</p>
+	 * <p>Examples: {@code enigma:cfr}, {@code enigma:enum_proposers/name}, {@code your_plugin:custom_indexer}</p>
 	 *
 	 * @return the constant ID
 	 */
