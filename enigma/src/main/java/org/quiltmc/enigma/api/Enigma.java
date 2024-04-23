@@ -285,7 +285,7 @@ public class Enigma {
 		}
 
 		private void putService(EnigmaServiceType<?> serviceType, EnigmaService service) {
-			this.validateRegistration(services.build(), serviceType, service);
+			this.validateRegistration(this.services.build(), serviceType, service);
 			this.services.put(serviceType, service);
 		}
 
