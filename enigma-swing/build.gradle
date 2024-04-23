@@ -19,12 +19,14 @@ dependencies {
 	testImplementation(testFixtures(project(':enigma')))
 }
 
+final String mainClassName = 'org.quiltmc.enigma.gui.Main'
 application {
-	mainClass = 'org.quiltmc.enigma.gui.Main'
+	mainClass = mainClassName
 	jar.manifest.attributes 'Main-Class': mainClass
 }
+
 static String convertToGradleTaskName(String name) {
-	String newName = new String(name);
+	String newName = new String(name)
 
 	for (int i = 0; i < name.length(); i++) {
 		if (name.charAt(i) == '_') {
@@ -38,13 +40,13 @@ static String convertToGradleTaskName(String name) {
 }
 
 def registerTestTask(String name) {
-	String taskName = convertToGradleTaskName(name);
+	String taskName = convertToGradleTaskName(name)
 
 	tasks.register("${taskName}TestGui", JavaExec.class) {
 		group("test")
 		dependsOn(":enigma:${taskName}TestObf")
 		dependsOn(":enigma:processResources")
-		mainClass = mainClass
+		mainClass = 'org.quiltmc.enigma.gui.Main'
 		classpath = sourceSets.test.runtimeClasspath
 
 		def jar = project(":enigma").file("build/test-obf/${name}.jar")
@@ -59,7 +61,7 @@ def registerTestTask(String name) {
 	tasks.register("${taskName}TestGui2", JavaExec.class) {
 		group("test")
 		dependsOn(":enigma:${taskName}TestObf")
-		mainClass = mainClass
+		mainClass = 'org.quiltmc.enigma.gui.Main'
 		classpath = sourceSets.test.runtimeClasspath
 
 		def jar = project(":enigma").file("build/test-obf/${name}.jar")

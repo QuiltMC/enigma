@@ -50,6 +50,7 @@ procyon = { module = "org.bitbucket.mstrobel:procyon-compilertools", version.ref
 proguard = { module = "com.guardsquare:proguard-base", version.ref = "proguard" }
 junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junit_engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
+junit_launcher = { module = "org.junit.platform:junit-platform-launcher" }
 hamcrest = { module = "org.hamcrest:hamcrest", version.ref = "hamcrest" }
 jimfs = { module = "com.google.jimfs:jimfs", version.ref = "jimfs" }
 
