@@ -19,10 +19,10 @@ dependencies {
 	testImplementation(testFixtures(project(':enigma')))
 }
 
-mainClassName = 'org.quiltmc.enigma.gui.Main'
-
-jar.manifest.attributes 'Main-Class': mainClassName
-
+application {
+	mainClass = 'org.quiltmc.enigma.gui.Main'
+	jar.manifest.attributes 'Main-Class': mainClass
+}
 static String convertToGradleTaskName(String name) {
 	String newName = new String(name);
 
@@ -44,7 +44,7 @@ def registerTestTask(String name) {
 		group("test")
 		dependsOn(":enigma:${taskName}TestObf")
 		dependsOn(":enigma:processResources")
-		mainClass = mainClassName
+		mainClass = mainClass
 		classpath = sourceSets.test.runtimeClasspath
 
 		def jar = project(":enigma").file("build/test-obf/${name}.jar")
@@ -59,7 +59,7 @@ def registerTestTask(String name) {
 	tasks.register("${taskName}TestGui2", JavaExec.class) {
 		group("test")
 		dependsOn(":enigma:${taskName}TestObf")
-		mainClass = mainClassName
+		mainClass = mainClass
 		classpath = sourceSets.test.runtimeClasspath
 
 		def jar = project(":enigma").file("build/test-obf/${name}.jar")

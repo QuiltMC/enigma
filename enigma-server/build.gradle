@@ -11,9 +11,10 @@ dependencies {
 	testImplementation testFixtures(project(':enigma'))
 }
 
-mainClassName = 'org.quiltmc.enigma.network.DedicatedEnigmaServer'
-
-jar.manifest.attributes 'Main-Class': mainClassName
+application {
+	mainClass = 'org.quiltmc.enigma.network.DedicatedEnigmaServer'
+	jar.manifest.attributes 'Main-Class': mainClass
+}
 
 publishing {
 	publications {
