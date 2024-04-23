@@ -16,7 +16,7 @@ vineflower = "1.10.0"
 cfr = "0.2.2"
 procyon = "0.6.0"
 
-proguard = "7.3.2"
+proguard = "7.4.0"
 junit = "5.9.3"
 hamcrest = "2.2"
 jimfs = "1.2"
