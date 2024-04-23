@@ -161,7 +161,7 @@ public class IdentifierPanel {
 				// type
 				JarIndex index = this.gui.getController().getProject().getJarIndex();
 				AccessFlags access = index.getIndex(EntryIndex.class).getMethodAccess(lve.getParent());
-				int i = access == null || access.isStatic() ? 0 : 1;
+				int i = access != null && access.isStatic() ? 0 : 1;
 				var args = lve.getParent().getDesc().getArgumentDescs();
 
 				for (ArgumentDescriptor arg : args) {
