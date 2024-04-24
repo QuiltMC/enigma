@@ -138,7 +138,12 @@ public class EntryRemapper {
 
 		Set<Entry<?>> resolution = new HashSet<>(this.obfResolver.resolveEntry(obfuscatedEntry, ResolutionStrategy.RESOLVE_ROOT));
 		for (ClassEntry clazz : classes) {
-			resolution.addAll(this.obfResolver.resolveEntry(methodEntry.withParent(clazz), ResolutionStrategy.RESOLVE_ROOT));
+			MethodEntry parentedMethod = methodEntry.withParent(clazz);
+			if (!this.jarIndex.getIndex(EntryIndex.class).hasEntry(parentedMethod)) {
+				continue;
+			}
+
+			resolution.addAll(this.obfResolver.resolveEntry(parentedMethod, ResolutionStrategy.RESOLVE_ROOT));
 		}
 
 		return resolution;
