@@ -11,7 +11,7 @@ import org.quiltmc.enigma.api.service.ReadWriteService;
 import java.io.Reader;
 import java.io.StringReader;
 
-public class ActiveByDefaultTest {
+public class TestActiveByDefault {
 	@Test
 	public void testServicesLoaded() {
 		Enigma enigma = Enigma.builder().build();

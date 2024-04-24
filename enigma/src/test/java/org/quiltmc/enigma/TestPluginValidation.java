@@ -16,7 +16,7 @@ import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import java.nio.file.Path;
 import java.util.List;
 
-public class PluginValidationTest {
+public class TestPluginValidation {
 	@Test
 	public void testIdValidation() {
 		Enigma.builder().setPlugins(List.of(new IdTestPlugin())).build();
