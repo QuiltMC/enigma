@@ -1,5 +1,8 @@
 package org.quiltmc.enigma.api.service;
 
+/**
+ * An enigma service is a component that provides a specific feature or piece of functionality to enigma.
+ */
 public interface EnigmaService {
 	/**
 	 * The ID of this service. This should satisfy a few criteria:

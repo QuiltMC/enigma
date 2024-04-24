@@ -7,6 +7,11 @@ import org.objectweb.asm.ClassVisitor;
 
 import java.util.Set;
 
+/**
+ * Jar indexer services analyse jar files as they're opened to collect information about their contents.
+ * <br>
+ * Jar indexer services are not active by default, and need to be specified in the {@link org.quiltmc.enigma.api.EnigmaProfile profile}.
+ */
 public interface JarIndexerService extends EnigmaService {
 	EnigmaServiceType<JarIndexerService> TYPE = new EnigmaServiceType<>("jar_indexer", false);
 

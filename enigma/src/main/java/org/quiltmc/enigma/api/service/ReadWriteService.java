@@ -14,13 +14,31 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 
+/**
+ * A read/write service defines a reader and/or a writer for mappings.
+ * <br>
+ * The service is keyed by a {@link FileType file type}, which is specified by a file extension. There should be no more than one read/write service per file type.
+ * <br>
+ * Read/write services are active by default, and as such do not need to be specified in the {@link org.quiltmc.enigma.api.EnigmaProfile profile}.
+ */
 public interface ReadWriteService extends EnigmaService, MappingsWriter, MappingsReader {
 	EnigmaServiceType<ReadWriteService> TYPE = new EnigmaServiceType<>("read_write", true);
 
+	/**
+	 * A unique file type for this service to read/write.
+	 * This can either represent a directory or a single file.
+	 * @return the file type
+	 */
 	FileType getFileType();
 
+	/**
+	 * {@return whether this service supports reading mappings}
+	 */
 	boolean supportsReading();
 
+	/**
+	 * {@return whether this service supports writing mappings}
+	 */
 	boolean supportsWriting();
 
 	static ReadWriteService create(@Nullable MappingsReader reader, @Nullable MappingsWriter writer, FileType fileType, String id) {
