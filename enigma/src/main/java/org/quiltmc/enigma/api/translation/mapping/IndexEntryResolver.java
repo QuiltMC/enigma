@@ -35,6 +35,21 @@ public class IndexEntryResolver implements EntryResolver {
 		this.treeBuilder = new IndexTreeBuilder(index);
 	}
 
+	/**
+	 * Resolves an entry, which may or may not exist in the bytecode, up to a matching entry definition, by traveling up
+	 * the class ancestry until finding the matching entry or entries. In most cases, this means converting something like
+	 * {@code ClassWithoutField#field} to {@code ClassWithField#field}, or {@code OverridingClass#toString} to
+	 * {@code Object#toString}. Only entries available in the index are returned.
+	 *
+	 * <p>
+	 * The {@code strategy} doesn't affect the result unless the entry is a {@linkplain MethodEntry} or a child of one,
+	 * i.e. a {@linkplain org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry LocalVariableEntry}.
+	 * Using {@link ResolutionStrategy#RESOLVE_CLOSEST}, the closest entry to {@code entry} in the hierarchy will be
+	 * returned, while using {@link ResolutionStrategy#RESOLVE_ROOT} will return the matching entries at the root(s) of
+	 * the hierarchy. This means, that overridden methods will be replaced by their highest possible definition, and if
+	 * the {@code entry} overrides multiple different methods at the same time, all the definitions of those methods
+	 * will be returned.
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public <E extends Entry<?>> Collection<E> resolveEntry(E entry, ResolutionStrategy strategy) {
@@ -55,8 +70,8 @@ public class IndexEntryResolver implements EntryResolver {
 				Collection<Entry<ClassEntry>> resolvedChildren = this.resolveChildEntry(classChild, strategy);
 				if (!resolvedChildren.isEmpty()) {
 					return resolvedChildren.stream()
-							.map(resolvedChild -> (E) entry.replaceAncestor(classChild, resolvedChild))
-							.toList();
+						.map(resolvedChild -> (E) entry.replaceAncestor(classChild, resolvedChild))
+						.toList();
 				}
 			}
 		}

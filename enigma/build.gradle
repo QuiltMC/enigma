@@ -20,6 +20,9 @@ dependencies {
 	proGuard libs.proguard
 
 	testImplementation libs.jimfs
+
+	testFixturesImplementation libs.asm
+	testFixturesImplementation libs.asm.tree
 }
 
 // Generate "version.txt" file
