@@ -20,7 +20,6 @@ import org.quiltmc.enigma.test.bytecode.MethodNodeBuilder;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -49,6 +48,11 @@ public class IndexEntryResolverTest {
 		index = JarIndex.empty();
 		index.indexJar(new HashSet<>(CLASS_PROVIDER.getClassNames()), CLASS_PROVIDER, ProgressListener.createEmpty());
 		resolver = new IndexEntryResolver(index);
+	}
+
+	private static <E extends Entry<?>> void assertNotResolved(E entry) {
+		Assertions.assertTrue(resolver.resolveEntry(entry, ResolutionStrategy.RESOLVE_ROOT).isEmpty(), "Entry " + entry + " should not be resolved");
+		Assertions.assertTrue(resolver.resolveEntry(entry, ResolutionStrategy.RESOLVE_CLOSEST).isEmpty(), "Entry " + entry + " should not be resolved");
 	}
 
 	@SafeVarargs
@@ -93,8 +97,8 @@ public class IndexEntryResolverTest {
 		var expected = TestEntryFactory.newField(baseA, "field2", "I");
 		assertResolvedSingle(entry, expected);
 
-		// TODO: Non-existing entries should be resolved to empty or the entry singleton??
-		// entry = TestEntryFactory.newField(baseA, "field3", "I");
+		entry = TestEntryFactory.newField(baseA, "field3", "I");
+		assertNotResolved(entry);
 
 		entry = TestEntryFactory.newField(sub1A, "field4", "J");
 		expected = TestEntryFactory.newField(baseA, "field4", "J");
@@ -104,11 +108,14 @@ public class IndexEntryResolverTest {
 		expected = TestEntryFactory.newField(baseA, "FIELD_8", "D");
 		assertResolvedSingle(entry, expected);
 
-		// entry = TestEntryFactory.newField(baseA, "FIELD_9", "D");
+		entry = TestEntryFactory.newField(baseA, "FIELD_9", "D");
+		assertNotResolved(entry);
 
-		// entry = TestEntryFactory.newField(sub1A, "field13", "S");
+		entry = TestEntryFactory.newField(sub1A, "field13", "S");
+		assertNotResolved(entry);
 
-		// entry = TestEntryFactory.newField(baseA, "field14", "F");
+		entry = TestEntryFactory.newField(baseA, "field14", "F");
+		assertNotResolved(entry);
 	}
 
 	@Test
@@ -152,6 +159,15 @@ public class IndexEntryResolverTest {
 		expected = entry;
 		assertResolvedRoot(entry, baseExpected);
 		assertResolvedClosest(entry, expected);
+
+		entry = TestEntryFactory.newMethod(baseB, "foo", "()LSub1B;");
+		assertNotResolved(entry);
+
+		entry = TestEntryFactory.newMethod(baseB, "foo", "()LSub1BSub1;");
+		assertNotResolved(entry);
+
+		entry = TestEntryFactory.newMethod(sub1B, "bar", "()V");
+		assertNotResolved(entry);
 
 		var baseC = TestEntryFactory.newClass("BaseC");
 		var sub1C = TestEntryFactory.newClass("Sub1C");

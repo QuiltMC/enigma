@@ -71,15 +71,20 @@ public class IndexEntryResolver implements EntryResolver {
 				return Collections.singleton(entry);
 			}
 
+			// Don't search existing private and/or static entries up the hierarchy
 			// Fields and classes can't be redefined, don't search them up the hierarchy
 			if (access != null && (access.isPrivate() || access.isStatic() || entry instanceof FieldEntry || entry instanceof ClassEntry)) {
 				return Collections.singleton(entry);
-			} else if (access == null || (!access.isPrivate() && !access.isStatic())) {
+			} else {
+				// Search the entry up the hierarchy; if the entry exists we can skip static entries, since this one isn't static
 				Collection<Entry<ClassEntry>> resolvedChildren = this.resolveChildEntry(classChild, strategy, access != null);
 				if (!resolvedChildren.isEmpty()) {
 					return resolvedChildren.stream()
 						.map(resolvedChild -> (E) entry.replaceAncestor(classChild, resolvedChild))
 						.toList();
+				} else if (access == null) {
+					// No matching entry was found, and this one doesn't exist
+					return Collections.emptySet();
 				}
 			}
 		}
