@@ -7,7 +7,10 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
-public class TestEntryFactory {
+public final class TestEntryFactory {
+	private TestEntryFactory() {
+	}
+
 	public static ClassEntry newClass(String name) {
 		return new ClassEntry(name);
 	}

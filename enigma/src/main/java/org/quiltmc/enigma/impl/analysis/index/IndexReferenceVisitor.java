@@ -59,7 +59,7 @@ public class IndexReferenceVisitor extends ClassVisitor {
 			try {
 				new Analyzer<>(new MethodInterpreter(entry, this.indexer, this.entryIndex, this.inheritanceIndex)).analyze(this.className, methodNode);
 			} catch (AnalyzerException e) {
-				throw new RuntimeException(e);
+				throw new RuntimeException("Failed to analyze " + methodNode.name, e);
 			}
 		});
 	}

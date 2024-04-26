@@ -22,18 +22,28 @@ public final class MethodNodeBuilder {
 		return new MethodNodeBuilder(Opcodes.ACC_PUBLIC, name, descriptor, null, null);
 	}
 
+	public MethodNodeBuilder insn(int opcode) {
+		this.methodNode.visitInsn(opcode);
+		return this;
+	}
+
+	public MethodNodeBuilder iconst_0() {
+		this.methodNode.visitInsn(Opcodes.ICONST_0);
+		return this;
+	}
+
 	public MethodNodeBuilder aload(int var) {
 		this.methodNode.visitVarInsn(Opcodes.ALOAD, var);
 		return this;
 	}
 
-	public MethodNodeBuilder methodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-		this.methodNode.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+	public MethodNodeBuilder typeInsn(int opcode, String type) {
+		this.methodNode.visitTypeInsn(opcode, type);
 		return this;
 	}
 
-	public MethodNodeBuilder insn(int opcode) {
-		this.methodNode.visitInsn(opcode);
+	public MethodNodeBuilder methodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+		this.methodNode.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
 		return this;
 	}
 

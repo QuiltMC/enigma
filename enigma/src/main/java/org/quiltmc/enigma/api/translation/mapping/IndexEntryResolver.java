@@ -36,10 +36,11 @@ public class IndexEntryResolver implements EntryResolver {
 	}
 
 	/**
-	 * Resolves an entry, which may or may not exist in the bytecode, up to a matching entry definition, by traveling up
+	 * Resolves an entry, which may or may not exist in the bytecode, up to a matching entry definition, by travelling up
 	 * the class ancestry until finding the matching entry or entries. In most cases, this means converting something like
 	 * {@code ClassWithoutField#field} to {@code ClassWithField#field}, or {@code OverridingClass#toString} to
-	 * {@code Object#toString}. Only entries available in the index are returned.
+	 * {@code Object#toString}. Private and/or static entries are always resolved as the entry itself. Only entries
+	 * available in the index are returned. Matching entries are ones with the exact same name & descriptor.
 	 *
 	 * <p>
 	 * The {@code strategy} doesn't affect the result unless the entry is a {@linkplain MethodEntry} or a child of one,
