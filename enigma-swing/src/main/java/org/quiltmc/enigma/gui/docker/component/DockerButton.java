@@ -127,6 +127,8 @@ public class DockerButton extends JToggleButton implements Draggable {
 			font = font.deriveFont(Font.BOLD);
 		}
 
+		font = ScaleUtil.scaleFont(font);
+
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setFont(font);
 

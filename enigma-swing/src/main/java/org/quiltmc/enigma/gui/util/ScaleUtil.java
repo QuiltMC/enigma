@@ -15,6 +15,7 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import javax.swing.BorderFactory;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -99,16 +100,50 @@ public class ScaleUtil {
 		SyntaxpainConfiguration.setEditorFont(font);
 	}
 
+	@SuppressWarnings("null")
 	private static BasicTweaker createTweakerForCurrentLook(float dpiScaling) {
 		String testString = UIManager.getLookAndFeel().getName().toLowerCase();
+
 		if (testString.contains("windows")) {
-			return new WindowsTweaker(dpiScaling, testString.contains("classic"));
-		} else if (testString.contains("metal")) {
-			return new MetalTweaker(dpiScaling);
-		} else if (testString.contains("nimbus")) {
-			return new NimbusTweaker(dpiScaling);
+			return new WindowsTweaker(dpiScaling, testString.contains("classic")) {
+				@Override
+				public Font modifyFont(Object key, Font original) {
+					return ScaleUtil.fallbackModifyFont(key, original, super.modifyFont(key, original), scaleFactor, BasicTweaker::isUnscaled);
+				}
+			};
 		}
 
-		return new BasicTweaker(dpiScaling);
+		if (testString.contains("metal")) {
+			return new MetalTweaker(dpiScaling) {
+				@Override
+				public Font modifyFont(Object key, Font original) {
+					return ScaleUtil.fallbackModifyFont(key, original, super.modifyFont(key, original), scaleFactor, BasicTweaker::isUnscaled);
+				}
+			};
+		}
+
+		if (testString.contains("nimbus")) {
+			return new NimbusTweaker(dpiScaling) {
+				@Override
+				public Font modifyFont(Object key, Font original) {
+					return ScaleUtil.fallbackModifyFont(key, original, super.modifyFont(key, original), scaleFactor, BasicTweaker::isUnscaled);
+				}
+			};
+		}
+
+		return new BasicTweaker(dpiScaling) {
+			@Override
+			public Font modifyFont(Object key, Font original) {
+				return ScaleUtil.fallbackModifyFont(key, original, super.modifyFont(key, original), scaleFactor, BasicTweaker::isUnscaled);
+			}
+		};
+	}
+
+	private static Font fallbackModifyFont(Object key, Font original, Font modified, float scaleFactor, Predicate<Float> unscaledCheck) {
+		if (modified == original && !unscaledCheck.test(scaleFactor)) {
+			return original.deriveFont(original.getSize() * scaleFactor);
+		}
+
+		return modified;
 	}
 }
