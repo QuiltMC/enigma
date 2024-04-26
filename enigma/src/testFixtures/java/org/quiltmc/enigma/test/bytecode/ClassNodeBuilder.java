@@ -30,8 +30,12 @@ public final class ClassNodeBuilder {
 		return this;
 	}
 
+	public ClassNodeBuilder field(int access, String name, String descriptor) {
+		return this.field(access, name, descriptor, null, null);
+	}
+
 	public ClassNodeBuilder field(String name, String descriptor) {
-		return this.field(Opcodes.ACC_PUBLIC, name, descriptor, null, null);
+		return this.field(Opcodes.ACC_PUBLIC, name, descriptor);
 	}
 
 	public ClassNodeBuilder method(MethodNode method) {

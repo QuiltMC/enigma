@@ -18,6 +18,10 @@ public final class MethodNodeBuilder {
 		return new MethodNodeBuilder(access, name, descriptor, signature, exceptions);
 	}
 
+	public static MethodNodeBuilder create(int access, String name, String descriptor) {
+		return new MethodNodeBuilder(access, name, descriptor, null, null);
+	}
+
 	public static MethodNodeBuilder create(String name, String descriptor) {
 		return new MethodNodeBuilder(Opcodes.ACC_PUBLIC, name, descriptor, null, null);
 	}

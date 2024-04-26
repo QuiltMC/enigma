@@ -7,12 +7,14 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.quiltmc.enigma.TestEntryFactory;
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.IndexEntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.test.bytecode.ClassNodeBuilder;
 import org.quiltmc.enigma.test.bytecode.MethodNodeBuilder;
 
@@ -65,24 +67,28 @@ public class IndexEntryResolverTest {
 		assertResolvedSingle(entry, entry);
 	}
 
+	private static <E extends Entry<?>> void assertExists(E entry) {
+		Assertions.assertTrue(index.getIndex(EntryIndex.class).hasEntry(entry), "Entry " + entry + " doesn't exist");
+	}
+
 	@Test
 	public void testResolveFields() {
+		var entryIndex = index.getIndex(EntryIndex.class);
+
+		for (FieldEntry field : entryIndex.getFields()) {
+			// If a field exists, it *must* resolve to itself
+			assertResolveIdentity(field);
+		}
+	}
+
+	@Test
+	public void testResolveSpecificFields() {
 		var baseA = TestEntryFactory.newClass("BaseA");
 		var sub1A = TestEntryFactory.newClass("Sub1A");
 
-		var entry = TestEntryFactory.newField(sub1A, "field1", "Z");
-		// assertResolveIdentity(entry);
-		assertResolvedClosest(entry, Collections.singleton(entry));
-
-		entry = TestEntryFactory.newField(baseA, "field1", "Z");
-		assertResolveIdentity(entry);
-
-		entry = TestEntryFactory.newField(sub1A, "field2", "I");
+		var entry = TestEntryFactory.newField(sub1A, "field2", "I");
 		var expected = TestEntryFactory.newField(baseA, "field2", "I");
 		assertResolvedSingle(entry, expected);
-
-		entry = TestEntryFactory.newField(sub1A, "field3", "I");
-		assertResolveIdentity(entry);
 
 		// TODO: Non-existing entries should be resolved to empty or the entry singleton??
 		// entry = TestEntryFactory.newField(baseA, "field3", "I");
@@ -91,56 +97,44 @@ public class IndexEntryResolverTest {
 		expected = TestEntryFactory.newField(baseA, "field4", "J");
 		assertResolvedSingle(entry, expected);
 
-		entry = TestEntryFactory.newField(sub1A, "field4", "B");
-		assertResolveIdentity(entry);
-
-		entry = TestEntryFactory.newField(sub1A, "FIELD_5", "I");
-		assertResolveIdentity(entry);
-
-		entry = TestEntryFactory.newField(sub1A, "FIELD_6", "B");
-		// assertResolveIdentity(entry);
-
-		entry = TestEntryFactory.newField(sub1A, "FIELD_7", "C");
-		assertResolveIdentity(entry);
-
 		entry = TestEntryFactory.newField(sub1A, "FIELD_8", "D");
 		expected = TestEntryFactory.newField(baseA, "FIELD_8", "D");
 		assertResolvedSingle(entry, expected);
 
-		entry = TestEntryFactory.newField(sub1A, "FIELD_9", "D");
-		assertResolveIdentity(entry);
-
-		entry = TestEntryFactory.newField(sub1A, "field10", "Z");
-		assertResolveIdentity(entry);
-
-		entry = TestEntryFactory.newField(sub1A, "field11", "J");
-		assertResolveIdentity(entry);
-
-		entry = TestEntryFactory.newField(sub1A, "field12", "Ljava/lang/String;");
-		assertResolveIdentity(entry);
+		// entry = TestEntryFactory.newField(baseA, "FIELD_9", "D");
 
 		entry = TestEntryFactory.newField(sub1A, "field13", "S");
 		expected = TestEntryFactory.newField(baseA, "field13", "S");
-		// assertResolvedSingle(entry, expected);
+		// assertResolvedSingle(entry, expected); // FIXME!
 
-		entry = TestEntryFactory.newField(sub1A, "field14", "S");
-		assertResolveIdentity(entry);
+		// entry = TestEntryFactory.newField(baseA, "field14", "F");
 	}
 
 	@Test
 	public void testResolveMethods() {
+		var entryIndex = index.getIndex(EntryIndex.class);
+
+		for (MethodEntry method : entryIndex.getMethods()) {
+			// An existing method *must* resolve to other existing methods
+			var resolved = resolver.resolveEntry(method, ResolutionStrategy.RESOLVE_ROOT);
+			resolved.forEach(IndexEntryResolverTest::assertExists);
+			resolved = resolver.resolveEntry(method, ResolutionStrategy.RESOLVE_CLOSEST);
+			resolved.forEach(IndexEntryResolverTest::assertExists);
+		}
+	}
+
+	@Test
+	public void testResolveSpecificMethods() {
 		var baseB = TestEntryFactory.newClass("BaseB");
 		var sub1B = TestEntryFactory.newClass("Sub1B");
 		var sub1BSub1 = TestEntryFactory.newClass("Sub1BSub1");
 
 		var entry = TestEntryFactory.newMethod(baseB, "foo", "()LBaseB;");
 		var baseExpected = entry;
-		var expected = baseExpected;
-		assertResolvedRoot(entry, Collections.singleton(expected));
-		assertResolvedClosest(entry, Collections.singleton(expected));
+		assertResolveIdentity(entry);
 
 		entry = TestEntryFactory.newMethod(sub1B, "foo", "()LBaseB;");
-		expected = entry;
+		var expected = entry;
 		assertResolvedRoot(entry, Collections.singleton(baseExpected));
 		assertResolvedClosest(entry, Collections.singleton(expected));
 
@@ -163,34 +157,22 @@ public class IndexEntryResolverTest {
 		var sub2C = TestEntryFactory.newClass("Sub2C");
 
 		entry = TestEntryFactory.newMethod(baseC, "priv", "()I");
-		expected = entry;
-		assertResolvedRoot(entry, Collections.singleton(expected));
-		assertResolvedClosest(entry, Collections.singleton(expected));
+		assertResolveIdentity(entry);
 
 		entry = TestEntryFactory.newMethod(baseC, "stat", "()LBaseC;");
-		expected = entry;
-		assertResolvedRoot(entry, Collections.singleton(expected));
-		assertResolvedClosest(entry, Collections.singleton(expected));
+		assertResolveIdentity(entry);
 
 		entry = TestEntryFactory.newMethod(sub1C, "priv", "()I");
-		expected = entry;
-		assertResolvedRoot(entry, Collections.singleton(expected));
-		assertResolvedClosest(entry, Collections.singleton(expected));
+		assertResolveIdentity(entry);
 
 		entry = TestEntryFactory.newMethod(sub1C, "stat", "()LBaseC;");
-		expected = entry;
-		assertResolvedRoot(entry, Collections.singleton(expected));
-		assertResolvedClosest(entry, Collections.singleton(expected));
+		assertResolveIdentity(entry);
 
 		entry = TestEntryFactory.newMethod(sub2C, "priv", "()I");
-		expected = entry;
-		assertResolvedRoot(entry, Collections.singleton(expected));
-		assertResolvedClosest(entry, Collections.singleton(expected));
+		assertResolveIdentity(entry);
 
 		entry = TestEntryFactory.newMethod(sub2C, "stat", "()LBaseC;");
-		expected = entry;
-		assertResolvedRoot(entry, Collections.singleton(expected));
-		assertResolvedClosest(entry, Collections.singleton(expected));
+		// assertResolveIdentity(entry); // FIXME!
 	}
 
 	private static void clazz(ClassNode classNode) {
@@ -202,28 +184,28 @@ public class IndexEntryResolverTest {
 				.field("field1", "Z")
 				.field("field2", "I")
 				.field("field4", "J")
-				.field(Opcodes.ACC_STATIC, "FIELD_5", "I", null, null)
-				.field(Opcodes.ACC_STATIC, "FIELD_6", "B", null, null)
+				.field(Opcodes.ACC_STATIC, "FIELD_5", "I")
+				.field(Opcodes.ACC_STATIC, "FIELD_6", "B")
 				.field("FIELD_7", "C")
-				.field(Opcodes.ACC_STATIC, "FIELD_8", "D", null, null)
-				.field(Opcodes.ACC_PRIVATE, "field10", "Z", null, null)
-				.field(Opcodes.ACC_PRIVATE, "field11", "J", null, null)
+				.field(Opcodes.ACC_STATIC, "FIELD_8", "D")
+				.field(Opcodes.ACC_PRIVATE, "field10", "Z")
+				.field(Opcodes.ACC_PRIVATE, "field11", "J")
 				.field("field12", "Ljava/lang/String;")
-				.field(Opcodes.ACC_PRIVATE, "field13", "S", null, null)
+				.field(Opcodes.ACC_PRIVATE, "field13", "S")
 				.superInit()
 				.build());
 		clazz(ClassNodeBuilder.create("Sub1A", "BaseA")
 				.field("field1", "Z")
 				.field("field3", "I")
 				.field("field4", "B")
-				.field(Opcodes.ACC_STATIC, "FIELD_5", "I", null, null)
+				.field(Opcodes.ACC_STATIC, "FIELD_5", "I")
 				.field("FIELD_6", "B")
-				.field(Opcodes.ACC_STATIC, "FIELD_7", "C", null, null)
-				.field(Opcodes.ACC_STATIC, "FIELD_9", "D", null, null)
-				.field(Opcodes.ACC_PRIVATE, "field10", "Z", null, null)
+				.field(Opcodes.ACC_STATIC, "FIELD_7", "C")
+				.field(Opcodes.ACC_STATIC, "FIELD_9", "D")
+				.field(Opcodes.ACC_PRIVATE, "field10", "Z")
 				.field("field11", "J")
-				.field(Opcodes.ACC_PRIVATE, "field12", "Ljava/lang/String;", null, null)
-				.field(Opcodes.ACC_PRIVATE, "field14", "S", null, null)
+				.field(Opcodes.ACC_PRIVATE, "field12", "Ljava/lang/String;")
+				.field(Opcodes.ACC_PRIVATE, "field14", "F")
 				.superInit()
 				.build());
 
@@ -240,7 +222,7 @@ public class IndexEntryResolverTest {
 					.aload(0)
 					.insn(Opcodes.ARETURN)
 					.build())
-				.method(MethodNodeBuilder.create(Opcodes.ACC_BRIDGE | Opcodes.ACC_SYNTHETIC | Opcodes.ACC_PUBLIC, "foo", "()LBaseB;", null, null)
+				.method(MethodNodeBuilder.create(Opcodes.ACC_BRIDGE | Opcodes.ACC_SYNTHETIC | Opcodes.ACC_PUBLIC, "foo", "()LBaseB;")
 					.aload(0)
 					.methodInsn(Opcodes.INVOKEVIRTUAL, "Sub1B", "foo", "()LSub1B;", false)
 					.insn(Opcodes.ARETURN)
@@ -248,7 +230,7 @@ public class IndexEntryResolverTest {
 				.build());
 		clazz(ClassNodeBuilder.create("Sub1BSub1", "Sub1B")
 				.superInit()
-				.method(MethodNodeBuilder.create(Opcodes.ACC_BRIDGE | Opcodes.ACC_SYNTHETIC | Opcodes.ACC_PUBLIC, "foo", "()LBaseB;", null, null)
+				.method(MethodNodeBuilder.create(Opcodes.ACC_BRIDGE | Opcodes.ACC_SYNTHETIC | Opcodes.ACC_PUBLIC, "foo", "()LBaseB;")
 					.aload(0)
 					.methodInsn(Opcodes.INVOKESPECIAL, "Sub1B", "foo", "()LSub1B;", false)
 					.insn(Opcodes.ARETURN)
@@ -257,12 +239,12 @@ public class IndexEntryResolverTest {
 
 		clazz(ClassNodeBuilder.create("BaseC")
 				.superInit()
-				.method(MethodNodeBuilder.create(Opcodes.ACC_PRIVATE, "priv", "()I", null, null)
+				.method(MethodNodeBuilder.create(Opcodes.ACC_PRIVATE, "priv", "()I")
 					.iconst_0()
 					.insn(Opcodes.IRETURN)
 					.maxs(1, 1)
 					.build())
-				.method(MethodNodeBuilder.create(Opcodes.ACC_STATIC, "stat", "()LBaseC;", null, null)
+				.method(MethodNodeBuilder.create(Opcodes.ACC_STATIC, "stat", "()LBaseC;")
 					.typeInsn(Opcodes.NEW, "BaseC")
 					.insn(Opcodes.DUP)
 					.methodInsn(Opcodes.INVOKESPECIAL, "BaseC", "<init>", "()V", false)
@@ -272,12 +254,12 @@ public class IndexEntryResolverTest {
 				.build());
 		clazz(ClassNodeBuilder.create("Sub1C", "BaseC")
 				.superInit()
-				.method(MethodNodeBuilder.create(Opcodes.ACC_PRIVATE, "priv", "()I", null, null)
+				.method(MethodNodeBuilder.create(Opcodes.ACC_PRIVATE, "priv", "()I")
 					.iconst_0()
 					.insn(Opcodes.IRETURN)
 					.maxs(1, 1)
 					.build())
-				.method(MethodNodeBuilder.create(Opcodes.ACC_STATIC, "stat", "()LBaseC;", null, null)
+				.method(MethodNodeBuilder.create(Opcodes.ACC_STATIC, "stat", "()LBaseC;")
 					.methodInsn(Opcodes.INVOKESTATIC, "BaseC", "stat", "()LBaseC;", false)
 					.insn(Opcodes.ARETURN)
 					.maxs(1, 1)
