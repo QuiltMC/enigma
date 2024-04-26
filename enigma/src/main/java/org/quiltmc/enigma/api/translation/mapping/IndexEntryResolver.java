@@ -62,9 +62,9 @@ public class IndexEntryResolver implements EntryResolver {
 			return Collections.emptySet();
 		}
 
-		Entry<ClassEntry> classChild = this.getClassChild(entry);
-		if (classChild != null && !(classChild instanceof ClassEntry)) {
-			AccessFlags access = this.entryIndex.getEntryAccess(classChild);
+		Entry<ClassEntry> entryAsClassChild = this.getClassChild(entry);
+		if (entryAsClassChild != null && !(entryAsClassChild instanceof ClassEntry)) {
+			AccessFlags access = this.entryIndex.getEntryAccess(entryAsClassChild);
 
 			// If we're looking for the closest and this entry exists, we're done looking
 			if (strategy == ResolutionStrategy.RESOLVE_CLOSEST && access != null) {
@@ -77,10 +77,10 @@ public class IndexEntryResolver implements EntryResolver {
 				return Collections.singleton(entry);
 			} else {
 				// Search the entry up the hierarchy; if the entry exists we can skip static entries, since this one isn't static
-				Collection<Entry<ClassEntry>> resolvedChildren = this.resolveChildEntry(classChild, strategy, access != null);
+				Collection<Entry<ClassEntry>> resolvedChildren = this.resolveEntryInAncestry(entryAsClassChild, strategy, access != null);
 				if (!resolvedChildren.isEmpty()) {
 					return resolvedChildren.stream()
-						.map(resolvedChild -> (E) entry.replaceAncestor(classChild, resolvedChild))
+						.map(resolvedChild -> (E) entry.replaceAncestor(entryAsClassChild, resolvedChild))
 						.toList();
 				} else if (access == null) {
 					// No matching entry was found, and this one doesn't exist
@@ -118,14 +118,14 @@ public class IndexEntryResolver implements EntryResolver {
 		return null;
 	}
 
-	private Set<Entry<ClassEntry>> resolveChildEntry(Entry<ClassEntry> entry, ResolutionStrategy strategy, boolean skipStatic) {
+	private Set<Entry<ClassEntry>> resolveEntryInAncestry(Entry<ClassEntry> entry, ResolutionStrategy strategy, boolean skipStatic) {
 		ClassEntry ownerClass = entry.getParent();
 
 		// Resolve specialized methods using their bridges
 		if (entry instanceof MethodEntry methodEntry) {
 			MethodEntry bridgeMethod = this.bridgeMethodIndex.getBridgeFromSpecialized(methodEntry);
 			if (bridgeMethod != null && ownerClass.equals(bridgeMethod.getParent())) {
-				Set<Entry<ClassEntry>> resolvedBridge = this.resolveChildEntry(bridgeMethod, strategy, skipStatic);
+				Set<Entry<ClassEntry>> resolvedBridge = this.resolveEntryInAncestry(bridgeMethod, strategy, skipStatic);
 				if (!resolvedBridge.isEmpty()) {
 					return resolvedBridge;
 				} else {
@@ -136,40 +136,40 @@ public class IndexEntryResolver implements EntryResolver {
 
 		Set<Entry<ClassEntry>> resolvedEntries = new HashSet<>();
 
-		for (ClassEntry parentClass : this.inheritanceIndex.getParents(ownerClass)) {
-			Entry<ClassEntry> parentEntry = entry.withParent(parentClass);
+		for (ClassEntry ancestorClass : this.inheritanceIndex.getParents(ownerClass)) {
+			Entry<ClassEntry> ancestorChildEntry = entry.withParent(ancestorClass);
 
 			if (strategy == ResolutionStrategy.RESOLVE_ROOT) {
-				resolvedEntries.addAll(this.resolveRoot(parentEntry, strategy, skipStatic));
+				resolvedEntries.addAll(this.resolveRoot(ancestorChildEntry, strategy, skipStatic));
 			} else {
-				resolvedEntries.addAll(this.resolveClosest(parentEntry, strategy, skipStatic));
+				resolvedEntries.addAll(this.resolveClosest(ancestorChildEntry, strategy, skipStatic));
 			}
 		}
 
 		return resolvedEntries;
 	}
 
-	private Collection<Entry<ClassEntry>> resolveRoot(Entry<ClassEntry> entry, ResolutionStrategy strategy, boolean skipStatic) {
+	private Collection<Entry<ClassEntry>> resolveRoot(Entry<ClassEntry> ancestorChildEntry, ResolutionStrategy strategy, boolean skipStatic) {
 		// When resolving root, we want to first look for the lowest entry before returning ourselves
-		Set<Entry<ClassEntry>> parentResolution = this.resolveChildEntry(entry, strategy, skipStatic);
+		Set<Entry<ClassEntry>> ancestorResolution = this.resolveEntryInAncestry(ancestorChildEntry, strategy, skipStatic);
 
-		if (parentResolution.isEmpty()) {
-			AccessFlags parentAccess = this.entryIndex.getEntryAccess(entry);
-			if (parentAccess != null && !parentAccess.isPrivate() && (!skipStatic || !parentAccess.isStatic())) {
-				return Collections.singleton(entry);
+		if (ancestorResolution.isEmpty()) {
+			AccessFlags ancestorChildAccess = this.entryIndex.getEntryAccess(ancestorChildEntry);
+			if (ancestorChildAccess != null && !ancestorChildAccess.isPrivate() && (!skipStatic || !ancestorChildAccess.isStatic())) {
+				return Collections.singleton(ancestorChildEntry);
 			}
 		}
 
-		return parentResolution;
+		return ancestorResolution;
 	}
 
-	private Collection<Entry<ClassEntry>> resolveClosest(Entry<ClassEntry> entry, ResolutionStrategy strategy, boolean skipStatic) {
+	private Collection<Entry<ClassEntry>> resolveClosest(Entry<ClassEntry> ancestorChildEntry, ResolutionStrategy strategy, boolean skipStatic) {
 		// When resolving closest, we want to first check if we exist before looking further down
-		AccessFlags parentAccess = this.entryIndex.getEntryAccess(entry);
-		if (parentAccess != null && !parentAccess.isPrivate() && (!skipStatic || !parentAccess.isStatic())) {
-			return Collections.singleton(entry);
+		AccessFlags ancestorChildAccess = this.entryIndex.getEntryAccess(ancestorChildEntry);
+		if (ancestorChildAccess != null && !ancestorChildAccess.isPrivate() && (!skipStatic || !ancestorChildAccess.isStatic())) {
+			return Collections.singleton(ancestorChildEntry);
 		} else {
-			return this.resolveChildEntry(entry, strategy, skipStatic);
+			return this.resolveEntryInAncestry(ancestorChildEntry, strategy, skipStatic);
 		}
 	}
 
