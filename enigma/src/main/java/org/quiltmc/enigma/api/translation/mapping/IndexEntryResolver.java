@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.impl.analysis.IndexTreeBuilder;
 import org.quiltmc.enigma.api.analysis.tree.MethodImplementationsTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.MethodInheritanceTreeNode;
@@ -36,17 +37,20 @@ public class IndexEntryResolver implements EntryResolver {
 	}
 
 	/**
-	 * Resolves an entry, which may or may not exist in the bytecode, up to a matching entry definition, by travelling up
-	 * the class ancestry until finding the matching entry or entries. In most cases, this means converting something like
-	 * {@code ClassWithoutField#field} to {@code ClassWithField#field}, or {@code OverridingClass#toString} to
-	 * {@code Object#toString}. Private and/or static entries are always resolved as the entry itself. Only entries
-	 * available in the index are returned. Matching entries are ones with the exact same name & descriptor.
+	 * Resolves an entry, which may or may not exist in the bytecode, up to a matching non-private entry definition, by
+	 * travelling up the class ancestry until finding the matching entry or entries. In most cases, this means converting
+	 * something like {@code ClassWithoutField#field} to {@code ClassWithField#field}, or {@code OverridingClass#toString}
+	 * to {@code Object#toString}.
+	 *
+	 * <p>
+	 * Private and/or static entries are always resolved as the entry itself. Only entries available in the index are
+	 * returned. Matching entries are ones with the exact same name & descriptor.
 	 *
 	 * <p>
 	 * The {@code strategy} doesn't affect the result unless the entry is a {@linkplain MethodEntry} or a child of one,
 	 * i.e. a {@linkplain org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry LocalVariableEntry}.
-	 * Using {@link ResolutionStrategy#RESOLVE_CLOSEST}, the closest entry to {@code entry} in the hierarchy will be
-	 * returned, while using {@link ResolutionStrategy#RESOLVE_ROOT} will return the matching entries at the root(s) of
+	 * Using {@link ResolutionStrategy#RESOLVE_CLOSEST}, the method closest to {@code entry} in the hierarchy will be
+	 * returned, while using {@link ResolutionStrategy#RESOLVE_ROOT} will return the matching methods at the root(s) of
 	 * the hierarchy. This means, that overridden methods will be replaced by their highest possible definition, and if
 	 * the {@code entry} overrides multiple different methods at the same time, all the definitions of those methods
 	 * will be returned.
@@ -67,8 +71,11 @@ public class IndexEntryResolver implements EntryResolver {
 				return Collections.singleton(entry);
 			}
 
-			if (access == null || (!access.isPrivate() && !access.isStatic())) {
-				Collection<Entry<ClassEntry>> resolvedChildren = this.resolveChildEntry(classChild, strategy);
+			// Fields and classes can't be redefined, don't search them up the hierarchy
+			if (access != null && (access.isPrivate() || access.isStatic() || entry instanceof FieldEntry || entry instanceof ClassEntry)) {
+				return Collections.singleton(entry);
+			} else if (access == null || (!access.isPrivate() && !access.isStatic())) {
+				Collection<Entry<ClassEntry>> resolvedChildren = this.resolveChildEntry(classChild, strategy, access != null);
 				if (!resolvedChildren.isEmpty()) {
 					return resolvedChildren.stream()
 						.map(resolvedChild -> (E) entry.replaceAncestor(classChild, resolvedChild))
@@ -106,14 +113,14 @@ public class IndexEntryResolver implements EntryResolver {
 		return null;
 	}
 
-	private Set<Entry<ClassEntry>> resolveChildEntry(Entry<ClassEntry> entry, ResolutionStrategy strategy) {
+	private Set<Entry<ClassEntry>> resolveChildEntry(Entry<ClassEntry> entry, ResolutionStrategy strategy, boolean skipStatic) {
 		ClassEntry ownerClass = entry.getParent();
 
 		// Resolve specialized methods using their bridges
 		if (entry instanceof MethodEntry methodEntry) {
 			MethodEntry bridgeMethod = this.bridgeMethodIndex.getBridgeFromSpecialized(methodEntry);
 			if (bridgeMethod != null && ownerClass.equals(bridgeMethod.getParent())) {
-				Set<Entry<ClassEntry>> resolvedBridge = this.resolveChildEntry(bridgeMethod, strategy);
+				Set<Entry<ClassEntry>> resolvedBridge = this.resolveChildEntry(bridgeMethod, strategy, skipStatic);
 				if (!resolvedBridge.isEmpty()) {
 					return resolvedBridge;
 				} else {
@@ -128,22 +135,22 @@ public class IndexEntryResolver implements EntryResolver {
 			Entry<ClassEntry> parentEntry = entry.withParent(parentClass);
 
 			if (strategy == ResolutionStrategy.RESOLVE_ROOT) {
-				resolvedEntries.addAll(this.resolveRoot(parentEntry, strategy));
+				resolvedEntries.addAll(this.resolveRoot(parentEntry, strategy, skipStatic));
 			} else {
-				resolvedEntries.addAll(this.resolveClosest(parentEntry, strategy));
+				resolvedEntries.addAll(this.resolveClosest(parentEntry, strategy, skipStatic));
 			}
 		}
 
 		return resolvedEntries;
 	}
 
-	private Collection<Entry<ClassEntry>> resolveRoot(Entry<ClassEntry> entry, ResolutionStrategy strategy) {
+	private Collection<Entry<ClassEntry>> resolveRoot(Entry<ClassEntry> entry, ResolutionStrategy strategy, boolean skipStatic) {
 		// When resolving root, we want to first look for the lowest entry before returning ourselves
-		Set<Entry<ClassEntry>> parentResolution = this.resolveChildEntry(entry, strategy);
+		Set<Entry<ClassEntry>> parentResolution = this.resolveChildEntry(entry, strategy, skipStatic);
 
 		if (parentResolution.isEmpty()) {
 			AccessFlags parentAccess = this.entryIndex.getEntryAccess(entry);
-			if (parentAccess != null && !parentAccess.isPrivate()) {
+			if (parentAccess != null && !parentAccess.isPrivate() && (!skipStatic || !parentAccess.isStatic())) {
 				return Collections.singleton(entry);
 			}
 		}
@@ -151,13 +158,13 @@ public class IndexEntryResolver implements EntryResolver {
 		return parentResolution;
 	}
 
-	private Collection<Entry<ClassEntry>> resolveClosest(Entry<ClassEntry> entry, ResolutionStrategy strategy) {
+	private Collection<Entry<ClassEntry>> resolveClosest(Entry<ClassEntry> entry, ResolutionStrategy strategy, boolean skipStatic) {
 		// When resolving closest, we want to first check if we exist before looking further down
 		AccessFlags parentAccess = this.entryIndex.getEntryAccess(entry);
-		if (parentAccess != null && !parentAccess.isPrivate()) {
+		if (parentAccess != null && !parentAccess.isPrivate() && (!skipStatic || !parentAccess.isStatic())) {
 			return Collections.singleton(entry);
 		} else {
-			return this.resolveChildEntry(entry, strategy);
+			return this.resolveChildEntry(entry, strategy, skipStatic);
 		}
 	}
 

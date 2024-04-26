@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 public class IndexEntryResolverTest {
@@ -50,17 +51,19 @@ public class IndexEntryResolverTest {
 		resolver = new IndexEntryResolver(index);
 	}
 
-	private static <E extends Entry<?>> void assertResolvedRoot(E entry, Collection<E> expected) {
-		Assertions.assertIterableEquals(expected, resolver.resolveEntry(entry, ResolutionStrategy.RESOLVE_ROOT), "wrong root resolution of " + entry);
+	@SafeVarargs
+	private static <E extends Entry<?>> void assertResolvedRoot(E entry, E... expected) {
+		Assertions.assertIterableEquals(List.of(expected), resolver.resolveEntry(entry, ResolutionStrategy.RESOLVE_ROOT), "wrong root resolution of " + entry);
 	}
 
-	private static <E extends Entry<?>> void assertResolvedClosest(E entry, Collection<E> expected) {
-		Assertions.assertIterableEquals(expected, resolver.resolveEntry(entry, ResolutionStrategy.RESOLVE_CLOSEST), "wrong closest resolution of " + entry);
+	@SafeVarargs
+	private static <E extends Entry<?>> void assertResolvedClosest(E entry, E... expected) {
+		Assertions.assertIterableEquals(List.of(expected), resolver.resolveEntry(entry, ResolutionStrategy.RESOLVE_CLOSEST), "wrong closest resolution of " + entry);
 	}
 
 	private static <E extends Entry<?>> void assertResolvedSingle(E entry, E expected) {
-		assertResolvedRoot(entry, Collections.singleton(expected));
-		assertResolvedClosest(entry, Collections.singleton(expected));
+		assertResolvedRoot(entry, expected);
+		assertResolvedClosest(entry, expected);
 	}
 
 	private static <E extends Entry<?>> void assertResolveIdentity(E entry) {
@@ -103,9 +106,7 @@ public class IndexEntryResolverTest {
 
 		// entry = TestEntryFactory.newField(baseA, "FIELD_9", "D");
 
-		entry = TestEntryFactory.newField(sub1A, "field13", "S");
-		expected = TestEntryFactory.newField(baseA, "field13", "S");
-		// assertResolvedSingle(entry, expected); // FIXME!
+		// entry = TestEntryFactory.newField(sub1A, "field13", "S");
 
 		// entry = TestEntryFactory.newField(baseA, "field14", "F");
 	}
@@ -135,22 +136,22 @@ public class IndexEntryResolverTest {
 
 		entry = TestEntryFactory.newMethod(sub1B, "foo", "()LBaseB;");
 		var expected = entry;
-		assertResolvedRoot(entry, Collections.singleton(baseExpected));
-		assertResolvedClosest(entry, Collections.singleton(expected));
+		assertResolvedRoot(entry, baseExpected);
+		assertResolvedClosest(entry, expected);
 
 		entry = TestEntryFactory.newMethod(sub1B, "foo", "()LSub1B;");
 		expected = entry;
-		assertResolvedRoot(entry, Collections.singleton(baseExpected));
-		assertResolvedClosest(entry, Collections.singleton(expected));
+		assertResolvedRoot(entry, baseExpected);
+		assertResolvedClosest(entry, expected);
 
 		entry = TestEntryFactory.newMethod(sub1BSub1, "foo", "()LSub1B;");
-		assertResolvedRoot(entry, Collections.singleton(baseExpected));
-		assertResolvedClosest(entry, Collections.singleton(expected));
+		assertResolvedRoot(entry, baseExpected);
+		assertResolvedClosest(entry, expected);
 
 		entry = TestEntryFactory.newMethod(sub1BSub1, "foo", "()LBaseB;");
 		expected = entry;
-		assertResolvedRoot(entry, Collections.singleton(baseExpected));
-		assertResolvedClosest(entry, Collections.singleton(expected));
+		assertResolvedRoot(entry, baseExpected);
+		assertResolvedClosest(entry, expected);
 
 		var baseC = TestEntryFactory.newClass("BaseC");
 		var sub1C = TestEntryFactory.newClass("Sub1C");
@@ -172,7 +173,7 @@ public class IndexEntryResolverTest {
 		assertResolveIdentity(entry);
 
 		entry = TestEntryFactory.newMethod(sub2C, "stat", "()LBaseC;");
-		// assertResolveIdentity(entry); // FIXME!
+		assertResolveIdentity(entry);
 	}
 
 	private static void clazz(ClassNode classNode) {
