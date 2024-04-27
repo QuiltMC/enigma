@@ -46,7 +46,7 @@ def registerTestTask(String name) {
 		group("test")
 		dependsOn(":enigma:${taskName}TestObf")
 		dependsOn(":enigma:processResources")
-		mainClass = 'org.quiltmc.enigma.gui.Main'
+		mainClass = application.mainClass
 		classpath = sourceSets.test.runtimeClasspath
 
 		def jar = project(":enigma").file("build/test-obf/${name}.jar")
@@ -61,7 +61,7 @@ def registerTestTask(String name) {
 	tasks.register("${taskName}TestGui2", JavaExec.class) {
 		group("test")
 		dependsOn(":enigma:${taskName}TestObf")
-		mainClass = 'org.quiltmc.enigma.gui.Main'
+		mainClass = application.mainClass
 		classpath = sourceSets.test.runtimeClasspath
 
 		def jar = project(":enigma").file("build/test-obf/${name}.jar")

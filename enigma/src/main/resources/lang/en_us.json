@@ -29,6 +29,7 @@
 	"menu.file.save.non_writeable": "Format \"%s\" is not writeable!",
 	"menu.file.save.cannot_save": "Cannot save mappings!",
 	"menu.file.open.non_parseable": "Format \"%s\" is not parseable!",
+	"menu.file.open.non_parseable.unsupported_format": "Format \"%s\" is not parseable: unsupported format!",
 	"menu.file.open.cannot_open": "Cannot open mappings!",
 	"menu.file.reload_mappings": "Reload Mappings",
 	"menu.file.reload_all": "Reload Jar/Mappings",

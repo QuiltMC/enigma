@@ -25,8 +25,8 @@ public final class ExtensionFileFilter extends FileFilter {
 	public ExtensionFileFilter(String formatName, List<String> extensions) {
 		this.formatName = formatName;
 		this.extensions = extensions.stream().peek(s -> {
-			if (s.contains(".")) {
-				throw new IllegalArgumentException("extensions cannot contain dots!");
+			if (s.startsWith(".")) {
+				throw new IllegalArgumentException("extensions cannot start with dots!");
 			}
 		}).map(s -> "." + s).toList();
 	}
