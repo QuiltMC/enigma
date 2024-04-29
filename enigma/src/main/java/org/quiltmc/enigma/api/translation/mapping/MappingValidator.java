@@ -1,8 +1,10 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
+import org.quiltmc.enigma.api.analysis.index.jar.EnclosingMethodIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.LambdaIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.PackageIndex;
 import org.quiltmc.enigma.api.translation.Translator;
@@ -22,6 +24,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -128,9 +132,27 @@ public class MappingValidator {
 	private boolean validateParameterUniqueness(ValidationContext context, String name, LocalVariableEntry parameter) {
 		MethodEntry parent = parameter.getParent();
 		if (parent != null) {
-			Iterator<LocalVariableEntry> iterator = parent.getParameterIterator(this.jarIndex.getIndex(EntryIndex.class), this.deobfuscator);
-			while (iterator.hasNext()) {
-				if (iterator.next().getName().equals(name)) {
+			var entryIndex = this.jarIndex.getIndex(EntryIndex.class);
+
+			Optional<MethodEntry> lambdaParentMethod = this.getLambdaParentMethod(parent);
+			List<MethodEntry> lambdaParents = new ArrayList<>();
+			while (lambdaParentMethod.isPresent()) {
+				lambdaParents.add(lambdaParentMethod.get());
+				lambdaParentMethod = this.getLambdaParentMethod(lambdaParentMethod.get());
+			}
+
+			var parameters = parent.getParameters(entryIndex);
+			if (!lambdaParents.isEmpty()) {
+				parameters.addAll(lambdaParents.stream().flatMap(m -> m.getParameters(entryIndex).stream()).toList());
+			}
+
+			for (LocalVariableEntry arg : parameters) {
+				LocalVariableEntry translatedArg = this.deobfuscator.translate(arg);
+				if (translatedArg != null) {
+					arg = translatedArg;
+				}
+
+				if (arg.getName().equals(name)) {
 					this.raiseConflict(context, parent, name, false);
 					return true;
 				}
@@ -138,6 +160,18 @@ public class MappingValidator {
 		}
 
 		return false;
+	}
+
+	private Optional<MethodEntry> getLambdaParentMethod(MethodEntry method) {
+		var lambdaIndex = this.jarIndex.getIndex(LambdaIndex.class);
+		var access = this.jarIndex.getIndex(EntryIndex.class).getMethodAccess(method);
+		var caller = lambdaIndex.getCaller(method);
+
+		if (access != null && access.isSynthetic() && access.isPrivate() && caller != null) {
+			return Optional.of(caller);
+		}
+
+		return Optional.empty();
 	}
 
 	private void raiseConflict(ValidationContext context, Entry<?> parent, String name, boolean shadow) {
