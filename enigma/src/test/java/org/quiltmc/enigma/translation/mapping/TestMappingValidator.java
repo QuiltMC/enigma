@@ -180,7 +180,7 @@ public class TestMappingValidator {
 	 * @param vc validation context
 	 * @param messages the messages the validation context should contain
 	 */
-	private static void assertMessages(ValidationContext vc, Message... messages) {
+	public static void assertMessages(ValidationContext vc, Message... messages) {
 		assertThat(vc.getMessages().size(), is(messages.length));
 		for (int i = 0; i < messages.length; i++) {
 			ParameterizedMessage msg = vc.getMessages().get(i);
