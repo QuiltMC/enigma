@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
-import org.quiltmc.enigma.api.analysis.index.jar.EnclosingMethodIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
@@ -21,10 +20,8 @@ import javax.annotation.Nullable;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
