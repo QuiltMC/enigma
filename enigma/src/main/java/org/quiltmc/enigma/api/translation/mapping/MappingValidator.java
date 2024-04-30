@@ -130,7 +130,10 @@ public class MappingValidator {
 		MethodEntry parent = parameter.getParent();
 		if (parent != null) {
 			var entryIndex = this.jarIndex.getIndex(EntryIndex.class);
+			var lambdaIndex = this.jarIndex.getIndex(LambdaIndex.class);
+			var parameters = parent.getParameters(entryIndex);
 
+			// add parent parameters for lambdas
 			Optional<MethodEntry> lambdaParentMethod = this.getLambdaParentMethod(parent);
 			List<MethodEntry> lambdaParents = new ArrayList<>();
 			while (lambdaParentMethod.isPresent()) {
@@ -138,9 +141,14 @@ public class MappingValidator {
 				lambdaParentMethod = this.getLambdaParentMethod(lambdaParentMethod.get());
 			}
 
-			var parameters = parent.getParameters(entryIndex);
 			if (!lambdaParents.isEmpty()) {
 				parameters.addAll(lambdaParents.stream().flatMap(m -> m.getParameters(entryIndex).stream()).toList());
+			}
+
+			// add nested lambda parents for normal methods
+			List<MethodEntry> internalLambdas = lambdaIndex.getInternalLambdas(parent);
+			if (internalLambdas != null) {
+				parameters.addAll(internalLambdas.stream().flatMap(m -> m.getParameters(entryIndex).stream()).toList());
 			}
 
 			for (LocalVariableEntry arg : parameters) {

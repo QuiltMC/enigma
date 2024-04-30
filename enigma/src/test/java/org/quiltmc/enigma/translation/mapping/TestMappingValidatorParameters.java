@@ -19,13 +19,12 @@ import java.nio.file.Path;
 
 public class TestMappingValidatorParameters {
 	public static final Path JAR = TestUtil.obfJar("inner_classes");
-	private static EnigmaProject project;
 	private static EntryRemapper remapper;
 
 	@BeforeAll
 	public static void beforeAll() throws Exception {
 		Enigma enigma = Enigma.create();
-		project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
+		EnigmaProject project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
 		remapper = project.getRemapper();
 	}
 
@@ -59,7 +58,15 @@ public class TestMappingValidatorParameters {
 		// validate parent parameter name conflict with top level lambda and nested lambda
 		remapper.putMapping(TestUtil.newVC(), secondLambdaParam, new EntryMapping("LEVEL_2"));
 
-		// TODO
+		ValidationContext vc4 = TestUtil.newVC();
+		remapper.validatePutMapping(vc4, parentParam, new EntryMapping("LEVEL_2"));
+		TestMappingValidator.assertMessages(vc4, Message.NON_UNIQUE_NAME_CLASS);
+
+		ValidationContext vc5 = TestUtil.newVC();
+		remapper.validatePutMapping(vc5, parentParam, new EntryMapping("LEVEL_1"));
+		TestMappingValidator.assertMessages(vc5, Message.NON_UNIQUE_NAME_CLASS);
+
+		// todo validate nested lambda name conflict with nested-er lambda
 	}
 
 	@Test
