@@ -66,7 +66,11 @@ public class TestMappingValidatorParameters {
 		remapper.validatePutMapping(vc5, parentParam, new EntryMapping("LEVEL_1"));
 		TestMappingValidator.assertMessages(vc5, Message.NON_UNIQUE_NAME_CLASS);
 
-		// todo validate nested lambda name conflict with nested-er lambda
+		// validate nested lambda name conflict with nested-er lambda
+
+		ValidationContext vc6 = TestUtil.newVC();
+		remapper.validatePutMapping(vc6, firstLambdaParam, new EntryMapping("LEVEL_2"));
+		TestMappingValidator.assertMessages(vc6, Message.NON_UNIQUE_NAME_CLASS);
 	}
 
 	@Test

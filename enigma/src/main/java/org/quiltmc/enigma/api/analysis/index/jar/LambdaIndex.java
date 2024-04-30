@@ -28,31 +28,43 @@ public class LambdaIndex implements JarIndexer {
 	public void processIndex(JarIndex index) {
 		var nestedLambdas = this.lambdasBuilder.build();
 
-		// denest
-		ImmutableListMultimap.Builder<MethodEntry, MethodEntry> topLevelLambdasBuilder = ImmutableListMultimap.builder();
+		ImmutableListMultimap.Builder<MethodEntry, MethodEntry> multilevelLambdasBuilder = ImmutableListMultimap.builder();
 		for (var callerMethod : nestedLambdas.keySet()) {
 			// if caller method is a lambda itself, find the top level method
 			boolean isLambda = nestedLambdas.containsValue(callerMethod);
 			MethodEntry topLevel = callerMethod;
 
-			while (isLambda) {
-				topLevel = this.callers.get(topLevel);
-				isLambda = nestedLambdas.containsValue(topLevel);
-			}
+			if (!isLambda) {
+				multilevelLambdasBuilder.put(topLevel, callerMethod);
+			} else {
+				// travel up the chain until we find the top level method, adding as we go
+				while (isLambda) {
+					topLevel = this.callers.get(topLevel);
+					isLambda = nestedLambdas.containsValue(topLevel);
 
-			topLevelLambdasBuilder.put(topLevel, callerMethod);
+					multilevelLambdasBuilder.put(topLevel, callerMethod);
+				}
+			}
 		}
 
-		this.lambdas = topLevelLambdasBuilder.build();
+		this.lambdas = multilevelLambdasBuilder.build();
 	}
 
+	/**
+	 * {@return the top-level method that contains the given lambda}
+	 * @param lambda the lambda to get the caller for
+	 */
 	public MethodDefEntry getCaller(MethodEntry lambda) {
 		return this.callers.get(lambda);
 	}
 
+	/**
+	 * {@return all lambda methods nested inside the given method}
+	 * @param method the method to get lambdas for
+	 */
 	@Nullable
-	public List<MethodEntry> getInternalLambdas(MethodEntry caller) {
-		return this.lambdas.get(caller);
+	public List<MethodEntry> getInternalLambdas(MethodEntry method) {
+		return this.lambdas.get(method);
 	}
 
 	@Override
