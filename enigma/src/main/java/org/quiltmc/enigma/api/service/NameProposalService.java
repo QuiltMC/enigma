@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * A name proposal service suggests default names for entries based on context from their types and surrounding mappings.
  * <br>
- * Obfuscation test services are not active by default, and need to be specified in the {@link org.quiltmc.enigma.api.EnigmaProfile profile}.
+ * Name proposal services are not active by default, and need to be specified in the {@link org.quiltmc.enigma.api.EnigmaProfile profile}.
  */
 public interface NameProposalService extends EnigmaService {
 	EnigmaServiceType<NameProposalService> TYPE = EnigmaServiceType.create("name_proposal");
