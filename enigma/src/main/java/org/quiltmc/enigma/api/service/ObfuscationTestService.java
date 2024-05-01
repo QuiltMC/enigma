@@ -8,7 +8,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
  * Obfuscation test services are not active by default, and need to be specified in the {@link org.quiltmc.enigma.api.EnigmaProfile profile}.
  */
 public interface ObfuscationTestService extends EnigmaService {
-	EnigmaServiceType<ObfuscationTestService> TYPE = new EnigmaServiceType<>("obfuscation_test", false);
+	EnigmaServiceType<ObfuscationTestService> TYPE = EnigmaServiceType.create("obfuscation_test");
 
 	boolean testDeobfuscated(Entry<?> entry);
 }

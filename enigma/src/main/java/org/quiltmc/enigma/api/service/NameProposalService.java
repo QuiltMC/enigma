@@ -15,7 +15,7 @@ import java.util.Map;
  * Obfuscation test services are not active by default, and need to be specified in the {@link org.quiltmc.enigma.api.EnigmaProfile profile}.
  */
 public interface NameProposalService extends EnigmaService {
-	EnigmaServiceType<NameProposalService> TYPE = new EnigmaServiceType<>("name_proposal", false);
+	EnigmaServiceType<NameProposalService> TYPE = EnigmaServiceType.create("name_proposal");
 
 	/**
 	 * Runs when a new JAR file is opened. Note that at this point, no mapping context will exist in the remapper.

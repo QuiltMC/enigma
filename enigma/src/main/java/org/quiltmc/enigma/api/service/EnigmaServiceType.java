@@ -4,6 +4,14 @@ public record EnigmaServiceType<T extends EnigmaService>(
 		String key,
 		boolean activeByDefault
 ) {
+	public static <T extends EnigmaService> EnigmaServiceType<T> create(String key, boolean activeByDefault) {
+		return new EnigmaServiceType<>(key, activeByDefault);
+	}
+
+	public static <T extends EnigmaService> EnigmaServiceType<T> create(String key) {
+		return new EnigmaServiceType<>(key, false);
+	}
+
 	/**
 	 * The unique key of this service type.
 	 */

@@ -22,7 +22,7 @@ import java.nio.file.Path;
  * Read/write services are active by default, and as such do not need to be specified in the {@link org.quiltmc.enigma.api.EnigmaProfile profile}.
  */
 public interface ReadWriteService extends EnigmaService, MappingsWriter, MappingsReader {
-	EnigmaServiceType<ReadWriteService> TYPE = new EnigmaServiceType<>("read_write", true);
+	EnigmaServiceType<ReadWriteService> TYPE = EnigmaServiceType.create("read_write", true);
 
 	/**
 	 * A unique file type for this service to read/write.

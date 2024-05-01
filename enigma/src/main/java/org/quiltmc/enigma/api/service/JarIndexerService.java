@@ -13,7 +13,7 @@ import java.util.Set;
  * Jar indexer services are not active by default, and need to be specified in the {@link org.quiltmc.enigma.api.EnigmaProfile profile}.
  */
 public interface JarIndexerService extends EnigmaService {
-	EnigmaServiceType<JarIndexerService> TYPE = new EnigmaServiceType<>("jar_indexer", false);
+	EnigmaServiceType<JarIndexerService> TYPE = EnigmaServiceType.create("jar_indexer");
 
 	void acceptJar(Set<String> scope, ClassProvider classProvider, JarIndex jarIndex);
 
