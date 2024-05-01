@@ -50,7 +50,7 @@ public class FillClassMappingsCommandTest extends CommandTest {
 		Path resultFile = Files.createTempFile("fillClassMappings", ".mappings");
 		FillClassMappingsCommand.run(JAR, MAPPINGS, resultFile, false, null, null);
 
-		MappingsReader reader = CommandsUtil.getReader(createEnigma(), resultFile);
+		MappingsReader reader = CommandsUtil.getReader(Enigma.create(), resultFile);
 		EntryTree<EntryMapping> result = reader.read(resultFile);
 
 		assertEquals("A_Anonymous", getName(result, A));

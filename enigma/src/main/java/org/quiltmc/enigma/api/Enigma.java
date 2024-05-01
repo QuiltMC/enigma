@@ -32,8 +32,11 @@ import org.tinylog.Logger;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,6 +47,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 public class Enigma {
@@ -182,28 +186,27 @@ public class Enigma {
 
 		if (Files.isDirectory(path)) {
 			try {
-				Optional<File> firstFile = Arrays.stream(Objects.requireNonNull(path.toFile().listFiles()))
-						.flatMap(file -> {
-							if (file.isDirectory()) {
-								var files = file.listFiles();
-								if (files != null) {
-									return Arrays.stream(files);
-								}
-							} else {
-								return Stream.of(file);
-							}
+				final AtomicReference<Optional<File>> firstFile = new AtomicReference<>();
+				Files.walkFileTree(path, new SimpleFileVisitor<>() {
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+						super.visitFile(file, attrs);
+						if (attrs.isRegularFile()) {
+							firstFile.set(Optional.of(file.toFile()));
+							return FileVisitResult.TERMINATE;
+						}
 
-							return Stream.empty();
-						})
-						.findFirst();
+						return FileVisitResult.CONTINUE;
+					}
+				});
 
-				if (firstFile.isPresent()) {
+				if (firstFile.get().isPresent()) {
 					for (FileType type : supportedTypes) {
 						if (!type.isDirectory()) {
 							continue;
 						}
 
-						String extension = MoreFiles.getFileExtension(firstFile.get().toPath()).toLowerCase();
+						String extension = MoreFiles.getFileExtension(firstFile.get().get().toPath()).toLowerCase();
 						if (type.getExtensions().contains(extension)) {
 							return Optional.of(type);
 						}
