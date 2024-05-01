@@ -32,7 +32,7 @@ public final class TinyV2Writer implements MappingsWriter {
 	public static final MappingsWriter INSTANCE = new TinyV2Writer();
 	private static final String MINOR_VERSION = "0";
 
-	public TinyV2Writer() {
+	private TinyV2Writer() {
 	}
 
 	private static int getEntryKind(Entry<?> e) {
