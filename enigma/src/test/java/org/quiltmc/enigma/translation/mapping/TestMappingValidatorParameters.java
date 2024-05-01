@@ -72,9 +72,4 @@ public class TestMappingValidatorParameters {
 		remapper.validatePutMapping(vc6, firstLambdaParam, new EntryMapping("LEVEL_2"));
 		TestMappingValidator.assertMessages(vc6, Message.NON_UNIQUE_NAME_CLASS);
 	}
-
-	@Test
-	public void testParameterNames() {
-		// TODO test normal param conflicts
-	}
 }
