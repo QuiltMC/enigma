@@ -44,7 +44,7 @@ public class InvertMappingsCommand extends Command {
 
 	public static void run(Path sourceFile, Path resultFile, @Nullable String obfuscatedNamespace, @Nullable String deobfuscatedNamespace) throws MappingParseException, IOException {
 		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, obfuscatedNamespace, deobfuscatedNamespace);
-		Enigma enigma = Enigma.builder().build();
+		Enigma enigma = createEnigma();
 
 		var readService = CommandsUtil.getReader(enigma, sourceFile);
 		var writeService = CommandsUtil.getWriter(enigma, resultFile);
