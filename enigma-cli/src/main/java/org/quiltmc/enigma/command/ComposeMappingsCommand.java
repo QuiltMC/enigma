@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingsReader;
 import org.quiltmc.enigma.util.MappingOperations;
@@ -48,14 +49,15 @@ public class ComposeMappingsCommand extends Command {
 
 	public static void run(Path leftFile, Path rightFile, Path resultFile, String keepMode, @Nullable String obfuscatedNamespace, @Nullable String deobfuscatedNamespace) throws IOException, MappingParseException {
 		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, obfuscatedNamespace, deobfuscatedNamespace);
+		Enigma enigma = createEnigma();
 
-		MappingsReader leftReader = CommandsUtil.getReader(createEnigma(), leftFile);
+		MappingsReader leftReader = CommandsUtil.getReader(enigma, leftFile);
 		EntryTree<EntryMapping> left = leftReader.read(leftFile);
-		MappingsReader rightReader = CommandsUtil.getReader(createEnigma(), rightFile);
+		MappingsReader rightReader = CommandsUtil.getReader(enigma, rightFile);
 		EntryTree<EntryMapping> right = rightReader.read(rightFile);
 		EntryTree<EntryMapping> result = MappingOperations.compose(left, right, keepMode.equals("left") || keepMode.equals("both"), keepMode.equals("right") || keepMode.equals("both"));
 
-		MappingsWriter writer = CommandsUtil.getWriter(createEnigma(), resultFile);
+		MappingsWriter writer = CommandsUtil.getWriter(enigma, resultFile);
 		Utils.delete(resultFile);
 		writer.write(result, resultFile, ProgressListener.createEmpty(), saveParameters);
 	}

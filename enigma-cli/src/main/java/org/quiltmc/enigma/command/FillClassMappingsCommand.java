@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -55,15 +56,16 @@ public class FillClassMappingsCommand extends Command {
 	public static void run(Path jar, Path source, Path result, boolean fillAll, @Nullable String obfuscatedNamespace, @Nullable String deobfuscatedNamespace) throws Exception {
 		boolean debug = shouldDebug(new FillClassMappingsCommand().getName());
 		JarIndex jarIndex = loadJar(jar);
+		Enigma enigma = createEnigma();
 
 		Logger.info("Reading mappings...");
 		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, obfuscatedNamespace, deobfuscatedNamespace);
-		EntryTree<EntryMapping> sourceMappings = readMappings(createEnigma(), source, ProgressListener.createEmpty());
+		EntryTree<EntryMapping> sourceMappings = readMappings(enigma, source, ProgressListener.createEmpty());
 
 		EntryTree<EntryMapping> resultMappings = exec(jarIndex, sourceMappings, fillAll, debug);
 
 		Logger.info("Writing mappings...");
-		MappingsWriter writer = CommandsUtil.getWriter(createEnigma(), result);
+		MappingsWriter writer = CommandsUtil.getWriter(enigma, result);
 		Utils.delete(result);
 		writer.write(resultMappings, result, ProgressListener.createEmpty(), saveParameters);
 

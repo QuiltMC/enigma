@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -45,12 +46,13 @@ public class ConvertMappingsCommand extends Command {
 
 	public static void run(Path source, Path output, @Nullable String obfuscatedNamespace, @Nullable String deobfuscatedNamespace) throws MappingParseException, IOException {
 		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, obfuscatedNamespace, deobfuscatedNamespace);
+		Enigma enigma = createEnigma();
 
-		MappingsReader reader = CommandsUtil.getReader(createEnigma(), source);
+		MappingsReader reader = CommandsUtil.getReader(enigma, source);
 		EntryTree<EntryMapping> mappings = reader.read(source);
 
 		Utils.delete(output);
-		MappingsWriter writer = CommandsUtil.getWriter(createEnigma(), output);
+		MappingsWriter writer = CommandsUtil.getWriter(enigma, output);
 		writer.write(mappings, output, ProgressListener.createEmpty(), saveParameters);
 	}
 }

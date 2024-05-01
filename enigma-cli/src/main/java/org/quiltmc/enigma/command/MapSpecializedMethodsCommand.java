@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.MappingTranslator;
@@ -56,15 +57,16 @@ public class MapSpecializedMethodsCommand extends Command {
 	public static void run(Path jar, Path sourcePath, Path output, @Nullable String obfuscatedNamespace, @Nullable String deobfuscatedNamespace) throws IOException, MappingParseException {
 		boolean debug = shouldDebug(new MapSpecializedMethodsCommand().getName());
 		JarIndex jarIndex = loadJar(jar);
+		Enigma enigma = createEnigma();
 
 		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, obfuscatedNamespace, deobfuscatedNamespace);
-		MappingsReader reader = CommandsUtil.getReader(createEnigma(), sourcePath);
+		MappingsReader reader = CommandsUtil.getReader(enigma, sourcePath);
 		EntryTree<EntryMapping> source = reader.read(sourcePath);
 
 		EntryTree<EntryMapping> result = run(jarIndex, source, debug);
 
 		Utils.delete(output);
-		MappingsWriter writer = CommandsUtil.getWriter(createEnigma(), output);
+		MappingsWriter writer = CommandsUtil.getWriter(enigma, output);
 		writer.write(result, output, saveParameters);
 
 		if (debug) {
