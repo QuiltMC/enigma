@@ -63,7 +63,7 @@ public class MapSpecializedMethodsCommandTest extends CommandTest {
 		Path resultFile = Files.createTempFile("mapSpecializedMethods", ".mappings");
 		MapSpecializedMethodsCommand.run(JAR, MAPPINGS, resultFile, null, null);
 
-		MappingsReader reader = CommandsUtil.getReader(Enigma.create(), resultFile);
+		MappingsReader reader = CommandsUtil.getReader(createEnigma(), resultFile);
 		EntryTree<EntryMapping> result = reader.read(resultFile, ProgressListener.createEmpty());
 
 		assertNotNull(result.findNode(BASE_CLASS));
