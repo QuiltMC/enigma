@@ -77,12 +77,12 @@ public final class TinyV2Writer implements MappingsWriter {
 	public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters parameters) {
 		String obfNamespace = parameters.obfuscatedNamespace();
 		if (obfNamespace == null) {
-			obfNamespace = "intermediary";
+			obfNamespace = "obfuscated";
 		}
 
 		String deobfNamespace = parameters.deobfuscatedNamespace();
 		if (deobfNamespace == null) {
-			deobfNamespace = "named";
+			deobfNamespace = "deobfuscated";
 		}
 
 		List<EntryTreeNode<EntryMapping>> classes = StreamSupport.stream(mappings.spliterator(), false)
