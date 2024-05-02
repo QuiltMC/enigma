@@ -38,17 +38,14 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
 
 public class Enigma {
 	public static final String NAME = "Enigma";
@@ -187,6 +184,8 @@ public class Enigma {
 		if (Files.isDirectory(path)) {
 			try {
 				final AtomicReference<Optional<File>> firstFile = new AtomicReference<>();
+				firstFile.set(Optional.empty());
+
 				Files.walkFileTree(path, new SimpleFileVisitor<>() {
 					@Override
 					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {

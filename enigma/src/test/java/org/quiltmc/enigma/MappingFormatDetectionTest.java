@@ -42,6 +42,7 @@ public class MappingFormatDetectionTest {
 				};
 			}
 
-			Assertions.assertEquals(expectedId, parsedFormat.get().getId());		}
+			Assertions.assertEquals(expectedId, parsedFormat.get().getId());
+		}
 	}
 }
