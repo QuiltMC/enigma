@@ -20,6 +20,10 @@ public class MappingFormatDetectionTest {
 		for (File file : Objects.requireNonNull(formatsDir.listFiles())) {
 			Optional<ReadWriteService> parsedFormat = enigma.getReadWriteService(file.toPath());
 			if (parsedFormat.isEmpty()) {
+				if (file.getName().equals("invalid_mapping.garbage")) {
+					continue;
+				}
+
 				Assertions.fail("Failed to detect format for " + file.getName());
 			}
 
