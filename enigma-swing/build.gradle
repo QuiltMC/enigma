@@ -19,9 +19,8 @@ dependencies {
 	testImplementation(testFixtures(project(':enigma')))
 }
 
-final String mainClassName = 'org.quiltmc.enigma.gui.Main'
 application {
-	mainClass = mainClassName
+	mainClass = 'org.quiltmc.enigma.gui.Main'
 	jar.manifest.attributes 'Main-Class': mainClass
 }
 
