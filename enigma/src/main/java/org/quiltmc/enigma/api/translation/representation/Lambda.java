@@ -17,7 +17,7 @@ import java.util.Objects;
 public record Lambda(String invokedName, MethodDescriptor invokedType, MethodDescriptor samMethodType, ParentedEntry<?> implMethod, MethodDescriptor instantiatedMethodType) implements Translatable {
 	@Override
 	public TranslateResult<Lambda> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
-		MethodEntry samMethod = new MethodEntry(this.getInterface(), this.invokedName, this.samMethodType);
+		MethodEntry samMethod = this.toSamMethod();
 		EntryMapping samMethodMapping = this.resolveMapping(resolver, mappings, samMethod);
 
 		return TranslateResult.of(
@@ -45,6 +45,10 @@ public record Lambda(String invokedName, MethodDescriptor invokedType, MethodDes
 
 	public ClassEntry getInterface() {
 		return this.invokedType.getReturnDesc().getTypeEntry();
+	}
+
+	public MethodEntry toSamMethod() {
+		return new MethodEntry(this.getInterface(), this.invokedName, this.samMethodType);
 	}
 
 	@Override

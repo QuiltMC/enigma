@@ -34,4 +34,9 @@ public class BaseClass extends SuperClass {
 	public int methodF() {
 		return 1;
 	}
+
+	// a(II)I
+	public int methodG(int a, int b) {
+		return a + b;
+	}
 }

@@ -19,14 +19,18 @@ import static org.hamcrest.Matchers.equalTo;
 public class TestInnerClassParameterStats {
 	private static final Path JAR = TestUtil.obfJar("inner_classes");
 
+	/**
+	 * Note: this test will break when parameters are added/removed from any input in the {@code inner_classes} package or the {@code Keep} class.
+	 * This is ok! Simply change the assertions for the new values.
+	 */
 	@Test
 	public void testInnerClassParameterStats() {
 		EnigmaProject project = openProject();
 		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), EnumSet.of(StatType.PARAMETERS), null, false);
-		// 5/8 total parameters in our six classes are non-mappable, meaning that we should get 0/3 parameters mapped
+		// 8/13 total parameters in our six classes are non-mappable, meaning that we should get 0/3 parameters mapped
 		// these non-mappable parameters come from non-static inner classes taking their enclosing class as a parameter
 		// they are currently manually excluded by a check in the stats generator
-		assertThat(stats.getMappable(StatType.PARAMETERS), equalTo(3));
+		assertThat(stats.getMappable(StatType.PARAMETERS), equalTo(5));
 		assertThat(stats.getMapped(StatType.PARAMETERS), equalTo(0));
 	}
 

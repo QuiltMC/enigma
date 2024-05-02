@@ -9,6 +9,7 @@ import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.validation.Message;
 import org.quiltmc.enigma.util.validation.ParameterizedMessage;
 import org.quiltmc.enigma.util.validation.ValidationContext;
@@ -174,13 +175,30 @@ public class TestMappingValidator {
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 	}
 
+	@RepeatedTest(value = 2, name = REPEATED_TEST_NAME)
+	public void testParameterNames() {
+		MethodEntry method = TestEntryFactory.newMethod("a", "a", "(II)I");
+
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newParameter(method, 1), new EntryMapping("param01"));
+
+		ValidationContext vc = TestUtil.newVC();
+		remapper.validatePutMapping(vc, TestEntryFactory.newParameter(method, 2), new EntryMapping("param01"));
+		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
+
+		remapper.putMapping(TestUtil.newVC(), TestEntryFactory.newParameter(method, 2), new EntryMapping("param02"));
+
+		vc = TestUtil.newVC();
+		remapper.validatePutMapping(vc, TestEntryFactory.newParameter(method, 1), new EntryMapping("param02"));
+		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
+	}
+
 	/**
 	 * Assert that the validation context contains the messages.
 	 *
 	 * @param vc validation context
 	 * @param messages the messages the validation context should contain
 	 */
-	private static void assertMessages(ValidationContext vc, Message... messages) {
+	public static void assertMessages(ValidationContext vc, Message... messages) {
 		assertThat(vc.getMessages().size(), is(messages.length));
 		for (int i = 0; i < messages.length; i++) {
 			ParameterizedMessage msg = vc.getMessages().get(i);

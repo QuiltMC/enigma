@@ -63,7 +63,8 @@ public class JarIndex implements JarIndexer {
 		BridgeMethodIndex bridgeMethodIndex = new BridgeMethodIndex(entryIndex, inheritanceIndex, referenceIndex);
 		PackageVisibilityIndex packageVisibilityIndex = new PackageVisibilityIndex();
 		EnclosingMethodIndex enclosingMethodIndex = new EnclosingMethodIndex();
-		return new JarIndex(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex, packageVisibilityIndex, enclosingMethodIndex);
+		LambdaIndex lambdaIndex = new LambdaIndex();
+		return new JarIndex(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex, packageVisibilityIndex, enclosingMethodIndex, lambdaIndex);
 	}
 
 	/**

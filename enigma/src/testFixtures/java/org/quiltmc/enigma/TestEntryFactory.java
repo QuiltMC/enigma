@@ -5,6 +5,7 @@ import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 public class TestEntryFactory {
@@ -26,6 +27,10 @@ public class TestEntryFactory {
 
 	public static MethodEntry newMethod(ClassEntry classEntry, String methodName, String methodSignature) {
 		return new MethodEntry(classEntry, methodName, new MethodDescriptor(methodSignature));
+	}
+
+	public static LocalVariableEntry newParameter(MethodEntry parent, int index) {
+		return new LocalVariableEntry(parent, index);
 	}
 
 	public static EntryReference<FieldEntry, MethodEntry> newFieldReferenceByMethod(FieldEntry fieldEntry, String callerClassName, String callerName, String callerSignature) {
