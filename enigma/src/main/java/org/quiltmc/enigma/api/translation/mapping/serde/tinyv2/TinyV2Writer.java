@@ -29,13 +29,10 @@ import java.util.List;
 import java.util.stream.StreamSupport;
 
 public final class TinyV2Writer implements MappingsWriter {
+	public static final MappingsWriter INSTANCE = new TinyV2Writer();
 	private static final String MINOR_VERSION = "0";
-	private final String obfHeader;
-	private final String deobfHeader;
 
-	public TinyV2Writer(String obfHeader, String deobfHeader) {
-		this.obfHeader = obfHeader;
-		this.deobfHeader = deobfHeader;
+	private TinyV2Writer() {
 	}
 
 	private static int getEntryKind(Entry<?> e) {
@@ -78,13 +75,23 @@ public final class TinyV2Writer implements MappingsWriter {
 
 	@Override
 	public void write(EntryTree<EntryMapping> mappings, MappingDelta<EntryMapping> delta, Path path, ProgressListener progress, MappingSaveParameters parameters) {
+		String obfNamespace = parameters.obfuscatedNamespace();
+		if (obfNamespace == null) {
+			obfNamespace = "obfuscated";
+		}
+
+		String deobfNamespace = parameters.deobfuscatedNamespace();
+		if (deobfNamespace == null) {
+			deobfNamespace = "deobfuscated";
+		}
+
 		List<EntryTreeNode<EntryMapping>> classes = StreamSupport.stream(mappings.spliterator(), false)
 				.filter(node -> node.getEntry() instanceof ClassEntry)
 				.sorted(mappingComparator())
 				.toList();
 
 		try (PrintWriter writer = new LfPrintWriter(Files.newBufferedWriter(path))) {
-			writer.println("tiny\t2\t" + MINOR_VERSION + "\t" + this.obfHeader + "\t" + this.deobfHeader);
+			writer.println("tiny\t2\t" + MINOR_VERSION + "\t" + obfNamespace + "\t" + deobfNamespace);
 
 			// no escape names
 

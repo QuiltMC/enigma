@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.gui.element;
 
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
+import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.NotificationManager;
@@ -18,6 +18,7 @@ import org.quiltmc.enigma.gui.dialog.SearchDialog;
 import org.quiltmc.enigma.gui.dialog.StatsDialog;
 import org.quiltmc.enigma.gui.dialog.decompiler.DecompilerSettingsDialog;
 import org.quiltmc.enigma.gui.dialog.keybind.ConfigureKeyBindsDialog;
+import org.quiltmc.enigma.gui.util.ExtensionFileFilter;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.LanguageUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
@@ -42,6 +43,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -222,7 +224,7 @@ public class MenuBar {
 
 		this.jarCloseItem.setEnabled(jarOpen);
 		this.openMappingsItem.setEnabled(jarOpen);
-		this.saveMappingsItem.setEnabled(jarOpen && this.gui.enigmaMappingsFileChooser.getSelectedFile() != null && connectionState != ConnectionState.CONNECTED);
+		this.saveMappingsItem.setEnabled(jarOpen && this.gui.mappingsFileChooser.getSelectedFile() != null && connectionState != ConnectionState.CONNECTED);
 		this.saveMappingsAsMenu.setEnabled(jarOpen);
 		this.closeMappingsItem.setEnabled(jarOpen);
 		this.reloadMappingsItem.setEnabled(jarOpen);
@@ -324,7 +326,7 @@ public class MenuBar {
 	}
 
 	private void onSaveMappingsClicked() {
-		this.gui.getController().saveMappings(this.gui.enigmaMappingsFileChooser.getSelectedFile().toPath());
+		this.gui.getController().saveMappings(this.gui.mappingsFileChooser.getSelectedFile().toPath());
 	}
 
 	private void openMappingsDiscardPrompt(Runnable then) {
@@ -469,16 +471,24 @@ public class MenuBar {
 	}
 
 	private void onOpenMappingsClicked() {
-		this.gui.enigmaMappingsFileChooser.setCurrentDirectory(new File(Config.main().stats.lastSelectedDir.value()));
-		if (this.gui.enigmaMappingsFileChooser.showOpenDialog(this.gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
-			File selectedFile = this.gui.enigmaMappingsFileChooser.getSelectedFile();
-			Config.main().stats.lastSelectedDir.setValue(this.gui.enigmaMappingsFileChooser.getCurrentDirectory().toString(), true);
+		this.gui.mappingsFileChooser.setCurrentDirectory(new File(Config.main().stats.lastSelectedDir.value()));
 
-			MappingFormat format = MappingFormat.parseFromFile(selectedFile.toPath());
-			if (format.getReader() != null) {
-				this.gui.getController().openMappings(format, selectedFile.toPath());
+		List<ReadWriteService> types = this.gui.getController().getEnigma().getReadWriteServices().stream().filter(ReadWriteService::supportsReading).toList();
+		ExtensionFileFilter.setupFileChooser(this.gui, this.gui.mappingsFileChooser, types.toArray(new ReadWriteService[0]));
+
+		if (this.gui.mappingsFileChooser.showOpenDialog(this.gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
+			File selectedFile = this.gui.mappingsFileChooser.getSelectedFile();
+			Config.main().stats.lastSelectedDir.setValue(this.gui.mappingsFileChooser.getCurrentDirectory().toString(), true);
+
+			Optional<ReadWriteService> format = this.gui.getController().getEnigma().getReadWriteService(selectedFile.toPath());
+			if (format.isPresent() && format.get().supportsReading()) {
+				this.gui.getController().openMappings(format.get(), selectedFile.toPath());
 			} else {
-				String nonParseableMessage = I18n.translateFormatted("menu.file.open.non_parseable", I18n.translate("mapping_format." + format.name().toLowerCase(Locale.ROOT)));
+				String nonParseableMessage = I18n.translateFormatted("menu.file.open.non_parseable.unsupported_format", selectedFile);
+				if (format.isPresent()) {
+					nonParseableMessage = I18n.translateFormatted("menu.file.open.non_parseable", I18n.translate("mapping_format." + format.get().getId().toLowerCase(Locale.ROOT)));
+				}
+
 				JOptionPane.showMessageDialog(this.gui.getFrame(), nonParseableMessage, I18n.translate("menu.file.open.cannot_open"), JOptionPane.ERROR_MESSAGE);
 			}
 		}
@@ -545,19 +555,22 @@ public class MenuBar {
 	}
 
 	private static void prepareSaveMappingsAsMenu(JMenu saveMappingsAsMenu, JMenuItem saveMappingsItem, Gui gui) {
-		for (MappingFormat format : MappingFormat.values()) {
-			if (format.getWriter() != null) {
-				JMenuItem item = new JMenuItem(I18n.translate("mapping_format." + format.name().toLowerCase(Locale.ROOT)));
+		for (ReadWriteService format : gui.getController().getEnigma().getReadWriteServices()) {
+			if (format.supportsWriting()) {
+				JMenuItem item = new JMenuItem(I18n.translate("mapping_format." + format.getId().toLowerCase(Locale.ROOT)));
 				item.addActionListener(event -> {
-					// TODO: Use a specific file chooser for it
-					if (gui.enigmaMappingsFileChooser.getCurrentDirectory() == null) {
-						gui.enigmaMappingsFileChooser.setCurrentDirectory(new File(Config.main().stats.lastSelectedDir.value()));
+					JFileChooser fileChooser = gui.mappingsFileChooser;
+					ExtensionFileFilter.setupFileChooser(gui, fileChooser, format);
+
+					if (fileChooser.getCurrentDirectory() == null) {
+						fileChooser.setCurrentDirectory(new File(Config.main().stats.lastSelectedDir.value()));
 					}
 
-					if (gui.enigmaMappingsFileChooser.showSaveDialog(gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
-						gui.getController().saveMappings(gui.enigmaMappingsFileChooser.getSelectedFile().toPath(), format);
+					if (fileChooser.showSaveDialog(gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
+						Path savePath = ExtensionFileFilter.getSavePath(fileChooser);
+						gui.getController().saveMappings(savePath, format);
 						saveMappingsItem.setEnabled(true);
-						Config.main().stats.lastSelectedDir.setValue(gui.enigmaMappingsFileChooser.getCurrentDirectory().toString(), true);
+						Config.main().stats.lastSelectedDir.setValue(fileChooser.getCurrentDirectory().toString());
 					}
 				});
 				saveMappingsAsMenu.add(item);

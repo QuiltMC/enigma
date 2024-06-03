@@ -15,7 +15,7 @@ import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
 import org.quiltmc.enigma.api.source.Decompiler;
-import org.quiltmc.enigma.api.source.DecompilerService;
+import org.quiltmc.enigma.api.service.DecompilerService;
 import org.quiltmc.enigma.api.source.SourceSettings;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;

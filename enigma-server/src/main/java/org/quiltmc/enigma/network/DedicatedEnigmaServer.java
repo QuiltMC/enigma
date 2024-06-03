@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.network;
 
+import com.google.common.io.MoreFiles;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
@@ -9,8 +10,8 @@ import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
+import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.util.Utils;
@@ -21,6 +22,7 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -28,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 public class DedicatedEnigmaServer extends EnigmaServer {
 	private final EnigmaProfile profile;
-	private final MappingFormat mappingFormat;
+	private final ReadWriteService readWriteService;
 	private final Path mappingsFile;
 	private final PrintWriter log;
 	private final BlockingQueue<Runnable> tasks = new LinkedBlockingDeque<>();
@@ -37,7 +39,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 			byte[] jarChecksum,
 			char[] password,
 			EnigmaProfile profile,
-			MappingFormat mappingFormat,
+			ReadWriteService readWriteService,
 			Path mappingsFile,
 			PrintWriter log,
 			EntryRemapper mappings,
@@ -45,7 +47,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 	) {
 		super(jarChecksum, password, mappings, port);
 		this.profile = profile;
-		this.mappingFormat = mappingFormat;
+		this.readWriteService = readWriteService;
 		this.mappingsFile = mappingsFile;
 		this.log = log;
 	}
@@ -115,18 +117,22 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 			Logger.info("Indexing Jar...");
 			EnigmaProject project = enigma.openJar(jar, new ClasspathClassProvider(), ProgressListener.createEmpty());
 
-			MappingFormat mappingFormat = MappingFormat.parseFromFile(mappingsFile);
+			Optional<ReadWriteService> readWriteService = enigma.getReadWriteService(mappingsFile);
+			if (readWriteService.isEmpty()) {
+				throw new IOException("Cannot read mapping file: unknown file type \"" + MoreFiles.getFileExtension(mappingsFile) + "\"!");
+			}
+
 			EntryRemapper mappings;
 			if (!Files.exists(mappingsFile)) {
 				mappings = EntryRemapper.mapped(project.getJarIndex(), project.getMappingsIndex(), project.getRemapper().getJarProposedMappings(), new HashEntryTree<>(), enigma.getNameProposalServices());
 			} else {
 				Logger.info("Reading mappings...");
-				mappings = EntryRemapper.mapped(project.getJarIndex(), project.getMappingsIndex(), project.getRemapper().getJarProposedMappings(), mappingFormat.read(mappingsFile), enigma.getNameProposalServices());
+				mappings = EntryRemapper.mapped(project.getJarIndex(), project.getMappingsIndex(), project.getRemapper().getJarProposedMappings(), readWriteService.get().read(mappingsFile), enigma.getNameProposalServices());
 			}
 
 			PrintWriter log = new PrintWriter(Files.newBufferedWriter(logFile));
 
-			server = new DedicatedEnigmaServer(checksum, password, profile, mappingFormat, mappingsFile, log, mappings, port);
+			server = new DedicatedEnigmaServer(checksum, password, profile, readWriteService.get(), mappingsFile, log, mappings, port);
 			server.start();
 			Logger.info("Server started");
 		} catch (IOException | MappingParseException e) {
@@ -154,7 +160,7 @@ public class DedicatedEnigmaServer extends EnigmaServer {
 	}
 
 	private void saveMappings() {
-		this.mappingFormat.write(this.getRemapper().getMappings(), this.getRemapper().takeMappingDelta(), this.mappingsFile, ProgressListener.createEmpty(), this.profile.getMappingSaveParameters());
+		this.readWriteService.write(this.getRemapper().getMappings(), this.getRemapper().takeMappingDelta(), this.mappingsFile, ProgressListener.createEmpty(), this.profile.getMappingSaveParameters());
 		this.log.flush();
 	}
 

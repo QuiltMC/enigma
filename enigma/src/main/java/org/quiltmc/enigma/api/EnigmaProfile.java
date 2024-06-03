@@ -33,7 +33,7 @@ import java.util.Optional;
 public final class EnigmaProfile {
 	public static final EnigmaProfile EMPTY = new EnigmaProfile(new ServiceContainer(Map.of()));
 
-	private static final MappingSaveParameters DEFAULT_MAPPING_SAVE_PARAMETERS = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
+	private static final MappingSaveParameters DEFAULT_MAPPING_SAVE_PARAMETERS = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, null, null);
 	private static final Gson GSON = new GsonBuilder()
 			.registerTypeAdapter(ServiceContainer.class, (JsonDeserializer<ServiceContainer>) EnigmaProfile::loadServiceContainer)
 			.create();
@@ -96,11 +96,11 @@ public final class EnigmaProfile {
 	}
 
 	public List<Service> getServiceProfiles(EnigmaServiceType<?> serviceType) {
-		return this.serviceProfiles.get(serviceType.key);
+		return this.serviceProfiles.get(serviceType.key());
 	}
 
 	public MappingSaveParameters getMappingSaveParameters() {
-		//noinspection ConstantConditions
+		//noinspection ConstantConditions - this field is parsed by GSON
 		return this.mappingSaveParameters == null ? EnigmaProfile.DEFAULT_MAPPING_SAVE_PARAMETERS : this.mappingSaveParameters;
 	}
 
@@ -109,6 +109,12 @@ public final class EnigmaProfile {
 		return this;
 	}
 
+	/**
+	 * Resolves the path relative to the parent directory of this profile.
+	 * If the profile was not loaded from a file, the path is returned as-is.
+	 * @param path the path to resolve
+	 * @return the resolved path
+	 */
 	public Path resolvePath(Path path) {
 		if (this.sourcePath == null) {
 			return path;

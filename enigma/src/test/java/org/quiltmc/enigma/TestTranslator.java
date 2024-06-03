@@ -7,7 +7,6 @@ import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,7 +29,7 @@ public class TestTranslator {
 	public static void beforeClass() throws Exception {
 		enigma = Enigma.create();
 		project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
-		mappings = MappingFormat.ENIGMA_FILE.read(
+		mappings = enigma.getReadWriteService(Path.of("/translation.mappings")).get().read(
 				TestUtil.getResource("/translation.mappings"),
 				ProgressListener.createEmpty());
 		project.setMappings(mappings, ProgressListener.createEmpty());

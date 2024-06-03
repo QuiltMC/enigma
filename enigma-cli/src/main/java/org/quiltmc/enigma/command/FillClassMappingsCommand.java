@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -15,6 +16,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.util.Utils;
 import org.tinylog.Logger;
 
+import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -23,8 +25,10 @@ public class FillClassMappingsCommand extends Command {
 		super(Argument.INPUT_JAR.required(),
 				Argument.INPUT_MAPPINGS.required(),
 				Argument.MAPPING_OUTPUT.required(),
-				Argument.OUTPUT_MAPPING_FORMAT.required(),
-				Argument.FILL_ALL.optional());
+				Argument.FILL_ALL.optional(),
+				Argument.OBFUSCATED_NAMESPACE.optional(),
+				Argument.DEOBFUSCATED_NAMESPACE.optional()
+		);
 	}
 
 	@Override
@@ -32,10 +36,11 @@ public class FillClassMappingsCommand extends Command {
 		Path inJar = getReadablePath(this.getArg(args, 0));
 		Path source = getReadablePath(this.getArg(args, 1));
 		Path result = getWritablePath(this.getArg(args, 2));
-		String resultFormat = this.getArg(args, 3);
-		boolean fillAll = Boolean.parseBoolean(this.getArg(args, 4));
+		boolean fillAll = Boolean.parseBoolean(this.getArg(args, 3));
+		String obfuscatedNamespace = this.getArg(args, 4);
+		String deobfuscatedNamespace = this.getArg(args, 5);
 
-		run(inJar, source, result, resultFormat, fillAll);
+		run(inJar, source, result, fillAll, obfuscatedNamespace, deobfuscatedNamespace);
 	}
 
 	@Override
@@ -48,19 +53,20 @@ public class FillClassMappingsCommand extends Command {
 		return "Adds empty mappings for classes missing in the input file, but whose parent or ancestors, do have names";
 	}
 
-	public static void run(Path jar, Path source, Path result, String resultFormat, boolean fillAll) throws Exception {
+	public static void run(Path jar, Path source, Path result, boolean fillAll, @Nullable String obfuscatedNamespace, @Nullable String deobfuscatedNamespace) throws Exception {
 		boolean debug = shouldDebug(new FillClassMappingsCommand().getName());
 		JarIndex jarIndex = loadJar(jar);
+		Enigma enigma = createEnigma();
 
 		Logger.info("Reading mappings...");
-		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
-		EntryTree<EntryMapping> sourceMappings = readMappings(source, ProgressListener.createEmpty());
+		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, obfuscatedNamespace, deobfuscatedNamespace);
+		EntryTree<EntryMapping> sourceMappings = readMappings(enigma, source, ProgressListener.createEmpty());
 
 		EntryTree<EntryMapping> resultMappings = exec(jarIndex, sourceMappings, fillAll, debug);
 
 		Logger.info("Writing mappings...");
+		MappingsWriter writer = CommandsUtil.getWriter(enigma, result);
 		Utils.delete(result);
-		MappingsWriter writer = MappingCommandsUtil.getWriter(resultFormat);
 		writer.write(resultMappings, result, ProgressListener.createEmpty(), saveParameters);
 
 		if (debug) {

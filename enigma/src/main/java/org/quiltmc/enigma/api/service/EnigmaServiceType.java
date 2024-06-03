@@ -1,14 +1,37 @@
 package org.quiltmc.enigma.api.service;
 
-public final class EnigmaServiceType<T extends EnigmaService> {
-	public final String key;
-
-	private EnigmaServiceType(String key) {
-		this.key = key;
+public record EnigmaServiceType<T extends EnigmaService>(
+		String key,
+		boolean activeByDefault
+) {
+	public static <T extends EnigmaService> EnigmaServiceType<T> create(String key, boolean activeByDefault) {
+		return new EnigmaServiceType<>(key, activeByDefault);
 	}
 
 	public static <T extends EnigmaService> EnigmaServiceType<T> create(String key) {
-		return new EnigmaServiceType<>(key);
+		return new EnigmaServiceType<>(key, false);
+	}
+
+	/**
+	 * The unique key of this service type.
+	 */
+	@Override
+	public String key() {
+		return this.key;
+	}
+
+	/**
+	 * Whether this service type is active by default.
+	 * If {@code true}, this service type will be active without being explicitly enabled in the profile.
+	 */
+	@Override
+	public boolean activeByDefault() {
+		return this.activeByDefault;
+	}
+
+	@Override
+	public String toString() {
+		return this.key;
 	}
 
 	@Override

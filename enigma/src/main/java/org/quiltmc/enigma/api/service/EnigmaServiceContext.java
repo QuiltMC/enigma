@@ -21,6 +21,12 @@ public interface EnigmaServiceContext<T extends EnigmaService> {
 		return this.getArgument(key).flatMap(e -> e.right());
 	}
 
+	/**
+	 * Resolves the path relative to the parent directory of the loaded {@link org.quiltmc.enigma.api.EnigmaProfile enigma profile}.
+	 * If there is no profile or the profile was not loaded from a file, the path is returned as-is.
+	 * @param path the path to resolve
+	 * @return the resolved path
+	 */
 	default Path getPath(String path) {
 		return Path.of(path);
 	}

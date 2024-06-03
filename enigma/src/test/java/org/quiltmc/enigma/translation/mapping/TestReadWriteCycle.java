@@ -1,10 +1,12 @@
 package org.quiltmc.enigma.translation.mapping;
 
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.serde.FileType;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
@@ -19,12 +21,14 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Predicate;
 
 /**
  * Tests that a MappingFormat can write out a fixed set of mappings and read them back without losing any information.
  */
 public class TestReadWriteCycle {
-	private final MappingSaveParameters parameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
+	private final MappingSaveParameters parameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, null, null);
+	private final Enigma enigma = Enigma.create();
 
 	private final Pair<ClassEntry, EntryMapping> testClazz = new Pair<>(
 			new ClassEntry("a/b/c"),
@@ -55,7 +59,7 @@ public class TestReadWriteCycle {
 		mappings.insert(mappingPair.a(), mappingPair.b());
 	}
 
-	private void testReadWriteCycle(MappingFormat mappingFormat, String tmpNameSuffix) throws IOException, MappingParseException {
+	private void testReadWriteCycle(ReadWriteService readWriteService, String tmpNameSuffix) throws IOException, MappingParseException {
 		//construct some known mappings to test with
 		EntryTree<EntryMapping> testMappings = new HashEntryTree<>();
 		this.insertMapping(testMappings, this.testClazz);
@@ -73,10 +77,10 @@ public class TestReadWriteCycle {
 		File tempFile = File.createTempFile("readWriteCycle", tmpNameSuffix);
 		tempFile.delete(); //remove the auto created file
 
-		mappingFormat.write(testMappings, tempFile.toPath(), ProgressListener.createEmpty(), this.parameters);
+		readWriteService.write(testMappings, tempFile.toPath(), ProgressListener.createEmpty(), this.parameters);
 		Assertions.assertTrue(tempFile.exists(), "Written file not created");
 
-		EntryTree<EntryMapping> loadedMappings = mappingFormat.read(tempFile.toPath(), ProgressListener.createEmpty());
+		EntryTree<EntryMapping> loadedMappings = readWriteService.read(tempFile.toPath(), ProgressListener.createEmpty());
 
 		Assertions.assertTrue(loadedMappings.contains(this.testClazz.a()), "Loaded mappings don't contain testClazz");
 		Assertions.assertTrue(loadedMappings.contains(this.testField1.a()), "Loaded mappings don't contain testField1");
@@ -101,21 +105,26 @@ public class TestReadWriteCycle {
 
 	@Test
 	public void testEnigmaFile() throws IOException, MappingParseException {
-		this.testReadWriteCycle(MappingFormat.ENIGMA_FILE, ".enigma");
+		this.testReadWriteCycle(this.getService(file -> file.getExtensions().contains("mapping") && !file.isDirectory()), ".mapping");
 	}
 
 	@Test
 	public void testEnigmaDir() throws IOException, MappingParseException {
-		this.testReadWriteCycle(MappingFormat.ENIGMA_DIRECTORY, ".tmp");
+		this.testReadWriteCycle(this.getService(file -> file.getExtensions().contains("mapping") && file.isDirectory()), ".tmp");
 	}
 
 	@Test
 	public void testEnigmaZip() throws IOException, MappingParseException {
-		this.testReadWriteCycle(MappingFormat.ENIGMA_ZIP, ".zip");
+		this.testReadWriteCycle(this.getService(file -> file.getExtensions().contains("zip")), ".zip");
 	}
 
 	@Test
 	public void testTinyV2() throws IOException, MappingParseException {
-		this.testReadWriteCycle(MappingFormat.TINY_V2, ".tiny");
+		this.testReadWriteCycle(this.getService(file -> file.getExtensions().contains("tiny")), ".tiny");
+	}
+
+	@SuppressWarnings("all")
+	private ReadWriteService getService(Predicate<FileType> predicate) {
+		return this.enigma.getReadWriteService(this.enigma.getSupportedFileTypes().stream().filter(predicate).findFirst().get()).get();
 	}
 }

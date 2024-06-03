@@ -2,7 +2,17 @@ package org.quiltmc.enigma.api.translation.mapping.serde;
 
 import com.google.gson.annotations.SerializedName;
 
-public record MappingSaveParameters(@SerializedName("file_name_format") MappingFileNameFormat fileNameFormat, @SerializedName("write_proposed_names") boolean writeProposedNames) {
+import javax.annotation.Nullable;
+
+public record MappingSaveParameters(
+		@SerializedName("file_name_format") MappingFileNameFormat fileNameFormat,
+		@SerializedName("write_proposed_names") boolean writeProposedNames,
+		@SerializedName("obfuscated_namespace") @Nullable String obfuscatedNamespace,
+		@SerializedName("deobfuscated_namespace") @Nullable String deobfuscatedNamespace
+) {
+	/**
+	 * Controls how individual files will be named in directory-based mapping formats.
+	 */
 	@Override
 	public MappingFileNameFormat fileNameFormat() {
 		return this.fileNameFormat;
@@ -16,5 +26,23 @@ public record MappingSaveParameters(@SerializedName("file_name_format") MappingF
 	@Override
 	public boolean writeProposedNames() {
 		return this.writeProposedNames;
+	}
+
+	/**
+	 * The namespace of the mappings' obfuscated names. This will be saved in certain mapping formats.
+	 * If null, the format will define a default namespace.
+	 */
+	@Override
+	public String obfuscatedNamespace() {
+		return this.obfuscatedNamespace;
+	}
+
+	/**
+	 * The namespace of the mappings' deobfuscated names. This will be saved in certain mapping formats.
+	 * If null, the format will define a default namespace.
+	 */
+	@Override
+	public String deobfuscatedNamespace() {
+		return this.deobfuscatedNamespace;
 	}
 }

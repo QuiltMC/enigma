@@ -17,18 +17,6 @@ public enum Argument {
 		"""
 				A path to the right file or folder to read mappings from, used in commands which take two mapping inputs."""
 	),
-	OUTPUT_MAPPING_FORMAT("<output-mapping-format>",
-		"""
-				The mapping format to use when writing output mappings. Allowed values are (case-insensitive):
-				- TINY_V2:from_namespace:to_namespace (ex: tiny_v2:intermediary:named)
-				- ENIGMA_FILE
-				- ENIGMA_DIRECTORY
-				- ENIGMA_ZIP
-				- SRG_FILE
-				- RECAF
-
-				Proguard is not a valid output format, as writing is unsupported."""
-	),
 	MAPPING_OUTPUT("<mapping-output>",
 		"""
 				A path to the file or folder to write mappings to. Will be created if missing."""
@@ -60,6 +48,14 @@ public enum Argument {
 	ENIGMA_PROFILE("<enigma-profile>",
 		"""
 				A path to an Enigma profile JSON file, used to apply things like plugins."""
+	),
+	OBFUSCATED_NAMESPACE("<obfuscated-namespace>",
+		"""
+				The namespace to use for obfuscated names when writing mappings. Only used in certain mapping formats."""
+	),
+	DEOBFUSCATED_NAMESPACE("<deobfuscated-namespace>",
+		"""
+				The namespace to use for deobfuscated names when writing mappings. Only used in certain mapping formats."""
 	);
 
 	private final String displayForm;

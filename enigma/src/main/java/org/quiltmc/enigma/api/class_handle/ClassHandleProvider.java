@@ -7,7 +7,7 @@ import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.source.Decompiler;
-import org.quiltmc.enigma.api.source.DecompilerService;
+import org.quiltmc.enigma.api.service.DecompilerService;
 import org.quiltmc.enigma.api.source.Source;
 import org.quiltmc.enigma.api.source.SourceIndex;
 import org.quiltmc.enigma.api.source.SourceSettings;

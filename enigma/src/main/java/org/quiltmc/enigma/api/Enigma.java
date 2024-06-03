@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.api;
 
+import com.google.common.io.MoreFiles;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.service.EnigmaService;
@@ -13,8 +14,10 @@ import org.quiltmc.enigma.api.class_provider.CombiningClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
 import org.quiltmc.enigma.api.service.NameProposalService;
+import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.serde.FileType;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
@@ -24,9 +27,16 @@ import org.quiltmc.enigma.util.Utils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableListMultimap;
 import org.objectweb.asm.Opcodes;
+import org.tinylog.Logger;
 
+import javax.annotation.Nullable;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +45,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Enigma {
 	public static final String NAME = "Enigma";
@@ -128,6 +139,96 @@ public class Enigma {
 		return proposalServices;
 	}
 
+	/**
+	 * {@return all registered read/write services}
+	 */
+	public List<ReadWriteService> getReadWriteServices() {
+		return this.services.get(ReadWriteService.TYPE);
+	}
+
+	/**
+	 * Gets all supported {@link FileType file types} for reading or writing.
+	 * @return the list of supported file types
+	 */
+	public List<FileType> getSupportedFileTypes() {
+		return this.getReadWriteServices().stream().map(ReadWriteService::getFileType).toList();
+	}
+
+	/**
+	 * Gets the {@link ReadWriteService read/write service} for the provided {@link FileType file type}.
+	 * @param fileType the file type to get the service for
+	 * @return the read/write service for the file type
+	 */
+	public Optional<ReadWriteService> getReadWriteService(FileType fileType) {
+		return this.getReadWriteServices().stream().filter(service -> service.getFileType().equals(fileType)).findFirst();
+	}
+
+	/**
+	 * Parses the {@link FileType file type} of the provided path and returns the corresponding {@link ReadWriteService read/write service}
+	 * @param path the path to analyse
+	 * @return the read/write service for the file type of the path
+	 */
+	public Optional<ReadWriteService> getReadWriteService(Path path) {
+		return this.parseFileType(path).flatMap(this::getReadWriteService);
+	}
+
+	/**
+	 * Determines the mapping format of the provided path. Checks all formats according to their {@link FileType} file extensions.
+	 * If the path is a directory, it will check the first file in the directory. For directories, defaults to the enigma mappings format.
+	 * @param path the path to analyse
+	 * @return the mapping format of the path
+	 */
+	public Optional<FileType> parseFileType(Path path) {
+		List<FileType> supportedTypes = this.getSupportedFileTypes();
+
+		if (Files.isDirectory(path)) {
+			try {
+				final AtomicReference<Optional<File>> firstFile = new AtomicReference<>();
+				firstFile.set(Optional.empty());
+
+				Files.walkFileTree(path, new SimpleFileVisitor<>() {
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+						super.visitFile(file, attrs);
+						if (attrs.isRegularFile()) {
+							firstFile.set(Optional.of(file.toFile()));
+							return FileVisitResult.TERMINATE;
+						}
+
+						return FileVisitResult.CONTINUE;
+					}
+				});
+
+				if (firstFile.get().isPresent()) {
+					for (FileType type : supportedTypes) {
+						if (!type.isDirectory()) {
+							continue;
+						}
+
+						String extension = MoreFiles.getFileExtension(firstFile.get().get().toPath()).toLowerCase();
+						if (type.getExtensions().contains(extension)) {
+							return Optional.of(type);
+						}
+					}
+				}
+
+				return this.getSupportedFileTypes().stream().filter(type -> type.isDirectory() && type.getExtensions().contains("mapping")).findFirst();
+			} catch (Exception e) {
+				Logger.error(e, "Failed to determine mapping format of directory {}", path);
+			}
+		} else {
+			String extension = MoreFiles.getFileExtension(path).toLowerCase();
+
+			for (FileType type : supportedTypes) {
+				if (type.getExtensions().contains(extension)) {
+					return Optional.of(type);
+				}
+			}
+		}
+
+		return Optional.empty();
+	}
+
 	public static class Builder {
 		private EnigmaProfile profile = EnigmaProfile.EMPTY;
 		private Iterable<EnigmaPlugin> plugins = ServiceLoader.load(EnigmaPlugin.class);
@@ -171,20 +272,30 @@ public class Enigma {
 		public <T extends EnigmaService> void registerService(EnigmaServiceType<T> serviceType, EnigmaServiceFactory<T> factory) {
 			List<EnigmaProfile.Service> serviceProfiles = this.profile.getServiceProfiles(serviceType);
 
+			if (serviceProfiles.isEmpty() && serviceType.activeByDefault()) {
+				this.putService(serviceType, factory.create(this.getServiceContext(null)));
+				return;
+			}
+
 			for (EnigmaProfile.Service serviceProfile : serviceProfiles) {
 				T service = factory.create(this.getServiceContext(serviceProfile));
 				if (serviceProfile.matches(service.getId())) {
-					this.services.put(serviceType, service);
+					this.putService(serviceType, service);
 					break;
 				}
 			}
 		}
 
-		private <T extends EnigmaService> EnigmaServiceContext<T> getServiceContext(EnigmaProfile.Service serviceProfile) {
+		private void putService(EnigmaServiceType<?> serviceType, EnigmaService service) {
+			this.validateRegistration(this.services.build(), serviceType, service);
+			this.services.put(serviceType, service);
+		}
+
+		private <T extends EnigmaService> EnigmaServiceContext<T> getServiceContext(@Nullable EnigmaProfile.Service serviceProfile) {
 			return new EnigmaServiceContext<>() {
 				@Override
 				public Optional<Either<String, List<String>>> getArgument(String key) {
-					return serviceProfile.getArgument(key);
+					return serviceProfile == null ? Optional.empty() : serviceProfile.getArgument(key);
 				}
 
 				@Override
@@ -204,6 +315,11 @@ public class Enigma {
 			for (EnigmaServiceType<?> type : builtServices.keySet()) {
 				List<EnigmaProfile.Service> serviceProfiles = this.profile.getServiceProfiles(type);
 
+				if (serviceProfiles.isEmpty() && type.activeByDefault()) {
+					orderedServices.putAll(type, builtServices.get(type));
+					continue;
+				}
+
 				for (EnigmaProfile.Service service : serviceProfiles) {
 					for (EnigmaService registeredService : builtServices.get(type)) {
 						if (service.matches(registeredService.getId())) {
@@ -214,7 +330,36 @@ public class Enigma {
 				}
 			}
 
-			return new EnigmaServices(orderedServices.build());
+			var builtOrderedServices = orderedServices.build();
+			return new EnigmaServices(builtOrderedServices);
+		}
+
+		private void validateRegistration(ImmutableListMultimap<EnigmaServiceType<?>, EnigmaService> services, EnigmaServiceType<?> serviceType, EnigmaService service) {
+			this.validatePluginId(service.getId());
+
+			for (EnigmaService otherService : services.get(serviceType)) {
+				// all services
+				if (service.getId().equals(otherService.getId())) {
+					throw new IllegalStateException("Multiple services of type " + serviceType + " have the same ID: \"" + service.getId() + "\"");
+				}
+
+				// read write services
+				if (service instanceof ReadWriteService rwService
+						&& otherService instanceof ReadWriteService otherRwService
+						&& rwService.getFileType().isDirectory() == otherRwService.getFileType().isDirectory()) {
+					for (String extension : rwService.getFileType().getExtensions()) {
+						if (otherRwService.getFileType().getExtensions().contains(extension)) {
+							throw new IllegalStateException("Multiple read/write services found supporting the same extension: " + extension + " (id: " + service.getId() + ", other id: " + otherService.getId() + ")");
+						}
+					}
+				}
+			}
+		}
+
+		private void validatePluginId(String id) {
+			if (!id.matches("([a-z0-9_]+):([a-z0-9_]+((/[a-z0-9_]+)+)?)")) {
+				throw new IllegalArgumentException("Invalid plugin id: \"" + id + "\"\n" + "Refer to Javadoc on EnigmaService#getId for how to properly form a service ID.");
+			}
 		}
 	}
 

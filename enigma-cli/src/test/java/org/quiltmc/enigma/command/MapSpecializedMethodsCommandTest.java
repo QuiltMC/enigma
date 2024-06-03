@@ -1,9 +1,10 @@
 package org.quiltmc.enigma.command;
 
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.TestUtil;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingsReader;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
@@ -60,9 +61,10 @@ public class MapSpecializedMethodsCommandTest extends CommandTest {
 	@Test
 	public void test() throws Exception {
 		Path resultFile = Files.createTempFile("mapSpecializedMethods", ".mappings");
-		MapSpecializedMethodsCommand.run(JAR, MAPPINGS, MappingFormat.ENIGMA_FILE.name(), resultFile);
+		MapSpecializedMethodsCommand.run(JAR, MAPPINGS, resultFile, null, null);
 
-		EntryTree<EntryMapping> result = MappingFormat.ENIGMA_FILE.read(resultFile, ProgressListener.createEmpty());
+		MappingsReader reader = CommandsUtil.getReader(Enigma.create(), resultFile);
+		EntryTree<EntryMapping> result = reader.read(resultFile, ProgressListener.createEmpty());
 
 		assertNotNull(result.findNode(BASE_CLASS));
 		assertEquals("foo", getName(result, BASE_FOO_1));

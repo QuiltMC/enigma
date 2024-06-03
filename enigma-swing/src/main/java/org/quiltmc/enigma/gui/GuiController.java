@@ -12,6 +12,7 @@ import org.quiltmc.enigma.api.analysis.tree.ClassInheritanceTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassReferenceTreeNode;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.tree.FieldReferenceTreeNode;
+import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.gui.dialog.CrashDialog;
 import org.quiltmc.enigma.gui.network.IntegratedEnigmaClient;
 import org.quiltmc.enigma.impl.analysis.IndexTreeBuilder;
@@ -39,7 +40,7 @@ import org.quiltmc.enigma.network.packet.c2s.EntryChangeC2SPacket;
 import org.quiltmc.enigma.network.packet.c2s.LoginC2SPacket;
 import org.quiltmc.enigma.network.packet.Packet;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
-import org.quiltmc.enigma.api.source.DecompilerService;
+import org.quiltmc.enigma.api.service.DecompilerService;
 import org.quiltmc.enigma.api.source.SourceIndex;
 import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
@@ -53,7 +54,6 @@ import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.util.EntryUtil;
 import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
@@ -70,6 +70,7 @@ import org.quiltmc.enigma.util.validation.ParameterizedMessage;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 import org.tinylog.Logger;
 
+import javax.annotation.Nullable;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import java.awt.Desktop;
@@ -98,7 +99,7 @@ public class GuiController implements ClientPacketHandler {
 	private StatsGenerator statsGenerator;
 
 	private Path loadedMappingPath;
-	private MappingFormat loadedMappingFormat;
+	private ReadWriteService readWriteService;
 
 	private ClassHandleProvider chp;
 
@@ -145,10 +146,16 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public CompletableFuture<Void> openMappings(Path path) {
-		return this.openMappings(MappingFormat.parseFromFile(path), path);
+		var readWriteService = this.enigma.getReadWriteService(path);
+		if (readWriteService.isEmpty() || !readWriteService.get().supportsReading()) {
+			Logger.error("Could not open mappings: no reader found for file \"{}\"", path);
+			return CompletableFuture.supplyAsync(() -> null);
+		}
+
+		return this.openMappings(readWriteService.get(), path);
 	}
 
-	public CompletableFuture<Void> openMappings(MappingFormat format, Path path) {
+	public CompletableFuture<Void> openMappings(ReadWriteService readWriteService, Path path) {
 		if (this.project == null || !new File(path.toUri()).exists()) {
 			return CompletableFuture.supplyAsync(() -> null);
 		}
@@ -159,10 +166,10 @@ public class GuiController implements ClientPacketHandler {
 
 		return ProgressDialog.runOffThread(this.gui, progress -> {
 			try {
-				EntryTree<EntryMapping> mappings = format.read(path);
+				EntryTree<EntryMapping> mappings = readWriteService.read(path);
 				this.project.setMappings(mappings, progress);
 
-				this.loadedMappingFormat = format;
+				this.readWriteService = readWriteService;
 				this.loadedMappingPath = path;
 
 				this.refreshClasses();
@@ -191,7 +198,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public CompletableFuture<Void> saveMappings(Path path) {
-		return this.saveMappings(path, this.loadedMappingFormat);
+		return this.saveMappings(path, this.readWriteService);
 	}
 
 	/**
@@ -202,14 +209,14 @@ public class GuiController implements ClientPacketHandler {
 	 * join on the future in gui, but rather call {@code thenXxx} methods.
 	 *
 	 * @param path the path of the save
-	 * @param format the format of the save
+	 * @param service the writer for the mapping type
 	 * @return the future of saving
 	 */
-	public CompletableFuture<Void> saveMappings(Path path, MappingFormat format) {
+	public CompletableFuture<Void> saveMappings(Path path, ReadWriteService service) {
 		if (this.project == null) {
 			return CompletableFuture.completedFuture(null);
-		} else if (format.getWriter() == null) {
-			String nonWriteableMessage = I18n.translateFormatted("menu.file.save.non_writeable", I18n.translate("mapping_format." + format.name().toLowerCase(Locale.ROOT)));
+		} else if (!service.supportsWriting()) {
+			String nonWriteableMessage = I18n.translateFormatted("menu.file.save.non_writeable", I18n.translate("mapping_format." + service.getId().toLowerCase(Locale.ROOT)));
 			JOptionPane.showMessageDialog(this.gui.getFrame(), nonWriteableMessage, I18n.translate("menu.file.save.cannot_save"), JOptionPane.ERROR_MESSAGE);
 			return CompletableFuture.completedFuture(null);
 		}
@@ -221,13 +228,13 @@ public class GuiController implements ClientPacketHandler {
 			MappingDelta<EntryMapping> delta = mapper.takeMappingDelta();
 			boolean saveAll = !path.equals(this.loadedMappingPath);
 
-			this.loadedMappingFormat = format;
+			this.readWriteService = service;
 			this.loadedMappingPath = path;
 
 			if (saveAll) {
-				format.write(mapper.getMappings(), path, progress, saveParameters);
+				service.write(mapper.getMappings(), path, progress, saveParameters);
 			} else {
-				format.write(mapper.getMappings(), delta, path, progress, saveParameters);
+				service.write(mapper.getMappings(), delta, path, progress, saveParameters);
 			}
 		});
 	}
@@ -247,16 +254,16 @@ public class GuiController implements ClientPacketHandler {
 		if (jarPath != null) {
 			this.closeJar();
 			CompletableFuture<Void> f = this.openJar(jarPath);
-			if (this.loadedMappingFormat != null && this.loadedMappingPath != null) {
-				f.whenComplete((v, t) -> this.openMappings(this.loadedMappingFormat, this.loadedMappingPath));
+			if (this.readWriteService != null && this.loadedMappingPath != null) {
+				f.whenComplete((v, t) -> this.openMappings(this.readWriteService, this.loadedMappingPath));
 			}
 		}
 	}
 
 	public void reloadMappings() {
-		if (this.loadedMappingFormat != null && this.loadedMappingPath != null) {
+		if (this.readWriteService != null && this.loadedMappingPath != null) {
 			this.closeMappings();
-			this.openMappings(this.loadedMappingFormat, this.loadedMappingPath);
+			this.openMappings(this.readWriteService, this.loadedMappingPath);
 		}
 	}
 
@@ -611,8 +618,14 @@ public class GuiController implements ClientPacketHandler {
 		return this.enigma;
 	}
 
+	@Nullable
 	public StatsGenerator getStatsGenerator() {
 		return this.statsGenerator;
+	}
+
+	@Nullable
+	public ReadWriteService getReadWriteService() {
+		return this.readWriteService;
 	}
 
 	public void createClient(String username, String ip, int port, char[] password) throws IOException {

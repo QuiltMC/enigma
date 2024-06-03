@@ -1,12 +1,14 @@
 package org.quiltmc.enigma.translation.mapping;
 
 import org.quiltmc.enigma.TestUtil;
+import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.serde.enigma.EnigmaMappingsReader;
-import org.quiltmc.enigma.api.translation.mapping.serde.tinyv2.TinyV2Writer;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.junit.jupiter.api.Test;
 
@@ -18,11 +20,12 @@ public class TestComments {
 
 	@Test
 	public void testParseAndWrite() throws IOException, MappingParseException {
-		MappingSaveParameters params = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false);
+		MappingSaveParameters params = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, "intermediary", "named");
 		EntryTree<EntryMapping> mappings = EnigmaMappingsReader.DIRECTORY.read(
 						DIRECTORY);
 
-		new TinyV2Writer("intermediary", "named")
-						.write(mappings, DIRECTORY.resolve("convertedtiny.tiny"), params);
+		Path file = DIRECTORY.resolve("convertedtiny.tiny");
+
+		Enigma.create().getReadWriteService(file).get().write(mappings, MappingDelta.added(mappings), file, ProgressListener.createEmpty(), params);
 	}
 }
