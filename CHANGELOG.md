@@ -169,3 +169,43 @@ As always, we've hard at work improving the beautiful software that helps mapper
 
 - fixed fractional scaling not applying to docker buttons
 - fixed ASM artifact expiring
+
+# 2.4.0
+
+Enigma `2.4` represents some huge internal changes that will have some big consequences for your plugins! These consequences may not be pretty, but they're for your own good. Trust us. The future is bright for Enigma plugins.
+
+With this release, we made quite a few changes in the direction of supporting more mapping formats through third-party libraries, in self-contained plugins to make sure not to complicate Enigma's internal spaghetti more.
+
+- made some major API changes!
+  - added a new service type: read/write services
+    - this service defines an optional reader and an optional writer for mappings
+    - each service is keyed by a unique file type, of which the uniqueness is determined by the extension
+    - this is a major breaking change to reading and writing, and will impact your plugins! make sure to test your plugins when updating to `2.4`.
+    - this change adds more modularity to enigma, which will be useful as we look to support libraries like Fabric's [mapping-io](https://github.com/FabricMc/Mapping-IO)
+  - added validation for plugin registration
+    - no two services of a given type can have the same ID
+    - plugins' IDs must strictly adhere to the rules defined in `EnigmaService` javadoc
+    - no two read/write services can support the exact same file type
+  - service types now support being active by default
+    - this type of service does not have to be explicitly defined in a profile to be active
+    - being defined explicitly in the profile will override this behaviour
+    - decompiler services and read/write services are active by default
+- added filters to the "open mappings" dialogue, making it easier to search for mappings
+  - this is based on a [PR to Fabric](https://github.com/FabricMC/Enigma/pull/532) by [Juuz](https://github.com/Juuxel), with some improvements
+  - supports filtering for multiple file types at once
+  - by default open mappings will still auto-detect the format, filtering for all supported file types
+- fixed issues with resolving matching entries
+  - this fixes some false positives leading to invalid mappings being written
+- added validation for lambda parameter name uniqueness
+  - this is yet another recompilability issue fixed!
+  - previously, you could rename a lambda parameter to a name that conflicted with other local variables, causing crashes when compiling the named code
+  - this applies recursively to all parameters, meaning that parameters of a top-level method can conflict with its internal lambdas. this ensures that all possible conflicts are eliminated
+- fixed a lot of scale issues!
+  - fixed highlight boxes not scaling
+  - fixed text outside of the code view not scaling on themes other than default
+  - fixed various small issues
+- fixed the identifier panel reporting the wrong type for some lambda and method parameters
+- added lots of new unit tests and documentation as always!
+- updated gradle and fixed deprecations
+- updated dependencies
+  - vineflower: `1.10.0` -> `1.10.1`
