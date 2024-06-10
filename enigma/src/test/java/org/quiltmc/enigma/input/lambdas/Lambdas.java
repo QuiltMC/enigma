@@ -21,7 +21,6 @@ public class Lambdas {
 		return provider.get();
 	}
 
-
 	public static void foo() {
 		consume(s -> consume(s1 -> {
 			System.out.println(s);
