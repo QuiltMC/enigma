@@ -2,6 +2,7 @@ package org.quiltmc.enigma.api.analysis.index.jar;
 
 import com.google.common.collect.ImmutableListMultimap;
 import org.quiltmc.enigma.api.analysis.ReferenceTargetType;
+import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.Lambda;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
@@ -43,7 +44,10 @@ public class LambdaIndex implements JarIndexer {
 					isLambda = nestedLambdas.containsValue(topLevel);
 
 					multilevelLambdasBuilder.put(topLevel, callerMethod);
-					if (topLevel == this.callers.getOrDefault(topLevel, null)) {
+
+					// note: non-synthetic methods (functional interface calls) should always be at the deepest level, so this shouldn't cause issues
+					AccessFlags access = index.getIndex(EntryIndex.class).getMethodAccess(topLevel);
+					if (topLevel == this.callers.getOrDefault(topLevel, null) || (access != null && !access.isSynthetic())) {
 						break;
 					}
 				}
