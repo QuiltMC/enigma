@@ -43,6 +43,9 @@ public class LambdaIndex implements JarIndexer {
 					isLambda = nestedLambdas.containsValue(topLevel);
 
 					multilevelLambdasBuilder.put(topLevel, callerMethod);
+					if (topLevel == this.callers.getOrDefault(topLevel, null)) {
+						break;
+					}
 				}
 			}
 		}
