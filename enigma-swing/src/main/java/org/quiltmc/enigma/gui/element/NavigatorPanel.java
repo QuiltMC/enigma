@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.element;
 
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
+import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.api.source.TokenType;
@@ -119,7 +120,7 @@ public class NavigatorPanel extends JPanel {
 	 */
 	public void addEntry(@Nullable Entry<?> entry) {
 		EnigmaProject project = this.gui.getController().getProject();
-		if (entry != null && project.isRenamable(entry) && project.isNavigable(entry)) {
+		if (entry != null && this.gui.isEditable(EditableType.fromEntry(entry)) && project.isRenamable(entry) && project.isNavigable(entry)) {
 			TokenType tokenType = this.getTokenType(entry);
 			List<Entry<?>> entries = this.entries.get(tokenType);
 
