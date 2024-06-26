@@ -140,7 +140,11 @@ public class JarIndex implements JarIndexer {
 	@Override
 	public void indexClass(ClassDefEntry classEntry) {
 		if (classEntry.isJre()) {
-			return;
+			if (classEntry.getFullName().equals("java/lang/Object") || classEntry.getFullName().equals("java/lang/Record")) {
+
+			}
+
+			//return;
 		}
 
 		for (ClassEntry interfaceEntry : classEntry.getInterfaces()) {
@@ -158,7 +162,7 @@ public class JarIndex implements JarIndexer {
 	@Override
 	public void indexField(FieldDefEntry fieldEntry) {
 		if (fieldEntry.getParent().isJre()) {
-			return;
+			//return;
 		}
 
 		this.indexers.forEach((key, indexer) -> indexer.indexField(fieldEntry));
@@ -167,10 +171,11 @@ public class JarIndex implements JarIndexer {
 		}
 	}
 
+	// todo why aren't JRE classes being run through this?
 	@Override
 	public void indexMethod(MethodDefEntry methodEntry) {
 		if (methodEntry.getParent().isJre()) {
-			return;
+			//return;
 		}
 
 		this.indexers.forEach((key, indexer) -> indexer.indexMethod(methodEntry));

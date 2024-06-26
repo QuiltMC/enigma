@@ -200,12 +200,17 @@ public class EnigmaProject {
 			String sig = obfMethodEntry.getDesc().toString();
 
 			// todo change this to a check if the method is declared in java.lang.Object or java.lang.Record
+			// working on this via indexing
 
-			for (Pair<String, String> pair : NON_RENAMABLE_METHODS) {
-				if (pair.a().equals(name) && pair.b().equals(sig)) {
-					return false;
-				}
+			if (this.jarIndex.getChildrenByClass().get(new ClassEntry("java/lang/Object")).contains(obfMethodEntry)) {
+				return false;
 			}
+
+//			for (Pair<String, String> pair : NON_RENAMABLE_METHODS) {
+//				if (pair.a().equals(name) && pair.b().equals(sig)) {
+//					return false;
+//				}
+//			}
 
 			ClassDefEntry parent = this.jarIndex.getIndex(EntryIndex.class).getDefinition(obfMethodEntry.getParent());
 			if (parent != null && parent.isEnum()
@@ -228,6 +233,21 @@ public class EnigmaProject {
 		}
 
 		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
+	}
+
+	public boolean isReservedMethod(MethodEntry obfMethod) {
+		String name = obfMethod.getName();
+		String sig = obfMethod.getDesc().toString();
+
+		// todo change this to a check if the method is declared in java.lang.Object or java.lang.Record
+
+		for (Pair<String, String> pair : NON_RENAMABLE_METHODS) {
+			if (pair.a().equals(name) && pair.b().equals(sig)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {

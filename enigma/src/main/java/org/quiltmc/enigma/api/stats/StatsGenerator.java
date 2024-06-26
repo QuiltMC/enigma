@@ -8,6 +8,7 @@ import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.ArgumentDescriptor;
 import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;
@@ -212,6 +213,26 @@ public class StatsGenerator {
 		}
 
 		return StatsResult.create(mappableCounts, unmappedCounts, false);
+	}
+
+	// todo
+	private boolean isCanonicalConstructor(ClassDefEntry record, MethodEntry entry, List<ParentedEntry<?>> children) {
+		List<FieldEntry> fields = children.stream().filter(e -> e instanceof FieldEntry).map(e -> (FieldEntry) e).toList();
+		MethodDescriptor descriptor = entry.getDesc();
+		List<ArgumentDescriptor> argumentDescs = descriptor.getArgumentDescs();
+
+		for (var desc : argumentDescs) {
+			grind:
+			for (var field : fields) {
+				if (field.getDesc().equals(desc)) {
+					break grind;
+				}
+			}
+
+			return false;
+		}
+
+		return false;
 	}
 
 	/**

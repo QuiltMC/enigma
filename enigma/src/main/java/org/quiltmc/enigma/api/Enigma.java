@@ -3,6 +3,7 @@ package org.quiltmc.enigma.api;
 import com.google.common.io.MoreFiles;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
+import org.quiltmc.enigma.api.class_provider.ClassLoaderClassProvider;
 import org.quiltmc.enigma.api.service.EnigmaService;
 import org.quiltmc.enigma.api.service.EnigmaServiceContext;
 import org.quiltmc.enigma.api.service.EnigmaServiceFactory;
@@ -75,7 +76,9 @@ public class Enigma {
 	public EnigmaProject openJar(Path path, ClassProvider libraryClassProvider, ProgressListener progress) throws IOException {
 		JarClassProvider jarClassProvider = new JarClassProvider(path);
 		JarIndex index = JarIndex.empty();
-		ClassProvider classProvider = new ObfuscationFixClassProvider(new CachingClassProvider(new CombiningClassProvider(jarClassProvider, libraryClassProvider)), index);
+		ClassLoaderClassProvider jreProvider = new ClassLoaderClassProvider(Object.class.getClassLoader());
+		CombiningClassProvider combined = new CombiningClassProvider(jarClassProvider, libraryClassProvider);
+		ClassProvider classProvider = new ObfuscationFixClassProvider(new CombiningClassProvider(jreProvider, new CachingClassProvider(combined)), index);
 		Set<String> scope = jarClassProvider.getClassNames();
 
 		index.indexJar(scope, classProvider, progress);
