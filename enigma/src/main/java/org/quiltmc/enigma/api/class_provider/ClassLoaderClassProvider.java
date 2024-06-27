@@ -17,23 +17,25 @@ public class ClassLoaderClassProvider implements ClassProvider {
 
 	@Nullable
 	@Override
+	@SuppressWarnings("ConstantConditions")
 	public ClassNode get(String name) {
-		if (this.loader.getResource(name) == null) {
-			return null;
-		}
+		try {
+			Class<?> clazz = this.loader.loadClass(name);
+			String className = clazz.getName();
+			int i = className.lastIndexOf('.');
+			String resourceName = className.substring(i != -1 ? i + 1 : 0) + ".class";
 
-		try (var resource = this.loader.getResourceAsStream(name)) {
-			assert resource != null;
-			// todo doesn't work!
-			return AsmUtil.bytesToNode(resource.readAllBytes());
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+			try (var resource = clazz.getResourceAsStream(resourceName)) {
+				return AsmUtil.bytesToNode(resource.readAllBytes());
+			} catch (IOException ignored) {}
+		} catch (ClassNotFoundException ignored) {}
+
+		return null;
 	}
 
 	@Override
 	public Collection<String> getClassNames() {
 		// todo implement
-		return List.of("java/lang/Record");
+		return List.of("java.lang.Object", "java.lang.Record");
 	}
 }

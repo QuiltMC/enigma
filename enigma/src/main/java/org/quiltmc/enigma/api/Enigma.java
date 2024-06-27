@@ -38,8 +38,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -76,10 +78,13 @@ public class Enigma {
 	public EnigmaProject openJar(Path path, ClassProvider libraryClassProvider, ProgressListener progress) throws IOException {
 		JarClassProvider jarClassProvider = new JarClassProvider(path);
 		JarIndex index = JarIndex.empty();
-		ClassLoaderClassProvider jreProvider = new ClassLoaderClassProvider(Object.class.getClassLoader());
+		// todo
+		var c = DriverManager.class.getClassLoader();
+		ClassLoaderClassProvider jreProvider = new ClassLoaderClassProvider(c);
 		CombiningClassProvider combined = new CombiningClassProvider(jarClassProvider, libraryClassProvider);
 		ClassProvider classProvider = new ObfuscationFixClassProvider(new CombiningClassProvider(jreProvider, new CachingClassProvider(combined)), index);
-		Set<String> scope = jarClassProvider.getClassNames();
+		Set<String> scope = new HashSet<>(jarClassProvider.getClassNames());
+		scope.addAll(jreProvider.getClassNames());
 
 		index.indexJar(scope, classProvider, progress);
 
