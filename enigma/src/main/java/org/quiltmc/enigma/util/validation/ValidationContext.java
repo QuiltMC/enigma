@@ -66,18 +66,23 @@ public class ValidationContext {
 	public boolean canProceed() {
 		List<ParameterizedMessage> messagesCopy = new ArrayList<>(this.messages);
 
-		if (this.verifyWarnings) {
-			for (ParameterizedMessage m : messagesCopy) {
-				if (m.getType() == Message.Type.WARNING) {
-					this.messages.remove(m);
-					if (!this.notifier.verifyWarning(m)) {
-						return false;
+		boolean hasError = this.messages.stream().noneMatch(m -> m.message().getType() == Message.Type.ERROR);
+		if (hasError) {
+			return false;
+		} else {
+			if (this.verifyWarnings) {
+				for (ParameterizedMessage m : messagesCopy) {
+					if (m.getType() == Message.Type.WARNING) {
+						this.messages.remove(m);
+						if (!this.notifier.verifyWarning(m)) {
+							return false;
+						}
 					}
 				}
 			}
-		}
 
-		return this.messages.stream().noneMatch(m -> m.message().getType() == Message.Type.ERROR);
+			return true;
+		}
 	}
 
 	/**
