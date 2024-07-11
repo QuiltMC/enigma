@@ -184,8 +184,10 @@ public class EnigmaProject {
 			String sig = obfMethodEntry.getDesc().toString();
 
 			// methods declared in object and record are not renamable
-			if (this.jarIndex.getChildrenByClass().get(new ClassEntry("java/lang/Object")).contains(obfMethodEntry)
-					|| this.jarIndex.getChildrenByClass().get(new ClassEntry("java/lang/Record")).contains(obfMethodEntry)) {
+			// todo probably really slow -- look into it
+			// compareTo ignores parent, we want that
+			if (this.jarIndex.getChildrenByClass().get(new ClassEntry("java/lang/Object")).stream().anyMatch(c -> c instanceof MethodEntry m && m.compareTo(obfMethodEntry) == 0)
+					|| this.jarIndex.getChildrenByClass().get(new ClassEntry("java/lang/Record")).stream().anyMatch(c -> c instanceof MethodEntry m && m.compareTo(obfMethodEntry) == 0)) {
 				return false;
 			}
 

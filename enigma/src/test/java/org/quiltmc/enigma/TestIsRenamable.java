@@ -26,7 +26,7 @@ public class TestIsRenamable {
 
 	@Test
 	public void obfEntries() {
-		var equals = TestEntryFactory.newMethod("java/lang/Object", "equals", "(Ljava/lang/Object;)Z");
+		var equals = TestEntryFactory.newMethod("a", "equals", "(Ljava/lang/Object;)Z");
 		Assertions.assertFalse(obfProject.isRenamable(equals));
 
 		// does actually exist in the code
@@ -36,10 +36,10 @@ public class TestIsRenamable {
 		var getClass = TestEntryFactory.newMethod("java/lang/Object", "getClass", "()Ljava/lang/Class;");
 		Assertions.assertFalse(obfProject.isRenamable(getClass));
 
-		var toString = TestEntryFactory.newMethod("java/lang/Object", "toString", "()Ljava/lang/String;");
+		var toString = TestEntryFactory.newMethod("java/lang/Record", "toString", "()Ljava/lang/String;");
 		Assertions.assertFalse(obfProject.isRenamable(toString));
 
-		var wait = TestEntryFactory.newMethod("java/lang/Object", "wait", "()V");
+		var wait = TestEntryFactory.newMethod("b", "wait", "()V");
 		Assertions.assertFalse(obfProject.isRenamable(wait));
 	}
 }
