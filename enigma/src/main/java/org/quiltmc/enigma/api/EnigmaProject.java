@@ -14,7 +14,6 @@ import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.ArgumentDescriptor;
 import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
-import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
@@ -33,7 +32,6 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.I18n;
-import org.quiltmc.enigma.util.Pair;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 import org.tinylog.Logger;
@@ -45,7 +43,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -58,31 +55,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class EnigmaProject {
-	private static final List<Pair<String, String>> NON_RENAMABLE_METHODS = new ArrayList<>();
-
-	static {
-		NON_RENAMABLE_METHODS.add(new Pair<>("hashCode", "()I"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("clone", "()Ljava/lang/Object;"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("equals", "(Ljava/lang/Object;)Z"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("finalize", "()V"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("getClass", "()Ljava/lang/Class;"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("notify", "()V"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("notifyAll", "()V"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("toString", "()Ljava/lang/String;"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("wait", "()V"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("wait", "(J)V"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("wait", "(JI)V"));
-	}
-
 	private final Enigma enigma;
-
 	private final Path jarPath;
 	private final ClassProvider classProvider;
 	private final JarIndex jarIndex;
-	private MappingsIndex mappingsIndex;
 	private final byte[] jarChecksum;
 
 	private EntryRemapper remapper;
+	private MappingsIndex mappingsIndex;
 
 	public EnigmaProject(Enigma enigma, Path jarPath, ClassProvider classProvider, JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedNames, byte[] jarChecksum) {
 		Preconditions.checkArgument(jarChecksum.length == 20);
@@ -203,18 +183,11 @@ public class EnigmaProject {
 			String name = obfMethodEntry.getName();
 			String sig = obfMethodEntry.getDesc().toString();
 
-			// todo change this to a check if the method is declared in java.lang.Object or java.lang.Record
-			// working on this via indexing
-
-			if (this.jarIndex.getChildrenByClass().get(new ClassEntry("java/lang/Object")).contains(obfMethodEntry) || this.jarIndex.getChildrenByClass().get(new ClassEntry("java/lang/Record")).contains(obfMethodEntry)) {
+			// methods declared in object and record are not renamable
+			if (this.jarIndex.getChildrenByClass().get(new ClassEntry("java/lang/Object")).contains(obfMethodEntry)
+					|| this.jarIndex.getChildrenByClass().get(new ClassEntry("java/lang/Record")).contains(obfMethodEntry)) {
 				return false;
 			}
-
-//			for (Pair<String, String> pair : NON_RENAMABLE_METHODS) {
-//				if (pair.a().equals(name) && pair.b().equals(sig)) {
-//					return false;
-//				}
-//			}
 
 			ClassDefEntry parent = this.jarIndex.getIndex(EntryIndex.class).getDefinition(obfMethodEntry.getParent());
 			if (parent != null && parent.isEnum()
@@ -272,21 +245,6 @@ public class EnigmaProject {
 		}
 
 		return true;
-	}
-
-	public boolean isReservedMethod(MethodEntry obfMethod) {
-		String name = obfMethod.getName();
-		String sig = obfMethod.getDesc().toString();
-
-		// todo change this to a check if the method is declared in java.lang.Object or java.lang.Record
-
-		for (Pair<String, String> pair : NON_RENAMABLE_METHODS) {
-			if (pair.a().equals(name) && pair.b().equals(sig)) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	public boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {
