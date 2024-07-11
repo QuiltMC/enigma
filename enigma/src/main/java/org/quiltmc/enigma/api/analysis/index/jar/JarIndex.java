@@ -171,7 +171,6 @@ public class JarIndex implements JarIndexer {
 		}
 	}
 
-	// todo why aren't JRE classes being run through this?
 	@Override
 	public void indexMethod(MethodDefEntry methodEntry) {
 		if (methodEntry.getParent().isJre()) {

@@ -215,26 +215,6 @@ public class StatsGenerator {
 		return StatsResult.create(mappableCounts, unmappedCounts, false);
 	}
 
-	// todo
-	private boolean isCanonicalConstructor(ClassDefEntry record, MethodEntry entry, List<ParentedEntry<?>> children) {
-		List<FieldEntry> fields = children.stream().filter(e -> e instanceof FieldEntry).map(e -> (FieldEntry) e).toList();
-		MethodDescriptor descriptor = entry.getDesc();
-		List<ArgumentDescriptor> argumentDescs = descriptor.getArgumentDescs();
-
-		for (var desc : argumentDescs) {
-			grind:
-			for (var field : fields) {
-				if (field.getDesc().equals(desc)) {
-					break grind;
-				}
-			}
-
-			return false;
-		}
-
-		return false;
-	}
-
 	/**
 	 * Gets the stats for the provided class.
 	 * @param entry the class to get stats for

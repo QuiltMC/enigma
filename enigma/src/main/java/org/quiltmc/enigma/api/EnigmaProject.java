@@ -11,6 +11,10 @@ import org.quiltmc.enigma.api.service.ObfuscationTestService;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeUtil;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
+import org.quiltmc.enigma.api.translation.representation.ArgumentDescriptor;
+import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
@@ -202,7 +206,7 @@ public class EnigmaProject {
 			// todo change this to a check if the method is declared in java.lang.Object or java.lang.Record
 			// working on this via indexing
 
-			if (this.jarIndex.getChildrenByClass().get(new ClassEntry("java/lang/Object")).contains(obfMethodEntry)) {
+			if (this.jarIndex.getChildrenByClass().get(new ClassEntry("java/lang/Object")).contains(obfMethodEntry) || this.jarIndex.getChildrenByClass().get(new ClassEntry("java/lang/Record")).contains(obfMethodEntry)) {
 				return false;
 			}
 
@@ -228,11 +232,46 @@ public class EnigmaProject {
 			if (parent.isEnum() && method.getName().equals("valueOf") && method.getDesc().toString().equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")) {
 				return false;
 			}
+
+			// todo i have notes on this
+			if (parent.isRecord() && method.getName().equals("<init>") && this.isCanonicalConstructor(parent, method)) {
+				return false;
+			}
 		} else if (obfEntry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
 			return false;
 		}
 
 		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
+	}
+
+	public boolean isCanonicalConstructor(ClassDefEntry record, MethodEntry methodEntry) {
+		if (!record.isRecord() || !methodEntry.isConstructor()) {
+			return false;
+		}
+
+		MethodDescriptor descriptor = methodEntry.getDesc();
+		List<ArgumentDescriptor> argumentDescs = descriptor.getArgumentDescs();
+		List<FieldEntry> fields = this.jarIndex.getChildrenByClass().get(record).stream()
+			.filter(e -> e instanceof FieldEntry)
+			.map(e -> (FieldEntry) e)
+			.toList();
+
+		// number of parameters must match the number of fields
+		if (argumentDescs.size() != fields.size()) {
+			return false;
+		}
+
+		// match types
+		for (int i = 0; i < fields.size(); i++) {
+			FieldEntry field = fields.get(i);
+			ArgumentDescriptor argument = argumentDescs.get(i);
+
+			if (!field.getDesc().toString().equals(argument.toString())) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public boolean isReservedMethod(MethodEntry obfMethod) {
