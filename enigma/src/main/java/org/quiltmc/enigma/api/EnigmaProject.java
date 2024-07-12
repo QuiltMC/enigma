@@ -59,17 +59,19 @@ public class EnigmaProject {
 	private final Path jarPath;
 	private final ClassProvider classProvider;
 	private final JarIndex jarIndex;
+	private final JarIndex libIndex;
 	private final byte[] jarChecksum;
 
 	private EntryRemapper remapper;
 	private MappingsIndex mappingsIndex;
 
-	public EnigmaProject(Enigma enigma, Path jarPath, ClassProvider classProvider, JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedNames, byte[] jarChecksum) {
+	public EnigmaProject(Enigma enigma, Path jarPath, ClassProvider classProvider, JarIndex jarIndex, JarIndex libIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedNames, byte[] jarChecksum) {
 		Preconditions.checkArgument(jarChecksum.length == 20);
 		this.enigma = enigma;
 		this.jarPath = jarPath;
 		this.classProvider = classProvider;
 		this.jarIndex = jarIndex;
+		this.libIndex = libIndex;
 		this.jarChecksum = jarChecksum;
 
 		this.mappingsIndex = mappingsIndex;
@@ -186,8 +188,8 @@ public class EnigmaProject {
 			// methods declared in object and record are not renamable
 			// todo probably really slow -- look into it
 			// compareTo ignores parent, we want that
-			if (this.jarIndex.getChildrenByClass().get(new ClassEntry("java/lang/Object")).stream().anyMatch(c -> c instanceof MethodEntry m && m.compareTo(obfMethodEntry) == 0)
-					|| this.jarIndex.getChildrenByClass().get(new ClassEntry("java/lang/Record")).stream().anyMatch(c -> c instanceof MethodEntry m && m.compareTo(obfMethodEntry) == 0)) {
+			if (this.libIndex.getChildrenByClass().get(new ClassEntry("java/lang/Object")).stream().anyMatch(c -> c instanceof MethodEntry m && m.compareTo(obfMethodEntry) == 0)
+					|| this.libIndex.getChildrenByClass().get(new ClassEntry("java/lang/Record")).stream().anyMatch(c -> c instanceof MethodEntry m && m.compareTo(obfMethodEntry) == 0)) {
 				return false;
 			}
 

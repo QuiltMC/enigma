@@ -2,6 +2,8 @@ package org.quiltmc.enigma.api;
 
 import com.google.common.io.MoreFiles;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.LibrariesJarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.class_provider.ClassLoaderClassProvider;
 import org.quiltmc.enigma.api.service.EnigmaService;
@@ -77,28 +79,22 @@ public class Enigma {
 
 	public EnigmaProject openJar(Path path, ClassProvider libraryClassProvider, ProgressListener progress) throws IOException {
 		JarClassProvider jarClassProvider = new JarClassProvider(path);
-		JarIndex index = JarIndex.empty();
-		// todo
-		var c = DriverManager.class.getClassLoader();
-		ClassLoaderClassProvider jreProvider = new ClassLoaderClassProvider(c);
-		CombiningClassProvider combined = new CombiningClassProvider(jarClassProvider, libraryClassProvider);
-		ClassProvider classProvider = new ObfuscationFixClassProvider(new CombiningClassProvider(jreProvider, new CachingClassProvider(combined)), index);
-		Set<String> scope = new HashSet<>(jarClassProvider.getClassNames());
-		scope.addAll(jreProvider.getClassNames());
+		JarIndex index = MainJarIndex.empty();
+		JarIndex libIndex = LibrariesJarIndex.empty();
 
-		index.indexJar(scope, classProvider, progress);
+		ClassLoaderClassProvider jreProvider = new ClassLoaderClassProvider(DriverManager.class.getClassLoader());
+		CombiningClassProvider librariesProvider = new CombiningClassProvider(jreProvider, libraryClassProvider);
+		ClassProvider mainProjectProvider = new ObfuscationFixClassProvider(new CachingClassProvider(jarClassProvider), index);
 
-		var indexers = this.services.get(JarIndexerService.TYPE);
-		progress.init(indexers.size(), I18n.translate("progress.jar.custom_indexing"));
+		Set<String> mainScope = new HashSet<>(mainProjectProvider.getClassNames());
+		Set<String> librariesScope = new HashSet<>(librariesProvider.getClassNames());
 
-		int i = 1;
-		for (var service : indexers) {
-			progress.step(i++, I18n.translateFormatted("progress.jar.custom_indexing.indexer", service.getId()));
-			service.acceptJar(scope, classProvider, index);
-		}
+		// main index
+		this.index(index, mainProjectProvider, mainScope, progress, "jar", JarIndexerService.TYPE);
+		// lib index
+		this.index(libIndex, librariesProvider, librariesScope, progress, "libs", null /* todo */);
 
-		progress.step(i, I18n.translate("progress.jar.custom_indexing.finished"));
-
+		// name proposal
 		var nameProposalServices = this.getNameProposalServices();
 		progress.init(nameProposalServices.size(), I18n.translate("progress.jar.name_proposal"));
 
@@ -125,7 +121,24 @@ public class Enigma {
 		MappingsIndex mappingsIndex = MappingsIndex.empty();
 		mappingsIndex.indexMappings(proposedNames, progress);
 
-		return new EnigmaProject(this, path, classProvider, index, mappingsIndex, proposedNames, Utils.zipSha1(path));
+		return new EnigmaProject(this, path, mainProjectProvider, index, libIndex, mappingsIndex, proposedNames, Utils.zipSha1(path));
+	}
+
+	private <T extends JarIndexerService> void index(JarIndex index, ClassProvider classProvider, Set<String> scope, ProgressListener progress, String progressKey, EnigmaServiceType<T> serviceType) {
+		index.indexJar(scope, classProvider, progress);
+
+		if (serviceType != null) {
+			List<T> indexers = this.services.get(serviceType);
+			progress.init(indexers.size(), I18n.translate("progress." + progressKey + ".custom_indexing"));
+
+			int i = 1;
+			for (var service : indexers) {
+				progress.step(i++, I18n.translateFormatted("progress." + progressKey + ".custom_indexing.indexer", service.getId()));
+				service.acceptJar(scope, classProvider, index);
+			}
+
+			progress.step(i, I18n.translate("progress." + progressKey + ".custom_indexing.finished"));
+		}
 	}
 
 	public EnigmaProfile getProfile() {
