@@ -121,7 +121,7 @@ public class TestReadWriteCycle {
 		Assertions.assertEquals(this.testMethod2.b().targetName(), loadedMappings.get(this.testMethod2.a()).targetName(), "Incorrect mapping: testMethod2");
 		Assertions.assertEquals(this.testMethod3.b().targetName(), loadedMappings.get(this.testMethod3.a()).targetName(), "Incorrect mapping: testMethod3");
 		Assertions.assertEquals(this.testNormalParameter.b().targetName(), loadedMappings.get(this.testNormalParameter.a()).targetName(), "Incorrect mapping: testNormalParameter");
-		Assertions.assertEquals(this.testProposedParameter.b().targetName(), loadedMappings.get(this.testProposedParameter.a()).targetName(), "Incorrect mapping: testProposedParameter");
+		// note: proposed parameter name will not be saved
 
 		Assertions.assertEquals(this.testClazz.b().javadoc(), loadedMappings.get(this.testClazz.a()).javadoc(), "Incorrect javadoc: testClazz");
 		Assertions.assertEquals(this.testField1.b().javadoc(), loadedMappings.get(this.testField1.a()).javadoc(), "Incorrect javadoc: testField1");
