@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.translation.mapping;
 
+import org.quiltmc.enigma.TestEntryFactory;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.service.ReadWriteService;
@@ -14,6 +15,7 @@ import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.Pair;
 import org.junit.jupiter.api.Assertions;
@@ -55,6 +57,21 @@ public class TestReadWriteCycle {
 			new EntryMapping("mapped4", "this is method 2", TokenType.DEOBFUSCATED, null)
 	);
 
+	private final Pair<MethodEntry, EntryMapping> testMethod3 = new Pair<>(
+			MethodEntry.parse("a/b/c", "method3", "(IZ)V"),
+			new EntryMapping("mapped5", "this is method 3", TokenType.DEOBFUSCATED, null)
+	);
+
+	private final Pair<LocalVariableEntry, EntryMapping> testNormalParameter = new Pair<>(
+			TestEntryFactory.newParameter(this.testMethod3.a(), 0),
+			new EntryMapping("mapped6", "this is a normal parameter", TokenType.DEOBFUSCATED, null)
+	);
+
+	private final Pair<LocalVariableEntry, EntryMapping> testProposedParameter = new Pair<>(
+			TestEntryFactory.newParameter(this.testMethod3.a(), 1),
+			new EntryMapping("mapped7", "this is a proposed parameter", TokenType.JAR_PROPOSED, "enigma:fake_plugin")
+	);
+
 	private void insertMapping(EntryTree<EntryMapping> mappings, Pair<? extends Entry<?>, EntryMapping> mappingPair) {
 		mappings.insert(mappingPair.a(), mappingPair.b());
 	}
@@ -67,12 +84,18 @@ public class TestReadWriteCycle {
 		this.insertMapping(testMappings, this.testField2);
 		this.insertMapping(testMappings, this.testMethod1);
 		this.insertMapping(testMappings, this.testMethod2);
+		this.insertMapping(testMappings, this.testMethod3);
+		this.insertMapping(testMappings, this.testNormalParameter);
+		this.insertMapping(testMappings, this.testProposedParameter);
 
 		Assertions.assertTrue(testMappings.contains(this.testClazz.a()), "Test mapping insertion failed: testClazz");
 		Assertions.assertTrue(testMappings.contains(this.testField1.a()), "Test mapping insertion failed: testField1");
 		Assertions.assertTrue(testMappings.contains(this.testField2.a()), "Test mapping insertion failed: testField2");
 		Assertions.assertTrue(testMappings.contains(this.testMethod1.a()), "Test mapping insertion failed: testMethod1");
 		Assertions.assertTrue(testMappings.contains(this.testMethod2.a()), "Test mapping insertion failed: testMethod2");
+		Assertions.assertTrue(testMappings.contains(this.testMethod3.a()), "Test mapping insertion failed: testMethod3");
+		Assertions.assertTrue(testMappings.contains(this.testNormalParameter.a()), "Test mapping insertion failed: testNormalParameter");
+		Assertions.assertTrue(testMappings.contains(this.testProposedParameter.a()), "Test mapping insertion failed: testProposedParameter");
 
 		File tempFile = File.createTempFile("readWriteCycle", tmpNameSuffix);
 		tempFile.delete(); //remove the auto created file
@@ -87,18 +110,27 @@ public class TestReadWriteCycle {
 		Assertions.assertTrue(loadedMappings.contains(this.testField2.a()), "Loaded mappings don't contain testField2");
 		Assertions.assertTrue(loadedMappings.contains(this.testMethod1.a()), "Loaded mappings don't contain testMethod1");
 		Assertions.assertTrue(loadedMappings.contains(this.testMethod2.a()), "Loaded mappings don't contain testMethod2");
+		Assertions.assertTrue(loadedMappings.contains(this.testMethod3.a()), "Loaded mappings don't contain testMethod3");
+		Assertions.assertTrue(loadedMappings.contains(this.testNormalParameter.a()), "Loaded mappings don't contain testNormalParameter");
+		Assertions.assertTrue(loadedMappings.contains(this.testProposedParameter.a()), "Loaded mappings don't contain testProposedParameter");
 
 		Assertions.assertEquals(this.testClazz.b().targetName(), loadedMappings.get(this.testClazz.a()).targetName(), "Incorrect mapping: testClazz");
 		Assertions.assertEquals(this.testField1.b().targetName(), loadedMappings.get(this.testField1.a()).targetName(), "Incorrect mapping: testField1");
 		Assertions.assertEquals(this.testField2.b().targetName(), loadedMappings.get(this.testField2.a()).targetName(), "Incorrect mapping: testField2");
 		Assertions.assertEquals(this.testMethod1.b().targetName(), loadedMappings.get(this.testMethod1.a()).targetName(), "Incorrect mapping: testMethod1");
 		Assertions.assertEquals(this.testMethod2.b().targetName(), loadedMappings.get(this.testMethod2.a()).targetName(), "Incorrect mapping: testMethod2");
+		Assertions.assertEquals(this.testMethod3.b().targetName(), loadedMappings.get(this.testMethod3.a()).targetName(), "Incorrect mapping: testMethod3");
+		Assertions.assertEquals(this.testNormalParameter.b().targetName(), loadedMappings.get(this.testNormalParameter.a()).targetName(), "Incorrect mapping: testNormalParameter");
+		Assertions.assertEquals(this.testProposedParameter.b().targetName(), loadedMappings.get(this.testProposedParameter.a()).targetName(), "Incorrect mapping: testProposedParameter");
 
 		Assertions.assertEquals(this.testClazz.b().javadoc(), loadedMappings.get(this.testClazz.a()).javadoc(), "Incorrect javadoc: testClazz");
 		Assertions.assertEquals(this.testField1.b().javadoc(), loadedMappings.get(this.testField1.a()).javadoc(), "Incorrect javadoc: testField1");
 		Assertions.assertEquals(this.testField2.b().javadoc(), loadedMappings.get(this.testField2.a()).javadoc(), "Incorrect javadoc: testField2");
 		Assertions.assertEquals(this.testMethod1.b().javadoc(), loadedMappings.get(this.testMethod1.a()).javadoc(), "Incorrect javadoc: testMethod1");
 		Assertions.assertEquals(this.testMethod2.b().javadoc(), loadedMappings.get(this.testMethod2.a()).javadoc(), "Incorrect javadoc: testMethod2");
+		Assertions.assertEquals(this.testMethod3.b().javadoc(), loadedMappings.get(this.testMethod3.a()).javadoc(), "Incorrect javadoc: testMethod3");
+		Assertions.assertEquals(this.testNormalParameter.b().javadoc(), loadedMappings.get(this.testNormalParameter.a()).javadoc(), "Incorrect javadoc: testNormalParameter");
+		Assertions.assertEquals(this.testProposedParameter.b().javadoc(), loadedMappings.get(this.testProposedParameter.a()).javadoc(), "Incorrect javadoc: testProposedParameter");
 
 		tempFile.delete();
 	}
