@@ -66,7 +66,7 @@ public class ValidationContext {
 	public boolean canProceed() {
 		List<ParameterizedMessage> messagesCopy = new ArrayList<>(this.messages);
 
-		boolean hasError = this.messages.stream().noneMatch(m -> m.message().getType() == Message.Type.ERROR);
+		boolean hasError = this.messages.stream().anyMatch(m -> m.message().getType() == Message.Type.ERROR);
 		if (hasError) {
 			return false;
 		} else {
