@@ -209,3 +209,13 @@ With this release, we made quite a few changes in the direction of supporting mo
 - updated gradle and fixed deprecations
 - updated dependencies
   - vineflower: `1.10.0` -> `1.10.1`
+
+# 2.4.1
+
+As always, we need a quick bugfix release before the next big update. `2.4.1` fixes some long-standing issues!
+
+- fixed javadocs applied to parameters with proposed names becoming detached from the parameter due to being saved incorrect in the Enigma mappings format
+- fixed the GUI still attempting to confirm warnings when a fatal error is present in a validation
+- updated dependencies
+  - guava: `33.0.0` -> `33.2.1`
+  - proguard: `7.4.0` -> `7.5.0`
