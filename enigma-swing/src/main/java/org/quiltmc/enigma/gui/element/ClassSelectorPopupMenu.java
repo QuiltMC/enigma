@@ -13,6 +13,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
+import java.awt.event.ActionEvent;
 
 public class ClassSelectorPopupMenu {
 	private final Gui gui;
@@ -44,6 +45,7 @@ public class ClassSelectorPopupMenu {
 
 		this.renameClass.addActionListener(a -> {
 			String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("popup_menu.class_selector.rename_class"), this.selector.getSelectedClassDeobf().getFullName());
+			if (input == null) return;
 			this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager()), EntryChange.modify(this.selector.getSelectedClassObf()).withDeobfName(input));
 		});
 
