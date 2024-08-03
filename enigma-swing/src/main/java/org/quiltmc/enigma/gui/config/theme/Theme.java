@@ -134,30 +134,30 @@ public class Theme extends ReflectiveConfig.Section {
 
 		public void configure(boolean dark) {
 			if (dark) {
-				setIfAbsent(this.lineNumbersForeground, new SerializableColor(0xFFA4A4A3));
-				setIfAbsent(this.lineNumbersBackground, new SerializableColor(0xFF313335));
-				setIfAbsent(this.lineNumbersSelected, new SerializableColor(0xFF606366));
+				setIfAbsent(this.lineNumbersForeground, new SerializableColor(0xFFDBDBDA));
+				setIfAbsent(this.lineNumbersBackground, new SerializableColor(0xFF252729));
+				setIfAbsent(this.lineNumbersSelected, new SerializableColor(0xFF353739));
 
-				setIfAbsent(this.obfuscated, new SerializableColor(0x4DFF5555));
-				setIfAbsent(this.obfuscatedOutline, new SerializableColor(0x80FF5555));
+				setIfAbsent(this.obfuscated, new SerializableColor(0x31FF5555));
+				setIfAbsent(this.obfuscatedOutline, new SerializableColor(0x89FF5555));
 
-				setIfAbsent(this.proposed, new SerializableColor(0x4D606366));
-				setIfAbsent(this.proposedOutline, new SerializableColor(0x80606366));
+				setIfAbsent(this.proposed, new SerializableColor(0x43606366));
+				setIfAbsent(this.proposedOutline, new SerializableColor(0x86606366));
 
-				setIfAbsent(this.deobfuscated, new SerializableColor(0x4D50FA7B));
+				setIfAbsent(this.deobfuscated, new SerializableColor(0x2450FA7B));
 				setIfAbsent(this.deobfuscatedOutline, new SerializableColor(0x8050FA7B));
 
-				setIfAbsent(this.editorBackground, new SerializableColor(0xFF282A36));
-				setIfAbsent(this.highlight, new SerializableColor(0xFFFF79C6));
+				setIfAbsent(this.editorBackground, new SerializableColor(0xFF1B1B20));
+				setIfAbsent(this.highlight, new SerializableColor(0xFFFF8BD8));
 				setIfAbsent(this.caret, new SerializableColor(0xFFF8F8F2));
 				setIfAbsent(this.selectionHighlight, new SerializableColor(0xFFF8F8F2));
 				setIfAbsent(this.string, new SerializableColor(0xFFF1FA8C));
-				setIfAbsent(this.number, new SerializableColor(0xFFBD93F9));
+				setIfAbsent(this.number, new SerializableColor(0xFFD5ABFF));
 				setIfAbsent(this.operator, new SerializableColor(0xFFF8F8F2));
-				setIfAbsent(this.delimiter, new SerializableColor(0xFFF8F8F2));
+				setIfAbsent(this.delimiter, new SerializableColor(0xFFFF5555));
 				setIfAbsent(this.type, new SerializableColor(0xFFF8F8F2));
 				setIfAbsent(this.identifier, new SerializableColor(0xFFF8F8F2));
-				setIfAbsent(this.comment, new SerializableColor(0xFF339933));
+				setIfAbsent(this.comment, new SerializableColor(0xFF63C963));
 				setIfAbsent(this.text, new SerializableColor(0xFFF8F8F2));
 
 				setIfAbsent(this.debugToken, new SerializableColor(0x804B1370));
