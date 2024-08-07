@@ -186,7 +186,6 @@ public class PackageRenamer {
 			// skips all classes that do not match the exact package being renamed
 			if (this.mode == Mode.MOVE) {
 				if (!oldName.equals(String.join("/", oldPackageNames) + "/" + classNode.getDeobfEntry().getSimpleName())) {
-					System.out.println("ignoring: " + oldName);
 					return;
 				}
 			}
