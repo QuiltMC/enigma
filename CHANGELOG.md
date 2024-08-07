@@ -226,6 +226,7 @@ More bugfixes. I work so hard for my beloved users.
 
 - fixed javadoc dialog not scaling properly
 - fixed invalid data being appended to exports of the stats tree
+- removed an extra debug print statement that was sitting in the mass package renamer
 - updated dependencies
   - quilt config: `1.3.0` -> `1.3.2`
   - junit: `5.9.3` -> `5.10.3`
