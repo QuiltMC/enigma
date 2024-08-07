@@ -219,3 +219,15 @@ As always, we need a quick bugfix release before the next big update. `2.4.1` fi
 - updated dependencies
   - guava: `33.0.0` -> `33.2.1`
   - proguard: `7.4.0` -> `7.5.0`
+
+# 2.4.2
+
+More bugfixes. I work so hard for my beloved users.
+
+- fixed javadoc dialog not scaling properly
+- fixed invalid data being appended to exports of the stats tree
+- updated dependencies
+  - quilt config: `1.3.0` -> `1.3.2`
+  - junit: `5.9.3` -> `5.10.3`
+  - hamcrest: `2.2` -> `3.0`
+  - jimfs: `1.2` -> `1.3.0`
