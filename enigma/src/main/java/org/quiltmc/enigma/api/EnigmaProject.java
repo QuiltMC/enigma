@@ -11,6 +11,9 @@ import org.quiltmc.enigma.api.service.ObfuscationTestService;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeUtil;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
+import org.quiltmc.enigma.api.translation.representation.ArgumentDescriptor;
+import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
@@ -29,7 +32,6 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.I18n;
-import org.quiltmc.enigma.util.Pair;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 import org.tinylog.Logger;
@@ -41,7 +43,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -54,38 +55,23 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class EnigmaProject {
-	private static final List<Pair<String, String>> NON_RENAMABLE_METHODS = new ArrayList<>();
-
-	static {
-		NON_RENAMABLE_METHODS.add(new Pair<>("hashCode", "()I"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("clone", "()Ljava/lang/Object;"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("equals", "(Ljava/lang/Object;)Z"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("finalize", "()V"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("getClass", "()Ljava/lang/Class;"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("notify", "()V"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("notifyAll", "()V"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("toString", "()Ljava/lang/String;"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("wait", "()V"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("wait", "(J)V"));
-		NON_RENAMABLE_METHODS.add(new Pair<>("wait", "(JI)V"));
-	}
-
 	private final Enigma enigma;
-
 	private final Path jarPath;
 	private final ClassProvider classProvider;
 	private final JarIndex jarIndex;
-	private MappingsIndex mappingsIndex;
+	private final JarIndex libIndex;
 	private final byte[] jarChecksum;
 
 	private EntryRemapper remapper;
+	private MappingsIndex mappingsIndex;
 
-	public EnigmaProject(Enigma enigma, Path jarPath, ClassProvider classProvider, JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedNames, byte[] jarChecksum) {
+	public EnigmaProject(Enigma enigma, Path jarPath, ClassProvider classProvider, JarIndex jarIndex, JarIndex libIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedNames, byte[] jarChecksum) {
 		Preconditions.checkArgument(jarChecksum.length == 20);
 		this.enigma = enigma;
 		this.jarPath = jarPath;
 		this.classProvider = classProvider;
 		this.jarIndex = jarIndex;
+		this.libIndex = libIndex;
 		this.jarChecksum = jarChecksum;
 
 		this.mappingsIndex = mappingsIndex;
@@ -199,12 +185,12 @@ public class EnigmaProject {
 			String name = obfMethodEntry.getName();
 			String sig = obfMethodEntry.getDesc().toString();
 
-			// todo change this to a check if the method is declared in java.lang.Object or java.lang.Record
-
-			for (Pair<String, String> pair : NON_RENAMABLE_METHODS) {
-				if (pair.a().equals(name) && pair.b().equals(sig)) {
-					return false;
-				}
+			// methods declared in object and record are not renamable
+			// todo probably really slow -- look into it
+			// compareTo ignores parent, we want that
+			if (this.libIndex.getChildrenByClass().get(new ClassEntry("java/lang/Object")).stream().anyMatch(c -> c instanceof MethodEntry m && m.compareTo(obfMethodEntry) == 0)
+					|| this.libIndex.getChildrenByClass().get(new ClassEntry("java/lang/Record")).stream().anyMatch(c -> c instanceof MethodEntry m && m.compareTo(obfMethodEntry) == 0)) {
+				return false;
 			}
 
 			ClassDefEntry parent = this.jarIndex.getIndex(EntryIndex.class).getDefinition(obfMethodEntry.getParent());
@@ -223,11 +209,46 @@ public class EnigmaProject {
 			if (parent.isEnum() && method.getName().equals("valueOf") && method.getDesc().toString().equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")) {
 				return false;
 			}
+
+			// todo i have notes on this
+			if (parent.isRecord() && method.getName().equals("<init>") && this.isCanonicalConstructor(parent, method)) {
+				return false;
+			}
 		} else if (obfEntry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
 			return false;
 		}
 
 		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
+	}
+
+	public boolean isCanonicalConstructor(ClassDefEntry record, MethodEntry methodEntry) {
+		if (!record.isRecord() || !methodEntry.isConstructor()) {
+			return false;
+		}
+
+		MethodDescriptor descriptor = methodEntry.getDesc();
+		List<ArgumentDescriptor> argumentDescs = descriptor.getArgumentDescs();
+		List<FieldEntry> fields = this.jarIndex.getChildrenByClass().get(record).stream()
+			.filter(e -> e instanceof FieldEntry)
+			.map(e -> (FieldEntry) e)
+			.toList();
+
+		// number of parameters must match the number of fields
+		if (argumentDescs.size() != fields.size()) {
+			return false;
+		}
+
+		// match types
+		for (int i = 0; i < fields.size(); i++) {
+			FieldEntry field = fields.get(i);
+			ArgumentDescriptor argument = argumentDescs.get(i);
+
+			if (!field.getDesc().toString().equals(argument.toString())) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {

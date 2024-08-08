@@ -4,6 +4,7 @@ import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.ReferenceIndex;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
@@ -32,7 +33,7 @@ public class TestJarIndexConstructorReferences {
 
 	public TestJarIndexConstructorReferences() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
-		this.index = JarIndex.empty();
+		this.index = MainJarIndex.empty();
 		this.index.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.createEmpty());
 	}
 

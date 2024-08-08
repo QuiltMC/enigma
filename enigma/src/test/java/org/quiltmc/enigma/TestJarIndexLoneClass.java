@@ -1,5 +1,6 @@
 package org.quiltmc.enigma;
 
+import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.ReferenceIndex;
 import org.quiltmc.enigma.api.analysis.tree.ClassImplementationsTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassInheritanceTreeNode;
@@ -35,7 +36,7 @@ public class TestJarIndexLoneClass {
 
 	public TestJarIndexLoneClass() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
-		this.index = JarIndex.empty();
+		this.index = MainJarIndex.empty();
 		this.index.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.createEmpty());
 	}
 
