@@ -13,7 +13,7 @@ public class StatsTree<T> {
 		private String name;
 		private T value;
 		private List<Node<T>> children = new ArrayList<>();
-		private final Map<String, Node<T>> namedChildren = new HashMap<>();
+		private final transient Map<String, Node<T>> namedChildren = new HashMap<>();
 
 		public Node(String name, T value) {
 			this.name = name;
