@@ -14,8 +14,7 @@ import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.config.implementor_api.ConfigEnvironment;
 import org.quiltmc.config.implementor_api.ConfigFactory;
 import org.quiltmc.enigma.gui.NotificationManager;
-import org.quiltmc.enigma.gui.config.theme.LookAndFeel;
-import org.quiltmc.enigma.gui.config.theme.Theme;
+import org.quiltmc.enigma.gui.config.theme.*;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindDialog;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
@@ -78,11 +77,12 @@ public final class Config extends ReflectiveConfig {
 	 */
 	public static LookAndFeel activeLookAndFeel;
 
-	public final Theme defaultTheme = new Theme(LookAndFeel.DEFAULT);
-	public final Theme darculaTheme = new Theme(LookAndFeel.DARCULA);
-	public final Theme metalTheme = new Theme(LookAndFeel.METAL);
-	public final Theme systemTheme = new Theme(LookAndFeel.SYSTEM);
-	public final Theme noneTheme = new Theme(LookAndFeel.NONE);
+	public final Theme defaultTheme = new DefaultTheme(LookAndFeel.DEFAULT);
+	public final Theme darculaTheme = new DarculaTheme(LookAndFeel.DARCULA);
+	public final Theme darcerulaTheme = new DarcerulaTheme(LookAndFeel.DARCERULA);
+	public final Theme metalTheme = new DefaultTheme(LookAndFeel.METAL);
+	public final Theme systemTheme = new DefaultTheme(LookAndFeel.SYSTEM);
+	public final Theme noneTheme = new DefaultTheme(LookAndFeel.NONE);
 
 	@SuppressWarnings("unused")
 	public void processChange(org.quiltmc.config.api.Config.Builder builder) {
@@ -120,6 +120,7 @@ public final class Config extends ReflectiveConfig {
 		return switch (activeLookAndFeel) {
 			case DEFAULT -> main().defaultTheme;
 			case DARCULA -> main().darculaTheme;
+			case DARCERULA -> main().darcerulaTheme;
 			case METAL -> main().metalTheme;
 			case SYSTEM -> main().systemTheme;
 			case NONE -> main().noneTheme;

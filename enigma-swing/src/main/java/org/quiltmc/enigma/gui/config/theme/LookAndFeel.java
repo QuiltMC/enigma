@@ -17,6 +17,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 public enum LookAndFeel implements ConfigSerializableObject<String> {
 	DEFAULT(false),
 	DARCULA(false),
+	DARCERULA(false),
 	METAL(true),
 	SYSTEM(true),
 	NONE(true);

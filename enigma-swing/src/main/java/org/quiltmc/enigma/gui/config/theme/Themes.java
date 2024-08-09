@@ -18,7 +18,7 @@ public class Themes {
 		LookAndFeel laf = Config.main().lookAndFeel.value();
 		Config.activeLookAndFeel = laf;
 		laf.setGlobalLAF();
-		Config.currentColors().configure(LookAndFeel.isDarkLaf());
+		Config.currentColors().configure();
 		Themes.setFonts();
 		Config.updateSyntaxpain();
 		UIManager.put("ScrollBar.showButtons", true);
