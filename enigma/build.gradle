@@ -23,6 +23,8 @@ dependencies {
 
 	testFixturesImplementation libs.asm
 	testFixturesImplementation libs.asm.tree
+
+	implementation("net.bytebuddy:byte-buddy-agent:1.14.18")
 }
 
 // Generate "version.txt" file
