@@ -146,33 +146,33 @@ public class Theme extends ReflectiveConfig.Section {
 		}
 
 		private Colors(
-			SerializableColor lineNumbersForeground,
-			SerializableColor lineNumbersBackground,
-			SerializableColor lineNumbersSelected,
-			SerializableColor obfuscated,
-			SerializableColor obfuscatedOutline,
+				SerializableColor lineNumbersForeground,
+				SerializableColor lineNumbersBackground,
+				SerializableColor lineNumbersSelected,
+				SerializableColor obfuscated,
+				SerializableColor obfuscatedOutline,
 
-			SerializableColor proposed,
-			SerializableColor proposedOutline,
+				SerializableColor proposed,
+				SerializableColor proposedOutline,
 
-			SerializableColor deobfuscated,
-			SerializableColor deobfuscatedOutline,
+				SerializableColor deobfuscated,
+				SerializableColor deobfuscatedOutline,
 
-			SerializableColor editorBackground,
-			SerializableColor highlight,
-			SerializableColor caret,
-			SerializableColor selectionHighlight,
-			SerializableColor string,
-			SerializableColor number,
-			SerializableColor operator,
-			SerializableColor delimiter,
-			SerializableColor type,
-			SerializableColor identifier,
-			SerializableColor comment,
-			SerializableColor text,
-			SerializableColor debugToken,
-			SerializableColor debugTokenOutline,
-			SerializableColor dockHighlight
+				SerializableColor editorBackground,
+				SerializableColor highlight,
+				SerializableColor caret,
+				SerializableColor selectionHighlight,
+				SerializableColor string,
+				SerializableColor number,
+				SerializableColor operator,
+				SerializableColor delimiter,
+				SerializableColor type,
+				SerializableColor identifier,
+				SerializableColor comment,
+				SerializableColor text,
+				SerializableColor debugToken,
+				SerializableColor debugTokenOutline,
+				SerializableColor dockHighlight
 		) {
 			this.lineNumbersForeground = this.value(lineNumbersForeground);
 			this.lineNumbersBackground = this.value(lineNumbersBackground);
@@ -205,33 +205,33 @@ public class Theme extends ReflectiveConfig.Section {
 
 		public void configure() {
 			Stream.of(
-				lineNumbersForeground,
-				lineNumbersBackground,
-				lineNumbersSelected,
+					this.lineNumbersForeground,
+					this.lineNumbersBackground,
+					this.lineNumbersSelected,
 
-				obfuscated,
-				obfuscatedOutline,
+					this.obfuscated,
+					this.obfuscatedOutline,
 
-				proposed,
-				proposedOutline,
+					this.proposed,
+					this.proposedOutline,
 
-				deobfuscated,
-				deobfuscatedOutline,
+					this.deobfuscated,
+					this.deobfuscatedOutline,
 
-				editorBackground,
-				highlight,
-				caret,
-				selectionHighlight,
-				string,
-				number,
-				operator,
-				delimiter,
-				type,
-				identifier,
-				text,
+					this.editorBackground,
+					this.highlight,
+					this.caret,
+					this.selectionHighlight,
+					this.string,
+					this.number,
+					this.operator,
+					this.delimiter,
+					this.type,
+					this.identifier,
+					this.text,
 
-				debugToken,
-				debugTokenOutline
+					this.debugToken,
+					this.debugTokenOutline
 			).forEach(Colors::resetIfAbsent);
 		}
 

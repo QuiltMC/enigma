@@ -1,10 +1,10 @@
 package org.quiltmc.enigma.gui.config.theme;
 
 /**
- * <p>
  * Factory  methods for creating non-default sets of colors for themes.
+ *
  * <p>
- * These can't be created in {@link Theme} sub-classes because of a quilt-config limitation.
+ * These can't be created in {@link Theme} subclasses because of a quilt-config limitation.
  */
 public final class ColorsFactories {
 	private ColorsFactories() { }
