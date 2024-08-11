@@ -14,17 +14,22 @@ import java.awt.Font;
 import java.util.stream.Stream;
 
 @SerializedNameConvention(NamingSchemes.SNAKE_CASE)
-// non-abstract for experimentation
 public class Theme extends ReflectiveConfig.Section {
 	public final transient LookAndFeel lookAndFeel;
+
+	/**
+	 * Create a theme with the default colors.
+	 */
 	public Theme(LookAndFeel lookAndFeel) {
-		this.lookAndFeel = lookAndFeel;
-		this.colors = buildDefaultColors(new Colors.Builder()).build();
+		this(lookAndFeel, new Colors.Builder());
 	}
 
-	// non-abstract for experimentation
-	protected Colors.Builder buildDefaultColors(Colors.Builder colors) {
-		return colors;
+	/**
+	 * Create a theme with custom colors.
+	 */
+	public Theme(LookAndFeel lookAndFeel, Colors.Builder colors) {
+		this.lookAndFeel = lookAndFeel;
+		this.colors = colors.build();
 	}
 
 	@Comment("Colors are encoded in the RGBA format.")

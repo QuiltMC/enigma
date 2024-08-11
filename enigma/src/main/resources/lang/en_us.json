@@ -67,6 +67,7 @@
 	"menu.view.themes": "Themes",
 	"menu.view.themes.default": "Default",
 	"menu.view.themes.darcula": "Darcula",
+	"menu.view.themes.darcerula": "Darcerula",
 	"menu.view.themes.metal": "Metal",
 	"menu.view.themes.system": "System",
 	"menu.view.themes.none": "None (JVM Default)",

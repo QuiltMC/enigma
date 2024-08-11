@@ -46,7 +46,7 @@ public enum LookAndFeel implements ConfigSerializableObject<String> {
 				case NONE -> UIManager.setLookAndFeel(NONE_LAF);
 				case DEFAULT -> UIManager.setLookAndFeel(new FlatLightLaf());
 				case METAL -> UIManager.setLookAndFeel(new MetalLookAndFeel());
-				case DARCULA -> UIManager.setLookAndFeel(new FlatDarkLaf());
+				case DARCULA, DARCERULA -> UIManager.setLookAndFeel(new FlatDarkLaf());
 				case SYSTEM -> UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			}
 		} catch (Exception e) {

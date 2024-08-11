@@ -77,12 +77,12 @@ public final class Config extends ReflectiveConfig {
 	 */
 	public static LookAndFeel activeLookAndFeel;
 
-	public final Theme defaultTheme = new DefaultTheme(LookAndFeel.DEFAULT);
-	public final Theme darculaTheme = new DarculaTheme(LookAndFeel.DARCULA);
-	public final Theme darcerulaTheme = new DarcerulaTheme(LookAndFeel.DARCERULA);
-	public final Theme metalTheme = new DefaultTheme(LookAndFeel.METAL);
-	public final Theme systemTheme = new DefaultTheme(LookAndFeel.SYSTEM);
-	public final Theme noneTheme = new DefaultTheme(LookAndFeel.NONE);
+	public final Theme defaultTheme = new Theme(LookAndFeel.DEFAULT);
+	public final Theme darculaTheme = new Theme(LookAndFeel.DARCULA, ColorsFactories.createDarcula());
+	public final Theme darcerulaTheme = new Theme(LookAndFeel.DARCERULA, ColorsFactories.createDarcerula());
+	public final Theme metalTheme = new Theme(LookAndFeel.METAL);
+	public final Theme systemTheme = new Theme(LookAndFeel.SYSTEM);
+	public final Theme noneTheme = new Theme(LookAndFeel.NONE);
 
 	@SuppressWarnings("unused")
 	public void processChange(org.quiltmc.config.api.Config.Builder builder) {

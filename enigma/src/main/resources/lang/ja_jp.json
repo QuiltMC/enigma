@@ -36,6 +36,7 @@
 	"menu.view.themes": "テーマ",
 	"menu.view.themes.default": "デフォルト",
 	"menu.view.themes.darcula": "Darcula",
+	"menu.view.themes.darcerula": "Darcerula",
 	"menu.view.themes.metal": "Metal",
 	"menu.view.themes.system": "システム",
 	"menu.view.themes.none": "なし (JVMのデフォルト)",
