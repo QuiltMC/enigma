@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.gui.config.theme;
 
-import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatSystemProperties;
 import org.quiltmc.config.api.values.ComplexConfigValue;
@@ -46,7 +45,12 @@ public enum LookAndFeel implements ConfigSerializableObject<String> {
 				case NONE -> UIManager.setLookAndFeel(NONE_LAF);
 				case DEFAULT -> UIManager.setLookAndFeel(new FlatLightLaf());
 				case METAL -> UIManager.setLookAndFeel(new MetalLookAndFeel());
-				case DARCULA, DARCERULA -> UIManager.setLookAndFeel(new FlatDarkLaf());
+				// case DARCULA, DARCERULA -> UIManager.setLookAndFeel(new FlatDarkLaf());
+				// case DARCULA, DARCERULA -> UIManager.setLookAndFeel(new FlatDarculaLaf());
+
+				// case DARCULA, DARCERULA -> UIManager.setLookAndFeel(new ConfigurableLookAndFeel(new FlatDarkLaf()));
+				case DARCULA, DARCERULA -> UIManager.setLookAndFeel(new ConfigurableLookAndFeel(new MetalLookAndFeel()));
+				// case DARCULA, DARCERULA -> UIManager.setLookAndFeel(new ConfigurableLookAndFeel(new FlatLightLaf()));
 				case SYSTEM -> UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			}
 		} catch (Exception e) {
