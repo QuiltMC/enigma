@@ -1,61 +1,40 @@
 package org.quiltmc.enigma.gui.config.theme;
 
-import com.formdev.flatlaf.FlatLightLaf;
-import com.formdev.flatlaf.FlatSystemProperties;
+import com.formdev.flatlaf.FlatDarkLaf;
 import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
-import org.quiltmc.enigma.gui.config.Config;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
+import java.util.function.Function;
+import javax.annotation.Nullable;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
 public enum LookAndFeel implements ConfigSerializableObject<String> {
-	DEFAULT(false),
-	DARCULA(false),
-	DARCERULA(false),
-	METAL(true),
-	SYSTEM(true),
-	NONE(true);
+	DEFAULT(false, ConfigurableFlatLightLaf::new),
+	DARCULA(false, unused -> new FlatDarkLaf()),
+	DARCERULA(false, unused -> new FlatDarkLaf()),
+	METAL(true, unused -> new MetalLookAndFeel()),
+	SYSTEM(true, null),
+	NONE(true, unused -> UIManager.getLookAndFeel());
 
-	// the "JVM default" look and feel, get it at the beginning and store it so we can set it later
-	private static final javax.swing.LookAndFeel NONE_LAF = UIManager.getLookAndFeel();
 	private final boolean needsScaling;
 
-	LookAndFeel(boolean needsScaling) {
+	@Nullable
+	public final Function<Theme.LookAndFeelColors, javax.swing.LookAndFeel> constructor;
+
+	LookAndFeel(boolean needsScaling, Function<Theme.LookAndFeelColors, javax.swing.LookAndFeel> constructor) {
 		this.needsScaling = needsScaling;
+		this.constructor = constructor;
 	}
 
 	public boolean needsScaling() {
 		// FlatLaf-based LaFs do their own scaling so we don't have to do it.
 		// Running swing-dpi for FlatLaf actually breaks fonts, so we let it scale the GUI.
 		return this.needsScaling;
-	}
-
-	public void setGlobalLAF() {
-		// Configure FlatLaf's UI scale to be our scale factor.
-		// This is also used for the SVG icons, so it applies even when some other LaF is active.
-		System.setProperty(FlatSystemProperties.UI_SCALE, Float.toString(Config.main().scaleFactor.value()));
-
-		try {
-			switch (this) {
-				case NONE -> UIManager.setLookAndFeel(NONE_LAF);
-				case DEFAULT -> UIManager.setLookAndFeel(new FlatLightLaf());
-				case METAL -> UIManager.setLookAndFeel(new MetalLookAndFeel());
-				// case DARCULA, DARCERULA -> UIManager.setLookAndFeel(new FlatDarkLaf());
-				// case DARCULA, DARCERULA -> UIManager.setLookAndFeel(new FlatDarculaLaf());
-
-				// case DARCULA, DARCERULA -> UIManager.setLookAndFeel(new ConfigurableLookAndFeel(new FlatDarkLaf()));
-				case DARCULA, DARCERULA -> UIManager.setLookAndFeel(new ConfigurableLookAndFeel(new MetalLookAndFeel()));
-				// case DARCULA, DARCERULA -> UIManager.setLookAndFeel(new ConfigurableLookAndFeel(new FlatLightLaf()));
-				case SYSTEM -> UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			}
-		} catch (Exception e) {
-			throw new Error("Failed to set global look and feel", e);
-		}
 	}
 
 	public static boolean isDarkLaf() {

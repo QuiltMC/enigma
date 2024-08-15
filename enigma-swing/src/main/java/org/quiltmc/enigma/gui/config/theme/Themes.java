@@ -15,10 +15,10 @@ public class Themes {
 	// Calling this after the UI is initialized (e.g. when the user changes
 	// theme settings) is currently not functional.
 	public static void setupTheme() {
-		LookAndFeel laf = Config.main().lookAndFeel.value();
-		Config.activeLookAndFeel = laf;
-		laf.setGlobalLAF();
-		Config.currentColors().configure();
+		Config.activeLookAndFeel = Config.main().lookAndFeel.value();
+		Config.getCurrentSyntaxPaneColors().configure();
+		Config.getCurrentLookAndFeelColors().configure();
+		Config.setGlobalLaf();
 		Themes.setFonts();
 		Config.updateSyntaxpain();
 		UIManager.put("ScrollBar.showButtons", true);
@@ -75,11 +75,11 @@ public class Themes {
 
 	public static Map<TokenType, BoxHighlightPainter> getBoxHighlightPainters() {
 		return Map.of(
-				TokenType.OBFUSCATED, BoxHighlightPainter.create(Config.currentColors().obfuscated.value(), Config.currentColors().obfuscatedOutline.value()),
-				TokenType.JAR_PROPOSED, BoxHighlightPainter.create(Config.currentColors().proposed.value(), Config.currentColors().proposedOutline.value()),
-				TokenType.DYNAMIC_PROPOSED, BoxHighlightPainter.create(Config.currentColors().proposed.value(), Config.currentColors().proposedOutline.value()),
-				TokenType.DEOBFUSCATED, BoxHighlightPainter.create(Config.currentColors().deobfuscated.value(), Config.currentColors().deobfuscatedOutline.value()),
-				TokenType.DEBUG, BoxHighlightPainter.create(Config.currentColors().debugToken.value(), Config.currentColors().debugTokenOutline.value())
+				TokenType.OBFUSCATED, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().obfuscated.value(), Config.getCurrentSyntaxPaneColors().obfuscatedOutline.value()),
+				TokenType.JAR_PROPOSED, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().proposed.value(), Config.getCurrentSyntaxPaneColors().proposedOutline.value()),
+				TokenType.DYNAMIC_PROPOSED, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().proposed.value(), Config.getCurrentSyntaxPaneColors().proposedOutline.value()),
+				TokenType.DEOBFUSCATED, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().deobfuscated.value(), Config.getCurrentSyntaxPaneColors().deobfuscatedOutline.value()),
+				TokenType.DEBUG, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().debugToken.value(), Config.getCurrentSyntaxPaneColors().debugTokenOutline.value())
 		);
 	}
 }

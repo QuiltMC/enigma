@@ -22,10 +22,12 @@ import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
 import javax.annotation.Nullable;
+import javax.swing.*;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.Function;
 
 /**
  * The Enigma config is separated into five different files: {@link Config the main config (this one)},
@@ -129,8 +131,29 @@ public final class Config extends ReflectiveConfig {
 		};
 	}
 
-	public static Theme.Colors currentColors() {
-		return currentTheme().colors;
+	public static Theme.SyntaxPaneColors getCurrentSyntaxPaneColors() {
+		return currentTheme().syntaxPaneColors;
+	}
+
+	public static Theme.LookAndFeelColors getCurrentLookAndFeelColors() {
+		return currentTheme().lookAndFeelColors;
+	}
+
+	public static void setGlobalLaf() {
+		try {
+			final Theme currentTheme = currentTheme();
+
+			final Function<Theme.LookAndFeelColors, javax.swing.LookAndFeel> constructor =
+				currentTheme.lookAndFeel.constructor;
+
+			if (constructor == null) {
+				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			} else {
+				UIManager.setLookAndFeel(constructor.apply(currentTheme.lookAndFeelColors));
+			}
+		} catch (Exception e) {
+			throw new Error("Failed to set global look and feel", e);
+		}
 	}
 
 	public static Theme.Fonts currentFonts() {
@@ -235,23 +258,23 @@ public final class Config extends ReflectiveConfig {
 	 */
 	public static void updateSyntaxpain() {
 		Theme.Fonts fonts = currentFonts();
-		Theme.Colors colors = currentColors();
+		Theme.SyntaxPaneColors syntaxPaneColors = getCurrentSyntaxPaneColors();
 
 		SyntaxpainConfiguration.setEditorFont(fonts.editor.value());
 		SyntaxpainConfiguration.setQuickFindDialogFactory(EnigmaQuickFindDialog::new);
 
-		SyntaxpainConfiguration.setLineRulerPrimaryColor(colors.lineNumbersForeground.value());
-		SyntaxpainConfiguration.setLineRulerSecondaryColor(colors.lineNumbersBackground.value());
-		SyntaxpainConfiguration.setLineRulerSelectionColor(colors.lineNumbersSelected.value());
+		SyntaxpainConfiguration.setLineRulerPrimaryColor(syntaxPaneColors.lineNumbersForeground.value());
+		SyntaxpainConfiguration.setLineRulerSecondaryColor(syntaxPaneColors.lineNumbersBackground.value());
+		SyntaxpainConfiguration.setLineRulerSelectionColor(syntaxPaneColors.lineNumbersSelected.value());
 
-		SyntaxpainConfiguration.setHighlightColor(colors.highlight.value());
-		SyntaxpainConfiguration.setStringColor(colors.string.value());
-		SyntaxpainConfiguration.setNumberColor(colors.number.value());
-		SyntaxpainConfiguration.setOperatorColor(colors.operator.value());
-		SyntaxpainConfiguration.setDelimiterColor(colors.delimiter.value());
-		SyntaxpainConfiguration.setTypeColor(colors.type.value());
-		SyntaxpainConfiguration.setIdentifierColor(colors.identifier.value());
-		SyntaxpainConfiguration.setCommentColour(colors.comment.value());
-		SyntaxpainConfiguration.setTextColor(colors.text.value());
+		SyntaxpainConfiguration.setHighlightColor(syntaxPaneColors.highlight.value());
+		SyntaxpainConfiguration.setStringColor(syntaxPaneColors.string.value());
+		SyntaxpainConfiguration.setNumberColor(syntaxPaneColors.number.value());
+		SyntaxpainConfiguration.setOperatorColor(syntaxPaneColors.operator.value());
+		SyntaxpainConfiguration.setDelimiterColor(syntaxPaneColors.delimiter.value());
+		SyntaxpainConfiguration.setTypeColor(syntaxPaneColors.type.value());
+		SyntaxpainConfiguration.setIdentifierColor(syntaxPaneColors.identifier.value());
+		SyntaxpainConfiguration.setCommentColour(syntaxPaneColors.comment.value());
+		SyntaxpainConfiguration.setTextColor(syntaxPaneColors.text.value());
 	}
 }

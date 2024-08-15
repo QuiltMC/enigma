@@ -21,20 +21,46 @@ public class Theme extends ReflectiveConfig.Section {
 	 * Create a theme with the default colors.
 	 */
 	public Theme(LookAndFeel lookAndFeel) {
-		this(lookAndFeel, new Colors.Builder());
+		this(lookAndFeel, new SyntaxPaneColors.Builder());
+	}
+
+	public Theme(
+		LookAndFeel lookAndFeel,
+		SyntaxPaneColors.Builder syntaxPaneColors
+	) {
+		this(lookAndFeel, syntaxPaneColors, new LookAndFeelColors.Builder());
 	}
 
 	/**
 	 * Create a theme with custom colors.
 	 */
-	public Theme(LookAndFeel lookAndFeel, Colors.Builder colors) {
+	public Theme(
+		LookAndFeel lookAndFeel,
+		SyntaxPaneColors.Builder syntaxPaneColors,
+		LookAndFeelColors.Builder lookAndFeelColors
+	) {
 		this.lookAndFeel = lookAndFeel;
-		this.colors = colors.build();
+		this.syntaxPaneColors = syntaxPaneColors.build();
+		this.lookAndFeelColors = lookAndFeelColors.build();
 	}
 
 	@Comment("Colors are encoded in the RGBA format.")
-	public final Colors colors;
+	public final SyntaxPaneColors syntaxPaneColors;
+
+	@Comment("Colors are encoded in the RGBA format.")
+	public final LookAndFeelColors lookAndFeelColors;
+
 	public final Fonts fonts = new Fonts();
+
+	private static <T> void resetIfAbsent(TrackedValue<T> value) {
+		setIfAbsent(value, value.getDefaultValue());
+	}
+
+	private static <T> void setIfAbsent(TrackedValue<T> value, T newValue) {
+		if (value.getDefaultValue().equals(value.value())) {
+			value.setValue(newValue, true);
+		}
+	}
 
 	public static class Fonts extends ReflectiveConfig.Section {
 		public final TrackedValue<SerializableFont> defaultBold = this.value(new SerializableFont(Font.decode(Font.DIALOG).deriveFont(Font.BOLD)));
@@ -84,7 +110,7 @@ public class Theme extends ReflectiveConfig.Section {
 	/**
 	 * Default values are for light themes.
 	 */
-	public static class Colors extends ReflectiveConfig.Section {
+	public static class SyntaxPaneColors extends ReflectiveConfig.Section {
 		public final TrackedValue<SerializableColor> lineNumbersForeground;
 		public final TrackedValue<SerializableColor> lineNumbersBackground;
 		public final TrackedValue<SerializableColor> lineNumbersSelected;
@@ -113,39 +139,7 @@ public class Theme extends ReflectiveConfig.Section {
 		public final TrackedValue<SerializableColor> debugTokenOutline;
 		public final TrackedValue<SerializableColor> dockHighlight;
 
-		public static class SerializableColor extends Color implements ConfigSerializableObject<String> {
-			SerializableColor(int rgba) {
-				super(rgba, true);
-			}
-
-			@Override
-			public SerializableColor convertFrom(String representation) {
-				return new SerializableColor(new Color(
-					Integer.valueOf(representation.substring(0, 2), 16),
-					Integer.valueOf(representation.substring(2, 4), 16),
-					Integer.valueOf(representation.substring(4, 6), 16),
-					Integer.valueOf(representation.substring(6, 8), 16)
-				).getRGB());
-			}
-
-			@Override
-			public String getRepresentation() {
-				int rgba = (this.getRGB() << 8) | this.getAlpha();
-				return String.format("%08X", rgba);
-			}
-
-			@Override
-			public ComplexConfigValue copy() {
-				return new SerializableColor(this.getRGB());
-			}
-
-			@Override
-			public String toString() {
-				return "SerializableColor" + "[r=" + this.getRed() + ",g=" + this.getGreen() + ",b=" + this.getBlue() + ",a=" + this.getAlpha() + "]" + " (hex=" + this.getRepresentation() + ")";
-			}
-		}
-
-		private Colors(
+		private SyntaxPaneColors(
 				SerializableColor lineNumbersForeground,
 				SerializableColor lineNumbersBackground,
 				SerializableColor lineNumbersSelected,
@@ -204,45 +198,39 @@ public class Theme extends ReflectiveConfig.Section {
 		}
 
 		public void configure() {
-			Stream.of(
-					this.lineNumbersForeground,
-					this.lineNumbersBackground,
-					this.lineNumbersSelected,
-
-					this.obfuscated,
-					this.obfuscatedOutline,
-
-					this.proposed,
-					this.proposedOutline,
-
-					this.deobfuscated,
-					this.deobfuscatedOutline,
-
-					this.editorBackground,
-					this.highlight,
-					this.caret,
-					this.selectionHighlight,
-					this.string,
-					this.number,
-					this.operator,
-					this.delimiter,
-					this.type,
-					this.identifier,
-					this.text,
-
-					this.debugToken,
-					this.debugTokenOutline
-			).forEach(Colors::resetIfAbsent);
+			stream().forEach(Theme::resetIfAbsent);
 		}
 
-		private static <T> void resetIfAbsent(TrackedValue<T> value) {
-			setIfAbsent(value, value.getDefaultValue());
-		}
+		public Stream<TrackedValue<SerializableColor>> stream() {
+			return Stream.of(
+				this.lineNumbersForeground,
+				this.lineNumbersBackground,
+				this.lineNumbersSelected,
 
-		private static <T> void setIfAbsent(TrackedValue<T> value, T newValue) {
-			if (value.getDefaultValue().equals(value.value())) {
-				value.setValue(newValue, true);
-			}
+				this.obfuscated,
+				this.obfuscatedOutline,
+
+				this.proposed,
+				this.proposedOutline,
+
+				this.deobfuscated,
+				this.deobfuscatedOutline,
+
+				this.editorBackground,
+				this.highlight,
+				this.caret,
+				this.selectionHighlight,
+				this.string,
+				this.number,
+				this.operator,
+				this.delimiter,
+				this.type,
+				this.identifier,
+				this.text,
+
+				this.debugToken,
+				this.debugTokenOutline
+			);
 		}
 
 		public static class Builder {
@@ -274,8 +262,8 @@ public class Theme extends ReflectiveConfig.Section {
 			private SerializableColor debugTokenOutline = new SerializableColor(0xFFBD93F9);
 			private SerializableColor dockHighlight = new SerializableColor(0xFF0000FF);
 
-			public Colors build() {
-				return new Colors(
+			public SyntaxPaneColors build() {
+				return new SyntaxPaneColors(
 					this.lineNumbersForeground,
 					this.lineNumbersBackground,
 					this.lineNumbersSelected,
@@ -425,6 +413,185 @@ public class Theme extends ReflectiveConfig.Section {
 				this.dockHighlight = dockHighlight;
 				return this;
 			}
+		}
+	}
+
+	public static class LookAndFeelColors extends ReflectiveConfig.Section {
+		public final TrackedValue<SerializableColor> foreground;
+		public final TrackedValue<SerializableColor> background;
+
+		public final TrackedValue<SerializableColor> accentBaseColor;
+
+		public final TrackedValue<SerializableColor> activeCaption;
+		public final TrackedValue<SerializableColor> inactiveCaption;
+
+		public final TrackedValue<SerializableColor> errorBorder;
+
+		public final TrackedValue<SerializableColor> warningBorder;
+
+		private LookAndFeelColors(
+			SerializableColor foreground,
+			SerializableColor background,
+
+			SerializableColor accentBaseColor,
+
+			SerializableColor activeCaption,
+			SerializableColor inactiveCaption,
+
+			SerializableColor errorBorder,
+			SerializableColor warningBorder
+		) {
+			this.foreground = this.value(foreground);
+			this.background = this.value(background);
+
+			this.accentBaseColor = this.value(accentBaseColor);
+
+			this.activeCaption = this.value(activeCaption);
+			this.inactiveCaption = this.value(inactiveCaption);
+
+			this.errorBorder = this.value(errorBorder);
+			this.warningBorder = this.value(warningBorder);
+		}
+
+		public void configure() {
+			stream().forEach(Theme::resetIfAbsent);
+		}
+
+		public Stream<TrackedValue<SerializableColor>> stream() {
+			return Stream.of(
+				this.foreground,
+				this.background,
+
+				this.accentBaseColor,
+				this.activeCaption,
+				this.inactiveCaption,
+
+				this.errorBorder,
+				this.warningBorder
+			);
+		}
+
+		public TrackedValue<SerializableColor> getWarningBorder() {
+			return warningBorder;
+		}
+
+		public TrackedValue<SerializableColor> getErrorBorder() {
+			return errorBorder;
+		}
+
+		public TrackedValue<SerializableColor> getInactiveCaption() {
+			return inactiveCaption;
+		}
+
+		public TrackedValue<SerializableColor> getActiveCaption() {
+			return activeCaption;
+		}
+
+		public TrackedValue<SerializableColor> getAccentBaseColor() {
+			return accentBaseColor;
+		}
+
+		public TrackedValue<SerializableColor> getBackground() {
+			return background;
+		}
+
+		public TrackedValue<SerializableColor> getForeground() {
+			return foreground;
+		}
+
+		public static class Builder {
+			private SerializableColor foreground = new SerializableColor(0xFF000000);
+			private SerializableColor background = new SerializableColor(0xFFF2F2F2);
+
+			private SerializableColor accentBaseColor = new SerializableColor(0xFF2675BF);
+
+			private SerializableColor activeCaption = new SerializableColor(0xFF99B4D1);
+			private SerializableColor inactiveCaption = new SerializableColor(0xFFBFCDDB);
+
+			private SerializableColor errorBorder = new SerializableColor(0xFFE53E4D);
+			private SerializableColor warningBorder = new SerializableColor(0xFFE2A53A);
+
+			public LookAndFeelColors build() {
+				return new LookAndFeelColors(
+					this.foreground,
+					this.background,
+
+					this.accentBaseColor,
+
+					this.activeCaption,
+					this.inactiveCaption,
+
+					this.errorBorder,
+					this.warningBorder
+				);
+			}
+
+			public Builder foreground(SerializableColor foreground) {
+				this.foreground = foreground;
+				return this;
+			}
+
+			public Builder background(SerializableColor background) {
+				this.background = background;
+				return this;
+			}
+
+			public Builder accentBaseColor(SerializableColor accentBaseColor) {
+				this.accentBaseColor = accentBaseColor;
+				return this;
+			}
+
+			public Builder activeCaption(SerializableColor activeCaption) {
+				this.activeCaption = activeCaption;
+				return this;
+			}
+
+			public Builder inactiveCaption(SerializableColor inactiveCaption) {
+				this.inactiveCaption = inactiveCaption;
+				return this;
+			}
+
+			public Builder errorBorder(SerializableColor errorBorder) {
+				this.errorBorder = errorBorder;
+				return this;
+			}
+
+			public Builder warningBorder(SerializableColor warningBorder) {
+				this.warningBorder = warningBorder;
+				return this;
+			}
+		}
+	}
+
+	public static class SerializableColor extends Color implements ConfigSerializableObject<String> {
+		SerializableColor(int rgba) {
+			super(rgba, true);
+		}
+
+		@Override
+		public SerializableColor convertFrom(String representation) {
+			return new SerializableColor(new Color(
+				Integer.valueOf(representation.substring(0, 2), 16),
+				Integer.valueOf(representation.substring(2, 4), 16),
+				Integer.valueOf(representation.substring(4, 6), 16),
+				Integer.valueOf(representation.substring(6, 8), 16)
+			).getRGB());
+		}
+
+		@Override
+		public String getRepresentation() {
+			int rgba = (this.getRGB() << 8) | this.getAlpha();
+			return String.format("%08X", rgba);
+		}
+
+		@Override
+		public ComplexConfigValue copy() {
+			return new SerializableColor(this.getRGB());
+		}
+
+		@Override
+		public String toString() {
+			return "SerializableColor" + "[r=" + this.getRed() + ",g=" + this.getGreen() + ",b=" + this.getBlue() + ",a=" + this.getAlpha() + "]" + " (hex=" + this.getRepresentation() + ")";
 		}
 	}
 }

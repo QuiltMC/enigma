@@ -23,7 +23,7 @@ public class InheritanceTreeCellRenderer extends DefaultTreeCellRenderer {
 		Component ret = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 
 		if (!(value instanceof MethodInheritanceTreeNode node) || node.isImplemented()) {
-			ret.setForeground(Config.currentColors().text.value());
+			ret.setForeground(Config.getCurrentSyntaxPaneColors().text.value());
 			ret.setFont(ret.getFont().deriveFont(Font.PLAIN));
 			if (value instanceof ClassInheritanceTreeNode) {
 				this.setIcon(GuiUtil.getClassIcon(this.gui, ((ClassInheritanceTreeNode) value).getClassEntry()));
@@ -31,7 +31,7 @@ public class InheritanceTreeCellRenderer extends DefaultTreeCellRenderer {
 				this.setIcon(GuiUtil.getMethodIcon(((MethodInheritanceTreeNode) value).getMethodEntry()));
 			}
 		} else {
-			ret.setForeground(Config.currentColors().number.value());
+			ret.setForeground(Config.getCurrentSyntaxPaneColors().number.value());
 			ret.setFont(ret.getFont().deriveFont(Font.ITALIC));
 			this.setIcon(GuiUtil.CLASS_ICON);
 		}

@@ -111,7 +111,7 @@ public class DockerSelector extends JPanel {
 		if (this.hovered != null) {
 			Rectangle paintedBounds = this.getScreenBoundsFor(this.hovered);
 
-			Color color = Config.currentColors().dockHighlight.value();
+			Color color = Config.getCurrentSyntaxPaneColors().dockHighlight.value();
 			graphics.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 100));
 			graphics.fillRect(0, this.hovered.equals(this.bottomSelector) ? paintedBounds.height : 0, paintedBounds.width, paintedBounds.height);
 			this.repaint();

@@ -1,14 +1,14 @@
 package quilt.internal.task;
 
-import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatLightLaf;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.GradleException;
+import org.gradle.api.provider.ListProperty;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -16,32 +16,43 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class PrintColorKeyGroupsMapCodeTask extends DefaultTask {
+	@Input
+	public abstract ListProperty<LookAndFeel> getLookAndFeels();
+
 	@TaskAction
 	public void run() {
-		printDistinctColorKeyGroupsMapCode(
-			UIManager.getLookAndFeel(),
-			new MetalLookAndFeel(),
-			new FlatLightLaf(),
-			new FlatDarkLaf(),
-			new FlatDarculaLaf()
-		);
+		final List<LookAndFeel> lookAndFeels = getLookAndFeels().get();
+
+		if (lookAndFeels.isEmpty()) {
+			throw new GradleException("empty lookAndFeels");
+		} else {
+			printColorKeyGroupsMapCode(lookAndFeels);
+		}
 	}
 
-	private static List<Set<String>> getDistinctColorKeyGroups(LookAndFeel... lookAndFeels) {
-		final List<List<Set<String>>> themesKeyGroups = Arrays.stream(lookAndFeels)
-			.map(PrintColorKeyGroupsMapCodeTask::getUniqueColors)
-			.map(uniqueColors ->
-				uniqueColors.values()
-					.stream()
-					.map(keyObjects ->
-						keyObjects.stream()
-							.map(Object::toString)
-							.collect(Collectors.<String, Set<String>>toCollection(LinkedHashSet::new))
-					)
-					.toList()
-			).toList();
+	private static List<Set<String>> getCombinedColorKeyGroups(List<LookAndFeel> lookAndFeels) {
+		final List<List<Set<String>>> themesKeyGroups = lookAndFeels.stream()
+			.map(PrintColorKeyGroupsMapCodeTask::getColorKeyGroups)
+			.toList();
 
-		// map from each color key to each color key that always shares the same color
+		final Map<String, Set<String>> keysToDistinctGroups = getKeysToDistinctGroups(themesKeyGroups);
+
+		final List<Set<String>> distinctGroups = new LinkedList<>();
+
+		while (!keysToDistinctGroups.isEmpty()) {
+			final Set<String> distinctGroup = keysToDistinctGroups.values().iterator().next();
+
+			distinctGroups.add(distinctGroup);
+
+			distinctGroup.forEach(keysToDistinctGroups::remove);
+		}
+
+		return distinctGroups;
+	}
+
+	// map from each color key to each color key that always shares the same color
+	@NotNull
+	private static Map<String, Set<String>> getKeysToDistinctGroups(List<List<Set<String>>> themesKeyGroups) {
 		final Map<String, Set<String>> keysToDistinctGroups = new LinkedHashMap<>();
 
 		themesKeyGroups.forEach(themeKeyGroups ->
@@ -101,30 +112,22 @@ public abstract class PrintColorKeyGroupsMapCodeTask extends DefaultTask {
 			)
 		);
 
-		final List<Set<String>> distinctGroups = new LinkedList<>();
-
-		while (!keysToDistinctGroups.isEmpty()) {
-			final Set<String> distinctGroup = keysToDistinctGroups.values().iterator().next();
-
-			distinctGroups.add(distinctGroup);
-
-			distinctGroup.forEach(keysToDistinctGroups::remove);
-		}
-
-		return distinctGroups;
+		return keysToDistinctGroups;
 	}
 
-	private static void printDistinctColorKeyGroupsMapCode(LookAndFeel... lookAndFeels) {
-		final List<Set<String>> distinctGroups = getDistinctColorKeyGroups(lookAndFeels);
+	private static void printColorKeyGroupsMapCode(List<LookAndFeel> lookAndFeels) {
+		final List<Set<String>> colorKeyGroups = lookAndFeels.size() == 1 ?
+			getColorKeyGroups(lookAndFeels.get(0)) :
+			getCombinedColorKeyGroups(lookAndFeels);
 
 		final int[] i = {0};
 		System.out.println(
 			"Map.<String, List<String>>ofEntries(\n" +
 
-				distinctGroups.stream()
+				colorKeyGroups.stream()
 					.flatMap(group ->
 						Stream.of(
-							"Map.entry(\"group-" + i[0]++ + "\", List.of(\n" +
+							"Map.entry(\"group_" + i[0]++ + "\", List.of(\n" +
 
 								group.stream()
 									.map(key -> "\"" + key + "\"")
@@ -136,6 +139,17 @@ public abstract class PrintColorKeyGroupsMapCodeTask extends DefaultTask {
 
 				"\n);"
 		);
+	}
+
+	private static List<Set<String>> getColorKeyGroups(LookAndFeel lookAndFeel) {
+		return getUniqueColors(lookAndFeel).values()
+			.stream()
+			.map(keyObjects ->
+				keyObjects.stream()
+					.map(Object::toString)
+					.collect(Collectors.<String, Set<String>>toCollection(LinkedHashSet::new))
+			)
+			.toList();
 	}
 
 	private static Map<Color, List<Object>> getUniqueColors(LookAndFeel lookAndFeel) {
