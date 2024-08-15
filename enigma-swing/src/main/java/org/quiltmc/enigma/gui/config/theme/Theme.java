@@ -15,13 +15,17 @@ import java.util.stream.Stream;
 
 @SerializedNameConvention(NamingSchemes.SNAKE_CASE)
 public class Theme extends ReflectiveConfig.Section {
-	public final transient ThemeProperties themeProperties;
-
-	public Theme(ThemeProperties properties) {
-		this.themeProperties = properties;
-		this.syntaxPaneColors = properties.syntaxPaneColorsFactory.get().build();
-		this.lookAndFeelColors = properties.lookAndFeelColorsFactory.get().build();
+	private static <T> void resetIfAbsent(TrackedValue<T> value) {
+		setIfAbsent(value, value.getDefaultValue());
 	}
+
+	private static <T> void setIfAbsent(TrackedValue<T> value, T newValue) {
+		if (value.getDefaultValue().equals(value.value())) {
+			value.setValue(newValue, true);
+		}
+	}
+
+	public final transient ThemeProperties properties;
 
 	@Comment("Colors are encoded in the RGBA format.")
 	public final SyntaxPaneColors syntaxPaneColors;
@@ -31,14 +35,10 @@ public class Theme extends ReflectiveConfig.Section {
 
 	public final Fonts fonts = new Fonts();
 
-	private static <T> void resetIfAbsent(TrackedValue<T> value) {
-		setIfAbsent(value, value.getDefaultValue());
-	}
-
-	private static <T> void setIfAbsent(TrackedValue<T> value, T newValue) {
-		if (value.getDefaultValue().equals(value.value())) {
-			value.setValue(newValue, true);
-		}
+	public Theme(ThemeProperties properties) {
+		this.properties = properties;
+		this.syntaxPaneColors = properties.syntaxPaneColorsFactory.get().build();
+		this.lookAndFeelColors = properties.lookAndFeelColorsFactory.get().build();
 	}
 
 	public static class Fonts extends ReflectiveConfig.Section {

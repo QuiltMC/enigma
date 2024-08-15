@@ -26,7 +26,12 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The Enigma config is separated into five different files: {@link Config the main config (this one)},
@@ -45,6 +50,22 @@ public final class Config extends ReflectiveConfig {
 	private static final NetConfig NET = ConfigFactory.create(ENVIRONMENT, FAMILY, "net", NetConfig.class);
 	private static final DockerConfig DOCKER = ConfigFactory.create(ENVIRONMENT, FAMILY, "docker", DockerConfig.class);
 	private static final DecompilerConfig DECOMPILER = ConfigFactory.create(ENVIRONMENT, FAMILY, "decompiler", DecompilerConfig.class);
+
+	// this map ensures:
+	// 1. each ThemeProperties has an associated theme (by using ThemeProperties.values()) [similar to enhanced switch]
+	// 2. each ThemeProperties is associated with the theme that uses it (albeit at runtime) [improvement over switch]
+	private static final Map<ThemeProperties, Theme> THEMES_BY_PROPERTIES = Arrays.stream(ThemeProperties.values())
+		.collect(Collectors.toMap(
+			Function.identity(),
+			properties -> main().streamThemes()
+				.filter(theme -> theme.properties == properties)
+				.findAny()
+				.orElseThrow(() ->
+					new IllegalStateException("Config#streamThemes() missing value for " + properties)
+				),
+			(l, r) -> { throw new IllegalStateException("impossible duplicate enum value"); },
+			() -> new EnumMap<>(ThemeProperties.class)
+		));
 
 	@Comment("The currently assigned UI language. This will be an ISO-639 two-letter language code, followed by an underscore and an ISO 3166-1 alpha-2 two-letter country code.")
 	@Processor("grabPossibleLanguages")
@@ -123,14 +144,7 @@ public final class Config extends ReflectiveConfig {
 	}
 
 	public static Theme currentTheme() {
-		return switch (activeThemeProperties) {
-			case DEFAULT -> main().defaultTheme;
-			case DARCULA -> main().darculaTheme;
-			case DARCERULA -> main().darcerulaTheme;
-			case METAL -> main().metalTheme;
-			case SYSTEM -> main().systemTheme;
-			case NONE -> main().noneTheme;
-		};
+		return THEMES_BY_PROPERTIES.get(activeThemeProperties);
 	}
 
 	public static Theme.SyntaxPaneColors getCurrentSyntaxPaneColors() {
@@ -146,7 +160,7 @@ public final class Config extends ReflectiveConfig {
 			final Theme currentTheme = currentTheme();
 
 			final Function<Theme.LookAndFeelColors, javax.swing.LookAndFeel> constructor =
-				currentTheme.themeProperties.lookAndFeelFactory;
+				currentTheme.properties.lookAndFeelFactory;
 
 			if (constructor == null) {
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -189,6 +203,17 @@ public final class Config extends ReflectiveConfig {
 	public void grabPossibleLanguages(TrackedValue.Builder<String> builder) {
 		String possibleLanguages = "Supported languages: " + String.join(", ", I18n.getAvailableLanguages().toArray(new String[0]));
 		builder.metadata(Comment.TYPE, b -> b.add(possibleLanguages));
+	}
+
+	private Stream<Theme> streamThemes() {
+		return Stream.of(
+			this.defaultTheme,
+			this.darculaTheme,
+			this.darcerulaTheme,
+			this.metalTheme,
+			this.systemTheme,
+			this.noneTheme
+		);
 	}
 
 	public record RecentProject(String jarPath, String mappingsPath) implements ConfigSerializableObject<ValueMap<String>> {
