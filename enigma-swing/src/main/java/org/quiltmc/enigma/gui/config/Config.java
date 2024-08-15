@@ -14,8 +14,7 @@ import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.config.implementor_api.ConfigEnvironment;
 import org.quiltmc.config.implementor_api.ConfigFactory;
 import org.quiltmc.enigma.gui.NotificationManager;
-import org.quiltmc.enigma.gui.config.theme.ColorsFactories;
-import org.quiltmc.enigma.gui.config.theme.LookAndFeel;
+import org.quiltmc.enigma.gui.config.theme.ThemeProperties;
 import org.quiltmc.enigma.gui.config.theme.Theme;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindDialog;
 import org.quiltmc.enigma.util.I18n;
@@ -72,21 +71,24 @@ public final class Config extends ReflectiveConfig {
 	public final DevSection development = new DevSection();
 
 	/**
-	 * The look and feel stored in the config: do not use this unless setting! Use {@link #activeLookAndFeel} instead,
+	 * The look and feel stored in the config: do not use this unless setting! Use {@link #activeThemeProperties} instead,
 	 * since look and feel is final once loaded.
 	 */
-	public final TrackedValue<LookAndFeel> lookAndFeel = this.value(LookAndFeel.DEFAULT);
+	public final TrackedValue<ThemeProperties> theme = this.value(ThemeProperties.DEFAULT);
 	/**
 	 * Look and feel is not modifiable at runtime. I have tried and failed multiple times to get this running.
 	 */
-	public static LookAndFeel activeLookAndFeel;
+	public static ThemeProperties activeThemeProperties;
 
-	public final Theme defaultTheme = new Theme(LookAndFeel.DEFAULT);
-	public final Theme darculaTheme = new Theme(LookAndFeel.DARCULA, ColorsFactories.createDarcula());
-	public final Theme darcerulaTheme = new Theme(LookAndFeel.DARCERULA, ColorsFactories.createDarcerula());
-	public final Theme metalTheme = new Theme(LookAndFeel.METAL);
-	public final Theme systemTheme = new Theme(LookAndFeel.SYSTEM);
-	public final Theme noneTheme = new Theme(LookAndFeel.NONE);
+	public final Theme defaultTheme = new Theme(ThemeProperties.DEFAULT);
+	public final Theme darculaTheme = new Theme(ThemeProperties.DARCULA);
+	public final Theme darcerulaTheme = new Theme(ThemeProperties.DARCERULA);
+	public final Theme metalTheme = new Theme(ThemeProperties.METAL);
+	// TODO: see if these can be made optional
+	@Comment("look_and_feel_colors are ignored for system_theme")
+	public final Theme systemTheme = new Theme(ThemeProperties.SYSTEM);
+	@Comment("look_and_feel_colors are ignored for none_theme")
+	public final Theme noneTheme = new Theme(ThemeProperties.NONE);
 
 	@SuppressWarnings("unused")
 	public void processChange(org.quiltmc.config.api.Config.Builder builder) {
@@ -121,7 +123,7 @@ public final class Config extends ReflectiveConfig {
 	}
 
 	public static Theme currentTheme() {
-		return switch (activeLookAndFeel) {
+		return switch (activeThemeProperties) {
 			case DEFAULT -> main().defaultTheme;
 			case DARCULA -> main().darculaTheme;
 			case DARCERULA -> main().darcerulaTheme;
@@ -144,7 +146,7 @@ public final class Config extends ReflectiveConfig {
 			final Theme currentTheme = currentTheme();
 
 			final Function<Theme.LookAndFeelColors, javax.swing.LookAndFeel> constructor =
-				currentTheme.lookAndFeel.constructor;
+				currentTheme.themeProperties.lookAndFeelFactory;
 
 			if (constructor == null) {
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());

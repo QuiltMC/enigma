@@ -15,33 +15,12 @@ import java.util.stream.Stream;
 
 @SerializedNameConvention(NamingSchemes.SNAKE_CASE)
 public class Theme extends ReflectiveConfig.Section {
-	public final transient LookAndFeel lookAndFeel;
+	public final transient ThemeProperties themeProperties;
 
-	/**
-	 * Create a theme with the default colors.
-	 */
-	public Theme(LookAndFeel lookAndFeel) {
-		this(lookAndFeel, new SyntaxPaneColors.Builder());
-	}
-
-	public Theme(
-		LookAndFeel lookAndFeel,
-		SyntaxPaneColors.Builder syntaxPaneColors
-	) {
-		this(lookAndFeel, syntaxPaneColors, new LookAndFeelColors.Builder());
-	}
-
-	/**
-	 * Create a theme with custom colors.
-	 */
-	public Theme(
-		LookAndFeel lookAndFeel,
-		SyntaxPaneColors.Builder syntaxPaneColors,
-		LookAndFeelColors.Builder lookAndFeelColors
-	) {
-		this.lookAndFeel = lookAndFeel;
-		this.syntaxPaneColors = syntaxPaneColors.build();
-		this.lookAndFeelColors = lookAndFeelColors.build();
+	public Theme(ThemeProperties properties) {
+		this.themeProperties = properties;
+		this.syntaxPaneColors = properties.syntaxPaneColorsFactory.get().build();
+		this.lookAndFeelColors = properties.lookAndFeelColorsFactory.get().build();
 	}
 
 	@Comment("Colors are encoded in the RGBA format.")
@@ -499,6 +478,7 @@ public class Theme extends ReflectiveConfig.Section {
 			return foreground;
 		}
 
+		// default colors are from FlatLightLaf.properties
 		public static class Builder {
 			private SerializableColor foreground = new SerializableColor(0xFF000000);
 			private SerializableColor background = new SerializableColor(0xFFF2F2F2);

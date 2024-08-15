@@ -1,17 +1,20 @@
 package org.quiltmc.enigma.gui.config.theme;
 
 /**
- * Factory  methods for creating non-default sets of colors for themes.
- *
+ * Factory  methods for creating syntax pane colors for themes.
  * <p>
  * These can't be created in {@link Theme} subclasses because of a quilt-config limitation.
  */
-public final class ColorsFactories {
-	private ColorsFactories() { }
+public final class SyntaxPaneColorsFactories {
+	private SyntaxPaneColorsFactories() { }
+
+	public static Theme.SyntaxPaneColors.Builder createDefault() {
+		// default colors are for LookAndFeel.DEFAULT
+		return new Theme.SyntaxPaneColors.Builder();
+	}
 
 	public static Theme.SyntaxPaneColors.Builder createDarcula() {
-		final var colors = new Theme.SyntaxPaneColors.Builder();
-		return colors
+		return new Theme.SyntaxPaneColors.Builder()
 			.lineNumbersForeground(new Theme.SerializableColor(0xFFA4A4A3))
 			.lineNumbersBackground(new Theme.SerializableColor(0xFF313335))
 			.lineNumbersSelected(new Theme.SerializableColor(0xFF606366))
