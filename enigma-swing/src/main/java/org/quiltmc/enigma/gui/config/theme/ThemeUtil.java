@@ -19,20 +19,20 @@ public final class ThemeUtil {
 	private ThemeUtil() { }
 
 	public static Map<String, Function<Theme.LookAndFeelColors, TrackedValue<Theme.SerializableColor>>>
-	createColorGettersByKey(
-		Stream<String> foregroundKeys,
-		Stream<String> backgroundKeys,
+			createColorGettersByKey(
+				Stream<String> foregroundKeys,
+				Stream<String> backgroundKeys,
 
-		Stream<String> accentBaseColorKeys,
+				Stream<String> accentBaseColorKeys,
 
-		Stream<String> activeCaptionKeys,
-		Stream<String> inactiveCaptionKeys,
+				Stream<String> activeCaptionKeys,
+				Stream<String> inactiveCaptionKeys,
 
-		Stream<String> errorBorderKeys,
-		Stream<String> warningBorderKeys
+				Stream<String> errorBorderKeys,
+				Stream<String> warningBorderKeys
 	) {
-		return Stream.
-			<Map.Entry<Stream<String>, Function<Theme.LookAndFeelColors, TrackedValue<Theme.SerializableColor>>>>
+		return Stream
+			.<Map.Entry<Stream<String>, Function<Theme.LookAndFeelColors, TrackedValue<Theme.SerializableColor>>>>
 			of(
 				Map.entry(foregroundKeys, Theme.LookAndFeelColors::getForeground),
 				Map.entry(backgroundKeys, Theme.LookAndFeelColors::getBackground),
@@ -48,6 +48,7 @@ public final class ThemeUtil {
 				.flatMap(entry -> entry.getKey().map(key -> Map.entry(key, entry.getValue())))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
+
 	// Calling this after the UI is initialized (e.g. when the user changes
 	// theme settings) is currently not functional.
 	public static void setupTheme() {

@@ -63,20 +63,20 @@ public enum ThemeProperties implements ConfigSerializableObject<String> {
 	public final boolean needsScaling;
 
 	ThemeProperties(
-		@Nullable Function<Theme.LookAndFeelColors, javax.swing.LookAndFeel> lookAndFeelFactory,
-		@Nullable Supplier<Theme.LookAndFeelColors.Builder> lookAndFeelColorsFactory,
-		@Nullable Supplier<Theme.SyntaxPaneColors.Builder> syntaxPaneColorsFactory,
-		boolean needsScaling
+			@Nullable Function<Theme.LookAndFeelColors, javax.swing.LookAndFeel> lookAndFeelFactory,
+			@Nullable Supplier<Theme.LookAndFeelColors.Builder> lookAndFeelColorsFactory,
+			@Nullable Supplier<Theme.SyntaxPaneColors.Builder> syntaxPaneColorsFactory,
+			boolean needsScaling
 	) {
 		this.lookAndFeelFactory = lookAndFeelFactory;
 
-		this.syntaxPaneColorsFactory = syntaxPaneColorsFactory == null ?
-			Theme.SyntaxPaneColors.Builder::new :
-			syntaxPaneColorsFactory;
+		this.syntaxPaneColorsFactory = syntaxPaneColorsFactory == null
+			? Theme.SyntaxPaneColors.Builder::new
+			: syntaxPaneColorsFactory;
 
-		this.lookAndFeelColorsFactory = lookAndFeelColorsFactory == null ?
-			Theme.LookAndFeelColors.Builder::new :
-			lookAndFeelColorsFactory;
+		this.lookAndFeelColorsFactory = lookAndFeelColorsFactory == null
+			? Theme.LookAndFeelColors.Builder::new
+			: lookAndFeelColorsFactory;
 
 		this.needsScaling = needsScaling;
 	}

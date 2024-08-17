@@ -177,7 +177,7 @@ public class Theme extends ReflectiveConfig.Section {
 		}
 
 		public void configure() {
-			stream().forEach(Theme::resetIfAbsent);
+			this.stream().forEach(Theme::resetIfAbsent);
 		}
 
 		public Stream<TrackedValue<SerializableColor>> stream() {
@@ -409,16 +409,16 @@ public class Theme extends ReflectiveConfig.Section {
 		public final TrackedValue<SerializableColor> warningBorder;
 
 		private LookAndFeelColors(
-			SerializableColor foreground,
-			SerializableColor background,
+				SerializableColor foreground,
+				SerializableColor background,
 
-			SerializableColor accentBaseColor,
+				SerializableColor accentBaseColor,
 
-			SerializableColor activeCaption,
-			SerializableColor inactiveCaption,
+				SerializableColor activeCaption,
+				SerializableColor inactiveCaption,
 
-			SerializableColor errorBorder,
-			SerializableColor warningBorder
+				SerializableColor errorBorder,
+				SerializableColor warningBorder
 		) {
 			this.foreground = this.value(foreground);
 			this.background = this.value(background);
@@ -433,7 +433,7 @@ public class Theme extends ReflectiveConfig.Section {
 		}
 
 		public void configure() {
-			stream().forEach(Theme::resetIfAbsent);
+			this.stream().forEach(Theme::resetIfAbsent);
 		}
 
 		public Stream<TrackedValue<SerializableColor>> stream() {
@@ -451,31 +451,31 @@ public class Theme extends ReflectiveConfig.Section {
 		}
 
 		public TrackedValue<SerializableColor> getWarningBorder() {
-			return warningBorder;
+			return this.warningBorder;
 		}
 
 		public TrackedValue<SerializableColor> getErrorBorder() {
-			return errorBorder;
+			return this.errorBorder;
 		}
 
 		public TrackedValue<SerializableColor> getInactiveCaption() {
-			return inactiveCaption;
+			return this.inactiveCaption;
 		}
 
 		public TrackedValue<SerializableColor> getActiveCaption() {
-			return activeCaption;
+			return this.activeCaption;
 		}
 
 		public TrackedValue<SerializableColor> getAccentBaseColor() {
-			return accentBaseColor;
+			return this.accentBaseColor;
 		}
 
 		public TrackedValue<SerializableColor> getBackground() {
-			return background;
+			return this.background;
 		}
 
 		public TrackedValue<SerializableColor> getForeground() {
-			return foreground;
+			return this.foreground;
 		}
 
 		// default colors are from FlatLightLaf.properties

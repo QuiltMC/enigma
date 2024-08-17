@@ -3,24 +3,25 @@ package org.quiltmc.enigma.gui.config.theme;
 import com.formdev.flatlaf.FlatPropertiesLaf;
 import org.quiltmc.config.api.values.TrackedValue;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Properties;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 public abstract class ConfigurableFlatLaf extends FlatPropertiesLaf {
 	private static final Map<String, Function<Theme.LookAndFeelColors, TrackedValue<Theme.SerializableColor>>>
-		COLOR_GETTERS_BY_KEY = ThemeUtil.createColorGettersByKey(
-			Stream.of("@foreground"),
-			Stream.of("@background"),
+			COLOR_GETTERS_BY_KEY = ThemeUtil.createColorGettersByKey(
+				Stream.of("@foreground"),
+				Stream.of("@background"),
 
-			Stream.of("@accentBaseColor"),
+				Stream.of("@accentBaseColor"),
 
-			Stream.of("activeCaption"),
-			Stream.of("inactiveCaption"),
+				Stream.of("activeCaption"),
+				Stream.of("inactiveCaption"),
 
-			Stream.of("Component.error.focusedBorderColor"),
-			Stream.of("Component.warning.focusedBorderColor")
-		);
+				Stream.of("Component.error.focusedBorderColor"),
+				Stream.of("Component.warning.focusedBorderColor")
+			);
 
 	private static String colorPropertyValueOf(Theme.SerializableColor color) {
 		return "#" + color.getRepresentation();
@@ -37,10 +38,10 @@ public abstract class ConfigurableFlatLaf extends FlatPropertiesLaf {
 
 	private void setColorProperties(Theme.LookAndFeelColors colors) {
 		COLOR_GETTERS_BY_KEY.forEach((key, colorGetter) ->
-			this.getProperties().setProperty(
-				key,
-				colorPropertyValueOf(colorGetter.apply(colors).value())
-			)
+				this.getProperties().setProperty(
+					key,
+					colorPropertyValueOf(colorGetter.apply(colors).value())
+				)
 		);
 	}
 

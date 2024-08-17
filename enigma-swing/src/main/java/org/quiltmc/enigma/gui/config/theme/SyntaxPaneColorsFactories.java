@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.config.theme;
 
 /**
  * Factory  methods for creating syntax pane colors for themes.
+ *
  * <p>
  * These can't be created in {@link Theme} subclasses because of a quilt-config limitation.
  */

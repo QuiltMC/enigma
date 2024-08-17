@@ -15,6 +15,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Brute. Force.
+ * <p>
+ * <°(,, `• - •' ,,)°>
+ */
 public abstract class PrintColorKeyGroupsMapCodeTask extends DefaultTask {
 	@Input
 	public abstract ListProperty<LookAndFeel> getLookAndFeels();

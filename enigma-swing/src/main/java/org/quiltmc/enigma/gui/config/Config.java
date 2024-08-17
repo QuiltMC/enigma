@@ -21,7 +21,7 @@ import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
 import javax.annotation.Nullable;
-import javax.swing.*;
+import javax.swing.UIManager;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.nio.file.Path;
@@ -55,17 +55,19 @@ public final class Config extends ReflectiveConfig {
 	// 1. each ThemeProperties has an associated theme (by using ThemeProperties.values()) [similar to enhanced switch]
 	// 2. each ThemeProperties is associated with the theme that uses it (albeit at runtime) [improvement over switch]
 	private static final Map<ThemeProperties, Theme> THEMES_BY_PROPERTIES = Arrays.stream(ThemeProperties.values())
-		.collect(Collectors.toMap(
-			Function.identity(),
-			properties -> main().streamThemes()
-				.filter(theme -> theme.properties == properties)
-				.findAny()
-				.orElseThrow(() ->
-					new IllegalStateException("Config#streamThemes() missing value for " + properties)
-				),
-			(l, r) -> { throw new IllegalStateException("impossible duplicate enum value"); },
-			() -> new EnumMap<>(ThemeProperties.class)
-		));
+			.collect(Collectors.toMap(
+				Function.identity(),
+				properties -> main().streamThemes()
+					.filter(theme -> theme.properties == properties)
+					.findAny()
+					.orElseThrow(() ->
+						new IllegalStateException("Config#streamThemes() missing value for " + properties)
+					),
+				(l, r) -> {
+					throw new IllegalStateException("impossible duplicate enum value");
+				},
+				() -> new EnumMap<>(ThemeProperties.class)
+			));
 
 	@Comment("The currently assigned UI language. This will be an ISO-639 two-letter language code, followed by an underscore and an ISO 3166-1 alpha-2 two-letter country code.")
 	@Processor("grabPossibleLanguages")
@@ -160,7 +162,7 @@ public final class Config extends ReflectiveConfig {
 			final Theme currentTheme = currentTheme();
 
 			final Function<Theme.LookAndFeelColors, javax.swing.LookAndFeel> constructor =
-				currentTheme.properties.lookAndFeelFactory;
+					currentTheme.properties.lookAndFeelFactory;
 
 			if (constructor == null) {
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());

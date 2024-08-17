@@ -10,8 +10,8 @@ public abstract class AbstractConfigurableFlatDarkLaf extends ConfigurableFlatLa
 		// 		so some buttons have a light background with very low contrast against the foreground.
 		// This adds a rough equivalent to FlatLightLaf's property.
 		this.getProperties().setProperty(
-			"Button.focusedBackground",
-			"lighten($Component.focusColor,5%,derived noAutoInverse)"
+				"Button.focusedBackground",
+				"lighten($Component.focusColor,5%,derived noAutoInverse)"
 		);
 	}
 }
