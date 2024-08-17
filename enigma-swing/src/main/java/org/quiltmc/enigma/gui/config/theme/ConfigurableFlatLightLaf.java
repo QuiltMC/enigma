@@ -16,7 +16,7 @@ public class ConfigurableFlatLightLaf extends ConfigurableFlatLaf {
 	}
 
 	@Override
-	protected String getBase() {
-		return "light";
+	protected Base getBase() {
+		return Base.LIGHT;
 	}
 }

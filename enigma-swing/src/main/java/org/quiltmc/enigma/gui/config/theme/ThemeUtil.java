@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.config.theme;
 
+import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
@@ -8,10 +9,45 @@ import org.quiltmc.syntaxpain.JavaSyntaxKit;
 
 import java.awt.Font;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.swing.JEditorPane;
 import javax.swing.UIManager;
 
-public class Themes {
+public final class ThemeUtil {
+	private ThemeUtil() { }
+
+	public static Map<String, Function<Theme.LookAndFeelColors, TrackedValue<Theme.SerializableColor>>>
+	createColorGettersByKey(
+		Stream<String> foregroundKeys,
+		Stream<String> backgroundKeys,
+
+		Stream<String> accentBaseColorKeys,
+
+		Stream<String> activeCaptionKeys,
+		Stream<String> inactiveCaptionKeys,
+
+		Stream<String> errorBorderKeys,
+		Stream<String> warningBorderKeys
+	) {
+		return Stream.
+			<Map.Entry<Stream<String>, Function<Theme.LookAndFeelColors, TrackedValue<Theme.SerializableColor>>>>
+			of(
+				Map.entry(foregroundKeys, Theme.LookAndFeelColors::getForeground),
+				Map.entry(backgroundKeys, Theme.LookAndFeelColors::getBackground),
+
+				Map.entry(accentBaseColorKeys, Theme.LookAndFeelColors::getAccentBaseColor),
+
+				Map.entry(activeCaptionKeys, Theme.LookAndFeelColors::getActiveCaption),
+				Map.entry(inactiveCaptionKeys, Theme.LookAndFeelColors::getInactiveCaption),
+
+				Map.entry(errorBorderKeys, Theme.LookAndFeelColors::getErrorBorder),
+				Map.entry(warningBorderKeys, Theme.LookAndFeelColors::getWarningBorder)
+			)
+				.flatMap(entry -> entry.getKey().map(key -> Map.entry(key, entry.getValue())))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+	}
 	// Calling this after the UI is initialized (e.g. when the user changes
 	// theme settings) is currently not functional.
 	public static void setupTheme() {
@@ -19,7 +55,7 @@ public class Themes {
 		Config.getCurrentSyntaxPaneColors().configure();
 		Config.getCurrentLookAndFeelColors().configure();
 		Config.setGlobalLaf();
-		Themes.setFonts();
+		ThemeUtil.setFonts();
 		Config.updateSyntaxpain();
 		UIManager.put("ScrollBar.showButtons", true);
 		JEditorPane.registerEditorKitForContentType("text/enigma-sources", JavaSyntaxKit.class.getName());

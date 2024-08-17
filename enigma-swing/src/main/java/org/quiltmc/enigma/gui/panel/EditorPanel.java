@@ -9,7 +9,7 @@ import org.quiltmc.enigma.gui.BrowserCaret;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.GuiController;
-import org.quiltmc.enigma.gui.config.theme.Themes;
+import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.element.EditorPopupMenu;
@@ -132,7 +132,7 @@ public class EditorPanel {
 		this.errorTextArea.setEditable(false);
 		this.errorTextArea.setFont(ScaleUtil.getFont(Font.MONOSPACED, Font.PLAIN, 10));
 
-		this.boxHighlightPainters = Themes.getBoxHighlightPainters();
+		this.boxHighlightPainters = ThemeUtil.getBoxHighlightPainters();
 
 		this.editor.addMouseListener(new MouseAdapter() {
 			@Override

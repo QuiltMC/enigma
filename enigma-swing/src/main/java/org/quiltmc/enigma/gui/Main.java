@@ -2,7 +2,7 @@ package org.quiltmc.enigma.gui;
 
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
-import org.quiltmc.enigma.gui.config.theme.Themes;
+import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.CrashDialog;
 import org.quiltmc.enigma.util.I18n;
@@ -105,7 +105,7 @@ public class Main {
 			setDefaultSystemProperty("awt.useSystemAAFontSettings", "on");
 			setDefaultSystemProperty("swing.aatext", "true");
 
-			Themes.setupTheme();
+			ThemeUtil.setupTheme();
 
 			KeyBinds.loadConfig();
 

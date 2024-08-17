@@ -4,7 +4,7 @@ import com.formdev.flatlaf.FlatDarkLaf;
 
 // TODO: see if default colors can be loaded from FlatDarkLaf.properties
 // TODO: investigate 'change theme restart' alert button color
-public class ConfigurableFlatDarkLaf extends ConfigurableFlatLaf {
+public class ConfigurableFlatDarkLaf extends AbstractConfigurableFlatDarkLaf {
 	public static final String NAME = "Configurable " + FlatDarkLaf.NAME;
 
 	public static Theme.LookAndFeelColors.Builder createColors() {
@@ -27,7 +27,7 @@ public class ConfigurableFlatDarkLaf extends ConfigurableFlatLaf {
 	}
 
 	@Override
-	protected String getBase() {
-		return "dark";
+	protected Base getBase() {
+		return Base.DARK;
 	}
 }

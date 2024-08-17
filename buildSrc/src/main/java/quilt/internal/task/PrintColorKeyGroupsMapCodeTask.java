@@ -122,7 +122,7 @@ public abstract class PrintColorKeyGroupsMapCodeTask extends DefaultTask {
 
 		final int[] i = {0};
 		System.out.println(
-			"Map.<String, List<String>>ofEntries(\n" +
+			"final Map<String, List<String>> KEYS_BY_COLOR_GROUP = Stream.<Map.Entry<String, List<String>>>of(\n" +
 
 				colorKeyGroups.stream()
 					.flatMap(group ->
@@ -137,7 +137,15 @@ public abstract class PrintColorKeyGroupsMapCodeTask extends DefaultTask {
 						)
 					).collect(Collectors.joining(",\n")) +
 
-				"\n);"
+				"""
+				\n)
+					.collect(Collectors.toMap(
+					  	Map.Entry::getKey,
+					  	Map.Entry::getValue,
+					  	(l, r) -> { throw new IllegalStateException("duplicate keys"); },
+					  	LinkedHashMap::new
+					));
+				"""
 		);
 	}
 
