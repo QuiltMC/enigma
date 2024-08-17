@@ -1,6 +1,7 @@
-package org.quiltmc.enigma.gui.config.theme;
+package org.quiltmc.enigma.gui.config.theme.look_and_feel;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import org.quiltmc.enigma.gui.config.theme.Theme;
 
 // TODO: see if default colors can be loaded from FlatLightLaf.properties
 public class ConfigurableFlatLightLaf extends ConfigurableFlatLaf {
@@ -11,12 +12,7 @@ public class ConfigurableFlatLightLaf extends ConfigurableFlatLaf {
 		return new Theme.LookAndFeelColors.Builder();
 	}
 
-	protected ConfigurableFlatLightLaf(Theme.LookAndFeelColors colors) {
-		super(NAME, colors);
-	}
-
-	@Override
-	protected Base getBase() {
-		return Base.LIGHT;
+	public ConfigurableFlatLightLaf(Theme.LookAndFeelColors colors) {
+		super(NAME, colors, Base.LIGHT);
 	}
 }

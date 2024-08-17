@@ -1,7 +1,9 @@
-package org.quiltmc.enigma.gui.config.theme;
+package org.quiltmc.enigma.gui.config.theme.look_and_feel;
 
 import com.formdev.flatlaf.FlatPropertiesLaf;
 import org.quiltmc.config.api.values.TrackedValue;
+import org.quiltmc.enigma.gui.config.theme.Theme;
+import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
 
 import java.util.Map;
 import java.util.Properties;
@@ -27,22 +29,23 @@ public abstract class ConfigurableFlatLaf extends FlatPropertiesLaf {
 		return "#" + color.getRepresentation();
 	}
 
-	protected ConfigurableFlatLaf(String name, Theme.LookAndFeelColors colors) {
-		super(name, new Properties(((int) colors.stream().count()) + 1));
+	private static Properties createProperties(Theme.LookAndFeelColors colors, Base base) {
+		final Properties properties = new Properties(((int) colors.stream().count()) + 1);
 
-		this.setColorProperties(colors);
-		this.getProperties().setProperty("@baseTheme", this.getBase().value);
+		properties.setProperty("@baseTheme", base.value);
+
+		COLOR_GETTERS_BY_KEY.forEach((key, colorGetter) ->
+			properties.setProperty(
+				key,
+				colorPropertyValueOf(colorGetter.apply(colors).value())
+			)
+		);
+
+		return properties;
 	}
 
-	protected abstract Base getBase();
-
-	private void setColorProperties(Theme.LookAndFeelColors colors) {
-		COLOR_GETTERS_BY_KEY.forEach((key, colorGetter) ->
-				this.getProperties().setProperty(
-					key,
-					colorPropertyValueOf(colorGetter.apply(colors).value())
-				)
-		);
+	protected ConfigurableFlatLaf(String name, Theme.LookAndFeelColors colors, Base base) {
+		super(name, createProperties(colors, base));
 	}
 
 	/**

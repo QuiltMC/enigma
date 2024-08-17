@@ -1,6 +1,8 @@
-package org.quiltmc.enigma.gui.config.theme;
+package org.quiltmc.enigma.gui.config.theme.look_and_feel;
 
 import org.quiltmc.config.api.values.TrackedValue;
+import org.quiltmc.enigma.gui.config.theme.Theme;
+import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
 
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import java.util.LinkedHashMap;
@@ -127,7 +129,7 @@ public class ConfigurableMetalLaf extends MetalLookAndFeel {
 				),
 
 				// TODO: finish replacing these with MetalLookAndFeel keys
-				Stream.of("@accentBaseColor"),
+				Stream.of(),
 
 				Stream.of("activeCaption"),
 				Stream.of("inactiveCaption"),
@@ -135,6 +137,44 @@ public class ConfigurableMetalLaf extends MetalLookAndFeel {
 				Stream.of("Component.error.focusedBorderColor"),
 				Stream.of("Component.warning.focusedBorderColor")
 			);
+
+	static {
+		// @accentBase2Color = lighten(saturate(@accentBaseColor,10%),6%)
+		Stream.of(
+				"RadioButtonMenuItem.selectionBackground",
+				"ProgressBar.foreground",
+				"Menu.selectionBackground",
+				"CheckBoxMenuItem.selectionBackground",
+				"Button.focus",
+				"ToggleButton.focus",
+				"activeCaptionBorder",
+				"ScrollBar.thumb",
+				"MenuItem.selectionBackground",
+				"RadioButton.focus",
+				"Slider.foreground",
+				"CheckBox.focus",
+				"Slider.focus",
+				"ComboBox.selectionBackground"
+		);
+
+		// @accentCheckmarkColor = if(@accentColor, @accentColor, tint(@accentBase2Color,20%))
+		Stream.of(
+				"TabbedPane.focus",
+				"MenuItem.acceleratorForeground",
+				"List.dropLineColor",
+				"Menu.acceleratorForeground",
+				"Tree.dropLineColor",
+				"Table.dropLineColor",
+				"ScrollBar.thumbShadow",
+				"Separator.foreground",
+				"ToolBar.dockingForeground",
+				"TabbedPane.borderHightlightColor",
+				"Tree.selectionBorderColor",
+				"ProgressBar.selectionBackground",
+				"RadioButtonMenuItem.acceleratorForeground",
+				"CheckBoxMenuItem.acceleratorForeground"
+		);
+	}
 
 	public static final Map<String, List<String>> PROPERTIES_BY_COLOR = Stream.of(
 			// Map.entry("foreground", List.of(
@@ -221,22 +261,22 @@ public class ConfigurableMetalLaf extends MetalLookAndFeel {
 				"MenuItem.disabledForeground",
 				"Button.disabledText"
 			)),
-			Map.entry("foreground_line", List.of(
-				"TabbedPane.focus",
-				"MenuItem.acceleratorForeground",
-				"List.dropLineColor",
-				"Menu.acceleratorForeground",
-				"Tree.dropLineColor",
-				"Table.dropLineColor",
-				"ScrollBar.thumbShadow",
-				"Separator.foreground",
-				"ToolBar.dockingForeground",
-				"TabbedPane.borderHightlightColor",
-				"Tree.selectionBorderColor",
-				"ProgressBar.selectionBackground",
-				"RadioButtonMenuItem.acceleratorForeground",
-				"CheckBoxMenuItem.acceleratorForeground"
-			)),
+			// Map.entry("foreground_line", List.of(
+			// 	"TabbedPane.focus",
+			// 	"MenuItem.acceleratorForeground",
+			// 	"List.dropLineColor",
+			// 	"Menu.acceleratorForeground",
+			// 	"Tree.dropLineColor",
+			// 	"Table.dropLineColor",
+			// 	"ScrollBar.thumbShadow",
+			// 	"Separator.foreground",
+			// 	"ToolBar.dockingForeground",
+			// 	"TabbedPane.borderHightlightColor",
+			// 	"Tree.selectionBorderColor",
+			// 	"ProgressBar.selectionBackground",
+			// 	"RadioButtonMenuItem.acceleratorForeground",
+			// 	"CheckBoxMenuItem.acceleratorForeground"
+			// )),
 
 			// Map.entry("background", List.of(
 			// 	"TextArea.background",
@@ -401,22 +441,22 @@ public class ConfigurableMetalLaf extends MetalLookAndFeel {
 				"ToolBar.darkShadow"
 			)),
 
-			Map.entry("input_foreground", List.of(
-				"RadioButtonMenuItem.selectionBackground",
-				"ProgressBar.foreground",
-				"Menu.selectionBackground",
-				"CheckBoxMenuItem.selectionBackground",
-				"Button.focus",
-				"ToggleButton.focus",
-				"activeCaptionBorder",
-				"ScrollBar.thumb",
-				"MenuItem.selectionBackground",
-				"RadioButton.focus",
-				"Slider.foreground",
-				"CheckBox.focus",
-				"Slider.focus",
-				"ComboBox.selectionBackground"
-			)),
+			// Map.entry("input_foreground", List.of(
+			// 	"RadioButtonMenuItem.selectionBackground",
+			// 	"ProgressBar.foreground",
+			// 	"Menu.selectionBackground",
+			// 	"CheckBoxMenuItem.selectionBackground",
+			// 	"Button.focus",
+			// 	"ToggleButton.focus",
+			// 	"activeCaptionBorder",
+			// 	"ScrollBar.thumb",
+			// 	"MenuItem.selectionBackground",
+			// 	"RadioButton.focus",
+			// 	"Slider.foreground",
+			// 	"CheckBox.focus",
+			// 	"Slider.focus",
+			// 	"ComboBox.selectionBackground"
+			// )),
 			Map.entry("input_border", List.of(
 				"ToolBar.borderColor",
 				"Button.disabledToolBarBorderBackground",

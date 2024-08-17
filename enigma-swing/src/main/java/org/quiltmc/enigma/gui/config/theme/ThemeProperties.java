@@ -2,6 +2,9 @@ package org.quiltmc.enigma.gui.config.theme;
 
 import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
+import org.quiltmc.enigma.gui.config.theme.look_and_feel.ConfigurableFlatDarculaLaf;
+import org.quiltmc.enigma.gui.config.theme.look_and_feel.ConfigurableFlatDarkLaf;
+import org.quiltmc.enigma.gui.config.theme.look_and_feel.ConfigurableFlatLightLaf;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -27,8 +30,8 @@ public enum ThemeProperties implements ConfigSerializableObject<String> {
 		false
 	),
 	DARCERULA(
-		ConfigurableFlatDarculaLaf::new,
-		ConfigurableFlatDarculaLaf::createColors,
+		ConfigurableFlatDarkLaf::new,
+		ConfigurableFlatDarkLaf::createColors,
 		SyntaxPaneColorsFactories::createDarcerula,
 		false
 	),

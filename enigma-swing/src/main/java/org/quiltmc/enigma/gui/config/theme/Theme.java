@@ -544,7 +544,7 @@ public class Theme extends ReflectiveConfig.Section {
 	}
 
 	public static class SerializableColor extends Color implements ConfigSerializableObject<String> {
-		SerializableColor(int rgba) {
+		public SerializableColor(int rgba) {
 			super(rgba, true);
 		}
 
