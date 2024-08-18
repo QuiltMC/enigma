@@ -1,50 +1,40 @@
 package org.quiltmc.enigma.gui.config.theme.look_and_feel;
 
 import com.formdev.flatlaf.FlatPropertiesLaf;
-import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.config.theme.Theme;
-import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
+import org.quiltmc.enigma.gui.config.theme.Theme.LookAndFeelColors;
 
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 public abstract class ConfigurableFlatLaf extends FlatPropertiesLaf {
-	private static final Map<String, Function<Theme.LookAndFeelColors, TrackedValue<Theme.SerializableColor>>>
-			COLOR_GETTERS_BY_KEY = ThemeUtil.createColorGettersByKey(
-				Stream.of("@foreground"),
-				Stream.of("@background"),
+	private static final Map<String, HexColorStringGetter>
+			COLOR_GETTERS_BY_KEY = Map.of(
+					"@foreground", HexColorStringGetter.of(LookAndFeelColors::getForeground),
+					"@background", HexColorStringGetter.of(LookAndFeelColors::getBackground),
 
-				Stream.of("@accentBaseColor"),
+					"@accentBaseColor", HexColorStringGetter.of(LookAndFeelColors::getAccentBaseColor),
 
-				Stream.of("activeCaption"),
-				Stream.of("inactiveCaption"),
+					"activeCaption", HexColorStringGetter.of(LookAndFeelColors::getActiveCaption),
+					"inactiveCaption", HexColorStringGetter.of(LookAndFeelColors::getInactiveCaption),
 
-				Stream.of("Component.error.focusedBorderColor"),
-				Stream.of("Component.warning.focusedBorderColor")
+					"Component.error.focusedBorderColor", HexColorStringGetter.of(LookAndFeelColors::getErrorBorder),
+					"Component.warning.focusedBorderColor", HexColorStringGetter.of(LookAndFeelColors::getWarningBorder)
 			);
 
-	private static String colorPropertyValueOf(Theme.SerializableColor color) {
-		return "#" + color.getRepresentation();
-	}
-
-	private static Properties createProperties(Theme.LookAndFeelColors colors, Base base) {
+	private static Properties createProperties(LookAndFeelColors colors, Base base) {
 		final Properties properties = new Properties(((int) colors.stream().count()) + 1);
 
 		properties.setProperty("@baseTheme", base.value);
 
 		COLOR_GETTERS_BY_KEY.forEach((key, colorGetter) ->
-			properties.setProperty(
-				key,
-				colorPropertyValueOf(colorGetter.apply(colors).value())
-			)
+			properties.setProperty(key, colorGetter.apply(colors))
 		);
 
 		return properties;
 	}
 
-	protected ConfigurableFlatLaf(String name, Theme.LookAndFeelColors colors, Base base) {
+	protected ConfigurableFlatLaf(String name, LookAndFeelColors colors, Base base) {
 		super(name, createProperties(colors, base));
 	}
 
