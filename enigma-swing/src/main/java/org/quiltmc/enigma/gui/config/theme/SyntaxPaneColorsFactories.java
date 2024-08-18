@@ -9,7 +9,7 @@ package org.quiltmc.enigma.gui.config.theme;
 public final class SyntaxPaneColorsFactories {
 	private SyntaxPaneColorsFactories() { }
 
-	public static Theme.SyntaxPaneColors.Builder createDefault() {
+	public static Theme.SyntaxPaneColors.Builder createLight() {
 		// default colors are for LookAndFeel.DEFAULT
 		return new Theme.SyntaxPaneColors.Builder();
 	}

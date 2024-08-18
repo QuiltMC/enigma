@@ -6,6 +6,5 @@ import org.quiltmc.enigma.gui.config.theme.Theme;
 import java.util.function.Function;
 
 @FunctionalInterface
-public interface TrackedSerializableColorGetter extends Function<Theme.LookAndFeelColors, TrackedValue<Theme.SerializableColor>> {
-
-}
+public interface TrackedSerializableColorGetter extends Function
+		<Theme.LookAndFeelColors, TrackedValue<Theme.SerializableColor>> { }

@@ -1,7 +1,6 @@
 package org.quiltmc.enigma.gui.config.theme.look_and_feel;
 
 import com.formdev.flatlaf.FlatPropertiesLaf;
-import org.quiltmc.enigma.gui.config.theme.Theme;
 import org.quiltmc.enigma.gui.config.theme.Theme.LookAndFeelColors;
 
 import java.util.Map;
@@ -28,7 +27,7 @@ public abstract class ConfigurableFlatLaf extends FlatPropertiesLaf {
 		properties.setProperty("@baseTheme", base.value);
 
 		COLOR_GETTERS_BY_KEY.forEach((key, colorGetter) ->
-			properties.setProperty(key, colorGetter.apply(colors))
+				properties.setProperty(key, colorGetter.apply(colors))
 		);
 
 		return properties;

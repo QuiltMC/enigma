@@ -4,7 +4,7 @@ import org.quiltmc.enigma.gui.config.theme.Theme;
 import org.quiltmc.enigma.gui.config.theme.Theme.LookAndFeelColors;
 
 import javax.annotation.Nullable;
-import javax.swing.*;
+import javax.swing.UIDefaults;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import java.util.Arrays;
 import java.util.Map;
@@ -296,26 +296,26 @@ public class ConfigurableMetalOceanLookAndFeel extends MetalLookAndFeel {
 				// ColorUIResource OCEAN_DROP = new ColorUIResource(0xD2E9FF)
 				new ColorGetterForKeys(
 					ColorGetters::getDropCellBackground,
-					"Table.dropCellBackground",//@dropCellBackground
-					"Tree.dropCellBackground",//@dropCellBackground
-					"List.dropCellBackground"//@dropCellBackground
+					"Table.dropCellBackground", //@dropCellBackground
+					"Tree.dropCellBackground", //@dropCellBackground
+					"List.dropCellBackground" //@dropCellBackground
 				),
 
 				// OceanTheme
 				// ColorUIResource SECONDARY1 = new ColorUIResource(0x7A8A99)
 				new ColorGetterForKeys(
 					ColorGetters::getControlShadow,
-					"ScrollBar.thumbDarkShadow",//$controlDkShadow
-					"ScrollBar.trackHighlight",//$controlDkShadow
-					"InternalFrame.borderDarkShadow",//$controlDkShadow
+					"ScrollBar.thumbDarkShadow", //$controlDkShadow
+					"ScrollBar.trackHighlight", //$controlDkShadow
+					"InternalFrame.borderDarkShadow", //$controlDkShadow
 					"TabbedPane.darkShadow",
 					"RadioButton.darkShadow",
 					"ToolTip.foregroundInactive",
-					"Table.gridColor",//darken($Table.background,8%)
-					"controlDkShadow",//darken($controlShadow,15%)
+					"Table.gridColor", //darken($Table.background,8%)
+					"controlDkShadow", //darken($controlShadow,15%)
 					"TextField.darkShadow",
 					"Button.darkShadow",
-					"ComboBox.buttonDarkShadow",//$controlDkShadow
+					"ComboBox.buttonDarkShadow", //$controlDkShadow
 					"SplitPane.darkShadow",
 					"ToggleButton.darkShadow",
 					"ScrollBar.darkShadow",
@@ -335,9 +335,9 @@ public class ConfigurableMetalOceanLookAndFeel extends MetalLookAndFeel {
 				// Color c8ddf2 = new ColorUIResource(0xC8DDF2)
 				new ColorGetterForKeys(
 					ColorGetters::getTableHeaderBackground,
-					"TabbedPane.contentAreaColor",//$Component.borderColor
+					"TabbedPane.contentAreaColor", //$Component.borderColor
 					"TabbedPane.selected",
-					"TableHeader.focusCellBackground",//$TableHeader.background
+					"TableHeader.focusCellBackground", //$TableHeader.background
 					"SplitPane.dividerFocusColor"
 				),
 
@@ -466,7 +466,7 @@ public class ConfigurableMetalOceanLookAndFeel extends MetalLookAndFeel {
 	protected void initSystemColorDefaults(UIDefaults table) {
 		super.initSystemColorDefaults(table);
 
-		table.putAll(createColorDefaults(colors));
+		table.putAll(createColorDefaults(this.colors));
 	}
 
 	private record ColorGetterForKeys(
@@ -474,7 +474,7 @@ public class ConfigurableMetalOceanLookAndFeel extends MetalLookAndFeel {
 			String... keys
 	) {
 		public Stream<String> streamKeys() {
-			return Arrays.stream(keys);
+			return Arrays.stream(this.keys);
 		}
 	}
 
@@ -722,8 +722,8 @@ public class ConfigurableMetalOceanLookAndFeel extends MetalLookAndFeel {
 
 	private static class ColorPropertyValueHolder {
 		public static ColorPropertyValueHolder of(
-			SerializableColorGetter getter,
-			LookAndFeelColors colors
+				SerializableColorGetter getter,
+				LookAndFeelColors colors
 		) {
 			return new ColorPropertyValueHolder(getter, colors);
 		}
@@ -739,11 +739,11 @@ public class ConfigurableMetalOceanLookAndFeel extends MetalLookAndFeel {
 		}
 
 		public String get() {
-			if (value == null) {
-				value = getter.apply(colors);
+			if (this.value == null) {
+				this.value = this.getter.apply(this.colors);
 			}
 
-			return value;
+			return this.value;
 		}
 	}
 }

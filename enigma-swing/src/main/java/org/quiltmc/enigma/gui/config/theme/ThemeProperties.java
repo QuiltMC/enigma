@@ -2,7 +2,6 @@ package org.quiltmc.enigma.gui.config.theme;
 
 import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
-import org.quiltmc.enigma.gui.config.theme.look_and_feel.ConfigurableFlatDarculaLaf;
 import org.quiltmc.enigma.gui.config.theme.look_and_feel.ConfigurableFlatDarkLaf;
 import org.quiltmc.enigma.gui.config.theme.look_and_feel.ConfigurableFlatLightLaf;
 
@@ -19,47 +18,47 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 public enum ThemeProperties implements ConfigSerializableObject<String> {
 	DEFAULT(
 		ConfigurableFlatLightLaf::new,
-		ConfigurableFlatLightLaf::createColors,
-		SyntaxPaneColorsFactories::createDefault,
+		LookAndFeelColorsFactories::createLight,
+		SyntaxPaneColorsFactories::createLight,
 		false
 	),
 	DARCULA(
 		ConfigurableFlatDarkLaf::new,
-		ConfigurableFlatDarkLaf::createColors,
+		LookAndFeelColorsFactories::createDarcula,
 		SyntaxPaneColorsFactories::createDarcula,
 		false
 	),
 	DARCERULA(
 		ConfigurableFlatDarkLaf::new,
-		ConfigurableFlatDarkLaf::createColors,
+		LookAndFeelColorsFactories::createDarcerula,
 		SyntaxPaneColorsFactories::createDarcerula,
 		false
 	),
 	METAL(
 		unused -> new MetalLookAndFeel(),
 		null,
-		null,
+		SyntaxPaneColorsFactories::createLight,
 		true
 	),
 	SYSTEM(
 		null,
 		null,
-		null,
+		SyntaxPaneColorsFactories::createLight,
 		true
 	),
 	NONE(
 		unused -> UIManager.getLookAndFeel(),
 		null,
-		null,
+		SyntaxPaneColorsFactories::createLight,
 		true
 	);
 
 	@Nullable
 	public final Function<Theme.LookAndFeelColors, javax.swing.LookAndFeel> lookAndFeelFactory;
 
-	public final Supplier<Theme.SyntaxPaneColors.Builder> syntaxPaneColorsFactory;
-
 	public final Supplier<Theme.LookAndFeelColors.Builder> lookAndFeelColorsFactory;
+
+	public final Supplier<Theme.SyntaxPaneColors.Builder> syntaxPaneColorsFactory;
 
 	// FlatLaf-based LaFs do their own scaling so we don't have to do it.
 	// Running swing-dpi for FlatLaf actually breaks fonts, so we let it scale the GUI.
@@ -68,18 +67,16 @@ public enum ThemeProperties implements ConfigSerializableObject<String> {
 	ThemeProperties(
 			@Nullable Function<Theme.LookAndFeelColors, javax.swing.LookAndFeel> lookAndFeelFactory,
 			@Nullable Supplier<Theme.LookAndFeelColors.Builder> lookAndFeelColorsFactory,
-			@Nullable Supplier<Theme.SyntaxPaneColors.Builder> syntaxPaneColorsFactory,
+			Supplier<Theme.SyntaxPaneColors.Builder> syntaxPaneColorsFactory,
 			boolean needsScaling
 	) {
 		this.lookAndFeelFactory = lookAndFeelFactory;
 
-		this.syntaxPaneColorsFactory = syntaxPaneColorsFactory == null
-			? Theme.SyntaxPaneColors.Builder::new
-			: syntaxPaneColorsFactory;
-
 		this.lookAndFeelColorsFactory = lookAndFeelColorsFactory == null
 			? Theme.LookAndFeelColors.Builder::new
 			: lookAndFeelColorsFactory;
+
+		this.syntaxPaneColorsFactory = syntaxPaneColorsFactory;
 
 		this.needsScaling = needsScaling;
 	}
