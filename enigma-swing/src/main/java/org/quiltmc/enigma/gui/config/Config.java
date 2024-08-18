@@ -106,8 +106,9 @@ public final class Config extends ReflectiveConfig {
 	public final Theme defaultTheme = new Theme(ThemeProperties.DEFAULT);
 	public final Theme darculaTheme = new Theme(ThemeProperties.DARCULA);
 	public final Theme darcerulaTheme = new Theme(ThemeProperties.DARCERULA);
-	public final Theme metalTheme = new Theme(ThemeProperties.METAL);
 	// TODO: see if these can be made optional
+	@Comment("look_and_feel_colors are ignored for metal_theme")
+	public final Theme metalTheme = new Theme(ThemeProperties.METAL);
 	@Comment("look_and_feel_colors are ignored for system_theme")
 	public final Theme systemTheme = new Theme(ThemeProperties.SYSTEM);
 	@Comment("look_and_feel_colors are ignored for none_theme")
