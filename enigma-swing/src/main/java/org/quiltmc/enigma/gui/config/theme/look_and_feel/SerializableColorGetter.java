@@ -8,6 +8,10 @@ import java.util.function.Function;
 @FunctionalInterface
 public interface SerializableColorGetter extends Function<Theme.LookAndFeelColors, Theme.SerializableColor> {
 	static SerializableColorGetter of(TrackedSerializableColorGetter getter) {
-		return (SerializableColorGetter) getter.andThen(TrackedValue::value);
+		return of(getter.andThen(TrackedValue::value));
+	}
+
+	static SerializableColorGetter of(Function<Theme.LookAndFeelColors, Theme.SerializableColor> getter) {
+		return getter::apply;
 	}
 }

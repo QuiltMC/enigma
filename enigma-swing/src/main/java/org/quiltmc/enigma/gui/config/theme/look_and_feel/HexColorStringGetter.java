@@ -4,14 +4,18 @@ import org.quiltmc.enigma.gui.config.theme.Theme;
 
 import java.util.function.Function;
 
+@FunctionalInterface
 public interface HexColorStringGetter extends Function<Theme.LookAndFeelColors, String> {
 	static HexColorStringGetter of(TrackedSerializableColorGetter getter) {
 		return of(SerializableColorGetter.of(getter));
 	}
 
 	static HexColorStringGetter of(SerializableColorGetter getter) {
-		return (HexColorStringGetter) getter
-			.andThen(HexColorStringGetter::colorPropertyValueOf);
+		return of(getter.andThen(HexColorStringGetter::colorPropertyValueOf));
+	}
+
+	static HexColorStringGetter of(Function<Theme.LookAndFeelColors, String> getter) {
+		return getter::apply;
 	}
 
 	static String colorPropertyValueOf(Theme.SerializableColor color) {
