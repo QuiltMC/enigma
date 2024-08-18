@@ -28,7 +28,16 @@ public class LookAndFeelColorsFactories {
 	}
 
 	public static Theme.LookAndFeelColors.Builder createDarcerula() {
-		// TODO
-		return createDarcula();
+		return createDarcula()
+			.foreground(new Theme.SerializableColor(0xFFC3C3C3))
+			.background(new Theme.SerializableColor(0xFF242729))
+
+			.accentBaseColor(new Theme.SerializableColor(0xFF4366A7))
+
+			.activeCaption(new Theme.SerializableColor(0xFF374254))
+			.inactiveCaption(new Theme.SerializableColor(0xFF2B2E2F));
+
+			// errorBorder inherited from darcula
+			// warningBorder inherited from darcula
 	}
 }
