@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.gui.config.theme;
 
-// TODO: see if default colors can be loaded from FlatLightLaf/FlatDarkLaf.properties
 /**
  * Factory  methods for creating look and feel colors for themes.
  *
