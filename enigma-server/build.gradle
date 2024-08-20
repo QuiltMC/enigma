@@ -16,6 +16,10 @@ application {
 	jar.manifest.attributes 'Main-Class': mainClass
 }
 
+tasks.named('test') {
+	dependsOn(project(':enigma').tasks.named('completeTestObf'))
+}
+
 publishing {
 	publications {
 		"$project.name"(MavenPublication) {
