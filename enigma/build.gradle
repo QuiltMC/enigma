@@ -1,3 +1,8 @@
+import org.gradle.api.internal.ConventionMapping
+import quilt.internal.task.ProGuardExecTask
+
+import java.util.stream.Stream
+
 plugins {
 	id 'checkstyle'
 	id 'java-library'
@@ -65,7 +70,7 @@ def registerTestJarTasks(String name, String... input) {
 	String taskName = convertToGradleTaskName(name)
 	def libraryJarsArg = "<java.home>/jmods/java.base.jmod(!**.jar;!module-info.class)"
 
-	tasks.register("${taskName}TestJar", Jar.class) {
+	final testJarTask = tasks.register("${taskName}TestJar", Jar.class) {
 		group("test-setup")
 		from(sourceSets.test.output) {
 			include input
@@ -75,21 +80,22 @@ def registerTestJarTasks(String name, String... input) {
 		destinationDirectory = file('build/test-inputs')
 	}
 
-	var confFile = 'src/test/resources/proguard-test.conf'
+	var confFileArg = 'src/test/resources/proguard-test.conf'
 	if (file("src/test/resources/proguard-$name-test.conf").exists()) {
-		confFile = "src/test/resources/proguard-$name-test.conf"
+		confFileArg = "src/test/resources/proguard-$name-test.conf"
 	}
 
-	tasks.register("${taskName}TestObf", JavaExec.class) {
+	tasks.register("${taskName}TestObf", ProGuardExecTask) {
 		group("test-setup")
-		dependsOn("${taskName}TestJar")
-		mainClass = 'proguard.ProGuard'
 		classpath configurations.proGuard
 
-		args "@$confFile", '-injars', file("build/test-inputs/${name}.jar"),
-				'-libraryjars', libraryJarsArg,
-				'-outjars', file("build/test-obf/${name}.jar")
-				//'-printmapping', file("build/test-obf/${name}.txt")
+		confFile = confFileArg
+
+		libraryJars = libraryJarsArg
+
+		inJar = testJarTask.get().archiveFile
+
+		outJar = file("build/test-obf/${name}.jar")
 	}
 }
 

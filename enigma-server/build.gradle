@@ -1,3 +1,5 @@
+import quilt.internal.task.ProGuardExecTask
+
 plugins {
 	id 'application'
 	id 'checkstyle'
@@ -17,7 +19,12 @@ application {
 }
 
 tasks.named('test') {
-	dependsOn(project(':enigma').tasks.named('completeTestObf'))
+	inputs.files(
+		project(':enigma').tasks
+			.withType(ProGuardExecTask)
+			.named('completeTestObf')
+			.get().outJar
+	)
 }
 
 publishing {
