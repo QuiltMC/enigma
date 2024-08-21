@@ -2,10 +2,11 @@ package org.quiltmc.enigma.gui.element;
 
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
+import org.quiltmc.enigma.api.translation.representation.entry.*;
+import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.api.source.TokenType;
-import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
 import javax.annotation.Nullable;
 import javax.swing.JButton;
@@ -119,7 +120,7 @@ public class NavigatorPanel extends JPanel {
 	 */
 	public void addEntry(@Nullable Entry<?> entry) {
 		EnigmaProject project = this.gui.getController().getProject();
-		if (entry != null && project.isRenamable(entry) && project.isNavigable(entry)) {
+		if (entry != null && project.isRenamable(entry) && project.isNavigable(entry) && isEntryEditable(entry)) {
 			TokenType tokenType = this.getTokenType(entry);
 			List<Entry<?>> entries = this.entries.get(tokenType);
 
@@ -128,6 +129,19 @@ public class NavigatorPanel extends JPanel {
 				this.updateStatsLabel();
 			}
 		}
+	}
+
+	private boolean isEntryEditable(Entry<?> entry) {
+		if (entry instanceof ClassEntry) {
+			return this.gui.isEditable(EditableType.CLASS);
+		} else if (entry instanceof FieldEntry) {
+			return this.gui.isEditable(EditableType.FIELD);
+		} else if (entry instanceof MethodEntry) {
+			return this.gui.isEditable(EditableType.METHOD);
+		} else if (entry instanceof LocalVariableEntry lve) {
+			return this.gui.isEditable(lve.isArgument() ? EditableType.PARAMETER : EditableType.LOCAL_VARIABLE);
+		}
+		return true;
 	}
 
 	/**
