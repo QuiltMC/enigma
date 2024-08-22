@@ -1,7 +1,8 @@
 package org.quiltmc.enigma.gui.config.theme.look_and_feel;
 
 import com.formdev.flatlaf.FlatPropertiesLaf;
-import org.quiltmc.enigma.gui.config.theme.ThemeCreator.LookAndFeelColors;
+import org.quiltmc.enigma.gui.config.theme.properties.ConfigurableLafThemeProperties;
+import org.quiltmc.enigma.gui.config.theme.properties.ConfigurableLafThemeProperties.LookAndFeelColors;
 
 import java.util.Map;
 import java.util.Properties;
@@ -9,16 +10,16 @@ import java.util.Properties;
 public abstract class ConfigurableFlatLaf extends FlatPropertiesLaf {
 	private static final Map<String, HexColorStringGetter>
 			COLOR_GETTERS_BY_KEY = Map.of(
-					"@foreground", HexColorStringGetter.of(LookAndFeelColors::getForeground),
-					"@background", HexColorStringGetter.of(LookAndFeelColors::getBackground),
+					"@foreground", HexColorStringGetter.of(ConfigurableLafThemeProperties.LookAndFeelColors::getForeground),
+					"@background", HexColorStringGetter.of(ConfigurableLafThemeProperties.LookAndFeelColors::getBackground),
 
-					"@accentBaseColor", HexColorStringGetter.of(LookAndFeelColors::getAccentBaseColor),
+					"@accentBaseColor", HexColorStringGetter.of(ConfigurableLafThemeProperties.LookAndFeelColors::getAccentBaseColor),
 
-					"activeCaption", HexColorStringGetter.of(LookAndFeelColors::getActiveCaption),
-					"inactiveCaption", HexColorStringGetter.of(LookAndFeelColors::getInactiveCaption),
+					"activeCaption", HexColorStringGetter.of(ConfigurableLafThemeProperties.LookAndFeelColors::getActiveCaption),
+					"inactiveCaption", HexColorStringGetter.of(ConfigurableLafThemeProperties.LookAndFeelColors::getInactiveCaption),
 
-					"Component.error.focusedBorderColor", HexColorStringGetter.of(LookAndFeelColors::getErrorBorder),
-					"Component.warning.focusedBorderColor", HexColorStringGetter.of(LookAndFeelColors::getWarningBorder)
+					"Component.error.focusedBorderColor", HexColorStringGetter.of(ConfigurableLafThemeProperties.LookAndFeelColors::getErrorBorder),
+					"Component.warning.focusedBorderColor", HexColorStringGetter.of(ConfigurableLafThemeProperties.LookAndFeelColors::getWarningBorder)
 			);
 
 	private static Properties createProperties(LookAndFeelColors colors, Base base) {
@@ -51,5 +52,10 @@ public abstract class ConfigurableFlatLaf extends FlatPropertiesLaf {
 		Base(String value) {
 			this.value = value;
 		}
+	}
+
+	@FunctionalInterface
+	public interface Constructor {
+		ConfigurableFlatLaf construct(LookAndFeelColors colors);
 	}
 }

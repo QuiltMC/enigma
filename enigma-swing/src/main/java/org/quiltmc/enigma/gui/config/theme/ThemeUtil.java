@@ -17,9 +17,8 @@ public final class ThemeUtil {
 	// Calling this after the UI is initialized (e.g. when the user changes
 	// theme settings) is currently not functional.
 	public static void setupTheme() {
-		Config.activeThemeProperties = Config.main().theme.value();
-		Config.getCurrentSyntaxPaneColors().configure();
-		Config.getCurrentLookAndFeelColors().configure();
+		Config.activeThemeChoice = Config.main().theme.value();
+		Config.configureTheme();
 		Config.setGlobalLaf();
 		ThemeUtil.setFonts();
 		Config.updateSyntaxpain();

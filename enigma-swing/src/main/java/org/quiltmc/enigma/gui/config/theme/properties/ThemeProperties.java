@@ -1,49 +1,58 @@
-package org.quiltmc.enigma.gui.config.theme;
+package org.quiltmc.enigma.gui.config.theme.properties;
 
 import org.quiltmc.config.api.Config;
-import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.annotations.SerializedNameConvention;
 import org.quiltmc.config.api.metadata.NamingSchemes;
 import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
 import org.quiltmc.config.api.values.TrackedValue;
+import org.quiltmc.enigma.gui.config.theme.ThemeChoice;
 
+import javax.swing.*;
 import java.awt.Color;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-@SerializedNameConvention(NamingSchemes.SNAKE_CASE)
-public class ThemeCreator implements Config.Creator {
-	private static <T> void resetIfAbsent(TrackedValue<T> value) {
+public abstract class ThemeProperties implements Config.Creator {
+	protected static <T> void resetIfAbsent(TrackedValue<T> value) {
 		setIfAbsent(value, value.getDefaultValue());
 	}
 
-	private static <T> void setIfAbsent(TrackedValue<T> value, T newValue) {
+	protected static <T> void setIfAbsent(TrackedValue<T> value, T newValue) {
 		if (value.getDefaultValue().equals(value.value())) {
 			value.setValue(newValue, true);
 		}
 	}
 
-	public final transient ThemeProperties properties;
+	protected static void addColorFormatComment(Comment.Builder builder) {
+		builder.add("Colors are encoded in the RGBA format.");
+	}
 
-	@Comment("Colors are encoded in the RGBA format.")
+	public final ThemeChoice choice;
+
 	public final SyntaxPaneColors syntaxPaneColors;
 
-	@Comment("Colors are encoded in the RGBA format.")
-	public final LookAndFeelColors lookAndFeelColors;
-
-	public ThemeCreator(ThemeProperties properties) {
-		this.properties = properties;
-		this.syntaxPaneColors = properties.syntaxPaneColorsFactory.get().build();
-		this.lookAndFeelColors = properties.lookAndFeelColorsFactory.get().build();
+	protected ThemeProperties() {
+		this.choice = this.getThemeChoice();
+		this.syntaxPaneColors = this.buildSyntaxPaneColors(new SyntaxPaneColors.Builder()).build();
 	}
 
 	@Override
 	public void create(Config.Builder builder) {
-		builder.section("syntax_pane_colors", this.syntaxPaneColors);
+		builder.metadata(Comment.TYPE, ThemeProperties::addColorFormatComment);
+		builder.section("syntax_pane_colors", this.buildSyntaxPaneColors(new SyntaxPaneColors.Builder()).build());
+	}
 
-		builder.section("look_and_feel_colors", this.lookAndFeelColors);
+	public abstract ThemeChoice getThemeChoice();
+
+	public abstract void setGlobalLaf() throws
+			UnsupportedLookAndFeelException, ClassNotFoundException,
+			InstantiationException, IllegalAccessException;
+
+	protected SyntaxPaneColors.Builder buildSyntaxPaneColors(SyntaxPaneColors.Builder syntaxPaneColors) {
+		// start with default (light) colors
+		return syntaxPaneColors;
 	}
 
 	/**
@@ -137,7 +146,7 @@ public class ThemeCreator implements Config.Creator {
 		}
 
 		public void configure() {
-			this.stream().forEach(ThemeCreator::resetIfAbsent);
+			this.stream().forEach(ThemeProperties::resetIfAbsent);
 		}
 
 		public Stream<TrackedValue<SerializableColor>> stream() {
@@ -360,157 +369,8 @@ public class ThemeCreator implements Config.Creator {
 		}
 	}
 
-	public static class LookAndFeelColors implements Consumer<Config.SectionBuilder> {
-		public final TrackedValue<SerializableColor> foreground;
-		public final TrackedValue<SerializableColor> background;
-
-		public final TrackedValue<SerializableColor> accentBaseColor;
-
-		public final TrackedValue<SerializableColor> activeCaption;
-		public final TrackedValue<SerializableColor> inactiveCaption;
-
-		public final TrackedValue<SerializableColor> errorBorder;
-
-		public final TrackedValue<SerializableColor> warningBorder;
-
-		private LookAndFeelColors(
-				SerializableColor foreground,
-				SerializableColor background,
-
-				SerializableColor accentBaseColor,
-
-				SerializableColor activeCaption,
-				SerializableColor inactiveCaption,
-
-				SerializableColor errorBorder,
-				SerializableColor warningBorder
-		) {
-			this.foreground = TrackedValue.create(foreground, "foreground");
-			this.background = TrackedValue.create(background, "background");
-
-			this.accentBaseColor = TrackedValue.create(accentBaseColor, "accentBaseColor");
-
-			this.activeCaption = TrackedValue.create(activeCaption, "activeCaption");
-			this.inactiveCaption = TrackedValue.create(inactiveCaption, "inactiveCaption");
-
-			this.errorBorder = TrackedValue.create(errorBorder, "errorBorder");
-			this.warningBorder = TrackedValue.create(warningBorder, "warningBorder");
-		}
-
-		public void configure() {
-			this.stream().forEach(ThemeCreator::resetIfAbsent);
-		}
-
-		public Stream<TrackedValue<SerializableColor>> stream() {
-			return Stream.of(
-				this.foreground,
-				this.background,
-
-				this.accentBaseColor,
-				this.activeCaption,
-				this.inactiveCaption,
-
-				this.errorBorder,
-				this.warningBorder
-			);
-		}
-
-		public TrackedValue<SerializableColor> getWarningBorder() {
-			return this.warningBorder;
-		}
-
-		public TrackedValue<SerializableColor> getErrorBorder() {
-			return this.errorBorder;
-		}
-
-		public TrackedValue<SerializableColor> getInactiveCaption() {
-			return this.inactiveCaption;
-		}
-
-		public TrackedValue<SerializableColor> getActiveCaption() {
-			return this.activeCaption;
-		}
-
-		public TrackedValue<SerializableColor> getAccentBaseColor() {
-			return this.accentBaseColor;
-		}
-
-		public TrackedValue<SerializableColor> getBackground() {
-			return this.background;
-		}
-
-		public TrackedValue<SerializableColor> getForeground() {
-			return this.foreground;
-		}
-
-		@Override
-		public void accept(Config.SectionBuilder builder) {
-			this.stream().forEach(builder::field);
-		}
-
-		// default colors are from FlatLightLaf.properties
-		public static class Builder {
-			private SerializableColor foreground = new SerializableColor(0xFF000000);
-			private SerializableColor background = new SerializableColor(0xFFF2F2F2);
-
-			private SerializableColor accentBaseColor = new SerializableColor(0xFF2675BF);
-
-			private SerializableColor activeCaption = new SerializableColor(0xFF99B4D1);
-			private SerializableColor inactiveCaption = new SerializableColor(0xFFBFCDDB);
-
-			private SerializableColor errorBorder = new SerializableColor(0xFFE53E4D);
-			private SerializableColor warningBorder = new SerializableColor(0xFFE2A53A);
-
-			public LookAndFeelColors build() {
-				return new LookAndFeelColors(
-					this.foreground,
-					this.background,
-
-					this.accentBaseColor,
-
-					this.activeCaption,
-					this.inactiveCaption,
-
-					this.errorBorder,
-					this.warningBorder
-				);
-			}
-
-			public Builder foreground(SerializableColor foreground) {
-				this.foreground = foreground;
-				return this;
-			}
-
-			public Builder background(SerializableColor background) {
-				this.background = background;
-				return this;
-			}
-
-			public Builder accentBaseColor(SerializableColor accentBaseColor) {
-				this.accentBaseColor = accentBaseColor;
-				return this;
-			}
-
-			public Builder activeCaption(SerializableColor activeCaption) {
-				this.activeCaption = activeCaption;
-				return this;
-			}
-
-			public Builder inactiveCaption(SerializableColor inactiveCaption) {
-				this.inactiveCaption = inactiveCaption;
-				return this;
-			}
-
-			public Builder errorBorder(SerializableColor errorBorder) {
-				this.errorBorder = errorBorder;
-				return this;
-			}
-
-			public Builder warningBorder(SerializableColor warningBorder) {
-				this.warningBorder = warningBorder;
-				return this;
-			}
-		}
+	public void configure() {
+		this.syntaxPaneColors.configure();
 	}
 
 	public static class SerializableColor extends Color implements ConfigSerializableObject<String> {

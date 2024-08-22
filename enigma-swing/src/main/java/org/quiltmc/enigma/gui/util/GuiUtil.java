@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.util;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.config.theme.ThemeProperties;
+import org.quiltmc.enigma.gui.config.theme.ThemeChoice;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
@@ -268,10 +268,10 @@ public class GuiUtil {
 	}
 
 	public static Icon getUpChevron() {
-		return ThemeProperties.isDarkLaf() ? CHEVRON_UP_WHITE : CHEVRON_UP_BLACK;
+		return ThemeChoice.isDarkLaf() ? CHEVRON_UP_WHITE : CHEVRON_UP_BLACK;
 	}
 
 	public static Icon getDownChevron() {
-		return ThemeProperties.isDarkLaf() ? CHEVRON_DOWN_WHITE : CHEVRON_DOWN_BLACK;
+		return ThemeChoice.isDarkLaf() ? CHEVRON_DOWN_WHITE : CHEVRON_DOWN_BLACK;
 	}
 }

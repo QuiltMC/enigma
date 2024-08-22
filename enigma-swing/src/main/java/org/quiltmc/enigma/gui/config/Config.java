@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.config;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.annotations.Processor;
@@ -15,12 +16,13 @@ import org.quiltmc.config.implementor_api.ConfigEnvironment;
 import org.quiltmc.config.implementor_api.ConfigFactory;
 import org.quiltmc.enigma.gui.NotificationManager;
 import org.quiltmc.enigma.gui.config.theme.*;
+import org.quiltmc.enigma.gui.config.theme.properties.*;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindDialog;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
 import javax.annotation.Nullable;
-import javax.swing.UIManager;
+import javax.swing.*;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.nio.file.Path;
@@ -28,6 +30,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -52,31 +55,19 @@ public final class Config extends ReflectiveConfig {
 	private static final DockerConfig DOCKER = ConfigFactory.create(ENVIRONMENT, FAMILY, "docker", DockerConfig.class);
 	private static final DecompilerConfig DECOMPILER = ConfigFactory.create(ENVIRONMENT, FAMILY, "decompiler", DecompilerConfig.class);
 
-	private static final Theme DEFAULT_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "default", ThemeProperties.DEFAULT);
-	private static final Theme DARCULA_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "darcula", ThemeProperties.DARCULA);
-	private static final Theme DARCERULA_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "darcerula", ThemeProperties.DARCERULA);
-	private static final Theme METAL_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "metal", ThemeProperties.METAL);
-	private static final Theme SYSTEM_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "system", ThemeProperties.SYSTEM);
-	private static final Theme NONE_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "none", ThemeProperties.NONE);
+	private static final Theme DEFAULT_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "default", new DefaultThemeProperties());
+	private static final Theme DARCULA_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "darcula", new DarculaThemeProperties());
+	private static final Theme DARCERULA_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "darcerula", new DarcerulaThemeProperties());
+	private static final Theme METAL_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "metal", new MetalThemeProperties());
+	private static final Theme SYSTEM_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "system", new SystemThemeProperties());
+	private static final Theme NONE_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "none", new NoneThemeProperties());
 
-	// this map ensures:
-	// 1. each ThemeProperties has an associated theme (by using ThemeProperties.values()) [similar to enhanced switch]
-	// 2. each ThemeProperties is associated with the theme that uses it (albeit at runtime) [improvement over switch]
-	private static final Map<ThemeProperties, Theme> THEMES_BY_PROPERTIES =
-		Arrays.stream(ThemeProperties.values())
-			.collect(Collectors.toMap(
-				Function.identity(),
-				properties -> main().streamThemes()
-					.filter(theme -> theme.getCreator().properties == properties)
-					.findAny()
-					.orElseThrow(() ->
-						new IllegalStateException("Config#streamThemes() missing value for " + properties)
-					),
-				(l, r) -> {
-					throw new IllegalStateException("impossible duplicate enum value");
-				},
-				() -> new EnumMap<>(ThemeProperties.class)
-			));
+	// this map ensures each ThemeChoice is associated with the theme that uses it
+	@VisibleForTesting
+	static final Map<ThemeChoice, Theme> THEMES_BY_CHOICE = streamThemes().collect(Collectors.toMap(
+			theme -> theme.getChoice(),
+			Function.identity()
+	));
 
 	@Comment("The currently assigned UI language. This will be an ISO-639 two-letter language code, followed by an underscore and an ISO 3166-1 alpha-2 two-letter country code.")
 	@Processor("grabPossibleLanguages")
@@ -103,14 +94,18 @@ public final class Config extends ReflectiveConfig {
 	public final DevSection development = new DevSection();
 
 	/**
-	 * The look and feel stored in the config: do not use this unless setting! Use {@link #activeThemeProperties} instead,
+	 * The look and feel stored in the config: do not use this unless setting! Use {@link #activeThemeChoice} instead,
 	 * since look and feel is final once loaded.
 	 */
-	public final TrackedValue<ThemeProperties> theme = this.value(ThemeProperties.DEFAULT);
+	public final TrackedValue<ThemeChoice> theme = this.value(ThemeChoice.DEFAULT);
 	/**
 	 * Look and feel is not modifiable at runtime. I have tried and failed multiple times to get this running.
 	 */
-	public static ThemeProperties activeThemeProperties;
+	public static ThemeChoice activeThemeChoice;
+
+	public static void configureTheme() {
+		currentTheme().configure();
+	}
 
 	@SuppressWarnings("unused")
 	public void processChange(org.quiltmc.config.api.Config.Builder builder) {
@@ -145,30 +140,20 @@ public final class Config extends ReflectiveConfig {
 	}
 
 	public static Theme currentTheme() {
-		return THEMES_BY_PROPERTIES.get(activeThemeProperties);
+		return THEMES_BY_CHOICE.get(activeThemeChoice);
 	}
 
-	public static ThemeCreator.SyntaxPaneColors getCurrentSyntaxPaneColors() {
-		return currentTheme().getCreator().syntaxPaneColors;
-	}
-
-	public static ThemeCreator.LookAndFeelColors getCurrentLookAndFeelColors() {
-		return currentTheme().getCreator().lookAndFeelColors;
+	public static ThemeProperties.SyntaxPaneColors getCurrentSyntaxPaneColors() {
+		return currentTheme().getSyntaxPaneColors();
 	}
 
 	public static void setGlobalLaf() {
 		try {
-			final Theme currentTheme = currentTheme();
-
-			final Function<ThemeCreator.LookAndFeelColors, javax.swing.LookAndFeel> constructor =
-					currentTheme.getCreator().properties.lookAndFeelFactory;
-
-			if (constructor == null) {
-				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			} else {
-				UIManager.setLookAndFeel(constructor.apply(currentTheme.getCreator().lookAndFeelColors));
-			}
-		} catch (Exception e) {
+			currentTheme().setGlobalLaf();
+		} catch (
+				UnsupportedLookAndFeelException | ClassNotFoundException |
+				InstantiationException | IllegalAccessException e
+		) {
 			throw new Error("Failed to set global look and feel", e);
 		}
 	}
@@ -200,13 +185,7 @@ public final class Config extends ReflectiveConfig {
 		}
 	}
 
-	@SuppressWarnings("unused")
-	public void grabPossibleLanguages(TrackedValue.Builder<String> builder) {
-		String possibleLanguages = "Supported languages: " + String.join(", ", I18n.getAvailableLanguages().toArray(new String[0]));
-		builder.metadata(Comment.TYPE, b -> b.add(possibleLanguages));
-	}
-
-	private Stream<Theme> streamThemes() {
+	private static Stream<Theme> streamThemes() {
 		return Stream.of(
 			DEFAULT_THEME,
 			DARCULA_THEME,
@@ -215,6 +194,12 @@ public final class Config extends ReflectiveConfig {
 			SYSTEM_THEME,
 			NONE_THEME
 		);
+	}
+
+	@SuppressWarnings("unused")
+	public void grabPossibleLanguages(TrackedValue.Builder<String> builder) {
+		String possibleLanguages = "Supported languages: " + String.join(", ", I18n.getAvailableLanguages().toArray(new String[0]));
+		builder.metadata(Comment.TYPE, b -> b.add(possibleLanguages));
 	}
 
 	public record RecentProject(String jarPath, String mappingsPath) implements ConfigSerializableObject<ValueMap<String>> {
@@ -286,7 +271,7 @@ public final class Config extends ReflectiveConfig {
 	 */
 	public static void updateSyntaxpain() {
 		Theme.Fonts fonts = currentFonts();
-		ThemeCreator.SyntaxPaneColors syntaxPaneColors = getCurrentSyntaxPaneColors();
+		ThemeProperties.SyntaxPaneColors syntaxPaneColors = getCurrentSyntaxPaneColors();
 
 		SyntaxpainConfiguration.setEditorFont(fonts.editor.value());
 		SyntaxpainConfiguration.setQuickFindDialogFactory(EnigmaQuickFindDialog::new);

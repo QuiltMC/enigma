@@ -7,26 +7,41 @@ import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.config.implementor_api.ConfigEnvironment;
 import org.quiltmc.config.implementor_api.ConfigFactory;
+import org.quiltmc.enigma.gui.config.theme.properties.ThemeProperties;
 
+import javax.swing.*;
 import java.awt.*;
 
 public class Theme extends ReflectiveConfig {
 	public static Theme create(ConfigEnvironment environment, String family, String id, ThemeProperties properties) {
-		final ThemeCreator defaultCreator = new ThemeCreator(properties);
 
-		final Theme theme = ConfigFactory.create(environment, family, id, defaultCreator, Theme.class);
+		final Theme theme = ConfigFactory.create(environment, family, id, properties, Theme.class);
 
-		theme.creator = defaultCreator;
+		theme.properties = properties;
 
 		return theme;
 	}
 
+	private transient ThemeProperties properties;
+
 	public final Fonts fonts = new Fonts();
 
-	private transient ThemeCreator creator;
+	public ThemeChoice getChoice() {
+		return this.properties.choice;
+	}
 
-	public ThemeCreator getCreator() {
-		return this.creator;
+	public ThemeProperties.SyntaxPaneColors getSyntaxPaneColors() {
+		return this.properties.syntaxPaneColors;
+	}
+
+	public void setGlobalLaf() throws
+			UnsupportedLookAndFeelException, ClassNotFoundException,
+			InstantiationException, IllegalAccessException {
+		this.properties.setGlobalLaf();
+	}
+
+	public void configure() {
+		this.properties.configure();
 	}
 
 	public static class Fonts extends Section {

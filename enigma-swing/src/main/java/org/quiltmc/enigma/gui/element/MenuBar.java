@@ -5,7 +5,7 @@ import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.NotificationManager;
 import org.quiltmc.enigma.gui.config.Decompiler;
-import org.quiltmc.enigma.gui.config.theme.ThemeProperties;
+import org.quiltmc.enigma.gui.config.theme.ThemeChoice;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.dialog.AboutDialog;
@@ -602,15 +602,15 @@ public class MenuBar {
 
 	private static void prepareThemesMenu(JMenu themesMenu, Gui gui) {
 		ButtonGroup themeGroup = new ButtonGroup();
-		for (ThemeProperties themeProperties : ThemeProperties.values()) {
-			JRadioButtonMenuItem themeButton = new JRadioButtonMenuItem(I18n.translate("menu.view.themes." + themeProperties.name().toLowerCase(Locale.ROOT)));
+		for (ThemeChoice themeChoice : ThemeChoice.values()) {
+			JRadioButtonMenuItem themeButton = new JRadioButtonMenuItem(I18n.translate("menu.view.themes." + themeChoice.name().toLowerCase(Locale.ROOT)));
 			themeGroup.add(themeButton);
-			if (themeProperties.equals(Config.main().theme.value())) {
+			if (themeChoice.equals(Config.main().theme.value())) {
 				themeButton.setSelected(true);
 			}
 
 			themeButton.addActionListener(e -> {
-				Config.main().theme.setValue(themeProperties, true);
+				Config.main().theme.setValue(themeChoice, true);
 				ChangeDialog.show(gui.getFrame());
 			});
 			themesMenu.add(themeButton);
