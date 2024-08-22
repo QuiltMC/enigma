@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.gui.config.theme.properties;
 
-import org.quiltmc.enigma.gui.config.theme.ThemeChoice;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.theme.look_and_feel.ConfigurableFlatLaf;
 import org.quiltmc.enigma.gui.config.theme.look_and_feel.ConfigurableFlatLightLaf;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.ConfigurableConfigCreator;
@@ -17,11 +17,6 @@ public class DefaultThemeProperties extends ConfigurableFlatLafThemeProperties {
 
 	protected DefaultThemeProperties(SyntaxPaneProperties syntaxPaneColors, LookAndFeelProperties lookAndFeelColors, List<ConfigurableConfigCreator> creators) {
 		super(syntaxPaneColors, lookAndFeelColors, creators);
-	}
-
-	@Override
-	public ThemeChoice getThemeChoice() {
-		return ThemeChoice.DEFAULT;
 	}
 
 	@Override

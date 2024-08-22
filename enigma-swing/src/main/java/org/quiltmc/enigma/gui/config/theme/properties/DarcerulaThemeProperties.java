@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.gui.config.theme.properties;
 
-import org.quiltmc.enigma.gui.config.theme.ThemeChoice;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.ConfigurableConfigCreator;
 
 import java.util.ArrayList;
@@ -13,11 +12,6 @@ public class DarcerulaThemeProperties extends AbstractDarculaThemeProperties {
 
 	protected DarcerulaThemeProperties(org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties syntaxPaneColors, org.quiltmc.enigma.gui.config.theme.properties.composite.LookAndFeelProperties lookAndFeelColors, List<ConfigurableConfigCreator> creators) {
 		super(syntaxPaneColors, lookAndFeelColors, creators);
-	}
-
-	@Override
-	public ThemeChoice getThemeChoice() {
-		return ThemeChoice.DARCERULA;
 	}
 
 	public static class SyntaxPaneProperties extends DarculaThemeProperties.SyntaxPaneProperties {

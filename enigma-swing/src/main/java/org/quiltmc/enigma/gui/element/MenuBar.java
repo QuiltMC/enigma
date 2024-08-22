@@ -5,7 +5,6 @@ import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.NotificationManager;
 import org.quiltmc.enigma.gui.config.Decompiler;
-import org.quiltmc.enigma.gui.config.theme.ThemeChoice;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.dialog.AboutDialog;
@@ -602,7 +601,7 @@ public class MenuBar {
 
 	private static void prepareThemesMenu(JMenu themesMenu, Gui gui) {
 		ButtonGroup themeGroup = new ButtonGroup();
-		for (ThemeChoice themeChoice : ThemeChoice.values()) {
+		for (Config.ThemeChoice themeChoice : Config.ThemeChoice.values()) {
 			JRadioButtonMenuItem themeButton = new JRadioButtonMenuItem(I18n.translate("menu.view.themes." + themeChoice.name().toLowerCase(Locale.ROOT)));
 			themeGroup.add(themeButton);
 			if (themeChoice.equals(Config.main().theme.value())) {

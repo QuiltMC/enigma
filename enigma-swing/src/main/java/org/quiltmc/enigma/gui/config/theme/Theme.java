@@ -7,6 +7,7 @@ import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.config.implementor_api.ConfigEnvironment;
 import org.quiltmc.config.implementor_api.ConfigFactory;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.ThemeProperties;
 
@@ -15,9 +16,9 @@ import java.awt.*;
 
 public class Theme extends ReflectiveConfig {
 	public static Theme create(ConfigEnvironment environment, String family, String id, ThemeProperties properties) {
-
 		final Theme theme = ConfigFactory.create(environment, family, id, properties, Theme.class);
 
+		// set properties here because ConfigFactory.create(...) requires a no-args constructor
 		theme.properties = properties;
 
 		return theme;
@@ -26,10 +27,6 @@ public class Theme extends ReflectiveConfig {
 	private transient ThemeProperties properties;
 
 	public final Fonts fonts = new Fonts();
-
-	public ThemeChoice getChoice() {
-		return this.properties.choice;
-	}
 
 	public SyntaxPaneProperties.Colors getSyntaxPaneColors() {
 		return this.properties.getSyntaxPaneColors();

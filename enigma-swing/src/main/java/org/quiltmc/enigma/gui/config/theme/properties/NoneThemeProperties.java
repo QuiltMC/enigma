@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.gui.config.theme.properties;
 
-import org.quiltmc.enigma.gui.config.theme.ThemeChoice;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.ConfigurableConfigCreator;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 
@@ -17,11 +17,6 @@ public class NoneThemeProperties extends NonSystemLafThemeProperties {
 
 	protected NoneThemeProperties(SyntaxPaneProperties syntaxPaneColors, List<ConfigurableConfigCreator> creators) {
 		super(syntaxPaneColors, creators);
-	}
-
-	@Override
-	public ThemeChoice getThemeChoice() {
-		return ThemeChoice.NONE;
 	}
 
 	@Override

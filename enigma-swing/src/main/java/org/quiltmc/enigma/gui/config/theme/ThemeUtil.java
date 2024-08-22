@@ -7,10 +7,10 @@ import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.syntaxpain.JavaSyntaxKit;
 
-import java.awt.Font;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.Map;
-import javax.swing.JEditorPane;
-import javax.swing.UIManager;
+import javax.swing.*;
 
 public final class ThemeUtil {
 	private ThemeUtil() { }
@@ -93,5 +93,21 @@ public final class ThemeUtil {
 		if (value.getDefaultValue().equals(value.value())) {
 			value.setValue(newValue, true);
 		}
+	}
+
+	public static boolean isDarkLaf() {
+		// a bit of a hack because swing doesn't give any API for that, and we need colors that aren't defined in look and feel
+		JPanel panel = new JPanel();
+		panel.setSize(new Dimension(10, 10));
+		panel.doLayout();
+
+		BufferedImage image = new BufferedImage(panel.getSize().width, panel.getSize().height, BufferedImage.TYPE_INT_RGB);
+		panel.printAll(image.getGraphics());
+
+		Color c = new Color(image.getRGB(0, 0));
+
+		// convert the color we got to grayscale
+		int b = (int) (0.3 * c.getRed() + 0.59 * c.getGreen() + 0.11 * c.getBlue());
+		return b < 85;
 	}
 }

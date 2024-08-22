@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.gui.config;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.annotations.Processor;
@@ -28,10 +27,6 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * The Enigma config is separated into five different files: {@link Config the main config (this one)},
@@ -52,20 +47,6 @@ public final class Config extends ReflectiveConfig {
 	private static final NetConfig NET = ConfigFactory.create(ENVIRONMENT, FAMILY, "net", NetConfig.class);
 	private static final DockerConfig DOCKER = ConfigFactory.create(ENVIRONMENT, FAMILY, "docker", DockerConfig.class);
 	private static final DecompilerConfig DECOMPILER = ConfigFactory.create(ENVIRONMENT, FAMILY, "decompiler", DecompilerConfig.class);
-
-	private static final Theme DEFAULT_THEME = Theme.create(ENVIRONMENT, THEME_FAMILY, "default", new DefaultThemeProperties());
-	private static final Theme DARCULA_THEME = Theme.create(ENVIRONMENT, THEME_FAMILY, "darcula", new DarculaThemeProperties());
-	private static final Theme DARCERULA_THEME = Theme.create(ENVIRONMENT, THEME_FAMILY, "darcerula", new DarcerulaThemeProperties());
-	private static final Theme METAL_THEME = Theme.create(ENVIRONMENT, THEME_FAMILY, "metal", new MetalThemeProperties());
-	private static final Theme SYSTEM_THEME = Theme.create(ENVIRONMENT, THEME_FAMILY, "system", new SystemThemeProperties());
-	private static final Theme NONE_THEME = Theme.create(ENVIRONMENT, THEME_FAMILY, "none", new NoneThemeProperties());
-
-	// this map ensures each ThemeChoice is associated with the theme that uses it
-	@VisibleForTesting
-	static final Map<ThemeChoice, Theme> THEMES_BY_CHOICE = streamThemes().collect(Collectors.toMap(
-			Theme::getChoice,
-			Function.identity()
-	));
 
 	@Comment("The currently assigned UI language. This will be an ISO-639 two-letter language code, followed by an underscore and an ISO 3166-1 alpha-2 two-letter country code.")
 	@Processor("grabPossibleLanguages")
@@ -138,7 +119,7 @@ public final class Config extends ReflectiveConfig {
 	}
 
 	public static Theme currentTheme() {
-		return THEMES_BY_CHOICE.get(activeThemeChoice);
+		return activeThemeChoice.theme;
 	}
 
 	public static SyntaxPaneProperties.Colors getCurrentSyntaxPaneColors() {
@@ -181,17 +162,6 @@ public final class Config extends ReflectiveConfig {
 		} else {
 			return null;
 		}
-	}
-
-	private static Stream<Theme> streamThemes() {
-		return Stream.of(
-			DEFAULT_THEME,
-			DARCULA_THEME,
-			DARCERULA_THEME,
-			METAL_THEME,
-			SYSTEM_THEME,
-			NONE_THEME
-		);
 	}
 
 	@SuppressWarnings("unused")
@@ -287,5 +257,47 @@ public final class Config extends ReflectiveConfig {
 		SyntaxpainConfiguration.setIdentifierColor(colors.identifier.value());
 		SyntaxpainConfiguration.setCommentColour(colors.comment.value());
 		SyntaxpainConfiguration.setTextColor(colors.text.value());
+	}
+
+	public enum ThemeChoice implements ConfigSerializableObject<String> {
+		DEFAULT(
+			Theme.create(ENVIRONMENT, THEME_FAMILY, "default", new DefaultThemeProperties())
+		),
+		DARCULA(
+			Theme.create(ENVIRONMENT, THEME_FAMILY, "darcula", new DarculaThemeProperties())
+		),
+		DARCERULA(
+			Theme.create(ENVIRONMENT, THEME_FAMILY, "darcerula", new DarcerulaThemeProperties())
+		),
+		METAL(
+			Theme.create(ENVIRONMENT, THEME_FAMILY, "metal", new MetalThemeProperties())
+		),
+		SYSTEM(
+			Theme.create(ENVIRONMENT, THEME_FAMILY, "system", new SystemThemeProperties())
+		),
+		NONE(
+			Theme.create(ENVIRONMENT, THEME_FAMILY, "none", new NoneThemeProperties())
+		);
+
+		private final Theme theme;
+
+		ThemeChoice(Theme theme) {
+			this.theme = theme;
+		}
+
+		@Override
+		public ThemeChoice convertFrom(String representation) {
+			return ThemeChoice.valueOf(representation);
+		}
+
+		@Override
+		public String getRepresentation() {
+			return this.name();
+		}
+
+		@Override
+		public ComplexConfigValue copy() {
+			return this;
+		}
 	}
 }

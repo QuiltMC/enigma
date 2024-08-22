@@ -3,7 +3,6 @@ package org.quiltmc.enigma.gui.config.theme.properties;
 import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
-import org.quiltmc.enigma.gui.config.theme.ThemeChoice;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.CompositeConfigCreator;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.ConfigurableConfigCreator;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
@@ -18,17 +17,12 @@ public abstract class ThemeProperties extends CompositeConfigCreator {
 		builder.add("Colors are encoded in the RGBA format.");
 	}
 
-	public final ThemeChoice choice;
-
 	private final SyntaxPaneProperties syntaxPaneProperties;
 
 	protected ThemeProperties(SyntaxPaneProperties syntaxPaneColors, List<ConfigurableConfigCreator> creators) {
 		super(ListUtil.prepend(syntaxPaneColors, creators));
-		this.choice = this.getThemeChoice();
 		this.syntaxPaneProperties = syntaxPaneColors;
 	}
-
-	public abstract ThemeChoice getThemeChoice();
 
 	public final SyntaxPaneProperties.Colors getSyntaxPaneColors() {
 		return this.syntaxPaneProperties.colors;
