@@ -1,38 +1,40 @@
-package org.quiltmc.enigma.gui.config.theme.properties;
+package org.quiltmc.enigma.gui.config.theme.properties.composite;
 
 import org.quiltmc.config.api.Config;
 import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.values.TrackedValue;
+import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
+import org.quiltmc.enigma.gui.config.theme.properties.ThemeProperties;
 
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-public class SyntaxPaneColorProperties implements ConfigurableConfigCreator {
-	public final SyntaxPaneColorProperties.SyntaxPaneColors syntaxPaneColors;
+public class SyntaxPaneProperties implements ConfigurableConfigCreator {
+	public final Colors colors;
 
-	protected SyntaxPaneColorProperties() {
-		this.syntaxPaneColors = this.buildSyntaxPaneColors(new SyntaxPaneColorProperties.SyntaxPaneColors.Builder()).build();
+	public SyntaxPaneProperties() {
+		this.colors = this.buildSyntaxPaneColors(new Colors.Builder()).build();
 	}
 
 	@Override
 	public void create(Config.Builder builder) {
 		builder.metadata(Comment.TYPE, ThemeProperties::addColorFormatComment);
-		builder.section("syntax_pane_colors", this.syntaxPaneColors);
+		builder.section("syntax_pane_colors", this.colors);
 	}
 
-	protected SyntaxPaneColorProperties.SyntaxPaneColors.Builder buildSyntaxPaneColors(SyntaxPaneColorProperties.SyntaxPaneColors.Builder syntaxPaneColors) {
+	protected Colors.Builder buildSyntaxPaneColors(Colors.Builder syntaxPaneColors) {
 		// start with default (light) colors
 		return syntaxPaneColors;
 	}
 
 	public void configure() {
-		this.syntaxPaneColors.configure();
+		this.colors.configure();
 	}
 
 	/**
 	 * Default values are for light themes.
 	 */
-	public static class SyntaxPaneColors implements Consumer<Config.SectionBuilder> {
+	public static class Colors implements Consumer<Config.SectionBuilder> {
 		public final TrackedValue<ThemeProperties.SerializableColor> lineNumbersForeground;
 		public final TrackedValue<ThemeProperties.SerializableColor> lineNumbersBackground;
 		public final TrackedValue<ThemeProperties.SerializableColor> lineNumbersSelected;
@@ -61,7 +63,7 @@ public class SyntaxPaneColorProperties implements ConfigurableConfigCreator {
 		public final TrackedValue<ThemeProperties.SerializableColor> debugTokenOutline;
 		public final TrackedValue<ThemeProperties.SerializableColor> dockHighlight;
 
-		private SyntaxPaneColors(
+		private Colors(
 				ThemeProperties.SerializableColor lineNumbersForeground,
 				ThemeProperties.SerializableColor lineNumbersBackground,
 				ThemeProperties.SerializableColor lineNumbersSelected,
@@ -120,7 +122,7 @@ public class SyntaxPaneColorProperties implements ConfigurableConfigCreator {
 		}
 
 		public void configure() {
-			this.stream().forEach(ThemeProperties::resetIfAbsent);
+			this.stream().forEach(ThemeUtil::resetIfAbsent);
 		}
 
 		public Stream<TrackedValue<ThemeProperties.SerializableColor>> stream() {
@@ -189,8 +191,8 @@ public class SyntaxPaneColorProperties implements ConfigurableConfigCreator {
 			private ThemeProperties.SerializableColor debugTokenOutline = new ThemeProperties.SerializableColor(0xFFBD93F9);
 			private ThemeProperties.SerializableColor dockHighlight = new ThemeProperties.SerializableColor(0xFF0000FF);
 
-			public SyntaxPaneColors build() {
-				return new SyntaxPaneColors(
+			public Colors build() {
+				return new Colors(
 					this.lineNumbersForeground,
 					this.lineNumbersBackground,
 					this.lineNumbersSelected,

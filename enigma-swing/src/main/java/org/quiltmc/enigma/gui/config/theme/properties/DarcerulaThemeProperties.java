@@ -1,16 +1,17 @@
 package org.quiltmc.enigma.gui.config.theme.properties;
 
 import org.quiltmc.enigma.gui.config.theme.ThemeChoice;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.ConfigurableConfigCreator;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DarcerulaThemeProperties extends AbstractDarculaThemeProperties {
 	public DarcerulaThemeProperties() {
-		this(new DarcerulaThemeProperties.SPColors(), new DarcerulaThemeProperties.LafColors(), new ArrayList<>());
+		this(new SyntaxPaneProperties(), new LookAndFeelProperties(), new ArrayList<>());
 	}
 
-	protected DarcerulaThemeProperties(SyntaxPaneColorProperties syntaxPaneColors, LookAndFeelColorProperties lookAndFeelColors, List<ConfigurableConfigCreator> creators) {
+	protected DarcerulaThemeProperties(org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties syntaxPaneColors, org.quiltmc.enigma.gui.config.theme.properties.composite.LookAndFeelProperties lookAndFeelColors, List<ConfigurableConfigCreator> creators) {
 		super(syntaxPaneColors, lookAndFeelColors, creators);
 	}
 
@@ -19,9 +20,9 @@ public class DarcerulaThemeProperties extends AbstractDarculaThemeProperties {
 		return ThemeChoice.DARCERULA;
 	}
 
-	public static class SPColors extends DarculaThemeProperties.SPColors {
+	public static class SyntaxPaneProperties extends DarculaThemeProperties.SyntaxPaneProperties {
 		@Override
-		public SyntaxPaneColorProperties.SyntaxPaneColors.Builder buildSyntaxPaneColors(SyntaxPaneColorProperties.SyntaxPaneColors.Builder syntaxPaneColors) {
+		public Colors.Builder buildSyntaxPaneColors(Colors.Builder syntaxPaneColors) {
 			return super.buildSyntaxPaneColors(syntaxPaneColors)
 				.lineNumbersForeground(new SerializableColor(0xFFDBDBDA))
 				.lineNumbersBackground(new SerializableColor(0xFF252729))
@@ -54,9 +55,9 @@ public class DarcerulaThemeProperties extends AbstractDarculaThemeProperties {
 			}
 	}
 
-	public static class LafColors extends DarculaThemeProperties.LafColors {
+	protected static class LookAndFeelProperties extends DarculaThemeProperties.LookAndFeelProperties {
 		@Override
-		protected LookAndFeelColors.Builder buildLookAndFeelColors(LookAndFeelColors.Builder lookAndFeelColors) {
+		protected Colors.Builder buildLookAndFeelColors(Colors.Builder lookAndFeelColors) {
 			return super.buildLookAndFeelColors(lookAndFeelColors)
 				.foreground(new SerializableColor(0xFFC3C3C3))
 				.background(new SerializableColor(0xFF242729))

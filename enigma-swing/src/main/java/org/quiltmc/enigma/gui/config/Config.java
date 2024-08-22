@@ -17,6 +17,7 @@ import org.quiltmc.config.implementor_api.ConfigFactory;
 import org.quiltmc.enigma.gui.NotificationManager;
 import org.quiltmc.enigma.gui.config.theme.*;
 import org.quiltmc.enigma.gui.config.theme.properties.*;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindDialog;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
@@ -140,7 +141,7 @@ public final class Config extends ReflectiveConfig {
 		return THEMES_BY_CHOICE.get(activeThemeChoice);
 	}
 
-	public static SyntaxPaneColorProperties.SyntaxPaneColors getCurrentSyntaxPaneColors() {
+	public static SyntaxPaneProperties.Colors getCurrentSyntaxPaneColors() {
 		return currentTheme().getSyntaxPaneColors();
 	}
 
@@ -268,23 +269,23 @@ public final class Config extends ReflectiveConfig {
 	 */
 	public static void updateSyntaxpain() {
 		Theme.Fonts fonts = currentFonts();
-		SyntaxPaneColorProperties.SyntaxPaneColors syntaxPaneColors = getCurrentSyntaxPaneColors();
+		SyntaxPaneProperties.Colors colors = getCurrentSyntaxPaneColors();
 
 		SyntaxpainConfiguration.setEditorFont(fonts.editor.value());
 		SyntaxpainConfiguration.setQuickFindDialogFactory(EnigmaQuickFindDialog::new);
 
-		SyntaxpainConfiguration.setLineRulerPrimaryColor(syntaxPaneColors.lineNumbersForeground.value());
-		SyntaxpainConfiguration.setLineRulerSecondaryColor(syntaxPaneColors.lineNumbersBackground.value());
-		SyntaxpainConfiguration.setLineRulerSelectionColor(syntaxPaneColors.lineNumbersSelected.value());
+		SyntaxpainConfiguration.setLineRulerPrimaryColor(colors.lineNumbersForeground.value());
+		SyntaxpainConfiguration.setLineRulerSecondaryColor(colors.lineNumbersBackground.value());
+		SyntaxpainConfiguration.setLineRulerSelectionColor(colors.lineNumbersSelected.value());
 
-		SyntaxpainConfiguration.setHighlightColor(syntaxPaneColors.highlight.value());
-		SyntaxpainConfiguration.setStringColor(syntaxPaneColors.string.value());
-		SyntaxpainConfiguration.setNumberColor(syntaxPaneColors.number.value());
-		SyntaxpainConfiguration.setOperatorColor(syntaxPaneColors.operator.value());
-		SyntaxpainConfiguration.setDelimiterColor(syntaxPaneColors.delimiter.value());
-		SyntaxpainConfiguration.setTypeColor(syntaxPaneColors.type.value());
-		SyntaxpainConfiguration.setIdentifierColor(syntaxPaneColors.identifier.value());
-		SyntaxpainConfiguration.setCommentColour(syntaxPaneColors.comment.value());
-		SyntaxpainConfiguration.setTextColor(syntaxPaneColors.text.value());
+		SyntaxpainConfiguration.setHighlightColor(colors.highlight.value());
+		SyntaxpainConfiguration.setStringColor(colors.string.value());
+		SyntaxpainConfiguration.setNumberColor(colors.number.value());
+		SyntaxpainConfiguration.setOperatorColor(colors.operator.value());
+		SyntaxpainConfiguration.setDelimiterColor(colors.delimiter.value());
+		SyntaxpainConfiguration.setTypeColor(colors.type.value());
+		SyntaxpainConfiguration.setIdentifierColor(colors.identifier.value());
+		SyntaxpainConfiguration.setCommentColour(colors.comment.value());
+		SyntaxpainConfiguration.setTextColor(colors.text.value());
 	}
 }

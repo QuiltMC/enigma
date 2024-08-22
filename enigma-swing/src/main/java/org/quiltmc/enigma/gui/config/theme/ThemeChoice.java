@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.config.theme;
 import org.quiltmc.config.api.Config;
 import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
-import org.quiltmc.enigma.gui.config.theme.properties.SyntaxPaneColorProperties;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -42,7 +42,7 @@ public enum ThemeChoice implements ConfigSerializableObject<String> {
 	}
 
 	private static void testColorBuilder(Config.SectionBuilder builder) {
-		final var colors = new SyntaxPaneColorProperties.SyntaxPaneColors.Builder().build();
+		final var colors = new SyntaxPaneProperties.Colors.Builder().build();
 		colors.stream().forEach(builder::field);
 	}
 

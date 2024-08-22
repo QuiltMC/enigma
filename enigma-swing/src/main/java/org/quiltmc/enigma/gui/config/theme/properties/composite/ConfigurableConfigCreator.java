@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.gui.config.theme.properties;
+package org.quiltmc.enigma.gui.config.theme.properties.composite;
 
 import org.quiltmc.config.api.Config;
 

@@ -1,16 +1,17 @@
 package org.quiltmc.enigma.gui.config.theme.properties;
 
 import org.quiltmc.enigma.gui.config.theme.ThemeChoice;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.ConfigurableConfigCreator;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DarculaThemeProperties extends AbstractDarculaThemeProperties {
 	public DarculaThemeProperties() {
-		this(new SPColors(), new LafColors(), new ArrayList<>());
+		this(new SyntaxPaneProperties(), new LookAndFeelProperties(), new ArrayList<>());
 	}
 
-	protected DarculaThemeProperties(SyntaxPaneColorProperties syntaxPaneColors, LookAndFeelColorProperties lookAndFeelColors, List<ConfigurableConfigCreator> creators) {
+	protected DarculaThemeProperties(org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties syntaxPaneColors, org.quiltmc.enigma.gui.config.theme.properties.composite.LookAndFeelProperties lookAndFeelColors, List<ConfigurableConfigCreator> creators) {
 		super(syntaxPaneColors, lookAndFeelColors, creators);
 	}
 
@@ -19,9 +20,10 @@ public class DarculaThemeProperties extends AbstractDarculaThemeProperties {
 		return ThemeChoice.DARCULA;
 	}
 
-	protected static class LafColors extends LookAndFeelColorProperties {
+	protected static class LookAndFeelProperties extends
+		org.quiltmc.enigma.gui.config.theme.properties.composite.LookAndFeelProperties {
 		@Override
-		protected LookAndFeelColors.Builder buildLookAndFeelColors (LookAndFeelColors.Builder lookAndFeelColors){
+		protected Colors.Builder buildLookAndFeelColors (Colors.Builder lookAndFeelColors){
 			// colors are from FlatDarkLaf.properties
 			return lookAndFeelColors
 				.foreground(new SerializableColor(0xFFBBBBBB))
@@ -37,9 +39,10 @@ public class DarculaThemeProperties extends AbstractDarculaThemeProperties {
 		}
 	}
 
-	protected static class SPColors extends SyntaxPaneColorProperties {
+	protected static class SyntaxPaneProperties extends
+		org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties {
 		@Override
-		public SyntaxPaneColorProperties.SyntaxPaneColors.Builder buildSyntaxPaneColors(SyntaxPaneColorProperties.SyntaxPaneColors.Builder syntaxPaneColors) {
+		public Colors.Builder buildSyntaxPaneColors(Colors.Builder syntaxPaneColors) {
 			return syntaxPaneColors
 				.lineNumbersForeground(new SerializableColor(0xFFA4A4A3))
 				.lineNumbersBackground(new SerializableColor(0xFF313335))

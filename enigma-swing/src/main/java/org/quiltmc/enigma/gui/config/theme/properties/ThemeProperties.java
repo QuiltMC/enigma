@@ -3,8 +3,10 @@ package org.quiltmc.enigma.gui.config.theme.properties;
 import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
-import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.config.theme.ThemeChoice;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.CompositeConfigCreator;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.ConfigurableConfigCreator;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.util.ListUtil;
 
 import javax.swing.*;
@@ -12,34 +14,24 @@ import java.awt.Color;
 import java.util.List;
 
 public abstract class ThemeProperties extends CompositeConfigCreator {
-	protected static <T> void resetIfAbsent(TrackedValue<T> value) {
-		setIfAbsent(value, value.getDefaultValue());
-	}
-
-	protected static <T> void setIfAbsent(TrackedValue<T> value, T newValue) {
-		if (value.getDefaultValue().equals(value.value())) {
-			value.setValue(newValue, true);
-		}
-	}
-
-	protected static void addColorFormatComment(Comment.Builder builder) {
+	public static void addColorFormatComment(Comment.Builder builder) {
 		builder.add("Colors are encoded in the RGBA format.");
 	}
 
 	public final ThemeChoice choice;
 
-	private final SyntaxPaneColorProperties syntaxPaneColorProperties;
+	private final SyntaxPaneProperties syntaxPaneProperties;
 
-	protected ThemeProperties(SyntaxPaneColorProperties syntaxPaneColors, List<ConfigurableConfigCreator> creators) {
+	protected ThemeProperties(SyntaxPaneProperties syntaxPaneColors, List<ConfigurableConfigCreator> creators) {
 		super(ListUtil.prepend(syntaxPaneColors, creators));
 		this.choice = this.getThemeChoice();
-		this.syntaxPaneColorProperties = syntaxPaneColors;
+		this.syntaxPaneProperties = syntaxPaneColors;
 	}
 
 	public abstract ThemeChoice getThemeChoice();
 
-	public final SyntaxPaneColorProperties.SyntaxPaneColors getSyntaxPaneColors() {
-		return this.syntaxPaneColorProperties.syntaxPaneColors;
+	public final SyntaxPaneProperties.Colors getSyntaxPaneColors() {
+		return this.syntaxPaneProperties.colors;
 	}
 
 	public abstract void setGlobalLaf() throws

@@ -1,6 +1,8 @@
 package org.quiltmc.enigma.gui.config.theme.properties;
 
 import org.quiltmc.enigma.gui.config.theme.ThemeChoice;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.ConfigurableConfigCreator;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -8,10 +10,10 @@ import java.util.List;
 
 public class SystemThemeProperties extends ThemeProperties {
 	public SystemThemeProperties() {
-		this(new SyntaxPaneColorProperties(), new ArrayList<>());
+		this(new SyntaxPaneProperties(), new ArrayList<>());
 	}
 
-	protected SystemThemeProperties(SyntaxPaneColorProperties syntaxPaneColors, List<ConfigurableConfigCreator> creators) {
+	protected SystemThemeProperties(SyntaxPaneProperties syntaxPaneColors, List<ConfigurableConfigCreator> creators) {
 		super(syntaxPaneColors, creators);
 	}
 

@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.config.theme;
 
+import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
@@ -82,5 +83,15 @@ public final class ThemeUtil {
 				TokenType.DEOBFUSCATED, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().deobfuscated.value(), Config.getCurrentSyntaxPaneColors().deobfuscatedOutline.value()),
 				TokenType.DEBUG, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().debugToken.value(), Config.getCurrentSyntaxPaneColors().debugTokenOutline.value())
 		);
+	}
+
+	public static <T> void resetIfAbsent(TrackedValue<T> value) {
+		setIfAbsent(value, value.getDefaultValue());
+	}
+
+	public static <T> void setIfAbsent(TrackedValue<T> value, T newValue) {
+		if (value.getDefaultValue().equals(value.value())) {
+			value.setValue(newValue, true);
+		}
 	}
 }
