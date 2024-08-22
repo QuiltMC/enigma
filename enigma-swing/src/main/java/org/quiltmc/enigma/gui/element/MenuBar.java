@@ -472,6 +472,7 @@ public class MenuBar {
 
 	private void onOpenMappingsClicked() {
 		this.gui.mappingsFileChooser.setCurrentDirectory(new File(Config.main().stats.lastSelectedDir.value()));
+		this.gui.mappingsFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
 		List<ReadWriteService> types = this.gui.getController().getEnigma().getReadWriteServices().stream().filter(ReadWriteService::supportsReading).toList();
 		ExtensionFileFilter.setupFileChooser(this.gui, this.gui.mappingsFileChooser, types.toArray(new ReadWriteService[0]));
@@ -486,7 +487,7 @@ public class MenuBar {
 			} else {
 				String nonParseableMessage = I18n.translateFormatted("menu.file.open.non_parseable.unsupported_format", selectedFile);
 				if (format.isPresent()) {
-					nonParseableMessage = I18n.translateFormatted("menu.file.open.non_parseable", I18n.translate("mapping_format." + format.get().getId().toLowerCase(Locale.ROOT)));
+					nonParseableMessage = I18n.translateFormatted("menu.file.open.non_parseable", I18n.translate("mapping_format." + format.get().getId().split(":")[1].toLowerCase()));
 				}
 
 				JOptionPane.showMessageDialog(this.gui.getFrame(), nonParseableMessage, I18n.translate("menu.file.open.cannot_open"), JOptionPane.ERROR_MESSAGE);

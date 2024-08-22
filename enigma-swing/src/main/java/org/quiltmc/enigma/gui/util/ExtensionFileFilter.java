@@ -37,7 +37,6 @@ public final class ExtensionFileFilter extends FileFilter {
 
 	@Override
 	public boolean accept(File f) {
-		// Always accept directories so the user can see them.
 		if (f.isDirectory()) {
 			return true;
 		}
@@ -78,17 +77,12 @@ public final class ExtensionFileFilter extends FileFilter {
 		fileChooser.resetChoosableFileFilters();
 
 		for (ReadWriteService service : services) {
-			if (service.getFileType().isDirectory()) {
-				fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			} else {
-				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-				String formatName = I18n.translate("mapping_format." + service.getId().toLowerCase());
-				var filter = new ExtensionFileFilter(formatName, service.getFileType().getExtensions());
-				// Add our new filter to the list...
-				fileChooser.addChoosableFileFilter(filter);
-				// ...and choose it as the default.
-				fileChooser.setFileFilter(filter);
-			}
+			String formatName = I18n.translate("mapping_format." + service.getId().split(":")[1].toLowerCase());
+			var filter = new ExtensionFileFilter(formatName, service.getFileType().getExtensions());
+			// Add our new filter to the list...
+			fileChooser.addChoosableFileFilter(filter);
+			// ...and choose it as the default.
+			fileChooser.setFileFilter(filter);
 		}
 
 		if (services.length > 1) {
