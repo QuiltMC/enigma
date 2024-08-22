@@ -43,7 +43,7 @@ public abstract class ProGuardExecTask extends JavaExec {
 			}
 
 			args(
-				"\"@" + getConfFile().get() + "\"",
+				"@" + getConfFile().get(),
 				"-injars", getInJar().get().getAsFile(),
 				"-libraryjars", getLibraryJars().get(),
 				"-outjars", getOutJar().get().getAsFile()
