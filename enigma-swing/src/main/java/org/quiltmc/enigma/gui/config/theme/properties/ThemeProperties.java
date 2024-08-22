@@ -38,6 +38,9 @@ public abstract class ThemeProperties extends CompositeConfigCreator {
 			UnsupportedLookAndFeelException, ClassNotFoundException,
 			InstantiationException, IllegalAccessException;
 
+	// FlatLaf-based LaFs do their own scaling so we don't have to do it.
+	// Running swing-dpi for FlatLaf actually breaks fonts, so we let it scale the GUI.
+	public abstract boolean needsScaling();
 
 	public static class SerializableColor extends Color implements ConfigSerializableObject<String> {
 		public SerializableColor(int rgba) {

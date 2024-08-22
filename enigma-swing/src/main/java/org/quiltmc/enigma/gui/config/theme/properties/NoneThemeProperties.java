@@ -25,6 +25,11 @@ public class NoneThemeProperties extends NonSystemLafThemeProperties {
 	}
 
 	@Override
+	public boolean needsScaling() {
+		return true;
+	}
+
+	@Override
 	protected LookAndFeel getLaf() {
 		return NONE_LAF;
 	}

@@ -12,34 +12,18 @@ import javax.swing.JPanel;
 
 public enum ThemeChoice implements ConfigSerializableObject<String> {
 	DEFAULT(
-		false
 	),
 	DARCULA(
-		false
 	),
 	DARCERULA(
-		false
 	),
 	METAL(
-		true
 	),
 	SYSTEM(
-		true
 	),
 	NONE(
-		true
 	);
 
-	// FlatLaf-based LaFs do their own scaling so we don't have to do it.
-	// Running swing-dpi for FlatLaf actually breaks fonts, so we let it scale the GUI.
-	public final boolean needsScaling;
-
-	ThemeChoice(
-			boolean needsScaling
-	) {
-
-		this.needsScaling = needsScaling;
-	}
 
 	private static void testColorBuilder(Config.SectionBuilder builder) {
 		final var colors = new SyntaxPaneProperties.Colors.Builder().build();

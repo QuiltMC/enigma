@@ -45,6 +45,10 @@ public class Theme extends ReflectiveConfig {
 		this.properties.configure();
 	}
 
+	public boolean needsScaling() {
+		return properties.needsScaling();
+	}
+
 	public static class Fonts extends Section {
 		public final TrackedValue<SerializableFont> defaultBold = this.value(new SerializableFont(Font.decode(Font.DIALOG).deriveFont(Font.BOLD)));
 		public final TrackedValue<SerializableFont> defaultNormal = this.value(new SerializableFont(Font.decode(Font.DIALOG)));

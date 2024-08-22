@@ -10,7 +10,7 @@ import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProper
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultThemeProperties extends ConfigurableLafThemeProperties {
+public class DefaultThemeProperties extends ConfigurableFlatLafThemeProperties {
 	public DefaultThemeProperties() {
 		this(new SyntaxPaneProperties(), new LookAndFeelProperties(), new ArrayList<>());
 	}

@@ -28,4 +28,9 @@ public class SystemThemeProperties extends ThemeProperties {
 			InstantiationException, IllegalAccessException {
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 	}
+
+	@Override
+	public boolean needsScaling() {
+		return true;
+	}
 }

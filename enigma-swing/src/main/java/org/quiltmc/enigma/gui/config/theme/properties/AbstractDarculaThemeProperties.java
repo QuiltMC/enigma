@@ -8,7 +8,7 @@ import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProper
 
 import java.util.List;
 
-public abstract class AbstractDarculaThemeProperties extends ConfigurableLafThemeProperties {
+public abstract class AbstractDarculaThemeProperties extends ConfigurableFlatLafThemeProperties {
 	protected AbstractDarculaThemeProperties(SyntaxPaneProperties syntaxPaneColors, LookAndFeelProperties lookAndFeelColors, List<ConfigurableConfigCreator> creators) {
 		super(syntaxPaneColors, lookAndFeelColors, creators);
 	}
