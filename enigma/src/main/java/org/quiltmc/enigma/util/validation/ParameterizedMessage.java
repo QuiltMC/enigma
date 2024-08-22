@@ -9,7 +9,7 @@ import java.io.File;
  */
 public record ParameterizedMessage(Message message, Object... params) {
 	public static ParameterizedMessage openedProject(String jar, String mappings) {
-		return new ParameterizedMessage(Message.OPENED_PROJECT, jar.substring(jar.lastIndexOf(File.separator)), mappings.substring(jar.lastIndexOf(File.separator)));
+		return new ParameterizedMessage(Message.OPENED_PROJECT, jar.substring(jar.lastIndexOf(File.separator)), mappings.substring(mappings.lastIndexOf(File.separator)));
 	}
 
 	public Message.Type getType() {
