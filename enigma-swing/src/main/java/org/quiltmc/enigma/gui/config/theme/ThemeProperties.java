@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.config.theme;
 
+import org.quiltmc.config.api.Config;
 import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
 import org.quiltmc.enigma.gui.config.theme.look_and_feel.ConfigurableFlatDarkLaf;
@@ -17,68 +18,84 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 
 public enum ThemeProperties implements ConfigSerializableObject<String> {
 	DEFAULT(
+		builder -> { builder.section("syntax_pain_colors", ThemeProperties::testColorBuilder); },
 		ConfigurableFlatLightLaf::new,
 		LookAndFeelColorsFactories::createLight,
 		SyntaxPaneColorsFactories::createLight,
 		false
 	),
 	DARCULA(
+		builder -> { builder.section("syntax_pain_colors", ThemeProperties::testColorBuilder); },
 		ConfigurableFlatDarkLaf::new,
 		LookAndFeelColorsFactories::createDarcula,
 		SyntaxPaneColorsFactories::createDarcula,
 		false
 	),
 	DARCERULA(
+		builder -> { builder.section("syntax_pain_colors", ThemeProperties::testColorBuilder); },
 		ConfigurableFlatDarkLaf::new,
 		LookAndFeelColorsFactories::createDarcerula,
 		SyntaxPaneColorsFactories::createDarcerula,
 		false
 	),
 	METAL(
+		builder -> { builder.section("syntax_pain_colors", ThemeProperties::testColorBuilder); },
 		unused -> new MetalLookAndFeel(),
 		null,
 		SyntaxPaneColorsFactories::createLight,
 		true
 	),
 	SYSTEM(
+		builder -> { builder.section("syntax_pain_colors", ThemeProperties::testColorBuilder); },
 		null,
 		null,
 		SyntaxPaneColorsFactories::createLight,
 		true
 	),
 	NONE(
+		builder -> { builder.section("syntax_pain_colors", ThemeProperties::testColorBuilder); },
 		unused -> UIManager.getLookAndFeel(),
 		null,
 		SyntaxPaneColorsFactories::createLight,
 		true
 	);
 
+	public final Config.Creator creator;
+
 	@Nullable
-	public final Function<Theme.LookAndFeelColors, javax.swing.LookAndFeel> lookAndFeelFactory;
+	public final Function<ThemeCreator.LookAndFeelColors, javax.swing.LookAndFeel> lookAndFeelFactory;
 
-	public final Supplier<Theme.LookAndFeelColors.Builder> lookAndFeelColorsFactory;
+	public final Supplier<ThemeCreator.LookAndFeelColors.Builder> lookAndFeelColorsFactory;
 
-	public final Supplier<Theme.SyntaxPaneColors.Builder> syntaxPaneColorsFactory;
+	public final Supplier<ThemeCreator.SyntaxPaneColors.Builder> syntaxPaneColorsFactory;
 
 	// FlatLaf-based LaFs do their own scaling so we don't have to do it.
 	// Running swing-dpi for FlatLaf actually breaks fonts, so we let it scale the GUI.
 	public final boolean needsScaling;
 
 	ThemeProperties(
-			@Nullable Function<Theme.LookAndFeelColors, javax.swing.LookAndFeel> lookAndFeelFactory,
-			@Nullable Supplier<Theme.LookAndFeelColors.Builder> lookAndFeelColorsFactory,
-			Supplier<Theme.SyntaxPaneColors.Builder> syntaxPaneColorsFactory,
+			Config.Creator creator,
+			@Nullable Function<ThemeCreator.LookAndFeelColors, javax.swing.LookAndFeel> lookAndFeelFactory,
+			@Nullable Supplier<ThemeCreator.LookAndFeelColors.Builder> lookAndFeelColorsFactory,
+			Supplier<ThemeCreator.SyntaxPaneColors.Builder> syntaxPaneColorsFactory,
 			boolean needsScaling
 	) {
+		this.creator = creator;
+
 		this.lookAndFeelFactory = lookAndFeelFactory;
 
 		this.lookAndFeelColorsFactory = lookAndFeelColorsFactory == null
-			? Theme.LookAndFeelColors.Builder::new
+			? ThemeCreator.LookAndFeelColors.Builder::new
 			: lookAndFeelColorsFactory;
 
 		this.syntaxPaneColorsFactory = syntaxPaneColorsFactory;
 
 		this.needsScaling = needsScaling;
+	}
+
+	private static void testColorBuilder(Config.SectionBuilder builder) {
+		final var colors = new ThemeCreator.SyntaxPaneColors.Builder().build();
+		colors.stream().forEach(builder::field);
 	}
 
 	public static boolean isDarkLaf() {

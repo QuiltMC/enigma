@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui.config.theme.look_and_feel;
 
 import com.formdev.flatlaf.FlatPropertiesLaf;
-import org.quiltmc.enigma.gui.config.theme.Theme.LookAndFeelColors;
+import org.quiltmc.enigma.gui.config.theme.ThemeCreator.LookAndFeelColors;
 
 import java.util.Map;
 import java.util.Properties;

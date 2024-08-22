@@ -14,8 +14,7 @@ import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.config.implementor_api.ConfigEnvironment;
 import org.quiltmc.config.implementor_api.ConfigFactory;
 import org.quiltmc.enigma.gui.NotificationManager;
-import org.quiltmc.enigma.gui.config.theme.ThemeProperties;
-import org.quiltmc.enigma.gui.config.theme.Theme;
+import org.quiltmc.enigma.gui.config.theme.*;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindDialog;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
@@ -43,22 +42,32 @@ import java.util.stream.Stream;
 public final class Config extends ReflectiveConfig {
 	private static final String FORMAT = "toml";
 	private static final String FAMILY = "enigma";
+	private static final String THEME_FAMILY = "theme";
 
 	private static final ConfigEnvironment ENVIRONMENT = new ConfigEnvironment(ConfigPaths.getConfigPathRoot(), FORMAT, TomlSerializer.INSTANCE);
+	private static final ConfigEnvironment THEME_ENVIRONMENT = new ConfigEnvironment(ConfigPaths.getConfigPathRoot().resolve(FAMILY), FORMAT, TomlSerializer.INSTANCE);
 	private static final Config MAIN = ConfigFactory.create(ENVIRONMENT, FAMILY, "main", Config.class);
 	private static final KeyBindConfig KEYBIND = ConfigFactory.create(ENVIRONMENT, FAMILY, "keybind", KeyBindConfig.class);
 	private static final NetConfig NET = ConfigFactory.create(ENVIRONMENT, FAMILY, "net", NetConfig.class);
 	private static final DockerConfig DOCKER = ConfigFactory.create(ENVIRONMENT, FAMILY, "docker", DockerConfig.class);
 	private static final DecompilerConfig DECOMPILER = ConfigFactory.create(ENVIRONMENT, FAMILY, "decompiler", DecompilerConfig.class);
 
+	private static final Theme DEFAULT_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "default", ThemeProperties.DEFAULT);
+	private static final Theme DARCULA_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "darcula", ThemeProperties.DARCULA);
+	private static final Theme DARCERULA_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "darcerula", ThemeProperties.DARCERULA);
+	private static final Theme METAL_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "metal", ThemeProperties.METAL);
+	private static final Theme SYSTEM_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "system", ThemeProperties.SYSTEM);
+	private static final Theme NONE_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "none", ThemeProperties.NONE);
+
 	// this map ensures:
 	// 1. each ThemeProperties has an associated theme (by using ThemeProperties.values()) [similar to enhanced switch]
 	// 2. each ThemeProperties is associated with the theme that uses it (albeit at runtime) [improvement over switch]
-	private static final Map<ThemeProperties, Theme> THEMES_BY_PROPERTIES = Arrays.stream(ThemeProperties.values())
+	private static final Map<ThemeProperties, Theme> THEMES_BY_PROPERTIES =
+		Arrays.stream(ThemeProperties.values())
 			.collect(Collectors.toMap(
 				Function.identity(),
 				properties -> main().streamThemes()
-					.filter(theme -> theme.properties == properties)
+					.filter(theme -> theme.getCreator().properties == properties)
 					.findAny()
 					.orElseThrow(() ->
 						new IllegalStateException("Config#streamThemes() missing value for " + properties)
@@ -103,17 +112,6 @@ public final class Config extends ReflectiveConfig {
 	 */
 	public static ThemeProperties activeThemeProperties;
 
-	public final Theme defaultTheme = new Theme(ThemeProperties.DEFAULT);
-	public final Theme darculaTheme = new Theme(ThemeProperties.DARCULA);
-	public final Theme darcerulaTheme = new Theme(ThemeProperties.DARCERULA);
-	// TODO: see if these can be made optional
-	@Comment("look_and_feel_colors are ignored for metal_theme")
-	public final Theme metalTheme = new Theme(ThemeProperties.METAL);
-	@Comment("look_and_feel_colors are ignored for system_theme")
-	public final Theme systemTheme = new Theme(ThemeProperties.SYSTEM);
-	@Comment("look_and_feel_colors are ignored for none_theme")
-	public final Theme noneTheme = new Theme(ThemeProperties.NONE);
-
 	@SuppressWarnings("unused")
 	public void processChange(org.quiltmc.config.api.Config.Builder builder) {
 		builder.callback(config -> {
@@ -150,25 +148,25 @@ public final class Config extends ReflectiveConfig {
 		return THEMES_BY_PROPERTIES.get(activeThemeProperties);
 	}
 
-	public static Theme.SyntaxPaneColors getCurrentSyntaxPaneColors() {
-		return currentTheme().syntaxPaneColors;
+	public static ThemeCreator.SyntaxPaneColors getCurrentSyntaxPaneColors() {
+		return currentTheme().getCreator().syntaxPaneColors;
 	}
 
-	public static Theme.LookAndFeelColors getCurrentLookAndFeelColors() {
-		return currentTheme().lookAndFeelColors;
+	public static ThemeCreator.LookAndFeelColors getCurrentLookAndFeelColors() {
+		return currentTheme().getCreator().lookAndFeelColors;
 	}
 
 	public static void setGlobalLaf() {
 		try {
 			final Theme currentTheme = currentTheme();
 
-			final Function<Theme.LookAndFeelColors, javax.swing.LookAndFeel> constructor =
-					currentTheme.properties.lookAndFeelFactory;
+			final Function<ThemeCreator.LookAndFeelColors, javax.swing.LookAndFeel> constructor =
+					currentTheme.getCreator().properties.lookAndFeelFactory;
 
 			if (constructor == null) {
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			} else {
-				UIManager.setLookAndFeel(constructor.apply(currentTheme.lookAndFeelColors));
+				UIManager.setLookAndFeel(constructor.apply(currentTheme.getCreator().lookAndFeelColors));
 			}
 		} catch (Exception e) {
 			throw new Error("Failed to set global look and feel", e);
@@ -210,12 +208,12 @@ public final class Config extends ReflectiveConfig {
 
 	private Stream<Theme> streamThemes() {
 		return Stream.of(
-			this.defaultTheme,
-			this.darculaTheme,
-			this.darcerulaTheme,
-			this.metalTheme,
-			this.systemTheme,
-			this.noneTheme
+			DEFAULT_THEME,
+			DARCULA_THEME,
+			DARCERULA_THEME,
+			METAL_THEME,
+			SYSTEM_THEME,
+			NONE_THEME
 		);
 	}
 
@@ -288,7 +286,7 @@ public final class Config extends ReflectiveConfig {
 	 */
 	public static void updateSyntaxpain() {
 		Theme.Fonts fonts = currentFonts();
-		Theme.SyntaxPaneColors syntaxPaneColors = getCurrentSyntaxPaneColors();
+		ThemeCreator.SyntaxPaneColors syntaxPaneColors = getCurrentSyntaxPaneColors();
 
 		SyntaxpainConfiguration.setEditorFont(fonts.editor.value());
 		SyntaxpainConfiguration.setQuickFindDialogFactory(EnigmaQuickFindDialog::new);

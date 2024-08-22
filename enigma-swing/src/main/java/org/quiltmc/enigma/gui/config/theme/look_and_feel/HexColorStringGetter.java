@@ -1,11 +1,11 @@
 package org.quiltmc.enigma.gui.config.theme.look_and_feel;
 
-import org.quiltmc.enigma.gui.config.theme.Theme;
+import org.quiltmc.enigma.gui.config.theme.ThemeCreator;
 
 import java.util.function.Function;
 
 @FunctionalInterface
-public interface HexColorStringGetter extends Function<Theme.LookAndFeelColors, String> {
+public interface HexColorStringGetter extends Function<ThemeCreator.LookAndFeelColors, String> {
 	static HexColorStringGetter of(TrackedSerializableColorGetter getter) {
 		return of(SerializableColorGetter.of(getter));
 	}
@@ -14,11 +14,11 @@ public interface HexColorStringGetter extends Function<Theme.LookAndFeelColors, 
 		return of(getter.andThen(HexColorStringGetter::colorPropertyValueOf));
 	}
 
-	static HexColorStringGetter of(Function<Theme.LookAndFeelColors, String> getter) {
+	static HexColorStringGetter of(Function<ThemeCreator.LookAndFeelColors, String> getter) {
 		return getter::apply;
 	}
 
-	static String colorPropertyValueOf(Theme.SerializableColor color) {
+	static String colorPropertyValueOf(ThemeCreator.SerializableColor color) {
 		return prependHash(color.getRepresentation());
 	}
 
