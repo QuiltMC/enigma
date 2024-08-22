@@ -7,6 +7,7 @@ import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.config.implementor_api.ConfigEnvironment;
 import org.quiltmc.config.implementor_api.ConfigFactory;
+import org.quiltmc.enigma.gui.config.theme.properties.SyntaxPaneColorProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.ThemeProperties;
 
 import javax.swing.*;
@@ -30,8 +31,8 @@ public class Theme extends ReflectiveConfig {
 		return this.properties.choice;
 	}
 
-	public ThemeProperties.SyntaxPaneColors getSyntaxPaneColors() {
-		return this.properties.syntaxPaneColors;
+	public SyntaxPaneColorProperties.SyntaxPaneColors getSyntaxPaneColors() {
+		return this.properties.getSyntaxPaneColors();
 	}
 
 	public void setGlobalLaf() throws

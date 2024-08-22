@@ -1,47 +1,32 @@
 package org.quiltmc.enigma.gui.config.theme.properties;
 
 import org.quiltmc.config.api.Config;
-import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.config.theme.look_and_feel.ConfigurableFlatLaf;
+import org.quiltmc.enigma.gui.util.ListUtil;
 
 import javax.swing.*;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public abstract class ConfigurableLafThemeProperties extends NonSystemLafThemeProperties {
-	private final LookAndFeelColors lookAndFeelColors;
+	private final LookAndFeelColorProperties lookAndFeelColorProperties;
 
-	protected ConfigurableLafThemeProperties() {
-		this.lookAndFeelColors = this.buildLookAndFeelColors(new LookAndFeelColors.Builder()).build();
+	protected ConfigurableLafThemeProperties(
+			SyntaxPaneColorProperties syntaxPaneColors, LookAndFeelColorProperties lookAndFeelColors,
+			List<ConfigurableConfigCreator> creators
+	) {
+		super(syntaxPaneColors, ListUtil.prepend(lookAndFeelColors, creators));
+		this.lookAndFeelColorProperties = lookAndFeelColors;
 	}
 
 	@Override
 	protected final LookAndFeel getLaf() {
-		return this.getLafConstructor().construct(this.lookAndFeelColors);
-	}
-
-	@Override
-	public void create(Config.Builder builder) {
-		super.create(builder);
-
-		builder.metadata(Comment.TYPE, ThemeProperties::addColorFormatComment);
-		builder.section("look_and_feel_colors", this.buildLookAndFeelColors(new LookAndFeelColors.Builder()).build());
-	}
-
-	@Override
-	public void configure() {
-		super.configure();
-
-		this.lookAndFeelColors.configure();
+		return this.getLafConstructor().construct(this.lookAndFeelColorProperties.lookAndFeelColors);
 	}
 
 	protected abstract ConfigurableFlatLaf.Constructor getLafConstructor();
-
-	protected LookAndFeelColors.Builder buildLookAndFeelColors(LookAndFeelColors.Builder lookAndFeelColors) {
-		// start with default (light) colors
-		return lookAndFeelColors;
-	}
 
 	public static class LookAndFeelColors implements Consumer<Config.SectionBuilder> {
 		public final TrackedValue<SerializableColor> foreground;

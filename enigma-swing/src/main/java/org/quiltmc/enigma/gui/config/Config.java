@@ -27,10 +27,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -65,7 +62,7 @@ public final class Config extends ReflectiveConfig {
 	// this map ensures each ThemeChoice is associated with the theme that uses it
 	@VisibleForTesting
 	static final Map<ThemeChoice, Theme> THEMES_BY_CHOICE = streamThemes().collect(Collectors.toMap(
-			theme -> theme.getChoice(),
+			Theme::getChoice,
 			Function.identity()
 	));
 
@@ -143,7 +140,7 @@ public final class Config extends ReflectiveConfig {
 		return THEMES_BY_CHOICE.get(activeThemeChoice);
 	}
 
-	public static ThemeProperties.SyntaxPaneColors getCurrentSyntaxPaneColors() {
+	public static SyntaxPaneColorProperties.SyntaxPaneColors getCurrentSyntaxPaneColors() {
 		return currentTheme().getSyntaxPaneColors();
 	}
 
@@ -271,7 +268,7 @@ public final class Config extends ReflectiveConfig {
 	 */
 	public static void updateSyntaxpain() {
 		Theme.Fonts fonts = currentFonts();
-		ThemeProperties.SyntaxPaneColors syntaxPaneColors = getCurrentSyntaxPaneColors();
+		SyntaxPaneColorProperties.SyntaxPaneColors syntaxPaneColors = getCurrentSyntaxPaneColors();
 
 		SyntaxpainConfiguration.setEditorFont(fonts.editor.value());
 		SyntaxpainConfiguration.setQuickFindDialogFactory(EnigmaQuickFindDialog::new);

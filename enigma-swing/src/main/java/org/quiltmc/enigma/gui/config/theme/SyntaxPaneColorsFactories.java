@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.config.theme;
 
+import org.quiltmc.enigma.gui.config.theme.properties.SyntaxPaneColorProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.ThemeProperties;
 
 /**
@@ -11,13 +12,13 @@ import org.quiltmc.enigma.gui.config.theme.properties.ThemeProperties;
 public final class SyntaxPaneColorsFactories {
 	private SyntaxPaneColorsFactories() { }
 
-	public static ThemeProperties.SyntaxPaneColors.Builder createLight() {
+	public static SyntaxPaneColorProperties.SyntaxPaneColors.Builder createLight() {
 		// default colors are for LookAndFeel.DEFAULT
-		return new ThemeProperties.SyntaxPaneColors.Builder();
+		return new SyntaxPaneColorProperties.SyntaxPaneColors.Builder();
 	}
 
-	public static ThemeProperties.SyntaxPaneColors.Builder createDarcula() {
-		return new ThemeProperties.SyntaxPaneColors.Builder()
+	public static SyntaxPaneColorProperties.SyntaxPaneColors.Builder createDarcula() {
+		return new SyntaxPaneColorProperties.SyntaxPaneColors.Builder()
 			.lineNumbersForeground(new ThemeProperties.SerializableColor(0xFFA4A4A3))
 			.lineNumbersBackground(new ThemeProperties.SerializableColor(0xFF313335))
 			.lineNumbersSelected(new ThemeProperties.SerializableColor(0xFF606366))
@@ -48,7 +49,7 @@ public final class SyntaxPaneColorsFactories {
 			.debugTokenOutline(new ThemeProperties.SerializableColor(0x80701367));
 	}
 
-	public static ThemeProperties.SyntaxPaneColors.Builder createDarcerula() {
+	public static SyntaxPaneColorProperties.SyntaxPaneColors.Builder createDarcerula() {
 		return createDarcula()
 			.lineNumbersForeground(new ThemeProperties.SerializableColor(0xFFDBDBDA))
 			.lineNumbersBackground(new ThemeProperties.SerializableColor(0xFF252729))
