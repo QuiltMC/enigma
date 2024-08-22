@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.config;
 
 import org.quiltmc.config.api.ReflectiveConfig;
+import org.quiltmc.config.api.annotations.Alias;
 import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.annotations.Processor;
 import org.quiltmc.config.api.annotations.SerializedNameConvention;
@@ -76,6 +77,7 @@ public final class Config extends ReflectiveConfig {
 	 * The look and feel stored in the config: do not use this unless setting! Use {@link #activeThemeChoice} instead,
 	 * since look and feel is final once loaded.
 	 */
+	@Alias("look_and_feel")
 	public final TrackedValue<ThemeChoice> theme = this.value(ThemeChoice.DEFAULT);
 	/**
 	 * Look and feel is not modifiable at runtime. I have tried and failed multiple times to get this running.
