@@ -43,22 +43,22 @@ import java.util.stream.Stream;
 public final class Config extends ReflectiveConfig {
 	private static final String FORMAT = "toml";
 	private static final String FAMILY = "enigma";
-	private static final String THEME_FAMILY = "theme";
+	private static final String THEME_FAMILY = FAMILY + "/theme";
 
 	private static final ConfigEnvironment ENVIRONMENT = new ConfigEnvironment(ConfigPaths.getConfigPathRoot(), FORMAT, TomlSerializer.INSTANCE);
-	private static final ConfigEnvironment THEME_ENVIRONMENT = new ConfigEnvironment(ConfigPaths.getConfigPathRoot().resolve(FAMILY), FORMAT, TomlSerializer.INSTANCE);
+
 	private static final Config MAIN = ConfigFactory.create(ENVIRONMENT, FAMILY, "main", Config.class);
 	private static final KeyBindConfig KEYBIND = ConfigFactory.create(ENVIRONMENT, FAMILY, "keybind", KeyBindConfig.class);
 	private static final NetConfig NET = ConfigFactory.create(ENVIRONMENT, FAMILY, "net", NetConfig.class);
 	private static final DockerConfig DOCKER = ConfigFactory.create(ENVIRONMENT, FAMILY, "docker", DockerConfig.class);
 	private static final DecompilerConfig DECOMPILER = ConfigFactory.create(ENVIRONMENT, FAMILY, "decompiler", DecompilerConfig.class);
 
-	private static final Theme DEFAULT_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "default", new DefaultThemeProperties());
-	private static final Theme DARCULA_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "darcula", new DarculaThemeProperties());
-	private static final Theme DARCERULA_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "darcerula", new DarcerulaThemeProperties());
-	private static final Theme METAL_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "metal", new MetalThemeProperties());
-	private static final Theme SYSTEM_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "system", new SystemThemeProperties());
-	private static final Theme NONE_THEME = Theme.create(THEME_ENVIRONMENT, THEME_FAMILY, "none", new NoneThemeProperties());
+	private static final Theme DEFAULT_THEME = Theme.create(ENVIRONMENT, THEME_FAMILY, "default", new DefaultThemeProperties());
+	private static final Theme DARCULA_THEME = Theme.create(ENVIRONMENT, THEME_FAMILY, "darcula", new DarculaThemeProperties());
+	private static final Theme DARCERULA_THEME = Theme.create(ENVIRONMENT, THEME_FAMILY, "darcerula", new DarcerulaThemeProperties());
+	private static final Theme METAL_THEME = Theme.create(ENVIRONMENT, THEME_FAMILY, "metal", new MetalThemeProperties());
+	private static final Theme SYSTEM_THEME = Theme.create(ENVIRONMENT, THEME_FAMILY, "system", new SystemThemeProperties());
+	private static final Theme NONE_THEME = Theme.create(ENVIRONMENT, THEME_FAMILY, "none", new NoneThemeProperties());
 
 	// this map ensures each ThemeChoice is associated with the theme that uses it
 	@VisibleForTesting
