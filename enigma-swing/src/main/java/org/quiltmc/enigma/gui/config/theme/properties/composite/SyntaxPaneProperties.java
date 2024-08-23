@@ -94,22 +94,22 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 				ThemeProperties.SerializableColor debugTokenOutline,
 				ThemeProperties.SerializableColor dockHighlight
 		) {
-			this.lineNumbersForeground = TrackedValue.create(lineNumbersForeground, "lineNumbersForeground");
-			this.lineNumbersBackground = TrackedValue.create(lineNumbersBackground, "lineNumbersBackground");
-			this.lineNumbersSelected = TrackedValue.create(lineNumbersSelected, "lineNumbersSelected");
+			this.lineNumbersForeground = TrackedValue.create(lineNumbersForeground, "line_numbers_foreground");
+			this.lineNumbersBackground = TrackedValue.create(lineNumbersBackground, "line_numbers_background");
+			this.lineNumbersSelected = TrackedValue.create(lineNumbersSelected, "line_numbers_selected");
 			this.obfuscated = TrackedValue.create(obfuscated, "obfuscated");
-			this.obfuscatedOutline = TrackedValue.create(obfuscatedOutline, "obfuscatedOutline");
+			this.obfuscatedOutline = TrackedValue.create(obfuscatedOutline, "obfuscated_outline");
 
 			this.proposed = TrackedValue.create(proposed, "proposed");
-			this.proposedOutline = TrackedValue.create(proposedOutline, "proposedOutline");
+			this.proposedOutline = TrackedValue.create(proposedOutline, "proposed_outline");
 
 			this.deobfuscated = TrackedValue.create(deobfuscated, "deobfuscated");
-			this.deobfuscatedOutline = TrackedValue.create(deobfuscatedOutline, "deobfuscatedOutline");
+			this.deobfuscatedOutline = TrackedValue.create(deobfuscatedOutline, "deobfuscated_outline");
 
-			this.editorBackground = TrackedValue.create(editorBackground, "editorBackground");
+			this.editorBackground = TrackedValue.create(editorBackground, "editor_background");
 			this.highlight = TrackedValue.create(highlight, "highlight");
 			this.caret = TrackedValue.create(caret, "caret");
-			this.selectionHighlight = TrackedValue.create(selectionHighlight, "selectionHighlight");
+			this.selectionHighlight = TrackedValue.create(selectionHighlight, "selection_highlight");
 			this.string = TrackedValue.create(string, "string");
 			this.number = TrackedValue.create(number, "number");
 			this.operator = TrackedValue.create(operator, "operator");
@@ -118,9 +118,9 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 			this.identifier = TrackedValue.create(identifier, "identifier");
 			this.comment = TrackedValue.create(comment, "comment");
 			this.text = TrackedValue.create(text, "text");
-			this.debugToken = TrackedValue.create(debugToken, "debugToken");
-			this.debugTokenOutline = TrackedValue.create(debugTokenOutline, "debugTokenOutline");
-			this.dockHighlight = TrackedValue.create(dockHighlight, "dockHighlight");
+			this.debugToken = TrackedValue.create(debugToken, "debug_token");
+			this.debugTokenOutline = TrackedValue.create(debugTokenOutline, "debug_token_outline");
+			this.dockHighlight = TrackedValue.create(dockHighlight, "dock_highlight");
 		}
 
 		public void configure() {

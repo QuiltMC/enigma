@@ -62,13 +62,13 @@ public class LookAndFeelProperties implements Config.Creator, Configurable {
 			this.foreground = TrackedValue.create(foreground, "foreground");
 			this.background = TrackedValue.create(background, "background");
 
-			this.accentBaseColor = TrackedValue.create(accentBaseColor, "accentBaseColor");
+			this.accentBaseColor = TrackedValue.create(accentBaseColor, "accent_base_color");
 
-			this.activeCaption = TrackedValue.create(activeCaption, "activeCaption");
-			this.inactiveCaption = TrackedValue.create(inactiveCaption, "inactiveCaption");
+			this.activeCaption = TrackedValue.create(activeCaption, "active_caption");
+			this.inactiveCaption = TrackedValue.create(inactiveCaption, "inactive_caption");
 
-			this.errorBorder = TrackedValue.create(errorBorder, "errorBorder");
-			this.warningBorder = TrackedValue.create(warningBorder, "warningBorder");
+			this.errorBorder = TrackedValue.create(errorBorder, "error_border");
+			this.warningBorder = TrackedValue.create(warningBorder, "warning_border");
 		}
 
 		public void configure() {
