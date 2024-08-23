@@ -8,7 +8,7 @@ import org.quiltmc.enigma.gui.config.theme.properties.composite.CompositeConfigC
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.util.ListUtil;
 
-import javax.swing.*;
+import javax.swing.UnsupportedLookAndFeelException;
 import java.awt.Color;
 import java.util.List;
 

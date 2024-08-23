@@ -21,8 +21,8 @@ public class DarcerulaThemeProperties extends AbstractDarculaThemeProperties {
 
 	public static class SyntaxPane extends DarculaThemeProperties.SyntaxPane {
 		@Override
-		public Colors.Builder buildSyntaxPaneColors(Colors.Builder syntaxPaneColors) {
-			return super.buildSyntaxPaneColors(syntaxPaneColors)
+		public Colors.Builder buildSyntaxPaneColors(Colors.Builder colors) {
+			return super.buildSyntaxPaneColors(colors)
 				.lineNumbersForeground(new SerializableColor(0xFFDBDBDA))
 				.lineNumbersBackground(new SerializableColor(0xFF252729))
 				.lineNumbersSelected(new SerializableColor(0xFF353739))
@@ -51,13 +51,13 @@ public class DarcerulaThemeProperties extends AbstractDarculaThemeProperties {
 
 				// debugToken inherited from darcula
 				// debugTokenOutline inherited from darcula
-			}
+		}
 	}
 
 	protected static class LookAndFeel extends DarculaThemeProperties.LookAndFeel {
 		@Override
-		protected Colors.Builder buildLookAndFeelColors(Colors.Builder lookAndFeelColors) {
-			return super.buildLookAndFeelColors(lookAndFeelColors)
+		protected Colors.Builder buildLookAndFeelColors(Colors.Builder colors) {
+			return super.buildLookAndFeelColors(colors)
 				.foreground(new SerializableColor(0xFFC3C3C3))
 				.background(new SerializableColor(0xFF242729))
 

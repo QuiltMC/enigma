@@ -7,12 +7,11 @@ import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.config.implementor_api.ConfigEnvironment;
 import org.quiltmc.config.implementor_api.ConfigFactory;
-import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.ThemeProperties;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.UnsupportedLookAndFeelException;
+import java.awt.Font;
 
 public class Theme extends ReflectiveConfig {
 	public static Theme create(ConfigEnvironment environment, String family, String id, ThemeProperties properties) {
@@ -43,7 +42,7 @@ public class Theme extends ReflectiveConfig {
 	}
 
 	public boolean needsScaling() {
-		return properties.needsScaling();
+		return this.properties.needsScaling();
 	}
 
 	public static class Fonts extends Section {

@@ -29,9 +29,9 @@ public class LookAndFeelProperties implements Config.Creator, Configurable {
 		this.colors.configure();
 	}
 
-	protected Colors.Builder buildLookAndFeelColors(Colors.Builder lookAndFeelColors) {
+	protected Colors.Builder buildLookAndFeelColors(Colors.Builder colors) {
 		// start with default (light) colors
-		return lookAndFeelColors;
+		return colors;
 	}
 
 	public static class Colors implements Consumer<Config.SectionBuilder> {

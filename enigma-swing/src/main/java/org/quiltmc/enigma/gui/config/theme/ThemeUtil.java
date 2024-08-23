@@ -7,10 +7,14 @@ import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.syntaxpain.JavaSyntaxKit;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.util.Map;
-import javax.swing.*;
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 public final class ThemeUtil {
 	private ThemeUtil() { }

@@ -3,7 +3,8 @@ package org.quiltmc.enigma.gui.config.theme.properties;
 import org.quiltmc.config.api.Config;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 
-import javax.swing.*;
+import javax.swing.LookAndFeel;
+import javax.swing.UIManager;
 import java.util.ArrayList;
 import java.util.List;
 

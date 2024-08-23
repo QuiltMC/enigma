@@ -11,7 +11,7 @@ import java.util.List;
 public abstract class NonConfigurableLafThemeProperties extends NonSystemLafThemeProperties {
 	public static void createComment(Config.Builder builder) {
 		builder.metadata(Comment.TYPE, comment ->
-			comment.add(LookAndFeelProperties.COLORS_KEY + " not configurable for this theme")
+				comment.add(LookAndFeelProperties.COLORS_KEY + " are not configurable for this theme")
 		);
 	}
 

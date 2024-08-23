@@ -24,9 +24,9 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 		builder.section(COLORS_KEY, this.colors);
 	}
 
-	protected Colors.Builder buildSyntaxPaneColors(Colors.Builder syntaxPaneColors) {
+	protected Colors.Builder buildSyntaxPaneColors(Colors.Builder colors) {
 		// start with default (light) colors
-		return syntaxPaneColors;
+		return colors;
 	}
 
 	public void configure() {

@@ -4,7 +4,8 @@ import org.quiltmc.config.api.Config;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.util.ListUtil;
 
-import javax.swing.*;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,10 +19,10 @@ public class SystemThemeProperties extends ThemeProperties {
 			List<Config.Creator> creators
 	) {
 		super(
-			syntaxPaneColors,
-			// this is duplicated from NonConfigurableLafThemeProperties
-			// because java doesn't support multi-inheritance
-			ListUtil.prepend(NonConfigurableLafThemeProperties::createComment, creators)
+				syntaxPaneColors,
+				// this is duplicated from NonConfigurableLafThemeProperties
+				// because java doesn't support multi-inheritance
+				ListUtil.prepend(NonConfigurableLafThemeProperties::createComment, creators)
 		);
 	}
 

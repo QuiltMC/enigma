@@ -15,15 +15,20 @@ import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.config.implementor_api.ConfigEnvironment;
 import org.quiltmc.config.implementor_api.ConfigFactory;
 import org.quiltmc.enigma.gui.NotificationManager;
-import org.quiltmc.enigma.gui.config.theme.*;
-import org.quiltmc.enigma.gui.config.theme.properties.*;
+import org.quiltmc.enigma.gui.config.theme.Theme;
+import org.quiltmc.enigma.gui.config.theme.properties.DarcerulaThemeProperties;
+import org.quiltmc.enigma.gui.config.theme.properties.DarculaThemeProperties;
+import org.quiltmc.enigma.gui.config.theme.properties.DefaultThemeProperties;
+import org.quiltmc.enigma.gui.config.theme.properties.MetalThemeProperties;
+import org.quiltmc.enigma.gui.config.theme.properties.NoneThemeProperties;
+import org.quiltmc.enigma.gui.config.theme.properties.SystemThemeProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindDialog;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
 import javax.annotation.Nullable;
-import javax.swing.*;
+import javax.swing.UnsupportedLookAndFeelException;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.nio.file.Path;
@@ -131,9 +136,8 @@ public final class Config extends ReflectiveConfig {
 	public static void setGlobalLaf() {
 		try {
 			currentTheme().setGlobalLaf();
-		} catch (
-				UnsupportedLookAndFeelException | ClassNotFoundException |
-				InstantiationException | IllegalAccessException e
+		} catch (UnsupportedLookAndFeelException | ClassNotFoundException
+			| InstantiationException | IllegalAccessException e
 		) {
 			throw new Error("Failed to set global look and feel", e);
 		}

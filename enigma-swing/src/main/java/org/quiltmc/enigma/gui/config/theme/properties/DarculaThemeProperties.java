@@ -21,9 +21,9 @@ public class DarculaThemeProperties extends AbstractDarculaThemeProperties {
 
 	protected static class LookAndFeel extends LookAndFeelProperties {
 		@Override
-		protected Colors.Builder buildLookAndFeelColors (Colors.Builder lookAndFeelColors){
+		protected Colors.Builder buildLookAndFeelColors(Colors.Builder colors) {
 			// colors are from FlatDarkLaf.properties
-			return lookAndFeelColors
+			return super.buildLookAndFeelColors(colors)
 				.foreground(new SerializableColor(0xFFBBBBBB))
 				.background(new SerializableColor(0xFF3C3F41))
 
@@ -39,8 +39,8 @@ public class DarculaThemeProperties extends AbstractDarculaThemeProperties {
 
 	protected static class SyntaxPane extends SyntaxPaneProperties {
 		@Override
-		public Colors.Builder buildSyntaxPaneColors(Colors.Builder syntaxPaneColors) {
-			return syntaxPaneColors
+		public Colors.Builder buildSyntaxPaneColors(Colors.Builder colors) {
+			return super.buildSyntaxPaneColors(colors)
 				.lineNumbersForeground(new SerializableColor(0xFFA4A4A3))
 				.lineNumbersBackground(new SerializableColor(0xFF313335))
 				.lineNumbersSelected(new SerializableColor(0xFF606366))
