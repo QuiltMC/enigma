@@ -2,12 +2,11 @@ package org.quiltmc.enigma.gui.config.theme.properties.composite;
 
 import org.quiltmc.config.api.Config;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Stream;
 
 /**
- * A {@link Config.Creator} containing {@link ConfigurableConfigCreator}s, to work around
+ * A {@link Config.Creator} containing other {@link Config.Creator}s, to work around
  * {@link org.quiltmc.config.api.ReflectiveConfig ReflectiveConfig} limitations.
  * <p>
  * {@link org.quiltmc.config.api.values.TrackedValue TrackedValue}s will have {@code null}
@@ -21,10 +20,18 @@ import java.util.List;
  * {@code TrackedValueImpl.config} was {@code null}.
  */
 public abstract class CompositeConfigCreator implements Config.Creator {
-	private final List<ConfigurableConfigCreator> creators;
+	private final List<Config.Creator> creators;
+	private final List<Configurable> configurableCreators;
 
-	public CompositeConfigCreator(Collection<ConfigurableConfigCreator> creators) {
-		this.creators = new ArrayList<>(creators);
+	public CompositeConfigCreator(Collection<Config.Creator> creators) {
+		this.creators = List.copyOf(creators);
+
+		this.configurableCreators = this.creators.stream()
+				.flatMap(creator -> creator instanceof Configurable configurable
+						? Stream.of(configurable)
+						: Stream.empty()
+				)
+				.toList();
 	}
 
 	@Override
@@ -33,6 +40,6 @@ public abstract class CompositeConfigCreator implements Config.Creator {
 	}
 
 	public void configure() {
-		creators.forEach(ConfigurableConfigCreator::configure);
+		configurableCreators.forEach(Configurable::configure);
 	}
 }

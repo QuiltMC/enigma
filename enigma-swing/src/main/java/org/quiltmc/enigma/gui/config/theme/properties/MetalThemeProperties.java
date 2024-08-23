@@ -1,7 +1,6 @@
 package org.quiltmc.enigma.gui.config.theme.properties;
 
-import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.config.theme.properties.composite.ConfigurableConfigCreator;
+import org.quiltmc.config.api.Config;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 
 import javax.swing.*;
@@ -9,12 +8,15 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MetalThemeProperties extends NonSystemLafThemeProperties {
+public class MetalThemeProperties extends NonConfigurableLafThemeProperties {
 	public MetalThemeProperties() {
 		this(new SyntaxPaneProperties(), new ArrayList<>());
 	}
 
-	protected MetalThemeProperties(SyntaxPaneProperties syntaxPaneColors, List<ConfigurableConfigCreator> creators) {
+	protected MetalThemeProperties(
+			SyntaxPaneProperties syntaxPaneColors,
+			List<Config.Creator> creators
+	) {
 		super(syntaxPaneColors, creators);
 	}
 

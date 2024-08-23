@@ -9,7 +9,9 @@ import org.quiltmc.enigma.gui.config.theme.properties.ThemeProperties;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-public class LookAndFeelProperties implements ConfigurableConfigCreator {
+public class LookAndFeelProperties implements Config.Creator, Configurable {
+	public static final String COLORS_KEY = "look_and_feel_colors";
+
 	public final Colors colors;
 
 	public LookAndFeelProperties() {
@@ -18,8 +20,8 @@ public class LookAndFeelProperties implements ConfigurableConfigCreator {
 
 	@Override
 	public void create(Config.Builder builder) {
-		builder.metadata(Comment.TYPE, ThemeProperties::addColorFormatComment);
-		builder.section("look_and_feel_colors", this.colors);
+		builder.metadata(Comment.TYPE, ThemeProperties.SerializableColor::addFormatComment);
+		builder.section(COLORS_KEY, this.colors);
 	}
 
 	@Override

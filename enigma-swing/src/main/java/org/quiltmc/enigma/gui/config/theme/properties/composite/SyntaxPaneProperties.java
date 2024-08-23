@@ -9,7 +9,9 @@ import org.quiltmc.enigma.gui.config.theme.properties.ThemeProperties;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-public class SyntaxPaneProperties implements ConfigurableConfigCreator {
+public class SyntaxPaneProperties implements Config.Creator, Configurable {
+	public static final String COLORS_KEY = "syntax_pane_colors";
+
 	public final Colors colors;
 
 	public SyntaxPaneProperties() {
@@ -18,8 +20,8 @@ public class SyntaxPaneProperties implements ConfigurableConfigCreator {
 
 	@Override
 	public void create(Config.Builder builder) {
-		builder.metadata(Comment.TYPE, ThemeProperties::addColorFormatComment);
-		builder.section("syntax_pane_colors", this.colors);
+		builder.metadata(Comment.TYPE, ThemeProperties.SerializableColor::addFormatComment);
+		builder.section(COLORS_KEY, this.colors);
 	}
 
 	protected Colors.Builder buildSyntaxPaneColors(Colors.Builder syntaxPaneColors) {

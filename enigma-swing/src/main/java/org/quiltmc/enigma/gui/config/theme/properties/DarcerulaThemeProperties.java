@@ -1,20 +1,25 @@
 package org.quiltmc.enigma.gui.config.theme.properties;
 
-import org.quiltmc.enigma.gui.config.theme.properties.composite.ConfigurableConfigCreator;
+import org.quiltmc.config.api.Config;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.LookAndFeelProperties;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DarcerulaThemeProperties extends AbstractDarculaThemeProperties {
 	public DarcerulaThemeProperties() {
-		this(new SyntaxPaneProperties(), new LookAndFeelProperties(), new ArrayList<>());
+		this(new SyntaxPane(), new LookAndFeel(), new ArrayList<>());
 	}
 
-	protected DarcerulaThemeProperties(org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties syntaxPaneColors, org.quiltmc.enigma.gui.config.theme.properties.composite.LookAndFeelProperties lookAndFeelColors, List<ConfigurableConfigCreator> creators) {
+	protected DarcerulaThemeProperties(
+			SyntaxPaneProperties syntaxPaneColors, LookAndFeelProperties lookAndFeelColors,
+			List<Config.Creator> creators
+	) {
 		super(syntaxPaneColors, lookAndFeelColors, creators);
 	}
 
-	public static class SyntaxPaneProperties extends DarculaThemeProperties.SyntaxPaneProperties {
+	public static class SyntaxPane extends DarculaThemeProperties.SyntaxPane {
 		@Override
 		public Colors.Builder buildSyntaxPaneColors(Colors.Builder syntaxPaneColors) {
 			return super.buildSyntaxPaneColors(syntaxPaneColors)
@@ -49,7 +54,7 @@ public class DarcerulaThemeProperties extends AbstractDarculaThemeProperties {
 			}
 	}
 
-	protected static class LookAndFeelProperties extends DarculaThemeProperties.LookAndFeelProperties {
+	protected static class LookAndFeel extends DarculaThemeProperties.LookAndFeel {
 		@Override
 		protected Colors.Builder buildLookAndFeelColors(Colors.Builder lookAndFeelColors) {
 			return super.buildLookAndFeelColors(lookAndFeelColors)

@@ -1,10 +1,10 @@
 package org.quiltmc.enigma.gui.config.theme.properties;
 
+import org.quiltmc.config.api.Config;
 import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.CompositeConfigCreator;
-import org.quiltmc.enigma.gui.config.theme.properties.composite.ConfigurableConfigCreator;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.util.ListUtil;
 
@@ -13,13 +13,12 @@ import java.awt.Color;
 import java.util.List;
 
 public abstract class ThemeProperties extends CompositeConfigCreator {
-	public static void addColorFormatComment(Comment.Builder builder) {
-		builder.add("Colors are encoded in the RGBA format.");
-	}
-
 	private final SyntaxPaneProperties syntaxPaneProperties;
 
-	protected ThemeProperties(SyntaxPaneProperties syntaxPaneColors, List<ConfigurableConfigCreator> creators) {
+	protected ThemeProperties(
+			SyntaxPaneProperties syntaxPaneColors,
+			List<Config.Creator> creators
+	) {
 		super(ListUtil.prepend(syntaxPaneColors, creators));
 		this.syntaxPaneProperties = syntaxPaneColors;
 	}
@@ -37,6 +36,10 @@ public abstract class ThemeProperties extends CompositeConfigCreator {
 	public abstract boolean needsScaling();
 
 	public static class SerializableColor extends Color implements ConfigSerializableObject<String> {
+		public static void addFormatComment(Comment.Builder comment) {
+			comment.add("Colors are encoded in the RGBA format.");
+		}
+
 		public SerializableColor(int rgba) {
 			super(rgba, true);
 		}
