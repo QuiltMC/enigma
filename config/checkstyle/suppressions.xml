@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN" "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+<suppressions>
+    <!--  Suppress indentation check for lambda's because it can't be satisfied in some cases where
+    a line break precedes a lambda. Affects lambdas passed to ThemeProperties' constructor. -->
+    <suppress checks="IndentationCheck"
+              files="ThemeProperties.java"
+              message="^'lambda arguments' has incorrect indentation level"/>
+</suppressions>

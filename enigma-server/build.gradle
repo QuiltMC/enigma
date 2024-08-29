@@ -1,3 +1,5 @@
+import quilt.internal.task.ProGuardExecTask
+
 plugins {
 	id 'application'
 	id 'checkstyle'
@@ -14,6 +16,15 @@ dependencies {
 application {
 	mainClass = 'org.quiltmc.enigma.network.DedicatedEnigmaServer'
 	jar.manifest.attributes 'Main-Class': mainClass
+}
+
+tasks.named('test') {
+	inputs.files(
+		project(':enigma').tasks
+			.withType(ProGuardExecTask)
+			.named('completeTestObf')
+			.get().outJar
+	)
 }
 
 publishing {

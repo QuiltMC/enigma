@@ -9,7 +9,7 @@ import org.quiltmc.enigma.gui.BrowserCaret;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.GuiController;
-import org.quiltmc.enigma.gui.config.theme.Themes;
+import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.element.EditorPopupMenu;
@@ -115,9 +115,9 @@ public class EditorPanel {
 		this.editor.setCaret(new BrowserCaret());
 		this.editor.setFont(ScaleUtil.getFont(this.editor.getFont().getFontName(), Font.PLAIN, this.fontSize));
 		this.editor.addCaretListener(event -> this.onCaretMove(event.getDot(), this.mouseIsPressed));
-		this.editor.setCaretColor(Config.currentColors().caret.value());
+		this.editor.setCaretColor(Config.getCurrentSyntaxPaneColors().caret.value());
 		this.editor.setContentType("text/enigma-sources");
-		this.editor.setBackground(Config.currentColors().editorBackground.value());
+		this.editor.setBackground(Config.getCurrentSyntaxPaneColors().editorBackground.value());
 
 		// set unit increment to height of one line, the amount scrolled per
 		// mouse wheel rotation is then controlled by OS settings
@@ -132,7 +132,7 @@ public class EditorPanel {
 		this.errorTextArea.setEditable(false);
 		this.errorTextArea.setFont(ScaleUtil.getFont(Font.MONOSPACED, Font.PLAIN, 10));
 
-		this.boxHighlightPainters = Themes.getBoxHighlightPainters();
+		this.boxHighlightPainters = ThemeUtil.getBoxHighlightPainters();
 
 		this.editor.addMouseListener(new MouseAdapter() {
 			@Override

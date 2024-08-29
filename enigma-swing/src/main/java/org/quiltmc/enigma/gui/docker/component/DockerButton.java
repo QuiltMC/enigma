@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.gui.docker.component;
 
-import org.quiltmc.enigma.gui.config.theme.LookAndFeel;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
@@ -123,7 +122,7 @@ public class DockerButton extends JToggleButton implements Draggable {
 		// setup text
 		String translatedText = this.textSupplier.get();
 		Font font = Config.currentFonts().defaultNormal.value();
-		if (Config.activeLookAndFeel.equals(LookAndFeel.SYSTEM)) {
+		if (Config.activeThemeChoice.equals(Config.ThemeChoice.SYSTEM)) {
 			font = font.deriveFont(Font.BOLD);
 		}
 

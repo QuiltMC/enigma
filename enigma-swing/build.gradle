@@ -1,3 +1,19 @@
+import com.formdev.flatlaf.FlatDarculaLaf
+import com.formdev.flatlaf.FlatDarkLaf
+import com.formdev.flatlaf.FlatLightLaf
+import quilt.internal.task.PrintColorKeyGroupsMapCodeTask
+
+import javax.swing.LookAndFeel
+import javax.swing.UIManager
+
+import javax.swing.plaf.metal.MetalLookAndFeel
+
+buildscript {
+	dependencies {
+		classpath(libs.flatlaf)
+	}
+}
+
 plugins {
 	id 'application'
 	id 'checkstyle'
@@ -80,6 +96,30 @@ project(":enigma").file("src/test/java/org/quiltmc/enigma/input").listFiles().ea
 }
 
 registerTestTask("complete")
+
+void registerPrintColorKeyGroupsMapCode(String lafsName, LookAndFeel... lookAndFeels) {
+	tasks.register("print" + lafsName + "ColorKeyGroupsMapCode", PrintColorKeyGroupsMapCodeTask) { task ->
+		task.lookAndFeels = lookAndFeels as List
+	}
+}
+
+registerPrintColorKeyGroupsMapCode("Combined",
+	UIManager.getLookAndFeel(),
+	new MetalLookAndFeel(),
+	new FlatLightLaf(),
+	new FlatDarkLaf(),
+	new FlatDarculaLaf()
+)
+
+registerPrintColorKeyGroupsMapCode("None", UIManager.getLookAndFeel())
+
+registerPrintColorKeyGroupsMapCode("Metal", new MetalLookAndFeel())
+
+registerPrintColorKeyGroupsMapCode("FlatLight", new FlatLightLaf())
+
+registerPrintColorKeyGroupsMapCode("FlatDark", new FlatDarkLaf())
+
+registerPrintColorKeyGroupsMapCode("FlatDarcula", new FlatDarculaLaf())
 
 publishing {
 	publications {

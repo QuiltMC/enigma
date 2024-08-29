@@ -32,6 +32,7 @@
 	"menu.view.themes": "主题",
 	"menu.view.themes.default": "默认",
 	"menu.view.themes.darcula": "Darcula",
+	"menu.view.themes.darcerula": "Darcerula",
 	"menu.view.themes.system": "系统",
 	"menu.view.themes.none": "无（JVM 默认）",
 	"menu.view.languages": "语言",

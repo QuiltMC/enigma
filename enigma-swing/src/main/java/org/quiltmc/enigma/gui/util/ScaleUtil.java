@@ -91,7 +91,7 @@ public class ScaleUtil {
 	public static void applyScaling() {
 		double scale = Config.main().scaleFactor.value();
 
-		if (Config.activeLookAndFeel.needsScaling()) {
+		if (Config.currentTheme().needsScaling()) {
 			UiDefaultsScaler.updateAndApplyGlobalScaling((int) (100 * scale), true);
 		}
 

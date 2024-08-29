@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.config;
 
 import org.quiltmc.config.api.ReflectiveConfig;
+import org.quiltmc.config.api.annotations.Alias;
 import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.annotations.Processor;
 import org.quiltmc.config.api.annotations.SerializedNameConvention;
@@ -14,13 +15,20 @@ import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.config.implementor_api.ConfigEnvironment;
 import org.quiltmc.config.implementor_api.ConfigFactory;
 import org.quiltmc.enigma.gui.NotificationManager;
-import org.quiltmc.enigma.gui.config.theme.LookAndFeel;
 import org.quiltmc.enigma.gui.config.theme.Theme;
+import org.quiltmc.enigma.gui.config.theme.properties.DarcerulaThemeProperties;
+import org.quiltmc.enigma.gui.config.theme.properties.DarculaThemeProperties;
+import org.quiltmc.enigma.gui.config.theme.properties.DefaultThemeProperties;
+import org.quiltmc.enigma.gui.config.theme.properties.MetalThemeProperties;
+import org.quiltmc.enigma.gui.config.theme.properties.NoneThemeProperties;
+import org.quiltmc.enigma.gui.config.theme.properties.SystemThemeProperties;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindDialog;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
 import javax.annotation.Nullable;
+import javax.swing.UnsupportedLookAndFeelException;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.nio.file.Path;
@@ -36,8 +44,10 @@ import java.nio.file.Paths;
 public final class Config extends ReflectiveConfig {
 	private static final String FORMAT = "toml";
 	private static final String FAMILY = "enigma";
+	private static final String THEME_FAMILY = FAMILY + "/theme";
 
 	private static final ConfigEnvironment ENVIRONMENT = new ConfigEnvironment(ConfigPaths.getConfigPathRoot(), FORMAT, TomlSerializer.INSTANCE);
+
 	private static final Config MAIN = ConfigFactory.create(ENVIRONMENT, FAMILY, "main", Config.class);
 	private static final KeyBindConfig KEYBIND = ConfigFactory.create(ENVIRONMENT, FAMILY, "keybind", KeyBindConfig.class);
 	private static final NetConfig NET = ConfigFactory.create(ENVIRONMENT, FAMILY, "net", NetConfig.class);
@@ -69,20 +79,19 @@ public final class Config extends ReflectiveConfig {
 	public final DevSection development = new DevSection();
 
 	/**
-	 * The look and feel stored in the config: do not use this unless setting! Use {@link #activeLookAndFeel} instead,
+	 * The look and feel stored in the config: do not use this unless setting! Use {@link #activeThemeChoice} instead,
 	 * since look and feel is final once loaded.
 	 */
-	public final TrackedValue<LookAndFeel> lookAndFeel = this.value(LookAndFeel.DEFAULT);
+	@Alias("look_and_feel")
+	public final TrackedValue<ThemeChoice> theme = this.value(ThemeChoice.DEFAULT);
 	/**
 	 * Look and feel is not modifiable at runtime. I have tried and failed multiple times to get this running.
 	 */
-	public static LookAndFeel activeLookAndFeel;
+	public static ThemeChoice activeThemeChoice;
 
-	public final Theme defaultTheme = new Theme(LookAndFeel.DEFAULT);
-	public final Theme darculaTheme = new Theme(LookAndFeel.DARCULA);
-	public final Theme metalTheme = new Theme(LookAndFeel.METAL);
-	public final Theme systemTheme = new Theme(LookAndFeel.SYSTEM);
-	public final Theme noneTheme = new Theme(LookAndFeel.NONE);
+	public static void configureTheme() {
+		currentTheme().configure();
+	}
 
 	@SuppressWarnings("unused")
 	public void processChange(org.quiltmc.config.api.Config.Builder builder) {
@@ -117,17 +126,21 @@ public final class Config extends ReflectiveConfig {
 	}
 
 	public static Theme currentTheme() {
-		return switch (activeLookAndFeel) {
-			case DEFAULT -> main().defaultTheme;
-			case DARCULA -> main().darculaTheme;
-			case METAL -> main().metalTheme;
-			case SYSTEM -> main().systemTheme;
-			case NONE -> main().noneTheme;
-		};
+		return activeThemeChoice.theme;
 	}
 
-	public static Theme.Colors currentColors() {
-		return currentTheme().colors;
+	public static SyntaxPaneProperties.Colors getCurrentSyntaxPaneColors() {
+		return currentTheme().getSyntaxPaneColors();
+	}
+
+	public static void setGlobalLaf() {
+		try {
+			currentTheme().setGlobalLaf();
+		} catch (UnsupportedLookAndFeelException | ClassNotFoundException
+			| InstantiationException | IllegalAccessException e
+		) {
+			throw new Error("Failed to set global look and feel", e);
+		}
 	}
 
 	public static Theme.Fonts currentFonts() {
@@ -232,7 +245,7 @@ public final class Config extends ReflectiveConfig {
 	 */
 	public static void updateSyntaxpain() {
 		Theme.Fonts fonts = currentFonts();
-		Theme.Colors colors = currentColors();
+		SyntaxPaneProperties.Colors colors = getCurrentSyntaxPaneColors();
 
 		SyntaxpainConfiguration.setEditorFont(fonts.editor.value());
 		SyntaxpainConfiguration.setQuickFindDialogFactory(EnigmaQuickFindDialog::new);
@@ -250,5 +263,47 @@ public final class Config extends ReflectiveConfig {
 		SyntaxpainConfiguration.setIdentifierColor(colors.identifier.value());
 		SyntaxpainConfiguration.setCommentColour(colors.comment.value());
 		SyntaxpainConfiguration.setTextColor(colors.text.value());
+	}
+
+	public enum ThemeChoice implements ConfigSerializableObject<String> {
+		DEFAULT(
+			Theme.create(ENVIRONMENT, THEME_FAMILY, "default", new DefaultThemeProperties())
+		),
+		DARCULA(
+			Theme.create(ENVIRONMENT, THEME_FAMILY, "darcula", new DarculaThemeProperties())
+		),
+		DARCERULA(
+			Theme.create(ENVIRONMENT, THEME_FAMILY, "darcerula", new DarcerulaThemeProperties())
+		),
+		METAL(
+			Theme.create(ENVIRONMENT, THEME_FAMILY, "metal", new MetalThemeProperties())
+		),
+		SYSTEM(
+			Theme.create(ENVIRONMENT, THEME_FAMILY, "system", new SystemThemeProperties())
+		),
+		NONE(
+			Theme.create(ENVIRONMENT, THEME_FAMILY, "none", new NoneThemeProperties())
+		);
+
+		private final Theme theme;
+
+		ThemeChoice(Theme theme) {
+			this.theme = theme;
+		}
+
+		@Override
+		public ThemeChoice convertFrom(String representation) {
+			return ThemeChoice.valueOf(representation);
+		}
+
+		@Override
+		public String getRepresentation() {
+			return this.name();
+		}
+
+		@Override
+		public ComplexConfigValue copy() {
+			return this;
+		}
 	}
 }
