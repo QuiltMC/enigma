@@ -5,7 +5,7 @@ import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.LibrariesJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
-import org.quiltmc.enigma.api.class_provider.ClassLoaderClassProvider;
+import org.quiltmc.enigma.impl.analysis.ClassLoaderClassProvider;
 import org.quiltmc.enigma.api.service.EnigmaService;
 import org.quiltmc.enigma.api.service.EnigmaServiceContext;
 import org.quiltmc.enigma.api.service.EnigmaServiceFactory;
@@ -92,7 +92,7 @@ public class Enigma {
 		// main index
 		this.index(index, mainProjectProvider, mainScope, progress, "jar", JarIndexerService.TYPE);
 		// lib index
-		this.index(libIndex, librariesProvider, librariesScope, progress, "libs", null /* todo */);
+		this.index(libIndex, librariesProvider, librariesScope, progress, "libs", JarIndexerService.TYPE);
 
 		// name proposal
 		var nameProposalServices = this.getNameProposalServices();
@@ -133,8 +133,11 @@ public class Enigma {
 
 			int i = 1;
 			for (var service : indexers) {
-				progress.step(i++, I18n.translateFormatted("progress." + progressKey + ".custom_indexing.indexer", service.getId()));
-				service.acceptJar(scope, classProvider, index);
+				// todo stupid
+				if (!(progressKey.equals("libs") && !service.shouldIndexLibraries())) {
+					progress.step(i++, I18n.translateFormatted("progress." + progressKey + ".custom_indexing.indexer", service.getId()));
+					service.acceptJar(scope, classProvider, index);
+				}
 			}
 
 			progress.step(i, I18n.translate("progress." + progressKey + ".custom_indexing.finished"));

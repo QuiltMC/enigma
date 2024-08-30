@@ -31,7 +31,7 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 		final Map<Entry<?>, String> names = new HashMap<>();
 		final EnumFieldNameFindingVisitor visitor = new EnumFieldNameFindingVisitor(names);
 
-		ctx.registerService(JarIndexerService.TYPE, ctx1 -> JarIndexerService.fromVisitor(visitor, "enigma:enum_initializer_indexer"));
+		ctx.registerService(JarIndexerService.TYPE, ctx1 -> JarIndexerService.fromVisitor(ctx1, visitor, "enigma:enum_initializer_indexer"));
 
 		ctx.registerService(NameProposalService.TYPE, ctx1 -> new NameProposalService() {
 			@Override

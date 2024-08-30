@@ -1,6 +1,7 @@
-package org.quiltmc.enigma.api.class_provider;
+package org.quiltmc.enigma.impl.analysis;
 
 import org.objectweb.asm.tree.ClassNode;
+import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.util.AsmUtil;
 
 import javax.annotation.Nullable;
@@ -8,6 +9,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Note: currently unfinished. Only indexes record and object.
+ */
 public class ClassLoaderClassProvider implements ClassProvider {
 	private final ClassLoader loader;
 
@@ -35,7 +39,6 @@ public class ClassLoaderClassProvider implements ClassProvider {
 
 	@Override
 	public Collection<String> getClassNames() {
-		// todo implement
 		return List.of("java.lang.Object", "java.lang.Record");
 	}
 }
