@@ -1,14 +1,12 @@
 package org.quiltmc.enigma.api.class_provider;
 
-import net.bytebuddy.agent.ByteBuddyAgent;
 import org.objectweb.asm.tree.ClassNode;
 import org.quiltmc.enigma.util.AsmUtil;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.lang.instrument.Instrumentation;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 public class ClassLoaderClassProvider implements ClassProvider {
 	private final ClassLoader loader;
@@ -37,16 +35,7 @@ public class ClassLoaderClassProvider implements ClassProvider {
 
 	@Override
 	public Collection<String> getClassNames() {
-		Instrumentation instrumentation;
-		try {
-			instrumentation = ByteBuddyAgent.getInstrumentation();
-		} catch (Exception e) {
-			ByteBuddyAgent.install();
-			instrumentation = ByteBuddyAgent.getInstrumentation();
-		}
-
-		// really cursed regex that makes sure all names are actual classes
-		// instrumentation gives us some data like "[B" and "[Ljava.lang.Throwable" in addition to the real data, and this is the easiest way to filter
-		return Arrays.stream(instrumentation.getInitiatedClasses(this.loader)).map(Class::getName).filter(name -> name.matches("([\\p{L}_$][\\p{L}\\p{N}_$]*\\.)*[\\p{L}_$][\\p{L}\\p{N}_$]*")).toList();
+		// todo implement
+		return List.of("java.lang.Object", "java.lang.Record");
 	}
 }
