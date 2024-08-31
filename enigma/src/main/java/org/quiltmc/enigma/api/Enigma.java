@@ -90,9 +90,9 @@ public class Enigma {
 		Set<String> librariesScope = new HashSet<>(librariesProvider.getClassNames());
 
 		// main index
-		this.index(index, mainProjectProvider, mainScope, progress, "jar", JarIndexerService.TYPE);
+		this.index(index, mainProjectProvider, mainScope, progress, false);
 		// lib index
-		this.index(libIndex, librariesProvider, librariesScope, progress, "libs", JarIndexerService.TYPE);
+		this.index(libIndex, librariesProvider, librariesScope, progress, true);
 
 		// name proposal
 		var nameProposalServices = this.getNameProposalServices();
@@ -124,24 +124,22 @@ public class Enigma {
 		return new EnigmaProject(this, path, mainProjectProvider, index, libIndex, mappingsIndex, proposedNames, Utils.zipSha1(path));
 	}
 
-	private <T extends JarIndexerService> void index(JarIndex index, ClassProvider classProvider, Set<String> scope, ProgressListener progress, String progressKey, EnigmaServiceType<T> serviceType) {
+	private void index(JarIndex index, ClassProvider classProvider, Set<String> scope, ProgressListener progress, boolean libraries) {
+		String progressKey = libraries? "libs" : "jar";
 		index.indexJar(scope, classProvider, progress);
 
-		if (serviceType != null) {
-			List<T> indexers = this.services.get(serviceType);
-			progress.init(indexers.size(), I18n.translate("progress." + progressKey + ".custom_indexing"));
+		List<JarIndexerService> indexers = this.services.get(JarIndexerService.TYPE);
+		progress.init(indexers.size(), I18n.translate("progress." + progressKey + ".custom_indexing"));
 
-			int i = 1;
-			for (var service : indexers) {
-				// todo stupid
-				if (!(progressKey.equals("libs") && !service.shouldIndexLibraries())) {
-					progress.step(i++, I18n.translateFormatted("progress." + progressKey + ".custom_indexing.indexer", service.getId()));
-					service.acceptJar(scope, classProvider, index);
-				}
+		int i = 1;
+		for (var service : indexers) {
+			if (!(libraries && !service.shouldIndexLibraries())) {
+				progress.step(i++, I18n.translateFormatted("progress." + progressKey + ".custom_indexing.indexer", service.getId()));
+				service.acceptJar(scope, classProvider, index);
 			}
-
-			progress.step(i, I18n.translate("progress." + progressKey + ".custom_indexing.finished"));
 		}
+
+		progress.step(i, I18n.translate("progress." + progressKey + ".custom_indexing.finished"));
 	}
 
 	public EnigmaProfile getProfile() {
