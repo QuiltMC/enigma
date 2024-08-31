@@ -194,10 +194,24 @@ public class EnigmaProject {
 			}
 
 			ClassDefEntry parent = this.jarIndex.getIndex(EntryIndex.class).getDefinition(obfMethodEntry.getParent());
-			if (parent != null && parent.isEnum()
-					&& ((name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";"))
-					|| (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")))) {
-				return false;
+			if (parent != null) {
+				if (parent.isEnum()
+						&& ((name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";"))
+						|| (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")))) {
+					return false;
+				}
+
+				// record component getters -- todo probably has false positives, probably a better way to do this
+				if (parent.isRecord()) {
+					var children = this.jarIndex.getChildrenByClass().get(parent);
+					for (Entry<?> child : children) {
+						if (child instanceof FieldEntry field
+								&& field.getName().equals(obfMethodEntry.getName())
+								&& obfMethodEntry.getDesc().getReturnDesc().equals(field.getDesc())) {
+							return false;
+						}
+					}
+				}
 			}
 		} else if (obfEntry instanceof LocalVariableEntry localEntry && !localEntry.isArgument()) {
 			return false;
@@ -210,10 +224,9 @@ public class EnigmaProject {
 				return false;
 			}
 
-			// todo i have notes on this
-			if (parent.isRecord() && method.getName().equals("<init>") && this.isCanonicalConstructor(parent, method)) {
-				return false;
-			}
+//			if (parent.isRecord() && method.getName().equals("<init>") && this.isCanonicalConstructor(parent, method)) {
+//				return false;
+//			}
 		} else if (obfEntry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
 			return false;
 		}
