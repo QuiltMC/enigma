@@ -8,7 +8,6 @@ import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
-import org.quiltmc.enigma.impl.analysis.index.AbstractJarIndex;
 
 public interface JarIndexer {
 	default void indexClass(ClassDefEntry classEntry) {

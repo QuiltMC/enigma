@@ -6,6 +6,7 @@ import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.EnigmaPlugin;
+import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
@@ -106,7 +107,7 @@ public abstract class Command {
 	public static JarIndex loadJar(Path jar) throws IOException {
 		Logger.info("Reading JAR...");
 		JarClassProvider classProvider = new JarClassProvider(jar);
-		JarIndex index = JarIndex.empty();
+		JarIndex index = MainJarIndex.empty();
 		index.indexJar(classProvider.getClassNames(), new CachingClassProvider(classProvider), ProgressListener.createEmpty());
 
 		return index;

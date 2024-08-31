@@ -229,9 +229,9 @@ public class EnigmaProject {
 		MethodDescriptor descriptor = methodEntry.getDesc();
 		List<ArgumentDescriptor> argumentDescs = descriptor.getArgumentDescs();
 		List<FieldEntry> fields = this.jarIndex.getChildrenByClass().get(record).stream()
-			.filter(e -> e instanceof FieldEntry)
-			.map(e -> (FieldEntry) e)
-			.toList();
+				.filter(e -> e instanceof FieldEntry)
+				.map(e -> (FieldEntry) e)
+				.toList();
 
 		// number of parameters must match the number of fields
 		if (argumentDescs.size() != fields.size()) {

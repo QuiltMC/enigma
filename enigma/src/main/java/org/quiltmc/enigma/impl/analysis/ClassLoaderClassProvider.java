@@ -31,8 +31,12 @@ public class ClassLoaderClassProvider implements ClassProvider {
 
 			try (var resource = clazz.getResourceAsStream(resourceName)) {
 				return AsmUtil.bytesToNode(resource.readAllBytes());
-			} catch (IOException ignored) {}
-		} catch (ClassNotFoundException ignored) {}
+			} catch (IOException ignored) {
+				// ignored
+			}
+		} catch (ClassNotFoundException ignored) {
+			// ignored
+		}
 
 		return null;
 	}

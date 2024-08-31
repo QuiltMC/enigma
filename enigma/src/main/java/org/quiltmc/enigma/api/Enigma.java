@@ -125,7 +125,7 @@ public class Enigma {
 	}
 
 	private void index(JarIndex index, ClassProvider classProvider, Set<String> scope, ProgressListener progress, boolean libraries) {
-		String progressKey = libraries? "libs" : "jar";
+		String progressKey = libraries ? "libs" : "jar";
 		index.indexJar(scope, classProvider, progress);
 
 		List<JarIndexerService> indexers = this.services.get(JarIndexerService.TYPE);
