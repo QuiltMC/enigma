@@ -27,7 +27,7 @@ public class RecordComponentProposalService implements NameProposalService {
 	@Override
 	public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
 		if (obfEntry instanceof FieldEntry fieldEntry) {
-			return mapRecordComponentGetter(remapper, fieldEntry.getContainingClass(), fieldEntry, newMapping);
+			return this.mapRecordComponentGetter(remapper, fieldEntry.getContainingClass(), fieldEntry, newMapping);
 		}
 
 		return null;
@@ -44,9 +44,9 @@ public class RecordComponentProposalService implements NameProposalService {
 
 		MethodEntry obfMethodEntry = null;
 		List<MethodEntry> obfClassMethods = remapper.getJarIndex().getChildrenByClass().get(parentDef).stream()
-			.filter(e -> e instanceof MethodEntry)
-			.map(e -> (MethodEntry) e)
-			.toList();
+				.filter(e -> e instanceof MethodEntry)
+				.map(e -> (MethodEntry) e)
+				.toList();
 
 		for (MethodEntry method : obfClassMethods) {
 			if (method.getName().equals(obfFieldEntry.getName()) && method.getDesc().toString().equals("()" + obfFieldEntry.getDesc())) {
