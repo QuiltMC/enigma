@@ -2,7 +2,6 @@ package org.quiltmc.enigma.api;
 
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
-import org.objectweb.asm.tree.RecordComponentNode;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.index.jar.EnclosingMethodIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
@@ -12,9 +11,6 @@ import org.quiltmc.enigma.api.service.ObfuscationTestService;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeUtil;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
-import org.quiltmc.enigma.api.translation.representation.ArgumentDescriptor;
-import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
-import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
@@ -76,7 +72,7 @@ public class EnigmaProject {
 		this.jarChecksum = jarChecksum;
 
 		this.mappingsIndex = mappingsIndex;
-		this.remapper = EntryRemapper.mapped(classProvider, jarIndex, this.mappingsIndex, proposedNames, new HashEntryTree<>(), this.enigma.getNameProposalServices());
+		this.remapper = EntryRemapper.mapped(jarIndex, this.mappingsIndex, proposedNames, new HashEntryTree<>(), this.enigma.getNameProposalServices());
 	}
 
 	/**
@@ -95,12 +91,12 @@ public class EnigmaProject {
 			EntryTree<EntryMapping> mergedTree = EntryTreeUtil.merge(jarProposedMappings, mappings);
 
 			this.mappingsIndex.indexMappings(mergedTree, progress);
-			this.remapper = EntryRemapper.mapped(this.classProvider, this.jarIndex, this.mappingsIndex, jarProposedMappings, mappings, this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, jarProposedMappings, mappings, this.enigma.getNameProposalServices());
 		} else if (!jarProposedMappings.isEmpty()) {
 			this.mappingsIndex.indexMappings(jarProposedMappings, progress);
-			this.remapper = EntryRemapper.mapped(this.classProvider, this.jarIndex, this.mappingsIndex, jarProposedMappings, new HashEntryTree<>(), this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, jarProposedMappings, new HashEntryTree<>(), this.enigma.getNameProposalServices());
 		} else {
-			this.remapper = EntryRemapper.empty(this.classProvider, this.jarIndex, this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.empty(this.jarIndex, this.enigma.getNameProposalServices());
 		}
 
 		// update dynamically proposed names

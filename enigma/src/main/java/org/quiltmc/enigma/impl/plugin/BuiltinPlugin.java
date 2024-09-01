@@ -57,6 +57,8 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 				return "enigma:enum_name_proposer";
 			}
 		});
+
+		ctx.registerService(NameProposalService.TYPE, ctx1 -> new RecordComponentProposalService());
 	}
 
 	private static void registerSpecializedMethodNamingService(EnigmaPluginContext ctx) {
