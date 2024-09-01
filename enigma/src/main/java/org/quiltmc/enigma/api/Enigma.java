@@ -194,6 +194,12 @@ public class Enigma {
 		return this.parseFileType(path).flatMap(this::getReadWriteService);
 	}
 
+	public static void validatePluginId(String id) {
+		if (id != null && !id.matches("([a-z0-9_]+):([a-z0-9_]+((/[a-z0-9_]+)+)?)")) {
+			throw new IllegalArgumentException("Invalid plugin id: \"" + id + "\"\n" + "Refer to Javadoc on EnigmaService#getId for how to properly form a service ID.");
+		}
+	}
+
 	/**
 	 * Determines the mapping format of the provided path. Checks all formats according to their {@link FileType} file extensions.
 	 * If the path is a directory, it will check the first file in the directory. For directories, defaults to the enigma mappings format.
@@ -357,7 +363,7 @@ public class Enigma {
 		}
 
 		private void validateRegistration(ImmutableListMultimap<EnigmaServiceType<?>, EnigmaService> services, EnigmaServiceType<?> serviceType, EnigmaService service) {
-			this.validatePluginId(service.getId());
+			validatePluginId(service.getId());
 
 			for (EnigmaService otherService : services.get(serviceType)) {
 				// all services
@@ -375,12 +381,6 @@ public class Enigma {
 						}
 					}
 				}
-			}
-		}
-
-		private void validatePluginId(String id) {
-			if (!id.matches("([a-z0-9_]+):([a-z0-9_]+((/[a-z0-9_]+)+)?)")) {
-				throw new IllegalArgumentException("Invalid plugin id: \"" + id + "\"\n" + "Refer to Javadoc on EnigmaService#getId for how to properly form a service ID.");
 			}
 		}
 	}

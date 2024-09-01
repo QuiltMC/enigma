@@ -1,9 +1,11 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
+import org.objectweb.asm.tree.RecordComponentNode;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
+import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.translation.MappingTranslator;
 import org.quiltmc.enigma.api.translation.Translatable;
@@ -13,6 +15,7 @@ import org.quiltmc.enigma.api.translation.mapping.tree.DeltaTrackingTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.MergedEntryMappingTree;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
@@ -36,6 +39,7 @@ public class EntryRemapper {
 	private final EntryTree<EntryMapping> proposedMappings;
 	private final DeltaTrackingTree<EntryMapping> mappings;
 
+	private final ClassProvider classProvider;
 	private final EntryResolver obfResolver;
 	private final Translator deobfuscator;
 	private final JarIndex jarIndex;
@@ -44,13 +48,14 @@ public class EntryRemapper {
 	private final MappingValidator validator;
 	private final List<NameProposalService> proposalServices;
 
-	private EntryRemapper(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> jarProposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
+	private EntryRemapper(ClassProvider classProvider, JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> jarProposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
 		this.deobfMappings = deobfMappings;
 		this.jarProposedMappings = jarProposedMappings;
 		this.proposedMappings = new HashEntryTree<>(jarProposedMappings);
 		this.mappings = new DeltaTrackingTree<>(new MergedEntryMappingTree(deobfMappings, this.proposedMappings));
 
 		this.obfResolver = jarIndex.getEntryResolver();
+		this.classProvider = classProvider;
 
 		this.deobfuscator = new MappingTranslator(this.mappings, this.obfResolver);
 		this.jarIndex = jarIndex;
@@ -60,12 +65,12 @@ public class EntryRemapper {
 		this.proposalServices = proposalServices;
 	}
 
-	public static EntryRemapper mapped(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
-		return new EntryRemapper(jarIndex, mappingsIndex, proposedMappings, deobfMappings, proposalServices);
+	public static EntryRemapper mapped(ClassProvider classProvider, JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
+		return new EntryRemapper(classProvider, jarIndex, mappingsIndex, proposedMappings, deobfMappings, proposalServices);
 	}
 
-	public static EntryRemapper empty(JarIndex index, List<NameProposalService> proposalServices) {
-		return new EntryRemapper(index, MappingsIndex.empty(), new HashEntryTree<>(), new HashEntryTree<>(), proposalServices);
+	public static EntryRemapper empty(ClassProvider classProvider, JarIndex index, List<NameProposalService> proposalServices) {
+		return new EntryRemapper(classProvider, index, MappingsIndex.empty(), new HashEntryTree<>(), new HashEntryTree<>(), proposalServices);
 	}
 
 	public void validatePutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping) {
@@ -76,13 +81,10 @@ public class EntryRemapper {
 		this.doPutMapping(vc, obfuscatedEntry, deobfMapping, false);
 	}
 
-	// note: just supressing warnings until it's fixed
-	@SuppressWarnings("all")
 	private void doPutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping, boolean validateOnly) {
-		// todo this needs to be fixed!
-		//if (obfuscatedEntry instanceof FieldEntry fieldEntry) {
-		//	mapRecordComponentGetter(vc, fieldEntry.getParent(), fieldEntry, deobfMapping);
-		//}
+		if (obfuscatedEntry instanceof FieldEntry fieldEntry) {
+			mapRecordComponentGetter(vc, fieldEntry.getParent(), fieldEntry, deobfMapping);
+		}
 
 		EntryMapping oldMapping = this.getMapping(obfuscatedEntry);
 		boolean renaming = !Objects.equals(oldMapping.targetName(), deobfMapping.targetName());
@@ -144,38 +146,48 @@ public class EntryRemapper {
 		return resolution;
 	}
 
-	// todo this needs to be fixed for hashed mappings!
-	// note: just supressing warnings until it's fixed
-	@SuppressWarnings("all")
-	private void mapRecordComponentGetter(ValidationContext vc, ClassEntry classEntry, FieldEntry fieldEntry, EntryMapping fieldMapping) {
+	private void mapRecordComponentGetter(ValidationContext vc, ClassEntry parent, FieldEntry obfFieldEntry, EntryMapping mapping) {
 		EntryIndex entryIndex = this.jarIndex.getIndex(EntryIndex.class);
-
-		if (!entryIndex.getDefinition(classEntry).isRecord() || entryIndex.getFieldAccess(fieldEntry).isStatic()) {
+		ClassDefEntry parentDef = entryIndex.getDefinition(parent);
+		var def = entryIndex.getDefinition(obfFieldEntry);
+		if ((parentDef != null && !parentDef.isRecord()) || (def != null && def.getAccess().isStatic())) {
 			return;
 		}
 
-		// Find all the methods in this record class
-		List<MethodEntry> classMethods = entryIndex.getMethods().stream()
-				.filter(entry -> classEntry.equals(entry.getParent()))
-				.toList();
-
-		MethodEntry methodEntry = null;
-
-		for (MethodEntry method : classMethods) {
-			// Find the matching record component getter via matching the names. TODO: Support when the record field and method names do not match
-			if (method.getName().equals(fieldEntry.getName()) && method.getDesc().toString().equals("()" + fieldEntry.getDesc())) {
-				methodEntry = method;
+		// find matching record component
+		RecordComponentNode recordNode = null;
+		var components = this.classProvider.get(parent.getName()).recordComponents;
+		for (RecordComponentNode node : components) {
+			if (node.name.equals(obfFieldEntry.getName()) && node.descriptor.equals(obfFieldEntry.getDesc().toString()) && node.signature.equals(def.getSignature().toString())) {
+				recordNode = node;
 				break;
 			}
 		}
 
-		if (methodEntry == null && fieldMapping != null) {
-			vc.raise(Message.UNKNOWN_RECORD_GETTER, fieldMapping.targetName());
+		if (recordNode == null) {
 			return;
 		}
 
-		// Also remap the associated method, without the javadoc.
-		this.doPutMapping(vc, methodEntry, new EntryMapping(fieldMapping.targetName()), false);
+		MethodEntry obfMethodEntry = null;
+		List<MethodEntry> obfClassMethods = this.jarIndex.getChildrenByClass().get(parentDef).stream()
+			.filter(entry -> entry instanceof MethodEntry)
+			.map(entry -> (MethodEntry) entry)
+			.toList();
+
+		for (MethodEntry method : obfClassMethods) {
+			if (method.getName().equals(recordNode.name) && method.getDesc().toString().equals("()" + recordNode.descriptor)) {
+				obfMethodEntry = method;
+				break;
+			}
+		}
+
+		if (obfMethodEntry == null && mapping != null) {
+			vc.raise(Message.UNKNOWN_RECORD_GETTER, mapping.targetName());
+			return;
+		}
+
+		// remap method to match field
+		this.doPutMapping(vc, obfMethodEntry, mapping.withJavadoc(null), false);
 	}
 
 	/**

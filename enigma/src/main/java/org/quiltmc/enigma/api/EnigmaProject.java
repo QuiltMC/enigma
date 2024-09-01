@@ -2,6 +2,7 @@ package org.quiltmc.enigma.api;
 
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
+import org.objectweb.asm.tree.RecordComponentNode;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.index.jar.EnclosingMethodIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
@@ -75,7 +76,7 @@ public class EnigmaProject {
 		this.jarChecksum = jarChecksum;
 
 		this.mappingsIndex = mappingsIndex;
-		this.remapper = EntryRemapper.mapped(jarIndex, this.mappingsIndex, proposedNames, new HashEntryTree<>(), this.enigma.getNameProposalServices());
+		this.remapper = EntryRemapper.mapped(classProvider, jarIndex, this.mappingsIndex, proposedNames, new HashEntryTree<>(), this.enigma.getNameProposalServices());
 	}
 
 	/**
@@ -94,12 +95,12 @@ public class EnigmaProject {
 			EntryTree<EntryMapping> mergedTree = EntryTreeUtil.merge(jarProposedMappings, mappings);
 
 			this.mappingsIndex.indexMappings(mergedTree, progress);
-			this.remapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, jarProposedMappings, mappings, this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.mapped(this.classProvider, this.jarIndex, this.mappingsIndex, jarProposedMappings, mappings, this.enigma.getNameProposalServices());
 		} else if (!jarProposedMappings.isEmpty()) {
 			this.mappingsIndex.indexMappings(jarProposedMappings, progress);
-			this.remapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, jarProposedMappings, new HashEntryTree<>(), this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.mapped(this.classProvider, this.jarIndex, this.mappingsIndex, jarProposedMappings, new HashEntryTree<>(), this.enigma.getNameProposalServices());
 		} else {
-			this.remapper = EntryRemapper.empty(this.jarIndex, this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.empty(this.classProvider, this.jarIndex, this.enigma.getNameProposalServices());
 		}
 
 		// update dynamically proposed names
@@ -200,18 +201,6 @@ public class EnigmaProject {
 						|| (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")))) {
 					return false;
 				}
-
-				// record component getters -- todo probably has false positives, probably a better way to do this
-				if (parent.isRecord()) {
-					var children = this.jarIndex.getChildrenByClass().get(parent);
-					for (Entry<?> child : children) {
-						if (child instanceof FieldEntry field
-								&& field.getName().equals(obfMethodEntry.getName())
-								&& obfMethodEntry.getDesc().getReturnDesc().equals(field.getDesc())) {
-							return false;
-						}
-					}
-				}
 			}
 		} else if (obfEntry instanceof LocalVariableEntry localEntry && !localEntry.isArgument()) {
 			return false;
@@ -223,45 +212,11 @@ public class EnigmaProject {
 			if (parent.isEnum() && method.getName().equals("valueOf") && method.getDesc().toString().equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")) {
 				return false;
 			}
-
-//			if (parent.isRecord() && method.getName().equals("<init>") && this.isCanonicalConstructor(parent, method)) {
-//				return false;
-//			}
 		} else if (obfEntry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
 			return false;
 		}
 
 		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
-	}
-
-	public boolean isCanonicalConstructor(ClassDefEntry record, MethodEntry methodEntry) {
-		if (!record.isRecord() || !methodEntry.isConstructor()) {
-			return false;
-		}
-
-		MethodDescriptor descriptor = methodEntry.getDesc();
-		List<ArgumentDescriptor> argumentDescs = descriptor.getArgumentDescs();
-		List<FieldEntry> fields = this.jarIndex.getChildrenByClass().get(record).stream()
-				.filter(e -> e instanceof FieldEntry)
-				.map(e -> (FieldEntry) e)
-				.toList();
-
-		// number of parameters must match the number of fields
-		if (argumentDescs.size() != fields.size()) {
-			return false;
-		}
-
-		// match types
-		for (int i = 0; i < fields.size(); i++) {
-			FieldEntry field = fields.get(i);
-			ArgumentDescriptor argument = argumentDescs.get(i);
-
-			if (!field.getDesc().toString().equals(argument.toString())) {
-				return false;
-			}
-		}
-
-		return true;
 	}
 
 	public boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {
