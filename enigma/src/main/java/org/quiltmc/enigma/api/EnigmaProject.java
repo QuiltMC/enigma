@@ -212,7 +212,7 @@ public class EnigmaProject {
 		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
 	}
 
-	private boolean isEnumValueOfMethod(ClassDefEntry parent, MethodEntry method) {
+	private static boolean isEnumValueOfMethod(ClassDefEntry parent, MethodEntry method) {
 		return parent != null && parent.isEnum() && method.getName().equals("valueOf") && method.getDesc().toString().equals("(Ljava/lang/String;)L" + parent.getFullName() + ";");
 	}
 
