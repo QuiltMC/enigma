@@ -21,6 +21,7 @@ import java.util.Map;
 public final class BuiltinPlugin implements EnigmaPlugin {
 	@Override
 	public void init(EnigmaPluginContext ctx) {
+		ctx.registerService(NameProposalService.TYPE, ctx1 -> new RecordComponentProposalService());
 		registerEnumNamingService(ctx);
 		registerSpecializedMethodNamingService(ctx);
 		registerDecompilerServices(ctx);
@@ -57,8 +58,6 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 				return "enigma:enum_name_proposer";
 			}
 		});
-
-		ctx.registerService(NameProposalService.TYPE, ctx1 -> new RecordComponentProposalService());
 	}
 
 	private static void registerSpecializedMethodNamingService(EnigmaPluginContext ctx) {

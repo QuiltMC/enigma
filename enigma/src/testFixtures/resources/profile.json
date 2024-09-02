@@ -17,6 +17,9 @@
 			},
 			{
 				"id": "test:parameters"
+			},
+			{
+				"id": "enigma:record_component_proposer"
 			}
 		]
 	}

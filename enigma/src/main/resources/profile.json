@@ -14,6 +14,9 @@
 			},
 			{
 				"id": "enigma:specialized_method_name_proposer"
+			},
+			{
+				"id": "enigma:record_component_proposer"
 			}
 		]
 	}

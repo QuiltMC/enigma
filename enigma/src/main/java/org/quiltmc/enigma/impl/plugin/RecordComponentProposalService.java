@@ -60,7 +60,8 @@ public class RecordComponentProposalService implements NameProposalService {
 		}
 
 		// remap method to match field
-		return Map.of(obfMethodEntry, mapping.withJavadoc(null).withSourcePluginId(this.getId()).withTokenType(TokenType.DYNAMIC_PROPOSED));
+		EntryMapping newMapping = mapping.tokenType() == TokenType.OBFUSCATED ? new EntryMapping(null, null, TokenType.OBFUSCATED, null) : this.createMapping(mapping.targetName(), TokenType.DYNAMIC_PROPOSED);
+		return Map.of(obfMethodEntry, newMapping);
 	}
 
 	@Override

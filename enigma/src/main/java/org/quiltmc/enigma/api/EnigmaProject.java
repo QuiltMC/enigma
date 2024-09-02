@@ -183,20 +183,17 @@ public class EnigmaProject {
 			String sig = obfMethodEntry.getDesc().toString();
 
 			// methods declared in object and record are not renamable
-			// todo probably really slow -- look into it
-			// compareTo ignores parent, we want that
+			// note: compareTo ignores parent, we want that
 			if (this.libIndex.getChildrenByClass().get(new ClassEntry("java/lang/Object")).stream().anyMatch(c -> c instanceof MethodEntry m && m.compareTo(obfMethodEntry) == 0)
 					|| this.libIndex.getChildrenByClass().get(new ClassEntry("java/lang/Record")).stream().anyMatch(c -> c instanceof MethodEntry m && m.compareTo(obfMethodEntry) == 0)) {
 				return false;
 			}
 
 			ClassDefEntry parent = this.jarIndex.getIndex(EntryIndex.class).getDefinition(obfMethodEntry.getParent());
-			if (parent != null) {
-				if (parent.isEnum()
-						&& ((name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";"))
-						|| (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")))) {
-					return false;
-				}
+			if (parent != null && parent.isEnum()
+					&& ((name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";"))
+					|| isEnumValueOfMethod(parent, obfMethodEntry))) {
+				return false;
 			}
 		} else if (obfEntry instanceof LocalVariableEntry localEntry && !localEntry.isArgument()) {
 			return false;
@@ -205,7 +202,7 @@ public class EnigmaProject {
 			ClassDefEntry parent = this.jarIndex.getIndex(EntryIndex.class).getDefinition(method.getParent());
 
 			// if this is the valueOf method of an enum class, the argument shouldn't be able to be renamed.
-			if (parent.isEnum() && method.getName().equals("valueOf") && method.getDesc().toString().equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")) {
+			if (isEnumValueOfMethod(parent, method)) {
 				return false;
 			}
 		} else if (obfEntry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
@@ -213,6 +210,10 @@ public class EnigmaProject {
 		}
 
 		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
+	}
+
+	private boolean isEnumValueOfMethod(ClassDefEntry parent, MethodEntry method) {
+		return parent != null && parent.isEnum() && method.getName().equals("valueOf") && method.getDesc().toString().equals("(Ljava/lang/String;)L" + parent.getFullName() + ";");
 	}
 
 	public boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {
