@@ -64,6 +64,14 @@ public class RecordComponentProposalService implements NameProposalService {
 		return Map.of(obfMethodEntry, newMapping);
 	}
 
+	public static boolean isGetter(EntryRemapper remapper, FieldEntry obfFieldEntry, MethodEntry method) {
+		if (method.getName().equals(obfFieldEntry.getName()) && method.getDesc().toString().equals("()" + obfFieldEntry.getDesc())) {
+			return true;
+		}
+
+
+	}
+
 	@Override
 	public String getId() {
 		return "enigma:record_component_proposer";
