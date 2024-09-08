@@ -5,6 +5,7 @@ import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.objectweb.asm.ClassVisitor;
 
+import javax.annotation.Nullable;
 import java.util.Set;
 
 /**
@@ -15,7 +16,16 @@ import java.util.Set;
 public interface JarIndexerService extends EnigmaService {
 	EnigmaServiceType<JarIndexerService> TYPE = EnigmaServiceType.create("jar_indexer");
 
-	static boolean shouldIndexLibraries(EnigmaServiceContext<JarIndexerService> context) {
+	/**
+	 * Checks the {@code index_libraries} argument in the context to determine if libraries should be indexed.
+	 * @param context the context for this service
+	 * @return whether libraries should be indexed
+	 */
+	static boolean shouldIndexLibraries(@Nullable EnigmaServiceContext<JarIndexerService> context) {
+		if (context == null) {
+			return false;
+		}
+
 		return context.getSingleArgument("index_libraries").map(Boolean::parseBoolean).orElse(false);
 	}
 
@@ -38,12 +48,23 @@ public interface JarIndexerService extends EnigmaService {
 
 	/**
 	 * Creates an indexer service that runs all {@link ClassNode class nodes} through the provided {@link ClassVisitor visitor}.
+	 * @param visitor the visitor to pass classes through
+	 * @param id the service's ID
+	 * @return the indexer service
+	 */
+	static JarIndexerService fromVisitor(ClassVisitor visitor, String id) {
+		return fromVisitor(null, visitor, id);
+	}
+
+	/**
+	 * Creates an indexer service that runs all {@link ClassNode class nodes} through the provided {@link ClassVisitor visitor}.
+	 * Overrides {@link #shouldIndexLibraries()} according to the profile argument described in {@link #shouldIndexLibraries(EnigmaServiceContext)}.
 	 * @param context the profile context for the service
 	 * @param visitor the visitor to pass classes through
 	 * @param id the service's ID
 	 * @return the indexer service
 	 */
-	static JarIndexerService fromVisitor(EnigmaServiceContext<JarIndexerService> context, ClassVisitor visitor, String id) {
+	static JarIndexerService fromVisitor(@Nullable EnigmaServiceContext<JarIndexerService> context, ClassVisitor visitor, String id) {
 		boolean indexLibs = shouldIndexLibraries(context);
 
 		return new JarIndexerService() {
