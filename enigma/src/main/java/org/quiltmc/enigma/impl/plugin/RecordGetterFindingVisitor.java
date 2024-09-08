@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-// todo may be getting duplicate methods/fields?
 final class RecordGetterFindingVisitor extends ClassVisitor {
 	private ClassEntry clazz;
 	private final Map<FieldEntry, MethodEntry> fieldToMethod;
@@ -49,7 +48,7 @@ final class RecordGetterFindingVisitor extends ClassVisitor {
 
 	@Override
 	public FieldVisitor visitField(final int access, final String name, final String descriptor, final String signature, final Object value) {
-		if (this.clazz != null) {
+		if (this.clazz != null && ((access & Opcodes.ACC_PRIVATE) != 0) && this.recordComponents.stream().anyMatch(component -> component.name.equals(name))) {
 			FieldNode node = new FieldNode(this.api, access, name, descriptor, signature, value);
 			this.fields.add(node);
 			return node;
@@ -60,7 +59,7 @@ final class RecordGetterFindingVisitor extends ClassVisitor {
 
 	@Override
 	public MethodVisitor visitMethod(final int access, final String name, final String descriptor, final String signature, final String[] exceptions) {
-		if (this.clazz != null) {
+		if (this.clazz != null && ((access & Opcodes.ACC_PUBLIC) != 0)) {
 			MethodNode node = new MethodNode(this.api, access, name, descriptor, signature, exceptions);
 			this.methods.add(node);
 			return node;
@@ -97,9 +96,9 @@ final class RecordGetterFindingVisitor extends ClassVisitor {
 
 			for (MethodNode method : this.methods) {
 				InsnList instructions = method.instructions;
-				System.out.println(instructions.toString());
 
-				// todo is this stupid
+				// match bytecode to exact expected bytecode for a getter
+				// only check important instructions (ignore new frame instructions, etc.)
 				if (instructions.size() == 6
 						&& instructions.get(2).getOpcode() == Opcodes.ALOAD
 						&& instructions.get(3) instanceof FieldInsnNode fieldInsn
@@ -107,17 +106,9 @@ final class RecordGetterFindingVisitor extends ClassVisitor {
 						&& fieldInsn.owner.equals(this.clazz.getName())
 						&& fieldInsn.desc.equals(field.desc)
 						&& fieldInsn.name.equals(field.name)
-						&& instructions.get(4).getOpcode() == Opcodes.IRETURN) { // todo match to ALL return opcodes
+						&& instructions.get(4).getOpcode() >= 172 && instructions.get(4).getOpcode() <= 177) { // return opcodes are 172 - 177
 					this.fieldToMethod.put(new FieldEntry(this.clazz, field.name, new TypeDescriptor(field.desc)), new MethodEntry(this.clazz, method.name, new MethodDescriptor(method.desc)));
 				}
-
-//				instructions.get(0); // opcode -1 label node
-//				instructions.get(1); // opcode -1 line number node
-//				instructions.get(2); // opcode 25 var insn node
-//				instructions.get(3); // opcode 180 field insn node (gets record field)
-//				instructions.get(4); // opcode 172 insn node
-//				instructions.get(5); // opcode -1 label node
-//				boolean getField = instructions.get(3).getOpcode() == Opcodes.H_GETFIELD;
 			}
 		}
 	}

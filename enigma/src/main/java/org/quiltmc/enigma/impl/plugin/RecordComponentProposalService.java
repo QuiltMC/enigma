@@ -13,6 +13,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,18 @@ public record RecordComponentProposalService(Map<FieldEntry, MethodEntry> fieldT
 	public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
 		if (obfEntry instanceof FieldEntry fieldEntry) {
 			return this.mapRecordComponentGetter(remapper, fieldEntry.getContainingClass(), fieldEntry, newMapping);
+		} else if (obfEntry == null) {
+			Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
+			for (var mapping : remapper.getMappings()) {
+				if (mapping.getEntry() instanceof FieldEntry fieldEntry) {
+					var getter = this.mapRecordComponentGetter(remapper, fieldEntry.getContainingClass(), fieldEntry, mapping.getValue());
+					if (getter != null) {
+						mappings.putAll(getter);
+					}
+				}
+			}
+
+			return mappings;
 		}
 
 		return null;
