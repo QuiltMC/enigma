@@ -62,7 +62,7 @@ public record RecordComponentProposalService(Map<FieldEntry, MethodEntry> fieldT
 
 		MethodEntry obfMethodEntry = null;
 		for (MethodEntry method : obfClassMethods) {
-			if (isGetter(obfFieldEntry, method)) {
+			if (this.isGetter(obfFieldEntry, method)) {
 				obfMethodEntry = method;
 				break;
 			}
