@@ -11,7 +11,12 @@ public record EntryMapping(
 		TokenType tokenType,
 		@Nullable String sourcePluginId
 ) {
+	/**
+	 * @deprecated to be removed in version 3.0.0. Renamed to {@link EntryMapping#OBFUSCATED}.
+	 */
+	@Deprecated(forRemoval = true, since = "2.5.0")
 	public static final EntryMapping DEFAULT = new EntryMapping(null, null, TokenType.OBFUSCATED, null);
+	public static final EntryMapping OBFUSCATED = new EntryMapping(null, null, TokenType.OBFUSCATED, null);
 
 	public EntryMapping(@Nullable String targetName) {
 		this(trimWhitespace(targetName), null, targetName == null ? TokenType.OBFUSCATED : TokenType.DEOBFUSCATED, null);
