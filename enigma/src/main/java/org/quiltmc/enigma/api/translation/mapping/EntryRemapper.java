@@ -88,7 +88,7 @@ public class EntryRemapper {
 		if (validateOnly || !vc.canProceed()) return;
 
 		for (Entry<?> resolvedEntry : resolvedEntries) {
-			if (deobfMapping.equals(EntryMapping.DEFAULT)) {
+			if (deobfMapping.equals(EntryMapping.OBFUSCATED)) {
 				this.mappings.insert(resolvedEntry, null);
 			} else {
 				this.mappings.insert(resolvedEntry, deobfMapping);
@@ -150,7 +150,7 @@ public class EntryRemapper {
 	@Nonnull
 	public EntryMapping getMapping(Entry<?> entry) {
 		EntryMapping entryMapping = this.mappings.get(entry);
-		return entryMapping == null ? EntryMapping.DEFAULT : entryMapping;
+		return entryMapping == null ? EntryMapping.OBFUSCATED : entryMapping;
 	}
 
 	public <T extends Translatable> TranslateResult<T> extendedDeobfuscate(T translatable) {

@@ -40,7 +40,7 @@ public record Lambda(String invokedName, MethodDescriptor invokedType, MethodDes
 			}
 		}
 
-		return EntryMapping.DEFAULT;
+		return EntryMapping.OBFUSCATED;
 	}
 
 	public ClassEntry getInterface() {

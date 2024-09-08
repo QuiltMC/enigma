@@ -150,7 +150,7 @@ public final class TinyV2Writer implements MappingsWriter {
 		EntryMapping mapping = node.getValue();
 
 		if (mapping == null) {
-			mapping = EntryMapping.DEFAULT;
+			mapping = EntryMapping.OBFUSCATED;
 		}
 
 		if (mapping.targetName() != null) {
@@ -172,7 +172,7 @@ public final class TinyV2Writer implements MappingsWriter {
 	}
 
 	private void writeField(PrintWriter writer, EntryTreeNode<EntryMapping> node) {
-		if (node.getValue() == null || node.getValue().equals(EntryMapping.DEFAULT)) {
+		if (node.getValue() == null || node.getValue().equals(EntryMapping.OBFUSCATED)) {
 			return; // Shortcut
 		}
 
@@ -185,7 +185,7 @@ public final class TinyV2Writer implements MappingsWriter {
 		EntryMapping mapping = node.getValue();
 
 		if (mapping == null) {
-			mapping = EntryMapping.DEFAULT;
+			mapping = EntryMapping.OBFUSCATED;
 		}
 
 		if (mapping.targetName() != null) {
@@ -198,7 +198,7 @@ public final class TinyV2Writer implements MappingsWriter {
 	}
 
 	private void writeParameter(PrintWriter writer, EntryTreeNode<EntryMapping> node) {
-		if (node.getValue() == null || node.getValue().equals(EntryMapping.DEFAULT)) {
+		if (node.getValue() == null || node.getValue().equals(EntryMapping.OBFUSCATED)) {
 			return; // Shortcut
 		}
 

@@ -178,7 +178,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 		EntryMapping classEntryMapping = mappings.get(classEntry);
 
 		if (classEntryMapping == null) {
-			classEntryMapping = EntryMapping.DEFAULT;
+			classEntryMapping = EntryMapping.OBFUSCATED;
 		}
 
 		writer.println(this.writeClass(classEntry, classEntryMapping).trim());
@@ -209,7 +209,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 		EntryMapping mapping = node.getValue();
 
 		if (mapping == null) {
-			mapping = EntryMapping.DEFAULT;
+			mapping = EntryMapping.OBFUSCATED;
 		}
 
 		String line = null;
