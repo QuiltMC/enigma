@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
-public class RecordComponentProposalService implements NameProposalService {
+public record RecordComponentProposalService(Map<FieldEntry, MethodEntry> fieldToGetter) implements NameProposalService {
 	@Nullable
 	@Override
 	public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
@@ -42,14 +42,14 @@ public class RecordComponentProposalService implements NameProposalService {
 			return null;
 		}
 
-		MethodEntry obfMethodEntry = null;
 		List<MethodEntry> obfClassMethods = remapper.getJarIndex().getChildrenByClass().get(parentDef).stream()
 				.filter(e -> e instanceof MethodEntry)
 				.map(e -> (MethodEntry) e)
 				.toList();
 
+		MethodEntry obfMethodEntry = null;
 		for (MethodEntry method : obfClassMethods) {
-			if (method.getName().equals(obfFieldEntry.getName()) && method.getDesc().toString().equals("()" + obfFieldEntry.getDesc())) {
+			if (isGetter(obfFieldEntry, method)) {
 				obfMethodEntry = method;
 				break;
 			}
@@ -64,12 +64,9 @@ public class RecordComponentProposalService implements NameProposalService {
 		return Map.of(obfMethodEntry, newMapping);
 	}
 
-	public static boolean isGetter(EntryRemapper remapper, FieldEntry obfFieldEntry, MethodEntry method) {
-		if (method.getName().equals(obfFieldEntry.getName()) && method.getDesc().toString().equals("()" + obfFieldEntry.getDesc())) {
-			return true;
-		}
-
-
+	public boolean isGetter(FieldEntry obfFieldEntry, MethodEntry method) {
+		var getter = this.fieldToGetter.get(obfFieldEntry);
+		return getter != null && getter.equals(method);
 	}
 
 	@Override

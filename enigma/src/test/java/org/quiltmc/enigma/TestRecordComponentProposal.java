@@ -23,6 +23,7 @@ public class TestRecordComponentProposal {
 
 	@Test
 	void testRecordComponentProposal() throws IOException {
+		// todo add indexer and tests
 		Reader r = new StringReader("""
 				{
 					"services": {

@@ -1,71 +1,68 @@
 package org.quiltmc.enigma.impl.plugin;
 
-import org.jetbrains.java.decompiler.util.Pair;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.RecordComponentVisitor;
-import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.LdcInsnNode;
-import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.analysis.Analyzer;
-import org.objectweb.asm.tree.analysis.Frame;
-import org.objectweb.asm.tree.analysis.SourceInterpreter;
-import org.objectweb.asm.tree.analysis.SourceValue;
+import org.objectweb.asm.tree.RecordComponentNode;
 import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+// todo may be getting duplicate methods/fields?
 final class RecordGetterFindingVisitor extends ClassVisitor {
 	private ClassEntry clazz;
-	private final Map<Entry<?>, String> mappings;
-	private final Set<Pair<String, String>> enumFields = new HashSet<>();
-	private final List<MethodNode> classInits = new ArrayList<>();
+	private final Map<FieldEntry, MethodEntry> fieldToMethod;
+	private final Set<RecordComponentNode> recordComponents = new HashSet<>();
+	private final Set<FieldNode> fields = new HashSet<>();
+	private final Set<MethodNode> methods = new HashSet<>();
 
-	RecordGetterFindingVisitor(Map<Entry<?>, String> mappings) {
+	RecordGetterFindingVisitor(Map<FieldEntry, MethodEntry> fieldToMethod) {
 		super(Enigma.ASM_VERSION);
-		this.mappings = mappings;
+		this.fieldToMethod = fieldToMethod;
 	}
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 		super.visit(version, access, name, signature, superName, interfaces);
 		this.clazz = (access & Opcodes.ACC_RECORD) != 0 ? new ClassEntry(name) : null;
-		this.enumFields.clear();
-		this.classInits.clear();
+		this.recordComponents.clear();
 	}
 
 	@Override
-	public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
+	public RecordComponentVisitor visitRecordComponent(final String name, final String descriptor, final String signature) {
+		this.recordComponents.add(new RecordComponentNode(this.api, name, descriptor, signature));
+		return super.visitRecordComponent(name, descriptor, signature);
+	}
+
+	@Override
+	public FieldVisitor visitField(final int access, final String name, final String descriptor, final String signature, final Object value) {
 		if (this.clazz != null) {
-			throw new IllegalArgumentException("Found two enum fields with the same name \"" + name + "\" and desc \"" + descriptor + "\"!");
+			FieldNode node = new FieldNode(this.api, access, name, descriptor, signature, value);
+			this.fields.add(node);
+			return node;
 		}
 
 		return super.visitField(access, name, descriptor, signature, value);
 	}
 
 	@Override
-	public RecordComponentVisitor visitRecordComponent(final String name, final String descriptor, final String signature) {
-
-	}
-
-	@Override
-	public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-		if ("<clinit>".equals(name)) {
+	public MethodVisitor visitMethod(final int access, final String name, final String descriptor, final String signature, final String[] exceptions) {
+		if (this.clazz != null) {
 			MethodNode node = new MethodNode(this.api, access, name, descriptor, signature, exceptions);
-			this.classInits.add(node);
+			this.methods.add(node);
 			return node;
 		}
 
@@ -76,45 +73,51 @@ final class RecordGetterFindingVisitor extends ClassVisitor {
 	public void visitEnd() {
 		super.visitEnd();
 		try {
-			this.collectResults();
+			if (this.clazz != null) {
+				this.collectResults();
+			}
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
 	}
 
-	private void collectResults() throws Exception {
-		String owner = this.clazz.getName();
-		Analyzer<SourceValue> analyzer = new Analyzer<>(new SourceInterpreter());
+	private void collectResults() {
+		for (RecordComponentNode component : this.recordComponents) {
+			FieldNode field = null;
+			for (FieldNode node : this.fields) {
+				if (node.name.equals(component.name) && node.desc.equals(component.descriptor)) {
+					field = node;
+					break;
+				}
+			}
 
-		for (MethodNode mn : this.classInits) {
-			Frame<SourceValue>[] frames = analyzer.analyze(this.className, mn);
+			if (field == null) {
+				throw new RuntimeException("Field not found for record component: " + component.name);
+			}
 
-			InsnList instrs = mn.instructions;
-			for (int i = 1; i < instrs.size(); i++) {
-				AbstractInsnNode instr1 = instrs.get(i - 1);
-				AbstractInsnNode instr2 = instrs.get(i);
-				String s = null;
+			for (MethodNode method : this.methods) {
+				InsnList instructions = method.instructions;
+				System.out.println(instructions.toString());
 
-				if (instr2.getOpcode() == Opcodes.PUTSTATIC
-					&& ((FieldInsnNode) instr2).owner.equals(owner)
-					&& this.enumFields.contains(Pair.of(((FieldInsnNode) instr2).name, ((FieldInsnNode) instr2).desc))
-					&& instr1.getOpcode() == Opcodes.INVOKESPECIAL
-					&& "<init>".equals(((MethodInsnNode) instr1).name)) {
-					for (int j = 0; j < frames[i - 1].getStackSize(); j++) {
-						SourceValue sv = frames[i - 1].getStack(j);
-						for (AbstractInsnNode ci : sv.insns) {
-							if (ci instanceof LdcInsnNode insnNode && insnNode.cst instanceof String && s == null) {
-								s = (String) (insnNode.cst);
-							}
-						}
-					}
+				// todo is this stupid
+				if (instructions.size() == 6
+						&& instructions.get(2).getOpcode() == Opcodes.ALOAD
+						&& instructions.get(3) instanceof FieldInsnNode fieldInsn
+						&& fieldInsn.getOpcode() == Opcodes.GETFIELD
+						&& fieldInsn.owner.equals(this.clazz.getName())
+						&& fieldInsn.desc.equals(field.desc)
+						&& fieldInsn.name.equals(field.name)
+						&& instructions.get(4).getOpcode() == Opcodes.IRETURN) { // todo match to ALL return opcodes
+					this.fieldToMethod.put(new FieldEntry(this.clazz, field.name, new TypeDescriptor(field.desc)), new MethodEntry(this.clazz, method.name, new MethodDescriptor(method.desc)));
 				}
 
-				if (s != null) {
-					this.mappings.put(new FieldEntry(this.clazz, ((FieldInsnNode) instr2).name, new TypeDescriptor(((FieldInsnNode) instr2).desc)), s);
-				}
-
-				// report otherwise?
+//				instructions.get(0); // opcode -1 label node
+//				instructions.get(1); // opcode -1 line number node
+//				instructions.get(2); // opcode 25 var insn node
+//				instructions.get(3); // opcode 180 field insn node (gets record field)
+//				instructions.get(4); // opcode 172 insn node
+//				instructions.get(5); // opcode -1 label node
+//				boolean getField = instructions.get(3).getOpcode() == Opcodes.H_GETFIELD;
 			}
 		}
 	}
