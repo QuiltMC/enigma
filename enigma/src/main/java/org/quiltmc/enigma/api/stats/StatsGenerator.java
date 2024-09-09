@@ -196,9 +196,13 @@ public class StatsGenerator {
 
 					ClassEntry containingClass = method.getContainingClass();
 					if (includedTypes.contains(StatType.PARAMETERS) && !this.project.isAnonymousOrLocal(containingClass) && !(((MethodDefEntry) method).getAccess().isSynthetic() && !includeSynthetic)) {
+						if (containingClass.getName().contains("AdvancementH")) {
+							System.out.println();
+						}
+
 						ClassDefEntry def = this.entryIndex.getDefinition(containingClass);
 						if (def != null && def.isRecord() && this.isCanonicalConstructor(def, method)) {
-							break;
+							continue;
 						}
 
 						MethodDescriptor descriptor = method.getDesc();
