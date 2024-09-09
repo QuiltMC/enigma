@@ -106,7 +106,7 @@ final class RecordGetterFindingVisitor extends ClassVisitor {
 						&& fieldInsn.owner.equals(this.clazz.getName())
 						&& fieldInsn.desc.equals(field.desc)
 						&& fieldInsn.name.equals(field.name)
-						&& instructions.get(4).getOpcode() >= 172 && instructions.get(4).getOpcode() <= 177) { // return opcodes are 172 - 177
+						&& instructions.get(4).getOpcode() >= Opcodes.IRETURN && instructions.get(4).getOpcode() <= Opcodes.ARETURN) {
 					this.fieldToMethod.put(new FieldEntry(this.clazz, field.name, new TypeDescriptor(field.desc)), new MethodEntry(this.clazz, method.name, new MethodDescriptor(method.desc)));
 				}
 			}
