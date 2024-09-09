@@ -205,7 +205,6 @@ public class StatsGenerator {
 							if (!(argument.getAccess().isSynthetic() && !includeSynthetic)
 									// skip the implicit superclass parameter for non-static inner class constructors
 									&& !(method.isConstructor() && containingClass.isInnerClass() && index == 1 && argument.containsType() && argument.getTypeEntry().equals(containingClass.getOuterClass()))) {
-
 								this.update(StatType.PARAMETERS, mappableCounts, unmappedCounts, new LocalVariableEntry(method, index));
 							}
 
@@ -230,16 +229,16 @@ public class StatsGenerator {
 		MethodDescriptor descriptor = methodEntry.getDesc();
 		List<ArgumentDescriptor> argumentDescs = descriptor.getArgumentDescs();
 		List<FieldEntry> fields = this.project.getJarIndex().getChildrenByClass().get(record).stream()
-			.filter(e -> {
-				if (e instanceof FieldEntry field) {
-					var access = this.entryIndex.getFieldAccess(field);
-					return access != null && !access.isSynthetic() && !access.isStatic();
-				}
+				.filter(e -> {
+					if (e instanceof FieldEntry field) {
+						var access = this.entryIndex.getFieldAccess(field);
+						return access != null && !access.isSynthetic() && !access.isStatic();
+					}
 
-				return false;
-			})
-			.map(e -> (FieldEntry) e)
-			.toList();
+					return false;
+				})
+				.map(e -> (FieldEntry) e)
+				.toList();
 
 		// number of parameters must match the number of fields
 		if (argumentDescs.size() != fields.size()) {
