@@ -164,10 +164,6 @@ public class StatsGenerator {
 		Map<StatType, Integer> mappableCounts = new EnumMap<>(StatType.class);
 		Map<StatType, Map<String, Integer>> unmappedCounts = new EnumMap<>(StatType.class);
 
-		if (classEntry.getName().contains("AdvancementHolder")) {
-			System.out.println();
-		}
-
 		List<ParentedEntry<?>> children = this.project.getJarIndex().getChildrenByClass().get(classEntry);
 		List<Entry<?>> entries = new ArrayList<>(children);
 
@@ -196,10 +192,6 @@ public class StatsGenerator {
 
 					ClassEntry containingClass = method.getContainingClass();
 					if (includedTypes.contains(StatType.PARAMETERS) && !this.project.isAnonymousOrLocal(containingClass) && !(((MethodDefEntry) method).getAccess().isSynthetic() && !includeSynthetic)) {
-						if (containingClass.getName().contains("AdvancementH")) {
-							System.out.println();
-						}
-
 						ClassDefEntry def = this.entryIndex.getDefinition(containingClass);
 						if (def != null && def.isRecord() && this.isCanonicalConstructor(def, method)) {
 							continue;
