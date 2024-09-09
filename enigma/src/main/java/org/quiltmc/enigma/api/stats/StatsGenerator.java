@@ -8,6 +8,7 @@ import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.ArgumentDescriptor;
 import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;
@@ -163,6 +164,10 @@ public class StatsGenerator {
 		Map<StatType, Integer> mappableCounts = new EnumMap<>(StatType.class);
 		Map<StatType, Map<String, Integer>> unmappedCounts = new EnumMap<>(StatType.class);
 
+		if (classEntry.getName().contains("AdvancementHolder")) {
+			System.out.println();
+		}
+
 		List<ParentedEntry<?>> children = this.project.getJarIndex().getChildrenByClass().get(classEntry);
 		List<Entry<?>> entries = new ArrayList<>(children);
 
@@ -191,6 +196,11 @@ public class StatsGenerator {
 
 					ClassEntry containingClass = method.getContainingClass();
 					if (includedTypes.contains(StatType.PARAMETERS) && !this.project.isAnonymousOrLocal(containingClass) && !(((MethodDefEntry) method).getAccess().isSynthetic() && !includeSynthetic)) {
+						ClassDefEntry def = this.entryIndex.getDefinition(containingClass);
+						if (def != null && def.isRecord() && this.isCanonicalConstructor(def, method)) {
+							break;
+						}
+
 						MethodDescriptor descriptor = method.getDesc();
 						List<ArgumentDescriptor> argumentDescs = descriptor.getArgumentDescs();
 
@@ -199,6 +209,7 @@ public class StatsGenerator {
 							if (!(argument.getAccess().isSynthetic() && !includeSynthetic)
 									// skip the implicit superclass parameter for non-static inner class constructors
 									&& !(method.isConstructor() && containingClass.isInnerClass() && index == 1 && argument.containsType() && argument.getTypeEntry().equals(containingClass.getOuterClass()))) {
+
 								this.update(StatType.PARAMETERS, mappableCounts, unmappedCounts, new LocalVariableEntry(method, index));
 							}
 
@@ -212,6 +223,44 @@ public class StatsGenerator {
 		}
 
 		return StatsResult.create(mappableCounts, unmappedCounts, false);
+	}
+
+	// todo write a test for this
+	private boolean isCanonicalConstructor(ClassDefEntry record, MethodEntry methodEntry) {
+		if (!record.isRecord() || !methodEntry.isConstructor()) {
+			return false;
+		}
+
+		MethodDescriptor descriptor = methodEntry.getDesc();
+		List<ArgumentDescriptor> argumentDescs = descriptor.getArgumentDescs();
+		List<FieldEntry> fields = this.project.getJarIndex().getChildrenByClass().get(record).stream()
+			.filter(e -> {
+				if (e instanceof FieldEntry field) {
+					var access = this.entryIndex.getFieldAccess(field);
+					return access != null && !access.isSynthetic() && !access.isStatic();
+				}
+
+				return false;
+			})
+			.map(e -> (FieldEntry) e)
+			.toList();
+
+		// number of parameters must match the number of fields
+		if (argumentDescs.size() != fields.size()) {
+			return false;
+		}
+
+		// match types
+		for (int i = 0; i < fields.size(); i++) {
+			FieldEntry field = fields.get(i);
+			ArgumentDescriptor argument = argumentDescs.get(i);
+
+			if (!field.getDesc().toString().equals(argument.toString())) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
