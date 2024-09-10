@@ -1,8 +1,10 @@
-package org.quiltmc.enigma;
+package org.quiltmc.enigma.records;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.quiltmc.enigma.TestEntryFactory;
+import org.quiltmc.enigma.TestUtil;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
@@ -71,7 +73,7 @@ public class TestRecordComponentProposal {
 	@Test
 	void testMismatchRecordComponentProposal() {
 		// name of getter mismatches with name of field
-		ClassEntry cClass = TestEntryFactory.newClass("c");
+		ClassEntry cClass = TestEntryFactory.newClass("d");
 		FieldEntry aField = TestEntryFactory.newField(cClass, "a", "I");
 		MethodEntry fakeAGetter = TestEntryFactory.newMethod(cClass, "a", "()I");
 		MethodEntry realAGetter = TestEntryFactory.newMethod(cClass, "b", "()I");

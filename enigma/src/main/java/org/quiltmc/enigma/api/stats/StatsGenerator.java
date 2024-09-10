@@ -193,8 +193,11 @@ public class StatsGenerator {
 					ClassEntry containingClass = method.getContainingClass();
 					if (includedTypes.contains(StatType.PARAMETERS) && !this.project.isAnonymousOrLocal(containingClass) && !(((MethodDefEntry) method).getAccess().isSynthetic() && !includeSynthetic)) {
 						ClassDefEntry def = this.entryIndex.getDefinition(containingClass);
-						if (def != null && def.isRecord() && this.isCanonicalConstructor(def, method)) {
-							continue;
+						if (def != null && def.isRecord()) {
+							if (this.isCanonicalConstructor(def, method)
+									|| method.equals(new MethodEntry(containingClass, "equals", new MethodDescriptor("(Ljava/lang/Object;)Z")))) {
+								continue;
+							}
 						}
 
 						MethodDescriptor descriptor = method.getDesc();
@@ -220,7 +223,6 @@ public class StatsGenerator {
 		return StatsResult.create(mappableCounts, unmappedCounts, false);
 	}
 
-	// todo write a test for this
 	private boolean isCanonicalConstructor(ClassDefEntry record, MethodEntry methodEntry) {
 		if (!record.isRecord() || !methodEntry.isConstructor()) {
 			return false;
