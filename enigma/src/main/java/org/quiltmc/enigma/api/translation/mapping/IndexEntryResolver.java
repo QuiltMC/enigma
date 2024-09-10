@@ -28,7 +28,6 @@ public class IndexEntryResolver implements EntryResolver {
 
 	private final IndexTreeBuilder treeBuilder;
 
-	// todo stupid
 	public IndexEntryResolver(JarIndex index) {
 		this.entryIndex = index.getIndex(EntryIndex.class);
 		this.inheritanceIndex = index.getIndex(InheritanceIndex.class);
