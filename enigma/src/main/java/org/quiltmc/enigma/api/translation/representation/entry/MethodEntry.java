@@ -143,6 +143,6 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 
 	@Override
 	public int compareTo(MethodEntry entry) {
-		return (this.name + this.descriptor.toString()).compareTo(entry.name + entry.descriptor.toString());
+		return (this.name + this.descriptor).compareTo(entry.name + entry.descriptor);
 	}
 }

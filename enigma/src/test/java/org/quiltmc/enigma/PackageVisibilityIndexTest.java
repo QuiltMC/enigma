@@ -1,6 +1,7 @@
 package org.quiltmc.enigma;
 
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.PackageVisibilityIndex;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
@@ -25,7 +26,7 @@ public class PackageVisibilityIndexTest {
 
 	public PackageVisibilityIndexTest() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
-		this.jarIndex = JarIndex.empty();
+		this.jarIndex = MainJarIndex.empty();
 		this.jarIndex.indexJar(jcp.getClassNames(), jcp, ProgressListener.createEmpty());
 	}
 

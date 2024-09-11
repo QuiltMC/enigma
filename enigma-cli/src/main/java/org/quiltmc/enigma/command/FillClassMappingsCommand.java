@@ -112,7 +112,7 @@ public class FillClassMappingsCommand extends Command {
 		Logger.debug("Entry {} {} a mapping", entry, hasMapping ? "has" : "doesn't have");
 		if (!hasMapping && addMapping) {
 			Logger.debug("Adding mapping for {}", entry);
-			mappings.insert(entry, EntryMapping.DEFAULT);
+			mappings.insert(entry, EntryMapping.OBFUSCATED);
 		}
 
 		List<ParentedEntry<?>> children = index.getChildrenByClass().get(entry);

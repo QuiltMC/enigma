@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.source.TokenType;
 
 import javax.annotation.Nullable;
@@ -10,7 +11,12 @@ public record EntryMapping(
 		TokenType tokenType,
 		@Nullable String sourcePluginId
 ) {
+	/**
+	 * @deprecated to be removed in version 3.0.0. Renamed to {@link EntryMapping#OBFUSCATED}.
+	 */
+	@Deprecated(forRemoval = true, since = "2.5.0")
 	public static final EntryMapping DEFAULT = new EntryMapping(null, null, TokenType.OBFUSCATED, null);
+	public static final EntryMapping OBFUSCATED = new EntryMapping(null, null, TokenType.OBFUSCATED, null);
 
 	public EntryMapping(@Nullable String targetName) {
 		this(trimWhitespace(targetName), null, targetName == null ? TokenType.OBFUSCATED : TokenType.DEOBFUSCATED, null);
@@ -21,7 +27,7 @@ public record EntryMapping(
 	}
 
 	public EntryMapping {
-		validateSourcePluginId(sourcePluginId);
+		Enigma.validatePluginId(sourcePluginId);
 
 		if (tokenType == null) {
 			throw new RuntimeException("cannot create a mapping without a token type!");
@@ -88,11 +94,5 @@ public record EntryMapping(
 
 	private static String trimWhitespace(@Nullable String string) {
 		return string == null ? null : string.strip();
-	}
-
-	private static void validateSourcePluginId(String id) {
-		if (id != null && !id.matches("([a-z0-9_]+:[a-z0-9_/]+)")) {
-			throw new IllegalArgumentException("invalid plugin ID: '" + id + "! plugin ID should be all lowercase, only contain letters, numbers, underscores and slashes, and be namespaced separated by a colon.");
-		}
 	}
 }

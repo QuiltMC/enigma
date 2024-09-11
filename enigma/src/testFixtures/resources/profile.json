@@ -6,6 +6,9 @@
 			},
 			{
 				"id": "enigma:specialized_bridge_method_indexer"
+			},
+			{
+				"id": "enigma:record_component_indexer"
 			}
 		],
 		"name_proposal": [
@@ -17,6 +20,9 @@
 			},
 			{
 				"id": "test:parameters"
+			},
+			{
+				"id": "enigma:record_component_proposer"
 			}
 		]
 	}

@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
-import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
@@ -15,9 +14,7 @@ import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.MergedEntryMappingTree;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
-import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
-import org.quiltmc.enigma.util.validation.Message;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 
 import java.util.ArrayList;
@@ -76,14 +73,7 @@ public class EntryRemapper {
 		this.doPutMapping(vc, obfuscatedEntry, deobfMapping, false);
 	}
 
-	// note: just supressing warnings until it's fixed
-	@SuppressWarnings("all")
 	private void doPutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping, boolean validateOnly) {
-		// todo this needs to be fixed!
-		//if (obfuscatedEntry instanceof FieldEntry fieldEntry) {
-		//	mapRecordComponentGetter(vc, fieldEntry.getParent(), fieldEntry, deobfMapping);
-		//}
-
 		EntryMapping oldMapping = this.getMapping(obfuscatedEntry);
 		boolean renaming = !Objects.equals(oldMapping.targetName(), deobfMapping.targetName());
 
@@ -98,7 +88,7 @@ public class EntryRemapper {
 		if (validateOnly || !vc.canProceed()) return;
 
 		for (Entry<?> resolvedEntry : resolvedEntries) {
-			if (deobfMapping.equals(EntryMapping.DEFAULT)) {
+			if (deobfMapping.equals(EntryMapping.OBFUSCATED)) {
 				this.mappings.insert(resolvedEntry, null);
 			} else {
 				this.mappings.insert(resolvedEntry, deobfMapping);
@@ -144,40 +134,6 @@ public class EntryRemapper {
 		return resolution;
 	}
 
-	// todo this needs to be fixed for hashed mappings!
-	// note: just supressing warnings until it's fixed
-	@SuppressWarnings("all")
-	private void mapRecordComponentGetter(ValidationContext vc, ClassEntry classEntry, FieldEntry fieldEntry, EntryMapping fieldMapping) {
-		EntryIndex entryIndex = this.jarIndex.getIndex(EntryIndex.class);
-
-		if (!entryIndex.getDefinition(classEntry).isRecord() || entryIndex.getFieldAccess(fieldEntry).isStatic()) {
-			return;
-		}
-
-		// Find all the methods in this record class
-		List<MethodEntry> classMethods = entryIndex.getMethods().stream()
-				.filter(entry -> classEntry.equals(entry.getParent()))
-				.toList();
-
-		MethodEntry methodEntry = null;
-
-		for (MethodEntry method : classMethods) {
-			// Find the matching record component getter via matching the names. TODO: Support when the record field and method names do not match
-			if (method.getName().equals(fieldEntry.getName()) && method.getDesc().toString().equals("()" + fieldEntry.getDesc())) {
-				methodEntry = method;
-				break;
-			}
-		}
-
-		if (methodEntry == null && fieldMapping != null) {
-			vc.raise(Message.UNKNOWN_RECORD_GETTER, fieldMapping.targetName());
-			return;
-		}
-
-		// Also remap the associated method, without the javadoc.
-		this.doPutMapping(vc, methodEntry, new EntryMapping(fieldMapping.targetName()), false);
-	}
-
 	/**
 	 * Runs {@link NameProposalService#getDynamicProposedNames(EntryRemapper, Entry, EntryMapping, EntryMapping)} over the names stored in this remapper,
 	 * inserting all mappings generated.
@@ -194,7 +150,7 @@ public class EntryRemapper {
 	@Nonnull
 	public EntryMapping getMapping(Entry<?> entry) {
 		EntryMapping entryMapping = this.mappings.get(entry);
-		return entryMapping == null ? EntryMapping.DEFAULT : entryMapping;
+		return entryMapping == null ? EntryMapping.OBFUSCATED : entryMapping;
 	}
 
 	public <T extends Translatable> TranslateResult<T> extendedDeobfuscate(T translatable) {

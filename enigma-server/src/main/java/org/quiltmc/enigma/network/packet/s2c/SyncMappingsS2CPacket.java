@@ -55,7 +55,7 @@ public record SyncMappingsS2CPacket(EntryTree<EntryMapping> mappings) implements
 	private static void writeEntryTreeNode(DataOutput output, EntryTreeNode<EntryMapping> node) throws IOException {
 		PacketHelper.writeEntry(output, node.getEntry(), false);
 		EntryMapping value = node.getValue();
-		if (value == null) value = EntryMapping.DEFAULT;
+		if (value == null) value = EntryMapping.OBFUSCATED;
 
 		PacketHelper.writeString(output, value.targetName() != null ? value.targetName() : "");
 		PacketHelper.writeString(output, value.javadoc() != null ? value.javadoc() : "");

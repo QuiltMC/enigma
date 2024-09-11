@@ -83,6 +83,6 @@ public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 			}
 		}
 
-		return EntryMapping.DEFAULT;
+		return EntryMapping.OBFUSCATED;
 	}
 }

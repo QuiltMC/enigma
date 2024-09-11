@@ -21,25 +21,23 @@ import java.util.Map;
 public class EntryIndex implements JarIndexer {
 	private final EntryTree<EntryMapping> tree = new HashEntryTree<>();
 
-	private final Map<ClassEntry, AccessFlags> classes = new HashMap<>();
-	private final Map<FieldEntry, AccessFlags> fields = new HashMap<>();
-	private final Map<MethodEntry, AccessFlags> methods = new HashMap<>();
-	private final Map<ClassEntry, ClassDefEntry> definitions = new HashMap<>();
+	private final Map<FieldEntry, FieldDefEntry> fieldDefinitions = new HashMap<>();
+	private final Map<MethodEntry, MethodDefEntry> methodDefinitions = new HashMap<>();
+	private final Map<ClassEntry, ClassDefEntry> classDefinitions = new HashMap<>();
 
 	@Override
 	public void indexClass(ClassDefEntry classEntry) {
-		this.definitions.put(classEntry, classEntry);
-		this.classes.put(classEntry, classEntry.getAccess());
+		this.classDefinitions.put(classEntry, classEntry);
 	}
 
 	@Override
 	public void indexMethod(MethodDefEntry methodEntry) {
-		this.methods.put(methodEntry, methodEntry.getAccess());
+		this.methodDefinitions.put(methodEntry, methodEntry);
 	}
 
 	@Override
 	public void indexField(FieldDefEntry fieldEntry) {
-		this.fields.put(fieldEntry, fieldEntry.getAccess());
+		this.fieldDefinitions.put(fieldEntry, fieldEntry);
 	}
 
 	@Override
@@ -58,15 +56,15 @@ public class EntryIndex implements JarIndexer {
 	}
 
 	public boolean hasClass(ClassEntry entry) {
-		return this.classes.containsKey(entry);
+		return this.classDefinitions.containsKey(entry);
 	}
 
 	public boolean hasMethod(MethodEntry entry) {
-		return this.methods.containsKey(entry);
+		return this.methodDefinitions.containsKey(entry);
 	}
 
 	public boolean hasField(FieldEntry entry) {
-		return this.fields.containsKey(entry);
+		return this.fieldDefinitions.containsKey(entry);
 	}
 
 	public boolean hasEntry(Entry<?> entry) {
@@ -91,17 +89,20 @@ public class EntryIndex implements JarIndexer {
 
 	@Nullable
 	public AccessFlags getMethodAccess(MethodEntry entry) {
-		return this.methods.get(entry);
+		var def = this.methodDefinitions.get(entry);
+		return def == null ? null : def.getAccess();
 	}
 
 	@Nullable
 	public AccessFlags getFieldAccess(FieldEntry entry) {
-		return this.fields.get(entry);
+		var def = this.fieldDefinitions.get(entry);
+		return def == null ? null : def.getAccess();
 	}
 
 	@Nullable
 	public AccessFlags getClassAccess(ClassEntry entry) {
-		return this.classes.get(entry);
+		var def = this.classDefinitions.get(entry);
+		return def == null ? null : def.getAccess();
 	}
 
 	@Nullable
@@ -119,20 +120,31 @@ public class EntryIndex implements JarIndexer {
 		return null;
 	}
 
+	@Nullable
 	public ClassDefEntry getDefinition(ClassEntry entry) {
-		return this.definitions.get(entry);
+		return this.classDefinitions.get(entry);
+	}
+
+	@Nullable
+	public MethodDefEntry getDefinition(MethodEntry entry) {
+		return this.methodDefinitions.get(entry);
+	}
+
+	@Nullable
+	public FieldDefEntry getDefinition(FieldEntry entry) {
+		return this.fieldDefinitions.get(entry);
 	}
 
 	public Collection<ClassEntry> getClasses() {
-		return this.classes.keySet();
+		return this.classDefinitions.keySet();
 	}
 
 	public Collection<MethodEntry> getMethods() {
-		return this.methods.keySet();
+		return this.methodDefinitions.keySet();
 	}
 
 	public Collection<FieldEntry> getFields() {
-		return this.fields.keySet();
+		return this.fieldDefinitions.keySet();
 	}
 
 	/**
