@@ -13,8 +13,9 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
+import java.util.function.Function;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
@@ -49,7 +50,7 @@ public class ScaleUtil {
 	}
 
 	public static Font scaleFont(Font font) {
-		return createTweakerForCurrentLook(Config.main().scaleFactor.value()).modifyFont("", font);
+		return createEnsuredFontScalingTweakerForCurrentLook(Config.main().scaleFactor.value()).modifyFont("", font);
 	}
 
 	public static float scale(float f) {
@@ -84,49 +85,76 @@ public class ScaleUtil {
 	}
 
 	@SuppressWarnings("null")
-	private static BasicTweaker createTweakerForCurrentLook(float dpiScaling) {
-		String testString = UIManager.getLookAndFeel().getName().toLowerCase();
+	private static BasicTweaker createEnsuredFontScalingTweakerForCurrentLook(float dpiScaling) {
+		final String lookAndFeelName = UIManager.getLookAndFeel().getName().toLowerCase();
 
-		if (testString.contains("windows")) {
-			return new WindowsTweaker(dpiScaling, testString.contains("classic")) {
-				@Override
-				public Font modifyFont(Object key, Font original) {
-					return ScaleUtil.fallbackModifyFont(key, original, super.modifyFont(key, original), scaleFactor, BasicTweaker::isUnscaled);
-				}
-			};
+		final Function<Float, BasicTweaker> delegateTweakerFactory;
+		if (lookAndFeelName.contains("windows")) {
+			delegateTweakerFactory = scale -> new WindowsTweaker(scale, lookAndFeelName.contains("classic"));
+		} else if (lookAndFeelName.contains("metal")) {
+			delegateTweakerFactory = MetalTweaker::new;
+		} else if (lookAndFeelName.contains("nimbus")) {
+			delegateTweakerFactory = NimbusTweaker::new;
+		} else {
+			delegateTweakerFactory = BasicTweaker::new;
 		}
 
-		if (testString.contains("metal")) {
-			return new MetalTweaker(dpiScaling) {
-				@Override
-				public Font modifyFont(Object key, Font original) {
-					return ScaleUtil.fallbackModifyFont(key, original, super.modifyFont(key, original), scaleFactor, BasicTweaker::isUnscaled);
-				}
-			};
-		}
-
-		if (testString.contains("nimbus")) {
-			return new NimbusTweaker(dpiScaling) {
-				@Override
-				public Font modifyFont(Object key, Font original) {
-					return ScaleUtil.fallbackModifyFont(key, original, super.modifyFont(key, original), scaleFactor, BasicTweaker::isUnscaled);
-				}
-			};
-		}
-
-		return new BasicTweaker(dpiScaling) {
-			@Override
-			public Font modifyFont(Object key, Font original) {
-				return ScaleUtil.fallbackModifyFont(key, original, super.modifyFont(key, original), scaleFactor, BasicTweaker::isUnscaled);
-			}
-		};
+		return new DelegatingEnsuredFontScalingBasicTweaker(dpiScaling, delegateTweakerFactory);
 	}
 
-	private static Font fallbackModifyFont(Object key, Font original, Font modified, float scaleFactor, Predicate<Float> unscaledCheck) {
-		if (modified == original && !unscaledCheck.test(scaleFactor)) {
-			return original.deriveFont(original.getSize() * scaleFactor);
+	private static class DelegatingEnsuredFontScalingBasicTweaker extends BasicTweaker {
+		private final BasicTweaker delegate;
+
+		public DelegatingEnsuredFontScalingBasicTweaker(
+			float scaleFactor, Function<Float, BasicTweaker> delegateFactory
+		) {
+			super(scaleFactor);
+			this.delegate = delegateFactory.apply(scaleFactor);
 		}
 
-		return modified;
+		@Override
+		public void initialTweaks() {
+			this.delegate.initialTweaks();
+		}
+
+		@Override
+		public Font modifyFont(Object key, Font original) {
+			final Font modified = this.delegate.modifyFont(key, original);
+			if (modified == original && !BasicTweaker.isUnscaled(this.scaleFactor)) {
+				return original.deriveFont(original.getSize() * this.scaleFactor);
+			}
+
+			return modified;
+		}
+
+		@Override
+		public Icon modifyIcon(Object key, Icon original) {
+			return this.delegate.modifyIcon(key, original);
+		}
+
+		@Override
+		public Dimension modifyDimension(Object key, Dimension original) {
+			return this.delegate.modifyDimension(key, original);
+		}
+
+		@Override
+		public Integer modifyInteger(Object key, Integer original) {
+			return this.delegate.modifyInteger(key, original);
+		}
+
+		@Override
+		public Insets modifyInsets(Object key, Insets original) {
+			return this.delegate.modifyInsets(key, original);
+		}
+
+		@Override
+		public void finalTweaks() {
+			this.delegate.finalTweaks();
+		}
+
+		@Override
+		public void setDoExtraTweaks(boolean tweak) {
+			this.delegate.setDoExtraTweaks(tweak);
+		}
 	}
 }
