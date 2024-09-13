@@ -79,9 +79,8 @@ public class ScaleUtil {
 			UiDefaultsScaler.updateAndApplyGlobalScaling((int) (100 * scale), true);
 		}
 
-		Font font = Config.currentFonts().editor.value();
-		font = font.deriveFont((float) (12 * scale));
-		SyntaxpainConfiguration.setEditorFont(font);
+		final Font font = SyntaxpainConfiguration.getEditorFont();
+		SyntaxpainConfiguration.setEditorFont(font.deriveFont((float) (font.getSize() * scale)));
 	}
 
 	@SuppressWarnings("null")
