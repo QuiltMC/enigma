@@ -34,7 +34,7 @@ public class SystemThemeProperties extends ThemeProperties {
 	}
 
 	@Override
-	public boolean needsScaling() {
-		return true;
+	public boolean onlyScaleFonts() {
+		return false;
 	}
 }

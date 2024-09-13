@@ -5,18 +5,19 @@ import com.github.swingdpi.plaf.BasicTweaker;
 import com.github.swingdpi.plaf.MetalTweaker;
 import com.github.swingdpi.plaf.NimbusTweaker;
 import com.github.swingdpi.plaf.WindowsTweaker;
-import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.config.theme.Theme;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
+import java.util.function.Function;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
@@ -27,10 +28,6 @@ public class ScaleUtil {
 		float oldScale = Config.main().scaleFactor.value();
 		float clamped = Math.min(Math.max(0.25f, scaleFactor), 10.0f);
 		Config.main().scaleFactor.setValue(clamped, true);
-		rescaleFontInConfig(Config.currentFonts().defaultBold, oldScale);
-		rescaleFontInConfig(Config.currentFonts().defaultNormal, oldScale);
-		rescaleFontInConfig(Config.currentFonts().small, oldScale);
-		rescaleFontInConfig(Config.currentFonts().editor, oldScale);
 		listeners.forEach(l -> l.onScaleChanged(clamped, oldScale));
 	}
 
@@ -55,17 +52,7 @@ public class ScaleUtil {
 	}
 
 	public static Font scaleFont(Font font) {
-		return createTweakerForCurrentLook(Config.main().scaleFactor.value()).modifyFont("", font);
-	}
-
-	private static void rescaleFontInConfig(TrackedValue<Theme.Fonts.SerializableFont> font, float oldScale) {
-		font.setValue(new Theme.Fonts.SerializableFont(rescaleFont(font.value(), oldScale)), true);
-	}
-
-	// This does not use the font that's currently active in the UI!
-	private static Font rescaleFont(Font font, float oldScale) {
-		float newSize = Math.round(font.getSize() / oldScale * Config.main().scaleFactor.value());
-		return font.deriveFont(newSize);
+		return createEnsuredFontScalingTweakerForCurrentLook(Config.main().scaleFactor.value()).modifyFont("", font);
 	}
 
 	public static float scale(float f) {
@@ -89,61 +76,107 @@ public class ScaleUtil {
 	}
 
 	public static void applyScaling() {
-		double scale = Config.main().scaleFactor.value();
+		final double scale = Config.main().scaleFactor.value();
 
-		if (Config.currentTheme().needsScaling()) {
+		if (Config.currentTheme().onlyScaleFonts()) {
+			scaleFontsOnly((float) scale);
+		} else {
 			UiDefaultsScaler.updateAndApplyGlobalScaling((int) (100 * scale), true);
 		}
 
-		Font font = Config.currentFonts().editor.value();
-		font = font.deriveFont((float) (12 * scale));
-		SyntaxpainConfiguration.setEditorFont(font);
+		final Font font = SyntaxpainConfiguration.getEditorFont();
+		SyntaxpainConfiguration.setEditorFont(font.deriveFont((float) (font.getSize() * scale)));
+	}
+
+	// effectively UiDefaultsScaler::modifyDefaults but only for fonts
+	private static void scaleFontsOnly(float scale) {
+		final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+
+		final BasicTweaker tweaker = new BasicTweaker(scale);
+		for (Object key: Collections.list(defaults.keys())) {
+			final Object original = defaults.get(key);
+
+			if (original instanceof Font originalFont) {
+				final Font modifiedFont = tweaker.modifyFont(key, originalFont);
+
+				if (modifiedFont != null && modifiedFont != originalFont) {
+					defaults.put(key, modifiedFont);
+				}
+			}
+		}
 	}
 
 	@SuppressWarnings("null")
-	private static BasicTweaker createTweakerForCurrentLook(float dpiScaling) {
-		String testString = UIManager.getLookAndFeel().getName().toLowerCase();
+	private static BasicTweaker createEnsuredFontScalingTweakerForCurrentLook(float dpiScaling) {
+		final String lookAndFeelName = UIManager.getLookAndFeel().getName().toLowerCase();
 
-		if (testString.contains("windows")) {
-			return new WindowsTweaker(dpiScaling, testString.contains("classic")) {
-				@Override
-				public Font modifyFont(Object key, Font original) {
-					return ScaleUtil.fallbackModifyFont(key, original, super.modifyFont(key, original), scaleFactor, BasicTweaker::isUnscaled);
-				}
-			};
+		final Function<Float, BasicTweaker> delegateTweakerFactory;
+		if (lookAndFeelName.contains("windows")) {
+			delegateTweakerFactory = scale -> new WindowsTweaker(scale, lookAndFeelName.contains("classic"));
+		} else if (lookAndFeelName.contains("metal")) {
+			delegateTweakerFactory = MetalTweaker::new;
+		} else if (lookAndFeelName.contains("nimbus")) {
+			delegateTweakerFactory = NimbusTweaker::new;
+		} else {
+			delegateTweakerFactory = BasicTweaker::new;
 		}
 
-		if (testString.contains("metal")) {
-			return new MetalTweaker(dpiScaling) {
-				@Override
-				public Font modifyFont(Object key, Font original) {
-					return ScaleUtil.fallbackModifyFont(key, original, super.modifyFont(key, original), scaleFactor, BasicTweaker::isUnscaled);
-				}
-			};
-		}
-
-		if (testString.contains("nimbus")) {
-			return new NimbusTweaker(dpiScaling) {
-				@Override
-				public Font modifyFont(Object key, Font original) {
-					return ScaleUtil.fallbackModifyFont(key, original, super.modifyFont(key, original), scaleFactor, BasicTweaker::isUnscaled);
-				}
-			};
-		}
-
-		return new BasicTweaker(dpiScaling) {
-			@Override
-			public Font modifyFont(Object key, Font original) {
-				return ScaleUtil.fallbackModifyFont(key, original, super.modifyFont(key, original), scaleFactor, BasicTweaker::isUnscaled);
-			}
-		};
+		return new DelegatingEnsuredFontScalingBasicTweaker(dpiScaling, delegateTweakerFactory);
 	}
 
-	private static Font fallbackModifyFont(Object key, Font original, Font modified, float scaleFactor, Predicate<Float> unscaledCheck) {
-		if (modified == original && !unscaledCheck.test(scaleFactor)) {
-			return original.deriveFont(original.getSize() * scaleFactor);
+	private static class DelegatingEnsuredFontScalingBasicTweaker extends BasicTweaker {
+		private final BasicTweaker delegate;
+
+		DelegatingEnsuredFontScalingBasicTweaker(
+				float scaleFactor, Function<Float, BasicTweaker> delegateFactory
+		) {
+			super(scaleFactor);
+			this.delegate = delegateFactory.apply(scaleFactor);
 		}
 
-		return modified;
+		@Override
+		public void initialTweaks() {
+			this.delegate.initialTweaks();
+		}
+
+		@Override
+		public Font modifyFont(Object key, Font original) {
+			final Font modified = this.delegate.modifyFont(key, original);
+			if (modified == original && !BasicTweaker.isUnscaled(this.scaleFactor)) {
+				return original.deriveFont(original.getSize() * this.scaleFactor);
+			}
+
+			return modified;
+		}
+
+		@Override
+		public Icon modifyIcon(Object key, Icon original) {
+			return this.delegate.modifyIcon(key, original);
+		}
+
+		@Override
+		public Dimension modifyDimension(Object key, Dimension original) {
+			return this.delegate.modifyDimension(key, original);
+		}
+
+		@Override
+		public Integer modifyInteger(Object key, Integer original) {
+			return this.delegate.modifyInteger(key, original);
+		}
+
+		@Override
+		public Insets modifyInsets(Object key, Insets original) {
+			return this.delegate.modifyInsets(key, original);
+		}
+
+		@Override
+		public void finalTweaks() {
+			this.delegate.finalTweaks();
+		}
+
+		@Override
+		public void setDoExtraTweaks(boolean tweak) {
+			this.delegate.setDoExtraTweaks(tweak);
+		}
 	}
 }

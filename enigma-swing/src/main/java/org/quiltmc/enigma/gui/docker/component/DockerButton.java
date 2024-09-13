@@ -12,9 +12,12 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 import java.util.function.Supplier;
 
 public class DockerButton extends JToggleButton implements Draggable {
+	private static final int PAD_FACTOR = 10;
+
 	private final Docker docker;
 
 	private JComponent initialParent;
@@ -132,10 +135,15 @@ public class DockerButton extends JToggleButton implements Draggable {
 		g2d.setFont(font);
 
 		// position
-		int textSize = (int) font.createGlyphVector(g2d.getFontRenderContext(), translatedText).getVisualBounds().getWidth() + ScaleUtil.scale(20);
-		this.setPreferredSize(new Dimension(this.getPreferredSize().width, textSize));
-		int x = this.side == Docker.Side.RIGHT ? ScaleUtil.scale(10) : -textSize + ScaleUtil.scale(10);
-		int y = this.side == Docker.Side.RIGHT ? -ScaleUtil.scale(10) : ScaleUtil.scale(20);
+		final int scaledPadding = ScaleUtil.scale(PAD_FACTOR);
+		final int doubleScaledPadding = scaledPadding * 2;
+
+		final Rectangle2D textBounds = font.createGlyphVector(g2d.getFontRenderContext(), translatedText).getVisualBounds();
+		final int paddedTextWidth = (int) textBounds.getWidth() + doubleScaledPadding;
+		final int paddedTextHeight = (int) textBounds.getHeight() + doubleScaledPadding;
+		this.setPreferredSize(new Dimension(paddedTextHeight, paddedTextWidth));
+		int x = this.side == Docker.Side.RIGHT ? scaledPadding : -paddedTextWidth + scaledPadding;
+		int y = this.side == Docker.Side.RIGHT ? -scaledPadding : paddedTextHeight - scaledPadding;
 
 		g2d.drawString(translatedText, x, y);
 		this.setSize(this.getPreferredSize());

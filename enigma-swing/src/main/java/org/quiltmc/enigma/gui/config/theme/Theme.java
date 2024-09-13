@@ -41,8 +41,8 @@ public class Theme extends ReflectiveConfig {
 		this.properties.configure();
 	}
 
-	public boolean needsScaling() {
-		return this.properties.needsScaling();
+	public boolean onlyScaleFonts() {
+		return this.properties.onlyScaleFonts();
 	}
 
 	public static class Fonts extends Section {

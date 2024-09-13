@@ -16,7 +16,7 @@ public abstract class ConfigurableFlatLafThemeProperties extends ConfigurableLaf
 	}
 
 	@Override
-	public final boolean needsScaling() {
-		return false;
+	public final boolean onlyScaleFonts() {
+		return true;
 	}
 }
