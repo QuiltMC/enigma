@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.function.Function;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.UIDefaults;
 import javax.swing.UIManager;
-import javax.swing.*;
 import javax.swing.border.Border;
 
 public class ScaleUtil {
@@ -90,14 +90,13 @@ public class ScaleUtil {
 
 	// effectively UiDefaultsScaler::modifyDefaults but only for fonts
 	private static void scaleFontsOnly(float scale) {
-		UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+		final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
 		final BasicTweaker tweaker = new BasicTweaker(scale);
 		for (Object key: Collections.list(defaults.keys())) {
-			Object original = defaults.get(key);
+			final Object original = defaults.get(key);
 
-			final Object newValue =
-				original instanceof Font font
+			final Object newValue = original instanceof Font font
 					? tweaker.modifyFont(key, font)
 					: original;
 
@@ -128,8 +127,8 @@ public class ScaleUtil {
 	private static class DelegatingEnsuredFontScalingBasicTweaker extends BasicTweaker {
 		private final BasicTweaker delegate;
 
-		public DelegatingEnsuredFontScalingBasicTweaker(
-			float scaleFactor, Function<Float, BasicTweaker> delegateFactory
+		DelegatingEnsuredFontScalingBasicTweaker(
+				float scaleFactor, Function<Float, BasicTweaker> delegateFactory
 		) {
 			super(scaleFactor);
 			this.delegate = delegateFactory.apply(scaleFactor);
