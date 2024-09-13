@@ -95,10 +95,11 @@ public class StatsDialog {
 		filterButton.addActionListener(action -> {
 			dialog.dispose();
 			ProgressDialog.runOffThread(gui, listener -> {
+				String topLevelPackageSlashes = topLevelPackage.getText().replace('.', '/');
 				Config.main().stats.lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
 
-				ProjectStatsResult projectResult = gui.getController().getStatsGenerator().getResult(EditableType.toStatTypes(gui.getEditableTypes()), syntheticParametersOption.isSelected()).filter(Config.main().stats.lastTopLevelPackage.value());
-				SwingUtilities.invokeLater(() -> show(gui, projectResult, Config.main().stats.lastTopLevelPackage.value()));
+				ProjectStatsResult projectResult = gui.getController().getStatsGenerator().getResult(EditableType.toStatTypes(gui.getEditableTypes()), syntheticParametersOption.isSelected()).filter(topLevelPackageSlashes);
+				SwingUtilities.invokeLater(() -> show(gui, projectResult, topLevelPackageSlashes));
 			});
 		});
 		contentPane.add(filterButton, cb1.pos(0, result.getOverall().getTypes().size() + 3).anchor(GridBagConstraints.EAST).build());

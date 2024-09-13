@@ -72,11 +72,12 @@ public record StatsResult(Map<StatType, Integer> totalMappable, Map<StatType, In
 
 	/**
 	 * Builds a tree representation of this stats result.
-	 * @param topLevelPackageDot the top level package, separated by dots
+	 * @param topLevelPackage the top level package
 	 * @param includedTypes the types to include in the tree
 	 * @return the tree
 	 */
-	public StatsTree<Integer> buildTree(String topLevelPackageDot, Set<StatType> includedTypes) {
+	public StatsTree<Integer> buildTree(String topLevelPackage, Set<StatType> includedTypes) {
+		topLevelPackage = topLevelPackage.replace('/', '.');
 		StatsTree<Integer> tree = new StatsTree<>();
 
 		for (Map.Entry<StatType, Map<String, Integer>> typedEntry : this.unmappedTreeData.entrySet()) {
@@ -85,7 +86,7 @@ public record StatsResult(Map<StatType, Integer> totalMappable, Map<StatType, In
 			}
 
 			for (Map.Entry<String, Integer> entry : typedEntry.getValue().entrySet()) {
-				if (entry.getKey().startsWith(topLevelPackageDot)) {
+				if (entry.getKey().startsWith(topLevelPackage)) {
 					StatsTree.Node<Integer> node = tree.getNode(entry.getKey());
 					int value = node.getValue() == null ? 0 : node.getValue();
 
