@@ -232,3 +232,42 @@ More bugfixes. I work so hard for my beloved users.
   - junit: `5.9.3` -> `5.10.3`
   - hamcrest: `2.2` -> `3.0`
   - jimfs: `1.2` -> `1.3.0`
+
+# 2.5.0
+
+- new [theme system and theme](https://github.com/QuiltMC/enigma/pull/216) (thanks [supersaiyansubtlety](https://github.com/supersaiyansubtlety)!)
+  - adds a new theme: darcerula
+    - this theme is yet darker than the old dark theme, for those that appreciate a pitch black atmosphere for their mappings
+  - moves theme configurations into a separate `/theme/` directory in the config folder
+    - declutters the `main.toml` file
+    - old theme configs will not be migrated, you'll have to manually transfer your old custom themes
+  - cleans up a lot of backend for themes, allowing us to easily add new themes in the future
+- added indexing for libraries in addition to the main JAR
+  - separate step from normal indexing, performed after
+  - disabled by default for all existing plugin-based indexers
+    - can be enabled by setting the `index_libraries` property to true in service's config in the enigma profile
+    - refer to Javadocs in `JarIndexerService` for how to implement this property, we recommend adding it!
+  - currently, only `Record` and `Object` from the JDK are indexed as libraries by default
+-  added name proposal for record components
+  -  names for record getters are automatically proposed as their corresponding field is named
+  -  methods are linked to fields based on bytecode
+    - this is a fail-fast solution: if there is no method perfectly matching the expected code for a record getter no mapping will be proposed
+    - this allows us to sucessfully propose mappings in situations such as [hashed mojmap](https://github.com/quiltmc/mappings-hasher) where the record getter method mismatches with the component name
+  - works using two new services: `enigma:record_component_indexer` and `enigma:record_component_proposer`
+- deprecated `EntryMapping#DEFAULT` to be renamed to `EntryMapping#OBFUSCATED`
+- fixed proposed method validation and main plugin id validation using different regexes to validate
+  - it was possible to write a valid plugin ID that would crash when used on a proposed mapping
+- fixed issues with stat generation and records
+  - ignore parameters of canonical constructors for records as they can be hidden by decompilers
+  - ignore parameters of equals() method for the same reason
+- fixed mapping stats filtering
+  - fixed issues with GUI when using dots to filter
+  - fixed issues with graph when using slashes to filter
+- fixed a crash when cancelling a class rename initiated from the class tree (thanks [notevenjoking](https://github.com/770grappenmaker)!)
+- fixed a possible crash when parsing recent files (thanks [pitheguy](https://github.com/PiTheGuy)!)
+- fixed entry navigator ignoring which types are currently editable
+- fixed mappings chooser not accepting directories
+- fixed missing translations in mappings chooser
+- fixed a bunch more scaling issues (thanks [supersaiyansubtlety](https://github.com/supersaiyansubtlety) again!)
+  - fixed config values sometimes being messed up when changing scale and restarting
+  - fixed editor font size sometimes being overwritten
