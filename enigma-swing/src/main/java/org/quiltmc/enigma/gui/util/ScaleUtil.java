@@ -12,11 +12,13 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.Border;
 
 public class ScaleUtil {
@@ -74,14 +76,35 @@ public class ScaleUtil {
 	}
 
 	public static void applyScaling() {
-		double scale = Config.main().scaleFactor.value();
+		final double scale = Config.main().scaleFactor.value();
 
-		if (Config.currentTheme().needsScaling()) {
+		if (Config.currentTheme().onlyScaleFonts()) {
+			scaleFontsOnly((float) scale);
+		} else {
 			UiDefaultsScaler.updateAndApplyGlobalScaling((int) (100 * scale), true);
 		}
 
 		final Font font = SyntaxpainConfiguration.getEditorFont();
 		SyntaxpainConfiguration.setEditorFont(font.deriveFont((float) (font.getSize() * scale)));
+	}
+
+	// effectively UiDefaultsScaler::modifyDefaults but only for fonts
+	private static void scaleFontsOnly(float scale) {
+		UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+
+		final BasicTweaker tweaker = new BasicTweaker(scale);
+		for (Object key: Collections.list(defaults.keys())) {
+			Object original = defaults.get(key);
+
+			final Object newValue =
+				original instanceof Font font
+					? tweaker.modifyFont(key, font)
+					: original;
+
+			if (newValue != null && newValue != original) {
+				defaults.put(key, newValue);
+			}
+		}
 	}
 
 	@SuppressWarnings("null")

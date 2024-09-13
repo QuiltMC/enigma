@@ -23,8 +23,8 @@ public class NoneThemeProperties extends NonConfigurableLafThemeProperties {
 	}
 
 	@Override
-	public boolean needsScaling() {
-		return true;
+	public boolean onlyScaleFonts() {
+		return false;
 	}
 
 	@Override
