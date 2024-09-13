@@ -31,7 +31,7 @@ public abstract class ThemeProperties extends CompositeConfigCreator {
 			UnsupportedLookAndFeelException, ClassNotFoundException,
 			InstantiationException, IllegalAccessException;
 
-	// FlatLaf-based LaFs do their own scaling so we don't have to do it.
+	// FlatLaf-based LaFs do (some of) their own scaling so we don't have to do (all of) it.
 	// Running swing-dpi for FlatLaf actually breaks fonts, so we let it scale the GUI.
 	public abstract boolean onlyScaleFonts();
 
