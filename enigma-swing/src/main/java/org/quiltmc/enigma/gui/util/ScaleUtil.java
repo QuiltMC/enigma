@@ -96,12 +96,12 @@ public class ScaleUtil {
 		for (Object key: Collections.list(defaults.keys())) {
 			final Object original = defaults.get(key);
 
-			final Object newValue = original instanceof Font font
-					? tweaker.modifyFont(key, font)
-					: original;
+			if (original instanceof Font originalFont) {
+				final Font modifiedFont = tweaker.modifyFont(key, originalFont);
 
-			if (newValue != null && newValue != original) {
-				defaults.put(key, newValue);
+				if (modifiedFont != null && modifiedFont != originalFont) {
+					defaults.put(key, modifiedFont);
+				}
 			}
 		}
 	}
