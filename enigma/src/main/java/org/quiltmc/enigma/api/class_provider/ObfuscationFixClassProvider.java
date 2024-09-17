@@ -45,7 +45,7 @@ public class ObfuscationFixClassProvider implements ClassProvider {
 	public ClassNode get(String name) {
 		ClassNode node = this.classProvider.get(name);
 
-		if (!this.jarIndex.isIndexed(name)) {
+		if (!this.jarIndex.isIndexed(name) || node == null) {
 			return node;
 		}
 
