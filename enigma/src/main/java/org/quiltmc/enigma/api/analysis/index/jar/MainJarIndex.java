@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.api.analysis.index.jar;
 
+import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.impl.analysis.index.AbstractJarIndex;
 
 public class MainJarIndex extends AbstractJarIndex {
@@ -25,5 +27,10 @@ public class MainJarIndex extends AbstractJarIndex {
 	@Override
 	public String getTranslationKey() {
 		return "progress.jar.indexing.jar";
+	}
+
+	@Override
+	public void indexJar(ProjectClassProvider classProvider, ProgressListener progress) {
+		this.indexJar(classProvider.getMainClassNames(), classProvider, progress);
 	}
 }

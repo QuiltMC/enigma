@@ -11,6 +11,7 @@ import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
+import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.IndexEntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
@@ -22,7 +23,6 @@ import org.quiltmc.enigma.test.bytecode.MethodNodeBuilder;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +47,7 @@ public class IndexEntryResolverTest {
 	@BeforeAll
 	public static void beforeAll() {
 		index = MainJarIndex.empty();
-		index.indexJar(new HashSet<>(CLASS_PROVIDER.getClassNames()), CLASS_PROVIDER, ProgressListener.createEmpty());
+		index.indexJar(new ProjectClassProvider(CLASS_PROVIDER, null), ProgressListener.createEmpty());
 		resolver = new IndexEntryResolver(index);
 	}
 

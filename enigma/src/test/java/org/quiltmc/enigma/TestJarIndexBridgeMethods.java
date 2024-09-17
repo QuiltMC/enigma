@@ -8,6 +8,7 @@ import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
+import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.service.DecompilerService;
 import org.quiltmc.enigma.api.source.Decompilers;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
@@ -40,7 +41,7 @@ public class TestJarIndexBridgeMethods {
 		JarClassProvider jcp = new JarClassProvider(JAR);
 		this.classProvider = new CachingClassProvider(jcp);
 		this.index = MainJarIndex.empty();
-		this.index.indexJar(jcp.getClassNames(), this.classProvider, ProgressListener.createEmpty());
+		this.index.indexJar(new ProjectClassProvider(this.classProvider, null), ProgressListener.createEmpty());
 	}
 
 	@Test
