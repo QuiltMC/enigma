@@ -123,20 +123,22 @@ public class Enigma {
 	}
 
 	private void index(JarIndex index, ProjectClassProvider classProvider, ProgressListener progress) {
+		boolean libraries = index instanceof LibrariesJarIndex;
+		String progressKey = libraries ? "libs" : "jar";
 		index.indexJar(classProvider, progress);
 
 		List<JarIndexerService> indexers = this.services.get(JarIndexerService.TYPE);
-		progress.init(indexers.size(), I18n.translate("progress.jar.custom_indexing"));
+		progress.init(indexers.size(), I18n.translate("progress." + progressKey + ".custom_indexing"));
 
 		int i = 1;
 		for (var service : indexers) {
-			if (!(index instanceof LibrariesJarIndex && !service.shouldIndexLibraries())) {
-				progress.step(i++, I18n.translateFormatted("progress.jar.custom_indexing.indexer", service.getId()));
-				service.acceptJar(classProvider, index);
+			if (!(libraries && !service.shouldIndexLibraries())) {
+				progress.step(i++, I18n.translateFormatted("progress." + progressKey + ".custom_indexing.indexer", service.getId()));
+				service.acceptJar(libraries ? classProvider.getLibraryClassNames() : classProvider.getMainClassNames(), classProvider, index);
 			}
 		}
 
-		progress.step(i, I18n.translate("progress.jar.custom_indexing.finished"));
+		progress.step(i, I18n.translate("progress." + progressKey + ".custom_indexing.finished"));
 	}
 
 	public EnigmaProfile getProfile() {
