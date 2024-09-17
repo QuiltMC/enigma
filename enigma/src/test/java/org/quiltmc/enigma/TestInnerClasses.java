@@ -6,7 +6,6 @@ import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
-import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.source.Decompiler;
 import org.quiltmc.enigma.api.source.Decompilers;
 import org.quiltmc.enigma.api.source.SourceSettings;
@@ -35,7 +34,7 @@ public class TestInnerClasses {
 		JarClassProvider jcp = new JarClassProvider(JAR);
 		CachingClassProvider classProvider = new CachingClassProvider(jcp);
 		this.index = MainJarIndex.empty();
-		this.index.indexJar(new ProjectClassProvider(classProvider, null), ProgressListener.createEmpty());
+		this.index.indexJar(jcp.getClassNames(), classProvider, ProgressListener.createEmpty());
 		this.decompiler = Decompilers.CFR.create(classProvider, new SourceSettings(false, false));
 	}
 

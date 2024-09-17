@@ -9,7 +9,6 @@ import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.ReferenceIndex;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
-import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.IndexEntryResolver;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
@@ -42,7 +41,7 @@ public class TestJarIndexInheritanceTree {
 	public TestJarIndexInheritanceTree() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
 		this.index = MainJarIndex.empty();
-		this.index.indexJar(new ProjectClassProvider(new CachingClassProvider(jcp), null), ProgressListener.createEmpty());
+		this.index.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.createEmpty());
 	}
 
 	@Test
