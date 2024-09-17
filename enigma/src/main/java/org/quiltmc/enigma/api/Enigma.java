@@ -89,6 +89,9 @@ public class Enigma {
 		// main index
 		this.index(index, projectClassProvider, progress);
 
+		// lib index
+		this.index(libIndex, projectClassProvider, progress);
+
 		// name proposal
 		var nameProposalServices = this.getNameProposalServices();
 		progress.init(nameProposalServices.size(), I18n.translate("progress.jar.name_proposal"));
@@ -127,8 +130,10 @@ public class Enigma {
 
 		int i = 1;
 		for (var service : indexers) {
-			progress.step(i++, I18n.translateFormatted("progress.jar.custom_indexing.indexer", service.getId()));
-			service.acceptJar(classProvider, index);
+			if (!(index instanceof LibrariesJarIndex && !service.shouldIndexLibraries())) {
+				progress.step(i++, I18n.translateFormatted("progress.jar.custom_indexing.indexer", service.getId()));
+				service.acceptJar(classProvider, index);
+			}
 		}
 
 		progress.step(i, I18n.translate("progress.jar.custom_indexing.finished"));
