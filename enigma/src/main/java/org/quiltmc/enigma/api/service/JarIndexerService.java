@@ -2,11 +2,11 @@ package org.quiltmc.enigma.api.service;
 
 import org.objectweb.asm.tree.ClassNode;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
-import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.objectweb.asm.ClassVisitor;
+import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 
 import javax.annotation.Nullable;
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * Jar indexer services analyse jar files as they're opened to collect information about their contents.
@@ -31,11 +31,11 @@ public interface JarIndexerService extends EnigmaService {
 
 	/**
 	 * Indexes a collection of classes.
-	 * @param scope a list of class names to be indexed
-	 * @param classProvider a provider to translate class names into {@link ClassNode class nodes}
+	 * @param scope the current scope to be indexed. This is either all main jar classes or all library classes
+	 * @param classProvider a provider to translate class names into {@link ClassNode class nodes}. Contains both library and main jar classes
 	 * @param jarIndex the current jar index
 	 */
-	void acceptJar(Set<String> scope, ClassProvider classProvider, JarIndex jarIndex);
+	void acceptJar(Collection<String> scope, ProjectClassProvider classProvider, JarIndex jarIndex);
 
 	/**
 	 * Whether this indexer should be run on libraries in addition to the main project being indexed.
@@ -69,7 +69,7 @@ public interface JarIndexerService extends EnigmaService {
 
 		return new JarIndexerService() {
 			@Override
-			public void acceptJar(Set<String> scope, ClassProvider classProvider, JarIndex jarIndex) {
+			public void acceptJar(Collection<String> scope, ProjectClassProvider classProvider, JarIndex jarIndex) {
 				for (String className : scope) {
 					ClassNode node = classProvider.get(className);
 					if (node != null) {
