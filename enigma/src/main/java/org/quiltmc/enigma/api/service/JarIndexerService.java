@@ -31,8 +31,8 @@ public interface JarIndexerService extends EnigmaService {
 
 	/**
 	 * Indexes a collection of classes.
-	 * @param scope the current scope to be indexed. This is either all main JAR classes or all library classes
-	 * @param classProvider a provider to translate class names into {@link ClassNode class nodes}. Contains both library and main JAR classes
+	 * @param scope the current scope to be indexed. This is either all main jar classes or all library classes
+	 * @param classProvider a provider to translate class names into {@link ClassNode class nodes}. Contains both library and main jar classes
 	 * @param jarIndex the current jar index
 	 */
 	void acceptJar(Collection<String> scope, ProjectClassProvider classProvider, JarIndex jarIndex);

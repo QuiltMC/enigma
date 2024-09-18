@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
 
 public class ProjectClassProvider implements ClassProvider {
 	@Nullable
@@ -58,7 +58,7 @@ public class ProjectClassProvider implements ClassProvider {
 	 * @param name the internal name of the class
 	 * @return the {@linkplain ClassNode} for that class, or {@code null} if it was not found
 	 */
-	public ClassNode getMainClass(String name) {
+	public @Nullable ClassNode getMainClass(String name) {
 		return this.main != null ? this.main.get(name) : null;
 	}
 
@@ -69,7 +69,7 @@ public class ProjectClassProvider implements ClassProvider {
 	 * @param name the internal name of the class
 	 * @return the {@linkplain ClassNode} for that class, or {@code null} if it was not found
 	 */
-	public ClassNode getLibraryClass(String name) {
+	public @Nullable ClassNode getLibraryClass(String name) {
 		return this.libraries != null ? this.libraries.get(name) : null;
 	}
 
@@ -79,10 +79,10 @@ public class ProjectClassProvider implements ClassProvider {
 	}
 
 	public Collection<String> getMainClassNames() {
-		return this.main != null ? this.main.getClassNames() : new HashSet<>();
+		return this.main != null ? this.main.getClassNames() : Collections.emptySet();
 	}
 
 	public Collection<String> getLibraryClassNames() {
-		return this.libraries != null ? this.libraries.getClassNames() : new HashSet<>();
+		return this.libraries != null ? this.libraries.getClassNames() : Collections.emptySet();
 	}
 }
