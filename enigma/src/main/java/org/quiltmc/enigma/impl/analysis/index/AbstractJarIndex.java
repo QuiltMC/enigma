@@ -25,7 +25,6 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.util.I18n;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -76,7 +75,7 @@ public abstract class AbstractJarIndex implements JarIndex {
 	 * @param classProvider a class provider containing all classes in the jar
 	 * @param progress a progress listener to track index completion
 	 */
-	public void indexJar(Collection<String> classNames, ClassProvider classProvider, ProgressListener progress) {
+	public void indexJar(Set<String> classNames, ClassProvider classProvider, ProgressListener progress) {
 		// for use in processIndex
 		this.progress = progress;
 
