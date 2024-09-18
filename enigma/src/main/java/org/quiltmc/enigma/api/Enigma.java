@@ -44,11 +44,13 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Enigma {
@@ -134,7 +136,9 @@ public class Enigma {
 		for (var service : indexers) {
 			if (!(libraries && !service.shouldIndexLibraries())) {
 				progress.step(i++, I18n.translateFormatted("progress." + progressKey + ".custom_indexing.indexer", service.getId()));
-				service.acceptJar(libraries ? classProvider.getLibraryClassNames() : classProvider.getMainClassNames(), classProvider, index);
+				var names = libraries ? classProvider.getLibraryClassNames() : classProvider.getMainClassNames();
+				Set<String> scope = new HashSet<>(names);
+				service.acceptJar(scope, classProvider, index);
 			}
 		}
 

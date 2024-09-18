@@ -7,8 +7,6 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 public class ProjectClassProvider implements ClassProvider {
 	@Nullable
@@ -80,11 +78,11 @@ public class ProjectClassProvider implements ClassProvider {
 		return this.classNames;
 	}
 
-	public Set<String> getMainClassNames() {
-		return this.main != null ? new HashSet<>(this.main.getClassNames()) : Collections.emptySet();
+	public Collection<String> getMainClassNames() {
+		return this.main != null ? this.main.getClassNames() : Collections.emptySet();
 	}
 
-	public Set<String> getLibraryClassNames() {
-		return this.libraries != null ? new HashSet<>(this.libraries.getClassNames()) : Collections.emptySet();
+	public Collection<String> getLibraryClassNames() {
+		return this.libraries != null ? this.libraries.getClassNames() : Collections.emptySet();
 	}
 }
