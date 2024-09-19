@@ -248,6 +248,11 @@ More bugfixes. I work so hard for my beloved users.
     - can be enabled by setting the `index_libraries` property to true in service's config in the enigma profile
     - refer to Javadocs in `JarIndexerService` for how to implement this property, we recommend adding it!
   - currently, only `Record` and `Object` from the JDK are indexed as libraries by default
+- API changes around indexing
+  - `JarIndex#indexJar` no longer receives a scope
+    - the `ClassProvider` parameter has been replaced with a `ProjectClassProvider`, providing classes and scope for both the main jar and libraries
+  - `JarIndexerService#acceptJar` now takes a `ProjectClassProvider` instead of a `ClassProvider`
+    - the scope has not been removed, and if the service is configured to accept libraries will be the main scope on first run and the library scope on the second
 -  added name proposal for record components
   -  names for record getters are automatically proposed as their corresponding field is named
   -  methods are linked to fields based on bytecode
@@ -271,3 +276,4 @@ More bugfixes. I work so hard for my beloved users.
 - fixed a bunch more scaling issues (thanks [supersaiyansubtlety](https://github.com/supersaiyansubtlety) again!)
   - fixed config values sometimes being messed up when changing scale and restarting
   - fixed editor font size sometimes being overwritten
+- fixed possibly incorrect save location when saving from the unsaved warning dialogue (thanks again [pitheguy](https://github.com/PiTheGuy)!)
