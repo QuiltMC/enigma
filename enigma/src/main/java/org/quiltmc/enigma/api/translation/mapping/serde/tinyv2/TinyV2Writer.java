@@ -209,7 +209,7 @@ public final class TinyV2Writer implements MappingsWriter {
 		writer.print(node.getEntry().getName());
 		writer.print("\t");
 		EntryMapping mapping = node.getValue();
-		if (mapping.targetName() == null) {
+		if (mapping.targetName() != null) {
 			writer.println(mapping.targetName());
 		} else {
 			writer.println();
