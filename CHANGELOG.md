@@ -235,6 +235,8 @@ More bugfixes. I work so hard for my beloved users.
 
 # 2.5.0
 
+`2.5.0` brings contributions from 3 of our lovely enigma users in addition to our regular duo, bringing you some reworks to long-broken features and fixing some long-bothersome bugs!
+
 - new [theme system and theme](https://github.com/QuiltMC/enigma/pull/216) (thanks [supersaiyansubtlety](https://github.com/supersaiyansubtlety)!)
   - adds a new theme: darcerula
     - this theme is yet darker than the old dark theme, for those that appreciate a pitch black atmosphere for their mappings
@@ -253,7 +255,7 @@ More bugfixes. I work so hard for my beloved users.
     - the `ClassProvider` parameter has been replaced with a `ProjectClassProvider`, providing classes and scope for both the main jar and libraries
   - `JarIndexerService#acceptJar` now takes a `ProjectClassProvider` instead of a `ClassProvider`
     - the scope has not been removed, and if the service is configured to accept libraries will be the main scope on first run and the library scope on the second
--  added name proposal for record components
+- added name proposal for record components
   -  names for record getters are automatically proposed as their corresponding field is named
   -  methods are linked to fields based on bytecode
     - this is a fail-fast solution: if there is no method perfectly matching the expected code for a record getter no mapping will be proposed
