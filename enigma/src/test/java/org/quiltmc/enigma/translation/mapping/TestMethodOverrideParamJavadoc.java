@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.translation.mapping;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.TestEntryFactory;
 import org.quiltmc.enigma.TestUtil;
@@ -31,38 +31,35 @@ public class TestMethodOverrideParamJavadoc {
 	private static Enigma enigma;
 	private static EnigmaProject project;
 
-	@BeforeAll
-	static void setupEnigma() throws IOException {
+	@BeforeEach
+	void setupEnigma() throws IOException {
 		enigma = Enigma.create();
 		project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
 	}
 
 	void test(ReadWriteService readWriteService, String tmpNameSuffix) throws IOException, MappingParseException {
-		var remapper = project.getRemapper();
-
 		ClassEntry inheritor = TestEntryFactory.newClass("a");
 		MethodEntry method = TestEntryFactory.newMethod(inheritor, "a", "(D)D");
 		LocalVariableEntry param = TestEntryFactory.newParameter(method, 1);
 
-		EntryMapping mapping = remapper.getMapping(param);
+		EntryMapping mapping = project.getRemapper().getMapping(param);
 		Assertions.assertNull(mapping.javadoc());
 
-		remapper.putMapping(TestUtil.newVC(), param, mapping.withJavadoc("gaming"));
+		project.getRemapper().putMapping(TestUtil.newVC(), param, mapping.withJavadoc("gaming"));
 
-		EntryMapping withJavadoc = remapper.getMapping(param);
+		EntryMapping withJavadoc = project.getRemapper().getMapping(param);
 		Assertions.assertEquals("gaming", withJavadoc.javadoc());
 
 		File tempFile = File.createTempFile("testMethodOverrideParamJavadoc", tmpNameSuffix);
 		tempFile.delete(); //remove the auto created file
 
-		readWriteService.write(remapper.getMappings(), tempFile.toPath(), ProgressListener.createEmpty(), PARAMETERS);
+		readWriteService.write(project.getRemapper().getMappings(), tempFile.toPath(), ProgressListener.createEmpty(), PARAMETERS);
 		Assertions.assertTrue(tempFile.exists(), "Written file not created");
 		EntryTree<EntryMapping> loadedMappings = readWriteService.read(tempFile.toPath(), ProgressListener.createEmpty());
 
 		project.setMappings(loadedMappings, ProgressListener.createEmpty());
-		remapper = project.getRemapper();
 
-		EntryMapping newMapping = remapper.getMapping(param);
+		EntryMapping newMapping = project.getRemapper().getMapping(param);
 		Assertions.assertEquals("gaming", newMapping.javadoc());
 	}
 
