@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.input.interfaces;
 
 public interface Root {
-	public int a();
+	int a();
 
-	public double b(double c);
+	double b(double c);
 }
