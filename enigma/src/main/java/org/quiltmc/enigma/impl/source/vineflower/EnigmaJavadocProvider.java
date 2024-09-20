@@ -2,6 +2,7 @@ package org.quiltmc.enigma.impl.source.vineflower;
 
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
@@ -102,7 +103,15 @@ public class EnigmaJavadocProvider implements IFabricJavadocProvider {
 						EntryMapping paramMapping = this.remapper.getMapping(child);
 
 						if (paramMapping.javadoc() != null) {
-							builder.append("\n@param ").append(paramMapping.targetName()).append(' ').append(paramMapping.javadoc());
+							// for overridden methods, it's possible that we have no name and need to search for the root
+							String name = paramMapping.targetName();
+							if (name == null) {
+								var root = this.remapper.getObfResolver().resolveFirstEntry(child, ResolutionStrategy.RESOLVE_ROOT);
+								EntryMapping rootMapping = this.remapper.getMapping(root); // root entry will never be null
+								name = rootMapping.targetName();
+							}
+
+							builder.append("\n@param ").append(name).append(' ').append(paramMapping.javadoc());
 						}
 					}
 				}
