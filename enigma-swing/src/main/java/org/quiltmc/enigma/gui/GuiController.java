@@ -7,12 +7,14 @@ import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.analysis.tree.ClassImplementationsTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassInheritanceTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassReferenceTreeNode;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.tree.FieldReferenceTreeNode;
 import org.quiltmc.enigma.api.service.ReadWriteService;
+import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.gui.dialog.CrashDialog;
 import org.quiltmc.enigma.gui.network.IntegratedEnigmaClient;
 import org.quiltmc.enigma.impl.analysis.IndexTreeBuilder;
@@ -553,6 +555,16 @@ public class GuiController implements ClientPacketHandler {
 
 			if (!Objects.equals(prev.targetName(), mapping.targetName()) || !Objects.equals(prev.tokenType(), mapping.tokenType())) {
 				this.chp.invalidateMapped();
+
+				// local variable entries need to be propagated up the tree to update param names in javadoc
+				if (target instanceof LocalVariableEntry) {
+					this.chp.invalidateJavadoc(target.getTopLevelClass());
+
+					var children = this.project.getJarIndex().getIndex(InheritanceIndex.class).getChildren(target.getContainingClass());
+					for (ClassEntry child : children) {
+						this.chp.invalidateJavadoc(child.getTopLevelClass());
+					}
+				}
 			}
 
 			if (!Objects.equals(prev.javadoc(), mapping.javadoc())) {

@@ -209,13 +209,13 @@ public final class TinyV2Writer implements MappingsWriter {
 		writer.print(node.getEntry().getName());
 		writer.print("\t");
 		EntryMapping mapping = node.getValue();
-		if (mapping == null || mapping.targetName() == null) {
-			writer.println(); // todo ???
-		} else {
+		if (mapping.targetName() != null) {
 			writer.println(mapping.targetName());
-
-			this.writeComment(writer, mapping, 3);
+		} else {
+			writer.println();
 		}
+
+		this.writeComment(writer, mapping, 3);
 	}
 
 	private void writeComment(PrintWriter writer, EntryMapping mapping, int indent) {
