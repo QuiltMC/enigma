@@ -16,10 +16,6 @@ subprojects {
 		maven {
 			url = "https://maven.fabricmc.net/"
 		}
-		// remove when ASM fix is released
-		maven {
-			url = "https://repository.ow2.org/nexus/content/repositories/snapshots/"
-		}
 	}
 
 	dependencies {
