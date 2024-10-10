@@ -576,7 +576,9 @@ public class GuiController implements ClientPacketHandler {
 				boolean isNewOb = mapping.targetName() == null;
 				this.gui.moveClassTree(target.getContainingClass(), updateSwingState, isOldOb, isNewOb);
 			} else if (updateSwingState) {
-				this.gui.reloadStats(change.getTarget().getTopLevelClass());
+				// update stat icons for classes that could have had their mappings changed by this update
+				boolean propagate = target instanceof FieldEntry || target instanceof MethodEntry || target instanceof LocalVariableEntry;
+				this.gui.reloadStats(change.getTarget().getTopLevelClass(), propagate);
 			}
 		}
 	}

@@ -3,6 +3,7 @@ package org.quiltmc.enigma.gui;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.analysis.EntryReference;
+import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
@@ -586,18 +587,28 @@ public class Gui {
 			allClassesSelector.restoreExpansionState(expansionState);
 			deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
 			obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
-			this.reloadStats(classEntry);
+			this.reloadStats(classEntry, false);
 		}
 	}
 
 	/**
 	 * Reloads stats for the provided class in all selectors.
 	 * @param classEntry the class to reload
+	 * @param propagate whether to also reload ancestors of the class
 	 */
-	public void reloadStats(ClassEntry classEntry) {
+	public void reloadStats(ClassEntry classEntry, boolean propagate) {
+		List<ClassEntry> toUpdate = new ArrayList<>();
+		toUpdate.add(classEntry);
+		if (propagate) {
+			Collection<ClassEntry> parents = this.controller.getProject().getJarIndex().getIndex(InheritanceIndex.class).getAncestors(classEntry);
+			toUpdate.addAll(parents);
+		}
+
 		for (Docker value : this.dockerManager.getDockers()) {
 			if (value instanceof ClassesDocker docker) {
-				docker.getClassSelector().reloadStats(classEntry);
+				for (ClassEntry entry : toUpdate) {
+					docker.getClassSelector().reloadStats(entry);
+				}
 			}
 		}
 	}

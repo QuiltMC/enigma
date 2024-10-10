@@ -1,5 +1,6 @@
-package org.quiltmc.enigma;
+package org.quiltmc.enigma.stats;
 
+import org.quiltmc.enigma.TestUtil;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
