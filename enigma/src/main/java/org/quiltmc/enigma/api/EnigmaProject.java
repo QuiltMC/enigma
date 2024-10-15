@@ -144,7 +144,7 @@ public class EnigmaProject {
 
 	private Collection<Entry<?>> dropMappings(EntryTree<EntryMapping> mappings, ProgressListener progress) {
 		// drop mappings that don't match the jar
-		MappingsChecker checker = new MappingsChecker(this.jarIndex, mappings);
+		MappingsChecker checker = new MappingsChecker(this, this.jarIndex, mappings);
 		MappingsChecker.Dropped droppedBroken = checker.dropBrokenMappings(progress);
 
 		Map<Entry<?>, String> droppedBrokenMappings = droppedBroken.getDroppedMappings();

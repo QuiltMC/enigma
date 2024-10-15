@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.impl.translation.mapping;
 
+import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
@@ -18,10 +19,12 @@ import java.util.function.BiConsumer;
 import java.util.stream.StreamSupport;
 
 public class MappingsChecker {
+	private final EnigmaProject project;
 	private final JarIndex index;
 	private final EntryTree<EntryMapping> mappings;
 
-	public MappingsChecker(JarIndex index, EntryTree<EntryMapping> mappings) {
+	public MappingsChecker(EnigmaProject project, JarIndex index, EntryTree<EntryMapping> mappings) {
+		this.project = project;
 		this.index = index;
 		this.mappings = mappings;
 	}
@@ -50,7 +53,7 @@ public class MappingsChecker {
 	}
 
 	private void tryDropBrokenEntry(Dropped dropped, Entry<?> entry) {
-		if (this.shouldDropBrokenEntry(entry)) {
+		if (this.shouldDropBrokenEntry(dropped, entry)) {
 			EntryMapping mapping = this.mappings.get(entry);
 			if (mapping != null) {
 				dropped.drop(entry, mapping);
@@ -58,7 +61,7 @@ public class MappingsChecker {
 		}
 	}
 
-	private boolean shouldDropBrokenEntry(Entry<?> entry) {
+	private boolean shouldDropBrokenEntry(Dropped dropped, Entry<?> entry) {
 		if (!this.index.getIndex(EntryIndex.class).hasEntry(entry)) {
 			return true;
 		}
@@ -74,7 +77,7 @@ public class MappingsChecker {
 		}
 
 		// Method entry has parameter names, keep it even though it's not the root.
-		return !(entry instanceof MethodEntry) || this.mappings.getChildren(entry).isEmpty();
+		return !(entry instanceof MethodEntry) || this.hasChildren(entry, dropped);
 
 		// Entry is not the root, and is not a method with params
 	}
@@ -84,7 +87,7 @@ public class MappingsChecker {
 	}
 
 	private void tryDropEmptyEntry(Dropped dropped, Entry<?> entry) {
-		if (this.shouldDropEmptyMapping(entry)) {
+		if (this.shouldDropEmptyMapping(dropped, entry)) {
 			EntryMapping mapping = this.mappings.get(entry);
 			if (mapping != null) {
 				dropped.drop(entry, mapping);
@@ -92,16 +95,33 @@ public class MappingsChecker {
 		}
 	}
 
-	private boolean shouldDropEmptyMapping(Entry<?> entry) {
+	private boolean shouldDropEmptyMapping(Dropped dropped, Entry<?> entry) {
 		EntryMapping mapping = this.mappings.get(entry);
+		System.out.println(entry + " -> " + mapping);
 		if (mapping != null) {
-			boolean isEmpty = mapping.targetName() == null && mapping.javadoc() == null;
+			boolean isEmpty = (mapping.targetName() == null && mapping.javadoc() == null) || !project.isRenamable(entry);
+
 			if (isEmpty) {
-				return this.mappings.getChildren(entry).isEmpty();
+				return this.hasChildren(entry, dropped);
 			}
 		}
 
 		return false;
+	}
+
+	private boolean hasChildren(Entry<?> entry, Dropped dropped) {
+		var children = this.mappings.getChildren(entry);
+
+		// account for child mappings that have been dropped already
+		if (!children.isEmpty()) {
+			for (Entry<?> child : children) {
+				if (!dropped.getDroppedMappings().containsKey(child) && !this.hasChildren(child, dropped)) {
+					return true;
+				}
+			}
+		}
+
+		return children.isEmpty();
 	}
 
 	public static class Dropped {
