@@ -131,13 +131,15 @@ public class EnigmaProject {
 		return this.remapper;
 	}
 
-	public void dropMappings(ProgressListener progress) {
+	public Collection<Entry<?>> dropMappings(ProgressListener progress) {
 		DeltaTrackingTree<EntryMapping> mappings = this.remapper.getMappings();
 
 		Collection<Entry<?>> dropped = this.dropMappings(mappings, progress);
 		for (Entry<?> entry : dropped) {
 			mappings.trackChange(entry);
 		}
+
+		return dropped;
 	}
 
 	private Collection<Entry<?>> dropMappings(EntryTree<EntryMapping> mappings, ProgressListener progress) {

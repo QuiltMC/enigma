@@ -51,30 +51,35 @@ public class DropInvalidMappingsCommand extends Command {
 
 		Logger.info("Dropping invalid mappings...");
 
-		project.dropMappings(ProgressListener.createEmpty());
+		var droppedMappings = project.dropMappings(ProgressListener.createEmpty());
 
-		Logger.info("Writing mappings...");
+		if (!droppedMappings.isEmpty()) {
+			Logger.info("Found and dropped {} invalid mappings.", droppedMappings.size());
+			Logger.info("Writing mappings...");
 
-		if (mappingsOut == mappingsIn) {
-			Logger.info("Overwriting input mappings");
-			Files.walkFileTree(mappingsIn, new SimpleFileVisitor<>() {
-				@Override
-				public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-					Files.delete(dir);
-					return FileVisitResult.CONTINUE;
-				}
+			if (mappingsOut == mappingsIn) {
+				Logger.info("Overwriting input mappings");
+				Files.walkFileTree(mappingsIn, new SimpleFileVisitor<>() {
+					@Override
+					public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+						Files.delete(dir);
+						return FileVisitResult.CONTINUE;
+					}
 
-				@Override
-				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-					Files.delete(file);
-					return FileVisitResult.CONTINUE;
-				}
-			});
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+						Files.delete(file);
+						return FileVisitResult.CONTINUE;
+					}
+				});
 
-			Files.deleteIfExists(mappingsIn);
+				Files.deleteIfExists(mappingsIn);
+			}
+
+			MappingSaveParameters saveParameters = project.getEnigma().getProfile().getMappingSaveParameters();
+			writer.write(project.getRemapper().getMappings(), mappingsOut, ProgressListener.createEmpty(), saveParameters);
+		} else {
+			Logger.info("No invalid mappings found.");
 		}
-
-		MappingSaveParameters saveParameters = project.getEnigma().getProfile().getMappingSaveParameters();
-		writer.write(project.getRemapper().getMappings(), mappingsOut, ProgressListener.createEmpty(), saveParameters);
 	}
 }
