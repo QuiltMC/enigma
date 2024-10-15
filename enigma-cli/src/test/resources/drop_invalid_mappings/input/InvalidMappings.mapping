@@ -1,0 +1,11 @@
+CLASS a InvalidMappings
+	FIELD a slayField Ljava/lang/String;
+	FIELD b fakeField I
+	METHOD <init> (Ljava/lang/String;)V
+		ARG 1 coolParameter
+		ARG 2 fakeParameter
+		ARG 3 fakerParameter
+	METHOD a slayMethod ()Ljava/lang/String;
+		ARG 1 fakeParameter
+	METHOD b fakeMethod ()V
+	CLASS b NonExistentClass
