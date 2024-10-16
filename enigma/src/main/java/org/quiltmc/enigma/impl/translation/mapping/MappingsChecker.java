@@ -97,7 +97,6 @@ public class MappingsChecker {
 
 	private boolean shouldDropEmptyMapping(Dropped dropped, Entry<?> entry) {
 		EntryMapping mapping = this.mappings.get(entry);
-		System.out.println(entry + " -> " + mapping);
 		if (mapping != null) {
 			boolean isEmpty = (mapping.targetName() == null && mapping.javadoc() == null) || !this.project.isRenamable(entry);
 
