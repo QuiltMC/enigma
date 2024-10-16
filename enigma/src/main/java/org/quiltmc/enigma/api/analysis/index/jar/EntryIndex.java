@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.api.analysis.index.jar;
 
+import org.objectweb.asm.tree.ClassNode;
+import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
@@ -17,6 +19,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class EntryIndex implements JarIndexer {
 	private final EntryTree<EntryMapping> tree = new HashEntryTree<>();
@@ -67,7 +70,29 @@ public class EntryIndex implements JarIndexer {
 		return this.fieldDefinitions.containsKey(entry);
 	}
 
+	/**
+	 * Checks whether the entry has been indexed and therefore exists in the JAR file.
+	 * <br>
+	 * Parameters are not indexed, and this method does not fully verify validity of parameter indices.
+	 * Therefore, it is possible that this method returns {@code true} for an invalid parameter.
+	 * @param entry the entry to check
+	 * @return whether the entry exists
+	 * @see #hasEntry(Entry, EnigmaProject)
+	 */
 	public boolean hasEntry(Entry<?> entry) {
+		return this.hasEntry(entry, null);
+	}
+
+	/**
+	 * Checks whether the entry has been indexed and therefore exists in the JAR file.
+	 * <br>
+	 * For parameters, which are not indexed, verifies that they have a valid index and therefore could exist.
+	 * @param entry the entry to check
+	 * @param project the current project
+	 * @return whether the entry exists
+	 */
+	@SuppressWarnings("ConstantConditions")
+	public boolean hasEntry(Entry<?> entry, @Nullable EnigmaProject project) {
 		if (entry instanceof ClassEntry classEntry) {
 			return this.hasClass(classEntry);
 		} else if (entry instanceof MethodEntry methodEntry) {
@@ -77,10 +102,25 @@ public class EntryIndex implements JarIndexer {
 		} else if (entry instanceof LocalVariableEntry localVariableEntry) {
 			MethodEntry parent = localVariableEntry.getParent();
 			if (this.hasMethod(parent)) {
-				// TODO: Check using max_locals from the Code attribute (JVMS§4.7.3)
+				AtomicInteger maxLocals = new AtomicInteger(-1);
+				ClassEntry parentClass = parent != null ? parent.getParent() : null;
+
+				if (project != null) {
+					// find max_locals for method, representing the number of parameters it receives (JVMS§4.7.3)
+					// note: parent class cannot be null, warning suppressed
+					ClassNode classNode = project.getClassProvider().get(parentClass.getFullName());
+					if (classNode != null) {
+						classNode.methods.stream()
+							.filter(node -> node.name.equals(parent.getName()) && node.desc.equals(parent.getDesc().toString()))
+							.findFirst().ifPresent(node -> maxLocals.set(node.maxLocals));
+					}
+				}
+
 				AccessFlags parentAccess = this.getMethodAccess(parent);
 				int startIndex = parentAccess != null && parentAccess.isStatic() ? 0 : 1;
-				return localVariableEntry.getIndex() >= startIndex;
+
+				// if maxLocals is -1 it's not found for the method and should be ignored
+				return localVariableEntry.getIndex() >= startIndex && (maxLocals.get() == -1 || localVariableEntry.getIndex() <= maxLocals.get() - 1);
 			}
 		}
 
