@@ -70,10 +70,27 @@ public class EntryIndex implements JarIndexer {
 		return this.fieldDefinitions.containsKey(entry);
 	}
 
+	/**
+	 * Checks the entry has been indexed and therefore exists in the JAR file.
+	 * <br>
+	 * Parameters are not indexed, and this method does not fully verify validity of parameter indices.
+	 * Therefore, it is possible that this method returns {@code true} for an invalid parameter.
+	 * @param entry the entry to check
+	 * @return whether the entry exists
+	 * @see #hasEntry(Entry, EnigmaProject)
+	 */
 	public boolean hasEntry(Entry<?> entry) {
 		return this.hasEntry(entry, null);
 	}
 
+	/**
+	 * Checks the entry has been indexed and therefore exists in the JAR file.
+	 * <br>
+	 * For parameters, which are not indexed, verifies that they have a valid index and therefore could exist.
+	 * @param entry the entry to check
+	 * @param project the current project
+	 * @return whether the entry exists
+	 */
 	@SuppressWarnings("ConstantConditions")
 	public boolean hasEntry(Entry<?> entry, @Nullable EnigmaProject project) {
 		if (entry instanceof ClassEntry classEntry) {
