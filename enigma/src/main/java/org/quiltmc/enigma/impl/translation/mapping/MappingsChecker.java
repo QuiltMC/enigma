@@ -62,7 +62,7 @@ public class MappingsChecker {
 	}
 
 	private boolean shouldDropBrokenEntry(Dropped dropped, Entry<?> entry) {
-		if (!this.index.getIndex(EntryIndex.class).hasEntry(entry)) {
+		if (!this.index.getIndex(EntryIndex.class).hasEntry(entry, this.project)) {
 			return true;
 		}
 
@@ -99,7 +99,7 @@ public class MappingsChecker {
 		EntryMapping mapping = this.mappings.get(entry);
 		System.out.println(entry + " -> " + mapping);
 		if (mapping != null) {
-			boolean isEmpty = (mapping.targetName() == null && mapping.javadoc() == null) || !project.isRenamable(entry);
+			boolean isEmpty = (mapping.targetName() == null && mapping.javadoc() == null) || !this.project.isRenamable(entry);
 
 			if (isEmpty) {
 				return this.hasChildren(entry, dropped);

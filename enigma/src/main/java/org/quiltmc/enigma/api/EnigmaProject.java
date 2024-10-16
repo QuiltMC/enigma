@@ -170,7 +170,7 @@ public class EnigmaProject {
 			return false;
 		}
 
-		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
+		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry, this);
 	}
 
 	public boolean isRenamable(Entry<?> obfEntry) {
@@ -211,7 +211,7 @@ public class EnigmaProject {
 			return false;
 		}
 
-		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
+		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry, this);
 	}
 
 	private static boolean isEnumValueOfMethod(ClassDefEntry parent, MethodEntry method) {
@@ -237,7 +237,7 @@ public class EnigmaProject {
 	}
 
 	public boolean isSynthetic(Entry<?> entry) {
-		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(entry) && this.jarIndex.getIndex(EntryIndex.class).getEntryAccess(entry).isSynthetic();
+		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(entry, this) && this.jarIndex.getIndex(EntryIndex.class).getEntryAccess(entry).isSynthetic();
 	}
 
 	public boolean isAnonymousOrLocal(ClassEntry classEntry) {
