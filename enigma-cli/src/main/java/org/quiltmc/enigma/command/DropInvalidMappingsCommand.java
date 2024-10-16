@@ -37,7 +37,7 @@ public class DropInvalidMappingsCommand extends Command {
 
 	@Override
 	public String getDescription() {
-		return "Removes all invalid mapping entries (entries whose obfuscated name is not found in the jar) from the provided mappings.";
+		return "Removes all invalid mapping entries (entries whose obfuscated name is not found in the jar) and empty mappings (garbage lines that don't add anything to the mappings) from the provided mappings.";
 	}
 
 	public static void run(Path jarIn, Path mappingsIn, Path mappingsOut) throws Exception {
