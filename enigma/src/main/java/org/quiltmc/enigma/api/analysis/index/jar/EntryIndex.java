@@ -71,7 +71,7 @@ public class EntryIndex implements JarIndexer {
 	}
 
 	/**
-	 * Checks the entry has been indexed and therefore exists in the JAR file.
+	 * Checks whether the entry has been indexed and therefore exists in the JAR file.
 	 * <br>
 	 * Parameters are not indexed, and this method does not fully verify validity of parameter indices.
 	 * Therefore, it is possible that this method returns {@code true} for an invalid parameter.
@@ -84,7 +84,7 @@ public class EntryIndex implements JarIndexer {
 	}
 
 	/**
-	 * Checks the entry has been indexed and therefore exists in the JAR file.
+	 * Checks whether the entry has been indexed and therefore exists in the JAR file.
 	 * <br>
 	 * For parameters, which are not indexed, verifies that they have a valid index and therefore could exist.
 	 * @param entry the entry to check
