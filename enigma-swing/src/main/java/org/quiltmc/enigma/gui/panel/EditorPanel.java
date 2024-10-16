@@ -208,8 +208,9 @@ public class EditorPanel {
 		this.ui.putClientProperty(EditorPanel.class, this);
 	}
 
-	public void onRename() {
+	public void onRename(boolean isNewMapping) {
 		this.navigatorPanel.updateAllTokenTypes();
+		if (isNewMapping) this.navigatorPanel.decrementIndex();
 	}
 
 	@Nullable

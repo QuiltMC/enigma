@@ -109,6 +109,10 @@ public class NavigatorPanel extends JPanel {
 		}
 	}
 
+	public void decrementIndex() {
+		this.currentIndex--;
+	}
+
 	private void tryNavigate() {
 		this.gui.getController().navigateTo(this.entries.get(this.selectedType).get(this.currentIndex));
 		this.updateStatsLabel();
