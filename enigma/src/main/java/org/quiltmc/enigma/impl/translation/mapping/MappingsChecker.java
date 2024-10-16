@@ -77,7 +77,7 @@ public class MappingsChecker {
 		}
 
 		// Method entry has parameter names, keep it even though it's not the root.
-		return !(entry instanceof MethodEntry) || this.hasChildren(entry, dropped);
+		return !(entry instanceof MethodEntry) || this.hasNoChildren(entry, dropped);
 
 		// Entry is not the root, and is not a method with params
 	}
@@ -101,20 +101,20 @@ public class MappingsChecker {
 			boolean isEmpty = (mapping.targetName() == null && mapping.javadoc() == null) || !this.project.isRenamable(entry);
 
 			if (isEmpty) {
-				return this.hasChildren(entry, dropped);
+				return this.hasNoChildren(entry, dropped);
 			}
 		}
 
 		return false;
 	}
 
-	private boolean hasChildren(Entry<?> entry, Dropped dropped) {
+	private boolean hasNoChildren(Entry<?> entry, Dropped dropped) {
 		var children = this.mappings.getChildren(entry);
 
 		// account for child mappings that have been dropped already
 		if (!children.isEmpty()) {
 			for (Entry<?> child : children) {
-				if (!dropped.getDroppedMappings().containsKey(child) && !this.hasChildren(child, dropped)) {
+				if (!dropped.getDroppedMappings().containsKey(child) && !this.hasNoChildren(child, dropped)) {
 					return true;
 				}
 			}
