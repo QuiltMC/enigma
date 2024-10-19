@@ -55,6 +55,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -162,6 +163,9 @@ public class Gui {
 	}
 
 	private void setupUi() {
+		// fix folder icons being automatically hidden: https://github.com/JFormDesigner/FlatLaf/pull/609
+		UIManager.put("Tree.showDefaultIcons", true);
+
 		this.setupDockers();
 
 		this.jarFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
