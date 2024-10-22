@@ -279,3 +279,30 @@ More bugfixes. I work so hard for my beloved users.
   - fixed config values sometimes being messed up when changing scale and restarting
   - fixed editor font size sometimes being overwritten
 - fixed possibly incorrect save location when saving from the unsaved warning dialogue (thanks again [pitheguy](https://github.com/PiTheGuy)!)
+
+# 2.5.1
+
+Hot off the tail of `2.5`, enigma `2.5.1` features some minor improvements to `drop-invalid-mappings` and the usual wealth of bugfixes.
+But honey, I know you're just here to see if you can remove the ASM snapshot repo from your buildscript. I'm happy to report that you can!
+
+- improved `drop-invalid-mappings` command
+  - improved logging
+    - do not print lines about writing new mappings when no changes have occurred
+    - print stats after completion on how many mappings were dropped
+  - improved behaviour for dropping
+    - drop methods that have no name and no valid parameters
+    - drop parameters whose index is outside their parent method's scope of valid indices
+  - added unit testing
+- fixed various issues with javadoc on parameters
+  - fixed comments on parameters sometimes being improperly written by the tinyv2 writer
+  - fixed javadoc on method overrides not properly finding parameter names
+  - fixed javadoc not always refreshing on parameter name updates
+- fixed entry navigator pointing to the wrong entry after an entry's token type was changed
+  - the most common time this would occur was when you renamed an obfuscated entry with the default navigator, and since there were then a different amount of obfuscated entries, the navigator would point to a different one than previously
+  - this fix is thanks to [pitheguy](https://github.com/PiTheGuy)!
+- fixed identifier panel mislabelling inner classes' outer class as their "superclass"
+- fixed stats of parent classes not reloading when their entries are mapped from a child class
+- fixed folder icons in the "obfuscated classes" docker not being visible
+- updated dependencies
+  - asm: `9.8-SNAPSHOT` -> `9.7.1`
+    - you can now remove the ASM snapshot repo from your buildscript when depending on enigma through maven/gradle!
