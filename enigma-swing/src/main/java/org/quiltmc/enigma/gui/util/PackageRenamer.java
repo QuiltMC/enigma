@@ -173,7 +173,7 @@ public class PackageRenamer {
 			boolean confirmed = false;
 			int i = 0;
 			for (var entry : renameStack.entrySet()) {
-				if (!confirmed) {
+				if (!confirmed && !this.gui.isTestEnvironment()) {
 					int continueOperation = JOptionPane.showConfirmDialog(this.gui.getFrame(), buildConfirmationPanel(renameStack));
 					if (continueOperation != JOptionPane.YES_OPTION) {
 						return;
