@@ -8,7 +8,6 @@ import org.quiltmc.enigma.gui.docker.AllClassesDocker;
 import org.quiltmc.enigma.gui.element.ClassSelectorPopupMenu;
 import org.quiltmc.enigma.gui.util.PackageRenamer;
 import org.quiltmc.enigma.api.translation.TranslateResult;
-import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
@@ -33,7 +32,7 @@ public class TestPackageRename {
 	void testRemoveOnePackage() throws InterruptedException {
 		renamePackage("a/b/c", "a/c", PackageRenamer.Mode.REFACTOR);
 
-		assertMapping("a","a/c/A");
+		assertMapping("a", "a/c/A");
 		assertMapping("b", "a/c/B");
 		assertMapping("c", "a/c/C");
 		assertMapping("d", "a/D");
