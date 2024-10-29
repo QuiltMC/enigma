@@ -181,7 +181,7 @@ public class PackageRenamer {
 	private void handleNode(int divergenceIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, Map<String, Runnable> renameStack, TreeNode node) {
 		if (node instanceof ClassSelectorClassNode classNode && rename) {
 			String oldName = classNode.getDeobfEntry().getFullName();
-			int finalPackageIndex = divergenceIndex - 1;
+			int finalPackageIndex = divergenceIndex == 0 ? 0 : divergenceIndex - 1;
 
 			// skips all classes that do not match the exact package being renamed
 			if (this.mode == Mode.MOVE) {
@@ -268,9 +268,9 @@ public class PackageRenamer {
 				}
 			}
 
-			if (packageName.equals(newPackageNames[index])) {
+			if (newPackageNames.length - 1 >= index && packageName.equals(newPackageNames[index])) {
 				this.handlePackage(index, false, oldPackageNames, newPackageNames, renameStack, packageNode);
-			} else if (packageName.equals(oldPackageNames[index])) {
+			} else if (oldPackageNames.length - 1 >= index && packageName.equals(oldPackageNames[index])) {
 				this.handlePackage(index, true, oldPackageNames, newPackageNames, renameStack, packageNode);
 			}
 		}
