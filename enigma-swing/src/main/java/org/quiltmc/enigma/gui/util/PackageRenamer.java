@@ -12,7 +12,14 @@ import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.validation.Message;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.tree.TreeNode;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -143,7 +150,7 @@ public class PackageRenamer {
 		String[] oldPackageNames = path.split("/");
 		String[] newPackageNames = input.split("/");
 
-		Map<String, Runnable> renameStack = new HashMap<>();
+		Map<String, ClassRename> renameStack = new HashMap<>();
 
 		return ProgressDialog.runOffThread(this.gui, listener -> {
 			listener.init(1, I18n.translate("popup_menu.class_selector.package_rename.discovering"));
@@ -163,10 +170,20 @@ public class PackageRenamer {
 				}
 			}
 
+			boolean confirmed = false;
 			int i = 0;
 			for (var entry : renameStack.entrySet()) {
+				if (!confirmed) {
+					int continueOperation = JOptionPane.showConfirmDialog(this.gui.getFrame(), buildConfirmationPanel(renameStack));
+					if (continueOperation != JOptionPane.YES_OPTION) {
+						return;
+					} else {
+						confirmed = true;
+					}
+				}
+
 				listener.step(i, I18n.translateFormatted("popup_menu.class_selector.package_rename.renaming_class", entry.getKey()));
-				entry.getValue().run();
+				entry.getValue().executeRename();
 				i++;
 			}
 
@@ -178,7 +195,51 @@ public class PackageRenamer {
 		});
 	}
 
-	private void handleNode(int divergenceIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, Map<String, Runnable> renameStack, TreeNode node) {
+	private static JPanel buildConfirmationPanel(Map<String, ClassRename> renameStack) {
+		JPanel panel = new JPanel(new BorderLayout());
+		int truncationThreshold = 50;
+
+		var sampleRenameLines = collectSampleRenames(truncationThreshold, renameStack);
+		JTextArea text = new JTextArea(multilineify(false, sampleRenameLines));
+		text.setEditable(false);
+		JScrollPane sampleRenames = new JScrollPane(text);
+		sampleRenames.setPreferredSize(new Dimension(ScaleUtil.scale(400), ScaleUtil.scale(100)));
+
+		String changesString = I18n.translate("popup_menu.class_selector.package_rename.changes_to_apply") + (sampleRenameLines.length == truncationThreshold ? " (" + I18n.translate("popup_menu.class_selector.package_rename.truncated") + ")" : "");
+		panel.add(BorderLayout.NORTH, new JLabel(multilineify(true, I18n.translate("popup_menu.class_selector.package_rename.confirm_rename"), changesString)));
+		panel.add(sampleRenames, BorderLayout.CENTER);
+
+		return panel;
+	}
+
+	private static String multilineify(boolean html, String... lines) {
+		StringBuilder builder = new StringBuilder(html ? "<html>" : "");
+
+		for (int i = 0; i < lines.length; i++) {
+			builder.append(lines[i]).append(i == lines.length - 1 ? "" : (html ? "<br>" : "\n"));
+		}
+
+		return builder.append(html ? "</html>" : "").toString();
+	}
+
+	private static String[] collectSampleRenames(int truncationThreshold, Map<String, ClassRename> renameStack) {
+		int max = Math.min(renameStack.size(), truncationThreshold);
+		int index = 0;
+
+		String[] builder = new String[max];
+		for (Map.Entry<String, ClassRename> entry : renameStack.entrySet()) {
+			builder[index] = entry.getKey() + " -> " + entry.getValue().getNewName();
+			index++;
+
+			if (index >= max) {
+				return builder;
+			}
+		}
+
+		throw new RuntimeException("failed to collect sample renames!");
+	}
+
+	private void handleNode(int divergenceIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, Map<String, ClassRename> renameStack, TreeNode node) {
 		if (node instanceof ClassSelectorClassNode classNode && rename) {
 			String oldName = classNode.getDeobfEntry().getFullName();
 			int finalPackageIndex = divergenceIndex == 0 ? 0 : divergenceIndex - 1;
@@ -190,59 +251,72 @@ public class PackageRenamer {
 				}
 			}
 
-			renameStack.put(oldName, () -> {
-				String[] split = oldName.split("/");
-				StringBuilder newPackages = new StringBuilder();
+			renameStack.put(oldName, new ClassRename() {
+				private String cachedNewName = null;
 
-				if (oldPackageNames.length <= newPackageNames.length) {
-					for (int i = finalPackageIndex; i < newPackageNames.length; i++) {
-						if (i >= 0) {
-							if (i < oldPackageNames.length && i < split.length && oldPackageNames[i].equals(split[i])) {
-								split[i] = newPackageNames[i];
-							} else {
-								newPackages.append("/").append(newPackageNames[i]);
+				@Override
+				public void executeRename() {
+					String newName = this.cachedNewName == null ? this.getNewName() : this.cachedNewName;
+
+					// ignore warnings, we don't want to bother the user with every individual package created
+					PackageRenamer.this.gui.getController().applyChange(new ValidationContext(PackageRenamer.this.gui.getNotificationManager(), false), EntryChange.modify(classNode.getObfEntry()).withDeobfName(newName), false);
+				}
+
+				@Override
+				public String getNewName() {
+					String[] split = oldName.split("/");
+					StringBuilder newPackages = new StringBuilder();
+
+					if (oldPackageNames.length <= newPackageNames.length) {
+						for (int i = finalPackageIndex; i < newPackageNames.length; i++) {
+							if (i >= 0) {
+								if (i < oldPackageNames.length && i < split.length && oldPackageNames[i].equals(split[i])) {
+									split[i] = newPackageNames[i];
+								} else {
+									newPackages.append("/").append(newPackageNames[i]);
+								}
+							}
+						}
+					} else {
+						for (int i = 0; i < oldPackageNames.length; i++) {
+							if (i > newPackageNames.length - 1 || !oldPackageNames[i].equals(newPackageNames[i])) {
+								StringBuilder string = new StringBuilder();
+
+								// append preceding old package names
+								for (int j = 0; j <= i - 1; j++) {
+									appendSlash(string);
+									string.append(oldPackageNames[j]);
+								}
+
+								// append new package names
+								for (int j = i; j < newPackageNames.length; j++) {
+									appendSlash(string);
+									string.append(newPackageNames[j]);
+								}
+
+								// append the remaining old package names
+								for (int j = i - 1 + oldPackageNames.length; j < split.length - 1; j++) {
+									appendSlash(string);
+									string.append(split[j]);
+								}
+
+								appendSlash(string);
+								string.append(classNode.getDeobfEntry().getSimpleName());
+								split = string.toString().split("/");
+								break;
 							}
 						}
 					}
-				} else {
-					for (int i = 0; i < oldPackageNames.length; i++) {
-						if (i > newPackageNames.length - 1 || !oldPackageNames[i].equals(newPackageNames[i])) {
-							StringBuilder string = new StringBuilder();
 
-							// append preceding old package names
-							for (int j = 0; j <= i - 1; j++) {
-								appendSlash(string);
-								string.append(oldPackageNames[j]);
-							}
-
-							// append new package names
-							for (int j = i; j < newPackageNames.length; j++) {
-								appendSlash(string);
-								string.append(newPackageNames[j]);
-							}
-
-							// append the remaining old package names
-							for (int j = i - 1 + oldPackageNames.length; j < split.length - 1; j++) {
-								appendSlash(string);
-								string.append(split[j]);
-							}
-
-							appendSlash(string);
-							string.append(classNode.getDeobfEntry().getSimpleName());
-							split = string.toString().split("/");
-							break;
-						}
+					// append new packages to last package
+					if (!newPackages.toString().isBlank()) {
+						split[finalPackageIndex] = split[finalPackageIndex] + newPackages;
 					}
-				}
 
-				// append new packages to last package
-				if (!newPackages.toString().isBlank()) {
-					split[finalPackageIndex] = split[finalPackageIndex] + newPackages;
+					String newName = String.join("/", split);
+					this.cachedNewName = newName;
+					return newName;
 				}
-
-				String newName = String.join("/", split);
-				// ignore warnings, we don't want to bother the user with every individual package created
-				this.gui.getController().applyChange(new ValidationContext(this.gui.getNotificationManager(), false), EntryChange.modify(classNode.getObfEntry()).withDeobfName(newName), false);
 			});
 		} else if (node instanceof ClassSelectorPackageNode packageNode) {
 			String packageName = packageNode.getPackageName().substring(packageNode.getPackageName().lastIndexOf("/") + 1);
@@ -282,7 +356,7 @@ public class PackageRenamer {
 		}
 	}
 
-	private void handlePackage(int divergenceIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, Map<String, Runnable> renameStack, TreeNode node) {
+	private void handlePackage(int divergenceIndex, boolean rename, String[] oldPackageNames, String[] newPackageNames, Map<String, ClassRename> renameStack, TreeNode node) {
 		if (!rename) {
 			divergenceIndex++;
 		}
@@ -290,5 +364,11 @@ public class PackageRenamer {
 		for (int j = 0; j < node.getChildCount(); j++) {
 			this.handleNode(divergenceIndex, rename, oldPackageNames, newPackageNames, renameStack, node.getChildAt(j));
 		}
+	}
+
+	private interface ClassRename {
+		void executeRename();
+
+		String getNewName();
 	}
 }
