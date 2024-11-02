@@ -10,6 +10,7 @@ import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
+import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
@@ -108,7 +109,7 @@ public abstract class Command {
 		Logger.info("Reading JAR...");
 		JarClassProvider classProvider = new JarClassProvider(jar);
 		JarIndex index = MainJarIndex.empty();
-		index.indexJar(classProvider.getClassNames(), new CachingClassProvider(classProvider), ProgressListener.createEmpty());
+		index.indexJar(new ProjectClassProvider(new CachingClassProvider(classProvider), null), ProgressListener.createEmpty());
 
 		return index;
 	}

@@ -131,18 +131,20 @@ public class EnigmaProject {
 		return this.remapper;
 	}
 
-	public void dropMappings(ProgressListener progress) {
+	public Collection<Entry<?>> dropMappings(ProgressListener progress) {
 		DeltaTrackingTree<EntryMapping> mappings = this.remapper.getMappings();
 
 		Collection<Entry<?>> dropped = this.dropMappings(mappings, progress);
 		for (Entry<?> entry : dropped) {
 			mappings.trackChange(entry);
 		}
+
+		return dropped;
 	}
 
 	private Collection<Entry<?>> dropMappings(EntryTree<EntryMapping> mappings, ProgressListener progress) {
 		// drop mappings that don't match the jar
-		MappingsChecker checker = new MappingsChecker(this.jarIndex, mappings);
+		MappingsChecker checker = new MappingsChecker(this, this.jarIndex, mappings);
 		MappingsChecker.Dropped droppedBroken = checker.dropBrokenMappings(progress);
 
 		Map<Entry<?>, String> droppedBrokenMappings = droppedBroken.getDroppedMappings();
@@ -168,7 +170,7 @@ public class EnigmaProject {
 			return false;
 		}
 
-		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
+		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry, this);
 	}
 
 	public boolean isRenamable(Entry<?> obfEntry) {
@@ -209,7 +211,7 @@ public class EnigmaProject {
 			return false;
 		}
 
-		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
+		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry, this);
 	}
 
 	private static boolean isEnumValueOfMethod(ClassDefEntry parent, MethodEntry method) {
@@ -235,7 +237,7 @@ public class EnigmaProject {
 	}
 
 	public boolean isSynthetic(Entry<?> entry) {
-		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(entry) && this.jarIndex.getIndex(EntryIndex.class).getEntryAccess(entry).isSynthetic();
+		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(entry, this) && this.jarIndex.getIndex(EntryIndex.class).getEntryAccess(entry).isSynthetic();
 	}
 
 	public boolean isAnonymousOrLocal(ClassEntry classEntry) {

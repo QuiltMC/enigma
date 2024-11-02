@@ -16,10 +16,6 @@ subprojects {
 		maven {
 			url = "https://maven.fabricmc.net/"
 		}
-		// remove when ASM fix is released
-		maven {
-			url = "https://repository.ow2.org/nexus/content/repositories/snapshots/"
-		}
 	}
 
 	dependencies {
@@ -35,7 +31,7 @@ subprojects {
 	}
 
 	group = 'org.quiltmc'
-	version = '2.5.0'
+	version = '2.5.1'
 
 	var ENV = System.getenv()
 	version = version + (ENV.GITHUB_ACTIONS ? (ENV.SNAPSHOTS_URL ? "-SNAPSHOT" : "") : "+local")

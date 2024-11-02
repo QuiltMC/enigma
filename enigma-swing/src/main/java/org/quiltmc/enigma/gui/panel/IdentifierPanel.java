@@ -123,7 +123,7 @@ public class IdentifierPanel {
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
 
 				if (ce.getParent() != null) {
-					th.addCopiableStringRow(I18n.translate("info_panel.identifier.superclass"), ce.getParent().getFullName());
+					th.addCopiableStringRow(I18n.translate("info_panel.identifier.outer_class"), ce.getParent().getFullName());
 				}
 			} else if (this.deobfEntry instanceof FieldEntry fe) {
 				this.nameField = th.addRenameTextField(EditableType.FIELD, fe.getName());

@@ -235,6 +235,8 @@ More bugfixes. I work so hard for my beloved users.
 
 # 2.5.0
 
+`2.5.0` brings contributions from 3 of our lovely enigma users in addition to our regular duo, bringing you some reworks to long-broken features and fixing some long-bothersome bugs!
+
 - new [theme system and theme](https://github.com/QuiltMC/enigma/pull/216) (thanks [supersaiyansubtlety](https://github.com/supersaiyansubtlety)!)
   - adds a new theme: darcerula
     - this theme is yet darker than the old dark theme, for those that appreciate a pitch black atmosphere for their mappings
@@ -248,7 +250,12 @@ More bugfixes. I work so hard for my beloved users.
     - can be enabled by setting the `index_libraries` property to true in service's config in the enigma profile
     - refer to Javadocs in `JarIndexerService` for how to implement this property, we recommend adding it!
   - currently, only `Record` and `Object` from the JDK are indexed as libraries by default
--  added name proposal for record components
+- API changes around indexing
+  - `JarIndex#indexJar` no longer receives a scope
+    - the `ClassProvider` parameter has been replaced with a `ProjectClassProvider`, providing classes and scope for both the main jar and libraries
+  - `JarIndexerService#acceptJar` now takes a `ProjectClassProvider` instead of a `ClassProvider`
+    - the scope has not been removed, and if the service is configured to accept libraries will be the main scope on first run and the library scope on the second
+- added name proposal for record components
   -  names for record getters are automatically proposed as their corresponding field is named
   -  methods are linked to fields based on bytecode
     - this is a fail-fast solution: if there is no method perfectly matching the expected code for a record getter no mapping will be proposed
@@ -271,3 +278,31 @@ More bugfixes. I work so hard for my beloved users.
 - fixed a bunch more scaling issues (thanks [supersaiyansubtlety](https://github.com/supersaiyansubtlety) again!)
   - fixed config values sometimes being messed up when changing scale and restarting
   - fixed editor font size sometimes being overwritten
+- fixed possibly incorrect save location when saving from the unsaved warning dialogue (thanks again [pitheguy](https://github.com/PiTheGuy)!)
+
+# 2.5.1
+
+Hot off the tail of `2.5`, enigma `2.5.1` features some minor improvements to `drop-invalid-mappings` and the usual wealth of bugfixes.
+But honey, I know you're just here to see if you can remove the ASM snapshot repo from your buildscript. I'm happy to report that you can!
+
+- improved `drop-invalid-mappings` command
+  - improved logging
+    - do not print lines about writing new mappings when no changes have occurred
+    - print stats after completion on how many mappings were dropped
+  - improved behaviour for dropping
+    - drop methods that have no name and no valid parameters
+    - drop parameters whose index is outside their parent method's scope of valid indices
+  - added unit testing
+- fixed various issues with javadoc on parameters
+  - fixed comments on parameters sometimes being improperly written by the tinyv2 writer
+  - fixed javadoc on method overrides not properly finding parameter names
+  - fixed javadoc not always refreshing on parameter name updates
+- fixed entry navigator pointing to the wrong entry after an entry's token type was changed
+  - the most common time this would occur was when you renamed an obfuscated entry with the default navigator, and since there were then a different amount of obfuscated entries, the navigator would point to a different one than previously
+  - this fix is thanks to [pitheguy](https://github.com/PiTheGuy)!
+- fixed identifier panel mislabelling inner classes' outer class as their "superclass"
+- fixed stats of parent classes not reloading when their entries are mapped from a child class
+- fixed folder icons in the "obfuscated classes" docker not being visible
+- updated dependencies
+  - asm: `9.8-SNAPSHOT` -> `9.7.1`
+    - you can now remove the ASM snapshot repo from your buildscript when depending on enigma through maven/gradle!

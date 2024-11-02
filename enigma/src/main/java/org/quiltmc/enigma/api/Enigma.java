@@ -5,6 +5,7 @@ import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.LibrariesJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
+import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.impl.analysis.ClassLoaderClassProvider;
 import org.quiltmc.enigma.api.service.EnigmaService;
 import org.quiltmc.enigma.api.service.EnigmaServiceContext;
@@ -85,14 +86,13 @@ public class Enigma {
 		ClassLoaderClassProvider jreProvider = new ClassLoaderClassProvider(DriverManager.class.getClassLoader());
 		CombiningClassProvider librariesProvider = new CombiningClassProvider(jreProvider, libraryClassProvider);
 		ClassProvider mainProjectProvider = new ObfuscationFixClassProvider(new CachingClassProvider(jarClassProvider), index);
-
-		Set<String> mainScope = new HashSet<>(mainProjectProvider.getClassNames());
-		Set<String> librariesScope = new HashSet<>(librariesProvider.getClassNames());
+		ProjectClassProvider projectClassProvider = new ProjectClassProvider(mainProjectProvider, librariesProvider);
 
 		// main index
-		this.index(index, mainProjectProvider, mainScope, progress, false);
+		this.index(index, projectClassProvider, progress);
+
 		// lib index
-		this.index(libIndex, librariesProvider, librariesScope, progress, true);
+		this.index(libIndex, projectClassProvider, progress);
 
 		// name proposal
 		var nameProposalServices = this.getNameProposalServices();
@@ -124,9 +124,10 @@ public class Enigma {
 		return new EnigmaProject(this, path, mainProjectProvider, index, libIndex, mappingsIndex, proposedNames, Utils.zipSha1(path));
 	}
 
-	private void index(JarIndex index, ClassProvider classProvider, Set<String> scope, ProgressListener progress, boolean libraries) {
+	private void index(JarIndex index, ProjectClassProvider classProvider, ProgressListener progress) {
+		boolean libraries = index instanceof LibrariesJarIndex;
 		String progressKey = libraries ? "libs" : "jar";
-		index.indexJar(scope, classProvider, progress);
+		index.indexJar(classProvider, progress);
 
 		List<JarIndexerService> indexers = this.services.get(JarIndexerService.TYPE);
 		progress.init(indexers.size(), I18n.translate("progress." + progressKey + ".custom_indexing"));
@@ -135,6 +136,8 @@ public class Enigma {
 		for (var service : indexers) {
 			if (!(libraries && !service.shouldIndexLibraries())) {
 				progress.step(i++, I18n.translateFormatted("progress." + progressKey + ".custom_indexing.indexer", service.getId()));
+				var names = libraries ? classProvider.getLibraryClassNames() : classProvider.getMainClassNames();
+				Set<String> scope = new HashSet<>(names);
 				service.acceptJar(scope, classProvider, index);
 			}
 		}

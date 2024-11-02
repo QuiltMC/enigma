@@ -37,7 +37,7 @@ public class DropInvalidMappingsCommand extends Command {
 
 	@Override
 	public String getDescription() {
-		return "Removes all invalid mapping entries (entries whose obfuscated name is not found in the jar) from the provided mappings.";
+		return "Removes all invalid mapping entries (entries whose obfuscated name is not found in the jar) and empty mappings (garbage lines that don't add anything to the mappings) from the provided mappings.";
 	}
 
 	public static void run(Path jarIn, Path mappingsIn, Path mappingsOut) throws Exception {
@@ -51,30 +51,35 @@ public class DropInvalidMappingsCommand extends Command {
 
 		Logger.info("Dropping invalid mappings...");
 
-		project.dropMappings(ProgressListener.createEmpty());
+		var droppedMappings = project.dropMappings(ProgressListener.createEmpty());
 
-		Logger.info("Writing mappings...");
+		if (!droppedMappings.isEmpty()) {
+			Logger.info("Found and dropped {} invalid mappings.", droppedMappings.size());
+			Logger.info("Writing mappings...");
 
-		if (mappingsOut == mappingsIn) {
-			Logger.info("Overwriting input mappings");
-			Files.walkFileTree(mappingsIn, new SimpleFileVisitor<>() {
-				@Override
-				public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-					Files.delete(dir);
-					return FileVisitResult.CONTINUE;
-				}
+			if (mappingsOut == mappingsIn) {
+				Logger.info("Overwriting input mappings");
+				Files.walkFileTree(mappingsIn, new SimpleFileVisitor<>() {
+					@Override
+					public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+						Files.delete(dir);
+						return FileVisitResult.CONTINUE;
+					}
 
-				@Override
-				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-					Files.delete(file);
-					return FileVisitResult.CONTINUE;
-				}
-			});
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+						Files.delete(file);
+						return FileVisitResult.CONTINUE;
+					}
+				});
 
-			Files.deleteIfExists(mappingsIn);
+				Files.deleteIfExists(mappingsIn);
+			}
+
+			MappingSaveParameters saveParameters = project.getEnigma().getProfile().getMappingSaveParameters();
+			writer.write(project.getRemapper().getMappings(), mappingsOut, ProgressListener.createEmpty(), saveParameters);
+		} else {
+			Logger.info("No invalid mappings found.");
 		}
-
-		MappingSaveParameters saveParameters = project.getEnigma().getProfile().getMappingSaveParameters();
-		writer.write(project.getRemapper().getMappings(), mappingsOut, ProgressListener.createEmpty(), saveParameters);
 	}
 }
