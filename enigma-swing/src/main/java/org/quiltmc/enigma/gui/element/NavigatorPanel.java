@@ -110,7 +110,7 @@ public class NavigatorPanel extends JPanel {
 	}
 
 	public void decrementIndex() {
-		this.currentIndex--;
+		this.currentIndex = Math.max(this.currentIndex - 1, 0);
 	}
 
 	private void tryNavigate() {
