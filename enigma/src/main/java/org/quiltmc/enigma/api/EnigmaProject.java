@@ -11,7 +11,6 @@ import org.quiltmc.enigma.api.service.ObfuscationTestService;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeUtil;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
-import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
@@ -250,6 +249,7 @@ public class EnigmaProject {
 	/**
 	 * Verifies that the provided {@code parameter} has a valid index for its parent method.
 	 * This method validates both the upper and lower bounds of the parent method's index range.
+	 *
 	 * <p>Note that this method could still return {@code true} for an invalid index in the case that the index is impossible due to double-size parameters --
 	 * for example, if the index is 4 and there's a double at index 3, the index would be invalid.
 	 * But honestly, we at <a href=https://quiltmc.org>QuiltMC</a> doubt that that's a situation you'll ever be running into.
