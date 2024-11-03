@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.api.analysis.index.jar;
 
-import org.objectweb.asm.tree.ClassNode;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
@@ -19,7 +18,6 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class EntryIndex implements JarIndexer {
 	private final EntryTree<EntryMapping> tree = new HashEntryTree<>();
@@ -73,26 +71,13 @@ public class EntryIndex implements JarIndexer {
 	/**
 	 * Checks whether the entry has been indexed and therefore exists in the JAR file.
 	 * <br>
-	 * Parameters are not indexed, and this method does not fully verify validity of parameter indices.
-	 * Therefore, it is possible that this method returns {@code true} for an invalid parameter.
+	 * For parameters, which are not indexed, checks the parent method and partially verifies their indices.
+	 * To fully validate a parameter's index, use {@link EnigmaProject#validateParameterIndex(LocalVariableEntry)}.
+	 *
 	 * @param entry the entry to check
 	 * @return whether the entry exists
-	 * @see #hasEntry(Entry, EnigmaProject)
 	 */
 	public boolean hasEntry(Entry<?> entry) {
-		return this.hasEntry(entry, null);
-	}
-
-	/**
-	 * Checks whether the entry has been indexed and therefore exists in the JAR file.
-	 * <br>
-	 * For parameters, which are not indexed, verifies that they have a valid index and therefore could exist.
-	 * @param entry the entry to check
-	 * @param project the current project
-	 * @return whether the entry exists
-	 */
-	@SuppressWarnings("ConstantConditions")
-	public boolean hasEntry(Entry<?> entry, @Nullable EnigmaProject project) {
 		if (entry instanceof ClassEntry classEntry) {
 			return this.hasClass(classEntry);
 		} else if (entry instanceof MethodEntry methodEntry) {
@@ -101,30 +86,28 @@ public class EntryIndex implements JarIndexer {
 			return this.hasField(fieldEntry);
 		} else if (entry instanceof LocalVariableEntry localVariableEntry) {
 			MethodEntry parent = localVariableEntry.getParent();
-			if (this.hasMethod(parent)) {
-				AtomicInteger maxLocals = new AtomicInteger(-1);
-				ClassEntry parentClass = parent != null ? parent.getParent() : null;
-
-				if (project != null) {
-					// find max_locals for method, representing the number of parameters it receives (JVMS§4.7.3)
-					// note: parent class cannot be null, warning suppressed
-					ClassNode classNode = project.getClassProvider().get(parentClass.getFullName());
-					if (classNode != null) {
-						classNode.methods.stream()
-							.filter(node -> node.name.equals(parent.getName()) && node.desc.equals(parent.getDesc().toString()))
-							.findFirst().ifPresent(node -> maxLocals.set(node.maxLocals));
-					}
-				}
-
-				AccessFlags parentAccess = this.getMethodAccess(parent);
-				int startIndex = parentAccess != null && parentAccess.isStatic() ? 0 : 1;
-
-				// if maxLocals is -1 it's not found for the method and should be ignored
-				return localVariableEntry.getIndex() >= startIndex && (maxLocals.get() == -1 || localVariableEntry.getIndex() <= maxLocals.get() - 1);
+			if (this.hasEntry(parent)) {
+				return this.validateParameterIndex(localVariableEntry);
 			}
 		}
 
 		return false;
+	}
+
+	/**
+	 * Validates that the parameter index is not below the minimum index for its parent method and therefore could be valid.
+	 * <br>Note that this method does not guarantee the index is valid -- for full validation, call {@link EnigmaProject#validateParameterIndex(LocalVariableEntry)}.
+	 *
+	 * @param parameter the parameter to validate
+	 * @return whether the index could be valid
+	 * @see EnigmaProject#validateParameterIndex(LocalVariableEntry)
+	 */
+	public boolean validateParameterIndex(LocalVariableEntry parameter) {
+		MethodEntry parent = parameter.getParent();
+		AccessFlags parentAccess = this.getMethodAccess(parent);
+
+		int startIndex = parentAccess != null && parentAccess.isStatic() ? 0 : 1;
+		return parameter.getIndex() >= startIndex;
 	}
 
 	@Nullable

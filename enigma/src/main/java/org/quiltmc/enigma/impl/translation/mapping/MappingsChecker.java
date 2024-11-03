@@ -9,6 +9,7 @@ import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import java.util.Collection;
@@ -62,7 +63,8 @@ public class MappingsChecker {
 	}
 
 	private boolean shouldDropBrokenEntry(Dropped dropped, Entry<?> entry) {
-		if (!this.index.getIndex(EntryIndex.class).hasEntry(entry, this.project)) {
+		if (!this.index.getIndex(EntryIndex.class).hasEntry(entry)
+				|| (entry instanceof LocalVariableEntry parameter && !this.project.validateParameterIndex(parameter))) {
 			return true;
 		}
 

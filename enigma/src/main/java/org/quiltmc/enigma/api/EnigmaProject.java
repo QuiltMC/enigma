@@ -11,6 +11,7 @@ import org.quiltmc.enigma.api.service.ObfuscationTestService;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeUtil;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
+import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
@@ -170,7 +171,7 @@ public class EnigmaProject {
 			return false;
 		}
 
-		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry, this);
+		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
 	}
 
 	public boolean isRenamable(Entry<?> obfEntry) {
@@ -211,7 +212,7 @@ public class EnigmaProject {
 			return false;
 		}
 
-		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry, this);
+		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
 	}
 
 	private static boolean isEnumValueOfMethod(ClassDefEntry parent, MethodEntry method) {
@@ -237,13 +238,48 @@ public class EnigmaProject {
 	}
 
 	public boolean isSynthetic(Entry<?> entry) {
-		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(entry, this) && this.jarIndex.getIndex(EntryIndex.class).getEntryAccess(entry).isSynthetic();
+		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(entry) && this.jarIndex.getIndex(EntryIndex.class).getEntryAccess(entry).isSynthetic();
 	}
 
 	public boolean isAnonymousOrLocal(ClassEntry classEntry) {
 		EnclosingMethodIndex enclosingMethodIndex = this.jarIndex.getIndex(EnclosingMethodIndex.class);
 		// Only local and anonymous classes may have the EnclosingMethod attribute
 		return enclosingMethodIndex.hasEnclosingMethod(classEntry);
+	}
+
+	/**
+	 * Verifies that the provided {@code parameter} has a valid index for its parent method.
+	 * This method validates both the upper and lower bounds of the parent method's index range.
+	 * <p>Note that this method could still return {@code true} for an invalid index in the case that the index is impossible due to double-size parameters --
+	 * for example, if the index is 4 and there's a double at index 3, the index would be invalid.
+	 * But honestly, we at <a href=https://quiltmc.org>QuiltMC</a> doubt that that's a situation you'll ever be running into.
+	 * If it is, complain <a href=https://github.com/QuiltMC/enigma/issues>in our issue tracker</a> about us writing this whole comment instead of implementing that functionality.
+	 *
+	 * @param parameter the parameter to validate
+	 * @return whether the index is valid
+	 */
+	public boolean validateParameterIndex(LocalVariableEntry parameter) {
+		MethodEntry parent = parameter.getParent();
+		EntryIndex index = this.jarIndex.getIndex(EntryIndex.class);
+
+		if (index.hasMethod(parent)) {
+			AtomicInteger maxLocals = new AtomicInteger(-1);
+			ClassEntry parentClass = parent != null ? parent.getParent() : null;
+
+			// find max_locals for method, representing the number of parameters it receives (JVMS§4.7.3)
+			// note: parent class cannot be null, warning suppressed
+			ClassNode classNode = this.getClassProvider().get(parentClass.getFullName());
+			if (classNode != null) {
+				classNode.methods.stream()
+					.filter(node -> node.name.equals(parent.getName()) && node.desc.equals(parent.getDesc().toString()))
+					.findFirst().ifPresent(node -> maxLocals.set(node.maxLocals));
+			}
+
+			// if maxLocals is -1 it's not found for the method and should be ignored
+			return index.validateParameterIndex(parameter) && (maxLocals.get() == -1 || parameter.getIndex() <= maxLocals.get() - 1);
+		}
+
+		return false;
 	}
 
 	public JarExport exportRemappedJar(ProgressListener progress) {
