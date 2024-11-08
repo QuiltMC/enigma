@@ -306,3 +306,11 @@ But honey, I know you're just here to see if you can remove the ASM snapshot rep
 - updated dependencies
   - asm: `9.8-SNAPSHOT` -> `9.7.1`
     - you can now remove the ASM snapshot repo from your buildscript when depending on enigma through maven/gradle!
+
+# 2.5.2
+
+In our bugfix era.
+
+- fixed stability issues introduced with the new validation on parameter indices
+- added missing translations for library indexing
+- fixed entry navigator pointing to negative entry indices after renaming items (thanks [pitheguy](https://github.com/PiTheGuy)!)
