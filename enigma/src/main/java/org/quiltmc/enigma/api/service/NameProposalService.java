@@ -46,7 +46,15 @@ public interface NameProposalService extends EnigmaService {
 		return false;
 	}
 
-	default boolean alwaysSave() {
+	/**
+	 * Disables validation of proposed mappings from this service.
+	 * This allows you to return any kind of mapping you want from {@link #getDynamicProposedNames(EntryRemapper, Entry, EntryMapping, EntryMapping)}
+	 * and {@link #getProposedNames(JarIndex)}, but should be used sparingly as it will allow creating mappings that can't be linked back to this proposer.
+	 * Do not use this unless you're sure there's no other way to accomplish what you're looking to do!
+	 *
+	 * @return whether validation should be bypassed
+	 */
+	default boolean bypassValidation() {
 		return false;
 	}
 

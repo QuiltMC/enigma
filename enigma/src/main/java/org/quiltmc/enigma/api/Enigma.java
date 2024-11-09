@@ -107,7 +107,7 @@ public class Enigma {
 
 			if (proposed != null) {
 				for (var entry : proposed.entrySet()) {
-					if (entry.getValue() != null && entry.getValue().tokenType() != TokenType.JAR_PROPOSED) {
+					if (!service.bypassValidation() && entry.getValue() != null && entry.getValue().tokenType() != TokenType.JAR_PROPOSED) {
 						throw new RuntimeException("Token type of mapping " + entry.getValue() + " for entry " + entry.getKey() + " was " + entry.getValue().tokenType() + ", but should be " + TokenType.JAR_PROPOSED + "!");
 					}
 

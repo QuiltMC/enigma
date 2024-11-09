@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class TestNameProposalAlwaysSave {
+public class TestNameProposalBypassValidation {
 	private static final Path JAR = TestUtil.obfJar("validation");
 	private static EnigmaProject project;
 
@@ -155,7 +155,7 @@ public class TestNameProposalAlwaysSave {
 				AtomicInteger i = new AtomicInteger();
 
 				index.getIndex(EntryIndex.class).getMethods().forEach(
-					method -> mappings.put(method, this.createMapping("gaming" + i.getAndIncrement(), TokenType.JAR_PROPOSED))
+					method -> mappings.put(method, new EntryMapping("gaming" + i.getAndIncrement(), null, TokenType.DEOBFUSCATED, null))
 				);
 
 				return mappings;
@@ -167,7 +167,7 @@ public class TestNameProposalAlwaysSave {
 			}
 
 			@Override
-			public boolean alwaysSave() {
+			public boolean bypassValidation() {
 				return true;
 			}
 
