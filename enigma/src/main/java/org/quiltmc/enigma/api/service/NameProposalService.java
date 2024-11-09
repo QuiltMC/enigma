@@ -42,6 +42,14 @@ public interface NameProposalService extends EnigmaService {
 	@Nullable
 	Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping);
 
+	default boolean isFallback() {
+		return false;
+	}
+
+	default boolean alwaysSave() {
+		return false;
+	}
+
 	/**
 	 * Creates a proposed mapping, with no javadoc and using {@link #getId()} as the source plugin ID.
 	 * @param name the name
