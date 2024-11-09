@@ -167,6 +167,11 @@ public class TestNameProposalAlwaysSave {
 			}
 
 			@Override
+			public boolean alwaysSave() {
+				return true;
+			}
+
+			@Override
 			public String getId() {
 				return "test:name_all_methods_gaming";
 			}
