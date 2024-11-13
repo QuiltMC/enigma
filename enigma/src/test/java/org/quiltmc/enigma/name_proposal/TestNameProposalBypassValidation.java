@@ -96,7 +96,7 @@ public class TestNameProposalBypassValidation {
 		assertMappingStartsWith(TestEntryFactory.newMethod("b", "a", "(I)V"), TestEntryFactory.newMethod("b", "gaming", "(I)V"));
 	}
 
-	private void assertMappingStartsWith(Entry<?> obf, Entry<?> deobf) {
+	private static void assertMappingStartsWith(Entry<?> obf, Entry<?> deobf) {
 		TranslateResult<? extends Entry<?>> result = project.getRemapper().getDeobfuscator().extendedTranslate(obf);
 		assertThat(result, is(notNullValue()));
 
@@ -106,14 +106,14 @@ public class TestNameProposalBypassValidation {
 		}
 	}
 
-	private void assertUnmapped(Entry<?> obf) {
+	private static void assertUnmapped(Entry<?> obf) {
 		TranslateResult<? extends Entry<?>> result = project.getRemapper().getDeobfuscator().extendedTranslate(obf);
 		assertThat(result, is(notNullValue()));
 		assertThat(result.getType(), is(TokenType.OBFUSCATED));
 	}
 
 	@SuppressWarnings("all")
-	private ReadWriteService getService() {
+	private static ReadWriteService getService() {
 		return project.getEnigma().getReadWriteService(project.getEnigma().getSupportedFileTypes().stream().filter(file -> file.getExtensions().contains("mapping") && !file.isDirectory()).findFirst().get()).get();
 	}
 
@@ -131,7 +131,7 @@ public class TestNameProposalBypassValidation {
 				AtomicInteger i = new AtomicInteger();
 
 				index.getIndex(EntryIndex.class).getFields().forEach(
-					field -> mappings.put(field, this.createMapping("slay" + i.getAndIncrement(), TokenType.JAR_PROPOSED))
+						field -> mappings.put(field, this.createMapping("slay" + i.getAndIncrement(), TokenType.JAR_PROPOSED))
 				);
 
 				return mappings;
@@ -155,7 +155,7 @@ public class TestNameProposalBypassValidation {
 				AtomicInteger i = new AtomicInteger();
 
 				index.getIndex(EntryIndex.class).getMethods().forEach(
-					method -> mappings.put(method, new EntryMapping("gaming" + i.getAndIncrement(), null, TokenType.DEOBFUSCATED, null))
+						method -> mappings.put(method, new EntryMapping("gaming" + i.getAndIncrement(), null, TokenType.DEOBFUSCATED, null))
 				);
 
 				return mappings;

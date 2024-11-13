@@ -14,14 +14,12 @@ import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.api.service.NameProposalService;
-import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.impl.plugin.BuiltinPlugin;
@@ -73,7 +71,7 @@ public class TestFallbackNameProposal {
 	}
 
 	@Test
-	public void testFallbackStats() throws IOException, MappingParseException {
+	public void testFallbackStats() throws IOException {
 		ClassEntry bClass = TestEntryFactory.newClass("b");
 
 		// assert a couple mappings to make sure the test plugin works
@@ -104,7 +102,7 @@ public class TestFallbackNameProposal {
 
 	// todo: ui test for colour?
 
-	private void assertMappingStartsWith(Entry<?> obf, Entry<?> deobf) {
+	private static void assertMappingStartsWith(Entry<?> obf, Entry<?> deobf) {
 		TranslateResult<? extends Entry<?>> result = project.getRemapper().getDeobfuscator().extendedTranslate(obf);
 		assertThat(result, is(notNullValue()));
 
@@ -112,17 +110,6 @@ public class TestFallbackNameProposal {
 		if (deobfName != null) {
 			assertThat(deobfName, startsWith(deobf.getName()));
 		}
-	}
-
-	private void assertUnmapped(Entry<?> obf) {
-		TranslateResult<? extends Entry<?>> result = project.getRemapper().getDeobfuscator().extendedTranslate(obf);
-		assertThat(result, is(notNullValue()));
-		assertThat(result.getType(), is(TokenType.OBFUSCATED));
-	}
-
-	@SuppressWarnings("all")
-	private ReadWriteService getService() {
-		return project.getEnigma().getReadWriteService(project.getEnigma().getSupportedFileTypes().stream().filter(file -> file.getExtensions().contains("mapping") && !file.isDirectory()).findFirst().get()).get();
 	}
 
 	private static class TestPlugin implements EnigmaPlugin {
@@ -139,7 +126,7 @@ public class TestFallbackNameProposal {
 				AtomicInteger i = new AtomicInteger();
 
 				index.getIndex(EntryIndex.class).getFields().forEach(
-					field -> mappings.put(field, this.createMapping("slay" + i.getAndIncrement(), TokenType.JAR_PROPOSED))
+						field -> mappings.put(field, this.createMapping("slay" + i.getAndIncrement(), TokenType.JAR_PROPOSED))
 				);
 
 				return mappings;
@@ -163,7 +150,7 @@ public class TestFallbackNameProposal {
 				AtomicInteger i = new AtomicInteger();
 
 				index.getIndex(EntryIndex.class).getMethods().forEach(
-					method -> mappings.put(method, this.createMapping("gaming" + i.getAndIncrement(), TokenType.JAR_PROPOSED))
+						method -> mappings.put(method, this.createMapping("gaming" + i.getAndIncrement(), TokenType.JAR_PROPOSED))
 				);
 
 				return mappings;
