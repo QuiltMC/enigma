@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.service.EnigmaService;
+import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.ArgumentDescriptor;
@@ -38,6 +40,8 @@ public class StatsGenerator {
 	private ProjectStatsResult result = null;
 	private ProgressListener overallListener;
 	private CountDownLatch generationLatch = null;
+
+	private List<String> fallbackNameProposerIdCache;
 
 	public StatsGenerator(EnigmaProject project) {
 		this.project = project;
@@ -100,6 +104,8 @@ public class StatsGenerator {
 			this.overallListener = progress;
 		}
 
+		this.rebuildCache();
+
 		includedTypes = EnumSet.copyOf(includedTypes);
 		Map<ClassEntry, StatsResult> stats = this.result == null ? new HashMap<>() : this.result.getStats();
 
@@ -115,7 +121,7 @@ public class StatsGenerator {
 
 				for (ClassEntry entry : classes) {
 					progress.step(done++, I18n.translateFormatted("progress.stats.for", entry.getName()));
-					StatsResult result = this.generate(includedTypes, entry, includeSynthetic);
+					StatsResult result = this.generate(includedTypes, entry, includeSynthetic, false);
 					stats.put(entry, result);
 				}
 
@@ -131,7 +137,7 @@ public class StatsGenerator {
 			}
 		} else {
 			Preconditions.checkNotNull(classEntry, "Entry cannot be null after initial stat generation!");
-			stats.put(classEntry, this.generate(includedTypes, classEntry, includeSynthetic));
+			stats.put(classEntry, this.generate(includedTypes, classEntry, includeSynthetic, false));
 			this.result = new ProjectStatsResult(this.project, stats);
 		}
 
@@ -161,6 +167,14 @@ public class StatsGenerator {
 	 * @return the generated {@link StatsResult}
 	 */
 	public StatsResult generate(Set<StatType> includedTypes, ClassEntry classEntry, boolean includeSynthetic) {
+		return this.generate(includedTypes, classEntry, includeSynthetic, true);
+	}
+
+	private StatsResult generate(Set<StatType> includedTypes, ClassEntry classEntry, boolean includeSynthetic, boolean rebuildCache) {
+		if (rebuildCache) {
+			this.rebuildCache();
+		}
+
 		Map<StatType, Integer> mappableCounts = new EnumMap<>(StatType.class);
 		Map<StatType, Map<String, Integer>> unmappedCounts = new EnumMap<>(StatType.class);
 
@@ -223,6 +237,10 @@ public class StatsGenerator {
 		return StatsResult.create(mappableCounts, unmappedCounts, false);
 	}
 
+	private void rebuildCache() {
+		this.fallbackNameProposerIdCache = this.project.getEnigma().getNameProposalServices().stream().filter(NameProposalService::isFallback).map(EnigmaService::getId).toList();
+	}
+
 	private boolean isCanonicalConstructor(ClassDefEntry record, MethodEntry methodEntry) {
 		if (!record.isRecord() || !methodEntry.isConstructor()) {
 			return false;
@@ -274,12 +292,9 @@ public class StatsGenerator {
 	}
 
 	private void update(StatType type, Map<StatType, Integer> mappable, Map<StatType, Map<String, Integer>> unmapped, Entry<?> entry) {
-		boolean obfuscated = this.project.isObfuscated(entry);
-		boolean renamable = this.project.isRenamable(entry);
-		boolean synthetic = this.project.isSynthetic(entry);
-
-		if (renamable) {
-			if (obfuscated && !synthetic) {
+		if (this.project.isRenamable(entry)) {
+			if (this.project.isObfuscated(entry) && !this.project.isSynthetic(entry)
+					|| this.fallbackNameProposerIdCache.contains(this.project.getRemapper().getMapping(entry).sourcePluginId())) { // fallback proposed mappings don't count
 				String parent = this.project.getRemapper().deobfuscate(entry.getTopLevelClass()).getName().replace('/', '.');
 
 				unmapped.computeIfAbsent(type, t -> new HashMap<>());

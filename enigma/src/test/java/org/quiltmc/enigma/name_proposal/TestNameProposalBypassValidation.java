@@ -120,11 +120,11 @@ public class TestNameProposalBypassValidation {
 	private static class TestPlugin implements EnigmaPlugin {
 		@Override
 		public void init(EnigmaPluginContext ctx) {
-			ctx.registerService(NameProposalService.TYPE, ctx1 -> new TestFieldProposerNoFallback());
-			ctx.registerService(NameProposalService.TYPE, ctx1 -> new TestMethodProposerWithFallback());
+			ctx.registerService(NameProposalService.TYPE, ctx1 -> new TestFieldProposerNormal());
+			ctx.registerService(NameProposalService.TYPE, ctx1 -> new TestMethodProposerWithBypass());
 		}
 
-		private static class TestFieldProposerNoFallback implements NameProposalService {
+		private static class TestFieldProposerNormal implements NameProposalService {
 			@Override
 			public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
 				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
@@ -148,7 +148,7 @@ public class TestNameProposalBypassValidation {
 			}
 		}
 
-		private static class TestMethodProposerWithFallback implements NameProposalService {
+		private static class TestMethodProposerWithBypass implements NameProposalService {
 			@Override
 			public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
 				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
