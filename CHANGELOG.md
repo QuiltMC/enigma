@@ -23,8 +23,6 @@ The largest Enigma update ever brings you dozens of changes across the user inte
 - wrote up piles of documentation
 - removed support for the old Recaf and Tiny V1 mapping formats
 - removed old internal config API
-
-
 - implemented automatic format detection in all commands
 - greatly improved command help
   - include descriptions of what each argument does in errors
@@ -32,8 +30,6 @@ The largest Enigma update ever brings you dozens of changes across the user inte
     - lists all possible commands
     - includes detailed descriptions of each command's function
 - normalised all command names to `kebab-case`
-
-
 - statistics got a huge rework
   - stat icons in the class tree dockers have been expanded to now show on packages as well as classes
   - optimise stat regeneration for single classes
@@ -62,8 +58,6 @@ The largest Enigma update ever brings you dozens of changes across the user inte
 - added some neat debug utils if you run with the `--development` flag
   - currently, this includes a view of the internal mapping tree
 - removed access modifier editing
-
-
 - fix yet more bugs with statistic accuracy
 - fix the cancel button in the "rename package" window causing a crash
 - fix documenting constructors (from Fabric upstream, with permission!)
