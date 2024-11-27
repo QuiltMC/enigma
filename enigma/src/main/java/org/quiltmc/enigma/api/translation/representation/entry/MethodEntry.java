@@ -97,7 +97,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
-				mapping.tokenType(),
+				mapping,
 				new MethodEntry(this.parent, translatedName, translator.translate(this.descriptor), docs)
 		);
 	}

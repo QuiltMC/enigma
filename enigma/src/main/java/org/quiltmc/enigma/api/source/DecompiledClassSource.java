@@ -57,7 +57,7 @@ public class DecompiledClassSource {
 		TranslateResult<Entry<?>> translatedEntry = translator.extendedTranslate(entry);
 
 		if (project.isRenamable(reference)) {
-			if (!translatedEntry.isObfuscated()) {
+			if (translatedEntry != null && !translatedEntry.isObfuscated()) {
 				target.add(translatedEntry.getType(), movedToken);
 				return translatedEntry.getValue().getSourceRemapName();
 			} else {

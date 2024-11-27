@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.element;
 
 import org.quiltmc.enigma.api.analysis.EntryReference;
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.GuiController;
@@ -171,7 +172,7 @@ public class EditorPopupMenu {
 		this.openNextItem.setEnabled(controller.hasNextReference());
 		this.toggleMappingItem.setEnabled(isRenamable && (type != null && this.gui.isEditable(type)));
 
-		if (referenceEntry != null && this.gui.getController().getProject().getRemapper().extendedDeobfuscate(referenceEntry).isDeobfuscated()) {
+		if (referenceEntry != null && this.gui.getController().getProject().getRemapper().extendedDeobfuscate(referenceEntry).getType() == TokenType.DEOBFUSCATED) {
 			this.toggleMappingItem.setText(I18n.translate("popup_menu.reset_obfuscated"));
 		} else {
 			this.toggleMappingItem.setText(I18n.translate("popup_menu.mark_deobfuscated"));
