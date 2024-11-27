@@ -197,6 +197,22 @@ public class Enigma {
 		return this.parseFileType(path).flatMap(this::getReadWriteService);
 	}
 
+	/**
+	 * Searches for and returns a service with a matching id to the provided {@code id}.
+	 * @param type the type of the searched service
+	 * @param id the id of the service
+	 * @return the optional service
+	 */
+	public <T extends EnigmaService> Optional<T> getService(EnigmaServiceType<T> type, String id) {
+		for (T service : this.services.get(type)) {
+			if (service.getId().equals(id)) {
+				return Optional.of(service);
+			}
+		}
+
+		return Optional.empty();
+	}
+
 	public static void validatePluginId(String id) {
 		if (id != null && !id.matches("([a-z0-9_]+):([a-z0-9_]+((/[a-z0-9_]+)+)?)")) {
 			throw new IllegalArgumentException("Invalid plugin id: \"" + id + "\"\n" + "Refer to Javadoc on EnigmaService#getId for how to properly form a service ID.");

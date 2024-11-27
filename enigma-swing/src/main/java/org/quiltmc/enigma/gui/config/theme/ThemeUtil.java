@@ -79,14 +79,25 @@ public final class ThemeUtil {
 		UIManager.put("Button.font", bold);
 	}
 
-	public static Map<TokenType, BoxHighlightPainter> getBoxHighlightPainters() {
-		return Map.of(
-				TokenType.OBFUSCATED, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().obfuscated.value(), Config.getCurrentSyntaxPaneColors().obfuscatedOutline.value()),
-				TokenType.JAR_PROPOSED, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().proposed.value(), Config.getCurrentSyntaxPaneColors().proposedOutline.value()),
-				TokenType.DYNAMIC_PROPOSED, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().proposed.value(), Config.getCurrentSyntaxPaneColors().proposedOutline.value()),
-				TokenType.DEOBFUSCATED, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().deobfuscated.value(), Config.getCurrentSyntaxPaneColors().deobfuscatedOutline.value()),
-				TokenType.DEBUG, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().debugToken.value(), Config.getCurrentSyntaxPaneColors().debugTokenOutline.value())
-		);
+	public static BoxHighlightPainter createObfuscatedPainter() {
+		return BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().obfuscated.value(), Config.getCurrentSyntaxPaneColors().obfuscatedOutline.value());
+	}
+
+	public static BoxHighlightPainter createProposedPainter() {
+		return BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().proposed.value(), Config.getCurrentSyntaxPaneColors().proposedOutline.value());
+	}
+
+	public static BoxHighlightPainter createDeobfuscatedPainter() {
+		return BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().deobfuscated.value(), Config.getCurrentSyntaxPaneColors().deobfuscatedOutline.value());
+	}
+
+	public static BoxHighlightPainter createDebugPainter() {
+		return BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().debugToken.value(), Config.getCurrentSyntaxPaneColors().debugTokenOutline.value());
+	}
+
+	public static BoxHighlightPainter createFallbackPainter() {
+		// todo proper colours
+		return BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().proposed.value(), Config.getCurrentSyntaxPaneColors().debugTokenOutline.value());
 	}
 
 	public static <T> void resetIfAbsent(TrackedValue<T> value) {
