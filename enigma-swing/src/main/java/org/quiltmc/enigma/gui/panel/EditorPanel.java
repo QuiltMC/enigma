@@ -498,7 +498,7 @@ public class EditorPanel {
 		this.editor.getHighlighter().removeAllHighlights();
 
 		for (TokenType type : tokens.keySet()) {
-			BoxHighlightPainter tokenPainter = switch (type) {
+			BoxHighlightPainter typePainter = switch (type) {
 				case OBFUSCATED -> this.obfuscatedPainter;
 				case DEOBFUSCATED -> this.deobfuscatedPainter;
 				case DEBUG -> this.debugPainter;
@@ -506,13 +506,14 @@ public class EditorPanel {
 			};
 
 			for (Token token : tokens.get(type)) {
+				BoxHighlightPainter tokenPainter = typePainter;
 				EntryReference<Entry<?>, Entry<?>> reference = this.getReference(token);
 
 				if (reference != null) {
 					EditableType t = EditableType.fromEntry(reference.entry);
 					boolean editable = t == null || this.gui.isEditable(t);
 					boolean fallback = tokenStore.isFallback(token);
-					tokenPainter = editable ? (fallback ? this.fallbackPainter : tokenPainter) : this.proposedPainter;
+					tokenPainter = editable ? (fallback ? this.fallbackPainter : typePainter) : this.proposedPainter;
 				}
 
 				this.addHighlightedToken(token, tokenPainter);
