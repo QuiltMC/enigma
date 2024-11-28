@@ -326,7 +326,7 @@ public class Enigma {
 
 			for (EnigmaProfile.Service serviceProfile : serviceProfiles) {
 				T service = factory.create(this.getServiceContext(serviceProfile));
-				if (serviceProfile.matches(service.getId())) {
+				if (serviceProfile != null && serviceProfile.matches(service.getId())) {
 					this.putService(serviceType, service);
 					break;
 				}
