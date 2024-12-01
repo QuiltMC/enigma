@@ -96,8 +96,7 @@ public final class ThemeUtil {
 	}
 
 	public static BoxHighlightPainter createFallbackPainter() {
-		// todo proper colours
-		return BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().proposed.value(), Config.getCurrentSyntaxPaneColors().debugTokenOutline.value());
+		return BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().fallback.value(), Config.getCurrentSyntaxPaneColors().fallbackOutline.value());
 	}
 
 	public static <T> void resetIfAbsent(TrackedValue<T> value) {
