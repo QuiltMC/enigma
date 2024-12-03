@@ -113,7 +113,7 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 			this.deobfuscatedOutline = TrackedValue.create(deobfuscatedOutline, "deobfuscated_outline");
 
 			this.fallback = TrackedValue.create(fallback, "fallback");
-			this.fallbackOutline = TrackedValue.create(fallback, "fallbackOutline");
+			this.fallbackOutline = TrackedValue.create(fallbackOutline, "fallbackOutline");
 
 			this.editorBackground = TrackedValue.create(editorBackground, "editor_background");
 			this.highlight = TrackedValue.create(highlight, "highlight");
@@ -189,10 +189,8 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 			private ThemeProperties.SerializableColor deobfuscated = new ThemeProperties.SerializableColor(0xFFDCFFDC);
 			private ThemeProperties.SerializableColor deobfuscatedOutline = new ThemeProperties.SerializableColor(0xFF50A050);
 
-			// todo defaults for other themes
-			// todo better colours
-			private ThemeProperties.SerializableColor fallback = new ThemeProperties.SerializableColor(0x60eb8f34);
-			private ThemeProperties.SerializableColor fallbackOutline = new ThemeProperties.SerializableColor(0xFFeb8f34);
+			private ThemeProperties.SerializableColor fallback = new ThemeProperties.SerializableColor(0xFFffddbb);
+			private ThemeProperties.SerializableColor fallbackOutline = new ThemeProperties.SerializableColor(0xFFd86f06);
 
 			private ThemeProperties.SerializableColor editorBackground = new ThemeProperties.SerializableColor(0xFFFFFFFF);
 			private ThemeProperties.SerializableColor highlight = new ThemeProperties.SerializableColor(0xFF3333EE);
