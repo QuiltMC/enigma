@@ -272,13 +272,13 @@ public class EnigmaProject {
 			ClassNode classNode = this.getClassProvider().get(parentClass.getFullName());
 			if (classNode != null) {
 				classNode.methods.stream()
-					.filter(node -> node.name.equals(parent.getName()) && node.desc.equals(parent.getDesc().toString()))
-					.findFirst().ifPresent(node -> {
-						// occasionally it's possible to run into a method that has parameters, yet whose max locals is 0. java is stupid. we ignore those cases
-						if (!(node.parameters != null && node.parameters.size() > node.maxLocals)) {
-							maxLocals.set(node.maxLocals);
-						}
-					});
+						.filter(node -> node.name.equals(parent.getName()) && node.desc.equals(parent.getDesc().toString()))
+						.findFirst().ifPresent(node -> {
+							// occasionally it's possible to run into a method that has parameters, yet whose max locals is 0. java is stupid. we ignore those cases
+							if (!(node.parameters != null && node.parameters.size() > node.maxLocals)) {
+								maxLocals.set(node.maxLocals);
+							}
+						});
 			}
 
 			// if maxLocals is -1 it's not found for the method and should be ignored
