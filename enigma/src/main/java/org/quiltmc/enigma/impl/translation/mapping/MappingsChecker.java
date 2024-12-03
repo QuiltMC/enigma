@@ -116,7 +116,10 @@ public class MappingsChecker {
 		// account for child mappings that have been dropped already
 		if (!children.isEmpty()) {
 			for (Entry<?> child : children) {
-				if (!dropped.getDroppedMappings().containsKey(child) && !this.hasNoChildren(child, dropped)) {
+				var mapping = this.mappings.get(child);
+				if (mapping != null && !(mapping.targetName() == null && mapping.javadoc() == null)) {
+					return false;
+				} else if (!dropped.getDroppedMappings().containsKey(child) && this.hasNoChildren(child, dropped)) {
 					return true;
 				}
 			}
