@@ -258,13 +258,14 @@ public class EnigmaProject {
 	 * @param parameter the parameter to validate
 	 * @return whether the index is valid
 	 */
+	@SuppressWarnings("DataFlowIssue")
 	public boolean validateParameterIndex(LocalVariableEntry parameter) {
 		MethodEntry parent = parameter.getParent();
 		EntryIndex index = this.jarIndex.getIndex(EntryIndex.class);
 
 		if (index.hasMethod(parent)) {
 			AtomicInteger maxLocals = new AtomicInteger(-1);
-			ClassEntry parentClass = parent != null ? parent.getParent() : null;
+			ClassEntry parentClass = parent.getParent();
 
 			// find max_locals for method, representing the number of parameters it receives (JVMS§4.7.3)
 			// note: parent class cannot be null, warning suppressed
@@ -272,7 +273,12 @@ public class EnigmaProject {
 			if (classNode != null) {
 				classNode.methods.stream()
 						.filter(node -> node.name.equals(parent.getName()) && node.desc.equals(parent.getDesc().toString()))
-						.findFirst().ifPresent(node -> maxLocals.set(node.maxLocals));
+						.findFirst().ifPresent(node -> {
+							// occasionally it's possible to run into a method that has parameters, yet whose max locals is 0. java is stupid. we ignore those cases
+							if (!(node.parameters != null && node.parameters.size() > node.maxLocals)) {
+								maxLocals.set(node.maxLocals);
+							}
+						});
 			}
 
 			// if maxLocals is -1 it's not found for the method and should be ignored
