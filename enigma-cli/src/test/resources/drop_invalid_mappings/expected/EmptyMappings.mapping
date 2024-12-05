@@ -1,4 +1,0 @@
-CLASS a
-	CLASS b
-		METHOD b (Ljava/lang/String;)V
-			ARG 2 nonEmpty

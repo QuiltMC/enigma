@@ -118,15 +118,15 @@ public class MappingsChecker {
 		if (!children.isEmpty()) {
 			for (Entry<?> child : children) {
 				var mapping = this.mappings.get(child);
-				if (!dropped.getDroppedMappings().containsKey(child)
-						&& mapping != null && mapping.tokenType() != TokenType.OBFUSCATED
+				if ((!dropped.getDroppedMappings().containsKey(child)
+						&& mapping != null && mapping.tokenType() != TokenType.OBFUSCATED)
 						|| !this.hasNoMappedChildren(child, dropped)) {
 					return false;
 				}
 			}
 		}
 
-		return children.isEmpty();
+		return true;
 	}
 
 	public static class Dropped {

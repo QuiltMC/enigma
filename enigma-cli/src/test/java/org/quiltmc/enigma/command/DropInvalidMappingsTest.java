@@ -19,6 +19,8 @@ public class DropInvalidMappingsTest extends CommandTest {
 	private static final Path EMPTY_MAPPINGS_EXPECTED = EXPECTED_DIR.resolve("EmptyMappings.mapping");
 	private static final Path MAPPING_SAVE_INPUT = INPUT_DIR.resolve("MappingSave.mapping");
 	private static final Path MAPPING_SAVE_EXPECTED = EXPECTED_DIR.resolve("MappingSave.mapping");
+	private static final Path DISCARD_INNER_CLASS_INPUT = INPUT_DIR.resolve("DiscardInnerClass.mapping");
+	private static final Path DISCARD_INNER_CLASS_EXPECTED = EXPECTED_DIR.resolve("DiscardInnerClass.mapping");
 
 	@Test
 	public void testInvalidMappings() throws Exception {
@@ -51,6 +53,18 @@ public class DropInvalidMappingsTest extends CommandTest {
 		DropInvalidMappingsCommand.run(INNER_JAR, MAPPING_SAVE_INPUT, resultFile);
 
 		String expectedLines = Files.readString(MAPPING_SAVE_EXPECTED);
+		String actualLines = Files.readString(resultFile);
+
+		Assertions.assertEquals(expectedLines, actualLines);
+	}
+
+	@Test
+	public void testDiscardInnerClass() throws Exception {
+		Path resultFile = Files.createTempFile("discardInnerClass", ".mapping");
+
+		DropInvalidMappingsCommand.run(INNER_JAR, DISCARD_INNER_CLASS_INPUT, resultFile);
+
+		String expectedLines = Files.readString(DISCARD_INNER_CLASS_EXPECTED);
 		String actualLines = Files.readString(resultFile);
 
 		Assertions.assertEquals(expectedLines, actualLines);
