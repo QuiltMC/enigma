@@ -109,7 +109,7 @@ public class Main {
 
 			KeyBinds.loadConfig();
 
-			Gui gui = new Gui(parsedProfile, editables, true);
+			Gui gui = new Gui(parsedProfile, editables, false);
 			GuiController controller = gui.getController();
 
 			if (options.has("hide-progress-bars")) {
