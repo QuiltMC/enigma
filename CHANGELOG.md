@@ -308,3 +308,11 @@ In our bugfix era.
 - fixed stability issues introduced with the new validation on parameter indices
 - added missing translations for library indexing
 - fixed entry navigator pointing to negative entry indices after renaming items (thanks [pitheguy](https://github.com/PiTheGuy)!)
+
+# 2.5.3
+
+in the code straight up 'fixin it'. and by 'it' let's justr say. my bugs
+
+- fixed two issues with `dropInvalidMappings`
+  - fixed recursive search for mapping sometimes failing and dropping parents of mapped entries
+  - fixed an extremely rare case where methods with improper `max_locals` attributes would lose their args
