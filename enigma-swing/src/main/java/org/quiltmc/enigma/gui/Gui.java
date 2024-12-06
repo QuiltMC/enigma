@@ -103,7 +103,9 @@ public class Gui {
 	public final JFileChooser exportJarFileChooser;
 	public final SearchDialog searchDialog;
 
-	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean visible) {
+	private final boolean testEnvironment;
+
+	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean testEnvironment) {
 		this.dockerManager = new DockerManager(this);
 		this.mainWindow = new MainWindow(this, Enigma.NAME);
 		this.centerPanel = new JPanel(new BorderLayout());
@@ -126,6 +128,7 @@ public class Gui {
 		this.connectionStatusLabel = new JLabel();
 		this.notificationManager = new NotificationManager(this);
 		this.searchDialog = new SearchDialog(this);
+		this.testEnvironment = testEnvironment;
 
 		this.showsProgressBars = true;
 
@@ -133,7 +136,7 @@ public class Gui {
 
 		LanguageUtil.addListener(this::retranslateUi);
 
-		this.mainWindow.setVisible(visible);
+		this.mainWindow.setVisible(!testEnvironment);
 	}
 
 	private void setupDockers() {
@@ -271,6 +274,10 @@ public class Gui {
 
 	public Set<EditableType> getEditableTypes() {
 		return this.editableTypes;
+	}
+
+	public boolean isTestEnvironment() {
+		return this.testEnvironment;
 	}
 
 	public void addCrash(Throwable t) {
