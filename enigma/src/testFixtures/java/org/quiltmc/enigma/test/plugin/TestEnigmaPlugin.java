@@ -18,10 +18,48 @@ public class TestEnigmaPlugin implements EnigmaPlugin {
 	@Override
 	public void init(EnigmaPluginContext ctx) {
 		this.registerParameterNamingService(ctx);
+		this.registerFieldNamingService(ctx);
 	}
 
 	private void registerParameterNamingService(EnigmaPluginContext ctx) {
 		ctx.registerService(NameProposalService.TYPE, ctx1 -> new ParameterNameProposalService());
+	}
+
+	private void registerFieldNamingService(EnigmaPluginContext ctx) {
+		ctx.registerService(NameProposalService.TYPE, ctx2 -> new StringFieldNameProposalService());
+	}
+
+	public static class StringFieldNameProposalService implements NameProposalService {
+		@Override
+		public String getId() {
+			return "test:strings";
+		}
+
+		@Override
+		public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
+			EntryIndex entryIndex = index.getIndex(EntryIndex.class);
+			Map<Entry<?>, EntryMapping> names = new HashMap<>();
+
+			int fieldIndex = 0;
+			for (var field : entryIndex.getFields()) {
+				if (field.getDesc().toString().equals("Ljava/lang/String;")) {
+					names.put(field, this.createMapping("string" + fieldIndex, TokenType.JAR_PROPOSED));
+					fieldIndex++;
+				}
+			}
+
+			return names;
+		}
+
+		@Override
+		public boolean isFallback() {
+			return true;
+		}
+
+		@Override
+		public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, Entry<?> obfEntry, EntryMapping oldMapping, EntryMapping newMapping) {
+			return null;
+		}
 	}
 
 	public static class ParameterNameProposalService implements NameProposalService {
@@ -41,7 +79,9 @@ public class TestEnigmaPlugin implements EnigmaPlugin {
 					var param = method.getParameters(entryIndex).get(0);
 					names.put(param, this.createMapping("o", TokenType.JAR_PROPOSED));
 				} else {
-					for (var param : method.getParameters(entryIndex)) {
+					// only propose a name for the first parameter
+					if (!method.getParameters(index.getIndex(EntryIndex.class)).isEmpty()) {
+						var param = method.getParameters(entryIndex).get(0);
 						names.put(param, this.createMapping("param" + param.getIndex(), TokenType.JAR_PROPOSED));
 					}
 				}

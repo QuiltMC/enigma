@@ -46,7 +46,7 @@ public class FieldDefEntry extends FieldEntry implements DefEntry<ClassEntry> {
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
-				mapping.tokenType(),
+				mapping,
 				new FieldDefEntry(this.parent, translatedName, translatedDesc, translatedSignature, this.access, docs)
 		);
 	}

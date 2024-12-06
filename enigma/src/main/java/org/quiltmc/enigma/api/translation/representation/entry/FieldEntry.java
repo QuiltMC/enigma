@@ -53,7 +53,7 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
-				mapping.tokenType(),
+				mapping,
 				new FieldEntry(this.parent, translatedName, translator.translate(this.desc), docs)
 		);
 	}

@@ -80,7 +80,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
-				mapping.tokenType(),
+				mapping,
 				new ClassEntry(this.parent, translatedName, docs)
 		);
 	}
