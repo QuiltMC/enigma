@@ -24,7 +24,6 @@ import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.impl.plugin.BuiltinPlugin;
-import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -65,7 +64,7 @@ public class TestNameProposalBypassValidation {
 			Enigma enigma = Enigma.builder().setProfile(profile).setPlugins(List.of(new BuiltinPlugin(), new TestPlugin())).build();
 			project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
 		} catch (Exception e) {
-			Logger.error(e, "Failed to open jar!");
+			throw new RuntimeException("Failed to open jar!", e);
 		}
 	}
 

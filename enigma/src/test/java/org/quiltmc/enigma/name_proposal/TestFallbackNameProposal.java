@@ -23,7 +23,6 @@ import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.impl.plugin.BuiltinPlugin;
-import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -66,7 +65,7 @@ public class TestFallbackNameProposal {
 			Enigma enigma = Enigma.builder().setProfile(profile).setPlugins(List.of(new BuiltinPlugin(), new TestPlugin())).build();
 			project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
 		} catch (Exception e) {
-			Logger.error(e, "Failed to open jar!");
+			throw new RuntimeException("Failed to open jar!", e);
 		}
 	}
 
@@ -99,8 +98,6 @@ public class TestFallbackNameProposal {
 		assertEquals(0, proposerFieldStats.getUnmapped());
 		assertEquals(controlFieldStats.getMappable(), proposerFieldStats.getMapped());
 	}
-
-	// todo: ui test for colour?
 
 	private static void assertMappingStartsWith(Entry<?> obf, Entry<?> deobf) {
 		TranslateResult<? extends Entry<?>> result = project.getRemapper().getDeobfuscator().extendedTranslate(obf);
