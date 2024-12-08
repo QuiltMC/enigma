@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.api.service;
 
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -21,11 +22,12 @@ public interface NameProposalService extends EnigmaService {
 	 * Runs when a new JAR file is opened. Note that at this point, no mapping context will exist in the remapper.
 	 * All mappings proposed should have a token type of {@link TokenType#JAR_PROPOSED} and a non-null source plugin ID.
 	 *
+	 * @param enigma an enigma instance to use as context
 	 * @param index an index of the jar, to use as context
 	 * @return a map of obfuscated entries to their proposed names
 	 */
 	@Nullable
-	Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index);
+	Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index);
 
 	/**
 	 * Runs when an entry is renamed, for updating proposed names that use other mappings as context.
@@ -49,7 +51,7 @@ public interface NameProposalService extends EnigmaService {
 	/**
 	 * Disables validation of proposed mappings from this service.
 	 * This allows you to return any kind of mapping you want from {@link #getDynamicProposedNames(EntryRemapper, Entry, EntryMapping, EntryMapping)}
-	 * and {@link #getProposedNames(JarIndex)}, but should be used sparingly as it will allow creating mappings that can't be linked back to this proposer.
+	 * and {@link #getProposedNames(Enigma, JarIndex)}, but should be used sparingly as it will allow creating mappings that can't be linked back to this proposer.
 	 * Do not use this unless you're sure there's no other way to accomplish what you're looking to do!
 	 *
 	 * @return whether validation should be bypassed

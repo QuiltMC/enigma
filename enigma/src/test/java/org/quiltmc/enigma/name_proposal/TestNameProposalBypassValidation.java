@@ -125,7 +125,7 @@ public class TestNameProposalBypassValidation {
 
 		private static class TestFieldProposerNormal implements NameProposalService {
 			@Override
-			public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
+			public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
 				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
 				AtomicInteger i = new AtomicInteger();
 
@@ -149,7 +149,7 @@ public class TestNameProposalBypassValidation {
 
 		private static class TestMethodProposerWithBypass implements NameProposalService {
 			@Override
-			public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
+			public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
 				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
 				AtomicInteger i = new AtomicInteger();
 

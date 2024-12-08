@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.test.plugin;
 
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaPluginContext;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
@@ -36,7 +37,7 @@ public class TestEnigmaPlugin implements EnigmaPlugin {
 		}
 
 		@Override
-		public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
+		public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
 			EntryIndex entryIndex = index.getIndex(EntryIndex.class);
 			Map<Entry<?>, EntryMapping> names = new HashMap<>();
 
@@ -71,7 +72,7 @@ public class TestEnigmaPlugin implements EnigmaPlugin {
 		}
 
 		@Override
-		public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
+		public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
 			EntryIndex entryIndex = index.getIndex(EntryIndex.class);
 			Map<Entry<?>, EntryMapping> names = new HashMap<>();
 			for (var method : entryIndex.getMethods()) {
