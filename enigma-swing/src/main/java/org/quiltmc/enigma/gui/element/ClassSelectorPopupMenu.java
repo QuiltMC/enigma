@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.element;
 
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.docker.ClassesDocker;
@@ -121,7 +122,7 @@ public class ClassSelectorPopupMenu {
 		// update toggle mapping text to match
 		this.toggleMapping.setEnabled(selected != null);
 		if (selected != null) {
-			if (this.gui.getController().getProject().getRemapper().extendedDeobfuscate(selected).isDeobfuscated()) {
+			if (this.gui.getController().getProject().getRemapper().extendedDeobfuscate(selected).getType() == TokenType.DEOBFUSCATED) {
 				this.toggleMapping.setText(I18n.translate("popup_menu.reset_obfuscated"));
 			} else {
 				this.toggleMapping.setText(I18n.translate("popup_menu.mark_deobfuscated"));

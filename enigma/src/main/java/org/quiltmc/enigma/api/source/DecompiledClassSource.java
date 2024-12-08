@@ -4,6 +4,7 @@ import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
@@ -57,14 +58,14 @@ public class DecompiledClassSource {
 		TranslateResult<Entry<?>> translatedEntry = translator.extendedTranslate(entry);
 
 		if (project.isRenamable(reference)) {
-			if (!translatedEntry.isObfuscated()) {
-				target.add(translatedEntry.getType(), movedToken);
+			if (translatedEntry != null && !translatedEntry.isObfuscated()) {
+				target.add(project, translatedEntry.getMapping(), movedToken);
 				return translatedEntry.getValue().getSourceRemapName();
 			} else {
-				target.add(TokenType.OBFUSCATED, movedToken);
+				target.add(project, EntryMapping.OBFUSCATED, movedToken);
 			}
 		} else if (DEBUG_TOKEN_HIGHLIGHTS) {
-			target.add(TokenType.DEBUG, movedToken);
+			target.add(project, new EntryMapping(null, null, TokenType.DEBUG, null), movedToken);
 		}
 
 		return this.generateDefaultName(translatedEntry.getValue());

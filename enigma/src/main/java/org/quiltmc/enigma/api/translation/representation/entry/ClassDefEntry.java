@@ -77,7 +77,7 @@ public class ClassDefEntry extends ClassEntry implements DefEntry<ClassEntry> {
 		ClassEntry[] translatedInterfaces = Arrays.stream(this.interfaces).map(translator::translate).toArray(ClassEntry[]::new);
 		String docs = mapping.javadoc();
 		return TranslateResult.of(
-				mapping.tokenType(),
+				mapping,
 				new ClassDefEntry(this.parent, translatedName, translatedSignature, this.access, translatedSuper, translatedInterfaces, docs)
 		);
 	}

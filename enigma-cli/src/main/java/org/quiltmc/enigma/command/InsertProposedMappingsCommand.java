@@ -98,7 +98,7 @@ public class InsertProposedMappingsCommand extends Command {
 	@SuppressWarnings("unused")
 	public static EntryTree<EntryMapping> exec(NameProposalService[] nameProposalServices, EnigmaProject project) {
 		for (NameProposalService service : nameProposalServices) {
-			Map<Entry<?>, EntryMapping> jarMappings = service.getProposedNames(project.getJarIndex());
+			Map<Entry<?>, EntryMapping> jarMappings = service.getProposedNames(project.getEnigma(), project.getJarIndex());
 			Map<Entry<?>, EntryMapping> dynamicMappings = service.getDynamicProposedNames(project.getRemapper(), null, null, null);
 
 			insertMappings(jarMappings, project);

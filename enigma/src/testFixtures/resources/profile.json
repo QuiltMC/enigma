@@ -22,6 +22,9 @@
 				"id": "test:parameters"
 			},
 			{
+				"id": "test:strings"
+			},
+			{
 				"id": "enigma:record_component_proposer"
 			}
 		]

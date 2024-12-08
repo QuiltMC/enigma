@@ -132,7 +132,7 @@ public class TestNameProposal {
 
 		private record TestJarNameProposer(String prefix, String id) implements NameProposalService {
 			@Override
-			public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
+			public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
 				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
 				AtomicInteger i = new AtomicInteger();
 
@@ -154,7 +154,7 @@ public class TestNameProposal {
 
 		private record TestDynamicNameProposer(String id) implements NameProposalService {
 			@Override
-			public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
+			public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
 				return null;
 			}
 
