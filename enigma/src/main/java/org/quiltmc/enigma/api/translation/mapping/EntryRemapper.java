@@ -142,7 +142,14 @@ public class EntryRemapper {
 		for (var service : this.proposalServices) {
 			var proposedNames = service.getDynamicProposedNames(this, obfEntry, oldMapping, newMapping);
 			if (proposedNames != null) {
-				proposedNames.forEach(this.proposedMappings::insert);
+				// due to unchecked proposal, proposers are allowed to insert other token types
+				proposedNames.forEach((entry, mapping) -> {
+					if (mapping.tokenType().isProposed()) {
+						this.proposedMappings.insert(entry, mapping);
+					} else {
+						this.mappings.insert(entry, mapping);
+					}
+				});
 			}
 		}
 	}
