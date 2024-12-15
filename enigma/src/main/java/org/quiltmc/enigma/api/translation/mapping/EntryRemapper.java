@@ -4,6 +4,7 @@ import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.service.NameProposalService;
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.MappingTranslator;
 import org.quiltmc.enigma.api.translation.Translatable;
 import org.quiltmc.enigma.api.translation.TranslateResult;
@@ -143,11 +144,12 @@ public class EntryRemapper {
 			var proposedNames = service.getDynamicProposedNames(this, obfEntry, oldMapping, newMapping);
 			if (proposedNames != null) {
 				// due to unchecked proposal, proposers are allowed to insert other token types
+				// when deobfuscated, they must be put in the main tree
 				proposedNames.forEach((entry, mapping) -> {
-					if (mapping.tokenType().isProposed()) {
-						this.proposedMappings.insert(entry, mapping);
-					} else {
+					if (mapping.tokenType() == TokenType.DEOBFUSCATED) {
 						this.mappings.insert(entry, mapping);
+					} else {
+						this.proposedMappings.insert(entry, mapping);
 					}
 				});
 			}
