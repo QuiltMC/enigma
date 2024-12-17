@@ -44,6 +44,13 @@ public interface NameProposalService extends EnigmaService {
 	@Nullable
 	Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping);
 
+	/**
+	 * Marks names proposed by this service as 'fallback' names.
+	 * Fallback names will be visually differentiated in frontend applications, and should be expected to be of lower quality than a typical proposed name.
+	 * Fallback names will not count towards statistics.
+	 *
+	 * @return whether names from this service should be marked as fallback
+	 */
 	default boolean isFallback() {
 		return false;
 	}
