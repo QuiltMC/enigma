@@ -44,7 +44,7 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 		String javadoc = mapping.javadoc();
 		return TranslateResult.of(
-				mapping.tokenType(),
+				mapping,
 				new LocalVariableEntry(this.parent, this.index, translatedName, this.parameter, javadoc)
 		);
 	}

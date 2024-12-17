@@ -1,5 +1,9 @@
 package org.quiltmc.enigma.api.source;
 
+import org.quiltmc.enigma.api.EnigmaProject;
+import org.quiltmc.enigma.api.service.NameProposalService;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -9,15 +13,17 @@ import java.util.NavigableSet;
 import java.util.TreeSet;
 
 public final class TokenStore {
-	private static final TokenStore EMPTY = new TokenStore(Collections.emptyNavigableSet(), Collections.emptyMap(), null);
+	private static final TokenStore EMPTY = new TokenStore(Collections.emptyNavigableSet(), Collections.emptyMap(), Collections.emptyNavigableSet(), null);
 
 	private final NavigableSet<Token> tokens;
 	private final Map<TokenType, NavigableSet<Token>> byType;
+	private final NavigableSet<Token> fallbackTokens;
 	private final String obfSource;
 
-	private TokenStore(NavigableSet<Token> tokens, Map<TokenType, NavigableSet<Token>> byType, String obfSource) {
+	private TokenStore(NavigableSet<Token> tokens, Map<TokenType, NavigableSet<Token>> byType, NavigableSet<Token> fallbackTokens, String obfSource) {
 		this.tokens = tokens;
 		this.byType = byType;
+		this.fallbackTokens = fallbackTokens;
 		this.obfSource = obfSource;
 	}
 
@@ -27,22 +33,36 @@ public final class TokenStore {
 			map.put(value, new TreeSet<>(Comparator.comparing(t -> t.start)));
 		}
 
-		return new TokenStore(new TreeSet<>(Comparator.comparing(t -> t.start)), Collections.unmodifiableMap(map), obfuscatedIndex.getSource());
+		return new TokenStore(new TreeSet<>(Comparator.comparing(t -> t.start)), Collections.unmodifiableMap(map), new TreeSet<>(Comparator.comparing(t -> t.start)), obfuscatedIndex.getSource());
 	}
 
 	public static TokenStore empty() {
 		return TokenStore.EMPTY;
 	}
 
-	public void add(TokenType type, Token token) {
+	public void add(EnigmaProject project, EntryMapping mapping, Token token) {
 		this.tokens.add(token);
-		this.byType.get(type).add(token);
+		this.byType.get(mapping.tokenType()).add(token);
+
+		if (mapping.sourcePluginId() != null) {
+			var sourceServiceOptional = project.getEnigma().getService(NameProposalService.TYPE, mapping.sourcePluginId());
+			sourceServiceOptional.ifPresent(service -> {
+				if (service.isFallback()) {
+					this.fallbackTokens.add(token);
+				}
+			});
+		}
+	}
+
+	public boolean isFallback(Token token) {
+		return this.fallbackTokens.contains(token);
 	}
 
 	public boolean isCompatible(TokenStore other) {
 		return this.obfSource != null && other.obfSource != null
 				&& this.obfSource.equals(other.obfSource)
-				&& this.tokens.size() == other.tokens.size();
+				&& this.tokens.size() == other.tokens.size()
+				&& this.fallbackTokens.size() == other.fallbackTokens.size();
 	}
 
 	public int mapPosition(TokenStore to, int position) {

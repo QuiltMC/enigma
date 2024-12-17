@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.records;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.TestEntryFactory;
 import org.quiltmc.enigma.TestUtil;
@@ -25,8 +25,8 @@ public class TestRecordComponentProposal {
 	private static final Path JAR = TestUtil.obfJar("records");
 	private static EnigmaProject project;
 
-	@BeforeAll
-	static void setupEnigma() throws IOException {
+	@BeforeEach
+	void setupEnigma() throws IOException {
 		Reader r = new StringReader("""
 				{
 					"services": {
@@ -55,8 +55,8 @@ public class TestRecordComponentProposal {
 		FieldEntry aField = TestEntryFactory.newField(aClass, "a", "I");
 		MethodEntry aGetter = TestEntryFactory.newMethod(aClass, "a", "()I");
 
-		Assertions.assertSame(project.getRemapper().getMapping(aField).tokenType(), TokenType.OBFUSCATED);
-		Assertions.assertSame(project.getRemapper().getMapping(aGetter).tokenType(), TokenType.OBFUSCATED);
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(aField).tokenType());
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(aGetter).tokenType());
 
 		project.getRemapper().putMapping(TestUtil.newVC(), aField, new EntryMapping("mapped"));
 
@@ -78,9 +78,9 @@ public class TestRecordComponentProposal {
 		MethodEntry fakeAGetter = TestEntryFactory.newMethod(cClass, "a", "()I");
 		MethodEntry realAGetter = TestEntryFactory.newMethod(cClass, "b", "()I");
 
-		Assertions.assertSame(project.getRemapper().getMapping(aField).tokenType(), TokenType.OBFUSCATED);
-		Assertions.assertSame(project.getRemapper().getMapping(fakeAGetter).tokenType(), TokenType.OBFUSCATED);
-		Assertions.assertSame(project.getRemapper().getMapping(realAGetter).tokenType(), TokenType.OBFUSCATED);
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(aField).tokenType());
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(fakeAGetter).tokenType());
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(realAGetter).tokenType());
 
 		project.getRemapper().putMapping(TestUtil.newVC(), aField, new EntryMapping("mapped"));
 
@@ -105,8 +105,8 @@ public class TestRecordComponentProposal {
 		FieldEntry aField = TestEntryFactory.newField(aClass, "a", "I");
 		MethodEntry aGetter = TestEntryFactory.newMethod(aClass, "a", "()I");
 
-		Assertions.assertSame(project.getRemapper().getMapping(aField).tokenType(), TokenType.OBFUSCATED);
-		Assertions.assertSame(project.getRemapper().getMapping(aGetter).tokenType(), TokenType.OBFUSCATED);
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(aField).tokenType());
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(aGetter).tokenType());
 
 		// put name, make sure getter matches
 		project.getRemapper().putMapping(TestUtil.newVC(), aField, new EntryMapping("mapped"));
@@ -132,8 +132,8 @@ public class TestRecordComponentProposal {
 		FieldEntry aField = TestEntryFactory.newField(eClass, "a", "Ljava/lang/String;");
 		MethodEntry aGetter = TestEntryFactory.newMethod(eClass, "a", "()Ljava/lang/String;");
 
-		Assertions.assertSame(project.getRemapper().getMapping(aField).tokenType(), TokenType.OBFUSCATED);
-		Assertions.assertSame(project.getRemapper().getMapping(aGetter).tokenType(), TokenType.OBFUSCATED);
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(aField).tokenType());
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(aGetter).tokenType());
 
 		project.getRemapper().putMapping(TestUtil.newVC(), aField, new EntryMapping("mapped"));
 

@@ -42,6 +42,22 @@ public interface NameProposalService extends EnigmaService {
 	@Nullable
 	Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping);
 
+	default boolean isFallback() {
+		return false;
+	}
+
+	/**
+	 * Disables validation of proposed mappings from this service.
+	 * This allows you to return any kind of mapping you want from {@link #getDynamicProposedNames(EntryRemapper, Entry, EntryMapping, EntryMapping)}
+	 * and {@link #getProposedNames(JarIndex)}, but should be used sparingly as it will allow creating mappings that can't be linked back to this proposer.
+	 * Do not use this unless you're sure there's no other way to accomplish what you're looking to do!
+	 *
+	 * @return whether validation should be bypassed
+	 */
+	default boolean bypassValidation() {
+		return false;
+	}
+
 	/**
 	 * Creates a proposed mapping, with no javadoc and using {@link #getId()} as the source plugin ID.
 	 * @param name the name

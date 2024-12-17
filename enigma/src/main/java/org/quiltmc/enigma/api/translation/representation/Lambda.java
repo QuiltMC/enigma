@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.api.translation.representation;
 
-import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.Translatable;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
@@ -21,7 +20,7 @@ public record Lambda(String invokedName, MethodDescriptor invokedType, MethodDes
 		EntryMapping samMethodMapping = this.resolveMapping(resolver, mappings, samMethod);
 
 		return TranslateResult.of(
-				samMethodMapping.targetName() == null ? TokenType.OBFUSCATED : TokenType.DEOBFUSCATED,
+				samMethodMapping,
 				new Lambda(
 						samMethodMapping.targetName() != null ? samMethodMapping.targetName() : this.invokedName,
 						this.invokedType.extendedTranslate(translator, resolver, mappings).getValue(),
