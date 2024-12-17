@@ -4,14 +4,12 @@ import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.syntaxpain.JavaSyntaxKit;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.image.BufferedImage;
-import java.util.Map;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -79,14 +77,24 @@ public final class ThemeUtil {
 		UIManager.put("Button.font", bold);
 	}
 
-	public static Map<TokenType, BoxHighlightPainter> getBoxHighlightPainters() {
-		return Map.of(
-				TokenType.OBFUSCATED, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().obfuscated.value(), Config.getCurrentSyntaxPaneColors().obfuscatedOutline.value()),
-				TokenType.JAR_PROPOSED, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().proposed.value(), Config.getCurrentSyntaxPaneColors().proposedOutline.value()),
-				TokenType.DYNAMIC_PROPOSED, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().proposed.value(), Config.getCurrentSyntaxPaneColors().proposedOutline.value()),
-				TokenType.DEOBFUSCATED, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().deobfuscated.value(), Config.getCurrentSyntaxPaneColors().deobfuscatedOutline.value()),
-				TokenType.DEBUG, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().debugToken.value(), Config.getCurrentSyntaxPaneColors().debugTokenOutline.value())
-		);
+	public static BoxHighlightPainter createObfuscatedPainter() {
+		return BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().obfuscated.value(), Config.getCurrentSyntaxPaneColors().obfuscatedOutline.value());
+	}
+
+	public static BoxHighlightPainter createProposedPainter() {
+		return BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().proposed.value(), Config.getCurrentSyntaxPaneColors().proposedOutline.value());
+	}
+
+	public static BoxHighlightPainter createDeobfuscatedPainter() {
+		return BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().deobfuscated.value(), Config.getCurrentSyntaxPaneColors().deobfuscatedOutline.value());
+	}
+
+	public static BoxHighlightPainter createDebugPainter() {
+		return BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().debugToken.value(), Config.getCurrentSyntaxPaneColors().debugTokenOutline.value());
+	}
+
+	public static BoxHighlightPainter createFallbackPainter() {
+		return BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().fallback.value(), Config.getCurrentSyntaxPaneColors().fallbackOutline.value());
 	}
 
 	public static <T> void resetIfAbsent(TrackedValue<T> value) {

@@ -107,7 +107,7 @@ public class Enigma {
 
 			if (proposed != null) {
 				for (var entry : proposed.entrySet()) {
-					if (entry.getValue() != null && entry.getValue().tokenType() != TokenType.JAR_PROPOSED) {
+					if (!service.bypassValidation() && entry.getValue() != null && entry.getValue().tokenType() != TokenType.JAR_PROPOSED) {
 						throw new RuntimeException("Token type of mapping " + entry.getValue() + " for entry " + entry.getKey() + " was " + entry.getValue().tokenType() + ", but should be " + TokenType.JAR_PROPOSED + "!");
 					}
 
@@ -195,6 +195,22 @@ public class Enigma {
 	 */
 	public Optional<ReadWriteService> getReadWriteService(Path path) {
 		return this.parseFileType(path).flatMap(this::getReadWriteService);
+	}
+
+	/**
+	 * Searches for and returns a service with a matching id to the provided {@code id}.
+	 * @param type the type of the searched service
+	 * @param id the id of the service
+	 * @return the optional service
+	 */
+	public <T extends EnigmaService> Optional<T> getService(EnigmaServiceType<T> type, String id) {
+		for (T service : this.services.get(type)) {
+			if (service.getId().equals(id)) {
+				return Optional.of(service);
+			}
+		}
+
+		return Optional.empty();
 	}
 
 	public static void validatePluginId(String id) {
@@ -310,7 +326,7 @@ public class Enigma {
 
 			for (EnigmaProfile.Service serviceProfile : serviceProfiles) {
 				T service = factory.create(this.getServiceContext(serviceProfile));
-				if (serviceProfile.matches(service.getId())) {
+				if (serviceProfile != null && serviceProfile.matches(service.getId())) {
 					this.putService(serviceType, service);
 					break;
 				}

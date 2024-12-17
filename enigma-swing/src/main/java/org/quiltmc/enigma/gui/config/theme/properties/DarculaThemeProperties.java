@@ -54,6 +54,9 @@ public class DarculaThemeProperties extends AbstractDarculaThemeProperties {
 				.deobfuscated(new SerializableColor(0x4D50FA7B))
 				.deobfuscatedOutline(new SerializableColor(0x8050FA7B))
 
+				.fallback(new SerializableColor(0x4Daa5500))
+				.fallbackOutline(new SerializableColor(0x80d86f06))
+
 				.editorBackground(new SerializableColor(0xFF282A36))
 				.highlight(new SerializableColor(0xFFFF79C6))
 				.caret(new SerializableColor(0xFFF8F8F2))

@@ -28,7 +28,7 @@ public class LocalVariableDefEntry extends LocalVariableEntry {
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 		String javadoc = mapping.javadoc();
 		return TranslateResult.of(
-				mapping.tokenType(),
+				mapping,
 				new LocalVariableDefEntry(this.parent, this.index, translatedName, this.parameter, translatedDesc, javadoc)
 		);
 	}
