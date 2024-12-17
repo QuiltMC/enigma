@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.impl.plugin;
 
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.service.NameProposalService;
@@ -20,7 +21,7 @@ import java.util.Map;
 public record RecordComponentProposalService(Map<FieldEntry, MethodEntry> fieldToGetter) implements NameProposalService {
 	@Nullable
 	@Override
-	public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
+	public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
 		return null;
 	}
 

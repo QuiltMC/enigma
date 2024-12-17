@@ -103,7 +103,7 @@ public class Enigma {
 		int j = 1;
 		for (var service : nameProposalServices) {
 			progress.step(j++, I18n.translateFormatted("progress.jar.name_proposal.proposer", service.getId()));
-			Map<Entry<?>, EntryMapping> proposed = service.getProposedNames(index);
+			Map<Entry<?>, EntryMapping> proposed = service.getProposedNames(this, index);
 
 			if (proposed != null) {
 				for (var entry : proposed.entrySet()) {
