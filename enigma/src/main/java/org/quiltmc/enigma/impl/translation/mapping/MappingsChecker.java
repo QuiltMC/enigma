@@ -4,6 +4,7 @@ import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
@@ -79,7 +80,7 @@ public class MappingsChecker {
 		}
 
 		// Method entry has parameter names, keep it even though it's not the root.
-		return !(entry instanceof MethodEntry) || this.hasNoChildren(entry, dropped);
+		return !(entry instanceof MethodEntry) || this.hasNoMappedChildren(entry, dropped);
 
 		// Entry is not the root, and is not a method with params
 	}
@@ -103,29 +104,29 @@ public class MappingsChecker {
 			boolean isEmpty = (mapping.targetName() == null && mapping.javadoc() == null) || !this.project.isRenamable(entry);
 
 			if (isEmpty) {
-				return this.hasNoChildren(entry, dropped);
+				return this.hasNoMappedChildren(entry, dropped);
 			}
 		}
 
 		return false;
 	}
 
-	private boolean hasNoChildren(Entry<?> entry, Dropped dropped) {
+	private boolean hasNoMappedChildren(Entry<?> entry, Dropped dropped) {
 		var children = this.mappings.getChildren(entry);
 
 		// account for child mappings that have been dropped already
 		if (!children.isEmpty()) {
 			for (Entry<?> child : children) {
 				var mapping = this.mappings.get(child);
-				if (mapping != null && !(mapping.targetName() == null && mapping.javadoc() == null)) {
+				if ((!dropped.getDroppedMappings().containsKey(child)
+						&& mapping != null && mapping.tokenType() != TokenType.OBFUSCATED)
+						|| !this.hasNoMappedChildren(child, dropped)) {
 					return false;
-				} else if (!dropped.getDroppedMappings().containsKey(child) && this.hasNoChildren(child, dropped)) {
-					return true;
 				}
 			}
 		}
 
-		return children.isEmpty();
+		return true;
 	}
 
 	public static class Dropped {

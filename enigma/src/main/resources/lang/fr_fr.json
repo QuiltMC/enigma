@@ -115,7 +115,7 @@
 	"popup_menu.class_selector.rename_class": "Renommer la classe",
 	"popup_menu.class_selector.expand_all": "Tout développer",
 	"popup_menu.class_selector.collapse_all": "Tout réduire",
-	"popup_menu.class_selector.package_rename.title": "Renommage du package...",
+	"popup_menu.class_selector.package_rename.rename_title": "Renommage du package '%s'...",
 	"popup_menu.class_selector.package_rename.discovering": "Découverte des classes à renommer...",
 	"popup_menu.class_selector.package_rename.renaming_classes": "Renommage des classes...",
 	"popup_menu.class_selector.package_rename.renaming_class": "Renommage de la classe : %s",

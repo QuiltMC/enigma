@@ -100,7 +100,12 @@ public class ClassSelectorPopupMenu {
 			}
 		}
 
-		String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("popup_menu.class_selector.package_rename.title"), pathString.toString());
+		String title = switch (mode) {
+			case MOVE -> I18n.translateFormatted("popup_menu.class_selector.package_rename.move_title", pathString.toString());
+			case REFACTOR -> I18n.translateFormatted("popup_menu.class_selector.package_rename.rename_title", pathString.toString());
+		};
+
+		String input = JOptionPane.showInputDialog(this.gui.getFrame(), title, pathString.toString());
 		if (input != null) {
 			this.createPackageRenamer(mode).renamePackage(pathString.toString(), input);
 		}

@@ -1,0 +1,4 @@
+CLASS c
+	CLASS a
+		METHOD <init> (Lc;I)V
+			ARG 2 x

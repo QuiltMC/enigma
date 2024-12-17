@@ -1,0 +1,8 @@
+CLASS c
+	METHOD a ()V
+		ARG 34 invalid
+		ARG 23423 invalid
+	CLASS a
+		FIELD a I
+		METHOD <init> (Lc;I)V
+			ARG 2 x
