@@ -6,6 +6,7 @@ import org.quiltmc.enigma.api.analysis.index.jar.LibrariesJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.impl.analysis.ClassLoaderClassProvider;
 import org.quiltmc.enigma.api.service.EnigmaService;
 import org.quiltmc.enigma.api.service.EnigmaServiceContext;
@@ -195,6 +196,31 @@ public class Enigma {
 	 */
 	public Optional<ReadWriteService> getReadWriteService(Path path) {
 		return this.parseFileType(path).flatMap(this::getReadWriteService);
+	}
+
+	/**
+	 * Automatically determines the file type of and reads the provided mappings.
+	 * @param path the path to read
+	 * @return the read mappings
+	 */
+	public Optional<EntryTree<EntryMapping>> readMappings(Path path) throws MappingParseException, IOException {
+		return this.readMappings(path, ProgressListener.createEmpty());
+	}
+
+	/**
+	 * Automatically determines the file type of and reads the provided mappings.
+	 * @param path the path to read
+	 * @param progress a progress listener to use when reading
+	 * @return the read mappings
+	 */
+	public Optional<EntryTree<EntryMapping>> readMappings(Path path, ProgressListener progress) throws MappingParseException, IOException {
+		var service = this.getReadWriteService(path);
+
+		if (service.isPresent()) {
+			return Optional.ofNullable(service.get().read(path, progress));
+		}
+
+		return Optional.empty();
 	}
 
 	/**
