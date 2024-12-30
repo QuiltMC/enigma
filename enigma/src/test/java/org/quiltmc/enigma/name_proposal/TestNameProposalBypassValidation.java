@@ -22,8 +22,13 @@ import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
+import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.impl.plugin.BuiltinPlugin;
+import org.quiltmc.enigma.util.validation.PrintNotifier;
+import org.quiltmc.enigma.util.validation.ValidationContext;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -38,6 +43,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestNameProposalBypassValidation {
 	private static final Path JAR = TestUtil.obfJar("validation");
@@ -93,6 +99,18 @@ public class TestNameProposalBypassValidation {
 
 		assertMappingStartsWith(TestEntryFactory.newMethod("b", "c", "()V"), TestEntryFactory.newMethod("b", "gaming", "()V"));
 		assertMappingStartsWith(TestEntryFactory.newMethod("b", "a", "(I)V"), TestEntryFactory.newMethod("b", "gaming", "(I)V"));
+	}
+
+	@Test
+	void testDynamic() {
+		var method = TestEntryFactory.newMethod("a", "a", "()V");
+
+		// trigger dynamic proposal real quick
+		project.getRemapper().putMapping(new ValidationContext(PrintNotifier.INSTANCE), method, new EntryMapping("slay"));
+
+		var mapping = project.getRemapper().getMapping(method);
+		assertEquals(TokenType.DEOBFUSCATED, mapping.tokenType());
+		assertEquals("dynamicGaming", mapping.targetName());
 	}
 
 	private static void assertMappingStartsWith(Entry<?> obf, Entry<?> deobf) {
@@ -162,12 +180,15 @@ public class TestNameProposalBypassValidation {
 
 			@Override
 			public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
-				return null;
+				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
+				mappings.put(new MethodEntry(new ClassEntry("a"), "a", new MethodDescriptor("()V")), new EntryMapping("dynamicGaming", null, TokenType.DEOBFUSCATED, null));
+
+				return mappings;
 			}
 
 			@Override
-			public boolean bypassValidation() {
-				return true;
+			public void validateProposedMapping(Entry<?> entry, EntryMapping mapping) {
+				// no-op
 			}
 
 			@Override

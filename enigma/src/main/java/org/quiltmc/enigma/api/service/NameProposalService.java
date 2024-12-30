@@ -56,18 +56,6 @@ public interface NameProposalService extends EnigmaService {
 	}
 
 	/**
-	 * Disables validation of proposed mappings from this service.
-	 * This allows you to return any kind of mapping you want from {@link #getDynamicProposedNames(EntryRemapper, Entry, EntryMapping, EntryMapping)}
-	 * and {@link #getProposedNames(Enigma, JarIndex)}, but should be used sparingly as it will allow creating mappings that can't be linked back to this proposer.
-	 * Do not use this unless you're sure there's no other way to accomplish what you're looking to do!
-	 *
-	 * @return whether validation should be bypassed
-	 */
-	default boolean bypassValidation() {
-		return false;
-	}
-
-	/**
 	 * Creates a proposed mapping, with no javadoc and using {@link #getId()} as the source plugin ID.
 	 * @param name the name
 	 * @param tokenType the token type - must be either {@link TokenType#JAR_PROPOSED} or {@link TokenType#DYNAMIC_PROPOSED}
@@ -88,7 +76,7 @@ public interface NameProposalService extends EnigmaService {
 	 * @param mapping the mapping to be validated
 	 */
 	default void validateProposedMapping(@Nullable Entry<?> entry, @Nullable EntryMapping mapping) {
-		if (!this.bypassValidation() && mapping != null && mapping.tokenType() != TokenType.JAR_PROPOSED) {
+		if (mapping != null && mapping.tokenType() != TokenType.JAR_PROPOSED) {
 			throw new RuntimeException("Token type of mapping " + mapping + " for entry " + entry + " (was " + mapping.tokenType() + ", but should be " + TokenType.JAR_PROPOSED + "!)");
 		}
 	}
