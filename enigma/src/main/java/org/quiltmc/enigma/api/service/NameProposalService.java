@@ -80,4 +80,16 @@ public interface NameProposalService extends EnigmaService {
 
 		return new EntryMapping(name, null, tokenType, this.getId());
 	}
+	/**
+	 * Validates the provided mapping to ensure it is a valid proposal.
+	 * Do not override this unless you know exactly what you're doing!
+	 *
+	 * @param entry the entry the mapping will be attached to
+	 * @param mapping the mapping to be validated
+	 */
+	default void validateProposedMapping(@Nullable Entry<?> entry, @Nullable EntryMapping mapping) {
+		if (!this.bypassValidation() && mapping != null && mapping.tokenType() != TokenType.JAR_PROPOSED) {
+			throw new RuntimeException("Token type of mapping " + mapping + " for entry " + entry + " (was " + mapping.tokenType() + ", but should be " + TokenType.JAR_PROPOSED + "!)");
+		}
+	}
 }

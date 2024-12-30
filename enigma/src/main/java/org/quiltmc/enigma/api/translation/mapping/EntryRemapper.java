@@ -149,6 +149,8 @@ public class EntryRemapper {
 				// due to unchecked proposal, proposers are allowed to insert other token types
 				// when deobfuscated, they must be put in the main tree
 				proposedNames.forEach((entry, mapping) -> {
+					service.validateProposedMapping(entry, mapping);
+
 					if (mapping.tokenType() == TokenType.DEOBFUSCATED) {
 						this.mappings.insert(entry, mapping);
 					} else {

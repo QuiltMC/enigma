@@ -20,7 +20,6 @@ import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
 import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.service.ReadWriteService;
-import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.serde.FileType;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
@@ -108,10 +107,7 @@ public class Enigma {
 
 			if (proposed != null) {
 				for (var entry : proposed.entrySet()) {
-					if (!service.bypassValidation() && entry.getValue() != null && entry.getValue().tokenType() != TokenType.JAR_PROPOSED) {
-						throw new RuntimeException("Token type of mapping " + entry.getValue() + " for entry " + entry.getKey() + " was " + entry.getValue().tokenType() + ", but should be " + TokenType.JAR_PROPOSED + "!");
-					}
-
+					service.validateProposedMapping(entry.getKey(), entry.getValue());
 					proposedNames.insert(entry.getKey(), entry.getValue());
 				}
 			}
