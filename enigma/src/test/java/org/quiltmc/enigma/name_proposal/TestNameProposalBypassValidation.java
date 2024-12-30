@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.name_proposal;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.TestEntryFactory;
 import org.quiltmc.enigma.TestUtil;
@@ -44,13 +43,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TestNameProposalBypassValidation {
 	private static final Path JAR = TestUtil.obfJar("validation");
 	private static EnigmaProject project;
 
-	@BeforeAll
-	public static void setupEnigma() {
+	public static void setupEnigma(EnigmaPlugin plugin) {
 		Reader r = new StringReader("""
 				{
 					"services": {
@@ -67,7 +66,7 @@ public class TestNameProposalBypassValidation {
 
 		try {
 			EnigmaProfile profile = EnigmaProfile.parse(r);
-			Enigma enigma = Enigma.builder().setProfile(profile).setPlugins(List.of(new BuiltinPlugin(), new TestPlugin())).build();
+			Enigma enigma = Enigma.builder().setProfile(profile).setPlugins(List.of(new BuiltinPlugin(), plugin)).build();
 			project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to open jar!", e);
@@ -75,7 +74,25 @@ public class TestNameProposalBypassValidation {
 	}
 
 	@Test
+	public void testValidationFail() {
+		assertThrows(RuntimeException.class, () -> setupEnigma(new TestPlugin(false, false)));
+	}
+
+	@Test
+	public void testDynamicValidationFail() {
+		assertThrows(RuntimeException.class, () -> {
+			setupEnigma(new TestPlugin(false, true));
+
+			// trigger dynamic proposal real quick
+			var method = TestEntryFactory.newMethod("a", "a", "()V");
+			project.getRemapper().putMapping(new ValidationContext(PrintNotifier.INSTANCE), method, new EntryMapping("slay"));
+		});
+	}
+
+	@Test
 	public void test() throws IOException, MappingParseException {
+		setupEnigma(new TestPlugin(true, false));
+
 		// assert a couple mappings to make sure the test plugin works
 		assertMappingStartsWith(TestEntryFactory.newMethod("b", "c", "()V"), TestEntryFactory.newMethod("b", "gaming", "()V"));
 		assertMappingStartsWith(TestEntryFactory.newMethod("b", "a", "(I)V"), TestEntryFactory.newMethod("b", "gaming", "(I)V"));
@@ -103,6 +120,8 @@ public class TestNameProposalBypassValidation {
 
 	@Test
 	void testDynamic() {
+		setupEnigma(new TestPlugin(true, false));
+
 		var method = TestEntryFactory.newMethod("a", "a", "()V");
 
 		// trigger dynamic proposal real quick
@@ -134,67 +153,71 @@ public class TestNameProposalBypassValidation {
 		return project.getEnigma().getReadWriteService(project.getEnigma().getSupportedFileTypes().stream().filter(file -> file.getExtensions().contains("mapping") && !file.isDirectory()).findFirst().get()).get();
 	}
 
-	private static class TestPlugin implements EnigmaPlugin {
+	private record TestPlugin(boolean bypass, boolean dynamicOnly) implements EnigmaPlugin {
 		@Override
 		public void init(EnigmaPluginContext ctx) {
-			ctx.registerService(NameProposalService.TYPE, ctx1 -> new TestFieldProposerNormal());
-			ctx.registerService(NameProposalService.TYPE, ctx1 -> new TestMethodProposerWithBypass());
+			ctx.registerService(NameProposalService.TYPE, ctx1 -> new TestFieldProposer());
+			ctx.registerService(NameProposalService.TYPE, ctx1 -> new TestMethodProposer(this.bypass, this.dynamicOnly));
+		}
+	}
+
+	private static class TestFieldProposer implements NameProposalService {
+		@Override
+		public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
+			Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
+			AtomicInteger i = new AtomicInteger();
+
+			index.getIndex(EntryIndex.class).getFields().forEach(
+				field -> mappings.put(field, this.createMapping("slay" + i.getAndIncrement(), TokenType.JAR_PROPOSED))
+			);
+
+			return mappings;
 		}
 
-		private static class TestFieldProposerNormal implements NameProposalService {
-			@Override
-			public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
-				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
-				AtomicInteger i = new AtomicInteger();
-
-				index.getIndex(EntryIndex.class).getFields().forEach(
-						field -> mappings.put(field, this.createMapping("slay" + i.getAndIncrement(), TokenType.JAR_PROPOSED))
-				);
-
-				return mappings;
-			}
-
-			@Override
-			public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
-				return null;
-			}
-
-			@Override
-			public String getId() {
-				return "test:name_all_fields_slay";
-			}
+		@Override
+		public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
+			return null;
 		}
 
-		private static class TestMethodProposerWithBypass implements NameProposalService {
-			@Override
-			public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
-				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
+		@Override
+		public String getId() {
+			return "test:name_all_fields_slay";
+		}
+	}
+
+	private record TestMethodProposer(boolean bypass, boolean dynamicOnly) implements NameProposalService {
+		@Override
+		public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
+			Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
+			if (!this.dynamicOnly) {
 				AtomicInteger i = new AtomicInteger();
 
 				index.getIndex(EntryIndex.class).getMethods().forEach(
-						method -> mappings.put(method, new EntryMapping("gaming" + i.getAndIncrement(), null, TokenType.DEOBFUSCATED, null))
+					method -> mappings.put(method, new EntryMapping("gaming" + i.getAndIncrement(), null, TokenType.DEOBFUSCATED, null))
 				);
-
-				return mappings;
 			}
 
-			@Override
-			public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
-				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
-				mappings.put(new MethodEntry(new ClassEntry("a"), "a", new MethodDescriptor("()V")), new EntryMapping("dynamicGaming", null, TokenType.DEOBFUSCATED, null));
+			return mappings;
+		}
 
-				return mappings;
-			}
+		@Override
+		public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
+			Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
+			mappings.put(new MethodEntry(new ClassEntry("a"), "a", new MethodDescriptor("()V")), new EntryMapping("dynamicGaming", null, TokenType.DEOBFUSCATED, null));
 
-			@Override
-			public void validateProposedMapping(Entry<?> entry, EntryMapping mapping) {
-				// no-op
-			}
+			return mappings;
+		}
 
-			@Override
-			public String getId() {
-				return "test:name_all_methods_gaming";
+		@Override
+		public void validateProposedMapping(Entry<?> entry, EntryMapping mapping) {
+			if (!this.bypass()) {
+				NameProposalService.super.validateProposedMapping(entry, mapping);
 			}
+		}
+
+		@Override
+		public String getId() {
+			return "test:name_all_methods_gaming";
 		}
 	}
 }
