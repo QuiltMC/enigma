@@ -68,6 +68,7 @@ public interface NameProposalService extends EnigmaService {
 
 		return new EntryMapping(name, null, tokenType, this.getId());
 	}
+
 	/**
 	 * Validates the provided mapping to ensure it is a valid proposal.
 	 * Do not override this unless you know exactly what you're doing!

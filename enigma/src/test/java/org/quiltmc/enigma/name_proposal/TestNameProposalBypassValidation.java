@@ -168,7 +168,7 @@ public class TestNameProposalBypassValidation {
 			AtomicInteger i = new AtomicInteger();
 
 			index.getIndex(EntryIndex.class).getFields().forEach(
-				field -> mappings.put(field, this.createMapping("slay" + i.getAndIncrement(), TokenType.JAR_PROPOSED))
+					field -> mappings.put(field, this.createMapping("slay" + i.getAndIncrement(), TokenType.JAR_PROPOSED))
 			);
 
 			return mappings;
@@ -193,7 +193,7 @@ public class TestNameProposalBypassValidation {
 				AtomicInteger i = new AtomicInteger();
 
 				index.getIndex(EntryIndex.class).getMethods().forEach(
-					method -> mappings.put(method, new EntryMapping("gaming" + i.getAndIncrement(), null, TokenType.DEOBFUSCATED, null))
+						method -> mappings.put(method, new EntryMapping("gaming" + i.getAndIncrement(), null, TokenType.DEOBFUSCATED, null))
 				);
 			}
 
