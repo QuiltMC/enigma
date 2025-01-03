@@ -107,7 +107,7 @@ public class Enigma {
 
 			if (proposed != null) {
 				for (var entry : proposed.entrySet()) {
-					service.validateProposedMapping(entry.getKey(), entry.getValue());
+					service.validateProposedMapping(entry.getKey(), entry.getValue(), false);
 					proposedNames.insert(entry.getKey(), entry.getValue());
 				}
 			}

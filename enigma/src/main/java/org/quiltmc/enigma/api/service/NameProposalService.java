@@ -76,9 +76,9 @@ public interface NameProposalService extends EnigmaService {
 	 * @param entry the entry the mapping will be attached to
 	 * @param mapping the mapping to be validated
 	 */
-	default void validateProposedMapping(@Nullable Entry<?> entry, @Nullable EntryMapping mapping) {
-		if (mapping != null && mapping.tokenType() != TokenType.JAR_PROPOSED) {
-			throw new RuntimeException("Token type of mapping " + mapping + " for entry " + entry + " (was " + mapping.tokenType() + ", but should be " + TokenType.JAR_PROPOSED + "!)");
+	default void validateProposedMapping(@Nullable Entry<?> entry, @Nullable EntryMapping mapping, boolean dynamic) {
+		if (mapping != null && mapping.tokenType() != (dynamic ? TokenType.DYNAMIC_PROPOSED : TokenType.JAR_PROPOSED)) {
+			throw new RuntimeException("Token type of mapping " + mapping + " for entry " + entry + " was " + mapping.tokenType() + ", but should be " + TokenType.JAR_PROPOSED + "!");
 		}
 	}
 }

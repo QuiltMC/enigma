@@ -209,9 +209,9 @@ public class TestNameProposalBypassValidation {
 		}
 
 		@Override
-		public void validateProposedMapping(Entry<?> entry, EntryMapping mapping) {
+		public void validateProposedMapping(Entry<?> entry, EntryMapping mapping, boolean dynamic) {
 			if (!this.bypass()) {
-				NameProposalService.super.validateProposedMapping(entry, mapping);
+				NameProposalService.super.validateProposedMapping(entry, mapping, dynamic);
 			}
 		}
 

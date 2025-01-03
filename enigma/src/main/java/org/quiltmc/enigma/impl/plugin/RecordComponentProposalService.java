@@ -78,6 +78,15 @@ public record RecordComponentProposalService(Map<FieldEntry, MethodEntry> fieldT
 		return Map.of(obfMethodEntry, newMapping);
 	}
 
+	@Override
+	public void validateProposedMapping(Entry<?> entry, EntryMapping mapping, boolean dynamic) {
+		if (dynamic && mapping.tokenType() == TokenType.OBFUSCATED) {
+			return;
+		}
+
+		NameProposalService.super.validateProposedMapping(entry, mapping, dynamic);
+	}
+
 	public boolean isGetter(FieldEntry obfFieldEntry, MethodEntry method) {
 		var getter = this.fieldToGetter.get(obfFieldEntry);
 		return getter != null && getter.equals(method);
