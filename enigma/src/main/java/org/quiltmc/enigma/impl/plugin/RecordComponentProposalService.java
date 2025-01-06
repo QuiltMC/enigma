@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.impl.plugin;
 
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.service.NameProposalService;
@@ -20,7 +21,7 @@ import java.util.Map;
 public record RecordComponentProposalService(Map<FieldEntry, MethodEntry> fieldToGetter) implements NameProposalService {
 	@Nullable
 	@Override
-	public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
+	public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
 		return null;
 	}
 
@@ -75,6 +76,15 @@ public record RecordComponentProposalService(Map<FieldEntry, MethodEntry> fieldT
 		// remap method to match field
 		EntryMapping newMapping = mapping.tokenType() == TokenType.OBFUSCATED ? new EntryMapping(null, null, TokenType.OBFUSCATED, null) : this.createMapping(mapping.targetName(), TokenType.DYNAMIC_PROPOSED);
 		return Map.of(obfMethodEntry, newMapping);
+	}
+
+	@Override
+	public void validateProposedMapping(Entry<?> entry, EntryMapping mapping, boolean dynamic) {
+		if (dynamic && mapping.tokenType() == TokenType.OBFUSCATED) {
+			return;
+		}
+
+		NameProposalService.super.validateProposedMapping(entry, mapping, dynamic);
 	}
 
 	public boolean isGetter(FieldEntry obfFieldEntry, MethodEntry method) {
