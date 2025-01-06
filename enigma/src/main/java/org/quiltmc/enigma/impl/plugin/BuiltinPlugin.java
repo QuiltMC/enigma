@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.impl.plugin;
 
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaPluginContext;
@@ -38,7 +39,7 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 
 		ctx.registerService(NameProposalService.TYPE, ctx1 -> new NameProposalService() {
 			@Override
-			public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
+			public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
 				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
 
 				index.getIndex(EntryIndex.class).getFields().forEach(field -> {
@@ -73,7 +74,7 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 	private static void registerSpecializedMethodNamingService(EnigmaPluginContext ctx) {
 		ctx.registerService(NameProposalService.TYPE, ctx1 -> new NameProposalService() {
 			@Override
-			public Map<Entry<?>, EntryMapping> getProposedNames(JarIndex index) {
+			public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
 				BridgeMethodIndex bridgeMethodIndex = index.getIndex(BridgeMethodIndex.class);
 				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
 

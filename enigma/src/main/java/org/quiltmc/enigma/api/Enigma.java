@@ -6,6 +6,7 @@ import org.quiltmc.enigma.api.analysis.index.jar.LibrariesJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.impl.analysis.ClassLoaderClassProvider;
 import org.quiltmc.enigma.api.service.EnigmaService;
 import org.quiltmc.enigma.api.service.EnigmaServiceContext;
@@ -19,7 +20,6 @@ import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
 import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.service.ReadWriteService;
-import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.serde.FileType;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
@@ -103,14 +103,11 @@ public class Enigma {
 		int j = 1;
 		for (var service : nameProposalServices) {
 			progress.step(j++, I18n.translateFormatted("progress.jar.name_proposal.proposer", service.getId()));
-			Map<Entry<?>, EntryMapping> proposed = service.getProposedNames(index);
+			Map<Entry<?>, EntryMapping> proposed = service.getProposedNames(this, index);
 
 			if (proposed != null) {
 				for (var entry : proposed.entrySet()) {
-					if (!service.bypassValidation() && entry.getValue() != null && entry.getValue().tokenType() != TokenType.JAR_PROPOSED) {
-						throw new RuntimeException("Token type of mapping " + entry.getValue() + " for entry " + entry.getKey() + " was " + entry.getValue().tokenType() + ", but should be " + TokenType.JAR_PROPOSED + "!");
-					}
-
+					service.validateProposedMapping(entry.getKey(), entry.getValue(), false);
 					proposedNames.insert(entry.getKey(), entry.getValue());
 				}
 			}
@@ -195,6 +192,31 @@ public class Enigma {
 	 */
 	public Optional<ReadWriteService> getReadWriteService(Path path) {
 		return this.parseFileType(path).flatMap(this::getReadWriteService);
+	}
+
+	/**
+	 * Automatically determines the file type of and reads the provided mappings.
+	 * @param path the path to read
+	 * @return the read mappings
+	 */
+	public Optional<EntryTree<EntryMapping>> readMappings(Path path) throws MappingParseException, IOException {
+		return this.readMappings(path, ProgressListener.createEmpty());
+	}
+
+	/**
+	 * Automatically determines the file type of and reads the provided mappings.
+	 * @param path the path to read
+	 * @param progress a progress listener to use when reading
+	 * @return the read mappings
+	 */
+	public Optional<EntryTree<EntryMapping>> readMappings(Path path, ProgressListener progress) throws MappingParseException, IOException {
+		var service = this.getReadWriteService(path);
+
+		if (service.isPresent()) {
+			return Optional.ofNullable(service.get().read(path, progress));
+		}
+
+		return Optional.empty();
 	}
 
 	/**
