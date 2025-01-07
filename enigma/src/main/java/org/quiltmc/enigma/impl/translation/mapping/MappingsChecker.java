@@ -9,10 +9,12 @@ import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -31,39 +33,50 @@ public class MappingsChecker {
 		this.mappings = mappings;
 	}
 
-	private Dropped dropMappings(ProgressListener progress, BiConsumer<Dropped, Entry<?>> dropper) {
-		Dropped dropped = new Dropped();
-
+	private Dropper collectMappings(ProgressListener progress, Dropper dropper, BiConsumer<Dropper, Entry<?>> dropFunction) {
 		// HashEntryTree#getAllEntries filters out empty classes
-		List<? extends Entry<?>> entries = StreamSupport.stream(this.mappings.spliterator(), false).map(EntryTreeNode::getEntry).toList();
+		List<? extends Entry<?>> entries = new ArrayList<>(StreamSupport.stream(this.mappings.spliterator(), false).map(EntryTreeNode::getEntry).toList());
+
+		// sort so that we begin with local variables and end with class entries. this is probably a terrible way of doing this
+		entries.sort((a, b) -> {
+			if (a instanceof LocalVariableEntry && !(b instanceof LocalVariableEntry)) {
+				return -1;
+			} else if (b instanceof LocalVariableEntry && !(a instanceof LocalVariableEntry)) {
+				return 1;
+			} else if (a instanceof ClassEntry && !(b instanceof ClassEntry)) {
+				return 1;
+			} else if (b instanceof ClassEntry && !(a instanceof ClassEntry)) {
+				return -1;
+			}
+
+			return 0;
+		});
 
 		progress.init(entries.size(), "Checking for dropped mappings");
 
 		int steps = 0;
 		for (Entry<?> entry : entries) {
 			progress.step(steps++, entry.toString());
-			dropper.accept(dropped, entry);
+			dropFunction.accept(dropper, entry);
 		}
 
-		dropped.apply(this.mappings);
-
-		return dropped;
+		return dropper;
 	}
 
-	public Dropped dropBrokenMappings(ProgressListener progress) {
-		return this.dropMappings(progress, this::tryDropBrokenEntry);
+	public Dropper collectBrokenMappings(ProgressListener progress, Dropper dropper) {
+		return this.collectMappings(progress, dropper, this::tryDropBrokenEntry);
 	}
 
-	private void tryDropBrokenEntry(Dropped dropped, Entry<?> entry) {
-		if (this.shouldDropBrokenEntry(dropped, entry)) {
+	private void tryDropBrokenEntry(Dropper dropper, Entry<?> entry) {
+		if (this.shouldDropBrokenEntry(dropper, entry)) {
 			EntryMapping mapping = this.mappings.get(entry);
 			if (mapping != null) {
-				dropped.drop(entry, mapping);
+				dropper.addPendingDrop(entry, mapping);
 			}
 		}
 	}
 
-	private boolean shouldDropBrokenEntry(Dropped dropped, Entry<?> entry) {
+	private boolean shouldDropBrokenEntry(Dropper dropper, Entry<?> entry) {
 		if (!this.index.getIndex(EntryIndex.class).hasEntry(entry)
 				|| (entry instanceof LocalVariableEntry parameter && !this.project.validateParameterIndex(parameter))) {
 			return true;
@@ -80,47 +93,49 @@ public class MappingsChecker {
 		}
 
 		// Method entry has parameter names, keep it even though it's not the root.
-		return !(entry instanceof MethodEntry) || this.hasNoMappedChildren(entry, dropped);
+		return !(entry instanceof MethodEntry) || this.hasNoMappedChildren(entry, dropper);
 
 		// Entry is not the root, and is not a method with params
 	}
 
-	public Dropped dropEmptyMappings(ProgressListener progress) {
-		return this.dropMappings(progress, this::tryDropEmptyEntry);
+	public Dropper collectEmptyMappings(ProgressListener progress, Dropper dropperBroken) {
+		return this.collectMappings(progress, dropperBroken, this::tryDropEmptyEntry);
 	}
 
-	private void tryDropEmptyEntry(Dropped dropped, Entry<?> entry) {
-		if (this.shouldDropEmptyMapping(dropped, entry)) {
+	private void tryDropEmptyEntry(Dropper dropper, Entry<?> entry) {
+		if (this.shouldDropEmptyMapping(dropper, entry)) {
 			EntryMapping mapping = this.mappings.get(entry);
 			if (mapping != null) {
-				dropped.drop(entry, mapping);
+				dropper.addPendingDrop(entry, mapping);
 			}
 		}
 	}
 
-	private boolean shouldDropEmptyMapping(Dropped dropped, Entry<?> entry) {
+	private boolean shouldDropEmptyMapping(Dropper dropper, Entry<?> entry) {
 		EntryMapping mapping = this.mappings.get(entry);
 		if (mapping != null) {
 			boolean isEmpty = (mapping.targetName() == null && mapping.javadoc() == null) || !this.project.isRenamable(entry);
 
 			if (isEmpty) {
-				return this.hasNoMappedChildren(entry, dropped);
+				return this.hasNoMappedChildren(entry, dropper);
 			}
 		}
 
 		return false;
 	}
 
-	private boolean hasNoMappedChildren(Entry<?> entry, Dropped dropped) {
+	private boolean hasNoMappedChildren(Entry<?> entry, Dropper dropper) {
 		var children = this.mappings.getChildren(entry);
 
 		// account for child mappings that have been dropped already
 		if (!children.isEmpty()) {
+			var droppedMappings = dropper.getDroppedAndPending();
+
 			for (Entry<?> child : children) {
 				var mapping = this.mappings.get(child);
-				if ((!dropped.getDroppedMappings().containsKey(child)
+				if ((!droppedMappings.containsKey(child)
 						&& mapping != null && mapping.tokenType() != TokenType.OBFUSCATED)
-						|| !this.hasNoMappedChildren(child, dropped)) {
+						|| !this.hasNoMappedChildren(child, dropper)) {
 					return false;
 				}
 			}
@@ -129,14 +144,17 @@ public class MappingsChecker {
 		return true;
 	}
 
-	public static class Dropped {
+	public static class Dropper {
 		private final Map<Entry<?>, String> droppedMappings = new HashMap<>();
+		private final Map<Entry<?>, String> pendingDroppedMappings = new HashMap<>();
 
-		public void drop(Entry<?> entry, EntryMapping mapping) {
-			this.droppedMappings.put(entry, mapping.targetName() != null ? mapping.targetName() : entry.getName());
+		public void addPendingDrop(Entry<?> entry, EntryMapping mapping) {
+			this.pendingDroppedMappings.put(entry, mapping.targetName() != null ? mapping.targetName() : entry.getName());
 		}
 
-		void apply(EntryTree<EntryMapping> mappings) {
+		public void applyPendingDrops(EntryTree<EntryMapping> mappings) {
+			this.droppedMappings.putAll(this.pendingDroppedMappings);
+
 			for (Entry<?> entry : this.droppedMappings.keySet()) {
 				EntryTreeNode<EntryMapping> node = mappings.findNode(entry);
 				if (node == null) {
@@ -147,10 +165,23 @@ public class MappingsChecker {
 					mappings.remove(childEntry);
 				}
 			}
+
+			this.pendingDroppedMappings.clear();
+		}
+
+		public Map<Entry<?>, String> getDroppedAndPending() {
+			var map = new HashMap<Entry<?>, String>();
+			map.putAll(this.droppedMappings);
+			map.putAll(this.pendingDroppedMappings);
+			return map;
 		}
 
 		public Map<Entry<?>, String> getDroppedMappings() {
 			return this.droppedMappings;
+		}
+
+		public Map<Entry<?>, String> getPendingDroppedMappings() {
+			return this.pendingDroppedMappings;
 		}
 	}
 }

@@ -10,6 +10,7 @@ import java.nio.file.Path;
 public class DropInvalidMappingsTest extends CommandTest {
 	private static final Path LONE_JAR = TestUtil.obfJar("lone_class");
 	private static final Path INNER_JAR = TestUtil.obfJar("inner_classes");
+	private static final Path ENUMS_JAR = TestUtil.obfJar("enums");
 	private static final Path INPUT_DIR = getResource("/drop_invalid_mappings/input/");
 	private static final Path EXPECTED_DIR = getResource("/drop_invalid_mappings/expected/");
 
@@ -21,6 +22,8 @@ public class DropInvalidMappingsTest extends CommandTest {
 	private static final Path MAPPING_SAVE_EXPECTED = EXPECTED_DIR.resolve("MappingSave.mapping");
 	private static final Path DISCARD_INNER_CLASS_INPUT = INPUT_DIR.resolve("DiscardInnerClass.mapping");
 	private static final Path DISCARD_INNER_CLASS_EXPECTED = EXPECTED_DIR.resolve("DiscardInnerClass.mapping");
+	private static final Path ENUMS_INPUT = INPUT_DIR.resolve("Enums.mapping");
+	private static final Path ENUMS_EXPECTED = EXPECTED_DIR.resolve("Enums.mapping");
 
 	@Test
 	public void testInvalidMappings() throws Exception {
@@ -65,6 +68,18 @@ public class DropInvalidMappingsTest extends CommandTest {
 		DropInvalidMappingsCommand.run(INNER_JAR, DISCARD_INNER_CLASS_INPUT, resultFile);
 
 		String expectedLines = Files.readString(DISCARD_INNER_CLASS_EXPECTED);
+		String actualLines = Files.readString(resultFile);
+
+		Assertions.assertEquals(expectedLines, actualLines);
+	}
+
+	@Test
+	public void testEnums() throws Exception {
+		Path resultFile = Files.createTempFile("enums", ".mapping");
+
+		DropInvalidMappingsCommand.run(ENUMS_JAR, ENUMS_INPUT, resultFile);
+
+		String expectedLines = Files.readString(ENUMS_EXPECTED);
 		String actualLines = Files.readString(resultFile);
 
 		Assertions.assertEquals(expectedLines, actualLines);
