@@ -1,0 +1,7 @@
+CLASS a Gaming
+	FIELD a wawa I
+	METHOD <init> (Ljava/lang/String;II)V
+		ARG 3 wawa
+	METHOD a wawa ()I
+	METHOD valueOf (Ljava/lang/String;)La;
+			ARG 0 name
