@@ -13,6 +13,36 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
+/**
+ * Represents a Java type descriptor.
+ * Type descriptors are used to represent the types of elements such as arguments, fields, and method returns.
+ * <p>
+ *     Type descriptors can be formatted two different ways:
+ *     <ul>
+ *         <li>
+ *             For objects, descriptors are formatted as {@code Lpackage/Class$Inner;}.
+ *             The prefix {@code L} denotes the start of an object type, followed by the fully qualified name,
+ *             and ending in {@code ;}.
+ *         </li>
+ *         <li>
+ *             For primitives, descriptors are formatted as a single, uppercase letter.
+ *             Each primitive has its own designated letter, which is the first letter of its keyword for all but {@code boolean} and {@code long}:
+ *             <ul>
+ *                 <li>{@code byte}: {@code B}</li>
+ *                 <li>{@code char}: {@code C}</li>
+ *                 <li>{@code short}: {@code S}</li>
+ *                 <li>{@code int}: {@code I}</li>
+ *                 <li>{@code long}: {@code J}</li>
+ *                 <li>{@code float}: {@code F}</li>
+ *                 <li>{@code double}: {@code D}</li>
+ *                 <li>{@code boolean}: {@code Z}</li>
+ *             </ul>
+ *         </li>
+ *     </ul>
+ * </p>
+ *
+ * When representing an array type in a type descriptor, the descriptor is prefixed by {@code [}, such as {@code [I} or {@code [Lpackage/Class;}.
+ */
 public class TypeDescriptor implements Translatable {
 	protected final String desc;
 
