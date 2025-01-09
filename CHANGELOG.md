@@ -316,3 +316,33 @@ in the code straight up 'fixin it'. and by 'it' let's justr say. my bugs
 - fixed two issues with `dropInvalidMappings`
   - fixed recursive search for mapping sometimes failing and dropping parents of mapped entries
   - fixed an extremely rare case where methods with improper `max_locals` attributes would lose their args
+
+# 2.6.0
+
+My beloved users. Did you miss me?
+The latest release of everyone's favourite program features major upgrades to both name proposal in the backend and package renaming in the GUI.
+
+- improved package renaming in the GUI
+  - fixed various possible crashes
+  - a confirmation dialogue containing samples of renames to be applied will now be shown before applying renames
+    - this ensures that an unexpected result will not be produced, as there is no undo functionality currently
+  - made testing for package renaming logic more robust
+- made some major changes to name proposal
+  - added a new boolean in `NameProposalService`: `isFallback()`
+    - this boolean marks all mappings proposed by the service as fallback, changing their behaviour
+    - fallback names will not count towards stats by default
+    - fallback names will have a different colour in the UI
+    - fallback names do not have their own token types, and are expected to be less reliably high-quality names than normal proposed mappings
+  - added a new method in `NameProposalService`: `validateProposedMapping(Entry<?>, EntryMapping, boolean)`
+    - this method is called on proposed mappings to validate them
+    - this can be used to reduce or heighten the strictness of validating mappings proposed by your service
+    - do not override this method unless you know what you're doing!
+  - dynamically proposed names will now also be validated
+    - this may break plugins using previously unsupported behaviour, such as proposing token types other than `DYNAMIC_PROPOSED`
+  - added an `Enigma` object as context for bytecode-based name proposal
+    - an `Enigma` object is also now accessible in dynamic proposal via the `EntryRemapper` object
+  - greatly increased unit testing for name proposal
+- added new `readMappings(Path)` and `readMappings(Path, ProgressListener)` API method to `Enigma`
+  - these are a simple way to read mappings!
+- added extensive class-level javadoc for `TypeDescriptor`
+- fixed `dropInvalidMappings` taking two runs to successfully drop all invalid/empty mappings in some cases
