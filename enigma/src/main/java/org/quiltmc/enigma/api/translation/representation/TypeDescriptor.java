@@ -40,7 +40,6 @@ import java.util.function.UnaryOperator;
  *         </li>
  *     </ul>
  * </p>
- *
  * When representing an array type in a type descriptor, the descriptor is prefixed by {@code [}, such as {@code [I} or {@code [Lpackage/Class;}.
  */
 public class TypeDescriptor implements Translatable {
