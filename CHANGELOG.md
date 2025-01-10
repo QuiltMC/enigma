@@ -346,3 +346,9 @@ The latest release of everyone's favourite program features major upgrades to bo
   - these are a simple way to read mappings!
 - added extensive class-level javadoc for `TypeDescriptor`
 - fixed `dropInvalidMappings` taking two runs to successfully drop all invalid/empty mappings in some cases
+
+# 2.6.1
+
+day two bugfix release for my all name proposal girlies out there in the world
+
+- fix an NPE that could occur when proposing a null mapping
