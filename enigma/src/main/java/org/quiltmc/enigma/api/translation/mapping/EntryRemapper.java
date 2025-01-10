@@ -18,6 +18,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.validation.ValidationContext;
+import org.tinylog.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -149,9 +150,16 @@ public class EntryRemapper {
 				// due to unchecked proposal, proposers are allowed to insert other token types
 				// when deobfuscated, they must be put in the main tree
 				proposedNames.forEach((entry, mapping) -> {
+					if (entry == null) {
+						Logger.warn("Name proposer '" + service.getId() + "' proposed a  mapping (" + mapping + ") attached to a null entry!");
+						return;
+					}
+
 					service.validateProposedMapping(entry, mapping, true);
 
-					if (mapping.tokenType() == TokenType.DEOBFUSCATED) {
+					if (mapping == null) {
+						this.proposedMappings.remove(entry);
+					} else if (mapping.tokenType() == TokenType.DEOBFUSCATED) {
 						this.mappings.insert(entry, mapping);
 					} else {
 						this.proposedMappings.insert(entry, mapping);
