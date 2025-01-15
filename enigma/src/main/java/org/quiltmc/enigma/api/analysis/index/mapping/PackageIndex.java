@@ -10,6 +10,7 @@ import java.util.List;
 
 /**
  * An indexer that saves the names of all currently existing packages.
+ * This index contains all existing packages, regardless of whether they have any classes directly inside them.
  */
 public class PackageIndex implements MappingsIndexer {
 	private final Multimap<ClassEntry, String> packageNames = HashMultimap.create();
