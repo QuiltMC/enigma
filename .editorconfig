@@ -12,6 +12,7 @@ indent_style = tab
 
 [*.java]
 indent_style = tab
+ij_java_names_count_to_use_import_on_demand = 99
 
 [*.tiny]
 indent_style = tab
