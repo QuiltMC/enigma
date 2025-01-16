@@ -16,6 +16,7 @@ import org.quiltmc.enigma.api.analysis.tree.FieldReferenceTreeNode;
 import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.gui.dialog.CrashDialog;
+import org.quiltmc.enigma.gui.docker.*;
 import org.quiltmc.enigma.gui.network.IntegratedEnigmaClient;
 import org.quiltmc.enigma.impl.analysis.IndexTreeBuilder;
 import org.quiltmc.enigma.api.analysis.tree.MethodImplementationsTreeNode;
@@ -29,7 +30,6 @@ import org.quiltmc.enigma.api.class_handle.ClassHandleProvider;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.ProgressDialog;
-import org.quiltmc.enigma.gui.docker.CollabDocker;
 import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.gui.util.History;
 import org.quiltmc.enigma.network.ClientPacketHandler;
@@ -181,6 +181,7 @@ public class GuiController implements ClientPacketHandler {
 					ProgressListener progressListener = ProgressListener.createEmpty();
 					this.gui.getMainWindow().getStatusBar().syncWith(progressListener);
 					this.statsGenerator.generate(progressListener, EditableType.toStatTypes(this.gui.getEditableTypes()), false);
+					this.gui.getDockerManager().getDocker(AllClassesDocker.class).repaint();
 				}).start();
 			} catch (MappingParseException e) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), e.getMessage());
