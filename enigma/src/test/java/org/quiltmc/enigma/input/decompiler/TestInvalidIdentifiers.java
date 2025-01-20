@@ -55,7 +55,7 @@ public class TestInvalidIdentifiers {
 		try {
 			throw new RuntimeException("meow :3");
 		} catch (RuntimeException e) {
-			e.printStackTrace();
+			invokeConstructor();
 		}
 	}
 
@@ -104,7 +104,7 @@ public class TestInvalidIdentifiers {
 			// false
 			private boolean c = true;
 
-			public Abstract() {
+			Abstract() {
 				this.m = 'o';
 			}
 
