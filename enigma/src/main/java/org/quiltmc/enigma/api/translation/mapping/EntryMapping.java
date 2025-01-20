@@ -33,7 +33,7 @@ public record EntryMapping(
 			throw new RuntimeException("cannot create a mapping without a token type!");
 		} else if (tokenType == TokenType.OBFUSCATED && targetName != null) {
 			throw new RuntimeException("cannot create a named mapping with an obfuscated token type!");
-		} else if (targetName == null && tokenType != TokenType.OBFUSCATED) {
+		} else if (targetName == null && tokenType != TokenType.OBFUSCATED && tokenType != TokenType.DEBUG) {
 			throw new RuntimeException("cannot create a non-obfuscated mapping with no name!");
 		} else if (!tokenType.isProposed() && sourcePluginId != null) {
 			throw new RuntimeException("cannot create a non-proposed mapping with a source plugin ID!");
