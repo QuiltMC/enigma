@@ -116,10 +116,6 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 		Token token = this.getToken(range);
 		MethodEntry entry = getMethodEntry(className, name, descriptor);
 
-		if (token.text.equals("new")) {
-			return;
-		}
-
 		if (declaration) {
 			this.addDeclaration(token, entry);
 			this.currentMethod = entry;

@@ -37,9 +37,15 @@ public class DecompilationTest {
 
 	@ParameterizedTest
 	@MethodSource("provideDecompilers")
+	public void testInvalidIdentifiers(DecompilerService decompiler) {
+		// todo
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideDecompilers")
 	public void testVarargsDecompile(DecompilerService decompiler) {
 		TokenChecker checker = this.getTokenChecker(decompiler);
-		MethodEntry method = TestEntryFactory.newMethod("a", "a", "()V");
+		MethodEntry method = TestEntryFactory.newMethod("b", "a", "()V");
 		assertThat(checker.getReferenceTokens(
 				new EntryReference<>(TestEntryFactory.newMethod("org/quiltmc/enigma/input/Keep", "a", "([Ljava/lang/String;)V"), "", method)
 		), contains("a"));

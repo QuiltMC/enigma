@@ -260,7 +260,7 @@ public class EnigmaDumper extends StringStreamDumper {
 		Token token = new Token(now - name.length(), now, name);
 
 		// Skip constructor references
-		if (entry != null && !name.equals("new")) {
+		if (entry != null) {
 			if (defines) {
 				this.index.addDeclaration(token, entry); // override as cfr reuses local vars
 			} else {
