@@ -22,7 +22,7 @@ public class TestJarIndexEnums {
 	@Test
 	void checkEnumStats() {
 		EnigmaProject project = openProject();
-		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), EnumSet.allOf(StatType.class), null, false);
+		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), null, new StatsGenerator.GenerationParameters(EnumSet.allOf(StatType.class)));
 
 		assertThat(stats.getMapped(StatType.CLASSES), equalTo(0));
 		assertThat(stats.getMapped(StatType.FIELDS), equalTo(0));

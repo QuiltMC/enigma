@@ -18,7 +18,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Set;
+import java.util.EnumSet;
 
 public class TestStatGenerationInheritance {
 	private static final Path JAR = TestUtil.obfJar("interfaces");
@@ -40,17 +40,17 @@ public class TestStatGenerationInheritance {
 		ClassEntry interfaceEntry = TestEntryFactory.newClass("b");
 		ClassEntry inheritorEntry = TestEntryFactory.newClass("a");
 
-		StatsResult interfaceResult = new StatsGenerator(project).generate(Set.of(StatType.METHODS), interfaceEntry, false);
+		StatsResult interfaceResult = new StatsGenerator(project).generate(interfaceEntry, new StatsGenerator.GenerationParameters(EnumSet.of(StatType.METHODS)));
 		Assertions.assertEquals(2, interfaceResult.getMappable());
 
 		// the inheritor does not own the method; it won't count towards its stats
-		StatsResult inheritorResult = new StatsGenerator(project).generate(Set.of(StatType.METHODS), inheritorEntry, false);
+		StatsResult inheritorResult = new StatsGenerator(project).generate(inheritorEntry, new StatsGenerator.GenerationParameters(EnumSet.of(StatType.METHODS)));
 		Assertions.assertEquals(0, inheritorResult.getMappable());
 
 		MethodEntry inheritedMethod = TestEntryFactory.newMethod(inheritorEntry, "a", "(D)D");
 		project.getRemapper().putMapping(TestUtil.newVC(), inheritedMethod, new EntryMapping("mapped"));
 
-		StatsResult interfaceResult2 = new StatsGenerator(project).generate(Set.of(StatType.METHODS), interfaceEntry, false);
+		StatsResult interfaceResult2 = new StatsGenerator(project).generate(interfaceEntry, new StatsGenerator.GenerationParameters(EnumSet.of(StatType.METHODS)));
 		Assertions.assertEquals(1, interfaceResult2.getMapped());
 	}
 }

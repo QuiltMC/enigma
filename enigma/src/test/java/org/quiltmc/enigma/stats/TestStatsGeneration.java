@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,7 +31,7 @@ public class TestStatsGeneration {
 	@Test
 	void checkNoMappedEntriesByDefault() {
 		EnigmaProject project = openProject();
-		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), Set.of(StatType.values()), null, false);
+		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), null, new StatsGenerator.GenerationParameters(EnumSet.of(StatType.METHODS)));
 		assertThat(stats.getMapped(), equalTo(0));
 		assertThat(stats.getPercentage(), equalTo(0d));
 	}
@@ -90,7 +91,7 @@ public class TestStatsGeneration {
 	}
 
 	private static void checkFullyMapped(EnigmaProject project, StatType... types) {
-		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), Set.of(types), null, false);
+		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), null, new StatsGenerator.GenerationParameters(Set.of(types)));
 		assertThat(stats.getMapped(types), equalTo(stats.getMappable(types)));
 		assertThat(stats.getPercentage(types), equalTo(100d));
 	}

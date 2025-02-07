@@ -53,7 +53,7 @@ public class TestRecordStats {
 
 	@Test
 	void testParameters() {
-		StatsResult stats = new StatsGenerator(project).generate(EnumSet.of(StatType.PARAMETERS), TestEntryFactory.newClass("c"), false);
+		StatsResult stats = new StatsGenerator(project).generate(TestEntryFactory.newClass("c"), new StatsGenerator.GenerationParameters(EnumSet.of(StatType.PARAMETERS)));
 
 		// total params in the class are 10
 		// equals method is ignored
@@ -66,14 +66,14 @@ public class TestRecordStats {
 	@Test
 	void testMethods() {
 		ClassEntry c = TestEntryFactory.newClass("c");
-		StatsResult stats = new StatsGenerator(project).generate(EnumSet.of(StatType.METHODS), c, false);
+		StatsResult stats = new StatsGenerator(project).generate(c, new StatsGenerator.GenerationParameters(EnumSet.of(StatType.METHODS)));
 
 		// 4 mappable methods: 1 for each field
 		assertThat(stats.getMappable(StatType.METHODS), equalTo(4));
 		assertThat(stats.getMapped(StatType.METHODS), equalTo(0));
 
 		project.getRemapper().putMapping(TestUtil.newVC(), TestEntryFactory.newField(c, "a", "Ljava/lang/String;"), new EntryMapping("gaming"));
-		StatsResult stats2 = new StatsGenerator(project).generate(EnumSet.of(StatType.METHODS), c, false);
+		StatsResult stats2 = new StatsGenerator(project).generate(c, new StatsGenerator.GenerationParameters(EnumSet.of(StatType.METHODS)));
 
 		// 1 method mapped to match field
 		assertThat(stats2.getMappable(StatType.METHODS), equalTo(4));

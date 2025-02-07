@@ -38,7 +38,7 @@ public class StatsDialog {
 					listener.sync(generator.getOverallProgress());
 				}
 
-				ProjectStatsResult result = gui.getController().getStatsGenerator().getResult(EditableType.toStatTypes(gui.getEditableTypes()), false);
+				ProjectStatsResult result = gui.getController().getStatsGenerator().getResult(new StatsGenerator.GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes())));
 				SwingUtilities.invokeLater(() -> show(gui, result, ""));
 			});
 		} else {
@@ -98,7 +98,7 @@ public class StatsDialog {
 				String topLevelPackageSlashes = topLevelPackage.getText().replace('.', '/');
 				Config.main().stats.lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
 
-				ProjectStatsResult projectResult = gui.getController().getStatsGenerator().getResult(EditableType.toStatTypes(gui.getEditableTypes()), syntheticParametersOption.isSelected()).filter(topLevelPackageSlashes);
+				ProjectStatsResult projectResult = gui.getController().getStatsGenerator().getResult(new StatsGenerator.GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes()), syntheticParametersOption.isSelected())).filter(topLevelPackageSlashes);
 				SwingUtilities.invokeLater(() -> show(gui, projectResult, topLevelPackageSlashes));
 			});
 		});

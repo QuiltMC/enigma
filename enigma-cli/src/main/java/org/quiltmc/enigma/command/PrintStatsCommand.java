@@ -47,7 +47,7 @@ public class PrintStatsCommand extends Command {
 
 	public static void run(Path inJar, Path mappings, Enigma enigma) throws Exception {
 		StatsGenerator generator = new StatsGenerator(openProject(inJar, mappings, enigma));
-		ProjectStatsResult result = generator.generate(new ConsoleProgressListener(), Set.of(StatType.values()), false);
+		ProjectStatsResult result = generator.generate(new ConsoleProgressListener(), new StatsGenerator.GenerationParameters(Set.of(StatType.values())));
 
 		Logger.info(String.format("Overall mapped: %.2f%% (%s / %s)", result.getPercentage(), result.getMapped(), result.getMappable()));
 		Logger.info(String.format("Classes: %.2f%% (%s / %s)", result.getPercentage(StatType.CLASSES), result.getMapped(StatType.CLASSES), result.getMappable(StatType.CLASSES)));

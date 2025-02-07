@@ -48,9 +48,9 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 			@Override
 			protected ClassSelectorClassNode doInBackground() {
 				if (generator.getResultNullable() == null && generator.getOverallProgress() == null) {
-					generator.generate(ProgressListener.createEmpty(), EditableType.toStatTypes(gui.getEditableTypes()), false);
+					generator.generate(ProgressListener.createEmpty(), new StatsGenerator.GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes())));
 				} else if (updateIfPresent) {
-					generator.generate(ProgressListener.createEmpty(), EditableType.toStatTypes(gui.getEditableTypes()), ClassSelectorClassNode.this.getObfEntry(), false);
+					generator.generate(ProgressListener.createEmpty(), ClassSelectorClassNode.this.getObfEntry(), new StatsGenerator.GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes())));
 				}
 
 				return ClassSelectorClassNode.this;
