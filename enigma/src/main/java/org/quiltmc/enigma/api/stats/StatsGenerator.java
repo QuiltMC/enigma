@@ -37,6 +37,7 @@ public class StatsGenerator {
 	private final EntryResolver entryResolver;
 
 	private ProjectStatsResult result = null;
+	private GenerationParameters lastParameters = new GenerationParameters();
 	private ProgressListener overallListener;
 	private CountDownLatch generationLatch = null;
 
@@ -58,12 +59,12 @@ public class StatsGenerator {
 	}
 
 	/**
-	 * Gets the latest generated stats, or generates them if not yet present.
+	 * Gets the latest generated stats, or generates them if not available.
+	 * Regenerates stats if parameters have changed.
 	 * @return the stats
 	 */
 	public ProjectStatsResult getResult(GenerationParameters parameters) {
-		// todo regen when parameters are changed
-		if (this.result == null) {
+		if (this.result == null || !this.lastParameters.equals(parameters)) {
 			return this.generate(ProgressListener.createEmpty(), parameters);
 		}
 
@@ -123,6 +124,7 @@ public class StatsGenerator {
 				}
 
 				this.result = new ProjectStatsResult(this.project, stats);
+				this.lastParameters = parameters;
 				this.generationLatch.countDown();
 			} else {
 				try {
@@ -136,6 +138,7 @@ public class StatsGenerator {
 			Preconditions.checkNotNull(classEntry, "Entry cannot be null after initial stat generation!");
 			stats.put(classEntry, this.generate(classEntry, parameters, false));
 			this.result = new ProjectStatsResult(this.project, stats);
+			this.lastParameters = parameters;
 		}
 
 		this.overallListener = null;
@@ -292,7 +295,7 @@ public class StatsGenerator {
 	private void update(StatType type, Map<StatType, Integer> mappable, Map<StatType, Map<String, Integer>> unmapped, Entry<?> entry, GenerationParameters parameters) {
 		if (this.project.isRenamable(entry)) {
 			if (this.project.isObfuscated(entry) && !this.project.isSynthetic(entry)
-					|| (!parameters.includeFallback() && this.fallbackNameProposerIdCache.contains(this.project.getRemapper().getMapping(entry).sourcePluginId()))) { // fallback proposed mappings don't count
+					|| (!parameters.countFallback() && this.fallbackNameProposerIdCache.contains(this.project.getRemapper().getMapping(entry).sourcePluginId()))) { // fallback proposed mappings don't count
 				String parent = this.project.getRemapper().deobfuscate(entry.getTopLevelClass()).getName().replace('/', '.');
 
 				unmapped.computeIfAbsent(type, t -> new HashMap<>());
@@ -303,13 +306,4 @@ public class StatsGenerator {
 		}
 	}
 
-	public record GenerationParameters(Set<StatType> includedTypes, boolean includeSynthetic, boolean includeFallback) {
-		public GenerationParameters(Set<StatType> types) {
-			this(types, false, false);
-		}
-
-		public GenerationParameters(Set<StatType> types, boolean includeSynthetic) {
-			this(types, includeSynthetic, false);
-		}
-	}
 }

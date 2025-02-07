@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.node;
 
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.stats.GenerationParameters;
 import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
@@ -48,9 +49,9 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 			@Override
 			protected ClassSelectorClassNode doInBackground() {
 				if (generator.getResultNullable() == null && generator.getOverallProgress() == null) {
-					generator.generate(ProgressListener.createEmpty(), new StatsGenerator.GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes())));
+					generator.generate(ProgressListener.createEmpty(), new GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes())));
 				} else if (updateIfPresent) {
-					generator.generate(ProgressListener.createEmpty(), ClassSelectorClassNode.this.getObfEntry(), new StatsGenerator.GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes())));
+					generator.generate(ProgressListener.createEmpty(), ClassSelectorClassNode.this.getObfEntry(), new GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes())));
 				}
 
 				return ClassSelectorClassNode.this;

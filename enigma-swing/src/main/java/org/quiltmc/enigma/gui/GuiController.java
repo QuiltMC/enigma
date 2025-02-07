@@ -14,6 +14,7 @@ import org.quiltmc.enigma.api.analysis.tree.ClassReferenceTreeNode;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.tree.FieldReferenceTreeNode;
 import org.quiltmc.enigma.api.service.ReadWriteService;
+import org.quiltmc.enigma.api.stats.GenerationParameters;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.gui.dialog.CrashDialog;
 import org.quiltmc.enigma.gui.network.IntegratedEnigmaClient;
@@ -180,7 +181,7 @@ public class GuiController implements ClientPacketHandler {
 				new Thread(() -> {
 					ProgressListener progressListener = ProgressListener.createEmpty();
 					this.gui.getMainWindow().getStatusBar().syncWith(progressListener);
-					this.statsGenerator.generate(progressListener, new StatsGenerator.GenerationParameters(EditableType.toStatTypes(this.gui.getEditableTypes())));
+					this.statsGenerator.generate(progressListener, new GenerationParameters(EditableType.toStatTypes(this.gui.getEditableTypes())));
 				}).start();
 			} catch (MappingParseException e) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), e.getMessage());
@@ -585,7 +586,7 @@ public class GuiController implements ClientPacketHandler {
 
 	public void openStatsTree(Set<StatType> includedTypes) {
 		ProgressDialog.runOffThread(this.gui, progress -> {
-			StatsResult overall = this.getStatsGenerator().getResult(new StatsGenerator.GenerationParameters(EditableType.toStatTypes(this.gui.getEditableTypes()))).getOverall();
+			StatsResult overall = this.getStatsGenerator().getResult(new GenerationParameters(EditableType.toStatTypes(this.gui.getEditableTypes()))).getOverall();
 			StatsTree<Integer> tree = overall.buildTree(Config.main().stats.lastTopLevelPackage.value(), includedTypes);
 			String treeJson = GSON.toJson(tree.root);
 

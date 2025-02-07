@@ -9,6 +9,7 @@ import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
+import org.quiltmc.enigma.api.stats.GenerationParameters;
 import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
 import org.quiltmc.enigma.api.stats.StatsResult;
@@ -53,7 +54,7 @@ public class TestRecordStats {
 
 	@Test
 	void testParameters() {
-		StatsResult stats = new StatsGenerator(project).generate(TestEntryFactory.newClass("c"), new StatsGenerator.GenerationParameters(EnumSet.of(StatType.PARAMETERS)));
+		StatsResult stats = new StatsGenerator(project).generate(TestEntryFactory.newClass("c"), new GenerationParameters(EnumSet.of(StatType.PARAMETERS)));
 
 		// total params in the class are 10
 		// equals method is ignored
@@ -66,14 +67,14 @@ public class TestRecordStats {
 	@Test
 	void testMethods() {
 		ClassEntry c = TestEntryFactory.newClass("c");
-		StatsResult stats = new StatsGenerator(project).generate(c, new StatsGenerator.GenerationParameters(EnumSet.of(StatType.METHODS)));
+		StatsResult stats = new StatsGenerator(project).generate(c, new GenerationParameters(EnumSet.of(StatType.METHODS)));
 
 		// 4 mappable methods: 1 for each field
 		assertThat(stats.getMappable(StatType.METHODS), equalTo(4));
 		assertThat(stats.getMapped(StatType.METHODS), equalTo(0));
 
 		project.getRemapper().putMapping(TestUtil.newVC(), TestEntryFactory.newField(c, "a", "Ljava/lang/String;"), new EntryMapping("gaming"));
-		StatsResult stats2 = new StatsGenerator(project).generate(c, new StatsGenerator.GenerationParameters(EnumSet.of(StatType.METHODS)));
+		StatsResult stats2 = new StatsGenerator(project).generate(c, new GenerationParameters(EnumSet.of(StatType.METHODS)));
 
 		// 1 method mapped to match field
 		assertThat(stats2.getMappable(StatType.METHODS), equalTo(4));

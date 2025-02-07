@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.dialog;
 
+import org.quiltmc.enigma.api.stats.GenerationParameters;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
@@ -38,7 +39,7 @@ public class StatsDialog {
 					listener.sync(generator.getOverallProgress());
 				}
 
-				ProjectStatsResult result = gui.getController().getStatsGenerator().getResult(new StatsGenerator.GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes())));
+				ProjectStatsResult result = gui.getController().getStatsGenerator().getResult(new GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes())));
 				SwingUtilities.invokeLater(() -> show(gui, result, ""));
 			});
 		} else {
@@ -98,7 +99,7 @@ public class StatsDialog {
 				String topLevelPackageSlashes = topLevelPackage.getText().replace('.', '/');
 				Config.main().stats.lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
 
-				ProjectStatsResult projectResult = gui.getController().getStatsGenerator().getResult(new StatsGenerator.GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes()), syntheticParametersOption.isSelected())).filter(topLevelPackageSlashes);
+				ProjectStatsResult projectResult = gui.getController().getStatsGenerator().getResult(new GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes()), syntheticParametersOption.isSelected())).filter(topLevelPackageSlashes);
 				SwingUtilities.invokeLater(() -> show(gui, projectResult, topLevelPackageSlashes));
 			});
 		});

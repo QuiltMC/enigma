@@ -15,6 +15,7 @@ import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.source.TokenType;
+import org.quiltmc.enigma.api.stats.GenerationParameters;
 import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
 import org.quiltmc.enigma.api.translation.TranslateResult;
@@ -80,13 +81,13 @@ public class TestFallbackNameProposal {
 		assertMappingStartsWith(TestEntryFactory.newField(bClass, "a", "I"), TestEntryFactory.newField(bClass, "slay", "I"));
 		assertMappingStartsWith(TestEntryFactory.newField(bClass, "a", "Ljava/lang/String;"), TestEntryFactory.newField(bClass, "slay", "Ljava/lang/String;"));
 
-		var proposerFieldStats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), bClass, new StatsGenerator.GenerationParameters(EnumSet.of(StatType.FIELDS)));
-		var proposerMethodStats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), bClass, new StatsGenerator.GenerationParameters(EnumSet.of(StatType.METHODS)));
+		var proposerFieldStats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), bClass, new GenerationParameters(EnumSet.of(StatType.FIELDS)));
+		var proposerMethodStats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), bClass, new GenerationParameters(EnumSet.of(StatType.METHODS)));
 
 		project = Enigma.create().openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
 
-		var controlFieldStats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), bClass, new StatsGenerator.GenerationParameters(EnumSet.of(StatType.FIELDS)));
-		var controlMethodStats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), bClass, new StatsGenerator.GenerationParameters(EnumSet.of(StatType.METHODS)));
+		var controlFieldStats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), bClass, new GenerationParameters(EnumSet.of(StatType.FIELDS)));
+		var controlMethodStats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), bClass, new GenerationParameters(EnumSet.of(StatType.METHODS)));
 
 		// method stats should be identical since fallback proposals don't affect stats
 		assertEquals(controlMethodStats.getMappable(), proposerMethodStats.getMappable());

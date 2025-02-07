@@ -4,6 +4,7 @@ import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
+import org.quiltmc.enigma.api.stats.GenerationParameters;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
@@ -26,7 +27,7 @@ public class TestInnerClassParameterStats {
 	@Test
 	public void testInnerClassParameterStats() {
 		EnigmaProject project = openProject();
-		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), null, new StatsGenerator.GenerationParameters(EnumSet.of(StatType.PARAMETERS)));
+		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), null, new GenerationParameters(EnumSet.of(StatType.PARAMETERS)));
 		// 8/13 total parameters in our six classes are non-mappable, meaning that we should get 0/3 parameters mapped
 		// these non-mappable parameters come from non-static inner classes taking their enclosing class as a parameter
 		// they are currently manually excluded by a check in the stats generator
