@@ -10,4 +10,5 @@ public class StatsSection extends ReflectiveConfig.Section {
 	public final TrackedValue<String> lastSelectedDir = this.value("");
 	public final TrackedValue<String> lastTopLevelPackage = this.value("");
 	public final TrackedValue<Boolean> shouldIncludeSyntheticParameters = this.value(false);
+	public final TrackedValue<Boolean> shouldCountFallbackNames = this.value(false);
 }

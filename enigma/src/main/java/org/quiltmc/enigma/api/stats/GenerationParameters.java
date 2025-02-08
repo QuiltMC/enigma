@@ -12,15 +12,18 @@ import java.util.Set;
  * @param countFallback whether to count {@link NameProposalService#isFallback() fallback-proposed} entries as mapped in the result
  */
 public record GenerationParameters(Set<StatType> includedTypes, boolean includeSynthetic, boolean countFallback) {
+	/**
+	 * Creates a default set of parameters.
+	 */
 	public GenerationParameters() {
 		this(EnumSet.noneOf(StatType.class), false, false);
 	}
 
+	/**
+	 * Creates a default set of parameters including the given types.
+	 * @param types the types of entry to include
+	 */
 	public GenerationParameters(Set<StatType> types) {
 		this(types, false, false);
-	}
-
-	public GenerationParameters(Set<StatType> types, boolean includeSynthetic) {
-		this(types, includeSynthetic, false);
 	}
 }

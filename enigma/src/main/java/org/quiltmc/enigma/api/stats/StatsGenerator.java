@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.api.stats;
 
-import com.google.common.base.Preconditions;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
@@ -64,6 +63,9 @@ public class StatsGenerator {
 	 * @return the stats
 	 */
 	public ProjectStatsResult getResult(GenerationParameters parameters) {
+		System.out.println(this.lastParameters);
+		System.out.println(parameters);
+
 		if (this.result == null || !this.lastParameters.equals(parameters)) {
 			return this.generate(ProgressListener.createEmpty(), parameters);
 		}
@@ -107,12 +109,12 @@ public class StatsGenerator {
 
 		Map<ClassEntry, StatsResult> stats = this.result == null ? new HashMap<>() : this.result.getStats();
 
-		if (this.result == null || classEntry == null) {
-			if (this.generationLatch == null) {
+		if (classEntry == null) {
+			if (this.generationLatch == null || this.generationLatch.getCount() == 0) {
 				this.generationLatch = new CountDownLatch(1);
 
 				List<ClassEntry> classes = this.entryIndex.getClasses()
-						.stream().filter(entry -> !entry.isInnerClass()).toList();
+					.stream().filter(entry -> !entry.isInnerClass()).toList();
 
 				int done = 0;
 				progress.init(classes.size() - 1, I18n.translate("progress.stats"));
@@ -135,7 +137,6 @@ public class StatsGenerator {
 				}
 			}
 		} else {
-			Preconditions.checkNotNull(classEntry, "Entry cannot be null after initial stat generation!");
 			stats.put(classEntry, this.generate(classEntry, parameters, false));
 			this.result = new ProjectStatsResult(this.project, stats);
 			this.lastParameters = parameters;
@@ -294,7 +295,9 @@ public class StatsGenerator {
 
 	private void update(StatType type, Map<StatType, Integer> mappable, Map<StatType, Map<String, Integer>> unmapped, Entry<?> entry, GenerationParameters parameters) {
 		if (this.project.isRenamable(entry)) {
-			if (this.project.isObfuscated(entry) && !this.project.isSynthetic(entry)
+			boolean obf = this.project.isObfuscated(entry);
+
+			if ((obf && (!this.project.isSynthetic(entry) || !parameters.includeSynthetic()))
 					|| (!parameters.countFallback() && this.fallbackNameProposerIdCache.contains(this.project.getRemapper().getMapping(entry).sourcePluginId()))) { // fallback proposed mappings don't count
 				String parent = this.project.getRemapper().deobfuscate(entry.getTopLevelClass()).getName().replace('/', '.');
 
@@ -305,5 +308,4 @@ public class StatsGenerator {
 			mappable.put(type, mappable.getOrDefault(type, 0) + 1);
 		}
 	}
-
 }

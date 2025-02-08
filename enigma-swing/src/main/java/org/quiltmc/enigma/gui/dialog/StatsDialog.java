@@ -91,6 +91,11 @@ public class StatsDialog {
 		syntheticParametersOption.setSelected(Config.main().stats.shouldIncludeSyntheticParameters.value());
 		contentPane.add(syntheticParametersOption, cb1.pos(0, result.getOverall().getTypes().size() + 4).build());
 
+		// show synthetic members option
+		JCheckBox countFallbackOption = new JCheckBox(I18n.translate("menu.file.stats.count_fallback"));
+		countFallbackOption.setSelected(Config.main().stats.shouldCountFallbackNames.value());
+		contentPane.add(countFallbackOption, cb1.pos(0, result.getOverall().getTypes().size() + 3).build());
+
 		// show filter button
 		JButton filterButton = new JButton(I18n.translate("menu.file.stats.filter"));
 		filterButton.addActionListener(action -> {
@@ -99,11 +104,14 @@ public class StatsDialog {
 				String topLevelPackageSlashes = topLevelPackage.getText().replace('.', '/');
 				Config.main().stats.lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
 
-				ProjectStatsResult projectResult = gui.getController().getStatsGenerator().getResult(new GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes()), syntheticParametersOption.isSelected())).filter(topLevelPackageSlashes);
+				GenerationParameters parameters = new GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes()), syntheticParametersOption.isSelected(), countFallbackOption.isSelected());
+				StatsGenerator generator = gui.getController().getStatsGenerator();
+				ProjectStatsResult projectResult = generator.getResult(parameters).filter(topLevelPackageSlashes);
+
 				SwingUtilities.invokeLater(() -> show(gui, projectResult, topLevelPackageSlashes));
 			});
 		});
-		contentPane.add(filterButton, cb1.pos(0, result.getOverall().getTypes().size() + 3).anchor(GridBagConstraints.EAST).build());
+		contentPane.add(filterButton, cb1.pos(0, result.getOverall().getTypes().size() + 5).anchor(GridBagConstraints.EAST).build());
 
 		// show generate button
 		JButton button = new JButton(I18n.translate("menu.file.stats.generate"));
@@ -111,8 +119,9 @@ public class StatsDialog {
 		button.addActionListener(action -> {
 			dialog.dispose();
 
-			Config.main().stats.lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
-			Config.main().stats.shouldIncludeSyntheticParameters.setValue(syntheticParametersOption.isSelected(), true);
+			Config.main().stats.lastTopLevelPackage.setValue(topLevelPackage.getText());
+			Config.main().stats.shouldIncludeSyntheticParameters.setValue(syntheticParametersOption.isSelected());
+			Config.main().stats.shouldCountFallbackNames.setValue(countFallbackOption.isSelected());
 
 			generateStats(gui, checkboxes);
 		});
