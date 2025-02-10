@@ -114,7 +114,7 @@ public class MenuBar {
 		prepareLanguagesMenu(this.languagesMenu);
 		prepareScaleMenu(this.scaleMenu, gui);
 		prepareNotificationsMenu(this.notificationsMenu);
-		prepareStatIconsMenu(this.statIconsMenu);
+		this.prepareStatIconsMenu(this.statIconsMenu);
 		this.prepareCrashHistoryMenu();
 
 		this.fileMenu.add(this.jarOpenItem);
