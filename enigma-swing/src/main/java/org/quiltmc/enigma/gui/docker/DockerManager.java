@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class DockerManager {
 	private final Map<Class<? extends Docker>, Docker> dockers = new LinkedHashMap<>();
@@ -33,6 +34,25 @@ public class DockerManager {
 	 */
 	public Dock getLeftDock() {
 		return this.leftDock;
+	}
+
+	/**
+	 * {@return a map of all currently active dockers, keyed by their locations}
+	 */
+	public Map<Docker.Location, Docker> getActiveDockers() {
+		Map<Docker.Location, Docker> activeDockers = new HashMap<>();
+
+		activeDockers.putAll(this.leftDock.getHostedDockers().entrySet().stream().collect(Collectors.toMap(
+				entry -> new Docker.Location(Docker.Side.LEFT, entry.getKey()),
+				Map.Entry::getValue
+		)));
+
+		activeDockers.putAll(this.rightDock.getHostedDockers().entrySet().stream().collect(Collectors.toMap(
+				entry -> new Docker.Location(Docker.Side.RIGHT, entry.getKey()),
+				Map.Entry::getValue
+		)));
+
+		return activeDockers;
 	}
 
 	/**
