@@ -180,18 +180,7 @@ public class GuiController implements ClientPacketHandler {
 				this.refreshClasses();
 				this.chp.invalidateJavadoc();
 				this.statsGenerator = new StatsGenerator(this.project);
-				new Thread(() -> {
-					ProgressListener progressListener = ProgressListener.createEmpty();
-					this.gui.getMainWindow().getStatusBar().syncWith(progressListener);
-					this.statsGenerator.generate(progressListener, new GenerationParameters(EditableType.toStatTypes(this.gui.getEditableTypes())));
-
-					// ensure all class tree dockers show the update to the stats icons
-					for (Docker docker : this.gui.getDockerManager().getActiveDockers().values()) {
-						if (docker instanceof ClassesDocker) {
-							docker.repaint();
-						}
-					}
-				}).start();
+				new Thread(this::regenerateAndUpdateStatIcons).start();
 			} catch (MappingParseException e) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), e.getMessage());
 			} catch (Exception e) {
@@ -207,6 +196,21 @@ public class GuiController implements ClientPacketHandler {
 		this.project.setMappings(mappings, new ProgressDialog(this.gui.getFrame()));
 		this.refreshClasses();
 		this.chp.invalidateJavadoc();
+	}
+
+	public void regenerateAndUpdateStatIcons() {
+		ProgressListener progressListener = ProgressListener.createEmpty();
+		this.gui.getMainWindow().getStatusBar().syncWith(progressListener);
+		var editableTypes = EditableType.toStatTypes(this.gui.getEditableTypes());
+		GenerationParameters parameters = new GenerationParameters(editableTypes, Config.main().stats.icons.shouldIncludeSyntheticParameters.value(), Config.main().stats.icons.shouldCountFallbackNames.value());
+		this.statsGenerator.generate(progressListener, parameters);
+
+		// ensure all class tree dockers show the update to the stats icons
+		for (Docker docker : this.gui.getDockerManager().getActiveDockers().values()) {
+			if (docker instanceof ClassesDocker) {
+				docker.repaint();
+			}
+		}
 	}
 
 	public CompletableFuture<Void> saveMappings(Path path) {

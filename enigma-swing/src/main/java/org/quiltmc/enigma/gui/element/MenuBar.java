@@ -28,6 +28,7 @@ import org.quiltmc.enigma.util.validation.ParameterizedMessage;
 
 import javax.annotation.Nullable;
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -74,6 +75,7 @@ public class MenuBar {
 	private final JMenu languagesMenu = new JMenu();
 	private final JMenu scaleMenu = new JMenu();
 	private final JMenu notificationsMenu = new JMenu();
+	private final JMenu statIconsMenu = new JMenu();
 	private final JMenuItem fontItem = new JMenuItem();
 	private final JMenuItem customScaleItem = new JMenuItem();
 
@@ -112,6 +114,7 @@ public class MenuBar {
 		prepareLanguagesMenu(this.languagesMenu);
 		prepareScaleMenu(this.scaleMenu, gui);
 		prepareNotificationsMenu(this.notificationsMenu);
+		prepareStatIconsMenu(this.statIconsMenu);
 		this.prepareCrashHistoryMenu();
 
 		this.fileMenu.add(this.jarOpenItem);
@@ -147,6 +150,7 @@ public class MenuBar {
 		this.viewMenu.add(this.notificationsMenu);
 		this.scaleMenu.add(this.customScaleItem);
 		this.viewMenu.add(this.scaleMenu);
+		this.viewMenu.add(this.statIconsMenu);
 		this.viewMenu.add(this.fontItem);
 		ui.add(this.viewMenu);
 
@@ -263,6 +267,7 @@ public class MenuBar {
 		this.notificationsMenu.setText(I18n.translate("menu.view.notifications"));
 		this.languagesMenu.setText(I18n.translate("menu.view.languages"));
 		this.scaleMenu.setText(I18n.translate("menu.view.scale"));
+		this.statIconsMenu.setText(I18n.translate("menu.view.stat_icons"));
 		this.fontItem.setText(I18n.translate("menu.view.font"));
 		this.customScaleItem.setText(I18n.translate("menu.view.scale.custom"));
 
@@ -679,6 +684,29 @@ public class MenuBar {
 
 			notificationsMenu.add(notificationsButton);
 		}
+	}
+
+	private void prepareStatIconsMenu(JMenu statIconsMenu) {
+		JCheckBoxMenuItem includeSynthetic = new JCheckBoxMenuItem(I18n.translate("menu.view.stat_icons.include_synthetic"));
+		JCheckBoxMenuItem countFallback = new JCheckBoxMenuItem(I18n.translate("menu.view.stat_icons.count_fallback"));
+
+		includeSynthetic.setSelected(Config.main().stats.icons.shouldIncludeSyntheticParameters.value());
+		countFallback.setSelected(Config.main().stats.icons.shouldCountFallbackNames.value());
+
+		includeSynthetic.addActionListener(event -> {
+			var value = includeSynthetic.getState();
+			Config.main().stats.icons.shouldIncludeSyntheticParameters.setValue(value);
+			MenuBar.this.gui.getController().regenerateAndUpdateStatIcons();
+		});
+
+		countFallback.addActionListener(event -> {
+			var value = countFallback.getState();
+			Config.main().stats.icons.shouldCountFallbackNames.setValue(value);
+			MenuBar.this.gui.getController().regenerateAndUpdateStatIcons();
+		});
+
+		statIconsMenu.add(includeSynthetic);
+		statIconsMenu.add(countFallback);
 	}
 
 	public void prepareCrashHistoryMenu() {

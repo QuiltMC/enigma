@@ -11,4 +11,11 @@ public class StatsSection extends ReflectiveConfig.Section {
 	public final TrackedValue<String> lastTopLevelPackage = this.value("");
 	public final TrackedValue<Boolean> shouldIncludeSyntheticParameters = this.value(false);
 	public final TrackedValue<Boolean> shouldCountFallbackNames = this.value(false);
+	public final IconsSection icons = new IconsSection();
+
+	@SerializedNameConvention(NamingSchemes.SNAKE_CASE)
+	public static class IconsSection extends ReflectiveConfig.Section {
+		public final TrackedValue<Boolean> shouldIncludeSyntheticParameters = this.value(false);
+		public final TrackedValue<Boolean> shouldCountFallbackNames = this.value(false);
+	}
 }
