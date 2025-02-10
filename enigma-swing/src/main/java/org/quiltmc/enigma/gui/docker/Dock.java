@@ -7,6 +7,7 @@ import org.quiltmc.enigma.gui.docker.component.DockerButton;
 import org.quiltmc.enigma.gui.docker.component.DockerSelector;
 import org.quiltmc.enigma.gui.docker.component.Draggable;
 
+import javax.annotation.Nullable;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import java.awt.BorderLayout;
@@ -17,7 +18,9 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -37,6 +40,9 @@ public class Dock extends JPanel {
 	 */
 	private Docker.VerticalLocation hovered;
 	private boolean isSplit;
+	/**
+	 * {@code null} if the view is currently split.
+	 */
 	private DockerContainer unifiedDock;
 	private Docker toSave;
 
@@ -145,7 +151,7 @@ public class Dock extends JPanel {
 		if (verticalLocation == Docker.VerticalLocation.BOTTOM || verticalLocation == Docker.VerticalLocation.TOP) {
 			// if we'd be leaving empty space via opening, we want to host the docker as the full panel
 			// this is to avoid wasting space
-			if (avoidEmptySpace && ((this.isSplit && this.getDock(verticalLocation.inverse()).getHostedDocker() == null)
+			if (avoidEmptySpace && ((this.isSplit && this.getContainer(verticalLocation.inverse()).getHostedDocker() == null)
 					|| (!this.isSplit && this.unifiedDock.getHostedDocker() == null)
 					|| (!this.isSplit && this.unifiedDock.getHostedDocker().getId().equals(docker.getId())))) {
 				this.host(docker, Docker.VerticalLocation.FULL);
@@ -158,7 +164,7 @@ public class Dock extends JPanel {
 
 			// preserve divider location and host
 			int location = this.splitPane.getDividerLocation();
-			this.getDock(verticalLocation).setHostedDocker(docker);
+			this.getContainer(verticalLocation).setHostedDocker(docker);
 			this.splitPane.setDividerLocation(location);
 
 			if (this.toSave != null && !this.toSave.equals(docker)) {
@@ -229,12 +235,12 @@ public class Dock extends JPanel {
 
 	private void removeDocker(Docker.VerticalLocation location, boolean avoidEmptySpace) {
 		// do not leave empty dockers
-		if (avoidEmptySpace && location != Docker.VerticalLocation.FULL && this.getDock(location.inverse()).getHostedDocker() != null) {
-			this.host(this.getDock(location.inverse()).getHostedDocker(), Docker.VerticalLocation.FULL, false);
+		if (avoidEmptySpace && location != Docker.VerticalLocation.FULL && this.getContainer(location.inverse()).getHostedDocker() != null) {
+			this.host(this.getContainer(location.inverse()).getHostedDocker(), Docker.VerticalLocation.FULL, false);
 			return;
 		}
 
-		DockerContainer container = this.getDock(location);
+		DockerContainer container = this.getContainer(location);
 		if (container != null) {
 			container.setHostedDocker(null);
 		}
@@ -308,7 +314,24 @@ public class Dock extends JPanel {
 		return false;
 	}
 
-	public DockerContainer getDock(Docker.VerticalLocation verticalLocation) {
+	/**
+	 * {@return a map of all hosted dockers, keyed by their locations}
+	 */
+	public Map<Docker.VerticalLocation, Docker> getHostedDockers() {
+		Map<Docker.VerticalLocation, Docker> map = new HashMap<>();
+		for (Docker.VerticalLocation verticalLocation : Docker.VerticalLocation.values()) {
+			var container = this.getContainer(verticalLocation);
+
+			if (container != null && container.getHostedDocker() != null) {
+				map.put(verticalLocation, container.getHostedDocker());
+			}
+		}
+
+		return map;
+	}
+
+	@Nullable
+	private DockerContainer getContainer(Docker.VerticalLocation verticalLocation) {
 		return switch (verticalLocation) {
 			case TOP -> this.topDock;
 			case BOTTOM -> this.bottomDock;
@@ -368,6 +391,7 @@ public class Dock extends JPanel {
 			this.hostedDocker = null;
 		}
 
+		@Nullable
 		public Docker getHostedDocker() {
 			return this.hostedDocker;
 		}
