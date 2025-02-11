@@ -557,7 +557,7 @@ public class MenuBar {
 	private static void prepareSaveMappingsAsMenu(JMenu saveMappingsAsMenu, JMenuItem saveMappingsItem, Gui gui) {
 		for (ReadWriteService format : gui.getController().getEnigma().getReadWriteServices()) {
 			if (format.supportsWriting()) {
-				JMenuItem item = new JMenuItem(I18n.translate("mapping_format." + format.getId().toLowerCase(Locale.ROOT)));
+				JMenuItem item = new JMenuItem(I18n.translate("mapping_format." + format.getId().split(":")[1].toLowerCase()));
 				item.addActionListener(event -> {
 					JFileChooser fileChooser = gui.mappingsFileChooser;
 					ExtensionFileFilter.setupFileChooser(gui, fileChooser, format);
