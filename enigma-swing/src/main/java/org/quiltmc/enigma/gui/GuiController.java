@@ -199,16 +199,18 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void regenerateAndUpdateStatIcons() {
-		ProgressListener progressListener = ProgressListener.createEmpty();
-		this.gui.getMainWindow().getStatusBar().syncWith(progressListener);
-		var editableTypes = EditableType.toStatTypes(this.gui.getEditableTypes());
-		GenerationParameters parameters = new GenerationParameters(editableTypes, Config.main().stats.icons.shouldIncludeSyntheticParameters.value(), Config.main().stats.icons.shouldCountFallbackNames.value());
-		this.statsGenerator.generate(progressListener, parameters);
+		if (Config.main().features.enableClassTreeStatIcons.value()) {
+			ProgressListener progressListener = ProgressListener.createEmpty();
+			this.gui.getMainWindow().getStatusBar().syncWith(progressListener);
+			var editableTypes = EditableType.toStatTypes(this.gui.getEditableTypes());
+			GenerationParameters parameters = new GenerationParameters(editableTypes, Config.main().stats.icons.shouldIncludeSyntheticParameters.value(), Config.main().stats.icons.shouldCountFallbackNames.value());
+			this.statsGenerator.generate(progressListener, parameters);
 
-		// ensure all class tree dockers show the update to the stats icons
-		for (Docker docker : this.gui.getDockerManager().getActiveDockers().values()) {
-			if (docker instanceof ClassesDocker) {
-				docker.repaint();
+			// ensure all class tree dockers show the update to the stats icons
+			for (Docker docker : this.gui.getDockerManager().getActiveDockers().values()) {
+				if (docker instanceof ClassesDocker) {
+					docker.repaint();
+				}
 			}
 		}
 	}

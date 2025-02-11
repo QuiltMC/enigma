@@ -16,7 +16,7 @@ public record GenerationParameters(Set<StatType> includedTypes, boolean includeS
 	 * Creates a default set of parameters.
 	 */
 	public GenerationParameters() {
-		this(EnumSet.noneOf(StatType.class), false, false);
+		this(EnumSet.allOf(StatType.class), false, false);
 	}
 
 	/**

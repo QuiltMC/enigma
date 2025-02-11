@@ -63,9 +63,6 @@ public class StatsGenerator {
 	 * @return the stats
 	 */
 	public ProjectStatsResult getResult(GenerationParameters parameters) {
-		System.out.println(this.lastParameters);
-		System.out.println(parameters);
-
 		if (this.result == null || !this.lastParameters.equals(parameters)) {
 			return this.generate(ProgressListener.createEmpty(), parameters);
 		}
