@@ -120,8 +120,6 @@ public class StatsDialog {
 			dialog.dispose();
 
 			Config.main().stats.lastTopLevelPackage.setValue(topLevelPackage.getText());
-			Config.main().stats.shouldIncludeSyntheticParameters.setValue(syntheticParametersOption.isSelected());
-			Config.main().stats.shouldCountFallbackNames.setValue(countFallbackOption.isSelected());
 
 			generateStats(gui, checkboxes);
 		});

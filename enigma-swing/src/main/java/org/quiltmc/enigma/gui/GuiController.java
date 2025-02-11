@@ -202,15 +202,18 @@ public class GuiController implements ClientPacketHandler {
 		if (Config.main().features.enableClassTreeStatIcons.value()) {
 			ProgressListener progressListener = ProgressListener.createEmpty();
 			this.gui.getMainWindow().getStatusBar().syncWith(progressListener);
-			var editableTypes = EditableType.toStatTypes(this.gui.getEditableTypes());
-			GenerationParameters parameters = new GenerationParameters(editableTypes, Config.main().stats.icons.shouldIncludeSyntheticParameters.value(), Config.main().stats.icons.shouldCountFallbackNames.value());
-			this.statsGenerator.generate(progressListener, parameters);
 
-			// ensure all class tree dockers show the update to the stats icons
-			for (Docker docker : this.gui.getDockerManager().getActiveDockers().values()) {
-				if (docker instanceof ClassesDocker) {
-					docker.repaint();
-				}
+			var includedTypes = EditableType.toStatTypes(this.gui.getEditableTypes());
+			includedTypes.removeIf(type -> !Config.stats().includedStatTypes.value().contains(type));
+
+			GenerationParameters parameters = new GenerationParameters(includedTypes, Config.stats().shouldIncludeSyntheticParameters.value(), Config.stats().shouldCountFallbackNames.value());
+			this.statsGenerator.generate(progressListener, parameters);
+		}
+
+		// ensure all class tree dockers show the update to the stats icons
+		for (Docker docker : this.gui.getDockerManager().getActiveDockers().values()) {
+			if (docker instanceof ClassesDocker) {
+				docker.repaint();
 			}
 		}
 	}

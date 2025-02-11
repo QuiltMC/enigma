@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.element;
 
 import org.quiltmc.enigma.api.service.ReadWriteService;
+import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.NotificationManager;
@@ -687,26 +688,50 @@ public class MenuBar {
 	}
 
 	private void prepareStatIconsMenu(JMenu statIconsMenu) {
+		JMenu statTypes = new JMenu(I18n.translate("menu.view.stat_icons.included_types"));
+		for (StatType statType : StatType.values()) {
+			JCheckBoxMenuItem checkbox = new JCheckBoxMenuItem(statType.getName());
+			checkbox.setSelected(Config.main().stats.includedStatTypes.value().contains(statType));
+			checkbox.addActionListener(event -> {
+				if (checkbox.isSelected() && !Config.stats().includedStatTypes.value().contains(statType)) {
+					Config.stats().includedStatTypes.value().add(statType);
+				} else {
+					Config.stats().includedStatTypes.value().remove(statType);
+				}
+
+				MenuBar.this.gui.getController().regenerateAndUpdateStatIcons();
+			});
+
+			statTypes.add(checkbox);
+		}
+
+		JCheckBoxMenuItem enableIcons = new JCheckBoxMenuItem(I18n.translate("menu.view.stat_icons.enable_icons"));
 		JCheckBoxMenuItem includeSynthetic = new JCheckBoxMenuItem(I18n.translate("menu.view.stat_icons.include_synthetic"));
 		JCheckBoxMenuItem countFallback = new JCheckBoxMenuItem(I18n.translate("menu.view.stat_icons.count_fallback"));
 
-		includeSynthetic.setSelected(Config.main().stats.icons.shouldIncludeSyntheticParameters.value());
-		countFallback.setSelected(Config.main().stats.icons.shouldCountFallbackNames.value());
+		enableIcons.setSelected(Config.main().features.enableClassTreeStatIcons.value());
+		includeSynthetic.setSelected(Config.main().stats.shouldIncludeSyntheticParameters.value());
+		countFallback.setSelected(Config.main().stats.shouldCountFallbackNames.value());
+
+		enableIcons.addActionListener(event -> {
+			Config.main().features.enableClassTreeStatIcons.setValue(enableIcons.isSelected());
+			MenuBar.this.gui.getController().regenerateAndUpdateStatIcons();
+		});
 
 		includeSynthetic.addActionListener(event -> {
-			var value = includeSynthetic.getState();
-			Config.main().stats.icons.shouldIncludeSyntheticParameters.setValue(value);
+			Config.main().stats.shouldIncludeSyntheticParameters.setValue(includeSynthetic.isSelected());
 			MenuBar.this.gui.getController().regenerateAndUpdateStatIcons();
 		});
 
 		countFallback.addActionListener(event -> {
-			var value = countFallback.getState();
-			Config.main().stats.icons.shouldCountFallbackNames.setValue(value);
+			Config.main().stats.shouldCountFallbackNames.setValue(countFallback.isSelected());
 			MenuBar.this.gui.getController().regenerateAndUpdateStatIcons();
 		});
 
+		statIconsMenu.add(enableIcons);
 		statIconsMenu.add(includeSynthetic);
 		statIconsMenu.add(countFallback);
+		statIconsMenu.add(statTypes);
 	}
 
 	public void prepareCrashHistoryMenu() {
