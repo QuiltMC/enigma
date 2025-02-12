@@ -109,6 +109,10 @@ public final class Config extends ReflectiveConfig {
 		return MAIN;
 	}
 
+	public static StatsSection stats() {
+		return main().stats;
+	}
+
 	public static DockerConfig dockers() {
 		return DOCKER;
 	}
