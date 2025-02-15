@@ -244,6 +244,7 @@
 	"prompt.close.title": "Save your changes?",
 	"prompt.close.summary": "Your mappings have not been saved yet. Do you want to save?",
 	"prompt.close.save": "Save and close",
+	"prompt.close.save_and_reload": "Save and reload",
 	"prompt.close.discard": "Discard changes",
 	"prompt.connect.title": "Connect to Server",
 	"prompt.connect.username": "Username:",
