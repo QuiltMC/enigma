@@ -32,8 +32,12 @@ public interface ClassProvider {
 		String finalClassName = className;
 		return this.getClassNames()
 				.stream()
-				.filter(s -> s.lastIndexOf('/') == depth && s.startsWith(finalClassName))
+				.filter(s -> s.lastIndexOf('/') == depth && isOwn(s, finalClassName))
 				.toList();
+	}
+
+	private static boolean isOwn(String className, String parentClass) {
+		return className.equals(parentClass) || className.startsWith(parentClass + "$");
 	}
 
 	static ClassProvider fromMap(Map<String, ClassNode> classes) {
