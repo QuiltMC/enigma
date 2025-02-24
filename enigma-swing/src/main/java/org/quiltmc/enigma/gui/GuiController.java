@@ -167,7 +167,7 @@ public class GuiController implements ClientPacketHandler {
 
 		this.gui.setMappingsFile(path);
 		Config.insertRecentProject(this.project.getJarPath().toString(), path.toString());
-		this.gui.getMenuBar().reloadOpenRecentMenu(this.gui);
+		this.gui.getMenuBar().getFileMenu().reloadOpenRecentMenu();
 
 		return ProgressDialog.runOffThread(this.gui, progress -> {
 			try {

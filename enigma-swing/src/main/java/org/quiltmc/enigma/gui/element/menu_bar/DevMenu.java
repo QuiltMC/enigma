@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.gui.element;
+package org.quiltmc.enigma.gui.element.menu_bar;
 
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
@@ -12,7 +12,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -26,7 +25,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 
-public class DevMenu extends JMenu {
+public class DevMenu extends AbstractEnigmaMenu {
 	private final Gui gui;
 
 	private final JCheckBoxMenuItem showMappingSourcePluginItem = new JCheckBoxMenuItem();
@@ -48,7 +47,8 @@ public class DevMenu extends JMenu {
 		this.printMappingTreeItem.addActionListener(e -> this.onPrintMappingTreeClicked());
 	}
 
-	public void retranslateUi() {
+	@Override
+	public void retranslate() {
 		this.setText("Dev");
 
 		this.showMappingSourcePluginItem.setText(I18n.translate("dev.menu.show_mapping_source_plugin"));
@@ -57,7 +57,8 @@ public class DevMenu extends JMenu {
 		this.printMappingTreeItem.setText(I18n.translate("dev.menu.print_mapping_tree"));
 	}
 
-	public void updateUiState() {
+	@Override
+	public void updateState() {
 		boolean jarOpen = this.gui.isJarOpen();
 		this.printMappingTreeItem.setEnabled(jarOpen);
 

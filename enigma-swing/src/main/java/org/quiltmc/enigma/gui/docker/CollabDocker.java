@@ -54,8 +54,8 @@ public class CollabDocker extends Docker {
 		connectionButtonPanel.add(this.startServerButton, BorderLayout.NORTH);
 		connectionButtonPanel.add(this.connectToServerButton, BorderLayout.SOUTH);
 
-		this.startServerButton.addActionListener(e -> this.gui.getMenuBar().onStartServerClicked());
-		this.connectToServerButton.addActionListener(e -> this.gui.getMenuBar().onConnectClicked());
+		this.startServerButton.addActionListener(e -> this.gui.getMenuBar().getCollabMenu().onStartServerClicked());
+		this.connectToServerButton.addActionListener(e -> this.gui.getMenuBar().getCollabMenu().onConnectClicked());
 
 		// we make a copy of the title bar to avoid having to shuffle it around both panels
 		this.titleCopy = new DockerTitleBar(gui, this, this.titleSupplier);
