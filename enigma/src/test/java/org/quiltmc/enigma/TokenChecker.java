@@ -45,7 +45,7 @@ public class TokenChecker {
 		// decompile the class
 		Source source = this.decompiler.getUndocumentedSource(entry.getTopLevelClass().getFullName());
 		// DEBUG
-		createDebugFile(source, entry.getTopLevelClass());
+		// this.createDebugFile(source, entry.getTopLevelClass());
 		String string = source.asString();
 		SourceIndex index = source.index();
 
@@ -65,7 +65,7 @@ public class TokenChecker {
 		String string = source.asString();
 		SourceIndex index = source.index();
 		// DEBUG
-		// createDebugFile(source, reference.context.getTopLevelClass());
+		// this.createDebugFile(source, reference.context.getTopLevelClass());
 
 		// get the token values
 		List<String> values = new ArrayList<>();

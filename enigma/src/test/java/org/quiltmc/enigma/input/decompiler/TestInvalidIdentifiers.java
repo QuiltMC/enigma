@@ -55,7 +55,7 @@ public class TestInvalidIdentifiers {
 		try {
 			throw new RuntimeException("meow :3");
 		} catch (RuntimeException e) {
-			invokeConstructor();
+			this.invokeConstructor();
 		}
 	}
 
