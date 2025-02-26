@@ -47,7 +47,7 @@ public interface NameProposalService extends EnigmaService {
 	/**
 	 * Marks names proposed by this service as 'fallback' names.
 	 * Fallback names will be visually differentiated in frontend applications, and should be expected to be of lower quality than a typical proposed name.
-	 * Fallback names will not count towards statistics.
+	 * Unlike regular proposed names, fallback names will not count towards statistics by default.
 	 *
 	 * @return whether names from this service should be marked as fallback
 	 */
