@@ -1,0 +1,57 @@
+org.quiltmc.enigma.input.decompiler.TestInvalidIdentifiers -> a:
+# {"fileName":"TestInvalidIdentifiers.java","id":"sourceFile"}
+    byte f1 -> byte
+    boolean f2 -> boolean
+    int f3 -> int
+    float f4 -> float
+    double f5 -> double
+    short f6 -> short
+    char f7 -> char
+    long f8 -> long
+    int f9 -> final
+    int f10 -> break
+    int f11 -> for
+    int f12 -> static
+    int f13 -> super
+    int f14 -> private
+    int f15 -> import
+    int f16 -> synchronized
+    int f17 -> $
+    boolean $assertionsDisabled -> b
+    6:6:void <init>() -> <init>
+    44:45:void invokeConstructor() -> new
+    49:51:void assertStatement() -> assert
+    56:60:void tryCatchThrownException() -> try
+    64:73:void switchCase() -> switch
+    77:77:void noop() -> void
+    81:82:void throwException() -> throws
+    116:119:void innerClass() -> class
+    123:138:void loop() -> while
+    142:142:int n() -> native
+    6:6:void <clinit>() -> <clinit>
+org.quiltmc.enigma.input.decompiler.TestInvalidIdentifiers$1 -> a$1:
+# {"fileName":"TestInvalidIdentifiers.java","id":"sourceFile"}
+    org.quiltmc.enigma.input.decompiler.TestInvalidIdentifiers this$0 -> a
+    116:116:void <init>(org.quiltmc.enigma.input.decompiler.TestInvalidIdentifiers) -> <init>
+org.quiltmc.enigma.input.decompiler.TestInvalidIdentifiers$1Abstract -> a$abstract:
+# {"fileName":"TestInvalidIdentifiers.java","id":"sourceFile"}
+    char m -> transient
+    boolean b -> volatile
+    boolean c -> false
+    org.quiltmc.enigma.input.decompiler.TestInvalidIdentifiers this$0 -> b
+    103:109:void <init>(org.quiltmc.enigma.input.decompiler.TestInvalidIdentifiers) -> <init>
+    112:113:void meow() -> throws
+org.quiltmc.enigma.input.decompiler.TestInvalidIdentifiers$1Interface -> a$interface:
+# {"fileName":"TestInvalidIdentifiers.java","id":"sourceFile"}
+    void meow() -> throws
+    94:94:int purr() -> enum
+org.quiltmc.enigma.input.decompiler.TestInvalidIdentifiers$Enum -> a$enum:
+# {"fileName":"TestInvalidIdentifiers.java","id":"sourceFile"}
+    org.quiltmc.enigma.input.decompiler.TestInvalidIdentifiers$Enum Foo -> final
+    org.quiltmc.enigma.input.decompiler.TestInvalidIdentifiers$Enum e -> this
+    org.quiltmc.enigma.input.decompiler.TestInvalidIdentifiers$Enum[] $VALUES -> a
+    145:145:org.quiltmc.enigma.input.decompiler.TestInvalidIdentifiers$Enum[] values() -> a
+    145:145:org.quiltmc.enigma.input.decompiler.TestInvalidIdentifiers$Enum valueOf(java.lang.String) -> a
+    150:152:void <init>(java.lang.String,int) -> <init>
+    145:145:org.quiltmc.enigma.input.decompiler.TestInvalidIdentifiers$Enum[] $values() -> b
+    145:146:void <clinit>() -> <clinit>

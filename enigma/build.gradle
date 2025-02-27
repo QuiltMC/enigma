@@ -90,6 +90,7 @@ def registerTestJarTasks(String name, String... input) {
 		classpath configurations.proGuard
 
 		confFile = confFileArg
+		inputs.file confFileArg
 
 		libraryJars = libraryJarsArg
 

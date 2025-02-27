@@ -43,9 +43,9 @@ public class TokenChecker {
 
 	protected String getDeclarationToken(Entry<?> entry) {
 		// decompile the class
-		Source source = this.decompiler.getUndocumentedSource(entry.getContainingClass().getFullName());
+		Source source = this.decompiler.getUndocumentedSource(entry.getTopLevelClass().getFullName());
 		// DEBUG
-		// createDebugFile(source, entry.getContainingClass());
+		// this.createDebugFile(source, entry.getTopLevelClass());
 		String string = source.asString();
 		SourceIndex index = source.index();
 
@@ -61,11 +61,11 @@ public class TokenChecker {
 	@SuppressWarnings("unchecked")
 	protected Collection<String> getReferenceTokens(EntryReference<? extends Entry<?>, ? extends Entry<?>> reference) {
 		// decompile the class
-		Source source = this.decompiler.getUndocumentedSource(reference.context.getContainingClass().getFullName());
+		Source source = this.decompiler.getUndocumentedSource(reference.context.getTopLevelClass().getFullName());
 		String string = source.asString();
 		SourceIndex index = source.index();
 		// DEBUG
-		// createDebugFile(source, reference.context.getContainingClass());
+		// this.createDebugFile(source, reference.context.getTopLevelClass());
 
 		// get the token values
 		List<String> values = new ArrayList<>();
@@ -85,7 +85,7 @@ public class TokenChecker {
 			String name = classEntry.getContextualName();
 			Path path = Files.createTempFile("class-" + name.replace("$", "_") + "-", ".html");
 			Files.writeString(path, SourceTestUtil.toHtml(source, name));
-			Logger.info("Debug file created: {}", path.toUri());
+			Logger.info("Debug file created: {} ({})", path.toUri(), this.decompiler.getClass().getCanonicalName());
 		} catch (Exception e) {
 			Logger.error(e, "Failed to create debug source file for {}", classEntry);
 		}
