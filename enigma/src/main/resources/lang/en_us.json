@@ -122,6 +122,7 @@
 	"popup_menu.class_selector.rename_package": "Rename Package",
 	"popup_menu.class_selector.move_package": "Move Package",
 	"popup_menu.class_selector.rename_class": "Rename Class",
+	"popup_menu.class_selector.regenerate_stats": "Regenerate Stats",
 	"popup_menu.class_selector.expand_all": "Expand All",
 	"popup_menu.class_selector.collapse_all": "Collapse All",
 	"popup_menu.class_selector.package_rename.rename_title": "Renaming package '%s'...",
