@@ -189,7 +189,7 @@ public class EditorPanel {
 				if (ref == null) return;
 				if (!EditorPanel.this.controller.getProject().isRenamable(ref)) return;
 
-				if (!event.isControlDown() && !event.isAltDown() && Character.isJavaIdentifierPart(event.getKeyChar())) {
+				if (!event.isControlDown() && !event.isAltDown() && Character.isJavaIdentifierStart(event.getKeyChar())) {
 					EnigmaProject project = gui.getController().getProject();
 					EntryReference<Entry<?>, Entry<?>> reference = project.getRemapper().deobfuscate(EditorPanel.this.cursorReference);
 					Entry<?> entry = reference.getNameableEntry();
