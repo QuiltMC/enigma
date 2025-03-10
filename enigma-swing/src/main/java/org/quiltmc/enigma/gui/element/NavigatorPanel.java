@@ -1,6 +1,8 @@
 package org.quiltmc.enigma.gui.element;
 
 import org.quiltmc.enigma.api.EnigmaProject;
+import org.quiltmc.enigma.api.analysis.EntryReference;
+import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
@@ -15,10 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.event.ItemEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A panel with buttons to navigate to the next and previous items in its entry collection.
@@ -73,26 +72,14 @@ public class NavigatorPanel extends JPanel {
 	 * Navigates to the next entry matching the current filter.
 	 */
 	public void navigateDown() {
-		List<Entry<?>> currentEntrySet = this.entries.get(this.selectedType);
-		if (!currentEntrySet.isEmpty()) {
-			this.currentIndex++;
-			this.wrapIndex();
-
-			this.tryNavigate();
-		}
+		tryNavigate(false);
 	}
 
 	/**
 	 * Navigates to the last entry matching the current filter.
 	 */
 	public void navigateUp() {
-		List<Entry<?>> currentEntrySet = this.entries.get(this.selectedType);
-		if (!currentEntrySet.isEmpty()) {
-			this.currentIndex--;
-			this.wrapIndex();
-
-			this.tryNavigate();
-		}
+		tryNavigate(true);
 	}
 
 	private void onTypeChange() {
@@ -113,9 +100,30 @@ public class NavigatorPanel extends JPanel {
 		this.currentIndex = Math.max(this.currentIndex - 1, 0);
 	}
 
-	private void tryNavigate() {
-		this.gui.getController().navigateTo(this.entries.get(this.selectedType).get(this.currentIndex));
-		this.updateStatsLabel();
+	private void tryNavigate(boolean reverse) {
+		List<Entry<?>> currentEntrySet = this.entries.get(this.selectedType);
+		if (!currentEntrySet.isEmpty()) {
+			Entry<?> entry = this.getClosestEntryToCursor(currentEntrySet, reverse);
+			this.gui.getController().navigateTo(entry);
+			this.currentIndex = currentEntrySet.indexOf(entry);
+			updateStatsLabel();
+		}
+	}
+
+	public Entry<?> getClosestEntryToCursor(List<Entry<?>> currentEntrySet, boolean reverse) {
+		List<Entry<?>> possibleEntriesCopy = new ArrayList<>(currentEntrySet);
+		if (reverse) Collections.reverse(possibleEntriesCopy);
+		int cursorPos = this.gui.getActiveEditor().getEditor().getCaretPosition();
+		for (Entry<?> entry : possibleEntriesCopy) {
+			List<Token> tokens = this.gui.getController().getTokensForReference(this.gui.getActiveEditor().getSource(), EntryReference.declaration(entry, entry.getName()));
+			if (!tokens.isEmpty()) {
+				Token token = tokens.get(0);
+				if (reverse ? token.start < cursorPos : token.start > cursorPos) {
+					return entry;
+				}
+			}
+		}
+		return possibleEntriesCopy.get(0);
 	}
 
 	/**
