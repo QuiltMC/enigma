@@ -127,7 +127,7 @@ public class NavigatorPanel extends JPanel {
 				}
 			}
 		}
-		
+
 		return possibleEntriesCopy.get(0);
 	}
 
