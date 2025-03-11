@@ -76,14 +76,14 @@ public class NavigatorPanel extends JPanel {
 	 * Navigates to the next entry matching the current filter.
 	 */
 	public void navigateDown() {
-		tryNavigate(false);
+		this.tryNavigate(false);
 	}
 
 	/**
 	 * Navigates to the last entry matching the current filter.
 	 */
 	public void navigateUp() {
-		tryNavigate(true);
+		this.tryNavigate(true);
 	}
 
 	private void onTypeChange() {
@@ -110,7 +110,7 @@ public class NavigatorPanel extends JPanel {
 			Entry<?> entry = this.getClosestEntryToCursor(currentEntrySet, reverse);
 			this.gui.getController().navigateTo(entry);
 			this.currentIndex = currentEntrySet.indexOf(entry);
-			updateStatsLabel();
+			this.updateStatsLabel();
 		}
 	}
 
@@ -127,6 +127,7 @@ public class NavigatorPanel extends JPanel {
 				}
 			}
 		}
+		
 		return possibleEntriesCopy.get(0);
 	}
 
