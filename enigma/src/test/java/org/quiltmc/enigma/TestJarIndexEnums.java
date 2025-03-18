@@ -3,6 +3,7 @@ package org.quiltmc.enigma;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.stats.GenerationParameters;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
@@ -22,7 +23,7 @@ public class TestJarIndexEnums {
 	@Test
 	void checkEnumStats() {
 		EnigmaProject project = openProject();
-		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), EnumSet.allOf(StatType.class), null, false);
+		ProjectStatsResult stats = new StatsGenerator(project).generate(ProgressListener.createEmpty(), null, new GenerationParameters(EnumSet.allOf(StatType.class)));
 
 		assertThat(stats.getMapped(StatType.CLASSES), equalTo(0));
 		assertThat(stats.getMapped(StatType.FIELDS), equalTo(0));
