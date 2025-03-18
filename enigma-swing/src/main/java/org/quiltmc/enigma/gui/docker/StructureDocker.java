@@ -128,6 +128,10 @@ public class StructureDocker extends Docker {
 		this.structureTree.setSelectionRow(this.structureTree.getRowForPath(path));
 	}
 
+	public void focusSearch() {
+		this.searchBar.requestFocus();
+	}
+
 	private void onKeyPress(KeyEvent e) {
 		if (KeyBinds.SELECT.matches(e)) {
 			this.navigateToSelectedNode();

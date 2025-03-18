@@ -6,6 +6,7 @@ import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.GuiController;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
+import org.quiltmc.enigma.gui.docker.StructureDocker;
 import org.quiltmc.enigma.gui.panel.EditorPanel;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
@@ -24,6 +25,8 @@ public class EditorPopupMenu {
 	private final JMenuItem renameItem = new JMenuItem();
 	private final JMenuItem pasteItem = new JMenuItem();
 	private final JMenuItem editJavadocItem = new JMenuItem();
+	private final JMenuItem showStructureItem = new JMenuItem();
+	private final JMenuItem searchStructureItem = new JMenuItem();
 	private final JMenuItem showInheritanceItem = new JMenuItem();
 	private final JMenuItem showImplementationsItem = new JMenuItem();
 	private final JMenuItem showCallsItem = new JMenuItem();
@@ -52,6 +55,8 @@ public class EditorPopupMenu {
 		this.ui.add(this.showImplementationsItem);
 		this.ui.add(this.showCallsItem);
 		this.ui.add(this.showCallsSpecificItem);
+		this.ui.add(this.showStructureItem);
+		this.ui.add(this.searchStructureItem);
 		this.ui.add(this.openEntryItem);
 		this.ui.add(this.openPreviousItem);
 		this.ui.add(this.openNextItem);
@@ -76,6 +81,11 @@ public class EditorPopupMenu {
 		this.renameItem.addActionListener(event -> gui.startRename(editor));
 		this.pasteItem.addActionListener(event -> gui.startRename(editor, GuiUtil.getClipboard()));
 		this.editJavadocItem.addActionListener(event -> gui.startDocChange(editor));
+		this.showStructureItem.addActionListener(event -> gui.openDocker(StructureDocker.class));
+		this.searchStructureItem.addActionListener(event -> {
+			gui.openDocker(StructureDocker.class);
+			gui.getDockerManager().getDocker(StructureDocker.class).focusSearch();
+		});
 		this.showInheritanceItem.addActionListener(event -> gui.showInheritance(editor));
 		this.showImplementationsItem.addActionListener(event -> gui.showImplementations(editor));
 		this.showCallsItem.addActionListener(event -> gui.showCalls(editor, true));
@@ -93,6 +103,8 @@ public class EditorPopupMenu {
 		this.renameItem.setAccelerator(KeyBinds.EDITOR_RENAME.toKeyStroke());
 		this.pasteItem.setAccelerator(KeyBinds.EDITOR_PASTE.toKeyStroke());
 		this.editJavadocItem.setAccelerator(KeyBinds.EDITOR_EDIT_JAVADOC.toKeyStroke());
+		this.showStructureItem.setAccelerator(KeyBinds.EDITOR_SHOW_STRUCTURE.toKeyStroke());
+		this.searchStructureItem.setAccelerator(KeyBinds.EDITOR_SEARCH_STRUCTURE.toKeyStroke());
 		this.showInheritanceItem.setAccelerator(KeyBinds.EDITOR_SHOW_INHERITANCE.toKeyStroke());
 		this.showImplementationsItem.setAccelerator(KeyBinds.EDITOR_SHOW_IMPLEMENTATIONS.toKeyStroke());
 		this.showCallsItem.setAccelerator(KeyBinds.EDITOR_SHOW_CALLS.toKeyStroke());
@@ -141,6 +153,12 @@ public class EditorPopupMenu {
 			return true;
 		} else if (KeyBinds.EDITOR_PASTE.matches(event)) {
 			this.pasteItem.doClick();
+			return true;
+		} else if (KeyBinds.EDITOR_SEARCH_STRUCTURE.matches(event)) {
+			this.searchStructureItem.doClick();
+			return true;
+		} else if (KeyBinds.EDITOR_SHOW_STRUCTURE.matches(event)) {
+			this.showStructureItem.doClick();
 			return true;
 		}
 
