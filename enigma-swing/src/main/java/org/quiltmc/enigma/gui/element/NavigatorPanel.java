@@ -116,7 +116,10 @@ public class NavigatorPanel extends JPanel {
 
 	public Entry<?> getClosestEntryToCursor(List<Entry<?>> currentEntrySet, boolean reverse) {
 		List<Entry<?>> possibleEntriesCopy = new ArrayList<>(currentEntrySet);
-		if (reverse) Collections.reverse(possibleEntriesCopy);
+		if (reverse) {
+			Collections.reverse(possibleEntriesCopy);
+		}
+		
 		int cursorPos = this.gui.getActiveEditor().getEditor().getCaretPosition();
 		for (Entry<?> entry : possibleEntriesCopy) {
 			List<Token> tokens = this.gui.getController().getTokensForReference(this.gui.getActiveEditor().getSource(), EntryReference.declaration(entry, entry.getName()));
