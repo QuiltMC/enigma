@@ -174,6 +174,7 @@ public class EditorPanel {
 					}
 				} else if (KeyBinds.EDITOR_QUICK_FIND.matches(event)) {
 					// prevent navigating on click when quick find activated
+					EditorPanel.this.shouldNavigateOnClick = false; // CTRL
 				} else if (KeyBinds.EDITOR_ZOOM_IN.matches(event)) {
 					EditorPanel.this.offsetEditorZoom(2);
 				} else if (KeyBinds.EDITOR_ZOOM_OUT.matches(event)) {
