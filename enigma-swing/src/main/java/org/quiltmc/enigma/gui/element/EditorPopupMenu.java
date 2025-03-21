@@ -81,7 +81,10 @@ public class EditorPopupMenu {
 		this.renameItem.addActionListener(event -> gui.startRename(editor));
 		this.pasteItem.addActionListener(event -> gui.startRename(editor, GuiUtil.getClipboard()));
 		this.editJavadocItem.addActionListener(event -> gui.startDocChange(editor));
-		this.showStructureItem.addActionListener(event -> gui.openDocker(StructureDocker.class));
+		this.showStructureItem.addActionListener(event -> {
+			gui.openDocker(StructureDocker.class);
+			gui.getDockerManager().getDocker(StructureDocker.class).focusTree();
+		});
 		this.searchStructureItem.addActionListener(event -> {
 			gui.openDocker(StructureDocker.class);
 			gui.getDockerManager().getDocker(StructureDocker.class).focusSearch();

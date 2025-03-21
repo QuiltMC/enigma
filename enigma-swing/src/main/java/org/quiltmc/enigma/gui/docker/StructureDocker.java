@@ -132,6 +132,10 @@ public class StructureDocker extends Docker {
 		this.searchBar.requestFocus();
 	}
 
+	public void focusTree() {
+		this.structureTree.requestFocus();
+	}
+
 	private void onKeyPress(KeyEvent e) {
 		if (KeyBinds.SELECT.matches(e)) {
 			this.navigateToSelectedNode();
