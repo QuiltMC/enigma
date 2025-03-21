@@ -31,8 +31,8 @@ public final class KeyBinds {
 	public static final KeyBind EDITOR_RENAME = KeyBind.builder("rename", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_R).build();
 	public static final KeyBind EDITOR_PASTE = KeyBind.builder("paste", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_V).build();
 	public static final KeyBind EDITOR_EDIT_JAVADOC = KeyBind.builder("edit_javadoc", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_D).build();
-	public static final KeyBind EDITOR_SHOW_STRUCTURE = KeyBind.builder("show_structure", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_Q).build();
-	public static final KeyBind EDITOR_SEARCH_STRUCTURE = KeyBind.builder("search_structure", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK).key(KeyEvent.VK_Q).build();
+	public static final KeyBind EDITOR_SHOW_STRUCTURE = KeyBind.builder("show_structure", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_T).build();
+	public static final KeyBind EDITOR_SEARCH_STRUCTURE = KeyBind.builder("search_structure", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK).key(KeyEvent.VK_T).build();
 	public static final KeyBind EDITOR_SHOW_INHERITANCE = KeyBind.builder("show_inheritance", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_I).build();
 	public static final KeyBind EDITOR_SHOW_IMPLEMENTATIONS = KeyBind.builder("show_implementations", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_M).build();
 	public static final KeyBind EDITOR_SHOW_CALLS = KeyBind.builder("show_calls", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_C).build();
