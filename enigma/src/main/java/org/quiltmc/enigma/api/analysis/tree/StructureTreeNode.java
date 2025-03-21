@@ -80,7 +80,10 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 				childNode.load(project, options);
 			}
 
-			this.add(childNode);
+			String search = options.searchString().strip().toLowerCase();
+			if ((child instanceof ClassEntry) || (search.isBlank() || childNode.toString().toLowerCase().contains(search))) {
+				this.add(childNode);
+			}
 		}
 	}
 
