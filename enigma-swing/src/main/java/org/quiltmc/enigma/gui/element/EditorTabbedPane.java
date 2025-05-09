@@ -74,10 +74,10 @@ public class EditorTabbedPane {
 				if (KeyBinds.EDITOR_CLOSE_TAB.matches(keyEvent)) {
 					this.closeEditor(ed);
 				} else if (KeyBinds.ENTRY_NAVIGATOR_NEXT.matches(keyEvent)) {
-					this.navigator.navigateDown();
+ 					ed.getNavigatorPanel().navigateDown();
 					keyEvent.consume();
 				} else if (KeyBinds.ENTRY_NAVIGATOR_LAST.matches(keyEvent)) {
-					this.navigator.navigateUp();
+					ed.getNavigatorPanel().navigateUp();
 					keyEvent.consume();
 				}
 			}));
