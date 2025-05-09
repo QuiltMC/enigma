@@ -236,7 +236,7 @@ public class EditorPanel {
 	}
 
 	public NavigatorPanel getNavigatorPanel() {
-		return navigatorPanel;
+		return this.navigatorPanel;
 	}
 
 	public void setClassHandle(ClassHandle handle) {
