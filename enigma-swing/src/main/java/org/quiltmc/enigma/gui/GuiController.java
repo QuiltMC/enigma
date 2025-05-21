@@ -216,7 +216,9 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	/**
-	 * Saves the mappings, with a dialog popping up, showing the progress.
+	 * Saves the mappings. If {@code background} is false, a dialog will pop up
+	 * showing the progress. Otherwise, the progress will be shown in the
+	 * status bar.
 	 *
 	 * <p>Notice the returned completable future has to be completed by
 	 * {@link SwingUtilities#invokeLater(Runnable)}. Hence, do not try to
@@ -224,6 +226,7 @@ public class GuiController implements ClientPacketHandler {
 	 *
 	 * @param path the path of the save
 	 * @param service the writer for the mapping type
+	 * @param background whether the progress should be shown in the status bar
 	 * @return the future of saving
 	 */
 	public CompletableFuture<Void> saveMappings(Path path, ReadWriteService service, boolean background) {
@@ -243,7 +246,7 @@ public class GuiController implements ClientPacketHandler {
 			});
 		} else {
 			return ProgressDialog.runOffThread(this.gui, progress -> {
-				doSave(path, service, progress);
+				this.doSave(path, service, progress);
 			});
 		}
 	}
