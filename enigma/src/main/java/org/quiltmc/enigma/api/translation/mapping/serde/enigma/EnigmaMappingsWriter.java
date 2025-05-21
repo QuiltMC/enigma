@@ -58,7 +58,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 					progress.step(steps++, classEntry.getFullName());
 					this.writeRoot(writer, writtenMappings, classEntry);
 				}
-				
+
 				progress.step(steps, I18n.translate("progress.mappings.enigma_file.done"));
 			} catch (IOException e) {
 				Logger.error(e, "Error while writing mappings to file {}", path);

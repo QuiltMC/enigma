@@ -208,7 +208,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public CompletableFuture<Void> saveMappings(Path path) {
-		return saveMappings(path, false);
+		return this.saveMappings(path, false);
 	}
 
 	public CompletableFuture<Void> saveMappings(Path path, boolean background) {
@@ -237,6 +237,7 @@ public class GuiController implements ClientPacketHandler {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), nonWriteableMessage, I18n.translate("menu.file.save.cannot_save"), JOptionPane.ERROR_MESSAGE);
 			return CompletableFuture.completedFuture(null);
 		}
+
 		if (background) {
 			return CompletableFuture.supplyAsync(() -> {
 				ProgressListener progress = ProgressListener.createEmpty();
