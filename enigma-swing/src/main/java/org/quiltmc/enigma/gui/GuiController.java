@@ -208,7 +208,11 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public CompletableFuture<Void> saveMappings(Path path) {
-		return this.saveMappings(path, this.readWriteService);
+		return saveMappings(path, false);
+	}
+
+	public CompletableFuture<Void> saveMappings(Path path, boolean background) {
+		return this.saveMappings(path, this.readWriteService, background);
 	}
 
 	/**
@@ -222,7 +226,7 @@ public class GuiController implements ClientPacketHandler {
 	 * @param service the writer for the mapping type
 	 * @return the future of saving
 	 */
-	public CompletableFuture<Void> saveMappings(Path path, ReadWriteService service) {
+	public CompletableFuture<Void> saveMappings(Path path, ReadWriteService service, boolean background) {
 		if (this.project == null) {
 			return CompletableFuture.completedFuture(null);
 		} else if (!service.supportsWriting()) {
@@ -230,23 +234,35 @@ public class GuiController implements ClientPacketHandler {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), nonWriteableMessage, I18n.translate("menu.file.save.cannot_save"), JOptionPane.ERROR_MESSAGE);
 			return CompletableFuture.completedFuture(null);
 		}
+		if (background) {
+			return CompletableFuture.supplyAsync(() -> {
+				ProgressListener progress = ProgressListener.createEmpty();
+				this.gui.getMainWindow().getStatusBar().syncWith(progress);
+				this.doSave(path, service, progress);
+				return null;
+			});
+		} else {
+			return ProgressDialog.runOffThread(this.gui, progress -> {
+				doSave(path, service, progress);
+			});
+		}
+	}
 
-		return ProgressDialog.runOffThread(this.gui, progress -> {
-			EntryRemapper mapper = this.project.getRemapper();
-			MappingSaveParameters saveParameters = this.enigma.getProfile().getMappingSaveParameters();
+	private void doSave(Path path, ReadWriteService service, ProgressListener progress) {
+		EntryRemapper mapper = this.project.getRemapper();
+		MappingSaveParameters saveParameters = this.enigma.getProfile().getMappingSaveParameters();
 
-			MappingDelta<EntryMapping> delta = mapper.takeMappingDelta();
-			boolean saveAll = !path.equals(this.loadedMappingPath);
+		MappingDelta<EntryMapping> delta = mapper.takeMappingDelta();
+		boolean saveAll = !path.equals(this.loadedMappingPath);
 
-			this.readWriteService = service;
-			this.loadedMappingPath = path;
+		this.readWriteService = service;
+		this.loadedMappingPath = path;
 
-			if (saveAll) {
-				service.write(mapper.getMappings(), path, progress, saveParameters);
-			} else {
-				service.write(mapper.getMappings(), delta, path, progress, saveParameters);
-			}
-		});
+		if (saveAll) {
+			service.write(mapper.getMappings(), path, progress, saveParameters);
+		} else {
+			service.write(mapper.getMappings(), delta, path, progress, saveParameters);
+		}
 	}
 
 	public void closeMappings() {

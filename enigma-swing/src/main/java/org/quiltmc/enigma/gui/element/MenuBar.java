@@ -568,7 +568,7 @@ public class MenuBar {
 
 					if (fileChooser.showSaveDialog(gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
 						Path savePath = ExtensionFileFilter.getSavePath(fileChooser);
-						gui.getController().saveMappings(savePath, format);
+						gui.getController().saveMappings(savePath, format, false);
 						saveMappingsItem.setEnabled(true);
 						Config.main().stats.lastSelectedDir.setValue(fileChooser.getCurrentDirectory().toString());
 					}
