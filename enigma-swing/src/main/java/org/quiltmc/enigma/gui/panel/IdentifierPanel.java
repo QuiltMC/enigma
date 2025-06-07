@@ -210,6 +210,9 @@ public class IdentifierPanel {
 						IdentifierPanel.this.vc.setNotifier(IdentifierPanel.this.gui.getNotificationManager());
 						IdentifierPanel.this.vc.reset();
 						IdentifierPanel.this.doRename(field.getText());
+						if (Config.main().features.autoSaveMappings.value() && IdentifierPanel.this.gui.mappingsFileChooser.getSelectedFile() != null) {
+							IdentifierPanel.this.gui.getController().saveMappings(IdentifierPanel.this.gui.mappingsFileChooser.getSelectedFile().toPath(), true);
+						}
 					}
 
 					EditorPanel e = IdentifierPanel.this.gui.getActiveEditor();
