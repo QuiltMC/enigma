@@ -235,6 +235,10 @@ public class EditorPanel {
 		return null;
 	}
 
+	public NavigatorPanel getNavigatorPanel() {
+		return this.navigatorPanel;
+	}
+
 	public void setClassHandle(ClassHandle handle) {
 		ClassEntry old = null;
 		if (this.classHandle != null) {
