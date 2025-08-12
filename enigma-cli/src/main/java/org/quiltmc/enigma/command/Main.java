@@ -1,14 +1,33 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.collect.ImmutableMap;
 import org.quiltmc.enigma.api.Enigma;
 import org.tinylog.Logger;
 
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
 public class Main {
-	private static final Map<String, Command> COMMANDS = new LinkedHashMap<>();
+	private static final ImmutableMap<String, Command> COMMANDS = Stream
+			.of(
+				DeobfuscateCommand.INSTANCE,
+				DecompileCommand.INSTANCE,
+				ConvertMappingsCommand.INSTANCE,
+				ComposeMappingsCommand.INSTANCE,
+				InvertMappingsCommand.INSTANCE,
+				CheckMappingsCommand.INSTANCE,
+				MapSpecializedMethodsCommand.INSTANCE,
+				InsertProposedMappingsCommand.INSTANCE,
+				DropInvalidMappingsCommand.INSTANCE,
+				FillClassMappingsCommand.INSTANCE,
+				HelpCommand.INSTANCE,
+				PrintStatsCommand.INSTANCE
+			)
+			.collect(toImmutableMap(Command::getName, Function.identity()));
 
 	public static void main(String... args) {
 		try {
@@ -97,30 +116,8 @@ public class Main {
 		builder.append(argument.explanation()).append("\n");
 	}
 
-	private static void register(Command command) {
-		Command old = COMMANDS.put(command.getName(), command);
-		if (old != null) {
-			Logger.warn("Command {} with name {} has been substituted by {}", old, command.getName(), command);
-		}
-	}
-
 	private static void logEnigmaInfo() {
 		Logger.info("{} - {}", Enigma.NAME, Enigma.VERSION);
-	}
-
-	static {
-		register(DeobfuscateCommand.INSTANCE);
-		register(DecompileCommand.INSTANCE);
-		register(ConvertMappingsCommand.INSTANCE);
-		register(ComposeMappingsCommand.INSTANCE);
-		register(InvertMappingsCommand.INSTANCE);
-		register(CheckMappingsCommand.INSTANCE);
-		register(MapSpecializedMethodsCommand.INSTANCE);
-		register(InsertProposedMappingsCommand.INSTANCE);
-		register(DropInvalidMappingsCommand.INSTANCE);
-		register(FillClassMappingsCommand.INSTANCE);
-		register(HelpCommand.INSTANCE);
-		register(PrintStatsCommand.INSTANCE);
 	}
 
 	private static final class CommandHelpException extends IllegalArgumentException {
