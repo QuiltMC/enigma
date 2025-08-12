@@ -25,7 +25,9 @@ import java.nio.file.Path;
 import java.util.Map;
 
 public final class MapSpecializedMethodsCommand extends Command {
-	public MapSpecializedMethodsCommand() {
+	public static final MapSpecializedMethodsCommand INSTANCE = new MapSpecializedMethodsCommand();
+
+	private MapSpecializedMethodsCommand() {
 		super(
 				ImmutableList.of(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS, CommonArguments.MAPPING_OUTPUT),
 				ImmutableList.of(CommonArguments.OBFUSCATED_NAMESPACE, CommonArguments.DEOBFUSCATED_NAMESPACE)
@@ -54,7 +56,7 @@ public final class MapSpecializedMethodsCommand extends Command {
 	}
 
 	public static void run(Path jar, Path sourcePath, Path output, @Nullable String obfuscatedNamespace, @Nullable String deobfuscatedNamespace) throws IOException, MappingParseException {
-		boolean debug = shouldDebug(new MapSpecializedMethodsCommand().getName());
+		boolean debug = shouldDebug(INSTANCE.getName());
 		JarIndex jarIndex = loadJar(jar);
 		Enigma enigma = createEnigma();
 

@@ -27,7 +27,9 @@ public final class FillClassMappingsCommand extends Command {
 					Whether to fill all possible mappings. Allowed values are "true" and "false"."""
 	);
 
-	protected FillClassMappingsCommand() {
+	public static final FillClassMappingsCommand INSTANCE = new FillClassMappingsCommand();
+
+	private FillClassMappingsCommand() {
 		super(
 				ImmutableList.of(
 						CommonArguments.INPUT_JAR,
@@ -61,7 +63,7 @@ public final class FillClassMappingsCommand extends Command {
 	}
 
 	public static void run(Path jar, Path source, Path result, boolean fillAll, @Nullable String obfuscatedNamespace, @Nullable String deobfuscatedNamespace) throws Exception {
-		boolean debug = shouldDebug(new FillClassMappingsCommand().getName());
+		boolean debug = shouldDebug(INSTANCE.getName());
 		JarIndex jarIndex = loadJar(jar);
 		Enigma enigma = createEnigma();
 

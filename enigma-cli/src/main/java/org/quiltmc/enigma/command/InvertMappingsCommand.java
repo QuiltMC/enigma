@@ -20,7 +20,9 @@ public final class InvertMappingsCommand extends Command {
 					A path to the file or folder to write output to."""
 	);
 
-	public InvertMappingsCommand() {
+	public static final InvertMappingsCommand INSTANCE = new InvertMappingsCommand();
+
+	private InvertMappingsCommand() {
 		super(
 				ImmutableList.of(CommonArguments.INPUT_MAPPINGS, OUTPUT_FOLDER),
 				ImmutableList.of(CommonArguments.OBFUSCATED_NAMESPACE, CommonArguments.DEOBFUSCATED_NAMESPACE)

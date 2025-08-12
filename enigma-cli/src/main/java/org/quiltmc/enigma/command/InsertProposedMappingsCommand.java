@@ -28,7 +28,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
 public final class InsertProposedMappingsCommand extends Command {
-	public InsertProposedMappingsCommand() {
+	public static final InsertProposedMappingsCommand INSTANCE = new InsertProposedMappingsCommand();
+
+	private InsertProposedMappingsCommand() {
 		super(
 				ImmutableList.of(
 						CommonArguments.INPUT_JAR,
@@ -73,7 +75,7 @@ public final class InsertProposedMappingsCommand extends Command {
 	}
 
 	public static void run(Path inJar, Path source, Path output, Enigma enigma, @Nullable String obfuscatedNamespace, @Nullable String deobfuscatedNamespace) throws Exception {
-		boolean debug = shouldDebug(new InsertProposedMappingsCommand().getName());
+		boolean debug = shouldDebug(INSTANCE.getName());
 		int nameProposalServices = enigma.getServices().get(NameProposalService.TYPE).size();
 		if (nameProposalServices == 0) {
 			Logger.error("No name proposal services found!");

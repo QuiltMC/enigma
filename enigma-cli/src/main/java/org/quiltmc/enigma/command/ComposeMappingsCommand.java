@@ -30,7 +30,9 @@ public final class ComposeMappingsCommand extends Command {
 					Which mappings should overwrite the others when composing conflicting mappings. Allowed values are "left", "right", and "both"."""
 	);
 
-	public ComposeMappingsCommand() {
+	public static final ComposeMappingsCommand INSTANCE = new ComposeMappingsCommand();
+
+	private ComposeMappingsCommand() {
 		super(LEFT_MAPPINGS, RIGHT_MAPPINGS, CommonArguments.MAPPING_OUTPUT, KEEP_MODE);
 	}
 

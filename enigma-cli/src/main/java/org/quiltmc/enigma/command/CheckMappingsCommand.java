@@ -11,7 +11,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class CheckMappingsCommand extends Command {
-	public CheckMappingsCommand() {
+	public static final CheckMappingsCommand INSTANCE = new CheckMappingsCommand();
+
+	private CheckMappingsCommand() {
 		super(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS);
 	}
 

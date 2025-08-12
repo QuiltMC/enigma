@@ -109,18 +109,18 @@ public class Main {
 	}
 
 	static {
-		register(new DeobfuscateCommand());
-		register(new DecompileCommand());
-		register(new ConvertMappingsCommand());
-		register(new ComposeMappingsCommand());
-		register(new InvertMappingsCommand());
-		register(new CheckMappingsCommand());
-		register(new MapSpecializedMethodsCommand());
-		register(new InsertProposedMappingsCommand());
-		register(new DropInvalidMappingsCommand());
-		register(new FillClassMappingsCommand());
-		register(new HelpCommand());
-		register(new PrintStatsCommand());
+		register(DeobfuscateCommand.INSTANCE);
+		register(DecompileCommand.INSTANCE);
+		register(ConvertMappingsCommand.INSTANCE);
+		register(ComposeMappingsCommand.INSTANCE);
+		register(InvertMappingsCommand.INSTANCE);
+		register(CheckMappingsCommand.INSTANCE);
+		register(MapSpecializedMethodsCommand.INSTANCE);
+		register(InsertProposedMappingsCommand.INSTANCE);
+		register(DropInvalidMappingsCommand.INSTANCE);
+		register(FillClassMappingsCommand.INSTANCE);
+		register(HelpCommand.INSTANCE);
+		register(PrintStatsCommand.INSTANCE);
 	}
 
 	private static final class CommandHelpException extends IllegalArgumentException {

@@ -16,7 +16,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public final class ConvertMappingsCommand extends Command {
-	public ConvertMappingsCommand() {
+	public static final ConvertMappingsCommand INSTANCE = new ConvertMappingsCommand();
+
+	private ConvertMappingsCommand() {
 		super(
 				CommonArguments.INPUT_MAPPINGS,
 				CommonArguments.MAPPING_OUTPUT,

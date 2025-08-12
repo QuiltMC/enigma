@@ -7,7 +7,9 @@ import org.quiltmc.enigma.api.ProgressListener;
 import java.nio.file.Path;
 
 public final class DeobfuscateCommand extends Command {
-	public DeobfuscateCommand() {
+	public static final DeobfuscateCommand INSTANCE = new DeobfuscateCommand();
+
+	private DeobfuscateCommand() {
 		super(
 				ImmutableList.of(CommonArguments.INPUT_JAR, CommonArguments.OUTPUT_JAR),
 				ImmutableList.of(CommonArguments.INPUT_MAPPINGS)

@@ -14,7 +14,9 @@ import java.nio.file.Path;
 import java.util.Set;
 
 public final class PrintStatsCommand extends Command {
-	public PrintStatsCommand() {
+	public static final PrintStatsCommand INSTANCE = new PrintStatsCommand();
+
+	private PrintStatsCommand() {
 		super(
 				ImmutableList.of(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS),
 				ImmutableList.of(CommonArguments.ENIGMA_PROFILE)

@@ -22,7 +22,9 @@ public final class DecompileCommand extends Command {
 					- BYTECODE"""
 	);
 
-	public DecompileCommand() {
+	public static final DecompileCommand INSTANCE = new DecompileCommand();
+
+	private DecompileCommand() {
 		super(
 				ImmutableList.of(DECOMPILER, CommonArguments.INPUT_JAR, CommonArguments.OUTPUT_JAR),
 				ImmutableList.of(CommonArguments.INPUT_MAPPINGS)
