@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
-public class InsertProposedMappingsCommand extends Command {
+public final class InsertProposedMappingsCommand extends Command {
 	public InsertProposedMappingsCommand() {
 		super(
 				ImmutableList.of(

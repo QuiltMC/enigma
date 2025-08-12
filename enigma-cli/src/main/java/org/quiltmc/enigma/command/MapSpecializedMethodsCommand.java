@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
-public class MapSpecializedMethodsCommand extends Command {
+public final class MapSpecializedMethodsCommand extends Command {
 	public MapSpecializedMethodsCommand() {
 		super(
 				ImmutableList.of(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS, CommonArguments.MAPPING_OUTPUT),

@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class CheckMappingsCommand extends Command {
+public final class CheckMappingsCommand extends Command {
 	public CheckMappingsCommand() {
 		super(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS);
 	}

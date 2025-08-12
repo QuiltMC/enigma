@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-public class DropInvalidMappingsCommand extends Command {
+public final class DropInvalidMappingsCommand extends Command {
 	public DropInvalidMappingsCommand() {
 		super(
 				ImmutableList.of(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS),

@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class InvertMappingsCommand extends Command {
+public final class InvertMappingsCommand extends Command {
 	private static final Argument OUTPUT_FOLDER = new Argument("<output-folder>",
 			"""
 					A path to the file or folder to write output to."""

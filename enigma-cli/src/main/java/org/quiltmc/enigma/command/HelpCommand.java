@@ -4,7 +4,7 @@ import org.tinylog.Logger;
 
 import java.util.Collection;
 
-public class HelpCommand extends Command {
+public final class HelpCommand extends Command {
 	protected HelpCommand() {
 		super();
 	}

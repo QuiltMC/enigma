@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class ComposeMappingsCommand extends Command {
+public final class ComposeMappingsCommand extends Command {
 	private static final Argument LEFT_MAPPINGS = new Argument("<left-mappings>",
 			"""
 					A path to the left file or folder to read mappings from, used in commands which take two mapping inputs."""

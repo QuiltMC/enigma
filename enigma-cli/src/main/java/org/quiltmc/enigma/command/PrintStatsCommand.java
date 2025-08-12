@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.Set;
 
-public class PrintStatsCommand extends Command {
+public final class PrintStatsCommand extends Command {
 	public PrintStatsCommand() {
 		super(
 				ImmutableList.of(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS),

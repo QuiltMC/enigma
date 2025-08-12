@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.List;
 
-public class FillClassMappingsCommand extends Command {
+public final class FillClassMappingsCommand extends Command {
 	private static final Argument FILL_ALL = new Argument("<fill-all>",
 			"""
 					Whether to fill all possible mappings. Allowed values are "true" and "false"."""

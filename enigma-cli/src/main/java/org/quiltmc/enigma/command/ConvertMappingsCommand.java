@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class ConvertMappingsCommand extends Command {
+public final class ConvertMappingsCommand extends Command {
 	public ConvertMappingsCommand() {
 		super(
 				CommonArguments.INPUT_MAPPINGS,

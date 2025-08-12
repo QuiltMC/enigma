@@ -31,7 +31,10 @@ import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
 
-public abstract class Command {
+public abstract sealed class Command permits
+		CheckMappingsCommand, ComposeMappingsCommand, ConvertMappingsCommand, DecompileCommand, DeobfuscateCommand,
+		DropInvalidMappingsCommand, FillClassMappingsCommand, HelpCommand, InsertProposedMappingsCommand,
+		InvertMappingsCommand, MapSpecializedMethodsCommand, PrintStatsCommand {
 	final ImmutableList<Argument> requiredArguments;
 	final ImmutableList<Argument> optionalArguments;
 
