@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
@@ -25,11 +26,9 @@ import java.util.Map;
 
 public class MapSpecializedMethodsCommand extends Command {
 	public MapSpecializedMethodsCommand() {
-		super(Argument.INPUT_JAR.required(),
-				Argument.INPUT_MAPPINGS.required(),
-				Argument.MAPPING_OUTPUT.required(),
-				Argument.OBFUSCATED_NAMESPACE.optional(),
-				Argument.DEOBFUSCATED_NAMESPACE.optional()
+		super(
+				ImmutableList.of(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS, CommonArguments.MAPPING_OUTPUT),
+				ImmutableList.of(CommonArguments.OBFUSCATED_NAMESPACE, CommonArguments.DEOBFUSCATED_NAMESPACE)
 		);
 	}
 

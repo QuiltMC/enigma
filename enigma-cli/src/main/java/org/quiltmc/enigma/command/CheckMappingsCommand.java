@@ -12,9 +12,7 @@ import java.util.stream.Collectors;
 
 public class CheckMappingsCommand extends Command {
 	public CheckMappingsCommand() {
-		super(Argument.INPUT_JAR.required(),
-				Argument.INPUT_MAPPINGS.required()
-		);
+		super(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS);
 	}
 
 	@Override

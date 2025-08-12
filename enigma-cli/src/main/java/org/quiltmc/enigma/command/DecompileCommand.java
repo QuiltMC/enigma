@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.EnigmaProject.DecompileErrorStrategy;
@@ -12,11 +13,20 @@ import java.nio.file.Path;
 import java.util.Locale;
 
 public class DecompileCommand extends Command {
+	private static final Argument DECOMPILER = new Argument("<decompiler>",
+			"""
+					The decompiler to use when producing output. Allowed values are (case-insensitive):
+					- VINEFLOWER
+					- CFR
+					- PROCYON
+					- BYTECODE"""
+	);
+
 	public DecompileCommand() {
-		super(Argument.DECOMPILER.required(),
-				Argument.INPUT_JAR.required(),
-				Argument.OUTPUT_JAR.required(),
-				Argument.INPUT_MAPPINGS.optional());
+		super(
+				ImmutableList.of(DECOMPILER, CommonArguments.INPUT_JAR, CommonArguments.OUTPUT_JAR),
+				ImmutableList.of(CommonArguments.INPUT_MAPPINGS)
+		);
 	}
 
 	@Override

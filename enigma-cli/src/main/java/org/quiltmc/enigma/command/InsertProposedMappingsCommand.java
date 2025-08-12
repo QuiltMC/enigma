@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
@@ -28,12 +29,17 @@ import javax.annotation.Nullable;
 
 public class InsertProposedMappingsCommand extends Command {
 	public InsertProposedMappingsCommand() {
-		super(Argument.INPUT_JAR.required(),
-				Argument.INPUT_MAPPINGS.required(),
-				Argument.MAPPING_OUTPUT.required(),
-				Argument.ENIGMA_PROFILE.optional(),
-				Argument.OBFUSCATED_NAMESPACE.optional(),
-				Argument.DEOBFUSCATED_NAMESPACE.optional()
+		super(
+				ImmutableList.of(
+						CommonArguments.INPUT_JAR,
+						CommonArguments.INPUT_MAPPINGS,
+						CommonArguments.MAPPING_OUTPUT
+				),
+				ImmutableList.of(
+						CommonArguments.ENIGMA_PROFILE,
+						CommonArguments.OBFUSCATED_NAMESPACE,
+						CommonArguments.DEOBFUSCATED_NAMESPACE
+				)
 		);
 	}
 

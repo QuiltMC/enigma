@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaProfile;
@@ -14,9 +15,10 @@ import java.util.Set;
 
 public class PrintStatsCommand extends Command {
 	public PrintStatsCommand() {
-		super(Argument.INPUT_JAR.required(),
-				Argument.INPUT_MAPPINGS.required(),
-				Argument.ENIGMA_PROFILE.optional());
+		super(
+				ImmutableList.of(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS),
+				ImmutableList.of(CommonArguments.ENIGMA_PROFILE)
+		);
 	}
 
 	@Override

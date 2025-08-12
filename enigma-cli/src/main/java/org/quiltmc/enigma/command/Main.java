@@ -93,8 +93,8 @@ public class Main {
 	}
 
 	private static void appendHelp(Argument argument, int index, StringBuilder builder) {
-		builder.append(String.format("Argument %s: %s", index, argument.getDisplayForm())).append("\n");
-		builder.append(argument.getExplanation()).append("\n");
+		builder.append(String.format("Argument %s: %s", index, argument.displayForm())).append("\n");
+		builder.append(argument.explanation()).append("\n");
 	}
 
 	private static void register(Command command) {

@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
@@ -21,13 +22,19 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class FillClassMappingsCommand extends Command {
+	private static final Argument FILL_ALL = new Argument("<fill-all>",
+			"""
+					Whether to fill all possible mappings. Allowed values are "true" and "false"."""
+	);
+
 	protected FillClassMappingsCommand() {
-		super(Argument.INPUT_JAR.required(),
-				Argument.INPUT_MAPPINGS.required(),
-				Argument.MAPPING_OUTPUT.required(),
-				Argument.FILL_ALL.optional(),
-				Argument.OBFUSCATED_NAMESPACE.optional(),
-				Argument.DEOBFUSCATED_NAMESPACE.optional()
+		super(
+				ImmutableList.of(
+						CommonArguments.INPUT_JAR,
+						CommonArguments.INPUT_MAPPINGS,
+						CommonArguments.MAPPING_OUTPUT
+				),
+				ImmutableList.of(FILL_ALL, CommonArguments.OBFUSCATED_NAMESPACE, CommonArguments.DEOBFUSCATED_NAMESPACE)
 		);
 	}
 

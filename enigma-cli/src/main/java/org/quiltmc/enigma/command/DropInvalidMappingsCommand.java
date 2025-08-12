@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
@@ -15,9 +16,10 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 public class DropInvalidMappingsCommand extends Command {
 	public DropInvalidMappingsCommand() {
-		super(Argument.INPUT_JAR.required(),
-				Argument.INPUT_MAPPINGS.required(),
-				Argument.MAPPING_OUTPUT.optional());
+		super(
+				ImmutableList.of(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS),
+				ImmutableList.of(CommonArguments.MAPPING_OUTPUT)
+		);
 	}
 
 	@Override

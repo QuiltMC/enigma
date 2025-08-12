@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 
@@ -7,9 +8,9 @@ import java.nio.file.Path;
 
 public class DeobfuscateCommand extends Command {
 	public DeobfuscateCommand() {
-		super(Argument.INPUT_JAR.required(),
-				Argument.OUTPUT_JAR.required(),
-				Argument.INPUT_MAPPINGS.optional()
+		super(
+				ImmutableList.of(CommonArguments.INPUT_JAR, CommonArguments.OUTPUT_JAR),
+				ImmutableList.of(CommonArguments.INPUT_MAPPINGS)
 		);
 	}
 

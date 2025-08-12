@@ -17,12 +17,21 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public class ComposeMappingsCommand extends Command {
+	private static final Argument LEFT_MAPPINGS = new Argument("<left-mappings>",
+			"""
+					A path to the left file or folder to read mappings from, used in commands which take two mapping inputs."""
+	);
+	private static final Argument RIGHT_MAPPINGS = new Argument("<right-mappings>",
+			"""
+					A path to the right file or folder to read mappings from, used in commands which take two mapping inputs."""
+	);
+	private static final Argument KEEP_MODE = new Argument("<keep-mode>",
+			"""
+					Which mappings should overwrite the others when composing conflicting mappings. Allowed values are "left", "right", and "both"."""
+	);
+
 	public ComposeMappingsCommand() {
-		super(Argument.LEFT_MAPPINGS.required(),
-				Argument.RIGHT_MAPPINGS.required(),
-				Argument.MAPPING_OUTPUT.required(),
-				Argument.KEEP_MODE.required()
-		);
+		super(LEFT_MAPPINGS, RIGHT_MAPPINGS, CommonArguments.MAPPING_OUTPUT, KEEP_MODE);
 	}
 
 	@Override
