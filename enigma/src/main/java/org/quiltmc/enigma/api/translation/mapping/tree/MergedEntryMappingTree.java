@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.api.translation.mapping.tree;
 
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMap;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -42,8 +43,13 @@ public record MergedEntryMappingTree(EntryTree<EntryMapping> mainTree, EntryTree
 	@Override
 	public EntryMapping get(Entry<?> entry) {
 		EntryMapping main = this.mainTree.get(entry);
+
 		if (main == null || (main.equals(EntryMapping.OBFUSCATED) && this.secondaryTree.contains(entry))) {
 			return this.secondaryTree.get(entry);
+		}
+
+		if (main.tokenType().equals(TokenType.OBFUSCATED) && this.secondaryTree.contains(entry)) {
+			return EntryMapping.merge(main, this.secondaryTree.get(entry));
 		}
 
 		return main;

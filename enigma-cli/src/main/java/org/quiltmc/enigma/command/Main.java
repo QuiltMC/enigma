@@ -118,6 +118,7 @@ public class Main {
 		register(new MapSpecializedMethodsCommand());
 		register(new InsertProposedMappingsCommand());
 		register(new DropInvalidMappingsCommand());
+		register(new DropProposedMappingsCommand());
 		register(new FillClassMappingsCommand());
 		register(new HelpCommand());
 		register(new PrintStatsCommand());
