@@ -78,8 +78,7 @@ public abstract sealed class Command permits
 	 * @return {@code true} if the argument count is valid, {@code false} otherwise
 	 */
 	public boolean checkArgumentCount(int length) {
-		// valid if length is equal to the amount of required arguments or between required argument count and total argument count
-		return length == this.requiredArguments.size() || length > this.requiredArguments.size() && length <= this.totalArgumentCount;
+		return length >= this.requiredArguments.size() && length <= this.totalArgumentCount;
 	}
 
 	/**
