@@ -9,6 +9,7 @@ import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.service.ObfuscationTestService;
 import org.quiltmc.enigma.api.source.TokenType;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeUtil;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
@@ -40,6 +41,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -165,6 +167,68 @@ public class EnigmaProject {
 		dropper.applyPendingDrops(mappings);
 
 		return dropper.getDroppedMappings().keySet();
+	}
+
+	public Collection<Entry<?>> dropProposedMappings(ProgressListener progress) {
+		DeltaTrackingTree<EntryMapping> mappings = this.remapper.getMappings();
+		EntryTree<EntryMapping> proposedMappings = this.remapper.getProposedMappings();
+		progress.init((int) proposedMappings.getAllEntries().count(), "Proposed Mappings to check");
+
+		List<Entry<?>> dropped = new ArrayList<>();
+
+		int steps = 0;
+		for (EntryTreeNode<EntryMapping> proposedMapping : proposedMappings) {
+			progress.step(steps++, proposedMapping.getEntry().getFullName());
+
+			if (proposedMapping.getValue() == null) {
+				continue;
+			}
+
+			if (!mappings.contains(proposedMapping.getEntry())) {
+				continue;
+			}
+
+			EntryMapping entryMapping = mappings.get(proposedMapping.getEntry());
+
+			if (entryMapping.tokenType().isProposed()) {
+				continue;
+			}
+
+			if (entryMapping.targetName() == null) {
+				continue;
+			}
+
+//			if (entryMapping.javadoc() != null) {
+//				continue;
+//			}
+
+//			ParentedEntry<?> parent = ((ParentedEntry<?>) proposedMapping.getEntry());
+//			while (parent != null && parent.getParent() != null) {
+//				parent = (ParentedEntry<?>) parent.getParent();
+//			}
+//
+//			if (!parent.getFullName().equals("net/minecraft/unmapped/C_ygpuayyc")) {
+//				continue;
+//			}
+
+			if (proposedMapping.getValue().sourcePluginId().equals("quiltmc:name_proposal/delegate_params")) {
+				continue;
+			}
+
+			dropped.add(proposedMapping.getEntry());
+
+
+
+			if (entryMapping.targetName().equals(proposedMapping.getValue().targetName())) {
+				if (entryMapping.javadoc() != null) {
+					mappings.insert(proposedMapping.getEntry(), entryMapping.withName(null, TokenType.OBFUSCATED));
+					continue;
+				}
+				mappings.remove(proposedMapping.getEntry());
+			}
+		}
+
+		return dropped;
 	}
 
 	public boolean isNavigable(Entry<?> obfEntry) {
