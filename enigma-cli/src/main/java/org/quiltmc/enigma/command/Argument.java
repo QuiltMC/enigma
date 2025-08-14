@@ -134,6 +134,7 @@ final class Argument<T> {
 
 	static Optional<Path> getPath(String path) {
 		return Optional.ofNullable(path)
+			.filter(string -> !string.isEmpty())
 			.map(Paths::get)
 			.map(Path::toAbsolutePath);
 	}
