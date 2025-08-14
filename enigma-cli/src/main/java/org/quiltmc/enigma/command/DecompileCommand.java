@@ -52,6 +52,10 @@ public final class DecompileCommand extends Command {
 		return "Decompiles the provided jar into human-readable code.";
 	}
 
+	public static void run(Decompiler decompiler, Path fileJarIn, Path fileJarOut, Path fileMappings) throws Exception {
+		run(decompiler.toString(), fileJarIn, fileJarOut, fileMappings);
+	}
+
 	public static void run(String decompilerName, Path fileJarIn, Path fileJarOut, Path fileMappings) throws Exception {
 		DecompilerService decompilerService;
 

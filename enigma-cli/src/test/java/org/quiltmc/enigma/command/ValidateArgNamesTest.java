@@ -33,15 +33,8 @@ public class ValidateArgNamesTest {
 			for (int i = 0; i < argName.length(); i++) {
 				final char c = argName.charAt(i);
 
-				Assertions.assertNotEquals(
-						Argument.SEPARATOR, c,
-						() -> getIllegalCharacterMessage(cmdName, argName, Argument.SEPARATOR)
-				);
-
-				Assertions.assertNotEquals(
-						Argument.NAME_DELIM, c,
-						() -> getIllegalCharacterMessage(cmdName, argName, Argument.NAME_DELIM)
-				);
+				assertLegal(cmdName, argName, Argument.SEPARATOR, c);
+				assertLegal(cmdName, argName, Argument.NAME_DELIM, c);
 			}
 
 			Assertions.assertTrue(
@@ -53,8 +46,11 @@ public class ValidateArgNamesTest {
 		return argNames;
 	}
 
-	private static String getIllegalCharacterMessage(String cmdName, String argName, char illegal) {
-		return "Command '%s' arg '%s' name must not contain '%s'".formatted(cmdName, argName, illegal);
+	private static void assertLegal(String cmdName, String argName, char illegal, char actual) {
+		Assertions.assertNotEquals(
+				illegal, actual,
+				() -> "Command '%s' arg '%s' name must not contain '%s'".formatted(cmdName, argName, illegal)
+		);
 	}
 
 	private static String getDuplicateNameMessage(String cmdName, String argName) {
