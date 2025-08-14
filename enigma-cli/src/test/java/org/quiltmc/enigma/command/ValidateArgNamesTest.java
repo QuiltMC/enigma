@@ -20,7 +20,7 @@ public class ValidateArgNamesTest {
 		});
 	}
 
-	private static Set<String> validateArgs(String cmdName, ImmutableList<Argument> args) {
+	private static Set<String> validateArgs(String cmdName, ImmutableList<Argument<?>> args) {
 		final Set<String> argNames = new HashSet<>();
 		for (final Argument arg : args) {
 			final String argName = arg.getName();

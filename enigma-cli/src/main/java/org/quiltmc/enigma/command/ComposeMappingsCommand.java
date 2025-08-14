@@ -24,15 +24,15 @@ import static org.quiltmc.enigma.command.CommonArguments.OBFUSCATED_NAMESPACE;
 import static org.quiltmc.enigma.util.Utils.andJoin;
 
 public final class ComposeMappingsCommand extends Command {
-	private static final Argument LEFT_MAPPINGS = Argument.ofPath("left-mappings",
+	private static final Argument<Path> LEFT_MAPPINGS = Argument.ofReadablePath("left-mappings",
 			"""
 					A path to the left file or folder to read mappings from, used in commands which take two mapping inputs."""
 	);
-	private static final Argument RIGHT_MAPPINGS = Argument.ofPath("right-mappings",
+	private static final Argument<Path> RIGHT_MAPPINGS = Argument.ofReadablePath("right-mappings",
 			"""
 					A path to the right file or folder to read mappings from, used in commands which take two mapping inputs."""
 	);
-	private static final Argument KEEP_MODE = Argument.ofEnum("keep-mode", KeepMode.class,
+	private static final Argument<String> KEEP_MODE = Argument.ofLenientEnum("keep-mode", KeepMode.class,
 			"""
 					Which mappings should overwrite the others when composing conflicting mappings. Allowed values are """
 				+ andJoin(KeepMode.VALUES.stream().map(Object::toString).map(mode -> '"' + mode + '"').toList())
@@ -41,18 +41,18 @@ public final class ComposeMappingsCommand extends Command {
 	public static final ComposeMappingsCommand INSTANCE = new ComposeMappingsCommand();
 
 	private ComposeMappingsCommand() {
-		super(LEFT_MAPPINGS, RIGHT_MAPPINGS, MAPPING_OUTPUT, KEEP_MODE);
+		super(
+				ImmutableList.of(LEFT_MAPPINGS, RIGHT_MAPPINGS, MAPPING_OUTPUT, KEEP_MODE),
+				ImmutableList.of(OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE)
+		);
 	}
 
 	@Override
 	protected void runImpl(Map<String, String> args) throws IOException, MappingParseException {
 		run(
-				getReadablePath(args.get(LEFT_MAPPINGS.getName())),
-				getReadablePath(args.get(RIGHT_MAPPINGS.getName())),
-				getWritablePath(args.get(MAPPING_OUTPUT.getName())),
-				args.get(KEEP_MODE.getName()),
-				args.get(OBFUSCATED_NAMESPACE.getName()),
-				args.get(DEOBFUSCATED_NAMESPACE.getName())
+				LEFT_MAPPINGS.get(args), RIGHT_MAPPINGS.get(args),
+				MAPPING_OUTPUT.get(args), KEEP_MODE.get(args),
+				OBFUSCATED_NAMESPACE.get(args), DEOBFUSCATED_NAMESPACE.get(args)
 		);
 	}
 

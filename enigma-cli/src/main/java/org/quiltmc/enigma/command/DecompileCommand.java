@@ -19,7 +19,7 @@ import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
 import static org.quiltmc.enigma.command.CommonArguments.OUTPUT_JAR;
 
 public final class DecompileCommand extends Command {
-	private static final Argument DECOMPILER = Argument.ofEnum("decompiler", Decompiler.class,
+	private static final Argument<String> DECOMPILER = Argument.ofLenientEnum("decompiler", Decompiler.class,
 			"""
 					The decompiler to use when producing output. Allowed values are (case-insensitive):"""
 				+ Decompiler.VALUES.stream()
@@ -39,12 +39,7 @@ public final class DecompileCommand extends Command {
 
 	@Override
 	protected void runImpl(Map<String, String> args) throws Exception {
-		run(
-				args.get(DECOMPILER.getName()),
-				getReadableFile(args.get(INPUT_JAR.getName())).toPath(),
-				getWritableFolder(args.get(OUTPUT_JAR.getName())).toPath(),
-				getReadablePath(args.get(INPUT_MAPPINGS.getName()))
-		);
+		run(DECOMPILER.get(args), INPUT_JAR.get(args), OUTPUT_JAR.get(args), INPUT_MAPPINGS.get(args));
 	}
 
 	@Override

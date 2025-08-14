@@ -31,11 +31,10 @@ public final class DropInvalidMappingsCommand extends Command {
 
 	@Override
 	protected void runImpl(Map<String, String> args) throws Exception {
-		Path jarIn = getReadablePath(args.get(INPUT_JAR.getName()));
-		Path mappingsIn = getReadablePath(args.get(INPUT_MAPPINGS.getName()));
-		String mappingsOutArg = args.get(MAPPING_OUTPUT.getName());
-		Path mappingsOut = mappingsOutArg != null && !mappingsOutArg.isEmpty()
-				? getReadablePath(mappingsOutArg) : mappingsIn;
+		Path jarIn = INPUT_JAR.get(args);
+		Path mappingsIn = INPUT_MAPPINGS.get(args);
+		Path mappingsOutArg = MAPPING_OUTPUT.get(args);
+		Path mappingsOut = mappingsOutArg != null ? mappingsOutArg : mappingsIn;
 
 		run(jarIn, mappingsIn, mappingsOut);
 	}

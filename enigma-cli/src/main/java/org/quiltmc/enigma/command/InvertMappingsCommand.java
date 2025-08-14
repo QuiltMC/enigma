@@ -20,7 +20,7 @@ import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
 import static org.quiltmc.enigma.command.CommonArguments.OBFUSCATED_NAMESPACE;
 
 public final class InvertMappingsCommand extends Command {
-	private static final Argument OUTPUT_FOLDER = Argument.ofPath("output-folder",
+	private static final Argument<Path> OUTPUT_FOLDER = Argument.ofWritablePath("output-folder",
 			"""
 					A path to the file or folder to write output to."""
 	);
@@ -37,10 +37,10 @@ public final class InvertMappingsCommand extends Command {
 	@Override
 	protected void runImpl(Map<String, String> args) throws IOException, MappingParseException {
 		run(
-				getReadablePath(args.get(INPUT_MAPPINGS.getName())),
-				getWritablePath(args.get(OUTPUT_FOLDER.getName())),
-				args.get(OBFUSCATED_NAMESPACE.getName()),
-				args.get(DEOBFUSCATED_NAMESPACE.getName())
+				INPUT_MAPPINGS.get(args),
+				OUTPUT_FOLDER.get(args),
+				OBFUSCATED_NAMESPACE.get(args),
+				DEOBFUSCATED_NAMESPACE.get(args)
 		);
 	}
 

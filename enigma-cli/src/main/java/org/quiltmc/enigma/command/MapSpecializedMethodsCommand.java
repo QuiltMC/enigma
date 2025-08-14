@@ -43,11 +43,8 @@ public final class MapSpecializedMethodsCommand extends Command {
 	@Override
 	protected void runImpl(Map<String, String> args) throws IOException, MappingParseException {
 		run(
-				getReadablePath(args.get(INPUT_JAR.getName())),
-				getReadablePath(args.get(INPUT_MAPPINGS.getName())),
-				getWritablePath(args.get(MAPPING_OUTPUT.getName())),
-				args.get(OBFUSCATED_NAMESPACE.getName()),
-				args.get(DEOBFUSCATED_NAMESPACE.getName())
+				INPUT_JAR.get(args), INPUT_MAPPINGS.get(args), MAPPING_OUTPUT.get(args),
+				OBFUSCATED_NAMESPACE.get(args), DEOBFUSCATED_NAMESPACE.get(args)
 		);
 	}
 

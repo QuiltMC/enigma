@@ -31,12 +31,7 @@ public final class PrintStatsCommand extends Command {
 
 	@Override
 	protected void runImpl(Map<String, String> args) throws Exception {
-		run(
-				getReadablePath(args.get(INPUT_JAR.getName())),
-				getReadablePath(INPUT_MAPPINGS.getName()),
-				getReadablePath(ENIGMA_PROFILE.getName()),
-				null
-		);
+		run(INPUT_JAR.get(args), INPUT_MAPPINGS.get(args), ENIGMA_PROFILE.get(args), null);
 	}
 
 	@Override

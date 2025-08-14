@@ -29,7 +29,7 @@ import static org.quiltmc.enigma.command.CommonArguments.MAPPING_OUTPUT;
 import static org.quiltmc.enigma.command.CommonArguments.OBFUSCATED_NAMESPACE;
 
 public final class FillClassMappingsCommand extends Command {
-	private static final Argument FILL_ALL = Argument.ofBool("fill-all",
+	private static final Argument<Boolean> FILL_ALL = Argument.ofBool("fill-all",
 			"""
 					Whether to fill all possible mappings. Allowed values are "true" and "false"."""
 	);
@@ -46,12 +46,9 @@ public final class FillClassMappingsCommand extends Command {
 	@Override
 	protected void runImpl(Map<String, String> args) throws Exception {
 		run(
-				getReadablePath(args.get(INPUT_JAR.getName())),
-				getReadablePath(args.get(INPUT_MAPPINGS.getName())),
-				getWritablePath(args.get(MAPPING_OUTPUT.getName())),
-				Boolean.parseBoolean(args.get(FILL_ALL.getName())),
-				args.get(OBFUSCATED_NAMESPACE.getName()),
-				args.get(DEOBFUSCATED_NAMESPACE.getName())
+				INPUT_JAR.get(args), INPUT_MAPPINGS.get(args), MAPPING_OUTPUT.get(args),
+				FILL_ALL.get(args),
+				OBFUSCATED_NAMESPACE.get(args), DEOBFUSCATED_NAMESPACE.get(args)
 		);
 	}
 

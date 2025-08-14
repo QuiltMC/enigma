@@ -22,10 +22,8 @@ import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.tinylog.Logger;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
@@ -44,17 +42,17 @@ public abstract sealed class Command permits
 	private static final int EARLIEST_ARG_DELIM_INDEX = 1;
 
 	@VisibleForTesting
-	final ImmutableList<Argument> requiredArguments;
+	final ImmutableList<Argument<?>> requiredArguments;
 	@VisibleForTesting
-	final ImmutableList<Argument> optionalArguments;
+	final ImmutableList<Argument<?>> optionalArguments;
 
 	private final int totalArgumentCount;
 
-	Command(Argument... requiredArguments) {
+	Command(Argument<?>... requiredArguments) {
 		this(ImmutableList.copyOf(requiredArguments), ImmutableList.of());
 	}
 
-	Command(Collection<Argument> requiredArguments, Collection<Argument> optionalArguments) {
+	Command(Collection<Argument<?>> requiredArguments, Collection<Argument<?>> optionalArguments) {
 		this.requiredArguments = ImmutableList.copyOf(requiredArguments);
 		this.optionalArguments = ImmutableList.copyOf(optionalArguments);
 		this.totalArgumentCount = this.requiredArguments.size() + this.optionalArguments.size();
@@ -73,7 +71,7 @@ public abstract sealed class Command permits
 		return arguments.toString();
 	}
 
-	private static void appendArguments(StringBuilder builder, List<Argument> arguments) {
+	private static void appendArguments(StringBuilder builder, List<Argument<?>> arguments) {
 		final int argCount = arguments.size();
 		final int iLastArg = argCount - 1;
 		for (int i = 0; i < argCount; i++) {
@@ -84,7 +82,7 @@ public abstract sealed class Command permits
 		}
 	}
 
-	private static void appendArgHelp(Argument argument, int index, StringBuilder builder) {
+	private static void appendArgHelp(Argument<?> argument, int index, StringBuilder builder) {
 		builder.append("Argument ").append(index).append(": ").append(argument.getDisplayForm()).append("\n");
 		builder.append(argument.getExplanation()).append("\n");
 	}
@@ -96,7 +94,7 @@ public abstract sealed class Command permits
 			builder.append("Arguments:").append("\n");
 			int argIndex = 0;
 			for (int j = 0; j < this.requiredArguments.size(); j++) {
-				Argument argument = this.requiredArguments.get(j);
+				Argument<?> argument = this.requiredArguments.get(j);
 				appendArgHelp(argument, argIndex, builder);
 				argIndex++;
 			}
@@ -104,7 +102,7 @@ public abstract sealed class Command permits
 			if (!this.optionalArguments.isEmpty()) {
 				builder.append("\n").append("Optional arguments:").append("\n");
 				for (int i = 0; i < this.optionalArguments.size(); i++) {
-					Argument argument = this.optionalArguments.get(i);
+					Argument<?> argument = this.optionalArguments.get(i);
 					appendArgHelp(argument, argIndex, builder);
 					argIndex++;
 				}
@@ -166,7 +164,7 @@ public abstract sealed class Command permits
 			final String rawValue = args[i];
 			final int delim = indexOfNameDelim(rawValue);
 			if (delim < EARLIEST_ARG_DELIM_INDEX) {
-				final Argument arg = i < this.requiredArguments.size()
+				final Argument<?> arg = i < this.requiredArguments.size()
 						? this.requiredArguments.get(i)
 						: this.optionalArguments.get(i - this.requiredArguments.size());
 
@@ -195,7 +193,7 @@ public abstract sealed class Command permits
 			}
 		}
 
-		for (final Argument require : this.requiredArguments) {
+		for (final Argument<?> require : this.requiredArguments) {
 			if (!valuesByName.containsKey(require.getName())) {
 				throw new ArgumentHelpException("Missing required '%s' argument.".formatted(require.getName()));
 			}
@@ -237,25 +235,6 @@ public abstract sealed class Command permits
 		return Enigma.create();
 	}
 
-	/**
-	 * Parses and validates the argument at {@code index}. The argument can then be converted to something more useful via {@link #getReadablePath(String)}, {@link #getWritablePath(String)}, etc.
-	 * @param args the command-line args, provided in {@link #run(String...)}
-	 * @param index the index of the argument
-	 * @return the argument, as a string
-	 */
-	protected String getArg(String[] args, int index) {
-		if (index < this.totalArgumentCount && index >= 0) {
-			final int requiredCount = this.requiredArguments.size();
-			if (index < requiredCount) {
-				return getArg(args, index, this.requiredArguments.get(index), false);
-			} else {
-				return getArg(args, index, this.optionalArguments.get(index - requiredCount), true);
-			}
-		} else {
-			throw new RuntimeException("arg index is outside of range of possible arguments! (index: " + index + ", allowed arg count: " + this.totalArgumentCount + ")");
-		}
-	}
-
 	public static Enigma createEnigma(EnigmaProfile profile, @Nullable Iterable<EnigmaPlugin> plugins) {
 		Enigma.Builder builder = Enigma.builder().setProfile(profile);
 
@@ -292,83 +271,7 @@ public abstract sealed class Command permits
 		return reader.read(path, progress);
 	}
 
-	protected static File getWritableFile(String path) {
-		if (path == null) {
-			return null;
-		}
-
-		File file = new File(path).getAbsoluteFile();
-		File dir = file.getParentFile();
-		if (dir == null) {
-			throw new IllegalArgumentException("Cannot write file: " + path);
-		}
-
-		// quick fix to avoid stupid stuff in Gradle code
-		if (!dir.isDirectory()) {
-			dir.mkdirs();
-		}
-
-		return file;
-	}
-
-	protected static File getWritableFolder(String path) {
-		if (path == null) {
-			return null;
-		}
-
-		File dir = new File(path).getAbsoluteFile();
-		if (!dir.exists()) {
-			throw new IllegalArgumentException("Cannot write to folder: " + dir);
-		}
-
-		return dir;
-	}
-
-	protected static File getReadableFile(String path) {
-		if (path == null) {
-			return null;
-		}
-
-		File file = new File(path).getAbsoluteFile();
-		if (!file.exists()) {
-			throw new IllegalArgumentException("Cannot find file: " + file.getAbsolutePath());
-		}
-
-		return file;
-	}
-
-	protected static Path getReadablePath(String path) {
-		if (path == null) {
-			return null;
-		}
-
-		Path file = Paths.get(path).toAbsolutePath();
-		if (!Files.exists(file)) {
-			throw new IllegalArgumentException("Cannot find file: " + file);
-		}
-
-		return file;
-	}
-
-	protected static Path getWritablePath(String path) {
-		if (path == null) {
-			return null;
-		}
-
-		Path dir = Path.of(path).toAbsolutePath();
-
-		try {
-			if (!Files.exists(dir.getParent())) {
-				Files.createDirectories(dir.getParent());
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-
-		return dir;
-	}
-
-	private static String getArg(String[] args, int index, Argument argument, boolean optional) {
+	private static String getArg(String[] args, int index, Argument<?> argument, boolean optional) {
 		if (index >= args.length) {
 			if (!optional) {
 				throw new IllegalArgumentException(argument.getName() + " is required");

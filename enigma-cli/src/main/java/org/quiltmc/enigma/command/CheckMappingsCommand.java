@@ -23,10 +23,7 @@ public final class CheckMappingsCommand extends Command {
 
 	@Override
 	protected void runImpl(Map<String, String> args) throws Exception {
-		run(
-				getReadableFile(args.get(INPUT_JAR.getName())).toPath(),
-				getReadablePath(args.get(INPUT_MAPPINGS.getName()))
-		);
+		run(INPUT_JAR.get(args), INPUT_MAPPINGS.get(args));
 	}
 
 	@Override

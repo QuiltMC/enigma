@@ -47,13 +47,9 @@ public final class InsertProposedMappingsCommand extends Command {
 	@Override
 	protected void runImpl(Map<String, String> args) throws Exception {
 		run(
-				getReadablePath(args.get(INPUT_JAR.getName())),
-				getReadablePath(args.get(INPUT_MAPPINGS.getName())),
-				getWritablePath(args.get(MAPPING_OUTPUT.getName())),
-				getReadablePath(args.get(ENIGMA_PROFILE.getName())),
-				null,
-				args.get(OBFUSCATED_NAMESPACE.getName()),
-				args.get(DEOBFUSCATED_NAMESPACE.getName())
+				INPUT_JAR.get(args), INPUT_MAPPINGS.get(args), MAPPING_OUTPUT.get(args),
+				ENIGMA_PROFILE.get(args), null,
+				OBFUSCATED_NAMESPACE.get(args), DEOBFUSCATED_NAMESPACE.get(args)
 		);
 	}
 
