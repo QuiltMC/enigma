@@ -102,6 +102,7 @@ final class Argument<T> {
 	}
 
 	static Path getWritableFile(String path) {
+		// !directory so it's true for non-existent files
 		return verify(getParentedPath(path), p -> !Files.isDirectory(p), "Not a file: ").orElse(null);
 	}
 
