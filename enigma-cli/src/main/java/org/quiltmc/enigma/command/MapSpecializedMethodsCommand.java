@@ -24,25 +24,31 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
+import static org.quiltmc.enigma.command.CommonArguments.DEOBFUSCATED_NAMESPACE;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_JAR;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
+import static org.quiltmc.enigma.command.CommonArguments.MAPPING_OUTPUT;
+import static org.quiltmc.enigma.command.CommonArguments.OBFUSCATED_NAMESPACE;
+
 public final class MapSpecializedMethodsCommand extends Command {
 	public static final MapSpecializedMethodsCommand INSTANCE = new MapSpecializedMethodsCommand();
 
 	private MapSpecializedMethodsCommand() {
 		super(
-				ImmutableList.of(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS, CommonArguments.MAPPING_OUTPUT),
-				ImmutableList.of(CommonArguments.OBFUSCATED_NAMESPACE, CommonArguments.DEOBFUSCATED_NAMESPACE)
+				ImmutableList.of(INPUT_JAR, INPUT_MAPPINGS, MAPPING_OUTPUT),
+				ImmutableList.of(OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE)
 		);
 	}
 
 	@Override
-	public void run(String... args) throws IOException, MappingParseException {
-		Path jar = getReadablePath(this.getArg(args, 0));
-		Path source = getReadablePath(this.getArg(args, 1));
-		Path result = getWritablePath(this.getArg(args, 2));
-		String obfuscatedNamespace = this.getArg(args, 3);
-		String deobfuscatedNamespace = this.getArg(args, 4);
-
-		run(jar, source, result, obfuscatedNamespace, deobfuscatedNamespace);
+	protected void runImpl(Map<String, String> args) throws IOException, MappingParseException {
+		run(
+				getReadablePath(args.get(INPUT_JAR.getName())),
+				getReadablePath(args.get(INPUT_MAPPINGS.getName())),
+				getWritablePath(args.get(MAPPING_OUTPUT.getName())),
+				args.get(OBFUSCATED_NAMESPACE.getName()),
+				args.get(DEOBFUSCATED_NAMESPACE.getName())
+		);
 	}
 
 	@Override

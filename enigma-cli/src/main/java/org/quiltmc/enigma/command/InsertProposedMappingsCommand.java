@@ -27,34 +27,34 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
+import static org.quiltmc.enigma.command.CommonArguments.DEOBFUSCATED_NAMESPACE;
+import static org.quiltmc.enigma.command.CommonArguments.ENIGMA_PROFILE;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_JAR;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
+import static org.quiltmc.enigma.command.CommonArguments.MAPPING_OUTPUT;
+import static org.quiltmc.enigma.command.CommonArguments.OBFUSCATED_NAMESPACE;
+
 public final class InsertProposedMappingsCommand extends Command {
 	public static final InsertProposedMappingsCommand INSTANCE = new InsertProposedMappingsCommand();
 
 	private InsertProposedMappingsCommand() {
 		super(
-				ImmutableList.of(
-						CommonArguments.INPUT_JAR,
-						CommonArguments.INPUT_MAPPINGS,
-						CommonArguments.MAPPING_OUTPUT
-				),
-				ImmutableList.of(
-						CommonArguments.ENIGMA_PROFILE,
-						CommonArguments.OBFUSCATED_NAMESPACE,
-						CommonArguments.DEOBFUSCATED_NAMESPACE
-				)
+				ImmutableList.of(INPUT_JAR, INPUT_MAPPINGS, MAPPING_OUTPUT),
+				ImmutableList.of(ENIGMA_PROFILE, OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE)
 		);
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
-		Path inJar = getReadablePath(this.getArg(args, 0));
-		Path source = getReadablePath(this.getArg(args, 1));
-		Path output = getWritablePath(this.getArg(args, 2));
-		Path profilePath = getReadablePath(this.getArg(args, 3));
-		String obfuscatedNamespace = this.getArg(args, 4);
-		String deobfuscatedNamespace = this.getArg(args, 5);
-
-		run(inJar, source, output, profilePath, null, obfuscatedNamespace, deobfuscatedNamespace);
+	protected void runImpl(Map<String, String> args) throws Exception {
+		run(
+				getReadablePath(args.get(INPUT_JAR.getName())),
+				getReadablePath(args.get(INPUT_MAPPINGS.getName())),
+				getWritablePath(args.get(MAPPING_OUTPUT.getName())),
+				getReadablePath(args.get(ENIGMA_PROFILE.getName())),
+				null,
+				args.get(OBFUSCATED_NAMESPACE.getName()),
+				args.get(DEOBFUSCATED_NAMESPACE.getName())
+		);
 	}
 
 	@Override

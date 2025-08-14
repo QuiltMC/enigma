@@ -14,27 +14,28 @@ import org.quiltmc.enigma.util.Utils;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
+
+import static org.quiltmc.enigma.command.CommonArguments.DEOBFUSCATED_NAMESPACE;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
+import static org.quiltmc.enigma.command.CommonArguments.MAPPING_OUTPUT;
+import static org.quiltmc.enigma.command.CommonArguments.OBFUSCATED_NAMESPACE;
 
 public final class ConvertMappingsCommand extends Command {
 	public static final ConvertMappingsCommand INSTANCE = new ConvertMappingsCommand();
 
 	private ConvertMappingsCommand() {
-		super(
-				CommonArguments.INPUT_MAPPINGS,
-				CommonArguments.MAPPING_OUTPUT,
-				CommonArguments.OBFUSCATED_NAMESPACE,
-				CommonArguments.DEOBFUSCATED_NAMESPACE
-		);
+		super(INPUT_MAPPINGS, MAPPING_OUTPUT, OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE);
 	}
 
 	@Override
-	public void run(String... args) throws IOException, MappingParseException {
-		Path source = getReadablePath(this.getArg(args, 0));
-		Path result = getWritablePath(this.getArg(args, 1));
-		String obfuscatedNamespace = this.getArg(args, 2);
-		String deobfuscatedNamespace = this.getArg(args, 3);
-
-		run(source, result, obfuscatedNamespace, deobfuscatedNamespace);
+	protected void runImpl(Map<String, String> args) throws IOException, MappingParseException {
+		run(
+				getReadablePath(args.get(INPUT_MAPPINGS.getName())),
+				getWritablePath(args.get(MAPPING_OUTPUT.getName())),
+				args.get(OBFUSCATED_NAMESPACE.getName()),
+				args.get(DEOBFUSCATED_NAMESPACE.getName())
+		);
 	}
 
 	@Override

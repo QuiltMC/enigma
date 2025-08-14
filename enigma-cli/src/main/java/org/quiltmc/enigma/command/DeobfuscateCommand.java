@@ -5,24 +5,29 @@ import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 
 import java.nio.file.Path;
+import java.util.Map;
+
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_JAR;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
+import static org.quiltmc.enigma.command.CommonArguments.OUTPUT_JAR;
 
 public final class DeobfuscateCommand extends Command {
 	public static final DeobfuscateCommand INSTANCE = new DeobfuscateCommand();
 
 	private DeobfuscateCommand() {
 		super(
-				ImmutableList.of(CommonArguments.INPUT_JAR, CommonArguments.OUTPUT_JAR),
-				ImmutableList.of(CommonArguments.INPUT_MAPPINGS)
+				ImmutableList.of(INPUT_JAR, OUTPUT_JAR),
+				ImmutableList.of(INPUT_MAPPINGS)
 		);
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
-		Path fileJarIn = getReadablePath(this.getArg(args, 0));
-		Path fileJarOut = getWritableFile(this.getArg(args, 1)).toPath();
-		Path fileMappings = getReadablePath(this.getArg(args, 2));
-
-		run(fileJarIn, fileJarOut, fileMappings);
+	protected void runImpl(Map<String, String> args) throws Exception {
+		run(
+				getReadablePath(args.get(INPUT_JAR.getName())),
+				getWritableFile(args.get(OUTPUT_JAR.getName())).toPath(),
+				getReadablePath(args.get(INPUT_MAPPINGS.getName()))
+		);
 	}
 
 	@Override

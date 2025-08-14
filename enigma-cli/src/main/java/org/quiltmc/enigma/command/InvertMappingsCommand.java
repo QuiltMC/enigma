@@ -13,9 +13,14 @@ import org.quiltmc.enigma.util.Utils;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
+
+import static org.quiltmc.enigma.command.CommonArguments.DEOBFUSCATED_NAMESPACE;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
+import static org.quiltmc.enigma.command.CommonArguments.OBFUSCATED_NAMESPACE;
 
 public final class InvertMappingsCommand extends Command {
-	private static final Argument OUTPUT_FOLDER = new Argument("<output-folder>",
+	private static final Argument OUTPUT_FOLDER = Argument.ofPath("output-folder",
 			"""
 					A path to the file or folder to write output to."""
 	);
@@ -24,19 +29,19 @@ public final class InvertMappingsCommand extends Command {
 
 	private InvertMappingsCommand() {
 		super(
-				ImmutableList.of(CommonArguments.INPUT_MAPPINGS, OUTPUT_FOLDER),
-				ImmutableList.of(CommonArguments.OBFUSCATED_NAMESPACE, CommonArguments.DEOBFUSCATED_NAMESPACE)
+				ImmutableList.of(INPUT_MAPPINGS, OUTPUT_FOLDER),
+				ImmutableList.of(OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE)
 		);
 	}
 
 	@Override
-	public void run(String... args) throws IOException, MappingParseException {
-		Path source = getReadablePath(this.getArg(args, 0));
-		Path result = getWritablePath(this.getArg(args, 2));
-		String obfuscatedNamespace = this.getArg(args, 3);
-		String deobfuscatedNamespace = this.getArg(args, 4);
-
-		run(source, result, obfuscatedNamespace, deobfuscatedNamespace);
+	protected void runImpl(Map<String, String> args) throws IOException, MappingParseException {
+		run(
+				getReadablePath(args.get(INPUT_MAPPINGS.getName())),
+				getWritablePath(args.get(OUTPUT_FOLDER.getName())),
+				args.get(OBFUSCATED_NAMESPACE.getName()),
+				args.get(DEOBFUSCATED_NAMESPACE.getName())
+		);
 	}
 
 	@Override

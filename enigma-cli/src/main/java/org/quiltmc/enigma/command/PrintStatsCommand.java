@@ -12,25 +12,31 @@ import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Set;
+
+import static org.quiltmc.enigma.command.CommonArguments.ENIGMA_PROFILE;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_JAR;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
 
 public final class PrintStatsCommand extends Command {
 	public static final PrintStatsCommand INSTANCE = new PrintStatsCommand();
 
 	private PrintStatsCommand() {
 		super(
-				ImmutableList.of(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS),
-				ImmutableList.of(CommonArguments.ENIGMA_PROFILE)
+				ImmutableList.of(INPUT_JAR, INPUT_MAPPINGS),
+				ImmutableList.of(ENIGMA_PROFILE)
 		);
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
-		Path inJar = getReadablePath(this.getArg(args, 0));
-		Path mappings = getReadablePath(this.getArg(args, 1));
-		Path profilePath = getReadablePath(this.getArg(args, 2));
-
-		run(inJar, mappings, profilePath, null);
+	protected void runImpl(Map<String, String> args) throws Exception {
+		run(
+				getReadablePath(args.get(INPUT_JAR.getName())),
+				getReadablePath(INPUT_MAPPINGS.getName()),
+				getReadablePath(ENIGMA_PROFILE.getName()),
+				null
+		);
 	}
 
 	@Override

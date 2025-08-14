@@ -7,21 +7,26 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.tinylog.Logger;
 
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_JAR;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
 
 public final class CheckMappingsCommand extends Command {
 	public static final CheckMappingsCommand INSTANCE = new CheckMappingsCommand();
 
 	private CheckMappingsCommand() {
-		super(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS);
+		super(INPUT_JAR, INPUT_MAPPINGS);
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
-		Path fileJarIn = getReadableFile(this.getArg(args, 0)).toPath();
-		Path fileMappings = getReadablePath(this.getArg(args, 1));
-		run(fileJarIn, fileMappings);
+	protected void runImpl(Map<String, String> args) throws Exception {
+		run(
+				getReadableFile(args.get(INPUT_JAR.getName())).toPath(),
+				getReadablePath(args.get(INPUT_MAPPINGS.getName()))
+		);
 	}
 
 	@Override

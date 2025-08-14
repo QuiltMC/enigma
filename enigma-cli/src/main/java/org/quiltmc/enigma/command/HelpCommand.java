@@ -3,6 +3,7 @@ package org.quiltmc.enigma.command;
 import org.tinylog.Logger;
 
 import java.util.Collection;
+import java.util.Map;
 
 public final class HelpCommand extends Command {
 	public static final HelpCommand INSTANCE = new HelpCommand();
@@ -12,7 +13,7 @@ public final class HelpCommand extends Command {
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
+	protected void runImpl(Map<String, String> args) throws Exception {
 		StringBuilder help = new StringBuilder();
 		Collection<Command> commands = Main.getCommands().values();
 

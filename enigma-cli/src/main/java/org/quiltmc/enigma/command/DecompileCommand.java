@@ -11,34 +11,40 @@ import org.tinylog.Logger;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_JAR;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
+import static org.quiltmc.enigma.command.CommonArguments.OUTPUT_JAR;
 
 public final class DecompileCommand extends Command {
-	private static final Argument DECOMPILER = new Argument("<decompiler>",
+	private static final Argument DECOMPILER = Argument.ofEnum("decompiler", Decompiler.class,
 			"""
-					The decompiler to use when producing output. Allowed values are (case-insensitive):
-					- VINEFLOWER
-					- CFR
-					- PROCYON
-					- BYTECODE"""
+					The decompiler to use when producing output. Allowed values are (case-insensitive):"""
+				+ Decompiler.VALUES.stream()
+					.map(Object::toString)
+					.map(decompiler -> "\n- " + decompiler)
+					.collect(Collectors.joining())
 	);
 
 	public static final DecompileCommand INSTANCE = new DecompileCommand();
 
 	private DecompileCommand() {
 		super(
-				ImmutableList.of(DECOMPILER, CommonArguments.INPUT_JAR, CommonArguments.OUTPUT_JAR),
-				ImmutableList.of(CommonArguments.INPUT_MAPPINGS)
+				ImmutableList.of(DECOMPILER, INPUT_JAR, OUTPUT_JAR),
+				ImmutableList.of(INPUT_MAPPINGS)
 		);
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
-		String decompilerName = this.getArg(args, 0);
-		Path fileJarIn = getReadableFile(this.getArg(args, 1)).toPath();
-		Path fileJarOut = getWritableFolder(this.getArg(args, 2)).toPath();
-		Path fileMappings = getReadablePath(this.getArg(args, 3));
-
-		run(decompilerName, fileJarIn, fileJarOut, fileMappings);
+	protected void runImpl(Map<String, String> args) throws Exception {
+		run(
+				args.get(DECOMPILER.getName()),
+				getReadableFile(args.get(INPUT_JAR.getName())).toPath(),
+				getWritableFolder(args.get(OUTPUT_JAR.getName())).toPath(),
+				getReadablePath(args.get(INPUT_MAPPINGS.getName()))
+		);
 	}
 
 	@Override
@@ -70,5 +76,11 @@ public final class DecompileCommand extends Command {
 		EnigmaProject.SourceExport source = jar.decompile(progress, decompilerService, DecompileErrorStrategy.TRACE_AS_SOURCE);
 
 		source.write(fileJarOut, progress);
+	}
+
+	public enum Decompiler {
+		VINEFLOWER, CFR, PROCYON, BYTECODE;
+
+		public static final ImmutableList<Decompiler> VALUES = ImmutableList.copyOf(values());
 	}
 }
