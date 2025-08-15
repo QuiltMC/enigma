@@ -19,10 +19,6 @@ public class ArgsParserTest {
 			NAME_9 = "name9", VALUE_9 = "value9",
 			NAME_10 = "name10", VALUE_10 = "value10";
 
-	private static final ImmutableList<String> ORDERED_NAMES = ImmutableList.of(
-			NAME_1, NAME_2, NAME_3, NAME_4, NAME_5, NAME_6, NAME_7, NAME_8, NAME_9, NAME_10
-	);
-
 	private static final Argument<String>
 			ARGUMENT_1 = Argument.ofString(NAME_1, "string", "test arg 1"),
 			ARGUMENT_2 = Argument.ofString(NAME_2, "string", "test arg 2"),
@@ -48,12 +44,15 @@ public class ArgsParserTest {
 			NAME_10, VALUE_10
 	);
 
+	private static final ImmutableList<String> ORDERED_NAMES = VALUES_BY_NAME.keySet().asList();
+	private static final ImmutableList<String> ORDERED_VALUES = VALUES_BY_NAME.values().asList();
+
 	@Test
 	void test1() {
 		final ArgsParser<String> parser = ArgsParser.of(ARGUMENT_1);
 		assertOrder(parser);
 		final String value = parseValues(parser);
-		assertEquals(value, VALUE_1);
+		assertValues(value);
 	}
 
 	@Test
@@ -61,8 +60,7 @@ public class ArgsParserTest {
 		final ArgsParser<Packed2> parser = ArgsParser.of(ARGUMENT_1, ARGUMENT_2, Packed2::new);
 		assertOrder(parser);
 		final Packed2 packed = parseValues(parser);
-		assertEquals(packed.arg1, VALUE_1);
-		assertEquals(packed.arg2, VALUE_2);
+		assertValues(packed.arg1, packed.arg2);
 	}
 
 	@Test
@@ -70,9 +68,7 @@ public class ArgsParserTest {
 		final ArgsParser<Packed3> parser = ArgsParser.of(ARGUMENT_1, ARGUMENT_2, ARGUMENT_3, Packed3::new);
 		assertOrder(parser);
 		final Packed3 packed = parseValues(parser);
-		assertEquals(packed.arg1, VALUE_1);
-		assertEquals(packed.arg2, VALUE_2);
-		assertEquals(packed.arg3, VALUE_3);
+		assertValues(packed.arg1, packed.arg2, packed.arg3);
 	}
 
 	@Test
@@ -80,10 +76,7 @@ public class ArgsParserTest {
 		final ArgsParser<Packed4> parser = ArgsParser.of(ARGUMENT_1, ARGUMENT_2, ARGUMENT_3, ARGUMENT_4, Packed4::new);
 		assertOrder(parser);
 		final Packed4 packed = parseValues(parser);
-		assertEquals(packed.arg1, VALUE_1);
-		assertEquals(packed.arg2, VALUE_2);
-		assertEquals(packed.arg3, VALUE_3);
-		assertEquals(packed.arg4, VALUE_4);
+		assertValues(packed.arg1, packed.arg2, packed.arg3, packed.arg4);
 	}
 
 	@Test
@@ -94,11 +87,7 @@ public class ArgsParserTest {
 		);
 		assertOrder(parser);
 		final Packed5 packed = parseValues(parser);
-		assertEquals(packed.arg1, VALUE_1);
-		assertEquals(packed.arg2, VALUE_2);
-		assertEquals(packed.arg3, VALUE_3);
-		assertEquals(packed.arg4, VALUE_4);
-		assertEquals(packed.arg5, VALUE_5);
+		assertValues(packed.arg1, packed.arg2, packed.arg3, packed.arg4, packed.arg5);
 	}
 
 	@Test
@@ -109,12 +98,7 @@ public class ArgsParserTest {
 		);
 		assertOrder(parser);
 		final Packed6 packed = parseValues(parser);
-		assertEquals(packed.arg1, VALUE_1);
-		assertEquals(packed.arg2, VALUE_2);
-		assertEquals(packed.arg3, VALUE_3);
-		assertEquals(packed.arg4, VALUE_4);
-		assertEquals(packed.arg5, VALUE_5);
-		assertEquals(packed.arg6, VALUE_6);
+		assertValues(packed.arg1, packed.arg2, packed.arg3, packed.arg4, packed.arg5, packed.arg6);
 	}
 
 	@Test
@@ -125,13 +109,7 @@ public class ArgsParserTest {
 		);
 		assertOrder(parser);
 		final Packed7 packed = parseValues(parser);
-		assertEquals(packed.arg1, VALUE_1);
-		assertEquals(packed.arg2, VALUE_2);
-		assertEquals(packed.arg3, VALUE_3);
-		assertEquals(packed.arg4, VALUE_4);
-		assertEquals(packed.arg5, VALUE_5);
-		assertEquals(packed.arg6, VALUE_6);
-		assertEquals(packed.arg7, VALUE_7);
+		assertValues(packed.arg1, packed.arg2, packed.arg3, packed.arg4, packed.arg5, packed.arg6, packed.arg7);
 	}
 
 	@Test
@@ -142,14 +120,9 @@ public class ArgsParserTest {
 		);
 		assertOrder(parser);
 		final Packed8 packed = parseValues(parser);
-		assertEquals(packed.arg1, VALUE_1);
-		assertEquals(packed.arg2, VALUE_2);
-		assertEquals(packed.arg3, VALUE_3);
-		assertEquals(packed.arg4, VALUE_4);
-		assertEquals(packed.arg5, VALUE_5);
-		assertEquals(packed.arg6, VALUE_6);
-		assertEquals(packed.arg7, VALUE_7);
-		assertEquals(packed.arg8, VALUE_8);
+		assertValues(
+				packed.arg1, packed.arg2, packed.arg3, packed.arg4, packed.arg5, packed.arg6, packed.arg7, packed.arg8
+		);
 	}
 
 	@Test
@@ -161,15 +134,10 @@ public class ArgsParserTest {
 		);
 		assertOrder(parser);
 		final Packed9 packed = parseValues(parser);
-		assertEquals(packed.arg1, VALUE_1);
-		assertEquals(packed.arg2, VALUE_2);
-		assertEquals(packed.arg3, VALUE_3);
-		assertEquals(packed.arg4, VALUE_4);
-		assertEquals(packed.arg5, VALUE_5);
-		assertEquals(packed.arg6, VALUE_6);
-		assertEquals(packed.arg7, VALUE_7);
-		assertEquals(packed.arg8, VALUE_8);
-		assertEquals(packed.arg9, VALUE_9);
+		assertValues(
+				packed.arg1, packed.arg2, packed.arg3, packed.arg4, packed.arg5,
+				packed.arg6, packed.arg7, packed.arg8, packed.arg9
+		);
 	}
 
 	@Test
@@ -181,21 +149,21 @@ public class ArgsParserTest {
 		);
 		assertOrder(parser);
 		final Packed10 packed = parseValues(parser);
-		assertEquals(packed.arg1, VALUE_1);
-		assertEquals(packed.arg2, VALUE_2);
-		assertEquals(packed.arg3, VALUE_3);
-		assertEquals(packed.arg4, VALUE_4);
-		assertEquals(packed.arg5, VALUE_5);
-		assertEquals(packed.arg6, VALUE_6);
-		assertEquals(packed.arg7, VALUE_7);
-		assertEquals(packed.arg8, VALUE_8);
-		assertEquals(packed.arg9, VALUE_9);
-		assertEquals(packed.arg10, VALUE_10);
+		assertValues(
+				packed.arg1, packed.arg2, packed.arg3, packed.arg4, packed.arg5,
+				packed.arg6, packed.arg7, packed.arg8, packed.arg9, packed.arg10
+		);
 	}
 
 	private static void assertOrder(ArgsParser<?> parser) {
 		for (int i = 0; i < parser.count(); i++) {
 			assertEquals(parser.get(i).getName(), ORDERED_NAMES.get(i));
+		}
+	}
+
+	private static void assertValues(String... values) {
+		for (int i = 0; i < values.length; i++) {
+			assertEquals(values[i], ORDERED_VALUES.get(i));
 		}
 	}
 
