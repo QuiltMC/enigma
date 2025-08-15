@@ -119,6 +119,16 @@ public abstract sealed class Command<R, O> permits
 	 * @throws Exception on any error
 	 */
 	public final void run(String... args) throws Exception {
+		final Map<String, String> valuesByName = this.buildValuesByName(args);
+
+		this.runImpl(
+				this.requiredArguments.parse(valuesByName, Argument::requireFrom),
+				this.optionalArguments.parse(valuesByName, Argument::from)
+		);
+	}
+
+	@VisibleForTesting
+	Map<String, String> buildValuesByName(String[] args) {
 		if (args.length < this.requiredArguments.count()) {
 			throw new ArgumentHelpException(
 				this, "Too few arguments (%s); at least %s %s required.".formatted(
@@ -189,10 +199,7 @@ public abstract sealed class Command<R, O> permits
 			}
 		}
 
-		this.runImpl(
-				this.requiredArguments.parse(valuesByName, Argument::requireFrom),
-				this.optionalArguments.parse(valuesByName, Argument::from)
-		);
+		return valuesByName;
 	}
 
 	/**
