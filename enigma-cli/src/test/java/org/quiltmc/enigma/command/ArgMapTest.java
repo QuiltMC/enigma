@@ -11,7 +11,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -19,7 +18,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.quiltmc.enigma.command.CommonArguments.DEOBFUSCATED_NAMESPACE;
 import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
 import static org.quiltmc.enigma.command.CommonArguments.MAPPING_OUTPUT;
@@ -46,32 +45,40 @@ public class ArgMapTest {
 	);
 
 	private static final Collector<Argument<?>, ?, Map<String, String>> EXPECTATION_COLLECTOR = Collectors.toMap(
-		Argument::getName,
-		arg -> {
-			final String expectedValue = COMPLETE_EXPECTED_MAP.get(arg.getName());
-			assertNotNull(expectedValue);
-			return expectedValue;
-		}
+			Argument::getName,
+			arg -> {
+				final String expectedValue = COMPLETE_EXPECTED_MAP.get(arg.getName());
+				assertNotNull(expectedValue);
+				return expectedValue;
+			}
 	);
 
 	@ParameterizedTest
 	@MethodSource("streamHomogenousArgsInputs")
-	void testAllUnnamedArgs(List<Argument<?>> arguments) {
+	void allUnnamedArgs(List<Argument<?>> arguments) {
 		assertHomogenousArgs(arguments, ArgMapTest::getUnnamedValue);
 	}
 
 	@ParameterizedTest
 	@MethodSource("streamHomogenousArgsInputs")
-	void testAllNamedArgs(List<Argument<?>> arguments) {
+	void allNamedArgs(List<Argument<?>> arguments) {
 		assertHomogenousArgs(arguments, ArgMapTest::getNamedValue);
 
 		final List<Argument<?>> reversed = reversed(arguments);
 		assertHomogenousArgs(reversed, ArgMapTest::getNamedValue);
 	}
 
+	private static Stream<List<Argument<?>>> streamHomogenousArgsInputs() {
+		return Stream.of(
+			List.of(REQUIRED_1, REQUIRED_2),
+			List.of(REQUIRED_1, REQUIRED_2, OPTIONAL_1),
+			List.of(REQUIRED_1, REQUIRED_2, OPTIONAL_1, OPTIONAL_2)
+		);
+	}
+
 	@ParameterizedTest
 	@MethodSource("streamMixedInputs")
-	void testMixedArgs(MixedArgs arguments) {
+	void mixedArgs(MixedArgs arguments) {
 		final Map<String, String> expectation = Stream
 				.concat(arguments.unnamed.stream(), arguments.named.stream())
 				.collect(EXPECTATION_COLLECTOR);
@@ -98,6 +105,19 @@ public class ArgMapTest {
 		assertEquals(expectation, TEST_SUBJECT.buildValuesByName(values2));
 	}
 
+	@ParameterizedTest
+	@MethodSource("streamMixedInputs")
+	void invalidArgOrder(MixedArgs arguments) {
+		final String[] values = Stream
+				.concat(
+					arguments.named.stream().map(ArgMapTest::getNamedValue),
+					arguments.unnamed.stream().map(ArgMapTest::getUnnamedValue)
+				)
+				.toArray(String[]::new);
+
+		assertThrows(Command.ArgumentHelpException.class, () -> TEST_SUBJECT.buildValuesByName(values));
+	}
+
 	private static Stream<MixedArgs> streamMixedInputs() {
 		return Stream.of(
 			MixedArgs.builder().unnamed(REQUIRED_1).named(REQUIRED_2).build(),
@@ -109,17 +129,55 @@ public class ArgMapTest {
 		);
 	}
 
-	private static Stream<List<Argument<?>>> streamHomogenousArgsInputs() {
+	@ParameterizedTest
+	@MethodSource("streamMissingRequiredInputs")
+	void missingRequiredArgs(List<String> args) {
+		assertThrows(
+				Command.ArgumentHelpException.class,
+				() -> TEST_SUBJECT.parseRequired(TEST_SUBJECT.buildValuesByName(args.toArray(String[]::new)))
+		);
+	}
+
+	static Stream<List<String>> streamMissingRequiredInputs() {
+		final String namedOptionalValue1 = getNamedValue(OPTIONAL_1);
+		final String namedOptionalValue2 = getNamedValue(OPTIONAL_2);
+
 		return Stream.of(
-			List.of(REQUIRED_1, REQUIRED_2),
-			List.of(REQUIRED_1, REQUIRED_2, OPTIONAL_1),
-			List.of(REQUIRED_1, REQUIRED_2, OPTIONAL_1, OPTIONAL_2)
+			List.of(namedOptionalValue1, namedOptionalValue2),
+			List.of(getUnnamedValue(REQUIRED_1), namedOptionalValue1, namedOptionalValue2),
+			List.of(getUnnamedValue(REQUIRED_2), namedOptionalValue1, namedOptionalValue2),
+			List.of(namedOptionalValue1, namedOptionalValue2, getNamedValue(REQUIRED_1)),
+			List.of(namedOptionalValue1, namedOptionalValue2, getNamedValue(REQUIRED_2))
 		);
 	}
 
 	@Test
-	void testInvalidArgs() {
-		//TODO
+	void tooFewArgs() {
+		assertThrows(Command.ArgumentHelpException.class, () -> TEST_SUBJECT.buildValuesByName(new String[]{ "1" }));
+	}
+
+	@Test
+	void tooManyArgs() {
+		assertThrows(
+				Command.ArgumentHelpException.class,
+				() -> TEST_SUBJECT.buildValuesByName(new String[]{ "1", "2", "3", "4", "5" })
+		);
+	}
+
+	@Test
+	void duplicateArgs() {
+		// unnamed and named duplication
+		assertThrows(
+				Command.ArgumentHelpException.class,
+				() -> TEST_SUBJECT.buildValuesByName(new String[]{ "1", "2", getNamedValue(REQUIRED_1) })
+		);
+
+		// named duplicates
+		final String namedValue = getNamedValue(OPTIONAL_1);
+		assertThrows(
+				Command.ArgumentHelpException.class,
+				() -> TEST_SUBJECT.buildValuesByName(new String[]{ "1", "2", namedValue, namedValue})
+		);
 	}
 
 	private static void assertHomogenousArgs(Collection<Argument<?>> args, Function<Argument<?>, String> valueGetter) {
@@ -173,7 +231,7 @@ public class ArgMapTest {
 					throw new IllegalStateException("Missing named args.");
 				}
 
-				return new MixedArgs(Objects.requireNonNull(this.unnamed), Objects.requireNonNull(this.named));
+				return new MixedArgs(this.unnamed, this.named);
 			}
 		}
 	}
