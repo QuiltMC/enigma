@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.command;
 
-import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaProfile;
@@ -8,30 +7,30 @@ import org.quiltmc.enigma.api.stats.GenerationParameters;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
+import org.quiltmc.enigma.command.PrintStatsCommand.Required;
 import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.Set;
 
 import static org.quiltmc.enigma.command.CommonArguments.ENIGMA_PROFILE;
 import static org.quiltmc.enigma.command.CommonArguments.INPUT_JAR;
 import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
 
-public final class PrintStatsCommand extends Command {
+public final class PrintStatsCommand extends Command<Required, Path> {
 	public static final PrintStatsCommand INSTANCE = new PrintStatsCommand();
 
 	private PrintStatsCommand() {
 		super(
-				ImmutableList.of(INPUT_JAR, INPUT_MAPPINGS),
-				ImmutableList.of(ENIGMA_PROFILE)
+				ArgsParser.of(INPUT_JAR, INPUT_MAPPINGS, Required::new),
+				ArgsParser.of(ENIGMA_PROFILE)
 		);
 	}
 
 	@Override
-	protected void runImpl(Map<String, String> args) throws Exception {
-		run(INPUT_JAR.get(args), INPUT_MAPPINGS.get(args), ENIGMA_PROFILE.get(args), null);
+	void runImpl(Required required, Path enigmaProfile) throws Exception {
+		run(required.inputJar, required.inputMappings, enigmaProfile, null);
 	}
 
 	@Override
@@ -61,5 +60,7 @@ public final class PrintStatsCommand extends Command {
 		Logger.info(String.format("Methods: %.2f%% (%s / %s)", result.getPercentage(StatType.METHODS), result.getMapped(StatType.METHODS), result.getMappable(StatType.METHODS)));
 		Logger.info(String.format("Parameters: %.2f%% (%s / %s)", result.getPercentage(StatType.PARAMETERS), result.getMapped(StatType.PARAMETERS), result.getMappable(StatType.PARAMETERS)));
 	}
+
+	record Required(Path inputJar, Path inputMappings) { }
 }
 

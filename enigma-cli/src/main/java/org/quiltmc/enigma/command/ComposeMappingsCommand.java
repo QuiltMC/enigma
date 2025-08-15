@@ -12,18 +12,19 @@ import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.util.Utils;
+import org.quiltmc.enigma.command.ComposeMappingsCommand.Required;
+import org.quiltmc.enigma.command.ComposeMappingsCommand.Optional;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
 
 import static org.quiltmc.enigma.command.CommonArguments.DEOBFUSCATED_NAMESPACE;
 import static org.quiltmc.enigma.command.CommonArguments.MAPPING_OUTPUT;
 import static org.quiltmc.enigma.command.CommonArguments.OBFUSCATED_NAMESPACE;
 import static org.quiltmc.enigma.util.Utils.andJoin;
 
-public final class ComposeMappingsCommand extends Command {
+public final class ComposeMappingsCommand extends Command<Required, Optional> {
 	private static final Argument<Path> LEFT_MAPPINGS = Argument.ofReadablePath("left-mappings",
 			"""
 					A path to the left file or folder to read mappings from, used in commands which take two mapping inputs."""
@@ -42,17 +43,17 @@ public final class ComposeMappingsCommand extends Command {
 
 	private ComposeMappingsCommand() {
 		super(
-				ImmutableList.of(LEFT_MAPPINGS, RIGHT_MAPPINGS, MAPPING_OUTPUT, KEEP_MODE),
-				ImmutableList.of(OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE)
+				ArgsParser.of(LEFT_MAPPINGS, RIGHT_MAPPINGS, MAPPING_OUTPUT, KEEP_MODE, Required::new),
+				ArgsParser.of(OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE, Optional::new)
 		);
 	}
 
 	@Override
-	protected void runImpl(Map<String, String> args) throws IOException, MappingParseException {
+	void runImpl(Required required, Optional optional) throws IOException, MappingParseException {
 		run(
-				LEFT_MAPPINGS.get(args), RIGHT_MAPPINGS.get(args),
-				MAPPING_OUTPUT.get(args), KEEP_MODE.get(args),
-				OBFUSCATED_NAMESPACE.get(args), DEOBFUSCATED_NAMESPACE.get(args)
+				required.leftMappings, required.rightMappings,
+				required.mappingsOutput, required.keepMode,
+				optional.obfuscatedNamespace, optional.deobfuscatedNamespace
 		);
 	}
 
@@ -132,4 +133,8 @@ public final class ComposeMappingsCommand extends Command {
 			return this.value;
 		}
 	}
+
+	record Required(Path leftMappings, Path rightMappings, Path mappingsOutput, String keepMode) { }
+
+	record Optional(String obfuscatedNamespace, String deobfuscatedNamespace) { }
 }

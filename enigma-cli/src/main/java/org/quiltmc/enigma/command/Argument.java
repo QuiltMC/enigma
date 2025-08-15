@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -167,7 +168,17 @@ final class Argument<T> {
 		return this.displayForm;
 	}
 
-	T get(Map<String, String> args) {
+	@Nullable
+	T from(Map<String, String> args) {
 		return this.fromString.apply(args.get(this.name));
+	}
+
+	T requireFrom(Map<String, String> values) {
+		final T t = this.from(values);
+		if (t == null) {
+			throw new IllegalArgumentException(this.name + " is required");
+		}
+
+		return t;
 	}
 }

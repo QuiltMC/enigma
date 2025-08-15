@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.command;
 
-import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.util.MappingOperations;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
@@ -9,34 +8,33 @@ import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.util.Utils;
+import org.quiltmc.enigma.command.InvertMappingsCommand.Required;
+import org.quiltmc.enigma.command.InvertMappingsCommand.Optional;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
 
 import static org.quiltmc.enigma.command.CommonArguments.DEOBFUSCATED_NAMESPACE;
 import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
 import static org.quiltmc.enigma.command.CommonArguments.MAPPING_OUTPUT;
 import static org.quiltmc.enigma.command.CommonArguments.OBFUSCATED_NAMESPACE;
 
-public final class InvertMappingsCommand extends Command {
+public final class InvertMappingsCommand extends Command<Required, Optional> {
 	public static final InvertMappingsCommand INSTANCE = new InvertMappingsCommand();
 
 	private InvertMappingsCommand() {
 		super(
-				ImmutableList.of(INPUT_MAPPINGS, MAPPING_OUTPUT),
-				ImmutableList.of(OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE)
+				ArgsParser.of(INPUT_MAPPINGS, MAPPING_OUTPUT, Required::new),
+				ArgsParser.of(OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE, Optional::new)
 		);
 	}
 
 	@Override
-	protected void runImpl(Map<String, String> args) throws IOException, MappingParseException {
+	void runImpl(Required required, Optional optional) throws IOException, MappingParseException {
 		run(
-				INPUT_MAPPINGS.get(args),
-				MAPPING_OUTPUT.get(args),
-				OBFUSCATED_NAMESPACE.get(args),
-				DEOBFUSCATED_NAMESPACE.get(args)
+				required.inputMappings, required.mappingOutput,
+				optional.obfuscatedNamespace, optional.deobfuscatedNamespace
 		);
 	}
 
@@ -63,4 +61,8 @@ public final class InvertMappingsCommand extends Command {
 		Utils.delete(resultFile);
 		writeService.write(result, resultFile, saveParameters);
 	}
+
+	record Required(Path inputMappings, Path mappingOutput) { }
+
+	record Optional(String obfuscatedNamespace, String deobfuscatedNamespace) { }
 }

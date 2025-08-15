@@ -4,26 +4,27 @@ import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.PackageVisibilityIndex;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.command.ArgsParser.Empty;
+import org.quiltmc.enigma.command.CheckMappingsCommand.Required;
 import org.tinylog.Logger;
 
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.quiltmc.enigma.command.CommonArguments.INPUT_JAR;
 import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
 
-public final class CheckMappingsCommand extends Command {
+public final class CheckMappingsCommand extends Command<Required, Empty> {
 	public static final CheckMappingsCommand INSTANCE = new CheckMappingsCommand();
 
 	private CheckMappingsCommand() {
-		super(INPUT_JAR, INPUT_MAPPINGS);
+		super(ArgsParser.of(INPUT_JAR, INPUT_MAPPINGS, Required::new), Empty.PARSER);
 	}
 
 	@Override
-	protected void runImpl(Map<String, String> args) throws Exception {
-		run(INPUT_JAR.get(args), INPUT_MAPPINGS.get(args));
+	void runImpl(Required required, Empty optional) throws Exception {
+		run(required.inputJar, required.inputMappings);
 	}
 
 	@Override
@@ -63,4 +64,6 @@ public final class CheckMappingsCommand extends Command {
 			throw new IllegalStateException("Errors in package visibility detected, see error logged above!");
 		}
 	}
+
+	record Required(Path inputJar, Path inputMappings) { }
 }

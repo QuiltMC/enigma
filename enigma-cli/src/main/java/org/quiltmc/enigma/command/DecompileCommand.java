@@ -6,19 +6,19 @@ import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.EnigmaProject.DecompileErrorStrategy;
 import org.quiltmc.enigma.api.service.DecompilerService;
 import org.quiltmc.enigma.api.source.Decompilers;
+import org.quiltmc.enigma.command.DecompileCommand.Required;
 import org.tinylog.Logger;
 
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.Locale;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.quiltmc.enigma.command.CommonArguments.INPUT_JAR;
 import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
 import static org.quiltmc.enigma.command.CommonArguments.OUTPUT_JAR;
 
-public final class DecompileCommand extends Command {
+public final class DecompileCommand extends Command<Required, Path> {
 	private static final Argument<String> DECOMPILER = Argument.ofLenientEnum("decompiler", Decompiler.class,
 			"""
 					The decompiler to use when producing output. Allowed values are (case-insensitive):"""
@@ -32,14 +32,14 @@ public final class DecompileCommand extends Command {
 
 	private DecompileCommand() {
 		super(
-				ImmutableList.of(DECOMPILER, INPUT_JAR, OUTPUT_JAR),
-				ImmutableList.of(INPUT_MAPPINGS)
+				ArgsParser.of(DECOMPILER, INPUT_JAR, OUTPUT_JAR, Required::new),
+				ArgsParser.of(INPUT_MAPPINGS)
 		);
 	}
 
 	@Override
-	protected void runImpl(Map<String, String> args) throws Exception {
-		run(DECOMPILER.get(args), INPUT_JAR.get(args), OUTPUT_JAR.get(args), INPUT_MAPPINGS.get(args));
+	void runImpl(Required required, Path inputMappings) throws Exception {
+		run(required.decompiler, required.inputJar, required.outputJar, inputMappings);
 	}
 
 	@Override
@@ -82,4 +82,6 @@ public final class DecompileCommand extends Command {
 
 		public static final ImmutableList<Decompiler> VALUES = ImmutableList.copyOf(values());
 	}
+
+	record Required(String decompiler, Path inputJar, Path outputJar) { }
 }

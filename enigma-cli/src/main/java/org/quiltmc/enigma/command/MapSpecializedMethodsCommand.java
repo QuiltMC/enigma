@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.command;
 
-import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
@@ -18,6 +17,8 @@ import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.Utils;
+import org.quiltmc.enigma.command.MapSpecializedMethodsCommand.Required;
+import org.quiltmc.enigma.command.MapSpecializedMethodsCommand.Optional;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -30,21 +31,21 @@ import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
 import static org.quiltmc.enigma.command.CommonArguments.MAPPING_OUTPUT;
 import static org.quiltmc.enigma.command.CommonArguments.OBFUSCATED_NAMESPACE;
 
-public final class MapSpecializedMethodsCommand extends Command {
+public final class MapSpecializedMethodsCommand extends Command<Required, Optional> {
 	public static final MapSpecializedMethodsCommand INSTANCE = new MapSpecializedMethodsCommand();
 
 	private MapSpecializedMethodsCommand() {
 		super(
-				ImmutableList.of(INPUT_JAR, INPUT_MAPPINGS, MAPPING_OUTPUT),
-				ImmutableList.of(OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE)
+				ArgsParser.of(INPUT_JAR, INPUT_MAPPINGS, MAPPING_OUTPUT, Required::new),
+				ArgsParser.of(OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE, Optional::new)
 		);
 	}
 
 	@Override
-	protected void runImpl(Map<String, String> args) throws IOException, MappingParseException {
+	void runImpl(Required required, Optional optional) throws IOException, MappingParseException {
 		run(
-				INPUT_JAR.get(args), INPUT_MAPPINGS.get(args), MAPPING_OUTPUT.get(args),
-				OBFUSCATED_NAMESPACE.get(args), DEOBFUSCATED_NAMESPACE.get(args)
+				required.inputJar, required.inputMappings, required.mappingOutput,
+				optional.obfuscatedNamespace, optional.deobfuscatedNamespace
 		);
 	}
 
@@ -105,4 +106,8 @@ public final class MapSpecializedMethodsCommand extends Command {
 
 		return result;
 	}
+
+	record Required(Path inputJar, Path inputMappings, Path mappingOutput) { }
+
+	record Optional(String obfuscatedNamespace, String deobfuscatedNamespace) { }
 }

@@ -9,30 +9,37 @@ import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingsReader;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.command.ArgsParser.Empty;
 import org.quiltmc.enigma.util.Utils;
+import org.quiltmc.enigma.command.ConvertMappingsCommand.Required;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
 
 import static org.quiltmc.enigma.command.CommonArguments.DEOBFUSCATED_NAMESPACE;
 import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
 import static org.quiltmc.enigma.command.CommonArguments.MAPPING_OUTPUT;
 import static org.quiltmc.enigma.command.CommonArguments.OBFUSCATED_NAMESPACE;
 
-public final class ConvertMappingsCommand extends Command {
+public final class ConvertMappingsCommand extends Command<Required, Empty> {
 	public static final ConvertMappingsCommand INSTANCE = new ConvertMappingsCommand();
 
 	private ConvertMappingsCommand() {
-		super(INPUT_MAPPINGS, MAPPING_OUTPUT, OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE);
+		super(
+				ArgsParser.of(
+					INPUT_MAPPINGS, MAPPING_OUTPUT, OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE,
+					Required::new
+				),
+				Empty.PARSER
+		);
 	}
 
 	@Override
-	protected void runImpl(Map<String, String> args) throws IOException, MappingParseException {
+	void runImpl(Required required, Empty optional) throws IOException, MappingParseException {
 		run(
-				INPUT_MAPPINGS.get(args), MAPPING_OUTPUT.get(args),
-				OBFUSCATED_NAMESPACE.get(args), DEOBFUSCATED_NAMESPACE.get(args)
+				required.inputMappings, required.mappingOutput,
+				required.obfuscatedNamespace, required.deobfuscatedNamespace
 		);
 	}
 
@@ -57,4 +64,9 @@ public final class ConvertMappingsCommand extends Command {
 		MappingsWriter writer = CommandsUtil.getWriter(enigma, output);
 		writer.write(mappings, output, ProgressListener.createEmpty(), saveParameters);
 	}
+
+	record Required(
+			Path inputMappings, Path mappingOutput,
+			String obfuscatedNamespace, String deobfuscatedNamespace
+	) { }
 }

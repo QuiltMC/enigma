@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.command;
 
-import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
@@ -20,6 +19,8 @@ import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntr
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.Utils;
 import org.quiltmc.enigma.util.validation.ValidationContext;
+import org.quiltmc.enigma.command.InsertProposedMappingsCommand.Required;
+import org.quiltmc.enigma.command.InsertProposedMappingsCommand.Optional;
 import org.tinylog.Logger;
 
 import java.nio.file.Path;
@@ -34,22 +35,22 @@ import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
 import static org.quiltmc.enigma.command.CommonArguments.MAPPING_OUTPUT;
 import static org.quiltmc.enigma.command.CommonArguments.OBFUSCATED_NAMESPACE;
 
-public final class InsertProposedMappingsCommand extends Command {
+public final class InsertProposedMappingsCommand extends Command<Required, Optional> {
 	public static final InsertProposedMappingsCommand INSTANCE = new InsertProposedMappingsCommand();
 
 	private InsertProposedMappingsCommand() {
 		super(
-				ImmutableList.of(INPUT_JAR, INPUT_MAPPINGS, MAPPING_OUTPUT),
-				ImmutableList.of(ENIGMA_PROFILE, OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE)
+				ArgsParser.of(INPUT_JAR, INPUT_MAPPINGS, MAPPING_OUTPUT, Required::new),
+				ArgsParser.of(ENIGMA_PROFILE, OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE, Optional::new)
 		);
 	}
 
 	@Override
-	protected void runImpl(Map<String, String> args) throws Exception {
+	void runImpl(Required required, Optional optional) throws Exception {
 		run(
-				INPUT_JAR.get(args), INPUT_MAPPINGS.get(args), MAPPING_OUTPUT.get(args),
-				ENIGMA_PROFILE.get(args), null,
-				OBFUSCATED_NAMESPACE.get(args), DEOBFUSCATED_NAMESPACE.get(args)
+				required.inputJar, required.inputMappings, required.mappingOutput,
+				optional.enigmaProfile, null,
+				optional.obfuscatedNamespace, optional.deobfuscatedNamespace
 		);
 	}
 
@@ -142,6 +143,13 @@ public final class InsertProposedMappingsCommand extends Command {
 			}
 		});
 
-		Logger.info("Proposed names for {} classes, {} fields, {} methods, {} parameters!", classes, fields, methods, parameters);
+		Logger.info(
+				"Proposed names for {} classes, {} fields, {} methods, {} parameters!",
+				classes, fields, methods, parameters
+		);
 	}
+
+	record Required(Path inputJar, Path inputMappings, Path mappingOutput) { }
+
+	record Optional(Path enigmaProfile, String obfuscatedNamespace, String deobfuscatedNamespace) { }
 }

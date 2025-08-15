@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.command;
 
-import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
@@ -15,12 +14,13 @@ import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.util.Utils;
+import org.quiltmc.enigma.command.FillClassMappingsCommand.Required;
+import org.quiltmc.enigma.command.FillClassMappingsCommand.Optional;
 import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 
 import static org.quiltmc.enigma.command.CommonArguments.DEOBFUSCATED_NAMESPACE;
 import static org.quiltmc.enigma.command.CommonArguments.INPUT_JAR;
@@ -28,7 +28,7 @@ import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
 import static org.quiltmc.enigma.command.CommonArguments.MAPPING_OUTPUT;
 import static org.quiltmc.enigma.command.CommonArguments.OBFUSCATED_NAMESPACE;
 
-public final class FillClassMappingsCommand extends Command {
+public final class FillClassMappingsCommand extends Command<Required, Optional> {
 	private static final Argument<Boolean> FILL_ALL = Argument.ofBool("fill-all",
 			"""
 					Whether to fill all possible mappings. Allowed values are "true" and "false"."""
@@ -38,17 +38,16 @@ public final class FillClassMappingsCommand extends Command {
 
 	private FillClassMappingsCommand() {
 		super(
-				ImmutableList.of(INPUT_JAR, INPUT_MAPPINGS, MAPPING_OUTPUT),
-				ImmutableList.of(FILL_ALL, OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE)
+				ArgsParser.of(INPUT_JAR, INPUT_MAPPINGS, MAPPING_OUTPUT, Required::new),
+				ArgsParser.of(FILL_ALL, OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE, Optional::new)
 		);
 	}
 
 	@Override
-	protected void runImpl(Map<String, String> args) throws Exception {
+	void runImpl(Required required, Optional optional) throws Exception {
 		run(
-				INPUT_JAR.get(args), INPUT_MAPPINGS.get(args), MAPPING_OUTPUT.get(args),
-				FILL_ALL.get(args),
-				OBFUSCATED_NAMESPACE.get(args), DEOBFUSCATED_NAMESPACE.get(args)
+				required.inputJar, required.inputMappings, required.mappingOutput,
+				optional.fillAll, optional.obfuscatedNamespace, optional.deobfuscatedNamespace
 		);
 	}
 
@@ -131,4 +130,8 @@ public final class FillClassMappingsCommand extends Command {
 			}
 		}
 	}
+
+	record Required(Path inputJar, Path inputMappings, Path mappingOutput) { }
+
+	record Optional(boolean fillAll, String obfuscatedNamespace, String deobfuscatedNamespace) { }
 }

@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.command;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +19,7 @@ public class ValidateArgNamesTest {
 		});
 	}
 
-	private static Set<String> validateArgs(String cmdName, ImmutableList<Argument<?>> args) {
+	private static Set<String> validateArgs(String cmdName, ArgsParser<?> args) {
 		final Set<String> argNames = new HashSet<>();
 		for (final Argument<?> arg : args) {
 			final String argName = arg.getName();

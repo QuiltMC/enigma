@@ -1,10 +1,10 @@
 package org.quiltmc.enigma.command;
 
-import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
+import org.quiltmc.enigma.command.DropInvalidMappingsCommand.Required;
 import org.tinylog.Logger;
 
 import java.io.IOException;
@@ -13,27 +13,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Map;
 
 import static org.quiltmc.enigma.command.CommonArguments.INPUT_JAR;
 import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
 import static org.quiltmc.enigma.command.CommonArguments.MAPPING_OUTPUT;
 
-public final class DropInvalidMappingsCommand extends Command {
+public final class DropInvalidMappingsCommand extends Command<Required, Path> {
 	public static final DropInvalidMappingsCommand INSTANCE = new DropInvalidMappingsCommand();
 
 	private DropInvalidMappingsCommand() {
 		super(
-				ImmutableList.of(INPUT_JAR, INPUT_MAPPINGS),
-				ImmutableList.of(MAPPING_OUTPUT)
+				ArgsParser.of(INPUT_JAR, INPUT_MAPPINGS, Required::new),
+				ArgsParser.of(MAPPING_OUTPUT)
 		);
 	}
 
 	@Override
-	protected void runImpl(Map<String, String> args) throws Exception {
-		Path jarIn = INPUT_JAR.get(args);
-		Path mappingsIn = INPUT_MAPPINGS.get(args);
-		Path mappingsOutArg = MAPPING_OUTPUT.get(args);
+	void runImpl(Required required, Path mappingOutput) throws Exception {
+		Path jarIn = required.inputJar;
+		Path mappingsIn = required.inputMappings;
+		Path mappingsOutArg = mappingOutput;
 		Path mappingsOut = mappingsOutArg != null ? mappingsOutArg : mappingsIn;
 
 		run(jarIn, mappingsIn, mappingsOut);
@@ -91,4 +90,6 @@ public final class DropInvalidMappingsCommand extends Command {
 			Logger.info("No invalid mappings found.");
 		}
 	}
+
+	record Required(Path inputJar, Path inputMappings) { }
 }
