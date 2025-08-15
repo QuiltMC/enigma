@@ -88,15 +88,15 @@ public class Main {
 	}
 
 	private static final class CommandErrorHelpException extends Command.HelpException {
-		final Command command;
+		final Command<?, ?> command;
 
-		CommandErrorHelpException(Command command, Throwable cause) {
+		CommandErrorHelpException(Command<?, ?> command, Throwable cause) {
 			super(cause);
 			this.command = command;
 		}
 
 		@Override
-		public Command getCommand() {
+		public Command<?, ?> getCommand() {
 			return this.command;
 		}
 	}

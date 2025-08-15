@@ -131,7 +131,7 @@ public abstract sealed class Command<R, O> permits
 		final Map<String, String> valuesByName = this.buildValuesByName(args);
 
 		this.runImpl(
-				this.requiredArguments.parse(valuesByName, Argument::requireFrom),
+				this.parseRequired(valuesByName),
 				this.optionalArguments.parse(valuesByName, Argument::from)
 		);
 	}
@@ -213,6 +213,15 @@ public abstract sealed class Command<R, O> permits
 		}
 
 		return valuesByName;
+	}
+
+	@VisibleForTesting
+	R parseRequired(Map<String, String> valuesByName) {
+		try {
+			return this.requiredArguments.parse(valuesByName, Argument::requireFrom);
+		} catch (IllegalArgumentException e) {
+			throw new ArgumentHelpException(this, e);
+		}
 	}
 
 	/**
@@ -375,11 +384,17 @@ public abstract sealed class Command<R, O> permits
 		}
 	}
 
-	protected static class ArgumentHelpException extends HelpException {
+	@VisibleForTesting
+	static class ArgumentHelpException extends HelpException {
 		private final Command<?, ?> command;
 
-		protected ArgumentHelpException(Command<?, ?> command, String message) {
+		ArgumentHelpException(Command<?, ?> command, String message) {
 			super(message);
+			this.command = command;
+		}
+
+		ArgumentHelpException(Command<?, ?> command, Throwable cause) {
+			super(cause);
 			this.command = command;
 		}
 
