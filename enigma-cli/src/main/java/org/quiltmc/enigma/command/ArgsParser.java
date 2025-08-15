@@ -6,6 +6,7 @@ import com.google.common.collect.UnmodifiableIterator;
 import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.stream.Stream;
 
 final class ArgsParser<P> implements Iterable<Argument<?>> {
 	static <T> ArgsParser<T> of(Argument<T> arg) {
@@ -147,6 +148,10 @@ final class ArgsParser<P> implements Iterable<Argument<?>> {
 	@Nonnull
 	public UnmodifiableIterator<Argument<?>> iterator() {
 		return this.args.iterator();
+	}
+
+	Stream<Argument<?>> stream() {
+		return this.args.stream();
 	}
 
 	@FunctionalInterface

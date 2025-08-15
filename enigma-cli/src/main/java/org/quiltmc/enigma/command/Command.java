@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.command;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
@@ -31,7 +32,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
+
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
 public abstract sealed class Command<R, O> permits
 		CheckMappingsCommand, ComposeMappingsCommand, ConvertMappingsCommand, DecompileCommand, DeobfuscateCommand,
@@ -44,12 +48,17 @@ public abstract sealed class Command<R, O> permits
 	@VisibleForTesting
 	final ArgsParser<O> optionalArguments;
 
-	private final int totalArgumentCount;
+	private final ImmutableSet<String> allArgumentNames;
 
 	Command(ArgsParser<R> requiredArguments, ArgsParser<O> optionalArguments) {
 		this.requiredArguments = requiredArguments;
 		this.optionalArguments = optionalArguments;
-		this.totalArgumentCount = this.requiredArguments.count() + this.optionalArguments.count();
+		this.allArgumentNames = Stream
+				.concat(
+					this.requiredArguments.stream().map(Argument::getName),
+					this.optionalArguments.stream().map(Argument::getName)
+				)
+				.collect(toImmutableSet());
 	}
 
 	public String getUsage() {
@@ -110,7 +119,7 @@ public abstract sealed class Command<R, O> permits
 	 * @return {@code true} if the argument count is valid, {@code false} otherwise
 	 */
 	public boolean checkArgumentCount(int length) {
-		return length >= this.requiredArguments.count() && length <= this.totalArgumentCount;
+		return length >= this.requiredArguments.count() && length <= this.allArgumentNames.size();
 	}
 
 	/**
@@ -137,13 +146,13 @@ public abstract sealed class Command<R, O> permits
 						this.requiredArguments.count()
 					)
 			);
-		} else if (args.length > this.totalArgumentCount) {
+		} else if (args.length > this.allArgumentNames.size()) {
 			throw new ArgumentHelpException(
 				this, "Too many arguments (%s); at most %s %s allowed.".formatted(
 						args.length,
-						this.totalArgumentCount == 1 ? "is" : "are",
-						this.totalArgumentCount
-					)
+						this.allArgumentNames.size() == 1 ? "is" : "are",
+						this.allArgumentNames.size()
+				)
 			);
 		}
 
@@ -156,6 +165,10 @@ public abstract sealed class Command<R, O> permits
 				throw new ArgumentHelpException(
 					this, "'%s' specified as both positional and named argument.".formatted(name)
 				);
+			}
+
+			if (!this.allArgumentNames.contains(name)) {
+				throw new ArgumentHelpException(this, "Unrecognized argument name: " + name);
 			}
 
 			final String value = rawValue.substring(delim + 1);
