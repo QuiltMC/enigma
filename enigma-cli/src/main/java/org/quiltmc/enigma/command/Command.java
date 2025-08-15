@@ -37,6 +37,12 @@ import javax.annotation.Nullable;
 
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
+/**
+ * Represents a command that can be run on the command line.
+ *
+ * @param <R> the type that holds this command's required arguments
+ * @param <O> the type that holds this command's optional arguments
+ */
 public abstract sealed class Command<R, O> permits
 		CheckMappingsCommand, ComposeMappingsCommand, ConvertMappingsCommand, DecompileCommand, DeobfuscateCommand,
 		DropInvalidMappingsCommand, FillClassMappingsCommand, HelpCommand, InsertProposedMappingsCommand,
