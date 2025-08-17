@@ -18,6 +18,10 @@ public class LocalVariableDefEntry extends LocalVariableEntry {
 		this.desc = desc;
 	}
 
+	public LocalVariableDefEntry(MethodEntry ownerEntry, int index, TypeDescriptor desc) {
+		this(ownerEntry, index, "", true, desc, null);
+	}
+
 	public TypeDescriptor getDesc() {
 		return this.desc;
 	}

@@ -1,7 +1,17 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import org.quiltmc.enigma.api.EnigmaProject;
-import org.quiltmc.enigma.util.Either;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.MemberTypeIndex;
+import org.quiltmc.enigma.api.translation.Translator;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.command.GrepMappingsCommand.Required;
 import org.quiltmc.enigma.command.GrepMappingsCommand.Optionals;
 import org.tinylog.Logger;
@@ -11,12 +21,12 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Predicate;
+import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class GrepMappingsCommand extends Command<Required, Optionals> {
-	private static final String VOID = "void";
-
 	private static final Argument<Pattern> CLASSES = Argument.ofPattern("classes",
 			"""
 			A regular expression to filter class names."""
@@ -33,9 +43,7 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 			"""
 			A regular expression to filter parameter names."""
 	);
-	private static final Argument<Either<Class<Void>, Pattern>> METHOD_RETURNS = new Argument<>(
-			"method-returns", VOID + "void|pattern",
-			string -> VOID.equals(string) ? Either.left(Void.class) : Either.right(Argument.parsePattern(string)),
+	private static final Argument<Pattern> METHOD_RETURNS = Argument.ofPattern("method-returns",
 			"""
 			A regular expression to filter method return type names. Pass 'void' to filter void methods."""
 	);
@@ -59,22 +67,11 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 
 	@Override
 	void runImpl(Required required, Optionals optionals) throws Exception {
-		final Path jar = required.inputJar;
-		final Path mappings = required.inputMappings;
-
-		final Pattern classes = optionals.classes;
-		final Pattern methods = optionals.methods;
-		final Pattern fields = optionals.fields;
-		final Pattern params = optionals.params;
-
-		final Either<Class<Void>, Pattern> methodReturns = optionals.methodReturns;
-
-		final Pattern fieldTypes = optionals.fieldTypes;
-		final Pattern paramTypes = optionals.paramTypes;
-
-
-
-		run(jar, mappings, classes, methods, fields, params, methodReturns, fieldTypes, paramTypes);
+		run(
+				required.inputJar, required.inputMappings,
+				optionals.classes, optionals.methods, optionals.fields, optionals.params,
+				optionals.methodReturns, optionals.fieldTypes, optionals.paramTypes
+		);
 	}
 
 	@Override
@@ -88,60 +85,135 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 				+ "Members can additionally be filtered by type.";
 	}
 
-	public static void runVoidMethodReturns(
-		Path jar, Path mappings,
-		@Nullable Pattern classes, @Nullable Pattern methods, @Nullable Pattern fields, @Nullable Pattern params,
-		@Nullable Pattern fieldTypes, @Nullable Pattern paramTypes
-	) throws Exception {
-		run(
-			jar, mappings, classes, methods, fields, params,
-			Either.left(Void.class),
-			fieldTypes, paramTypes
-		);
-	}
-
 	public static void run(
-		Path jar, Path mappings,
-		@Nullable Pattern classes, @Nullable Pattern methods, @Nullable Pattern fields, @Nullable Pattern params,
-		@Nullable Pattern methodsReturns,
-		@Nullable Pattern fieldTypes, @Nullable Pattern paramTypes
-	) throws Exception {
-		run(
-				jar, mappings, classes, methods, fields, params,
-				methodsReturns == null ? null : Either.right(methodsReturns),
-				fieldTypes, paramTypes
-		);
-	}
-
-	private static void run(
 			Path jar, Path mappings,
-			@Nullable Pattern classes, @Nullable Pattern methods, @Nullable Pattern fields, @Nullable Pattern params,
-			@Nullable Either<Class<Void>, Pattern> methodsReturns,
-			@Nullable Pattern fieldTypes, @Nullable Pattern paramTypes
+			@Nullable Pattern classes, @Nullable Pattern methods, @Nullable Pattern fields, @Nullable Pattern parameters,
+			@Nullable Pattern methodsReturns, @Nullable Pattern fieldTypes, @Nullable Pattern paramTypes
 	) throws Exception {
 		Objects.requireNonNull(jar, "jar must not be null");
 		Objects.requireNonNull(mappings, "mappings must not be null");
 
 		final EnigmaProject project = openProject(jar, mappings);
+		final EntryIndex entryIndex = project.getJarIndex().getIndex(EntryIndex.class);
+		final MemberTypeIndex memberTypeIndex = project.getJarIndex().getIndex(MemberTypeIndex.class);
+		final Translator deobfuscator = project.getRemapper().getDeobfuscator();
+
+		final Optional<Finder<ClassEntry>> classFinder = Finder.ofClassesOrEmpty(classes, deobfuscator);
+		final Optional<Finder<MethodEntry>> methodFinder = Finder.ofOrEmpty(
+				methods, methodsReturns, deobfuscator,
+				memberTypeIndex::getMethodReturnType, ResultType.METHOD
+		);
+		final Optional<Finder<FieldEntry>> fieldFinder = Finder.ofOrEmpty(
+				fields, fieldTypes, deobfuscator,
+				memberTypeIndex::getFieldType, ResultType.FIELD
+		);
+		final Optional<Finder<LocalVariableEntry>> paramFinder = Finder.ofOrEmpty(
+				parameters, paramTypes, deobfuscator,
+				memberTypeIndex::getParameterType, ResultType.PARAM
+		);
 
 		Logger.info("Grepping mappings...");
 
+		final Multimap<ResultType, String> resultsByType = project.getRemapper().getMappings().getAllEntries()
+				.parallel()
+				.<Map.Entry<ResultType, String>>mapMulti((obf, add) -> {
+					if (obf instanceof ClassEntry obfClass) {
+						classFinder.flatMap(finder -> finder.apply(obfClass)).ifPresent(add);
+					} else if (obf instanceof MethodEntry obfMethod) {
+						methodFinder.flatMap(finder -> finder.apply(obfMethod)).ifPresent(add);
 
+						paramFinder.ifPresent(finder -> {
+							obfMethod.streamParameters(entryIndex).forEach(obfParam -> {
+								finder.apply(obfParam).ifPresent(add);
+							});
+						});
+					} else if (obf instanceof FieldEntry obfField) {
+						fieldFinder.flatMap(finder -> finder.apply(obfField)).ifPresent(add);
+					}
+				})
+				.collect(Multimaps.toMultimap(Map.Entry::getKey, Map.Entry::getValue, HashMultimap::create));
+
+		if (resultsByType.isEmpty()) {
+			Logger.warn("No matches");
+		} else {
+			resultsByType.asMap().forEach((type, results) -> {
+				Logger.info(Stream
+						.concat(Stream.of(type.getResultsHeader(results.size())), results.stream())
+						.collect(Collectors.joining("\n\t"))
+				);
+			});
+		}
 	}
 
-	private record Filter(Predicate<String> namePredicate, ResultType type) {
-		private static Filter of(Pattern pattern, ResultType type) {
-			return new Filter(name -> pattern.matcher(name).find(), type);
+	private static <E extends Entry<?>> Optional<String> getTypeName(
+			E obfEntry, Translator deobfuscator, Function<E, ClassEntry> typeGetter
+	) {
+		final ClassEntry obfType = typeGetter.apply(obfEntry);
+		if (obfType != null) {
+			final ClassEntry deobfType = deobfuscator.translate(obfType);
+			return Optional.of((deobfType == null ? obfType : deobfType).getFullName());
+		} else {
+			return Optional.empty();
+		}
+	}
+
+	@FunctionalInterface
+	private interface Finder<E extends Entry<?>> extends Function<E, Optional<Map.Entry<ResultType, String>>> {
+		static Optional<Finder<ClassEntry>> ofClassesOrEmpty(@Nullable Pattern pattern, Translator deobfuscator) {
+			if (pattern == null) {
+				return Optional.empty();
+			} else {
+				return Optional.of(typelessOf(pattern, deobfuscator, ResultType.CLASS));
+			}
 		}
 
-		private static Filter ofVoidMethods() {
-
+		static <E extends Entry<?>> Optional<Finder<E>> ofOrEmpty(
+				@Nullable Pattern pattern, @Nullable Pattern typePattern, Translator deobfuscator,
+				Function<E, ClassEntry> typeGetter, ResultType resultType
+		) {
+			if (pattern == null) {
+				if (typePattern == null) {
+					return Optional.empty();
+				} else {
+					return Optional.of(obf -> {
+						final E deobf = deobfuscator.translate(obf);
+						return deobf == null ? Optional.empty()
+								: getTypeName(obf, deobfuscator, typeGetter)
+									.filter(typeName -> typePattern.matcher(typeName).find())
+									.map(typeName -> createResult(resultType, obf, deobf));
+					});
+				}
+			} else if (typePattern == null) {
+				return Optional.of(typelessOf(pattern, deobfuscator, resultType));
+			} else {
+				return Optional.of(obf -> {
+					final E deobf = deobfuscator.translate(obf);
+					if (deobf != null && pattern.matcher(deobf.getName()).find()) {
+						return getTypeName(obf, deobfuscator, typeGetter)
+							.filter(typeName -> typePattern.matcher(typeName).find())
+							.map(typeName -> createResult(resultType, obf, deobf));
+					} else {
+						return Optional.empty();
+					}
+				});
+			}
 		}
 
-		Optional<Map.Entry<ResultType, String>> findResult(String name, String obfName) {
-			return this.namePredicate.test(name) ?
-				java.util.Optional.of(Map.entry(this.type, "%s (%s)".formatted(name, obfName)))
-				: java.util.Optional.empty();
+		private static <E extends Entry<?>> Finder<E> typelessOf(
+				Pattern pattern, Translator deobfuscator, ResultType resultType
+		) {
+			return obf -> {
+				final E deobf = deobfuscator.translate(obf);
+				if (deobf != null && pattern.matcher(deobf.getName()).find()) {
+					return Optional.of(createResult(resultType, obf, deobf));
+				} else {
+					return Optional.empty();
+				}
+			};
+		}
+
+		private static Map.Entry<ResultType, String> createResult(ResultType resultType, Entry<?> obf, Entry<?> deobf) {
+			return Map.entry(resultType, "%s (%s)".formatted(deobf.getName(), obf.getFullName()));
 		}
 	}
 
@@ -160,13 +232,13 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 		}
 
 		String getResultsHeader(int resultCount) {
-			return "Found %d %s:\n\t".formatted(resultCount, resultCount == 1 ? this.singleName : this.pluralName);
+			return "Found %d %s:".formatted(resultCount, resultCount == 1 ? this.singleName : this.pluralName);
 		}
 	}
 
 	record Required(Path inputJar, Path inputMappings) { }
 	record Optionals(
 			Pattern classes, Pattern methods, Pattern fields, Pattern params,
-			Either<Class<Void>, Pattern> methodReturns, Pattern fieldTypes, Pattern paramTypes
+			Pattern methodReturns, Pattern fieldTypes, Pattern paramTypes
 	) { }
 }
