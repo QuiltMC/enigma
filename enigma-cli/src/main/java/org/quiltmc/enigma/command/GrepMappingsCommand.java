@@ -53,8 +53,7 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 			"""
 			A regular expression to filter parameter type names."""
 	);
-	private static final Argument<Integer> LIMIT = new Argument<>("limit", "int",
-			limit -> limit == null || limit.isEmpty() ? -1 : Integer.parseInt(limit),
+	private static final Argument<Integer> LIMIT = Argument.ofInt("limit", -1,
 			"""
 			A limit on the number of individual results which may be displayed.
 			The total, unlimited result count is always reported.

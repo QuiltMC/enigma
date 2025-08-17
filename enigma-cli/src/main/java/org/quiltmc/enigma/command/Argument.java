@@ -38,27 +38,27 @@ final class Argument<T> {
 	static final String PATH_TYPE = "path";
 
 	static Argument<Path> ofReadablePath(String name, String explanation) {
-		return new Argument<>(name, PATH_TYPE, Argument::getReadablePath, explanation);
+		return new Argument<>(name, PATH_TYPE, Argument::parseReadablePath, explanation);
 	}
 
 	static Argument<Path> ofReadableFile(String name, String explanation) {
-		return new Argument<>(name, PATH_TYPE, Argument::getReadableFile, explanation);
+		return new Argument<>(name, PATH_TYPE, Argument::parseReadableFile, explanation);
 	}
 
 	static Argument<Path> ofReadableFolder(String name, String explanation) {
-		return new Argument<>(name, PATH_TYPE, Argument::getReadableFolder, explanation);
+		return new Argument<>(name, PATH_TYPE, Argument::parseReadableFolder, explanation);
 	}
 
 	static Argument<Path> ofWritablePath(String name, String explanation) {
-		return new Argument<>(name, PATH_TYPE, Argument::getWritablePath, explanation);
+		return new Argument<>(name, PATH_TYPE, Argument::parseWritablePath, explanation);
 	}
 
 	static Argument<Path> ofWritableFile(String name, String explanation) {
-		return new Argument<>(name, PATH_TYPE, Argument::getWritableFile, explanation);
+		return new Argument<>(name, PATH_TYPE, Argument::parseWritableFile, explanation);
 	}
 
 	static Argument<Path> ofWritableFolder(String name, String explanation) {
-		return new Argument<>(name, PATH_TYPE, Argument::getWritableFolder, explanation);
+		return new Argument<>(name, PATH_TYPE, Argument::parseWritableFolder, explanation);
 	}
 
 	/**
@@ -73,6 +73,10 @@ final class Argument<T> {
 
 	static Argument<Boolean> ofBool(String name, String explanation) {
 		return new Argument<>(name, BOOL_TYPE, Boolean::parseBoolean, explanation);
+	}
+
+	static Argument<Integer> ofInt(String name, Integer defaultValue, String explanation) {
+		return new Argument<>(name, "int", integer -> parseInt(integer, defaultValue), explanation);
 	}
 
 	static Argument<String> ofString(String name, String typeDescription, String explanation) {
@@ -105,41 +109,41 @@ final class Argument<T> {
 		this.explanation = explanation;
 	}
 
-	static Path getReadablePath(String path) {
-		return getExistentPath(path).orElse(null);
+	static Path parseReadablePath(String path) {
+		return parseExistentPath(path).orElse(null);
 	}
 
-	static Path getReadableFile(String path) {
-		return verify(getExistentPath(path), Files::isRegularFile, "Not a file: ").orElse(null);
+	static Path parseReadableFile(String path) {
+		return verify(parseExistentPath(path), Files::isRegularFile, "Not a file: ").orElse(null);
 	}
 
-	static Path getReadableFolder(String path) {
-		return getExistentFolder(path).orElse(null);
+	static Path parseReadableFolder(String path) {
+		return parseExistentFolder(path).orElse(null);
 	}
 
-	static Path getWritablePath(String path) {
-		return getParentedPath(path).orElse(null);
+	static Path parseWritablePath(String path) {
+		return parseParentedPath(path).orElse(null);
 	}
 
-	static Path getWritableFile(String path) {
+	static Path parseWritableFile(String path) {
 		// !directory so it's true for non-existent files
-		return verify(getParentedPath(path), p -> !Files.isDirectory(p), "Not a file: ").orElse(null);
+		return verify(parseParentedPath(path), p -> !Files.isDirectory(p), "Not a file: ").orElse(null);
 	}
 
-	static Path getWritableFolder(String path) {
-		return getExistentFolder(path).orElse(null);
+	static Path parseWritableFolder(String path) {
+		return parseExistentFolder(path).orElse(null);
 	}
 
-	static Optional<Path> getExistentFolder(String path) {
-		return verify(getExistentPath(path), Files::isDirectory, "Not a folder: ");
+	static Optional<Path> parseExistentFolder(String path) {
+		return verify(parseExistentPath(path), Files::isDirectory, "Not a folder: ");
 	}
 
-	static Optional<Path> getExistentPath(String path) {
-		return verify(getPath(path), Files::exists, "Cannot find path: ");
+	static Optional<Path> parseExistentPath(String path) {
+		return verify(parsePath(path), Files::exists, "Cannot find path: ");
 	}
 
-	static Optional<Path> getParentedPath(String path) {
-		return peek(getPath(path), p -> {
+	static Optional<Path> parseParentedPath(String path) {
+		return peek(parsePath(path), p -> {
 			final Path parent = p.getParent();
 			if (parent == null) {
 				throw new IllegalArgumentException("Cannot write path: " + p);
@@ -153,7 +157,7 @@ final class Argument<T> {
 		});
 	}
 
-	static Optional<Path> getPath(String path) {
+	static Optional<Path> parsePath(String path) {
 		return Optional.ofNullable(path)
 			.filter(string -> !string.isEmpty())
 			.map(Paths::get)
@@ -169,6 +173,18 @@ final class Argument<T> {
 			return Pattern.compile(regex);
 		} catch (PatternSyntaxException e) {
 			throw new IllegalArgumentException(e);
+		}
+	}
+
+	static Integer parseInt(String integer, Integer defaultValue) {
+		if (integer == null || integer.isEmpty()) {
+			return defaultValue;
+		} else {
+			try {
+				return Integer.parseInt(integer);
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException(e);
+			}
 		}
 	}
 
