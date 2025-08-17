@@ -5,7 +5,6 @@ import org.quiltmc.enigma.api.Enigma;
 import org.tinylog.Logger;
 
 import java.util.Locale;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -70,7 +69,7 @@ public class Main {
 		}
 	}
 
-	public static Map<String, Command> getCommands() {
+	public static ImmutableMap<String, Command> getCommands() {
 		return COMMANDS;
 	}
 
