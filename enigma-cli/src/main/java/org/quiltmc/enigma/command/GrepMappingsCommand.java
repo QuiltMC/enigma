@@ -5,12 +5,12 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
-import org.quiltmc.enigma.api.analysis.index.jar.MemberTypeIndex;
 import org.quiltmc.enigma.api.translation.Translator;
+import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
-import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.command.GrepMappingsCommand.Required;
 import org.quiltmc.enigma.command.GrepMappingsCommand.Optionals;
@@ -95,21 +95,20 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 
 		final EnigmaProject project = openProject(jar, mappings);
 		final EntryIndex entryIndex = project.getJarIndex().getIndex(EntryIndex.class);
-		final MemberTypeIndex memberTypeIndex = project.getJarIndex().getIndex(MemberTypeIndex.class);
 		final Translator deobfuscator = project.getRemapper().getDeobfuscator();
 
 		final Optional<Finder<ClassEntry>> classFinder = Finder.ofClassesOrEmpty(classes, deobfuscator);
 		final Optional<Finder<MethodEntry>> methodFinder = Finder.ofOrEmpty(
 				methods, methodsReturns, deobfuscator,
-				memberTypeIndex::getMethodReturnType, ResultType.METHOD
+				ResultType.METHOD, method -> method.getDesc().getReturnDesc()
 		);
 		final Optional<Finder<FieldEntry>> fieldFinder = Finder.ofOrEmpty(
 				fields, fieldTypes, deobfuscator,
-				memberTypeIndex::getFieldType, ResultType.FIELD
+				ResultType.FIELD, FieldEntry::getDesc
 		);
-		final Optional<Finder<LocalVariableEntry>> paramFinder = Finder.ofOrEmpty(
+		final Optional<Finder<LocalVariableDefEntry>> paramFinder = Finder.ofOrEmpty(
 				parameters, paramTypes, deobfuscator,
-				memberTypeIndex::getParameterType, ResultType.PARAM
+				ResultType.PARAM, LocalVariableDefEntry::getDesc
 		);
 
 		Logger.info("Grepping mappings...");
@@ -145,15 +144,19 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 		}
 	}
 
-	private static <E extends Entry<?>> Optional<String> getTypeName(
-			E obfEntry, Translator deobfuscator, Function<E, ClassEntry> typeGetter
-	) {
-		final ClassEntry obfType = typeGetter.apply(obfEntry);
-		if (obfType != null) {
-			final ClassEntry deobfType = deobfuscator.translate(obfType);
-			return Optional.of((deobfType == null ? obfType : deobfType).getFullName());
+	private static String getName(TypeDescriptor desc, Translator deobfuscator) {
+		if (desc.isVoid()) {
+			return "void";
+		} else if (desc.isType()) {
+			final ClassEntry obf = desc.getTypeEntry();
+			final ClassEntry deobf = deobfuscator.translate(obf);
+			return (deobf == null ? obf : deobf).getFullName();
+		} else if (desc.isPrimitive()) {
+			return desc.getArrayType().getPrimitive().getKeyword();
+		} else if (desc.isArray()) {
+			return getName(desc.getArrayType(), deobfuscator) + "[]".repeat(desc.getArrayDimension());
 		} else {
-			return Optional.empty();
+			throw new IllegalStateException("TypeDescriptor is not void, type, primitive, or array: " + desc);
 		}
 	}
 
@@ -163,35 +166,38 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 			if (pattern == null) {
 				return Optional.empty();
 			} else {
-				return Optional.of(typelessOf(pattern, deobfuscator, ResultType.CLASS));
+				return Optional.of(ofTypeless(pattern, deobfuscator, ResultType.CLASS));
 			}
 		}
 
 		static <E extends Entry<?>> Optional<Finder<E>> ofOrEmpty(
 				@Nullable Pattern pattern, @Nullable Pattern typePattern, Translator deobfuscator,
-				Function<E, ClassEntry> typeGetter, ResultType resultType
+				ResultType resultType, Function<E, TypeDescriptor> descriptorGetter
 		) {
 			if (pattern == null) {
 				if (typePattern == null) {
 					return Optional.empty();
 				} else {
 					return Optional.of(obf -> {
-						final E deobf = deobfuscator.translate(obf);
-						return deobf == null ? Optional.empty()
-								: getTypeName(obf, deobfuscator, typeGetter)
-									.filter(typeName -> typePattern.matcher(typeName).find())
-									.map(typeName -> createResult(resultType, obf, deobf));
+						if (typePattern.matcher(getName(descriptorGetter.apply(obf), deobfuscator)).find()) {
+							final E deobf = deobfuscator.translate(obf);
+							return Optional.of(createResult(resultType, obf, deobf == null ? obf : deobf));
+						} else {
+							return Optional.empty();
+						}
 					});
 				}
 			} else if (typePattern == null) {
-				return Optional.of(typelessOf(pattern, deobfuscator, resultType));
+				return Optional.of(ofTypeless(pattern, deobfuscator, resultType));
 			} else {
 				return Optional.of(obf -> {
 					final E deobf = deobfuscator.translate(obf);
 					if (deobf != null && pattern.matcher(deobf.getName()).find()) {
-						return getTypeName(obf, deobfuscator, typeGetter)
-							.filter(typeName -> typePattern.matcher(typeName).find())
-							.map(typeName -> createResult(resultType, obf, deobf));
+						if (typePattern.matcher(getName(descriptorGetter.apply(obf), deobfuscator)).find()) {
+							return Optional.of(createResult(resultType, obf, deobf));
+						} else {
+							return Optional.empty();
+						}
 					} else {
 						return Optional.empty();
 					}
@@ -199,7 +205,7 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 			}
 		}
 
-		private static <E extends Entry<?>> Finder<E> typelessOf(
+		private static <E extends Entry<?>> Finder<E> ofTypeless(
 				Pattern pattern, Translator deobfuscator, ResultType resultType
 		) {
 			return obf -> {
