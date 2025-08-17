@@ -15,6 +15,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * TODO
@@ -32,25 +33,16 @@ public class MemberTypeIndex implements JarIndexer {
 
 	@Override
 	public void indexField(FieldDefEntry fieldEntry) {
-		final TypeDescriptor desc = fieldEntry.getDesc();
-		if (desc.isType()) {
-			this.fieldTypes.put(fieldEntry, desc.getTypeEntry());
-		}
+		getTypeOrArrayType(fieldEntry.getDesc()).ifPresent(type -> this.fieldTypes.put(fieldEntry, type));
 	}
 
 	@Override
 	public void indexMethod(MethodDefEntry methodEntry) {
 		final MethodDescriptor desc = methodEntry.getDesc();
-		final TypeDescriptor returnDesc = desc.getReturnDesc();
-		if (returnDesc.isType()) {
-			this.methodReturnTypes.put(methodEntry, returnDesc.getTypeEntry());
-		}
+		getTypeOrArrayType(desc.getReturnDesc()).ifPresent(type -> this.methodReturnTypes.put(methodEntry, type));
 
 		methodEntry.streamParameters(this.entryIndex).forEach(paramEntry -> {
-			final TypeDescriptor paramDesc = paramEntry.getDesc();
-			if (paramDesc.isType()) {
-				this.paramTypes.put(paramEntry, paramDesc.getTypeEntry());
-			}
+			getTypeOrArrayType(paramEntry.getDesc()).ifPresent(type -> this.paramTypes.put(paramEntry, type));
 		});
 	}
 
@@ -77,5 +69,15 @@ public class MemberTypeIndex implements JarIndexer {
 	@Override
 	public String getTranslationKey() {
 		return "progress.jar.indexing.process.member_types";
+	}
+
+	private static Optional<ClassEntry> getTypeOrArrayType(TypeDescriptor desc) {
+		if (desc.isType()) {
+			return Optional.of(desc.getTypeEntry());
+		} else if (desc.isArray()) {
+            return getTypeOrArrayType(desc.getArrayType());
+		} else {
+			return Optional.empty();
+		}
 	}
 }
