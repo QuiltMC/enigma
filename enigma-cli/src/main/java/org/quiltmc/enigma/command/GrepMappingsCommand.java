@@ -23,8 +23,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public final class GrepMappingsCommand extends Command<Required, Optionals> {
 	private static final Argument<Pattern> CLASSES = Argument.ofPattern("classes",
@@ -55,13 +53,24 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 			"""
 			A regular expression to filter parameter type names."""
 	);
+	private static final Argument<Integer> LIMIT = new Argument<>("limit", "int",
+			limit -> limit == null || limit.isEmpty() ? -1 : Integer.parseInt(limit),
+			"""
+			A limit on the number of individual results which may be displayed.
+			The total, unlimited result count is always reported.
+			The limit is applied per-result type (class, field, method, parameter), not globally.
+			A limit of 0 causes only counts to be reported and negative limits are ignored."""
+	);
 
 	public static final GrepMappingsCommand INSTANCE = new GrepMappingsCommand();
 
 	private GrepMappingsCommand() {
 		super(
 				ArgsParser.of(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS, Required::new),
-				ArgsParser.of(CLASSES, METHODS, FIELDS, PARAMS, METHOD_RETURNS, FIELD_TYPES, PARAM_TYPES, Optionals::new)
+				ArgsParser.of(
+					CLASSES, METHODS, FIELDS, PARAMS, METHOD_RETURNS, FIELD_TYPES, PARAM_TYPES, LIMIT,
+					Optionals::new
+				)
 		);
 	}
 
@@ -70,7 +79,7 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 		run(
 				required.inputJar, required.inputMappings,
 				optionals.classes, optionals.methods, optionals.fields, optionals.params,
-				optionals.methodReturns, optionals.fieldTypes, optionals.paramTypes
+				optionals.methodReturns, optionals.fieldTypes, optionals.paramTypes, optionals.limit
 		);
 	}
 
@@ -88,7 +97,7 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 	public static void run(
 			Path jar, Path mappings,
 			@Nullable Pattern classes, @Nullable Pattern methods, @Nullable Pattern fields, @Nullable Pattern parameters,
-			@Nullable Pattern methodsReturns, @Nullable Pattern fieldTypes, @Nullable Pattern paramTypes
+			@Nullable Pattern methodsReturns, @Nullable Pattern fieldTypes, @Nullable Pattern paramTypes, int limit
 	) throws Exception {
 		Objects.requireNonNull(jar, "jar must not be null");
 		Objects.requireNonNull(mappings, "mappings must not be null");
@@ -136,10 +145,27 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 			Logger.warn("No matches");
 		} else {
 			resultsByType.asMap().forEach((type, results) -> {
-				Logger.info(Stream
-						.concat(Stream.of(type.getResultsHeader(results.size())), results.stream())
-						.collect(Collectors.joining("\n\t"))
-				);
+				final int resultCount = results.size();
+				final StringBuilder message = new StringBuilder("Found ").append(resultCount).append(' ')
+						.append(type.getNameForCount(resultCount));
+
+				if (limit == 0) {
+					message.append('.');
+				} else {
+					final String delim = "\n\t";
+					message.append(':').append(delim);
+
+					if (limit < 0 || resultCount <= limit) {
+						message.append(String.join(delim, results));
+					} else {
+						message.append(String.join(delim, results.stream().limit(limit).toList()));
+						final int excess = resultCount - limit;
+						message.append(delim).append("... and ").append(excess).append(" more ")
+								.append(type.getNameForCount(excess)).append('.');
+					}
+				}
+
+				Logger.info(message);
 			});
 		}
 	}
@@ -147,16 +173,16 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 	private static String getName(TypeDescriptor desc, Translator deobfuscator) {
 		if (desc.isVoid()) {
 			return "void";
+		} else if (desc.isPrimitive()) {
+			return desc.getPrimitive().getKeyword();
 		} else if (desc.isType()) {
 			final ClassEntry obf = desc.getTypeEntry();
 			final ClassEntry deobf = deobfuscator.translate(obf);
 			return (deobf == null ? obf : deobf).getFullName();
-		} else if (desc.isPrimitive()) {
-			return desc.getArrayType().getPrimitive().getKeyword();
 		} else if (desc.isArray()) {
 			return getName(desc.getArrayType(), deobfuscator) + "[]".repeat(desc.getArrayDimension());
 		} else {
-			throw new IllegalStateException("TypeDescriptor is not void, type, primitive, or array: " + desc);
+			throw new IllegalStateException("TypeDescriptor is not void, primitive, type, or array: " + desc);
 		}
 	}
 
@@ -237,14 +263,15 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 			this.pluralName = pluralName;
 		}
 
-		String getResultsHeader(int resultCount) {
-			return "Found %d %s:".formatted(resultCount, resultCount == 1 ? this.singleName : this.pluralName);
+		String getNameForCount(int resultCount) {
+			return resultCount == 1 ? this.singleName : this.pluralName;
 		}
 	}
 
 	record Required(Path inputJar, Path inputMappings) { }
 	record Optionals(
 			Pattern classes, Pattern methods, Pattern fields, Pattern params,
-			Pattern methodReturns, Pattern fieldTypes, Pattern paramTypes
+			Pattern methodReturns, Pattern fieldTypes, Pattern paramTypes,
+			int limit
 	) { }
 }
