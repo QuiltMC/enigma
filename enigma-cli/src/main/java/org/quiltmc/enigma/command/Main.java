@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
 public class Main {
-	private static final ImmutableMap<String, Command> COMMANDS = Stream
+	private static final ImmutableMap<String, Command<?, ?>> COMMANDS = Stream
 			.of(
 				DeobfuscateCommand.INSTANCE,
 				DecompileCommand.INSTANCE,
@@ -37,7 +37,7 @@ public class Main {
 
 			String command = args[0].toLowerCase(Locale.ROOT);
 
-			Command cmd = COMMANDS.get(command);
+			Command<?, ?> cmd = COMMANDS.get(command);
 			if (cmd == null) {
 				throw new IllegalArgumentException("Command not recognized: " + command);
 			}
@@ -65,7 +65,7 @@ public class Main {
 		}
 	}
 
-	public static ImmutableMap<String, Command> getCommands() {
+	public static ImmutableMap<String, Command<?, ?>> getCommands() {
 		return COMMANDS;
 	}
 
@@ -78,7 +78,7 @@ public class Main {
 				\tjava -cp enigma.jar org.quiltmc.enigma.command.CommandMain <command> <args>
 				\twhere <command> is one of:""");
 
-		for (Command command : COMMANDS.values()) {
+		for (Command<?, ?> command : COMMANDS.values()) {
 			command.appendHelp(help);
 		}
 	}
