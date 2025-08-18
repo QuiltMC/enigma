@@ -1,0 +1,8 @@
+CLASS ac
+	FIELD a floatFIeld F
+	FIELD a intField I
+	FIELD a stringField Ljava/lang/String;
+	METHOD a intMethod ()I
+	METHOD a voidMethod ()V
+	METHOD a intToIntMethod (I)I
+	METHOD a intToVoidMethod (I)V

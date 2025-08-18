@@ -1,0 +1,3 @@
+CLASS l SelfReturnType
+	METHOD a getArray ()[Ll;
+	METHOD a get (Ljava/lang/String;)Ll;

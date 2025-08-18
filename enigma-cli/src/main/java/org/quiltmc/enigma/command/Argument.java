@@ -78,8 +78,8 @@ final class Argument<T> {
 		return new Argument<>(name, BOOL_TYPE, Boolean::parseBoolean, explanation);
 	}
 
-	static Argument<Integer> ofInt(String name, Integer defaultValue, String explanation) {
-		return new Argument<>(name, INT_TYPE, integer -> parseInt(integer, defaultValue), explanation);
+	static Argument<Integer> ofInt(String name, String explanation) {
+		return new Argument<>(name, INT_TYPE, Argument::parseInt, explanation);
 	}
 
 	static Argument<String> ofString(String name, String typeDescription, String explanation) {
@@ -179,9 +179,9 @@ final class Argument<T> {
 		}
 	}
 
-	static Integer parseInt(String integer, Integer defaultValue) {
+	static Integer parseInt(String integer) {
 		if (integer == null || integer.isEmpty()) {
-			return defaultValue;
+			return null;
 		} else {
 			try {
 				return Integer.parseInt(integer);

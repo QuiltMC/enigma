@@ -1,0 +1,4 @@
+CLASS V
+	FIELD a recordInt I
+	FIELD a recordString Ljava/lang/String;
+	METHOD a ()D

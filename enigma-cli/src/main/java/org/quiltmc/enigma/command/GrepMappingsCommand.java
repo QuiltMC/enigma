@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -18,12 +19,17 @@ import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+/**
+ * TODO
+ */
 public final class GrepMappingsCommand extends Command<Required, Optionals> {
 	private static final Argument<Pattern> CLASSES = Argument.ofPattern("classes",
 			"""
@@ -53,11 +59,10 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 			"""
 			A regular expression to filter parameter type names."""
 	);
-	private static final Argument<Integer> LIMIT = Argument.ofInt("limit", -1,
+	private static final Argument<Integer> LIMIT = Argument.ofInt("limit",
 			"""
-			A limit on the number of individual results which may be displayed.
+			A limit on the number of individual results which may be displayed per result type (class, field, method, parameter).
 			The total, unlimited result count is always reported.
-			The limit is applied per-result type (class, field, method, parameter), not globally.
 			A limit of 0 causes only counts to be reported and negative limits are ignored."""
 	);
 
@@ -89,14 +94,34 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 
 	@Override
 	public String getDescription() {
-		return "Searches for class and/or member names using regular expression. "
+		return "Searches for class and/or member names using regular expressions. "
 				+ "Members can additionally be filtered by type.";
 	}
 
 	public static void run(
 			Path jar, Path mappings,
 			@Nullable Pattern classes, @Nullable Pattern methods, @Nullable Pattern fields, @Nullable Pattern parameters,
-			@Nullable Pattern methodsReturns, @Nullable Pattern fieldTypes, @Nullable Pattern paramTypes, int limit
+			@Nullable Pattern methodsReturns, @Nullable Pattern fieldTypes, @Nullable Pattern parameterTypes,
+			Integer limit
+	) throws Exception {
+		final String message = runImpl(
+				jar, mappings,
+				classes, methods, fields, parameters,
+				methodsReturns, fieldTypes, parameterTypes, limit == null ? -1 : limit
+		);
+
+		if (message.isEmpty()) {
+			Logger.warn("No matches");
+		} else {
+			Logger.info(message);
+		}
+	}
+
+	@VisibleForTesting
+	static String runImpl(
+			Path jar, Path mappings,
+			@Nullable Pattern classes, @Nullable Pattern methods, @Nullable Pattern fields, @Nullable Pattern parameters,
+			@Nullable Pattern methodsReturns, @Nullable Pattern fieldTypes, @Nullable Pattern parameterTypes, int limit
 	) throws Exception {
 		Objects.requireNonNull(jar, "jar must not be null");
 		Objects.requireNonNull(mappings, "mappings must not be null");
@@ -115,7 +140,7 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 				ResultType.FIELD, FieldEntry::getDesc
 		);
 		final Optional<Finder<LocalVariableDefEntry>> paramFinder = Finder.ofOrEmpty(
-				parameters, paramTypes, deobfuscator,
+				parameters, parameterTypes, deobfuscator,
 				ResultType.PARAM, LocalVariableDefEntry::getDesc
 		);
 
@@ -141,31 +166,36 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 				.collect(Multimaps.toMultimap(Map.Entry::getKey, Map.Entry::getValue, HashMultimap::create));
 
 		if (resultsByType.isEmpty()) {
-			Logger.warn("No matches");
+			return "";
 		} else {
-			resultsByType.asMap().forEach((type, results) -> {
-				final int resultCount = results.size();
-				final StringBuilder message = new StringBuilder("Found ").append(resultCount).append(' ')
-						.append(type.getNameForCount(resultCount));
+			return resultsByType.asMap().entrySet().stream()
+				.map(entry -> {
+					final ResultType type = entry.getKey();
+					final Collection<String> results = entry.getValue();
+					final int resultCount = results.size();
 
-				if (limit == 0) {
-					message.append('.');
-				} else {
-					final String delim = "\n\t";
-					message.append(':').append(delim);
+					final StringBuilder message = new StringBuilder("Found ").append(resultCount).append(' ')
+							.append(type.getNameForCount(resultCount));
 
-					if (limit < 0 || resultCount <= limit) {
-						message.append(String.join(delim, results));
+					if (limit == 0) {
+						message.append('.');
 					} else {
-						message.append(String.join(delim, results.stream().limit(limit).toList()));
-						final int excess = resultCount - limit;
-						message.append(delim).append("... and ").append(excess).append(" more ")
-								.append(type.getNameForCount(excess)).append('.');
-					}
-				}
+						final String delim = "\n\t";
+						message.append(':').append(delim);
 
-				Logger.info(message);
-			});
+						if (limit < 0 || resultCount <= limit) {
+							message.append(String.join(delim, results));
+						} else {
+							message.append(String.join(delim, results.stream().limit(limit).toList()));
+							final int excess = resultCount - limit;
+							message.append(delim).append("... and ").append(excess).append(" more ")
+									.append(type.getNameForCount(excess)).append('.');
+						}
+					}
+
+					return message.toString();
+				})
+				.collect(Collectors.joining("\n"));
 		}
 	}
 
@@ -271,6 +301,6 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 	record Optionals(
 			Pattern classes, Pattern methods, Pattern fields, Pattern params,
 			Pattern methodReturns, Pattern fieldTypes, Pattern paramTypes,
-			int limit
+			Integer limit
 	) { }
 }
