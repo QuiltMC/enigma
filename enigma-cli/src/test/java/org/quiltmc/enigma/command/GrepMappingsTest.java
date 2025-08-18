@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.TestUtil;
 import org.quiltmc.enigma.command.GrepMappingsCommand.ResultType;
@@ -7,6 +8,7 @@ import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -17,14 +19,42 @@ public class GrepMappingsTest {
 	private static final Path JAR = TestUtil.obfJar("complete");
 	private static final Path MAPPINGS = getResource("/grep_mappings");
 
+	// class names
 	private static final String INNER_CLASS = "InnerClass";
 	private static final String OUTER_CLASS = "OuterClass";
-
+	// method names
 	private static final String INT_TO_VOID_METHOD = "intToVoidMethod";
 	private static final String VOID_METHOD = "voidMethod";
 	private static final String INT_METHOD = "intMethod";
 	private static final String INT_TO_INT_METHOD = "intToIntMethod";
 	private static final String GET_OTHER = "getOther";
+	// field names
+	private static final String INT_FIELD = "intField";
+	private static final String FLOAT_FIELD = "floatField";
+	private static final String STRING_FIELD = "stringField";
+	// record components
+	private static final String RECORD_INT = "recordInt";
+	private static final String RECORD_STRING = "recordString";
+
+	private static final ImmutableList<String> CLASS_NAMES = ImmutableList.of(OUTER_CLASS, INNER_CLASS);
+
+	private static final ImmutableList<String> METHOD_NAMES = ImmutableList.of(
+			INT_TO_VOID_METHOD,
+			VOID_METHOD,
+			INT_METHOD,
+			INT_TO_INT_METHOD,
+			GET_OTHER,
+			RECORD_INT,
+			RECORD_STRING
+	);
+
+	private static final ImmutableList<String> FIELD_NAMES = ImmutableList.of(
+			INT_FIELD,
+			FLOAT_FIELD,
+			STRING_FIELD,
+			RECORD_INT,
+			RECORD_STRING
+	);
 
 	@Test
 	void findsClassNames() {
@@ -33,9 +63,7 @@ public class GrepMappingsTest {
 				null, null, null, null, null, null, -1
 		);
 
-		assertResultCount(found, 2, ResultType.CLASS);
-		assertContains(found, INNER_CLASS);
-		assertContains(found, OUTER_CLASS);
+		assertOnlyResults(found, ResultType.CLASS, INNER_CLASS, OUTER_CLASS);
 	}
 
 	@Test
@@ -46,93 +74,208 @@ public class GrepMappingsTest {
 				null, null, null, null, null, -1
 		);
 
-		assertResultCount(found, 4, ResultType.METHOD);
-		assertContains(found, INT_TO_VOID_METHOD);
-		assertContains(found, VOID_METHOD);
-		assertContains(found, INT_METHOD);
-		assertContains(found, INT_TO_INT_METHOD);
+		assertOnlyResults(found, ResultType.METHOD, INT_TO_VOID_METHOD, VOID_METHOD, INT_METHOD, INT_TO_INT_METHOD);
 	}
 
 	@Test
 	void findsVoidMethods() {
 		final String found = runNonEmpty(
-				null, null, null, null,
+				null, null,
 				Pattern.compile("^void$"),
-				null, null, -1
+				null, null, null, null, -1
 		);
 
-		assertResultCount(found, 2, ResultType.METHOD);
-		assertContains(found, VOID_METHOD);
-		assertContains(found, INT_TO_VOID_METHOD);
+		assertOnlyResults(found, ResultType.METHOD, VOID_METHOD, INT_TO_VOID_METHOD);
 	}
 
 	@Test
 	void findsPrimitiveMethods() {
 		final String found = runNonEmpty(
-				null, null, null, null,
+				null, null,
 				Pattern.compile("^int"),
-				null, null, -1
+				null, null, null, null, -1
 		);
 
-		assertResultCount(found, 2, ResultType.METHOD);
-		assertContains(found, INT_METHOD);
-		assertContains(found, INT_TO_INT_METHOD);
+		assertOnlyResults(found, ResultType.METHOD, INT_METHOD, INT_TO_INT_METHOD);
 	}
 
 	@Test
 	void findsTypedMethods() {
 		final String found = runNonEmpty(
-				null, null, null, null,
+				null, null,
 				Pattern.compile("^OtherReturnType$"),
-				null, null, -1
+				null, null, null, null, -1
 		);
 
-		assertResultCount(found, 1, ResultType.METHOD);
-		assertContains(found, GET_OTHER);
+		assertOnlyResults(found, ResultType.METHOD, GET_OTHER);
 	}
 
 	@Test
-	void findsMethodNamesFiltered() {
+	void findsTypeFilteredMethodNames() {
 		final String found = runNonEmpty(
 				null,
-				Pattern.compile("^intTo"),
-				null, null,
-				Pattern.compile("^void$"),
+				Pattern.compile("^intTo"), Pattern.compile("^void$"),
+				null, null, null, null, -1
+		);
+
+		assertOnlyResults(found, ResultType.METHOD, INT_TO_VOID_METHOD);
+	}
+
+	@Test
+	void findsFieldNames() {
+		final String found = runNonEmpty(
+				null, null, null,
+				Pattern.compile("Field$"),
+				null, null, null, -1
+		);
+
+		assertOnlyResults(found, ResultType.FIELD, INT_FIELD, FLOAT_FIELD, STRING_FIELD);
+	}
+
+	@Test
+	void findsPrimitiveFields() {
+		final String found = runNonEmpty(
+				null, null, null, null,
+				Pattern.compile("^int$"),
 				null, null, -1
 		);
 
-		assertResultCount(found, 1, ResultType.METHOD);
-		assertContains(found, INT_TO_VOID_METHOD);
-		assertLacks(found, VOID_METHOD);
+		assertOnlyResults(found, ResultType.FIELD, INT_FIELD, RECORD_INT);
+	}
+
+	@Test
+	void findsTypedFields() {
+		final String found = runNonEmpty(
+				null, null, null, null,
+				Pattern.compile("^java\\.lang\\.String$"),
+				null, null, -1
+		);
+
+		assertOnlyResults(found, ResultType.FIELD, STRING_FIELD, RECORD_STRING);
+	}
+
+	@Test
+	void findsTypeFilteredFieldNames() {
+		final String found = runNonEmpty(
+				null, null, null,
+				Pattern.compile("Field$"), Pattern.compile("^float$"),
+				null, null, -1
+		);
+
+		assertOnlyResults(found, ResultType.FIELD, FLOAT_FIELD);
+	}
+
+	@Test
+	void findsParamNames() {
+		// TODO
+	}
+
+	@Test
+	void findsPrimitiveParams() {
+		// TODO
+	}
+
+	@Test
+	void findsTypedParams() {
+		// TODO
+	}
+
+	@Test
+	void findsTypeFilteredParamNames() {
+		// TODO
+	}
+
+	@Test
+	void findsEverything() {
+		// TODO
+	}
+
+	@Test
+	void findsNothing() {
+		// TODO
 	}
 
 	private static String runNonEmpty(
-			@Nullable Pattern classes, @Nullable Pattern methods, @Nullable Pattern fields, @Nullable Pattern parameters,
-			@Nullable Pattern methodsReturns, @Nullable Pattern fieldTypes, @Nullable Pattern paramTypes, int limit
+			@Nullable Pattern classes,
+			@Nullable Pattern methods, @Nullable Pattern methodsReturns,
+			@Nullable Pattern fields, @Nullable Pattern fieldTypes,
+			@Nullable Pattern parameters, @Nullable Pattern parameterTypes,
+			int limit
 	) {
-		final String found = run(classes, methods, fields, parameters, methodsReturns, fieldTypes, paramTypes, limit);
+		final String found = run(classes, methods, methodsReturns, fields, fieldTypes, parameters, parameterTypes, limit);
 
 		assertFalse(found.isEmpty());
+		// log for manual confirmation of formatting
 		Logger.info(found);
 
 		return found;
 	}
 
 	private static String run(
-			@Nullable Pattern classes, @Nullable Pattern methods, @Nullable Pattern fields, @Nullable Pattern parameters,
-			@Nullable Pattern methodsReturns, @Nullable Pattern fieldTypes, @Nullable Pattern paramTypes, int limit
+			@Nullable Pattern classes,
+			@Nullable Pattern methods, @Nullable Pattern methodsReturns,
+			@Nullable Pattern fields, @Nullable Pattern fieldTypes,
+			@Nullable Pattern parameters, @Nullable Pattern parameterTypes,
+			int limit
 	) {
 		try {
 			return GrepMappingsCommand.runImpl(
-					JAR, MAPPINGS, classes, methods, methodsReturns, fields, fieldTypes, parameters, paramTypes, limit
+					JAR, MAPPINGS, classes, methods, methodsReturns, fields, fieldTypes, parameters, parameterTypes, limit
 			);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
+	@SuppressWarnings("unused")
+	private static void assertOnlyResults(String found, ResultType type) throws Throwable {
+		throw new IllegalArgumentException("No expected names specified!");
+	}
+
+	private static void assertOnlyResults(String found, ResultType type, String... expectedNames) {
+		assertOnlyResultCount(found, expectedNames.length, type);
+
+		final ImmutableList<String> names = switch (type) {
+			case CLASS -> CLASS_NAMES;
+			case METHOD -> METHOD_NAMES;
+			case FIELD -> FIELD_NAMES;
+			// TODO
+			case PARAM -> throw new AssertionError("TODO");
+		};
+
+		final Set<String> expected = Set.of(expectedNames);
+		for (final String name : names) {
+			if (expected.contains(name)) {
+				assertContains(found, name);
+			} else {
+				assertLacks(found, name);
+			}
+		}
+	}
+
+	private static void assertOnlyResultCount(String found, int count, ResultType type) {
+		for (final ResultType value : ResultType.values()) {
+			if (value == type) {
+				assertResultCount(found, count, type);
+			} else {
+				assertNoResults(found, value);
+			}
+		}
+	}
+
 	private static void assertResultCount(String found, int count, ResultType type) {
 		assertContains(found, type.buildResultHeader(new StringBuilder(), count).toString());
+	}
+
+	private static void assertNoResults(String found, ResultType... types) {
+		for (final ResultType type : types) {
+			final Pattern resultHeaderPattern = Pattern
+					.compile("Found \\d+ (?:%s|%s)".formatted(type.singleName, type.pluralName));
+			assertFalse(
+					resultHeaderPattern.matcher(found).find(),
+					() -> "Unexpected result type: " + type
+			);
+		}
 	}
 
 	private static void assertContains(String string, String part) {

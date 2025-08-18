@@ -19,6 +19,7 @@ import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -174,7 +175,7 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 		if (resultsByType.isEmpty()) {
 			return "";
 		} else {
-			return resultsByType.asMap().entrySet().stream()
+			return "\n" + resultsByType.asMap().entrySet().stream()
 				.map(entry -> {
 					final ResultType type = entry.getKey();
 					final Collection<String> results = entry.getValue();
@@ -211,12 +212,24 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 		} else if (desc.isType()) {
 			final ClassEntry obf = desc.getTypeEntry();
 			final ClassEntry deobf = deobfuscator.translate(obf);
-			return (deobf == null ? obf : deobf).getFullName();
+			return getClassName(deobf == null ? obf : deobf);
 		} else if (desc.isArray()) {
 			return getName(desc.getArrayType(), deobfuscator) + "[]".repeat(desc.getArrayDimension());
 		} else {
 			throw new IllegalStateException("TypeDescriptor is not void, primitive, type, or array: " + desc);
 		}
+	}
+
+	private static String getClassName(ClassEntry entry) {
+		final ArrayList<String> builder = new ArrayList<>();
+
+		while (entry.getParent() != null) {
+			builder.add(0, entry.getName());
+		}
+
+		builder.add(0, entry.getName().replace('/', '.'));
+
+		return String.join(".", builder);
 	}
 
 	@FunctionalInterface
@@ -289,7 +302,9 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 		FIELD("field", "fields"),
 		PARAM("param", "params");
 
+		@VisibleForTesting
 		final String singleName;
+		@VisibleForTesting
 		final String pluralName;
 
 		ResultType(String singleName, String pluralName) {

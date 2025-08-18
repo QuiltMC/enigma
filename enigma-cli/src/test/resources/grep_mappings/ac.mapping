@@ -1,5 +1,5 @@
 CLASS ac
-	FIELD a floatFIeld F
+	FIELD a floatField F
 	FIELD a intField I
 	FIELD a stringField Ljava/lang/String;
 	METHOD a intMethod ()I
