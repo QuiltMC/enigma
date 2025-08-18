@@ -13,6 +13,16 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * Represents an argument for a {@link Command}.
+ *
+ * <p> Contains the argument's name and other details, along with the logic to parse it from a string.<br>
+ * If parsing fails in a predictable way, an {@link IllegalArgumentException} should be thrown.
+ * Note that whether an argument is required is decided per-command; argument parsing should <em>not</em> throw
+ * exceptions when the argument is missing. Instead it should return {@code null}.
+ *
+ * @param <T> the type of the argument
+ */
 final class Argument<T> {
 	static final char SEPARATOR = ' ';
 	static final char NAME_DELIM = '=';
@@ -46,7 +56,7 @@ final class Argument<T> {
 	}
 
 	/**
-	 * Creates a string argument whose {@code typeDescription} lists its allowed values.
+	 * Creates a string argument whose {@code typeDescription} lists expected values.
 	 */
 	static Argument<String> ofLenientEnum(String name, Class<? extends Enum<?>> type, String explanation) {
 		final String alternatives = Arrays.stream(type.getEnumConstants())
@@ -74,9 +84,8 @@ final class Argument<T> {
 	 * <p> See static factory methods for common argument types.
 	 *
 	 * @param name the name of the argument; may not contain any space or {@value #NAME_DELIM} characters
-	 * @param typeDescription a short description of the type of value to expect; by convention these are in kebab-case
-	 * 							except for {@link #ofLenientEnum(String, Class, String) enums} and
-	 * 							{@link #ofBool(String, String) booleans}
+	 * @param typeDescription a short description of the type of value to expect; conventional descriptions are in
+	 *                          kebab-case with alternatives separated by {@value ALTERNATIVES_DELIM}
 	 * @param explanation an extended explanation of what the argument accepts and what it's for
 	 */
 	Argument(String name, String typeDescription, Function<String, T> fromString, String explanation) {
