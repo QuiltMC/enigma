@@ -2,7 +2,6 @@ package org.quiltmc.enigma.gui.dialog;
 
 import org.quiltmc.enigma.api.stats.GenerationParameters;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
-import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
@@ -32,19 +31,23 @@ public class StatsDialog {
 		StatsGenerator generator = gui.getController().getStatsGenerator();
 		ProjectStatsResult nullableResult = generator.getResultNullable();
 
-		if (nullableResult == null) {
-			ProgressDialog.runOffThread(gui, listener -> {
-				// hook into current stat generation progress
-				if (generator.getOverallProgress() != null) {
-					listener.sync(generator.getOverallProgress());
-				}
-
-				ProjectStatsResult result = gui.getController().getStatsGenerator().getResult(new GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes())));
-				SwingUtilities.invokeLater(() -> show(gui, result, ""));
-			});
+		if (nullableResult == null || !nullableResult.getOverall().getTypes().equals(gui.getEditableStatTypes())) {
+			generateAndShow(gui, generator);
 		} else {
 			SwingUtilities.invokeLater(() -> show(gui, nullableResult, ""));
 		}
+	}
+
+	public static void generateAndShow(Gui gui, StatsGenerator generator) {
+		ProgressDialog.runOffThread(gui, listener -> {
+			// hook into current stat generation progress
+			if (generator.getOverallProgress() != null) {
+				listener.sync(generator.getOverallProgress());
+			}
+
+			ProjectStatsResult result = generator.getResult(new GenerationParameters(gui.getEditableStatTypes()));
+			SwingUtilities.invokeLater(() -> show(gui, result, ""));
+		});
 	}
 
 	public static void show(Gui gui, ProjectStatsResult result, String packageName) {
@@ -104,7 +107,7 @@ public class StatsDialog {
 				String topLevelPackageSlashes = topLevelPackage.getText().replace('.', '/');
 				Config.main().stats.lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
 
-				GenerationParameters parameters = new GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes()), syntheticParametersOption.isSelected(), countFallbackOption.isSelected());
+				GenerationParameters parameters = new GenerationParameters(gui.getEditableStatTypes(), syntheticParametersOption.isSelected(), countFallbackOption.isSelected());
 				StatsGenerator generator = gui.getController().getStatsGenerator();
 				ProjectStatsResult projectResult = generator.getResult(parameters).filter(topLevelPackageSlashes);
 

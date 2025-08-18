@@ -8,6 +8,8 @@ import org.quiltmc.config.api.values.ValueList;
 import org.quiltmc.enigma.api.stats.StatType;
 
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 
 @SerializedNameConvention(NamingSchemes.SNAKE_CASE)
 public class StatsSection extends ReflectiveConfig.Section {
@@ -17,4 +19,10 @@ public class StatsSection extends ReflectiveConfig.Section {
 	public final TrackedValue<ValueList<StatType>> includedStatTypes = this.list(StatType.CLASSES, EnumSet.allOf(StatType.class).toArray(StatType[]::new));
 	public final TrackedValue<Boolean> shouldIncludeSyntheticParameters = this.value(false);
 	public final TrackedValue<Boolean> shouldCountFallbackNames = this.value(false);
+
+	public Set<StatType> getIncludedTypesForIcons(Set<StatType> editableTypes) {
+		var types = new HashSet<>(editableTypes);
+		types.removeIf(type -> !this.includedStatTypes.value().contains(type));
+		return types;
+	}
 }

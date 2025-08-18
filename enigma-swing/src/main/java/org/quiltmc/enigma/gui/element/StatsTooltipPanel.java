@@ -10,6 +10,7 @@ import org.quiltmc.enigma.util.I18n;
 import javax.swing.JPanel;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 public abstract class StatsTooltipPanel extends JPanel {
 	private final GuiController controller;
@@ -31,11 +32,15 @@ public abstract class StatsTooltipPanel extends JPanel {
 			StatsResult stats = this.getStats(generator);
 
 			if ((event.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
-				for (int i = 0; i < StatType.values().length; i++) {
-					StatType type = StatType.values()[i];
-					if (Config.stats().includedStatTypes.value().contains(type)) {
-						text.append(type.getName()).append(": ").append(stats.toString(type)).append(i == StatType.values().length - 1 ? "" : "\n");
-					}
+				var includedTypes = new ArrayList<>(Config.stats().getIncludedTypesForIcons(this.controller.getGui().getEditableStatTypes()));
+
+				for (int i = 0; i < includedTypes.size(); i++) {
+					StatType type = includedTypes.get(i);
+					text
+						.append(type.getName())
+						.append(": ")
+						.append(stats.toString(type))
+						.append(i == includedTypes.size() - 1 ? "" : "\n");
 				}
 			} else {
 				text.append(stats);
