@@ -37,10 +37,10 @@ public abstract class StatsTooltipPanel extends JPanel {
 				for (int i = 0; i < includedTypes.size(); i++) {
 					StatType type = includedTypes.get(i);
 					text
-						.append(type.getName())
-						.append(": ")
-						.append(stats.toString(type))
-						.append(i == includedTypes.size() - 1 ? "" : "\n");
+							.append(type.getName())
+							.append(": ")
+							.append(stats.toString(type))
+							.append(i == includedTypes.size() - 1 ? "" : "\n");
 				}
 			} else {
 				text.append(stats);
