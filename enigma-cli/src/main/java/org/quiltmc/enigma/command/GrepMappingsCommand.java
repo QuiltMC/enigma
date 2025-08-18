@@ -83,7 +83,8 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 		run(
 				required.inputJar, required.inputMappings,
 				optionals.classes, optionals.methods, optionals.fields, optionals.params,
-				optionals.methodReturns, optionals.fieldTypes, optionals.paramTypes, optionals.limit
+				optionals.methodReturns, optionals.fieldTypes, optionals.paramTypes,
+				optionals.limit == null ? -1 : optionals.limit
 		);
 	}
 
@@ -102,12 +103,12 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 			Path jar, Path mappings,
 			@Nullable Pattern classes, @Nullable Pattern methods, @Nullable Pattern fields, @Nullable Pattern parameters,
 			@Nullable Pattern methodsReturns, @Nullable Pattern fieldTypes, @Nullable Pattern parameterTypes,
-			Integer limit
+			int limit
 	) throws Exception {
 		final String message = runImpl(
 				jar, mappings,
 				classes, methods, fields, parameters,
-				methodsReturns, fieldTypes, parameterTypes, limit == null ? -1 : limit
+				methodsReturns, fieldTypes, parameterTypes, limit
 		);
 
 		if (message.isEmpty()) {
@@ -172,10 +173,8 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 				.map(entry -> {
 					final ResultType type = entry.getKey();
 					final Collection<String> results = entry.getValue();
-					final int resultCount = results.size();
 
-					final StringBuilder message = new StringBuilder("Found ").append(resultCount).append(' ')
-							.append(type.getNameForCount(resultCount));
+					final StringBuilder message = type.buildResultHeader(new StringBuilder(), results.size());
 
 					if (limit == 0) {
 						message.append('.');
@@ -183,11 +182,11 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 						final String delim = "\n\t";
 						message.append(':').append(delim);
 
-						if (limit < 0 || resultCount <= limit) {
+						if (limit < 0 || results.size() <= limit) {
 							message.append(String.join(delim, results));
 						} else {
 							message.append(String.join(delim, results.stream().limit(limit).toList()));
-							final int excess = resultCount - limit;
+							final int excess = results.size() - limit;
 							message.append(delim).append("... and ").append(excess).append(" more ")
 									.append(type.getNameForCount(excess)).append('.');
 						}
@@ -278,7 +277,8 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 		}
 	}
 
-	private enum ResultType {
+	@VisibleForTesting
+	enum ResultType {
 		CLASS("class", "classes"),
 		METHOD("method", "methods"),
 		FIELD("field", "fields"),
@@ -292,8 +292,14 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 			this.pluralName = pluralName;
 		}
 
-		String getNameForCount(int resultCount) {
+		private String getNameForCount(int resultCount) {
 			return resultCount == 1 ? this.singleName : this.pluralName;
+		}
+
+		@VisibleForTesting
+		StringBuilder buildResultHeader(StringBuilder message, int count) {
+			return message.append("Found ").append(count)
+				.append(' ').append(this.getNameForCount(count));
 		}
 	}
 
