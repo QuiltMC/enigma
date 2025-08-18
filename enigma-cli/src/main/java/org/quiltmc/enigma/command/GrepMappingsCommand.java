@@ -72,7 +72,7 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 		super(
 				ArgsParser.of(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS, Required::new),
 				ArgsParser.of(
-					CLASSES, METHODS, FIELDS, PARAMS, METHOD_RETURNS, FIELD_TYPES, PARAM_TYPES, LIMIT,
+					CLASSES, METHODS, METHOD_RETURNS, FIELDS, FIELD_TYPES, PARAMS, PARAM_TYPES, LIMIT,
 					Optionals::new
 				)
 		);
@@ -82,8 +82,8 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 	void runImpl(Required required, Optionals optionals) throws Exception {
 		run(
 				required.inputJar, required.inputMappings,
-				optionals.classes, optionals.methods, optionals.fields, optionals.params,
-				optionals.methodReturns, optionals.fieldTypes, optionals.paramTypes,
+				optionals.classes, optionals.methods, optionals.methodReturns, optionals.fields, optionals.fieldTypes, optionals.params,
+				optionals.paramTypes,
 				optionals.limit == null ? -1 : optionals.limit
 		);
 	}
@@ -101,14 +101,16 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 
 	public static void run(
 			Path jar, Path mappings,
-			@Nullable Pattern classes, @Nullable Pattern methods, @Nullable Pattern fields, @Nullable Pattern parameters,
-			@Nullable Pattern methodsReturns, @Nullable Pattern fieldTypes, @Nullable Pattern parameterTypes,
+			@Nullable Pattern classes,
+			@Nullable Pattern methods, @Nullable Pattern methodsReturns,
+			@Nullable Pattern fields, @Nullable Pattern fieldTypes,
+			@Nullable Pattern parameters, @Nullable Pattern parameterTypes,
 			int limit
 	) throws Exception {
 		final String message = runImpl(
 				jar, mappings,
-				classes, methods, fields, parameters,
-				methodsReturns, fieldTypes, parameterTypes, limit
+				classes, methods, methodsReturns, fields, fieldTypes, parameters,
+				parameterTypes, limit
 		);
 
 		if (message.isEmpty()) {
@@ -121,8 +123,11 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 	@VisibleForTesting
 	static String runImpl(
 			Path jar, Path mappings,
-			@Nullable Pattern classes, @Nullable Pattern methods, @Nullable Pattern fields, @Nullable Pattern parameters,
-			@Nullable Pattern methodsReturns, @Nullable Pattern fieldTypes, @Nullable Pattern parameterTypes, int limit
+			@Nullable Pattern classes,
+			@Nullable Pattern methods, @Nullable Pattern methodsReturns,
+			@Nullable Pattern fields, @Nullable Pattern fieldTypes,
+			@Nullable Pattern parameters, @Nullable Pattern parameterTypes,
+			int limit
 	) throws Exception {
 		Objects.requireNonNull(jar, "jar must not be null");
 		Objects.requireNonNull(mappings, "mappings must not be null");
@@ -305,8 +310,10 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 
 	record Required(Path inputJar, Path inputMappings) { }
 	record Optionals(
-			Pattern classes, Pattern methods, Pattern fields, Pattern params,
-			Pattern methodReturns, Pattern fieldTypes, Pattern paramTypes,
+			Pattern classes,
+			Pattern methods, Pattern methodReturns,
+			Pattern fields, Pattern fieldTypes,
+			Pattern params, Pattern paramTypes,
 			Integer limit
 	) { }
 }

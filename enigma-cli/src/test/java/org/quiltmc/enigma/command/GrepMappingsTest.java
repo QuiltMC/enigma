@@ -124,7 +124,7 @@ public class GrepMappingsTest {
 	) {
 		try {
 			return GrepMappingsCommand.runImpl(
-				JAR, MAPPINGS, classes, methods, fields, parameters, methodsReturns, fieldTypes, paramTypes, limit
+					JAR, MAPPINGS, classes, methods, methodsReturns, fields, fieldTypes, parameters, paramTypes, limit
 			);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
