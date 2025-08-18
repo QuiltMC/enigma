@@ -86,7 +86,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -219,11 +218,17 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public CompletableFuture<Void> saveMappings(Path path) {
-		return this.saveMappings(path, this.readWriteService);
+		return this.saveMappings(path, false);
+	}
+
+	public CompletableFuture<Void> saveMappings(Path path, boolean background) {
+		return this.saveMappings(path, this.readWriteService, background);
 	}
 
 	/**
-	 * Saves the mappings, with a dialog popping up, showing the progress.
+	 * Saves the mappings. If {@code background} is false, a dialog will pop up
+	 * showing the progress. Otherwise, the progress will be shown in the
+	 * status bar.
 	 *
 	 * <p>Notice the returned completable future has to be completed by
 	 * {@link SwingUtilities#invokeLater(Runnable)}. Hence, do not try to
@@ -231,33 +236,47 @@ public class GuiController implements ClientPacketHandler {
 	 *
 	 * @param path the path of the save
 	 * @param service the writer for the mapping type
+	 * @param background whether the progress should be shown in the status bar
 	 * @return the future of saving
 	 */
-	public CompletableFuture<Void> saveMappings(Path path, ReadWriteService service) {
+	public CompletableFuture<Void> saveMappings(Path path, ReadWriteService service, boolean background) {
 		if (this.project == null) {
 			return CompletableFuture.completedFuture(null);
 		} else if (!service.supportsWriting()) {
-			String nonWriteableMessage = I18n.translateFormatted("menu.file.save.non_writeable", I18n.translate("mapping_format." + service.getId().toLowerCase(Locale.ROOT)));
+			String nonWriteableMessage = I18n.translateFormatted("menu.file.save.non_writeable", I18n.translate("mapping_format." + service.getId().split(":")[1].toLowerCase()));
 			JOptionPane.showMessageDialog(this.gui.getFrame(), nonWriteableMessage, I18n.translate("menu.file.save.cannot_save"), JOptionPane.ERROR_MESSAGE);
 			return CompletableFuture.completedFuture(null);
 		}
 
-		return ProgressDialog.runOffThread(this.gui, progress -> {
-			EntryRemapper mapper = this.project.getRemapper();
-			MappingSaveParameters saveParameters = this.enigma.getProfile().getMappingSaveParameters();
+		if (background) {
+			return CompletableFuture.supplyAsync(() -> {
+				ProgressListener progress = ProgressListener.createEmpty();
+				this.gui.getMainWindow().getStatusBar().syncWith(progress);
+				this.doSave(path, service, progress);
+				return null;
+			});
+		} else {
+			return ProgressDialog.runOffThread(this.gui, progress -> {
+				this.doSave(path, service, progress);
+			});
+		}
+	}
 
-			MappingDelta<EntryMapping> delta = mapper.takeMappingDelta();
-			boolean saveAll = !path.equals(this.loadedMappingPath);
+	private void doSave(Path path, ReadWriteService service, ProgressListener progress) {
+		EntryRemapper mapper = this.project.getRemapper();
+		MappingSaveParameters saveParameters = this.enigma.getProfile().getMappingSaveParameters();
 
-			this.readWriteService = service;
-			this.loadedMappingPath = path;
+		MappingDelta<EntryMapping> delta = mapper.takeMappingDelta();
+		boolean saveAll = !path.equals(this.loadedMappingPath);
 
-			if (saveAll) {
-				service.write(mapper.getMappings(), path, progress, saveParameters);
-			} else {
-				service.write(mapper.getMappings(), delta, path, progress, saveParameters);
-			}
-		});
+		this.readWriteService = service;
+		this.loadedMappingPath = path;
+
+		if (saveAll) {
+			service.write(mapper.getMappings(), path, progress, saveParameters);
+		} else {
+			service.write(mapper.getMappings(), delta, path, progress, saveParameters);
+		}
 	}
 
 	public void closeMappings() {

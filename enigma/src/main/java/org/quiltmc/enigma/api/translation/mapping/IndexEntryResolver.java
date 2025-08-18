@@ -13,6 +13,7 @@ import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.tinylog.Logger;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -125,11 +126,16 @@ public class IndexEntryResolver implements EntryResolver {
 		if (entry instanceof MethodEntry methodEntry) {
 			MethodEntry bridgeMethod = this.bridgeMethodIndex.getBridgeFromSpecialized(methodEntry);
 			if (bridgeMethod != null && ownerClass.equals(bridgeMethod.getParent())) {
-				Set<Entry<ClassEntry>> resolvedBridge = this.resolveEntryInAncestry(bridgeMethod, strategy, skipStatic);
-				if (!resolvedBridge.isEmpty()) {
-					return resolvedBridge;
+				if (bridgeMethod != methodEntry) {
+					Set<Entry<ClassEntry>> resolvedBridge = this.resolveEntryInAncestry(bridgeMethod, strategy, skipStatic);
+					if (!resolvedBridge.isEmpty()) {
+						return resolvedBridge;
+					} else {
+						return Collections.singleton(bridgeMethod);
+					}
 				} else {
-					return Collections.singleton(bridgeMethod);
+					// TODO: Find out cause?
+					Logger.warn("Bridge method for {} is itself!", methodEntry);
 				}
 			}
 		}

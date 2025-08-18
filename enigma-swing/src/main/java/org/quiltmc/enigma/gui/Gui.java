@@ -524,7 +524,7 @@ public class Gui {
 				}
 
 				return null;
-			}, I18n.translate("prompt.save"), I18n.translate("prompt.close.discard"), I18n.translate("prompt.cancel"));
+			}, I18n.translate("prompt.close.save"), I18n.translate("prompt.close.discard"), I18n.translate("prompt.cancel"));
 		}
 	}
 

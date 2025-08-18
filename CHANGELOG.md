@@ -352,3 +352,17 @@ The latest release of everyone's favourite program features major upgrades to bo
 day two bugfix release for my all name proposal girlies out there in the world
 
 - fix an NPE that could occur when proposing a null mapping
+
+# 2.6.2
+
+A wealth of bugfixes brought to you by rai, iota, and friends. You'll be rich. Take my hand.
+
+- fixed CFR and vineflower not allowing renames on methods named 'new'
+- fixed renames being started when pressing non-letter keys such as escape while hovering an entry (thanks [pitheguy](https://github.com/PiTheGuy)!)
+- fixed inheritance for JRE classes not being indexed
+- fixed a possible stack overflow in `IndexEntryResolver`
+- fixed an issue with similarly-named classes causing the token highlighter to explode (thanks [pitheguy](https://github.com/PiTheGuy)!)
+- fixed translations for mapping formats not properly displaying
+- fixed deobfuscation level icons not immediately updating after stat generation completes (thanks [pitheguy](https://github.com/PiTheGuy)!)
+- improved wording of some save dialogs (thanks [pitheguy](https://github.com/PiTheGuy)!)
+- improved `PackageIndex` javadoc
