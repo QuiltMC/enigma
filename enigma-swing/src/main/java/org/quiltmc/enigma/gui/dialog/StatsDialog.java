@@ -86,17 +86,17 @@ public class StatsDialog {
 		contentPane.add(topLevelPackageOption, cb1.pos(0, result.getOverall().getTypes().size() + 1).build());
 
 		JTextField topLevelPackage = new JTextField();
-		topLevelPackage.setText(Config.main().stats.lastTopLevelPackage.value());
+		topLevelPackage.setText(Config.stats().lastTopLevelPackage.value());
 		contentPane.add(topLevelPackage, cb1.pos(0, result.getOverall().getTypes().size() + 2).fill(GridBagConstraints.HORIZONTAL).build());
 
 		// show synthetic members option
 		JCheckBox syntheticParametersOption = new JCheckBox(I18n.translate("menu.file.stats.synthetic_parameters"));
-		syntheticParametersOption.setSelected(Config.main().stats.shouldIncludeSyntheticParameters.value());
+		syntheticParametersOption.setSelected(Config.stats().shouldIncludeSyntheticParameters.value());
 		contentPane.add(syntheticParametersOption, cb1.pos(0, result.getOverall().getTypes().size() + 4).build());
 
 		// show synthetic members option
 		JCheckBox countFallbackOption = new JCheckBox(I18n.translate("menu.file.stats.count_fallback"));
-		countFallbackOption.setSelected(Config.main().stats.shouldCountFallbackNames.value());
+		countFallbackOption.setSelected(Config.stats().shouldCountFallbackNames.value());
 		contentPane.add(countFallbackOption, cb1.pos(0, result.getOverall().getTypes().size() + 3).build());
 
 		// show filter button
@@ -105,7 +105,7 @@ public class StatsDialog {
 			dialog.dispose();
 			ProgressDialog.runOffThread(gui, listener -> {
 				String topLevelPackageSlashes = topLevelPackage.getText().replace('.', '/');
-				Config.main().stats.lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
+				Config.stats().lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
 
 				GenerationParameters parameters = new GenerationParameters(gui.getEditableStatTypes(), syntheticParametersOption.isSelected(), countFallbackOption.isSelected());
 				StatsGenerator generator = gui.getController().getStatsGenerator();
@@ -122,7 +122,7 @@ public class StatsDialog {
 		button.addActionListener(action -> {
 			dialog.dispose();
 
-			Config.main().stats.lastTopLevelPackage.setValue(topLevelPackage.getText());
+			Config.stats().lastTopLevelPackage.setValue(topLevelPackage.getText());
 
 			generateStats(gui, checkboxes);
 		});
