@@ -37,6 +37,7 @@ public class GrepMappingsTest {
 	private static final String STRING_PARAM = "stringParam";
 	private static final String INT_PARAM = "intParam";
 	private static final String CONSTRUCTOR_INT_PARAM = "constructorIntParam";
+	private static final String CONSTRUCTOR_PARAM_STRING = "constructorParamString";
 	// record components
 	private static final String RECORD_INT = "recordInt";
 	private static final String RECORD_STRING = "recordString";
@@ -67,7 +68,8 @@ public class GrepMappingsTest {
 			TYPED_PARAM,
 			STRING_PARAM,
 			INT_PARAM,
-			CONSTRUCTOR_INT_PARAM
+			CONSTRUCTOR_INT_PARAM,
+			CONSTRUCTOR_PARAM_STRING
 	);
 
 	@Test
@@ -216,11 +218,11 @@ public class GrepMappingsTest {
 	void findsTypeFilteredParamNames() {
 		final String found = runNonEmpty(
 				null, null, null, null, null,
-				Pattern.compile("^string"), Pattern.compile("^(int|java\\.lang\\.String)$"),
+				Pattern.compile("^constructor"), Pattern.compile("^java\\.lang\\.String$"),
 				-1
 		);
 
-		assertOnlyResults(found, ResultType.PARAM, STRING_PARAM);
+		assertOnlyResults(found, ResultType.PARAM, CONSTRUCTOR_PARAM_STRING);
 	}
 
 	@Test
@@ -258,7 +260,12 @@ public class GrepMappingsTest {
 	) {
 		try {
 			return GrepMappingsCommand.runImpl(
-					JAR, MAPPINGS, classes, methods, methodsReturns, fields, fieldTypes, parameters, parameterTypes, limit
+					JAR, MAPPINGS,
+					classes,
+					methods, methodsReturns,
+					fields, fieldTypes,
+					parameters, parameterTypes,
+					limit
 			);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
