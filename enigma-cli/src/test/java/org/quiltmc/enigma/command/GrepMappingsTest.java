@@ -32,6 +32,11 @@ public class GrepMappingsTest {
 	private static final String INT_FIELD = "intField";
 	private static final String FLOAT_FIELD = "floatField";
 	private static final String STRING_FIELD = "stringField";
+	// param names
+	private static final String TYPED_PARAM = "typedParam";
+	private static final String STRING_PARAM = "stringParam";
+	private static final String INT_PARAM = "intParam";
+	private static final String CONSTRUCTOR_INT_PARAM = "constructorIntParam";
 	// record components
 	private static final String RECORD_INT = "recordInt";
 	private static final String RECORD_STRING = "recordString";
@@ -54,6 +59,15 @@ public class GrepMappingsTest {
 			STRING_FIELD,
 			RECORD_INT,
 			RECORD_STRING
+	);
+
+	// Does not include RECORD_INT or RECORD_STRING because EntryIndex doesn't see canonical record constructors.
+	// They can be found through their fields or getters instead.
+	private static final ImmutableList<String> PARAM_NAMES = ImmutableList.of(
+			TYPED_PARAM,
+			STRING_PARAM,
+			INT_PARAM,
+			CONSTRUCTOR_INT_PARAM
 	);
 
 	@Test
@@ -167,22 +181,46 @@ public class GrepMappingsTest {
 
 	@Test
 	void findsParamNames() {
-		// TODO
+		final String found = runNonEmpty(
+				null, null, null, null, null,
+				Pattern.compile("Param$"),
+				null, -1
+		);
+
+		assertOnlyResults(found, ResultType.PARAM, TYPED_PARAM, STRING_PARAM, INT_PARAM, CONSTRUCTOR_INT_PARAM);
 	}
 
 	@Test
 	void findsPrimitiveParams() {
-		// TODO
+		final String found = runNonEmpty(
+				null, null, null, null, null, null,
+				Pattern.compile("^int$"),
+				-1
+		);
+
+		assertOnlyResults(found, ResultType.PARAM, INT_PARAM, CONSTRUCTOR_INT_PARAM);
 	}
 
 	@Test
 	void findsTypedParams() {
-		// TODO
+		final String found = runNonEmpty(
+				null, null, null, null, null, null,
+				Pattern.compile("^ParamType$"),
+				-1
+		);
+
+		assertOnlyResults(found, ResultType.PARAM, TYPED_PARAM);
 	}
 
 	@Test
 	void findsTypeFilteredParamNames() {
-		// TODO
+		final String found = runNonEmpty(
+				null, null, null, null, null,
+				Pattern.compile("^string"), Pattern.compile("^(int|java\\.lang\\.String)$"),
+				-1
+		);
+
+		assertOnlyResults(found, ResultType.PARAM, STRING_PARAM);
 	}
 
 	@Test
@@ -204,7 +242,7 @@ public class GrepMappingsTest {
 	) {
 		final String found = run(classes, methods, methodsReturns, fields, fieldTypes, parameters, parameterTypes, limit);
 
-		assertFalse(found.isEmpty());
+		assertFalse(found.isEmpty(), "Unexpected empty result!");
 		// log for manual confirmation of formatting
 		Logger.info(found);
 
@@ -232,16 +270,21 @@ public class GrepMappingsTest {
 		throw new IllegalArgumentException("No expected names specified!");
 	}
 
+	/**
+	 * Asserts that the passed {@code expectedNames} are the only results in the passed {@code found} string.
+	 */
 	private static void assertOnlyResults(String found, ResultType type, String... expectedNames) {
 		assertOnlyResultCount(found, expectedNames.length, type);
+		assertOnlyContains(found, type, expectedNames);
+	}
 
-		final ImmutableList<String> names = switch (type) {
-			case CLASS -> CLASS_NAMES;
-			case METHOD -> METHOD_NAMES;
-			case FIELD -> FIELD_NAMES;
-			// TODO
-			case PARAM -> throw new AssertionError("TODO");
-		};
+	/**
+	 * Asserts that, of the known names of the passes {@code type}, only the passed {@code expectedNames} appear in
+	 * the passed {@code found} string.<br>
+	 * Does not assert any total result counts.
+	 */
+	private static void assertOnlyContains(String found, ResultType type, String... expectedNames) {
+		final ImmutableList<String> names = getNames(type);
 
 		final Set<String> expected = Set.of(expectedNames);
 		for (final String name : names) {
@@ -251,6 +294,15 @@ public class GrepMappingsTest {
 				assertLacks(found, name);
 			}
 		}
+	}
+
+	private static ImmutableList<String> getNames(ResultType type) {
+		return switch (type) {
+			case CLASS -> CLASS_NAMES;
+			case METHOD -> METHOD_NAMES;
+			case FIELD -> FIELD_NAMES;
+			case PARAM -> PARAM_NAMES;
+		};
 	}
 
 	private static void assertOnlyResultCount(String found, int count, ResultType type) {
@@ -275,6 +327,28 @@ public class GrepMappingsTest {
 					resultHeaderPattern.matcher(found).find(),
 					() -> "Unexpected result type: " + type
 			);
+		}
+	}
+
+	@SuppressWarnings("unused")
+	private static void assertContainsAll(String found) throws Throwable {
+		throw new IllegalArgumentException("No expected names specified!");
+	}
+
+	private static void assertContainsAll(String string, String... parts) {
+		for (final String name : parts) {
+			assertContains(string, name);
+		}
+	}
+
+	@SuppressWarnings("unused")
+	private static void assertLacksAll(String found) throws Throwable {
+		throw new IllegalArgumentException("No expected names specified!");
+	}
+
+	private static void assertLacksAll(String string, String... parts) {
+		for (final String part : parts) {
+			assertLacks(string, part);
 		}
 	}
 

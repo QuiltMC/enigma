@@ -1,0 +1,3 @@
+CLASS r
+	METHOD a (Lt;)V
+		ARG 0 typedParam
