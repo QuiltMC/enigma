@@ -22,6 +22,11 @@ public class GrepMappingsTest {
 	// class names
 	private static final String INNER_CLASS = "InnerClass";
 	private static final String OUTER_CLASS = "OuterClass";
+	private static final String OTHER_RETURN_TYPE = "OtherReturnType";
+	private static final String INNER_FIELD_TYPE = "InnerFieldType";
+	private static final String PARAM_TYPE = "ParamType";
+	private static final String SELF_RETURN_TYPE = "SelfReturnType";
+
 	// method names
 	private static final String INT_TO_VOID_METHOD = "intToVoidMethod";
 	private static final String VOID_METHOD = "voidMethod";
@@ -42,7 +47,14 @@ public class GrepMappingsTest {
 	private static final String RECORD_INT = "recordInt";
 	private static final String RECORD_STRING = "recordString";
 
-	private static final ImmutableList<String> CLASS_NAMES = ImmutableList.of(OUTER_CLASS, INNER_CLASS);
+	private static final ImmutableList<String> CLASS_NAMES = ImmutableList.of(
+			OUTER_CLASS,
+			INNER_CLASS,
+			OTHER_RETURN_TYPE,
+			INNER_FIELD_TYPE,
+			PARAM_TYPE,
+			SELF_RETURN_TYPE
+	);
 
 	private static final ImmutableList<String> METHOD_NAMES = ImmutableList.of(
 			INT_TO_VOID_METHOD,
@@ -226,8 +238,33 @@ public class GrepMappingsTest {
 	}
 
 	@Test
-	void findsEverything() {
-		// TODO
+	void findsEverythingAndLimitable() {
+		final Pattern anything = Pattern.compile(".*");
+		final String found = runNonEmpty(
+				anything,
+				anything, anything,
+				anything, anything,
+				anything, anything,
+				-1
+		);
+
+		final String limitedFound = runNonEmpty(
+			anything,
+			anything, anything,
+			anything, anything,
+			anything, anything,
+			0
+		);
+
+		for (final ResultType type : ResultType.values()) {
+			final String[] names = getNames(type).toArray(String[]::new);
+			assertOnlyResultsOfType(found, type, names);
+
+			assertResultCount(limitedFound, names.length, type);
+			for (final String name : names) {
+				assertLacks(limitedFound, name);
+			}
+		}
 	}
 
 	@Test
@@ -282,7 +319,16 @@ public class GrepMappingsTest {
 	 */
 	private static void assertOnlyResults(String found, ResultType type, String... expectedNames) {
 		assertOnlyResultCount(found, expectedNames.length, type);
-		assertOnlyContains(found, type, expectedNames);
+		assertExclusiveResults(found, type, expectedNames);
+	}
+
+	/**
+	 * Asserts that the passed {@code expectedNames} are the only results of the passed {@code type} in the passed
+	 * {@code found} string.
+	 */
+	private static void assertOnlyResultsOfType(String found, ResultType type, String... expectedNames) {
+		assertResultCount(found, expectedNames.length, type);
+		assertExclusiveResults(found, type, expectedNames);
 	}
 
 	/**
@@ -290,7 +336,7 @@ public class GrepMappingsTest {
 	 * the passed {@code found} string.<br>
 	 * Does not assert any total result counts.
 	 */
-	private static void assertOnlyContains(String found, ResultType type, String... expectedNames) {
+	private static void assertExclusiveResults(String found, ResultType type, String... expectedNames) {
 		final ImmutableList<String> names = getNames(type);
 
 		final Set<String> expected = Set.of(expectedNames);
@@ -334,28 +380,6 @@ public class GrepMappingsTest {
 					resultHeaderPattern.matcher(found).find(),
 					() -> "Unexpected result type: " + type
 			);
-		}
-	}
-
-	@SuppressWarnings("unused")
-	private static void assertContainsAll(String found) throws Throwable {
-		throw new IllegalArgumentException("No expected names specified!");
-	}
-
-	private static void assertContainsAll(String string, String... parts) {
-		for (final String name : parts) {
-			assertContains(string, name);
-		}
-	}
-
-	@SuppressWarnings("unused")
-	private static void assertLacksAll(String found) throws Throwable {
-		throw new IllegalArgumentException("No expected names specified!");
-	}
-
-	private static void assertLacksAll(String string, String... parts) {
-		for (final String part : parts) {
-			assertLacks(string, part);
 		}
 	}
 
