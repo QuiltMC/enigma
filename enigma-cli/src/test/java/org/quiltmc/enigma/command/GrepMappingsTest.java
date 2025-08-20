@@ -249,11 +249,11 @@ public class GrepMappingsTest {
 		);
 
 		final String limitedFound = runNonEmpty(
-			anything,
-			anything, anything,
-			anything, anything,
-			anything, anything,
-			0
+				anything,
+				anything, anything,
+				anything, anything,
+				anything, anything,
+				0
 		);
 
 		for (final ResultType type : ResultType.values()) {
@@ -269,7 +269,16 @@ public class GrepMappingsTest {
 
 	@Test
 	void findsNothing() {
-		// TODO
+		final Pattern unmatchable = Pattern.compile(" ");
+		final String found = run(
+				unmatchable,
+				unmatchable, unmatchable,
+				unmatchable, unmatchable,
+				unmatchable, unmatchable,
+				-1
+		);
+
+		assertTrue(found.isEmpty(), "Expected to find empty string!");
 	}
 
 	private static String runNonEmpty(
