@@ -52,7 +52,7 @@ record PredicateParser<E, O>(Function<String, E> elementParser, BiPredicate<E, O
 
 					priorToken = switch (priorToken) {
 						case AND -> throw consecutiveTokensErrorOf(Token.AND, Token.AND, i);
-                        case OR -> throw consecutiveTokensErrorOf(Token.OR, Token.AND, i);
+						case OR -> throw consecutiveTokensErrorOf(Token.OR, Token.AND, i);
 						case NOT, AND_NOT, OR_NOT -> throw consecutiveTokensErrorOf(Token.NOT, Token.AND, i);
 						case OPEN -> throw consecutiveTokensErrorOf(Token.OPEN, Token.AND, i);
 						case CLOSE, ELEMENT -> Token.AND;
@@ -68,7 +68,7 @@ record PredicateParser<E, O>(Function<String, E> elementParser, BiPredicate<E, O
 
 					priorToken = switch (priorToken) {
 						case AND -> throw consecutiveTokensErrorOf(Token.AND, Token.OR, i);
-                        case OR -> throw consecutiveTokensErrorOf(Token.OR, Token.OR, i);
+						case OR -> throw consecutiveTokensErrorOf(Token.OR, Token.OR, i);
 						case NOT, AND_NOT, OR_NOT -> throw consecutiveTokensErrorOf(Token.NOT, Token.OR, i);
 						case OPEN -> throw consecutiveTokensErrorOf(Token.OPEN, Token.OR, i);
 						case CLOSE, ELEMENT -> Token.OR;
@@ -83,27 +83,29 @@ record PredicateParser<E, O>(Function<String, E> elementParser, BiPredicate<E, O
 					priorToken = switch (priorToken) {
 						case OPEN, NONE -> Token.NOT;
 						case AND -> Token.AND_NOT;
-                        case OR -> Token.OR_NOT;
+						case OR -> Token.OR_NOT;
 						case NOT, AND_NOT, OR_NOT -> throw consecutiveTokensErrorOf(Token.NOT, Token.NOT, i);
-                        case CLOSE -> throw consecutiveTokensErrorOf(Token.CLOSE, Token.NOT, i);
-                        case ELEMENT -> throw consecutiveTokensErrorOf(Token.ELEMENT, Token.NOT, i);
-                    };
+						case CLOSE -> throw consecutiveTokensErrorOf(Token.CLOSE, Token.NOT, i);
+						case ELEMENT -> throw consecutiveTokensErrorOf(Token.ELEMENT, Token.NOT, i);
+					};
 				}
 				case OPEN -> {
 					if (elementBuilder != null) {
 						throw consecutiveTokensErrorOf(Token.ELEMENT, Token.OPEN, i);
 					}
 
-					incompletes.push(switch (priorToken) {
-						case AND -> new IncompletePredicate<>(currentPredicate, Operator.AND);
-						case OR -> new IncompletePredicate<>(currentPredicate, Operator.OR);
-						case NOT -> new IncompletePredicate<>(currentPredicate, Operator.NOT);
-                        case AND_NOT -> new IncompletePredicate<>(currentPredicate, Operator.AND_NOT);
-                        case OR_NOT -> new IncompletePredicate<>(currentPredicate, Operator.OR_NOT);
-                        case OPEN, NONE -> null;
-						case CLOSE -> throw consecutiveTokensErrorOf(Token.CLOSE, Token.OPEN, i);
-						case ELEMENT -> throw consecutiveTokensErrorOf(Token.ELEMENT, Token.OPEN, i);
-					});
+					incompletes.push(
+							switch (priorToken) {
+								case AND -> new IncompletePredicate<>(currentPredicate, Operator.AND);
+								case OR -> new IncompletePredicate<>(currentPredicate, Operator.OR);
+								case NOT -> new IncompletePredicate<>(currentPredicate, Operator.NOT);
+								case AND_NOT -> new IncompletePredicate<>(currentPredicate, Operator.AND_NOT);
+								case OR_NOT -> new IncompletePredicate<>(currentPredicate, Operator.OR_NOT);
+								case OPEN, NONE -> null;
+								case CLOSE -> throw consecutiveTokensErrorOf(Token.CLOSE, Token.OPEN, i);
+								case ELEMENT -> throw consecutiveTokensErrorOf(Token.ELEMENT, Token.OPEN, i);
+							}
+					);
 
 					currentPredicate = null;
 					priorToken = Token.OPEN;
@@ -163,7 +165,7 @@ record PredicateParser<E, O>(Function<String, E> elementParser, BiPredicate<E, O
 				case AND -> throw trailingTokenErrorOf(Token.AND);
 				case OR -> throw trailingTokenErrorOf(Token.OR);
 				case NOT, AND_NOT, OR_NOT -> throw trailingTokenErrorOf(Token.NOT);
-            }
+			}
 		}
 
 		if (currentPredicate == null) {
@@ -222,9 +224,9 @@ record PredicateParser<E, O>(Function<String, E> elementParser, BiPredicate<E, O
 		ELEMENT("element"),
 		NONE("no token");
 
-        final String description;
+		final String description;
 
-        Token(String description) {
+		Token(String description) {
 			this.description = description;
 		}
 
@@ -232,18 +234,18 @@ record PredicateParser<E, O>(Function<String, E> elementParser, BiPredicate<E, O
 		public String toString() {
 			return this.description;
 		}
-    }
+	}
 
 	private enum Operator {
 		AND(Token.AND), OR(Token.OR), NOT(Token.NOT), AND_NOT(Token.AND_NOT), OR_NOT(Token.OR_NOT);
 
 		final Token token;
 
-        Operator(Token token) {
+		Operator(Token token) {
 			this.token = token;
 		}
 
-        @Override
+		@Override
 		public String toString() {
 			return this.token.toString();
 		}

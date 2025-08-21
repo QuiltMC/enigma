@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import static org.quiltmc.enigma.command.PredicateParser.AND;
 import static org.quiltmc.enigma.command.PredicateParser.CLOSE;
 import static org.quiltmc.enigma.command.PredicateParser.NOT;
@@ -52,15 +51,15 @@ public class PredicateParserTest {
 	private static void testValidImpl(ValidCase valid, Predicate<String> predicate) {
 		for (final String expected : valid.expected) {
 			assertTrue(
-				predicate.test(expected),
-				() -> "Expected predicate '%s' to match '%s'!".formatted(valid.predicate, expected)
+					predicate.test(expected),
+					() -> "Expected predicate '%s' to match '%s'!".formatted(valid.predicate, expected)
 			);
 		}
 
 		for (final String unexpected : valid.unexpected) {
 			assertFalse(
-				predicate.test(unexpected),
-				() -> "Did not expect predicate '%s' to match '%s'!".formatted(valid.predicate, unexpected)
+					predicate.test(unexpected),
+					() -> "Did not expect predicate '%s' to match '%s'!".formatted(valid.predicate, unexpected)
 			);
 		}
 	}
