@@ -78,7 +78,13 @@ public class PredicateParserTest {
 					validBuilder("(a&b)|(e&f)").expect("lab", "effect").unexpect("xyz", "ae", "af", "be", "bf"),
 					validBuilder("(ab|ef)&(or|ut)")
 						.expect("abor", "abut", "efor", "efut")
-						.unexpect("ab", "ef", "or", "ut", "abef", "orut")
+						.unexpect("ab", "ef", "or", "ut", "abef", "orut"),
+					validBuilder("a&!b").expect("a", "ha").unexpect("ab", "ba", "b", "z"),
+					validBuilder("!a|b").expect("", "b", "ab", "z").unexpect("a"),
+					validBuilder("!(a|b)").expect("", "z").unexpect("a", "b"),
+					validBuilder("a&!(b|c)").expect("a", "at").unexpect("z", "ab", "ca"),
+					validBuilder("(a|b)&!(c&d)").expect("a", "b", "ac", "bd").unexpect("acd", "dcb"),
+					validBuilder("((a|b)&c)&!(d|e)").expect("ac", "bc").unexpect("ace", "cbe")
 				)
 				.map(ValidCase.Builder::build);
 	}
@@ -97,9 +103,12 @@ public class PredicateParserTest {
 		final Supplier<Stream<String>> nonElements = () -> Stream.of(AND, OR, NOT, OPEN, CLOSE).map(Object::toString);
 
 		return Streams.concat(
-			Stream.of(""),
 			nonElements.get(),
-			nonElements.get().flatMap(left -> nonElements.get().map(right -> left + right))
+			nonElements.get().flatMap(left -> nonElements.get().map(right -> left + right)),
+			Stream.of(
+				"", "&a", "a&", "|a", "a|", "!!a", "a!!", "!a!",
+				"(a", "a(", ")a", "a)", "((a)", "(a))"
+			)
 		);
 	}
 

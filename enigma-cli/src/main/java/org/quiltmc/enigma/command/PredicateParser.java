@@ -123,6 +123,10 @@ record PredicateParser<E, O>(Function<String, E> elementParser, BiPredicate<E, O
 						case NOT, OR_NOT, AND_NOT -> throw consecutiveTokensErrorOf(Token.NOT, Token.CLOSE, i);
 						case OPEN -> throw consecutiveTokensErrorOf(Token.OPEN, Token.CLOSE, i);
 						case CLOSE, ELEMENT -> {
+							if (incompletes.isEmpty()) {
+								throw unopenedCloseErrorOf(i);
+							}
+
 							final IncompletePredicate<O> incomplete = incompletes.pop();
 							if (incomplete != null) {
 								yield incomplete.combine(currentPredicate);
@@ -130,9 +134,7 @@ record PredicateParser<E, O>(Function<String, E> elementParser, BiPredicate<E, O
 								yield currentPredicate;
 							}
 						}
-						case NONE -> throw new IllegalArgumentException(
-								"Unopened %s at index %d.".formatted(Token.CLOSE, i)
-						);
+						case NONE -> throw unopenedCloseErrorOf(i);
 					};
 
 					priorToken = Token.CLOSE;
@@ -173,6 +175,12 @@ record PredicateParser<E, O>(Function<String, E> elementParser, BiPredicate<E, O
 		}
 
 		return currentPredicate;
+	}
+
+	private static IllegalArgumentException unopenedCloseErrorOf(int index) {
+		return new IllegalArgumentException(
+				"Unopened " + Token.CLOSE + " at index %d.".formatted(index)
+		);
 	}
 
 	private Predicate<O> combine(@Nullable Predicate<O> predicate, String element, Token operator) {
