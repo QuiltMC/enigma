@@ -18,6 +18,7 @@ import java.util.Comparator;
 public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	private final ClassEntry obfEntry;
 	private ClassEntry deobfEntry;
+	private boolean updatePending;
 
 	public ClassSelectorClassNode(ClassEntry obfEntry, ClassEntry deobfEntry) {
 		super(Comparator.comparing(TreeNode::toString));
@@ -42,6 +43,12 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	 * @param updateIfPresent whether to update the stats if they have already been generated for this node
 	 */
 	public void reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent) {
+		if (this.updatePending) {
+			return;
+		}
+
+		this.updatePending = true;
+
 		StatsGenerator generator = gui.getController().getStatsGenerator();
 
 		SwingWorker<ClassSelectorClassNode, Void> iconUpdateWorker = new SwingWorker<>() {
@@ -66,6 +73,7 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 				}
 
 				SwingUtilities.invokeLater(() -> selector.reload(ClassSelectorClassNode.this, false));
+				ClassSelectorClassNode.this.updatePending = false;
 			}
 		};
 
