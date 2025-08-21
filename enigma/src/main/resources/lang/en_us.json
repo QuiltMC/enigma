@@ -23,6 +23,7 @@
 	"menu.file.mappings.open": "Open Mappings...",
 	"menu.file.mappings.save": "Save Mappings",
 	"menu.file.mappings.save_as": "Save Mappings As...",
+	"menu.file.mappings.auto_save": "Auto Save Mappings",
 	"menu.file.mappings.close": "Close Mappings",
 	"menu.file.mappings.drop": "Drop Invalid Mappings",
 	"menu.file.mappings.file_filter": "%s (%s)",

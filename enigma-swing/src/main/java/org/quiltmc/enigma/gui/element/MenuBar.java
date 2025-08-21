@@ -27,13 +27,7 @@ import org.quiltmc.enigma.util.validation.Message;
 import org.quiltmc.enigma.util.validation.ParameterizedMessage;
 
 import javax.annotation.Nullable;
-import javax.swing.ButtonGroup;
-import javax.swing.JFileChooser;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JRadioButtonMenuItem;
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -55,6 +49,7 @@ public class MenuBar {
 	private final JMenuItem maxRecentFilesItem = new JMenuItem();
 	private final JMenuItem saveMappingsItem = new JMenuItem();
 	private final JMenu saveMappingsAsMenu = new JMenu();
+	private final JCheckBoxMenuItem autoSaveMappingsItem = new JCheckBoxMenuItem();
 	private final JMenuItem closeMappingsItem = new JMenuItem();
 	private final JMenuItem dropMappingsItem = new JMenuItem();
 	private final JMenuItem reloadMappingsItem = new JMenuItem();
@@ -123,6 +118,7 @@ public class MenuBar {
 		this.fileMenu.add(this.openMappingsItem);
 		this.fileMenu.add(this.saveMappingsItem);
 		this.fileMenu.add(this.saveMappingsAsMenu);
+		this.fileMenu.add(this.autoSaveMappingsItem);
 		this.fileMenu.add(this.closeMappingsItem);
 		this.fileMenu.add(this.dropMappingsItem);
 		this.fileMenu.addSeparator();
@@ -176,6 +172,7 @@ public class MenuBar {
 		this.jarCloseItem.addActionListener(e -> this.gui.getController().closeJar());
 		this.maxRecentFilesItem.addActionListener(e -> this.onMaxRecentFilesClicked());
 		this.saveMappingsItem.addActionListener(e -> this.onSaveMappingsClicked());
+		this.autoSaveMappingsItem.addActionListener(e -> Config.main().features.autoSaveMappings.setValue(this.autoSaveMappingsItem.getState()));
 		this.closeMappingsItem.addActionListener(e -> this.onCloseMappingsClicked());
 		this.dropMappingsItem.addActionListener(e -> this.gui.getController().dropMappings());
 		this.reloadMappingsItem.addActionListener(e -> this.onReloadMappingsClicked());
@@ -225,6 +222,8 @@ public class MenuBar {
 		this.openMappingsItem.setEnabled(jarOpen);
 		this.saveMappingsItem.setEnabled(jarOpen && this.gui.mappingsFileChooser.getSelectedFile() != null && connectionState != ConnectionState.CONNECTED);
 		this.saveMappingsAsMenu.setEnabled(jarOpen);
+		this.autoSaveMappingsItem.setEnabled(jarOpen);
+		this.autoSaveMappingsItem.setState(Config.main().features.autoSaveMappings.value());
 		this.closeMappingsItem.setEnabled(jarOpen);
 		this.reloadMappingsItem.setEnabled(jarOpen);
 		this.reloadAllItem.setEnabled(jarOpen);
@@ -244,6 +243,7 @@ public class MenuBar {
 		this.openMappingsItem.setText(I18n.translate("menu.file.mappings.open"));
 		this.saveMappingsItem.setText(I18n.translate("menu.file.mappings.save"));
 		this.saveMappingsAsMenu.setText(I18n.translate("menu.file.mappings.save_as"));
+		this.autoSaveMappingsItem.setText(I18n.translate("menu.file.mappings.auto_save"));
 		this.closeMappingsItem.setText(I18n.translate("menu.file.mappings.close"));
 		this.dropMappingsItem.setText(I18n.translate("menu.file.mappings.drop"));
 		this.reloadMappingsItem.setText(I18n.translate("menu.file.reload_mappings"));
