@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import javax.annotation.Nullable;
 import java.util.Stack;
 import java.util.function.BiPredicate;
@@ -7,14 +9,19 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 record PredicateParser<E, O>(Function<String, E> elementParser, BiPredicate<E, O> elementPredicator) {
-	private static final char AND = '&';
-	private static final char OR = '|';
-	private static final char NOT = '!';
+	@VisibleForTesting
+	static final char AND = '&';
+	@VisibleForTesting
+	static final char OR = '|';
+	@VisibleForTesting
+	static final char NOT = '!';
 
-	private static final char OPEN = '(';
-	private static final char CLOSE = ')';
+	@VisibleForTesting
+	static final char OPEN = '(';
+	@VisibleForTesting
+	static final char CLOSE = ')';
 
-	Predicate<O> parsePredicate(String string) {
+	Predicate<O> parse(String string) {
 		// non-null only when in the middle of an element
 		@Nullable
 		StringBuilder elementBuilder = null;
