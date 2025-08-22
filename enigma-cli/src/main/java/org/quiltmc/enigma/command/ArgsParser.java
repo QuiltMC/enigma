@@ -8,6 +8,11 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
+/**
+ * Encapsulates logic for parsing a list of {@link Argument}s into values. Also provides access to the argument list.
+ *
+ * @param <P> the type the argument values are packed in
+ */
 final class ArgsParser<P> implements Iterable<Argument<?>> {
 	static <T> ArgsParser<T> of(Argument<T> arg) {
 		return new ArgsParser<>(ImmutableList.of(arg), (values, from) -> from.parse(arg, values));
