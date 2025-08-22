@@ -24,7 +24,8 @@ public class Main {
 				DropInvalidMappingsCommand.INSTANCE,
 				FillClassMappingsCommand.INSTANCE,
 				HelpCommand.INSTANCE,
-				PrintStatsCommand.INSTANCE
+				PrintStatsCommand.INSTANCE,
+				GrepMappingsCommand.INSTANCE
 			)
 			.collect(toImmutableMap(Command::getName, Function.identity()));
 

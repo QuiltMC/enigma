@@ -99,9 +99,9 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 
 	private static final String DESCRIPTION = """
 			Searches for class, method, field, and parameter names using regular expressions.
-			Each can additionally be filtered using access expressions; methods, fields, and parameters can be filtered by type.
-			An access expression is a boolean combination of access flag keywords. They support &, |, !, and parentheses.
-			Available access flag keywords are %s.""".formatted(andJoin(Arrays.stream(Access.values()).map(Object::toString).toList()));
+				Each can additionally be filtered using access expressions; methods, fields, and parameters can be filtered by type.
+				An access expression is a boolean combination of access flag keywords. They support &, |, !, and parentheses.
+				Available access flag keywords are %s.""".formatted(andJoin(Arrays.stream(Access.values()).map(Object::toString).toList()));
 
 	private GrepMappingsCommand() {
 		super(
