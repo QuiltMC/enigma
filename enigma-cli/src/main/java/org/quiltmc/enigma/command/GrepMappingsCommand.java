@@ -35,9 +35,6 @@ import java.util.stream.Collectors;
 
 import static org.quiltmc.enigma.util.Utils.andJoin;
 
-/**
- * TODO
- */
 public final class GrepMappingsCommand extends Command<Required, Optionals> {
 	private static final PredicateParser<Access, AccessFlags> ACCESS_PREDICATE_PARSER = new PredicateParser<>(
 			Access::valueOf,

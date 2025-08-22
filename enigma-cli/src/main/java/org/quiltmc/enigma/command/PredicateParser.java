@@ -8,6 +8,18 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+/**
+ * Encapsulates logic for parsing a boolean expression of elements and combining those elements into a predicate.
+ *
+ * <p> Supports {@value #AND}, {@value #OR}, {@value #NOT} and parentheses operators.
+ *
+ * @param elementParser a function that parses the string representation of an element;
+ *                      <em>note</em> that elements' string representations may not contain
+ *                      {@value #AND}, {@value #OR}, {@value #NOT}, {@value #OPEN}, {@value #CLOSE}, or space.
+ * @param elementPredicator a function used to convert an element into a predicate
+ * @param <E> the type of elements
+ * @param <O> the tested type
+ */
 record PredicateParser<E, O>(Function<String, E> elementParser, BiPredicate<E, O> elementPredicator) {
 	@VisibleForTesting
 	static final char AND = '&';
