@@ -179,15 +179,17 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 		final EntryIndex entryIndex = project.getJarIndex().getIndex(EntryIndex.class);
 		final EntryRemapper remapper = project.getRemapper();
 
-		final Optional<Finder<ClassEntry>> classFinder = Finder.ofClassesOrEmpty(classes, remapper);
+		final Optional<Finder<ClassEntry>> classFinder =
+				Finder.ofClassesOrEmpty(classes, classAccess, remapper, entryIndex);
 		final Optional<Finder<MethodEntry>> methodFinder = Finder.ofOrEmpty(
-				methods, methodsReturns, ResultType.METHOD, remapper, method -> method.getDesc().getReturnDesc()
+				methods, methodsReturns, methodAccess, ResultType.METHOD,
+				remapper, entryIndex, method -> method.getDesc().getReturnDesc()
 		);
 		final Optional<Finder<FieldEntry>> fieldFinder = Finder.ofOrEmpty(
-				fields, fieldTypes, ResultType.FIELD, remapper, FieldEntry::getDesc
+				fields, fieldTypes, fieldAccess, ResultType.FIELD, remapper, entryIndex, FieldEntry::getDesc
 		);
 		final Optional<Finder<LocalVariableDefEntry>> paramFinder = Finder.ofOrEmpty(
-				params, paramTypes, ResultType.PARAM, remapper, LocalVariableDefEntry::getDesc
+				params, paramTypes, paramAccess, ResultType.PARAM, remapper, entryIndex, LocalVariableDefEntry::getDesc
 		);
 
 		Logger.info("Grepping mappings...");
@@ -276,58 +278,66 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 
 	@FunctionalInterface
 	private interface Finder<E extends Entry<?>> extends Function<E, Optional<Map.Entry<ResultType, String>>> {
-		static Optional<Finder<ClassEntry>> ofClassesOrEmpty(@Nullable Pattern pattern, EntryRemapper remapper) {
+		static Optional<Finder<ClassEntry>> ofClassesOrEmpty(
+				@Nullable Pattern pattern, @Nullable Predicate<AccessFlags> access,
+				EntryRemapper remapper, EntryIndex entryIndex
+		) {
 			if (pattern == null) {
-				return Optional.empty();
+				if (access == null) {
+					return Optional.empty();
+				} else {
+					return Optional.of(ofAccess(access, ResultType.CLASS, remapper, entryIndex));
+				}
 			} else {
-				return Optional.of(ofTypeless(pattern, ResultType.CLASS, remapper));
+				if (access == null) {
+					return Optional.of(ofName(pattern, ResultType.CLASS, remapper));
+				} else {
+					return Optional.of(ofNameAndAccess(pattern, access, ResultType.CLASS, remapper, entryIndex));
+				}
 			}
 		}
 
 		static <E extends Entry<?>> Optional<Finder<E>> ofOrEmpty(
-				@Nullable Pattern pattern, @Nullable Pattern typePattern, ResultType resultType,
-				EntryRemapper remapper, Function<E, TypeDescriptor> descriptorGetter
+				@Nullable Pattern pattern, @Nullable Pattern typePattern, @Nullable Predicate<AccessFlags> access,
+				ResultType resultType, EntryRemapper remapper, EntryIndex entryIndex,
+				Function<E, TypeDescriptor> descriptorGetter
 		) {
 			if (pattern == null) {
 				if (typePattern == null) {
-					return Optional.empty();
+					if (access == null) {
+						return Optional.empty();
+					} else {
+						return Optional.of(ofAccess(access, resultType, remapper, entryIndex));
+					}
 				} else {
-					return Optional.of(obf -> {
-						if (
-								// don't match types of unmapped entries
-								remapper.getMapping(obf).targetName() != null
-									&& typePattern.matcher(getTypeName(descriptorGetter.apply(obf), remapper)).find()
-						) {
-							final E deobf = remapper.deobfuscate(obf);
-							return Optional.of(createResult(resultType, obf, deobf == null ? obf : deobf));
-						} else {
-							return Optional.empty();
-						}
-					});
+					if (access == null) {
+						return Optional.of(ofType(typePattern, resultType, remapper, descriptorGetter));
+					} else {
+						return Optional.of(ofTypeAndAccess(typePattern, access, resultType, remapper, entryIndex, descriptorGetter));
+					}
 				}
 			} else if (typePattern == null) {
-				return Optional.of(ofTypeless(pattern, resultType, remapper));
+				if (access == null) {
+					return Optional.of(ofName(pattern, resultType, remapper));
+				} else {
+					return Optional.of(ofNameAndAccess(pattern, access, resultType, remapper, entryIndex));
+				}
 			} else {
-				return Optional.of(obf -> {
-					if (remapper.getMapping(obf).targetName() != null) {
-						final E deobf = remapper.deobfuscate(obf);
-						if (pattern.matcher(deobf.getName()).find()) {
-							if (typePattern.matcher(getTypeName(descriptorGetter.apply(obf), remapper)).find()) {
-								return Optional.of(createResult(resultType, obf, deobf));
-							}
-						}
-					}
-
-					return Optional.empty();
-				});
+				if (access == null) {
+					return Optional.of(ofNameAndType(pattern, typePattern, resultType, remapper, descriptorGetter));
+				} else {
+					return Optional.of(ofFull(
+							pattern, typePattern, access, resultType, remapper, entryIndex, descriptorGetter
+					));
+				}
 			}
 		}
 
-		private static <E extends Entry<?>> Finder<E> ofTypeless(
+		static <E extends Entry<?>> Finder<E> ofName(
 				Pattern pattern, ResultType resultType, EntryRemapper remapper
 		) {
 			return obf -> {
-				if (remapper.getMapping(obf).targetName() != null) {
+				if (isMapped(remapper, obf)) {
 					final E deobf = remapper.deobfuscate(obf);
 					if (pattern.matcher(deobf.getName()).find()) {
 						return Optional.of(createResult(resultType, obf, deobf));
@@ -338,7 +348,125 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 			};
 		}
 
-		private static Map.Entry<ResultType, String> createResult(ResultType resultType, Entry<?> obf, Entry<?> deobf) {
+		static <E extends Entry<?>> Finder<E> ofType(
+				Pattern pattern, ResultType resultType, EntryRemapper remapper, Function<E, TypeDescriptor> descriptorGetter
+		) {
+			return obf -> {
+				if (isMapped(remapper, obf) && typeMatches(obf, pattern, remapper, descriptorGetter)) {
+					return Optional.of(createResult(resultType, remapper, obf));
+				} else {
+					return Optional.empty();
+				}
+			};
+		}
+
+		static <E extends Entry<?>> Finder<E> ofNameAndType(
+				Pattern pattern, Pattern typePattern, ResultType resultType,
+				EntryRemapper remapper, Function<E, TypeDescriptor> descriptorGetter
+		) {
+			return obf -> {
+				if (isMapped(remapper, obf) && typeMatches(obf, typePattern, remapper, descriptorGetter)) {
+					final E deobf = remapper.deobfuscate(obf);
+					if (pattern.matcher(deobf.getName()).find()) {
+						return Optional.of(createResult(resultType, obf, deobf));
+					}
+				}
+
+				return Optional.empty();
+			};
+		}
+
+		static <E extends Entry<?>> Finder<E> ofAccess(
+				Predicate<AccessFlags> access, ResultType resultType, EntryRemapper remapper, EntryIndex entryIndex
+		) {
+			return obf -> {
+				if (isMapped(remapper, obf) && accessMatches(obf, access, entryIndex)) {
+					return Optional.of(createResult(resultType, remapper, obf));
+				} else {
+					return Optional.empty();
+				}
+			};
+		}
+
+		static <E extends Entry<?>> Finder<E> ofNameAndAccess(
+				Pattern pattern, Predicate<AccessFlags> access, ResultType resultType,
+				EntryRemapper remapper, EntryIndex entryIndex
+		) {
+			return obf -> {
+				if (isMapped(remapper, obf) && accessMatches(obf, access, entryIndex)) {
+					final E deobf = remapper.deobfuscate(obf);
+					if (pattern.matcher(deobf.getName()).find()) {
+						return Optional.of(createResult(resultType, obf, deobf));
+					}
+				}
+
+				return Optional.empty();
+			};
+		}
+
+		static <E extends Entry<?>> Finder<E> ofTypeAndAccess(
+				Pattern pattern, Predicate<AccessFlags> access, ResultType resultType,
+				EntryRemapper remapper, EntryIndex entryIndex, Function<E, TypeDescriptor> descriptorGetter
+		) {
+			return obf -> {
+				if (
+						isMapped(remapper, obf)
+							&& typeMatches(obf, pattern, remapper, descriptorGetter)
+							&& accessMatches(obf, access, entryIndex)
+				) {
+					return Optional.of(createResult(resultType, remapper, obf));
+				} else {
+					return Optional.empty();
+				}
+			};
+		}
+
+		static <E extends Entry<?>> Finder<E> ofFull(
+				Pattern pattern, Pattern typePattern, Predicate<AccessFlags> access, ResultType resultType,
+				EntryRemapper remapper, EntryIndex entryIndex, Function<E, TypeDescriptor> descriptorGetter
+		) {
+			return obf -> {
+				if (
+						isMapped(remapper, obf)
+							&& typeMatches(obf, typePattern, remapper, descriptorGetter)
+							&& accessMatches(obf, access, entryIndex)
+				) {
+					final E deobf = remapper.deobfuscate(obf);
+					if (pattern.matcher(deobf.getName()).find()) {
+						return Optional.of(createResult(resultType, remapper, obf));
+					}
+				}
+
+				return Optional.empty();
+			};
+		}
+
+		private static boolean isMapped(EntryRemapper remapper, Entry<?> entry) {
+			return remapper.getMapping(entry).targetName() != null;
+		}
+
+		private static <E extends Entry<?>> boolean typeMatches(
+				E entry, Pattern pattern, EntryRemapper remapper, Function<E, TypeDescriptor> descriptorGetter
+		) {
+			return pattern.matcher(getTypeName(descriptorGetter.apply(entry), remapper)).find();
+		}
+
+		private static boolean accessMatches(
+				Entry<?> entry, Predicate<AccessFlags> predicate, EntryIndex entryIndex
+		) {
+			final AccessFlags entryAccess = entryIndex.getEntryAccess(entry);
+			return entryAccess != null && predicate.test(entryAccess);
+		}
+
+		private static Map.Entry<ResultType, String> createResult(
+				ResultType resultType, EntryRemapper remapper, Entry<?> obf
+		) {
+			return createResult(resultType, obf, remapper.deobfuscate(obf));
+		}
+
+		private static <E extends Entry<?>> Map.Entry<ResultType, String> createResult(
+				ResultType resultType, E obf, E deobf
+		) {
 			return Map.entry(resultType, "%s (%s)".formatted(deobf.getName(), obf.getFullName()));
 		}
 	}
