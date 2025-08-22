@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Predicates.alwaysFalse;
@@ -23,41 +24,45 @@ public class GrepMappingsTest {
 	private static final Path JAR = TestUtil.obfJar("complete");
 	private static final Path MAPPINGS = getResource("/grep_mappings");
 
-	// class names
+	// classes
 	private static final String INNER_CLASS = "InnerClass";
 	private static final String OUTER_CLASS = "OuterClass";
-	private static final String OTHER_RETURN_TYPE = "OtherReturnType";
+	private static final String OTHER_RETURN_INTERFACE = "OtherReturnInterface";
 	private static final String INNER_FIELD_TYPE = "InnerFieldType";
 	private static final String PARAM_TYPE = "ParamType";
-	private static final String SELF_RETURN_TYPE = "SelfReturnType";
-
-	// method names
+	private static final String SELF_RETURN_ENUM = "SelfReturnEnum";
+	// methods
 	private static final String INT_TO_VOID_METHOD = "intToVoidMethod";
 	private static final String VOID_METHOD = "voidMethod";
 	private static final String INT_METHOD = "intMethod";
 	private static final String INT_TO_INT_METHOD = "intToIntMethod";
 	private static final String GET_OTHER = "getOther";
-	// field names
+	private static final String ABSTRACT_METHOD = "abstractMethod";
+	private static final String STATIC_GET_ARRAY = "staticGetArray";
+	private static final String STATIC_GET = "staticGet";
+	// fields
 	private static final String INT_FIELD = "intField";
 	private static final String FLOAT_FIELD = "floatField";
 	private static final String STRING_FIELD = "stringField";
-	// param names
-	private static final String TYPED_PARAM = "typedParam";
+	private static final String PRIVATE_STATIC_FINAL_INT_FIELD = "PRIVATE_STATIC_FINAL_INT_FIELD";
+	// params
+	private static final String STATIC_TYPED_PARAM = "staticTypedParam";
 	private static final String STRING_PARAM = "stringParam";
 	private static final String INT_PARAM = "intParam";
 	private static final String CONSTRUCTOR_INT_PARAM = "constructorIntParam";
 	private static final String CONSTRUCTOR_PARAM_STRING = "constructorParamString";
 	// record components
+	// only their fields are mapped, not getters or canonical constructor args
 	private static final String RECORD_INT = "recordInt";
 	private static final String RECORD_STRING = "recordString";
 
 	private static final ImmutableList<String> CLASS_NAMES = ImmutableList.of(
 			OUTER_CLASS,
 			INNER_CLASS,
-			OTHER_RETURN_TYPE,
+			OTHER_RETURN_INTERFACE,
 			INNER_FIELD_TYPE,
 			PARAM_TYPE,
-			SELF_RETURN_TYPE
+			SELF_RETURN_ENUM
 	);
 
 	private static final ImmutableList<String> METHOD_NAMES = ImmutableList.of(
@@ -66,14 +71,16 @@ public class GrepMappingsTest {
 			INT_METHOD,
 			INT_TO_INT_METHOD,
 			GET_OTHER,
-			RECORD_INT,
-			RECORD_STRING
+			ABSTRACT_METHOD,
+			STATIC_GET_ARRAY,
+			STATIC_GET
 	);
 
 	private static final ImmutableList<String> FIELD_NAMES = ImmutableList.of(
 			INT_FIELD,
 			FLOAT_FIELD,
 			STRING_FIELD,
+			PRIVATE_STATIC_FINAL_INT_FIELD,
 			RECORD_INT,
 			RECORD_STRING
 	);
@@ -81,7 +88,7 @@ public class GrepMappingsTest {
 	// Does not include RECORD_INT or RECORD_STRING because EntryIndex doesn't see canonical record constructors.
 	// They can be found through their fields or getters instead.
 	private static final ImmutableList<String> PARAM_NAMES = ImmutableList.of(
-			TYPED_PARAM,
+			STATIC_TYPED_PARAM,
 			STRING_PARAM,
 			INT_PARAM,
 			CONSTRUCTOR_INT_PARAM,
@@ -111,7 +118,10 @@ public class GrepMappingsTest {
 				-1
 		);
 
-		assertOnlyResults(found, ResultType.METHOD, INT_TO_VOID_METHOD, VOID_METHOD, INT_METHOD, INT_TO_INT_METHOD);
+		assertOnlyResults(
+				found, ResultType.METHOD,
+				INT_TO_VOID_METHOD, VOID_METHOD, INT_METHOD, INT_TO_INT_METHOD, ABSTRACT_METHOD
+		);
 	}
 
 	@Test
@@ -144,7 +154,7 @@ public class GrepMappingsTest {
 	void findsTypedMethods() {
 		final String found = runNonEmpty(
 				null, null,
-				null, Pattern.compile("^OtherReturnType$"), null,
+				null, Pattern.compile("^OtherReturnInterface$"), null,
 				null, null, null,
 				null, null, null,
 				-1
@@ -189,7 +199,7 @@ public class GrepMappingsTest {
 				-1
 		);
 
-		assertOnlyResults(found, ResultType.FIELD, INT_FIELD, RECORD_INT);
+		assertOnlyResults(found, ResultType.FIELD, INT_FIELD, PRIVATE_STATIC_FINAL_INT_FIELD, RECORD_INT);
 	}
 
 	@Test
@@ -228,7 +238,7 @@ public class GrepMappingsTest {
 				-1
 		);
 
-		assertOnlyResults(found, ResultType.PARAM, TYPED_PARAM, STRING_PARAM, INT_PARAM, CONSTRUCTOR_INT_PARAM);
+		assertOnlyResults(found, ResultType.PARAM, STATIC_TYPED_PARAM, STRING_PARAM, INT_PARAM, CONSTRUCTOR_INT_PARAM);
 	}
 
 	@Test
@@ -254,7 +264,7 @@ public class GrepMappingsTest {
 				-1
 		);
 
-		assertOnlyResults(found, ResultType.PARAM, TYPED_PARAM);
+		assertOnlyResults(found, ResultType.PARAM, STATIC_TYPED_PARAM);
 	}
 
 	@Test
@@ -367,7 +377,7 @@ public class GrepMappingsTest {
 	 */
 	private static void assertOnlyResults(String found, ResultType type, String... expectedNames) {
 		assertOnlyResultCount(found, expectedNames.length, type);
-		assertExclusiveResults(found, type, expectedNames);
+		assertOnlyResultsOfType(found, type, expectedNames);
 	}
 
 	/**
@@ -375,24 +385,23 @@ public class GrepMappingsTest {
 	 * {@code found} string.
 	 */
 	private static void assertOnlyResultsOfType(String found, ResultType type, String... expectedNames) {
-		assertResultCount(found, expectedNames.length, type);
-		assertExclusiveResults(found, type, expectedNames);
-	}
-
-	/**
-	 * Asserts that, of the known names of the passes {@code type}, only the passed {@code expectedNames} appear in
-	 * the passed {@code found} string.<br>
-	 * Does not assert any total result counts.
-	 */
-	private static void assertExclusiveResults(String found, ResultType type, String... expectedNames) {
 		final ImmutableList<String> names = getNames(type);
+
+		final String header = type.buildResultHeader(new StringBuilder(), expectedNames.length).toString();
+		final int headerStart = found.indexOf(header);
+		assertFalse(headerStart < 0, () -> getExpectedToContainMessage(found, header));
+
+		final int headerEnd = headerStart + header.length();
+		final Matcher nextResultMatcher = Pattern.compile("Found \\d+ \\w+").matcher(found);
+		final int typeSectionEnd = nextResultMatcher.find(headerEnd) ? nextResultMatcher.start() : found.length();
+		final String typeSection = found.substring(headerEnd, typeSectionEnd);
 
 		final Set<String> expected = Set.of(expectedNames);
 		for (final String name : names) {
 			if (expected.contains(name)) {
-				assertContains(found, name);
+				assertContains(typeSection, name);
 			} else {
-				assertLacks(found, name);
+				assertLacks(typeSection, name);
 			}
 		}
 	}
@@ -432,10 +441,14 @@ public class GrepMappingsTest {
 	}
 
 	private static void assertContains(String string, String part) {
-		assertTrue(string.contains(part), () -> "Expected '%s' to contain '%s'!".formatted(string, part));
+		assertTrue(string.contains(part), () -> getExpectedToContainMessage(string, part));
 	}
 
 	private static void assertLacks(String string, String part) {
 		assertFalse(string.contains(part), () -> "Did not expect '%s' to contain '%s'!".formatted(string, part));
+	}
+
+	private static String getExpectedToContainMessage(String string, String part) {
+		return "Expected '%s' to contain '%s'!".formatted(string, part);
 	}
 }

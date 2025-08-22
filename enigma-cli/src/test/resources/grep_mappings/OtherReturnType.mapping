@@ -1,3 +1,0 @@
-CLASS Z OtherReturnType
-	METHOD a (I)C
-		ARG 1 intParam
