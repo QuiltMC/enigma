@@ -1,4 +1,4 @@
 CLASS l SelfReturnEnum
 	METHOD a staticGetArray ()[Ll;
 	METHOD a staticGet (Ljava/lang/String;)Ll;
-		ARG 0 stringParam
+		ARG 0 staticStringParam

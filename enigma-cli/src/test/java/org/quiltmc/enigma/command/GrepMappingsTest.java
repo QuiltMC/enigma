@@ -40,14 +40,16 @@ public class GrepMappingsTest {
 	private static final String ABSTRACT_METHOD = "abstractMethod";
 	private static final String STATIC_GET_ARRAY = "staticGetArray";
 	private static final String STATIC_GET = "staticGet";
+	private static final String STATIC_VOID_METHOD = "staticVoidMethod";
 	// fields
 	private static final String INT_FIELD = "intField";
 	private static final String FLOAT_FIELD = "floatField";
 	private static final String STRING_FIELD = "stringField";
+	private static final String PRIVATE_STRING_FIELD = "privateStringField";
 	private static final String PRIVATE_STATIC_FINAL_INT_FIELD = "PRIVATE_STATIC_FINAL_INT_FIELD";
 	// params
 	private static final String STATIC_TYPED_PARAM = "staticTypedParam";
-	private static final String STRING_PARAM = "stringParam";
+	private static final String STATIC_STRING_PARAM = "staticStringParam";
 	private static final String INT_PARAM = "intParam";
 	private static final String CONSTRUCTOR_INT_PARAM = "constructorIntParam";
 	private static final String CONSTRUCTOR_PARAM_STRING = "constructorParamString";
@@ -55,6 +57,7 @@ public class GrepMappingsTest {
 	// only their fields are mapped, not getters or canonical constructor args
 	private static final String RECORD_INT = "recordInt";
 	private static final String RECORD_STRING = "recordString";
+	private static final String RECORD_STRING_2 = "recordString2";
 
 	private static final ImmutableList<String> CLASS_NAMES = ImmutableList.of(
 			OUTER_CLASS,
@@ -73,23 +76,26 @@ public class GrepMappingsTest {
 			GET_OTHER,
 			ABSTRACT_METHOD,
 			STATIC_GET_ARRAY,
-			STATIC_GET
+			STATIC_GET,
+			STATIC_VOID_METHOD
 	);
 
 	private static final ImmutableList<String> FIELD_NAMES = ImmutableList.of(
 			INT_FIELD,
 			FLOAT_FIELD,
 			STRING_FIELD,
+			PRIVATE_STRING_FIELD,
 			PRIVATE_STATIC_FINAL_INT_FIELD,
 			RECORD_INT,
-			RECORD_STRING
+			RECORD_STRING,
+			RECORD_STRING_2
 	);
 
 	// Does not include RECORD_INT or RECORD_STRING because EntryIndex doesn't see canonical record constructors.
 	// They can be found through their fields or getters instead.
 	private static final ImmutableList<String> PARAM_NAMES = ImmutableList.of(
 			STATIC_TYPED_PARAM,
-			STRING_PARAM,
+			STATIC_STRING_PARAM,
 			INT_PARAM,
 			CONSTRUCTOR_INT_PARAM,
 			CONSTRUCTOR_PARAM_STRING
@@ -109,6 +115,32 @@ public class GrepMappingsTest {
 	}
 
 	@Test
+	void findsAccessedClasses() {
+		final String found = runNonEmpty(
+				null, AccessFlags::isEnum,
+				null, null, null,
+				null, null, null,
+				null, null, null,
+				-1
+		);
+
+		assertOnlyResults(found, ResultType.CLASS, SELF_RETURN_ENUM);
+	}
+
+	@Test
+	void findsAccessFilteredClassNames() {
+		final String found = runNonEmpty(
+				Pattern.compile("Return"), access -> !access.isEnum(),
+				null, null, null,
+				null, null, null,
+				null, null, null,
+				-1
+		);
+
+		assertOnlyResults(found, ResultType.CLASS, OTHER_RETURN_INTERFACE);
+	}
+
+	@Test
 	void findsMethodNames() {
 		final String found = runNonEmpty(
 				null, null,
@@ -120,7 +152,7 @@ public class GrepMappingsTest {
 
 		assertOnlyResults(
 				found, ResultType.METHOD,
-				INT_TO_VOID_METHOD, VOID_METHOD, INT_METHOD, INT_TO_INT_METHOD, ABSTRACT_METHOD
+				INT_TO_VOID_METHOD, VOID_METHOD, INT_METHOD, INT_TO_INT_METHOD, ABSTRACT_METHOD, STATIC_VOID_METHOD
 		);
 	}
 
@@ -134,7 +166,7 @@ public class GrepMappingsTest {
 				-1
 		);
 
-		assertOnlyResults(found, ResultType.METHOD, VOID_METHOD, INT_TO_VOID_METHOD);
+		assertOnlyResults(found, ResultType.METHOD, VOID_METHOD, INT_TO_VOID_METHOD, STATIC_VOID_METHOD);
 	}
 
 	@Test
@@ -164,6 +196,19 @@ public class GrepMappingsTest {
 	}
 
 	@Test
+	void findsAccessedMethods() {
+		final String found = runNonEmpty(
+				null, null,
+				null, null, AccessFlags::isAbstract,
+				null, null, null,
+				null, null, null,
+				-1
+		);
+
+		assertOnlyResults(found, ResultType.METHOD, ABSTRACT_METHOD);
+	}
+
+	@Test
 	void findsTypeFilteredMethodNames() {
 		final String found = runNonEmpty(
 				null, null,
@@ -177,6 +222,32 @@ public class GrepMappingsTest {
 	}
 
 	@Test
+	void findsAccessFilteredMethodNames() {
+		final String found = runNonEmpty(
+				null, null,
+				Pattern.compile(".*(?<!Array)$"), null, AccessFlags::isStatic,
+				null, null, null,
+				null, null, null,
+				-1
+		);
+
+		assertOnlyResults(found, ResultType.METHOD, STATIC_GET, STATIC_VOID_METHOD);
+	}
+
+	@Test
+	void findsFullyFilteredMethodNames() {
+		final String found = runNonEmpty(
+				null, null,
+				Pattern.compile("^(?!int)"), Pattern.compile("^void$"), access -> !access.isStatic(),
+				null, null, null,
+				null, null, null,
+				-1
+		);
+
+		assertOnlyResults(found, ResultType.METHOD, VOID_METHOD);
+	}
+
+	@Test
 	void findsFieldNames() {
 		final String found = runNonEmpty(
 				null, null,
@@ -186,7 +257,7 @@ public class GrepMappingsTest {
 				-1
 		);
 
-		assertOnlyResults(found, ResultType.FIELD, INT_FIELD, FLOAT_FIELD, STRING_FIELD);
+		assertOnlyResults(found, ResultType.FIELD, INT_FIELD, FLOAT_FIELD, STRING_FIELD, PRIVATE_STRING_FIELD);
 	}
 
 	@Test
@@ -212,7 +283,23 @@ public class GrepMappingsTest {
 				-1
 		);
 
-		assertOnlyResults(found, ResultType.FIELD, STRING_FIELD, RECORD_STRING);
+		assertOnlyResults(found, ResultType.FIELD, STRING_FIELD, PRIVATE_STRING_FIELD, RECORD_STRING, RECORD_STRING_2);
+	}
+
+	@Test
+	void findsAccessedFields() {
+		final String found = runNonEmpty(
+				null, null,
+				null, null, null,
+				null, null, AccessFlags::isPrivate,
+				null, null, null,
+				-1
+		);
+
+		assertOnlyResults(
+				found, ResultType.FIELD,
+				PRIVATE_STRING_FIELD, PRIVATE_STATIC_FINAL_INT_FIELD, RECORD_INT, RECORD_STRING, RECORD_STRING_2
+		);
 	}
 
 	@Test
@@ -229,6 +316,32 @@ public class GrepMappingsTest {
 	}
 
 	@Test
+	void findsAccessFilteredFieldNames() {
+		final String found = runNonEmpty(
+				null, null,
+				null, null, null,
+				Pattern.compile("(?i)int"), null, AccessFlags::isPrivate,
+				null, null, null,
+				-1
+		);
+
+		assertOnlyResults(found, ResultType.FIELD, PRIVATE_STATIC_FINAL_INT_FIELD, RECORD_INT);
+	}
+
+	@Test
+	void findsFullyFilteredFieldNames() {
+		final String found = runNonEmpty(
+				null, null,
+				null, null, null,
+				Pattern.compile(".*(?<!2)$"), Pattern.compile("^java\\.lang\\.String$"), AccessFlags::isPrivate,
+				null, null, null,
+				-1
+		);
+
+		assertOnlyResults(found, ResultType.FIELD, RECORD_STRING, PRIVATE_STRING_FIELD);
+	}
+
+	@Test
 	void findsParamNames() {
 		final String found = runNonEmpty(
 				null, null,
@@ -238,7 +351,10 @@ public class GrepMappingsTest {
 				-1
 		);
 
-		assertOnlyResults(found, ResultType.PARAM, STATIC_TYPED_PARAM, STRING_PARAM, INT_PARAM, CONSTRUCTOR_INT_PARAM);
+		assertOnlyResults(
+				found, ResultType.PARAM,
+				STATIC_TYPED_PARAM, STATIC_STRING_PARAM, INT_PARAM, CONSTRUCTOR_INT_PARAM
+		);
 	}
 
 	@Test
@@ -268,6 +384,19 @@ public class GrepMappingsTest {
 	}
 
 	@Test
+	void findsAccessedParams() {
+		final String found = runNonEmpty(
+				null, null,
+				null, null, null,
+				null, null, null,
+				null, null, AccessFlags::isStatic,
+				-1
+		);
+
+		assertOnlyResults(found, ResultType.PARAM, STATIC_TYPED_PARAM, STATIC_STRING_PARAM);
+	}
+
+	@Test
 	void findsTypeFilteredParamNames() {
 		final String found = runNonEmpty(
 				null, null,
@@ -278,6 +407,32 @@ public class GrepMappingsTest {
 		);
 
 		assertOnlyResults(found, ResultType.PARAM, CONSTRUCTOR_PARAM_STRING);
+	}
+
+	@Test
+	void findsAccessFilteredParamNames() {
+		final String found = runNonEmpty(
+				null, null,
+				null, null, null,
+				null, null, null,
+				Pattern.compile("st"), null, access -> !access.isStatic(),
+				-1
+		);
+
+		assertOnlyResults(found, ResultType.PARAM, CONSTRUCTOR_INT_PARAM, CONSTRUCTOR_PARAM_STRING);
+	}
+
+	@Test
+	void findsFullyFilteredParamNames() {
+		final String found = runNonEmpty(
+				null, null,
+				null, null, null,
+				null, null, null,
+				Pattern.compile("st"), Pattern.compile("^.*(?<!String)$"), access -> !access.isStatic(),
+				-1
+		);
+
+		assertOnlyResults(found, ResultType.PARAM, CONSTRUCTOR_INT_PARAM);
 	}
 
 	@Test
