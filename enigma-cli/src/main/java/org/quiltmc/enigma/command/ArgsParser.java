@@ -119,6 +119,40 @@ final class ArgsParser<P> implements Iterable<Argument<?>> {
 		);
 	}
 
+	static <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, P> ArgsParser<P> of(
+			Argument<T1> arg1, Argument<T2> arg2, Argument<T3> arg3, Argument<T4> arg4, Argument<T5> arg5,
+			Argument<T6> arg6, Argument<T7> arg7, Argument<T8> arg8, Argument<T9> arg9, Argument<T10> arg10,
+			Argument<T11> arg11,
+			Packer11<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, P> packer
+	) {
+		return new ArgsParser<>(
+				ImmutableList.of(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11),
+				(values, from) -> packer.pack(
+					from.parse(arg1, values), from.parse(arg2, values), from.parse(arg3, values),
+					from.parse(arg4, values), from.parse(arg5, values), from.parse(arg6, values),
+					from.parse(arg7, values), from.parse(arg8, values), from.parse(arg9, values),
+					from.parse(arg10, values), from.parse(arg11, values)
+				)
+		);
+	}
+
+	static <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, P> ArgsParser<P> of(
+			Argument<T1> arg1, Argument<T2> arg2, Argument<T3> arg3, Argument<T4> arg4, Argument<T5> arg5,
+			Argument<T6> arg6, Argument<T7> arg7, Argument<T8> arg8, Argument<T9> arg9, Argument<T10> arg10,
+			Argument<T11> arg11, Argument<T12> arg12,
+			Packer12<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, P> packer
+	) {
+		return new ArgsParser<>(
+				ImmutableList.of(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12),
+				(values, from) -> packer.pack(
+					from.parse(arg1, values), from.parse(arg2, values), from.parse(arg3, values),
+					from.parse(arg4, values), from.parse(arg5, values), from.parse(arg6, values),
+					from.parse(arg7, values), from.parse(arg8, values), from.parse(arg9, values),
+					from.parse(arg10, values), from.parse(arg11, values), from.parse(arg12, values)
+				)
+		);
+	}
+
 	private final ImmutableList<Argument<?>> args;
 
 	private final BiFunction<Map<String, String>, ArgParser, P> impl;
@@ -197,6 +231,16 @@ final class ArgsParser<P> implements Iterable<Argument<?>> {
 	@FunctionalInterface
 	interface Packer10<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, P> {
 		P pack(T1 v1, T2 v2, T3 v3, T4 v4, T5 v5, T6 v6, T7 v7, T8 v8, T9 v9, T10 v10);
+	}
+
+	@FunctionalInterface
+	interface Packer11<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, P> {
+		P pack(T1 v1, T2 v2, T3 v3, T4 v4, T5 v5, T6 v6, T7 v7, T8 v8, T9 v9, T10 v10, T11 v11);
+	}
+
+	@FunctionalInterface
+	interface Packer12<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, P> {
+		P pack(T1 v1, T2 v2, T3 v3, T4 v4, T5 v5, T6 v6, T7 v7, T8 v8, T9 v9, T10 v10, T11 v11, T12 v12);
 	}
 
 	static final class Empty {

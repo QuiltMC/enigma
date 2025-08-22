@@ -4,9 +4,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import org.objectweb.asm.Opcodes;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
@@ -21,60 +23,95 @@ import org.tinylog.Logger;
 import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static org.quiltmc.enigma.util.Utils.andJoin;
 
 /**
  * TODO
  */
 public final class GrepMappingsCommand extends Command<Required, Optionals> {
+	private static final PredicateParser<Access, AccessFlags> ACCESS_PREDICATE_PARSER = new PredicateParser<>(
+			Access::valueOf,
+			(access, flags) -> (flags.getFlags() & access.flag) != 0
+	);
+
 	private static final Argument<Pattern> CLASSES = Argument.ofPattern("classes",
 			"""
 			A regular expression to filter class names."""
+	);
+	private static final Argument<Predicate<AccessFlags>> CLASS_ACCESS = accessPredicateArgOf("class-access",
+			"""
+			An access expression to filter classes."""
 	);
 	private static final Argument<Pattern> METHODS = Argument.ofPattern("methods",
 			"""
 			A regular expression to filter method names."""
 	);
-	private static final Argument<Pattern> FIELDS = Argument.ofPattern("fields",
-			"""
-			A regular expression to filter field names."""
-	);
-	private static final Argument<Pattern> PARAMS = Argument.ofPattern("params",
-			"""
-			A regular expression to filter parameter names."""
-	);
 	private static final Argument<Pattern> METHOD_RETURNS = Argument.ofPattern("method-returns",
 			"""
 			A regular expression to filter method return type names. Pass 'void' to filter void methods."""
+	);
+	private static final Argument<Predicate<AccessFlags>> METHOD_ACCESS = accessPredicateArgOf("method-access",
+			"""
+			An access expression to filter methods."""
+	);
+	private static final Argument<Pattern> FIELDS = Argument.ofPattern("fields",
+			"""
+			A regular expression to filter field names."""
 	);
 	private static final Argument<Pattern> FIELD_TYPES = Argument.ofPattern("field-types",
 			"""
 			A regular expression to filter field type names."""
 	);
+	private static final Argument<Predicate<AccessFlags>> FIELD_ACCESS = accessPredicateArgOf("field-access",
+			"""
+			An access expression to filter fields."""
+	);
+	private static final Argument<Pattern> PARAMS = Argument.ofPattern("params",
+			"""
+			A regular expression to filter parameter names."""
+	);
 	private static final Argument<Pattern> PARAM_TYPES = Argument.ofPattern("param-types",
 			"""
 			A regular expression to filter parameter type names."""
 	);
+	private static final Argument<Predicate<AccessFlags>> PARAM_ACCESS = accessPredicateArgOf("param-access",
+			"""
+			An access expression to filter parameters."""
+	);
 	private static final Argument<Integer> LIMIT = Argument.ofInt("limit",
 			"""
-			A limit on the number of individual results which may be displayed per result type (class, field, method, parameter).
+			A limit on the number of individual results which may be displayed per result type (class, method, field, parameter).
 			The total, unlimited result count is always reported.
 			A limit of 0 causes only counts to be reported and negative limits are ignored."""
 	);
 
 	public static final GrepMappingsCommand INSTANCE = new GrepMappingsCommand();
 
+	private static final String DESCRIPTION = """
+			Searches for class, method, field, and parameter names using regular expressions.
+			Each can additionally be filtered using access expressions; methods, fields, and parameters can be filtered by type.
+			An access expression is a boolean combination of access flag keywords. They support &, |, !, and parentheses.
+			Available access flag keywords are %s.""".formatted(andJoin(Arrays.stream(Access.values()).map(Object::toString).toList()));
+
 	private GrepMappingsCommand() {
 		super(
 				ArgsParser.of(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS, Required::new),
 				ArgsParser.of(
-					CLASSES, METHODS, METHOD_RETURNS, FIELDS, FIELD_TYPES, PARAMS, PARAM_TYPES, LIMIT,
+					CLASSES, CLASS_ACCESS,
+					METHODS, METHOD_RETURNS, METHOD_ACCESS,
+					FIELDS, FIELD_TYPES, FIELD_ACCESS,
+					PARAMS, PARAM_TYPES, PARAM_ACCESS,
+					LIMIT,
 					Optionals::new
 				)
 		);
@@ -84,8 +121,10 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 	void runImpl(Required required, Optionals optionals) throws Exception {
 		run(
 				required.inputJar, required.inputMappings,
-				optionals.classes, optionals.methods, optionals.methodReturns, optionals.fields, optionals.fieldTypes, optionals.params,
-				optionals.paramTypes,
+				optionals.classes, optionals.classAccess,
+				optionals.methods, optionals.methodReturns, optionals.methodAccess,
+				optionals.fields, optionals.fieldTypes, optionals.fieldAccess,
+				optionals.params, optionals.paramTypes, optionals.paramAccess,
 				optionals.limit == null ? -1 : optionals.limit
 		);
 	}
@@ -97,22 +136,24 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 
 	@Override
 	public String getDescription() {
-		return "Searches for class and/or member names using regular expressions. "
-				+ "Members can additionally be filtered by type.";
+		return DESCRIPTION;
 	}
 
 	public static void run(
 			Path jar, Path mappings,
-			@Nullable Pattern classes,
-			@Nullable Pattern methods, @Nullable Pattern methodsReturns,
-			@Nullable Pattern fields, @Nullable Pattern fieldTypes,
-			@Nullable Pattern parameters, @Nullable Pattern parameterTypes,
+			@Nullable Pattern classes, @Nullable Predicate<AccessFlags> classAccess,
+			@Nullable Pattern methods, @Nullable Pattern methodsReturns, @Nullable Predicate<AccessFlags> methodAccess,
+			@Nullable Pattern fields, @Nullable Pattern fieldTypes, @Nullable Predicate<AccessFlags> fieldAccess,
+			@Nullable Pattern params, @Nullable Pattern paramType, @Nullable Predicate<AccessFlags> paramAccess,
 			int limit
 	) throws Exception {
 		final String message = runImpl(
 				jar, mappings,
-				classes, methods, methodsReturns, fields, fieldTypes, parameters,
-				parameterTypes, limit
+				classes, classAccess,
+				methods, methodsReturns, methodAccess,
+				fields, fieldTypes, fieldAccess,
+				params, paramType, paramAccess,
+				limit
 		);
 
 		if (message.isEmpty()) {
@@ -125,10 +166,10 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 	@VisibleForTesting
 	static String runImpl(
 			Path jar, Path mappings,
-			@Nullable Pattern classes,
-			@Nullable Pattern methods, @Nullable Pattern methodsReturns,
-			@Nullable Pattern fields, @Nullable Pattern fieldTypes,
-			@Nullable Pattern parameters, @Nullable Pattern parameterTypes,
+			@Nullable Pattern classes, @Nullable Predicate<AccessFlags> classAccess,
+			@Nullable Pattern methods, @Nullable Pattern methodsReturns, @Nullable Predicate<AccessFlags> methodAccess,
+			@Nullable Pattern fields, @Nullable Pattern fieldTypes, @Nullable Predicate<AccessFlags> fieldAccess,
+			@Nullable Pattern params, @Nullable Pattern paramTypes, @Nullable Predicate<AccessFlags> paramAccess,
 			int limit
 	) throws Exception {
 		Objects.requireNonNull(jar, "jar must not be null");
@@ -146,7 +187,7 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 				fields, fieldTypes, ResultType.FIELD, remapper, FieldEntry::getDesc
 		);
 		final Optional<Finder<LocalVariableDefEntry>> paramFinder = Finder.ofOrEmpty(
-				parameters, parameterTypes, ResultType.PARAM, remapper, LocalVariableDefEntry::getDesc
+				params, paramTypes, ResultType.PARAM, remapper, LocalVariableDefEntry::getDesc
 		);
 
 		Logger.info("Grepping mappings...");
@@ -227,6 +268,10 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 		builder.add(0, entry.getName().replace('/', '.'));
 
 		return String.join(".", builder);
+	}
+
+	private static Argument<Predicate<AccessFlags>> accessPredicateArgOf(String name, String explanation) {
+		return new Argument<>(name, "access-expression", ACCESS_PREDICATE_PARSER::parse, explanation);
 	}
 
 	@FunctionalInterface
@@ -326,12 +371,53 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 		}
 	}
 
+	private enum Access {
+		PUBLIC(Opcodes.ACC_PUBLIC),
+		PRIVATE(Opcodes.ACC_PRIVATE),
+		PROTECTED(Opcodes.ACC_PROTECTED),
+		STATIC(Opcodes.ACC_STATIC),
+		FINAL(Opcodes.ACC_FINAL),
+		SUPER(Opcodes.ACC_SUPER),
+		SYNCHRONIZED(Opcodes.ACC_SYNCHRONIZED),
+		OPEN(Opcodes.ACC_OPEN),
+		TRANSITIVE(Opcodes.ACC_TRANSITIVE),
+		VOLATILE(Opcodes.ACC_VOLATILE),
+		BRIDGE(Opcodes.ACC_BRIDGE),
+		STATIC_PHASE(Opcodes.ACC_STATIC_PHASE),
+		VARARGS(Opcodes.ACC_VARARGS),
+		TRANSIENT(Opcodes.ACC_TRANSIENT),
+		NATIVE(Opcodes.ACC_NATIVE),
+		INTERFACE(Opcodes.ACC_INTERFACE),
+		ABSTRACT(Opcodes.ACC_ABSTRACT),
+		STRICT(Opcodes.ACC_STRICT),
+		SYNTHETIC(Opcodes.ACC_SYNTHETIC),
+		ANNOTATION(Opcodes.ACC_ANNOTATION),
+		ENUM(Opcodes.ACC_ENUM),
+		MANDATED(Opcodes.ACC_MANDATED),
+		MODULE(Opcodes.ACC_MODULE),
+		RECORD(Opcodes.ACC_RECORD),
+		DEPRECATED(Opcodes.ACC_DEPRECATED);
+
+		final int flag;
+		final String lowercase;
+
+		Access(int flag) {
+			this.flag = flag;
+			this.lowercase = this.name().toLowerCase();
+		}
+
+		@Override
+		public String toString() {
+			return this.lowercase;
+		}
+	}
+
 	record Required(Path inputJar, Path inputMappings) { }
 	record Optionals(
-			Pattern classes,
-			Pattern methods, Pattern methodReturns,
-			Pattern fields, Pattern fieldTypes,
-			Pattern params, Pattern paramTypes,
+			Pattern classes, Predicate<AccessFlags> classAccess,
+			Pattern methods, Pattern methodReturns, Predicate<AccessFlags> methodAccess,
+			Pattern fields, Pattern fieldTypes, Predicate<AccessFlags> fieldAccess,
+			Pattern params, Pattern paramTypes, Predicate<AccessFlags> paramAccess,
 			Integer limit
 	) { }
 }

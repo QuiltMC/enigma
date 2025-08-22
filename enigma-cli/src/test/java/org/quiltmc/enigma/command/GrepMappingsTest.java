@@ -3,14 +3,18 @@ package org.quiltmc.enigma.command;
 import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.TestUtil;
+import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.command.GrepMappingsCommand.ResultType;
 import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
+import static com.google.common.base.Predicates.alwaysFalse;
+import static com.google.common.base.Predicates.alwaysTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.quiltmc.enigma.TestUtil.getResource;
@@ -87,8 +91,11 @@ public class GrepMappingsTest {
 	@Test
 	void findsClassNames() {
 		final String found = runNonEmpty(
-				Pattern.compile("erClass$"),
-				null, null, null, null, null, null, -1
+				Pattern.compile("erClass$"), null,
+				null, null, null,
+				null, null, null,
+				null, null, null,
+				-1
 		);
 
 		assertOnlyResults(found, ResultType.CLASS, INNER_CLASS, OUTER_CLASS);
@@ -97,9 +104,11 @@ public class GrepMappingsTest {
 	@Test
 	void findsMethodNames() {
 		final String found = runNonEmpty(
-				null,
-				Pattern.compile("Method$"),
-				null, null, null, null, null, -1
+				null, null,
+				Pattern.compile("Method$"), null, null,
+				null, null, null,
+				null, null, null,
+				-1
 		);
 
 		assertOnlyResults(found, ResultType.METHOD, INT_TO_VOID_METHOD, VOID_METHOD, INT_METHOD, INT_TO_INT_METHOD);
@@ -109,8 +118,10 @@ public class GrepMappingsTest {
 	void findsVoidMethods() {
 		final String found = runNonEmpty(
 				null, null,
-				Pattern.compile("^void$"),
-				null, null, null, null, -1
+				null, Pattern.compile("^void$"), null,
+				null, null, null,
+				null, null, null,
+				-1
 		);
 
 		assertOnlyResults(found, ResultType.METHOD, VOID_METHOD, INT_TO_VOID_METHOD);
@@ -120,8 +131,10 @@ public class GrepMappingsTest {
 	void findsPrimitiveMethods() {
 		final String found = runNonEmpty(
 				null, null,
-				Pattern.compile("^int"),
-				null, null, null, null, -1
+				null, Pattern.compile("^int"), null,
+				null, null, null,
+				null, null, null,
+				-1
 		);
 
 		assertOnlyResults(found, ResultType.METHOD, INT_METHOD, INT_TO_INT_METHOD);
@@ -131,8 +144,10 @@ public class GrepMappingsTest {
 	void findsTypedMethods() {
 		final String found = runNonEmpty(
 				null, null,
-				Pattern.compile("^OtherReturnType$"),
-				null, null, null, null, -1
+				null, Pattern.compile("^OtherReturnType$"), null,
+				null, null, null,
+				null, null, null,
+				-1
 		);
 
 		assertOnlyResults(found, ResultType.METHOD, GET_OTHER);
@@ -141,9 +156,11 @@ public class GrepMappingsTest {
 	@Test
 	void findsTypeFilteredMethodNames() {
 		final String found = runNonEmpty(
-				null,
-				Pattern.compile("^intTo"), Pattern.compile("^void$"),
-				null, null, null, null, -1
+				null, null,
+				Pattern.compile("^intTo"), Pattern.compile("^void$"), null,
+				null, null, null,
+				null, null, null,
+				-1
 		);
 
 		assertOnlyResults(found, ResultType.METHOD, INT_TO_VOID_METHOD);
@@ -152,9 +169,11 @@ public class GrepMappingsTest {
 	@Test
 	void findsFieldNames() {
 		final String found = runNonEmpty(
+				null, null,
 				null, null, null,
-				Pattern.compile("Field$"),
-				null, null, null, -1
+				Pattern.compile("Field$"), null, null,
+				null, null, null,
+				-1
 		);
 
 		assertOnlyResults(found, ResultType.FIELD, INT_FIELD, FLOAT_FIELD, STRING_FIELD);
@@ -163,9 +182,11 @@ public class GrepMappingsTest {
 	@Test
 	void findsPrimitiveFields() {
 		final String found = runNonEmpty(
-				null, null, null, null,
-				Pattern.compile("^int$"),
-				null, null, -1
+				null, null,
+				null, null, null,
+				null, Pattern.compile("^int$"), null,
+				null, null, null,
+				-1
 		);
 
 		assertOnlyResults(found, ResultType.FIELD, INT_FIELD, RECORD_INT);
@@ -174,9 +195,11 @@ public class GrepMappingsTest {
 	@Test
 	void findsTypedFields() {
 		final String found = runNonEmpty(
-				null, null, null, null,
-				Pattern.compile("^java\\.lang\\.String$"),
-				null, null, -1
+				null, null,
+				null, null, null,
+				null, Pattern.compile("^java\\.lang\\.String$"), null,
+				null, null, null,
+				-1
 		);
 
 		assertOnlyResults(found, ResultType.FIELD, STRING_FIELD, RECORD_STRING);
@@ -185,9 +208,11 @@ public class GrepMappingsTest {
 	@Test
 	void findsTypeFilteredFieldNames() {
 		final String found = runNonEmpty(
+				null, null,
 				null, null, null,
-				Pattern.compile("Field$"), Pattern.compile("^float$"),
-				null, null, -1
+				Pattern.compile("Field$"), Pattern.compile("^float$"), null,
+				null, null, null,
+				-1
 		);
 
 		assertOnlyResults(found, ResultType.FIELD, FLOAT_FIELD);
@@ -196,9 +221,11 @@ public class GrepMappingsTest {
 	@Test
 	void findsParamNames() {
 		final String found = runNonEmpty(
-				null, null, null, null, null,
-				Pattern.compile("Param$"),
-				null, -1
+				null, null,
+				null, null, null,
+				null, null, null,
+				Pattern.compile("Param$"), null, null,
+				-1
 		);
 
 		assertOnlyResults(found, ResultType.PARAM, TYPED_PARAM, STRING_PARAM, INT_PARAM, CONSTRUCTOR_INT_PARAM);
@@ -207,8 +234,10 @@ public class GrepMappingsTest {
 	@Test
 	void findsPrimitiveParams() {
 		final String found = runNonEmpty(
-				null, null, null, null, null, null,
-				Pattern.compile("^int$"),
+				null, null,
+				null, null, null,
+				null, null, null,
+				null, Pattern.compile("^int$"), null,
 				-1
 		);
 
@@ -218,8 +247,10 @@ public class GrepMappingsTest {
 	@Test
 	void findsTypedParams() {
 		final String found = runNonEmpty(
-				null, null, null, null, null, null,
-				Pattern.compile("^ParamType$"),
+				null, null,
+				null, null, null,
+				null, null, null,
+				null, Pattern.compile("^ParamType$"), null,
 				-1
 		);
 
@@ -229,8 +260,10 @@ public class GrepMappingsTest {
 	@Test
 	void findsTypeFilteredParamNames() {
 		final String found = runNonEmpty(
-				null, null, null, null, null,
-				Pattern.compile("^constructor"), Pattern.compile("^java\\.lang\\.String$"),
+				null, null,
+				null, null, null,
+				null, null, null,
+				Pattern.compile("^constructor"), Pattern.compile("^java\\.lang\\.String$"), null,
 				-1
 		);
 
@@ -241,18 +274,18 @@ public class GrepMappingsTest {
 	void findsEverythingAndLimitable() {
 		final Pattern anything = Pattern.compile(".*");
 		final String found = runNonEmpty(
-				anything,
-				anything, anything,
-				anything, anything,
-				anything, anything,
+				anything, alwaysTrue(),
+				anything, anything, alwaysTrue(),
+				anything, anything, alwaysTrue(),
+				anything, anything, alwaysTrue(),
 				-1
 		);
 
 		final String limitedFound = runNonEmpty(
-				anything,
-				anything, anything,
-				anything, anything,
-				anything, anything,
+				anything, alwaysTrue(),
+				anything, anything, alwaysTrue(),
+				anything, anything, alwaysTrue(),
+				anything, anything, alwaysTrue(),
 				0
 		);
 
@@ -271,10 +304,10 @@ public class GrepMappingsTest {
 	void findsNothing() {
 		final Pattern unmatchable = Pattern.compile(" ");
 		final String found = run(
-				unmatchable,
-				unmatchable, unmatchable,
-				unmatchable, unmatchable,
-				unmatchable, unmatchable,
+				unmatchable, alwaysFalse(),
+				unmatchable, unmatchable, alwaysFalse(),
+				unmatchable, unmatchable, alwaysFalse(),
+				unmatchable, unmatchable, alwaysFalse(),
 				-1
 		);
 
@@ -282,13 +315,19 @@ public class GrepMappingsTest {
 	}
 
 	private static String runNonEmpty(
-			@Nullable Pattern classes,
-			@Nullable Pattern methods, @Nullable Pattern methodsReturns,
-			@Nullable Pattern fields, @Nullable Pattern fieldTypes,
-			@Nullable Pattern parameters, @Nullable Pattern parameterTypes,
+			@Nullable Pattern classes, @Nullable Predicate<AccessFlags> classAccess,
+			@Nullable Pattern methods, @Nullable Pattern methodReturns, @Nullable Predicate<AccessFlags> methodAccess,
+			@Nullable Pattern fields, @Nullable Pattern fieldTypes, @Nullable Predicate<AccessFlags> fieldAccess,
+			@Nullable Pattern params, @Nullable Pattern paramTypes, @Nullable Predicate<AccessFlags> paramAccess,
 			int limit
 	) {
-		final String found = run(classes, methods, methodsReturns, fields, fieldTypes, parameters, parameterTypes, limit);
+		final String found = run(
+				classes, classAccess,
+				methods, methodReturns, methodAccess,
+				fields, fieldTypes, fieldAccess,
+				params, paramTypes, paramAccess,
+				limit
+		);
 
 		assertFalse(found.isEmpty(), "Unexpected empty result!");
 		// log for manual confirmation of formatting
@@ -298,19 +337,19 @@ public class GrepMappingsTest {
 	}
 
 	private static String run(
-			@Nullable Pattern classes,
-			@Nullable Pattern methods, @Nullable Pattern methodsReturns,
-			@Nullable Pattern fields, @Nullable Pattern fieldTypes,
-			@Nullable Pattern parameters, @Nullable Pattern parameterTypes,
+			@Nullable Pattern classes, @Nullable Predicate<AccessFlags> classAccess,
+			@Nullable Pattern methods, @Nullable Pattern methodReturns, @Nullable Predicate<AccessFlags> methodAccess,
+			@Nullable Pattern fields, @Nullable Pattern fieldTypes, @Nullable Predicate<AccessFlags> fieldAccess,
+			@Nullable Pattern params, @Nullable Pattern paramTypes, @Nullable Predicate<AccessFlags> paramAccess,
 			int limit
 	) {
 		try {
 			return GrepMappingsCommand.runImpl(
 					JAR, MAPPINGS,
-					classes,
-					methods, methodsReturns,
-					fields, fieldTypes,
-					parameters, parameterTypes,
+					classes, classAccess,
+					methods, methodReturns, methodAccess,
+					fields, fieldTypes, fieldAccess,
+					params, paramTypes, paramAccess,
 					limit
 			);
 		} catch (Exception e) {
