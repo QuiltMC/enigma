@@ -77,24 +77,19 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	 * @return a stream of this method's parameters
 	 */
 	public Stream<LocalVariableDefEntry> streamParameters(EntryIndex index) {
-		return this.paramCache
-				.computeIfAbsent(index, entryIndex -> {
-					AccessFlags flags = entryIndex.getMethodAccess(this);
+		AccessFlags flags = index.getMethodAccess(this);
+		return flags == null ? Stream.empty() : this.paramCache
+				.computeIfAbsent(index, ignored -> {
+					int i = flags.isStatic() ? 0 : 1;
+					ImmutableList.Builder<LocalVariableDefEntry> parameters = ImmutableList.builder();
+					for (ArgumentDescriptor arg : this.descriptor.getArgumentDescs()) {
+						LocalVariableDefEntry argEntry = new LocalVariableDefEntry(this, i, arg);
+						parameters.add(argEntry);
 
-					if (flags == null) {
-						return ImmutableList.of();
-					} else {
-						int i = flags.isStatic() ? 0 : 1;
-						ImmutableList.Builder<LocalVariableDefEntry> parameters = ImmutableList.builder();
-						for (ArgumentDescriptor arg : this.descriptor.getArgumentDescs()) {
-							LocalVariableDefEntry argEntry = new LocalVariableDefEntry(this, i, arg);
-							parameters.add(argEntry);
-
-							i += arg.getSize();
-						}
-
-						return parameters.build();
+						i += arg.getSize();
 					}
+
+					return parameters.build();
 				})
 				.stream();
 	}
