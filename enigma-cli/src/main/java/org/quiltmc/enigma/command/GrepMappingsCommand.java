@@ -90,7 +90,7 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 	);
 	private static final Argument<Integer> LIMIT = Argument.ofInt("limit",
 			"""
-			A limit on the number of individual results which may be displayed per result type (class, method, field, parameter).
+			A limit on the number of individual results to display per result type (class, method, field, parameter).
 			The total, unlimited result count is always reported.
 			A limit of 0 causes only counts to be reported and negative limits are ignored."""
 	);
