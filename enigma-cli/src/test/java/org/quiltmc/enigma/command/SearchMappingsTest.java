@@ -28,6 +28,8 @@ public class SearchMappingsTest {
 	// classes
 	private static final String INNER_CLASS = "InnerClass";
 	private static final String OUTER_CLASS = "OuterClass";
+	private static final String KEEP_PACKAGED = "KeepPackaged";
+	private static final String PACKAGED_CLASS = "PackagedClass";
 	private static final String OTHER_RETURN_INTERFACE = "OtherReturnInterface";
 	private static final String INNER_FIELD_TYPE = "InnerFieldType";
 	private static final String PARAM_TYPE = "ParamType";
@@ -63,6 +65,8 @@ public class SearchMappingsTest {
 	private static final ImmutableList<String> CLASS_NAMES = ImmutableList.of(
 			OUTER_CLASS,
 			INNER_CLASS,
+			KEEP_PACKAGED,
+			PACKAGED_CLASS,
 			OTHER_RETURN_INTERFACE,
 			INNER_FIELD_TYPE,
 			PARAM_TYPE,
@@ -412,6 +416,57 @@ public class SearchMappingsTest {
 	}
 
 	@Test
+	void findsArrayTypes() {
+		final String found = runDefault(
+				null, null,
+				null, Pattern.compile("\\[\\]"), null,
+				null, null, null,
+				null, null, null
+		);
+
+		assertOnlyResults(found, ResultType.METHOD, STATIC_GET_ARRAY);
+	}
+
+	@Test
+	void nameSorts() {
+		final String found = run(
+				Pattern.compile(".*"), null,
+				null, null, null,
+				null, null, null,
+				null, null, null,
+				Sort.NAME, -1
+		);
+
+		assertOrder(found, KEEP_PACKAGED, PACKAGED_CLASS, SELF_RETURN_ENUM);
+	}
+
+	@Test
+	void packageSorts() {
+		final String found = run(
+				Pattern.compile(".*"), null,
+				null, null, null,
+				null, null, null,
+				null, null, null,
+				Sort.PACKAGE, -1
+		);
+
+		assertOrder(found, SELF_RETURN_ENUM, KEEP_PACKAGED, PACKAGED_CLASS);
+	}
+
+	@Test
+	void depthSorts() {
+		final String found = run(
+				Pattern.compile(".*"), null,
+				null, null, null,
+				null, null, null,
+				null, null, null,
+				Sort.DEPTH, -1
+		);
+
+		assertOrder(found, SELF_RETURN_ENUM, PACKAGED_CLASS, KEEP_PACKAGED);
+	}
+
+	@Test
 	void findsEverythingAndLimitable() {
 		final Pattern anything = Pattern.compile(".*");
 		final String found = runDefault(
@@ -443,7 +498,7 @@ public class SearchMappingsTest {
 	@Test
 	void findsNothing() {
 		final Pattern unmatchable = Pattern.compile(" ");
-		final String found = run(
+		final String unmatchableArgsFound = run(
 				unmatchable, alwaysFalse(),
 				unmatchable, unmatchable, alwaysFalse(),
 				unmatchable, unmatchable, alwaysFalse(),
@@ -451,7 +506,17 @@ public class SearchMappingsTest {
 				null, -1
 		);
 
-		assertTrue(found.isEmpty(), "Expected to find empty string!");
+		assertTrue(unmatchableArgsFound.isEmpty(), "Expected to find empty string!");
+
+		final String noArgsFound = run(
+				null, null,
+				null, null, null,
+				null, null, null,
+				null, null, null,
+				null, -1
+		);
+
+		assertTrue(noArgsFound.isEmpty(), "Expected to find empty string!");
 	}
 
 	/**
@@ -515,7 +580,26 @@ public class SearchMappingsTest {
 		}
 	}
 
-	@SuppressWarnings("unused")
+	@SuppressWarnings({"unused", "RedundantThrows"})
+	private static void assertOrder(String found) throws Throwable {
+		throw new UnsupportedOperationException();
+	}
+
+	private static void assertOrder(String found, String... words) {
+		int prev = requireIndexOf(found, words[0]);
+
+		for (int n = 1; n < words.length; n++) {
+			final String word = words[n];
+			final int current = requireIndexOf(found, word);
+
+			final String prevWord = words[n - 1];
+			assertTrue(prev < current, () -> getExpectedToComBeforeMessage(prevWord, word));
+
+			prev = current;
+		}
+	}
+
+	@SuppressWarnings({"unused", "RedundantThrows"})
 	private static void assertOnlyResults(String found, ResultType type) throws Throwable {
 		throw new IllegalArgumentException("No expected names specified!");
 	}
@@ -536,8 +620,7 @@ public class SearchMappingsTest {
 		final ImmutableList<String> names = getNames(type);
 
 		final String header = type.buildResultHeader(new StringBuilder(), expectedNames.length).toString();
-		final int headerStart = found.indexOf(header);
-		assertFalse(headerStart < 0, () -> getExpectedToContainMessage(found, header));
+		final int headerStart = requireIndexOf(found, header);
 
 		final int headerEnd = headerStart + header.length();
 		final Matcher nextResultMatcher = Pattern.compile("Found \\d+ \\w+").matcher(found);
@@ -588,15 +671,35 @@ public class SearchMappingsTest {
 		}
 	}
 
-	private static void assertContains(String string, String part) {
-		assertTrue(string.contains(part), () -> getExpectedToContainMessage(string, part));
+	private static int requireIndexOf(String string, String word) {
+		final Matcher matcher = wordPatternOf(word).matcher(string);
+
+		assertTrue(matcher.find(), () -> getExpectedToContainMessage(string, word));
+
+		return matcher.start();
 	}
 
-	private static void assertLacks(String string, String part) {
-		assertFalse(string.contains(part), () -> "Did not expect '%s' to contain '%s'!".formatted(string, part));
+	private static void assertContains(String string, String word) {
+		assertTrue(containsWord(string, word), () -> getExpectedToContainMessage(string, word));
 	}
 
-	private static String getExpectedToContainMessage(String string, String part) {
-		return "Expected '%s' to contain '%s'!".formatted(string, part);
+	private static void assertLacks(String string, String word) {
+		assertFalse(containsWord(string, word), () -> "Did not expect '%s' to contain '%s'!".formatted(string, word));
+	}
+
+	private static boolean containsWord(String string, String word) {
+		return wordPatternOf("\\b" + word + "\\b").matcher(string).find();
+	}
+
+	private static Pattern wordPatternOf(String word) {
+		return Pattern.compile(word);
+	}
+
+	private static String getExpectedToContainMessage(String string, String word) {
+		return "Expected '%s' to contain '%s'!".formatted(string, word);
+	}
+
+	private static String getExpectedToComBeforeMessage(String expectedFirst, String expectedSecond) {
+		return "Expected %s to come before %s!".formatted(expectedFirst, expectedSecond);
 	}
 }

@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.quiltmc.enigma.util.Utils.andJoin;
+import static java.util.Comparator.comparingInt;
 
 public final class SearchMappingsCommand extends Command<Required, Optionals> {
 	private static final PredicateParser<Access, AccessFlags> ACCESS_PREDICATE_PARSER = new PredicateParser<>(
@@ -306,6 +307,10 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 
 	private record QualifiedName(ImmutableList<String> packages, ImmutableList<String> names) {
 		static final Comparator<List<String>> PARTS_ALPHABETIZER = (left, right) -> {
+			if (left.isEmpty()) {
+				return right.isEmpty() ? 0 : -1;
+			}
+
 			for (int i = 0; i < left.size(); i++) {
 				if (i >= right.size()) {
 					return 1;
@@ -327,7 +332,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 				PARTS_ALPHABETIZER.compare(left.packages, right.packages);
 
 		static final Comparator<QualifiedName> PACKAGE_DEPTH_SORTER =
-				Comparator.comparingInt(qualified -> qualified.packages.size());
+				comparingInt(qualified -> qualified.packages.size());
 
 		static QualifiedName of(Entry<?> entry) {
 			final ArrayList<String> names = new ArrayList<>();
