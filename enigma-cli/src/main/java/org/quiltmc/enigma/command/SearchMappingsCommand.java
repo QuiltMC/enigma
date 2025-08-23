@@ -241,20 +241,26 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 
 									lineBuilder
 											.append(builder.name.names.get(finalNameIndex))
-											.append(" (")
-											.append(Stream
-												.concat(
-													builder.name.packages.stream(),
-													builder.name.names.subList(0, finalNameIndex).stream()
+											.append(" ");
+
+									final ImmutableList<String> outerNames = builder.name.names.subList(0, finalNameIndex);
+									if (!(outerNames.isEmpty() && builder.name.packages.isEmpty())) {
+										lineBuilder
+												.append("(")
+												.append(Stream
+													.concat(
+														builder.name.packages.stream(),
+														outerNames.stream()
+													)
+													.collect(Collectors.joining("."))
 												)
-												.collect(Collectors.joining("."))
-											)
-											.append(")");
+												.append(") ");
+									}
 								} else {
 									lineBuilder.append(builder.name.toString());
 								}
 
-								lineBuilder.append(" [").append(builder.obf.getFullName()).append("]");
+								lineBuilder.append("[").append(builder.obf.getFullName()).append("]");
 
 								return lineBuilder.toString();
 							})
