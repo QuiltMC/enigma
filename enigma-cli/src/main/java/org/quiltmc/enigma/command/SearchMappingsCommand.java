@@ -2,6 +2,7 @@ package org.quiltmc.enigma.command;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import org.objectweb.asm.Opcodes;
@@ -24,7 +25,7 @@ import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -32,6 +33,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.quiltmc.enigma.util.Utils.andJoin;
 
@@ -191,9 +193,9 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 
 		Logger.info("Searching mappings...");
 
-		final Multimap<ResultType, String> resultsByType = remapper.getMappings().getAllEntries()
+		final Multimap<ResultType, Entry<?>> resultsByType = remapper.getMappings().getAllEntries()
 				.parallel()
-				.<Map.Entry<ResultType, String>>mapMulti((obf, add) -> {
+				.<Map.Entry<ResultType, Entry<?>>>mapMulti((obf, add) -> {
 					if (obf instanceof ClassEntry obfClass) {
 						classFinder.flatMap(finder -> finder.apply(obfClass)).ifPresent(add);
 					} else if (obf instanceof MethodEntry obfMethod) {
@@ -215,7 +217,9 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 			return "\n" + resultsByType.asMap().entrySet().stream()
 				.map(entry -> {
 					final ResultType type = entry.getKey();
-					final Collection<String> results = entry.getValue();
+					final List<String> results = entry.getValue().stream()
+							.map(e -> "%s (%s)".formatted(QualifiedName.of(e), remapper.deobfuscate(e).getFullName()))
+							.toList();
 
 					final StringBuilder message = type.buildResultHeader(new StringBuilder(), results.size());
 
@@ -247,9 +251,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 		} else if (desc.isPrimitive()) {
 			return desc.getPrimitive().getKeyword();
 		} else if (desc.isType()) {
-			final ClassEntry obf = desc.getTypeEntry();
-			final ClassEntry deobf = remapper.deobfuscate(obf);
-			return getClassName(deobf == null ? obf : deobf);
+			return QualifiedName.of(remapper.deobfuscate(desc.getTypeEntry())).toString();
 		} else if (desc.isArray()) {
 			return getTypeName(desc.getArrayType(), remapper) + "[]".repeat(desc.getArrayDimension());
 		} else {
@@ -257,24 +259,41 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 		}
 	}
 
-	private static String getClassName(ClassEntry entry) {
-		final ArrayList<String> builder = new ArrayList<>();
-
-		while (entry.getParent() != null) {
-			builder.add(0, entry.getName());
-		}
-
-		builder.add(0, entry.getName().replace('/', '.'));
-
-		return String.join(".", builder);
-	}
-
 	private static Argument<Predicate<AccessFlags>> accessPredicateArgOf(String name, String explanation) {
 		return new Argument<>(name, "access-expression", ACCESS_PREDICATE_PARSER::parse, explanation);
 	}
 
+	private record QualifiedName(ImmutableList<String> packages, ImmutableList<String> names) {
+		static QualifiedName of(Entry<?> entry) {
+			final ArrayList<String> names = new ArrayList<>();
+
+			while (entry.getParent() != null) {
+				names.add(0, entry.getName());
+				entry = entry.getParent();
+			}
+
+			final String[] qualifiedTopName = entry.getFullName().split("/");
+			final int lastIndex = qualifiedTopName.length - 1;
+			names.add(0, qualifiedTopName[lastIndex]);
+
+			final ImmutableList.Builder<String> packages = ImmutableList.builder();
+			for (int i = 0; i < lastIndex; i++) {
+				packages.add(qualifiedTopName[i]);
+			}
+
+			return new QualifiedName(packages.build(), ImmutableList.copyOf(names));
+		}
+
+		@Override
+		public String toString() {
+			return Stream
+					.concat(this.packages.stream(), this.names.stream())
+					.collect(Collectors.joining("."));
+		}
+	}
+
 	@FunctionalInterface
-	private interface Finder<E extends Entry<?>> extends Function<E, Optional<Map.Entry<ResultType, String>>> {
+	private interface Finder<E extends Entry<?>> extends Function<E, Optional<Map.Entry<ResultType, Entry<?>>>> {
 		static Optional<Finder<ClassEntry>> ofClassesOrEmpty(
 				@Nullable Pattern pattern, @Nullable Predicate<AccessFlags> access,
 				EntryRemapper remapper, EntryIndex entryIndex
@@ -337,7 +356,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 				if (isMapped(remapper, obf)) {
 					final E deobf = remapper.deobfuscate(obf);
 					if (pattern.matcher(deobf.getName()).find()) {
-						return Optional.of(createResult(resultType, obf, deobf));
+						return Optional.of(Map.entry(resultType, obf));
 					}
 				}
 
@@ -350,7 +369,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 		) {
 			return obf -> {
 				if (isMapped(remapper, obf) && typeMatches(obf, pattern, remapper, descriptorGetter)) {
-					return Optional.of(createResult(resultType, remapper, obf));
+					return Optional.of(Map.entry(resultType, obf));
 				} else {
 					return Optional.empty();
 				}
@@ -365,7 +384,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 				if (isMapped(remapper, obf) && typeMatches(obf, typePattern, remapper, descriptorGetter)) {
 					final E deobf = remapper.deobfuscate(obf);
 					if (pattern.matcher(deobf.getName()).find()) {
-						return Optional.of(createResult(resultType, obf, deobf));
+						return Optional.of(Map.entry(resultType, obf));
 					}
 				}
 
@@ -378,7 +397,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 		) {
 			return obf -> {
 				if (isMapped(remapper, obf) && accessMatches(obf, access, entryIndex)) {
-					return Optional.of(createResult(resultType, remapper, obf));
+					return Optional.of(Map.entry(resultType, obf));
 				} else {
 					return Optional.empty();
 				}
@@ -393,7 +412,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 				if (isMapped(remapper, obf) && accessMatches(obf, access, entryIndex)) {
 					final E deobf = remapper.deobfuscate(obf);
 					if (pattern.matcher(deobf.getName()).find()) {
-						return Optional.of(createResult(resultType, obf, deobf));
+						return Optional.of(Map.entry(resultType, obf));
 					}
 				}
 
@@ -411,7 +430,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 							&& typeMatches(obf, pattern, remapper, descriptorGetter)
 							&& accessMatches(obf, access, entryIndex)
 				) {
-					return Optional.of(createResult(resultType, remapper, obf));
+					return Optional.of(Map.entry(resultType, obf));
 				} else {
 					return Optional.empty();
 				}
@@ -430,7 +449,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 				) {
 					final E deobf = remapper.deobfuscate(obf);
 					if (pattern.matcher(deobf.getName()).find()) {
-						return Optional.of(createResult(resultType, remapper, obf));
+						return Optional.of(Map.entry(resultType, obf));
 					}
 				}
 
@@ -453,18 +472,6 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 		) {
 			final AccessFlags entryAccess = entryIndex.getEntryAccess(entry);
 			return entryAccess != null && predicate.test(entryAccess);
-		}
-
-		private static Map.Entry<ResultType, String> createResult(
-				ResultType resultType, EntryRemapper remapper, Entry<?> obf
-		) {
-			return createResult(resultType, obf, remapper.deobfuscate(obf));
-		}
-
-		private static <E extends Entry<?>> Map.Entry<ResultType, String> createResult(
-				ResultType resultType, E obf, E deobf
-		) {
-			return Map.entry(resultType, "%s (%s)".formatted(deobf.getName(), obf.getFullName()));
 		}
 	}
 
