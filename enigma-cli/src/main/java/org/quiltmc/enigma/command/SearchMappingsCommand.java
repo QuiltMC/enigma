@@ -25,6 +25,8 @@ import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -87,6 +89,9 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 			"""
 			An access expression to filter parameters."""
 	);
+	private static final Argument<Sort> SORT = Argument.ofEnum("sort", Sort.class,
+			"""
+			How results should be sorted.""");
 	private static final Argument<Integer> LIMIT = Argument.ofInt("limit",
 			"""
 			A limit on the number of individual results to display per result type (class, method, field, parameter).
@@ -110,7 +115,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 					METHODS, METHOD_RETURNS, METHOD_ACCESS,
 					FIELDS, FIELD_TYPES, FIELD_ACCESS,
 					PARAMS, PARAM_TYPES, PARAM_ACCESS,
-					LIMIT,
+					SORT, LIMIT,
 					Optionals::new
 				)
 		);
@@ -124,7 +129,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 				optionals.methods, optionals.methodReturns, optionals.methodAccess,
 				optionals.fields, optionals.fieldTypes, optionals.fieldAccess,
 				optionals.params, optionals.paramTypes, optionals.paramAccess,
-				optionals.limit == null ? -1 : optionals.limit
+				optionals.sort, optionals.limit == null ? -1 : optionals.limit
 		);
 	}
 
@@ -144,7 +149,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 			@Nullable Pattern methods, @Nullable Pattern methodsReturns, @Nullable Predicate<AccessFlags> methodAccess,
 			@Nullable Pattern fields, @Nullable Pattern fieldTypes, @Nullable Predicate<AccessFlags> fieldAccess,
 			@Nullable Pattern params, @Nullable Pattern paramType, @Nullable Predicate<AccessFlags> paramAccess,
-			int limit
+			@Nullable Sort sort, int limit
 	) throws Exception {
 		final String message = runImpl(
 				jar, mappings,
@@ -152,7 +157,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 				methods, methodsReturns, methodAccess,
 				fields, fieldTypes, fieldAccess,
 				params, paramType, paramAccess,
-				limit
+				sort, limit
 		);
 
 		if (message.isEmpty()) {
@@ -169,10 +174,12 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 			@Nullable Pattern methods, @Nullable Pattern methodsReturns, @Nullable Predicate<AccessFlags> methodAccess,
 			@Nullable Pattern fields, @Nullable Pattern fieldTypes, @Nullable Predicate<AccessFlags> fieldAccess,
 			@Nullable Pattern params, @Nullable Pattern paramTypes, @Nullable Predicate<AccessFlags> paramAccess,
-			int limit
+			@Nullable Sort sort, int limit
 	) throws Exception {
 		Objects.requireNonNull(jar, "jar must not be null");
 		Objects.requireNonNull(mappings, "mappings must not be null");
+
+		final Sort defaultedSort = sort == null ? Sort.DEFAULT : sort;
 
 		final EnigmaProject project = openProject(jar, mappings);
 		final EntryIndex entryIndex = project.getJarIndex().getIndex(EntryIndex.class);
@@ -214,26 +221,54 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 		if (resultsByType.isEmpty()) {
 			return "";
 		} else {
-			return "\n" + resultsByType.asMap().entrySet().stream()
-				.map(entry -> {
-					final ResultType type = entry.getKey();
-					final List<String> results = entry.getValue().stream()
-							.map(e -> "%s (%s)".formatted(QualifiedName.of(e), remapper.deobfuscate(e).getFullName()))
+			return resultsByType.asMap().entrySet().stream()
+				.map(resultEntry -> {
+					final ResultType type = resultEntry.getKey();
+					final Collection<Entry<?>> resultEntries = resultEntry.getValue();
+					final int totalResults = resultEntries.size();
+					final boolean limited = limit >= 0 && limit < totalResults;
+
+					final Stream<ResultBuilder> sortedBuilders = resultEntries.stream()
+							.map(obf -> new ResultBuilder(QualifiedName.of(remapper.deobfuscate(obf)), obf))
+							.sorted(ResultBuilder.comparingName(defaultedSort.comparator));
+
+					final List<String> lines = (limited ? sortedBuilders.limit(limit) : sortedBuilders)
+							.map(builder -> {
+								final StringBuilder lineBuilder = new StringBuilder();
+								if (defaultedSort == Sort.NAME) {
+									final int finalNameIndex = builder.name.names.size() - 1;
+
+									lineBuilder
+											.append(builder.name.names.get(finalNameIndex))
+											.append(" (")
+											.append(Stream
+												.concat(
+													builder.name.packages.stream(),
+													builder.name.names.subList(0, finalNameIndex).stream()
+												)
+												.collect(Collectors.joining("."))
+											)
+											.append(")");
+								} else {
+									lineBuilder.append(builder.name.toString());
+								}
+
+								lineBuilder.append(" [").append(builder.obf.getFullName()).append("]");
+
+								return lineBuilder.toString();
+							})
 							.toList();
 
-					final StringBuilder message = type.buildResultHeader(new StringBuilder(), results.size());
+					final StringBuilder message = type.buildResultHeader(new StringBuilder(), totalResults);
 
 					if (limit == 0) {
 						message.append('.');
 					} else {
 						final String delim = "\n\t";
-						message.append(':').append(delim);
+						message.append(':').append(delim).append(String.join(delim, lines));
 
-						if (limit < 0 || results.size() <= limit) {
-							message.append(String.join(delim, results));
-						} else {
-							message.append(String.join(delim, results.stream().limit(limit).toList()));
-							final int excess = results.size() - limit;
+						if (limited) {
+							final int excess = lines.size() - limit;
 							message.append(delim).append("... and ").append(excess).append(" more ")
 									.append(type.getNameForCount(excess)).append('.');
 						}
@@ -241,7 +276,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 
 					return message.toString();
 				})
-				.collect(Collectors.joining("\n"));
+				.collect(Collectors.joining("\n", "\n", ""));
 		}
 	}
 
@@ -263,7 +298,37 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 		return new Argument<>(name, "access-expression", ACCESS_PREDICATE_PARSER::parse, explanation);
 	}
 
+	private record ResultBuilder(QualifiedName name, Entry<?> obf) {
+		static Comparator<ResultBuilder> comparingName(Comparator<QualifiedName> nameComparator) {
+			return (left, right) -> nameComparator.compare(left.name, right.name);
+		}
+	}
+
 	private record QualifiedName(ImmutableList<String> packages, ImmutableList<String> names) {
+		static final Comparator<List<String>> PARTS_ALPHABETIZER = (left, right) -> {
+			for (int i = 0; i < left.size(); i++) {
+				if (i >= right.size()) {
+					return 1;
+				} else {
+					final int comparison = left.get(i).compareTo(right.get(i));
+					if (comparison != 0) {
+						return comparison;
+					}
+				}
+			}
+
+			return 0;
+		};
+
+		static final Comparator<QualifiedName> NAMES_ALPHABETIZER = (left, right) ->
+				PARTS_ALPHABETIZER.compare(left.names, right.names);
+
+		static final Comparator<QualifiedName> PACKAGES_ALPHABETIZER = (left, right) ->
+				PARTS_ALPHABETIZER.compare(left.packages, right.packages);
+
+		static final Comparator<QualifiedName> PACKAGE_DEPTH_SORTER =
+				Comparator.comparingInt(qualified -> qualified.packages.size());
+
 		static QualifiedName of(Entry<?> entry) {
 			final ArrayList<String> names = new ArrayList<>();
 
@@ -503,6 +568,24 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 		}
 	}
 
+	public enum Sort {
+		NAME(QualifiedName.NAMES_ALPHABETIZER.thenComparing(QualifiedName.PACKAGES_ALPHABETIZER)),
+		PACKAGE(QualifiedName.PACKAGES_ALPHABETIZER.thenComparing(QualifiedName.NAMES_ALPHABETIZER)),
+		DEPTH(
+				QualifiedName.PACKAGE_DEPTH_SORTER
+					.thenComparing(QualifiedName.PACKAGES_ALPHABETIZER)
+					.thenComparing(QualifiedName.NAMES_ALPHABETIZER)
+		);
+
+		private static final Sort DEFAULT = NAME;
+
+		private final Comparator<QualifiedName> comparator;
+
+		Sort(Comparator<QualifiedName> comparator) {
+			this.comparator = comparator;
+		}
+	}
+
 	private enum Access {
 		PUBLIC(Opcodes.ACC_PUBLIC),
 		PRIVATE(Opcodes.ACC_PRIVATE),
@@ -550,6 +633,6 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 			Pattern methods, Pattern methodReturns, Predicate<AccessFlags> methodAccess,
 			Pattern fields, Pattern fieldTypes, Predicate<AccessFlags> fieldAccess,
 			Pattern params, Pattern paramTypes, Predicate<AccessFlags> paramAccess,
-			Integer limit
+			Sort sort, Integer limit
 	) { }
 }

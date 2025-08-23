@@ -68,14 +68,15 @@ final class Argument<T> {
 	 * Creates a string argument whose {@code typeDescription} lists expected values.
 	 */
 	static Argument<String> ofLenientEnum(String name, Class<? extends Enum<?>> type, String explanation) {
-		final String alternatives = Arrays.stream(type.getEnumConstants())
-				.map(Object::toString)
-				.collect(Collectors.joining(ALTERNATIVES_DELIM));
-		return ofString(name, alternatives, explanation);
+		return ofString(name, alternativesOf(type), explanation);
+	}
+
+	static <E extends Enum<E>> Argument<E> ofEnum(String name, Class<E> type, String explanation) {
+		return new Argument<>(name, alternativesOf(type), string -> parseEnum(type, string), explanation);
 	}
 
 	static Argument<Boolean> ofBool(String name, String explanation) {
-		return new Argument<>(name, BOOL_TYPE, Boolean::parseBoolean, explanation);
+		return new Argument<>(name, BOOL_TYPE, Argument::parseBool, explanation);
 	}
 
 	static Argument<Integer> ofInt(String name, String explanation) {
@@ -88,6 +89,12 @@ final class Argument<T> {
 
 	static Argument<Pattern> ofPattern(String name, String explanation) {
 		return new Argument<>(name, PATTERN_TYPE, Argument::parsePattern, explanation);
+	}
+
+	private static String alternativesOf(Class<? extends Enum<?>> type) {
+		return Arrays.stream(type.getEnumConstants())
+			.map(Object::toString)
+			.collect(Collectors.joining(ALTERNATIVES_DELIM));
 	}
 
 	private final String name;
@@ -177,6 +184,14 @@ final class Argument<T> {
 		} catch (PatternSyntaxException e) {
 			throw new IllegalArgumentException(e);
 		}
+	}
+
+	static <E extends Enum<E>> E parseEnum(Class<E> type, String name) {
+		return name == null ? null : Enum.valueOf(type, name);
+	}
+
+	static Boolean parseBool(String value) {
+		return value == null ? null : Boolean.parseBoolean(value);
 	}
 
 	static Integer parseInt(String integer) {

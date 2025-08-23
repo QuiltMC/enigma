@@ -21,7 +21,8 @@ public class ArgsParserTest {
 			NAME_9 = "name9", VALUE_9 = "value9",
 			NAME_10 = "name10", VALUE_10 = "value10",
 			NAME_11 = "name11", VALUE_11 = "value11",
-			NAME_12 = "name12", VALUE_12 = "value12";
+			NAME_12 = "name12", VALUE_12 = "value12",
+			NAME_13 = "name13", VALUE_13 = "value13";
 
 	private static final Argument<String>
 			ARGUMENT_1 = Argument.ofString(NAME_1, "string", "test arg 1"),
@@ -35,7 +36,8 @@ public class ArgsParserTest {
 			ARGUMENT_9 = Argument.ofString(NAME_9, "string", "test arg 9"),
 			ARGUMENT_10 = Argument.ofString(NAME_10, "string", "test arg 10"),
 			ARGUMENT_11 = Argument.ofString(NAME_11, "string", "test arg 11"),
-			ARGUMENT_12 = Argument.ofString(NAME_12, "string", "test arg 12");
+			ARGUMENT_12 = Argument.ofString(NAME_12, "string", "test arg 12"),
+			ARGUMENT_13 = Argument.ofString(NAME_13, "string", "test arg 13");
 
 	private static final ImmutableMap<String, String> VALUES_BY_NAME = ImmutableMap.ofEntries(
 			Map.entry(NAME_1, VALUE_1),
@@ -49,7 +51,8 @@ public class ArgsParserTest {
 			Map.entry(NAME_9, VALUE_9),
 			Map.entry(NAME_10, VALUE_10),
 			Map.entry(NAME_11, VALUE_11),
-			Map.entry(NAME_12, VALUE_12)
+			Map.entry(NAME_12, VALUE_12),
+			Map.entry(NAME_13, VALUE_13)
 	);
 
 	private static final ImmutableList<String> ORDERED_NAMES = VALUES_BY_NAME.keySet().asList();
@@ -193,6 +196,21 @@ public class ArgsParserTest {
 		);
 	}
 
+	@Test
+	void test13() {
+		final ArgsParser<Packed13> parser = ArgsParser.of(
+				ARGUMENT_1, ARGUMENT_2, ARGUMENT_3, ARGUMENT_4, ARGUMENT_5, ARGUMENT_6, ARGUMENT_7, ARGUMENT_8,
+				ARGUMENT_9, ARGUMENT_10, ARGUMENT_11, ARGUMENT_12, ARGUMENT_13,
+				Packed13::new
+		);
+		assertOrder(parser);
+		final Packed13 packed = parseValues(parser);
+		assertValues(
+				packed.arg1, packed.arg2, packed.arg3, packed.arg4, packed.arg5, packed.arg6, packed.arg7, packed.arg8,
+				packed.arg9, packed.arg10, packed.arg11, packed.arg12, packed.arg13
+		);
+	}
+
 	private static void assertOrder(ArgsParser<?> parser) {
 		for (int i = 0; i < parser.count(); i++) {
 			assertEquals(parser.get(i).getName(), ORDERED_NAMES.get(i));
@@ -235,5 +253,9 @@ public class ArgsParserTest {
 	private record Packed12(
 			String arg1, String arg2, String arg3, String arg4, String arg5, String arg6, String arg7, String arg8,
 			String arg9, String arg10, String arg11, String arg12
+	) { }
+	private record Packed13(
+			String arg1, String arg2, String arg3, String arg4, String arg5, String arg6, String arg7, String arg8,
+			String arg9, String arg10, String arg11, String arg12, String arg13
 	) { }
 }

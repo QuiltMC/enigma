@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.TestUtil;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.command.SearchMappingsCommand.ResultType;
+import org.quiltmc.enigma.command.SearchMappingsCommand.Sort;
 import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
@@ -103,12 +104,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsClassNames() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				Pattern.compile("erClass$"), null,
 				null, null, null,
 				null, null, null,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(found, ResultType.CLASS, INNER_CLASS, OUTER_CLASS);
@@ -116,12 +116,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsAccessedClasses() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, AccessFlags::isEnum,
 				null, null, null,
 				null, null, null,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(found, ResultType.CLASS, SELF_RETURN_ENUM);
@@ -129,12 +128,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsAccessFilteredClassNames() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				Pattern.compile("Return"), access -> !access.isEnum(),
 				null, null, null,
 				null, null, null,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(found, ResultType.CLASS, OTHER_RETURN_INTERFACE);
@@ -142,12 +140,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsMethodNames() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				Pattern.compile("Method$"), null, null,
 				null, null, null,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(
@@ -158,12 +155,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsVoidMethods() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, Pattern.compile("^void$"), null,
 				null, null, null,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(found, ResultType.METHOD, VOID_METHOD, INT_TO_VOID_METHOD, STATIC_VOID_METHOD);
@@ -171,12 +167,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsPrimitiveMethods() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, Pattern.compile("^int"), null,
 				null, null, null,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(found, ResultType.METHOD, INT_METHOD, INT_TO_INT_METHOD);
@@ -184,12 +179,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsTypedMethods() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, Pattern.compile("^OtherReturnInterface$"), null,
 				null, null, null,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(found, ResultType.METHOD, GET_OTHER);
@@ -197,12 +191,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsAccessedMethods() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, null, AccessFlags::isAbstract,
 				null, null, null,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(found, ResultType.METHOD, ABSTRACT_METHOD);
@@ -210,12 +203,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsTypeFilteredMethodNames() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				Pattern.compile("^intTo"), Pattern.compile("^void$"), null,
 				null, null, null,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(found, ResultType.METHOD, INT_TO_VOID_METHOD);
@@ -223,12 +215,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsAccessFilteredMethodNames() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				Pattern.compile(".*(?<!Array)$"), null, AccessFlags::isStatic,
 				null, null, null,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(found, ResultType.METHOD, STATIC_GET, STATIC_VOID_METHOD);
@@ -236,12 +227,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsFullyFilteredMethodNames() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				Pattern.compile("^(?!int)"), Pattern.compile("^void$"), access -> !access.isStatic(),
 				null, null, null,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(found, ResultType.METHOD, VOID_METHOD);
@@ -249,12 +239,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsFieldNames() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, null, null,
 				Pattern.compile("Field$"), null, null,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(found, ResultType.FIELD, INT_FIELD, FLOAT_FIELD, STRING_FIELD, PRIVATE_STRING_FIELD);
@@ -262,12 +251,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsPrimitiveFields() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, null, null,
 				null, Pattern.compile("^int$"), null,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(found, ResultType.FIELD, INT_FIELD, PRIVATE_STATIC_FINAL_INT_FIELD, RECORD_INT);
@@ -275,12 +263,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsTypedFields() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, null, null,
 				null, Pattern.compile("^java\\.lang\\.String$"), null,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(found, ResultType.FIELD, STRING_FIELD, PRIVATE_STRING_FIELD, RECORD_STRING, RECORD_STRING_2);
@@ -288,12 +275,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsAccessedFields() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, null, null,
 				null, null, AccessFlags::isPrivate,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(
@@ -304,12 +290,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsTypeFilteredFieldNames() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, null, null,
 				Pattern.compile("Field$"), Pattern.compile("^float$"), null,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(found, ResultType.FIELD, FLOAT_FIELD);
@@ -317,12 +302,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsAccessFilteredFieldNames() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, null, null,
 				Pattern.compile("(?i)int"), null, AccessFlags::isPrivate,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(found, ResultType.FIELD, PRIVATE_STATIC_FINAL_INT_FIELD, RECORD_INT);
@@ -330,12 +314,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsFullyFilteredFieldNames() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, null, null,
 				Pattern.compile(".*(?<!2)$"), Pattern.compile("^java\\.lang\\.String$"), AccessFlags::isPrivate,
-				null, null, null,
-				-1
+				null, null, null
 		);
 
 		assertOnlyResults(found, ResultType.FIELD, RECORD_STRING, PRIVATE_STRING_FIELD);
@@ -343,12 +326,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsParamNames() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, null, null,
 				null, null, null,
-				Pattern.compile("Param$"), null, null,
-				-1
+				Pattern.compile("Param$"), null, null
 		);
 
 		assertOnlyResults(
@@ -359,12 +341,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsPrimitiveParams() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, null, null,
 				null, null, null,
-				null, Pattern.compile("^int$"), null,
-				-1
+				null, Pattern.compile("^int$"), null
 		);
 
 		assertOnlyResults(found, ResultType.PARAM, INT_PARAM, CONSTRUCTOR_INT_PARAM);
@@ -372,12 +353,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsTypedParams() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, null, null,
 				null, null, null,
-				null, Pattern.compile("^ParamType$"), null,
-				-1
+				null, Pattern.compile("^ParamType$"), null
 		);
 
 		assertOnlyResults(found, ResultType.PARAM, STATIC_TYPED_PARAM);
@@ -385,12 +365,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsAccessedParams() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, null, null,
 				null, null, null,
-				null, null, AccessFlags::isStatic,
-				-1
+				null, null, AccessFlags::isStatic
 		);
 
 		assertOnlyResults(found, ResultType.PARAM, STATIC_TYPED_PARAM, STATIC_STRING_PARAM);
@@ -398,12 +377,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsTypeFilteredParamNames() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, null, null,
 				null, null, null,
-				Pattern.compile("^constructor"), Pattern.compile("^java\\.lang\\.String$"), null,
-				-1
+				Pattern.compile("^constructor"), Pattern.compile("^java\\.lang\\.String$"), null
 		);
 
 		assertOnlyResults(found, ResultType.PARAM, CONSTRUCTOR_PARAM_STRING);
@@ -411,12 +389,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsAccessFilteredParamNames() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, null, null,
 				null, null, null,
-				Pattern.compile("st"), null, access -> !access.isStatic(),
-				-1
+				Pattern.compile("st"), null, access -> !access.isStatic()
 		);
 
 		assertOnlyResults(found, ResultType.PARAM, CONSTRUCTOR_INT_PARAM, CONSTRUCTOR_PARAM_STRING);
@@ -424,12 +401,11 @@ public class SearchMappingsTest {
 
 	@Test
 	void findsFullyFilteredParamNames() {
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				null, null,
 				null, null, null,
 				null, null, null,
-				Pattern.compile("st"), Pattern.compile("^.*(?<!String)$"), access -> !access.isStatic(),
-				-1
+				Pattern.compile("st"), Pattern.compile("^.*(?<!String)$"), access -> !access.isStatic()
 		);
 
 		assertOnlyResults(found, ResultType.PARAM, CONSTRUCTOR_INT_PARAM);
@@ -438,12 +414,11 @@ public class SearchMappingsTest {
 	@Test
 	void findsEverythingAndLimitable() {
 		final Pattern anything = Pattern.compile(".*");
-		final String found = runNonEmpty(
+		final String found = runDefault(
 				anything, alwaysTrue(),
 				anything, anything, alwaysTrue(),
 				anything, anything, alwaysTrue(),
-				anything, anything, alwaysTrue(),
-				-1
+				anything, anything, alwaysTrue()
 		);
 
 		final String limitedFound = runNonEmpty(
@@ -451,7 +426,7 @@ public class SearchMappingsTest {
 				anything, anything, alwaysTrue(),
 				anything, anything, alwaysTrue(),
 				anything, anything, alwaysTrue(),
-				0
+				null, 0
 		);
 
 		for (final ResultType type : ResultType.values()) {
@@ -473,10 +448,28 @@ public class SearchMappingsTest {
 				unmatchable, unmatchable, alwaysFalse(),
 				unmatchable, unmatchable, alwaysFalse(),
 				unmatchable, unmatchable, alwaysFalse(),
-				-1
+				null, -1
 		);
 
 		assertTrue(found.isEmpty(), "Expected to find empty string!");
+	}
+
+	/**
+	 * Uses default sort with no limit and verifies non-empty.
+	 */
+	private static String runDefault(
+			@Nullable Pattern classes, @Nullable Predicate<AccessFlags> classAccess,
+			@Nullable Pattern methods, @Nullable Pattern methodReturns, @Nullable Predicate<AccessFlags> methodAccess,
+			@Nullable Pattern fields, @Nullable Pattern fieldTypes, @Nullable Predicate<AccessFlags> fieldAccess,
+			@Nullable Pattern params, @Nullable Pattern paramTypes, @Nullable Predicate<AccessFlags> paramAccess
+	) {
+		return runNonEmpty(
+			classes, classAccess,
+			methods, methodReturns, methodAccess,
+			fields, fieldTypes, fieldAccess,
+			params, paramTypes, paramAccess,
+			null, -1
+		);
 	}
 
 	private static String runNonEmpty(
@@ -484,14 +477,14 @@ public class SearchMappingsTest {
 			@Nullable Pattern methods, @Nullable Pattern methodReturns, @Nullable Predicate<AccessFlags> methodAccess,
 			@Nullable Pattern fields, @Nullable Pattern fieldTypes, @Nullable Predicate<AccessFlags> fieldAccess,
 			@Nullable Pattern params, @Nullable Pattern paramTypes, @Nullable Predicate<AccessFlags> paramAccess,
-			int limit
+			@Nullable Sort sort, int limit
 	) {
 		final String found = run(
 				classes, classAccess,
 				methods, methodReturns, methodAccess,
 				fields, fieldTypes, fieldAccess,
 				params, paramTypes, paramAccess,
-				limit
+				sort, limit
 		);
 
 		assertFalse(found.isEmpty(), "Unexpected empty result!");
@@ -506,7 +499,7 @@ public class SearchMappingsTest {
 			@Nullable Pattern methods, @Nullable Pattern methodReturns, @Nullable Predicate<AccessFlags> methodAccess,
 			@Nullable Pattern fields, @Nullable Pattern fieldTypes, @Nullable Predicate<AccessFlags> fieldAccess,
 			@Nullable Pattern params, @Nullable Pattern paramTypes, @Nullable Predicate<AccessFlags> paramAccess,
-			int limit
+			@Nullable Sort sort, int limit
 	) {
 		try {
 			return SearchMappingsCommand.runImpl(
@@ -515,7 +508,7 @@ public class SearchMappingsTest {
 					methods, methodReturns, methodAccess,
 					fields, fieldTypes, fieldAccess,
 					params, paramTypes, paramAccess,
-					limit
+					sort, limit
 			);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
