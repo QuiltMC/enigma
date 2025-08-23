@@ -16,8 +16,8 @@ import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
-import org.quiltmc.enigma.command.GrepMappingsCommand.Required;
-import org.quiltmc.enigma.command.GrepMappingsCommand.Optionals;
+import org.quiltmc.enigma.command.SearchMappingsCommand.Required;
+import org.quiltmc.enigma.command.SearchMappingsCommand.Optionals;
 import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 
 import static org.quiltmc.enigma.util.Utils.andJoin;
 
-public final class GrepMappingsCommand extends Command<Required, Optionals> {
+public final class SearchMappingsCommand extends Command<Required, Optionals> {
 	private static final PredicateParser<Access, AccessFlags> ACCESS_PREDICATE_PARSER = new PredicateParser<>(
 			Access::valueOf,
 			(access, flags) -> (flags.getFlags() & access.flag) != 0
@@ -92,7 +92,7 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 			A limit of 0 causes only counts to be reported and negative limits are ignored."""
 	);
 
-	public static final GrepMappingsCommand INSTANCE = new GrepMappingsCommand();
+	public static final SearchMappingsCommand INSTANCE = new SearchMappingsCommand();
 
 	private static final String DESCRIPTION = """
 			Searches for class, method, field, and parameter names using regular expressions.
@@ -100,7 +100,7 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 				An access expression is a boolean combination of access flag keywords. They support &, |, !, and parentheses.
 				Available access flag keywords are %s.""".formatted(andJoin(Arrays.stream(Access.values()).map(Object::toString).toList()));
 
-	private GrepMappingsCommand() {
+	private SearchMappingsCommand() {
 		super(
 				ArgsParser.of(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS, Required::new),
 				ArgsParser.of(
@@ -128,7 +128,7 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 
 	@Override
 	public String getName() {
-		return "grep-mappings";
+		return "search-mappings";
 	}
 
 	@Override
@@ -189,7 +189,7 @@ public final class GrepMappingsCommand extends Command<Required, Optionals> {
 				params, paramTypes, paramAccess, ResultType.PARAM, remapper, entryIndex, LocalVariableDefEntry::getDesc
 		);
 
-		Logger.info("Grepping mappings...");
+		Logger.info("Searching mappings...");
 
 		final Multimap<ResultType, String> resultsByType = remapper.getMappings().getAllEntries()
 				.parallel()

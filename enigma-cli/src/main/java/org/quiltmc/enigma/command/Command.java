@@ -45,7 +45,7 @@ import static com.google.common.collect.ImmutableSet.toImmutableSet;
  */
 public abstract sealed class Command<R, O> permits
 		CheckMappingsCommand, ComposeMappingsCommand, ConvertMappingsCommand, DecompileCommand, DeobfuscateCommand,
-		DropInvalidMappingsCommand, FillClassMappingsCommand, GrepMappingsCommand, HelpCommand,
+		DropInvalidMappingsCommand, FillClassMappingsCommand, SearchMappingsCommand, HelpCommand,
 		InsertProposedMappingsCommand, InvertMappingsCommand, MapSpecializedMethodsCommand, PrintStatsCommand {
 	private static final int EARLIEST_ARG_DELIM_INDEX = 1;
 

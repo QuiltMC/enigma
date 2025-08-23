@@ -25,7 +25,7 @@ public class Main {
 				FillClassMappingsCommand.INSTANCE,
 				HelpCommand.INSTANCE,
 				PrintStatsCommand.INSTANCE,
-				GrepMappingsCommand.INSTANCE
+				SearchMappingsCommand.INSTANCE
 			)
 			.collect(toImmutableMap(Command::getName, Function.identity()));
 

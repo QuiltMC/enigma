@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.TestUtil;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
-import org.quiltmc.enigma.command.GrepMappingsCommand.ResultType;
+import org.quiltmc.enigma.command.SearchMappingsCommand.ResultType;
 import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
@@ -20,9 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.quiltmc.enigma.TestUtil.getResource;
 
-public class GrepMappingsTest {
+public class SearchMappingsTest {
 	private static final Path JAR = TestUtil.obfJar("complete");
-	private static final Path MAPPINGS = getResource("/grep_mappings");
+	private static final Path MAPPINGS = getResource("/search_mappings");
 
 	// classes
 	private static final String INNER_CLASS = "InnerClass";
@@ -509,7 +509,7 @@ public class GrepMappingsTest {
 			int limit
 	) {
 		try {
-			return GrepMappingsCommand.runImpl(
+			return SearchMappingsCommand.runImpl(
 					JAR, MAPPINGS,
 					classes, classAccess,
 					methods, methodReturns, methodAccess,
