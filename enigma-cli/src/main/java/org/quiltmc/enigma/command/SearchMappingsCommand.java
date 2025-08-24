@@ -337,7 +337,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 		static final Comparator<QualifiedName> PACKAGES_ALPHABETIZER = (left, right) ->
 				PARTS_ALPHABETIZER.compare(left.packages, right.packages);
 
-		static final Comparator<QualifiedName> PACKAGE_DEPTH_SORTER =
+		static final Comparator<QualifiedName> PACKAGES_DEPTH_SORTER =
 				comparingInt(qualified -> qualified.packages.size());
 
 		static QualifiedName of(Entry<?> entry) {
@@ -583,7 +583,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 		NAME(QualifiedName.NAMES_ALPHABETIZER.thenComparing(QualifiedName.PACKAGES_ALPHABETIZER)),
 		PACKAGE(QualifiedName.PACKAGES_ALPHABETIZER.thenComparing(QualifiedName.NAMES_ALPHABETIZER)),
 		DEPTH(
-				QualifiedName.PACKAGE_DEPTH_SORTER
+				QualifiedName.PACKAGES_DEPTH_SORTER
 					.thenComparing(QualifiedName.PACKAGES_ALPHABETIZER)
 					.thenComparing(QualifiedName.NAMES_ALPHABETIZER)
 		);
