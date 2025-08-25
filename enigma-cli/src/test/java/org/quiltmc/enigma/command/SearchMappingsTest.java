@@ -437,7 +437,7 @@ public class SearchMappingsTest {
 				Sort.NAME, -1
 		);
 
-		assertOrder(found, KEEP_PACKAGED, PACKAGED_CLASS, SELF_RETURN_ENUM);
+		assertResultOrder(found, ResultType.CLASS, KEEP_PACKAGED, PACKAGED_CLASS, SELF_RETURN_ENUM);
 	}
 
 	@Test
@@ -450,7 +450,7 @@ public class SearchMappingsTest {
 				Sort.PACKAGE, -1
 		);
 
-		assertOrder(found, SELF_RETURN_ENUM, KEEP_PACKAGED, PACKAGED_CLASS);
+		assertResultOrder(found, ResultType.CLASS, SELF_RETURN_ENUM, KEEP_PACKAGED, PACKAGED_CLASS);
 	}
 
 	@Test
@@ -463,7 +463,7 @@ public class SearchMappingsTest {
 				Sort.DEPTH, -1
 		);
 
-		assertOrder(found, SELF_RETURN_ENUM, PACKAGED_CLASS, KEEP_PACKAGED);
+		assertResultOrder(found, ResultType.CLASS, SELF_RETURN_ENUM, PACKAGED_CLASS, KEEP_PACKAGED);
 	}
 
 	@Test
@@ -581,19 +581,21 @@ public class SearchMappingsTest {
 	}
 
 	@SuppressWarnings({"unused", "RedundantThrows"})
-	private static void assertOrder(String found) throws Throwable {
+	private static void assertResultOrder(String found, ResultType type) throws Throwable {
 		throw new UnsupportedOperationException();
 	}
 
-	private static void assertOrder(String found, String... words) {
-		int prev = requireIndexOf(found, words[0]);
+	private static void assertResultOrder(String found, ResultType type, String... words) {
+		final String typeSection = requireResultTypeSection(found, type);
+
+		int prev = requireIndexOf(typeSection, words[0]);
 
 		for (int n = 1; n < words.length; n++) {
 			final String word = words[n];
-			final int current = requireIndexOf(found, word);
+			final int current = requireIndexOf(typeSection, word);
 
 			final String prevWord = words[n - 1];
-			assertTrue(prev < current, () -> getExpectedToComBeforeMessage(prevWord, word));
+			assertTrue(prev < current, () -> getExpectedBeforeMessage(prevWord, word));
 
 			prev = current;
 		}
@@ -617,18 +619,12 @@ public class SearchMappingsTest {
 	 * {@code found} string.
 	 */
 	private static void assertOnlyResultsOfType(String found, ResultType type, String... expectedNames) {
-		final ImmutableList<String> names = getNames(type);
-
 		final String header = type.buildResultHeader(new StringBuilder(), expectedNames.length).toString();
 		final int headerStart = requireIndexOf(found, header);
-
-		final int headerEnd = headerStart + header.length();
-		final Matcher nextResultMatcher = Pattern.compile("Found \\d+ \\w+").matcher(found);
-		final int typeSectionEnd = nextResultMatcher.find(headerEnd) ? nextResultMatcher.start() : found.length();
-		final String typeSection = found.substring(headerEnd, typeSectionEnd);
+		final String typeSection = getResultTypeSection(found, headerStart + header.length());
 
 		final Set<String> expected = Set.of(expectedNames);
-		for (final String name : names) {
+		for (final String name : getNames(type)) {
 			if (expected.contains(name)) {
 				assertContains(typeSection, name);
 			} else {
@@ -662,13 +658,23 @@ public class SearchMappingsTest {
 
 	private static void assertNoResults(String found, ResultType... types) {
 		for (final ResultType type : types) {
-			final Pattern resultHeaderPattern = Pattern
-					.compile("Found \\d+ (?:%s|%s)".formatted(type.singleName, type.pluralName));
 			assertFalse(
-					resultHeaderPattern.matcher(found).find(),
+					resultHeaderPatternOf(type).matcher(found).find(),
 					() -> "Unexpected result type: " + type
 			);
 		}
+	}
+
+	private static String requireResultTypeSection(String found, ResultType type) {
+		final Matcher headerMatcher = resultHeaderPatternOf(type).matcher(found);
+		assertTrue(headerMatcher.find(), () -> "Expected '%s' to contain '%s' results!".formatted(found, type));
+		return getResultTypeSection(found, headerMatcher.end());
+	}
+
+	private static String getResultTypeSection(String found, int headerEnd) {
+		final Matcher nextResultMatcher = Pattern.compile("Found \\d+ \\w+").matcher(found);
+		final int typeSectionEnd = nextResultMatcher.find(headerEnd) ? nextResultMatcher.start() : found.length();
+		return found.substring(headerEnd, typeSectionEnd);
 	}
 
 	private static int requireIndexOf(String string, String word) {
@@ -691,6 +697,10 @@ public class SearchMappingsTest {
 		return wordPatternOf("\\b" + word + "\\b").matcher(string).find();
 	}
 
+	private static Pattern resultHeaderPatternOf(ResultType type) {
+		return Pattern.compile("Found \\d+ (?:%s|%s)".formatted(type.singleName, type.pluralName));
+	}
+
 	private static Pattern wordPatternOf(String word) {
 		return Pattern.compile(word);
 	}
@@ -699,7 +709,7 @@ public class SearchMappingsTest {
 		return "Expected '%s' to contain '%s'!".formatted(string, word);
 	}
 
-	private static String getExpectedToComBeforeMessage(String expectedFirst, String expectedSecond) {
-		return "Expected %s to come before %s!".formatted(expectedFirst, expectedSecond);
+	private static String getExpectedBeforeMessage(String expectedFirst, String expectedSecond) {
+		return "Expected '%s' to come before '%s'!".formatted(expectedFirst, expectedSecond);
 	}
 }
