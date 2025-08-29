@@ -26,7 +26,7 @@ public abstract class StatsTooltipPanel extends JPanel {
 
 		StatsGenerator generator = this.controller.getStatsGenerator();
 
-		if (generator == null || generator.getResultNullable() == null) {
+		if (generator == null || generator.getResultNullable(Config.stats().createIconGenParameters(this.controller.getGui().getEditableStatTypes())) == null) {
 			text.append(I18n.translate("class_selector.tooltip.stats_not_generated"));
 		} else {
 			StatsResult stats = this.getStats(generator);

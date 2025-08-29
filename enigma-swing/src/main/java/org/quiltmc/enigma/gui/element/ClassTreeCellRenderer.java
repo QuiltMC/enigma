@@ -47,7 +47,7 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 
 					@Override
 					StatsResult getStats(StatsGenerator generator) {
-						return generator.getResultNullable().getPackageStats(this.getDisplayName());
+						return generator.getResultNullable(Config.stats().createIconGenParameters(ClassTreeCellRenderer.this.controller.getGui().getEditableStatTypes())).getPackageStats(this.getDisplayName());
 					}
 
 					@Override
@@ -92,7 +92,7 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 
 			if (Config.main().features.enableClassTreeStatIcons.value()) {
 				if (this.controller.getStatsGenerator() != null) {
-					ProjectStatsResult stats = this.controller.getStatsGenerator().getResultNullable();
+					ProjectStatsResult stats = this.controller.getStatsGenerator().getResultNullable(Config.stats().createIconGenParameters(this.controller.getGui().getEditableStatTypes()));
 					if (stats == null) {
 						// calculate stats on a separate thread for performance reasons
 						this.setIcon(GuiUtil.PENDING_STATUS_ICON);

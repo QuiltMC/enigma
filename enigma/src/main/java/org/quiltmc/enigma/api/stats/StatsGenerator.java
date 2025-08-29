@@ -51,8 +51,10 @@ public class StatsGenerator {
 	/**
 	 * Gets the latest generated stats.
 	 * @return the stats, or {@code null} if not yet generated
+	 * @deprecated use {@link #getResultNullable(GenerationParameters)} instead
 	 */
 	@Nullable
+	@Deprecated(forRemoval = true, since = "2.7.0")
 	public ProjectStatsResult getResultNullable() {
 		return this.result;
 	}
@@ -60,11 +62,26 @@ public class StatsGenerator {
 	/**
 	 * Gets the latest generated stats, or generates them if not available.
 	 * Regenerates stats if parameters have changed.
+	 * @param parameters the parameters of the stats to retrieve
 	 * @return the stats
 	 */
 	public ProjectStatsResult getResult(GenerationParameters parameters) {
 		if (this.result == null || !this.lastParameters.equals(parameters)) {
 			return this.generate(ProgressListener.createEmpty(), parameters);
+		}
+
+		return this.result;
+	}
+
+	/**
+	 * Gets the latest generated stats.
+	 * Returns null if parameters have changed.
+	 * @param parameters the parameters of the stats to retrieve
+	 * @return the stats, or null if none have been generated or the parameters have changed
+	 */
+	public ProjectStatsResult getResultNullable(GenerationParameters parameters) {
+		if (!this.lastParameters.equals(parameters)) {
+			return null;
 		}
 
 		return this.result;

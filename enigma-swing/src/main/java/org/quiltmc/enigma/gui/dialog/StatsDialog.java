@@ -28,24 +28,29 @@ import javax.swing.SwingUtilities;
 
 public class StatsDialog {
 	public static void show(Gui gui) {
+		GenerationParameters parameters = Config.stats().createGenParameters(gui.getEditableStatTypes());
 		StatsGenerator generator = gui.getController().getStatsGenerator();
-		ProjectStatsResult nullableResult = generator.getResultNullable();
+		if (generator != null) {
+			ProjectStatsResult nullableResult = generator.getResultNullable(parameters);
 
-		if (nullableResult == null || !nullableResult.getOverall().getTypes().equals(gui.getEditableStatTypes())) {
-			generateAndShow(gui, generator);
+			if (nullableResult == null) {
+				generateAndShow(gui, generator, parameters);
+			} else {
+				SwingUtilities.invokeLater(() -> show(gui, nullableResult, ""));
+			}
 		} else {
-			SwingUtilities.invokeLater(() -> show(gui, nullableResult, ""));
+			throw new IllegalStateException("Cannot open stats dialog without a project open! (stats generator is null)");
 		}
 	}
 
-	public static void generateAndShow(Gui gui, StatsGenerator generator) {
+	public static void generateAndShow(Gui gui, StatsGenerator generator, GenerationParameters parameters) {
 		ProgressDialog.runOffThread(gui, listener -> {
 			// hook into current stat generation progress
 			if (generator.getOverallProgress() != null) {
 				listener.sync(generator.getOverallProgress());
 			}
 
-			ProjectStatsResult result = generator.getResult(new GenerationParameters(gui.getEditableStatTypes()));
+			ProjectStatsResult result = generator.getResult(parameters);
 			SwingUtilities.invokeLater(() -> show(gui, result, ""));
 		});
 	}

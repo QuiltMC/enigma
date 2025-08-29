@@ -1,7 +1,6 @@
 package org.quiltmc.enigma.gui.node;
 
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.api.stats.GenerationParameters;
 import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
@@ -36,6 +35,7 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 
 	/**
 	 * Reloads the stats for this class node and updates the icon in the provided class selector.
+	 * Exits if no project is open.
 	 *
 	 * @param gui the current gui instance
 	 * @param selector the class selector to reload on
@@ -43,16 +43,19 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	 */
 	public void reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent) {
 		StatsGenerator generator = gui.getController().getStatsGenerator();
+		if (generator == null) {
+			return;
+		}
 
 		SwingWorker<ClassSelectorClassNode, Void> iconUpdateWorker = new SwingWorker<>() {
 			@Override
 			protected ClassSelectorClassNode doInBackground() {
-				var includedTypes = Config.stats().getIncludedTypesForIcons(gui.getEditableStatTypes());
+				var parameters = Config.stats().createIconGenParameters(gui.getEditableStatTypes());
 
-				if (generator.getResultNullable() == null && generator.getOverallProgress() == null) {
-					generator.generate(ProgressListener.createEmpty(), new GenerationParameters(includedTypes));
+				if (generator.getResultNullable(parameters) == null && generator.getOverallProgress() == null) {
+					generator.generate(ProgressListener.createEmpty(), parameters);
 				} else if (updateIfPresent) {
-					generator.generate(ProgressListener.createEmpty(), ClassSelectorClassNode.this.getObfEntry(), new GenerationParameters(includedTypes));
+					generator.generate(ProgressListener.createEmpty(), ClassSelectorClassNode.this.getObfEntry(), parameters);
 				}
 
 				return ClassSelectorClassNode.this;
@@ -61,7 +64,8 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 			@Override
 			public void done() {
 				try {
-					((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(generator.getResultNullable(), ClassSelectorClassNode.this.getObfEntry()));
+					var parameters = Config.stats().createIconGenParameters(gui.getEditableStatTypes());
+					((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(generator.getResultNullable(parameters), ClassSelectorClassNode.this.getObfEntry()));
 				} catch (NullPointerException ignored) {
 					// do nothing. this seems to be a race condition, likely a bug in FlatLAF caused by us suppressing the default tree icons
 					// ignoring this error should never cause issues since it only occurs at startup
