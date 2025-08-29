@@ -29,7 +29,7 @@ public class StatsSection extends ReflectiveConfig.Section {
 	}
 
 	public GenerationParameters createIconGenParameters(Set<StatType> editableTypes) {
-		return this.createGenParameters(getIncludedTypesForIcons(editableTypes));
+		return this.createGenParameters(this.getIncludedTypesForIcons(editableTypes));
 	}
 
 	public GenerationParameters createGenParameters(Set<StatType> includedTypes) {
