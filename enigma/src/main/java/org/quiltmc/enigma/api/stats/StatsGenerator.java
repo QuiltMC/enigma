@@ -12,7 +12,6 @@ import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
-import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
@@ -205,9 +204,7 @@ public class StatsGenerator {
 
 		for (Entry<?> entry : entries) {
 			if (entry instanceof FieldEntry field && includedTypes.contains(StatType.FIELDS)) {
-				if (!((FieldDefEntry) field).getAccess().isSynthetic()) {
-					this.update(StatType.FIELDS, mappableCounts, unmappedCounts, field, parameters);
-				}
+				this.update(StatType.FIELDS, mappableCounts, unmappedCounts, field, parameters);
 			} else if (entry instanceof MethodEntry method) {
 				MethodEntry root = this.entryResolver
 						.resolveEntry(method, ResolutionStrategy.RESOLVE_ROOT)
@@ -216,12 +213,12 @@ public class StatsGenerator {
 						.orElseThrow(AssertionError::new);
 
 				if (root == method) {
-					if (includedTypes.contains(StatType.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
+					if (includedTypes.contains(StatType.METHODS)) {
 						this.update(StatType.METHODS, mappableCounts, unmappedCounts, method, parameters);
 					}
 
 					ClassEntry containingClass = method.getContainingClass();
-					if (includedTypes.contains(StatType.PARAMETERS) && !this.project.isAnonymousOrLocal(containingClass) && !(((MethodDefEntry) method).getAccess().isSynthetic() && !parameters.includeSynthetic())) {
+					if (includedTypes.contains(StatType.PARAMETERS) && !this.project.isAnonymousOrLocal(containingClass) && (parameters.includeSynthetic() || !((MethodDefEntry) method).getAccess().isSynthetic())) {
 						ClassDefEntry def = this.entryIndex.getDefinition(containingClass);
 						if (def != null && def.isRecord()) {
 							if (this.isCanonicalConstructor(def, method)
@@ -235,7 +232,7 @@ public class StatsGenerator {
 
 						int index = ((MethodDefEntry) method).getAccess().isStatic() ? 0 : 1;
 						for (ArgumentDescriptor argument : argumentDescs) {
-							if (!(argument.getAccess().isSynthetic() && !parameters.includeSynthetic())
+							if ((parameters.includeSynthetic() || !argument.getAccess().isSynthetic())
 									// skip the implicit superclass parameter for non-static inner class constructors
 									&& !(method.isConstructor() && containingClass.isInnerClass() && index == 1 && argument.containsType() && argument.getTypeEntry().equals(containingClass.getOuterClass()))) {
 								this.update(StatType.PARAMETERS, mappableCounts, unmappedCounts, new LocalVariableEntry(method, index), parameters);
@@ -311,7 +308,7 @@ public class StatsGenerator {
 		if (this.project.isRenamable(entry)) {
 			boolean obf = this.project.isObfuscated(entry);
 
-			if ((obf && (!this.project.isSynthetic(entry) || !parameters.includeSynthetic()))
+			if ((obf && (parameters.includeSynthetic() || !this.project.isSynthetic(entry)))
 					|| (!parameters.countFallback() && this.fallbackNameProposerIdCache.contains(this.project.getRemapper().getMapping(entry).sourcePluginId()))) { // fallback proposed mappings don't count
 				String parent = this.project.getRemapper().deobfuscate(entry.getTopLevelClass()).getName().replace('/', '.');
 
