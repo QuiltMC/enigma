@@ -309,9 +309,7 @@ public class StatsGenerator {
 
 	private void update(StatType type, Map<StatType, Integer> mappable, Map<StatType, Map<String, Integer>> unmapped, Entry<?> entry, GenerationParameters parameters) {
 		if (this.project.isRenamable(entry)) {
-			boolean obf = this.project.isObfuscated(entry);
-
-			if ((obf && (parameters.includeSynthetic() || !this.project.isSynthetic(entry)))
+			if (this.project.isObfuscated(entry)
 					|| (!parameters.countFallback() && this.fallbackNameProposerIdCache.contains(this.project.getRemapper().getMapping(entry).sourcePluginId()))) { // fallback proposed mappings don't count
 				String parent = this.project.getRemapper().deobfuscate(entry.getTopLevelClass()).getName().replace('/', '.');
 
