@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.config.theme;
 
+import com.formdev.flatlaf.ui.FlatBorder;
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.values.ComplexConfigValue;
 import org.quiltmc.config.api.values.ConfigSerializableObject;
@@ -7,10 +8,14 @@ import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.config.implementor_api.ConfigEnvironment;
 import org.quiltmc.config.implementor_api.ConfigFactory;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.ThemeProperties;
 
+import javax.swing.BorderFactory;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.border.Border;
+import javax.swing.plaf.metal.MetalBorders;
 import java.awt.Font;
 
 public class Theme extends ReflectiveConfig {
@@ -35,6 +40,14 @@ public class Theme extends ReflectiveConfig {
 			UnsupportedLookAndFeelException, ClassNotFoundException,
 			InstantiationException, IllegalAccessException {
 		this.properties.setGlobalLaf();
+	}
+
+	public Border createBorder() {
+		return switch (Config.activeThemeChoice) {
+			case DEFAULT, DARCULA, DARCERULA -> new FlatBorder();
+			case METAL -> new MetalBorders.TextFieldBorder();
+			case SYSTEM, NONE -> BorderFactory.createEtchedBorder();
+		};
 	}
 
 	public void configure() {
