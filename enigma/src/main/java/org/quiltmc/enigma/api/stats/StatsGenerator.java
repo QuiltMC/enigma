@@ -12,6 +12,7 @@ import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
@@ -204,7 +205,9 @@ public class StatsGenerator {
 
 		for (Entry<?> entry : entries) {
 			if (entry instanceof FieldEntry field && includedTypes.contains(StatType.FIELDS)) {
-				this.update(StatType.FIELDS, mappableCounts, unmappedCounts, field, parameters);
+				if (!((FieldDefEntry) field).getAccess().isSynthetic()) {
+					this.update(StatType.FIELDS, mappableCounts, unmappedCounts, field, parameters);
+				}
 			} else if (entry instanceof MethodEntry method) {
 				MethodEntry root = this.entryResolver
 						.resolveEntry(method, ResolutionStrategy.RESOLVE_ROOT)
@@ -213,7 +216,7 @@ public class StatsGenerator {
 						.orElseThrow(AssertionError::new);
 
 				if (root == method) {
-					if (includedTypes.contains(StatType.METHODS)) {
+					if (includedTypes.contains(StatType.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
 						this.update(StatType.METHODS, mappableCounts, unmappedCounts, method, parameters);
 					}
 
