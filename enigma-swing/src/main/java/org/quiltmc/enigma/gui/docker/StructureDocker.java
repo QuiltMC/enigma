@@ -29,7 +29,6 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
-import javax.swing.border.LineBorder;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -59,7 +58,7 @@ public class StructureDocker extends Docker {
 
 		this.optionsPanel.add(this.searchLabel, cb.pos(0, 0).build());
 		this.searchBar = new JTextArea();
-		this.searchBar.setBorder(new LineBorder(Config.currentTheme().getSyntaxPaneColors().delimiter.value()));
+		this.searchBar.setBorder(Config.currentTheme().createBorder());
 		this.searchBar.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent e) {
