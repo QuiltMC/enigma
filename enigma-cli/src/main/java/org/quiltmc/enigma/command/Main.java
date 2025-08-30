@@ -1,14 +1,32 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.collect.ImmutableMap;
 import org.quiltmc.enigma.api.Enigma;
 import org.tinylog.Logger;
 
-import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
 public class Main {
-	private static final Map<String, Command> COMMANDS = new LinkedHashMap<>();
+	private static final ImmutableMap<String, Command> COMMANDS = Stream
+			.of(
+				DeobfuscateCommand.INSTANCE,
+				DecompileCommand.INSTANCE,
+				ConvertMappingsCommand.INSTANCE,
+				ComposeMappingsCommand.INSTANCE,
+				InvertMappingsCommand.INSTANCE,
+				CheckMappingsCommand.INSTANCE,
+				MapSpecializedMethodsCommand.INSTANCE,
+				InsertProposedMappingsCommand.INSTANCE,
+				DropInvalidMappingsCommand.INSTANCE,
+				FillClassMappingsCommand.INSTANCE,
+				HelpCommand.INSTANCE,
+				PrintStatsCommand.INSTANCE
+			)
+			.collect(toImmutableMap(Command::getName, Function.identity()));
 
 	public static void main(String... args) {
 		try {
@@ -51,7 +69,7 @@ public class Main {
 		}
 	}
 
-	public static Map<String, Command> getCommands() {
+	public static ImmutableMap<String, Command> getCommands() {
 		return COMMANDS;
 	}
 
@@ -93,34 +111,12 @@ public class Main {
 	}
 
 	private static void appendHelp(Argument argument, int index, StringBuilder builder) {
-		builder.append(String.format("Argument %s: %s", index, argument.getDisplayForm())).append("\n");
-		builder.append(argument.getExplanation()).append("\n");
-	}
-
-	private static void register(Command command) {
-		Command old = COMMANDS.put(command.getName(), command);
-		if (old != null) {
-			Logger.warn("Command {} with name {} has been substituted by {}", old, command.getName(), command);
-		}
+		builder.append(String.format("Argument %s: %s", index, argument.displayForm())).append("\n");
+		builder.append(argument.explanation()).append("\n");
 	}
 
 	private static void logEnigmaInfo() {
 		Logger.info("{} - {}", Enigma.NAME, Enigma.VERSION);
-	}
-
-	static {
-		register(new DeobfuscateCommand());
-		register(new DecompileCommand());
-		register(new ConvertMappingsCommand());
-		register(new ComposeMappingsCommand());
-		register(new InvertMappingsCommand());
-		register(new CheckMappingsCommand());
-		register(new MapSpecializedMethodsCommand());
-		register(new InsertProposedMappingsCommand());
-		register(new DropInvalidMappingsCommand());
-		register(new FillClassMappingsCommand());
-		register(new HelpCommand());
-		register(new PrintStatsCommand());
 	}
 
 	private static final class CommandHelpException extends IllegalArgumentException {

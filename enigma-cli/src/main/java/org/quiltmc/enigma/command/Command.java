@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
@@ -25,32 +26,28 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
 
-public abstract class Command {
-	protected final List<Argument> requiredArguments = new ArrayList<>();
-	protected final List<Argument> optionalArguments = new ArrayList<>();
-	protected final List<ComposedArgument> allArguments;
+public abstract sealed class Command permits
+		CheckMappingsCommand, ComposeMappingsCommand, ConvertMappingsCommand, DecompileCommand, DeobfuscateCommand,
+		DropInvalidMappingsCommand, FillClassMappingsCommand, HelpCommand, InsertProposedMappingsCommand,
+		InvertMappingsCommand, MapSpecializedMethodsCommand, PrintStatsCommand {
+	final ImmutableList<Argument> requiredArguments;
+	final ImmutableList<Argument> optionalArguments;
 
-	protected Command(ComposedArgument... arguments) {
-		this.allArguments = new ArrayList<>();
+	final int totalArgumentCount;
 
-		for (ComposedArgument argument : arguments) {
-			if (argument.optional()) {
-				this.optionalArguments.add(argument.argument());
-				this.allArguments.add(argument);
-			} else {
-				this.requiredArguments.add(argument.argument());
-				this.allArguments.add(argument);
+	Command(Argument... requiredArguments) {
+		this(ImmutableList.copyOf(requiredArguments), ImmutableList.of());
+	}
 
-				if (!this.optionalArguments.isEmpty()) {
-					throw new IllegalArgumentException("optional arguments should be grouped at the end of command arguments! (declaring arg " + argument + ")");
-				}
-			}
-		}
+	Command(Collection<Argument> requiredArguments, Collection<Argument> optionalArguments) {
+		this.requiredArguments = ImmutableList.copyOf(requiredArguments);
+		this.optionalArguments = ImmutableList.copyOf(optionalArguments);
+		this.totalArgumentCount = this.requiredArguments.size() + this.optionalArguments.size();
 	}
 
 	public String getUsage() {
@@ -68,7 +65,7 @@ public abstract class Command {
 
 	private static void appendArguments(StringBuilder builder, List<Argument> arguments) {
 		for (int i = 0; i < arguments.size(); i++) {
-			builder.append(arguments.get(i).getDisplayForm());
+			builder.append(arguments.get(i).displayForm());
 			if (i < arguments.size() - 1) {
 				builder.append(" ");
 			}
@@ -81,8 +78,7 @@ public abstract class Command {
 	 * @return {@code true} if the argument count is valid, {@code false} otherwise
 	 */
 	public boolean checkArgumentCount(int length) {
-		// valid if length is equal to the amount of required arguments or between required argument count and total argument count
-		return length == this.requiredArguments.size() || length > this.requiredArguments.size() && length <= this.allArguments.size();
+		return length >= this.requiredArguments.size() && length <= this.totalArgumentCount;
 	}
 
 	/**
@@ -125,10 +121,15 @@ public abstract class Command {
 	 * @return the argument, as a string
 	 */
 	protected String getArg(String[] args, int index) {
-		if (index < this.allArguments.size() && index >= 0) {
-			return getArg(args, index, this.allArguments.get(index));
+		if (index < this.totalArgumentCount && index >= 0) {
+			final int requiredCount = this.requiredArguments.size();
+			if (index < requiredCount) {
+				return getArg(args, index, this.requiredArguments.get(index), false);
+			} else {
+				return getArg(args, index, this.optionalArguments.get(index - requiredCount), true);
+			}
 		} else {
-			throw new RuntimeException("arg index is outside of range of possible arguments! (index: " + index + ", allowed arg count: " + this.allArguments.size() + ")");
+			throw new RuntimeException("arg index is outside of range of possible arguments! (index: " + index + ", allowed arg count: " + this.totalArgumentCount + ")");
 		}
 	}
 
@@ -244,16 +245,16 @@ public abstract class Command {
 		return dir;
 	}
 
-	private static String getArg(String[] args, int i, ComposedArgument argument) {
-		if (i >= args.length) {
-			if (!argument.optional()) {
-				throw new IllegalArgumentException(argument.argument().getDisplayForm() + " is required");
+	private static String getArg(String[] args, int index, Argument argument, boolean optional) {
+		if (index >= args.length) {
+			if (!optional) {
+				throw new IllegalArgumentException(argument.displayForm() + " is required");
 			} else {
 				return null;
 			}
 		}
 
-		return args[i];
+		return args[index];
 	}
 
 	protected static boolean shouldDebug(String name) {

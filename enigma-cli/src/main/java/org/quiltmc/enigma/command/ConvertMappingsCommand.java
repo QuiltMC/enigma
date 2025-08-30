@@ -15,12 +15,15 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class ConvertMappingsCommand extends Command {
-	public ConvertMappingsCommand() {
-		super(Argument.INPUT_MAPPINGS.required(),
-				Argument.MAPPING_OUTPUT.required(),
-				Argument.OBFUSCATED_NAMESPACE.required(),
-				Argument.DEOBFUSCATED_NAMESPACE.required()
+public final class ConvertMappingsCommand extends Command {
+	public static final ConvertMappingsCommand INSTANCE = new ConvertMappingsCommand();
+
+	private ConvertMappingsCommand() {
+		super(
+				CommonArguments.INPUT_MAPPINGS,
+				CommonArguments.MAPPING_OUTPUT,
+				CommonArguments.OBFUSCATED_NAMESPACE,
+				CommonArguments.DEOBFUSCATED_NAMESPACE
 		);
 	}
 
