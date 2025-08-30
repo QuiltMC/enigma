@@ -5,9 +5,17 @@ import org.quiltmc.enigma.util.validation.ValidationContext;
 
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.util.regex.Pattern;
 
 public final class TestUtil {
 	private TestUtil() {
+		throw new UnsupportedOperationException();
+	}
+
+	private static final Pattern UNWANTED_LINE_ENDING = Pattern.compile("\\r\\n?");
+
+	public static String toNewLineEndings(String string) {
+		return UNWANTED_LINE_ENDING.matcher(string).replaceAll("\n");
 	}
 
 	public static Path obfJar(String name) {

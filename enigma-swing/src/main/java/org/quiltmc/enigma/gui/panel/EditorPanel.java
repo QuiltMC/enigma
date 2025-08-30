@@ -174,6 +174,7 @@ public class EditorPanel {
 					}
 				} else if (KeyBinds.EDITOR_QUICK_FIND.matches(event)) {
 					// prevent navigating on click when quick find activated
+					EditorPanel.this.shouldNavigateOnClick = false; // CTRL
 				} else if (KeyBinds.EDITOR_ZOOM_IN.matches(event)) {
 					EditorPanel.this.offsetEditorZoom(2);
 				} else if (KeyBinds.EDITOR_ZOOM_OUT.matches(event)) {
@@ -189,7 +190,7 @@ public class EditorPanel {
 				if (ref == null) return;
 				if (!EditorPanel.this.controller.getProject().isRenamable(ref)) return;
 
-				if (!event.isControlDown() && !event.isAltDown() && Character.isJavaIdentifierPart(event.getKeyChar())) {
+				if (!event.isControlDown() && !event.isAltDown() && Character.isJavaIdentifierStart(event.getKeyChar())) {
 					EnigmaProject project = gui.getController().getProject();
 					EntryReference<Entry<?>, Entry<?>> reference = project.getRemapper().deobfuscate(EditorPanel.this.cursorReference);
 					Entry<?> entry = reference.getNameableEntry();
@@ -232,6 +233,10 @@ public class EditorPanel {
 		}
 
 		return null;
+	}
+
+	public NavigatorPanel getNavigatorPanel() {
+		return this.navigatorPanel;
 	}
 
 	public void setClassHandle(ClassHandle handle) {

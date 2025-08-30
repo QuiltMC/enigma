@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.util.MappingOperations;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
@@ -13,12 +14,18 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class InvertMappingsCommand extends Command {
-	public InvertMappingsCommand() {
-		super(Argument.INPUT_MAPPINGS.required(),
-				Argument.OUTPUT_FOLDER.required(),
-				Argument.OBFUSCATED_NAMESPACE.optional(),
-				Argument.DEOBFUSCATED_NAMESPACE.optional()
+public final class InvertMappingsCommand extends Command {
+	private static final Argument OUTPUT_FOLDER = new Argument("<output-folder>",
+			"""
+					A path to the file or folder to write output to."""
+	);
+
+	public static final InvertMappingsCommand INSTANCE = new InvertMappingsCommand();
+
+	private InvertMappingsCommand() {
+		super(
+				ImmutableList.of(CommonArguments.INPUT_MAPPINGS, OUTPUT_FOLDER),
+				ImmutableList.of(CommonArguments.OBFUSCATED_NAMESPACE, CommonArguments.DEOBFUSCATED_NAMESPACE)
 		);
 	}
 

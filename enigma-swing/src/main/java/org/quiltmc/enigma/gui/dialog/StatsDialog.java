@@ -2,7 +2,6 @@ package org.quiltmc.enigma.gui.dialog;
 
 import org.quiltmc.enigma.api.stats.GenerationParameters;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
-import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
@@ -29,22 +28,31 @@ import javax.swing.SwingUtilities;
 
 public class StatsDialog {
 	public static void show(Gui gui) {
+		GenerationParameters parameters = Config.stats().createGenParameters(gui.getEditableStatTypes());
 		StatsGenerator generator = gui.getController().getStatsGenerator();
-		ProjectStatsResult nullableResult = generator.getResultNullable();
+		if (generator != null) {
+			ProjectStatsResult nullableResult = generator.getResultNullable(parameters);
 
-		if (nullableResult == null) {
-			ProgressDialog.runOffThread(gui, listener -> {
-				// hook into current stat generation progress
-				if (generator.getOverallProgress() != null) {
-					listener.sync(generator.getOverallProgress());
-				}
-
-				ProjectStatsResult result = gui.getController().getStatsGenerator().getResult(new GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes())));
-				SwingUtilities.invokeLater(() -> show(gui, result, ""));
-			});
+			if (nullableResult == null) {
+				generateAndShow(gui, generator, parameters);
+			} else {
+				SwingUtilities.invokeLater(() -> show(gui, nullableResult, ""));
+			}
 		} else {
-			SwingUtilities.invokeLater(() -> show(gui, nullableResult, ""));
+			throw new IllegalStateException("Cannot open stats dialog without a project open! (stats generator is null)");
 		}
+	}
+
+	public static void generateAndShow(Gui gui, StatsGenerator generator, GenerationParameters parameters) {
+		ProgressDialog.runOffThread(gui, listener -> {
+			// hook into current stat generation progress
+			if (generator.getOverallProgress() != null) {
+				listener.sync(generator.getOverallProgress());
+			}
+
+			ProjectStatsResult result = generator.getResult(parameters);
+			SwingUtilities.invokeLater(() -> show(gui, result, ""));
+		});
 	}
 
 	public static void show(Gui gui, ProjectStatsResult result, String packageName) {
@@ -83,17 +91,17 @@ public class StatsDialog {
 		contentPane.add(topLevelPackageOption, cb1.pos(0, result.getOverall().getTypes().size() + 1).build());
 
 		JTextField topLevelPackage = new JTextField();
-		topLevelPackage.setText(Config.main().stats.lastTopLevelPackage.value());
+		topLevelPackage.setText(Config.stats().lastTopLevelPackage.value());
 		contentPane.add(topLevelPackage, cb1.pos(0, result.getOverall().getTypes().size() + 2).fill(GridBagConstraints.HORIZONTAL).build());
 
 		// show synthetic members option
 		JCheckBox syntheticParametersOption = new JCheckBox(I18n.translate("menu.file.stats.synthetic_parameters"));
-		syntheticParametersOption.setSelected(Config.main().stats.shouldIncludeSyntheticParameters.value());
+		syntheticParametersOption.setSelected(Config.stats().shouldIncludeSyntheticParameters.value());
 		contentPane.add(syntheticParametersOption, cb1.pos(0, result.getOverall().getTypes().size() + 4).build());
 
 		// show synthetic members option
 		JCheckBox countFallbackOption = new JCheckBox(I18n.translate("menu.file.stats.count_fallback"));
-		countFallbackOption.setSelected(Config.main().stats.shouldCountFallbackNames.value());
+		countFallbackOption.setSelected(Config.stats().shouldCountFallbackNames.value());
 		contentPane.add(countFallbackOption, cb1.pos(0, result.getOverall().getTypes().size() + 3).build());
 
 		// show filter button
@@ -102,9 +110,9 @@ public class StatsDialog {
 			dialog.dispose();
 			ProgressDialog.runOffThread(gui, listener -> {
 				String topLevelPackageSlashes = topLevelPackage.getText().replace('.', '/');
-				Config.main().stats.lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
+				Config.stats().lastTopLevelPackage.setValue(topLevelPackage.getText(), true);
 
-				GenerationParameters parameters = new GenerationParameters(EditableType.toStatTypes(gui.getEditableTypes()), syntheticParametersOption.isSelected(), countFallbackOption.isSelected());
+				GenerationParameters parameters = new GenerationParameters(gui.getEditableStatTypes(), syntheticParametersOption.isSelected(), countFallbackOption.isSelected());
 				StatsGenerator generator = gui.getController().getStatsGenerator();
 				ProjectStatsResult projectResult = generator.getResult(parameters).filter(topLevelPackageSlashes);
 
@@ -119,7 +127,7 @@ public class StatsDialog {
 		button.addActionListener(action -> {
 			dialog.dispose();
 
-			Config.main().stats.lastTopLevelPackage.setValue(topLevelPackage.getText());
+			Config.stats().lastTopLevelPackage.setValue(topLevelPackage.getText());
 
 			generateStats(gui, checkboxes);
 		});

@@ -8,6 +8,10 @@ import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
 import java.nio.file.Path;
 
 public class CommandsUtil {
+	private CommandsUtil() {
+		throw new UnsupportedOperationException();
+	}
+
 	public static ReadWriteService getReadWriteService(Enigma enigma, Path file) {
 		var service = enigma.getReadWriteService(file);
 		if (service.isEmpty()) {

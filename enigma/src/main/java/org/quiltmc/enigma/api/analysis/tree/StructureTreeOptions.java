@@ -3,7 +3,8 @@ package org.quiltmc.enigma.api.analysis.tree;
 public record StructureTreeOptions(
 		ObfuscationVisibility obfuscationVisibility,
 		DocumentationVisibility documentationVisibility,
-		SortingOrder sortingOrder) {
+		SortingOrder sortingOrder,
+		String searchString) {
 	public enum ObfuscationVisibility implements Option {
 		ALL("structure.options.obfuscation.all"),
 		OBFUSCATED("structure.options.obfuscation.obfuscated"),

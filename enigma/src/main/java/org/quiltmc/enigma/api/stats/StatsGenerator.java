@@ -51,8 +51,10 @@ public class StatsGenerator {
 	/**
 	 * Gets the latest generated stats.
 	 * @return the stats, or {@code null} if not yet generated
+	 * @deprecated use {@link #getResultNullable(GenerationParameters)} instead
 	 */
 	@Nullable
+	@Deprecated(forRemoval = true, since = "2.7.0")
 	public ProjectStatsResult getResultNullable() {
 		return this.result;
 	}
@@ -60,11 +62,26 @@ public class StatsGenerator {
 	/**
 	 * Gets the latest generated stats, or generates them if not available.
 	 * Regenerates stats if parameters have changed.
+	 * @param parameters the parameters of the stats to retrieve
 	 * @return the stats
 	 */
 	public ProjectStatsResult getResult(GenerationParameters parameters) {
 		if (this.result == null || !this.lastParameters.equals(parameters)) {
 			return this.generate(ProgressListener.createEmpty(), parameters);
+		}
+
+		return this.result;
+	}
+
+	/**
+	 * Gets the latest generated stats.
+	 * Returns null if parameters have changed.
+	 * @param parameters the parameters of the stats to retrieve
+	 * @return the stats, or null if none have been generated or the parameters have changed
+	 */
+	public ProjectStatsResult getResultNullable(GenerationParameters parameters) {
+		if (!this.lastParameters.equals(parameters)) {
+			return null;
 		}
 
 		return this.result;
@@ -204,7 +221,7 @@ public class StatsGenerator {
 					}
 
 					ClassEntry containingClass = method.getContainingClass();
-					if (includedTypes.contains(StatType.PARAMETERS) && !this.project.isAnonymousOrLocal(containingClass) && !(((MethodDefEntry) method).getAccess().isSynthetic() && !parameters.includeSynthetic())) {
+					if (includedTypes.contains(StatType.PARAMETERS) && !this.project.isAnonymousOrLocal(containingClass) && (parameters.includeSynthetic() || !((MethodDefEntry) method).getAccess().isSynthetic())) {
 						ClassDefEntry def = this.entryIndex.getDefinition(containingClass);
 						if (def != null && def.isRecord()) {
 							if (this.isCanonicalConstructor(def, method)
@@ -218,7 +235,7 @@ public class StatsGenerator {
 
 						int index = ((MethodDefEntry) method).getAccess().isStatic() ? 0 : 1;
 						for (ArgumentDescriptor argument : argumentDescs) {
-							if (!(argument.getAccess().isSynthetic() && !parameters.includeSynthetic())
+							if ((parameters.includeSynthetic() || !argument.getAccess().isSynthetic())
 									// skip the implicit superclass parameter for non-static inner class constructors
 									&& !(method.isConstructor() && containingClass.isInnerClass() && index == 1 && argument.containsType() && argument.getTypeEntry().equals(containingClass.getOuterClass()))) {
 								this.update(StatType.PARAMETERS, mappableCounts, unmappedCounts, new LocalVariableEntry(method, index), parameters);
@@ -292,9 +309,7 @@ public class StatsGenerator {
 
 	private void update(StatType type, Map<StatType, Integer> mappable, Map<StatType, Map<String, Integer>> unmapped, Entry<?> entry, GenerationParameters parameters) {
 		if (this.project.isRenamable(entry)) {
-			boolean obf = this.project.isObfuscated(entry);
-
-			if ((obf && (!this.project.isSynthetic(entry) || !parameters.includeSynthetic()))
+			if (this.project.isObfuscated(entry)
 					|| (!parameters.countFallback() && this.fallbackNameProposerIdCache.contains(this.project.getRemapper().getMapping(entry).sourcePluginId()))) { // fallback proposed mappings don't count
 				String parent = this.project.getRemapper().deobfuscate(entry.getTopLevelClass()).getName().replace('/', '.');
 

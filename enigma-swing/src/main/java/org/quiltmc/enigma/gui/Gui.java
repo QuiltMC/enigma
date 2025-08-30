@@ -5,6 +5,7 @@ import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.source.TokenType;
+import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
@@ -276,6 +277,10 @@ public class Gui {
 		return this.editableTypes;
 	}
 
+	public Set<StatType> getEditableStatTypes() {
+		return EditableType.toStatTypes(this.getEditableTypes());
+	}
+
 	public boolean isTestEnvironment() {
 		return this.testEnvironment;
 	}
@@ -524,7 +529,7 @@ public class Gui {
 				}
 
 				return null;
-			}, I18n.translate("prompt.save"), I18n.translate("prompt.close.discard"), I18n.translate("prompt.cancel"));
+			}, I18n.translate("prompt.close.save"), I18n.translate("prompt.close.discard"), I18n.translate("prompt.cancel"));
 		}
 	}
 
