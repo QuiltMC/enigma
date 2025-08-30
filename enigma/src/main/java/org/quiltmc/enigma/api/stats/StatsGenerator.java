@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.api.stats;
 
-import com.google.common.base.Preconditions;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
@@ -25,7 +24,6 @@ import org.tinylog.Logger;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +36,7 @@ public class StatsGenerator {
 	private final EntryResolver entryResolver;
 
 	private ProjectStatsResult result = null;
+	private GenerationParameters lastParameters = new GenerationParameters();
 	private ProgressListener overallListener;
 	private CountDownLatch generationLatch = null;
 
@@ -52,19 +51,37 @@ public class StatsGenerator {
 	/**
 	 * Gets the latest generated stats.
 	 * @return the stats, or {@code null} if not yet generated
+	 * @deprecated use {@link #getResultNullable(GenerationParameters)} instead
 	 */
 	@Nullable
+	@Deprecated(forRemoval = true, since = "2.7.0")
 	public ProjectStatsResult getResultNullable() {
 		return this.result;
 	}
 
 	/**
-	 * Gets the latest generated stats, or generates them if not yet present.
+	 * Gets the latest generated stats, or generates them if not available.
+	 * Regenerates stats if parameters have changed.
+	 * @param parameters the parameters of the stats to retrieve
 	 * @return the stats
 	 */
-	public ProjectStatsResult getResult(Set<StatType> includedTypes, boolean includeSynthetic) {
-		if (this.result == null) {
-			return this.generate(ProgressListener.createEmpty(), includedTypes, includeSynthetic);
+	public ProjectStatsResult getResult(GenerationParameters parameters) {
+		if (this.result == null || !this.lastParameters.equals(parameters)) {
+			return this.generate(ProgressListener.createEmpty(), parameters);
+		}
+
+		return this.result;
+	}
+
+	/**
+	 * Gets the latest generated stats.
+	 * Returns null if parameters have changed.
+	 * @param parameters the parameters of the stats to retrieve
+	 * @return the stats, or null if none have been generated or the parameters have changed
+	 */
+	public ProjectStatsResult getResultNullable(GenerationParameters parameters) {
+		if (!this.lastParameters.equals(parameters)) {
+			return null;
 		}
 
 		return this.result;
@@ -82,35 +99,32 @@ public class StatsGenerator {
 	/**
 	 * Generates stats for the current project.
 	 * @param progress a listener to update with current progress
-	 * @param includedTypes the types of entry to include in the stats
-	 * @param includeSynthetic whether to include synthetic methods
+	 * @param parameters the parameters to use for generation
 	 * @return the generated {@link ProjectStatsResult}
 	 */
-	public ProjectStatsResult generate(ProgressListener progress, Set<StatType> includedTypes, boolean includeSynthetic) {
-		return this.generate(progress, includedTypes, null, includeSynthetic);
+	public ProjectStatsResult generate(ProgressListener progress, GenerationParameters parameters) {
+		return this.generate(progress, null, parameters);
 	}
 
 	/**
 	 * Generates stats for the current project or updates existing stats with the provided class.
 	 * Somewhat thread-safe: will only generate stats on one thread at a time, awaiting generation on all other threads if called in parallel.
 	 * @param progress a listener to update with current progress
-	 * @param includedTypes the types of entry to include in the stats
 	 * @param classEntry if stats are being generated for a single class, provide the class here
-	 * @param includeSynthetic whether to include synthetic methods
+	 * @param parameters the parameters to use for generation
 	 * @return the generated {@link ProjectStatsResult} for the provided class or package
 	 */
-	public ProjectStatsResult generate(ProgressListener progress, Set<StatType> includedTypes, @Nullable ClassEntry classEntry, boolean includeSynthetic) {
+	public ProjectStatsResult generate(ProgressListener progress, @Nullable ClassEntry classEntry, GenerationParameters parameters) {
 		if (classEntry == null && this.overallListener == null) {
 			this.overallListener = progress;
 		}
 
 		this.rebuildCache();
 
-		includedTypes = EnumSet.copyOf(includedTypes);
 		Map<ClassEntry, StatsResult> stats = this.result == null ? new HashMap<>() : this.result.getStats();
 
-		if (this.result == null || classEntry == null) {
-			if (this.generationLatch == null) {
+		if (classEntry == null) {
+			if (this.generationLatch == null || this.generationLatch.getCount() == 0) {
 				this.generationLatch = new CountDownLatch(1);
 
 				List<ClassEntry> classes = this.entryIndex.getClasses()
@@ -121,11 +135,12 @@ public class StatsGenerator {
 
 				for (ClassEntry entry : classes) {
 					progress.step(done++, I18n.translateFormatted("progress.stats.for", entry.getName()));
-					StatsResult result = this.generate(includedTypes, entry, includeSynthetic, false);
+					StatsResult result = this.generate(entry, parameters, false);
 					stats.put(entry, result);
 				}
 
 				this.result = new ProjectStatsResult(this.project, stats);
+				this.lastParameters = parameters;
 				this.generationLatch.countDown();
 			} else {
 				try {
@@ -136,9 +151,9 @@ public class StatsGenerator {
 				}
 			}
 		} else {
-			Preconditions.checkNotNull(classEntry, "Entry cannot be null after initial stat generation!");
-			stats.put(classEntry, this.generate(includedTypes, classEntry, includeSynthetic, false));
+			stats.put(classEntry, this.generate(classEntry, parameters, false));
 			this.result = new ProjectStatsResult(this.project, stats);
+			this.lastParameters = parameters;
 		}
 
 		this.overallListener = null;
@@ -161,16 +176,15 @@ public class StatsGenerator {
 
 	/**
 	 * Generates stats for the provided class.
-	 * @param includedTypes the types of entry to include in the stats
 	 * @param classEntry the class to generate stats for
-	 * @param includeSynthetic whether to include synthetic parameters
+	 * @param parameters the parameters to use for generation
 	 * @return the generated {@link StatsResult}
 	 */
-	public StatsResult generate(Set<StatType> includedTypes, ClassEntry classEntry, boolean includeSynthetic) {
-		return this.generate(includedTypes, classEntry, includeSynthetic, true);
+	public StatsResult generate(ClassEntry classEntry, GenerationParameters parameters) {
+		return this.generate(classEntry, parameters, true);
 	}
 
-	private StatsResult generate(Set<StatType> includedTypes, ClassEntry classEntry, boolean includeSynthetic, boolean rebuildCache) {
+	private StatsResult generate(ClassEntry classEntry, GenerationParameters parameters, boolean rebuildCache) {
 		if (rebuildCache) {
 			this.rebuildCache();
 		}
@@ -187,10 +201,12 @@ public class StatsGenerator {
 
 		entries.add(classEntry);
 
+		Set<StatType> includedTypes = parameters.includedTypes();
+
 		for (Entry<?> entry : entries) {
 			if (entry instanceof FieldEntry field && includedTypes.contains(StatType.FIELDS)) {
 				if (!((FieldDefEntry) field).getAccess().isSynthetic()) {
-					this.update(StatType.FIELDS, mappableCounts, unmappedCounts, field);
+					this.update(StatType.FIELDS, mappableCounts, unmappedCounts, field, parameters);
 				}
 			} else if (entry instanceof MethodEntry method) {
 				MethodEntry root = this.entryResolver
@@ -201,11 +217,11 @@ public class StatsGenerator {
 
 				if (root == method) {
 					if (includedTypes.contains(StatType.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
-						this.update(StatType.METHODS, mappableCounts, unmappedCounts, method);
+						this.update(StatType.METHODS, mappableCounts, unmappedCounts, method, parameters);
 					}
 
 					ClassEntry containingClass = method.getContainingClass();
-					if (includedTypes.contains(StatType.PARAMETERS) && !this.project.isAnonymousOrLocal(containingClass) && !(((MethodDefEntry) method).getAccess().isSynthetic() && !includeSynthetic)) {
+					if (includedTypes.contains(StatType.PARAMETERS) && !this.project.isAnonymousOrLocal(containingClass) && (parameters.includeSynthetic() || !((MethodDefEntry) method).getAccess().isSynthetic())) {
 						ClassDefEntry def = this.entryIndex.getDefinition(containingClass);
 						if (def != null && def.isRecord()) {
 							if (this.isCanonicalConstructor(def, method)
@@ -219,10 +235,10 @@ public class StatsGenerator {
 
 						int index = ((MethodDefEntry) method).getAccess().isStatic() ? 0 : 1;
 						for (ArgumentDescriptor argument : argumentDescs) {
-							if (!(argument.getAccess().isSynthetic() && !includeSynthetic)
+							if ((parameters.includeSynthetic() || !argument.getAccess().isSynthetic())
 									// skip the implicit superclass parameter for non-static inner class constructors
 									&& !(method.isConstructor() && containingClass.isInnerClass() && index == 1 && argument.containsType() && argument.getTypeEntry().equals(containingClass.getOuterClass()))) {
-								this.update(StatType.PARAMETERS, mappableCounts, unmappedCounts, new LocalVariableEntry(method, index));
+								this.update(StatType.PARAMETERS, mappableCounts, unmappedCounts, new LocalVariableEntry(method, index), parameters);
 							}
 
 							index += argument.getSize();
@@ -230,7 +246,7 @@ public class StatsGenerator {
 					}
 				}
 			} else if (entry instanceof ClassEntry clazz && includedTypes.contains(StatType.CLASSES)) {
-				this.update(StatType.CLASSES, mappableCounts, unmappedCounts, clazz);
+				this.update(StatType.CLASSES, mappableCounts, unmappedCounts, clazz, parameters);
 			}
 		}
 
@@ -291,10 +307,10 @@ public class StatsGenerator {
 		return this.result.getStats().get(entry);
 	}
 
-	private void update(StatType type, Map<StatType, Integer> mappable, Map<StatType, Map<String, Integer>> unmapped, Entry<?> entry) {
+	private void update(StatType type, Map<StatType, Integer> mappable, Map<StatType, Map<String, Integer>> unmapped, Entry<?> entry, GenerationParameters parameters) {
 		if (this.project.isRenamable(entry)) {
-			if (this.project.isObfuscated(entry) && !this.project.isSynthetic(entry)
-					|| this.fallbackNameProposerIdCache.contains(this.project.getRemapper().getMapping(entry).sourcePluginId())) { // fallback proposed mappings don't count
+			if (this.project.isObfuscated(entry)
+					|| (!parameters.countFallback() && this.fallbackNameProposerIdCache.contains(this.project.getRemapper().getMapping(entry).sourcePluginId()))) { // fallback proposed mappings don't count
 				String parent = this.project.getRemapper().deobfuscate(entry.getTopLevelClass()).getName().replace('/', '.');
 
 				unmapped.computeIfAbsent(type, t -> new HashMap<>());
