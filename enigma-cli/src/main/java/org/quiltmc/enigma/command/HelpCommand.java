@@ -4,8 +4,10 @@ import org.tinylog.Logger;
 
 import java.util.Collection;
 
-public class HelpCommand extends Command {
-	protected HelpCommand() {
+public final class HelpCommand extends Command {
+	public static final HelpCommand INSTANCE = new HelpCommand();
+
+	private HelpCommand() {
 		super();
 	}
 
