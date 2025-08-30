@@ -214,7 +214,7 @@ public class FileMenu extends AbstractEnigmaMenu {
 
 					if (fileChooser.showSaveDialog(this.gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
 						Path savePath = ExtensionFileFilter.getSavePath(fileChooser);
-						this.gui.getController().saveMappings(savePath, format);
+						this.gui.getController().saveMappings(savePath, format, false);
 						this.saveMappingsItem.setEnabled(true);
 						Config.main().stats.lastSelectedDir.setValue(fileChooser.getCurrentDirectory().toString());
 					}

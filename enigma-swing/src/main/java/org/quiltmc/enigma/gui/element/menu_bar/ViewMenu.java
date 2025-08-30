@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.gui.element.menu_bar;
 
-import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.NotificationManager;
 import org.quiltmc.enigma.gui.config.Config;
@@ -12,7 +11,6 @@ import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Pair;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -24,30 +22,30 @@ import java.util.stream.IntStream;
 
 public class ViewMenu extends AbstractEnigmaMenu {
 	private final Gui gui;
+	private final StatsMenu stats;
 
 	private final JMenu themesMenu = new JMenu();
 	private final JMenu languagesMenu = new JMenu();
 	private final JMenu scaleMenu = new JMenu();
 	private final JMenu notificationsMenu = new JMenu();
-	private final JMenu statIconsMenu = new JMenu();
 	private final JMenuItem fontItem = new JMenuItem();
 	private final JMenuItem customScaleItem = new JMenuItem();
 
 	public ViewMenu(Gui gui) {
 		this.gui = gui;
+		this.stats = new StatsMenu(gui);
 
 		this.prepareThemesMenu();
 		this.prepareLanguagesMenu();
 		this.prepareScaleMenu();
 		this.prepareNotificationsMenu();
-		this.prepareStatIconsMenu();
 
 		this.add(this.themesMenu);
 		this.add(this.languagesMenu);
 		this.add(this.notificationsMenu);
 		this.scaleMenu.add(this.customScaleItem);
 		this.add(this.scaleMenu);
-		this.add(this.statIconsMenu);
+		this.add(this.stats);
 		this.add(this.fontItem);
 
 		this.customScaleItem.addActionListener(e -> this.onCustomScaleClicked());
@@ -61,7 +59,7 @@ public class ViewMenu extends AbstractEnigmaMenu {
 		this.notificationsMenu.setText(I18n.translate("menu.view.notifications"));
 		this.languagesMenu.setText(I18n.translate("menu.view.languages"));
 		this.scaleMenu.setText(I18n.translate("menu.view.scale"));
-		this.statIconsMenu.setText(I18n.translate("menu.view.stat_icons"));
+		this.stats.retranslate();
 		this.fontItem.setText(I18n.translate("menu.view.font"));
 		this.customScaleItem.setText(I18n.translate("menu.view.scale.custom"));
 	}
@@ -170,52 +168,5 @@ public class ViewMenu extends AbstractEnigmaMenu {
 
 			this.notificationsMenu.add(notificationsButton);
 		}
-	}
-
-	private void prepareStatIconsMenu() {
-		JMenu statTypes = new JMenu(I18n.translate("menu.view.stat_icons.included_types"));
-		for (StatType statType : StatType.values()) {
-			JCheckBoxMenuItem checkbox = new JCheckBoxMenuItem(statType.getName());
-			checkbox.setSelected(Config.main().stats.includedStatTypes.value().contains(statType));
-			checkbox.addActionListener(event -> {
-				if (checkbox.isSelected() && !Config.stats().includedStatTypes.value().contains(statType)) {
-					Config.stats().includedStatTypes.value().add(statType);
-				} else {
-					Config.stats().includedStatTypes.value().remove(statType);
-				}
-
-				ViewMenu.this.gui.getController().regenerateAndUpdateStatIcons();
-			});
-
-			statTypes.add(checkbox);
-		}
-
-		JCheckBoxMenuItem enableIcons = new JCheckBoxMenuItem(I18n.translate("menu.view.stat_icons.enable_icons"));
-		JCheckBoxMenuItem includeSynthetic = new JCheckBoxMenuItem(I18n.translate("menu.view.stat_icons.include_synthetic"));
-		JCheckBoxMenuItem countFallback = new JCheckBoxMenuItem(I18n.translate("menu.view.stat_icons.count_fallback"));
-
-		enableIcons.setSelected(Config.main().features.enableClassTreeStatIcons.value());
-		includeSynthetic.setSelected(Config.main().stats.shouldIncludeSyntheticParameters.value());
-		countFallback.setSelected(Config.main().stats.shouldCountFallbackNames.value());
-
-		enableIcons.addActionListener(event -> {
-			Config.main().features.enableClassTreeStatIcons.setValue(enableIcons.isSelected());
-			ViewMenu.this.gui.getController().regenerateAndUpdateStatIcons();
-		});
-
-		includeSynthetic.addActionListener(event -> {
-			Config.main().stats.shouldIncludeSyntheticParameters.setValue(includeSynthetic.isSelected());
-			ViewMenu.this.gui.getController().regenerateAndUpdateStatIcons();
-		});
-
-		countFallback.addActionListener(event -> {
-			Config.main().stats.shouldCountFallbackNames.setValue(countFallback.isSelected());
-			ViewMenu.this.gui.getController().regenerateAndUpdateStatIcons();
-		});
-
-		this.statIconsMenu.add(enableIcons);
-		this.statIconsMenu.add(includeSynthetic);
-		this.statIconsMenu.add(countFallback);
-		this.statIconsMenu.add(statTypes);
 	}
 }
