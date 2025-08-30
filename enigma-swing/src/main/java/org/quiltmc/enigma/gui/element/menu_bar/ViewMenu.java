@@ -66,7 +66,7 @@ public class ViewMenu extends AbstractEnigmaMenu {
 
 	private void onCustomScaleClicked() {
 		String answer = (String) JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("menu.view.scale.custom.title"), I18n.translate("menu.view.scale.custom.title"),
-			JOptionPane.QUESTION_MESSAGE, null, null, Double.toString(Config.main().scaleFactor.value() * 100));
+				JOptionPane.QUESTION_MESSAGE, null, null, Double.toString(Config.main().scaleFactor.value() * 100));
 
 		if (answer == null) {
 			return;
@@ -127,16 +127,16 @@ public class ViewMenu extends AbstractEnigmaMenu {
 	private void prepareScaleMenu() {
 		ButtonGroup scaleGroup = new ButtonGroup();
 		Map<Float, JRadioButtonMenuItem> scaleButtons = IntStream.of(100, 125, 150, 175, 200)
-			.mapToObj(scaleFactor -> {
-				float realScaleFactor = scaleFactor / 100f;
-				JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem(String.format("%d%%", scaleFactor));
-				menuItem.addActionListener(event -> ScaleUtil.setScaleFactor(realScaleFactor));
-				menuItem.addActionListener(event -> ChangeDialog.show(this.gui.getFrame()));
-				scaleGroup.add(menuItem);
-				this.scaleMenu.add(menuItem);
-				return new Pair<>(realScaleFactor, menuItem);
-			})
-			.collect(Collectors.toMap(Pair::a, Pair::b));
+				.mapToObj(scaleFactor -> {
+					float realScaleFactor = scaleFactor / 100f;
+					JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem(String.format("%d%%", scaleFactor));
+					menuItem.addActionListener(event -> ScaleUtil.setScaleFactor(realScaleFactor));
+					menuItem.addActionListener(event -> ChangeDialog.show(this.gui.getFrame()));
+					scaleGroup.add(menuItem);
+					this.scaleMenu.add(menuItem);
+					return new Pair<>(realScaleFactor, menuItem);
+				})
+				.collect(Collectors.toMap(Pair::a, Pair::b));
 
 		JRadioButtonMenuItem currentScaleButton = scaleButtons.get(Config.main().scaleFactor.value());
 		if (currentScaleButton != null) {

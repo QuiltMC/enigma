@@ -47,7 +47,6 @@ public class CollabMenu extends AbstractEnigmaMenu {
 		this.connectItem.setText(I18n.translate(connectionState != ConnectionState.CONNECTED ? "menu.collab.connect" : "menu.collab.disconnect"));
 		this.startServerItem.setEnabled(jarOpen && connectionState != ConnectionState.CONNECTED);
 		this.startServerItem.setText(I18n.translate(connectionState != ConnectionState.HOSTING ? "menu.collab.server.start" : "menu.collab.server.stop"));
-
 	}
 
 	public void onConnectClicked() {
