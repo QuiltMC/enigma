@@ -128,7 +128,7 @@ public class PredicateParserTest {
 				this.predicate = predicate;
 			}
 
-			@SuppressWarnings("unused")
+			@SuppressWarnings({"unused", "RedundantThrows"})
 			Builder expect() throws Throwable {
 				throw new UnsupportedOperationException();
 			}
@@ -144,7 +144,7 @@ public class PredicateParserTest {
 				return this;
 			}
 
-			@SuppressWarnings("unused")
+			@SuppressWarnings({"unused", "RedundantThrows"})
 			Builder unexpect() throws Throwable {
 				throw new UnsupportedOperationException();
 			}
@@ -162,7 +162,7 @@ public class PredicateParserTest {
 
 			ValidCase build() {
 				if (this.expect == null) {
-					throw new IllegalStateException("Not expect for '%s'!".formatted(this.predicate));
+					throw new IllegalStateException("No expect for '%s'!".formatted(this.predicate));
 				}
 
 				if (this.unexpect == null) {
