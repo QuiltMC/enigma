@@ -1,37 +1,35 @@
-package org.quiltmc.enigma.gui.element.menu_bar;
+package org.quiltmc.enigma.gui.element.menu_bar.file;
 
 import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
-import org.quiltmc.enigma.gui.dialog.CrashDialog;
 import org.quiltmc.enigma.gui.dialog.StatsDialog;
 import org.quiltmc.enigma.gui.dialog.keybind.ConfigureKeyBindsDialog;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
 import org.quiltmc.enigma.gui.util.ExtensionFileFilter;
 import org.quiltmc.enigma.util.I18n;
 
-import javax.annotation.Nullable;
-import javax.swing.ButtonGroup;
 import javax.swing.JFileChooser;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 public class FileMenu extends AbstractEnigmaMenu {
+	private final SaveMappingsAsMenu saveMappingsAs;
+	private final CrashHistoryMenu crashHistory;
+	private final OpenRecentMenu openRecent;
+
 	private final JMenuItem jarOpenItem = new JMenuItem();
 	private final JMenuItem jarCloseItem = new JMenuItem();
 	private final JMenuItem openMappingsItem = new JMenuItem();
-	private final JMenu openRecentMenu = new JMenu();
 	private final JMenuItem maxRecentFilesItem = new JMenuItem();
 	private final JMenuItem saveMappingsItem = new JMenuItem();
-	private final JMenu saveMappingsAsMenu = new JMenu();
 	private final JMenuItem closeMappingsItem = new JMenuItem();
 	private final JMenuItem dropMappingsItem = new JMenuItem();
 	private final JMenuItem reloadMappingsItem = new JMenuItem();
@@ -41,24 +39,23 @@ public class FileMenu extends AbstractEnigmaMenu {
 	private final JMenuItem statsItem = new JMenuItem();
 	private final JMenuItem configureKeyBindsItem = new JMenuItem();
 	private final JMenuItem exitItem = new JMenuItem();
-	private final JMenu crashHistoryMenu = new JMenu();
 
 	public FileMenu(Gui gui) {
 		super(gui);
 
-		this.reloadOpenRecentMenu();
-		this.prepareSaveMappingsAsMenu();
-		this.prepareCrashHistoryMenu();
+		this.saveMappingsAs = new SaveMappingsAsMenu(gui);
+		this.crashHistory = new CrashHistoryMenu(gui);
+		this.openRecent = new OpenRecentMenu(gui);
 
 		this.add(this.jarOpenItem);
 		this.add(this.jarCloseItem);
 		this.addSeparator();
-		this.add(this.openRecentMenu);
+		this.add(this.openRecent);
 		this.add(this.maxRecentFilesItem);
 		this.addSeparator();
 		this.add(this.openMappingsItem);
 		this.add(this.saveMappingsItem);
-		this.add(this.saveMappingsAsMenu);
+		this.add(this.saveMappingsAs);
 		this.add(this.closeMappingsItem);
 		this.add(this.dropMappingsItem);
 		this.addSeparator();
@@ -72,7 +69,7 @@ public class FileMenu extends AbstractEnigmaMenu {
 		this.addSeparator();
 		this.add(this.configureKeyBindsItem);
 		this.addSeparator();
-		this.add(this.crashHistoryMenu);
+		this.add(this.crashHistory);
 		this.add(this.exitItem);
 
 		this.jarOpenItem.addActionListener(e -> this.onOpenJarClicked());
@@ -106,14 +103,17 @@ public class FileMenu extends AbstractEnigmaMenu {
 
 		this.jarCloseItem.setEnabled(jarOpen);
 		this.openMappingsItem.setEnabled(jarOpen);
+		this.openRecent.updateState();
 		this.saveMappingsItem.setEnabled(jarOpen && this.gui.mappingsFileChooser.getSelectedFile() != null && this.gui.getConnectionState() != ConnectionState.CONNECTED);
-		this.saveMappingsAsMenu.setEnabled(jarOpen);
+		this.saveMappingsAs.updateState();
 		this.closeMappingsItem.setEnabled(jarOpen);
 		this.reloadMappingsItem.setEnabled(jarOpen);
 		this.reloadAllItem.setEnabled(jarOpen);
 		this.exportSourceItem.setEnabled(jarOpen);
 		this.exportJarItem.setEnabled(jarOpen);
 		this.statsItem.setEnabled(jarOpen);
+		this.crashHistory.updateState();
+		this.openRecent.updateState();
 	}
 
 	@Override
@@ -121,11 +121,11 @@ public class FileMenu extends AbstractEnigmaMenu {
 		this.setText(I18n.translate("menu.file"));
 		this.jarOpenItem.setText(I18n.translate("menu.file.jar.open"));
 		this.jarCloseItem.setText(I18n.translate("menu.file.jar.close"));
-		this.openRecentMenu.setText(I18n.translate("menu.file.open_recent_project"));
+		this.openRecent.retranslate();
 		this.maxRecentFilesItem.setText(I18n.translate("menu.file.max_recent_projects"));
 		this.openMappingsItem.setText(I18n.translate("menu.file.mappings.open"));
 		this.saveMappingsItem.setText(I18n.translate("menu.file.mappings.save"));
-		this.saveMappingsAsMenu.setText(I18n.translate("menu.file.mappings.save_as"));
+		this.saveMappingsAs.retranslate();
 		this.closeMappingsItem.setText(I18n.translate("menu.file.mappings.close"));
 		this.dropMappingsItem.setText(I18n.translate("menu.file.mappings.drop"));
 		this.reloadMappingsItem.setText(I18n.translate("menu.file.reload_mappings"));
@@ -134,113 +134,8 @@ public class FileMenu extends AbstractEnigmaMenu {
 		this.exportJarItem.setText(I18n.translate("menu.file.export.jar"));
 		this.statsItem.setText(I18n.translate("menu.file.stats"));
 		this.configureKeyBindsItem.setText(I18n.translate("menu.file.configure_keybinds"));
-		this.crashHistoryMenu.setText(I18n.translate("menu.file.crash_history"));
+		this.crashHistory.retranslate();
 		this.exitItem.setText(I18n.translate("menu.file.exit"));
-	}
-
-	// todo: break out
-	public void reloadOpenRecentMenu() {
-		this.openRecentMenu.removeAll();
-		List<Config.RecentProject> recentFilePairs = Config.main().recentProjects.value();
-
-		// find the longest common prefix among all mappings files
-		// this is to clear the "/home/user/wherever-you-store-your-mappings-projects/" part of the path and only show relevant information
-		Path prefix = null;
-
-		if (recentFilePairs.size() > 1) {
-			List<Path> recentFiles = recentFilePairs.stream().map(Config.RecentProject::getMappingsPath).sorted().toList();
-			prefix = recentFiles.get(0);
-
-			for (int i = 1; i < recentFiles.size(); i++) {
-				if (prefix == null) {
-					break;
-				}
-
-				prefix = findCommonPath(prefix, recentFiles.get(i));
-			}
-		}
-
-		for (Config.RecentProject recent : recentFilePairs) {
-			if (!Files.exists(recent.getJarPath()) || !Files.exists(recent.getMappingsPath())) {
-				continue;
-			}
-
-			String jarName = recent.getJarPath().getFileName().toString();
-
-			// if there's no common prefix, just show the last directory in the tree
-			String mappingsName;
-			if (prefix != null) {
-				mappingsName = prefix.relativize(recent.getMappingsPath()).toString();
-			} else {
-				mappingsName = recent.getMappingsPath().getFileName().toString();
-			}
-
-			JMenuItem item = new JMenuItem(jarName + " -> " + mappingsName);
-			item.addActionListener(event -> this.gui.getController().openJar(recent.getJarPath()).whenComplete((v, t) -> this.gui.getController().openMappings(recent.getMappingsPath())));
-			this.openRecentMenu.add(item);
-		}
-	}
-
-	/**
-	 * Find the longest common path between two absolute(!!) paths.
-	 */
-	@Nullable
-	private static Path findCommonPath(Path a, Path b) {
-		int i = 0;
-		for (; i < Math.min(a.getNameCount(), b.getNameCount()); i++) {
-			Path nameA = a.getName(i);
-			Path nameB = b.getName(i);
-
-			if (!nameA.equals(nameB)) {
-				break;
-			}
-		}
-
-		return i != 0 ? a.getRoot().resolve(a.subpath(0, i)) : null;
-	}
-
-	// todo: break out
-	private void prepareSaveMappingsAsMenu() {
-		for (ReadWriteService format : this.gui.getController().getEnigma().getReadWriteServices()) {
-			if (format.supportsWriting()) {
-				JMenuItem item = new JMenuItem(I18n.translate("mapping_format." + format.getId().toLowerCase(Locale.ROOT)));
-				item.addActionListener(event -> {
-					JFileChooser fileChooser = this.gui.mappingsFileChooser;
-					ExtensionFileFilter.setupFileChooser(this.gui, fileChooser, format);
-
-					if (fileChooser.getCurrentDirectory() == null) {
-						fileChooser.setCurrentDirectory(new File(Config.main().stats.lastSelectedDir.value()));
-					}
-
-					if (fileChooser.showSaveDialog(this.gui.getFrame()) == JFileChooser.APPROVE_OPTION) {
-						Path savePath = ExtensionFileFilter.getSavePath(fileChooser);
-						this.gui.getController().saveMappings(savePath, format, false);
-						this.saveMappingsItem.setEnabled(true);
-						Config.main().stats.lastSelectedDir.setValue(fileChooser.getCurrentDirectory().toString());
-					}
-				});
-
-				this.saveMappingsAsMenu.add(item);
-			}
-		}
-	}
-
-	// todo: break out
-	public void prepareCrashHistoryMenu() {
-		this.crashHistoryMenu.removeAll();
-		ButtonGroup crashHistoryGroup = new ButtonGroup();
-
-		for (int i = 0; i < this.gui.getCrashHistory().size(); i++) {
-			Throwable t = this.gui.getCrashHistory().get(i);
-			JMenuItem crashHistoryButton = new JMenuItem(i + " - " + t.toString());
-			crashHistoryGroup.add(crashHistoryButton);
-
-			crashHistoryButton.addActionListener(event -> CrashDialog.show(t, false));
-
-			this.crashHistoryMenu.add(crashHistoryButton);
-		}
-
-		this.crashHistoryMenu.setEnabled(!this.gui.getCrashHistory().isEmpty());
 	}
 
 	private void onOpenJarClicked() {
@@ -283,7 +178,7 @@ public class FileMenu extends AbstractEnigmaMenu {
 			} else {
 				String nonParseableMessage = I18n.translateFormatted("menu.file.open.non_parseable.unsupported_format", selectedFile);
 				if (format.isPresent()) {
-					nonParseableMessage = I18n.translateFormatted("menu.file.open.non_parseable", I18n.translate("mapping_format." + format.get().getId().split(":")[1].toLowerCase()));
+					nonParseableMessage = I18n.translateFormatted("menu.file.open.non_parseable", I18n.translate(format.get().getId()));
 				}
 
 				JOptionPane.showMessageDialog(this.gui.getFrame(), nonParseableMessage, I18n.translate("menu.file.open.cannot_open"), JOptionPane.ERROR_MESSAGE);

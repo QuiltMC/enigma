@@ -287,7 +287,7 @@ public class Gui {
 
 	public void addCrash(Throwable t) {
 		this.crashHistory.add(t);
-		this.menuBar.getFileMenu().prepareCrashHistoryMenu();
+		this.menuBar.getFileMenu().updateState();
 	}
 
 	public DockerManager getDockerManager() {

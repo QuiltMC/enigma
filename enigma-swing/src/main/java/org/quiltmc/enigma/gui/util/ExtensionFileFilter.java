@@ -77,7 +77,7 @@ public final class ExtensionFileFilter extends FileFilter {
 		fileChooser.resetChoosableFileFilters();
 
 		for (ReadWriteService service : services) {
-			String formatName = I18n.translate("mapping_format." + service.getId().split(":")[1].toLowerCase());
+			String formatName = I18n.translate(service.getId());
 			var filter = new ExtensionFileFilter(formatName, service.getFileType().getExtensions());
 			// Add our new filter to the list...
 			fileChooser.addChoosableFileFilter(filter);
