@@ -28,7 +28,7 @@ public class CrashHistoryMenu extends AbstractEnigmaMenu {
 			JMenuItem crashHistoryButton = new JMenuItem(i + " - " + t.toString());
 			crashHistoryGroup.add(crashHistoryButton);
 
-			crashHistoryButton.addActionListener(event -> onCrashClicked(t));
+			crashHistoryButton.addActionListener(event -> this.onCrashClicked(t));
 
 			this.add(crashHistoryButton);
 		}

@@ -33,10 +33,10 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 			this.options.put(realFactor, button);
 			this.add(button);
 
-			button.addActionListener(e -> onScaleClicked(realFactor));
+			button.addActionListener(e -> this.onScaleClicked(realFactor));
 		});
 
-		this.customScale.addActionListener(e -> onCustomScaleClicked());
+		this.customScale.addActionListener(e -> this.onCustomScaleClicked());
 
 		// note: as of refactoring this code, there is no other path which updates scale
 		// this code is therefore currently pointless
@@ -70,7 +70,7 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 
 	private void onCustomScaleClicked() {
 		String answer = (String) JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("menu.view.scale.custom.title"), I18n.translate("menu.view.scale.custom.title"),
-			JOptionPane.QUESTION_MESSAGE, null, null, Double.toString(Config.main().scaleFactor.value() * 100));
+				JOptionPane.QUESTION_MESSAGE, null, null, Double.toString(Config.main().scaleFactor.value() * 100));
 
 		if (answer == null) {
 			return;

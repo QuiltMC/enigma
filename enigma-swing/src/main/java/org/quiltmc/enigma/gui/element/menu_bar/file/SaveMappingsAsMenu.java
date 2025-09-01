@@ -12,7 +12,6 @@ import javax.swing.JMenuItem;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -27,7 +26,7 @@ public class SaveMappingsAsMenu extends AbstractEnigmaMenu {
 			this.items.put(format, item);
 			this.add(item);
 
-			item.addActionListener(e -> onFormatClicked(format));
+			item.addActionListener(e -> this.onFormatClicked(format));
 		});
 	}
 

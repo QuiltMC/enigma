@@ -21,7 +21,7 @@ public class LanguagesMenu extends AbstractEnigmaMenu {
 			this.languages.put(lang, languageButton);
 			this.add(languageButton);
 
-			languageButton.addActionListener(e -> onLanguageButtonClicked(lang));
+			languageButton.addActionListener(e -> this.onLanguageButtonClicked(lang));
 		}
 	}
 

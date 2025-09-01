@@ -27,7 +27,7 @@ public class ThemesMenu extends AbstractEnigmaMenu {
 			this.themes.put(theme, themeButton);
 
 			this.add(themeButton);
-			themeButton.addActionListener(e -> onThemeClicked(theme));
+			themeButton.addActionListener(e -> this.onThemeClicked(theme));
 		}
 	}
 

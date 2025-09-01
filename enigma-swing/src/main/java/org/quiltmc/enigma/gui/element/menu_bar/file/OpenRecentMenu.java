@@ -59,7 +59,7 @@ public class OpenRecentMenu extends AbstractEnigmaMenu {
 			}
 
 			JMenuItem item = new JMenuItem(jarName + " -> " + mappingsName);
-			item.addActionListener(event -> onRecentClicked(recent));
+			item.addActionListener(event -> this.onRecentClicked(recent));
 			this.add(item);
 		}
 	}
