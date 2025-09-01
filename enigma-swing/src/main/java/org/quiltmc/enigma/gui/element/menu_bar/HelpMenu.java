@@ -8,13 +8,11 @@ import org.quiltmc.enigma.util.I18n;
 import javax.swing.JMenuItem;
 
 public class HelpMenu extends AbstractEnigmaMenu {
-	private final Gui gui;
-
 	private final JMenuItem aboutItem = new JMenuItem();
 	private final JMenuItem githubItem = new JMenuItem();
 
 	public HelpMenu(Gui gui) {
-		this.gui = gui;
+		super(gui);
 
 		this.add(this.aboutItem);
 		this.add(this.githubItem);

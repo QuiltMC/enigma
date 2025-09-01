@@ -26,15 +26,13 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 
 public class DevMenu extends AbstractEnigmaMenu {
-	private final Gui gui;
-
 	private final JCheckBoxMenuItem showMappingSourcePluginItem = new JCheckBoxMenuItem();
 	private final JCheckBoxMenuItem debugTokenHighlightsItem = new JCheckBoxMenuItem();
 	private final JCheckBoxMenuItem logClientPacketsItem = new JCheckBoxMenuItem();
 	private final JMenuItem printMappingTreeItem = new JMenuItem();
 
 	public DevMenu(Gui gui) {
-		this.gui = gui;
+		super(gui);
 
 		this.add(this.showMappingSourcePluginItem);
 		this.add(this.debugTokenHighlightsItem);

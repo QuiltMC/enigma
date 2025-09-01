@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.element.menu_bar;
 
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.element.menu_bar.view.ViewMenu;
 
 import java.util.ArrayList;
 import java.util.List;

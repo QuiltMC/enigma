@@ -1,8 +1,9 @@
-package org.quiltmc.enigma.gui.element.menu_bar;
+package org.quiltmc.enigma.gui.element.menu_bar.view;
 
 import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JCheckBoxMenuItem;
@@ -11,8 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class StatsMenu extends AbstractEnigmaMenu {
-	private final Gui gui;
-
 	private final JCheckBoxMenuItem enableIcons = new JCheckBoxMenuItem();
 	private final JCheckBoxMenuItem includeSynthetic = new JCheckBoxMenuItem();
 	private final JCheckBoxMenuItem countFallback = new JCheckBoxMenuItem();
@@ -20,7 +19,7 @@ public class StatsMenu extends AbstractEnigmaMenu {
 	private final Map<StatType, JCheckBoxMenuItem> statTypeItems = new HashMap<>();
 
 	public StatsMenu(Gui gui) {
-		this.gui = gui;
+		super(gui);
 
 		this.add(this.enableIcons);
 		this.add(this.includeSynthetic);
@@ -32,16 +31,7 @@ public class StatsMenu extends AbstractEnigmaMenu {
 		this.countFallback.addActionListener(e -> this.onCountFallbackClicked());
 		for (StatType statType : StatType.values()) {
 			JCheckBoxMenuItem checkbox = new JCheckBoxMenuItem(statType.getName());
-			checkbox.setSelected(Config.main().stats.includedStatTypes.value().contains(statType));
-			checkbox.addActionListener(event -> {
-				if (checkbox.isSelected() && !Config.stats().includedStatTypes.value().contains(statType)) {
-					Config.stats().includedStatTypes.value().add(statType);
-				} else {
-					Config.stats().includedStatTypes.value().remove(statType);
-				}
-
-				this.gui.getController().regenerateAndUpdateStatIcons();
-			});
+			checkbox.addActionListener(event -> this.onCheckboxClicked(statType));
 
 			this.statTypeItems.put(statType, checkbox);
 			this.statTypes.add(checkbox);
@@ -67,6 +57,11 @@ public class StatsMenu extends AbstractEnigmaMenu {
 		this.enableIcons.setSelected(Config.main().features.enableClassTreeStatIcons.value());
 		this.includeSynthetic.setSelected(Config.main().stats.shouldIncludeSyntheticParameters.value());
 		this.countFallback.setSelected(Config.main().stats.shouldCountFallbackNames.value());
+
+		for (StatType type : StatType.values()) {
+			JCheckBoxMenuItem checkbox = this.statTypeItems.get(type);
+			checkbox.setSelected(Config.main().stats.includedStatTypes.value().contains(type));
+		}
 	}
 
 	private void onEnableIconsClicked() {
@@ -81,6 +76,18 @@ public class StatsMenu extends AbstractEnigmaMenu {
 
 	private void onCountFallbackClicked() {
 		Config.main().stats.shouldCountFallbackNames.setValue(this.countFallback.isSelected());
+		this.gui.getController().regenerateAndUpdateStatIcons();
+	}
+
+	private void onCheckboxClicked(StatType type) {
+		JCheckBoxMenuItem checkbox = this.statTypeItems.get(type);
+
+		if (checkbox.isSelected() && !Config.stats().includedStatTypes.value().contains(type)) {
+			Config.stats().includedStatTypes.value().add(type);
+		} else {
+			Config.stats().includedStatTypes.value().remove(type);
+		}
+
 		this.gui.getController().regenerateAndUpdateStatIcons();
 	}
 }

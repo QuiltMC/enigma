@@ -16,13 +16,11 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class CollabMenu extends AbstractEnigmaMenu {
-	private final Gui gui;
-
 	private final JMenuItem connectItem = new JMenuItem();
 	private final JMenuItem startServerItem = new JMenuItem();
 
 	public CollabMenu(Gui gui) {
-		this.gui = gui;
+		super(gui);
 
 		this.add(this.connectItem);
 		this.add(this.startServerItem);

@@ -25,8 +25,6 @@ import java.util.Locale;
 import java.util.Optional;
 
 public class FileMenu extends AbstractEnigmaMenu {
-	private final Gui gui;
-
 	private final JMenuItem jarOpenItem = new JMenuItem();
 	private final JMenuItem jarCloseItem = new JMenuItem();
 	private final JMenuItem openMappingsItem = new JMenuItem();
@@ -46,7 +44,7 @@ public class FileMenu extends AbstractEnigmaMenu {
 	private final JMenu crashHistoryMenu = new JMenu();
 
 	public FileMenu(Gui gui) {
-		this.gui = gui;
+		super(gui);
 
 		this.reloadOpenRecentMenu();
 		this.prepareSaveMappingsAsMenu();
@@ -140,6 +138,7 @@ public class FileMenu extends AbstractEnigmaMenu {
 		this.exitItem.setText(I18n.translate("menu.file.exit"));
 	}
 
+	// todo: break out
 	public void reloadOpenRecentMenu() {
 		this.openRecentMenu.removeAll();
 		List<Config.RecentProject> recentFilePairs = Config.main().recentProjects.value();
@@ -200,6 +199,7 @@ public class FileMenu extends AbstractEnigmaMenu {
 		return i != 0 ? a.getRoot().resolve(a.subpath(0, i)) : null;
 	}
 
+	// todo: break out
 	private void prepareSaveMappingsAsMenu() {
 		for (ReadWriteService format : this.gui.getController().getEnigma().getReadWriteServices()) {
 			if (format.supportsWriting()) {
@@ -225,6 +225,7 @@ public class FileMenu extends AbstractEnigmaMenu {
 		}
 	}
 
+	// todo: break out
 	public void prepareCrashHistoryMenu() {
 		this.crashHistoryMenu.removeAll();
 		ButtonGroup crashHistoryGroup = new ButtonGroup();

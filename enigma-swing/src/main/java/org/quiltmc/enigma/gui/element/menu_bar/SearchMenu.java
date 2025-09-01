@@ -9,8 +9,6 @@ import org.quiltmc.enigma.util.I18n;
 import javax.swing.JMenuItem;
 
 public class SearchMenu extends AbstractEnigmaMenu {
-	private final Gui gui;
-
 	private final JMenuItem searchItem = new JMenuItem(GuiUtil.DEOBFUSCATED_ICON);
 	private final JMenuItem searchAllItem = new JMenuItem(GuiUtil.DEOBFUSCATED_ICON);
 	private final JMenuItem searchClassItem = new JMenuItem(GuiUtil.CLASS_ICON);
@@ -18,7 +16,7 @@ public class SearchMenu extends AbstractEnigmaMenu {
 	private final JMenuItem searchFieldItem = new JMenuItem(GuiUtil.FIELD_ICON);
 
 	public SearchMenu(Gui gui) {
-		this.gui = gui;
+		super(gui);
 
 		this.add(this.searchItem);
 		this.add(this.searchAllItem);

@@ -11,12 +11,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 
 public class DecompilerMenu extends AbstractEnigmaMenu {
-	private final Gui gui;
-
 	private final JMenuItem decompilerSettingsItem = new JMenuItem();
 
 	public DecompilerMenu(Gui gui) {
-		this.gui = gui;
+		super(gui);
 
 		ButtonGroup decompilerGroup = new ButtonGroup();
 
