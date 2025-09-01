@@ -1,16 +1,9 @@
-import org.gradle.api.internal.ConventionMapping
-import quilt.internal.task.ProGuardExecTask
-
-import java.util.stream.Stream
+import proguard.gradle.ProGuardTask
 
 plugins {
 	id 'checkstyle'
 	id 'java-library'
 	id 'java-test-fixtures'
-}
-
-configurations {
-	proGuard
 }
 
 dependencies {
@@ -21,8 +14,6 @@ dependencies {
 	implementation libs.procyon
 
 	implementation libs.quilt.config
-
-	proGuard libs.proguard
 
 	testImplementation libs.jimfs
 
@@ -85,18 +76,18 @@ def registerTestJarTasks(String name, String... input) {
 		confFileArg = "src/test/resources/proguard-$name-test.conf"
 	}
 
-	tasks.register("${taskName}TestObf", ProGuardExecTask) {
+	tasks.register("${taskName}TestObf", ProGuardTask) {
 		group("test-setup")
-		classpath configurations.proGuard
 
-		confFile = confFileArg
-		inputs.file confFileArg
+		ignorewarnings
 
-		libraryJars = libraryJarsArg
+		configuration confFileArg
 
-		inJar = testJarTask.get().archiveFile
+		libraryJarFilters.add libraryJarsArg
 
-		outJar = file("build/test-obf/${name}.jar")
+		injars testJarTask.get().archiveFile
+
+		outjars file("build/test-obf/${name}.jar")
 	}
 }
 
