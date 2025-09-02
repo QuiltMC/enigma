@@ -75,7 +75,8 @@ public class OpenRecentMenu extends AbstractEnigmaMenu {
 	@Nullable
 	private static Path findCommonPath(Path a, Path b) {
 		int i = 0;
-		for (; i < Math.min(a.getNameCount(), b.getNameCount()); i++) {
+		int minNameCount = Math.min(a.getNameCount(), b.getNameCount());
+		for (; i < minNameCount; i++) {
 			Path nameA = a.getName(i);
 			Path nameB = b.getName(i);
 
