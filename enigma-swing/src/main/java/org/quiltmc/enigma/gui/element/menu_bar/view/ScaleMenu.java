@@ -19,7 +19,7 @@ import java.util.stream.IntStream;
 
 public class ScaleMenu extends AbstractEnigmaMenu {
 	private final int[] defaultOptions = {100, 125, 150, 175, 200};
-	private final ButtonGroup defaultOptionsGroup = new ButtonGroup();
+	private final ButtonGroup optionsGroup = new ButtonGroup();
 	private final Map<Float, JRadioButtonMenuItem> options = new HashMap<>();
 	private final JRadioButtonMenuItem customScaleButton = new JRadioButtonMenuItem();
 
@@ -27,12 +27,12 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 		super(gui);
 
 		this.add(this.customScaleButton);
-		this.defaultOptionsGroup.add(this.customScaleButton);
+		this.optionsGroup.add(this.customScaleButton);
 
 		this.forEachDefaultScaleOption((scaleFactor, realFactor) -> {
 			JRadioButtonMenuItem button = new JRadioButtonMenuItem();
 
-			this.defaultOptionsGroup.add(button);
+			this.optionsGroup.add(button);
 			this.options.put(realFactor, button);
 			this.add(button);
 
