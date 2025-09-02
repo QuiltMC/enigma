@@ -7,6 +7,7 @@ import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
 import org.quiltmc.enigma.gui.util.LanguageUtil;
 import org.quiltmc.enigma.util.I18n;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JRadioButtonMenuItem;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,9 +18,11 @@ public class LanguagesMenu extends AbstractEnigmaMenu {
 	protected LanguagesMenu(Gui gui) {
 		super(gui);
 
+		ButtonGroup languageButtons = new ButtonGroup();
 		for (String lang : I18n.getAvailableLanguages()) {
 			JRadioButtonMenuItem languageButton = new JRadioButtonMenuItem(I18n.getLanguageName(lang));
 			this.languages.put(lang, languageButton);
+			languageButtons.add(languageButton);
 			this.add(languageButton);
 
 			languageButton.addActionListener(e -> this.onLanguageButtonClicked(lang));

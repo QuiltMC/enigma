@@ -19,9 +19,9 @@ public class NotificationsMenu extends AbstractEnigmaMenu {
 	public NotificationsMenu(Gui gui) {
 		super(gui);
 
+		ButtonGroup buttonGroup = new ButtonGroup();
 		for (ServerNotificationLevel level : ServerNotificationLevel.values()) {
 			JRadioButtonMenuItem notificationsButton = new JRadioButtonMenuItem();
-			ButtonGroup buttonGroup = new ButtonGroup();
 			buttonGroup.add(notificationsButton);
 			this.buttons.put(level, notificationsButton);
 			notificationsButton.addActionListener(event -> Config.main().serverNotificationLevel.setValue(level, true));
