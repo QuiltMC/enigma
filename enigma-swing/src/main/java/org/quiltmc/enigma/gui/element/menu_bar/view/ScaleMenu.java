@@ -20,14 +20,14 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 	private final int[] defaultOptions = {100, 125, 150, 175, 200};
 	private final ButtonGroup defaultOptionsGroup = new ButtonGroup();
 	private final Map<Float, JRadioButtonMenuItem> options = new HashMap<>();
-	private final JRadioButtonMenuItem customScale = new JRadioButtonMenuItem();
+	private final JRadioButtonMenuItem customScaleButton = new JRadioButtonMenuItem();
 
 	protected ScaleMenu(Gui gui) {
 		super(gui);
 
-		this.add(this.customScale);
+		this.add(this.customScaleButton);
 
-		this.iterateScaleOptions((scaleFactor, realFactor) -> {
+		this.forEachDefaultScaleOption((scaleFactor, realFactor) -> {
 			JRadioButtonMenuItem button = new JRadioButtonMenuItem();
 
 			this.defaultOptionsGroup.add(button);
@@ -37,7 +37,7 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 			button.addActionListener(e -> this.onScaleClicked(realFactor));
 		});
 
-		this.customScale.addActionListener(e -> this.onCustomScaleClicked());
+		this.customScaleButton.addActionListener(e -> this.onCustomScaleClicked());
 
 		// note: as of refactoring this code, there is no other path which updates scale
 		// this code is therefore currently pointless
@@ -49,8 +49,8 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 	public void retranslate() {
 		this.setText(I18n.translate("menu.view.scale"));
 
-		this.customScale.setText(I18n.translate("menu.view.scale.custom"));
-		this.iterateScaleOptions((scaleFactor, realFactor) -> this.options.get(realFactor).setText(String.format("%d%%", scaleFactor)));
+		this.customScaleButton.setText(I18n.translate("menu.view.scale.custom"));
+		this.forEachDefaultScaleOption((scaleFactor, realFactor) -> this.options.get(realFactor).setText(String.format("%d%%", scaleFactor)));
 	}
 
 	@Override
@@ -88,7 +88,7 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 		ChangeDialog.show(this.gui.getFrame());
 	}
 
-	private void iterateScaleOptions(BiConsumer<Integer, Float> consumer) {
+	private void forEachDefaultScaleOption(BiConsumer<Integer, Float> consumer) {
 		IntStream.of(this.defaultOptions)
 				.forEach(
 					option -> consumer.accept(option, option / 100f)

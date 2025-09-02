@@ -22,7 +22,7 @@ public class SaveMappingsAsMenu extends AbstractEnigmaMenu {
 	protected SaveMappingsAsMenu(Gui gui) {
 		super(gui);
 
-		this.iterateFormats(format -> {
+		this.forEachFormat(format -> {
 			JMenuItem item = new JMenuItem();
 			this.items.put(format, item);
 			this.add(item);
@@ -35,7 +35,7 @@ public class SaveMappingsAsMenu extends AbstractEnigmaMenu {
 	public void retranslate() {
 		this.setText(I18n.translate("menu.file.mappings.save_as"));
 
-		this.iterateFormats(format -> this.items.get(format).setText(I18n.translate(format.getId())));
+		this.forEachFormat(format -> this.items.get(format).setText(I18n.translate(format.getId())));
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class SaveMappingsAsMenu extends AbstractEnigmaMenu {
 		}
 	}
 
-	private void iterateFormats(Consumer<ReadWriteService> consumer) {
+	private void forEachFormat(Consumer<ReadWriteService> consumer) {
 		this.gui.getController().getEnigma().getReadWriteServices().forEach(format -> {
 			if (format.supportsWriting()) {
 				consumer.accept(format);
