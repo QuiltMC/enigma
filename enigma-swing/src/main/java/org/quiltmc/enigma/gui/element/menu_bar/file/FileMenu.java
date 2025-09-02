@@ -174,10 +174,9 @@ public class FileMenu extends AbstractEnigmaMenu {
 			if (format.isPresent() && format.get().supportsReading()) {
 				this.gui.getController().openMappings(format.get(), selectedFile.toPath());
 			} else {
-				String nonParseableMessage = I18n.translateFormatted("menu.file.open.non_parseable.unsupported_format", selectedFile);
-				if (format.isPresent()) {
-					nonParseableMessage = I18n.translateFormatted("menu.file.open.non_parseable", I18n.translate(format.get().getId()));
-				}
+				String nonParseableMessage = format.isPresent()
+						? I18n.translateFormatted("menu.file.open.non_parseable", I18n.translate(format.get().getId()))
+						: I18n.translateFormatted("menu.file.open.non_parseable.unsupported_format", selectedFile);
 
 				JOptionPane.showMessageDialog(this.gui.getFrame(), nonParseableMessage, I18n.translate("menu.file.open.cannot_open"), JOptionPane.ERROR_MESSAGE);
 			}

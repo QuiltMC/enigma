@@ -38,7 +38,7 @@ public class MenuBar {
 		this.addMenu(this.collabMenu);
 		this.addMenu(helpMenu);
 
-		if (System.getProperty("enigma.development", "false").equalsIgnoreCase("true") || Config.main().development.anyEnabled) {
+		if (Boolean.parseBoolean(System.getProperty("enigma.development")) || Config.main().development.anyEnabled) {
 			this.addMenu(devMenu);
 		}
 
