@@ -27,7 +27,7 @@ import org.quiltmc.enigma.gui.docker.ObfuscatedClassesDocker;
 import org.quiltmc.enigma.gui.docker.StructureDocker;
 import org.quiltmc.enigma.gui.element.EditorTabbedPane;
 import org.quiltmc.enigma.gui.element.MainWindow;
-import org.quiltmc.enigma.gui.element.MenuBar;
+import org.quiltmc.enigma.gui.element.menu_bar.MenuBar;
 import org.quiltmc.enigma.gui.panel.EditorPanel;
 import org.quiltmc.enigma.gui.panel.IdentifierPanel;
 import org.quiltmc.enigma.gui.renderer.MessageListCellRenderer;
@@ -287,7 +287,7 @@ public class Gui {
 
 	public void addCrash(Throwable t) {
 		this.crashHistory.add(t);
-		this.menuBar.prepareCrashHistoryMenu();
+		this.menuBar.getFileMenu().updateState();
 	}
 
 	public DockerManager getDockerManager() {

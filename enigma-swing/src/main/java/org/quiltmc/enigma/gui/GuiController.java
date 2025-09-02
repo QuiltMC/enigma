@@ -165,7 +165,7 @@ public class GuiController implements ClientPacketHandler {
 
 		this.gui.setMappingsFile(path);
 		Config.insertRecentProject(this.project.getJarPath().toString(), path.toString());
-		this.gui.getMenuBar().reloadOpenRecentMenu(this.gui);
+		this.gui.getMenuBar().getFileMenu().updateState();
 
 		return ProgressDialog.runOffThread(this.gui, progress -> {
 			try {
@@ -239,7 +239,7 @@ public class GuiController implements ClientPacketHandler {
 		if (this.project == null) {
 			return CompletableFuture.completedFuture(null);
 		} else if (!service.supportsWriting()) {
-			String nonWriteableMessage = I18n.translateFormatted("menu.file.save.non_writeable", I18n.translate("mapping_format." + service.getId().split(":")[1].toLowerCase()));
+			String nonWriteableMessage = I18n.translateFormatted("menu.file.save.non_writeable", I18n.translate(service.getId()));
 			JOptionPane.showMessageDialog(this.gui.getFrame(), nonWriteableMessage, I18n.translate("menu.file.save.cannot_save"), JOptionPane.ERROR_MESSAGE);
 			return CompletableFuture.completedFuture(null);
 		}
