@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.element.menu_bar.view;
 
+import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
@@ -38,7 +39,7 @@ public class NotificationsMenu extends AbstractEnigmaMenu {
 	}
 
 	@Override
-	public void updateState() {
+	public void updateState(boolean jarOpen, ConnectionState state) {
 		for (ServerNotificationLevel level : ServerNotificationLevel.values()) {
 			this.buttons.get(level).setSelected(level.equals(Config.main().serverNotificationLevel.value()));
 		}

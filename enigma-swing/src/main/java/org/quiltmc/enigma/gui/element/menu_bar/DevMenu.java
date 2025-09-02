@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.element.menu_bar;
 
+import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
@@ -56,8 +57,7 @@ public class DevMenu extends AbstractEnigmaMenu {
 	}
 
 	@Override
-	public void updateState() {
-		boolean jarOpen = this.gui.isJarOpen();
+	public void updateState(boolean jarOpen, ConnectionState state) {
 		this.printMappingTreeItem.setEnabled(jarOpen);
 
 		this.showMappingSourcePluginItem.setState(Config.main().development.showMappingSourcePlugin.value());

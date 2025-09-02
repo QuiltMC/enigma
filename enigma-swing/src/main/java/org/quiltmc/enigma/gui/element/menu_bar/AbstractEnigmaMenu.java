@@ -10,4 +10,8 @@ public class AbstractEnigmaMenu extends JMenu implements EnigmaMenu {
 	protected AbstractEnigmaMenu(Gui gui) {
 		this.gui = gui;
 	}
+
+	public void updateState() {
+		this.updateState(this.gui.isJarOpen(), this.gui.getConnectionState());
+	}
 }

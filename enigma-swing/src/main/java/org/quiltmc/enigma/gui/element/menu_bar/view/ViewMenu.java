@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.element.menu_bar.view;
 
+import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.dialog.FontDialog;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
@@ -47,11 +48,11 @@ public class ViewMenu extends AbstractEnigmaMenu {
 	}
 
 	@Override
-	public void updateState() {
-		this.stats.updateState();
-		this.notifications.updateState();
-		this.languages.updateState();
-		this.scale.updateState();
+	public void updateState(boolean jarOpen, ConnectionState state) {
+		this.stats.updateState(jarOpen, state);
+		this.notifications.updateState(jarOpen, state);
+		this.languages.updateState(jarOpen, state);
+		this.scale.updateState(jarOpen, state);
 	}
 
 	private void onFontClicked(Gui gui) {

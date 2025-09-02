@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.element.menu_bar.file;
 
 import org.quiltmc.enigma.api.service.ReadWriteService;
+import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
@@ -38,8 +39,8 @@ public class SaveMappingsAsMenu extends AbstractEnigmaMenu {
 	}
 
 	@Override
-	public void updateState() {
-		this.setEnabled(this.gui.isJarOpen());
+	public void updateState(boolean jarOpen, ConnectionState state) {
+		this.setEnabled(jarOpen);
 	}
 
 	private void onFormatClicked(ReadWriteService format) {

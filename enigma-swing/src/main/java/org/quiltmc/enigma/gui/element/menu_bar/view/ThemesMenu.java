@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.element.menu_bar.view;
 
+import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.ChangeDialog;
@@ -41,7 +42,7 @@ public class ThemesMenu extends AbstractEnigmaMenu {
 	}
 
 	@Override
-	public void updateState() {
+	public void updateState(boolean jarOpen, ConnectionState state) {
 		for (ThemeChoice theme : ThemeChoice.values()) {
 			if (theme.equals(Config.main().theme.value())) {
 				this.themes.get(theme).setSelected(true);

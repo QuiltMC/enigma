@@ -32,19 +32,19 @@ public class CollabMenu extends AbstractEnigmaMenu {
 	@Override
 	public void retranslate() {
 		this.setText(I18n.translate("menu.collab"));
-		this.connectItem.setText(I18n.translate("menu.collab.connect"));
-		this.startServerItem.setText(I18n.translate("menu.collab.server.start"));
+		this.retranslate(this.gui.getConnectionState());
+	}
+
+	private void retranslate(ConnectionState state) {
+		this.connectItem.setText(I18n.translate(state != ConnectionState.CONNECTED ? "menu.collab.connect" : "menu.collab.disconnect"));
+		this.startServerItem.setText(I18n.translate(state != ConnectionState.HOSTING ? "menu.collab.server.start" : "menu.collab.server.stop"));
 	}
 
 	@Override
-	public void updateState() {
-		boolean jarOpen = this.gui.isJarOpen();
-		ConnectionState connectionState = this.gui.getConnectionState();
-
-		this.connectItem.setEnabled(jarOpen && connectionState != ConnectionState.HOSTING);
-		this.connectItem.setText(I18n.translate(connectionState != ConnectionState.CONNECTED ? "menu.collab.connect" : "menu.collab.disconnect"));
-		this.startServerItem.setEnabled(jarOpen && connectionState != ConnectionState.CONNECTED);
-		this.startServerItem.setText(I18n.translate(connectionState != ConnectionState.HOSTING ? "menu.collab.server.start" : "menu.collab.server.stop"));
+	public void updateState(boolean jarOpen, ConnectionState state) {
+		this.connectItem.setEnabled(jarOpen && state != ConnectionState.HOSTING);
+		this.startServerItem.setEnabled(jarOpen && state != ConnectionState.CONNECTED);
+		this.retranslate(state);
 	}
 
 	public void onConnectClicked() {

@@ -98,12 +98,10 @@ public class FileMenu extends AbstractEnigmaMenu {
 	}
 
 	@Override
-	public void updateState() {
-		boolean jarOpen = this.gui.isJarOpen();
-
+	public void updateState(boolean jarOpen, ConnectionState state) {
 		this.jarCloseItem.setEnabled(jarOpen);
 		this.openMappingsItem.setEnabled(jarOpen);
-		this.openRecent.updateState();
+		this.openRecent.updateState(jarOpen, state);
 		this.saveMappingsItem.setEnabled(jarOpen && this.gui.mappingsFileChooser.getSelectedFile() != null && this.gui.getConnectionState() != ConnectionState.CONNECTED);
 		this.saveMappingsAs.updateState();
 		this.closeMappingsItem.setEnabled(jarOpen);
@@ -112,8 +110,8 @@ public class FileMenu extends AbstractEnigmaMenu {
 		this.exportSourceItem.setEnabled(jarOpen);
 		this.exportJarItem.setEnabled(jarOpen);
 		this.statsItem.setEnabled(jarOpen);
-		this.crashHistory.updateState();
-		this.openRecent.updateState();
+		this.crashHistory.updateState(jarOpen, state);
+		this.openRecent.updateState(jarOpen, state);
 	}
 
 	@Override

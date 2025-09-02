@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.element.menu_bar.file;
 
+import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
@@ -22,7 +23,7 @@ public class OpenRecentMenu extends AbstractEnigmaMenu {
 	}
 
 	@Override
-	public void updateState() {
+	public void updateState(boolean jarOpen, ConnectionState state) {
 		this.removeAll();
 		List<Config.RecentProject> recentFilePairs = Config.main().recentProjects.value();
 

@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.element.menu_bar.view;
 
+import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
@@ -35,7 +36,7 @@ public class LanguagesMenu extends AbstractEnigmaMenu {
 	}
 
 	@Override
-	public void updateState() {
+	public void updateState(boolean jarOpen, ConnectionState state) {
 		for (String lang : I18n.getAvailableLanguages()) {
 			if (lang.equals(Config.main().language.value())) {
 				this.languages.get(lang).setSelected(true);

@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.element.menu_bar;
 
+import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.element.menu_bar.file.FileMenu;
@@ -56,8 +57,10 @@ public class MenuBar {
 	}
 
 	public void updateUiState() {
+		boolean jarOpen = this.gui.isJarOpen();
+		ConnectionState connectionState = this.gui.getConnectionState();
 		for (EnigmaMenu menu : this.menus) {
-			menu.updateState();
+			menu.updateState(jarOpen, connectionState);
 		}
 	}
 

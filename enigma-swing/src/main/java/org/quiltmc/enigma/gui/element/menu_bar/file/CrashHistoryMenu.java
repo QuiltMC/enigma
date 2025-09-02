@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.element.menu_bar.file;
 
+import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.dialog.CrashDialog;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
@@ -19,7 +20,7 @@ public class CrashHistoryMenu extends AbstractEnigmaMenu {
 	}
 
 	@Override
-	public void updateState() {
+	public void updateState(boolean jarOpen, ConnectionState state) {
 		this.removeAll();
 		ButtonGroup crashHistoryGroup = new ButtonGroup();
 

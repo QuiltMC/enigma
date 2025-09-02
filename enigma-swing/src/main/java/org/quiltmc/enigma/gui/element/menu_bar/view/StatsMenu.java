@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.element.menu_bar.view;
 
 import org.quiltmc.enigma.api.stats.StatType;
+import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
@@ -53,7 +54,7 @@ public class StatsMenu extends AbstractEnigmaMenu {
 	}
 
 	@Override
-	public void updateState() {
+	public void updateState(boolean jarOpen, ConnectionState state) {
 		this.enableIcons.setSelected(Config.main().features.enableClassTreeStatIcons.value());
 		this.includeSynthetic.setSelected(Config.main().stats.shouldIncludeSyntheticParameters.value());
 		this.countFallback.setSelected(Config.main().stats.shouldCountFallbackNames.value());

@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.element.menu_bar.view;
 
+import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.ChangeDialog;
@@ -53,7 +54,7 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 	}
 
 	@Override
-	public void updateState() {
+	public void updateState(boolean jarOpen, ConnectionState state) {
 		JRadioButtonMenuItem option = this.options.get(Config.main().scaleFactor.value());
 		if (option != null) {
 			option.setSelected(true);
