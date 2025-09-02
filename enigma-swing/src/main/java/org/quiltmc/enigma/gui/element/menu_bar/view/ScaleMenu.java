@@ -13,6 +13,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 
@@ -26,6 +27,7 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 		super(gui);
 
 		this.add(this.customScaleButton);
+		this.defaultOptionsGroup.add(this.customScaleButton);
 
 		this.forEachDefaultScaleOption((scaleFactor, realFactor) -> {
 			JRadioButtonMenuItem button = new JRadioButtonMenuItem();
@@ -56,12 +58,7 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 	@Override
 	public void updateState(boolean jarOpen, ConnectionState state) {
 		JRadioButtonMenuItem option = this.options.get(Config.main().scaleFactor.value());
-		if (option != null) {
-			option.setSelected(true);
-		} else {
-			// unselect all; scale is custom
-			this.defaultOptionsGroup.clearSelection();
-		}
+		Objects.requireNonNullElse(option, this.customScaleButton).setSelected(true);
 	}
 
 	private void onScaleClicked(float realScale) {
@@ -74,6 +71,9 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 				JOptionPane.QUESTION_MESSAGE, null, null, Double.toString(Config.main().scaleFactor.value() * 100));
 
 		if (answer == null) {
+			// cancelled
+			// button is considered selected, we need to go back to the old selection
+			this.updateState();
 			return;
 		}
 
@@ -86,6 +86,9 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 
 		ScaleUtil.setScaleFactor(newScale);
 		ChangeDialog.show(this.gui.getFrame());
+
+		// if custom scale matches a default scale, select that instead
+		this.updateState();
 	}
 
 	private void forEachDefaultScaleOption(BiConsumer<Integer, Float> consumer) {
