@@ -1,5 +1,6 @@
-package org.quiltmc.enigma.gui.element;
+package org.quiltmc.enigma.gui.element.menu_bar;
 
+import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
@@ -12,7 +13,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -26,16 +26,14 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 
-public class DevMenu extends JMenu {
-	private final Gui gui;
-
+public class DevMenu extends AbstractEnigmaMenu {
 	private final JCheckBoxMenuItem showMappingSourcePluginItem = new JCheckBoxMenuItem();
 	private final JCheckBoxMenuItem debugTokenHighlightsItem = new JCheckBoxMenuItem();
 	private final JCheckBoxMenuItem logClientPacketsItem = new JCheckBoxMenuItem();
 	private final JMenuItem printMappingTreeItem = new JMenuItem();
 
 	public DevMenu(Gui gui) {
-		this.gui = gui;
+		super(gui);
 
 		this.add(this.showMappingSourcePluginItem);
 		this.add(this.debugTokenHighlightsItem);
@@ -48,7 +46,8 @@ public class DevMenu extends JMenu {
 		this.printMappingTreeItem.addActionListener(e -> this.onPrintMappingTreeClicked());
 	}
 
-	public void retranslateUi() {
+	@Override
+	public void retranslate() {
 		this.setText("Dev");
 
 		this.showMappingSourcePluginItem.setText(I18n.translate("dev.menu.show_mapping_source_plugin"));
@@ -57,8 +56,8 @@ public class DevMenu extends JMenu {
 		this.printMappingTreeItem.setText(I18n.translate("dev.menu.print_mapping_tree"));
 	}
 
-	public void updateUiState() {
-		boolean jarOpen = this.gui.isJarOpen();
+	@Override
+	public void updateState(boolean jarOpen, ConnectionState state) {
 		this.printMappingTreeItem.setEnabled(jarOpen);
 
 		this.showMappingSourcePluginItem.setState(Config.main().development.showMappingSourcePlugin.value());
