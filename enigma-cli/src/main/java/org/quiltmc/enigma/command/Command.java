@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
@@ -20,37 +22,49 @@ import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.tinylog.Logger;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
-public abstract class Command {
-	protected final List<Argument> requiredArguments = new ArrayList<>();
-	protected final List<Argument> optionalArguments = new ArrayList<>();
-	protected final List<ComposedArgument> allArguments;
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
-	protected Command(ComposedArgument... arguments) {
-		this.allArguments = new ArrayList<>();
+/**
+ * Represents a command that can be run on the command line.
+ *
+ * @param <R> the type that holds this command's required arguments
+ * @param <O> the type that holds this command's optional arguments
+ */
+public abstract sealed class Command<R, O> permits
+		CheckMappingsCommand, ComposeMappingsCommand, ConvertMappingsCommand, DecompileCommand, DeobfuscateCommand,
+		DropInvalidMappingsCommand, FillClassMappingsCommand, HelpCommand, InsertProposedMappingsCommand,
+		InvertMappingsCommand, MapSpecializedMethodsCommand, PrintStatsCommand {
+	private static final int EARLIEST_ARG_DELIM_INDEX = 1;
 
-		for (ComposedArgument argument : arguments) {
-			if (argument.optional()) {
-				this.optionalArguments.add(argument.argument());
-				this.allArguments.add(argument);
-			} else {
-				this.requiredArguments.add(argument.argument());
-				this.allArguments.add(argument);
+	@VisibleForTesting
+	final ArgsParser<R> requiredArguments;
+	@VisibleForTesting
+	final ArgsParser<O> optionalArguments;
 
-				if (!this.optionalArguments.isEmpty()) {
-					throw new IllegalArgumentException("optional arguments should be grouped at the end of command arguments! (declaring arg " + argument + ")");
-				}
-			}
-		}
+	private final ImmutableSet<String> allArgumentNames;
+
+	Command(ArgsParser<R> requiredArguments, ArgsParser<O> optionalArguments) {
+		this.requiredArguments = requiredArguments;
+		this.optionalArguments = optionalArguments;
+		this.allArgumentNames = Stream
+				.concat(
+					this.requiredArguments.stream().map(Argument::getName),
+					this.optionalArguments.stream().map(Argument::getName)
+				)
+				.collect(toImmutableSet());
 	}
 
 	public String getUsage() {
@@ -66,11 +80,41 @@ public abstract class Command {
 		return arguments.toString();
 	}
 
-	private static void appendArguments(StringBuilder builder, List<Argument> arguments) {
-		for (int i = 0; i < arguments.size(); i++) {
+	private static void appendArguments(StringBuilder builder, ArgsParser<?> arguments) {
+		final int argCount = arguments.count();
+		final int iLastArg = argCount - 1;
+		for (int i = 0; i < argCount; i++) {
 			builder.append(arguments.get(i).getDisplayForm());
-			if (i < arguments.size() - 1) {
+			if (i < iLastArg) {
 				builder.append(" ");
+			}
+		}
+	}
+
+	private static void appendArgHelp(Argument<?> argument, int index, StringBuilder builder) {
+		builder.append("Argument ").append(index).append(": ").append(argument.getDisplayForm()).append("\n");
+		builder.append(argument.getExplanation()).append("\n");
+	}
+
+	final void appendHelp(StringBuilder builder) {
+		builder.append("\t\t").append(this.getName()).append(" ").append(this.getUsage()).append("\n");
+
+		int argIndex = 0;
+		if (!this.requiredArguments.isEmpty()) {
+			builder.append("Arguments:").append("\n");
+			for (int j = 0; j < this.requiredArguments.count(); j++) {
+				Argument<?> argument = this.requiredArguments.get(j);
+				appendArgHelp(argument, argIndex, builder);
+				argIndex++;
+			}
+		}
+
+		if (!this.optionalArguments.isEmpty()) {
+			builder.append("\n").append("Optional arguments:").append("\n");
+			for (int i = 0; i < this.optionalArguments.count(); i++) {
+				Argument<?> argument = this.optionalArguments.get(i);
+				appendArgHelp(argument, argIndex, builder);
+				argIndex++;
 			}
 		}
 	}
@@ -81,16 +125,117 @@ public abstract class Command {
 	 * @return {@code true} if the argument count is valid, {@code false} otherwise
 	 */
 	public boolean checkArgumentCount(int length) {
-		// valid if length is equal to the amount of required arguments or between required argument count and total argument count
-		return length == this.requiredArguments.size() || length > this.requiredArguments.size() && length <= this.allArguments.size();
+		return length >= this.requiredArguments.count() && length <= this.allArgumentNames.size();
 	}
 
 	/**
 	 * Executes this command.
-	 * @param args the command-line arguments, to be parsed with {@link #getArg(String[], int)}
+	 * @param args the command-line arguments
 	 * @throws Exception on any error
 	 */
-	public abstract void run(String... args) throws Exception;
+	public final void run(String... args) throws Exception {
+		final Map<String, String> valuesByName = this.buildValuesByName(args);
+
+		this.runImpl(
+				this.parseRequired(valuesByName),
+				this.optionalArguments.parse(valuesByName, Argument::from)
+		);
+	}
+
+	@VisibleForTesting
+	Map<String, String> buildValuesByName(String[] args) {
+		if (args.length < this.requiredArguments.count()) {
+			throw new ArgumentHelpException(
+				this, "Too few arguments (%s); at least %s %s required.".formatted(
+						args.length,
+						this.requiredArguments.count(),
+						this.requiredArguments.count() == 1 ? "is" : "are"
+				)
+			);
+		} else if (args.length > this.allArgumentNames.size()) {
+			throw new ArgumentHelpException(
+				this, "Too many arguments (%s); at most %s %s allowed.".formatted(
+						args.length,
+						this.allArgumentNames.size(),
+						this.allArgumentNames.size() == 1 ? "is" : "are"
+				)
+			);
+		}
+
+		final Map<String, String> valuesByName = new HashMap<>();
+		final Set<String> positionalArgNames = new HashSet<>();
+
+		final BiConsumer<String, Integer> addNamedArg = (rawValue, delim) -> {
+			final String name = rawValue.substring(0, delim);
+			if (positionalArgNames.contains(name)) {
+				throw new ArgumentHelpException(
+					this, "'%s' specified as both positional and named argument.".formatted(name)
+				);
+			}
+
+			if (!this.allArgumentNames.contains(name)) {
+				throw new ArgumentHelpException(this, "Unrecognized argument name: " + name);
+			}
+
+			final String value = rawValue.substring(delim + 1);
+			if (valuesByName.put(name, value) != null) {
+				throw new ArgumentHelpException(this, "'%s' argument named more than once.".formatted(name));
+			}
+		};
+
+		int i = 0;
+		// leading positional args
+		for (; i < args.length; i++) {
+			final String rawValue = args[i];
+			final int delim = indexOfNameDelim(rawValue);
+			if (delim < EARLIEST_ARG_DELIM_INDEX) {
+				final Argument<?> arg = i < this.requiredArguments.count()
+						? this.requiredArguments.get(i)
+						: this.optionalArguments.get(i - this.requiredArguments.count());
+
+				valuesByName.put(arg.getName(), rawValue);
+				positionalArgNames.add(arg.getName());
+			} else {
+				// first named arg
+				addNamedArg.accept(rawValue, delim);
+				i++;
+				break;
+			}
+		}
+
+		// trailing named args
+		for (; i < args.length; i++) {
+			final String rawValue = args[i];
+			final int delim = indexOfNameDelim(rawValue);
+			if (delim < EARLIEST_ARG_DELIM_INDEX) {
+				throw new ArgumentHelpException(
+					this, "Found unnamed positional argument after a named argument; "
+							+ "all positional arguments must come before any named arguments. Unnamed argument:\n\t"
+							+ rawValue
+				);
+			} else {
+				addNamedArg.accept(rawValue, delim);
+			}
+		}
+
+		return valuesByName;
+	}
+
+	@VisibleForTesting
+	R parseRequired(Map<String, String> valuesByName) {
+		try {
+			return this.requiredArguments.parse(valuesByName, Argument::requireFrom);
+		} catch (IllegalArgumentException e) {
+			throw new ArgumentHelpException(this, e);
+		}
+	}
+
+	/**
+	 * Executes this command.
+	 * @param required packed non-null required argument values
+	 * @param optional packed optional argument values
+	 */
+	abstract void runImpl(R required, O optional) throws Exception;
 
 	/**
 	 * Returns the name of this command. Should be all-lowercase, and separated by dashes for words.
@@ -116,20 +261,6 @@ public abstract class Command {
 
 	public static Enigma createEnigma() {
 		return Enigma.create();
-	}
-
-	/**
-	 * Parses and validates the argument at {@code index}. The argument can then be converted to something more useful via {@link #getReadablePath(String)}, {@link #getWritablePath(String)}, etc.
-	 * @param args the command-line args, provided in {@link #run(String...)}
-	 * @param index the index of the argument
-	 * @return the argument, as a string
-	 */
-	protected String getArg(String[] args, int index) {
-		if (index < this.allArguments.size() && index >= 0) {
-			return getArg(args, index, this.allArguments.get(index));
-		} else {
-			throw new RuntimeException("arg index is outside of range of possible arguments! (index: " + index + ", allowed arg count: " + this.allArguments.size() + ")");
-		}
 	}
 
 	public static Enigma createEnigma(EnigmaProfile profile, @Nullable Iterable<EnigmaPlugin> plugins) {
@@ -168,92 +299,29 @@ public abstract class Command {
 		return reader.read(path, progress);
 	}
 
-	protected static File getWritableFile(String path) {
-		if (path == null) {
-			return null;
-		}
-
-		File file = new File(path).getAbsoluteFile();
-		File dir = file.getParentFile();
-		if (dir == null) {
-			throw new IllegalArgumentException("Cannot write file: " + path);
-		}
-
-		// quick fix to avoid stupid stuff in Gradle code
-		if (!dir.isDirectory()) {
-			dir.mkdirs();
-		}
-
-		return file;
-	}
-
-	protected static File getWritableFolder(String path) {
-		if (path == null) {
-			return null;
-		}
-
-		File dir = new File(path).getAbsoluteFile();
-		if (!dir.exists()) {
-			throw new IllegalArgumentException("Cannot write to folder: " + dir);
-		}
-
-		return dir;
-	}
-
-	protected static File getReadableFile(String path) {
-		if (path == null) {
-			return null;
-		}
-
-		File file = new File(path).getAbsoluteFile();
-		if (!file.exists()) {
-			throw new IllegalArgumentException("Cannot find file: " + file.getAbsolutePath());
-		}
-
-		return file;
-	}
-
-	protected static Path getReadablePath(String path) {
-		if (path == null) {
-			return null;
-		}
-
-		Path file = Paths.get(path).toAbsolutePath();
-		if (!Files.exists(file)) {
-			throw new IllegalArgumentException("Cannot find file: " + file);
-		}
-
-		return file;
-	}
-
-	protected static Path getWritablePath(String path) {
-		if (path == null) {
-			return null;
-		}
-
-		Path dir = Path.of(path).toAbsolutePath();
-
-		try {
-			if (!Files.exists(dir.getParent())) {
-				Files.createDirectories(dir.getParent());
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-
-		return dir;
-	}
-
-	private static String getArg(String[] args, int i, ComposedArgument argument) {
-		if (i >= args.length) {
-			if (!argument.optional()) {
-				throw new IllegalArgumentException(argument.argument().getDisplayForm() + " is required");
+	private static String getArg(String[] args, int index, Argument<?> argument, boolean optional) {
+		if (index >= args.length) {
+			if (!optional) {
+				throw new IllegalArgumentException(argument.getName() + " is required");
 			} else {
 				return null;
 			}
 		}
 
-		return args[i];
+		return args[index];
+	}
+
+	private static int indexOfNameDelim(String argValue) {
+		for (int ic = 0; ic < argValue.length(); ic++) {
+			final char c = argValue.charAt(ic);
+			if (c == Argument.SEPARATOR) {
+				return -1;
+			} else if (c == Argument.NAME_DELIM) {
+				return ic;
+			}
+		}
+
+		return -1;
 	}
 
 	protected static boolean shouldDebug(String name) {
@@ -307,6 +375,38 @@ public abstract class Command {
 				double elapsedSeconds = (now - this.startTime) / 1000.0;
 				Logger.info("Finished in {} seconds", elapsedSeconds);
 			}
+		}
+	}
+
+	abstract static class HelpException extends RuntimeException {
+		protected abstract Command getCommand();
+
+		HelpException(String message) {
+			super(message);
+		}
+
+		HelpException(Throwable cause) {
+			super(cause);
+		}
+	}
+
+	@VisibleForTesting
+	static class ArgumentHelpException extends HelpException {
+		private final Command<?, ?> command;
+
+		ArgumentHelpException(Command<?, ?> command, String message) {
+			super(message);
+			this.command = command;
+		}
+
+		ArgumentHelpException(Command<?, ?> command, Throwable cause) {
+			super(cause);
+			this.command = command;
+		}
+
+		@Override
+		public Command<?, ?> getCommand() {
+			return this.command;
 		}
 	}
 }

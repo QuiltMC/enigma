@@ -14,33 +14,41 @@ import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.util.Utils;
+import org.quiltmc.enigma.command.FillClassMappingsCommand.Required;
+import org.quiltmc.enigma.command.FillClassMappingsCommand.Optional;
 import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.List;
 
-public class FillClassMappingsCommand extends Command {
-	protected FillClassMappingsCommand() {
-		super(Argument.INPUT_JAR.required(),
-				Argument.INPUT_MAPPINGS.required(),
-				Argument.MAPPING_OUTPUT.required(),
-				Argument.FILL_ALL.optional(),
-				Argument.OBFUSCATED_NAMESPACE.optional(),
-				Argument.DEOBFUSCATED_NAMESPACE.optional()
+import static org.quiltmc.enigma.command.CommonArguments.DEOBFUSCATED_NAMESPACE;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_JAR;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
+import static org.quiltmc.enigma.command.CommonArguments.MAPPING_OUTPUT;
+import static org.quiltmc.enigma.command.CommonArguments.OBFUSCATED_NAMESPACE;
+
+public final class FillClassMappingsCommand extends Command<Required, Optional> {
+	private static final Argument<Boolean> FILL_ALL = Argument.ofBool("fill-all",
+			"""
+					Whether to fill all possible mappings. Allowed values are "true" and "false"."""
+	);
+
+	public static final FillClassMappingsCommand INSTANCE = new FillClassMappingsCommand();
+
+	private FillClassMappingsCommand() {
+		super(
+				ArgsParser.of(INPUT_JAR, INPUT_MAPPINGS, MAPPING_OUTPUT, Required::new),
+				ArgsParser.of(FILL_ALL, OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE, Optional::new)
 		);
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
-		Path inJar = getReadablePath(this.getArg(args, 0));
-		Path source = getReadablePath(this.getArg(args, 1));
-		Path result = getWritablePath(this.getArg(args, 2));
-		boolean fillAll = Boolean.parseBoolean(this.getArg(args, 3));
-		String obfuscatedNamespace = this.getArg(args, 4);
-		String deobfuscatedNamespace = this.getArg(args, 5);
-
-		run(inJar, source, result, fillAll, obfuscatedNamespace, deobfuscatedNamespace);
+	void runImpl(Required required, Optional optional) throws Exception {
+		run(
+				required.inputJar, required.inputMappings, required.mappingOutput,
+				optional.fillAll, optional.obfuscatedNamespace, optional.deobfuscatedNamespace
+		);
 	}
 
 	@Override
@@ -54,7 +62,7 @@ public class FillClassMappingsCommand extends Command {
 	}
 
 	public static void run(Path jar, Path source, Path result, boolean fillAll, @Nullable String obfuscatedNamespace, @Nullable String deobfuscatedNamespace) throws Exception {
-		boolean debug = shouldDebug(new FillClassMappingsCommand().getName());
+		boolean debug = shouldDebug(INSTANCE.getName());
 		JarIndex jarIndex = loadJar(jar);
 		Enigma enigma = createEnigma();
 
@@ -122,4 +130,8 @@ public class FillClassMappingsCommand extends Command {
 			}
 		}
 	}
+
+	record Required(Path inputJar, Path inputMappings, Path mappingOutput) { }
+
+	record Optional(boolean fillAll, String obfuscatedNamespace, String deobfuscatedNamespace) { }
 }

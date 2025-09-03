@@ -3,6 +3,7 @@ package org.quiltmc.enigma.gui.docker;
 import org.quiltmc.enigma.api.analysis.tree.StructureTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.StructureTreeOptions;
 import org.quiltmc.enigma.gui.Gui;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.panel.EditorPanel;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.renderer.StructureOptionListCellRenderer;
@@ -19,12 +20,14 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -34,10 +37,12 @@ import javax.swing.tree.TreePath;
 public class StructureDocker extends Docker {
 	private final JPanel optionsPanel;
 
+	private final JLabel searchLabel = new JLabel();
 	private final JLabel obfuscationVisibilityLabel = new JLabel();
 	private final JLabel documentationVisibilityLabel = new JLabel();
 	private final JLabel sortingOrderLabel = new JLabel();
 
+	private final JTextArea searchBar;
 	private final JComboBox<StructureTreeOptions.ObfuscationVisibility> obfuscationVisibility;
 	private final JComboBox<StructureTreeOptions.DocumentationVisibility> documentationVisibility;
 	private final JComboBox<StructureTreeOptions.SortingOrder> sortingOrder;
@@ -51,23 +56,35 @@ public class StructureDocker extends Docker {
 
 		GridBagConstraintsBuilder cb = GridBagConstraintsBuilder.create().insets(5).fill(GridBagConstraints.HORIZONTAL);
 
-		this.optionsPanel.add(this.obfuscationVisibilityLabel, cb.pos(0, 0).build());
+		this.optionsPanel.add(this.searchLabel, cb.pos(0, 0).build());
+		this.searchBar = new JTextArea();
+		this.searchBar.setBorder(Config.currentTheme().createBorder());
+		this.searchBar.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				super.keyTyped(e);
+				StructureDocker.this.updateStructure(gui.getActiveEditor());
+			}
+		});
+		this.optionsPanel.add(this.searchBar, cb.pos(1, 0).build());
+
+		this.optionsPanel.add(this.obfuscationVisibilityLabel, cb.pos(0, 1).build());
 		this.obfuscationVisibility = new JComboBox<>(StructureTreeOptions.ObfuscationVisibility.values());
 		this.obfuscationVisibility.setRenderer(new StructureOptionListCellRenderer());
 		this.obfuscationVisibility.addActionListener(event -> this.updateStructure(gui.getActiveEditor()));
-		this.optionsPanel.add(this.obfuscationVisibility, cb.pos(1, 0).build());
+		this.optionsPanel.add(this.obfuscationVisibility, cb.pos(1, 1).build());
 
-		this.optionsPanel.add(this.documentationVisibilityLabel, cb.pos(0, 1).build());
+		this.optionsPanel.add(this.documentationVisibilityLabel, cb.pos(0, 2).build());
 		this.documentationVisibility = new JComboBox<>(StructureTreeOptions.DocumentationVisibility.values());
 		this.documentationVisibility.setRenderer(new StructureOptionListCellRenderer());
 		this.documentationVisibility.addActionListener(event -> this.updateStructure(gui.getActiveEditor()));
-		this.optionsPanel.add(this.documentationVisibility, cb.pos(1, 1).build());
+		this.optionsPanel.add(this.documentationVisibility, cb.pos(1, 2).build());
 
-		this.optionsPanel.add(this.sortingOrderLabel, cb.pos(0, 2).build());
+		this.optionsPanel.add(this.sortingOrderLabel, cb.pos(0, 3).build());
 		this.sortingOrder = new JComboBox<>(StructureTreeOptions.SortingOrder.values());
 		this.sortingOrder.setRenderer(new StructureOptionListCellRenderer());
 		this.sortingOrder.addActionListener(event -> this.updateStructure(gui.getActiveEditor()));
-		this.optionsPanel.add(this.sortingOrder, cb.pos(1, 2).build());
+		this.optionsPanel.add(this.sortingOrder, cb.pos(1, 3).build());
 
 		this.structureTree = new JTree();
 		this.structureTree.setModel(null);
@@ -110,6 +127,14 @@ public class StructureDocker extends Docker {
 		this.structureTree.setSelectionRow(this.structureTree.getRowForPath(path));
 	}
 
+	public void focusSearch() {
+		this.searchBar.requestFocus();
+	}
+
+	public void focusTree() {
+		this.structureTree.requestFocus();
+	}
+
 	private void onKeyPress(KeyEvent e) {
 		if (KeyBinds.SELECT.matches(e)) {
 			this.navigateToSelectedNode();
@@ -143,13 +168,15 @@ public class StructureDocker extends Docker {
 		return new StructureTreeOptions(
 				(StructureTreeOptions.ObfuscationVisibility) this.obfuscationVisibility.getSelectedItem(),
 				(StructureTreeOptions.DocumentationVisibility) this.documentationVisibility.getSelectedItem(),
-				(StructureTreeOptions.SortingOrder) this.sortingOrder.getSelectedItem()
+				(StructureTreeOptions.SortingOrder) this.sortingOrder.getSelectedItem(),
+				this.searchBar.getText()
 		);
 	}
 
 	@Override
 	public void retranslateUi() {
 		super.retranslateUi();
+		this.searchLabel.setText(I18n.translate("menu.search"));
 		this.obfuscationVisibilityLabel.setText(I18n.translate("structure.options.obfuscation"));
 		this.documentationVisibilityLabel.setText(I18n.translate("structure.options.documentation"));
 		this.sortingOrderLabel.setText(I18n.translate("structure.options.sorting"));

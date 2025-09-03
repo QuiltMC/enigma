@@ -34,20 +34,20 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 
 		if ((this.controller.getProject() != null && leaf && value instanceof ClassSelectorClassNode)
 				|| (this.controller.getProject() != null && value instanceof ClassSelectorPackageNode)) {
-			TooltipPanel panel;
+			StatsTooltipPanel panel;
 			Icon icon;
 			Function<ProjectStatsResult, Icon> deobfuscationIconGetter;
 			Runnable reloader;
 
 			if (value instanceof ClassSelectorPackageNode node) {
-				class PackageTooltipPanel extends TooltipPanel {
-					PackageTooltipPanel(GuiController controller) {
+				class PackageStatsTooltipPanel extends StatsTooltipPanel {
+					PackageStatsTooltipPanel(GuiController controller) {
 						super(controller);
 					}
 
 					@Override
 					StatsResult getStats(StatsGenerator generator) {
-						return generator.getResultNullable().getPackageStats(this.getDisplayName());
+						return generator.getResultNullable(Config.stats().createIconGenParameters(ClassTreeCellRenderer.this.controller.getGui().getEditableStatTypes())).getPackageStats(this.getDisplayName());
 					}
 
 					@Override
@@ -56,15 +56,15 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 					}
 				}
 
-				panel = new PackageTooltipPanel(this.controller);
+				panel = new PackageStatsTooltipPanel(this.controller);
 				icon = GuiUtil.getFolderIcon(this, tree, node);
 				deobfuscationIconGetter = projectStatsResult -> GuiUtil.getDeobfuscationIcon(projectStatsResult, node.getPackageName());
 				reloader = () -> {};
 			} else {
 				ClassSelectorClassNode node = (ClassSelectorClassNode) value;
 
-				class ClassTooltipPanel extends TooltipPanel {
-					ClassTooltipPanel(GuiController controller) {
+				class ClassStatsTooltipPanel extends StatsTooltipPanel {
+					ClassStatsTooltipPanel(GuiController controller) {
 						super(controller);
 					}
 
@@ -79,7 +79,7 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 					}
 				}
 
-				panel = new ClassTooltipPanel(this.controller);
+				panel = new ClassStatsTooltipPanel(this.controller);
 				icon = GuiUtil.getClassIcon(this.controller.getGui(), node.getObfEntry());
 				deobfuscationIconGetter = projectStatsResult -> GuiUtil.getDeobfuscationIcon(projectStatsResult, node.getObfEntry());
 				reloader = () -> node.reloadStats(this.controller.getGui(), this.selector, false);
@@ -92,7 +92,7 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 
 			if (Config.main().features.enableClassTreeStatIcons.value()) {
 				if (this.controller.getStatsGenerator() != null) {
-					ProjectStatsResult stats = this.controller.getStatsGenerator().getResultNullable();
+					ProjectStatsResult stats = this.controller.getStatsGenerator().getResultNullable(Config.stats().createIconGenParameters(this.controller.getGui().getEditableStatTypes()));
 					if (stats == null) {
 						// calculate stats on a separate thread for performance reasons
 						this.setIcon(GuiUtil.PENDING_STATUS_ICON);

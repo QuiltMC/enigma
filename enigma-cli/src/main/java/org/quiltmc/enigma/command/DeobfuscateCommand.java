@@ -2,24 +2,27 @@ package org.quiltmc.enigma.command;
 
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.command.DeobfuscateCommand.Required;
 
 import java.nio.file.Path;
 
-public class DeobfuscateCommand extends Command {
-	public DeobfuscateCommand() {
-		super(Argument.INPUT_JAR.required(),
-				Argument.OUTPUT_JAR.required(),
-				Argument.INPUT_MAPPINGS.optional()
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_JAR;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
+import static org.quiltmc.enigma.command.CommonArguments.OUTPUT_JAR;
+
+public final class DeobfuscateCommand extends Command<Required, Path> {
+	public static final DeobfuscateCommand INSTANCE = new DeobfuscateCommand();
+
+	private DeobfuscateCommand() {
+		super(
+				ArgsParser.of(INPUT_JAR, OUTPUT_JAR, Required::new),
+				ArgsParser.of(INPUT_MAPPINGS)
 		);
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
-		Path fileJarIn = getReadablePath(this.getArg(args, 0));
-		Path fileJarOut = getWritableFile(this.getArg(args, 1)).toPath();
-		Path fileMappings = getReadablePath(this.getArg(args, 2));
-
-		run(fileJarIn, fileJarOut, fileMappings);
+	void runImpl(Required required, Path inputMappings) throws Exception {
+		run(required.inputJar, required.outputJar, inputMappings);
 	}
 
 	@Override
@@ -40,4 +43,6 @@ public class DeobfuscateCommand extends Command {
 		EnigmaProject.JarExport jar = project.exportRemappedJar(progress);
 		jar.write(fileJarOut, progress);
 	}
+
+	record Required(Path inputJar, Path outputJar) { }
 }

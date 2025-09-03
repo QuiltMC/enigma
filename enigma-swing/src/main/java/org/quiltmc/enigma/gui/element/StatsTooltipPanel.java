@@ -4,16 +4,18 @@ import org.quiltmc.enigma.gui.GuiController;
 import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
 import org.quiltmc.enigma.api.stats.StatsResult;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JPanel;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
-public abstract class TooltipPanel extends JPanel {
+public abstract class StatsTooltipPanel extends JPanel {
 	private final GuiController controller;
 
-	public TooltipPanel(GuiController controller) {
+	public StatsTooltipPanel(GuiController controller) {
 		this.controller = controller;
 	}
 
@@ -24,15 +26,21 @@ public abstract class TooltipPanel extends JPanel {
 
 		StatsGenerator generator = this.controller.getStatsGenerator();
 
-		if (generator == null || generator.getResultNullable() == null) {
+		if (generator == null || generator.getResultNullable(Config.stats().createIconGenParameters(this.controller.getGui().getEditableStatTypes())) == null) {
 			text.append(I18n.translate("class_selector.tooltip.stats_not_generated"));
 		} else {
 			StatsResult stats = this.getStats(generator);
 
 			if ((event.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
-				for (int i = 0; i < StatType.values().length; i++) {
-					StatType type = StatType.values()[i];
-					text.append(type.getName()).append(": ").append(stats.toString(type)).append(i == StatType.values().length - 1 ? "" : "\n");
+				var includedTypes = new ArrayList<>(Config.stats().getIncludedTypesForIcons(this.controller.getGui().getEditableStatTypes()));
+
+				for (int i = 0; i < includedTypes.size(); i++) {
+					StatType type = includedTypes.get(i);
+					text
+							.append(type.getName())
+							.append(": ")
+							.append(stats.toString(type))
+							.append(i == includedTypes.size() - 1 ? "" : "\n");
 				}
 			} else {
 				text.append(stats);

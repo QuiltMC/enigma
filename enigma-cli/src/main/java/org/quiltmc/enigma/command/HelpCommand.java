@@ -1,21 +1,24 @@
 package org.quiltmc.enigma.command;
 
+import org.quiltmc.enigma.command.ArgsParser.Empty;
 import org.tinylog.Logger;
 
 import java.util.Collection;
 
-public class HelpCommand extends Command {
-	protected HelpCommand() {
-		super();
+public final class HelpCommand extends Command<Empty, Empty> {
+	public static final HelpCommand INSTANCE = new HelpCommand();
+
+	private HelpCommand() {
+		super(Empty.PARSER, Empty.PARSER);
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
+	void runImpl(Empty required, Empty optional) throws Exception {
 		StringBuilder help = new StringBuilder();
-		Collection<Command> commands = Main.getCommands().values();
+		Collection<Command<?, ?>> commands = Main.getCommands().values();
 
 		help.append("Supported commands:").append("\n");
-		for (Command command : commands) {
+		for (Command<?, ?> command : commands) {
 			help.append("- ").append(command.getName()).append("\n");
 			help.append("\t").append(command.getDescription()).append("\n");
 		}

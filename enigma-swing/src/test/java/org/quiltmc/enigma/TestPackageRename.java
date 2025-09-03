@@ -1,9 +1,11 @@
 package org.quiltmc.enigma;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
+import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
 import org.quiltmc.enigma.gui.docker.AllClassesDocker;
 import org.quiltmc.enigma.gui.element.ClassSelectorPopupMenu;
 import org.quiltmc.enigma.gui.util.PackageRenamer;
@@ -27,6 +29,11 @@ public class TestPackageRename {
 	public static final Path JAR = TestUtil.obfJar("complete");
 	public static final Path MAPPINGS = Path.of("src/test/resources/test_mappings");
 	private static EnigmaProject project;
+
+	@BeforeAll
+	static void setup() {
+		ThemeUtil.setupTheme();
+	}
 
 	@Test
 	void testRemoveOnePackage() throws InterruptedException {

@@ -6,6 +6,6 @@ public class HelpCommandTest {
 	@Test
 	void test() throws Exception {
 		// for manually verifying output
-		new HelpCommand().run();
+		HelpCommand.INSTANCE.run();
 	}
 }

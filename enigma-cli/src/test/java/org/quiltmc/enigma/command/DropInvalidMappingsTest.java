@@ -7,6 +7,8 @@ import org.quiltmc.enigma.TestUtil;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static org.quiltmc.enigma.TestUtil.toNewLineEndings;
+
 public class DropInvalidMappingsTest extends CommandTest {
 	private static final Path LONE_JAR = TestUtil.obfJar("lone_class");
 	private static final Path INNER_JAR = TestUtil.obfJar("inner_classes");
@@ -31,8 +33,8 @@ public class DropInvalidMappingsTest extends CommandTest {
 
 		DropInvalidMappingsCommand.run(LONE_JAR, INVALID_MAPPINGS_INPUT, resultFile);
 
-		String expectedLines = Files.readString(INVALID_MAPPINGS_EXPECTED);
-		String actualLines = Files.readString(resultFile);
+		String expectedLines = toNewLineEndings(Files.readString(INVALID_MAPPINGS_EXPECTED));
+		String actualLines = toNewLineEndings(Files.readString(resultFile));
 
 		Assertions.assertEquals(expectedLines, actualLines);
 	}
@@ -55,8 +57,8 @@ public class DropInvalidMappingsTest extends CommandTest {
 
 		DropInvalidMappingsCommand.run(INNER_JAR, MAPPING_SAVE_INPUT, resultFile);
 
-		String expectedLines = Files.readString(MAPPING_SAVE_EXPECTED);
-		String actualLines = Files.readString(resultFile);
+		String expectedLines = toNewLineEndings(Files.readString(MAPPING_SAVE_EXPECTED));
+		String actualLines = toNewLineEndings(Files.readString(resultFile));
 
 		Assertions.assertEquals(expectedLines, actualLines);
 	}
@@ -67,8 +69,8 @@ public class DropInvalidMappingsTest extends CommandTest {
 
 		DropInvalidMappingsCommand.run(INNER_JAR, DISCARD_INNER_CLASS_INPUT, resultFile);
 
-		String expectedLines = Files.readString(DISCARD_INNER_CLASS_EXPECTED);
-		String actualLines = Files.readString(resultFile);
+		String expectedLines = toNewLineEndings(Files.readString(DISCARD_INNER_CLASS_EXPECTED));
+		String actualLines = toNewLineEndings(Files.readString(resultFile));
 
 		Assertions.assertEquals(expectedLines, actualLines);
 	}
@@ -79,8 +81,8 @@ public class DropInvalidMappingsTest extends CommandTest {
 
 		DropInvalidMappingsCommand.run(ENUMS_JAR, ENUMS_INPUT, resultFile);
 
-		String expectedLines = Files.readString(ENUMS_EXPECTED);
-		String actualLines = Files.readString(resultFile);
+		String expectedLines = toNewLineEndings(Files.readString(ENUMS_EXPECTED));
+		String actualLines = toNewLineEndings(Files.readString(resultFile));
 
 		Assertions.assertEquals(expectedLines, actualLines);
 	}

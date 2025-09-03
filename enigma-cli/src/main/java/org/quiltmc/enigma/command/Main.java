@@ -1,14 +1,32 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.collect.ImmutableMap;
 import org.quiltmc.enigma.api.Enigma;
 import org.tinylog.Logger;
 
-import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
 public class Main {
-	private static final Map<String, Command> COMMANDS = new LinkedHashMap<>();
+	private static final ImmutableMap<String, Command<?, ?>> COMMANDS = Stream
+			.of(
+				DeobfuscateCommand.INSTANCE,
+				DecompileCommand.INSTANCE,
+				ConvertMappingsCommand.INSTANCE,
+				ComposeMappingsCommand.INSTANCE,
+				InvertMappingsCommand.INSTANCE,
+				CheckMappingsCommand.INSTANCE,
+				MapSpecializedMethodsCommand.INSTANCE,
+				InsertProposedMappingsCommand.INSTANCE,
+				DropInvalidMappingsCommand.INSTANCE,
+				FillClassMappingsCommand.INSTANCE,
+				HelpCommand.INSTANCE,
+				PrintStatsCommand.INSTANCE
+			)
+			.collect(toImmutableMap(Command::getName, Function.identity()));
 
 	public static void main(String... args) {
 		try {
@@ -19,13 +37,9 @@ public class Main {
 
 			String command = args[0].toLowerCase(Locale.ROOT);
 
-			Command cmd = COMMANDS.get(command);
+			Command<?, ?> cmd = COMMANDS.get(command);
 			if (cmd == null) {
 				throw new IllegalArgumentException("Command not recognized: " + command);
-			}
-
-			if (!cmd.checkArgumentCount(args.length - 1)) {
-				throw new CommandHelpException(cmd);
 			}
 
 			String[] cmdArgs = new String[args.length - 1];
@@ -34,14 +48,14 @@ public class Main {
 			try {
 				cmd.run(cmdArgs);
 			} catch (Exception ex) {
-				throw new CommandHelpException(cmd, ex);
+				throw new CommandErrorHelpException(cmd, ex);
 			}
-		} catch (CommandHelpException ex) {
+		} catch (Command.HelpException ex) {
 			Logger.error(ex);
 			logEnigmaInfo();
-			Logger.info("Command {} has encountered an error! Usage:", ex.command.getName());
+			Logger.info("Command {} has encountered an error! Usage:", ex.getCommand().getName());
 			StringBuilder help = new StringBuilder();
-			appendHelp(ex.command, help);
+			ex.getCommand().appendHelp(help);
 			Logger.info(help.toString());
 			System.exit(1);
 		} catch (IllegalArgumentException ex) {
@@ -51,7 +65,7 @@ public class Main {
 		}
 	}
 
-	public static Map<String, Command> getCommands() {
+	public static ImmutableMap<String, Command<?, ?>> getCommands() {
 		return COMMANDS;
 	}
 
@@ -61,46 +75,11 @@ public class Main {
 		StringBuilder help = new StringBuilder();
 		help.append("""
 				Usage:
-				\tjava -cp enigma.jar org.quiltmc.enigma.command.CommandMain <command> <args>
+				\tjava -jar enigma.jar <command> <args>
 				\twhere <command> is one of:""");
 
-		for (Command command : COMMANDS.values()) {
-			appendHelp(command, help);
-		}
-	}
-
-	private static void appendHelp(Command command, StringBuilder builder) {
-		builder.append(String.format("\t\t%s %s", command.getName(), command.getUsage())).append("\n");
-
-		if (!command.requiredArguments.isEmpty()) {
-			builder.append("Arguments:").append("\n");
-			int argIndex = 0;
-			for (int j = 0; j < command.requiredArguments.size(); j++) {
-				Argument argument = command.requiredArguments.get(j);
-				appendHelp(argument, argIndex, builder);
-				argIndex++;
-			}
-
-			if (!command.optionalArguments.isEmpty()) {
-				builder.append("\n").append("Optional arguments:").append("\n");
-				for (int i = 0; i < command.optionalArguments.size(); i++) {
-					Argument argument = command.optionalArguments.get(i);
-					appendHelp(argument, argIndex, builder);
-					argIndex++;
-				}
-			}
-		}
-	}
-
-	private static void appendHelp(Argument argument, int index, StringBuilder builder) {
-		builder.append(String.format("Argument %s: %s", index, argument.getDisplayForm())).append("\n");
-		builder.append(argument.getExplanation()).append("\n");
-	}
-
-	private static void register(Command command) {
-		Command old = COMMANDS.put(command.getName(), command);
-		if (old != null) {
-			Logger.warn("Command {} with name {} has been substituted by {}", old, command.getName(), command);
+		for (Command<?, ?> command : COMMANDS.values()) {
+			command.appendHelp(help);
 		}
 	}
 
@@ -108,31 +87,17 @@ public class Main {
 		Logger.info("{} - {}", Enigma.NAME, Enigma.VERSION);
 	}
 
-	static {
-		register(new DeobfuscateCommand());
-		register(new DecompileCommand());
-		register(new ConvertMappingsCommand());
-		register(new ComposeMappingsCommand());
-		register(new InvertMappingsCommand());
-		register(new CheckMappingsCommand());
-		register(new MapSpecializedMethodsCommand());
-		register(new InsertProposedMappingsCommand());
-		register(new DropInvalidMappingsCommand());
-		register(new FillClassMappingsCommand());
-		register(new HelpCommand());
-		register(new PrintStatsCommand());
-	}
+	private static final class CommandErrorHelpException extends Command.HelpException {
+		final Command<?, ?> command;
 
-	private static final class CommandHelpException extends IllegalArgumentException {
-		final Command command;
-
-		CommandHelpException(Command command) {
+		CommandErrorHelpException(Command<?, ?> command, Throwable cause) {
+			super(cause);
 			this.command = command;
 		}
 
-		CommandHelpException(Command command, Throwable cause) {
-			super(cause);
-			this.command = command;
+		@Override
+		public Command<?, ?> getCommand() {
+			return this.command;
 		}
 	}
 }
