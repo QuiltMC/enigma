@@ -148,16 +148,16 @@ public abstract sealed class Command<R, O> permits
 			throw new ArgumentHelpException(
 				this, "Too few arguments (%s); at least %s %s required.".formatted(
 						args.length,
-						this.requiredArguments.count() == 1 ? "is" : "are",
-						this.requiredArguments.count()
-					)
+						this.requiredArguments.count(),
+						this.requiredArguments.count() == 1 ? "is" : "are"
+				)
 			);
 		} else if (args.length > this.allArgumentNames.size()) {
 			throw new ArgumentHelpException(
 				this, "Too many arguments (%s); at most %s %s allowed.".formatted(
 						args.length,
-						this.allArgumentNames.size() == 1 ? "is" : "are",
-						this.allArgumentNames.size()
+						this.allArgumentNames.size(),
+						this.allArgumentNames.size() == 1 ? "is" : "are"
 				)
 			);
 		}
