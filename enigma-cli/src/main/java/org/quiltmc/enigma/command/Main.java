@@ -75,7 +75,7 @@ public class Main {
 		StringBuilder help = new StringBuilder();
 		help.append("""
 				Usage:
-				\tjava -cp enigma.jar org.quiltmc.enigma.command.CommandMain <command> <args>
+				\tjava -jar enigma.jar <command> <args>
 				\twhere <command> is one of:""");
 
 		for (Command<?, ?> command : COMMANDS.values()) {

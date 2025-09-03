@@ -209,7 +209,7 @@ public abstract sealed class Command<R, O> permits
 			final int delim = indexOfNameDelim(rawValue);
 			if (delim < EARLIEST_ARG_DELIM_INDEX) {
 				throw new ArgumentHelpException(
-					this, "Found unnamed positional argument after named a argument; "
+					this, "Found unnamed positional argument after a named argument; "
 							+ "all positional arguments must come before any named arguments. Unnamed argument:\n\t"
 							+ rawValue
 				);
