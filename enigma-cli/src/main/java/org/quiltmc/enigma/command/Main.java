@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
 public class Main {
-	private static final ImmutableMap<String, Command> COMMANDS = Stream
+	private static final ImmutableMap<String, Command<?, ?>> COMMANDS = Stream
 			.of(
 				DeobfuscateCommand.INSTANCE,
 				DecompileCommand.INSTANCE,
@@ -37,13 +37,9 @@ public class Main {
 
 			String command = args[0].toLowerCase(Locale.ROOT);
 
-			Command cmd = COMMANDS.get(command);
+			Command<?, ?> cmd = COMMANDS.get(command);
 			if (cmd == null) {
 				throw new IllegalArgumentException("Command not recognized: " + command);
-			}
-
-			if (!cmd.checkArgumentCount(args.length - 1)) {
-				throw new CommandHelpException(cmd);
 			}
 
 			String[] cmdArgs = new String[args.length - 1];
@@ -52,14 +48,14 @@ public class Main {
 			try {
 				cmd.run(cmdArgs);
 			} catch (Exception ex) {
-				throw new CommandHelpException(cmd, ex);
+				throw new CommandErrorHelpException(cmd, ex);
 			}
-		} catch (CommandHelpException ex) {
+		} catch (Command.HelpException ex) {
 			Logger.error(ex);
 			logEnigmaInfo();
-			Logger.info("Command {} has encountered an error! Usage:", ex.command.getName());
+			Logger.info("Command {} has encountered an error! Usage:", ex.getCommand().getName());
 			StringBuilder help = new StringBuilder();
-			appendHelp(ex.command, help);
+			ex.getCommand().appendHelp(help);
 			Logger.info(help.toString());
 			System.exit(1);
 		} catch (IllegalArgumentException ex) {
@@ -69,7 +65,7 @@ public class Main {
 		}
 	}
 
-	public static ImmutableMap<String, Command> getCommands() {
+	public static ImmutableMap<String, Command<?, ?>> getCommands() {
 		return COMMANDS;
 	}
 
@@ -79,56 +75,29 @@ public class Main {
 		StringBuilder help = new StringBuilder();
 		help.append("""
 				Usage:
-				\tjava -cp enigma.jar org.quiltmc.enigma.command.CommandMain <command> <args>
+				\tjava -jar enigma.jar <command> <args>
 				\twhere <command> is one of:""");
 
-		for (Command command : COMMANDS.values()) {
-			appendHelp(command, help);
+		for (Command<?, ?> command : COMMANDS.values()) {
+			command.appendHelp(help);
 		}
-	}
-
-	private static void appendHelp(Command command, StringBuilder builder) {
-		builder.append(String.format("\t\t%s %s", command.getName(), command.getUsage())).append("\n");
-
-		if (!command.requiredArguments.isEmpty()) {
-			builder.append("Arguments:").append("\n");
-			int argIndex = 0;
-			for (int j = 0; j < command.requiredArguments.size(); j++) {
-				Argument argument = command.requiredArguments.get(j);
-				appendHelp(argument, argIndex, builder);
-				argIndex++;
-			}
-
-			if (!command.optionalArguments.isEmpty()) {
-				builder.append("\n").append("Optional arguments:").append("\n");
-				for (int i = 0; i < command.optionalArguments.size(); i++) {
-					Argument argument = command.optionalArguments.get(i);
-					appendHelp(argument, argIndex, builder);
-					argIndex++;
-				}
-			}
-		}
-	}
-
-	private static void appendHelp(Argument argument, int index, StringBuilder builder) {
-		builder.append(String.format("Argument %s: %s", index, argument.displayForm())).append("\n");
-		builder.append(argument.explanation()).append("\n");
 	}
 
 	private static void logEnigmaInfo() {
 		Logger.info("{} - {}", Enigma.NAME, Enigma.VERSION);
 	}
 
-	private static final class CommandHelpException extends IllegalArgumentException {
-		final Command command;
+	private static final class CommandErrorHelpException extends Command.HelpException {
+		final Command<?, ?> command;
 
-		CommandHelpException(Command command) {
+		CommandErrorHelpException(Command<?, ?> command, Throwable cause) {
+			super(cause);
 			this.command = command;
 		}
 
-		CommandHelpException(Command command, Throwable cause) {
-			super(cause);
-			this.command = command;
+		@Override
+		public Command<?, ?> getCommand() {
+			return this.command;
 		}
 	}
 }

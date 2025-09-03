@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.command;
 
-import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.util.MappingOperations;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
@@ -9,34 +8,34 @@ import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.util.Utils;
+import org.quiltmc.enigma.command.InvertMappingsCommand.Required;
+import org.quiltmc.enigma.command.InvertMappingsCommand.Optional;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public final class InvertMappingsCommand extends Command {
-	private static final Argument OUTPUT_FOLDER = new Argument("<output-folder>",
-			"""
-					A path to the file or folder to write output to."""
-	);
+import static org.quiltmc.enigma.command.CommonArguments.DEOBFUSCATED_NAMESPACE;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
+import static org.quiltmc.enigma.command.CommonArguments.MAPPING_OUTPUT;
+import static org.quiltmc.enigma.command.CommonArguments.OBFUSCATED_NAMESPACE;
 
+public final class InvertMappingsCommand extends Command<Required, Optional> {
 	public static final InvertMappingsCommand INSTANCE = new InvertMappingsCommand();
 
 	private InvertMappingsCommand() {
 		super(
-				ImmutableList.of(CommonArguments.INPUT_MAPPINGS, OUTPUT_FOLDER),
-				ImmutableList.of(CommonArguments.OBFUSCATED_NAMESPACE, CommonArguments.DEOBFUSCATED_NAMESPACE)
+				ArgsParser.of(INPUT_MAPPINGS, MAPPING_OUTPUT, Required::new),
+				ArgsParser.of(OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE, Optional::new)
 		);
 	}
 
 	@Override
-	public void run(String... args) throws IOException, MappingParseException {
-		Path source = getReadablePath(this.getArg(args, 0));
-		Path result = getWritablePath(this.getArg(args, 2));
-		String obfuscatedNamespace = this.getArg(args, 3);
-		String deobfuscatedNamespace = this.getArg(args, 4);
-
-		run(source, result, obfuscatedNamespace, deobfuscatedNamespace);
+	void runImpl(Required required, Optional optional) throws IOException, MappingParseException {
+		run(
+				required.inputMappings, required.mappingOutput,
+				optional.obfuscatedNamespace, optional.deobfuscatedNamespace
+		);
 	}
 
 	@Override
@@ -62,4 +61,8 @@ public final class InvertMappingsCommand extends Command {
 		Utils.delete(resultFile);
 		writeService.write(result, resultFile, saveParameters);
 	}
+
+	record Required(Path inputMappings, Path mappingOutput) { }
+
+	record Optional(String obfuscatedNamespace, String deobfuscatedNamespace) { }
 }

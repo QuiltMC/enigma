@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.command;
 
-import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
@@ -18,31 +17,36 @@ import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.Utils;
+import org.quiltmc.enigma.command.MapSpecializedMethodsCommand.Required;
+import org.quiltmc.enigma.command.MapSpecializedMethodsCommand.Optional;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
-public final class MapSpecializedMethodsCommand extends Command {
+import static org.quiltmc.enigma.command.CommonArguments.DEOBFUSCATED_NAMESPACE;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_JAR;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
+import static org.quiltmc.enigma.command.CommonArguments.MAPPING_OUTPUT;
+import static org.quiltmc.enigma.command.CommonArguments.OBFUSCATED_NAMESPACE;
+
+public final class MapSpecializedMethodsCommand extends Command<Required, Optional> {
 	public static final MapSpecializedMethodsCommand INSTANCE = new MapSpecializedMethodsCommand();
 
 	private MapSpecializedMethodsCommand() {
 		super(
-				ImmutableList.of(CommonArguments.INPUT_JAR, CommonArguments.INPUT_MAPPINGS, CommonArguments.MAPPING_OUTPUT),
-				ImmutableList.of(CommonArguments.OBFUSCATED_NAMESPACE, CommonArguments.DEOBFUSCATED_NAMESPACE)
+				ArgsParser.of(INPUT_JAR, INPUT_MAPPINGS, MAPPING_OUTPUT, Required::new),
+				ArgsParser.of(OBFUSCATED_NAMESPACE, DEOBFUSCATED_NAMESPACE, Optional::new)
 		);
 	}
 
 	@Override
-	public void run(String... args) throws IOException, MappingParseException {
-		Path jar = getReadablePath(this.getArg(args, 0));
-		Path source = getReadablePath(this.getArg(args, 1));
-		Path result = getWritablePath(this.getArg(args, 2));
-		String obfuscatedNamespace = this.getArg(args, 3);
-		String deobfuscatedNamespace = this.getArg(args, 4);
-
-		run(jar, source, result, obfuscatedNamespace, deobfuscatedNamespace);
+	void runImpl(Required required, Optional optional) throws IOException, MappingParseException {
+		run(
+				required.inputJar, required.inputMappings, required.mappingOutput,
+				optional.obfuscatedNamespace, optional.deobfuscatedNamespace
+		);
 	}
 
 	@Override
@@ -102,4 +106,8 @@ public final class MapSpecializedMethodsCommand extends Command {
 
 		return result;
 	}
+
+	record Required(Path inputJar, Path inputMappings, Path mappingOutput) { }
+
+	record Optional(String obfuscatedNamespace, String deobfuscatedNamespace) { }
 }

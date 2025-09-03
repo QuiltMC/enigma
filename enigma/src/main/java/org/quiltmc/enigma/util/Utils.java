@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -99,5 +100,52 @@ public class Utils {
 		} finally {
 			l.unlock();
 		}
+	}
+
+	public static String andJoin(String... words) {
+		return andJoin(true, words);
+	}
+
+	public static String andJoin(boolean oxfordComma, String... words) {
+		return andJoin(oxfordComma, Arrays.asList(words));
+	}
+
+	public static String andJoin(List<String> words) {
+		return andJoin(true, words);
+	}
+
+	public static String andJoin(boolean oxfordComma, List<String> words) {
+		return naturalJoin(" and ", oxfordComma, words);
+	}
+
+	/**
+	 * @param finalSeparator the separator used between the last two {@code words}
+	 * @param oxfordComma whether to include a comma before the {@code finalSeparator}
+	 * 						in cases of three or more {@code words}
+	 * @param words the words to join
+	 * @return the passed {@code words} joined as an english language list
+	 */
+	public static String naturalJoin(String finalSeparator, boolean oxfordComma, List<String> words) {
+		final int count = words.size();
+		return switch (count) {
+			case 0 -> "";
+			case 1 -> words.get(0);
+			case 2 -> words.get(0) + finalSeparator + words.get(1);
+			default -> {
+				final StringBuilder joined = new StringBuilder(words.get(0));
+				final int lastIndex = count - 1;
+				for (final String word : words.subList(1, lastIndex)) {
+					joined.append(", ").append(word);
+				}
+
+				if (oxfordComma) {
+					joined.append(",");
+				}
+
+				joined.append(finalSeparator).append(words.get(lastIndex));
+
+				yield joined.toString();
+			}
+		};
 	}
 }
