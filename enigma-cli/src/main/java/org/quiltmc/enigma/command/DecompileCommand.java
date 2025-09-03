@@ -6,39 +6,40 @@ import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.EnigmaProject.DecompileErrorStrategy;
 import org.quiltmc.enigma.api.service.DecompilerService;
 import org.quiltmc.enigma.api.source.Decompilers;
+import org.quiltmc.enigma.command.DecompileCommand.Required;
 import org.tinylog.Logger;
 
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
-public final class DecompileCommand extends Command {
-	private static final Argument DECOMPILER = new Argument("<decompiler>",
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_JAR;
+import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
+import static org.quiltmc.enigma.command.CommonArguments.OUTPUT_JAR;
+
+public final class DecompileCommand extends Command<Required, Path> {
+	private static final Argument<String> DECOMPILER = Argument.ofLenientEnum("decompiler", Decompiler.class,
 			"""
-					The decompiler to use when producing output. Allowed values are (case-insensitive):
-					- VINEFLOWER
-					- CFR
-					- PROCYON
-					- BYTECODE"""
+					The decompiler to use when producing output. Allowed values are (case-insensitive):"""
+				+ Decompiler.VALUES.stream()
+					.map(Object::toString)
+					.map(decompiler -> "\n- " + decompiler)
+					.collect(Collectors.joining())
 	);
 
 	public static final DecompileCommand INSTANCE = new DecompileCommand();
 
 	private DecompileCommand() {
 		super(
-				ImmutableList.of(DECOMPILER, CommonArguments.INPUT_JAR, CommonArguments.OUTPUT_JAR),
-				ImmutableList.of(CommonArguments.INPUT_MAPPINGS)
+				ArgsParser.of(DECOMPILER, INPUT_JAR, OUTPUT_JAR, Required::new),
+				ArgsParser.of(INPUT_MAPPINGS)
 		);
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
-		String decompilerName = this.getArg(args, 0);
-		Path fileJarIn = getReadableFile(this.getArg(args, 1)).toPath();
-		Path fileJarOut = getWritableFolder(this.getArg(args, 2)).toPath();
-		Path fileMappings = getReadablePath(this.getArg(args, 3));
-
-		run(decompilerName, fileJarIn, fileJarOut, fileMappings);
+	void runImpl(Required required, Path inputMappings) throws Exception {
+		run(required.decompiler, required.inputJar, required.outputJar, inputMappings);
 	}
 
 	@Override
@@ -49,6 +50,10 @@ public final class DecompileCommand extends Command {
 	@Override
 	public String getDescription() {
 		return "Decompiles the provided jar into human-readable code.";
+	}
+
+	public static void run(Decompiler decompiler, Path fileJarIn, Path fileJarOut, Path fileMappings) throws Exception {
+		run(decompiler.toString(), fileJarIn, fileJarOut, fileMappings);
 	}
 
 	public static void run(String decompilerName, Path fileJarIn, Path fileJarOut, Path fileMappings) throws Exception {
@@ -71,4 +76,12 @@ public final class DecompileCommand extends Command {
 
 		source.write(fileJarOut, progress);
 	}
+
+	public enum Decompiler {
+		VINEFLOWER, CFR, PROCYON, BYTECODE;
+
+		public static final ImmutableList<Decompiler> VALUES = ImmutableList.copyOf(values());
+	}
+
+	record Required(String decompiler, Path inputJar, Path outputJar) { }
 }
