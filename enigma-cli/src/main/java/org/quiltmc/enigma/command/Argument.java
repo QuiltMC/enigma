@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.command;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,7 +26,9 @@ import java.util.stream.Collectors;
  * @param <T> the type of the argument
  */
 final class Argument<T> {
+	@VisibleForTesting
 	static final char SEPARATOR = ' ';
+	@VisibleForTesting
 	static final char NAME_DELIM = '=';
 
 	static final String ALTERNATIVES_DELIM = "|";

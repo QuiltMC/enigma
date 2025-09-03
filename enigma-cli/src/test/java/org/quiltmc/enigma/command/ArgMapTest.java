@@ -46,11 +46,7 @@ public class ArgMapTest {
 
 	private static final Collector<Argument<?>, ?, Map<String, String>> EXPECTATION_COLLECTOR = Collectors.toMap(
 			Argument::getName,
-			arg -> {
-				final String expectedValue = COMPLETE_EXPECTED_MAP.get(arg.getName());
-				assertNotNull(expectedValue);
-				return expectedValue;
-			}
+			ArgMapTest::getUnnamedValue
 	);
 
 	@ParameterizedTest
@@ -120,12 +116,12 @@ public class ArgMapTest {
 
 	private static Stream<MixedArgs> streamMixedInputs() {
 		return Stream.of(
-			MixedArgs.builder().unnamed(REQUIRED_1).named(REQUIRED_2).build(),
-			MixedArgs.builder().unnamed(REQUIRED_1).named(REQUIRED_2, OPTIONAL_1).build(),
-			MixedArgs.builder().unnamed(REQUIRED_1).named(REQUIRED_2, OPTIONAL_1, OPTIONAL_2).build(),
-			MixedArgs.builder().unnamed(REQUIRED_1, REQUIRED_2).named(OPTIONAL_1).build(),
-			MixedArgs.builder().unnamed(REQUIRED_1, REQUIRED_2).named(OPTIONAL_1, OPTIONAL_2).build(),
-			MixedArgs.builder().unnamed(REQUIRED_1, REQUIRED_2, OPTIONAL_1).named(OPTIONAL_2).build()
+			mixedBuilder().unnamed(REQUIRED_1).named(REQUIRED_2).build(),
+			mixedBuilder().unnamed(REQUIRED_1).named(REQUIRED_2, OPTIONAL_1).build(),
+			mixedBuilder().unnamed(REQUIRED_1).named(REQUIRED_2, OPTIONAL_1, OPTIONAL_2).build(),
+			mixedBuilder().unnamed(REQUIRED_1, REQUIRED_2).named(OPTIONAL_1).build(),
+			mixedBuilder().unnamed(REQUIRED_1, REQUIRED_2).named(OPTIONAL_1, OPTIONAL_2).build(),
+			mixedBuilder().unnamed(REQUIRED_1, REQUIRED_2, OPTIONAL_1).named(OPTIONAL_2).build()
 		);
 	}
 
@@ -189,7 +185,7 @@ public class ArgMapTest {
 
 	private static String getUnnamedValue(Argument<?> argument) {
 		final String value = COMPLETE_EXPECTED_MAP.get(argument.getName());
-		assertNotNull(value);
+		assertNotNull(value, () -> "No argument with name '" + argument.getName() + "' in COMPLETE_EXPECTED_MAP.");
 		return value;
 	}
 
@@ -201,6 +197,10 @@ public class ArgMapTest {
 		final List<T> reversed = new ArrayList<>(arguments);
 		Collections.reverse(reversed);
 		return reversed;
+	}
+
+	private static MixedArgs.Builder mixedBuilder() {
+		return MixedArgs.builder();
 	}
 
 	record MixedArgs(ImmutableList<Argument<?>> unnamed, ImmutableList<Argument<?>> named) {
