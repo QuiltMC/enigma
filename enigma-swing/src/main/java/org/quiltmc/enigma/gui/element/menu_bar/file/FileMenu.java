@@ -11,6 +11,7 @@ import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
 import org.quiltmc.enigma.gui.util.ExtensionFileFilter;
 import org.quiltmc.enigma.util.I18n;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -30,6 +31,7 @@ public class FileMenu extends AbstractEnigmaMenu {
 	private final JMenuItem openMappingsItem = new JMenuItem();
 	private final JMenuItem maxRecentFilesItem = new JMenuItem();
 	private final JMenuItem saveMappingsItem = new JMenuItem();
+	private final JCheckBoxMenuItem autoSaveMappingsItem = new JCheckBoxMenuItem();
 	private final JMenuItem closeMappingsItem = new JMenuItem();
 	private final JMenuItem dropMappingsItem = new JMenuItem();
 	private final JMenuItem reloadMappingsItem = new JMenuItem();
@@ -56,6 +58,7 @@ public class FileMenu extends AbstractEnigmaMenu {
 		this.add(this.openMappingsItem);
 		this.add(this.saveMappingsItem);
 		this.add(this.saveMappingsAs);
+		this.add(this.autoSaveMappingsItem);
 		this.add(this.closeMappingsItem);
 		this.add(this.dropMappingsItem);
 		this.addSeparator();
@@ -77,6 +80,7 @@ public class FileMenu extends AbstractEnigmaMenu {
 		this.jarCloseItem.addActionListener(e -> this.gui.getController().closeJar());
 		this.maxRecentFilesItem.addActionListener(e -> this.onMaxRecentFilesClicked());
 		this.saveMappingsItem.addActionListener(e -> this.onSaveMappingsClicked());
+		this.autoSaveMappingsItem.addActionListener(e -> Config.main().features.autoSaveMappings.setValue(this.autoSaveMappingsItem.getState()));
 		this.closeMappingsItem.addActionListener(e -> this.onCloseMappingsClicked());
 		this.dropMappingsItem.addActionListener(e -> this.gui.getController().dropMappings());
 		this.reloadMappingsItem.addActionListener(e -> this.onReloadMappingsClicked());
@@ -104,6 +108,8 @@ public class FileMenu extends AbstractEnigmaMenu {
 		this.openRecent.updateState(jarOpen, state);
 		this.saveMappingsItem.setEnabled(jarOpen && this.gui.mappingsFileChooser.getSelectedFile() != null && this.gui.getConnectionState() != ConnectionState.CONNECTED);
 		this.saveMappingsAs.updateState();
+		this.autoSaveMappingsItem.setEnabled(jarOpen);
+		this.autoSaveMappingsItem.setState(Config.main().features.autoSaveMappings.value());
 		this.closeMappingsItem.setEnabled(jarOpen);
 		this.reloadMappingsItem.setEnabled(jarOpen);
 		this.reloadAllItem.setEnabled(jarOpen);
@@ -124,6 +130,7 @@ public class FileMenu extends AbstractEnigmaMenu {
 		this.openMappingsItem.setText(I18n.translate("menu.file.mappings.open"));
 		this.saveMappingsItem.setText(I18n.translate("menu.file.mappings.save"));
 		this.saveMappingsAs.retranslate();
+		this.autoSaveMappingsItem.setText(I18n.translate("menu.file.mappings.auto_save"));
 		this.closeMappingsItem.setText(I18n.translate("menu.file.mappings.close"));
 		this.dropMappingsItem.setText(I18n.translate("menu.file.mappings.drop"));
 		this.reloadMappingsItem.setText(I18n.translate("menu.file.reload_mappings"));
