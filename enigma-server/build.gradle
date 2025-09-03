@@ -19,7 +19,7 @@ application {
 }
 
 tasks.named('test') {
-	inputs.files(project(':enigma').tasks.named('completeTestObf', proguard.gradle.ProGuardTask).map { it.outJarFileCollection })
+	inputs.files(project(':enigma').tasks.named('completeTestObf', ProGuardTask).map { it.outJarFileCollection })
 }
 
 publishing {
