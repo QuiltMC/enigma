@@ -79,11 +79,12 @@ def registerTestJarTasks(String name, String... input) {
 	tasks.register("${taskName}TestObf", ProGuardTask) {
 		group("test-setup")
 
-		ignorewarnings
-
 		configuration confFileArg
 
-		libraryJarFilters.add libraryJarsArg
+		libraryjars(
+			[jarfilter: '!**.jar', filter: '!module-info.class'],
+			"${System.getProperty('java.home')}/jmods/java.base.jmod"
+		)
 
 		injars testJarTask.get().archiveFile
 
