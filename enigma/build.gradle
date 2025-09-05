@@ -59,8 +59,6 @@ static String convertToGradleTaskName(String name) {
 // If your test fails for class file version problem with proguard, run gradle with -Dorg.gradle.java.home="<older jdk>" flag
 def registerTestJarTasks(String name, String... input) {
 	String taskName = convertToGradleTaskName(name)
-	def libraryJarsArg = "<java.home>/jmods/java.base.jmod(!**.jar;!module-info.class)"
-
 	final testJarTask = tasks.register("${taskName}TestJar", Jar.class) {
 		group("test-setup")
 		from(sourceSets.test.output) {
