@@ -21,12 +21,13 @@ dependencies {
 	testFixturesImplementation libs.asm.tree
 }
 
-// Generate "version.txt" file
+// Generate "version.properties" file
 
-ext.genOutputDir = file("$buildDir/generated-resources")
+final GEN_OUTPUT = project.layout.buildDirectory.dir('generated-resources')
 
-task generateVersionFile {
-	ext.outputFile = file("$genOutputDir/version.properties")
+tasks.register('generateVersionFile') {
+	final outputFile = GEN_OUTPUT.map { it.file('version.properties') }
+
 	inputs.property("version", project.version)
 	inputs.property("vineflower-version", libs.vineflower.get().versionConstraint.displayName)
 	inputs.property("cfr-version", libs.cfr.get().versionConstraint.displayName)
@@ -34,18 +35,18 @@ task generateVersionFile {
 
 	outputs.file(outputFile)
 	doLast {
-		outputFile.text = inputs.properties.entrySet()
+		outputFile.get().asFile.text = inputs.properties.entrySet()
 				.collect { "$it.key = $it.value" }.join("\n")
 	}
 }
 
-sourceSets.main.output.dir genOutputDir, builtBy: generateVersionFile
+sourceSets.main.output.dir GEN_OUTPUT, builtBy: generateVersionFile
 
 static String convertToGradleTaskName(String name) {
 	String newName = new String(name);
 
 	for (int i = 0; i < name.length(); i++) {
-		if (name.charAt(i) == '_') {
+		if (name.charAt(i) == (char) '_') {
 			var toReplace = '_' + name.charAt(i + 1)
 			var newChar = name.charAt(i + 1).toUpperCase().toString()
 			newName = newName.replace(toReplace, newChar)
