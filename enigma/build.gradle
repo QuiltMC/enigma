@@ -59,7 +59,7 @@ static String convertToGradleTaskName(String name) {
 // If your test fails for class file version problem with proguard, run gradle with -Dorg.gradle.java.home="<older jdk>" flag
 def registerTestJarTasks(String name, String... input) {
 	String taskName = convertToGradleTaskName(name)
-	final testJarTask = tasks.register("${taskName}TestJar", Jar.class) {
+	final testJar = tasks.register("${taskName}TestJar", Jar.class) {
 		group("test-setup")
 		from(sourceSets.test.output) {
 			include input
@@ -69,12 +69,11 @@ def registerTestJarTasks(String name, String... input) {
 		destinationDirectory = file('build/test-inputs')
 	}
 
-	var confFileArg = 'src/test/resources/proguard-test.conf'
-	if (file("src/test/resources/proguard-$name-test.conf").exists()) {
-		confFileArg = "src/test/resources/proguard-$name-test.conf"
-	}
+	final customConfFile = file("src/test/resources/proguard-$name-test.conf")
+	final confFileArg = customConfFile.exists() ? customConfFile
+		: file('src/test/resources/proguard-test.conf')
 
-	tasks.register("${taskName}TestObf", ProGuardTask) {
+	final testObf = tasks.register("${taskName}TestObf", ProGuardTask) {
 		group("test-setup")
 
 		configuration confFileArg
@@ -84,21 +83,19 @@ def registerTestJarTasks(String name, String... input) {
 			"${System.getProperty('java.home')}/jmods/java.base.jmod"
 		)
 
-		injars testJarTask.get().archiveFile
+		injars testJar.map { it.archiveFile }
 
 		outjars file("build/test-obf/${name}.jar")
 	}
+
+	test.dependsOn(testObf)
 }
 
 registerTestJarTasks("complete", "org/quiltmc/enigma/input/**/*.class")
-test.dependsOn("completeTestObf")
 
 file('src/test/java/org/quiltmc/enigma/input').listFiles().each { f ->
 	if (f.directory) {
-		String taskName = convertToGradleTaskName(f.name)
-
 		registerTestJarTasks(f.name, "org/quiltmc/enigma/input/$f.name/**/*.class", "org/quiltmc/enigma/input/Keep.class")
-		test.dependsOn("${taskName}TestObf")
 	}
 }
 
