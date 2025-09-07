@@ -42,24 +42,40 @@ tasks.register('generateVersionFile') {
 
 sourceSets.main.output.dir GEN_OUTPUT, builtBy: generateVersionFile
 
-static String convertToGradleTaskName(String name) {
-	String newName = new String(name);
+static String taskNameFrom(String name) {
+	final length = name.length()
 
-	for (int i = 0; i < name.length(); i++) {
-		if (name.charAt(i) == (char) '_') {
-			var toReplace = '_' + name.charAt(i + 1)
-			var newChar = name.charAt(i + 1).toUpperCase().toString()
-			newName = newName.replace(toReplace, newChar)
+	if (length == 0) {
+		throw new IllegalArgumentException("name must not be empty!")
+	}
+
+	final builder = new StringBuilder()
+
+	final first = name.charAt(0)
+
+	final underscore = (char) '_'
+	if (first != underscore) {
+		builder.append(Character.toLowerCase(first))
+	}
+
+	for (int i = 1; i < length; i++) {
+		final c = name.charAt(i)
+		if (c == underscore) {
+			if (i < length - 1) {
+				builder.append(Character.toUpperCase(name.charAt(++i)))
+			}
+		} else {
+			builder.append(Character.toLowerCase(c))
 		}
 	}
 
-	return newName
+	return builder.toString()
 }
 
 // Generate obfuscated JARs for tests
 // If your test fails for class file version problem with proguard, run gradle with -Dorg.gradle.java.home="<older jdk>" flag
 def registerTestJarTasks(String name, String... input) {
-	String taskName = convertToGradleTaskName(name)
+	String taskName = taskNameFrom(name)
 	final testJar = tasks.register("${taskName}TestJar", Jar.class) {
 		group("test-setup")
 		from(sourceSets.test.output) {
