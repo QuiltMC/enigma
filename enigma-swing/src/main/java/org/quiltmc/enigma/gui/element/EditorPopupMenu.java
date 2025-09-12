@@ -208,6 +208,8 @@ public class EditorPopupMenu {
 		this.showImplementationsItem.setText(I18n.translate("popup_menu.implementations"));
 		this.showCallsItem.setText(I18n.translate("popup_menu.calls"));
 		this.showCallsSpecificItem.setText(I18n.translate("popup_menu.calls.specific"));
+		this.showStructureItem.setText(I18n.translate("popup_menu.structure"));
+		this.searchStructureItem.setText(I18n.translate("popup_menu.search_structure"));
 		this.openEntryItem.setText(I18n.translate("popup_menu.declaration"));
 		this.openPreviousItem.setText(I18n.translate("popup_menu.back"));
 		this.openNextItem.setText(I18n.translate("popup_menu.forward"));
