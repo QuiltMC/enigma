@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 import static org.quiltmc.enigma.command.CommonArguments.INPUT_JAR;
 import static org.quiltmc.enigma.command.CommonArguments.INPUT_MAPPINGS;
-import static org.quiltmc.enigma.command.CommonArguments.OUTPUT_JAR;
 
 public final class DecompileCommand extends Command<Required, Path> {
 	private static final Argument<String> DECOMPILER = Argument.ofLenientEnum("decompiler", Decompiler.class,
@@ -28,18 +27,24 @@ public final class DecompileCommand extends Command<Required, Path> {
 					.collect(Collectors.joining())
 	);
 
+	private static final Argument<Path> OUTPUT_DIR = Argument.ofFolder("output-dir",
+			"""
+				The directory to save decompiler output to.
+				"""
+	);
+
 	public static final DecompileCommand INSTANCE = new DecompileCommand();
 
 	private DecompileCommand() {
 		super(
-				ArgsParser.of(DECOMPILER, INPUT_JAR, OUTPUT_JAR, Required::new),
+				ArgsParser.of(DECOMPILER, INPUT_JAR, OUTPUT_DIR, Required::new),
 				ArgsParser.of(INPUT_MAPPINGS)
 		);
 	}
 
 	@Override
 	void runImpl(Required required, Path inputMappings) throws Exception {
-		run(required.decompiler, required.inputJar, required.outputJar, inputMappings);
+		run(required.decompiler, required.inputJar, required.outputDir, inputMappings);
 	}
 
 	@Override
@@ -56,7 +61,7 @@ public final class DecompileCommand extends Command<Required, Path> {
 		run(decompiler.toString(), fileJarIn, fileJarOut, fileMappings);
 	}
 
-	public static void run(String decompilerName, Path fileJarIn, Path fileJarOut, Path fileMappings) throws Exception {
+	public static void run(String decompilerName, Path fileJarIn, Path outputDir, Path fileMappings) throws Exception {
 		DecompilerService decompilerService;
 
 		try {
@@ -74,7 +79,7 @@ public final class DecompileCommand extends Command<Required, Path> {
 		EnigmaProject.JarExport jar = project.exportRemappedJar(progress);
 		EnigmaProject.SourceExport source = jar.decompile(progress, decompilerService, DecompileErrorStrategy.TRACE_AS_SOURCE);
 
-		source.write(fileJarOut, progress);
+		source.write(outputDir, progress);
 	}
 
 	public enum Decompiler {
@@ -83,5 +88,5 @@ public final class DecompileCommand extends Command<Required, Path> {
 		public static final ImmutableList<Decompiler> VALUES = ImmutableList.copyOf(values());
 	}
 
-	record Required(String decompiler, Path inputJar, Path outputJar) { }
+	record Required(String decompiler, Path inputJar, Path outputDir) { }
 }
