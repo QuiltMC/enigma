@@ -38,7 +38,7 @@ public abstract class AbstractInheritanceTreeDocker extends Docker {
 		this.textPanel.add(this.inactiveLabel, BorderLayout.NORTH);
 
 		this.treePanel = new JPanel(new BorderLayout());
-		this.treePanel.add(new JScrollPane(tree));
+		this.treePanel.add(new JScrollPane(this.tree));
 
 		this.inactiveTextKey = inactiveTextKey;
 		this.notFoundKey = notFoundKey;
