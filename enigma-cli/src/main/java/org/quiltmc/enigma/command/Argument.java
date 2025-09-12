@@ -35,6 +35,18 @@ final class Argument<T> {
 	static final String BOOL_TYPE = true + ALTERNATIVES_DELIM + false;
 	static final String PATH_TYPE = "path";
 
+	static Argument<Path> ofPath(String name, String explanation) {
+		return new Argument<>(name, PATH_TYPE, string -> getPath(string).orElse(null), explanation);
+	}
+
+	static Argument<Path> ofFile(String name, String explanation) {
+		return new Argument<>(name, PATH_TYPE, Argument::getFile, explanation);
+	}
+
+	static Argument<Path> ofFolder(String name, String explanation) {
+		return new Argument<>(name, PATH_TYPE, Argument::getFolder, explanation);
+	}
+
 	static Argument<Path> ofReadablePath(String name, String explanation) {
 		return new Argument<>(name, PATH_TYPE, Argument::getReadablePath, explanation);
 	}
@@ -99,6 +111,14 @@ final class Argument<T> {
 		this.explanation = explanation;
 	}
 
+	static Path getFile(String path) {
+		return verifyFile(getPath(path)).orElse(null);
+	}
+
+	static Path getFolder(String path) {
+		return verifyFolder(getPath(path)).orElse(null);
+	}
+
 	static Path getReadablePath(String path) {
 		return getExistentPath(path).orElse(null);
 	}
@@ -116,8 +136,7 @@ final class Argument<T> {
 	}
 
 	static Path getWritableFile(String path) {
-		// !directory so it's true for non-existent files
-		return verify(getParentedPath(path), p -> !Files.isDirectory(p), "Not a file: ").orElse(null);
+		return verifyFile(getParentedPath(path)).orElse(null);
 	}
 
 	static Path getWritableFolder(String path) {
@@ -152,6 +171,18 @@ final class Argument<T> {
 			.filter(string -> !string.isEmpty())
 			.map(Paths::get)
 			.map(Path::toAbsolutePath);
+	}
+
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+	static Optional<Path> verifyFile(Optional<Path> path) {
+		// !directory so it's true for non-existent files
+		return verify(path, p -> !Files.isDirectory(p), "Not a file: ");
+	}
+
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+	static Optional<Path> verifyFolder(Optional<Path> path) {
+		// !directory so it's true for non-existent folders
+		return verify(path, p -> !Files.isRegularFile(p), "Not a file: ");
 	}
 
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
