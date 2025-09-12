@@ -133,14 +133,14 @@ final class Argument<T> {
 	}
 
 	static Optional<Path> getParentedPath(String path) {
-		return peek(getPath(path), p -> {
-			final Path parent = p.getParent();
+		return peek(getPath(path), child -> {
+			final Path parent = child.getParent();
 			if (parent == null) {
-				throw new IllegalArgumentException("Cannot write path: " + p);
+				throw new IllegalArgumentException("Cannot write path: " + child);
 			}
 
 			try {
-				Files.createDirectories(p);
+				Files.createDirectories(parent);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
