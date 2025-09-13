@@ -40,6 +40,18 @@ final class Argument<T> {
 	static final String INT_TYPE = "int";
 	static final String PATTERN_TYPE = "regex";
 
+	static Argument<Path> ofPath(String name, String explanation) {
+		return new Argument<>(name, PATH_TYPE, string -> parsePath(string).orElse(null), explanation);
+	}
+
+	static Argument<Path> ofFile(String name, String explanation) {
+		return new Argument<>(name, PATH_TYPE, Argument::parseFile, explanation);
+	}
+
+	static Argument<Path> ofFolder(String name, String explanation) {
+		return new Argument<>(name, PATH_TYPE, Argument::parseFolder, explanation);
+	}
+
 	static Argument<Path> ofReadablePath(String name, String explanation) {
 		return new Argument<>(name, PATH_TYPE, Argument::parseReadablePath, explanation);
 	}
@@ -119,6 +131,14 @@ final class Argument<T> {
 		this.explanation = explanation;
 	}
 
+	static Path parseFile(String path) {
+		return verifyFile(parsePath(path)).orElse(null);
+	}
+
+	static Path parseFolder(String path) {
+		return verifyFolder(parsePath(path)).orElse(null);
+	}
+
 	static Path parseReadablePath(String path) {
 		return parseExistentPath(path).orElse(null);
 	}
@@ -136,8 +156,7 @@ final class Argument<T> {
 	}
 
 	static Path parseWritableFile(String path) {
-		// !directory so it's true for non-existent files
-		return verify(parseParentedPath(path), p -> !Files.isDirectory(p), "Not a file: ").orElse(null);
+		return verifyFile(parseParentedPath(path)).orElse(null);
 	}
 
 	static Path parseWritableFolder(String path) {
@@ -153,14 +172,14 @@ final class Argument<T> {
 	}
 
 	static Optional<Path> parseParentedPath(String path) {
-		return peek(parsePath(path), p -> {
-			final Path parent = p.getParent();
+		return peek(parsePath(path), child -> {
+			final Path parent = child.getParent();
 			if (parent == null) {
-				throw new IllegalArgumentException("Cannot write path: " + p);
+				throw new IllegalArgumentException("Cannot write path: " + child);
 			}
 
 			try {
-				Files.createDirectories(p);
+				Files.createDirectories(parent);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -204,6 +223,18 @@ final class Argument<T> {
 				throw new IllegalArgumentException(e);
 			}
 		}
+	}
+
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+	static Optional<Path> verifyFile(Optional<Path> path) {
+		// !directory so it's true for non-existent files
+		return verify(path, p -> !Files.isDirectory(p), "Not a file: ");
+	}
+
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+	static Optional<Path> verifyFolder(Optional<Path> path) {
+		// !directory so it's true for non-existent folders
+		return verify(path, p -> !Files.isRegularFile(p), "Not a file: ");
 	}
 
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
