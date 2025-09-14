@@ -1,10 +1,9 @@
 package org.quiltmc.enigma.gui.panel;
 
+import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
-import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
-import org.quiltmc.enigma.api.translation.representation.AccessFlags;
-import org.quiltmc.enigma.api.translation.representation.ArgumentDescriptor;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
+import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableDefEntry;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
@@ -27,6 +26,7 @@ import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.MouseEvent;
+import javax.annotation.Nullable;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -77,7 +77,8 @@ public class IdentifierPanel {
 	}
 
 	public void refreshReference() {
-		this.deobfEntry = this.entry == null ? null : this.gui.getController().getProject().getRemapper().deobfuscate(this.entry);
+		final EnigmaProject project = this.gui.getController().getProject();
+		this.deobfEntry = this.entry == null ? null : project.getRemapper().deobfuscate(this.entry);
 
 		// Prevent IdentifierPanel from being rebuilt if you didn't click off.
 		if (this.lastEntry == this.entry && this.nameField != null) {
@@ -159,19 +160,20 @@ public class IdentifierPanel {
 				th.addStringRow(I18n.translate("info_panel.identifier.index"), Integer.toString(local.getIndex()));
 
 				// type
-				EntryIndex index = this.gui.getController().getProject().getJarIndex().getIndex(EntryIndex.class);
-				final String paramDesc = local.getParent().streamParameters(index)
-					.filter(param -> param.getIndex() == local.getIndex())
-					.findAny()
-					.map(param -> toReadableType(param.getDesc()))
-					.orElseGet(() -> I18n.translate("info_panel.identifier.type.unknown"));
+				EntryIndex index = project.getJarIndex().getIndex(EntryIndex.class);
+				// EntryIndex only contains obf entries, so use the obf entry to look up the local's descriptor
+				@Nullable
+				final LocalVariableDefEntry obfLocal = index.getDefinition((LocalVariableEntry) this.entry);
+				final String localDesc = obfLocal == null
+						? I18n.translate("info_panel.identifier.type.unknown")
+						: toReadableType(project.getRemapper().deobfuscate(obfLocal.getDesc()));
 
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), paramDesc);
+				th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), localDesc);
 			} else {
 				throw new IllegalStateException("unreachable");
 			}
 
-			var mapping = this.gui.getController().getProject().getRemapper().getMapping(this.entry);
+			var mapping = project.getRemapper().getMapping(this.entry);
 			if (Config.main().development.showMappingSourcePlugin.value() && mapping.tokenType().isProposed()) {
 				th.addStringRow(I18n.translate("dev.source_plugin"), mapping.sourcePluginId());
 			}
