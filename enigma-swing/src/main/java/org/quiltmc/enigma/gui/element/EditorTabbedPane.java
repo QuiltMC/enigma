@@ -13,6 +13,9 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
 import java.awt.Component;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import javax.annotation.Nullable;
@@ -98,6 +101,7 @@ public class EditorTabbedPane {
 		this.openFiles.remove(ed.getUi());
 		this.editors.inverse().remove(ed);
 		EditorPanel activeEditor = this.getActiveEditor();
+		activeEditor.getEditor().requestFocus();
 		this.gui.updateStructure(activeEditor);
 		this.gui.showCursorReference(activeEditor != null ? activeEditor.getCursorReference() : null);
 		ed.destroy();
@@ -151,6 +155,7 @@ public class EditorTabbedPane {
 			}
 
 			EditorPanel activeEditor = this.getActiveEditor();
+			activeEditor.getEditor().requestFocus();
 			this.gui.updateStructure(activeEditor);
 			this.gui.showCursorReference(activeEditor != null ? activeEditor.getCursorReference() : null);
 		}
