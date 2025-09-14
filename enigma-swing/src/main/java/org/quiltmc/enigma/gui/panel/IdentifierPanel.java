@@ -160,12 +160,13 @@ public class IdentifierPanel {
 
 				// type
 				EntryIndex index = this.gui.getController().getProject().getJarIndex().getIndex(EntryIndex.class);
-				local.getParent().streamParameters(index)
+				final String paramDesc = local.getParent().streamParameters(index)
 					.filter(param -> param.getIndex() == local.getIndex())
 					.findAny()
-					.ifPresent(param -> {
-						th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), toReadableType(param.getDesc()));
-					});
+					.map(param -> toReadableType(param.getDesc()))
+					.orElseGet(() -> I18n.translate("info_panel.identifier.type.unknown"));
+
+				th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), paramDesc);
 			} else {
 				throw new IllegalStateException("unreachable");
 			}
