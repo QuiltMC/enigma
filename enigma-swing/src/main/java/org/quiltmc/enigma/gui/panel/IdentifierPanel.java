@@ -144,35 +144,28 @@ public class IdentifierPanel {
 
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method_descriptor"), me.getDesc().toString());
-			} else if (this.deobfEntry instanceof LocalVariableEntry lve) {
+			} else if (this.deobfEntry instanceof LocalVariableEntry local) {
 				EditableType type;
 
-				if (lve.isArgument()) {
+				if (local.isArgument()) {
 					type = EditableType.PARAMETER;
 				} else {
 					type = EditableType.LOCAL_VARIABLE;
 				}
 
-				this.nameField = th.addRenameTextField(type, lve.getName());
-				th.addStringRow(I18n.translate("info_panel.identifier.class"), lve.getContainingClass().getFullName());
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method"), lve.getParent().getName());
-				th.addStringRow(I18n.translate("info_panel.identifier.index"), Integer.toString(lve.getIndex()));
+				this.nameField = th.addRenameTextField(type, local.getName());
+				th.addStringRow(I18n.translate("info_panel.identifier.class"), local.getContainingClass().getFullName());
+				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method"), local.getParent().getName());
+				th.addStringRow(I18n.translate("info_panel.identifier.index"), Integer.toString(local.getIndex()));
 
 				// type
-				JarIndex index = this.gui.getController().getProject().getJarIndex();
-				AccessFlags access = index.getIndex(EntryIndex.class).getMethodAccess(lve.getParent());
-				int i = access != null && access.isStatic() ? 0 : 1;
-				var args = lve.getParent().getDesc().getArgumentDescs();
-
-				for (ArgumentDescriptor arg : args) {
-					if (i == lve.getIndex()) {
-						th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), toReadableType(arg));
-						break;
-					}
-
-					var primitive = TypeDescriptor.Primitive.get(arg.toString().charAt(0));
-					i += primitive == null ? 1 : primitive.getSize();
-				}
+				EntryIndex index = this.gui.getController().getProject().getJarIndex().getIndex(EntryIndex.class);
+				local.getParent().streamParameters(index)
+					.filter(param -> param.getIndex() == local.getIndex())
+					.findAny()
+					.ifPresent(param -> {
+						th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), toReadableType(param.getDesc()));
+					});
 			} else {
 				throw new IllegalStateException("unreachable");
 			}
