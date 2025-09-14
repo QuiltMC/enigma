@@ -11,9 +11,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Point;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -82,6 +80,22 @@ public class ClosableTabTitlePane {
 					ClosableTabTitlePane.this.parent.dispatchEvent(e1);
 				}
 			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				ClosableTabTitlePane.this.closeButton.setEnabled(true);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				if (!ClosableTabTitlePane.this.isActive(ClosableTabTitlePane.this.parent)) {
+					Component target = SwingUtilities.getDeepestComponentAt(e.getComponent(), e.getX(), e.getY());
+					if (!(target == ClosableTabTitlePane.this.closeButton)) {
+						// only disable if mouse is over neither tab nor close button
+						ClosableTabTitlePane.this.closeButton.setEnabled(false);
+					}
+				}
+			}
 		});
 
 		this.ui.putClientProperty(ClosableTabTitlePane.class, this);
@@ -110,15 +124,20 @@ public class ClosableTabTitlePane {
 	}
 
 	private void updateState(JTabbedPane pane) {
-		int selectedIndex = pane.getSelectedIndex();
-		boolean isActive = selectedIndex != -1 && pane.getTabComponentAt(selectedIndex) == this.ui;
-		this.closeButton.setEnabled(isActive);
-		this.closeButton.putClientProperty("paintActive", isActive);
+		final boolean active = this.isActive(pane);
+		this.closeButton.setEnabled(active);
+		this.closeButton.putClientProperty("paintActive", active);
 
 		this.ui.remove(this.closeButton);
 		this.ui.add(this.closeButton);
 
 		this.ui.repaint();
+	}
+
+	private boolean isActive(JTabbedPane pane) {
+		int selectedIndex = pane.getSelectedIndex();
+		boolean isActive = selectedIndex != -1 && pane.getTabComponentAt(selectedIndex) == this.ui;
+		return isActive;
 	}
 
 	public JPanel getUi() {
