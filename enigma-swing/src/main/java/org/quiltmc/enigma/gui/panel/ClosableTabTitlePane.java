@@ -18,16 +18,18 @@ import java.awt.event.MouseEvent;
 public class ClosableTabTitlePane {
 	private final JPanel ui;
 	private final JButton closeButton;
-	private final JLabel label;
+	private final JLabel title;
 
 	private ChangeListener cachedChangeListener;
 	private JTabbedPane parent;
 
-	public ClosableTabTitlePane(String text, Runnable onClose) {
+	public ClosableTabTitlePane(String title, String tooltip, Runnable onClose) {
 		this.ui = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 2));
 		this.ui.setOpaque(false);
-		this.label = new JLabel(text);
-		this.ui.add(this.label);
+
+		this.title = new JLabel(title);
+		this.title.setToolTipText(tooltip);
+		this.ui.add(this.title);
 
 		// Adapted from javax.swing.plaf.metal.MetalTitlePane
 		this.closeButton = new JButton();
@@ -115,12 +117,13 @@ public class ClosableTabTitlePane {
 		this.parent = pane;
 	}
 
-	public void setText(String text) {
-		this.label.setText(text);
+	public void setText(String title, String tooltip) {
+		this.title.setText(title);
+		this.title.setToolTipText(tooltip);
 	}
 
-	public String getText() {
-		return this.label.getText();
+	public String getTitle() {
+		return this.title.getText();
 	}
 
 	private void updateState(JTabbedPane pane) {

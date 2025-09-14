@@ -13,9 +13,6 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
 import java.awt.Component;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import javax.annotation.Nullable;
@@ -47,9 +44,9 @@ public class EditorTabbedPane {
 			this.navigator = new NavigatorPanel(this.gui);
 			EditorPanel ed = new EditorPanel(this.gui, this.navigator);
 			ed.setClassHandle(ch);
-			this.openFiles.addTab(ed.getFileName(), ed.getUi());
+			this.openFiles.addTab(ed.getSimpleClassName(), ed.getUi());
 
-			ClosableTabTitlePane titlePane = new ClosableTabTitlePane(ed.getFileName(), () -> this.closeEditor(ed));
+			ClosableTabTitlePane titlePane = new ClosableTabTitlePane(ed.getSimpleClassName(), ed.getFullClassName(), () -> this.closeEditor(ed));
 			this.openFiles.setTabComponentAt(this.openFiles.indexOfComponent(ed.getUi()), titlePane.getUi());
 			titlePane.setTabbedPane(this.openFiles);
 
@@ -69,7 +66,7 @@ public class EditorTabbedPane {
 
 				@Override
 				public void onTitleChanged(EditorPanel editor, String title) {
-					titlePane.setText(editor.getFileName());
+					titlePane.setText(editor.getSimpleClassName(), editor.getFullClassName());
 				}
 			});
 
