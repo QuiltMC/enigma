@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.util;
 
 import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.Gui;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.ProgressDialog;
 import org.quiltmc.enigma.gui.docker.ClassesDocker;
 import org.quiltmc.enigma.gui.docker.Docker;
@@ -192,6 +193,10 @@ public class PackageRenamer {
 				classSelector.reload();
 				classSelector.restoreExpansionState(entry.getValue());
 			}
+
+			if (Config.main().features.autoSaveMappings.value() && this.gui.mappingsFileChooser.getSelectedFile() != null) {
+				this.gui.getController().saveMappings(this.gui.mappingsFileChooser.getSelectedFile().toPath(), true);
+			}
 		});
 	}
 
@@ -259,7 +264,7 @@ public class PackageRenamer {
 					String newName = this.cachedNewName == null ? this.getNewName() : this.cachedNewName;
 
 					// ignore warnings, we don't want to bother the user with every individual package created
-					PackageRenamer.this.gui.getController().applyChange(new ValidationContext(PackageRenamer.this.gui.getNotificationManager(), false), EntryChange.modify(classNode.getObfEntry()).withDeobfName(newName), false);
+					PackageRenamer.this.gui.getController().applyChange(new ValidationContext(PackageRenamer.this.gui.getNotificationManager(), false), EntryChange.modify(classNode.getObfEntry()).withDeobfName(newName), false, false);
 				}
 
 				@Override
