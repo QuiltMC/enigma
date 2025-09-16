@@ -72,8 +72,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RunnableFuture;
 import java.util.function.IntFunction;
+import java.util.stream.Stream;
 
 public class Gui {
+	private static final CompletableFuture<Void> COMPLETED_DUMMY = CompletableFuture.completedFuture(null);
+
 	private final MainWindow mainWindow;
 	private final GuiController controller;
 
@@ -109,8 +112,7 @@ public class Gui {
 
 	private final boolean testEnvironment;
 
-	@Nullable
-	private CompletableFuture<Void> priorReloads;
+	private CompletableFuture<Void> priorReloads = COMPLETED_DUMMY;
 
 	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean testEnvironment) {
 		this.dockerManager = new DockerManager(this);
@@ -626,14 +628,16 @@ public class Gui {
 			toUpdate.addAll(parents);
 		}
 
-		if (this.priorReloads == null) {
-			this.priorReloads = CompletableFuture.completedFuture(null);
+		if (this.priorReloads.isDone()) {
+			// discard prior completed futures to avoid taking up memory
+			this.priorReloads = COMPLETED_DUMMY;
 		}
 
+		final List<Runnable> currentReloads = new ArrayList<>();
 		for (Docker value : this.dockerManager.getDockers()) {
 			if (value instanceof ClassesDocker docker) {
 				for (ClassEntry entry : toUpdate) {
-					this.priorReloads = this.priorReloads.thenRunAsync(() -> {
+					currentReloads.add(() -> {
 						try {
 							docker.getClassSelector().reloadStats(entry).get();
 						} catch (InterruptedException | ExecutionException e) {
@@ -644,8 +648,14 @@ public class Gui {
 			}
 		}
 
-		// discard once done to avoid taking up memory
-		this.priorReloads = this.priorReloads.thenRun(() -> this.priorReloads = null);
+		this.priorReloads = this.priorReloads.thenRunAsync(() -> CompletableFuture
+				.allOf(
+					currentReloads.stream()
+						.map(CompletableFuture::runAsync)
+						.toArray(CompletableFuture[]::new)
+				)
+				.join()
+		);
 	}
 
 	public SearchDialog getSearchDialog() {
