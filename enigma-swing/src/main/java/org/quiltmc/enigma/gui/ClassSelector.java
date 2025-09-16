@@ -6,6 +6,7 @@ import org.quiltmc.enigma.gui.node.ClassSelectorClassNode;
 import org.quiltmc.enigma.gui.node.SortedMutableTreeNode;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.util.Utils;
 
 import javax.annotation.Nullable;
 import javax.swing.JTree;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.RunnableFuture;
 
 public class ClassSelector extends JTree {
 	public static final Comparator<ClassEntry> DEOBF_CLASS_COMPARATOR = Comparator.comparing(ClassEntry::getFullName);
@@ -296,11 +298,11 @@ public class ClassSelector extends JTree {
 	 *
 	 * @param classEntry the class to reload stats for
 	 */
-	public void reloadStats(ClassEntry classEntry) {
+	public RunnableFuture<Void> reloadStats(ClassEntry classEntry) {
 		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
-		if (node != null) {
-			node.reloadStats(this.controller.getGui(), this, true);
-		}
+		return node == null
+				? Utils.DUMMY_RUNNABLE_FUTURE
+				: node.reloadStats(this.controller.getGui(), this, true);
 	}
 
 	public interface ClassSelectionListener {

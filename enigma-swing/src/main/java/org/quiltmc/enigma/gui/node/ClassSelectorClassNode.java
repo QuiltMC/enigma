@@ -7,12 +7,14 @@ import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.util.Utils;
 
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import java.util.Comparator;
+import java.util.concurrent.RunnableFuture;
 
 public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	private final ClassEntry obfEntry;
@@ -41,15 +43,15 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	 * @param selector the class selector to reload on
 	 * @param updateIfPresent whether to update the stats if they have already been generated for this node
 	 */
-	public void reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent) {
+	public RunnableFuture<Void> reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent) {
 		StatsGenerator generator = gui.getController().getStatsGenerator();
 		if (generator == null) {
-			return;
+			return Utils.DUMMY_RUNNABLE_FUTURE;
 		}
 
-		SwingWorker<ClassSelectorClassNode, Void> iconUpdateWorker = new SwingWorker<>() {
+		SwingWorker<Void, Void> iconUpdateWorker = new SwingWorker<>() {
 			@Override
-			protected ClassSelectorClassNode doInBackground() {
+			protected Void doInBackground() {
 				var parameters = Config.stats().createIconGenParameters(gui.getEditableStatTypes());
 
 				if (generator.getResultNullable(parameters) == null && generator.getOverallProgress() == null) {
@@ -58,7 +60,7 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 					generator.generate(ProgressListener.createEmpty(), ClassSelectorClassNode.this.getObfEntry(), parameters);
 				}
 
-				return ClassSelectorClassNode.this;
+				return null;
 			}
 
 			@Override
@@ -78,6 +80,8 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 		if (Config.main().features.enableClassTreeStatIcons.value()) {
 			SwingUtilities.invokeLater(iconUpdateWorker::execute);
 		}
+
+		return iconUpdateWorker;
 	}
 
 	@Override

@@ -41,6 +41,7 @@ import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.util.I18n;
+import org.quiltmc.enigma.util.Utils;
 import org.quiltmc.enigma.util.validation.Message;
 import org.quiltmc.enigma.util.validation.ParameterizedMessage;
 import org.quiltmc.enigma.util.validation.ValidationContext;
@@ -68,6 +69,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.RunnableFuture;
 import java.util.function.IntFunction;
 
 public class Gui {
@@ -105,6 +108,9 @@ public class Gui {
 	public final SearchDialog searchDialog;
 
 	private final boolean testEnvironment;
+
+	@Nullable
+	private CompletableFuture<Void> priorReloads;
 
 	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean testEnvironment) {
 		this.dockerManager = new DockerManager(this);
@@ -620,13 +626,26 @@ public class Gui {
 			toUpdate.addAll(parents);
 		}
 
+		if (this.priorReloads == null) {
+			this.priorReloads = CompletableFuture.completedFuture(null);
+		}
+
 		for (Docker value : this.dockerManager.getDockers()) {
 			if (value instanceof ClassesDocker docker) {
 				for (ClassEntry entry : toUpdate) {
-					docker.getClassSelector().reloadStats(entry);
+					this.priorReloads = this.priorReloads.thenRunAsync(() -> {
+						try {
+							docker.getClassSelector().reloadStats(entry).get();
+						} catch (InterruptedException | ExecutionException e) {
+							throw new RuntimeException(e);
+						}
+					});
 				}
 			}
 		}
+
+		// discard once done to avoid taking up memory
+		this.priorReloads = this.priorReloads.thenRun(() -> this.priorReloads = null);
 	}
 
 	public SearchDialog getSearchDialog() {
