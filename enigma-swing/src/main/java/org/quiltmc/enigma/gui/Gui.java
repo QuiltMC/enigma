@@ -71,6 +71,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.IntFunction;
 import java.util.stream.Stream;
 
@@ -112,7 +113,14 @@ public class Gui {
 
 	private final boolean testEnvironment;
 
+	/**
+	 * Possibly-incomplete work from prior calls to {@link #reloadStats(ClassEntry, boolean)}.
+	 */
 	private CompletableFuture<Void> priorReloads = COMPLETED_DUMMY;
+	/**
+	 * Setting this to true cancels incomplete work from the last call to {@link #reloadStats(ClassEntry, boolean)}.
+	 */
+	private AtomicBoolean priorReloadCanceler = new AtomicBoolean(false);
 
 	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean testEnvironment) {
 		this.dockerManager = new DockerManager(this);
@@ -631,15 +639,19 @@ public class Gui {
 		if (this.priorReloads.isDone()) {
 			// discard prior completed futures to avoid taking up memory
 			this.priorReloads = COMPLETED_DUMMY;
+		} else {
+			this.priorReloadCanceler.set(true);
 		}
 
+		final AtomicBoolean currentReloadCanceler = new AtomicBoolean(false);
+		this.priorReloadCanceler = currentReloadCanceler;
 		final List<Runnable> currentReloads = new ArrayList<>();
 		for (Docker value : this.dockerManager.getDockers()) {
 			if (value instanceof ClassesDocker docker) {
 				for (ClassEntry entry : toUpdate) {
 					currentReloads.add(() -> {
 						try {
-							docker.getClassSelector().reloadStats(entry).get();
+							docker.getClassSelector().reloadStats(entry, currentReloadCanceler).get();
 						} catch (InterruptedException | ExecutionException e) {
 							throw new RuntimeException(e);
 						}

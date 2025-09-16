@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ClassSelector extends JTree {
 	public static final Comparator<ClassEntry> DEOBF_CLASS_COMPARATOR = Comparator.comparing(ClassEntry::getFullName);
@@ -298,11 +299,11 @@ public class ClassSelector extends JTree {
 	 *
 	 * @param classEntry the class to reload stats for
 	 */
-	public RunnableFuture<Void> reloadStats(ClassEntry classEntry) {
+	public RunnableFuture<?> reloadStats(ClassEntry classEntry, AtomicBoolean canceller) {
 		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
 		return node == null
 				? Utils.DUMMY_RUNNABLE_FUTURE
-				: node.reloadStats(this.controller.getGui(), this, true);
+				: node.reloadStats(this.controller.getGui(), this, true, canceller);
 	}
 
 	public interface ClassSelectionListener {

@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.node;
 
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
@@ -14,9 +15,16 @@ import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import java.util.Comparator;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ClassSelectorClassNode extends SortedMutableTreeNode {
+	/**
+	 * Used by {@link #reloadStats(Gui, ClassSelector, boolean)}; <b>never</b> change its value.
+	 */
+	private static final AtomicBoolean DUMMY_CANCELER = new AtomicBoolean(false);
+
 	private final ClassEntry obfEntry;
 	private ClassEntry deobfEntry;
 
@@ -43,37 +51,55 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	 * @param selector the class selector to reload on
 	 * @param updateIfPresent whether to update the stats if they have already been generated for this node
 	 */
-	public RunnableFuture<Void> reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent) {
+	public RunnableFuture<?> reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent) {
+		return this.reloadStats(gui, selector, updateIfPresent, DUMMY_CANCELER);
+	}
+
+	public RunnableFuture<?> reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent, AtomicBoolean canceller) {
 		StatsGenerator generator = gui.getController().getStatsGenerator();
 		if (generator == null) {
 			return Utils.DUMMY_RUNNABLE_FUTURE;
 		}
 
-		SwingWorker<Void, Void> iconUpdateWorker = new SwingWorker<>() {
+		SwingWorker<ProjectStatsResult, Void> iconUpdateWorker = new SwingWorker<>() {
 			@Override
-			protected Void doInBackground() {
-				var parameters = Config.stats().createIconGenParameters(gui.getEditableStatTypes());
+			protected ProjectStatsResult doInBackground() {
+				if (canceller.get()) {
+					return null;
+				} else {
+					var parameters = Config.stats().createIconGenParameters(gui.getEditableStatTypes());
 
-				if (generator.getResultNullable(parameters) == null && generator.getOverallProgress() == null) {
-					generator.generate(ProgressListener.createEmpty(), parameters);
-				} else if (updateIfPresent) {
-					generator.generate(ProgressListener.createEmpty(), ClassSelectorClassNode.this.getObfEntry(), parameters);
+					if (generator.getResultNullable(parameters) == null && generator.getOverallProgress() == null) {
+						return generator.generate(ProgressListener.createEmpty(), parameters);
+					} else if (updateIfPresent) {
+						return generator.generate(ProgressListener.createEmpty(), ClassSelectorClassNode.this.getObfEntry(), parameters);
+					} else {
+						return null;
+					}
 				}
-
-				return null;
 			}
 
 			@Override
 			public void done() {
-				try {
-					var parameters = Config.stats().createIconGenParameters(gui.getEditableStatTypes());
-					((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(generator.getResultNullable(parameters), ClassSelectorClassNode.this.getObfEntry()));
-				} catch (NullPointerException ignored) {
-					// do nothing. this seems to be a race condition, likely a bug in FlatLAF caused by us suppressing the default tree icons
-					// ignoring this error should never cause issues since it only occurs at startup
-				}
+				if (!canceller.get()) {
+					final ProjectStatsResult result;
+					try {
+						result = this.get();
+					} catch (ExecutionException | InterruptedException e) {
+						throw new RuntimeException(e);
+					}
 
-				SwingUtilities.invokeLater(() -> selector.reload(ClassSelectorClassNode.this, false));
+					if (result != null) {
+						try {
+							((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(result, ClassSelectorClassNode.this.getObfEntry()));
+						} catch (NullPointerException ignored) {
+							// do nothing. this seems to be a race condition, likely a bug in FlatLAF caused by us suppressing the default tree icons
+							// ignoring this error should never cause issues since it only occurs at startup
+						}
+
+						SwingUtilities.invokeLater(() -> selector.reload(ClassSelectorClassNode.this, false));
+					}
+				}
 			}
 		};
 
