@@ -41,7 +41,6 @@ import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.util.I18n;
-import org.quiltmc.enigma.util.Utils;
 import org.quiltmc.enigma.util.validation.Message;
 import org.quiltmc.enigma.util.validation.ParameterizedMessage;
 import org.quiltmc.enigma.util.validation.ValidationContext;
@@ -70,7 +69,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.IntFunction;
 import java.util.stream.Stream;
@@ -645,20 +643,16 @@ public class Gui {
 
 		final AtomicBoolean currentReloadCanceler = new AtomicBoolean(false);
 		this.priorReloadCanceler = currentReloadCanceler;
-		final List<Runnable> currentReloads = new ArrayList<>();
-		for (Docker value : this.dockerManager.getDockers()) {
-			if (value instanceof ClassesDocker docker) {
-				for (ClassEntry entry : toUpdate) {
-					currentReloads.add(() -> {
-						try {
-							docker.getClassSelector().reloadStats(entry, currentReloadCanceler).get();
-						} catch (InterruptedException | ExecutionException e) {
-							throw new RuntimeException(e);
-						}
-					});
+		final List<Runnable> currentReloads = this.dockerManager.getDockers().stream()
+			.flatMap(docker -> docker instanceof ClassesDocker classes ? Stream.of(classes) : Stream.empty())
+			.flatMap(classes -> toUpdate.stream().<Runnable>map(updating -> () -> {
+				try {
+					classes.getClassSelector().reloadStats(updating, currentReloadCanceler).get();
+				} catch (InterruptedException | ExecutionException e) {
+					throw new RuntimeException(e);
 				}
-			}
-		}
+			}))
+			.toList();
 
 		this.priorReloads = this.priorReloads.thenRunAsync(() -> CompletableFuture
 				.allOf(
