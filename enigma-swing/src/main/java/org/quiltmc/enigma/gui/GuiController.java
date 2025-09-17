@@ -20,7 +20,6 @@ import org.quiltmc.enigma.gui.docker.ClassesDocker;
 import org.quiltmc.enigma.gui.docker.CollabDocker;
 import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.network.IntegratedEnigmaClient;
-import org.quiltmc.enigma.gui.panel.IdentifierPanel;
 import org.quiltmc.enigma.impl.analysis.IndexTreeBuilder;
 import org.quiltmc.enigma.api.analysis.tree.MethodImplementationsTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.MethodInheritanceTreeNode;
@@ -570,6 +569,7 @@ public class GuiController implements ClientPacketHandler {
 		if (!vc.canProceed()) {
 			return;
 		}
+
 		if (autosave && Config.main().features.autoSaveMappings.value() && this.gui.mappingsFileChooser.getSelectedFile() != null) {
 			this.gui.getController().saveMappings(this.gui.mappingsFileChooser.getSelectedFile().toPath(), true);
 		}
