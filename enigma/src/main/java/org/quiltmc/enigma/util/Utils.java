@@ -17,7 +17,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Supplier;
@@ -25,10 +25,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class Utils {
-	public static final RunnableFuture<Void> DUMMY_RUNNABLE_FUTURE = new RunnableFuture<>() {
-		@Override
-		public void run() { }
-
+	public static final Future<Void> DUMMY_FUTURE = new Future<>() {
 		@Override
 		public boolean cancel(boolean mayInterruptIfRunning) {
 			return false;
@@ -54,6 +51,8 @@ public class Utils {
 			return null;
 		}
 	};
+
+	public static final Supplier<Boolean> SUPPLY_FALSE = () -> false;
 
 	public static String readStreamToString(InputStream in) throws IOException {
 		return CharStreams.toString(new InputStreamReader(in, StandardCharsets.UTF_8));

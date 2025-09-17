@@ -74,8 +74,6 @@ import java.util.function.IntFunction;
 import java.util.stream.Stream;
 
 public class Gui {
-	private static final CompletableFuture<Void> COMPLETED_DUMMY = CompletableFuture.completedFuture(null);
-
 	private final MainWindow mainWindow;
 	private final GuiController controller;
 
@@ -114,7 +112,7 @@ public class Gui {
 	/**
 	 * Possibly-incomplete work from prior calls to {@link #reloadStats(ClassEntry, boolean)}.
 	 */
-	private CompletableFuture<Void> priorReloads = COMPLETED_DUMMY;
+	private CompletableFuture<Void> priorReloads = CompletableFuture.completedFuture(null);
 	/**
 	 * Setting this to true cancels incomplete work from the last call to {@link #reloadStats(ClassEntry, boolean)}.
 	 */
@@ -623,6 +621,7 @@ public class Gui {
 
 	/**
 	 * Reloads stats for the provided class in all selectors.
+	 *
 	 * @param classEntry the class to reload
 	 * @param propagate whether to also reload ancestors of the class
 	 */
@@ -630,13 +629,14 @@ public class Gui {
 		List<ClassEntry> toUpdate = new ArrayList<>();
 		toUpdate.add(classEntry);
 		if (propagate) {
-			Collection<ClassEntry> parents = this.controller.getProject().getJarIndex().getIndex(InheritanceIndex.class).getAncestors(classEntry);
+			Collection<ClassEntry> parents = this.controller.getProject().getJarIndex().getIndex(InheritanceIndex.class)
+					.getAncestors(classEntry);
 			toUpdate.addAll(parents);
 		}
 
 		if (this.priorReloads.isDone()) {
 			// discard prior completed futures to avoid taking up memory
-			this.priorReloads = COMPLETED_DUMMY;
+			this.priorReloads = CompletableFuture.completedFuture(null);
 		} else {
 			this.priorReloadCanceler.set(true);
 		}
@@ -644,15 +644,15 @@ public class Gui {
 		final AtomicBoolean currentReloadCanceler = new AtomicBoolean(false);
 		this.priorReloadCanceler = currentReloadCanceler;
 		final List<Runnable> currentReloads = this.dockerManager.getDockers().stream()
-			.flatMap(docker -> docker instanceof ClassesDocker classes ? Stream.of(classes) : Stream.empty())
-			.flatMap(classes -> toUpdate.stream().<Runnable>map(updating -> () -> {
-				try {
-					classes.getClassSelector().reloadStats(updating, currentReloadCanceler::get).get();
-				} catch (InterruptedException | ExecutionException e) {
-					throw new RuntimeException(e);
-				}
-			}))
-			.toList();
+				.flatMap(docker -> docker instanceof ClassesDocker classes ? Stream.of(classes) : Stream.empty())
+				.flatMap(docker -> toUpdate.stream().<Runnable>map(updating -> () -> {
+					try {
+						docker.getClassSelector().reloadStats(updating, currentReloadCanceler::get).get();
+					} catch (InterruptedException | ExecutionException e) {
+						throw new RuntimeException(e);
+					}
+				}))
+				.toList();
 
 		this.priorReloads = this.priorReloads.thenRunAsync(() -> CompletableFuture
 				.allOf(

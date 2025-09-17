@@ -16,8 +16,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import java.util.Comparator;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 public class ClassSelectorClassNode extends SortedMutableTreeNode {
@@ -43,18 +42,33 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	 * Reloads the stats for this class node and updates the icon in the provided class selector.
 	 * Exits if no project is open.
 	 *
-	 * @param gui the current gui instance
-	 * @param selector the class selector to reload on
+	 * @param gui             the current gui instance
+	 * @param selector        the class selector to reload on
 	 * @param updateIfPresent whether to update the stats if they have already been generated for this node
+	 *
+	 * @return a future whose completion indicates that all asynchronous work has finished
 	 */
-	public RunnableFuture<?> reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent) {
-		return this.reloadStats(gui, selector, updateIfPresent, () -> false);
+	public Future<?> reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent) {
+		return this.reloadStats(gui, selector, updateIfPresent, Utils.SUPPLY_FALSE);
 	}
 
-	public RunnableFuture<?> reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent, Supplier<Boolean> shouldCancel) {
+	/**
+	 * Reloads the stats for this class node and updates the icon in the provided class selector.
+	 * Exits if no project is open.
+	 *
+	 * @param gui             the current gui instance
+	 * @param selector        the class selector to reload on
+	 * @param updateIfPresent whether to update the stats if they have already been generated for this node
+	 * @param shouldCancel    a supplier that may be used to cancel asynchronous work if it returns
+	 *                        {@code true} before the work has started
+	 *
+	 * @return a future whose completion indicates that no asynchronous work remains, whether
+	 * because it was canceled using the passed {@code shouldCancel} method or because it finished normally
+	 */
+	public Future<?> reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent, Supplier<Boolean> shouldCancel) {
 		StatsGenerator generator = gui.getController().getStatsGenerator();
 		if (generator == null) {
-			return Utils.DUMMY_RUNNABLE_FUTURE;
+			return Utils.DUMMY_FUTURE;
 		}
 
 		SwingWorker<ProjectStatsResult, Void> iconUpdateWorker = new SwingWorker<>() {

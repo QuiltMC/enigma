@@ -19,8 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 public class ClassSelector extends JTree {
@@ -299,11 +298,28 @@ public class ClassSelector extends JTree {
 	 * On completion, the class's stats icon will be updated.
 	 *
 	 * @param classEntry the class to reload stats for
+	 *
+	 * @return a future whose completion indicates that all asynchronous work has finished
 	 */
-	public RunnableFuture<?> reloadStats(ClassEntry classEntry, Supplier<Boolean> shouldCancel) {
+	public Future<?> reloadStats(ClassEntry classEntry) {
+		return this.reloadStats(classEntry, Utils.SUPPLY_FALSE);
+	}
+
+	/**
+	 * Requests an asynchronous reload of the stats for the given class.
+	 * On completion, the class's stats icon will be updated.
+	 *
+	 * @param classEntry   the class to reload stats for
+	 * @param shouldCancel a supplier that may be used to cancel asynchronous work if it returns
+	 *                     {@code true} before the work has started
+	 *
+	 * @return a future whose completion indicates that no asynchronous work remains, whether
+	 * because it was canceled using the passed {@code shouldCancel} method or because it finished normally
+	 */
+	public Future<?> reloadStats(ClassEntry classEntry, Supplier<Boolean> shouldCancel) {
 		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
 		return node == null
-				? Utils.DUMMY_RUNNABLE_FUTURE
+				? Utils.DUMMY_FUTURE
 				: node.reloadStats(this.controller.getGui(), this, true, shouldCancel);
 	}
 
