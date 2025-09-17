@@ -142,8 +142,7 @@ public class ClosableTabTitlePane {
 
 	private boolean isActive(JTabbedPane pane) {
 		int selectedIndex = pane.getSelectedIndex();
-		boolean isActive = selectedIndex != -1 && pane.getTabComponentAt(selectedIndex) == this.ui;
-		return isActive;
+		return selectedIndex != -1 && pane.getTabComponentAt(selectedIndex) == this.ui;
 	}
 
 	public JPanel getUi() {

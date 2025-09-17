@@ -38,19 +38,22 @@ public class EditorTabbedPane {
 
 	public EditorPanel openClass(ClassEntry entry) {
 		EditorPanel activeEditor = this.getActiveEditor();
-		EditorPanel editorPanel = this.editors.computeIfAbsent(entry, e -> {
-			ClassHandle ch = this.gui.getController().getClassHandleProvider().openClass(entry);
-			if (ch == null) return null;
-			this.navigator = new NavigatorPanel(this.gui);
-			EditorPanel ed = new EditorPanel(this.gui, this.navigator);
-			ed.setClassHandle(ch);
-			this.openFiles.addTab(ed.getSimpleClassName(), ed.getUi());
+		EditorPanel entryEditor = this.editors.computeIfAbsent(entry, editing -> {
+			ClassHandle classHandle = this.gui.getController().getClassHandleProvider().openClass(editing);
+			if (classHandle == null) {
+				return null;
+			}
 
-			ClosableTabTitlePane titlePane = new ClosableTabTitlePane(ed.getSimpleClassName(), ed.getFullClassName(), () -> this.closeEditor(ed));
-			this.openFiles.setTabComponentAt(this.openFiles.indexOfComponent(ed.getUi()), titlePane.getUi());
+			this.navigator = new NavigatorPanel(this.gui);
+			EditorPanel newEditor = new EditorPanel(this.gui, this.navigator);
+			newEditor.setClassHandle(classHandle);
+			this.openFiles.addTab(newEditor.getSimpleClassName(), newEditor.getUi());
+
+			ClosableTabTitlePane titlePane = new ClosableTabTitlePane(newEditor.getSimpleClassName(), newEditor.getFullClassName(), () -> this.closeEditor(newEditor));
+			this.openFiles.setTabComponentAt(this.openFiles.indexOfComponent(newEditor.getUi()), titlePane.getUi());
 			titlePane.setTabbedPane(this.openFiles);
 
-			ed.addListener(new EditorActionListener() {
+			newEditor.addListener(new EditorActionListener() {
 				@Override
 				public void onCursorReferenceChanged(EditorPanel editor, EntryReference<Entry<?>, Entry<?>> ref) {
 					if (editor == EditorTabbedPane.this.getActiveEditor()) {
@@ -70,28 +73,28 @@ public class EditorTabbedPane {
 				}
 			});
 
-			ed.getEditor().addKeyListener(GuiUtil.onKeyPress(keyEvent -> {
+			newEditor.getEditor().addKeyListener(GuiUtil.onKeyPress(keyEvent -> {
 				if (KeyBinds.EDITOR_CLOSE_TAB.matches(keyEvent)) {
-					this.closeEditor(ed);
+					this.closeEditor(newEditor);
 				} else if (KeyBinds.ENTRY_NAVIGATOR_NEXT.matches(keyEvent)) {
-					ed.getNavigatorPanel().navigateDown();
+					newEditor.getNavigatorPanel().navigateDown();
 					keyEvent.consume();
 				} else if (KeyBinds.ENTRY_NAVIGATOR_LAST.matches(keyEvent)) {
-					ed.getNavigatorPanel().navigateUp();
+					newEditor.getNavigatorPanel().navigateUp();
 					keyEvent.consume();
 				}
 			}));
 
-			return ed;
+			return newEditor;
 		});
 
-		if (editorPanel != null && activeEditor != editorPanel) {
+		if (entryEditor != null && activeEditor != entryEditor) {
 			this.openFiles.setSelectedComponent(this.editors.get(entry).getUi());
-			this.gui.updateStructure(editorPanel);
-			this.gui.showCursorReference(editorPanel.getCursorReference());
+			this.gui.updateStructure(entryEditor);
+			this.gui.showCursorReference(entryEditor.getCursorReference());
 		}
 
-		return editorPanel;
+		return entryEditor;
 	}
 
 	public void closeEditor(EditorPanel ed) {
