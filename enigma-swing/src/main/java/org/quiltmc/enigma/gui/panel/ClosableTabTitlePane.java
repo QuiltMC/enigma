@@ -94,9 +94,9 @@ public class ClosableTabTitlePane {
 			@Override
 			public void mouseExited(MouseEvent e) {
 				if (!ClosableTabTitlePane.this.isActive(ClosableTabTitlePane.this.parent)) {
-					Component target = SwingUtilities.getDeepestComponentAt(e.getComponent(), e.getX(), e.getY());
-					if (!(target == ClosableTabTitlePane.this.closeButton)) {
-						// only disable if mouse is over neither tab nor close button
+					final Component target = SwingUtilities.getDeepestComponentAt(e.getComponent(), e.getX(), e.getY());
+					if (target == null || !SwingUtilities.isDescendingFrom(target, ClosableTabTitlePane.this.ui)) {
+						// only disable if mouse is not over this ui or descendants
 						ClosableTabTitlePane.this.closeButton.setEnabled(false);
 					}
 				}
