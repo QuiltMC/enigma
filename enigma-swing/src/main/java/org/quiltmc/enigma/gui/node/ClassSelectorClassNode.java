@@ -18,13 +18,9 @@ import java.util.Comparator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 public class ClassSelectorClassNode extends SortedMutableTreeNode {
-	/**
-	 * Used by {@link #reloadStats(Gui, ClassSelector, boolean)}; <b>never</b> change its value.
-	 */
-	private static final AtomicBoolean DUMMY_CANCELER = new AtomicBoolean(false);
-
 	private final ClassEntry obfEntry;
 	private ClassEntry deobfEntry;
 
@@ -52,10 +48,10 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	 * @param updateIfPresent whether to update the stats if they have already been generated for this node
 	 */
 	public RunnableFuture<?> reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent) {
-		return this.reloadStats(gui, selector, updateIfPresent, DUMMY_CANCELER);
+		return this.reloadStats(gui, selector, updateIfPresent, () -> false);
 	}
 
-	public RunnableFuture<?> reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent, AtomicBoolean canceller) {
+	public RunnableFuture<?> reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent, Supplier<Boolean> shouldCancel) {
 		StatsGenerator generator = gui.getController().getStatsGenerator();
 		if (generator == null) {
 			return Utils.DUMMY_RUNNABLE_FUTURE;
@@ -64,7 +60,7 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 		SwingWorker<ProjectStatsResult, Void> iconUpdateWorker = new SwingWorker<>() {
 			@Override
 			protected ProjectStatsResult doInBackground() {
-				if (canceller.get()) {
+				if (shouldCancel.get()) {
 					return null;
 				} else {
 					var parameters = Config.stats().createIconGenParameters(gui.getEditableStatTypes());
@@ -81,7 +77,7 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 
 			@Override
 			public void done() {
-				if (!canceller.get()) {
+				if (!shouldCancel.get()) {
 					final ProjectStatsResult result;
 					try {
 						result = this.get();

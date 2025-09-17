@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 public class ClassSelector extends JTree {
 	public static final Comparator<ClassEntry> DEOBF_CLASS_COMPARATOR = Comparator.comparing(ClassEntry::getFullName);
@@ -299,11 +300,11 @@ public class ClassSelector extends JTree {
 	 *
 	 * @param classEntry the class to reload stats for
 	 */
-	public RunnableFuture<?> reloadStats(ClassEntry classEntry, AtomicBoolean canceller) {
+	public RunnableFuture<?> reloadStats(ClassEntry classEntry, Supplier<Boolean> shouldCancel) {
 		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
 		return node == null
 				? Utils.DUMMY_RUNNABLE_FUTURE
-				: node.reloadStats(this.controller.getGui(), this, true, canceller);
+				: node.reloadStats(this.controller.getGui(), this, true, shouldCancel);
 	}
 
 	public interface ClassSelectionListener {

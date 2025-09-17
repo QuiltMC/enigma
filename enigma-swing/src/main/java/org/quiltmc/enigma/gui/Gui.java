@@ -647,7 +647,7 @@ public class Gui {
 			.flatMap(docker -> docker instanceof ClassesDocker classes ? Stream.of(classes) : Stream.empty())
 			.flatMap(classes -> toUpdate.stream().<Runnable>map(updating -> () -> {
 				try {
-					classes.getClassSelector().reloadStats(updating, currentReloadCanceler).get();
+					classes.getClassSelector().reloadStats(updating, currentReloadCanceler::get).get();
 				} catch (InterruptedException | ExecutionException e) {
 					throw new RuntimeException(e);
 				}
