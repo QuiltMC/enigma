@@ -67,17 +67,17 @@ public class StatsMenu extends AbstractEnigmaMenu {
 
 	private void onEnableIconsClicked() {
 		Config.main().features.enableClassTreeStatIcons.setValue(this.enableIcons.isSelected());
-		this.gui.getController().regenerateAndUpdateStatIcons();
+		new Thread(() -> this.gui.getController().regenerateAndUpdateStatIcons()).start();
 	}
 
 	private void onIncludeSyntheticClicked() {
 		Config.main().stats.shouldIncludeSyntheticParameters.setValue(this.includeSynthetic.isSelected());
-		this.gui.getController().regenerateAndUpdateStatIcons();
+		new Thread(() -> this.gui.getController().regenerateAndUpdateStatIcons()).start();
 	}
 
 	private void onCountFallbackClicked() {
 		Config.main().stats.shouldCountFallbackNames.setValue(this.countFallback.isSelected());
-		this.gui.getController().regenerateAndUpdateStatIcons();
+		new Thread(() -> this.gui.getController().regenerateAndUpdateStatIcons()).start();
 	}
 
 	private void onCheckboxClicked(StatType type) {
@@ -89,6 +89,6 @@ public class StatsMenu extends AbstractEnigmaMenu {
 			Config.stats().includedStatTypes.value().remove(type);
 		}
 
-		this.gui.getController().regenerateAndUpdateStatIcons();
+		new Thread(() -> this.gui.getController().regenerateAndUpdateStatIcons()).start();
 	}
 }
