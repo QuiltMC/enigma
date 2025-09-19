@@ -1,10 +1,12 @@
 package org.quiltmc.enigma.api;
 
 import com.google.common.io.MoreFiles;
+import org.quiltmc.enigma.api.analysis.index.jar.CombinedJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.LibrariesJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
+import org.quiltmc.enigma.api.class_provider.JavaClassProvider;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.impl.analysis.ClassLoaderClassProvider;
@@ -80,19 +82,24 @@ public class Enigma {
 
 	public EnigmaProject openJar(Path path, ClassProvider libraryClassProvider, ProgressListener progress) throws IOException {
 		JarClassProvider jarClassProvider = new JarClassProvider(path);
-		JarIndex index = MainJarIndex.empty();
+		JarIndex jarIndex = MainJarIndex.empty();
 		JarIndex libIndex = LibrariesJarIndex.empty();
+		JarIndex comboIndex = CombinedJarIndex.empty();
 
 		ClassLoaderClassProvider jreProvider = new ClassLoaderClassProvider(DriverManager.class.getClassLoader());
-		CombiningClassProvider librariesProvider = new CombiningClassProvider(jreProvider, libraryClassProvider);
-		ClassProvider mainProjectProvider = new ObfuscationFixClassProvider(new CachingClassProvider(jarClassProvider), index);
+		JavaClassProvider javaClassProvider = new JavaClassProvider();
+		CombiningClassProvider librariesProvider = new CombiningClassProvider(jreProvider, javaClassProvider, libraryClassProvider);
+		ClassProvider mainProjectProvider = new ObfuscationFixClassProvider(new CachingClassProvider(jarClassProvider), jarIndex);
 		ProjectClassProvider projectClassProvider = new ProjectClassProvider(mainProjectProvider, librariesProvider);
 
 		// main index
-		this.index(index, projectClassProvider, progress);
+		this.index(jarIndex, projectClassProvider, progress);
 
 		// lib index
 		this.index(libIndex, projectClassProvider, progress);
+
+		// combined main and lib index
+		this.index(comboIndex, projectClassProvider, progress);
 
 		// name proposal
 		var nameProposalServices = this.getNameProposalServices();
@@ -103,7 +110,7 @@ public class Enigma {
 		int j = 1;
 		for (var service : nameProposalServices) {
 			progress.step(j++, I18n.translateFormatted("progress.jar.name_proposal.proposer", service.getId()));
-			Map<Entry<?>, EntryMapping> proposed = service.getProposedNames(this, index);
+			Map<Entry<?>, EntryMapping> proposed = service.getProposedNames(this, jarIndex);
 
 			if (proposed != null) {
 				for (var entry : proposed.entrySet()) {
@@ -118,7 +125,7 @@ public class Enigma {
 		MappingsIndex mappingsIndex = MappingsIndex.empty();
 		mappingsIndex.indexMappings(proposedNames, progress);
 
-		return new EnigmaProject(this, path, mainProjectProvider, index, libIndex, mappingsIndex, proposedNames, Utils.zipSha1(path));
+		return new EnigmaProject(this, path, mainProjectProvider, jarIndex, libIndex, comboIndex, mappingsIndex, proposedNames, Utils.zipSha1(path));
 	}
 
 	private void index(JarIndex index, ProjectClassProvider classProvider, ProgressListener progress) {

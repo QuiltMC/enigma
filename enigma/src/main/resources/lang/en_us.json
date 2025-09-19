@@ -198,6 +198,8 @@
 	"progress.jar.name_proposal.proposer": "Running %s",
 	"progress.jar.name_proposal.finished": "Done!",
 	"progress.jar.indexing.jar": "Indexing JAR...",
+	"progress.jar.indexing.libraries": "Indexing Libraries...",
+	"progress.jar.indexing.combined": "Indexing Combined JAR and Libraries...",
 	"progress.jar.indexing.process.jar": "JAR...",
 	"progress.jar.indexing.process.bridge_methods": "Bridge methods...",
 	"progress.jar.indexing.process.references": "Entry references...",

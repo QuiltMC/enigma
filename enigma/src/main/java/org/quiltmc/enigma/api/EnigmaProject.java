@@ -56,18 +56,20 @@ public class EnigmaProject {
 	private final ClassProvider classProvider;
 	private final JarIndex jarIndex;
 	private final JarIndex libIndex;
+	private final JarIndex combinedIndex;
 	private final byte[] jarChecksum;
 
 	private EntryRemapper remapper;
 	private MappingsIndex mappingsIndex;
 
-	public EnigmaProject(Enigma enigma, Path jarPath, ClassProvider classProvider, JarIndex jarIndex, JarIndex libIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedNames, byte[] jarChecksum) {
+	public EnigmaProject(Enigma enigma, Path jarPath, ClassProvider classProvider, JarIndex jarIndex, JarIndex libIndex, JarIndex combinedIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedNames, byte[] jarChecksum) {
 		Preconditions.checkArgument(jarChecksum.length == 20);
 		this.enigma = enigma;
 		this.jarPath = jarPath;
 		this.classProvider = classProvider;
 		this.jarIndex = jarIndex;
 		this.libIndex = libIndex;
+		this.combinedIndex = combinedIndex;
 		this.jarChecksum = jarChecksum;
 
 		this.mappingsIndex = mappingsIndex;
@@ -116,6 +118,14 @@ public class EnigmaProject {
 
 	public JarIndex getJarIndex() {
 		return this.jarIndex;
+	}
+
+	public JarIndex getLibIndex() {
+		return this.libIndex;
+	}
+
+	public JarIndex getCombinedIndex() {
+		return this.combinedIndex;
 	}
 
 	public MappingsIndex getMappingsIndex() {
