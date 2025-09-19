@@ -7,7 +7,9 @@ import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
 import org.quiltmc.enigma.util.I18n;
 
-import javax.swing.*;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
+import javax.swing.SwingUtilities;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
