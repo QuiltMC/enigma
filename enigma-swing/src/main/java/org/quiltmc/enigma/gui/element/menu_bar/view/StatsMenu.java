@@ -10,6 +10,7 @@ import org.quiltmc.enigma.util.I18n;
 import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class StatsMenu extends AbstractEnigmaMenu {
 	private final JCheckBoxMenuItem enableIcons = new JCheckBoxMenuItem();
@@ -66,17 +67,17 @@ public class StatsMenu extends AbstractEnigmaMenu {
 
 	private void onEnableIconsClicked() {
 		Config.main().features.enableClassTreeStatIcons.setValue(this.enableIcons.isSelected());
-		SwingUtilities.invokeLater(() -> this.gui.getController().regenerateAndUpdateStatIcons());
+		invokeAsyncLater(() -> this.gui.getController().regenerateAndUpdateStatIcons());
 	}
 
 	private void onIncludeSyntheticClicked() {
 		Config.main().stats.shouldIncludeSyntheticParameters.setValue(this.includeSynthetic.isSelected());
-		SwingUtilities.invokeLater(() -> this.gui.getController().regenerateAndUpdateStatIcons());
+		invokeAsyncLater(() -> this.gui.getController().regenerateAndUpdateStatIcons());
 	}
 
 	private void onCountFallbackClicked() {
 		Config.main().stats.shouldCountFallbackNames.setValue(this.countFallback.isSelected());
-		SwingUtilities.invokeLater(() -> this.gui.getController().regenerateAndUpdateStatIcons());
+		invokeAsyncLater(() -> this.gui.getController().regenerateAndUpdateStatIcons());
 	}
 
 	private void onCheckboxClicked(StatType type) {
@@ -88,6 +89,10 @@ public class StatsMenu extends AbstractEnigmaMenu {
 			Config.stats().includedStatTypes.value().remove(type);
 		}
 
-		SwingUtilities.invokeLater(() -> this.gui.getController().regenerateAndUpdateStatIcons());
+		invokeAsyncLater(() -> this.gui.getController().regenerateAndUpdateStatIcons());
+	}
+
+	private static void invokeAsyncLater(Runnable runnable) {
+		SwingUtilities.invokeLater(() -> CompletableFuture.runAsync(runnable));
 	}
 }
