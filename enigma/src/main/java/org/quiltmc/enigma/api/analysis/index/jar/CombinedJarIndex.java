@@ -4,10 +4,6 @@ import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.impl.analysis.index.AbstractJarIndex;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Stream;
-
 public class CombinedJarIndex extends AbstractJarIndex {
 	public CombinedJarIndex(JarIndexer... indexers) {
 		super(indexers);

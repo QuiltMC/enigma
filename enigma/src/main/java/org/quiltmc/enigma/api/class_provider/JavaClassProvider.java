@@ -26,7 +26,7 @@ public class JavaClassProvider implements ClassProvider {
 	@Nullable
 	@Override
 	public ClassNode get(String name) {
-		try (InputStream in =  Object.class.getResourceAsStream("/" + name + CLASS_EXTENSION)) {
+		try (InputStream in = Object.class.getResourceAsStream("/" + name + CLASS_EXTENSION)) {
 			if (in == null) {
 				return null;
 			}
@@ -45,7 +45,7 @@ public class JavaClassProvider implements ClassProvider {
 			this.classes = Object.class.getModule().getLayer().configuration().modules().stream()
 				.map(ResolvedModule::reference)
 				.flatMap(ref -> {
-					try (final ModuleReader reader = ref.open()) {
+					try (ModuleReader reader = ref.open()) {
 						return reader.list();
 					} catch (IOException e) {
 						throw new RuntimeException(e);
