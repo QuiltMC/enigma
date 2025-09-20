@@ -15,6 +15,8 @@ import org.quiltmc.enigma.api.class_provider.JavaClassProvider;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.impl.analysis.ClassLoaderClassProvider;
 import org.quiltmc.enigma.api.service.EnigmaService;
 import org.quiltmc.enigma.api.service.EnigmaServiceContext;
@@ -66,6 +68,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Enigma {
 	public static final String NAME = "Enigma";
@@ -168,7 +171,7 @@ public class Enigma {
 				return true;
 			}
 
-			return Streams
+			final boolean typeReferenced = Streams
 					.concat(
 						referenceIndex.getReferencesToClass(classEntry).stream(),
 						referenceIndex.getMethodTypeReferencesToClass(classEntry).stream(),
@@ -177,6 +180,28 @@ public class Enigma {
 					.anyMatch(reference ->
 						mainEntryIndex.hasClass(reference.entry) || mainEntryIndex.hasEntry(reference.context)
 					);
+
+			if (typeReferenced) {
+				return true;
+			}
+
+			final List<MethodEntry> mainMethods = mainIndex.getChildrenByClass().values().stream()
+					.flatMap(entry -> entry instanceof MethodEntry method ? Stream.of(method) : Stream.empty())
+					.toList();
+
+			final boolean methodReferenced = mainMethods.stream()
+					.flatMap(method -> referenceIndex.getMethodsReferencedBy(method).stream())
+					.map(MethodEntry::getParent)
+					.anyMatch(classEntry::equals);
+			if (methodReferenced) {
+				return true;
+			}
+
+			// field referenced
+			return mainMethods.stream()
+				.flatMap(method -> referenceIndex.getFieldsReferencedBy(method).stream())
+				.map(FieldEntry::getParent)
+				.anyMatch(classEntry::equals);
 		};
 	}
 
