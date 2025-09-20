@@ -1,14 +1,20 @@
 package org.quiltmc.enigma.api;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.Streams;
 import com.google.common.io.MoreFiles;
+import org.objectweb.asm.tree.ClassNode;
 import org.quiltmc.enigma.api.analysis.index.jar.CombinedJarIndex;
-import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.LibrariesJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.ReferenceIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.class_provider.JavaClassProvider;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.impl.analysis.ClassLoaderClassProvider;
 import org.quiltmc.enigma.api.service.EnigmaService;
 import org.quiltmc.enigma.api.service.EnigmaServiceContext;
@@ -27,6 +33,8 @@ import org.quiltmc.enigma.api.translation.mapping.serde.FileType;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.impl.analysis.index.AbstractJarIndex;
+import org.quiltmc.enigma.impl.analysis.index.IndexClassVisitor;
 import org.quiltmc.enigma.util.Either;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Utils;
@@ -45,15 +53,19 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.DriverManager;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class Enigma {
 	public static final String NAME = "Enigma";
@@ -82,9 +94,9 @@ public class Enigma {
 
 	public EnigmaProject openJar(Path path, ClassProvider libraryClassProvider, ProgressListener progress) throws IOException {
 		JarClassProvider jarClassProvider = new JarClassProvider(path);
-		JarIndex jarIndex = MainJarIndex.empty();
-		JarIndex libIndex = LibrariesJarIndex.empty();
-		JarIndex comboIndex = CombinedJarIndex.empty();
+		AbstractJarIndex jarIndex = MainJarIndex.empty();
+		AbstractJarIndex libIndex = LibrariesJarIndex.empty();
+		AbstractJarIndex comboIndex = CombinedJarIndex.empty();
 
 		ClassLoaderClassProvider jreProvider = new ClassLoaderClassProvider(DriverManager.class.getClassLoader());
 		JavaClassProvider javaClassProvider = new JavaClassProvider();
@@ -93,13 +105,16 @@ public class Enigma {
 		ProjectClassProvider projectClassProvider = new ProjectClassProvider(mainProjectProvider, librariesProvider);
 
 		// main index
-		this.index(jarIndex, projectClassProvider, progress);
+		this.index(jarIndex, projectClassProvider, progress, "jar", false, null);
+
+		// TODO make filtering toggleable with arg
+		final Predicate<String> mainReferencedPredicate = this.createMainReferencedPredicate(jarIndex, projectClassProvider);
 
 		// lib index
-		this.index(libIndex, projectClassProvider, progress);
+		this.index(libIndex, projectClassProvider, progress, "jar", true, mainReferencedPredicate);
 
 		// combined main and lib index
-		this.index(comboIndex, projectClassProvider, progress);
+		this.index(comboIndex, projectClassProvider, progress, "combined", true, mainReferencedPredicate);
 
 		// name proposal
 		var nameProposalServices = this.getNameProposalServices();
@@ -128,20 +143,64 @@ public class Enigma {
 		return new EnigmaProject(this, path, mainProjectProvider, jarIndex, libIndex, comboIndex, mappingsIndex, proposedNames, Utils.zipSha1(path));
 	}
 
-	private void index(JarIndex index, ProjectClassProvider classProvider, ProgressListener progress) {
-		boolean libraries = index instanceof LibrariesJarIndex;
-		String progressKey = libraries ? "libs" : "jar";
-		index.indexJar(classProvider, progress);
+	private Predicate<String> createMainReferencedPredicate(AbstractJarIndex mainIndex, ProjectClassProvider classProvider) {
+		final EntryIndex mainEntryIndex = mainIndex.getIndex(EntryIndex.class);
+
+		final EntryIndex entryIndex = new EntryIndex();
+		final ReferenceIndex referenceIndex = new ReferenceIndex();
+		final InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
+
+		final Collection<String> allClassNames = classProvider.getClassNames();
+		for (final String className : allClassNames) {
+			final ClassNode classNode = Objects.requireNonNull(classProvider.get(className));
+			classNode.accept(new IndexClassVisitor(entryIndex, Enigma.ASM_VERSION));
+			classNode.accept(new IndexClassVisitor(referenceIndex, Enigma.ASM_VERSION));
+			classNode.accept(new IndexClassVisitor(inheritanceIndex, Enigma.ASM_VERSION));
+		}
+
+		return className -> {
+			final ClassEntry classEntry = new ClassEntry(className);
+			if (mainEntryIndex.hasClass(classEntry)) {
+				return true;
+			}
+
+			if (inheritanceIndex.getChildren(classEntry).stream().anyMatch(mainEntryIndex::hasClass)) {
+				return true;
+			}
+
+			return Streams
+					.concat(
+						referenceIndex.getReferencesToClass(classEntry).stream(),
+						referenceIndex.getMethodTypeReferencesToClass(classEntry).stream(),
+						referenceIndex.getFieldTypeReferencesToClass(classEntry).stream()
+					)
+					.anyMatch(reference ->
+						mainEntryIndex.hasClass(reference.entry) || mainEntryIndex.hasEntry(reference.context)
+					);
+		};
+	}
+
+	private void index(
+			AbstractJarIndex index, ProjectClassProvider classProvider, ProgressListener progress, String progressKey,
+			boolean includesLibraries, @Nullable Predicate<String> classNameFilter
+	) {
+		if (classNameFilter == null) {
+			index.indexJar(classProvider, progress);
+			classNameFilter = Predicates.alwaysTrue();
+		} else {
+			index.indexJar(classProvider, progress, classNameFilter);
+		}
 
 		List<JarIndexerService> indexers = this.services.get(JarIndexerService.TYPE);
 		progress.init(indexers.size(), I18n.translate("progress." + progressKey + ".custom_indexing"));
 
 		int i = 1;
 		for (var service : indexers) {
-			if (!(libraries && !service.shouldIndexLibraries())) {
+			if (!(includesLibraries && !service.shouldIndexLibraries())) {
 				progress.step(i++, I18n.translateFormatted("progress." + progressKey + ".custom_indexing.indexer", service.getId()));
-				var names = libraries ? classProvider.getLibraryClassNames() : classProvider.getMainClassNames();
-				Set<String> scope = new HashSet<>(names);
+				Set<String> scope = index.getIndexableClassNames(classProvider).stream()
+						.filter(classNameFilter)
+						.collect(Collectors.toCollection(HashSet::new));
 				service.acceptJar(scope, classProvider, index);
 			}
 		}

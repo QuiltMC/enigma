@@ -1,23 +1,30 @@
 package org.quiltmc.enigma.api.analysis.index.jar;
 
-import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.impl.analysis.index.AbstractJarIndex;
 
+import java.util.Collection;
+
 public class LibrariesJarIndex extends AbstractJarIndex {
-	public LibrariesJarIndex(JarIndexer... indexers) {
-		super(indexers);
+	public LibrariesJarIndex(
+			EntryIndex entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex,
+			BridgeMethodIndex bridgeMethodIndex, JarIndexer... otherIndexers
+	) {
+		super(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex, otherIndexers);
 	}
 
 	/**
 	 * Creates an empty index, configured to use all built-in indexers.
 	 * @return the newly created index
 	 */
-	public static JarIndex empty() {
+	public static LibrariesJarIndex empty() {
 		EntryIndex entryIndex = new EntryIndex();
 		ReferenceIndex referenceIndex = new ReferenceIndex();
 		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
-		return new LibrariesJarIndex(entryIndex, inheritanceIndex, referenceIndex, new BridgeMethodIndex(entryIndex, inheritanceIndex, referenceIndex));
+		return new LibrariesJarIndex(
+				entryIndex, inheritanceIndex, referenceIndex,
+				new BridgeMethodIndex(entryIndex, inheritanceIndex, referenceIndex)
+		);
 	}
 
 	@Override
@@ -26,7 +33,7 @@ public class LibrariesJarIndex extends AbstractJarIndex {
 	}
 
 	@Override
-	public void indexJar(ProjectClassProvider classProvider, ProgressListener progress) {
-		this.indexJar(classProvider.getLibraryClassNames(), classProvider, progress);
+	public Collection<String> getIndexableClassNames(ProjectClassProvider classProvider) {
+		return classProvider.getLibraryClassNames();
 	}
 }
