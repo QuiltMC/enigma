@@ -9,6 +9,8 @@ import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.service.ObfuscationTestService;
 import org.quiltmc.enigma.api.source.TokenType;
+import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
+import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeUtil;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
@@ -41,9 +43,11 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -58,6 +62,7 @@ public class EnigmaProject {
 	private final JarIndex libIndex;
 	private final JarIndex combinedIndex;
 	private final byte[] jarChecksum;
+	private final Map<MethodEntry, Boolean> libraryMethodOverrideCache = new HashMap<>();
 
 	private EntryRemapper remapper;
 	private MappingsIndex mappingsIndex;
@@ -209,6 +214,10 @@ public class EnigmaProject {
 					|| isEnumValueOfMethod(parent, obfMethodEntry))) {
 				return false;
 			}
+
+			if (this.isLibraryMethodOverride(obfMethodEntry)) {
+				return false;
+			}
 		} else if (obfEntry instanceof LocalVariableEntry localEntry && !localEntry.isArgument()) {
 			return false;
 		} else if (obfEntry instanceof LocalVariableEntry localEntry && localEntry.isArgument()) {
@@ -224,6 +233,30 @@ public class EnigmaProject {
 		}
 
 		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
+	}
+
+	private boolean isLibraryMethodOverride(MethodEntry methodEntry) {
+		final Boolean cached = this.libraryMethodOverrideCache.get(methodEntry);
+		if (cached != null) {
+			return cached;
+		} else {
+			final EntryResolver combinedResolver = this.getCombinedIndex().getEntryResolver();
+			final Set<MethodEntry> equivalents = combinedResolver.resolveEquivalentMethods(methodEntry);
+			final Set<MethodEntry> roots = equivalents.stream()
+					.flatMap(equivalent -> combinedResolver.resolveEntry(equivalent, ResolutionStrategy.RESOLVE_ROOT).stream())
+					.collect(Collectors.toSet());
+
+			final Set<MethodEntry> equivalentsAndRoots = Stream
+					.concat(equivalents.stream(), roots.stream())
+					.collect(Collectors.toSet());
+
+			final EntryIndex jarEntryIndex = this.jarIndex.getIndex(EntryIndex.class);
+			final boolean anyNonJar = equivalentsAndRoots.stream().anyMatch(method -> !jarEntryIndex.hasMethod(method));
+
+			equivalentsAndRoots.forEach(method -> this.libraryMethodOverrideCache.put(method, anyNonJar));
+
+			return anyNonJar;
+		}
 	}
 
 	private static boolean isEnumValueOfMethod(ClassDefEntry parent, MethodEntry method) {
