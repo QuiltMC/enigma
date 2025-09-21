@@ -29,6 +29,8 @@ import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
 import javax.swing.text.html.HTML;
 
+import static org.quiltmc.enigma.gui.util.InputUtil.putKeyBindAction;
+
 public class JavadocDialog {
 	private final JDialog ui;
 	private final GuiController controller;
@@ -53,18 +55,16 @@ public class JavadocDialog {
 		this.text.setText(preset);
 		this.text.setTabSize(2);
 		contentPane.add(new JScrollPane(this.text), BorderLayout.CENTER);
-		this.text.addKeyListener(GuiUtil.onKeyPress(event -> {
-			if (KeyBinds.DIALOG_SAVE.matches(event)) {
-				if (event.isControlDown()) {
-					this.doSave();
-					if (this.vc.canProceed()) {
-						this.close();
-					}
-				}
-			} else if (KeyBinds.EXIT.matches(event)) {
+
+		putKeyBindAction(KeyBinds.MULTILINE_DIALOG_SAVE, this.text, e -> {
+			this.doSave();
+			if (this.vc.canProceed()) {
 				this.close();
 			}
-		}));
+		});
+
+		putKeyBindAction(KeyBinds.EXIT, this.text, e -> this.close());
+
 		this.text.setFont(ScaleUtil.scaleFont(Config.currentFonts().editor.value()));
 
 		// buttons panel
