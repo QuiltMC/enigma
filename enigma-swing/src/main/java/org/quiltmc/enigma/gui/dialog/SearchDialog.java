@@ -25,7 +25,6 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +46,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
+import static org.quiltmc.enigma.gui.util.InputUtil.putKeyBindAction;
 
 public class SearchDialog {
 	private final JTextField searchField;
@@ -90,7 +91,6 @@ public class SearchDialog {
 				SearchDialog.this.updateList();
 			}
 		});
-		this.searchField.addKeyListener(GuiUtil.onKeyPress(this::onKeyPressed));
 		this.searchField.addActionListener(e -> this.openSelected());
 
 		this.onlyExactMatchesCheckbox = new JCheckBox(I18n.translate("menu.search.only_exact_matches"));
@@ -156,6 +156,22 @@ public class SearchDialog {
 		this.dialog.setContentPane(contentPane);
 		this.dialog.setSize(ScaleUtil.getDimension(400, 500));
 		this.dialog.setLocationRelativeTo(gui.getFrame());
+
+		putKeyBindAction(KeyBinds.SEARCH_DIALOG_NEXT, contentPane, e -> {
+			final int next = this.classList.isSelectionEmpty() ? 0 : this.classList.getSelectedIndex() + 1;
+			this.classList.setSelectedIndex(next);
+			this.classList.ensureIndexIsVisible(next);
+		});
+
+		putKeyBindAction(KeyBinds.SEARCH_DIALOG_PREVIOUS, contentPane, e -> {
+			final int prev = this.classList.isSelectionEmpty()
+					? this.classList.getModel().getSize()
+					: this.classList.getSelectedIndex() - 1;
+			this.classList.setSelectedIndex(prev);
+			this.classList.ensureIndexIsVisible(prev);
+		});
+
+		putKeyBindAction(KeyBinds.EXIT, contentPane, e -> this.close());
 	}
 
 	private MouseListener createCheckboxListener(Type type) {
@@ -311,20 +327,6 @@ public class SearchDialog {
 
 	public void dispose() {
 		this.dialog.dispose();
-	}
-
-	private void onKeyPressed(KeyEvent e) {
-		if (KeyBinds.SEARCH_DIALOG_NEXT.matches(e)) {
-			int next = this.classList.isSelectionEmpty() ? 0 : this.classList.getSelectedIndex() + 1;
-			this.classList.setSelectedIndex(next);
-			this.classList.ensureIndexIsVisible(next);
-		} else if (KeyBinds.SEARCH_DIALOG_PREVIOUS.matches(e)) {
-			int prev = this.classList.isSelectionEmpty() ? this.classList.getModel().getSize() : this.classList.getSelectedIndex() - 1;
-			this.classList.setSelectedIndex(prev);
-			this.classList.ensureIndexIsVisible(prev);
-		} else if (KeyBinds.EXIT.matches(e)) {
-			this.close();
-		}
 	}
 
 	private record SearchEntryImpl(ParentedEntry<?> obf, ParentedEntry<?> deobf) implements SearchEntry {
