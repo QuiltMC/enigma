@@ -19,8 +19,8 @@ import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.syntaxpain.QuickFindDialog;
 
 import javax.swing.text.JTextComponent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+
+import static org.quiltmc.enigma.gui.util.InputUtil.putKeyBindAction;
 
 /**
  * Extension of {@link QuickFindDialog} to allow using keybindings, and improve UI.
@@ -35,16 +35,8 @@ public class EnigmaQuickFindDialog extends QuickFindDialog {
 		super.initComponents();
 
 		// keybinding support
-		this.searchField.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (KeyBinds.QUICK_FIND_DIALOG_PREVIOUS.matches(e)) {
-					EnigmaQuickFindDialog.this.prevButton.doClick();
-				} else if (KeyBinds.QUICK_FIND_DIALOG_NEXT.matches(e)) {
-					EnigmaQuickFindDialog.this.nextButton.doClick();
-				}
-			}
-		});
+		putKeyBindAction(KeyBinds.QUICK_FIND_DIALOG_PREVIOUS, this.searchField, e -> this.prevButton.doClick());
+		putKeyBindAction(KeyBinds.QUICK_FIND_DIALOG_NEXT, this.searchField, e -> this.nextButton.doClick());
 
 		this.ignoreCaseCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_IGNORE_CASE.getKeyCode());
 		this.regexCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_REGEX.getKeyCode());

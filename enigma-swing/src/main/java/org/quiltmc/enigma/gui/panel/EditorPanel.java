@@ -68,7 +68,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter.HighlightPainter;
 
-import static org.quiltmc.enigma.gui.util.InputUtil.putKeyBindAction;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
 public class EditorPanel {
