@@ -240,22 +240,28 @@ public class EnigmaProject {
 		if (cached != null) {
 			return cached;
 		} else {
-			final EntryResolver combinedResolver = this.getCombinedIndex().getEntryResolver();
-			final Set<MethodEntry> equivalents = combinedResolver.resolveEquivalentMethods(methodEntry);
-			final Set<MethodEntry> roots = equivalents.stream()
+			if (this.combinedIndex.getIndex(EntryIndex.class).hasMethod(methodEntry)) {
+				final EntryResolver combinedResolver = this.combinedIndex.getEntryResolver();
+				final Set<MethodEntry> equivalents = combinedResolver.resolveEquivalentMethods(methodEntry);
+				final Set<MethodEntry> roots = equivalents.stream()
 					.flatMap(equivalent -> combinedResolver.resolveEntry(equivalent, ResolutionStrategy.RESOLVE_ROOT).stream())
 					.collect(Collectors.toSet());
 
-			final Set<MethodEntry> equivalentsAndRoots = Stream
+				final Set<MethodEntry> equivalentsAndRoots = Stream
 					.concat(equivalents.stream(), roots.stream())
 					.collect(Collectors.toSet());
 
-			final EntryIndex jarEntryIndex = this.jarIndex.getIndex(EntryIndex.class);
-			final boolean anyNonJar = equivalentsAndRoots.stream().anyMatch(method -> !jarEntryIndex.hasMethod(method));
+				final EntryIndex jarEntryIndex = this.jarIndex.getIndex(EntryIndex.class);
+				final boolean anyNonJar = equivalentsAndRoots.stream().anyMatch(method -> !jarEntryIndex.hasMethod(method));
 
-			equivalentsAndRoots.forEach(method -> this.libraryMethodOverrideCache.put(method, anyNonJar));
+				equivalentsAndRoots.forEach(method -> this.libraryMethodOverrideCache.put(method, anyNonJar));
 
-			return anyNonJar;
+				return anyNonJar;
+			} else {
+				this.libraryMethodOverrideCache.put(methodEntry, false);
+
+				return false;
+			}
 		}
 	}
 

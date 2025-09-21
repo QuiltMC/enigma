@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.api.class_provider;
 
+import com.google.common.collect.ImmutableSet;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 
@@ -19,6 +20,11 @@ import java.util.stream.Collectors;
 public class JavaClassProvider implements ClassProvider {
 	private static final String CLASS_EXTENSION = ".class";
 	private static final Pattern JAVA_CLASS_PATTERN = Pattern.compile("^java/.*" + Pattern.quote(CLASS_EXTENSION) + "$");
+
+	private static final ImmutableSet<String> UN_ANALYZABLE_CLASS_NAMES = ImmutableSet.of(
+			"java/lang/module/ModuleDescriptor",
+			"java/io/PrintStream"
+	);
 
 	@Nullable
 	private Set<String> classes;
@@ -53,9 +59,9 @@ public class JavaClassProvider implements ClassProvider {
 				})
 				.filter(resource -> JAVA_CLASS_PATTERN.matcher(resource).find())
 				.map(javaClass -> javaClass.substring(0, javaClass.length() - CLASS_EXTENSION.length()))
+				// HACK: these cause AnalyzerException's
+				.filter(className -> !UN_ANALYZABLE_CLASS_NAMES.contains(className))
 				.filter(className -> this.get(className) != null)
-				// HACK: causes AnalyzerException
-				.filter(className -> !className.equals("java/lang/module/ModuleDescriptor"))
 				.collect(Collectors.toSet());
 		}
 
