@@ -43,9 +43,12 @@ public final class InputUtil {
 				}
 			}
 
-			inputMap.put(keyBind.toKeyStroke(), actionKey);
+			keyBind.combinations().stream().map(combo -> combo.toKeyStroke(0))
+					.forEach(key -> inputMap.put(key, actionKey));
+
 			final ActionMap actionMap = component.getActionMap();
 			if (actionMap != null) {
+				actionMap.remove(actionKey);
 				actionMap.put(actionKey, action);
 			}
 		}
