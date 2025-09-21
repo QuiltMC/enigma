@@ -14,17 +14,17 @@ public final class InputUtil {
 		throw new UnsupportedOperationException();
 	}
 
-	public static void putKeybindAction(KeyBind keyBind, JComponent component, ActionListener listener) {
-		putKeybindAction(keyBind, component, FocusCondition.WHEN_IN_FOCUSED_WINDOW, listener);
+	public static void putKeyBindAction(KeyBind keyBind, JComponent component, ActionListener listener) {
+		putKeyBindAction(keyBind, component, FocusCondition.WHEN_IN_FOCUSED_WINDOW, listener);
 	}
 
-	public static void putKeybindAction(
+	public static void putKeyBindAction(
 			KeyBind keyBind, JComponent component, FocusCondition condition, ActionListener listener
 	) {
-		putKeybindAction(keyBind, component, condition, new SimpleAction(listener));
+		putKeyBindAction(keyBind, component, condition, new SimpleAction(listener));
 	}
 
-	public static void putKeybindAction(
+	public static void putKeyBindAction(
 			KeyBind keyBind, JComponent component, FocusCondition condition, Action action
 	) {
 		final InputMap inputMap = component.getInputMap(condition.value);
