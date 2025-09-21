@@ -23,8 +23,6 @@ import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.source.Token;
-import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
-import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
@@ -69,6 +67,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter.HighlightPainter;
 
+import static org.quiltmc.enigma.gui.util.InputUtil.putKeybindAction;
+import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
+
 public class EditorPanel {
 	private final JPanel ui = new JPanel();
 	private final JEditorPane editor = new JEditorPane();
@@ -93,8 +94,6 @@ public class EditorPanel {
 
 	private EntryReference<Entry<?>, Entry<?>> cursorReference;
 	private EntryReference<Entry<?>, Entry<?>> nextReference;
-	private boolean mouseIsPressed = false;
-	private boolean shouldNavigateOnClick;
 
 	private int fontSize = 12;
 	private final BoxHighlightPainter obfuscatedPainter;
@@ -119,7 +118,7 @@ public class EditorPanel {
 		this.editor.setSelectionColor(new Color(31, 46, 90));
 		this.editor.setCaret(new BrowserCaret());
 		this.editor.setFont(ScaleUtil.getFont(this.editor.getFont().getFontName(), Font.PLAIN, this.fontSize));
-		this.editor.addCaretListener(event -> this.onCaretMove(event.getDot(), this.mouseIsPressed));
+		this.editor.addCaretListener(event -> this.onCaretMove(event.getDot()));
 		this.editor.setCaretColor(Config.getCurrentSyntaxPaneColors().caret.value());
 		this.editor.setContentType("text/enigma-sources");
 		this.editor.setBackground(Config.getCurrentSyntaxPaneColors().editorBackground.value());
@@ -145,8 +144,11 @@ public class EditorPanel {
 
 		this.editor.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mousePressed(MouseEvent mouseEvent) {
-				EditorPanel.this.mouseIsPressed = true;
+			public void mouseClicked(MouseEvent e) {
+				if ((e.getModifiersEx() & CTRL_DOWN_MASK) != 0 && e.getButton() == MouseEvent.BUTTON1) {
+					// ctrl + left click
+					EditorPanel.this.navigateToCursorReference();
+				}
 			}
 
 			@Override
@@ -159,31 +161,10 @@ public class EditorPanel {
 					case 5 -> // Forward navigation
 							gui.getController().openNextReference();
 				}
-
-				EditorPanel.this.mouseIsPressed = false;
 			}
 		});
+
 		this.editor.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent event) {
-				if (EditorPanel.this.popupMenu.handleKeyEvent(event)) return;
-
-				if (KeyBinds.EDITOR_RELOAD_CLASS.matches(event)) {
-					if (EditorPanel.this.classHandle != null) {
-						EditorPanel.this.classHandle.invalidate();
-					}
-				} else if (KeyBinds.EDITOR_QUICK_FIND.matches(event)) {
-					// prevent navigating on click when quick find activated
-					EditorPanel.this.shouldNavigateOnClick = false; // CTRL
-				} else if (KeyBinds.EDITOR_ZOOM_IN.matches(event)) {
-					EditorPanel.this.offsetEditorZoom(2);
-				} else if (KeyBinds.EDITOR_ZOOM_OUT.matches(event)) {
-					EditorPanel.this.offsetEditorZoom(-2);
-				} else if (event.isControlDown()) {
-					EditorPanel.this.shouldNavigateOnClick = true; // CTRL
-				}
-			}
-
 			@Override
 			public void keyTyped(KeyEvent event) {
 				EntryReference<Entry<?>, Entry<?>> ref = EditorPanel.this.getCursorReference();
@@ -206,12 +187,9 @@ public class EditorPanel {
 					gui.startRename(EditorPanel.this, name);
 				}
 			}
-
-			@Override
-			public void keyReleased(KeyEvent event) {
-				EditorPanel.this.shouldNavigateOnClick = event.isControlDown();
-			}
 		});
+
+		this.reloadKeyBinds();
 
 		this.retryButton.addActionListener(e -> this.redecompileClass());
 
@@ -220,7 +198,9 @@ public class EditorPanel {
 
 	public void onRename(boolean isNewMapping) {
 		this.navigatorPanel.updateAllTokenTypes();
-		if (isNewMapping) this.navigatorPanel.decrementIndex();
+		if (isNewMapping) {
+			this.navigatorPanel.decrementIndex();
+		}
 	}
 
 	@Nullable
@@ -396,25 +376,21 @@ public class EditorPanel {
 		this.editor.setFont(ScaleUtil.getFont(this.editor.getFont().getFontName(), Font.PLAIN, this.fontSize));
 	}
 
-	public void onCaretMove(int pos, boolean fromClick) {
+	private void onCaretMove(int pos) {
 		if (this.settingSource || this.controller.getProject() == null) {
 			return;
 		}
 
-		EntryRemapper mapper = this.controller.getProject().getRemapper();
-		Token token = this.getToken(pos);
+		this.setCursorReference(this.getReference(this.getToken(pos)));
+	}
 
-		this.setCursorReference(this.getReference(token));
-
-		Entry<?> referenceEntry = this.cursorReference != null ? this.cursorReference.entry : null;
-
-		if (referenceEntry != null && this.shouldNavigateOnClick && fromClick) {
-			this.shouldNavigateOnClick = false;
-			Entry<?> navigationEntry = referenceEntry;
-			if (this.cursorReference.context == null) {
-				EntryResolver resolver = mapper.getObfResolver();
-				navigationEntry = resolver.resolveFirstEntry(referenceEntry, ResolutionStrategy.RESOLVE_ROOT);
-			}
+	private void navigateToCursorReference() {
+		if (this.cursorReference != null) {
+			final Entry<?> referenceEntry = this.cursorReference.entry;
+			final Entry<?> navigationEntry = this.cursorReference.context == null
+					? this.controller.getProject().getRemapper().getObfResolver()
+						.resolveFirstEntry(referenceEntry, ResolutionStrategy.RESOLVE_ROOT)
+					: referenceEntry;
 
 			this.controller.navigateTo(navigationEntry);
 		}
@@ -663,7 +639,15 @@ public class EditorPanel {
 	}
 
 	public void reloadKeyBinds() {
-		this.popupMenu.setKeyBinds();
+		putKeybindAction(KeyBinds.EDITOR_RELOAD_CLASS, this.editor, e -> {
+			if (this.classHandle != null) {
+				this.classHandle.invalidate();
+			}
+		});
+		putKeybindAction(KeyBinds.EDITOR_ZOOM_IN, this.editor, e -> this.offsetEditorZoom(2));
+		putKeybindAction(KeyBinds.EDITOR_ZOOM_OUT, this.editor, e -> this.offsetEditorZoom(-2));
+
+		this.popupMenu.getButtonKeyBinds().forEach((key, button) -> putKeybindAction(key, this.editor, e -> button.doClick()));
 	}
 
 	private enum DisplayMode {

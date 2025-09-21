@@ -1,10 +1,12 @@
 package org.quiltmc.enigma.gui.element;
 
+import com.google.common.collect.ImmutableMap;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.GuiController;
+import org.quiltmc.enigma.gui.config.keybind.KeyBind;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.docker.StructureDocker;
 import org.quiltmc.enigma.gui.panel.EditorPanel;
@@ -15,9 +17,10 @@ import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.I18n;
 
-import java.awt.event.KeyEvent;
+import javax.swing.AbstractButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import java.util.Map;
 
 public class EditorPopupMenu {
 	private final JPopupMenu ui = new JPopupMenu();
@@ -38,6 +41,22 @@ public class EditorPopupMenu {
 	private final JMenuItem zoomInItem = new JMenuItem();
 	private final JMenuItem zoomOutMenu = new JMenuItem();
 	private final JMenuItem resetZoomItem = new JMenuItem();
+
+	private final ImmutableMap<KeyBind, JMenuItem> buttonKeyBinds = ImmutableMap.ofEntries(
+			Map.entry(KeyBinds.EDITOR_SHOW_INHERITANCE, this.showInheritanceItem),
+			Map.entry(KeyBinds.EDITOR_SHOW_IMPLEMENTATIONS, this.showImplementationsItem),
+			Map.entry(KeyBinds.EDITOR_OPEN_ENTRY, this.openEntryItem),
+			Map.entry(KeyBinds.EDITOR_OPEN_PREVIOUS, this.openPreviousItem),
+			Map.entry(KeyBinds.EDITOR_OPEN_NEXT, this.openNextItem),
+			Map.entry(KeyBinds.EDITOR_SHOW_CALLS_SPECIFIC, this.showCallsSpecificItem),
+			Map.entry(KeyBinds.EDITOR_SHOW_CALLS, this.showCallsItem),
+			Map.entry(KeyBinds.EDITOR_TOGGLE_MAPPING, this.toggleMappingItem),
+			Map.entry(KeyBinds.EDITOR_RENAME, this.renameItem),
+			Map.entry(KeyBinds.EDITOR_EDIT_JAVADOC, this.editJavadocItem),
+			Map.entry(KeyBinds.EDITOR_PASTE, this.pasteItem),
+			Map.entry(KeyBinds.EDITOR_SEARCH_STRUCTURE, this.searchStructureItem),
+			Map.entry(KeyBinds.EDITOR_SHOW_STRUCTURE, this.showStructureItem)
+	);
 
 	private final EditorPanel editor;
 	private final Gui gui;
@@ -102,70 +121,8 @@ public class EditorPopupMenu {
 		this.resetZoomItem.addActionListener(event -> editor.resetEditorZoom());
 	}
 
-	public void setKeyBinds() {
-		this.renameItem.setAccelerator(KeyBinds.EDITOR_RENAME.toKeyStroke());
-		this.pasteItem.setAccelerator(KeyBinds.EDITOR_PASTE.toKeyStroke());
-		this.editJavadocItem.setAccelerator(KeyBinds.EDITOR_EDIT_JAVADOC.toKeyStroke());
-		this.showStructureItem.setAccelerator(KeyBinds.EDITOR_SHOW_STRUCTURE.toKeyStroke());
-		this.searchStructureItem.setAccelerator(KeyBinds.EDITOR_SEARCH_STRUCTURE.toKeyStroke());
-		this.showInheritanceItem.setAccelerator(KeyBinds.EDITOR_SHOW_INHERITANCE.toKeyStroke());
-		this.showImplementationsItem.setAccelerator(KeyBinds.EDITOR_SHOW_IMPLEMENTATIONS.toKeyStroke());
-		this.showCallsItem.setAccelerator(KeyBinds.EDITOR_SHOW_CALLS.toKeyStroke());
-		this.showCallsSpecificItem.setAccelerator(KeyBinds.EDITOR_SHOW_CALLS_SPECIFIC.toKeyStroke());
-		this.openEntryItem.setAccelerator(KeyBinds.EDITOR_OPEN_ENTRY.toKeyStroke());
-		this.openPreviousItem.setAccelerator(KeyBinds.EDITOR_OPEN_PREVIOUS.toKeyStroke());
-		this.openNextItem.setAccelerator(KeyBinds.EDITOR_OPEN_NEXT.toKeyStroke());
-		this.toggleMappingItem.setAccelerator(KeyBinds.EDITOR_TOGGLE_MAPPING.toKeyStroke());
-		this.zoomInItem.setAccelerator(KeyBinds.EDITOR_ZOOM_IN.toKeyStroke());
-		this.zoomOutMenu.setAccelerator(KeyBinds.EDITOR_ZOOM_OUT.toKeyStroke());
-	}
-
-	// TODO have editor redirect key event to menu so that the actions get
-	//  	triggered without having to hardcode them here, because this
-	//		is a hack
-	public boolean handleKeyEvent(KeyEvent event) {
-		if (KeyBinds.EDITOR_SHOW_INHERITANCE.matches(event)) {
-			this.showInheritanceItem.doClick();
-			return true;
-		} else if (KeyBinds.EDITOR_SHOW_IMPLEMENTATIONS.matches(event)) {
-			this.showImplementationsItem.doClick();
-			return true;
-		} else if (KeyBinds.EDITOR_OPEN_ENTRY.matches(event)) {
-			this.openEntryItem.doClick();
-			return true;
-		} else if (KeyBinds.EDITOR_OPEN_PREVIOUS.matches(event)) {
-			this.openPreviousItem.doClick();
-			return true;
-		} else if (KeyBinds.EDITOR_OPEN_NEXT.matches(event)) {
-			this.openNextItem.doClick();
-			return true;
-		} else if (KeyBinds.EDITOR_SHOW_CALLS_SPECIFIC.matches(event)) {
-			this.showCallsSpecificItem.doClick();
-			return true;
-		} else if (KeyBinds.EDITOR_SHOW_CALLS.matches(event)) {
-			this.showCallsItem.doClick();
-			return true;
-		} else if (KeyBinds.EDITOR_TOGGLE_MAPPING.matches(event)) {
-			this.toggleMappingItem.doClick();
-			return true;
-		} else if (KeyBinds.EDITOR_RENAME.matches(event)) {
-			this.renameItem.doClick();
-			return true;
-		} else if (KeyBinds.EDITOR_EDIT_JAVADOC.matches(event)) {
-			this.editJavadocItem.doClick();
-			return true;
-		} else if (KeyBinds.EDITOR_PASTE.matches(event)) {
-			this.pasteItem.doClick();
-			return true;
-		} else if (KeyBinds.EDITOR_SEARCH_STRUCTURE.matches(event)) {
-			this.searchStructureItem.doClick();
-			return true;
-		} else if (KeyBinds.EDITOR_SHOW_STRUCTURE.matches(event)) {
-			this.showStructureItem.doClick();
-			return true;
-		}
-
-		return false;
+	public ImmutableMap<KeyBind, ? extends AbstractButton> getButtonKeyBinds() {
+		return this.buttonKeyBinds;
 	}
 
 	public void updateUiState() {

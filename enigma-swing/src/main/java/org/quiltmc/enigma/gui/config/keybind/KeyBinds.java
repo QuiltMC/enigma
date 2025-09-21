@@ -35,7 +35,7 @@ public final class KeyBinds {
 	public static final KeyBind EDITOR_SEARCH_STRUCTURE = KeyBind.builder("search_structure", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK).key(KeyEvent.VK_T).build();
 	public static final KeyBind EDITOR_SHOW_INHERITANCE = KeyBind.builder("show_inheritance", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_I).build();
 	public static final KeyBind EDITOR_SHOW_IMPLEMENTATIONS = KeyBind.builder("show_implementations", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_M).build();
-	public static final KeyBind EDITOR_SHOW_CALLS = KeyBind.builder("show_calls", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_C).build();
+	public static final KeyBind EDITOR_SHOW_CALLS = KeyBind.builder("show_calls", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK).key(KeyEvent.VK_C).build();
 	public static final KeyBind EDITOR_SHOW_CALLS_SPECIFIC = KeyBind.builder("show_calls_specific", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK).key(KeyEvent.VK_C).build();
 	public static final KeyBind EDITOR_OPEN_ENTRY = KeyBind.builder("open_entry", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_N).build();
 	public static final KeyBind EDITOR_OPEN_PREVIOUS = KeyBind.builder("open_previous", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_P).build();
