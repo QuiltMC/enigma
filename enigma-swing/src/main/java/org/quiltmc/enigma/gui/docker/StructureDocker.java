@@ -34,6 +34,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import static org.quiltmc.enigma.gui.util.InputUtil.putKeyBindAction;
+
 public class StructureDocker extends Docker {
 	private final JPanel optionsPanel;
 
@@ -91,7 +93,8 @@ public class StructureDocker extends Docker {
 		this.structureTree.setCellRenderer(new StructureTreeCellRenderer(gui));
 		this.structureTree.setSelectionModel(new SingleTreeSelectionModel());
 		this.structureTree.setShowsRootHandles(true);
-		this.structureTree.addKeyListener(GuiUtil.onKeyPress(this::onKeyPress));
+		putKeyBindAction(KeyBinds.SELECT, this.structureTree, e -> this.navigateToSelectedNode());
+
 		this.structureTree.addMouseListener(GuiUtil.onMouseClick(this::onClick));
 
 		this.retranslateUi();
@@ -133,12 +136,6 @@ public class StructureDocker extends Docker {
 
 	public void focusTree() {
 		this.structureTree.requestFocus();
-	}
-
-	private void onKeyPress(KeyEvent e) {
-		if (KeyBinds.SELECT.matches(e)) {
-			this.navigateToSelectedNode();
-		}
 	}
 
 	private void onClick(MouseEvent event) {
