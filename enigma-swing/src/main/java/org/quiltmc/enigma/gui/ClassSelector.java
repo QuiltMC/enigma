@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
-import static org.quiltmc.enigma.gui.util.InputUtil.putKeyBindAction;
+import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 
 public class ClassSelector extends JTree {
 	public static final Comparator<ClassEntry> DEOBF_CLASS_COMPARATOR = Comparator.comparing(ClassEntry::getFullName);

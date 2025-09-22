@@ -22,7 +22,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import static org.quiltmc.enigma.gui.util.InputUtil.putKeyBindAction;
+import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 import static javax.swing.SwingUtilities.getUIInputMap;
 
 public class EditorTabbedPane {

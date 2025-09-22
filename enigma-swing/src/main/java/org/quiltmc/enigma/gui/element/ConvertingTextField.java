@@ -16,7 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.Document;
 
-import static org.quiltmc.enigma.gui.util.InputUtil.putKeyBindAction;
+import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 
 /**
  * A label that converts into an editable text field when you click it.

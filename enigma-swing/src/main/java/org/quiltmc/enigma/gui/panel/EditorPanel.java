@@ -19,7 +19,6 @@ import org.quiltmc.enigma.gui.event.EditorActionListener;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.gui.highlight.SelectionHighlightPainter;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
-import org.quiltmc.enigma.gui.util.InputUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.source.TokenType;
@@ -68,6 +67,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter.HighlightPainter;
 
+import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
 public class EditorPanel {
@@ -639,15 +639,15 @@ public class EditorPanel {
 	}
 
 	public void reloadKeyBinds() {
-		InputUtil.putKeyBindAction(KeyBinds.EDITOR_RELOAD_CLASS, this.editor, e -> {
+		putKeyBindAction(KeyBinds.EDITOR_RELOAD_CLASS, this.editor, e -> {
 			if (this.classHandle != null) {
 				this.classHandle.invalidate();
 			}
 		});
-		InputUtil.putKeyBindAction(KeyBinds.EDITOR_ZOOM_IN, this.editor, e -> this.offsetEditorZoom(2));
-		InputUtil.putKeyBindAction(KeyBinds.EDITOR_ZOOM_OUT, this.editor, e -> this.offsetEditorZoom(-2));
+		putKeyBindAction(KeyBinds.EDITOR_ZOOM_IN, this.editor, e -> this.offsetEditorZoom(2));
+		putKeyBindAction(KeyBinds.EDITOR_ZOOM_OUT, this.editor, e -> this.offsetEditorZoom(-2));
 
-		this.popupMenu.getButtonKeyBinds().forEach((key, button) -> InputUtil.putKeyBindAction(key, this.editor, e -> button.doClick()));
+		this.popupMenu.getButtonKeyBinds().forEach((key, button) -> putKeyBindAction(key, this.editor, e -> button.doClick()));
 	}
 
 	private enum DisplayMode {

@@ -20,7 +20,7 @@ import org.quiltmc.syntaxpain.QuickFindDialog;
 
 import javax.swing.text.JTextComponent;
 
-import static org.quiltmc.enigma.gui.util.InputUtil.putKeyBindAction;
+import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 
 /**
  * Extension of {@link QuickFindDialog} to allow using keybindings, and improve UI.

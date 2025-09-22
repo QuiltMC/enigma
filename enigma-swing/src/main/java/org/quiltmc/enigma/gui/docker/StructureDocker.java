@@ -34,7 +34,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import static org.quiltmc.enigma.gui.util.InputUtil.putKeyBindAction;
+import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 
 public class StructureDocker extends Docker {
 	private final JPanel optionsPanel;

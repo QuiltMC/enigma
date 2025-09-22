@@ -29,7 +29,7 @@ import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
 import javax.swing.text.html.HTML;
 
-import static org.quiltmc.enigma.gui.util.InputUtil.putKeyBindAction;
+import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 
 public class JavadocDialog {
 	private final JDialog ui;

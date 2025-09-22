@@ -1,6 +1,6 @@
 package org.quiltmc.enigma.gui.config.keybind;
 
-import org.quiltmc.enigma.gui.util.InputUtil;
+import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
 import org.tinylog.Logger;
 
@@ -51,7 +51,7 @@ public record KeyBind(String name, String category, List<Combination> combinatio
 	/**
 	 * Prefer using component's {@link InputMap}s and {@link ActionMap}s to checking this in {@link KeyListener}s.
 	 *
-	 * @see InputUtil#putKeyBindAction(KeyBind, JComponent, InputUtil.FocusCondition, ActionListener)
+	 * @see GuiUtil#putKeyBindAction(KeyBind, JComponent, GuiUtil.FocusCondition, ActionListener)
 	 */
 	@Deprecated
 	public boolean matches(KeyEvent e) {
