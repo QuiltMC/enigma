@@ -688,6 +688,7 @@ public class EditorPanel {
 
 	public void retranslateUi() {
 		this.popupMenu.retranslateUi();
+		this.quickFindToolBar.translate();
 	}
 
 	public void reloadKeyBinds() {

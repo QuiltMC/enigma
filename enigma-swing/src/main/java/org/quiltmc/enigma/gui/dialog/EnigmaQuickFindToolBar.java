@@ -15,10 +15,14 @@ package org.quiltmc.enigma.gui.dialog;
 
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.util.GuiUtil;
+import org.quiltmc.enigma.gui.util.GuiUtil.FocusCondition;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.syntaxpain.QuickFindToolBar;
 
-import javax.swing.text.Document;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.SwingConstants;
 
 import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 
@@ -27,33 +31,75 @@ import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
  */
 public class EnigmaQuickFindToolBar extends QuickFindToolBar {
 
-	@Override
-	protected void initComponents() {
-		super.initComponents();
+	protected JCheckBox persistentCheckBox;
+	protected JButton closeButton;
 
+	public EnigmaQuickFindToolBar() {
+		super();
 		// keybinding support
 		this.reloadKeyBinds();
 
+		// configure parent components
 		this.ignoreCaseCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_IGNORE_CASE.getKeyCode());
 		this.regexCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_REGEX.getKeyCode());
 		this.wrapCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_WRAP.getKeyCode());
 
 		// make buttons icon-only
+		this.nextButton.setText("");
 		this.nextButton.setIcon(GuiUtil.getDownChevron());
+		this.prevButton.setText("");
 		this.prevButton.setIcon(GuiUtil.getUpChevron());
 
-		// translations
-		this.ignoreCase = I18n.translate("editor.quick_find.ignore_case");
-		this.useRegex = I18n.translate("editor.quick_find.use_regex");
-		this.wrap = I18n.translate("editor.quick_find.wrap");
-		this.next = "";
-		this.prev = "";
-		this.notFound = I18n.translate("editor.quick_find.not_found");
+		// add custom components
+		// push the rest of the components to the right
+		this.add(Box.createHorizontalGlue());
+
+		this.addSeparator();
+
+		this.persistentCheckBox = new JCheckBox();
+		this.persistentCheckBox.setFocusable(false);
+		this.persistentCheckBox.setOpaque(false);
+		this.persistentCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
+		this.persistentCheckBox.setHorizontalTextPosition(SwingConstants.LEADING);
+		this.persistentCheckBox.addActionListener(this);
+		// request focus so when it's lost this may be dismissed
+		this.persistentCheckBox.addItemListener(e -> this.requestFocus());
+		this.persistentCheckBox.setSelected(true);
+		this.add(this.persistentCheckBox);
+
+		this.addSeparator();
+
+		this.closeButton = new JButton();
+		this.closeButton.setIcon(GuiUtil.getCloseIcon());
+		this.closeButton.setFocusable(false);
+		this.closeButton.setOpaque(false);
+		this.closeButton.addActionListener(e -> this.dismiss());
+		this.add(this.closeButton);
+
 		this.translate();
+	}
+
+	@Override
+	protected boolean dismissOnFocusLost() {
+		return !this.persistentCheckBox.isSelected();
+	}
+
+	public void translate() {
+		this.notFound = I18n.translate("editor.quick_find.not_found");
+
+		this.ignoreCaseCheckBox.setText(I18n.translate("editor.quick_find.ignore_case"));
+		this.regexCheckBox.setText(I18n.translate("editor.quick_find.use_regex"));
+		this.wrapCheckBox.setText(I18n.translate("editor.quick_find.wrap"));
+
+		this.persistentCheckBox.setText(I18n.translate("editor.quick_find.persistent"));
 	}
 
 	public void reloadKeyBinds() {
 		putKeyBindAction(KeyBinds.QUICK_FIND_DIALOG_PREVIOUS, this.searchField, e -> this.prevButton.doClick());
 		putKeyBindAction(KeyBinds.QUICK_FIND_DIALOG_NEXT, this.searchField, e -> this.nextButton.doClick());
+		putKeyBindAction(
+				KeyBinds.QUICK_FIND_DIALOG_CLOSE, this, FocusCondition.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT,
+				e -> this.setVisible(false)
+		);
 	}
 }

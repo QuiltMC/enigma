@@ -24,6 +24,7 @@ import javax.swing.KeyStroke;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.Timer;
+import javax.swing.UIManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeNode;
@@ -215,6 +216,10 @@ public final class GuiUtil {
 		}
 
 		return METHOD_ICON;
+	}
+
+	public static Icon getCloseIcon() {
+		return UIManager.getIcon("InternalFrame.closeIcon");
 	}
 
 	public static TreePath getPathToRoot(TreeNode node) {
