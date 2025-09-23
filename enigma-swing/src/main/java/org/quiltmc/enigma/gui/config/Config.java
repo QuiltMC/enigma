@@ -23,7 +23,6 @@ import org.quiltmc.enigma.gui.config.theme.properties.MetalThemeProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.NoneThemeProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.SystemThemeProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
-import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindDialog;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
@@ -252,7 +251,8 @@ public final class Config extends ReflectiveConfig {
 		SyntaxPaneProperties.Colors colors = getCurrentSyntaxPaneColors();
 
 		SyntaxpainConfiguration.setEditorFont(fonts.editor.value());
-		SyntaxpainConfiguration.setQuickFindDialogFactory(EnigmaQuickFindDialog::new);
+		// disable dialog; EditorPanel uses a tool bar component instead
+		SyntaxpainConfiguration.setQuickFindDialogFactory(null);
 
 		SyntaxpainConfiguration.setLineRulerPrimaryColor(colors.lineNumbersForeground.value());
 		SyntaxpainConfiguration.setLineRulerSecondaryColor(colors.lineNumbersBackground.value());

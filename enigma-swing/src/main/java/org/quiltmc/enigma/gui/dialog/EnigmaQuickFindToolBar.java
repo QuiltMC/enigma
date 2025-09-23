@@ -16,27 +16,23 @@ package org.quiltmc.enigma.gui.dialog;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
-import org.quiltmc.syntaxpain.QuickFindDialog;
+import org.quiltmc.syntaxpain.QuickFindToolBar;
 
-import javax.swing.text.JTextComponent;
+import javax.swing.text.Document;
 
 import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 
 /**
- * Extension of {@link QuickFindDialog} to allow using keybindings, and improve UI.
+ * Extension of {@link QuickFindToolBar} to allow using keybindings, and improve UI.
  */
-public class EnigmaQuickFindDialog extends QuickFindDialog {
-	public EnigmaQuickFindDialog(JTextComponent target) {
-		super(target);
-	}
+public class EnigmaQuickFindToolBar extends QuickFindToolBar {
 
 	@Override
 	protected void initComponents() {
 		super.initComponents();
 
 		// keybinding support
-		putKeyBindAction(KeyBinds.QUICK_FIND_DIALOG_PREVIOUS, this.searchField, e -> this.prevButton.doClick());
-		putKeyBindAction(KeyBinds.QUICK_FIND_DIALOG_NEXT, this.searchField, e -> this.nextButton.doClick());
+		this.reloadKeyBinds();
 
 		this.ignoreCaseCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_IGNORE_CASE.getKeyCode());
 		this.regexCheckBox.setMnemonic(KeyBinds.QUICK_FIND_DIALOG_REGEX.getKeyCode());
@@ -54,5 +50,10 @@ public class EnigmaQuickFindDialog extends QuickFindDialog {
 		this.prev = "";
 		this.notFound = I18n.translate("editor.quick_find.not_found");
 		this.translate();
+	}
+
+	public void reloadKeyBinds() {
+		putKeyBindAction(KeyBinds.QUICK_FIND_DIALOG_PREVIOUS, this.searchField, e -> this.prevButton.doClick());
+		putKeyBindAction(KeyBinds.QUICK_FIND_DIALOG_NEXT, this.searchField, e -> this.nextButton.doClick());
 	}
 }
