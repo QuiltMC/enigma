@@ -307,6 +307,7 @@ public class QuickFindToolBar extends JToolBar implements DocumentListener, Acti
 			target.setCaretPosition(this.prevCaretPos);
 			if (searchData.doFindNext(target)) {
 				this.statusLabel.setText(null);
+				this.fixOverlappedCaret();
 			} else {
 				this.statusLabel.setText(this.notFound);
 			}
