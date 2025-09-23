@@ -31,7 +31,6 @@ import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
  * Extension of {@link QuickFindToolBar} to allow using keybindings, and improve UI.
  */
 public class EnigmaQuickFindToolBar extends QuickFindToolBar {
-
 	protected JCheckBox persistentCheckBox;
 	protected JButton closeButton;
 
@@ -68,6 +67,7 @@ public class EnigmaQuickFindToolBar extends QuickFindToolBar {
 			if (selected != Config.main().persistentEditorQuickFind.value()) {
 				Config.main().persistentEditorQuickFind.setValue(selected);
 			}
+
 			// request focus so when it's lost this may be dismissed
 			this.requestFocus();
 		});
