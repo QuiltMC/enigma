@@ -13,6 +13,7 @@
 
 package org.quiltmc.enigma.gui.dialog;
 
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.GuiUtil.FocusCondition;
@@ -62,9 +63,12 @@ public class EnigmaQuickFindToolBar extends QuickFindToolBar {
 		this.persistentCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
 		this.persistentCheckBox.setHorizontalTextPosition(SwingConstants.LEADING);
 		this.persistentCheckBox.addActionListener(this);
-		// request focus so when it's lost this may be dismissed
-		this.persistentCheckBox.addItemListener(e -> this.requestFocus());
-		this.persistentCheckBox.setSelected(true);
+		this.persistentCheckBox.addItemListener(e -> {
+			Config.main().persistentEditorQuickFind.setValue(this.persistentCheckBox.isSelected());
+			// request focus so when it's lost this may be dismissed
+			this.requestFocus();
+		});
+		this.persistentCheckBox.setSelected(Config.main().persistentEditorQuickFind.value());
 		this.add(this.persistentCheckBox);
 
 		this.addSeparator();
