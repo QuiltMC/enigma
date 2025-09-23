@@ -23,8 +23,6 @@ public class QuickFindDialog extends JDialog implements EscapeListener {
 
 	protected QuickFindToolBar quickFindToolBar;
 
-	protected String componentName = "QuickFindDialog";
-
 	public QuickFindDialog(JTextComponent target) {
 		super(SwingUtilities.getWindowAncestor(target), ModalityType.MODELESS);
 
@@ -41,7 +39,7 @@ public class QuickFindDialog extends JDialog implements EscapeListener {
 		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
 				.addComponent(this.quickFindToolBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
 
-		this.translate();
+		this.setName("QuickFindDialog");
 
 		Util.addEscapeListener(this);
 	}
@@ -72,12 +70,6 @@ public class QuickFindDialog extends JDialog implements EscapeListener {
 		this.quickFindToolBar.showFor(target);
 
 		this.setVisible(true);
-	}
-
-	protected void translate() {
-		this.quickFindToolBar.translate();
-		this.setName(this.componentName);
-		this.pack();
 	}
 
 	@Override

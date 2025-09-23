@@ -1,16 +1,11 @@
 package org.quiltmc.syntaxpain;
 
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -29,7 +24,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
-import java.awt.event.KeyEvent;
 import java.lang.ref.WeakReference;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -59,64 +53,16 @@ public class QuickFindToolBar extends JToolBar implements DocumentListener, Acti
 	protected JCheckBox regexCheckBox;
 	protected JCheckBox wrapCheckBox;
 
-	protected String prev = "prev";
-	protected String next = "next";
-	protected String ignoreCase = "Ignore case";
-	protected String useRegex = "Use regex";
-	protected String wrap = "Wrap";
 	protected String notFound = "Not found";
 
 	public QuickFindToolBar() {
-		this.initComponents();
-	}
-
-	public void showFor(JTextComponent target) {
-		this.searchData = new WeakReference<>(DocumentSearchData.getFrom(target.getDocument()));
-		this.target = new WeakReference<>(target);
-
-		this.prevCaretPos = target.getCaretPosition();
-
-		Container view = target.getParent();
-		Dimension size = this.getSize();
-
-		// Set the width of the dialog to the width of the target
-		size.width = target.getVisibleRect().width;
-		this.setSize(size);
-
-		// Put the dialog at the bottom of the target
-		Point loc = new Point(0, view.getHeight() - size.height);
-		SwingUtilities.convertPointToScreen(loc, view);
-		this.setLocation(loc);
-
-		this.searchField.setFont(target.getFont());
-
-		DocumentSearchData searchData = this.searchData.get();
-		this.wrapCheckBox.setSelected(searchData.isWrap());
-
-		// Set the search field to the current selection
-		String selectedText = target.getSelectedText();
-		if (selectedText != null) {
-			this.searchField.setText(selectedText);
-		} else {
-			Pattern pattern = searchData.getPattern();
-			if (pattern != null) {
-				this.searchField.setText(pattern.pattern());
-			}
-		}
-
-		this.setVisible(true);
-		this.searchField.requestFocus();
-		this.searchField.selectAll();
-	}
-
-	protected void initComponents() {
 		this.statusLabel = new JLabel();
 		this.searchField = new JTextField();
-		this.prevButton = new JButton(this.prev);
-		this.nextButton = new JButton(this.next);
-		this.ignoreCaseCheckBox = new JCheckBox(this.ignoreCase);
-		this.regexCheckBox = new JCheckBox(this.useRegex);
-		this.wrapCheckBox = new JCheckBox(this.wrap);
+		this.prevButton = new JButton("prev");
+		this.nextButton = new JButton("next");
+		this.ignoreCaseCheckBox = new JCheckBox("Ignore case");
+		this.regexCheckBox = new JCheckBox("Use regex");
+		this.wrapCheckBox = new JCheckBox("Wrap");
 
 		this.setBorder(BorderFactory.createEtchedBorder());
 		this.setFloatable(false);
@@ -170,34 +116,18 @@ public class QuickFindToolBar extends JToolBar implements DocumentListener, Acti
 		this.addSeparator();
 		this.add(this.statusLabel);
 
-		final InputMap inputMap = this.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-		if (inputMap != null) {
-			final ActionMap actionMap = this.getActionMap();
-			if (actionMap != null) {
-				final KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
-				final String actionMapKey = "close-quick-find";
-				inputMap.put(escape, actionMapKey);
-				actionMap.put(actionMapKey, new AbstractAction() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						QuickFindToolBar.this.setVisible(false);
-					}
-				});
-			}
-		}
-
 		this.searchField.getDocument().addDocumentListener(this);
 
 		// global listener instead of FocusListener so it receives events for children
 		Toolkit.getDefaultToolkit().addAWTEventListener(
 				e -> {
-					if (e instanceof FocusEvent focus) {
+					if (this.dismissOnFocusLost() && e instanceof FocusEvent focus) {
 						final Component component = focus.getComponent();
 						final boolean componentDescends = component != null
-								&& SwingUtilities.isDescendingFrom(component, QuickFindToolBar.this);
+								&& SwingUtilities.isDescendingFrom(component, this);
 						final Component opposite = focus.getOppositeComponent();
 						final boolean oppositeDescends = opposite != null
-								&& SwingUtilities.isDescendingFrom(opposite, QuickFindToolBar.this);
+								&& SwingUtilities.isDescendingFrom(opposite, this);
 
 						if (componentDescends != oppositeDescends) {
 							final boolean descendantGained = focus.getID() == FocusEvent.FOCUS_GAINED
@@ -205,32 +135,70 @@ public class QuickFindToolBar extends JToolBar implements DocumentListener, Acti
 									: oppositeDescends;
 
 							if (descendantGained) {
-								// document.addDocumentListener(QuickFindToolBar.this);
-								QuickFindToolBar.this.setVisible(true);
+								this.setVisible(true);
 							} else {
-								// document.removeDocumentListener(QuickFindToolBar.this);
-								QuickFindToolBar.this.setVisible(false);
-								final JTextComponent target = QuickFindToolBar.this.target.get();
-								if (target != null) {
-									Markers.removeMarkers(target, QuickFindToolBar.this.marker);
-									target.requestFocus();
-								}
+								this.dismiss();
 							}
 						}
 					}
 				},
 				FocusEvent.FOCUS_LOST | FocusEvent.FOCUS_GAINED
 		);
-
-		this.translate();
 	}
 
-	protected void translate() {
-		this.nextButton.setText(this.next);
-		this.prevButton.setText(this.prev);
-		this.ignoreCaseCheckBox.setText(this.ignoreCase);
-		this.regexCheckBox.setText(this.useRegex);
-		this.wrapCheckBox.setText(this.wrap);
+	/**
+	 * @return whether this toolbar should be dismissed when it loses focus
+	 */
+	protected boolean dismissOnFocusLost() {
+		return true;
+	}
+
+	public void showFor(JTextComponent target) {
+		this.searchData = new WeakReference<>(DocumentSearchData.getFrom(target.getDocument()));
+		this.target = new WeakReference<>(target);
+
+		this.prevCaretPos = target.getCaretPosition();
+
+		Container view = target.getParent();
+		Dimension size = this.getSize();
+
+		// Set the width of the dialog to the width of the target
+		size.width = target.getVisibleRect().width;
+		this.setSize(size);
+
+		// Put the dialog at the bottom of the target
+		Point loc = new Point(0, view.getHeight() - size.height);
+		SwingUtilities.convertPointToScreen(loc, view);
+		this.setLocation(loc);
+
+		this.searchField.setFont(target.getFont());
+
+		DocumentSearchData searchData = this.searchData.get();
+		this.wrapCheckBox.setSelected(searchData.isWrap());
+
+		// Set the search field to the current selection
+		String selectedText = target.getSelectedText();
+		if (selectedText != null) {
+			this.searchField.setText(selectedText);
+		} else {
+			Pattern pattern = searchData.getPattern();
+			if (pattern != null) {
+				this.searchField.setText(pattern.pattern());
+			}
+		}
+
+		this.setVisible(true);
+		this.searchField.requestFocus();
+		this.searchField.selectAll();
+	}
+
+	protected void dismiss() {
+		this.setVisible(false);
+		final JTextComponent target = this.target.get();
+		if (target != null) {
+			Markers.removeMarkers(target, this.marker);
+			target.requestFocus();
+		}
 	}
 
 	private void prevButtonActionPerformed(ActionEvent e) {
