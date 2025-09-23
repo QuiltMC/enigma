@@ -138,10 +138,22 @@ public class SyntaxpainConfiguration {
 		JavaSyntaxKit.setFont(font);
 	}
 
-	public static QuickFindDialog getQuickFindDialog(JTextComponent component) {
-		return quickFindDialogFactory.apply(component);
+	public static boolean isQuickFindDialogEnabled() {
+		return quickFindDialogFactory != null;
 	}
 
+	/**
+	 * @return a new dialog, or {@code null} if {@link #quickFindDialogFactory} is {@code null}
+	 */
+	public static QuickFindDialog getQuickFindDialog(JTextComponent component) {
+		return quickFindDialogFactory == null ? null : quickFindDialogFactory.apply(component);
+	}
+
+	/**
+	 * Set's the factory method used by {@link #getQuickFindDialog(JTextComponent)}  to create new dialogs.
+	 *
+	 * @param dialogFactory the dialog factory; may be {@code null}
+	 */
 	public static void setQuickFindDialogFactory(Function<JTextComponent, QuickFindDialog> dialogFactory) {
 		quickFindDialogFactory = dialogFactory;
 	}

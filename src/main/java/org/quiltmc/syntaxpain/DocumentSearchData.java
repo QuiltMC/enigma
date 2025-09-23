@@ -14,6 +14,7 @@
 
 package org.quiltmc.syntaxpain;
 
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -84,21 +85,20 @@ public class DocumentSearchData {
 	}
 
 	/**
-	 * Gets the Search data from a Document.  If document does not have any
-	 * search data, then a new instance is added, put and reurned.
-	 * @param target JTextCOmponent we are attaching to
+	 * Gets the search data from a document. If the document does not have any
+	 * search data, then a new instance is added and returned.
+	 *
+	 * @param document the document to retrieve data from
+	 *
+	 * @return the document's search data
 	 */
-	public static DocumentSearchData getFromEditor(JTextComponent target) {
-		if (target == null) {
-			return null;
-		}
-
-		Object o = target.getDocument().getProperty(PROPERTY_KEY);
-		if (o instanceof DocumentSearchData documentSearchData) {
+	public static DocumentSearchData getFrom(Document document) {
+		Object value = document.getProperty(PROPERTY_KEY);
+		if (value instanceof DocumentSearchData documentSearchData) {
 			return documentSearchData;
 		} else {
 			DocumentSearchData newDSD = new DocumentSearchData();
-			target.getDocument().putProperty(PROPERTY_KEY, newDSD);
+			document.putProperty(PROPERTY_KEY, newDSD);
 			return newDSD;
 		}
 	}
