@@ -481,10 +481,7 @@ public class EditorPanel {
 			this.setHighlightedTokens(source.getTokenStore(), source.getHighlightedTokens());
 			if (this.source != null) {
 				this.editor.setCaretPosition(newCaretPos);
-
-				for (Entry<?> entry : this.source.getIndex().declarations()) {
-					this.navigatorPanel.addEntry(entry);
-				}
+				this.navigatorPanel.resetEntries(this.source.getIndex().declarations());
 			}
 
 			this.setCursorReference(this.getReference(this.getToken(this.editor.getCaretPosition())));

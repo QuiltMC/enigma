@@ -10,7 +10,6 @@ import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
-import javax.annotation.Nullable;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -54,9 +53,7 @@ public class NavigatorPanel extends JPanel {
 		});
 		this.selectedType = TokenType.OBFUSCATED;
 
-		for (TokenType type : SUPPORTED_TOKEN_TYPES) {
-			this.entries.put(type, new ArrayList<>());
-		}
+		this.initEntries();
 
 		JButton up = new JButton(GuiUtil.getUpChevron());
 		up.addActionListener(event -> this.navigateUp());
@@ -70,6 +67,12 @@ public class NavigatorPanel extends JPanel {
 
 		// transparent background
 		this.setBackground(new Color(0, 0, 0, 0));
+	}
+
+	private void initEntries() {
+		for (TokenType type : SUPPORTED_TOKEN_TYPES) {
+			this.entries.put(type, new ArrayList<>());
+		}
 	}
 
 	/**
@@ -134,21 +137,21 @@ public class NavigatorPanel extends JPanel {
 		return possibleEntriesCopy.get(0);
 	}
 
-	/**
-	 * Adds the provided entry to this navigator's pool and sorts it.
-	 * @param entry the entry to add
-	 */
-	public void addEntry(@Nullable Entry<?> entry) {
+	public void resetEntries(Iterable<Entry<?>> newEntries) {
+		this.initEntries();
 		EnigmaProject project = this.gui.getController().getProject();
-		if (entry != null && this.gui.isEditable(EditableType.fromEntry(entry)) && project.isRenamable(entry) && project.isNavigable(entry)) {
-			TokenType tokenType = this.getTokenType(entry);
-			List<Entry<?>> entries = this.entries.get(tokenType);
+		for (Entry<?> entry : newEntries) {
+			if (entry != null && this.gui.isEditable(EditableType.fromEntry(entry)) && project.isRenamable(entry) && project.isNavigable(entry)) {
+				TokenType tokenType = this.getTokenType(entry);
+				List<Entry<?>> entries = this.entries.get(tokenType);
 
-			if (!entries.contains(entry)) {
-				entries.add(entry);
-				this.updateStatsLabel();
+				if (!entries.contains(entry)) {
+					entries.add(entry);
+				}
 			}
 		}
+
+		this.updateStatsLabel();
 	}
 
 	/**
@@ -178,6 +181,7 @@ public class NavigatorPanel extends JPanel {
 			}
 		}
 
+		// TODO ensure this has correct order
 		this.entries.get(tokenType).add(target);
 		this.updateStatsLabel();
 	}
