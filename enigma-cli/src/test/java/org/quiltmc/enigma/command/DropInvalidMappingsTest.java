@@ -13,7 +13,7 @@ public class DropInvalidMappingsTest extends CommandTest {
 	private static final Path LONE_JAR = TestUtil.obfJar("lone_class");
 	private static final Path INNER_JAR = TestUtil.obfJar("inner_classes");
 	private static final Path ENUMS_JAR = TestUtil.obfJar("enums");
-	private static final Path DROP_INVALID_MAPPINGS_JAR = TestUtil.obfJar("drop_invalid_mappings");
+	private static final Path DROP_INVALID_MAPPINGS_JAR = TestUtil.obfJar("z_drop_invalid_mappings");
 	private static final Path INPUT_DIR = getResource("/drop_invalid_mappings/input/");
 	private static final Path EXPECTED_DIR = getResource("/drop_invalid_mappings/expected/");
 
