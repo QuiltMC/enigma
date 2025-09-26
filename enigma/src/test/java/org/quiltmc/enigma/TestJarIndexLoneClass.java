@@ -24,8 +24,10 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
+import javax.swing.tree.TreeNode;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -77,9 +79,25 @@ public class TestJarIndexLoneClass {
 		IndexTreeBuilder treeBuilder = new IndexTreeBuilder(this.index);
 		ClassInheritanceTreeNode root = treeBuilder.buildClassInheritance(VoidTranslator.INSTANCE, TestEntryFactory.newClass("a"));
 		assertThat(root, is(not(nullValue())));
-		final ClassInheritanceTreeNode firstChild = (ClassInheritanceTreeNode) root.getFirstChild();
-		assertThat(firstChild.getClassName(), is("a"));
-		assertThat(firstChild.getChildCount(), is(0));
+
+		final ClassInheritanceTreeNode a = findChild(root, "a");
+		assertThat(a, is(not(nullValue())));
+		assertThat(a.getChildCount(), is(0));
+	}
+
+	private static ClassInheritanceTreeNode findChild(ClassInheritanceTreeNode root, String childName) {
+		final Iterator<TreeNode> childItr = root.children().asIterator();
+		while (childItr.hasNext()) {
+			final TreeNode childNode = childItr.next();
+			if (
+					childNode instanceof ClassInheritanceTreeNode inheritanceNode
+						&& inheritanceNode.getClassName().equals(childName)
+			) {
+				return inheritanceNode;
+			}
+		}
+
+		return null;
 	}
 
 	@Test
