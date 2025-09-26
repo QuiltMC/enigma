@@ -185,8 +185,13 @@ public class NavigatorPanel extends JPanel {
 	}
 
 	private void updateStatsLabel() {
-		int index = this.entryIndexesByType.get(this.selectedType).isEmpty() ? 0 : this.currentIndex + 1;
-		String indexString = String.valueOf(index).length() == 1 ? "0" + index : String.valueOf(index);
-		this.statsLabel.setText(indexString + "/" + this.entryIndexesByType.get(this.selectedType).size());
+		final BiMap<Entry<?>, Integer> entryIndexesOfType = this.entryIndexesByType.get(this.selectedType);
+		final String index = String.valueOf(entryIndexesOfType.isEmpty() ? 0 : this.currentIndex + 1);
+		final String total = String.valueOf(entryIndexesOfType.size());
+
+		final int lengthDiff = total.length() - index.length();
+		final String paddedIndex = lengthDiff == 0 ? index : "0".repeat(lengthDiff) + index;
+
+		this.statsLabel.setText(paddedIndex + "/" + total);
 	}
 }
