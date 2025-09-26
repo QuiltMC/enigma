@@ -13,6 +13,7 @@ public class DropInvalidMappingsTest extends CommandTest {
 	private static final Path LONE_JAR = TestUtil.obfJar("lone_class");
 	private static final Path INNER_JAR = TestUtil.obfJar("inner_classes");
 	private static final Path ENUMS_JAR = TestUtil.obfJar("enums");
+	private static final Path DROP_INVALID_MAPPINGS_JAR = TestUtil.obfJar("drop_invalid_mappings");
 	private static final Path INPUT_DIR = getResource("/drop_invalid_mappings/input/");
 	private static final Path EXPECTED_DIR = getResource("/drop_invalid_mappings/expected/");
 
@@ -26,6 +27,8 @@ public class DropInvalidMappingsTest extends CommandTest {
 	private static final Path DISCARD_INNER_CLASS_EXPECTED = EXPECTED_DIR.resolve("DiscardInnerClass.mapping");
 	private static final Path ENUMS_INPUT = INPUT_DIR.resolve("Enums.mapping");
 	private static final Path ENUMS_EXPECTED = EXPECTED_DIR.resolve("Enums.mapping");
+	private static final Path PARAM_INDEXES_INPUT = INPUT_DIR.resolve("ParamIndexes.mapping");
+	private static final Path PARAM_INDEXES_EXPECTED = EXPECTED_DIR.resolve("ParamIndexes.mapping");
 
 	@Test
 	public void testInvalidMappings() throws Exception {
@@ -82,6 +85,17 @@ public class DropInvalidMappingsTest extends CommandTest {
 		DropInvalidMappingsCommand.run(ENUMS_JAR, ENUMS_INPUT, resultFile);
 
 		String expectedLines = toNewLineEndings(Files.readString(ENUMS_EXPECTED));
+		String actualLines = toNewLineEndings(Files.readString(resultFile));
+
+		Assertions.assertEquals(expectedLines, actualLines);
+	}
+
+	@Test
+	public void testExtraParams() throws Exception {
+		Path resultFile = Files.createTempFile("extraTrailingParams", ".mappings");
+
+		DropInvalidMappingsCommand.run(DROP_INVALID_MAPPINGS_JAR, PARAM_INDEXES_INPUT, resultFile);
+		String expectedLines = toNewLineEndings(Files.readString(PARAM_INDEXES_EXPECTED));
 		String actualLines = toNewLineEndings(Files.readString(resultFile));
 
 		Assertions.assertEquals(expectedLines, actualLines);
