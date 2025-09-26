@@ -59,8 +59,7 @@ public class TestDeobfed {
 				TestEntryFactory.newClass("i"),
 				TestEntryFactory.newClass("i$a"),
 				TestEntryFactory.newClass("i$b"),
-				TestEntryFactory.newClass("j"),
-				TestEntryFactory.newClass("k")
+				TestEntryFactory.newClass("j")
 		));
 	}
 

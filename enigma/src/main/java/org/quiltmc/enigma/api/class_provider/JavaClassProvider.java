@@ -3,6 +3,7 @@ package org.quiltmc.enigma.api.class_provider;
 import com.google.common.collect.ImmutableSet;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.analysis.AnalyzerException;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -16,6 +17,8 @@ import java.util.stream.Collectors;
 
 /**
  * Provides java.* classes.
+ *
+ * <p> Currently unusable because of {@link AnalyzerException}s.
  */
 public class JavaClassProvider implements ClassProvider {
 	private static final String CLASS_EXTENSION = ".class";

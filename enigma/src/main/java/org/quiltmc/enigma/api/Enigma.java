@@ -11,7 +11,7 @@ import org.quiltmc.enigma.api.analysis.index.jar.LibrariesJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.ReferenceIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
-import org.quiltmc.enigma.api.class_provider.JavaClassProvider;
+import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
@@ -102,7 +102,7 @@ public class Enigma {
 		AbstractJarIndex comboIndex = CombinedJarIndex.empty();
 
 		ClassLoaderClassProvider jreProvider = new ClassLoaderClassProvider(DriverManager.class.getClassLoader());
-		JavaClassProvider javaClassProvider = new JavaClassProvider();
+		ClasspathClassProvider javaClassProvider = new ClasspathClassProvider();
 		CombiningClassProvider librariesProvider = new CombiningClassProvider(jreProvider, javaClassProvider, libraryClassProvider);
 		ClassProvider mainProjectProvider = new ObfuscationFixClassProvider(new CachingClassProvider(jarClassProvider), jarIndex);
 		ProjectClassProvider projectClassProvider = new ProjectClassProvider(mainProjectProvider, librariesProvider);

@@ -47,15 +47,12 @@ public class TestIsRenamable {
 
 	@Test
 	public void libraryOverrides() {
-		final ClassEntry nbtCollection = TestEntryFactory.newClass("j");
-		final ClassEntry nbtList = TestEntryFactory.newClass("k");
+		final ClassEntry toStringOverrider = TestEntryFactory.newClass("j");
 
-		final String sizeDescriptor = "()I";
-		final String sizeName = "size";
-		final MethodEntry nbtCollectionSize = TestEntryFactory.newMethod(nbtCollection, sizeName, sizeDescriptor);
-		final MethodEntry nbtListSize = TestEntryFactory.newMethod(nbtList, sizeName, sizeDescriptor);
+		final MethodEntry toString = TestEntryFactory.newMethod(
+				toStringOverrider, "toString", "()Ljava/lang/String;"
+		);
 
-		Assertions.assertFalse(obfProject.isRenamable(nbtCollectionSize));
-		Assertions.assertFalse(obfProject.isRenamable(nbtListSize));
+		Assertions.assertFalse(obfProject.isRenamable(toString));
 	}
 }
