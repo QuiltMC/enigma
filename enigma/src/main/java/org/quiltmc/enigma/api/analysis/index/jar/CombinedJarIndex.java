@@ -21,9 +21,12 @@ public class CombinedJarIndex extends AbstractJarIndex {
 		EntryIndex entryIndex = new EntryIndex();
 		ReferenceIndex referenceIndex = new ReferenceIndex();
 		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
+		LambdaIndex lambdaIndex = new LambdaIndex();
 		return new CombinedJarIndex(
 				entryIndex, inheritanceIndex, referenceIndex,
-				new BridgeMethodIndex(entryIndex, inheritanceIndex, referenceIndex)
+				new BridgeMethodIndex(entryIndex, inheritanceIndex, referenceIndex),
+				// required by MappingValidator
+				lambdaIndex
 		);
 	}
 

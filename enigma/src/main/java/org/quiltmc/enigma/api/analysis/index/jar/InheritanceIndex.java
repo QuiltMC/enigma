@@ -24,7 +24,7 @@ public class InheritanceIndex implements JarIndexer {
 	@Override
 	public void indexClass(ClassDefEntry classEntry) {
 		ClassEntry superClass = classEntry.getSuperClass();
-		if (superClass != null && !superClass.getName().equals("java/lang/Object")) {
+		if (superClass != null) {
 			this.indexParent(classEntry, superClass);
 		}
 

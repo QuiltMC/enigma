@@ -78,7 +78,7 @@ public class EnigmaProject {
 		this.jarChecksum = jarChecksum;
 
 		this.mappingsIndex = mappingsIndex;
-		this.remapper = EntryRemapper.mapped(enigma, jarIndex, this.mappingsIndex, proposedNames, new HashEntryTree<>(), this.enigma.getNameProposalServices());
+		this.remapper = EntryRemapper.mapped(this.enigma, this.combinedIndex, this.mappingsIndex, proposedNames, new HashEntryTree<>(), this.enigma.getNameProposalServices());
 	}
 
 	/**
@@ -97,12 +97,12 @@ public class EnigmaProject {
 			EntryTree<EntryMapping> mergedTree = EntryTreeUtil.merge(jarProposedMappings, mappings);
 
 			this.mappingsIndex.indexMappings(mergedTree, progress);
-			this.remapper = EntryRemapper.mapped(this.enigma, this.jarIndex, this.mappingsIndex, jarProposedMappings, mappings, this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.mapped(this.enigma, this.combinedIndex, this.mappingsIndex, jarProposedMappings, mappings, this.enigma.getNameProposalServices());
 		} else if (!jarProposedMappings.isEmpty()) {
 			this.mappingsIndex.indexMappings(jarProposedMappings, progress);
-			this.remapper = EntryRemapper.mapped(this.enigma, this.jarIndex, this.mappingsIndex, jarProposedMappings, new HashEntryTree<>(), this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.mapped(this.enigma, this.combinedIndex, this.mappingsIndex, jarProposedMappings, new HashEntryTree<>(), this.enigma.getNameProposalServices());
 		} else {
-			this.remapper = EntryRemapper.empty(this.enigma, this.jarIndex, this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.empty(this.enigma, this.combinedIndex, this.enigma.getNameProposalServices());
 		}
 
 		// update dynamically proposed names
@@ -244,12 +244,12 @@ public class EnigmaProject {
 				final EntryResolver combinedResolver = this.combinedIndex.getEntryResolver();
 				final Set<MethodEntry> equivalents = combinedResolver.resolveEquivalentMethods(methodEntry);
 				final Set<MethodEntry> roots = equivalents.stream()
-					.flatMap(equivalent -> combinedResolver.resolveEntry(equivalent, ResolutionStrategy.RESOLVE_ROOT).stream())
-					.collect(Collectors.toSet());
+						.flatMap(equivalent -> combinedResolver.resolveEntry(equivalent, ResolutionStrategy.RESOLVE_ROOT).stream())
+						.collect(Collectors.toSet());
 
 				final Set<MethodEntry> equivalentsAndRoots = Stream
-					.concat(equivalents.stream(), roots.stream())
-					.collect(Collectors.toSet());
+						.concat(equivalents.stream(), roots.stream())
+						.collect(Collectors.toSet());
 
 				final EntryIndex jarEntryIndex = this.jarIndex.getIndex(EntryIndex.class);
 				final boolean anyNonJar = equivalentsAndRoots.stream().anyMatch(method -> !jarEntryIndex.hasMethod(method));
