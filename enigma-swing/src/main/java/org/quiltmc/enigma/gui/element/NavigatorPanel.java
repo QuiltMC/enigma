@@ -163,7 +163,6 @@ public class NavigatorPanel extends JPanel {
 
 	/**
 	 * Rechecks and updates all token types.
-	 * @see #updateTokenType(Entry)
 	 */
 	public void updateAllTokenTypes() {
 		this.initEntryIndexesByType();
@@ -175,45 +174,6 @@ public class NavigatorPanel extends JPanel {
 					BiMap<Entry<?>, Integer> entryIndexesOfType = this.entryIndexesByType.get(this.getTokenType(entry));
 					entryIndexesOfType.put(entry, entryIndexesOfType.size());
 				});
-	}
-
-	/**
-	 * Checks if the entry should be moved to a different token type, and updates it if so.
-	 * Assumes that the entry's old token type matches the currently selected token type.
-	 * @param target the entry to check
-	 */
-	public void updateTokenType(Entry<?> target) {
-		TokenType tokenType = this.getTokenType(target);
-
-		for (BiMap<Entry<?>, Integer> entryIndexes : this.entryIndexesByType.values()) {
-			Integer removedIndex = entryIndexes.remove(target);
-			if (removedIndex != null) {
-				for (Map.Entry<Entry<?>, Integer> entryIndex : entryIndexes.entrySet()) {
-					int value = entryIndex.getValue();
-					if (value > removedIndex) {
-						entryIndex.setValue(value - 1);
-					}
-				}
-
-				break;
-			}
-		}
-
-		BiMap<Entry<?>, Integer> entryIndexesOfType = this.entryIndexesByType.get(tokenType);
-		final int untypedTargetIndex = this.allEntryIndexes.get(target);
-		int typedTargetIndex = 0;
-		for (Map.Entry<Entry<?>, Integer> entryIndex : entryIndexesOfType.entrySet()) {
-			final Integer untypedEntryIndex = this.allEntryIndexes.get(entryIndex.getKey());
-			if (untypedEntryIndex > untypedTargetIndex) {
-				entryIndex.setValue(entryIndex.getValue() + 1);
-			} else {
-				typedTargetIndex++;
-			}
-		}
-
-		entryIndexesOfType.put(target, typedTargetIndex);
-
-		this.updateStatsLabel();
 	}
 
 	private TokenType getTokenType(Entry<?> target) {
