@@ -110,7 +110,7 @@ public class Enigma {
 		// main index
 		this.index(jarIndex, projectClassProvider, progress, "jar", false, null);
 
-		// TODO make filtering toggleable with arg
+		// TODO make filtering toggleable with arg once JavaClassProvider is used
 		final Predicate<String> mainReferencedPredicate = this.createMainReferencedPredicate(jarIndex, projectClassProvider);
 
 		// lib index
