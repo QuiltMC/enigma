@@ -1,7 +1,5 @@
 package org.quiltmc.enigma.gui.element;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.source.Token;
@@ -21,10 +19,12 @@ import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A panel with buttons to navigate to the next and previous items in its entry collection.
@@ -34,8 +34,8 @@ public class NavigatorPanel extends JPanel {
 
 	private final Gui gui;
 	private final JLabel statsLabel;
-	private final BiMap<Entry<?>, Integer> allEntryIndexes = HashBiMap.create();
-	private final Map<TokenType, BiMap<Entry<?>, Integer>> entryIndexesByType = new HashMap<>();
+	private final Set<Entry<?>> allEntries = new LinkedHashSet<>();
+	private final Map<TokenType, Map<Entry<?>, Integer>> entryIndexesByType = new HashMap<>();
 
 	private int currentIndex = 0;
 	private TokenType selectedType;
@@ -76,7 +76,7 @@ public class NavigatorPanel extends JPanel {
 
 	private void initEntryIndexesByType() {
 		for (TokenType type : SUPPORTED_TOKEN_TYPES) {
-			this.entryIndexesByType.put(type, HashBiMap.create());
+			this.entryIndexesByType.put(type, new LinkedHashMap<>());
 		}
 	}
 
@@ -113,7 +113,7 @@ public class NavigatorPanel extends JPanel {
 	}
 
 	private void tryNavigate(boolean reverse) {
-		BiMap<Entry<?>, Integer> selectedEntryIndexes = this.entryIndexesByType.get(this.selectedType);
+		Map<Entry<?>, Integer> selectedEntryIndexes = this.entryIndexesByType.get(this.selectedType);
 		if (!selectedEntryIndexes.isEmpty()) {
 			Entry<?> entry = this.getClosestEntryToCursor(selectedEntryIndexes.keySet(), reverse);
 			this.gui.getController().navigateTo(entry);
@@ -143,17 +143,18 @@ public class NavigatorPanel extends JPanel {
 	}
 
 	public void resetEntries(Iterable<Entry<?>> newEntries) {
-		this.allEntryIndexes.clear();
+		this.allEntries.clear();
 		this.initEntryIndexesByType();
 
 		EnigmaProject project = this.gui.getController().getProject();
 		for (Entry<?> entry : newEntries) {
 			if (entry != null && this.gui.isEditable(EditableType.fromEntry(entry)) && project.isRenamable(entry) && project.isNavigable(entry)) {
-				if (!this.allEntryIndexes.containsKey(entry)) {
-					this.allEntryIndexes.put(entry, this.allEntryIndexes.size());
-
-					BiMap<Entry<?>, Integer> entryIndexesOfType = this.entryIndexesByType.get(this.getTokenType(entry));
-					entryIndexesOfType.put(entry, entryIndexesOfType.size());
+				if (!this.allEntries.contains(entry)) {
+					Map<Entry<?>, Integer> entryIndexesOfType = this.entryIndexesByType.get(this.getTokenType(entry));
+					if (entryIndexesOfType != null) {
+						this.allEntries.add(entry);
+						entryIndexesOfType.put(entry, entryIndexesOfType.size());
+					}
 				}
 			}
 		}
@@ -167,13 +168,12 @@ public class NavigatorPanel extends JPanel {
 	public void updateAllTokenTypes() {
 		this.initEntryIndexesByType();
 
-		this.allEntryIndexes.entrySet().stream()
-				.sorted(Comparator.comparingInt(Map.Entry::getValue))
-				.map(Map.Entry::getKey)
-				.forEach(entry -> {
-					BiMap<Entry<?>, Integer> entryIndexesOfType = this.entryIndexesByType.get(this.getTokenType(entry));
-					entryIndexesOfType.put(entry, entryIndexesOfType.size());
-				});
+		for (Entry<?> entry : this.allEntries) {
+			Map<Entry<?>, Integer> entryIndexesOfType = this.entryIndexesByType.get(this.getTokenType(entry));
+			if (entryIndexesOfType != null) {
+				entryIndexesOfType.put(entry, entryIndexesOfType.size());
+			}
+		}
 	}
 
 	private TokenType getTokenType(Entry<?> target) {
@@ -185,7 +185,7 @@ public class NavigatorPanel extends JPanel {
 	}
 
 	private void updateStatsLabel() {
-		final BiMap<Entry<?>, Integer> entryIndexesOfType = this.entryIndexesByType.get(this.selectedType);
+		final Map<Entry<?>, Integer> entryIndexesOfType = this.entryIndexesByType.get(this.selectedType);
 		final String index = String.valueOf(entryIndexesOfType.isEmpty() ? 0 : this.currentIndex + 1);
 		final String total = String.valueOf(entryIndexesOfType.size());
 
