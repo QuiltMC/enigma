@@ -14,6 +14,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 
+import javax.swing.SwingUtilities;
 import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.List;
@@ -32,7 +33,7 @@ public class TestPackageRename {
 
 	@BeforeAll
 	static void setup() {
-		ThemeUtil.setupTheme();
+		SwingUtilities.invokeLater(ThemeUtil::setupTheme);
 	}
 
 	@Test
