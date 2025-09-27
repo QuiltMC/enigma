@@ -540,7 +540,8 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 		private static <E extends Entry<?>> boolean typeMatches(
 				E entry, Pattern pattern, EntryRemapper remapper, Function<E, TypeDescriptor> descriptorGetter
 		) {
-			return pattern.matcher(getTypeName(descriptorGetter.apply(entry), remapper)).find();
+			final TypeDescriptor desc = descriptorGetter.apply(entry);
+			return pattern.matcher(desc.toString()).find() || pattern.matcher(getTypeName(desc, remapper)).find();
 		}
 
 		private static boolean accessMatches(

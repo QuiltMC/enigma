@@ -349,7 +349,8 @@ public class SearchMappingsTest {
 				null, null,
 				null, null, null,
 				null, null, null,
-				null, Pattern.compile("^int$"), null
+				// test matching raw primitive descriptor, too
+				null, Pattern.compile("^I$"), null
 		);
 
 		assertOnlyResults(found, ResultType.PARAM, INT_PARAM, CONSTRUCTOR_INT_PARAM);
@@ -385,7 +386,8 @@ public class SearchMappingsTest {
 				null, null,
 				null, null, null,
 				null, null, null,
-				Pattern.compile("^constructor"), Pattern.compile("^java\\.lang\\.String$"), null
+				// test matching raw type descriptor, too
+				Pattern.compile("^constructor"), Pattern.compile("^Ljava/lang/String;$"), null
 		);
 
 		assertOnlyResults(found, ResultType.PARAM, CONSTRUCTOR_PARAM_STRING);
@@ -409,7 +411,7 @@ public class SearchMappingsTest {
 				null, null,
 				null, null, null,
 				null, null, null,
-				Pattern.compile("st"), Pattern.compile("^.*(?<!String)$"), access -> !access.isStatic()
+				Pattern.compile("st"), Pattern.compile("^((?!String).)*$"), access -> !access.isStatic()
 		);
 
 		assertOnlyResults(found, ResultType.PARAM, CONSTRUCTOR_INT_PARAM);
