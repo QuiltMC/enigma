@@ -33,6 +33,7 @@ import org.quiltmc.syntaxpain.DefaultSyntaxAction;
 import org.quiltmc.syntaxpain.SyntaxDocument;
 import org.tinylog.Logger;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -41,6 +42,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.MouseInfo;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -56,6 +59,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -66,6 +70,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
+import javax.swing.JToolTip;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -79,7 +84,7 @@ import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
 public class EditorPanel {
 	private final JPanel ui = new JPanel();
-	private final JEditorPane editor = new JEditorPane();
+	private final CustomTooltipEditorPane editor = new CustomTooltipEditorPane(this::createEditorTooltip);
 	private final JScrollPane editorScrollPane = new JScrollPane(this.editor);
 	private final EnigmaQuickFindToolBar quickFindToolBar = new EnigmaQuickFindToolBar();
 	private final EditorPopupMenu popupMenu;
@@ -223,6 +228,36 @@ public class EditorPanel {
 		this.retryButton.addActionListener(e -> this.redecompileClass());
 
 		this.ui.putClientProperty(EditorPanel.class, this);
+	}
+
+	private JToolTip createEditorTooltip() {
+		return getMousePositionIn(this.editor)
+			.map(this.editor::viewToModel2D)
+			.filter(textPos -> textPos >= 0)
+			.map(this::getToken)
+			.map(this::getReference)
+			.map(EntryReference::getNameableEntry)
+			.map(this.gui.getController().getProject().getRemapper()::deobfuscate)
+			.map(Entry::getFullName)
+			.<JToolTip>map(entryName -> {
+				final JPanel root = new JPanel(new BorderLayout());
+				root.add(new JLabel(entryName));
+				return new ContainerToolTip(root);
+			})
+			// empty dummy tooltip
+			.orElseGet(JToolTip::new);
+	}
+
+	// getMousePosition(true) always returns null for editor, editorScrollPane, and ui
+	private static Optional<Point> getMousePositionIn(Component component) {
+		return Optional.of(MouseInfo.getPointerInfo().getLocation())
+			.map(mouse -> {
+				final Point editorLocation = component.getLocationOnScreen();
+				final Point point = new Point(mouse);
+				point.translate(-editorLocation.x, -editorLocation.y);
+				return point;
+			})
+			.filter(component::contains);
 	}
 
 	public void onRename(boolean isNewMapping) {
