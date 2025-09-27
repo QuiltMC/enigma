@@ -275,7 +275,7 @@ public final class SearchMappingsCommand extends Command<Required, Optionals> {
 						message.append(':').append(delim).append(String.join(delim, lines));
 
 						if (limited) {
-							final int excess = lines.size() - limit;
+							final int excess = totalResults - limit;
 							message.append(delim).append("... and ").append(excess).append(" more ")
 									.append(type.getNameForCount(excess)).append('.');
 						}
