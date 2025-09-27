@@ -84,11 +84,11 @@ final class Argument<T> {
 	}
 
 	static <E extends Enum<E>> Argument<E> ofEnum(String name, Class<E> type, String explanation) {
-		return new Argument<>(name, alternativesOf(type), string -> parseEnum(type, string), explanation);
+		return new Argument<>(name, alternativesOf(type), string -> Enum.valueOf(type, string), explanation);
 	}
 
 	static Argument<Boolean> ofBool(String name, String explanation) {
-		return new Argument<>(name, BOOL_TYPE, Argument::parseBool, explanation);
+		return new Argument<>(name, BOOL_TYPE, Boolean::parseBoolean, explanation);
 	}
 
 	static Argument<Integer> ofInt(String name, String explanation) {
@@ -187,14 +187,14 @@ final class Argument<T> {
 	}
 
 	static Optional<Path> parsePath(String path) {
-		return Optional.ofNullable(path)
+		return Optional.of(path)
 			.filter(string -> !string.isEmpty())
 			.map(Paths::get)
 			.map(Path::toAbsolutePath);
 	}
 
 	static Pattern parsePattern(String regex) {
-		if (regex == null || regex.isEmpty()) {
+		if (regex.isEmpty()) {
 			return null;
 		}
 
@@ -205,16 +205,8 @@ final class Argument<T> {
 		}
 	}
 
-	static <E extends Enum<E>> E parseEnum(Class<E> type, String name) {
-		return name == null ? null : Enum.valueOf(type, name);
-	}
-
-	static Boolean parseBool(String value) {
-		return value == null ? null : Boolean.parseBoolean(value);
-	}
-
 	static Integer parseInt(String integer) {
-		if (integer == null || integer.isEmpty()) {
+		if (integer.isEmpty()) {
 			return null;
 		} else {
 			try {
@@ -266,7 +258,8 @@ final class Argument<T> {
 
 	@Nullable
 	T from(Map<String, String> args) {
-		return this.fromString.apply(args.get(this.name));
+		final String string = args.get(this.name);
+		return string == null ? null : this.fromString.apply(string);
 	}
 
 	T requireFrom(Map<String, String> values) {
