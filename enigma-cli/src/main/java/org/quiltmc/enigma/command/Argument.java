@@ -96,7 +96,7 @@ final class Argument<T> {
 	}
 
 	static Argument<String> ofString(String name, String typeDescription, String explanation) {
-		return new Argument<>(name, typeDescription, Function.identity(), explanation);
+		return new Argument<>(name, typeDescription, Argument::parseString, explanation);
 	}
 
 	static Argument<Pattern> ofPattern(String name, String explanation) {
@@ -191,6 +191,10 @@ final class Argument<T> {
 			.filter(string -> !string.isEmpty())
 			.map(Paths::get)
 			.map(Path::toAbsolutePath);
+	}
+
+	static String parseString(String string) {
+		return string.isEmpty() ? null : string;
 	}
 
 	static Pattern parsePattern(String regex) {
