@@ -106,7 +106,6 @@ public class EditorPanel {
 	private final NavigatorPanel navigatorPanel;
 
 	// DIY tooltip because JToolTip can't be moved or resized
-	// private final JFrame tooltip = new JFrame("Editor tooltip");
 	private final JWindow tooltip = new JWindow();
 
 	private DisplayMode mode = DisplayMode.INACTIVE;
@@ -118,40 +117,45 @@ public class EditorPanel {
 	private EntryReference<Entry<?>, Entry<?>> nextReference;
 
 	@Nullable
-	private Entry<?> lastMouseTarget;
+	private Token lastMouseTarget;
 
 	// avoid finding the mouse entry every mouse movement update
 	private final Timer mouseStoppedMovingTimer = new Timer(MOUSE_STOPPED_MOVING_DELAY, e -> {
-		this.getMouseTarget().ifPresentOrElse(
-				target -> {
-					this.hideTokenTooltipTimer.restart();
-					if (this.tooltip.isVisible()) {
-						this.showTokenTooltipTimer.stop();
+		final Runnable onNoTarget = () -> {
+			this.lastMouseTarget = null;
+			this.showTokenTooltipTimer.stop();
+		};
 
-						if (!target.equals(this.lastMouseTarget)) {
-							this.lastMouseTarget = target;
-							this.updateToolTip(target);
-						}
-					} else {
-						this.lastMouseTarget = target;
-						this.showTokenTooltipTimer.start();
-					}
-				},
-				() -> {
-					this.lastMouseTarget = null;
-					this.showTokenTooltipTimer.stop();
-				}
+		this.getMouseTarget().ifPresentOrElse(
+				target -> this.getTokenEntry(target).ifPresentOrElse(
+						targetEntry -> {
+							this.hideTokenTooltipTimer.restart();
+							if (this.tooltip.isVisible()) {
+								this.showTokenTooltipTimer.stop();
+
+								if (!target.equals(this.lastMouseTarget)) {
+									this.lastMouseTarget = target;
+									this.updateToolTip(targetEntry);
+								}
+							} else {
+								this.lastMouseTarget = target;
+								this.showTokenTooltipTimer.start();
+							}
+						},
+						onNoTarget
+				),
+				onNoTarget
 		);
 	});
 	private final Timer showTokenTooltipTimer = new Timer(
 			ToolTipManager.sharedInstance().getInitialDelay() - MOUSE_STOPPED_MOVING_DELAY, e -> {
-				this.getMouseTarget().ifPresent(target -> {
+				this.getMouseTarget().ifPresent(target -> this.getTokenEntry(target).ifPresent(targetEntry -> {
 					this.hideTokenTooltipTimer.restart();
 					if (target.equals(this.lastMouseTarget)) {
 						this.tooltip.setVisible(true);
-						this.updateToolTip(target);
+						this.updateToolTip(targetEntry);
 					}
-				});
+				}));
 			}
 	);
 	private final Timer hideTokenTooltipTimer = new Timer(
@@ -342,17 +346,21 @@ public class EditorPanel {
 		this.tooltip.pack();
 	}
 
-	private Optional<? extends Entry<?>> getMouseTarget() {
+	private Optional<Token> getMouseTarget() {
 		return getMousePositionIn(this.editor)
 				.map(this.editor::viewToModel2D)
 				.filter(textPos -> textPos >= 0)
-				.map(this::getToken)
-				.map(this::getReference)
-				.map(EntryReference::getNameableEntry)
-				.map(this.gui.getController().getProject().getRemapper()::deobfuscate);
+				.map(this::getToken);
 	}
 
-	// getMousePosition(true) always returns null for editor, editorScrollPane, and ui
+	private Optional<? extends Entry<?>> getTokenEntry(Token token) {
+			return Optional.of(token)
+					.map(this::getReference)
+					.map(reference -> reference.entry)
+					.map(this.gui.getController().getProject().getRemapper()::deobfuscate);
+	}
+
+	// component.getMousePosition(true) always returns null for editor, editorScrollPane, and ui
 	private static Optional<Point> getMousePositionIn(Component component) {
 		return mapMousePositionTo(MouseInfo.getPointerInfo().getLocation(), component);
 	}
