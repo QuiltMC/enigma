@@ -77,8 +77,7 @@ public class MappingsChecker {
 	}
 
 	private boolean shouldDropBrokenEntry(Dropper dropper, Entry<?> entry) {
-		if (!this.index.getIndex(EntryIndex.class).hasEntry(entry)
-				|| (entry instanceof LocalVariableEntry parameter && !this.project.validateParameterIndex(parameter))) {
+		if (!this.index.getIndex(EntryIndex.class).hasEntry(entry)) {
 			return true;
 		}
 

@@ -206,6 +206,7 @@
 	"progress.jar.indexing.process.enclosing_methods": "Enclosing methods...",
 	"progress.jar.indexing.process.package_visibility": "Package visibility...",
 	"progress.jar.indexing.process.lambdas": "Lambdas...",
+	"progress.jar.indexing.process.member_types": "Member types...",
 	"progress.jar.indexing.process.done": "Done!",
 	"progress.jar.writing": "Writing jar...",
 	"progress.sources.writing": "Writing sources...",

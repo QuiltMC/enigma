@@ -14,6 +14,8 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 
+import javax.swing.SwingUtilities;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.List;
@@ -31,8 +33,8 @@ public class TestPackageRename {
 	private static EnigmaProject project;
 
 	@BeforeAll
-	static void setup() {
-		ThemeUtil.setupTheme();
+	static void setup() throws InterruptedException, InvocationTargetException {
+		SwingUtilities.invokeAndWait(ThemeUtil::setupTheme);
 	}
 
 	@Test
