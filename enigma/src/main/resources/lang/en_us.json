@@ -113,6 +113,8 @@
 	"popup_menu.implementations": "Show Implementations",
 	"popup_menu.calls": "Show Calls (All Implementations)",
 	"popup_menu.calls.specific": "Show Calls (Specific)",
+	"popup_menu.structure": "Show Structure",
+	"popup_menu.search_structure": "Search Structure",
 	"popup_menu.declaration": "Go to Declaration",
 	"popup_menu.back": "Go back",
 	"popup_menu.forward": "Go forward",
