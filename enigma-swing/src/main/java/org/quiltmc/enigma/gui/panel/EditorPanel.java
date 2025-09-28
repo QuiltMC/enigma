@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.panel;
 
+import com.google.common.util.concurrent.Runnables;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
@@ -63,6 +64,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -117,45 +120,40 @@ public class EditorPanel {
 	private EntryReference<Entry<?>, Entry<?>> nextReference;
 
 	@Nullable
-	private Token lastMouseTarget;
+	private Token lastMouseTargetToken;
 
 	// avoid finding the mouse entry every mouse movement update
 	private final Timer mouseStoppedMovingTimer = new Timer(MOUSE_STOPPED_MOVING_DELAY, e -> {
-		final Runnable onNoTarget = () -> {
-			this.lastMouseTarget = null;
-			this.showTokenTooltipTimer.stop();
-		};
+		this.consumeEditorMouseTarget(
+				(targetToken, targetEntry) -> {
+					this.hideTokenTooltipTimer.restart();
+					if (this.tooltip.isVisible()) {
+						this.showTokenTooltipTimer.stop();
 
-		this.getMouseTarget().ifPresentOrElse(
-				target -> this.getTokenEntry(target).ifPresentOrElse(
-						targetEntry -> {
-							this.hideTokenTooltipTimer.restart();
-							if (this.tooltip.isVisible()) {
-								this.showTokenTooltipTimer.stop();
-
-								if (!target.equals(this.lastMouseTarget)) {
-									this.lastMouseTarget = target;
-									this.updateToolTip(targetEntry);
-								}
-							} else {
-								this.lastMouseTarget = target;
-								this.showTokenTooltipTimer.start();
-							}
-						},
-						onNoTarget
-				),
-				onNoTarget
+						if (!targetToken.equals(this.lastMouseTargetToken)) {
+							this.lastMouseTargetToken = targetToken;
+							this.updateToolTip(targetEntry);
+						}
+					} else {
+						this.lastMouseTargetToken = targetToken;
+						this.showTokenTooltipTimer.start();
+					}
+				},
+				() -> {
+					this.lastMouseTargetToken = null;
+					this.showTokenTooltipTimer.stop();
+				}
 		);
 	});
 	private final Timer showTokenTooltipTimer = new Timer(
 			ToolTipManager.sharedInstance().getInitialDelay() - MOUSE_STOPPED_MOVING_DELAY, e -> {
-				this.getMouseTarget().ifPresent(target -> this.getTokenEntry(target).ifPresent(targetEntry -> {
+				this.consumeEditorMouseTarget((targetToken, targetEntry) -> {
 					this.hideTokenTooltipTimer.restart();
-					if (target.equals(this.lastMouseTarget)) {
+					if (targetToken.equals(this.lastMouseTargetToken)) {
 						this.tooltip.setVisible(true);
 						this.updateToolTip(targetEntry);
 					}
-				}));
+				});
 			}
 	);
 	private final Timer hideTokenTooltipTimer = new Timer(
@@ -282,13 +280,12 @@ public class EditorPanel {
 		this.tooltip.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				final Point absolutMousePosition = MouseInfo.getPointerInfo().getLocation();
-				mapMousePositionTo(absolutMousePosition, EditorPanel.this.editor).ifPresent(editorMousePosition -> {
+				consumeMousePositionIn(EditorPanel.this.editor, (absolutMousePosition, editorMousePosition) -> {
 					final MouseEvent editorMouseEvent = new MouseEvent(
-						EditorPanel.this.editor, e.getID(), e.getWhen(), e.getModifiersEx(),
-						editorMousePosition.x, editorMousePosition.y,
-						absolutMousePosition.x, absolutMousePosition.y,
-						e.getClickCount(), e.isPopupTrigger(), e.getButton()
+							EditorPanel.this.editor, e.getID(), e.getWhen(), e.getModifiersEx(),
+							editorMousePosition.x, editorMousePosition.y,
+							absolutMousePosition.x, absolutMousePosition.y,
+							e.getClickCount(), e.isPopupTrigger(), e.getButton()
 					);
 
 					for (final MouseListener listener : EditorPanel.this.editor.getMouseListeners()) {
@@ -346,34 +343,74 @@ public class EditorPanel {
 		this.tooltip.pack();
 	}
 
-	private Optional<Token> getMouseTarget() {
-		return getMousePositionIn(this.editor)
-				.map(this.editor::viewToModel2D)
-				.filter(textPos -> textPos >= 0)
-				.map(this::getToken);
+	/**
+	 * @see #consumeEditorMouseTarget(BiConsumer, Runnable)
+	 */
+	private void consumeEditorMouseTarget(BiConsumer<Token, Entry<?>> action) {
+		this.consumeEditorMouseTarget(action, Runnables.doNothing());
 	}
 
-	private Optional<? extends Entry<?>> getTokenEntry(Token token) {
-			return Optional.of(token)
-					.map(this::getReference)
-					.map(reference -> reference.entry)
-					.map(this.gui.getController().getProject().getRemapper()::deobfuscate);
+	/**
+	 * If the mouse is currently over a {@link Token} in the {@link #editor} that resolves to an {@link Entry}, passes
+	 * the token and entry to the passed {@code action}.<br>
+	 * Otherwise, calls the passed {@code onNoTarget}.
+	 *
+	 * @param action     the action to run when the mouse is over a token that resolves to an entry
+	 * @param onNoTarget the action to run when the mouse is not over a token that resolves to an entry
+	 */
+	private void consumeEditorMouseTarget(BiConsumer<Token, Entry<?>> action, Runnable onNoTarget) {
+		consumeMousePositionIn(this.editor,
+				(absoluteMouse, relativeMouse) -> Optional.of(relativeMouse)
+					.map(this.editor::viewToModel2D)
+					.filter(textPos -> textPos >= 0)
+					.map(this::getToken)
+					.ifPresentOrElse(
+						token -> Optional.of(token)
+							.map(this::getReference)
+							.map(reference -> reference.entry)
+							.map(this.gui.getController().getProject().getRemapper()::deobfuscate)
+							.ifPresentOrElse(
+								entry -> action.accept(token, entry),
+								onNoTarget
+							),
+						onNoTarget
+					),
+				ignored -> onNoTarget.run()
+		);
 	}
 
-	// component.getMousePosition(true) always returns null for editor, editorScrollPane, and ui
-	private static Optional<Point> getMousePositionIn(Component component) {
-		return mapMousePositionTo(MouseInfo.getPointerInfo().getLocation(), component);
+	/**
+	 * @see #consumeMousePositionIn(Component, BiConsumer, Consumer)
+	 */
+	private static void consumeMousePositionIn(Component component, BiConsumer<Point, Point> inAction) {
+		consumeMousePositionIn(component, inAction, pos -> { });
 	}
 
-	private static Optional<Point> mapMousePositionTo(Point mousePosition, Component component) {
-		return Optional.of(mousePosition)
-			.map(mouse -> {
-				final Point editorLocation = component.getLocationOnScreen();
-				final Point point = new Point(mouse);
-				point.translate(-editorLocation.x, -editorLocation.y);
-				return point;
-			})
-			.filter(component::contains);
+	/**
+	 * If the passed {@code component} {@link Component#contains(Point) contains} the mouse, passes the absolute mouse
+	 * position and its position relative to the passed {@code component} to the passed {@code inAction}.<br>
+	 * Otherwise, passes the absolute mouse position to the passed {@code outAction}.
+	 *
+	 * @param component the component which may contain the mouse pointer
+	 * @param inAction  the action to run if the mouse is inside the passed {@code component};
+	 *                  receives the mouse's absolute position and its position relative to the component
+	 * @param outAction the action to run if the mouse is outside the passed {@code component};
+	 *                  receives the mouse's absolute position
+	 */
+	private static void consumeMousePositionIn(
+			Component component, BiConsumer<Point, Point> inAction, Consumer<Point> outAction
+	) {
+		final Point absolutePos = MouseInfo.getPointerInfo().getLocation();
+
+		final Point componentPos = component.getLocationOnScreen();
+		final Point relativePos = new Point(absolutePos);
+		relativePos.translate(-componentPos.x, -componentPos.y);
+
+		if (component.contains(relativePos)) {
+			inAction.accept(absolutePos, relativePos);
+		} else {
+			outAction.accept(absolutePos);
+		}
 	}
 
 	public void onRename(boolean isNewMapping) {
