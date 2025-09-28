@@ -69,6 +69,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.IntFunction;
 import java.util.stream.Stream;
@@ -110,13 +112,18 @@ public class Gui {
 	private final boolean testEnvironment;
 
 	/**
-	 * Possibly-incomplete work from prior calls to {@link #reloadStats(ClassEntry, boolean)}.
+	 * Executor for {@link #reloadStats(ClassEntry, boolean) reloadStats} work.
+	 *
+	 * <p> Executes all work from one call to {@link #reloadStats(ClassEntry, boolean) reloadStats}
+	 * before starting work for the next call.
+	 * Fixes <a href="https://github.com/QuiltMC/enigma/issues/271">#271</a>.
 	 */
-	private CompletableFuture<Void> priorReloads = CompletableFuture.completedFuture(null);
+	private final Executor reloadStatsExecutor = Executors.newSingleThreadExecutor();
 	/**
-	 * Setting this to true cancels incomplete work from the last call to {@link #reloadStats(ClassEntry, boolean)}.
+	 * Setting this to true cancels unstarted work from the last call to
+	 * {@link #reloadStats(ClassEntry, boolean) reloadStats}.
 	 */
-	private AtomicBoolean priorReloadCanceler = new AtomicBoolean(false);
+	private AtomicBoolean priorReloadStatsCanceler = new AtomicBoolean(false);
 
 	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean testEnvironment) {
 		this.dockerManager = new DockerManager(this);
@@ -626,6 +633,10 @@ public class Gui {
 	 * @param propagate whether to also reload ancestors of the class
 	 */
 	public void reloadStats(ClassEntry classEntry, boolean propagate) {
+		this.priorReloadStatsCanceler.set(true);
+		final AtomicBoolean currentReloadCanceler = new AtomicBoolean(false);
+		this.priorReloadStatsCanceler = currentReloadCanceler;
+
 		List<ClassEntry> toUpdate = new ArrayList<>();
 		toUpdate.add(classEntry);
 		if (propagate) {
@@ -634,15 +645,6 @@ public class Gui {
 			toUpdate.addAll(parents);
 		}
 
-		if (this.priorReloads.isDone()) {
-			// discard prior completed futures to avoid taking up memory
-			this.priorReloads = CompletableFuture.completedFuture(null);
-		} else {
-			this.priorReloadCanceler.set(true);
-		}
-
-		final AtomicBoolean currentReloadCanceler = new AtomicBoolean(false);
-		this.priorReloadCanceler = currentReloadCanceler;
 		final List<Runnable> currentReloads = this.dockerManager.getDockers().stream()
 				.flatMap(docker -> docker instanceof ClassesDocker classes ? Stream.of(classes) : Stream.empty())
 				.flatMap(docker -> toUpdate.stream().<Runnable>map(updating -> () -> {
@@ -654,7 +656,7 @@ public class Gui {
 				}))
 				.toList();
 
-		this.priorReloads = this.priorReloads.thenRunAsync(() -> CompletableFuture
+		this.reloadStatsExecutor.execute(() -> CompletableFuture
 				.allOf(
 					currentReloads.stream()
 						.map(CompletableFuture::runAsync)
