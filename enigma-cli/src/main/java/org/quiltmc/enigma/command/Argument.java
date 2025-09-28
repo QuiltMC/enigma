@@ -83,7 +83,15 @@ final class Argument<T> {
 		return ofString(name, alternativesOf(type), explanation);
 	}
 
+	/**
+	 * Creates an enum argument that is case-insensitive.<br>
+	 * Assumes enum values have conventional {@code SCREAMING_SNAKE_CASE} names.
+	 */
 	static <E extends Enum<E>> Argument<E> ofEnum(String name, Class<E> type, String explanation) {
+		return new Argument<>(name, alternativesOf(type), string -> Enum.valueOf(type, string.toUpperCase()), explanation);
+	}
+
+	static <E extends Enum<E>> Argument<E> ofStrictEnum(String name, Class<E> type, String explanation) {
 		return new Argument<>(name, alternativesOf(type), string -> Enum.valueOf(type, string), explanation);
 	}
 
