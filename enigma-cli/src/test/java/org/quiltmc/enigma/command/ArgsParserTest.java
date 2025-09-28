@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ArgsParserTest {
@@ -17,7 +19,10 @@ public class ArgsParserTest {
 			NAME_7 = "name7", VALUE_7 = "value7",
 			NAME_8 = "name8", VALUE_8 = "value8",
 			NAME_9 = "name9", VALUE_9 = "value9",
-			NAME_10 = "name10", VALUE_10 = "value10";
+			NAME_10 = "name10", VALUE_10 = "value10",
+			NAME_11 = "name11", VALUE_11 = "value11",
+			NAME_12 = "name12", VALUE_12 = "value12",
+			NAME_13 = "name13", VALUE_13 = "value13";
 
 	private static final Argument<String>
 			ARGUMENT_1 = Argument.ofString(NAME_1, "string", "test arg 1"),
@@ -29,19 +34,25 @@ public class ArgsParserTest {
 			ARGUMENT_7 = Argument.ofString(NAME_7, "string", "test arg 7"),
 			ARGUMENT_8 = Argument.ofString(NAME_8, "string", "test arg 8"),
 			ARGUMENT_9 = Argument.ofString(NAME_9, "string", "test arg 9"),
-			ARGUMENT_10 = Argument.ofString(NAME_10, "string", "test arg 10");
+			ARGUMENT_10 = Argument.ofString(NAME_10, "string", "test arg 10"),
+			ARGUMENT_11 = Argument.ofString(NAME_11, "string", "test arg 11"),
+			ARGUMENT_12 = Argument.ofString(NAME_12, "string", "test arg 12"),
+			ARGUMENT_13 = Argument.ofString(NAME_13, "string", "test arg 13");
 
-	private static final ImmutableMap<String, String> VALUES_BY_NAME = ImmutableMap.of(
-			NAME_1, VALUE_1,
-			NAME_2, VALUE_2,
-			NAME_3, VALUE_3,
-			NAME_4, VALUE_4,
-			NAME_5, VALUE_5,
-			NAME_6, VALUE_6,
-			NAME_7, VALUE_7,
-			NAME_8, VALUE_8,
-			NAME_9, VALUE_9,
-			NAME_10, VALUE_10
+	private static final ImmutableMap<String, String> VALUES_BY_NAME = ImmutableMap.ofEntries(
+			Map.entry(NAME_1, VALUE_1),
+			Map.entry(NAME_2, VALUE_2),
+			Map.entry(NAME_3, VALUE_3),
+			Map.entry(NAME_4, VALUE_4),
+			Map.entry(NAME_5, VALUE_5),
+			Map.entry(NAME_6, VALUE_6),
+			Map.entry(NAME_7, VALUE_7),
+			Map.entry(NAME_8, VALUE_8),
+			Map.entry(NAME_9, VALUE_9),
+			Map.entry(NAME_10, VALUE_10),
+			Map.entry(NAME_11, VALUE_11),
+			Map.entry(NAME_12, VALUE_12),
+			Map.entry(NAME_13, VALUE_13)
 	);
 
 	private static final ImmutableList<String> ORDERED_NAMES = VALUES_BY_NAME.keySet().asList();
@@ -155,6 +166,51 @@ public class ArgsParserTest {
 		);
 	}
 
+	@Test
+	void test11() {
+		final ArgsParser<Packed11> parser = ArgsParser.of(
+				ARGUMENT_1, ARGUMENT_2, ARGUMENT_3, ARGUMENT_4, ARGUMENT_5, ARGUMENT_6, ARGUMENT_7, ARGUMENT_8,
+				ARGUMENT_9, ARGUMENT_10, ARGUMENT_11,
+				Packed11::new
+		);
+		assertOrder(parser);
+		final Packed11 packed = parseValues(parser);
+		assertValues(
+				packed.arg1, packed.arg2, packed.arg3, packed.arg4, packed.arg5, packed.arg6, packed.arg7, packed.arg8,
+				packed.arg9, packed.arg10, packed.arg11
+		);
+	}
+
+	@Test
+	void test12() {
+		final ArgsParser<Packed12> parser = ArgsParser.of(
+				ARGUMENT_1, ARGUMENT_2, ARGUMENT_3, ARGUMENT_4, ARGUMENT_5, ARGUMENT_6, ARGUMENT_7, ARGUMENT_8,
+				ARGUMENT_9, ARGUMENT_10, ARGUMENT_11, ARGUMENT_12,
+				Packed12::new
+		);
+		assertOrder(parser);
+		final Packed12 packed = parseValues(parser);
+		assertValues(
+				packed.arg1, packed.arg2, packed.arg3, packed.arg4, packed.arg5, packed.arg6, packed.arg7, packed.arg8,
+				packed.arg9, packed.arg10, packed.arg11, packed.arg12
+		);
+	}
+
+	@Test
+	void test13() {
+		final ArgsParser<Packed13> parser = ArgsParser.of(
+				ARGUMENT_1, ARGUMENT_2, ARGUMENT_3, ARGUMENT_4, ARGUMENT_5, ARGUMENT_6, ARGUMENT_7, ARGUMENT_8,
+				ARGUMENT_9, ARGUMENT_10, ARGUMENT_11, ARGUMENT_12, ARGUMENT_13,
+				Packed13::new
+		);
+		assertOrder(parser);
+		final Packed13 packed = parseValues(parser);
+		assertValues(
+				packed.arg1, packed.arg2, packed.arg3, packed.arg4, packed.arg5, packed.arg6, packed.arg7, packed.arg8,
+				packed.arg9, packed.arg10, packed.arg11, packed.arg12, packed.arg13
+		);
+	}
+
 	private static void assertOrder(ArgsParser<?> parser) {
 		for (int i = 0; i < parser.count(); i++) {
 			assertEquals(parser.get(i).getName(), ORDERED_NAMES.get(i));
@@ -189,5 +245,17 @@ public class ArgsParserTest {
 	private record Packed10(
 			String arg1, String arg2, String arg3, String arg4, String arg5,
 			String arg6, String arg7, String arg8, String arg9, String arg10
+	) { }
+	private record Packed11(
+			String arg1, String arg2, String arg3, String arg4, String arg5, String arg6, String arg7, String arg8,
+			String arg9, String arg10, String arg11
+	) { }
+	private record Packed12(
+			String arg1, String arg2, String arg3, String arg4, String arg5, String arg6, String arg7, String arg8,
+			String arg9, String arg10, String arg11, String arg12
+	) { }
+	private record Packed13(
+			String arg1, String arg2, String arg3, String arg4, String arg5, String arg6, String arg7, String arg8,
+			String arg9, String arg10, String arg11, String arg12, String arg13
 	) { }
 }

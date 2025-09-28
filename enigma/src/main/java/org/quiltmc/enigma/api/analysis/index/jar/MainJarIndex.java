@@ -21,7 +21,10 @@ public class MainJarIndex extends AbstractJarIndex {
 		PackageVisibilityIndex packageVisibilityIndex = new PackageVisibilityIndex();
 		EnclosingMethodIndex enclosingMethodIndex = new EnclosingMethodIndex();
 		LambdaIndex lambdaIndex = new LambdaIndex();
-		return new MainJarIndex(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex, packageVisibilityIndex, enclosingMethodIndex, lambdaIndex);
+		return new MainJarIndex(
+				entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex,
+				packageVisibilityIndex, enclosingMethodIndex, lambdaIndex
+		);
 	}
 
 	@Override

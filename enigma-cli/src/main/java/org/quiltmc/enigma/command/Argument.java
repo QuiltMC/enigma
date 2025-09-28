@@ -13,6 +13,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 /**
@@ -32,61 +34,87 @@ final class Argument<T> {
 	static final char NAME_DELIM = '=';
 
 	static final String ALTERNATIVES_DELIM = "|";
+
 	static final String BOOL_TYPE = true + ALTERNATIVES_DELIM + false;
 	static final String PATH_TYPE = "path";
+	static final String INT_TYPE = "int";
+	static final String PATTERN_TYPE = "regex";
 
 	static Argument<Path> ofPath(String name, String explanation) {
-		return new Argument<>(name, PATH_TYPE, string -> getPath(string).orElse(null), explanation);
+		return new Argument<>(name, PATH_TYPE, string -> parsePath(string).orElse(null), explanation);
 	}
 
 	static Argument<Path> ofFile(String name, String explanation) {
-		return new Argument<>(name, PATH_TYPE, Argument::getFile, explanation);
+		return new Argument<>(name, PATH_TYPE, Argument::parseFile, explanation);
 	}
 
 	static Argument<Path> ofFolder(String name, String explanation) {
-		return new Argument<>(name, PATH_TYPE, Argument::getFolder, explanation);
+		return new Argument<>(name, PATH_TYPE, Argument::parseFolder, explanation);
 	}
 
 	static Argument<Path> ofReadablePath(String name, String explanation) {
-		return new Argument<>(name, PATH_TYPE, Argument::getReadablePath, explanation);
+		return new Argument<>(name, PATH_TYPE, Argument::parseReadablePath, explanation);
 	}
 
 	static Argument<Path> ofReadableFile(String name, String explanation) {
-		return new Argument<>(name, PATH_TYPE, Argument::getReadableFile, explanation);
+		return new Argument<>(name, PATH_TYPE, Argument::parseReadableFile, explanation);
 	}
 
 	static Argument<Path> ofReadableFolder(String name, String explanation) {
-		return new Argument<>(name, PATH_TYPE, Argument::getReadableFolder, explanation);
+		return new Argument<>(name, PATH_TYPE, Argument::parseReadableFolder, explanation);
 	}
 
 	static Argument<Path> ofWritablePath(String name, String explanation) {
-		return new Argument<>(name, PATH_TYPE, Argument::getWritablePath, explanation);
+		return new Argument<>(name, PATH_TYPE, Argument::parseWritablePath, explanation);
 	}
 
 	static Argument<Path> ofWritableFile(String name, String explanation) {
-		return new Argument<>(name, PATH_TYPE, Argument::getWritableFile, explanation);
+		return new Argument<>(name, PATH_TYPE, Argument::parseWritableFile, explanation);
 	}
 
 	static Argument<Path> ofWritableFolder(String name, String explanation) {
-		return new Argument<>(name, PATH_TYPE, Argument::getWritableFolder, explanation);
+		return new Argument<>(name, PATH_TYPE, Argument::parseWritableFolder, explanation);
 	}
 
 	/**
 	 * Creates a string argument whose {@code typeDescription} lists expected values.
 	 */
 	static Argument<String> ofLenientEnum(String name, Class<? extends Enum<?>> type, String explanation) {
-		final String alternatives = Arrays.stream(type.getEnumConstants())
-				.map(Object::toString)
-				.collect(Collectors.joining(ALTERNATIVES_DELIM));
-		return ofString(name, alternatives, explanation);
+		return ofString(name, alternativesOf(type), explanation);
+	}
+
+	/**
+	 * Creates an enum argument that is case-insensitive.<br>
+	 * Assumes enum values have conventional {@code SCREAMING_SNAKE_CASE} names.
+	 */
+	static <E extends Enum<E>> Argument<E> ofEnum(String name, Class<E> type, String explanation) {
+		return new Argument<>(name, alternativesOf(type), string -> Enum.valueOf(type, string.toUpperCase()), explanation);
+	}
+
+	static <E extends Enum<E>> Argument<E> ofStrictEnum(String name, Class<E> type, String explanation) {
+		return new Argument<>(name, alternativesOf(type), string -> Enum.valueOf(type, string), explanation);
 	}
 
 	static Argument<Boolean> ofBool(String name, String explanation) {
 		return new Argument<>(name, BOOL_TYPE, Boolean::parseBoolean, explanation);
 	}
 
+	static Argument<Integer> ofInt(String name, String explanation) {
+		return new Argument<>(name, INT_TYPE, Argument::parseInt, explanation);
+	}
+
 	static Argument<String> ofString(String name, String typeDescription, String explanation) {
-		return new Argument<>(name, typeDescription, Function.identity(), explanation);
+		return new Argument<>(name, typeDescription, Argument::parseString, explanation);
+	}
+
+	static Argument<Pattern> ofPattern(String name, String explanation) {
+		return new Argument<>(name, PATTERN_TYPE, Argument::parsePattern, explanation);
+	}
+
+	private static String alternativesOf(Class<? extends Enum<?>> type) {
+		return Arrays.stream(type.getEnumConstants())
+			.map(Object::toString)
+			.collect(Collectors.joining(ALTERNATIVES_DELIM));
 	}
 
 	private final String name;
@@ -111,48 +139,48 @@ final class Argument<T> {
 		this.explanation = explanation;
 	}
 
-	static Path getFile(String path) {
-		return verifyFile(getPath(path)).orElse(null);
+	static Path parseFile(String path) {
+		return verifyFile(parsePath(path)).orElse(null);
 	}
 
-	static Path getFolder(String path) {
-		return verifyFolder(getPath(path)).orElse(null);
+	static Path parseFolder(String path) {
+		return verifyFolder(parsePath(path)).orElse(null);
 	}
 
-	static Path getReadablePath(String path) {
-		return getExistentPath(path).orElse(null);
+	static Path parseReadablePath(String path) {
+		return parseExistentPath(path).orElse(null);
 	}
 
-	static Path getReadableFile(String path) {
-		return verify(getExistentPath(path), Files::isRegularFile, "Not a file: ").orElse(null);
+	static Path parseReadableFile(String path) {
+		return verify(parseExistentPath(path), Files::isRegularFile, "Not a file: ").orElse(null);
 	}
 
-	static Path getReadableFolder(String path) {
-		return getExistentFolder(path).orElse(null);
+	static Path parseReadableFolder(String path) {
+		return parseExistentFolder(path).orElse(null);
 	}
 
-	static Path getWritablePath(String path) {
-		return getParentedPath(path).orElse(null);
+	static Path parseWritablePath(String path) {
+		return parseParentedPath(path).orElse(null);
 	}
 
-	static Path getWritableFile(String path) {
-		return verifyFile(getParentedPath(path)).orElse(null);
+	static Path parseWritableFile(String path) {
+		return verifyFile(parseParentedPath(path)).orElse(null);
 	}
 
-	static Path getWritableFolder(String path) {
-		return getExistentFolder(path).orElse(null);
+	static Path parseWritableFolder(String path) {
+		return parseExistentFolder(path).orElse(null);
 	}
 
-	static Optional<Path> getExistentFolder(String path) {
-		return verify(getExistentPath(path), Files::isDirectory, "Not a folder: ");
+	static Optional<Path> parseExistentFolder(String path) {
+		return verify(parseExistentPath(path), Files::isDirectory, "Not a folder: ");
 	}
 
-	static Optional<Path> getExistentPath(String path) {
-		return verify(getPath(path), Files::exists, "Cannot find path: ");
+	static Optional<Path> parseExistentPath(String path) {
+		return verify(parsePath(path), Files::exists, "Cannot find path: ");
 	}
 
-	static Optional<Path> getParentedPath(String path) {
-		return peek(getPath(path), child -> {
+	static Optional<Path> parseParentedPath(String path) {
+		return peek(parsePath(path), child -> {
 			final Path parent = child.getParent();
 			if (parent == null) {
 				throw new IllegalArgumentException("Cannot write path: " + child);
@@ -166,11 +194,39 @@ final class Argument<T> {
 		});
 	}
 
-	static Optional<Path> getPath(String path) {
-		return Optional.ofNullable(path)
+	static Optional<Path> parsePath(String path) {
+		return Optional.of(path)
 			.filter(string -> !string.isEmpty())
 			.map(Paths::get)
 			.map(Path::toAbsolutePath);
+	}
+
+	static String parseString(String string) {
+		return string.isEmpty() ? null : string;
+	}
+
+	static Pattern parsePattern(String regex) {
+		if (regex.isEmpty()) {
+			return null;
+		}
+
+		try {
+			return Pattern.compile(regex);
+		} catch (PatternSyntaxException e) {
+			throw new IllegalArgumentException(e);
+		}
+	}
+
+	static Integer parseInt(String integer) {
+		if (integer.isEmpty()) {
+			return null;
+		} else {
+			try {
+				return Integer.parseInt(integer);
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException(e);
+			}
+		}
 	}
 
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -214,7 +270,8 @@ final class Argument<T> {
 
 	@Nullable
 	T from(Map<String, String> args) {
-		return this.fromString.apply(args.get(this.name));
+		final String string = args.get(this.name);
+		return string == null ? null : this.fromString.apply(string);
 	}
 
 	T requireFrom(Map<String, String> values) {

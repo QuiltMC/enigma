@@ -1,0 +1,3 @@
+CLASS aa OuterClass
+	CLASS a InnerClass
+		METHOD a getOther ()LZ;
