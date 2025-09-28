@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.element;
 
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.gui.ClassSelector;
+import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.docker.ClassesDocker;
 import org.quiltmc.enigma.gui.util.PackageRenamer;
@@ -32,10 +33,12 @@ public class ClassSelectorPopupMenu {
 		this.gui = gui;
 		this.selector = docker.getClassSelector();
 		this.ui = new JPopupMenu();
+		if (gui.isEditable(EditableType.CLASS)) {
+			this.ui.add(this.renamePackage);
+			this.ui.add(this.movePackage);
+			this.ui.add(this.renameClass);
+		}
 
-		this.ui.add(this.renamePackage);
-		this.ui.add(this.movePackage);
-		this.ui.add(this.renameClass);
 		this.ui.add(this.regenerateStats);
 		this.ui.add(this.toggleMapping);
 		this.ui.addSeparator();
