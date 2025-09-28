@@ -36,6 +36,7 @@ import org.tinylog.Logger;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -61,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -74,6 +76,7 @@ import javax.swing.JToolTip;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.ToolTipManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter.HighlightPainter;
@@ -84,7 +87,7 @@ import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
 public class EditorPanel {
 	private final JPanel ui = new JPanel();
-	private final CustomTooltipEditorPane editor = new CustomTooltipEditorPane(this::createEditorTooltip);
+	private final CustomTooltipEditorPane editor = new CustomTooltipEditorPane(this::createToolTip);
 	private final JScrollPane editorScrollPane = new JScrollPane(this.editor);
 	private final EnigmaQuickFindToolBar quickFindToolBar = new EnigmaQuickFindToolBar();
 	private final EditorPopupMenu popupMenu;
@@ -107,6 +110,12 @@ public class EditorPanel {
 
 	private EntryReference<Entry<?>, Entry<?>> cursorReference;
 	private EntryReference<Entry<?>, Entry<?>> nextReference;
+
+	@Nullable
+	private ContainerToolTip<JPanel> toolTip;
+	private final Timer mouseStoppedMovingTimer = new Timer(100, e -> {
+		this.getMouseEntry().ifPresent(this::updateToolTip);
+	});
 
 	private int fontSize = 12;
 	private final BoxHighlightPainter obfuscatedPainter;
@@ -198,6 +207,14 @@ public class EditorPanel {
 			}
 		});
 
+		this.mouseStoppedMovingTimer.setRepeats(false);
+		this.editor.addMouseMotionListener(new MouseAdapter() {
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				EditorPanel.this.mouseStoppedMovingTimer.restart();
+			}
+		});
+
 		this.editor.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent event) {
@@ -230,22 +247,48 @@ public class EditorPanel {
 		this.ui.putClientProperty(EditorPanel.class, this);
 	}
 
-	private JToolTip createEditorTooltip() {
-		return getMousePositionIn(this.editor)
-			.map(this.editor::viewToModel2D)
-			.filter(textPos -> textPos >= 0)
-			.map(this::getToken)
-			.map(this::getReference)
-			.map(EntryReference::getNameableEntry)
-			.map(this.gui.getController().getProject().getRemapper()::deobfuscate)
-			.map(Entry::getFullName)
-			.<JToolTip>map(entryName -> {
-				final JPanel root = new JPanel(new BorderLayout());
-				root.add(new JLabel(entryName));
-				return new ContainerToolTip(root);
+	private JToolTip createToolTip() {
+		return this.getMouseEntry()
+			.<JToolTip>map(targetEntry -> {
+				this.toolTip = new ContainerToolTip<>(new JPanel(new BorderLayout()));;
+				this.toolTip.getRoot().setBorder(BorderFactory.createEmptyBorder());
+				this.updateToolTip(targetEntry);
+				return this.toolTip;
 			})
 			// empty dummy tooltip
-			.orElseGet(JToolTip::new);
+			.orElseGet(() -> {
+				this.toolTip = null;
+				return new JToolTip();
+			});
+	}
+
+	private void updateToolTip(Entry<?> target) {
+		if (this.toolTip != null) {
+			final JPanel toolTipContent = this.toolTip.getRoot();
+			toolTipContent.removeAll();
+			toolTipContent.setLayout(new BorderLayout());
+			final JLabel label = new JLabel(target.getFullName());
+			label.setBorder(BorderFactory.createEmptyBorder());
+			toolTipContent.add(label);
+
+			toolTipContent.setSize(this.toolTip.getPreferredSize());
+
+			this.toolTip.setSize(this.toolTip.getPreferredSize());
+			// this.toolTip.setLocation(MouseInfo.getPointerInfo().getLocation());
+
+			this.toolTip.validate();
+			this.toolTip.repaint();
+		}
+	}
+
+	private Optional<? extends Entry<?>> getMouseEntry() {
+		return getMousePositionIn(this.editor)
+				.map(this.editor::viewToModel2D)
+				.filter(textPos -> textPos >= 0)
+				.map(this::getToken)
+				.map(this::getReference)
+				.map(EntryReference::getNameableEntry)
+				.map(this.gui.getController().getProject().getRemapper()::deobfuscate);
 	}
 
 	// getMousePosition(true) always returns null for editor, editorScrollPane, and ui
