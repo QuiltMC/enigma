@@ -36,7 +36,7 @@ import org.tinylog.Logger;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -46,6 +46,7 @@ import java.awt.Insets;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -55,6 +56,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,7 +64,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -72,7 +73,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
-import javax.swing.JToolTip;
+import javax.swing.JWindow;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -86,15 +87,16 @@ import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
 public class EditorPanel {
+	public static final int MOUSE_STOPPED_MOVING_DELAY = 100;
 	private final JPanel ui = new JPanel();
-	private final CustomTooltipEditorPane editor = new CustomTooltipEditorPane(this::createToolTip);
+	private final JEditorPane editor = new JEditorPane();
 	private final JScrollPane editorScrollPane = new JScrollPane(this.editor);
 	private final EnigmaQuickFindToolBar quickFindToolBar = new EnigmaQuickFindToolBar();
 	private final EditorPopupMenu popupMenu;
 
 	// progress UI
 	private final JLabel decompilingLabel = new JLabel(I18n.translate("editor.decompiling"), SwingConstants.CENTER);
-	private final JProgressBar decompilingProgressBar = new JProgressBar(0, 100);
+	private final JProgressBar decompilingProgressBar = new JProgressBar(0, MOUSE_STOPPED_MOVING_DELAY);
 
 	// error display UI
 	private final JLabel errorLabel = new JLabel();
@@ -102,6 +104,10 @@ public class EditorPanel {
 	private final JScrollPane errorScrollPane = new JScrollPane(this.errorTextArea);
 	private final JButton retryButton = new JButton(I18n.translate("prompt.retry"));
 	private final NavigatorPanel navigatorPanel;
+
+	// DIY tooltip because JToolTip can't be moved or resized
+	// private final JFrame tooltip = new JFrame("Editor tooltip");
+	private final JWindow tooltip = new JWindow();
 
 	private DisplayMode mode = DisplayMode.INACTIVE;
 
@@ -112,10 +118,46 @@ public class EditorPanel {
 	private EntryReference<Entry<?>, Entry<?>> nextReference;
 
 	@Nullable
-	private ContainerToolTip<JPanel> toolTip;
-	private final Timer mouseStoppedMovingTimer = new Timer(100, e -> {
-		this.getMouseEntry().ifPresent(this::updateToolTip);
+	private Entry<?> lastMouseTarget;
+
+	// avoid finding the mouse entry every mouse movement update
+	private final Timer mouseStoppedMovingTimer = new Timer(MOUSE_STOPPED_MOVING_DELAY, e -> {
+		this.getMouseTarget().ifPresentOrElse(
+				target -> {
+					this.hideTokenTooltipTimer.restart();
+					if (this.tooltip.isVisible()) {
+						this.showTokenTooltipTimer.stop();
+
+						if (!target.equals(this.lastMouseTarget)) {
+							this.lastMouseTarget = target;
+							this.updateToolTip(target);
+						}
+					} else {
+						this.lastMouseTarget = target;
+						this.showTokenTooltipTimer.start();
+					}
+				},
+				() -> {
+					this.lastMouseTarget = null;
+					this.showTokenTooltipTimer.stop();
+				}
+		);
 	});
+	private final Timer showTokenTooltipTimer = new Timer(
+			ToolTipManager.sharedInstance().getInitialDelay() - MOUSE_STOPPED_MOVING_DELAY, e -> {
+				this.getMouseTarget().ifPresent(target -> {
+					this.hideTokenTooltipTimer.restart();
+					if (target.equals(this.lastMouseTarget)) {
+						this.tooltip.setVisible(true);
+						this.updateToolTip(target);
+					}
+				});
+			}
+	);
+	private final Timer hideTokenTooltipTimer = new Timer(
+			ToolTipManager.sharedInstance().getDismissDelay() - MOUSE_STOPPED_MOVING_DELAY,
+			e -> this.tooltip.setVisible(false)
+	);
 
 	private int fontSize = 12;
 	private final BoxHighlightPainter obfuscatedPainter;
@@ -185,7 +227,7 @@ public class EditorPanel {
 		this.fallbackPainter = ThemeUtil.createFallbackPainter();
 		this.deobfuscatedPainter = ThemeUtil.createDeobfuscatedPainter();
 
-		this.editor.addMouseListener(new MouseAdapter() {
+		final MouseAdapter editorMouseAdapter = new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if ((e.getModifiersEx() & CTRL_DOWN_MASK) != 0 && e.getButton() == MouseEvent.BUTTON1) {
@@ -195,23 +237,65 @@ public class EditorPanel {
 			}
 
 			@Override
+			public void mousePressed(MouseEvent mouseEvent) {
+				EditorPanel.this.tooltip.setVisible(false);
+				EditorPanel.this.mouseStoppedMovingTimer.stop();
+				EditorPanel.this.showTokenTooltipTimer.stop();
+				EditorPanel.this.hideTokenTooltipTimer.stop();
+			}
+
+			@Override
 			public void mouseReleased(MouseEvent e) {
 				switch (e.getButton()) {
 					case MouseEvent.BUTTON3 -> // Right click
-							EditorPanel.this.editor.setCaretPosition(EditorPanel.this.editor.viewToModel2D(e.getPoint()));
+						EditorPanel.this.editor.setCaretPosition(EditorPanel.this.editor.viewToModel2D(e.getPoint()));
 					case 4 -> // Back navigation
-							gui.getController().openPreviousReference();
+						gui.getController().openPreviousReference();
 					case 5 -> // Forward navigation
-							gui.getController().openNextReference();
+						gui.getController().openNextReference();
 				}
 			}
-		});
 
-		this.mouseStoppedMovingTimer.setRepeats(false);
-		this.editor.addMouseMotionListener(new MouseAdapter() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
 				EditorPanel.this.mouseStoppedMovingTimer.restart();
+			}
+		};
+
+		this.editor.addMouseListener(editorMouseAdapter);
+		this.editor.addMouseMotionListener(editorMouseAdapter);
+
+		this.mouseStoppedMovingTimer.setRepeats(false);
+		this.showTokenTooltipTimer.setRepeats(false);
+		this.hideTokenTooltipTimer.setRepeats(false);
+
+		this.tooltip.setVisible(false);
+		this.tooltip.setAlwaysOnTop(true);
+		this.tooltip.setType(Window.Type.POPUP);
+		this.tooltip.setLayout(new BorderLayout());
+		this.tooltip.setContentPane(new JPanel());
+
+		this.tooltip.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				final Point absolutMousePosition = MouseInfo.getPointerInfo().getLocation();
+				mapMousePositionTo(absolutMousePosition, EditorPanel.this.editor).ifPresent(editorMousePosition -> {
+					final MouseEvent editorMouseEvent = new MouseEvent(
+						EditorPanel.this.editor, e.getID(), e.getWhen(), e.getModifiersEx(),
+						editorMousePosition.x, editorMousePosition.y,
+						absolutMousePosition.x, absolutMousePosition.y,
+						e.getClickCount(), e.isPopupTrigger(), e.getButton()
+					);
+
+					for (final MouseListener listener : EditorPanel.this.editor.getMouseListeners()) {
+						listener.mousePressed(editorMouseEvent);
+						if (editorMouseEvent.isConsumed()) {
+							break;
+						}
+					}
+				});
+
+				e.consume();
 			}
 		});
 
@@ -247,41 +331,18 @@ public class EditorPanel {
 		this.ui.putClientProperty(EditorPanel.class, this);
 	}
 
-	private JToolTip createToolTip() {
-		return this.getMouseEntry()
-			.<JToolTip>map(targetEntry -> {
-				this.toolTip = new ContainerToolTip<>(new JPanel(new BorderLayout()));;
-				this.toolTip.getRoot().setBorder(BorderFactory.createEmptyBorder());
-				this.updateToolTip(targetEntry);
-				return this.toolTip;
-			})
-			// empty dummy tooltip
-			.orElseGet(() -> {
-				this.toolTip = null;
-				return new JToolTip();
-			});
-	}
-
 	private void updateToolTip(Entry<?> target) {
-		if (this.toolTip != null) {
-			final JPanel toolTipContent = this.toolTip.getRoot();
-			toolTipContent.removeAll();
-			toolTipContent.setLayout(new BorderLayout());
-			final JLabel label = new JLabel(target.getFullName());
-			label.setBorder(BorderFactory.createEmptyBorder());
-			toolTipContent.add(label);
+		final Container tooltipContent = this.tooltip.getContentPane();
+		tooltipContent.removeAll();
+		final JLabel label = new JLabel(target.getFullName());
+		tooltipContent.add(label);
 
-			toolTipContent.setSize(this.toolTip.getPreferredSize());
+		this.tooltip.setLocation(MouseInfo.getPointerInfo().getLocation());
 
-			this.toolTip.setSize(this.toolTip.getPreferredSize());
-			// this.toolTip.setLocation(MouseInfo.getPointerInfo().getLocation());
-
-			this.toolTip.validate();
-			this.toolTip.repaint();
-		}
+		this.tooltip.pack();
 	}
 
-	private Optional<? extends Entry<?>> getMouseEntry() {
+	private Optional<? extends Entry<?>> getMouseTarget() {
 		return getMousePositionIn(this.editor)
 				.map(this.editor::viewToModel2D)
 				.filter(textPos -> textPos >= 0)
@@ -293,7 +354,11 @@ public class EditorPanel {
 
 	// getMousePosition(true) always returns null for editor, editorScrollPane, and ui
 	private static Optional<Point> getMousePositionIn(Component component) {
-		return Optional.of(MouseInfo.getPointerInfo().getLocation())
+		return mapMousePositionTo(MouseInfo.getPointerInfo().getLocation(), component);
+	}
+
+	private static Optional<Point> mapMousePositionTo(Point mousePosition, Component component) {
+		return Optional.of(mousePosition)
 			.map(mouse -> {
 				final Point editorLocation = component.getLocationOnScreen();
 				final Point point = new Point(mouse);
