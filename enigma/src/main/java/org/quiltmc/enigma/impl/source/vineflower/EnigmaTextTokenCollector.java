@@ -18,7 +18,8 @@ import java.util.function.UnaryOperator;
 
 public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	private String content;
-	private final Deque<ClassEntry> classStack = new ArrayDeque<>();
+	private ClassEntry outerClass;
+	private ClassEntry currentClass;
 	private final Deque<MethodEntry> methodStack = new ArrayDeque<>();
 
 	private final Map<Token, Entry<?>> declarations = new HashMap<>();
@@ -88,12 +89,15 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			int startIndex = index;
 			index += "static {".length();
 			int depth = 1;
+			boolean inString = false;
 			while (depth > 0 && index < this.content.length()) {
 				char c = this.content.charAt(index++);
-				if (c == '{') {
+				if (c == '{' && !inString) {
 					depth++;
-				} else if (c == '}') {
+				} else if (c == '}' && !inString) {
 					depth--;
+				} else if (c == '\"') {
+					inString = !inString;
 				}
 
 				if (depth == 0) {
@@ -132,21 +136,19 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	private MethodEntry getSyntheticMethodEntry(SyntheticMethodSpan method) {
 		if (method.isLambda) {
 			//TODO add lambda logic
-			throw new UnsupportedOperationException("lambda handling not implemented yet");
+			throw new UnsupportedOperationException("Lambda handling is not implemented yet");
 		} else {
-			return getMethodEntry(this.classStack.peek().getFullName(), "<clinit>", MethodDescriptor.parseDescriptor("()V"));
+			return getMethodEntry(this.currentClass.getFullName(), "<clinit>", MethodDescriptor.parseDescriptor("()V"));
 		}
 	}
 
 	@Override
 	public void start(String content) {
 		this.content = content;
-		this.classStack.clear();
 		this.methodStack.clear();
 		findStaticInitializers();
 	}
 
-	//TODO pop classStack when leaving class
 	@Override
 	public void visitClass(TextRange range, boolean declaration, String name) {
 		super.visitClass(range, declaration, name);
@@ -154,8 +156,14 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 		updateMethodStack(range);
 
 		if (declaration) {
+			if (this.outerClass == null) {
+				this.outerClass = getClassEntry(name);
+				this.currentClass = this.outerClass;
+			} else {
+				this.currentClass = getClassEntry(this.outerClass.getFullName() + '$' + name);
+			}
+
 			this.addDeclaration(token, getClassEntry(name));
-			this.classStack.push(getClassEntry(name));
 		} else {
 			this.addReference(token, getClassEntry(name), this.methodStack.peek());
 		}
