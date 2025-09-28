@@ -28,6 +28,7 @@ import org.quiltmc.enigma.gui.docker.StructureDocker;
 import org.quiltmc.enigma.gui.element.EditorTabbedPane;
 import org.quiltmc.enigma.gui.element.MainWindow;
 import org.quiltmc.enigma.gui.element.menu_bar.MenuBar;
+import org.quiltmc.enigma.gui.panel.BaseEditorPanel;
 import org.quiltmc.enigma.gui.panel.EditorPanel;
 import org.quiltmc.enigma.gui.panel.IdentifierPanel;
 import org.quiltmc.enigma.gui.renderer.MessageListCellRenderer;
@@ -402,7 +403,7 @@ public class Gui {
 		this.updateUiState();
 	}
 
-	public void showTokens(EditorPanel editor, List<Token> tokens) {
+	public void showTokens(BaseEditorPanel editor, List<Token> tokens) {
 		if (tokens.size() > 1) {
 			this.openDocker(CallsTreeDocker.class);
 			this.controller.setTokenHandle(editor.getClassHandle().copy());
