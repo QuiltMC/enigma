@@ -49,9 +49,11 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class BaseEditorPanel {
 	protected final JPanel ui = new JPanel();
@@ -70,6 +72,8 @@ public class BaseEditorPanel {
 	private final JTextArea errorTextArea = new JTextArea();
 	private final JScrollPane errorScrollPane = new JScrollPane(this.errorTextArea);
 	private final JButton retryButton = new JButton(I18n.translate("prompt.retry"));
+
+	private final List<Consumer<DecompiledClassSource>> sourceSetListeners = new ArrayList<>();
 
 	private DisplayMode mode = DisplayMode.INACTIVE;
 
@@ -174,7 +178,7 @@ public class BaseEditorPanel {
 		});
 	}
 
-	public void displayError(ClassHandleError t) {
+	private void displayError(ClassHandleError t) {
 		this.setDisplayMode(DisplayMode.ERRORED);
 		String str = switch (t.type) {
 			case DECOMPILE -> "editor.decompile_error";
@@ -278,7 +282,7 @@ public class BaseEditorPanel {
 		return this.source.getIndex().getReference(token);
 	}
 
-	public void setSource(DecompiledClassSource source) {
+	protected void setSource(DecompiledClassSource source) {
 		this.setDisplayMode(DisplayMode.SUCCESS);
 		if (source == null) return;
 		try {
@@ -315,7 +319,9 @@ public class BaseEditorPanel {
 			if (this.source != null) {
 				this.editor.setCaretPosition(newCaretPos);
 
-				this.onSourceSet(source);
+				for (final Consumer<DecompiledClassSource> listener : this.sourceSetListeners) {
+					listener.accept(this.source);
+				}
 			}
 
 			this.setCursorReference(this.getReference(this.getToken(this.editor.getCaretPosition())));
@@ -329,7 +335,13 @@ public class BaseEditorPanel {
 		}
 	}
 
-	protected void onSourceSet(DecompiledClassSource source) { }
+	protected void addSourceSetListener(Consumer<DecompiledClassSource> listener) {
+		this.sourceSetListeners.add(listener);
+	}
+
+	protected void removeSourceSetListener(Consumer<DecompiledClassSource> listener) {
+		this.sourceSetListeners.remove(listener);
+	}
 
 	public void setHighlightedTokens(TokenStore tokenStore, Map<TokenType, ? extends Collection<Token>> tokens) {
 		// remove any old highlighters

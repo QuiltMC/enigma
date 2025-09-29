@@ -5,42 +5,19 @@ import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
-import org.quiltmc.enigma.api.source.TokenStore;
-import org.quiltmc.enigma.gui.BrowserCaret;
-import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.GuiController;
-import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
-import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindToolBar;
 import org.quiltmc.enigma.gui.element.EditorPopupMenu;
 import org.quiltmc.enigma.gui.element.NavigatorPanel;
 import org.quiltmc.enigma.gui.event.EditorActionListener;
-import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
-import org.quiltmc.enigma.gui.highlight.SelectionHighlightPainter;
-import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
-import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.api.source.DecompiledClassSource;
-import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.source.Token;
-import org.quiltmc.enigma.api.source.DecompiledClassSource;
-import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
-import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
-import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
-import org.quiltmc.enigma.gui.element.EditorPopupMenu;
-import org.quiltmc.enigma.gui.element.NavigatorPanel;
-import org.quiltmc.enigma.api.source.Token;
+import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
-import org.quiltmc.enigma.util.I18n;
-import org.quiltmc.enigma.util.Result;
 import org.quiltmc.syntaxpain.DefaultSyntaxAction;
 import org.quiltmc.syntaxpain.SyntaxDocument;
-import org.tinylog.Logger;
-import org.quiltmc.enigma.gui.event.EditorActionListener;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -49,9 +26,9 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -66,6 +43,8 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -73,9 +52,6 @@ import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Highlighter.HighlightPainter;
 import javax.swing.text.JTextComponent;
 
 import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
@@ -130,7 +106,7 @@ public class EditorPanel extends BaseEditorPanel {
 	);
 	private final Timer hideTokenTooltipTimer = new Timer(
 			ToolTipManager.sharedInstance().getDismissDelay() - MOUSE_STOPPED_MOVING_DELAY,
-			e -> this.tooltip.setVisible(false)
+			e -> this.closeTooltip()
 	);
 
 	private final List<EditorActionListener> listeners = new ArrayList<>();
@@ -164,6 +140,16 @@ public class EditorPanel extends BaseEditorPanel {
 		this.quickFindToolBar.setVisible(false);
 		// init editor popup menu
 		this.popupMenu = new EditorPopupMenu(this, gui);
+
+		// global listener so tooltip hides even if clicking outside editor
+		Toolkit.getDefaultToolkit().addAWTEventListener(
+				e -> {
+					if (e.getID() == MouseEvent.MOUSE_PRESSED) {
+						this.closeTooltip();
+					}
+				},
+				MouseEvent.MOUSE_PRESSED
+		);
 
 		final MouseAdapter editorMouseAdapter = new MouseAdapter() {
 			@Override
@@ -200,6 +186,13 @@ public class EditorPanel extends BaseEditorPanel {
 			}
 		};
 
+		this.editor.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				EditorPanel.this.closeTooltip();
+			}
+		});
+
 		this.editor.addMouseListener(editorMouseAdapter);
 		this.editor.addMouseMotionListener(editorMouseAdapter);
 		this.editor.addCaretListener(event -> this.onCaretMove(event.getDot()));
@@ -212,7 +205,7 @@ public class EditorPanel extends BaseEditorPanel {
 		this.tooltip.setAlwaysOnTop(true);
 		this.tooltip.setType(Window.Type.POPUP);
 		this.tooltip.setLayout(new BorderLayout());
-		this.tooltip.setContentPane(new JPanel());
+		this.tooltip.setContentPane(new Box(BoxLayout.PAGE_AXIS));
 
 		this.tooltip.addMouseListener(new MouseAdapter() {
 			@Override
@@ -263,15 +256,57 @@ public class EditorPanel extends BaseEditorPanel {
 		});
 
 		this.reloadKeyBinds();
+		this.addSourceSetListener(source -> {
+			if (this.navigatorPanel != null) {
+				for (Entry<?> entry : source.getIndex().declarations()) {
+					this.navigatorPanel.addEntry(entry);
+				}
+			}
+		});
 
 		this.ui.putClientProperty(EditorPanel.class, this);
+	}
+
+	private void closeTooltip() {
+		EditorPanel.this.tooltip.setVisible(false);
+		EditorPanel.this.lastMouseTargetToken = null;
+		EditorPanel.this.mouseStoppedMovingTimer.stop();
+		EditorPanel.this.showTokenTooltipTimer.stop();
+		EditorPanel.this.hideTokenTooltipTimer.stop();
 	}
 
 	private void updateToolTip(Entry<?> target) {
 		final Container tooltipContent = this.tooltip.getContentPane();
 		tooltipContent.removeAll();
-		final JLabel label = new JLabel(target.getFullName());
-		tooltipContent.add(label);
+
+		final Entry<?> deobfTarget = this.gui.getController().getProject().getRemapper().deobfuscate(target);
+
+		tooltipContent.add(new JLabel(deobfTarget.getFullName()));
+		if (target instanceof ParentedEntry<?> parentedTarget) {
+			final ClassEntry targetTopClass = parentedTarget.getTopLevelClass();
+
+			@Nullable
+			final Consumer<BaseEditorPanel> tooltipEditorSourceSetter;
+			if (targetTopClass.equals(this.getSource().getEntry())) {
+				tooltipEditorSourceSetter = tooltipEditor -> tooltipEditor.setSource(this.getSource());
+			} else {
+				final ClassHandle targetTopClassHandle = this.gui.getController().getClassHandleProvider()
+						.openClass(targetTopClass);
+				if (targetTopClassHandle == null) {
+					tooltipEditorSourceSetter = null;
+				} else {
+					tooltipEditorSourceSetter = tooltipEditor -> tooltipEditor.setClassHandle(targetTopClassHandle);
+				}
+			}
+
+			if (tooltipEditorSourceSetter != null) {
+				final BaseEditorPanel tooltipEditor = new BaseEditorPanel(this.gui);
+				tooltipEditorSourceSetter.accept(tooltipEditor);
+				tooltipEditor.getEditor().setEditable(false);
+				tooltipEditor.addSourceSetListener(source -> this.tooltip.pack());
+				tooltipContent.add(tooltipEditor.ui);
+			}
+		}
 
 		this.tooltip.setLocation(MouseInfo.getPointerInfo().getLocation());
 
@@ -303,7 +338,6 @@ public class EditorPanel extends BaseEditorPanel {
 						token -> Optional.of(token)
 							.map(this::getReference)
 							.map(reference -> reference.entry)
-							.map(this.gui.getController().getProject().getRemapper()::deobfuscate)
 							.ifPresentOrElse(
 								entry -> action.accept(token, entry),
 								onNoTarget
@@ -435,15 +469,15 @@ public class EditorPanel extends BaseEditorPanel {
 		this.listeners.forEach(l -> l.onCursorReferenceChanged(this, ref));
 	}
 
-	@Override
-	protected void onSourceSet(DecompiledClassSource source) {
-		super.onSourceSet(source);
-		if (this.navigatorPanel != null) {
-			for (Entry<?> entry : source.getIndex().declarations()) {
-				this.navigatorPanel.addEntry(entry);
-			}
-		}
-	}
+	// @Override
+	// protected void onSourceSet(DecompiledClassSource source) {
+	// 	super.onSourceSet(source);
+	// 	if (this.navigatorPanel != null) {
+	// 		for (Entry<?> entry : source.getIndex().declarations()) {
+	// 			this.navigatorPanel.addEntry(entry);
+	// 		}
+	// 	}
+	// }
 
 	public void addListener(EditorActionListener listener) {
 		this.listeners.add(listener);
