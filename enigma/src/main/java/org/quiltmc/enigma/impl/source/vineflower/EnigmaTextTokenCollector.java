@@ -108,8 +108,8 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 
 	private void parseSource() {
 		StaticJavaParser.getParserConfiguration()
-			.setStoreTokens(true)
-			.setLanguageLevel(ParserConfiguration.LanguageLevel.RAW);
+				.setStoreTokens(true)
+				.setLanguageLevel(ParserConfiguration.LanguageLevel.RAW);
 		CompilationUnit unit = StaticJavaParser.parse(this.content);
 		List<InitializerDeclaration> initializers = unit.findAll(InitializerDeclaration.class, InitializerDeclaration::isStatic);
 		for (InitializerDeclaration decl : initializers) {
@@ -236,9 +236,9 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 		}
 
 		List<SyntheticMethodSpan> enclosing = this.syntheticMethods.stream()
-			.filter(span -> encloses(span, range))
-			.sorted(Comparator.comparingInt(span -> span.range.length))
-			.toList();
+				.filter(span -> encloses(span, range))
+				.sorted(Comparator.comparingInt(span -> span.range.length))
+				.toList();
 
 		for (SyntheticMethodSpan method : enclosing) {
 			if (!this.openSynthetic.contains(method)) {
@@ -360,7 +360,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	}
 
 	private record SyntheticMethodSpan(TextRange range, boolean isLambda) {
-		public SyntheticMethodSpan(int start, int end, boolean isLambda) {
+		SyntheticMethodSpan(int start, int end, boolean isLambda) {
 			this(new TextRange(start, end - start), isLambda);
 		}
 	}
