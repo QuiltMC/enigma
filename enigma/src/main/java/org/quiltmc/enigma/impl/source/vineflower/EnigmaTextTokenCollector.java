@@ -5,9 +5,13 @@ import com.github.javaparser.Position;
 import com.github.javaparser.Range;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.InitializerDeclaration;
-import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.expr.LambdaExpr;
+import org.jetbrains.java.decompiler.main.DecompilerContext;
 import org.jetbrains.java.decompiler.main.extern.TextTokenVisitor;
+import org.jetbrains.java.decompiler.struct.StructClass;
+import org.jetbrains.java.decompiler.struct.StructMethod;
 import org.jetbrains.java.decompiler.struct.gen.FieldDescriptor;
 import org.jetbrains.java.decompiler.struct.gen.MethodDescriptor;
 import org.jetbrains.java.decompiler.util.Pair;
@@ -20,7 +24,15 @@ import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 public class EnigmaTextTokenCollector extends TextTokenVisitor {
@@ -102,9 +114,91 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			int end = positionToIndex(range.end);
 			syntheticMethods.add(new SyntheticMethodSpan(start, end, false));
 		}
+
+		for (FieldDeclaration decl : unit.findAll(FieldDeclaration.class)) {
+			Range range = decl.getRange().orElseThrow(() -> new IllegalStateException("No range for field declaration"));
+			int start = positionToIndex(range.begin);
+			int end = positionToIndex(range.end);
+			syntheticMethods.add(new SyntheticMethodSpan(start, end, false));
+		}
+
 		String pkgPrefix = unit.getPackageDeclaration().map(decl -> decl.getNameAsString().replace('.', '/') + "/").orElse("");
 		for (TypeDeclaration<?> decl : unit.getTypes()) {
 			addClassAndChildren(decl, pkgPrefix + decl.getNameAsString());
+		}
+
+		for (ClassEntry entry : classRanges.keySet()) {
+			String[] parts = entry.getContextualName().split("\\$");
+			TypeDeclaration<?> type = null;
+			for (TypeDeclaration<?> decl : unit.getTypes()) {
+				if (decl.getNameAsString().equals(parts[0])) {
+					type = decl;
+					break;
+				}
+			}
+
+			for (int i = 1; i < parts.length; i++) {
+				if (type != null) {
+					TypeDeclaration<?> finalType = type;
+					String name = parts[i];
+					type = type.findFirst(TypeDeclaration.class, t -> t != finalType && t.getNameAsString().equals(name)).orElse(null);
+				}
+			}
+
+			if (type == null) {
+				throw new IllegalStateException("Could not find type " + entry.getContextualName() + " in parsed source");
+			}
+
+			Map<String, TextRange> lambdaRanges = new HashMap<>();
+			int lambdaOrdinal = 0;
+			for (var member : type.getMembers()) {
+				if (member instanceof TypeDeclaration<?>) {
+					continue;
+				}
+
+				List<LambdaExpr> lambdas = member.findAll(LambdaExpr.class);
+				for (LambdaExpr lambda : lambdas) {
+					Node node = lambda;
+					String context;
+					while (true) {
+						Optional<Node> nodeOptional = node.getParentNode();
+						if (nodeOptional.isEmpty()) {
+							throw new IllegalStateException("Lambda has no valid parent");
+						}
+
+						node = nodeOptional.get();
+						if (node instanceof MethodDeclaration method) {
+							context = method.getNameAsString();
+							break;
+						} else if (node instanceof ConstructorDeclaration) {
+							context = "new";
+							break;
+						} else if (node instanceof TypeDeclaration<?>) {
+							context = "static";
+							break;
+						}
+					}
+
+					String name = "lambda$" + context + "$" + lambdaOrdinal++;
+					Range range = lambda.getRange().orElseThrow(() -> new IllegalStateException("No range for lambda"));
+					int start = positionToIndex(range.begin);
+					int end = positionToIndex(range.end);
+					TextRange textRange = new TextRange(start, end - start);
+					lambdaRanges.put(name, textRange);
+				}
+			}
+
+			StructClass clazz = DecompilerContext.getStructContext().getClass(entry.getFullName());
+			for (StructMethod method : clazz.getMethods()) {
+				TextRange range = lambdaRanges.get(method.getName());
+				if (range == null) {
+					continue;
+				}
+
+				SyntheticMethodSpan span = new SyntheticMethodSpan(range, true);
+				syntheticMethods.add(span);
+				syntheticEntryBySpan.put(span, getMethodEntry(entry.getFullName(), method.getName(), MethodDescriptor.parseDescriptor(method.getDescriptor())));
+			}
 		}
 	}
 
@@ -163,8 +257,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 
 	private MethodEntry getSyntheticMethodEntry(SyntheticMethodSpan method) {
 		if (method.isLambda) {
-			//TODO add lambda logic
-			throw new UnsupportedOperationException("Lambda handling is not implemented yet");
+			throw new IllegalStateException("Method entries for lambdas should have already been fetched");
 		} else {
 			return getMethodEntry(this.classStack.peek().getFullName(), "<clinit>", MethodDescriptor.parseDescriptor("()V"));
 		}
@@ -226,7 +319,8 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 
 			this.methodStack.push(entry);
 		} else {
-			this.addReference(token, entry, this.methodStack.peek());
+			MethodEntry context = !this.methodStack.isEmpty() ? this.methodStack.peek() : getMethodEntry(className, "<clinit>", MethodDescriptor.parseDescriptor("()V"));
+			this.addReference(token, entry, context);
 		}
 	}
 
