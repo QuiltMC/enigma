@@ -286,24 +286,21 @@ public class EditorPanel extends BaseEditorPanel {
 			final ClassEntry targetTopClass = parentedTarget.getTopLevelClass();
 
 			@Nullable
-			final Consumer<BaseEditorPanel> tooltipEditorSourceSetter;
-			if (targetTopClass.equals(this.getSource().getEntry())) {
-				tooltipEditorSourceSetter = tooltipEditor -> tooltipEditor.setSource(this.getSource());
-			} else {
-				final ClassHandle targetTopClassHandle = this.gui.getController().getClassHandleProvider()
-						.openClass(targetTopClass);
-				if (targetTopClassHandle == null) {
-					tooltipEditorSourceSetter = null;
-				} else {
-					tooltipEditorSourceSetter = tooltipEditor -> tooltipEditor.setClassHandle(targetTopClassHandle);
-				}
-			}
+			final ClassHandle targetTopClassHandle = targetTopClass.equals(this.getSource().getEntry())
+					? this.classHandle
+					: this.gui.getController().getClassHandleProvider().openClass(targetTopClass);
 
-			if (tooltipEditorSourceSetter != null) {
+			if (targetTopClassHandle != null) {
 				final BaseEditorPanel tooltipEditor = new BaseEditorPanel(this.gui);
-				tooltipEditorSourceSetter.accept(tooltipEditor);
 				tooltipEditor.getEditor().setEditable(false);
-				tooltipEditor.addSourceSetListener(source -> this.tooltip.pack());
+				tooltipEditor.addSourceSetListener(source -> {
+					this.tooltip.pack();
+					final Token declarationToken = source.getIndex().getDeclarationToken(target);
+					if (declarationToken != null) {
+						tooltipEditor.navigateToToken(declarationToken);
+					}
+				});
+				tooltipEditor.setClassHandle(targetTopClassHandle);
 				tooltipContent.add(tooltipEditor.ui);
 			}
 		}
