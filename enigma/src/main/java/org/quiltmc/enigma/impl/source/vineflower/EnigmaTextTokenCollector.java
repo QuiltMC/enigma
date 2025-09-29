@@ -105,7 +105,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	private void parseSource() {
 		StaticJavaParser.getParserConfiguration()
 			.setStoreTokens(true)
-			.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21); //todo see if we can get source information instead of hardcoding this
+			.setLanguageLevel(ParserConfiguration.LanguageLevel.RAW);
 		CompilationUnit unit = StaticJavaParser.parse(this.content);
 		List<InitializerDeclaration> initializers = unit.findAll(InitializerDeclaration.class, InitializerDeclaration::isStatic);
 		for (InitializerDeclaration decl : initializers) {
@@ -115,7 +115,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			syntheticMethods.add(new SyntheticMethodSpan(start, end, false));
 		}
 
-		for (FieldDeclaration decl : unit.findAll(FieldDeclaration.class)) {
+		for (FieldDeclaration decl : unit.findAll(FieldDeclaration.class, FieldDeclaration::isStatic)) {
 			Range range = decl.getRange().orElseThrow(() -> new IllegalStateException("No range for field declaration"));
 			int start = positionToIndex(range.begin);
 			int end = positionToIndex(range.end);
