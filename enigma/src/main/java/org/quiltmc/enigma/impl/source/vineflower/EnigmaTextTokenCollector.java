@@ -1,9 +1,10 @@
 package org.quiltmc.enigma.impl.source.vineflower;
 
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.Position;
 import com.github.javaparser.Range;
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
@@ -27,6 +28,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.tinylog.Logger;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -107,10 +109,17 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	}
 
 	private void parseSource() {
-		StaticJavaParser.getParserConfiguration()
+		ParserConfiguration config = new ParserConfiguration()
 				.setStoreTokens(true)
 				.setLanguageLevel(ParserConfiguration.LanguageLevel.RAW);
-		CompilationUnit unit = StaticJavaParser.parse(this.content);
+
+		ParseResult<CompilationUnit> parseResult = new JavaParser(config).parse(this.content);
+		if (!parseResult.isSuccessful()) {
+			Logger.warn("Failed to parse source: {}", parseResult.getProblems());
+			return;
+		}
+
+		CompilationUnit unit = parseResult.getResult().get();
 		List<InitializerDeclaration> initializers = unit.findAll(InitializerDeclaration.class, InitializerDeclaration::isStatic);
 		for (InitializerDeclaration decl : initializers) {
 			Range range = decl.getRange().orElseThrow(() -> new IllegalStateException("No range for initializer"));
@@ -250,7 +259,11 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 		}
 	}
 
-	private void pruneExitedClass(TextRange range) {
+	private void pruneExitedClasses(TextRange range) {
+		if (this.classRanges.isEmpty()) {
+			return; // Parsing failed
+		}
+
 		while (!this.classStack.isEmpty() && this.classRanges.get(this.classStack.peek()).getEnd() < range.start) {
 			this.classStack.pop();
 		}
@@ -283,7 +296,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	public void visitClass(TextRange range, boolean declaration, String name) {
 		super.visitClass(range, declaration, name);
 		Token token = this.getToken(range);
-		this.pruneExitedClass(range);
+		this.pruneExitedClasses(range);
 		this.updateMethodStack(range);
 
 		if (declaration) {
@@ -298,7 +311,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	public void visitField(TextRange range, boolean declaration, String className, String name, FieldDescriptor descriptor) {
 		super.visitField(range, declaration, className, name, descriptor);
 		Token token = this.getToken(range);
-		this.pruneExitedClass(range);
+		this.pruneExitedClasses(range);
 		this.updateMethodStack(range);
 
 		if (declaration) {
@@ -312,7 +325,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	public void visitMethod(TextRange range, boolean declaration, String className, String name, MethodDescriptor descriptor) {
 		super.visitMethod(range, declaration, className, name, descriptor);
 		Token token = this.getToken(range);
-		this.pruneExitedClass(range);
+		this.pruneExitedClasses(range);
 		this.updateMethodStack(range);
 		MethodEntry entry = getMethodEntry(className, name, descriptor);
 
@@ -333,7 +346,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	public void visitParameter(TextRange range, boolean declaration, String className, String methodName, MethodDescriptor methodDescriptor, int idx, String name) {
 		super.visitParameter(range, declaration, className, methodName, methodDescriptor, idx, name);
 		Token token = this.getToken(range);
-		this.pruneExitedClass(range);
+		this.pruneExitedClasses(range);
 		this.updateMethodStack(range);
 		MethodEntry parent = getMethodEntry(className, methodName, methodDescriptor);
 
@@ -348,7 +361,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	public void visitLocal(TextRange range, boolean declaration, String className, String methodName, MethodDescriptor methodDescriptor, int idx, String name) {
 		super.visitLocal(range, declaration, className, methodName, methodDescriptor, idx, name);
 		Token token = this.getToken(range);
-		this.pruneExitedClass(range);
+		this.pruneExitedClasses(range);
 		this.updateMethodStack(range);
 		MethodEntry parent = getMethodEntry(className, methodName, methodDescriptor);
 
