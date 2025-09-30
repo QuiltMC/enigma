@@ -217,7 +217,9 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 
 	private void addClassAndChildren(TypeDeclaration<?> decl, String name) {
 		Range range = decl.getRange().orElseThrow(() -> new IllegalStateException("No range for type declaration"));
-		TextRange textRange = new TextRange(this.positionToIndex(range.begin), this.positionToIndex(range.end));
+		int start = this.positionToIndex(range.begin);
+		int end = this.positionToIndex(range.end);
+		TextRange textRange = new TextRange(start, end - start);
 		this.classRanges.put(getClassEntry(name), textRange);
 		decl.getMembers().forEach(member -> {
 			if (member instanceof TypeDeclaration<?> child) {
@@ -226,19 +228,17 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 		});
 	}
 
-	private int positionToIndex(Position position) {
-		int index = 0;
-		int linesLeft = position.line;
-		while (linesLeft > 0) {
-			index = this.content.indexOf('\n', index) + 1;
-			linesLeft--;
+	private int positionToIndex(Position p) {
+		int idx = 0, line = 1;
+		while (line < p.line && idx >= 0) {
+			idx = this.content.indexOf('\n', idx) + 1;
+			line++;
 		}
-
-		return index + position.column;
+		return idx + (p.column - 1);
 	}
 
 	private void updateMethodStack(TextRange range) {
-		while (!this.openSynthetic.isEmpty() && encloses(this.openSynthetic.peek(), range)) {
+		while (!this.openSynthetic.isEmpty() && !encloses(this.openSynthetic.peek(), range)) {
 			SyntheticMethodSpan span = this.openSynthetic.pop();
 			this.syntheticEntryBySpan.remove(span);
 			this.methodStack.pop();
@@ -246,7 +246,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 
 		List<SyntheticMethodSpan> enclosing = this.syntheticMethods.stream()
 				.filter(span -> encloses(span, range))
-				.sorted(Comparator.comparingInt(span -> span.range.length))
+				.sorted(Comparator.<SyntheticMethodSpan>comparingInt(span -> span.range.length).reversed())
 				.toList();
 
 		for (SyntheticMethodSpan method : enclosing) {
@@ -254,6 +254,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 				MethodEntry entry = this.syntheticEntryBySpan.computeIfAbsent(method, this::getSyntheticMethodEntry);
 				if (this.methodStack.isEmpty() || !this.methodStack.peek().equals(entry)) {
 					this.methodStack.push(entry);
+					this.openSynthetic.push(method);
 				}
 			}
 		}
@@ -270,7 +271,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	}
 
 	private static boolean encloses(SyntheticMethodSpan outer, TextRange inner) {
-		return outer.range.start < inner.start && outer.range.getEnd() > inner.getEnd();
+		return outer.range.start <= inner.start && outer.range.getEnd() >= inner.getEnd();
 	}
 
 	private MethodEntry getSyntheticMethodEntry(SyntheticMethodSpan method) {
