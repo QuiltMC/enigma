@@ -3,7 +3,6 @@ package org.quiltmc.enigma.impl.source.vineflower;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
-import com.github.javaparser.Position;
 import com.github.javaparser.Range;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
@@ -12,15 +11,21 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.InitializerDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
-import com.github.javaparser.ast.expr.*;
-import org.jetbrains.java.decompiler.code.*;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.LambdaExpr;
+import com.github.javaparser.ast.expr.MethodReferenceExpr;
+import org.jetbrains.java.decompiler.code.CodeConstants;
+import org.jetbrains.java.decompiler.code.Instruction;
+import org.jetbrains.java.decompiler.code.InstructionSequence;
 import org.jetbrains.java.decompiler.main.DecompilerContext;
 import org.jetbrains.java.decompiler.main.extern.TextTokenVisitor;
 import org.jetbrains.java.decompiler.struct.StructClass;
 import org.jetbrains.java.decompiler.struct.StructMethod;
 import org.jetbrains.java.decompiler.struct.attr.StructBootstrapMethodsAttribute;
 import org.jetbrains.java.decompiler.struct.attr.StructGeneralAttribute;
-import org.jetbrains.java.decompiler.struct.consts.*;
+import org.jetbrains.java.decompiler.struct.consts.ConstantPool;
+import org.jetbrains.java.decompiler.struct.consts.LinkConstant;
+import org.jetbrains.java.decompiler.struct.consts.PooledConstant;
 import org.jetbrains.java.decompiler.struct.gen.FieldDescriptor;
 import org.jetbrains.java.decompiler.struct.gen.MethodDescriptor;
 import org.jetbrains.java.decompiler.util.Pair;
@@ -32,6 +37,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.util.LineIndexer;
 import org.tinylog.Logger;
 
 import java.io.IOException;
@@ -47,6 +53,7 @@ import java.util.function.UnaryOperator;
 
 public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	private String content;
+	private LineIndexer lineIndexer;
 	private final Deque<ClassEntry> classStack = new ArrayDeque<>();
 	private final Deque<MethodEntry> methodStack = new ArrayDeque<>();
 
@@ -127,16 +134,12 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 		List<InitializerDeclaration> initializers = unit.findAll(InitializerDeclaration.class, InitializerDeclaration::isStatic);
 		for (InitializerDeclaration decl : initializers) {
 			Range range = decl.getRange().orElseThrow(() -> new IllegalStateException("No range for initializer"));
-			int start = this.positionToIndex(range.begin);
-			int end = this.positionToIndex(range.end);
-			this.syntheticMethods.add(new SyntheticMethodSpan(start, end, false));
+			this.syntheticMethods.add(new SyntheticMethodSpan(this.convertRange(range), false));
 		}
 
 		for (FieldDeclaration decl : unit.findAll(FieldDeclaration.class, FieldDeclaration::isStatic)) {
 			Range range = decl.getRange().orElseThrow(() -> new IllegalStateException("No range for field declaration"));
-			int start = this.positionToIndex(range.begin);
-			int end = this.positionToIndex(range.end);
-			this.syntheticMethods.add(new SyntheticMethodSpan(start, end, false));
+			this.syntheticMethods.add(new SyntheticMethodSpan(this.convertRange(range), false));
 		}
 
 		String pkgPrefix = unit.getPackageDeclaration().map(decl -> decl.getNameAsString().replace('.', '/') + "/").orElse("");
@@ -191,6 +194,9 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 				}
 			}
 			StructClass clazz = DecompilerContext.getStructContext().getClass(classEntry.getFullName());
+			if (clazz == null) {
+				throw new IllegalStateException("Class bytecode not found");
+			}
 			for (StructMethod method : clazz.getMethods()) {
 				LambdaNode rootNode = rootNodes.get(method.getName());
 				if (rootNode == null) {
@@ -298,14 +304,14 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			lambdas.add(getMethodEntry(owner, name, MethodDescriptor.parseDescriptor(descriptor)));
 		}
 
+		method.releaseResources();
+
 		return lambdas;
 	}
 
 	private void addClassAndChildren(TypeDeclaration<?> decl, String name) {
 		Range range = decl.getRange().orElseThrow(() -> new IllegalStateException("No range for type declaration"));
-		int start = this.positionToIndex(range.begin);
-		int end = this.positionToIndex(range.end);
-		TextRange textRange = new TextRange(start, end - start);
+		TextRange textRange = this.convertRange(range);
 		this.classRanges.put(getClassEntry(name), textRange);
 		decl.getMembers().forEach(member -> {
 			if (member instanceof TypeDeclaration<?> child) {
@@ -314,18 +320,9 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 		});
 	}
 
-	private int positionToIndex(Position p) {
-		int idx = 0, line = 1;
-		while (line < p.line && idx >= 0) {
-			idx = this.content.indexOf('\n', idx) + 1;
-			line++;
-		}
-		return idx + (p.column - 1);
-	}
-
 	private TextRange convertRange(Range range) {
-		int start = this.positionToIndex(range.begin);
-		int end = this.positionToIndex(range.end);
+		int start = this.lineIndexer.getIndex(range.begin);
+		int end = this.lineIndexer.getIndex(range.end);
 		return new TextRange(start, end - start);
 	}
 
@@ -370,6 +367,9 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 		if (method.isLambda) {
 			throw new IllegalStateException("Method entries for lambdas should have already been fetched");
 		} else {
+			if (this.classStack.isEmpty()) {
+				throw new IllegalStateException("No class on the stack for synthetic method at " + method.range);
+			}
 			return getMethodEntry(this.classStack.peek().getFullName(), "<clinit>", MethodDescriptor.parseDescriptor("()V"));
 		}
 	}
@@ -377,6 +377,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	@Override
 	public void start(String content) {
 		this.content = content;
+		this.lineIndexer = new LineIndexer(content);
 		this.classRanges.clear();
 		this.methodStack.clear();
 		this.openSynthetic.clear();
@@ -465,11 +466,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 		}
 	}
 
-	private record SyntheticMethodSpan(TextRange range, boolean isLambda) {
-		SyntheticMethodSpan(int start, int end, boolean isLambda) {
-			this(new TextRange(start, end - start), isLambda);
-		}
-	}
+	private record SyntheticMethodSpan(TextRange range, boolean isLambda) {}
 
 	class LambdaNode {
 		final TextRange range;
