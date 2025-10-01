@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 public class EnigmaTextTokenCollector extends TextTokenVisitor {
@@ -133,13 +134,19 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 		CompilationUnit unit = parseResult.getResult().get();
 		List<InitializerDeclaration> initializers = unit.findAll(InitializerDeclaration.class, InitializerDeclaration::isStatic);
 		for (InitializerDeclaration decl : initializers) {
-			Range range = decl.getRange().orElseThrow(() -> new IllegalStateException("No range for initializer"));
-			this.syntheticMethods.add(new SyntheticMethodSpan(this.convertRange(range), false));
+			TextRange range = this.getTextRangeForNode(decl);
+			if (range == null) {
+				continue;
+			}
+			this.syntheticMethods.add(new SyntheticMethodSpan(range, false));
 		}
 
 		for (FieldDeclaration decl : unit.findAll(FieldDeclaration.class, FieldDeclaration::isStatic)) {
-			Range range = decl.getRange().orElseThrow(() -> new IllegalStateException("No range for field declaration"));
-			this.syntheticMethods.add(new SyntheticMethodSpan(this.convertRange(range), false));
+			TextRange range = this.getTextRangeForNode(decl);
+			if (range == null) {
+				continue;
+			}
+			this.syntheticMethods.add(new SyntheticMethodSpan(range, false));
 		}
 
 		String pkgPrefix = unit.getPackageDeclaration().map(decl -> decl.getNameAsString().replace('.', '/') + "/").orElse("");
@@ -215,7 +222,12 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			if (childNode.isMethodReference) {
 				continue;
 			}
+
 			MethodEntry entry = bytecodeLambdas.get(i);
+			if (childNode.range == null) {
+				continue;
+			}
+
 			SyntheticMethodSpan span = new SyntheticMethodSpan(childNode.range, true);
 			this.syntheticMethods.add(span);
 			this.syntheticEntryBySpan.put(span, entry);
@@ -310,8 +322,11 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	}
 
 	private void addClassAndChildren(TypeDeclaration<?> decl, String name) {
-		Range range = decl.getRange().orElseThrow(() -> new IllegalStateException("No range for type declaration"));
-		TextRange textRange = this.convertRange(range);
+		TextRange textRange = this.getTextRangeForNode(decl);
+		if (textRange == null) {
+			return;
+		}
+
 		this.classRanges.put(getClassEntry(name), textRange);
 		decl.getMembers().forEach(member -> {
 			if (member instanceof TypeDeclaration<?> child) {
@@ -320,7 +335,13 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 		});
 	}
 
-	private TextRange convertRange(Range range) {
+	private TextRange getTextRangeForNode(Node node) {
+		Optional<Range> rangeOpt = node.getRange();
+		if (rangeOpt.isEmpty()) {
+			Logger.error("No range for node of type {}", node.getClass().getSimpleName());
+			return null;
+		}
+		Range range = rangeOpt.get();
 		int start = this.lineIndexer.getIndex(range.begin);
 		int end = this.lineIndexer.getIndex(range.end);
 		return new TextRange(start, end - start);
@@ -473,7 +494,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 		final boolean isMethodReference;
 		final List<LambdaNode> children = new ArrayList<>();
 		LambdaNode(Expression lambda, boolean isMethodReference) {
-			this.range = EnigmaTextTokenCollector.this.convertRange(lambda.getRange().orElseThrow(() -> new IllegalStateException("No range for lambda")));
+			this.range = EnigmaTextTokenCollector.this.getTextRangeForNode(lambda);
 			this.isMethodReference = isMethodReference;
 		}
 
