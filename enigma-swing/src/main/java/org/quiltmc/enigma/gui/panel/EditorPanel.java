@@ -16,11 +16,9 @@ import com.google.common.util.concurrent.Runnables;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
-import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
-import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
@@ -381,82 +379,80 @@ public class EditorPanel extends BaseEditorPanel {
 	}
 
 	private Result<TrimmedBounds, String> getClassBounds(String source, String targetName, ClassEntry target) {
-		return this.getNodeType(target)
-			.map(nodeType -> {
-				final ParserConfiguration config = new ParserConfiguration()
-						.setStoreTokens(true)
-						.setLanguageLevel(ParserConfiguration.LanguageLevel.RAW);
+		return this.getNodeType(target, targetName).andThen(nodeType -> {
+			final ParserConfiguration config = new ParserConfiguration()
+					.setStoreTokens(true)
+					.setLanguageLevel(ParserConfiguration.LanguageLevel.RAW);
 
-				final ParseResult<CompilationUnit> parseResult = new JavaParser(config).parse(source);
-				return parseResult
-					.getResult()
-					.map(unit -> unit
-						.findFirst(nodeType, declaration -> declaration
-							.getFullyQualifiedName()
-							.filter(name -> name.equals(targetName))
-							.isPresent()
-						)
-						.map(targetDeclaration -> targetDeclaration
-							.getRange()
-							.map(range -> targetDeclaration
-								.getTokenRange()
-								.map(TokenRange::iterator)
-								.map(tokenItr -> {
-									while (tokenItr.hasNext()) {
-										final JavaToken javaToken = tokenItr.next();
-										if (javaToken.asString().equals("{")) {
-											return javaToken.getRange()
-												.map(openRange -> {
-													final Position startPos = range.begin;
-													final Position endPos = openRange.begin;
-
-													final LineIndexer lineIndexer = new LineIndexer(source);
-													final int start = lineIndexer.getIndex(startPos);
-													int end = lineIndexer.getIndex(endPos);
-													while (Character.isWhitespace(source.charAt(end - 1))) {
-														end--;
-													}
-
-													return Result.<TrimmedBounds, String>ok(new TrimmedBounds(start, end));
-												})
-												.orElseGet(() -> Result.err("No open curly brace range for %s!".formatted(targetName)));
-										}
-									}
-
-									return Result.<TrimmedBounds, String>err("No open curly brace for %s!".formatted(targetName));
-								})
-								.orElseGet(() -> Result.err("No token range for %s!".formatted(targetName)))
-							)
-							.orElseGet(() -> Result.err("No parsed range for %s!".formatted(targetName)))
-						)
-						.orElseGet(() -> Result.err("Failed to find %s in parsed source!".formatted(targetName)))
+			final ParseResult<CompilationUnit> parseResult = new JavaParser(config).parse(source);
+			return parseResult
+				.getResult()
+				.map(unit -> unit
+					.findFirst(nodeType, declaration -> declaration
+						.getFullyQualifiedName()
+						.filter(name -> name.equals(targetName))
+						.isPresent()
 					)
-					.orElseGet(() -> Result.err("Failed to parse source: " + parseResult.getProblems()));
-			})
-			.orElseGet(() -> Result.err("No definition for %s!".formatted(targetName)));
+					.map(targetDeclaration -> targetDeclaration
+						.getRange()
+						.map(range -> targetDeclaration
+							.getTokenRange()
+							.map(TokenRange::iterator)
+							.map(tokenItr -> {
+								while (tokenItr.hasNext()) {
+									final JavaToken javaToken = tokenItr.next();
+									if (javaToken.asString().equals("{")) {
+										return javaToken.getRange()
+											.map(openRange -> {
+												final Position startPos = range.begin;
+												final Position endPos = openRange.begin;
+
+												final LineIndexer lineIndexer = new LineIndexer(source);
+												final int start = lineIndexer.getIndex(startPos);
+												int end = lineIndexer.getIndex(endPos);
+												while (Character.isWhitespace(source.charAt(end - 1))) {
+													end--;
+												}
+
+												return Result.<TrimmedBounds, String>ok(new TrimmedBounds(start, end));
+											})
+											.orElseGet(() -> Result.err("No open curly brace range for %s!".formatted(targetName)));
+									}
+								}
+
+								return Result.<TrimmedBounds, String>err("No open curly brace for %s!".formatted(targetName));
+							})
+							.orElseGet(() -> Result.err("No token range for %s!".formatted(targetName)))
+						)
+						.orElseGet(() -> Result.err("No declaration range for %s!".formatted(targetName)))
+					)
+					.orElseGet(() -> Result.err("Failed to find %s in parsed source!".formatted(targetName)))
+				)
+				.orElseGet(() -> Result.err("Failed to parse source: " + parseResult.getProblems()));
+		});
 	}
 
-	private Optional<? extends Class<? extends TypeDeclaration<?>>> getNodeType(ClassEntry targetClass) {
+	private Result<? extends Class<? extends TypeDeclaration<?>>, String> getNodeType(
+			ClassEntry targetClass, String targetName
+	) {
 		final EntryIndex entryIndex = this.gui.getController().getProject().getJarIndex()
 				.getIndex(EntryIndex.class);
 
 		return Optional
 			.ofNullable(entryIndex.getDefinition(targetClass))
 			.map(targetDef -> {
-				final InheritanceIndex inheritanceIndex = this.gui.getController().getProject().getJarIndex()
-						.getIndex(InheritanceIndex.class);
-
-				final AccessFlags access = targetDef.getAccess();
-				if (access.isEnum()) {
-					return EnumDeclaration.class;
-				} else if (access.isAnnotation()) {
+				if (targetDef.getAccess().isAnnotation()) {
 					return AnnotationDeclaration.class;
-				} else if (inheritanceIndex.getParents(targetDef).contains(new ClassEntry("java/lang/Record"))) {
+				} else if (targetDef.isEnum()) {
+					return EnumDeclaration.class;
+				} else if (targetDef.isRecord()) {
 					return RecordDeclaration.class;
 				} else {
 					return ClassOrInterfaceDeclaration.class;
 				}
-			});
+			})
+			.<Result<? extends Class<? extends TypeDeclaration<?>>, String>>map(Result::ok)
+			.orElseGet(() -> Result.err("No definition for %s!".formatted(targetName)));
 	}
 
 	/**
