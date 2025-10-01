@@ -9,6 +9,7 @@ import com.github.javaparser.Range;
 import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
+import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -22,7 +23,6 @@ import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
-import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
@@ -355,96 +355,85 @@ public class EditorPanel extends BaseEditorPanel {
 		this.tooltip.pack();
 	}
 
-	private Result<TrimmedBounds, String> findClassBounds(DecompiledClassSource source, ClassEntry target, String targetName) {
+	private Result<TrimmedBounds, String> findClassBounds(
+			DecompiledClassSource source, ClassEntry target, String targetName
+	) {
 		return this.getNodeType(target, targetName).andThen(nodeType -> {
-			final String sourceString = source.toString();
-			final ParseResult<CompilationUnit> parseResult = parse(sourceString);
-			return parseResult
-				.getResult()
-				.map(unit -> unit
-					.findFirst(nodeType, declaration -> declaration
-						.getFullyQualifiedName()
-						.filter(name -> name.equals(targetName))
-						.isPresent()
-					)
-					.map(targetDeclaration -> targetDeclaration
-						.getRange()
-						.map(range -> targetDeclaration
-							.getTokenRange()
-							.map(TokenRange::iterator)
-							.map(tokenItr -> {
-								while (tokenItr.hasNext()) {
-									final JavaToken javaToken = tokenItr.next();
-									if (javaToken.asString().equals("{")) {
-										return javaToken.getRange()
-											.map(openRange -> Result.<TrimmedBounds, String>ok(
-													toTrimmedBounds(new LineIndexer(sourceString), range.begin, openRange.begin)
-											))
-											.orElseGet(() -> Result.err("No open curly brace range for %s!".formatted(targetName)));
-									}
-								}
+			final LineIndexer lineIndexer = new LineIndexer(source.toString());
+			return findDeclaration(source, lineIndexer, nodeType, target, targetName).andThen(declaration -> declaration
+				.getTokenRange()
+				.map(TokenRange::iterator)
+				.map(tokenItr -> {
+					while (tokenItr.hasNext()) {
+						final JavaToken javaToken = tokenItr.next();
+						if (javaToken.asString().equals("{")) {
+							return javaToken.getRange()
+								.map(openRange -> toTrimmedBounds(
+									lineIndexer, declaration.getRange().orElseThrow().begin, openRange.begin
+								))
+								.<Result<TrimmedBounds, String>>map(Result::ok)
+								.orElseGet(() -> Result.err("No open curly brace range for %s!".formatted(targetName)));
+						}
+					}
 
-								return Result.<TrimmedBounds, String>err("No open curly brace for %s!".formatted(targetName));
-							})
-							.orElseGet(() -> Result.err("No token range for %s!".formatted(targetName)))
-						)
-						.orElseGet(() -> Result.err("No declaration range for %s!".formatted(targetName)))
-					)
-					.orElseGet(() -> Result.err("Failed to find %s in parsed source!".formatted(targetName)))
-				)
-				.orElseGet(() -> Result.err("Failed to parse source: " + parseResult.getProblems()));
+					return Result.<TrimmedBounds, String>err("No open curly brace for %s!".formatted(targetName));
+				})
+				.orElseGet(() -> Result.err("No token range for %s!".formatted(targetName))));
 		});
 	}
 
 	private Result<TrimmedBounds, String> findMethodBounds(
-			DecompiledClassSource source, MethodEntry target,
-			String targetName, String targetSimpleName
+			DecompiledClassSource source, MethodEntry target, String targetName
 	) {
-		final String sourceString = source.toString();
+		final LineIndexer lineIndexer = new LineIndexer(source.toString());
+		return findDeclaration(source, lineIndexer, MethodDeclaration.class, target, targetName)
+			.andThen(declaration -> {
+				final Range range = declaration.getRange().orElseThrow();
 
-		final ParseResult<CompilationUnit> parseResult = parse(sourceString);
-			return parseResult
-				.getResult()
-				.map(unit -> {
-					final LineIndexer lineIndexer = new LineIndexer(sourceString);
-					final Token targetToken = source.getIndex().getDeclarationToken(target);
+				return declaration
+					.getBody()
+					.map(body -> body.getRange()
+						.map(bodyRange -> toTrimmedBounds(lineIndexer, range.begin, bodyRange.begin))
+						.<Result<TrimmedBounds, String>>map(Result::ok)
+						.orElseGet(() -> Result.err("No body range for %s!".formatted(targetName)))
+					)
+					// no body: abstract
+					.orElseGet(() -> Result.ok(toTrimmedBounds(lineIndexer, range.begin, range.end)));
+			});
+	}
 
-					return unit
-						.findAll(MethodDeclaration.class, declaration -> {
-							if (declaration.getNameAsString().equals(targetSimpleName) && declaration.hasRange()) {
-								final Range range = declaration.getRange().orElseThrow();
+	/**
+	 * @return an {@linkplain Result#ok(Object) ok result} containing the declaration representing the passed
+	 * {@code declarationToken}, or an {@linkplain Result#err(Object) error result} if it could not be found;
+	 * found declarations always {@linkplain TypeDeclaration#hasRange() have a range}
+	 */
+	private static <D extends BodyDeclaration<?>> Result<D, String> findDeclaration(
+			DecompiledClassSource source, LineIndexer lineIndexer, Class<D> nodeType, Entry<?> target, String targetName
+	) {
+		final ParseResult<CompilationUnit> parseResult = parse(source.toString());
+		return parseResult
+			.getResult()
+			.map(unit -> unit
+				.findAll(nodeType, declaration -> {
+					if (declaration.hasRange()) {
+						final Range range = declaration.getRange().orElseThrow();
+						final Token targetToken = source.getIndex().getDeclarationToken(target);
 
-								return lineIndexer.getIndex(range.begin) <= targetToken.start
-									&& lineIndexer.getIndex(range.end) >= targetToken.end;
-							} else {
-								return false;
-							}
-						})
-						.stream()
-						// deepest first
-						.min(Comparator.comparingInt(
-								// hasRange() already checked in filter
-								declaration -> lineIndexer.getIndex(declaration.getRange().orElseThrow().end)
-						))
-						.map(targetDeclaration -> {
-								// hasRange() already checked in filter
-								final Range range = targetDeclaration.getRange().orElseThrow();
-
-							return targetDeclaration
-									.getBody()
-									.map(body -> body.getRange()
-										.map(bodyRange -> Result.<TrimmedBounds, String>ok(
-											toTrimmedBounds(lineIndexer, range.begin, bodyRange.begin)
-										))
-										.orElseGet(() -> Result.err("No body range for %s!".formatted(targetName)))
-									)
-									// no body: abstract
-									.orElseGet(() -> Result.ok(toTrimmedBounds(lineIndexer, range.begin, range.end)));
-							}
-						)
-						.orElseGet(() -> Result.err("Failed to find %s in parsed source!".formatted(targetName)));
+						return lineIndexer.getIndex(range.begin) <= targetToken.start
+							&& lineIndexer.getIndex(range.end) >= targetToken.end;
+					} else {
+						return false;
+					}
 				})
-				.orElseGet(() -> Result.err("Failed to parse source: " + parseResult.getProblems()));
+				.stream()
+				// deepest
+				.min(Comparator.comparingInt(
+					// hasRange() already checked in filter
+					declaration -> lineIndexer.getIndex(declaration.getRange().orElseThrow().end)
+				))
+				.<Result<D, String>>map(Result::ok)
+				.orElseGet(() -> Result.err("Failed to find %s in parsed source!".formatted(targetName))))
+			.orElseGet(() -> Result.err("Failed to parse source: " + parseResult.getProblems()));
 	}
 
 	private static TrimmedBounds toTrimmedBounds(LineIndexer lineIndexer, Position startPos, Position endPos) {
@@ -459,9 +448,8 @@ public class EditorPanel extends BaseEditorPanel {
 
 	private static ParseResult<CompilationUnit> parse(String source) {
 		final ParserConfiguration config = new ParserConfiguration()
-			.setStoreTokens(true)
-			// .setSymbolResolver(new JavaSymbolSolver())
-			.setLanguageLevel(ParserConfiguration.LanguageLevel.RAW);
+				.setStoreTokens(true)
+				.setLanguageLevel(ParserConfiguration.LanguageLevel.RAW);
 
 		final ParseResult<CompilationUnit> parseResult = new JavaParser(config).parse(source);
 		return parseResult;
@@ -570,9 +558,7 @@ public class EditorPanel extends BaseEditorPanel {
 			return unwrapOrNull(this.findClassBounds(source, targetClass, targetDotName));
 		} else if (target instanceof MethodEntry targetMethod) {
 			// TODO
-			return unwrapOrNull(
-					this.findMethodBounds(source, targetMethod, targetDotName, deobfTarget.getSimpleName())
-			);
+			return unwrapOrNull(this.findMethodBounds(source, targetMethod, targetDotName));
 		} else if (target instanceof FieldEntry targetField) {
 			// TODO
 			return null;
