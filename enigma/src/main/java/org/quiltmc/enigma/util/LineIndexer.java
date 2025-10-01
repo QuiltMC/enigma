@@ -12,11 +12,17 @@ public class LineIndexer {
 
 	private final List<Integer> indexesByLine = new ArrayList<>();
 	private final Matcher lineEndMatcher;
+	private final String string;
 
 	public LineIndexer(String string) {
 		// the first line always starts at 0
 		this.indexesByLine.add(0);
-		this.lineEndMatcher = LINE_END.matcher(string);
+		this.string = string;
+		this.lineEndMatcher = LINE_END.matcher(this.string);
+	}
+
+	public String getString() {
+		return this.string;
 	}
 
 	public int getStartIndex(int line) {

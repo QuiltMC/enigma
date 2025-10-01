@@ -5,11 +5,13 @@ import com.github.javaparser.JavaToken;
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.Position;
+import com.github.javaparser.Range;
 import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.google.common.util.concurrent.Runnables;
@@ -20,6 +22,7 @@ import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
+import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
@@ -60,6 +63,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -130,7 +134,7 @@ public class EditorPanel extends BaseEditorPanel {
 				});
 			}
 	);
-	// TODO stop hide timer when mouse is over tooltip
+	// TODO stop hide timer when mouse is over tooltip or target token
 	// TODO tooltip re-shows after short delay after hiding
 	private final Timer hideTokenTooltipTimer = new Timer(
 			ToolTipManager.sharedInstance().getDismissDelay() - MOUSE_STOPPED_MOVING_DELAY,
@@ -313,7 +317,6 @@ public class EditorPanel extends BaseEditorPanel {
 		if (target instanceof ParentedEntry<?> parentedTarget) {
 			final ClassEntry targetTopClass = parentedTarget.getTopLevelClass();
 
-			@Nullable
 			final ClassHandle targetTopClassHandle = targetTopClass.equals(this.getSource().getEntry())
 					? this.classHandle
 					: this.gui.getController().getClassHandleProvider().openClass(targetTopClass);
@@ -352,13 +355,10 @@ public class EditorPanel extends BaseEditorPanel {
 		this.tooltip.pack();
 	}
 
-	private Result<TrimmedBounds, String> getClassBounds(String source, String targetName, ClassEntry target) {
+	private Result<TrimmedBounds, String> findClassBounds(DecompiledClassSource source, ClassEntry target, String targetName) {
 		return this.getNodeType(target, targetName).andThen(nodeType -> {
-			final ParserConfiguration config = new ParserConfiguration()
-					.setStoreTokens(true)
-					.setLanguageLevel(ParserConfiguration.LanguageLevel.RAW);
-
-			final ParseResult<CompilationUnit> parseResult = new JavaParser(config).parse(source);
+			final String sourceString = source.toString();
+			final ParseResult<CompilationUnit> parseResult = parse(sourceString);
 			return parseResult
 				.getResult()
 				.map(unit -> unit
@@ -377,19 +377,9 @@ public class EditorPanel extends BaseEditorPanel {
 									final JavaToken javaToken = tokenItr.next();
 									if (javaToken.asString().equals("{")) {
 										return javaToken.getRange()
-											.map(openRange -> {
-												final Position startPos = range.begin;
-												final Position endPos = openRange.begin;
-
-												final LineIndexer lineIndexer = new LineIndexer(source);
-												final int start = lineIndexer.getIndex(startPos);
-												int end = lineIndexer.getIndex(endPos);
-												while (Character.isWhitespace(source.charAt(end - 1))) {
-													end--;
-												}
-
-												return Result.<TrimmedBounds, String>ok(new TrimmedBounds(start, end));
-											})
+											.map(openRange -> Result.<TrimmedBounds, String>ok(
+													toTrimmedBounds(new LineIndexer(sourceString), range.begin, openRange.begin)
+											))
 											.orElseGet(() -> Result.err("No open curly brace range for %s!".formatted(targetName)));
 									}
 								}
@@ -404,6 +394,77 @@ public class EditorPanel extends BaseEditorPanel {
 				)
 				.orElseGet(() -> Result.err("Failed to parse source: " + parseResult.getProblems()));
 		});
+	}
+
+	private Result<TrimmedBounds, String> findMethodBounds(
+			DecompiledClassSource source, MethodEntry target,
+			String targetName, String targetSimpleName
+	) {
+		final String sourceString = source.toString();
+
+		final ParseResult<CompilationUnit> parseResult = parse(sourceString);
+			return parseResult
+				.getResult()
+				.map(unit -> {
+					final LineIndexer lineIndexer = new LineIndexer(sourceString);
+					final Token targetToken = source.getIndex().getDeclarationToken(target);
+
+					return unit
+						.findAll(MethodDeclaration.class, declaration -> {
+							if (declaration.getNameAsString().equals(targetSimpleName) && declaration.hasRange()) {
+								final Range range = declaration.getRange().orElseThrow();
+
+								return lineIndexer.getIndex(range.begin) <= targetToken.start
+									&& lineIndexer.getIndex(range.end) >= targetToken.end;
+							} else {
+								return false;
+							}
+						})
+						.stream()
+						// deepest first
+						.min(Comparator.comparingInt(
+								// hasRange() already checked in filter
+								declaration -> lineIndexer.getIndex(declaration.getRange().orElseThrow().end)
+						))
+						.map(targetDeclaration -> {
+								// hasRange() already checked in filter
+								final Range range = targetDeclaration.getRange().orElseThrow();
+
+							return targetDeclaration
+									.getBody()
+									.map(body -> body.getRange()
+										.map(bodyRange -> Result.<TrimmedBounds, String>ok(
+											toTrimmedBounds(lineIndexer, range.begin, bodyRange.begin)
+										))
+										.orElseGet(() -> Result.err("No body range for %s!".formatted(targetName)))
+									)
+									// no body: abstract
+									.orElseGet(() -> Result.ok(toTrimmedBounds(lineIndexer, range.begin, range.end)));
+							}
+						)
+						.orElseGet(() -> Result.err("Failed to find %s in parsed source!".formatted(targetName)));
+				})
+				.orElseGet(() -> Result.err("Failed to parse source: " + parseResult.getProblems()));
+	}
+
+	private static TrimmedBounds toTrimmedBounds(LineIndexer lineIndexer, Position startPos, Position endPos) {
+		final int start = lineIndexer.getIndex(startPos);
+		int end = lineIndexer.getIndex(endPos);
+		while (Character.isWhitespace(lineIndexer.getString().charAt(end - 1))) {
+			end--;
+		}
+
+		return new TrimmedBounds(start, end);
+	}
+
+	private static ParseResult<CompilationUnit> parse(String source) {
+		final ParserConfiguration config = new ParserConfiguration()
+			.setStoreTokens(true)
+			// .setSymbolResolver(new JavaSymbolSolver())
+			.setLanguageLevel(ParserConfiguration.LanguageLevel.RAW);
+
+		final ParseResult<CompilationUnit> parseResult = new JavaParser(config).parse(source);
+		return parseResult;
 	}
 
 	private Result<? extends Class<? extends TypeDeclaration<?>>, String> getNodeType(
@@ -426,7 +487,11 @@ public class EditorPanel extends BaseEditorPanel {
 				}
 			})
 			.<Result<? extends Class<? extends TypeDeclaration<?>>, String>>map(Result::ok)
-			.orElseGet(() -> Result.err("No definition for %s!".formatted(targetName)));
+			.orElseGet(() -> Result.err(noDefinitionErrorOf(targetName)));
+	}
+
+	private static String noDefinitionErrorOf(String targetName) {
+		return "No definition for %s!".formatted(targetName);
 	}
 
 	/**
@@ -499,16 +564,15 @@ public class EditorPanel extends BaseEditorPanel {
 	}
 
 	private TrimmedBounds createTrimmedBounds(DecompiledClassSource source, Entry<?> target, Entry<?> deobfTarget) {
-		if (target instanceof ClassEntry targetClass) {
-			final String targetDotName = CLASS_PUNCTUATION.matcher(deobfTarget.getFullName()).replaceAll(".");
+		final String targetDotName = CLASS_PUNCTUATION.matcher(deobfTarget.getFullName()).replaceAll(".");
 
-			return this.getClassBounds(source.toString(), targetDotName, targetClass).unwrapOrElse(error -> {
-				Logger.error(error);
-				return null;
-			});
+		if (target instanceof ClassEntry targetClass) {
+			return unwrapOrNull(this.findClassBounds(source, targetClass, targetDotName));
 		} else if (target instanceof MethodEntry targetMethod) {
 			// TODO
-			return null;
+			return unwrapOrNull(
+					this.findMethodBounds(source, targetMethod, targetDotName, deobfTarget.getSimpleName())
+			);
 		} else if (target instanceof FieldEntry targetField) {
 			// TODO
 			return null;
@@ -526,6 +590,13 @@ public class EditorPanel extends BaseEditorPanel {
 			// TODO
 			return null;
 		}
+	}
+
+	private static TrimmedBounds unwrapOrNull(Result<TrimmedBounds, String> boundsResult) {
+		return boundsResult.unwrapOrElse(error -> {
+			Logger.error(error);
+			return null;
+		});
 	}
 
 	public void onRename(boolean isNewMapping) {
