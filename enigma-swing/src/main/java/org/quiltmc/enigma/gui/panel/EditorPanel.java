@@ -1,10 +1,30 @@
 package org.quiltmc.enigma.gui.panel;
 
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.JavaToken;
+import com.github.javaparser.ParseResult;
+import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.Position;
+import com.github.javaparser.TokenRange;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.AnnotationDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.RecordDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
 import com.google.common.util.concurrent.Runnables;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.EntryReference;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
+import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
+import org.quiltmc.enigma.api.translation.representation.AccessFlags;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindToolBar;
@@ -12,12 +32,15 @@ import org.quiltmc.enigma.gui.element.EditorPopupMenu;
 import org.quiltmc.enigma.gui.element.NavigatorPanel;
 import org.quiltmc.enigma.gui.event.EditorActionListener;
 import org.quiltmc.enigma.api.source.Token;
-import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
-import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.syntaxpain.DefaultSyntaxAction;
 import org.quiltmc.syntaxpain.SyntaxDocument;
+import org.quiltmc.enigma.gui.highlight.SelectionHighlightPainter;
+import org.quiltmc.enigma.util.LineIndexer;
+import org.quiltmc.enigma.util.Result;
+import org.quiltmc.syntaxpain.LineNumbersRuler;
+import org.tinylog.Logger;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -42,12 +65,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JViewport;
 import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -59,6 +84,7 @@ import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
 public class EditorPanel extends BaseEditorPanel {
 	private static final int MOUSE_STOPPED_MOVING_DELAY = 100;
+	private static final Pattern CLASS_PUNCTUATION = Pattern.compile("/|\\$");
 
 	private final NavigatorPanel navigatorPanel;
 	private final EnigmaQuickFindToolBar quickFindToolBar = new EnigmaQuickFindToolBar();
@@ -104,6 +130,8 @@ public class EditorPanel extends BaseEditorPanel {
 				});
 			}
 	);
+	// TODO stop hide timer when mouse is over tooltip
+	// TODO tooltip re-shows after short delay after hiding
 	private final Timer hideTokenTooltipTimer = new Timer(
 			ToolTipManager.sharedInstance().getDismissDelay() - MOUSE_STOPPED_MOVING_DELAY,
 			e -> this.closeTooltip()
@@ -292,14 +320,56 @@ public class EditorPanel extends BaseEditorPanel {
 
 			if (targetTopClassHandle != null) {
 				final BaseEditorPanel tooltipEditor = new BaseEditorPanel(this.gui);
-				tooltipEditor.getEditor().setEditable(false);
-				tooltipEditor.addSourceSetListener(source -> {
-					this.tooltip.pack();
-					final Token declarationToken = source.getIndex().getDeclarationToken(target);
-					if (declarationToken != null) {
-						tooltipEditor.navigateToToken(declarationToken);
+
+				Optional.ofNullable(tooltipEditor.editorScrollPane.getRowHeader())
+						.map(JViewport::getView)
+						// LineNumbersRuler is installed by syntaxpain
+						.map(view -> view instanceof LineNumbersRuler lineNumbers ? lineNumbers : null)
+						// TODO offset line numbers instead of removing them once
+						//  offsets are implemented in syntaxpain
+						.ifPresent(lineNumbers -> lineNumbers.deinstall(tooltipEditor.editor));
+
+				tooltipEditor.setTrimFactory(source -> {
+					if (target instanceof ClassEntry targetClass) {
+						final String targetDotName = CLASS_PUNCTUATION.matcher(deobfTarget.getFullName()).replaceAll(".");
+
+						return this.getClassBounds(source.toString(), targetDotName, targetClass).unwrapOrElse(error -> {
+							Logger.error(error);
+							return null;
+						});
+					} else if (target instanceof MethodEntry targetMethod) {
+						// TODO
+						return null;
+					} else if (target instanceof FieldEntry targetField) {
+						// TODO
+						return null;
+					} else if (target instanceof LocalVariableEntry targetLocal) {
+						if (targetLocal.isArgument()) {
+							// TODO
+							return null;
+						} else {
+							// TODO
+							return null;
+
+							// nothing? or show parent method?
+						}
+					} else {
+						// TODO
+						return null;
 					}
 				});
+
+				tooltipEditor.addSourceSetListener(source -> {
+					final Token declarationToken = source.getIndex().getDeclarationToken(target);
+					if (declarationToken != null) {
+						this.tooltip.pack();
+
+						// TODO create custom highlighter
+						tooltipEditor.navigateToToken(declarationToken, SelectionHighlightPainter.INSTANCE);
+					}
+				});
+
+				tooltipEditor.getEditor().setEditable(false);
 				tooltipEditor.setClassHandle(targetTopClassHandle);
 				tooltipContent.add(tooltipEditor.ui);
 			}
@@ -308,6 +378,88 @@ public class EditorPanel extends BaseEditorPanel {
 		this.tooltip.setLocation(MouseInfo.getPointerInfo().getLocation());
 
 		this.tooltip.pack();
+	}
+
+	private Result<TrimmedBounds, String> getClassBounds(String source, String targetName, ClassEntry target) {
+		return this.getNodeType(target)
+			.map(nodeType -> {
+				final ParserConfiguration config = new ParserConfiguration()
+						.setStoreTokens(true)
+						.setLanguageLevel(ParserConfiguration.LanguageLevel.RAW);
+
+				final ParseResult<CompilationUnit> parseResult = new JavaParser(config).parse(source);
+				return parseResult
+					.getResult()
+					.map(unit -> unit
+						.findFirst(nodeType, declaration -> declaration
+							.getFullyQualifiedName()
+							.filter(name -> name.equals(targetName))
+							.isPresent()
+						)
+						.map(targetDeclaration -> targetDeclaration
+							.getRange()
+							.map(range -> targetDeclaration
+								.getTokenRange()
+								.map(TokenRange::iterator)
+								.map(tokenItr -> {
+									while (tokenItr.hasNext()) {
+										final JavaToken javaToken = tokenItr.next();
+										if (javaToken.asString().equals("{")) {
+											return javaToken.getRange()
+												.map(openRange -> {
+													final Position startPos = range.begin;
+													final Position endPos = openRange.begin;
+
+													final LineIndexer lineIndexer = new LineIndexer(source);
+													// subtract 1 because Position line/column start at index 1, not 0
+													final int start = lineIndexer.getIndex(startPos.line - 1)
+															+ startPos.column - 1;
+													int end = lineIndexer.getIndex(endPos.line - 1)
+															+ endPos.column - 1;
+													while (Character.isWhitespace(source.charAt(end - 1))) {
+														end--;
+													}
+
+													return Result.<TrimmedBounds, String>ok(new TrimmedBounds(start, end));
+												})
+												.orElseGet(() -> Result.err("No open curly brace range for %s!".formatted(targetName)));
+										}
+									}
+
+									return Result.<TrimmedBounds, String>err("No open curly brace for %s!".formatted(targetName));
+								})
+								.orElseGet(() -> Result.err("No token range for %s!".formatted(targetName)))
+							)
+							.orElseGet(() -> Result.err("No parsed range for %s!".formatted(targetName)))
+						)
+						.orElseGet(() -> Result.err("Failed to find %s in parsed source!".formatted(targetName)))
+					)
+					.orElseGet(() -> Result.err("Failed to parse source: " + parseResult.getProblems()));
+			})
+			.orElseGet(() -> Result.err("No definition for %s!".formatted(targetName)));
+	}
+
+	private Optional<? extends Class<? extends TypeDeclaration<?>>> getNodeType(ClassEntry targetClass) {
+		final EntryIndex entryIndex = this.gui.getController().getProject().getJarIndex()
+				.getIndex(EntryIndex.class);
+
+		return Optional
+			.ofNullable(entryIndex.getDefinition(targetClass))
+			.map(targetDef -> {
+				final InheritanceIndex inheritanceIndex = this.gui.getController().getProject().getJarIndex()
+						.getIndex(InheritanceIndex.class);
+
+				final AccessFlags access = targetDef.getAccess();
+				if (access.isEnum()) {
+					return EnumDeclaration.class;
+				} else if (access.isAnnotation()) {
+					return AnnotationDeclaration.class;
+				} else if (inheritanceIndex.getParents(targetDef).contains(new ClassEntry("java/lang/Record"))) {
+					return RecordDeclaration.class;
+				} else {
+					return ClassOrInterfaceDeclaration.class;
+				}
+			});
 	}
 
 	/**

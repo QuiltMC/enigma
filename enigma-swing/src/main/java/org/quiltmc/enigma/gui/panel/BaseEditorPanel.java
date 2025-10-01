@@ -22,6 +22,7 @@ import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Result;
+import org.quiltmc.enigma.util.Utils;
 import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
@@ -37,7 +38,6 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.Highlighter.HighlightPainter;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -53,7 +53,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class BaseEditorPanel {
 	protected final JPanel ui = new JPanel();
@@ -74,6 +76,8 @@ public class BaseEditorPanel {
 	private final JButton retryButton = new JButton(I18n.translate("prompt.retry"));
 
 	private final List<Consumer<DecompiledClassSource>> sourceSetListeners = new ArrayList<>();
+	@Nullable
+	private Function<DecompiledClassSource, TrimmedBounds> trimFactory;
 
 	private DisplayMode mode = DisplayMode.INACTIVE;
 
@@ -89,6 +93,7 @@ public class BaseEditorPanel {
 
 	protected ClassHandle classHandle;
 	private DecompiledClassSource source;
+	private SourceBounds sourceBounds = new DefaultBounds();
 	protected boolean settingSource;
 
 	public BaseEditorPanel(Gui gui) {
@@ -312,8 +317,16 @@ public class BaseEditorPanel {
 			}
 
 			this.source = source;
-			this.editor.getHighlighter().removeAllHighlights();
 			this.editor.setText(source.toString());
+			final TrimmedBounds trimmedBounds = this.trimFactory == null ? null : this.trimFactory.apply(this.source);
+			if (trimmedBounds == null) {
+				this.sourceBounds = new DefaultBounds();
+			} else {
+				this.sourceBounds = trimmedBounds;
+				this.trimSource(trimmedBounds);
+			}
+
+			this.editor.getHighlighter().removeAllHighlights();
 
 			this.setHighlightedTokens(source.getTokenStore(), source.getHighlightedTokens());
 			if (this.source != null) {
@@ -334,6 +347,46 @@ public class BaseEditorPanel {
 			this.nextReference = null;
 		}
 	}
+
+	// TODO strip indent
+	private void trimSource(TrimmedBounds bounds) {
+		final long oldCaretPos = this.editor.getCaretPosition();
+
+		final String sourceString = this.source.toString();
+		this.sourceBounds = new TrimmedBounds(bounds.start(), Math.min(bounds.end(), sourceString.length()));
+		this.editor.setText(sourceString.substring(this.sourceBounds.start(), this.sourceBounds.end()));
+		this.editor.setCaretPosition(
+				Utils.clamp(oldCaretPos - this.sourceBounds.start(), 0, this.editor.getText().length())
+		);
+	}
+
+	protected void setTrimFactory(Function<DecompiledClassSource, TrimmedBounds> factory) {
+		this.trimFactory = factory;
+	}
+
+	// protected void trimSource(int start, int end) {
+	// 	if (this.source == null) {
+	// 		throw new UnsupportedOperationException("Cannot trim null source!");
+	// 	}
+	//
+	// 	final long oldCaretPos = this.editor.getCaretPosition();
+	//
+	// 	final String sourceString = this.source.toString();
+	// 	this.sourceBounds = new TrimmedBounds(start, Math.min(end, sourceString.length()));
+	// 	this.editor.setText(sourceString.substring(this.sourceBounds.start(), this.sourceBounds.end()));
+	// 	this.editor.setCaretPosition(
+	// 			Utils.clamp(oldCaretPos - this.sourceBounds.start(), 0, this.editor.getText().length())
+	// 	);
+	// }
+
+	// protected void unTrimSource() {
+	// 	if (this.source == null) {
+	// 		throw new UnsupportedOperationException("Cannot un-trim null source!");
+	// 	}
+	//
+	// 	this.sourceBounds = new DefaultBounds();
+	// 	this.editor.setText(this.source.toString());
+	// }
 
 	protected void addSourceSetListener(Consumer<DecompiledClassSource> listener) {
 		this.sourceSetListeners.add(listener);
@@ -375,11 +428,13 @@ public class BaseEditorPanel {
 	}
 
 	private void addHighlightedToken(Token token, HighlightPainter tokenPainter) {
-		try {
-			this.editor.getHighlighter().addHighlight(token.start, token.end, tokenPainter);
-		} catch (BadLocationException ex) {
-			throw new IllegalArgumentException(ex);
-		}
+		this.sourceBounds.offsetOf(token).ifPresent(offsetToken -> {
+			try {
+				this.editor.getHighlighter().addHighlight(offsetToken.start, offsetToken.end, tokenPainter);
+			} catch (BadLocationException ex) {
+				throw new IllegalArgumentException(ex);
+			}
+		});
 	}
 
 	public EntryReference<Entry<?>, Entry<?>> getCursorReference() {
@@ -419,18 +474,31 @@ public class BaseEditorPanel {
 		this.navigateToToken(token, SelectionHighlightPainter.INSTANCE);
 	}
 
-	private void navigateToToken(Token token, HighlightPainter highlightPainter) {
+	protected void navigateToToken(Token token, HighlightPainter highlightPainter) {
 		// set the caret position to the token
-		Document document = this.editor.getDocument();
-		int clampedPosition = Math.min(Math.max(token.start, 0), document.getLength());
+		// Document document = this.editor.getDocument();
+		// if (!this.sourceBounds.contains(token)) {
+		// 	return;
+		// }
 
-		this.editor.setCaretPosition(clampedPosition);
+		final Token offsetToken = this.sourceBounds.offsetOf(token).orElse(null);
+		if (offsetToken == null) {
+			// token out of bounds
+			return;
+		}
+
+		// int clampedPosition = Math.min(Math.max(token.start, 0), document.getLength());
+		// int clampedPosition = Utils.clamp(token.start, this.sourceBounds.start(), this.sourceBounds.end());
+
+		// final int offsetStart = token.start - this.sourceBounds.start();
+
+		this.editor.setCaretPosition(offsetToken.start);
 		this.editor.grabFocus();
 
 		try {
 			// make sure the token is visible in the scroll window
-			Rectangle2D start = this.editor.modelToView2D(token.start);
-			Rectangle2D end = this.editor.modelToView2D(token.end);
+			Rectangle2D start = this.editor.modelToView2D(offsetToken.start);
+			Rectangle2D end = this.editor.modelToView2D(offsetToken.start);
 			if (start == null || end == null) {
 				return;
 			}
@@ -456,7 +524,8 @@ public class BaseEditorPanel {
 			public void actionPerformed(ActionEvent event) {
 				if (this.counter % 2 == 0) {
 					try {
-						this.highlight = BaseEditorPanel.this.editor.getHighlighter().addHighlight(token.start, token.end, highlightPainter);
+						// final int offsetEnd = token.end - BaseEditorPanel.this.sourceBounds.start();
+						this.highlight = BaseEditorPanel.this.editor.getHighlighter().addHighlight(offsetToken.start, offsetToken.end, highlightPainter);
 					} catch (BadLocationException ex) {
 						// don't care
 					}
@@ -473,14 +542,6 @@ public class BaseEditorPanel {
 
 		timer.start();
 	}
-
-	// public void addListener(EditorActionListener listener) {
-	// 	this.listeners.add(listener);
-	// }
-
-	// public void removeListener(EditorActionListener listener) {
-	// 	this.listeners.remove(listener);
-	// }
 
 	public JPanel getUi() {
 		return this.ui;
@@ -509,6 +570,55 @@ public class BaseEditorPanel {
 	private ClassEntry getDeobfOrObfHandleRef() {
 		final ClassEntry deobfRef = this.classHandle.getDeobfRef();
 		return deobfRef == null ? this.classHandle.getRef() : deobfRef;
+	}
+
+	protected sealed interface SourceBounds {
+		int start();
+
+		int end();
+
+		default boolean contains(int pos) {
+			return pos >= this.start() && pos <= this.end();
+		}
+
+		default boolean contains(Token token) {
+			return this.contains(token.start) && this.contains(token.end);
+		}
+
+		default Optional<Token> offsetOf(Token token) {
+			return this.contains(token)
+				? Optional.of(new Token(token.start - this.start(), token.end - this.start(), token.text))
+				: Optional.empty();
+		}
+	}
+
+	protected record TrimmedBounds(int start, int end) implements SourceBounds {
+		public TrimmedBounds {
+			if (start < 0) {
+				throw new IllegalArgumentException("start must not be negative!");
+			}
+
+			if (start > end) {
+				throw new IllegalArgumentException("start must not be greater than end!");
+			}
+		}
+	}
+
+	private final class DefaultBounds implements SourceBounds {
+		@Override
+		public int start() {
+			return 0;
+		}
+
+		@Override
+		public int end() {
+			return BaseEditorPanel.this.source.toString().length();
+		}
+
+		@Override
+		public Optional<Token> offsetOf(Token token) {
+			return this.end() < token.end ? Optional.empty() : Optional.of(token);
+		}
 	}
 
 	private enum DisplayMode {
