@@ -12,11 +12,15 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.InitializerDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
-import com.github.javaparser.ast.expr.LambdaExpr;
+import com.github.javaparser.ast.expr.*;
+import org.jetbrains.java.decompiler.code.*;
 import org.jetbrains.java.decompiler.main.DecompilerContext;
 import org.jetbrains.java.decompiler.main.extern.TextTokenVisitor;
 import org.jetbrains.java.decompiler.struct.StructClass;
 import org.jetbrains.java.decompiler.struct.StructMethod;
+import org.jetbrains.java.decompiler.struct.attr.StructBootstrapMethodsAttribute;
+import org.jetbrains.java.decompiler.struct.attr.StructGeneralAttribute;
+import org.jetbrains.java.decompiler.struct.consts.*;
 import org.jetbrains.java.decompiler.struct.gen.FieldDescriptor;
 import org.jetbrains.java.decompiler.struct.gen.MethodDescriptor;
 import org.jetbrains.java.decompiler.util.Pair;
@@ -30,6 +34,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntr
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.tinylog.Logger;
 
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -38,7 +43,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 public class EnigmaTextTokenCollector extends TextTokenVisitor {
@@ -140,8 +144,8 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			this.addClassAndChildren(decl, pkgPrefix + decl.getNameAsString());
 		}
 
-		for (ClassEntry entry : this.classRanges.keySet()) {
-			String[] parts = entry.getContextualName().split("\\$");
+		for (ClassEntry classEntry : this.classRanges.keySet()) {
+			String[] parts = classEntry.getContextualName().split("\\$");
 			TypeDeclaration<?> type = null;
 			for (TypeDeclaration<?> decl : unit.getTypes()) {
 				if (decl.getNameAsString().equals(parts[0])) {
@@ -159,60 +163,142 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			}
 
 			if (type == null) {
-				throw new IllegalStateException("Could not find type " + entry.getContextualName() + " in parsed source");
+				throw new IllegalStateException("Could not find type " + classEntry.getContextualName() + " in parsed source");
 			}
 
-			Map<String, TextRange> lambdaRanges = new HashMap<>();
-			int lambdaOrdinal = 0;
+			Map<String, LambdaNode> rootNodes = new HashMap<>();
 			for (var member : type.getMembers()) {
 				if (member instanceof TypeDeclaration<?>) {
 					continue;
 				}
-
-				List<LambdaExpr> lambdas = member.findAll(LambdaExpr.class);
-				for (LambdaExpr lambda : lambdas) {
-					Node node = lambda;
-					String context;
-					while (true) {
-						Optional<Node> nodeOptional = node.getParentNode();
-						if (nodeOptional.isEmpty()) {
-							throw new IllegalStateException("Lambda has no valid parent");
-						}
-
-						node = nodeOptional.get();
-						if (node instanceof MethodDeclaration method) {
-							context = method.getNameAsString();
-							break;
-						} else if (node instanceof ConstructorDeclaration) {
-							context = "new";
-							break;
-						} else if (node instanceof TypeDeclaration<?>) {
-							context = "static";
-							break;
+				if (member instanceof ConstructorDeclaration constructor) {
+					LambdaNode rootNode = rootNodes.computeIfAbsent("<init>", c -> new LambdaNode());
+					this.findLambdasInSource(constructor.getBody(), rootNode);
+				} else if (member instanceof MethodDeclaration method) {
+					if (method.getBody().isPresent()) {
+						LambdaNode rootNode = rootNodes.computeIfAbsent(method.getNameAsString(), c -> new LambdaNode());
+						this.findLambdasInSource(method.getBody().get(), rootNode);
+					}
+				} else {
+					LambdaNode rootNode = rootNodes.computeIfAbsent("<clinit>", c -> new LambdaNode());
+					for (LambdaExpr lambda : member.findAll(LambdaExpr.class)) {
+						if (lambda.findAncestor(LambdaExpr.class).isEmpty()) {
+							LambdaNode lambdaNode = new LambdaNode(lambda, false);
+							rootNode.children.add(lambdaNode);
+							this.findLambdasInSource(lambda, rootNode);
 						}
 					}
-
-					String name = "lambda$" + context + "$" + lambdaOrdinal++;
-					Range range = lambda.getRange().orElseThrow(() -> new IllegalStateException("No range for lambda"));
-					int start = this.positionToIndex(range.begin);
-					int end = this.positionToIndex(range.end);
-					TextRange textRange = new TextRange(start, end - start);
-					lambdaRanges.put(name, textRange);
 				}
 			}
-
-			StructClass clazz = DecompilerContext.getStructContext().getClass(entry.getFullName());
+			StructClass clazz = DecompilerContext.getStructContext().getClass(classEntry.getFullName());
 			for (StructMethod method : clazz.getMethods()) {
-				TextRange range = lambdaRanges.get(method.getName());
-				if (range == null) {
+				LambdaNode rootNode = rootNodes.get(method.getName());
+				if (rootNode == null) {
 					continue;
 				}
-
-				SyntheticMethodSpan span = new SyntheticMethodSpan(range, true);
-				this.syntheticMethods.add(span);
-				this.syntheticEntryBySpan.put(span, getMethodEntry(entry.getFullName(), method.getName(), MethodDescriptor.parseDescriptor(method.getDescriptor())));
+				this.pairContext(clazz, method, rootNode);
 			}
 		}
+	}
+
+	private void pairContext(StructClass owner, StructMethod method, LambdaNode rootNode) {
+		List<MethodEntry> bytecodeLambdas = extractLambdasFromBytecode(owner, method);
+		int count = Math.min(bytecodeLambdas.size(), rootNode.children.size());
+		for (int i = 0; i < count; i++) {
+			LambdaNode childNode = rootNode.children.get(i);
+			if (childNode.isMethodReference) {
+				continue;
+			}
+			MethodEntry entry = bytecodeLambdas.get(i);
+			SyntheticMethodSpan span = new SyntheticMethodSpan(childNode.range, true);
+			this.syntheticMethods.add(span);
+			this.syntheticEntryBySpan.put(span, entry);
+			StructClass entryClass = DecompilerContext.getStructContext().getClass(entry.getParent().getFullName());
+			StructMethod entryMethod = entryClass.getMethod(entry.getName(), entry.getDesc().toString());
+			this.pairContext(entryClass, entryMethod, childNode);
+		}
+	}
+
+	private void findLambdasInSource(Node method, LambdaNode parentNode) {
+		for (var member : method.getChildNodes()) {
+			if (member instanceof LambdaExpr lambda) {
+				LambdaNode lambdaNode = new LambdaNode(lambda, false);
+				parentNode.children.add(lambdaNode);
+				this.findLambdasInSource(lambda, lambdaNode);
+			} else if (member instanceof MethodReferenceExpr methodRef) {
+				LambdaNode lambdaNode = new LambdaNode(methodRef, true);
+				parentNode.children.add(lambdaNode);
+			} else {
+				this.findLambdasInSource(member, parentNode);
+			}
+		}
+	}
+
+	private static List<MethodEntry> extractLambdasFromBytecode(StructClass clazz, StructMethod method) {
+		List<MethodEntry> lambdas = new ArrayList<>();
+		ConstantPool pool = clazz.getPool();
+
+		StructBootstrapMethodsAttribute bootstrapAttr = clazz.getAttribute(StructGeneralAttribute.ATTRIBUTE_BOOTSTRAP_METHODS);
+
+		if (bootstrapAttr == null) {
+			return lambdas;
+		}
+
+		if (!method.containsCode()) {
+			return lambdas;
+		}
+
+		try {
+			method.expandData(clazz);
+		} catch (IOException e) {
+			return lambdas;
+		}
+
+		InstructionSequence seq = method.getInstructionSequence();
+		if (seq == null) {
+			return lambdas;
+		}
+
+		for (int i = 0; i < seq.length(); i++) {
+			Instruction instr = seq.getInstr(i);
+			if (instr.opcode != CodeConstants.opc_invokedynamic) {
+				continue;
+			}
+
+			int indyIndex = instr.operand(0);
+			PooledConstant constant = pool.getConstant(indyIndex);
+			if (!(constant instanceof LinkConstant link) || link.type != LinkConstant.CONSTANT_InvokeDynamic) {
+				continue;
+			}
+
+			int bsmIndex = link.index1;
+			LinkConstant bootstrapMethod = bootstrapAttr.getMethodReference(bsmIndex);
+			String methodOwner = bootstrapMethod.classname;
+			String methodName = bootstrapMethod.elementname;
+			boolean isLambda = "java/lang/invoke/LambdaMetafactory".equals(methodOwner) &&
+							   ("metafactory".equals(methodName) || "altMetafactory".equals(methodName));
+			if (!isLambda) {
+				continue;
+			}
+			List<PooledConstant> args = bootstrapAttr.getMethodArguments(bsmIndex);
+
+			if (args.size() < 3) {
+				continue;
+			}
+
+			PooledConstant implConstant = args.get(1);
+			if (!(implConstant instanceof LinkConstant implMethod)) {
+				continue;
+			}
+
+			String owner = implMethod.classname;
+			String name = implMethod.elementname;
+			String descriptor = implMethod.descriptor;
+
+			lambdas.add(getMethodEntry(owner, name, MethodDescriptor.parseDescriptor(descriptor)));
+		}
+
+		return lambdas;
 	}
 
 	private void addClassAndChildren(TypeDeclaration<?> decl, String name) {
@@ -235,6 +321,12 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			line++;
 		}
 		return idx + (p.column - 1);
+	}
+
+	private TextRange convertRange(Range range) {
+		int start = this.positionToIndex(range.begin);
+		int end = this.positionToIndex(range.end);
+		return new TextRange(start, end - start);
 	}
 
 	private void updateMethodStack(TextRange range) {
@@ -377,5 +469,21 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 		SyntheticMethodSpan(int start, int end, boolean isLambda) {
 			this(new TextRange(start, end - start), isLambda);
 		}
+	}
+
+	class LambdaNode {
+		final TextRange range;
+		final boolean isMethodReference;
+		final List<LambdaNode> children = new ArrayList<>();
+		LambdaNode(Expression lambda, boolean isMethodReference) {
+			this.range = EnigmaTextTokenCollector.this.convertRange(lambda.getRange().orElseThrow(() -> new IllegalStateException("No range for lambda")));
+			this.isMethodReference = isMethodReference;
+		}
+
+		LambdaNode() {
+			this.range = null;
+			this.isMethodReference = false;
+		}
+
 	}
 }
