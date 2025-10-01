@@ -451,8 +451,7 @@ public class EditorPanel extends BaseEditorPanel {
 				.setStoreTokens(true)
 				.setLanguageLevel(ParserConfiguration.LanguageLevel.RAW);
 
-		final ParseResult<CompilationUnit> parseResult = new JavaParser(config).parse(source);
-		return parseResult;
+		return new JavaParser(config).parse(source);
 	}
 
 	private Result<? extends Class<? extends TypeDeclaration<?>>, String> getNodeType(
