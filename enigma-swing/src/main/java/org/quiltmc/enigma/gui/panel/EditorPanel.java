@@ -411,11 +411,8 @@ public class EditorPanel extends BaseEditorPanel {
 													final Position endPos = openRange.begin;
 
 													final LineIndexer lineIndexer = new LineIndexer(source);
-													// subtract 1 because Position line/column start at index 1, not 0
-													final int start = lineIndexer.getIndex(startPos.line - 1)
-															+ startPos.column - 1;
-													int end = lineIndexer.getIndex(endPos.line - 1)
-															+ endPos.column - 1;
+													final int start = lineIndexer.getIndex(startPos);
+													int end = lineIndexer.getIndex(endPos);
 													while (Character.isWhitespace(source.charAt(end - 1))) {
 														end--;
 													}

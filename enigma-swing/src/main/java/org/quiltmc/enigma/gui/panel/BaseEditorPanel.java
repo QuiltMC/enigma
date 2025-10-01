@@ -364,30 +364,6 @@ public class BaseEditorPanel {
 		this.trimFactory = factory;
 	}
 
-	// protected void trimSource(int start, int end) {
-	// 	if (this.source == null) {
-	// 		throw new UnsupportedOperationException("Cannot trim null source!");
-	// 	}
-	//
-	// 	final long oldCaretPos = this.editor.getCaretPosition();
-	//
-	// 	final String sourceString = this.source.toString();
-	// 	this.sourceBounds = new TrimmedBounds(start, Math.min(end, sourceString.length()));
-	// 	this.editor.setText(sourceString.substring(this.sourceBounds.start(), this.sourceBounds.end()));
-	// 	this.editor.setCaretPosition(
-	// 			Utils.clamp(oldCaretPos - this.sourceBounds.start(), 0, this.editor.getText().length())
-	// 	);
-	// }
-
-	// protected void unTrimSource() {
-	// 	if (this.source == null) {
-	// 		throw new UnsupportedOperationException("Cannot un-trim null source!");
-	// 	}
-	//
-	// 	this.sourceBounds = new DefaultBounds();
-	// 	this.editor.setText(this.source.toString());
-	// }
-
 	protected void addSourceSetListener(Consumer<DecompiledClassSource> listener) {
 		this.sourceSetListeners.add(listener);
 	}
@@ -475,23 +451,13 @@ public class BaseEditorPanel {
 	}
 
 	protected void navigateToToken(Token token, HighlightPainter highlightPainter) {
-		// set the caret position to the token
-		// Document document = this.editor.getDocument();
-		// if (!this.sourceBounds.contains(token)) {
-		// 	return;
-		// }
-
 		final Token offsetToken = this.sourceBounds.offsetOf(token).orElse(null);
 		if (offsetToken == null) {
 			// token out of bounds
 			return;
 		}
 
-		// int clampedPosition = Math.min(Math.max(token.start, 0), document.getLength());
-		// int clampedPosition = Utils.clamp(token.start, this.sourceBounds.start(), this.sourceBounds.end());
-
-		// final int offsetStart = token.start - this.sourceBounds.start();
-
+		// set the caret position to the token
 		this.editor.setCaretPosition(offsetToken.start);
 		this.editor.grabFocus();
 

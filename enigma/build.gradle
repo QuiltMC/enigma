@@ -12,6 +12,7 @@ dependencies {
 	implementation libs.vineflower
 	implementation libs.cfr
 	implementation libs.procyon
+	implementation libs.javaparser
 
 	implementation libs.quilt.config
 

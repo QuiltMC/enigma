@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.util;
 
+import com.github.javaparser.Position;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -17,11 +19,16 @@ public class LineIndexer {
 		this.lineEndMatcher = LINE_END.matcher(string);
 	}
 
-	public int getIndex(int line) {
+	public int getStartIndex(int line) {
 		while (line >= this.indexesByLine.size() && this.lineEndMatcher.find()) {
 			this.indexesByLine.add(this.lineEndMatcher.end());
 		}
 
 		return line < this.indexesByLine.size() ? this.indexesByLine.get(line) : -1;
+	}
+
+	public int getIndex(Position position) {
+		final int lineIndex = this.getStartIndex(position.line - Position.FIRST_LINE);
+		return lineIndex < 0 ? lineIndex : lineIndex + position.column - Position.FIRST_COLUMN;
 	}
 }
