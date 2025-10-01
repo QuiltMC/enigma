@@ -138,6 +138,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			if (range == null) {
 				continue;
 			}
+
 			this.syntheticMethods.add(new SyntheticMethodSpan(range, false));
 		}
 
@@ -146,6 +147,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			if (range == null) {
 				continue;
 			}
+
 			this.syntheticMethods.add(new SyntheticMethodSpan(range, false));
 		}
 
@@ -181,6 +183,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 				if (member instanceof TypeDeclaration<?>) {
 					continue;
 				}
+
 				if (member instanceof ConstructorDeclaration constructor) {
 					LambdaNode rootNode = rootNodes.computeIfAbsent("<init>", c -> new LambdaNode());
 					this.findLambdasInSource(constructor.getBody(), rootNode);
@@ -200,15 +203,18 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 					}
 				}
 			}
+
 			StructClass clazz = DecompilerContext.getStructContext().getClass(classEntry.getFullName());
 			if (clazz == null) {
 				throw new IllegalStateException("Class bytecode not found");
 			}
+
 			for (StructMethod method : clazz.getMethods()) {
 				LambdaNode rootNode = rootNodes.get(method.getName());
 				if (rootNode == null) {
 					continue;
 				}
+
 				this.pairContext(clazz, method, rootNode);
 			}
 		}
@@ -293,11 +299,12 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			LinkConstant bootstrapMethod = bootstrapAttr.getMethodReference(bsmIndex);
 			String methodOwner = bootstrapMethod.classname;
 			String methodName = bootstrapMethod.elementname;
-			boolean isLambda = "java/lang/invoke/LambdaMetafactory".equals(methodOwner) &&
-							   ("metafactory".equals(methodName) || "altMetafactory".equals(methodName));
+			boolean isLambda = "java/lang/invoke/LambdaMetafactory".equals(methodOwner)
+								&& ("metafactory".equals(methodName) || "altMetafactory".equals(methodName));
 			if (!isLambda) {
 				continue;
 			}
+
 			List<PooledConstant> args = bootstrapAttr.getMethodArguments(bsmIndex);
 
 			if (args.size() < 3) {
@@ -341,6 +348,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			Logger.error("No range for node of type {}", node.getClass().getSimpleName());
 			return null;
 		}
+
 		Range range = rangeOpt.get();
 		int start = this.lineIndexer.getIndex(range.begin);
 		int end = this.lineIndexer.getIndex(range.end);
@@ -391,6 +399,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			if (this.classStack.isEmpty()) {
 				throw new IllegalStateException("No class on the stack for synthetic method at " + method.range);
 			}
+
 			return getMethodEntry(this.classStack.peek().getFullName(), "<clinit>", MethodDescriptor.parseDescriptor("()V"));
 		}
 	}
@@ -502,6 +511,5 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			this.range = null;
 			this.isMethodReference = false;
 		}
-
 	}
 }
