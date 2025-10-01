@@ -76,8 +76,6 @@ public class BaseEditorPanel {
 	private final JButton retryButton = new JButton(I18n.translate("prompt.retry"));
 
 	private final List<Consumer<DecompiledClassSource>> sourceSetListeners = new ArrayList<>();
-	@Nullable
-	private Function<DecompiledClassSource, TrimmedBounds> trimFactory;
 
 	private DisplayMode mode = DisplayMode.INACTIVE;
 
@@ -127,23 +125,32 @@ public class BaseEditorPanel {
 	}
 
 	public void setClassHandle(ClassHandle handle) {
+		this.setClassHandle(handle, null);
+	}
+
+	protected void setClassHandle(
+			ClassHandle handle, @Nullable Function<DecompiledClassSource, TrimmedBounds> trimFactory
+	) {
 		ClassEntry old = null;
 		if (this.classHandle != null) {
 			old = this.classHandle.getRef();
 			this.classHandle.close();
 		}
 
-		this.setClassHandleImpl(old, handle);
+		this.setClassHandleImpl(old, handle, trimFactory);
 	}
 
-	protected void setClassHandleImpl(ClassEntry old, ClassHandle handle) {
+	protected void setClassHandleImpl(
+			ClassEntry old, ClassHandle handle,
+			@Nullable Function<DecompiledClassSource, TrimmedBounds> trimFactory
+	) {
 		this.setDisplayMode(DisplayMode.IN_PROGRESS);
 		this.setCursorReference(null);
 
 		handle.addListener(new ClassHandleListener() {
 			@Override
 			public void onMappedSourceChanged(ClassHandle h, Result<DecompiledClassSource, ClassHandleError> res) {
-				BaseEditorPanel.this.handleDecompilerResult(res);
+				BaseEditorPanel.this.handleDecompilerResult(res, trimFactory);
 			}
 
 			@Override
@@ -156,7 +163,10 @@ public class BaseEditorPanel {
 			}
 		});
 
-		handle.getSource().thenAcceptAsync(this::handleDecompilerResult, SwingUtilities::invokeLater);
+		handle.getSource().thenAcceptAsync(
+				res -> BaseEditorPanel.this.handleDecompilerResult(res, trimFactory),
+				SwingUtilities::invokeLater
+		);
 
 		this.classHandle = handle;
 	}
@@ -171,10 +181,13 @@ public class BaseEditorPanel {
 		}
 	}
 
-	private void handleDecompilerResult(Result<DecompiledClassSource, ClassHandleError> res) {
+	private void handleDecompilerResult(
+			Result<DecompiledClassSource, ClassHandleError> res,
+			@Nullable Function<DecompiledClassSource, TrimmedBounds> trimFactory
+	) {
 		SwingUtilities.invokeLater(() -> {
 			if (res.isOk()) {
-				this.setSource(res.unwrap());
+				this.setSource(res.unwrap(), trimFactory);
 			} else {
 				this.displayError(res.unwrapErr());
 			}
@@ -287,7 +300,10 @@ public class BaseEditorPanel {
 		return this.source.getIndex().getReference(token);
 	}
 
-	protected void setSource(DecompiledClassSource source) {
+	protected void setSource(
+			DecompiledClassSource source,
+			@Nullable Function<DecompiledClassSource, TrimmedBounds> trimFactory
+	) {
 		this.setDisplayMode(DisplayMode.SUCCESS);
 		if (source == null) return;
 		try {
@@ -318,7 +334,7 @@ public class BaseEditorPanel {
 
 			this.source = source;
 			this.editor.setText(source.toString());
-			final TrimmedBounds trimmedBounds = this.trimFactory == null ? null : this.trimFactory.apply(this.source);
+			final TrimmedBounds trimmedBounds = trimFactory == null ? null : trimFactory.apply(this.source);
 			if (trimmedBounds == null) {
 				this.sourceBounds = new DefaultBounds();
 			} else {
@@ -358,10 +374,6 @@ public class BaseEditorPanel {
 		this.editor.setCaretPosition(
 				Utils.clamp(oldCaretPos - this.sourceBounds.start(), 0, this.editor.getText().length())
 		);
-	}
-
-	protected void setTrimFactory(Function<DecompiledClassSource, TrimmedBounds> factory) {
-		this.trimFactory = factory;
 	}
 
 	protected void addSourceSetListener(Consumer<DecompiledClassSource> listener) {

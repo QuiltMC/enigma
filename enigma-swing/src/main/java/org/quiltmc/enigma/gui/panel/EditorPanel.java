@@ -18,6 +18,7 @@ import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
+import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
@@ -63,6 +64,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.swing.Box;
@@ -327,36 +329,6 @@ public class EditorPanel extends BaseEditorPanel {
 						//  offsets are implemented in syntaxpain
 						.ifPresent(lineNumbers -> lineNumbers.deinstall(tooltipEditor.editor));
 
-				tooltipEditor.setTrimFactory(source -> {
-					if (target instanceof ClassEntry targetClass) {
-						final String targetDotName = CLASS_PUNCTUATION.matcher(deobfTarget.getFullName()).replaceAll(".");
-
-						return this.getClassBounds(source.toString(), targetDotName, targetClass).unwrapOrElse(error -> {
-							Logger.error(error);
-							return null;
-						});
-					} else if (target instanceof MethodEntry targetMethod) {
-						// TODO
-						return null;
-					} else if (target instanceof FieldEntry targetField) {
-						// TODO
-						return null;
-					} else if (target instanceof LocalVariableEntry targetLocal) {
-						if (targetLocal.isArgument()) {
-							// TODO
-							return null;
-						} else {
-							// TODO
-							return null;
-
-							// nothing? or show parent method?
-						}
-					} else {
-						// TODO
-						return null;
-					}
-				});
-
 				tooltipEditor.addSourceSetListener(source -> {
 					final Token declarationToken = source.getIndex().getDeclarationToken(target);
 					if (declarationToken != null) {
@@ -368,7 +340,9 @@ public class EditorPanel extends BaseEditorPanel {
 				});
 
 				tooltipEditor.getEditor().setEditable(false);
-				tooltipEditor.setClassHandle(targetTopClassHandle);
+				tooltipEditor.setClassHandle(targetTopClassHandle, source -> this
+						.createTrimmedBounds(source, target, deobfTarget)
+				);
 				tooltipContent.add(tooltipEditor.ui);
 			}
 		}
@@ -524,6 +498,36 @@ public class EditorPanel extends BaseEditorPanel {
 		}
 	}
 
+	private TrimmedBounds createTrimmedBounds(DecompiledClassSource source, Entry<?> target, Entry<?> deobfTarget) {
+		if (target instanceof ClassEntry targetClass) {
+			final String targetDotName = CLASS_PUNCTUATION.matcher(deobfTarget.getFullName()).replaceAll(".");
+
+			return this.getClassBounds(source.toString(), targetDotName, targetClass).unwrapOrElse(error -> {
+				Logger.error(error);
+				return null;
+			});
+		} else if (target instanceof MethodEntry targetMethod) {
+			// TODO
+			return null;
+		} else if (target instanceof FieldEntry targetField) {
+			// TODO
+			return null;
+		} else if (target instanceof LocalVariableEntry targetLocal) {
+			if (targetLocal.isArgument()) {
+				// TODO
+				return null;
+			} else {
+				// TODO
+				return null;
+
+				// nothing? or show parent method?
+			}
+		} else {
+			// TODO
+			return null;
+		}
+	}
+
 	public void onRename(boolean isNewMapping) {
 		this.navigatorPanel.updateAllTokenTypes();
 		if (isNewMapping) {
@@ -564,13 +568,18 @@ public class EditorPanel extends BaseEditorPanel {
 	}
 
 	@Override
-	protected void setClassHandleImpl(ClassEntry old, ClassHandle handle) {
-		super.setClassHandleImpl(old, handle);
+	protected void setClassHandleImpl(
+			ClassEntry old, ClassHandle handle,
+			@Nullable Function<DecompiledClassSource, TrimmedBounds> trimFactory
+	) {
+		super.setClassHandleImpl(old, handle, trimFactory);
 
 		handle.addListener(new ClassHandleListener() {
 			@Override
 			public void onDeobfRefChanged(ClassHandle h, ClassEntry deobfRef) {
-				SwingUtilities.invokeLater(() -> EditorPanel.this.listeners.forEach(l -> l.onTitleChanged(EditorPanel.this, EditorPanel.this.getSimpleClassName())));
+				SwingUtilities.invokeLater(() -> EditorPanel.this.listeners.forEach(l -> l
+					.onTitleChanged(EditorPanel.this, EditorPanel.this.getSimpleClassName()))
+				);
 			}
 
 			@Override
@@ -610,16 +619,6 @@ public class EditorPanel extends BaseEditorPanel {
 
 		this.listeners.forEach(l -> l.onCursorReferenceChanged(this, ref));
 	}
-
-	// @Override
-	// protected void onSourceSet(DecompiledClassSource source) {
-	// 	super.onSourceSet(source);
-	// 	if (this.navigatorPanel != null) {
-	// 		for (Entry<?> entry : source.getIndex().declarations()) {
-	// 			this.navigatorPanel.addEntry(entry);
-	// 		}
-	// 	}
-	// }
 
 	public void addListener(EditorActionListener listener) {
 		this.listeners.add(listener);
