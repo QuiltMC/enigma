@@ -44,8 +44,8 @@ import static java.util.Comparator.comparingInt;
 
 public class TooltipEditorPanel extends BaseEditorPanel {
 	private static final Pattern CLASS_PUNCTUATION = Pattern.compile("[/\\$]");
-	private static final String NO_ENTRY_DEFINITION = "No entry definition!";
-	private static final String NO_TOKEN_RANGE = "No token range!";
+	private static final String NO_ENTRY_DEFINITION = "no entry definition!";
+	private static final String NO_TOKEN_RANGE = "no token range!";
 
 	public TooltipEditorPanel(Gui gui, Entry<?> target, ClassHandle targetTopClassHandle) {
 		super(gui);
@@ -82,16 +82,14 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 			return unwrapTooltipBoundsOrNull(this.findFieldBounds(source, targetField), targetDotName);
 		} else if (target instanceof LocalVariableEntry targetLocal) {
 			if (targetLocal.isArgument()) {
-				// TODO show method declaration
-				return null;
+				return unwrapTooltipBoundsOrNull(this.findMethodBounds(source, targetLocal.getParent()), targetDotName);
 			} else {
 				// TODO show local declaration
 				return null;
 			}
 		} else {
-			// TODO use same message formatting as unwrapOrNull
 			// this should never be reached
-			Logger.error("Unrecognized target entry type: {}!", target);
+			Logger.error("Error trimming tooltip for '{}': unrecognized target entry type!", targetDotName);
 			return null;
 		}
 	}
@@ -109,8 +107,8 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 							lineIndexer, declaration.getRange().orElseThrow().begin, openRange.begin
 						))
 						.<Result<TrimmedBounds, String>>map(Result::ok)
-						.orElseGet(() -> Result.err("No class open curly brace range!")))
-					.orElseGet(() -> Result.err("No class open curly brace!"))
+						.orElseGet(() -> Result.err("no class open curly brace range!")))
+					.orElseGet(() -> Result.err("no class open curly brace!"))
 				)
 				.orElseGet(() -> Result.err(NO_TOKEN_RANGE))
 			);
@@ -137,23 +135,23 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 			.orElseGet(() -> Result.err(NO_ENTRY_DEFINITION));
 	}
 
+	// TODO lambdas?
 	private Result<TrimmedBounds, String> findMethodBounds(DecompiledClassSource source, MethodEntry target) {
 		final LineIndexer lineIndexer = new LineIndexer(source.toString());
 		final Token targetToken = source.getIndex().getDeclarationToken(target);
-		return findDeclaration(source, targetToken, MethodDeclaration.class, lineIndexer)
-			.andThen(declaration -> {
-				final Range range = declaration.getRange().orElseThrow();
+		return findDeclaration(source, targetToken, MethodDeclaration.class, lineIndexer).andThen(declaration -> {
+			final Range range = declaration.getRange().orElseThrow();
 
-				return declaration
-					.getBody()
-					.map(body -> body.getRange()
-						.map(bodyRange -> toTrimmedBounds(lineIndexer, range.begin, bodyRange.begin))
-						.<Result<TrimmedBounds, String>>map(Result::ok)
-						.orElseGet(() -> Result.err("No method body range!"))
-					)
-					// no body: abstract
-					.orElseGet(() -> Result.ok(toTrimmedBounds(lineIndexer, range)));
-			});
+			return declaration
+				.getBody()
+				.map(body -> body.getRange()
+					.map(bodyRange -> toTrimmedBounds(lineIndexer, range.begin, bodyRange.begin))
+					.<Result<TrimmedBounds, String>>map(Result::ok)
+					.orElseGet(() -> Result.err("no method body range!"))
+				)
+				// no body: abstract
+				.orElseGet(() -> Result.ok(toTrimmedBounds(lineIndexer, range)));
+		});
 	}
 
 	private Result<TrimmedBounds, String> findFieldBounds(DecompiledClassSource source, FieldEntry target) {
@@ -168,7 +166,7 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 					return findEnumConstantBounds(source, targetToken, lineIndexer);
 				} else {
 					if (targetDef.getAccess().isStatic()) {
-						// don't check whether it's a record component if it's static
+						// not a record component if it's static
 						return findRegularFieldBounds(source, targetToken, lineIndexer);
 					} else {
 						return Optional.ofNullable(entryIndex.getDefinition(targetDef.getParent()))
@@ -179,7 +177,7 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 									return findRegularFieldBounds(source, targetToken, lineIndexer);
 								}
 							})
-							.orElseGet(() -> Result.err("No field parent definition!"));
+							.orElseGet(() -> Result.err("no field parent definition!"));
 					}
 				}
 			})
@@ -198,7 +196,7 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 				.findFirst()
 				.map(targetComponent -> toTrimmedBounds(lineIndexer, targetComponent.getRange().orElseThrow()))
 				.<Result<TrimmedBounds, String>>map(Result::ok)
-				.orElseGet(() -> Result.err("Could not find record component!"))
+				.orElseGet(() -> Result.err("could not find record component!"))
 			);
 	}
 
@@ -212,26 +210,25 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 	private static Result<TrimmedBounds, String> findRegularFieldBounds(
 			DecompiledClassSource source, Token target, LineIndexer lineIndexer
 	) {
-		return findDeclaration(source, target, FieldDeclaration.class, lineIndexer)
-			.andThen(declaration -> declaration
-				.getTokenRange()
-				.map(tokenRange -> {
-					final Range range = declaration.getRange().orElseThrow();
-					return declaration.getVariables().stream()
-						.filter(variable -> rangeContains(lineIndexer, variable, target))
-						.findFirst()
-						.map(variable -> findFirstToken(tokenRange, token -> token.asString().equals("="))
-							.map(terminator -> toTrimmedBounds(
-								lineIndexer, range.begin, terminator.getRange().orElseThrow().begin
-							))
-							.<Result<TrimmedBounds, String>>map(Result::ok)
-							// no assignment in field declaration
-							.orElseGet(() -> Result.ok(toTrimmedBounds(lineIndexer, range)))
-						)
-						.orElseGet(() -> Result.err("No matching variable declarator!"));
-				})
-				.orElseGet(() -> Result.err(NO_TOKEN_RANGE))
-			);
+		return findDeclaration(source, target, FieldDeclaration.class, lineIndexer).andThen(declaration -> declaration
+			.getTokenRange()
+			.map(tokenRange -> {
+				final Range range = declaration.getRange().orElseThrow();
+				return declaration.getVariables().stream()
+					.filter(variable -> rangeContains(lineIndexer, variable, target))
+					.findFirst()
+					.map(variable -> findFirstToken(tokenRange, token -> token.asString().equals("="))
+						.map(terminator -> toTrimmedBounds(
+							lineIndexer, range.begin, terminator.getRange().orElseThrow().begin
+						))
+						.<Result<TrimmedBounds, String>>map(Result::ok)
+						// no assignment in field declaration
+						.orElseGet(() -> Result.ok(toTrimmedBounds(lineIndexer, range)))
+					)
+					.orElseGet(() -> Result.err("no matching variable declarator!"));
+			})
+			.orElseGet(() -> Result.err(NO_TOKEN_RANGE))
+		);
 	}
 
 	/**
@@ -251,8 +248,8 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 				// deepest
 				.min(comparingInt(declaration -> lineIndexer.getIndex(declaration.getRange().orElseThrow().end)))
 				.<Result<D, String>>map(Result::ok)
-				.orElseGet(() -> Result.err("Not found in parsed source!")))
-			.orElseGet(() -> Result.err("Failed to parse source: " + parseResult.getProblems()));
+				.orElseGet(() -> Result.err("not found in parsed source!")))
+			.orElseGet(() -> Result.err("failed to parse source: " + parseResult.getProblems()));
 	}
 
 	private static Optional<JavaToken> findFirstToken(TokenRange range, Predicate<JavaToken> predicate) {
