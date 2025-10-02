@@ -11,18 +11,25 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.nodeTypes.NodeWithRange;
 import com.google.common.util.concurrent.Runnables;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
+import org.quiltmc.enigma.api.translation.representation.AccessFlags;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
@@ -69,6 +76,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.swing.Box;
@@ -88,7 +96,7 @@ import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
 public class EditorPanel extends BaseEditorPanel {
 	private static final int MOUSE_STOPPED_MOVING_DELAY = 100;
-	private static final Pattern CLASS_PUNCTUATION = Pattern.compile("/|\\$");
+	private static final Pattern CLASS_PUNCTUATION = Pattern.compile("[/\\$]");
 
 	private final NavigatorPanel navigatorPanel;
 	private final EnigmaQuickFindToolBar quickFindToolBar = new EnigmaQuickFindToolBar();
@@ -360,25 +368,21 @@ public class EditorPanel extends BaseEditorPanel {
 	) {
 		return this.getNodeType(target, targetName).andThen(nodeType -> {
 			final LineIndexer lineIndexer = new LineIndexer(source.toString());
-			return findDeclaration(source, lineIndexer, nodeType, target, targetName).andThen(declaration -> declaration
+			final Token targetToken = source.getIndex().getDeclarationToken(target);
+			return findDeclaration(source, targetToken, targetName, nodeType, lineIndexer).andThen(declaration -> declaration
 				.getTokenRange()
-				.map(TokenRange::iterator)
-				.map(tokenItr -> {
-					while (tokenItr.hasNext()) {
-						final JavaToken javaToken = tokenItr.next();
-						if (javaToken.asString().equals("{")) {
-							return javaToken.getRange()
-								.map(openRange -> toTrimmedBounds(
-									lineIndexer, declaration.getRange().orElseThrow().begin, openRange.begin
-								))
-								.<Result<TrimmedBounds, String>>map(Result::ok)
-								.orElseGet(() -> Result.err("No open curly brace range for %s!".formatted(targetName)));
-						}
-					}
-
-					return Result.<TrimmedBounds, String>err("No open curly brace for %s!".formatted(targetName));
-				})
-				.orElseGet(() -> Result.err("No token range for %s!".formatted(targetName))));
+				.map(tokenRange -> findFirstToken(tokenRange, token -> token.asString().equals("{"))
+					.map(openCurlyBrace -> openCurlyBrace
+						.getRange()
+						.map(openRange -> toTrimmedBounds(
+							lineIndexer, declaration.getRange().orElseThrow().begin, openRange.begin
+						))
+						.<Result<TrimmedBounds, String>>map(Result::ok)
+						.orElseGet(() -> Result.err("No open curly brace range for %s!".formatted(targetName))))
+					.orElseGet(() -> Result.err("No open curly brace for %s!".formatted(targetName)))
+				)
+				.orElseGet(() -> Result.err(noTokenRangeErrorOf(targetName)))
+			);
 		});
 	}
 
@@ -386,7 +390,7 @@ public class EditorPanel extends BaseEditorPanel {
 			DecompiledClassSource source, MethodEntry target, String targetName
 	) {
 		final LineIndexer lineIndexer = new LineIndexer(source.toString());
-		return findDeclaration(source, lineIndexer, MethodDeclaration.class, target, targetName)
+		return findDeclaration(source, source.getIndex().getDeclarationToken(target), targetName, MethodDeclaration.class, lineIndexer)
 			.andThen(declaration -> {
 				final Range range = declaration.getRange().orElseThrow();
 
@@ -398,33 +402,112 @@ public class EditorPanel extends BaseEditorPanel {
 						.orElseGet(() -> Result.err("No body range for %s!".formatted(targetName)))
 					)
 					// no body: abstract
-					.orElseGet(() -> Result.ok(toTrimmedBounds(lineIndexer, range.begin, range.end)));
+					.orElseGet(() -> Result.ok(toTrimmedBounds(lineIndexer, range)));
 			});
+	}
+
+	private Result<TrimmedBounds, String> findFieldBounds(
+			DecompiledClassSource source, FieldEntry target, String targetName
+	) {
+		final Token targetToken = source.getIndex().getDeclarationToken(target);
+
+		final JarIndex jarIndex = this.gui.getController().getProject().getJarIndex();
+		final EntryIndex entryIndex = jarIndex.getIndex(EntryIndex.class);
+
+		return Optional.ofNullable(entryIndex.getDefinition(target))
+			.map(targetDef -> {
+				final LineIndexer lineIndexer = new LineIndexer(source.toString());
+				if (targetDef.getAccess().isEnum()) {
+					return findEnumConstantBounds(source, targetToken, targetName, lineIndexer);
+				} else {
+					return Optional.ofNullable(entryIndex.getDefinition(targetDef.getParent()))
+						.map(parent -> {
+							if (parent.isRecord()) {
+								return this.findRecordComponent(source, targetToken, targetName, parent, lineIndexer);
+							} else {
+								return findRegularFieldBounds(source, targetToken, targetName, lineIndexer);
+							}
+						})
+						.orElseGet(() -> Result.err("No parent definition for %s!".formatted(targetName)));
+				}
+			})
+			.orElseGet(() -> Result.err(noDefinitionErrorOf(targetName)));
+	}
+
+	private Result<TrimmedBounds, String> findRecordComponent(
+			DecompiledClassSource source, Token target, String targetName, ClassDefEntry parent, LineIndexer lineIndexer
+	) {
+		final Token parentToken = source.getIndex().getDeclarationToken(parent);
+		final String parentName = this.gui.getController().getProject().getRemapper().deobfuscate(parent).getFullName();
+
+		return findDeclaration(source, parentToken, parentName, RecordDeclaration.class, lineIndexer)
+			.andThen(parentDeclaration -> parentDeclaration
+				.getParameters().stream()
+				.filter(component -> rangeContains(lineIndexer, component, target))
+				.findFirst()
+				.map(targetComponent -> toTrimmedBounds(lineIndexer, targetComponent.getRange().orElseThrow()))
+				.<Result<TrimmedBounds, String>>map(Result::ok)
+				.orElseGet(() -> Result.err("Could not find record component %s!".formatted(targetName)))
+			);
+	}
+
+	private static Result<TrimmedBounds, String> findEnumConstantBounds(
+			DecompiledClassSource source, Token target, String targetName, LineIndexer lineIndexer
+	) {
+		return findDeclaration(source, target, targetName, EnumConstantDeclaration.class, lineIndexer)
+			.andThen(declaration -> Result.ok(toTrimmedBounds(lineIndexer, declaration.getRange().orElseThrow())));
+	}
+
+	private static Result<TrimmedBounds, String> findRegularFieldBounds(
+			DecompiledClassSource source, Token target, String targetName, LineIndexer lineIndexer
+	) {
+		return findDeclaration(source, target, targetName, FieldDeclaration.class, lineIndexer)
+			.andThen(declaration -> declaration
+				.getTokenRange()
+				.map(tokenRange -> {
+					final Range range = declaration.getRange().orElseThrow();
+					return declaration.getVariables().stream()
+						.filter(variable -> rangeContains(lineIndexer, variable, target))
+						.findFirst()
+						.map(variable -> findFirstToken(tokenRange, token -> token.asString().equals("="))
+							.map(terminator -> toTrimmedBounds(
+								lineIndexer, range.begin, terminator.getRange().orElseThrow().begin
+							))
+							.<Result<TrimmedBounds, String>>map(Result::ok)
+							// no assignment in field declaration
+							.orElseGet(() -> Result.ok(toTrimmedBounds(lineIndexer, range)))
+						)
+						.orElseGet(() -> Result.err(
+							"No matching variable declarator for: %s!".formatted(targetName)
+						));
+				})
+				.orElseGet(() -> Result.err(noTokenRangeErrorOf(targetName)))
+			);
+	}
+
+	private static Optional<JavaToken> findFirstToken(TokenRange range, Predicate<JavaToken> predicate) {
+		for (final JavaToken token : range) {
+			if (predicate.test(token)) {
+				return Optional.of(token);
+			}
+		}
+
+		return Optional.empty();
 	}
 
 	/**
 	 * @return an {@linkplain Result#ok(Object) ok result} containing the declaration representing the passed
-	 * {@code declarationToken}, or an {@linkplain Result#err(Object) error result} if it could not be found;
+	 * {@code token}, or an {@linkplain Result#err(Object) error result} if it could not be found;
 	 * found declarations always {@linkplain TypeDeclaration#hasRange() have a range}
 	 */
 	private static <D extends BodyDeclaration<?>> Result<D, String> findDeclaration(
-			DecompiledClassSource source, LineIndexer lineIndexer, Class<D> nodeType, Entry<?> target, String targetName
+			DecompiledClassSource source, Token target, String targetName, Class<D> nodeType, LineIndexer lineIndexer
 	) {
 		final ParseResult<CompilationUnit> parseResult = parse(source.toString());
 		return parseResult
 			.getResult()
 			.map(unit -> unit
-				.findAll(nodeType, declaration -> {
-					if (declaration.hasRange()) {
-						final Range range = declaration.getRange().orElseThrow();
-						final Token targetToken = source.getIndex().getDeclarationToken(target);
-
-						return lineIndexer.getIndex(range.begin) <= targetToken.start
-							&& lineIndexer.getIndex(range.end) >= targetToken.end;
-					} else {
-						return false;
-					}
-				})
+				.findAll(nodeType, declaration -> rangeContains(lineIndexer, declaration, target))
 				.stream()
 				// deepest
 				.min(Comparator.comparingInt(
@@ -436,14 +519,30 @@ public class EditorPanel extends BaseEditorPanel {
 			.orElseGet(() -> Result.err("Failed to parse source: " + parseResult.getProblems()));
 	}
 
+	private static <N extends NodeWithRange<?>> boolean rangeContains(LineIndexer lineIndexer, N node, Token token) {
+		if (node.hasRange()) {
+			final Range range = node.getRange().orElseThrow();
+
+			return lineIndexer.getIndex(range.begin) <= token.start
+				// subtract one because Token.end is exclusive
+				&& lineIndexer.getIndex(range.end) >= token.end - 1;
+		} else {
+			return false;
+		}
+	}
+
+	private static TrimmedBounds toTrimmedBounds(LineIndexer lineIndexer, Range range) {
+		return toTrimmedBounds(lineIndexer, range.begin, range.end);
+	}
+
 	private static TrimmedBounds toTrimmedBounds(LineIndexer lineIndexer, Position startPos, Position endPos) {
 		final int start = lineIndexer.getIndex(startPos);
 		int end = lineIndexer.getIndex(endPos);
-		while (Character.isWhitespace(lineIndexer.getString().charAt(end - 1))) {
+		while (Character.isWhitespace(lineIndexer.getString().charAt(end))) {
 			end--;
 		}
 
-		return new TrimmedBounds(start, end);
+		return new TrimmedBounds(start, end + 1);
 	}
 
 	private static ParseResult<CompilationUnit> parse(String source) {
@@ -454,11 +553,10 @@ public class EditorPanel extends BaseEditorPanel {
 		return new JavaParser(config).parse(source);
 	}
 
-	private Result<? extends Class<? extends TypeDeclaration<?>>, String> getNodeType(
+	private Result<Class<? extends TypeDeclaration<?>>, String> getNodeType(
 			ClassEntry targetClass, String targetName
 	) {
-		final EntryIndex entryIndex = this.gui.getController().getProject().getJarIndex()
-				.getIndex(EntryIndex.class);
+		final EntryIndex entryIndex = this.gui.getController().getProject().getJarIndex().getIndex(EntryIndex.class);
 
 		return Optional
 			.ofNullable(entryIndex.getDefinition(targetClass))
@@ -473,12 +571,36 @@ public class EditorPanel extends BaseEditorPanel {
 					return ClassOrInterfaceDeclaration.class;
 				}
 			})
-			.<Result<? extends Class<? extends TypeDeclaration<?>>, String>>map(Result::ok)
+			.<Result<Class<? extends TypeDeclaration<?>>, String>>map(Result::ok)
+			.orElseGet(() -> Result.err(noDefinitionErrorOf(targetName)));
+	}
+
+	private Result<Class<? extends BodyDeclaration<?>>, String> getNodeType(FieldEntry target, String targetName) {
+		final EntryIndex entryIndex = this.gui.getController().getProject().getJarIndex().getIndex(EntryIndex.class);
+
+		return Optional.ofNullable(entryIndex.getDefinition(target))
+			.map(FieldDefEntry::getAccess)
+			.map(access -> access.isEnum() ? EnumConstantDeclaration.class : FieldDeclaration.class)
+			.<Result<Class<? extends BodyDeclaration<?>>, String>>map(Result::ok)
+			.orElseGet(() -> Result.err(noDefinitionErrorOf(targetName)));
+	}
+
+	private Result<Boolean, String> isEnum(FieldEntry target, String targetName) {
+		final EntryIndex entryIndex = this.gui.getController().getProject().getJarIndex().getIndex(EntryIndex.class);
+
+		return Optional.ofNullable(entryIndex.getDefinition(target))
+			.map(FieldDefEntry::getAccess)
+			.map(AccessFlags::isEnum)
+			.<Result<Boolean, String>>map(Result::ok)
 			.orElseGet(() -> Result.err(noDefinitionErrorOf(targetName)));
 	}
 
 	private static String noDefinitionErrorOf(String targetName) {
 		return "No definition for %s!".formatted(targetName);
+	}
+
+	private static String noTokenRangeErrorOf(String targetName) {
+		return "No token range for %s!".formatted(targetName);
 	}
 
 	/**
@@ -550,6 +672,7 @@ public class EditorPanel extends BaseEditorPanel {
 		}
 	}
 
+	// TODO extract to util class or TooltipEditorPanel
 	private TrimmedBounds createTrimmedBounds(DecompiledClassSource source, Entry<?> target, Entry<?> deobfTarget) {
 		final String targetDotName = CLASS_PUNCTUATION.matcher(deobfTarget.getFullName()).replaceAll(".");
 
@@ -559,8 +682,7 @@ public class EditorPanel extends BaseEditorPanel {
 			// TODO
 			return unwrapOrNull(this.findMethodBounds(source, targetMethod, targetDotName));
 		} else if (target instanceof FieldEntry targetField) {
-			// TODO
-			return null;
+			return unwrapOrNull(this.findFieldBounds(source, targetField, targetDotName));
 		} else if (target instanceof LocalVariableEntry targetLocal) {
 			if (targetLocal.isArgument()) {
 				// TODO
