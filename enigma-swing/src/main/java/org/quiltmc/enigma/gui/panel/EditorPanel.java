@@ -355,6 +355,8 @@ public class EditorPanel extends BaseEditorPanel {
 						.createTrimmedBounds(source, target, deobfTarget)
 				);
 				tooltipContent.add(tooltipEditor.ui);
+			} else {
+				tooltipContent.add(new JLabel("No source available"));
 			}
 		}
 
@@ -420,15 +422,20 @@ public class EditorPanel extends BaseEditorPanel {
 				if (targetDef.getAccess().isEnum()) {
 					return findEnumConstantBounds(source, targetToken, targetName, lineIndexer);
 				} else {
-					return Optional.ofNullable(entryIndex.getDefinition(targetDef.getParent()))
-						.map(parent -> {
-							if (parent.isRecord()) {
-								return this.findRecordComponent(source, targetToken, targetName, parent, lineIndexer);
-							} else {
-								return findRegularFieldBounds(source, targetToken, targetName, lineIndexer);
-							}
-						})
-						.orElseGet(() -> Result.err("No parent definition for %s!".formatted(targetName)));
+					if (targetDef.getAccess().isStatic()) {
+						// don't check whether it's a record component if it's static
+						return findRegularFieldBounds(source, targetToken, targetName, lineIndexer);
+					} else {
+						return Optional.ofNullable(entryIndex.getDefinition(targetDef.getParent()))
+							.map(parent -> {
+								if (parent.isRecord()) {
+									return this.findRecordComponent(source, targetToken, targetName, parent, lineIndexer);
+								} else {
+									return findRegularFieldBounds(source, targetToken, targetName, lineIndexer);
+								}
+							})
+							.orElseGet(() -> Result.err("No parent definition for %s!".formatted(targetName)));
+					}
 				}
 			})
 			.orElseGet(() -> Result.err(noDefinitionErrorOf(targetName)));
@@ -685,16 +692,15 @@ public class EditorPanel extends BaseEditorPanel {
 			return unwrapOrNull(this.findFieldBounds(source, targetField, targetDotName));
 		} else if (target instanceof LocalVariableEntry targetLocal) {
 			if (targetLocal.isArgument()) {
-				// TODO
+				// TODO show method declaration
 				return null;
 			} else {
-				// TODO
+				// TODO show local declaration
 				return null;
-
-				// nothing? or show parent method?
 			}
 		} else {
-			// TODO
+			// this should never be reached
+			Logger.error("Unrecognized target entry type: " + target);
 			return null;
 		}
 	}
