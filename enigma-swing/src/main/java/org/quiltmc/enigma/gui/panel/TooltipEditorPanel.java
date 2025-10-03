@@ -60,8 +60,6 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 	private static final String METHOD = "method";
 	private static final String LAMBDA = "lambda";
 
-	private static final int IMPLEMENTS_OFFSET = -" implements ".length();
-
 	public TooltipEditorPanel(Gui gui, Entry<?> target, ClassHandle targetTopClassHandle) {
 		super(gui);
 
@@ -207,7 +205,7 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 	) {
 		return declaration
 			.getTokenRange()
-			.map(tokenRange -> findFirstToken(tokenRange, token -> token.asString().equals("{"))
+			.map(tokenRange -> findFirstToken(tokenRange, "{")
 				.map(openCurlyBrace -> openCurlyBrace
 					.getRange()
 					.map(openCurlyRange -> openCurlyRange.begin)
@@ -302,15 +300,23 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 				.getImplementedTypes()
 				.getFirst()
 				// exclude implemented types if present
-				.map(implemented -> implemented
-					.getBegin()
-					.map(firstImplementedBegin -> toTrimmedBounds(
-						lineIndexer,
-						parentDeclaration.getBegin().orElseThrow(),
-						firstImplementedBegin.right(IMPLEMENTS_OFFSET)
-					))
-					.<Result<TrimmedBounds, String>>map(Result::ok)
-					.orElseGet(() -> Result.err("no parent record implemented type range!"))
+				.map(ignored -> parentDeclaration
+					.getTokenRange()
+					.map(parentTokenRange -> findFirstToken(parentTokenRange, "implements")
+						.map(implToken -> implToken
+							.getRange()
+							.map(implRange -> implRange.begin.right(-1))
+							.map(beforeImpl -> toTrimmedBounds(
+								lineIndexer,
+								parentDeclaration.getBegin().orElseThrow(),
+								beforeImpl
+							))
+							.<Result<TrimmedBounds, String>>map(Result::ok)
+							.orElseGet(() -> Result.err("no parent record implements token range!"))
+						)
+						.orElseGet(() -> Result.err("record implements types but has no implements token!"))
+					)
+					.orElseGet(() -> Result.err("no parent record token range!"))
 				)
 				// no implemented types
 				.orElseGet(() -> findTypeDeclarationBounds(parentDeclaration, lineIndexer))
@@ -426,7 +432,7 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 			return variable
 				.getTokenRange()
 				// if it's not all on one line, try excluding assignment
-				.map(variableRange -> findFirstToken(variableRange, token -> token.asString().equals("="))
+				.map(variableRange -> findFirstToken(variableRange, "=")
 					.map(assignment -> assignment.getRange().orElseThrow().begin)
 					.<Result<Position, String>>map(Result::ok)
 					// no assignment
@@ -435,6 +441,10 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 				.orElseGet(() -> Result.err("no variable token range!"))
 				.map(end -> toTrimmedBounds(lineIndexer, outerRange.begin, end));
 		}
+	}
+
+	private static Optional<JavaToken> findFirstToken(TokenRange range, String token) {
+		return findFirstToken(range, javaToken -> javaToken.asString().equals(token));
 	}
 
 	private static Optional<JavaToken> findFirstToken(TokenRange range, Predicate<JavaToken> predicate) {
