@@ -44,6 +44,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -61,6 +62,7 @@ import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
 public class EditorPanel extends BaseEditorPanel {
 	private static final int MOUSE_STOPPED_MOVING_DELAY = 100;
+	private static final Pattern CLASS_PUNCTUATION = Pattern.compile("[/\\$]");
 
 	private final NavigatorPanel navigatorPanel;
 	private final EnigmaQuickFindToolBar quickFindToolBar = new EnigmaQuickFindToolBar();
@@ -149,6 +151,9 @@ public class EditorPanel extends BaseEditorPanel {
 		Toolkit.getDefaultToolkit().addAWTEventListener(
 				e -> {
 					// TODO configurably allow clicking tooltip
+					//  - update tooltip with clicked entry declaration
+					//  - add a "bread crumbs" back button
+					//  - open entry tab on ctrl-click or "Got to source" button click
 					if (e.getID() == MouseEvent.MOUSE_PRESSED) {
 						this.closeTooltip();
 					}
@@ -286,6 +291,7 @@ public class EditorPanel extends BaseEditorPanel {
 
 		final Entry<?> deobfTarget = this.gui.getController().getProject().getRemapper().deobfuscate(target);
 
+		// TODO show parent name instead
 		tooltipContent.add(new JLabel(deobfTarget.getFullName()));
 		if (target instanceof ParentedEntry<?> parentedTarget) {
 			final ClassEntry targetTopClass = parentedTarget.getTopLevelClass();
@@ -379,6 +385,11 @@ public class EditorPanel extends BaseEditorPanel {
 		} else {
 			outAction.accept(absolutePos);
 		}
+	}
+
+	// TODO use for tooltip parent label/link
+	private static String getFullDotName(Entry<?> entry) {
+		return CLASS_PUNCTUATION.matcher(entry.getFullName()).replaceAll(".");
 	}
 
 	public void onRename(boolean isNewMapping) {

@@ -17,7 +17,14 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.LambdaExpr;
+import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithRange;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.stmt.Statement;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
@@ -36,14 +43,14 @@ import org.quiltmc.syntaxpain.LineNumbersRuler;
 import org.tinylog.Logger;
 
 import javax.swing.JViewport;
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 import static java.util.Comparator.comparingInt;
 
 public class TooltipEditorPanel extends BaseEditorPanel {
-	private static final Pattern CLASS_PUNCTUATION = Pattern.compile("[/\\$]");
 	private static final String NO_ENTRY_DEFINITION = "no entry definition!";
 	private static final String NO_TOKEN_RANGE = "no token range!";
 
@@ -67,38 +74,118 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 		});
 
 		this.getEditor().setEditable(false);
-		final Entry<?> deobfTarget = this.gui.getController().getProject().getRemapper().deobfuscate(target);
-		this.setClassHandle(targetTopClassHandle, source -> this.createTrimmedBounds(source, target, deobfTarget));
+		this.setClassHandle(targetTopClassHandle, source -> this.createTrimmedBounds(source, target));
 	}
 
-	private TrimmedBounds createTrimmedBounds(DecompiledClassSource source, Entry<?> target, Entry<?> deobfTarget) {
-		final String targetDotName = CLASS_PUNCTUATION.matcher(deobfTarget.getFullName()).replaceAll(".");
+	private TrimmedBounds createTrimmedBounds(DecompiledClassSource source, Entry<?> target) {
+		final Token targetToken = Objects.requireNonNull(
+				source.getIndex().getDeclarationToken(target),
+				() -> "Error trimming tooltip for '%s': no declaration token!"
+					.formatted(this.getFullDeobfuscatedName(target))
+		);
 
+		final Result<TrimmedBounds, String> bounds;
 		if (target instanceof ClassEntry targetClass) {
-			return unwrapTooltipBoundsOrNull(this.findClassBounds(source, targetClass), targetDotName);
-		} else if (target instanceof MethodEntry targetMethod) {
-			return unwrapTooltipBoundsOrNull(this.findMethodBounds(source, targetMethod), targetDotName);
+			bounds = this.findClassBounds(source, targetToken, targetClass);
+		} else if (target instanceof MethodEntry) {
+			bounds = this.findMethodBounds(source, targetToken);
 		} else if (target instanceof FieldEntry targetField) {
-			return unwrapTooltipBoundsOrNull(this.findFieldBounds(source, targetField), targetDotName);
+			bounds = this.findFieldBounds(source, targetToken, targetField);
 		} else if (target instanceof LocalVariableEntry targetLocal) {
-			if (targetLocal.isArgument()) {
-				return unwrapTooltipBoundsOrNull(this.findMethodBounds(source, targetLocal.getParent()), targetDotName);
-			} else {
-				// TODO show local declaration
-				return null;
-			}
+			bounds = this.getVariableBounds(source, targetToken, targetLocal);
 		} else {
 			// this should never be reached
-			Logger.error("Error trimming tooltip for '{}': unrecognized target entry type!", targetDotName);
+			Logger.error(
+					"Error trimming tooltip for '{}': unrecognized target entry type!",
+					this.getFullDeobfuscatedName(target)
+			);
 			return null;
+		}
+
+		return bounds.unwrapOrElse(error -> {
+			Logger.error(
+					"Error finding declaration of '{}' for tooltip: {}",
+					this.getFullDeobfuscatedName(target),
+					error
+			);
+			return null;
+		});
+	}
+
+	private Result<TrimmedBounds, String> getVariableBounds(
+			DecompiledClassSource source, Token target, LocalVariableEntry targetEntry
+	) {
+		final MethodEntry parent = targetEntry.getParent();
+		final Token parentToken = source.getIndex().getDeclarationToken(parent);
+		if (parentToken == null) {
+			return this.findLambdaVariable(source, target, targetEntry, parent);
+		} else {
+			if (targetEntry.isArgument()) {
+				return this.findMethodBounds(source, parentToken);
+			} else {
+				return this.findLocalBounds(source, parentToken, target);
+			}
 		}
 	}
 
-	private Result<TrimmedBounds, String> findClassBounds(DecompiledClassSource source, ClassEntry target) {
-		return this.getNodeType(target).andThen(nodeType -> {
+	private Result<TrimmedBounds, String> findLambdaVariable(
+			DecompiledClassSource source, Token target, LocalVariableEntry targetEntry, MethodEntry parent
+	) {
+		final LineIndexer lineIndexer = new LineIndexer(source.toString());
+
+		final EntryIndex entryIndex = this.gui.getController().getProject().getJarIndex().getIndex(EntryIndex.class);
+		return Optional.ofNullable(entryIndex.getDefinition(parent))
+			.map(parentDef -> {
+				if (parentDef.getAccess().isSynthetic()) {
+					return parse(source).andThen(unit -> unit
+						.findAll(LambdaExpr.class, lambda -> rangeContains(lineIndexer, lambda, target))
+						.stream()
+						.max(depthComparatorOf(lineIndexer))
+						.map(parentLambda -> {
+							if (targetEntry.isArgument()) {
+								return parentLambda
+									.getBegin()
+									.map(parentBegin -> parentLambda
+										.getBody()
+										.getRange()
+										.map(bodyRange -> toTrimmedBounds(lineIndexer, parentBegin, bodyRange.begin))
+										.<Result<TrimmedBounds, String>>map(Result::ok)
+										.orElseGet(() -> Result.err("no parent lambda body range!")))
+									.orElseGet(() -> Result.err("no parent lambda begin"));
+							} else {
+								final Statement parentBody = parentLambda.getBody();
+								return parentBody.toBlockStmt()
+									.map(parentBlock -> findLocalBounds(target, parentBlock, lineIndexer, "lambda"))
+									.orElseGet(() -> parentBody.asExpressionStmt()
+										.getExpression()
+										.toVariableDeclarationExpr()
+										.map(variableExpr ->
+											findVariableExpressionBounds(target, variableExpr, lineIndexer)
+										)
+										.orElseGet(() -> Result.err("local declared in non-declaration expression!"))
+									);
+							}
+						})
+						.orElseGet(() -> Result.err("failed to find local's parent lambda!")));
+				} else {
+					return Result.<TrimmedBounds, String>err("no parent token for non-synthetic parent!");
+				}
+			})
+			.orElseGet(() -> Result.err("no parent definition!"));
+	}
+
+	private String getFullDeobfuscatedName(Entry<?> entry) {
+		return this.gui.getController().getProject().getRemapper()
+				.deobfuscate(entry)
+				.getFullName();
+	}
+
+	private Result<TrimmedBounds, String> findClassBounds(
+			DecompiledClassSource source, Token target, ClassEntry targetEntry
+	) {
+		return this.getNodeType(targetEntry).andThen(nodeType -> {
 			final LineIndexer lineIndexer = new LineIndexer(source.toString());
-			final Token targetToken = source.getIndex().getDeclarationToken(target);
-			return findDeclaration(source, targetToken, nodeType, lineIndexer).andThen(declaration -> declaration
+			return findDeclaration(source, target, nodeType, lineIndexer).andThen(declaration -> declaration
 				.getTokenRange()
 				.map(tokenRange -> findFirstToken(tokenRange, token -> token.asString().equals("{"))
 					.map(openCurlyBrace -> openCurlyBrace
@@ -135,46 +222,47 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 			.orElseGet(() -> Result.err(NO_ENTRY_DEFINITION));
 	}
 
-	// TODO lambdas?
-	private Result<TrimmedBounds, String> findMethodBounds(DecompiledClassSource source, MethodEntry target) {
+	// TODO check issue with (record?) constructors
+	private Result<TrimmedBounds, String> findMethodBounds(DecompiledClassSource source, Token targetToken) {
 		final LineIndexer lineIndexer = new LineIndexer(source.toString());
-		final Token targetToken = source.getIndex().getDeclarationToken(target);
+
 		return findDeclaration(source, targetToken, MethodDeclaration.class, lineIndexer).andThen(declaration -> {
 			final Range range = declaration.getRange().orElseThrow();
 
-			return declaration
-				.getBody()
-				.map(body -> body.getRange()
-					.map(bodyRange -> toTrimmedBounds(lineIndexer, range.begin, bodyRange.begin))
-					.<Result<TrimmedBounds, String>>map(Result::ok)
-					.orElseGet(() -> Result.err("no method body range!"))
-				)
-				// no body: abstract
-				.orElseGet(() -> Result.ok(toTrimmedBounds(lineIndexer, range)));
+			final Result<BlockStmt, String> methodBody = getMethodBody(declaration);
+			return methodBody.isErr()
+					// no body: abstract
+					? Result.ok(toTrimmedBounds(lineIndexer, range))
+					: methodBody
+						.andThen(body -> body.getRange()
+							.<Result<Range, String>>map(Result::ok)
+							.orElseGet(() -> Result.err("no method body range!"))
+						)
+						.map(bodyRange -> toTrimmedBounds(lineIndexer, range.begin, bodyRange.begin));
 		});
 	}
 
-	private Result<TrimmedBounds, String> findFieldBounds(DecompiledClassSource source, FieldEntry target) {
-		final Token targetToken = source.getIndex().getDeclarationToken(target);
-
+	private Result<TrimmedBounds, String> findFieldBounds(
+			DecompiledClassSource source, Token target, FieldEntry targetEntry
+	) {
 		final EntryIndex entryIndex = this.gui.getController().getProject().getJarIndex().getIndex(EntryIndex.class);
 
-		return Optional.ofNullable(entryIndex.getDefinition(target))
+		return Optional.ofNullable(entryIndex.getDefinition(targetEntry))
 			.map(targetDef -> {
 				final LineIndexer lineIndexer = new LineIndexer(source.toString());
 				if (targetDef.getAccess().isEnum()) {
-					return findEnumConstantBounds(source, targetToken, lineIndexer);
+					return findEnumConstantBounds(source, target, lineIndexer);
 				} else {
 					if (targetDef.getAccess().isStatic()) {
 						// not a record component if it's static
-						return findRegularFieldBounds(source, targetToken, lineIndexer);
+						return findRegularFieldBounds(source, target, lineIndexer);
 					} else {
 						return Optional.ofNullable(entryIndex.getDefinition(targetDef.getParent()))
 							.map(parent -> {
 								if (parent.isRecord()) {
-									return this.findRecordComponent(source, targetToken, parent, lineIndexer);
+									return this.findRecordComponent(source, target, parent, lineIndexer);
 								} else {
-									return findRegularFieldBounds(source, targetToken, lineIndexer);
+									return findRegularFieldBounds(source, target, lineIndexer);
 								}
 							})
 							.orElseGet(() -> Result.err("no field parent definition!"));
@@ -217,18 +305,53 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 				return declaration.getVariables().stream()
 					.filter(variable -> rangeContains(lineIndexer, variable, target))
 					.findFirst()
-					.map(variable -> findFirstToken(tokenRange, token -> token.asString().equals("="))
-						.map(terminator -> toTrimmedBounds(
-							lineIndexer, range.begin, terminator.getRange().orElseThrow().begin
-						))
-						.<Result<TrimmedBounds, String>>map(Result::ok)
-						// no assignment in field declaration
-						.orElseGet(() -> Result.ok(toTrimmedBounds(lineIndexer, range)))
-					)
-					.orElseGet(() -> Result.err("no matching variable declarator!"));
+					.map(variable -> toDeclaratorBounds(range, variable, lineIndexer))
+					.orElseGet(() -> Result.err("no matching field declarator!"));
 			})
 			.orElseGet(() -> Result.err(NO_TOKEN_RANGE))
 		);
+	}
+
+	private Result<TrimmedBounds, String> findLocalBounds(
+			DecompiledClassSource source, Token parentToken, Token targetToken
+	) {
+		final LineIndexer lineIndexer = new LineIndexer(source.toString());
+
+		return findDeclaration(source, parentToken, MethodDeclaration.class, lineIndexer).andThen(declaration ->
+			getMethodBody(declaration)
+				.andThen(parentBody -> findLocalBounds(targetToken, parentBody, lineIndexer, "method"))
+		);
+	}
+
+	private static Result<TrimmedBounds, String> findLocalBounds(
+			Token target, BlockStmt parentBody, LineIndexer lineIndexer, String parentType
+	) {
+		return parentBody
+			.getStatements()
+			.stream()
+			.map(Statement::toExpressionStmt)
+			.flatMap(Optional::stream)
+			.map(ExpressionStmt::getExpression)
+			.map(Expression::toVariableDeclarationExpr)
+			.flatMap(Optional::stream)
+			.filter(variableExpr -> rangeContains(lineIndexer, variableExpr, target))
+			.max(depthComparatorOf(lineIndexer))
+			.map(variableExpr -> findVariableExpressionBounds(target, variableExpr, lineIndexer))
+			.orElseGet(() -> Result.err("failed to find local in parent %s!".formatted(parentType)));
+	}
+
+	private static Result<TrimmedBounds, String> findVariableExpressionBounds(
+			Token targetToken, VariableDeclarationExpr variableExpr, LineIndexer lineIndexer
+	) {
+		return variableExpr
+			.getVariables()
+			.stream()
+			.filter(variable -> rangeContains(lineIndexer, variable, targetToken))
+			.findFirst()
+			.map(targetVariable ->
+				toDeclaratorBounds(variableExpr.getRange().orElseThrow(), targetVariable, lineIndexer)
+			)
+			.orElseGet(() -> Result.err("failed to find local in variable expression!"));
 	}
 
 	/**
@@ -239,17 +362,55 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 	private static <D extends BodyDeclaration<?>> Result<D, String> findDeclaration(
 			DecompiledClassSource source, Token target, Class<D> nodeType, LineIndexer lineIndexer
 	) {
-		final ParseResult<CompilationUnit> parseResult = parse(source.toString());
+		return parse(source).andThen(unit -> unit
+			.findAll(nodeType, declaration -> rangeContains(lineIndexer, declaration, target))
+			.stream()
+			.max(depthComparatorOf(lineIndexer))
+			.<Result<D, String>>map(Result::ok)
+			.orElseGet(() -> Result.err("not found in parsed source!"))
+		);
+	}
+
+	private static Comparator<NodeWithRange<?>> depthComparatorOf(LineIndexer lineIndexer) {
+		return comparingInt(declaration -> lineIndexer.getIndex(declaration.getRange().orElseThrow().begin));
+	}
+
+	private static Result<CompilationUnit, String> parse(DecompiledClassSource source) {
+		final ParserConfiguration config = new ParserConfiguration()
+				.setStoreTokens(true)
+				.setLanguageLevel(ParserConfiguration.LanguageLevel.RAW);
+
+		final ParseResult<CompilationUnit> parseResult = new JavaParser(config).parse(source.toString());
 		return parseResult
-			.getResult()
-			.map(unit -> unit
-				.findAll(nodeType, declaration -> rangeContains(lineIndexer, declaration, target))
-				.stream()
-				// deepest
-				.min(comparingInt(declaration -> lineIndexer.getIndex(declaration.getRange().orElseThrow().end)))
-				.<Result<D, String>>map(Result::ok)
-				.orElseGet(() -> Result.err("not found in parsed source!")))
-			.orElseGet(() -> Result.err("failed to parse source: " + parseResult.getProblems()));
+				.getResult()
+				.<Result<CompilationUnit, String>>map(Result::ok)
+				.orElseGet(() -> Result.err("failed to parse source: " + parseResult.getProblems()));
+	}
+
+	private static Result<BlockStmt, String> getMethodBody(MethodDeclaration declaration) {
+		return declaration
+			.getBody()
+			.<Result<BlockStmt, String>>map(Result::ok)
+			.orElseGet(() -> Result.err("no method body!"));
+	}
+
+	private static Result<TrimmedBounds, String> toDeclaratorBounds(
+			Range outerRange, VariableDeclarator variable, LineIndexer lineIndexer
+	) {
+		if (outerRange.begin.line == outerRange.end.line) {
+			return Result.ok(toTrimmedBounds(lineIndexer, outerRange));
+		} else {
+			return variable
+				.getTokenRange()
+				.map(variableRange -> findFirstToken(variableRange, token -> token.asString().equals("="))
+					.map(assignment -> assignment.getRange().orElseThrow().begin)
+					.<Result<Position, String>>map(Result::ok)
+					// no assignment
+					.orElse(Result.ok(outerRange.end))
+				)
+				.orElseGet(() -> Result.err("no variable token range!"))
+				.map(end -> toTrimmedBounds(lineIndexer, outerRange.begin, end));
+		}
 	}
 
 	private static Optional<JavaToken> findFirstToken(TokenRange range, Predicate<JavaToken> predicate) {
@@ -286,20 +447,5 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 		}
 
 		return new TrimmedBounds(start, end + 1);
-	}
-
-	private static TrimmedBounds unwrapTooltipBoundsOrNull(Result<TrimmedBounds, String> bounds, String targetName) {
-		return bounds.unwrapOrElse(error -> {
-			Logger.error("Error finding declaration of '{}' for tooltip: {}", targetName, error);
-			return null;
-		});
-	}
-
-	private static ParseResult<CompilationUnit> parse(String source) {
-		final ParserConfiguration config = new ParserConfiguration()
-				.setStoreTokens(true)
-				.setLanguageLevel(ParserConfiguration.LanguageLevel.RAW);
-
-		return new JavaParser(config).parse(source);
 	}
 }
