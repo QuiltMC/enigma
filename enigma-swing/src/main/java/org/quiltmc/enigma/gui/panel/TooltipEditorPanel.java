@@ -238,28 +238,27 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 		final LineIndexer lineIndexer = new LineIndexer(source.toString());
 
 		final Class<? extends CallableDeclaration<?>> nodeType;
-		final Function<CallableDeclaration<?>, Result<BlockStmt, String>> bodyGetter;
+		final Function<CallableDeclaration<?>, Optional<BlockStmt>> bodyGetter;
 		if (targetEntry.isConstructor()) {
 			nodeType = ConstructorDeclaration.class;
-			bodyGetter = declaration -> Result.ok(((ConstructorDeclaration) declaration).getBody());
+			bodyGetter = declaration -> Optional.of(((ConstructorDeclaration) declaration).getBody());
 		} else {
 			nodeType = MethodDeclaration.class;
-			bodyGetter = declaration -> getMethodBody((MethodDeclaration) declaration);
+			bodyGetter = declaration -> ((MethodDeclaration) declaration).getBody();
 		}
 
 		return findDeclaration(source, target, nodeType, lineIndexer).andThen(declaration -> {
 			final Range range = declaration.getRange().orElseThrow();
 
-			final Result<BlockStmt, String> methodBody = bodyGetter.apply(declaration);
-			return methodBody.isErr()
-					// no body: abstract
-					? Result.ok(toTrimmedBounds(lineIndexer, range))
-					: methodBody
-						.andThen(body -> body.getRange()
-							.<Result<Range, String>>map(Result::ok)
-							.orElseGet(() -> Result.err("no method body range!"))
-						)
-						.map(bodyRange -> toTrimmedBounds(lineIndexer, range.begin, bodyRange.begin));
+			return bodyGetter.apply(declaration)
+				.map(methodBody -> methodBody
+					.getRange()
+					.<Result<Range, String>>map(Result::ok)
+					.orElseGet(() -> Result.err("no method body range!"))
+					.map(bodyRange -> toTrimmedBounds(lineIndexer, range.begin, bodyRange.begin))
+				)
+				// no body: abstract
+				.orElseGet(() -> Result.ok(toTrimmedBounds(lineIndexer, range)));
 		});
 	}
 
@@ -338,10 +337,13 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 	) {
 		final LineIndexer lineIndexer = new LineIndexer(source.toString());
 
-		return findDeclaration(source, parentToken, MethodDeclaration.class, lineIndexer).andThen(declaration ->
-			getMethodBody(declaration)
+		return findDeclaration(source, parentToken, MethodDeclaration.class, lineIndexer)
+			.andThen(declaration -> declaration
+				.getBody()
+				.<Result<BlockStmt, String>>map(Result::ok)
+				.orElseGet(() -> Result.err("no method body!"))
 				.andThen(parentBody -> findLocalBounds(targetToken, parentBody, lineIndexer, METHOD))
-		);
+			);
 	}
 
 	private static Result<TrimmedBounds, String> findLocalBounds(
@@ -406,13 +408,6 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 				.getResult()
 				.<Result<CompilationUnit, String>>map(Result::ok)
 				.orElseGet(() -> Result.err("failed to parse source: " + parseResult.getProblems()));
-	}
-
-	private static Result<BlockStmt, String> getMethodBody(MethodDeclaration declaration) {
-		return declaration
-			.getBody()
-			.<Result<BlockStmt, String>>map(Result::ok)
-			.orElseGet(() -> Result.err("no method body!"));
 	}
 
 	private static Result<TrimmedBounds, String> toDeclaratorBounds(
