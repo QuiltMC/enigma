@@ -60,6 +60,8 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 	private static final String METHOD = "method";
 	private static final String LAMBDA = "lambda";
 
+	private static final int IMPLEMENTS_OFFSET = -" implements ".length();
+
 	public TooltipEditorPanel(Gui gui, Entry<?> target, ClassHandle targetTopClassHandle) {
 		super(gui);
 
@@ -195,21 +197,28 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 	) {
 		return this.getNodeType(targetEntry).andThen(nodeType -> {
 			final LineIndexer lineIndexer = new LineIndexer(source.toString());
-			return findDeclaration(source, target, nodeType, lineIndexer).andThen(declaration -> declaration
-				.getTokenRange()
-				.map(tokenRange -> findFirstToken(tokenRange, token -> token.asString().equals("{"))
-					.map(openCurlyBrace -> openCurlyBrace
-						.getRange()
-						.map(openRange -> toTrimmedBounds(
-							lineIndexer, declaration.getRange().orElseThrow().begin, openRange.begin
-						))
-						.<Result<TrimmedBounds, String>>map(Result::ok)
-						.orElseGet(() -> Result.err("no class open curly brace range!")))
-					.orElseGet(() -> Result.err("no class open curly brace!"))
-				)
-				.orElseGet(() -> Result.err(NO_TOKEN_RANGE))
-			);
+			return findDeclaration(source, target, nodeType, lineIndexer)
+				.andThen(declaration -> findTypeDeclarationBounds(declaration, lineIndexer));
 		});
+	}
+
+	private static Result<TrimmedBounds, String> findTypeDeclarationBounds(
+			TypeDeclaration<?> declaration, LineIndexer lineIndexer
+	) {
+		return declaration
+			.getTokenRange()
+			.map(tokenRange -> findFirstToken(tokenRange, token -> token.asString().equals("{"))
+				.map(openCurlyBrace -> openCurlyBrace
+					.getRange()
+					.map(openCurlyRange -> openCurlyRange.begin)
+					.map(openCurlyPos -> toTrimmedBounds(
+						lineIndexer, declaration.getBegin().orElseThrow(), openCurlyPos
+					))
+					.<Result<TrimmedBounds, String>>map(Result::ok)
+					.orElseGet(() -> Result.err("no class open curly brace range!")))
+				.orElseGet(() -> Result.err("no class open curly brace!"))
+			)
+			.orElseGet(() -> Result.err(NO_TOKEN_RANGE));
 	}
 
 	private Result<Class<? extends TypeDeclaration<?>>, String> getNodeType(ClassEntry targetClass) {
@@ -232,6 +241,7 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 			.orElseGet(() -> Result.err(NO_ENTRY_DEFINITION));
 	}
 
+	// TODO test record component getters
 	private Result<TrimmedBounds, String> findMethodBounds(
 			DecompiledClassSource source, Token target, MethodEntry targetEntry
 	) {
@@ -269,55 +279,52 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 
 		return Optional.ofNullable(entryIndex.getDefinition(targetEntry))
 			.map(targetDef -> {
-				final LineIndexer lineIndexer = new LineIndexer(source.toString());
 				if (targetDef.getAccess().isEnum()) {
-					return findEnumConstantBounds(source, target, lineIndexer);
+					return findEnumConstantBounds(source, target);
 				} else {
-					if (targetDef.getAccess().isStatic()) {
-						// not a record component if it's static
-						return findRegularFieldBounds(source, target, lineIndexer);
-					} else {
-						return Optional.ofNullable(entryIndex.getDefinition(targetDef.getParent()))
-							.map(parent -> {
-								if (parent.isRecord()) {
-									return this.findRecordComponent(source, target, parent, lineIndexer);
-								} else {
-									return findRegularFieldBounds(source, target, lineIndexer);
-								}
-							})
-							.orElseGet(() -> Result.err("no field parent definition!"));
-					}
+					return Optional.ofNullable(entryIndex.getDefinition(targetDef.getParent()))
+						.map(parent -> parent.isRecord() && !targetDef.getAccess().isStatic()
+							? this.findComponentParent(source, parent)
+							: findRegularFieldBounds(source, target)
+						)
+						.orElseGet(() -> Result.err("no field parent definition!"));
 				}
 			})
 			.orElseGet(() -> Result.err(NO_ENTRY_DEFINITION));
 	}
 
-	private Result<TrimmedBounds, String> findRecordComponent(
-			DecompiledClassSource source, Token target, ClassDefEntry parent, LineIndexer lineIndexer
-	) {
+	private Result<TrimmedBounds, String> findComponentParent(DecompiledClassSource source, ClassDefEntry parent) {
 		final Token parentToken = source.getIndex().getDeclarationToken(parent);
 
+		final LineIndexer lineIndexer = new LineIndexer(source.toString());
 		return findDeclaration(source, parentToken, RecordDeclaration.class, lineIndexer)
 			.andThen(parentDeclaration -> parentDeclaration
-				.getParameters().stream()
-				.filter(component -> rangeContains(lineIndexer, component, target))
-				.findFirst()
-				.map(targetComponent -> toTrimmedBounds(lineIndexer, targetComponent.getRange().orElseThrow()))
-				.<Result<TrimmedBounds, String>>map(Result::ok)
-				.orElseGet(() -> Result.err("could not find record component!"))
+				.getImplementedTypes()
+				.getFirst()
+				// exclude implemented types if present
+				.map(implemented -> implemented
+					.getBegin()
+					.map(firstImplementedBegin -> toTrimmedBounds(
+						lineIndexer,
+						parentDeclaration.getBegin().orElseThrow(),
+						firstImplementedBegin.right(IMPLEMENTS_OFFSET)
+					))
+					.<Result<TrimmedBounds, String>>map(Result::ok)
+					.orElseGet(() -> Result.err("no parent record implemented type range!"))
+				)
+				// no implemented types
+				.orElseGet(() -> findTypeDeclarationBounds(parentDeclaration, lineIndexer))
 			);
 	}
 
-	private static Result<TrimmedBounds, String> findEnumConstantBounds(
-			DecompiledClassSource source, Token target, LineIndexer lineIndexer
-	) {
+	private static Result<TrimmedBounds, String> findEnumConstantBounds(DecompiledClassSource source, Token target) {
+		final LineIndexer lineIndexer = new LineIndexer(source.toString());
 		return findDeclaration(source, target, EnumConstantDeclaration.class, lineIndexer)
 			.andThen(declaration -> Result.ok(toTrimmedBounds(lineIndexer, declaration.getRange().orElseThrow())));
 	}
 
-	private static Result<TrimmedBounds, String> findRegularFieldBounds(
-			DecompiledClassSource source, Token target, LineIndexer lineIndexer
-	) {
+	private static Result<TrimmedBounds, String> findRegularFieldBounds(DecompiledClassSource source, Token target) {
+		final LineIndexer lineIndexer = new LineIndexer(source.toString());
 		return findDeclaration(source, target, FieldDeclaration.class, lineIndexer).andThen(declaration -> declaration
 			.getTokenRange()
 			.map(tokenRange -> {
@@ -418,6 +425,7 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 		} else {
 			return variable
 				.getTokenRange()
+				// if it's not all on one line, try excluding assignment
 				.map(variableRange -> findFirstToken(variableRange, token -> token.asString().equals("="))
 					.map(assignment -> assignment.getRange().orElseThrow().begin)
 					.<Result<Position, String>>map(Result::ok)
