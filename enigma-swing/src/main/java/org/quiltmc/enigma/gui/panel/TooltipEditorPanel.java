@@ -10,7 +10,9 @@ import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
@@ -46,6 +48,7 @@ import javax.swing.JViewport;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static java.util.Comparator.comparingInt;
@@ -53,6 +56,9 @@ import static java.util.Comparator.comparingInt;
 public class TooltipEditorPanel extends BaseEditorPanel {
 	private static final String NO_ENTRY_DEFINITION = "no entry definition!";
 	private static final String NO_TOKEN_RANGE = "no token range!";
+	// used to compose error messages
+	private static final String METHOD = "method";
+	private static final String LAMBDA = "lambda";
 
 	public TooltipEditorPanel(Gui gui, Entry<?> target, ClassHandle targetTopClassHandle) {
 		super(gui);
@@ -87,8 +93,8 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 		final Result<TrimmedBounds, String> bounds;
 		if (target instanceof ClassEntry targetClass) {
 			bounds = this.findClassBounds(source, targetToken, targetClass);
-		} else if (target instanceof MethodEntry) {
-			bounds = this.findMethodBounds(source, targetToken);
+		} else if (target instanceof MethodEntry targetMethod) {
+			bounds = this.findMethodBounds(source, targetToken, targetMethod);
 		} else if (target instanceof FieldEntry targetField) {
 			bounds = this.findFieldBounds(source, targetToken, targetField);
 		} else if (target instanceof LocalVariableEntry targetLocal) {
@@ -116,12 +122,16 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 			DecompiledClassSource source, Token target, LocalVariableEntry targetEntry
 	) {
 		final MethodEntry parent = targetEntry.getParent();
+		if (parent == null) {
+			return Result.err("variable parent is null!");
+		}
+
 		final Token parentToken = source.getIndex().getDeclarationToken(parent);
 		if (parentToken == null) {
 			return this.findLambdaVariable(source, target, targetEntry, parent);
 		} else {
 			if (targetEntry.isArgument()) {
-				return this.findMethodBounds(source, parentToken);
+				return this.findMethodBounds(source, parentToken, parent);
 			} else {
 				return this.findLocalBounds(source, parentToken, target);
 			}
@@ -155,7 +165,7 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 							} else {
 								final Statement parentBody = parentLambda.getBody();
 								return parentBody.toBlockStmt()
-									.map(parentBlock -> findLocalBounds(target, parentBlock, lineIndexer, "lambda"))
+									.map(parentBlock -> findLocalBounds(target, parentBlock, lineIndexer, LAMBDA))
 									.orElseGet(() -> parentBody.asExpressionStmt()
 										.getExpression()
 										.toVariableDeclarationExpr()
@@ -222,14 +232,25 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 			.orElseGet(() -> Result.err(NO_ENTRY_DEFINITION));
 	}
 
-	// TODO check issue with (record?) constructors
-	private Result<TrimmedBounds, String> findMethodBounds(DecompiledClassSource source, Token targetToken) {
+	private Result<TrimmedBounds, String> findMethodBounds(
+			DecompiledClassSource source, Token target, MethodEntry targetEntry
+	) {
 		final LineIndexer lineIndexer = new LineIndexer(source.toString());
 
-		return findDeclaration(source, targetToken, MethodDeclaration.class, lineIndexer).andThen(declaration -> {
+		final Class<? extends CallableDeclaration<?>> nodeType;
+		final Function<CallableDeclaration<?>, Result<BlockStmt, String>> bodyGetter;
+		if (targetEntry.isConstructor()) {
+			nodeType = ConstructorDeclaration.class;
+			bodyGetter = declaration -> Result.ok(((ConstructorDeclaration) declaration).getBody());
+		} else {
+			nodeType = MethodDeclaration.class;
+			bodyGetter = declaration -> getMethodBody((MethodDeclaration) declaration);
+		}
+
+		return findDeclaration(source, target, nodeType, lineIndexer).andThen(declaration -> {
 			final Range range = declaration.getRange().orElseThrow();
 
-			final Result<BlockStmt, String> methodBody = getMethodBody(declaration);
+			final Result<BlockStmt, String> methodBody = bodyGetter.apply(declaration);
 			return methodBody.isErr()
 					// no body: abstract
 					? Result.ok(toTrimmedBounds(lineIndexer, range))
@@ -319,7 +340,7 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 
 		return findDeclaration(source, parentToken, MethodDeclaration.class, lineIndexer).andThen(declaration ->
 			getMethodBody(declaration)
-				.andThen(parentBody -> findLocalBounds(targetToken, parentBody, lineIndexer, "method"))
+				.andThen(parentBody -> findLocalBounds(targetToken, parentBody, lineIndexer, METHOD))
 		);
 	}
 

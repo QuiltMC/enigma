@@ -66,6 +66,7 @@ public class EditorPanel extends BaseEditorPanel {
 
 	private final NavigatorPanel navigatorPanel;
 	private final EnigmaQuickFindToolBar quickFindToolBar = new EnigmaQuickFindToolBar();
+	// TODO restore right click functionality!
 	private final EditorPopupMenu popupMenu;
 
 	// DIY tooltip because JToolTip can't be moved or resized
