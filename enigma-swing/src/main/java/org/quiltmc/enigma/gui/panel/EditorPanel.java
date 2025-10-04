@@ -256,7 +256,7 @@ public class EditorPanel {
 		handle.addListener(new ClassHandleListener() {
 			@Override
 			public void onDeobfRefChanged(ClassHandle h, ClassEntry deobfRef) {
-				SwingUtilities.invokeLater(() -> EditorPanel.this.listeners.forEach(l -> l.onTitleChanged(EditorPanel.this, EditorPanel.this.getFileName())));
+				SwingUtilities.invokeLater(() -> EditorPanel.this.listeners.forEach(l -> l.onTitleChanged(EditorPanel.this, EditorPanel.this.getSimpleClassName())));
 			}
 
 			@Override
@@ -653,9 +653,17 @@ public class EditorPanel {
 		return this.classHandle;
 	}
 
-	public String getFileName() {
-		ClassEntry classEntry = this.classHandle.getDeobfRef() != null ? this.classHandle.getDeobfRef() : this.classHandle.getRef();
-		return classEntry.getSimpleName();
+	public String getSimpleClassName() {
+		return this.getDeobfOrObfHandleRef().getSimpleName();
+	}
+
+	public String getFullClassName() {
+		return this.getDeobfOrObfHandleRef().getFullName();
+	}
+
+	private ClassEntry getDeobfOrObfHandleRef() {
+		final ClassEntry deobfRef = this.classHandle.getDeobfRef();
+		return deobfRef == null ? this.classHandle.getRef() : deobfRef;
 	}
 
 	public void retranslateUi() {
