@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.Runnables;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
+import org.quiltmc.enigma.api.class_handle.ClassHandleError;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
@@ -19,6 +20,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.syntaxpain.DefaultSyntaxAction;
 import org.quiltmc.syntaxpain.SyntaxDocument;
+import org.quiltmc.enigma.util.Result;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -279,11 +281,11 @@ public class EditorPanel extends BaseEditorPanel {
 	}
 
 	private void closeTooltip() {
-		EditorPanel.this.tooltip.setVisible(false);
-		EditorPanel.this.lastMouseTargetToken = null;
-		EditorPanel.this.mouseStoppedMovingTimer.stop();
-		EditorPanel.this.showTokenTooltipTimer.stop();
-		EditorPanel.this.hideTokenTooltipTimer.stop();
+		this.tooltip.setVisible(false);
+		this.lastMouseTargetToken = null;
+		this.mouseStoppedMovingTimer.stop();
+		this.showTokenTooltipTimer.stop();
+		this.hideTokenTooltipTimer.stop();
 	}
 
 	private void updateTooltip(Entry<?> target) {
@@ -298,11 +300,20 @@ public class EditorPanel extends BaseEditorPanel {
 			final ClassEntry targetTopClass = parentedTarget.getTopLevelClass();
 
 			final ClassHandle targetTopClassHandle = targetTopClass.equals(this.getSource().getEntry())
-					? this.classHandle
+					? this.classHandle.copy()
 					: this.gui.getController().getClassHandleProvider().openClass(targetTopClass);
 
 			if (targetTopClassHandle != null) {
 				final TooltipEditorPanel tooltipEditor = new TooltipEditorPanel(this.gui, target, targetTopClassHandle);
+
+				this.classHandle.addListener(new ClassHandleListener() {
+					@Override
+					public void onMappedSourceChanged(ClassHandle h, Result<DecompiledClassSource, ClassHandleError> res) {
+						EditorPanel.this.closeTooltip();
+						tooltipEditor.destroy();
+						EditorPanel.this.classHandle.removeListener(this);
+					}
+				});
 
 				tooltipEditor.addSourceSetListener(source -> this.tooltip.pack());
 
