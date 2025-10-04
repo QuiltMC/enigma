@@ -61,7 +61,6 @@ public class EditorPanel extends BaseEditorPanel {
 
 	private final NavigatorPanel navigatorPanel;
 	private final EnigmaQuickFindToolBar quickFindToolBar = new EnigmaQuickFindToolBar();
-	// TODO restore right click functionality!
 	private final EditorPopupMenu popupMenu;
 
 	// DIY tooltip because JToolTip can't be moved or resized
@@ -142,6 +141,7 @@ public class EditorPanel extends BaseEditorPanel {
 		this.quickFindToolBar.setVisible(false);
 		// init editor popup menu
 		this.popupMenu = new EditorPopupMenu(this, gui);
+		this.editor.setComponentPopupMenu(this.popupMenu.getUi());
 
 		// global listener so tooltip hides even if clicking outside editor
 		Toolkit.getDefaultToolkit().addAWTEventListener(
