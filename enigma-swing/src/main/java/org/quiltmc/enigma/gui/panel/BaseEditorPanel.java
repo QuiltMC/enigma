@@ -306,7 +306,10 @@ public class BaseEditorPanel {
 			@Nullable Function<DecompiledClassSource, TrimmedBounds> trimFactory
 	) {
 		this.setDisplayMode(DisplayMode.SUCCESS);
-		if (source == null) return;
+		if (source == null) {
+			return;
+		}
+
 		try {
 			this.settingSource = true;
 
@@ -334,24 +337,22 @@ public class BaseEditorPanel {
 			}
 
 			this.source = source;
-			this.editor.setText(source.toString());
+			this.editor.getHighlighter().removeAllHighlights();
+
+			this.editor.setText(this.source.toString());
 			final TrimmedBounds trimmedBounds = trimFactory == null ? null : trimFactory.apply(this.source);
 			if (trimmedBounds == null) {
 				this.sourceBounds = new DefaultBounds();
 			} else {
 				this.sourceBounds = trimmedBounds;
-				this.trimSource(trimmedBounds);
+				newCaretPos = this.trimSource(trimmedBounds, newCaretPos);
 			}
 
-			this.editor.getHighlighter().removeAllHighlights();
-
 			this.setHighlightedTokens(source.getTokenStore(), source.getHighlightedTokens());
-			if (this.source != null) {
-				this.editor.setCaretPosition(newCaretPos);
+			this.editor.setCaretPosition(newCaretPos);
 
-				for (final Consumer<DecompiledClassSource> listener : this.sourceSetListeners) {
-					listener.accept(this.source);
-				}
+			for (final Consumer<DecompiledClassSource> listener : this.sourceSetListeners) {
+				listener.accept(this.source);
 			}
 
 			this.setCursorReference(this.getReference(this.getToken(this.editor.getCaretPosition())));
@@ -366,15 +367,11 @@ public class BaseEditorPanel {
 	}
 
 	// TODO strip indent
-	private void trimSource(TrimmedBounds bounds) {
-		final long oldCaretPos = this.editor.getCaretPosition();
-
+	private int trimSource(TrimmedBounds bounds, int originalCaretPos) {
 		final String sourceString = this.source.toString();
 		this.sourceBounds = new TrimmedBounds(bounds.start(), Math.min(bounds.end(), sourceString.length()));
 		this.editor.setText(sourceString.substring(this.sourceBounds.start(), this.sourceBounds.end()));
-		this.editor.setCaretPosition(
-				Utils.clamp(oldCaretPos - this.sourceBounds.start(), 0, this.editor.getText().length())
-		);
+		return Utils.clamp((long) originalCaretPos - this.sourceBounds.start(), 0, this.editor.getText().length());
 	}
 
 	protected void addSourceSetListener(Consumer<DecompiledClassSource> listener) {
