@@ -11,6 +11,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Point;
@@ -20,16 +21,18 @@ import java.awt.event.MouseEvent;
 public class ClosableTabTitlePane {
 	private final JPanel ui;
 	private final JButton closeButton;
-	private final JLabel label;
+	private final JLabel title;
 
 	private ChangeListener cachedChangeListener;
 	private JTabbedPane parent;
 
-	public ClosableTabTitlePane(String text, Runnable onClose) {
+	public ClosableTabTitlePane(String title, String tooltip, Runnable onClose) {
 		this.ui = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 2));
 		this.ui.setOpaque(false);
-		this.label = new JLabel(text);
-		this.ui.add(this.label);
+
+		this.title = new JLabel(title);
+		this.title.setToolTipText(tooltip);
+		this.ui.add(this.title);
 
 		// Adapted from javax.swing.plaf.metal.MetalTitlePane
 		this.closeButton = new JButton();
@@ -82,6 +85,22 @@ public class ClosableTabTitlePane {
 					ClosableTabTitlePane.this.parent.dispatchEvent(e1);
 				}
 			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				ClosableTabTitlePane.this.closeButton.setEnabled(true);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				if (!ClosableTabTitlePane.this.isActive(ClosableTabTitlePane.this.parent)) {
+					final Component target = SwingUtilities.getDeepestComponentAt(e.getComponent(), e.getX(), e.getY());
+					if (target == null || !SwingUtilities.isDescendingFrom(target, ClosableTabTitlePane.this.ui)) {
+						// only disable if mouse is not over this ui or descendants
+						ClosableTabTitlePane.this.closeButton.setEnabled(false);
+					}
+				}
+			}
 		});
 
 		this.ui.putClientProperty(ClosableTabTitlePane.class, this);
@@ -101,24 +120,29 @@ public class ClosableTabTitlePane {
 		this.parent = pane;
 	}
 
-	public void setText(String text) {
-		this.label.setText(text);
+	public void setText(String title, String tooltip) {
+		this.title.setText(title);
+		this.title.setToolTipText(tooltip);
 	}
 
-	public String getText() {
-		return this.label.getText();
+	public String getTitle() {
+		return this.title.getText();
 	}
 
 	private void updateState(JTabbedPane pane) {
-		int selectedIndex = pane.getSelectedIndex();
-		boolean isActive = selectedIndex != -1 && pane.getTabComponentAt(selectedIndex) == this.ui;
-		this.closeButton.setEnabled(isActive);
-		this.closeButton.putClientProperty("paintActive", isActive);
+		final boolean active = this.isActive(pane);
+		this.closeButton.setEnabled(active);
+		this.closeButton.putClientProperty("paintActive", active);
 
 		this.ui.remove(this.closeButton);
 		this.ui.add(this.closeButton);
 
 		this.ui.repaint();
+	}
+
+	private boolean isActive(JTabbedPane pane) {
+		int selectedIndex = pane.getSelectedIndex();
+		return selectedIndex != -1 && pane.getTabComponentAt(selectedIndex) == this.ui;
 	}
 
 	public JPanel getUi() {
