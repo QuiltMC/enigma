@@ -2,8 +2,11 @@ package org.quiltmc.enigma.command;
 
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.TestUtil;
+import org.quiltmc.enigma.api.stats.GenerationParameters;
+import org.quiltmc.enigma.api.stats.StatType;
 
 import java.nio.file.Path;
+import java.util.Set;
 
 import static org.quiltmc.enigma.TestUtil.getResource;
 
@@ -14,6 +17,8 @@ public class PrintStatsCommandTest {
 	@Test
 	public void test() throws Exception {
 		// just here to manually verify output
-		PrintStatsCommand.run(JAR, MAPPINGS, null, null);
+		PrintStatsCommand.run(JAR, MAPPINGS, null, null, null);
+		final var customParams = new GenerationParameters(Set.of(StatType.CLASSES), true, true);
+		PrintStatsCommand.run(JAR, MAPPINGS, null, customParams, null);
 	}
 }
