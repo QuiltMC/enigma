@@ -52,14 +52,14 @@ import java.util.function.Predicate;
 
 import static java.util.Comparator.comparingInt;
 
-public class TooltipEditorPanel extends BaseEditorPanel {
+public class DeclarationSnippetPanel extends BaseEditorPanel {
 	private static final String NO_ENTRY_DEFINITION = "no entry definition!";
 	private static final String NO_TOKEN_RANGE = "no token range!";
 	// used to compose error messages
 	private static final String METHOD = "method";
 	private static final String LAMBDA = "lambda";
 
-	public TooltipEditorPanel(Gui gui, Entry<?> target, ClassHandle targetTopClassHandle) {
+	public DeclarationSnippetPanel(Gui gui, Entry<?> target, ClassHandle targetTopClassHandle) {
 		super(gui);
 
 		Optional.ofNullable(this.editorScrollPane.getRowHeader())
@@ -79,7 +79,7 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 		});
 
 		this.getEditor().setEditable(false);
-		this.setClassHandle(targetTopClassHandle, source -> this.createTrimmedBounds(source, target));
+		this.setClassHandle(targetTopClassHandle, false, source -> this.createTrimmedBounds(source, target));
 	}
 
 	private TrimmedBounds createTrimmedBounds(DecompiledClassSource source, Entry<?> target) {
@@ -87,7 +87,7 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 
 		if (targetToken == null) {
 			// This can happen as a result of #252: Issue with lost parameter connection.
-			// Once #252 is fixed, an error should be logged here.
+			// TODO once #252 is fixed, an error should be logged here.
 			return null;
 		}
 

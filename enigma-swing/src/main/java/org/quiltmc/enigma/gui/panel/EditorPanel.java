@@ -4,11 +4,9 @@ import com.google.common.util.concurrent.Runnables;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
-import org.quiltmc.enigma.api.class_handle.ClassHandleError;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
-import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindToolBar;
@@ -21,10 +19,9 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.syntaxpain.DefaultSyntaxAction;
 import org.quiltmc.syntaxpain.SyntaxDocument;
 import org.quiltmc.enigma.util.Result;
+import org.quiltmc.enigma.gui.event.EditorActionListener;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.MouseInfo;
@@ -48,12 +45,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
@@ -72,7 +65,7 @@ public class EditorPanel extends BaseEditorPanel {
 	private final EditorPopupMenu popupMenu;
 
 	// DIY tooltip because JToolTip can't be moved or resized
-	private final JWindow tooltip = new JWindow();
+	private final EditorTooltip tooltip = new EditorTooltip(this.gui);
 
 	@Nullable
 	private Token lastMouseTargetToken;
@@ -87,7 +80,7 @@ public class EditorPanel extends BaseEditorPanel {
 
 						if (!targetToken.equals(this.lastMouseTargetToken)) {
 							this.lastMouseTargetToken = targetToken;
-							this.updateTooltip(targetEntry);
+							this.openTooltip(targetEntry);
 						}
 					} else {
 						this.lastMouseTargetToken = targetToken;
@@ -106,7 +99,7 @@ public class EditorPanel extends BaseEditorPanel {
 					this.hideTokenTooltipTimer.restart();
 					if (targetToken.equals(this.lastMouseTargetToken)) {
 						this.tooltip.setVisible(true);
-						this.updateTooltip(targetEntry);
+						this.openTooltip(targetEntry);
 					}
 				});
 			}
@@ -215,10 +208,6 @@ public class EditorPanel extends BaseEditorPanel {
 		this.hideTokenTooltipTimer.setRepeats(false);
 
 		this.tooltip.setVisible(false);
-		this.tooltip.setAlwaysOnTop(true);
-		this.tooltip.setType(Window.Type.POPUP);
-		this.tooltip.setLayout(new BorderLayout());
-		this.tooltip.setContentPane(new Box(BoxLayout.PAGE_AXIS));
 
 		this.tooltip.addMouseListener(new MouseAdapter() {
 			@Override
@@ -281,53 +270,15 @@ public class EditorPanel extends BaseEditorPanel {
 	}
 
 	private void closeTooltip() {
-		this.tooltip.setVisible(false);
+		this.tooltip.close();
 		this.lastMouseTargetToken = null;
 		this.mouseStoppedMovingTimer.stop();
 		this.showTokenTooltipTimer.stop();
 		this.hideTokenTooltipTimer.stop();
 	}
 
-	private void updateTooltip(Entry<?> target) {
-		final Container tooltipContent = this.tooltip.getContentPane();
-		tooltipContent.removeAll();
-
-		final Entry<?> deobfTarget = this.gui.getController().getProject().getRemapper().deobfuscate(target);
-
-		// TODO show parent name instead
-		tooltipContent.add(new JLabel(deobfTarget.getFullName()));
-		if (target instanceof ParentedEntry<?> parentedTarget) {
-			final ClassEntry targetTopClass = parentedTarget.getTopLevelClass();
-
-			final ClassHandle targetTopClassHandle = targetTopClass.equals(this.getSource().getEntry())
-					? this.classHandle.copy()
-					: this.gui.getController().getClassHandleProvider().openClass(targetTopClass);
-
-			if (targetTopClassHandle != null) {
-				final TooltipEditorPanel tooltipEditor = new TooltipEditorPanel(this.gui, target, targetTopClassHandle);
-
-				this.classHandle.addListener(new ClassHandleListener() {
-					@Override
-					public void onMappedSourceChanged(ClassHandle h, Result<DecompiledClassSource, ClassHandleError> res) {
-						EditorPanel.this.closeTooltip();
-						tooltipEditor.destroy();
-						EditorPanel.this.classHandle.removeListener(this);
-					}
-				});
-
-				tooltipEditor.addSourceSetListener(source -> this.tooltip.pack());
-
-				tooltipContent.add(tooltipEditor.ui);
-			} else {
-				tooltipContent.add(new JLabel("No source available"));
-			}
-		}
-
-		// TODO offset from cursor slightly + ensure on-screen
-		this.tooltip.setLocation(MouseInfo.getPointerInfo().getLocation());
-
-		// TODO clamp size
-		this.tooltip.pack();
+	private void openTooltip(Entry<?> target) {
+		this.tooltip.open(target);
 	}
 
 	/**
@@ -413,18 +364,26 @@ public class EditorPanel extends BaseEditorPanel {
 
 	@Override
 	protected void initEditorPane(JPanel editorPane) {
-		final GridBagConstraints constraints = new GridBagConstraints();
-		constraints.gridx = 0;
-		constraints.gridy = 0;
-		constraints.weightx = 1.0;
-		constraints.weighty = 1.0;
-		constraints.anchor = GridBagConstraints.FIRST_LINE_END;
-		constraints.insets = new Insets(32, 32, 32, 32);
-		constraints.ipadx = 16;
-		constraints.ipady = 16;
-		editorPane.add(this.navigatorPanel, constraints);
+		final GridBagConstraints navigatorConstraints = new GridBagConstraints();
+		navigatorConstraints.gridx = 0;
+		navigatorConstraints.gridy = 0;
+		navigatorConstraints.weightx = 1.0;
+		navigatorConstraints.weighty = 1.0;
+		navigatorConstraints.anchor = GridBagConstraints.FIRST_LINE_END;
+		navigatorConstraints.insets = new Insets(32, 32, 32, 32);
+		navigatorConstraints.ipadx = 16;
+		navigatorConstraints.ipady = 16;
+		editorPane.add(this.navigatorPanel, navigatorConstraints);
 
 		super.initEditorPane(editorPane);
+
+		final var quickFindConstraints = new GridBagConstraints();
+		quickFindConstraints.gridx = 0;
+		quickFindConstraints.weightx = 1.0;
+		quickFindConstraints.weighty = 0;
+		quickFindConstraints.anchor = GridBagConstraints.PAGE_END;
+		quickFindConstraints.fill = GridBagConstraints.HORIZONTAL;
+		editorPane.add(this.quickFindToolBar, quickFindConstraints);
 	}
 
 	@Nullable
@@ -511,8 +470,8 @@ public class EditorPanel extends BaseEditorPanel {
 
 	public void reloadKeyBinds() {
 		putKeyBindAction(KeyBinds.EDITOR_RELOAD_CLASS, this.editor, e -> {
-			if (this.classHandle != null) {
-				this.classHandle.invalidate();
+			if (this.classHandler != null) {
+				this.classHandler.getHandle().invalidate();
 			}
 		});
 		putKeyBindAction(KeyBinds.EDITOR_ZOOM_IN, this.editor, e -> this.offsetEditorZoom(2));

@@ -89,7 +89,7 @@ public class BaseEditorPanel {
 	private final BoxHighlightPainter debugPainter;
 	private final BoxHighlightPainter fallbackPainter;
 
-	protected ClassHandle classHandle;
+	protected ClassHandler classHandler;
 	private DecompiledClassSource source;
 	private SourceBounds sourceBounds = new DefaultBounds();
 	protected boolean settingSource;
@@ -125,16 +125,19 @@ public class BaseEditorPanel {
 	}
 
 	public void setClassHandle(ClassHandle handle) {
-		this.setClassHandle(handle, null);
+		this.setClassHandle(handle, true, null);
 	}
 
 	protected void setClassHandle(
-			ClassHandle handle, @Nullable Function<DecompiledClassSource, TrimmedBounds> trimFactory
+			ClassHandle handle, boolean closeOldHandle,
+			@Nullable Function<DecompiledClassSource, TrimmedBounds> trimFactory
 	) {
 		ClassEntry old = null;
-		if (this.classHandle != null) {
-			old = this.classHandle.getRef();
-			this.classHandle.close();
+		if (this.classHandler != null) {
+			old = this.classHandler.getHandle().getRef();
+			if (closeOldHandle) {
+				this.classHandler.getHandle().close();
+			}
 		}
 
 		this.setClassHandleImpl(old, handle, trimFactory);
@@ -147,7 +150,7 @@ public class BaseEditorPanel {
 		this.setDisplayMode(DisplayMode.IN_PROGRESS);
 		this.setCursorReference(null);
 
-		handle.addListener(new ClassHandleListener() {
+		this.classHandler = ClassHandler.of(handle, new ClassHandleListener() {
 			@Override
 			public void onMappedSourceChanged(ClassHandle h, Result<DecompiledClassSource, ClassHandleError> res) {
 				BaseEditorPanel.this.handleDecompilerResult(res, trimFactory);
@@ -167,17 +170,15 @@ public class BaseEditorPanel {
 				res -> BaseEditorPanel.this.handleDecompilerResult(res, trimFactory),
 				SwingUtilities::invokeLater
 		);
-
-		this.classHandle = handle;
 	}
 
 	public void destroy() {
-		this.classHandle.close();
+		this.classHandler.getHandle().close();
 	}
 
 	private void redecompileClass() {
-		if (this.classHandle != null) {
-			this.classHandle.invalidate();
+		if (this.classHandler != null) {
+			this.classHandler.getHandle().invalidate();
 		}
 	}
 
@@ -448,7 +449,7 @@ public class BaseEditorPanel {
 		List<Token> tokens = this.controller.getTokensForReference(this.source, reference);
 		if (tokens.isEmpty()) {
 			// DEBUG
-			Logger.debug("No tokens found for {} in {}", reference, this.classHandle.getRef());
+			Logger.debug("No tokens found for {} in {}", reference, this.classHandler.getHandle().getRef());
 		} else {
 			this.gui.showTokens(this, tokens);
 		}
@@ -502,8 +503,8 @@ public class BaseEditorPanel {
 			public void actionPerformed(ActionEvent event) {
 				if (this.counter % 2 == 0) {
 					try {
-						// final int offsetEnd = token.end - BaseEditorPanel.this.sourceBounds.start();
-						this.highlight = BaseEditorPanel.this.editor.getHighlighter().addHighlight(offsetToken.start, offsetToken.end, highlightPainter);
+						this.highlight = BaseEditorPanel.this.editor.getHighlighter()
+								.addHighlight(offsetToken.start, offsetToken.end, highlightPainter);
 					} catch (BadLocationException ex) {
 						// don't care
 					}
@@ -534,7 +535,7 @@ public class BaseEditorPanel {
 	}
 
 	public ClassHandle getClassHandle() {
-		return this.classHandle;
+		return this.classHandler == null ? null : this.classHandler.getHandle();
 	}
 
 	public String getSimpleClassName() {
@@ -546,8 +547,8 @@ public class BaseEditorPanel {
 	}
 
 	private ClassEntry getDeobfOrObfHandleRef() {
-		final ClassEntry deobfRef = this.classHandle.getDeobfRef();
-		return deobfRef == null ? this.classHandle.getRef() : deobfRef;
+		final ClassEntry deobfRef = this.classHandler.handle.getDeobfRef();
+		return deobfRef == null ? this.classHandler.handle.getRef() : deobfRef;
 	}
 
 	protected sealed interface SourceBounds {
@@ -604,5 +605,29 @@ public class BaseEditorPanel {
 		IN_PROGRESS,
 		SUCCESS,
 		ERRORED,
+	}
+
+	public static final class ClassHandler {
+		public static ClassHandler of(ClassHandle handle, ClassHandleListener listener) {
+			handle.addListener(listener);
+
+			return new ClassHandler(handle, listener);
+		}
+
+		private final ClassHandle handle;
+		private final ClassHandleListener listener;
+
+		private ClassHandler(ClassHandle handle, ClassHandleListener listener) {
+			this.handle = handle;
+			this.listener = listener;
+		}
+
+		public ClassHandle getHandle() {
+			return this.handle;
+		}
+
+		public void removeListener() {
+			this.handle.removeListener(this.listener);
+		}
 	}
 }
