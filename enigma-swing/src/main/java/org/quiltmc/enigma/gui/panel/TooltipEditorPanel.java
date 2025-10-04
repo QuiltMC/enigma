@@ -46,7 +46,6 @@ import org.tinylog.Logger;
 
 import javax.swing.JViewport;
 import java.util.Comparator;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -84,11 +83,13 @@ public class TooltipEditorPanel extends BaseEditorPanel {
 	}
 
 	private TrimmedBounds createTrimmedBounds(DecompiledClassSource source, Entry<?> target) {
-		final Token targetToken = Objects.requireNonNull(
-				source.getIndex().getDeclarationToken(target),
-				() -> "Error trimming tooltip for '%s': no declaration token!"
-					.formatted(this.getFullDeobfuscatedName(target))
-		);
+		final Token targetToken = source.getIndex().getDeclarationToken(target);
+
+		if (targetToken == null) {
+			// This can happen as a result of #252: Issue with lost parameter connection.
+			// Once #252 is fixed, an error should be logged here.
+			return null;
+		}
 
 		final Result<TrimmedBounds, String> bounds;
 		if (target instanceof ClassEntry targetClass) {
