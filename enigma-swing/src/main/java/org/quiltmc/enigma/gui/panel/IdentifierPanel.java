@@ -1,10 +1,9 @@
 package org.quiltmc.enigma.gui.panel;
 
+import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
-import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
-import org.quiltmc.enigma.api.translation.representation.AccessFlags;
-import org.quiltmc.enigma.api.translation.representation.ArgumentDescriptor;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
+import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableDefEntry;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
@@ -27,6 +26,7 @@ import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.MouseEvent;
+import javax.annotation.Nullable;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -77,7 +77,8 @@ public class IdentifierPanel {
 	}
 
 	public void refreshReference() {
-		this.deobfEntry = this.entry == null ? null : this.gui.getController().getProject().getRemapper().deobfuscate(this.entry);
+		final EnigmaProject project = this.gui.getController().getProject();
+		this.deobfEntry = this.entry == null ? null : project.getRemapper().deobfuscate(this.entry);
 
 		// Prevent IdentifierPanel from being rebuilt if you didn't click off.
 		if (this.lastEntry == this.entry && this.nameField != null) {
@@ -144,40 +145,35 @@ public class IdentifierPanel {
 
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method_descriptor"), me.getDesc().toString());
-			} else if (this.deobfEntry instanceof LocalVariableEntry lve) {
+			} else if (this.deobfEntry instanceof LocalVariableEntry local) {
 				EditableType type;
 
-				if (lve.isArgument()) {
+				if (local.isArgument()) {
 					type = EditableType.PARAMETER;
 				} else {
 					type = EditableType.LOCAL_VARIABLE;
 				}
 
-				this.nameField = th.addRenameTextField(type, lve.getName());
-				th.addStringRow(I18n.translate("info_panel.identifier.class"), lve.getContainingClass().getFullName());
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method"), lve.getParent().getName());
-				th.addStringRow(I18n.translate("info_panel.identifier.index"), Integer.toString(lve.getIndex()));
+				this.nameField = th.addRenameTextField(type, local.getName());
+				th.addStringRow(I18n.translate("info_panel.identifier.class"), local.getContainingClass().getFullName());
+				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method"), local.getParent().getName());
+				th.addStringRow(I18n.translate("info_panel.identifier.index"), Integer.toString(local.getIndex()));
 
 				// type
-				JarIndex index = this.gui.getController().getProject().getJarIndex();
-				AccessFlags access = index.getIndex(EntryIndex.class).getMethodAccess(lve.getParent());
-				int i = access != null && access.isStatic() ? 0 : 1;
-				var args = lve.getParent().getDesc().getArgumentDescs();
+				EntryIndex index = project.getJarIndex().getIndex(EntryIndex.class);
+				// EntryIndex only contains obf entries, so use the obf entry to look up the local's descriptor
+				@Nullable
+				final LocalVariableDefEntry obfLocal = index.getDefinition((LocalVariableEntry) this.entry);
+				final String localDesc = obfLocal == null
+						? I18n.translate("info_panel.identifier.type.unknown")
+						: toReadableType(project.getRemapper().deobfuscate(obfLocal.getDesc()));
 
-				for (ArgumentDescriptor arg : args) {
-					if (i == lve.getIndex()) {
-						th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), toReadableType(arg));
-						break;
-					}
-
-					var primitive = TypeDescriptor.Primitive.get(arg.toString().charAt(0));
-					i += primitive == null ? 1 : primitive.getSize();
-				}
+				th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), localDesc);
 			} else {
 				throw new IllegalStateException("unreachable");
 			}
 
-			var mapping = this.gui.getController().getProject().getRemapper().getMapping(this.entry);
+			var mapping = project.getRemapper().getMapping(this.entry);
 			if (Config.main().development.showMappingSourcePlugin.value() && mapping.tokenType().isProposed()) {
 				th.addStringRow(I18n.translate("dev.source_plugin"), mapping.sourcePluginId());
 			}
