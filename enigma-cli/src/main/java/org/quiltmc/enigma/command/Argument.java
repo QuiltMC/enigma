@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -15,6 +16,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -88,7 +90,7 @@ final class Argument<T> {
 	 * Assumes enum values have conventional {@code SCREAMING_SNAKE_CASE} names.
 	 */
 	static <E extends Enum<E>> Argument<E> ofEnum(String name, Class<E> type, String explanation) {
-		return new Argument<>(name, alternativesOf(type), string -> Enum.valueOf(type, string.toUpperCase()), explanation);
+		return new Argument<>(name, alternativesOf(type), string -> parseCaseInsensitiveEnum(type, string), explanation);
 	}
 
 	static <E extends Enum<E>> Argument<E> ofStrictEnum(String name, Class<E> type, String explanation) {
@@ -111,10 +113,15 @@ final class Argument<T> {
 		return new Argument<>(name, PATTERN_TYPE, Argument::parsePattern, explanation);
 	}
 
-	private static String alternativesOf(Class<? extends Enum<?>> type) {
-		return Arrays.stream(type.getEnumConstants())
-			.map(Object::toString)
-			.collect(Collectors.joining(ALTERNATIVES_DELIM));
+	static <T, C extends Collection<T>> Argument<C> ofCollection(
+			String name, String typeDescription, String explanation,
+			Function<String, T> elementParser, Collector<T, ?, C> collector
+	) {
+		return new Argument<>(
+				name, typeDescription,
+				string -> parseCollection(string, ",", elementParser, collector),
+				explanation
+		);
 	}
 
 	private final String name;
@@ -141,6 +148,21 @@ final class Argument<T> {
 
 	static Path parseFile(String path) {
 		return verifyFile(parsePath(path)).orElse(null);
+	}
+
+	static <T, C extends Collection<T>> C parseCollection(
+			String input, String delimRegex, Function<String, T> elementParser, Collector<T, ?, C> collector
+	) {
+		return Arrays.stream(input.split(delimRegex))
+				.map(string -> {
+					final T element = elementParser.apply(string);
+					if (element == null) {
+						throw new IllegalArgumentException("Invalid element: " + string);
+					} else {
+						return element;
+					}
+				})
+				.collect(collector);
 	}
 
 	static Path parseFolder(String path) {
@@ -205,6 +227,10 @@ final class Argument<T> {
 		return string.isEmpty() ? null : string;
 	}
 
+	static <E extends Enum<E>> E parseCaseInsensitiveEnum(Class<E> type, String string) {
+		return Enum.valueOf(type, string.toUpperCase());
+	}
+
 	static Pattern parsePattern(String regex) {
 		if (regex.isEmpty()) {
 			return null;
@@ -254,6 +280,16 @@ final class Argument<T> {
 	static <T> Optional<T> peek(Optional<T> optional, Consumer<T> action) {
 		optional.ifPresent(action);
 		return optional;
+	}
+
+	static String alternativesOf(Class<? extends Enum<?>> type) {
+		return alternativesOf(type, ALTERNATIVES_DELIM);
+	}
+
+	static String alternativesOf(Class<? extends Enum<?>> type, String delim) {
+		return Arrays.stream(type.getEnumConstants())
+			.map(Object::toString)
+			.collect(Collectors.joining(delim));
 	}
 
 	public String getName() {
