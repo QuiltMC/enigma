@@ -39,7 +39,8 @@ public class QuickFindDialog extends JDialog implements EscapeListener {
 		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
 				.addComponent(this.quickFindToolBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
 
-		this.setName("QuickFindDialog");
+		final String simpleName = this.getClass().getSimpleName();
+		this.setName(simpleName.isEmpty() ? QuickFindDialog.class.getSimpleName() : simpleName);
 
 		Util.addEscapeListener(this);
 	}
