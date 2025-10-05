@@ -143,8 +143,7 @@ public class EditorTooltip extends JWindow {
 					if (parent instanceof ClassEntry parentClass) {
 						final String parentPackage = parentClass.getPackageName();
 						if (parentPackage != null) {
-							final String dotPackage = parentPackage.replace('/', '.');
-							builder.insert(0, dotPackage);
+							builder.insert(0, parentPackage.replace('/', '.'));
 						}
 					}
 

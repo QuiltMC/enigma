@@ -8,6 +8,7 @@ import org.quiltmc.enigma.api.event.ClassHandleListener;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.gui.Gui;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindToolBar;
 import org.quiltmc.enigma.gui.element.EditorPopupMenu;
@@ -69,27 +70,30 @@ public class EditorPanel extends BaseEditorPanel {
 
 	// avoid finding the mouse entry every mouse movement update
 	private final Timer mouseStoppedMovingTimer = new Timer(MOUSE_STOPPED_MOVING_DELAY, e -> {
-		this.consumeEditorMouseTarget(
-				(targetToken, targetEntry) -> {
-					this.hideTokenTooltipTimer.restart();
-					if (this.tooltip.isVisible()) {
-						this.showTokenTooltipTimer.stop();
+		if (Config.editor().tooltip.enable.value()) {
+			this.consumeEditorMouseTarget(
+					(targetToken, targetEntry) -> {
+						this.hideTokenTooltipTimer.restart();
+						if (this.tooltip.isVisible()) {
+							this.showTokenTooltipTimer.stop();
 
-						if (!targetToken.equals(this.lastMouseTargetToken)) {
+							if (!targetToken.equals(this.lastMouseTargetToken)) {
+								this.lastMouseTargetToken = targetToken;
+								this.openTooltip(targetEntry);
+							}
+						} else {
 							this.lastMouseTargetToken = targetToken;
-							this.openTooltip(targetEntry);
+							this.showTokenTooltipTimer.start();
 						}
-					} else {
-						this.lastMouseTargetToken = targetToken;
-						this.showTokenTooltipTimer.start();
+					},
+					() -> {
+						this.lastMouseTargetToken = null;
+						this.showTokenTooltipTimer.stop();
 					}
-				},
-				() -> {
-					this.lastMouseTargetToken = null;
-					this.showTokenTooltipTimer.stop();
-				}
-		);
+			);
+		}
 	});
+
 	private final Timer showTokenTooltipTimer = new Timer(
 			ToolTipManager.sharedInstance().getInitialDelay() - MOUSE_STOPPED_MOVING_DELAY, e -> {
 				this.consumeEditorMouseTarget((targetToken, targetEntry) -> {
@@ -101,6 +105,7 @@ public class EditorPanel extends BaseEditorPanel {
 				});
 			}
 	);
+
 	// TODO stop hide timer when mouse is over tooltip or target token
 	// TODO tooltip re-shows after short delay after hiding
 	private final Timer hideTokenTooltipTimer = new Timer(

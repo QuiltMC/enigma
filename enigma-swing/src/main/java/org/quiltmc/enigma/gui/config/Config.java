@@ -52,6 +52,7 @@ public final class Config extends ReflectiveConfig {
 	private static final NetConfig NET = ConfigFactory.create(ENVIRONMENT, FAMILY, "net", NetConfig.class);
 	private static final DockerConfig DOCKER = ConfigFactory.create(ENVIRONMENT, FAMILY, "docker", DockerConfig.class);
 	private static final DecompilerConfig DECOMPILER = ConfigFactory.create(ENVIRONMENT, FAMILY, "decompiler", DecompilerConfig.class);
+	private static final EditorConfig EDITOR = ConfigFactory.create(ENVIRONMENT, FAMILY, "editor", EditorConfig.class);
 
 	@Comment("The currently assigned UI language. This will be an ISO-639 two-letter language code, followed by an underscore and an ISO 3166-1 alpha-2 two-letter country code.")
 	@Processor("grabPossibleLanguages")
@@ -129,6 +130,10 @@ public final class Config extends ReflectiveConfig {
 
 	public static DecompilerConfig decompiler() {
 		return DECOMPILER;
+	}
+
+	public static EditorConfig editor() {
+		return EDITOR;
 	}
 
 	public static Theme currentTheme() {
