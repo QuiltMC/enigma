@@ -460,11 +460,14 @@ public class BaseEditorPanel {
 		this.navigateToToken(token, SelectionHighlightPainter.INSTANCE);
 	}
 
-	protected void navigateToToken(Token token, HighlightPainter highlightPainter) {
+	/**
+	 * @return {@code true} if navigation was successful, or {@code false} otherwise
+	 */
+	protected boolean navigateToToken(@Nullable Token token, HighlightPainter highlightPainter) {
 		final Token offsetToken = this.sourceBounds.offsetOf(token).orElse(null);
 		if (offsetToken == null) {
 			// token out of bounds
-			return;
+			return false;
 		}
 
 		// set the caret position to the token
@@ -476,7 +479,7 @@ public class BaseEditorPanel {
 			Rectangle2D start = this.editor.modelToView2D(offsetToken.start);
 			Rectangle2D end = this.editor.modelToView2D(offsetToken.start);
 			if (start == null || end == null) {
-				return;
+				return false;
 			}
 
 			Rectangle show = new Rectangle();
@@ -487,7 +490,7 @@ public class BaseEditorPanel {
 			if (!this.settingSource) {
 				throw new RuntimeException(ex);
 			} else {
-				return;
+				return false;
 			}
 		}
 
@@ -517,6 +520,8 @@ public class BaseEditorPanel {
 		});
 
 		timer.start();
+
+		return true;
 	}
 
 	public JPanel getUi() {
@@ -561,10 +566,10 @@ public class BaseEditorPanel {
 			return this.contains(token.start) && this.contains(token.end);
 		}
 
-		default Optional<Token> offsetOf(Token token) {
-			return this.contains(token)
-				? Optional.of(new Token(token.start - this.start(), token.end - this.start(), token.text))
-				: Optional.empty();
+		default Optional<Token> offsetOf(@Nullable Token token) {
+			return token == null || !this.contains(token)
+				? Optional.empty()
+				: Optional.of(new Token(token.start - this.start(), token.end - this.start(), token.text));
 		}
 	}
 
@@ -593,7 +598,7 @@ public class BaseEditorPanel {
 
 		@Override
 		public Optional<Token> offsetOf(Token token) {
-			return this.end() < token.end ? Optional.empty() : Optional.of(token);
+			return token == null || this.end() < token.end ? Optional.empty() : Optional.of(token);
 		}
 	}
 

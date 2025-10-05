@@ -72,9 +72,11 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 
 		this.addSourceSetListener(source -> {
 			final Token declarationToken = source.getIndex().getDeclarationToken(target);
-			if (declarationToken != null) {
-				// TODO create custom highlighter
-				this.navigateToToken(declarationToken, SelectionHighlightPainter.INSTANCE);
+			// TODO create custom highlighter
+			if (!this.navigateToToken(declarationToken, SelectionHighlightPainter.INSTANCE)) {
+				// the source isn't very useful if it couldn't be trimmed and the declaration couldn't be navigated to
+				// set this text so it doesn't waste space or cause confusion
+				this.editor.setText("// Unable to locate declaration");
 			}
 		});
 
@@ -87,7 +89,7 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 
 		if (targetToken == null) {
 			// This can happen as a result of #252: Issue with lost parameter connection.
-			// TODO once #252 is fixed, an error should be logged here.
+			// This can also happen when the token is from a library.
 			return null;
 		}
 
