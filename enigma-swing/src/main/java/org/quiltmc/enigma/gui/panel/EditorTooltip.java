@@ -14,6 +14,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JWindow;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.MouseInfo;
 import java.awt.Window;
 import java.util.Optional;
@@ -50,22 +51,34 @@ public class EditorTooltip extends JWindow {
 			this.declarationSnippet = null;
 		}
 
-		this.content.add(new JLabel(this.getParentName(target).orElse("From un-packaged class")));
+		{
+			final Box fromRow = Box.createHorizontalBox();
+			fromRow.add(new JLabel("From: "));
+			fromRow.add(new JLabel(this.getParentName(target).orElse("un-packaged class")));
+			fromRow.add(Box.createHorizontalGlue());
+			this.content.add(fromRow);
+		}
 
-		final ClassEntry targetTopClass = target.getTopLevelClass();
+		{
+			final ClassHandle targetTopClassHandle = this.gui.getController().getClassHandleProvider()
+					.openClass(target.getTopLevelClass());
 
-		final ClassHandle targetTopClassHandle = this.gui.getController().getClassHandleProvider()
-				.openClass(targetTopClass);
+			final Component sourceInfo;
+			if (targetTopClassHandle != null) {
+				this.declarationSnippet = new DeclarationSnippetPanel(this.gui, target, targetTopClassHandle);
 
-		if (targetTopClassHandle != null) {
-			this.declarationSnippet = new DeclarationSnippetPanel(this.gui, target, targetTopClassHandle);
+				// TODO create method that packs and adjusts position as necessary
+				this.declarationSnippet.addSourceSetListener(source -> this.pack());
 
-			// TODO create method that packs and adjusts position as necessary
-			this.declarationSnippet.addSourceSetListener(source -> this.pack());
+				sourceInfo = this.declarationSnippet.ui;
+			} else {
+				sourceInfo = new JLabel("No source available");
+			}
 
-			this.content.add(this.declarationSnippet.ui);
-		} else {
-			this.content.add(new JLabel("No source available"));
+			final Box sourceRow = Box.createHorizontalBox();
+			sourceRow.add(sourceInfo);
+			sourceRow.add(Box.createHorizontalGlue());
+			this.content.add(sourceRow);
 		}
 
 		// TODO offset from cursor slightly + ensure on-screen
