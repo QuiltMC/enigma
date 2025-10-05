@@ -21,13 +21,20 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Optional;
 import java.util.function.Consumer;
 
 public class EditorTooltip extends JWindow {
 	private final Gui gui;
 	private final Box content;
+
+	@Nullable
+	private Point dragStart;
 
 	@Nullable
 	private DeclarationSnippetPanel declarationSnippet;
@@ -42,6 +49,46 @@ public class EditorTooltip extends JWindow {
 		this.setType(Window.Type.POPUP);
 		this.setLayout(new BorderLayout());
 		this.setContentPane(this.content);
+
+		Toolkit.getDefaultToolkit().addAWTEventListener(
+				e -> {
+					if (e instanceof MouseEvent mouseEvent && mouseEvent.getID() == MouseEvent.MOUSE_RELEASED) {
+						EditorTooltip.this.dragStart = null;
+					}
+				},
+				MouseEvent.MOUSE_RELEASED
+		);
+
+		// TODO
+		//  - update tooltip with clicked entry declaration
+		//  - add a "bread crumbs" back button
+		//  - open entry tab on ctrl-click or "Got to source" button click
+		this.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (Config.editor().tooltip.interactable.value()) {
+					EditorTooltip.this.dragStart = e.getButton() == MouseEvent.BUTTON1
+							? new Point(e.getX(), e.getY())
+							: null;
+
+					e.consume();
+				} else {
+					EditorTooltip.this.close();
+				}
+			}
+		});
+
+		this.addMouseMotionListener(new MouseAdapter() {
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				final Point dragStart = EditorTooltip.this.dragStart;
+				if (dragStart != null) {
+					final Point location = EditorTooltip.this.getLocation();
+					location.translate(e.getX() - dragStart.x, e.getY() - dragStart.y);
+					EditorTooltip.this.setLocation(location);
+				}
+			}
+		});
 	}
 
 	/**
@@ -52,6 +99,15 @@ public class EditorTooltip extends JWindow {
 	public void open(Entry<?> target) {
 		this.content.removeAll();
 
+		@Nullable
+		final MouseAdapter stopInteraction = Config.editor().tooltip.interactable.value() ? null : new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				EditorTooltip.this.close();
+				e.consume();
+			}
+		};
+
 		if (this.declarationSnippet != null) {
 			this.declarationSnippet.classHandler.removeListener();
 			this.declarationSnippet = null;
@@ -59,6 +115,7 @@ public class EditorTooltip extends JWindow {
 
 		this.addRow(new JLabel("From: "), new JLabel(this.getParentName(target).orElse("un-packaged class")));
 
+		// TODO add param javadocs for methods (and component javadocs for records)
 		final String javadoc = this.gui.getController().getProject().getRemapper().getMapping(target).javadoc();
 		if (javadoc != null) {
 			this.add(new JSeparator());
@@ -69,6 +126,11 @@ public class EditorTooltip extends JWindow {
 			javadocComponent.setForeground(Config.getCurrentSyntaxPaneColors().comment.value());
 			javadocComponent.setFont(Config.currentFonts().editor.value().deriveFont(Font.ITALIC));
 			javadocComponent.setBackground(new Color(0, 0, 0, 0));
+			javadocComponent.setCaretColor(new Color(0, 0, 0, 0));
+			javadocComponent.getCaret().setSelectionVisible(true);
+			if (stopInteraction != null) {
+				javadocComponent.addMouseListener(stopInteraction);
+			}
 
 			this.addRow(javadocComponent);
 		}
@@ -83,6 +145,10 @@ public class EditorTooltip extends JWindow {
 
 				// TODO create method that packs and adjusts position as necessary
 				this.declarationSnippet.addSourceSetListener(source -> this.pack());
+
+				if (stopInteraction != null) {
+					this.declarationSnippet.editor.addMouseListener(stopInteraction);
+				}
 
 				sourceInfo = this.declarationSnippet.ui;
 			} else {

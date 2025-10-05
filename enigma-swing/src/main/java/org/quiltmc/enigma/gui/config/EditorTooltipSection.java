@@ -10,4 +10,7 @@ import org.quiltmc.config.api.values.TrackedValue;
 public class EditorTooltipSection extends ReflectiveConfig.Section {
 	@Comment("Whether tooltips are enabled.")
 	public final TrackedValue<Boolean> enable = this.value(true);
+
+	@Comment("Whether tooltips can be clicked and interacted with to navigate their content.")
+	public final TrackedValue<Boolean> interactable = this.value(true);
 }

@@ -45,6 +45,7 @@ import org.quiltmc.syntaxpain.LineNumbersRuler;
 import org.tinylog.Logger;
 
 import javax.swing.JViewport;
+import java.awt.Color;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.Function;
@@ -82,6 +83,9 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 
 		this.getEditor().setEditable(false);
 		this.setClassHandle(targetTopClassHandle, false, source -> this.createSnippet(source, target));
+
+		this.editor.setCaretColor(new Color(0, 0, 0, 0));
+		this.editor.getCaret().setSelectionVisible(true);
 	}
 
 	private Snippet createSnippet(DecompiledClassSource source, Entry<?> target) {

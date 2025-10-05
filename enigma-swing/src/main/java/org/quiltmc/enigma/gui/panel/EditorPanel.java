@@ -149,12 +149,10 @@ public class EditorPanel extends BaseEditorPanel {
 		// global listener so tooltip hides even if clicking outside editor
 		Toolkit.getDefaultToolkit().addAWTEventListener(
 				e -> {
-					// TODO configurably allow clicking tooltip
-					//  - update tooltip with clicked entry declaration
-					//  - add a "bread crumbs" back button
-					//  - open entry tab on ctrl-click or "Got to source" button click
-					if (e.getID() == MouseEvent.MOUSE_PRESSED) {
-						this.closeTooltip();
+					if (e instanceof MouseEvent mouseEvent && mouseEvent.getID() == MouseEvent.MOUSE_PRESSED) {
+						if (this.tooltip.isVisible()) {
+							consumeMousePositionOut(this.tooltip.getContentPane(), absolute -> this.closeTooltip());
+						}
 					}
 				},
 				MouseEvent.MOUSE_PRESSED
@@ -324,6 +322,13 @@ public class EditorPanel extends BaseEditorPanel {
 	 */
 	private static void consumeMousePositionIn(Component component, BiConsumer<Point, Point> inAction) {
 		consumeMousePositionIn(component, inAction, pos -> { });
+	}
+
+	/**
+	 * @see #consumeMousePositionIn(Component, BiConsumer, Consumer)
+	 */
+	private static void consumeMousePositionOut(Component component, Consumer<Point> outAction) {
+		consumeMousePositionIn(component, (absolut, relative) -> { }, outAction);
 	}
 
 	/**
