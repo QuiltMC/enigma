@@ -73,7 +73,7 @@ public class EditorPanel extends BaseEditorPanel {
 		if (Config.editor().tooltip.enable.value()) {
 			this.consumeEditorMouseTarget(
 					(targetToken, targetEntry) -> {
-						this.hideTokenTooltipTimer.restart();
+						this.hideTokenTooltipTimer.stop();
 						if (this.tooltip.isVisible()) {
 							this.showTokenTooltipTimer.stop();
 
@@ -89,6 +89,7 @@ public class EditorPanel extends BaseEditorPanel {
 					() -> {
 						this.lastMouseTargetToken = null;
 						this.showTokenTooltipTimer.stop();
+						this.hideTokenTooltipTimer.start();
 					}
 			);
 		}
@@ -97,7 +98,6 @@ public class EditorPanel extends BaseEditorPanel {
 	private final Timer showTokenTooltipTimer = new Timer(
 			ToolTipManager.sharedInstance().getInitialDelay() - MOUSE_STOPPED_MOVING_DELAY, e -> {
 				this.consumeEditorMouseTarget((targetToken, targetEntry) -> {
-					this.hideTokenTooltipTimer.restart();
 					if (targetToken.equals(this.lastMouseTargetToken)) {
 						this.tooltip.setVisible(true);
 						this.openTooltip(targetEntry);
@@ -106,8 +106,6 @@ public class EditorPanel extends BaseEditorPanel {
 			}
 	);
 
-	// TODO stop hide timer when mouse is over tooltip or target token
-	// TODO tooltip re-shows after short delay after hiding
 	private final Timer hideTokenTooltipTimer = new Timer(
 			ToolTipManager.sharedInstance().getDismissDelay() - MOUSE_STOPPED_MOVING_DELAY,
 			e -> this.closeTooltip()
@@ -230,6 +228,15 @@ public class EditorPanel extends BaseEditorPanel {
 				});
 
 				e.consume();
+			}
+		});
+
+		this.tooltip.addMouseMotionListener(new MouseAdapter() {
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				if (Config.editor().tooltip.interactable.value()) {
+					EditorPanel.this.hideTokenTooltipTimer.stop();
+				}
 			}
 		});
 
