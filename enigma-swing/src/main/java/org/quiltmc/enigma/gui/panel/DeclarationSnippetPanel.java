@@ -81,10 +81,10 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 		});
 
 		this.getEditor().setEditable(false);
-		this.setClassHandle(targetTopClassHandle, false, source -> this.createTrimmedBounds(source, target));
+		this.setClassHandle(targetTopClassHandle, false, source -> this.createSnippet(source, target));
 	}
 
-	private TrimmedBounds createTrimmedBounds(DecompiledClassSource source, Entry<?> target) {
+	private Snippet createSnippet(DecompiledClassSource source, Entry<?> target) {
 		final Token targetToken = source.getIndex().getDeclarationToken(target);
 
 		if (targetToken == null) {
@@ -93,15 +93,15 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 			return null;
 		}
 
-		final Result<TrimmedBounds, String> bounds;
+		final Result<Snippet, String> snippet;
 		if (target instanceof ClassEntry targetClass) {
-			bounds = this.findClassBounds(source, targetToken, targetClass);
+			snippet = this.findClassSnippet(source, targetToken, targetClass);
 		} else if (target instanceof MethodEntry targetMethod) {
-			bounds = this.findMethodBounds(source, targetToken, targetMethod);
+			snippet = this.findMethodSnippet(source, targetToken, targetMethod);
 		} else if (target instanceof FieldEntry targetField) {
-			bounds = this.findFieldBounds(source, targetToken, targetField);
+			snippet = this.findFieldSnippet(source, targetToken, targetField);
 		} else if (target instanceof LocalVariableEntry targetLocal) {
-			bounds = this.getVariableBounds(source, targetToken, targetLocal);
+			snippet = this.getVariableSnippet(source, targetToken, targetLocal);
 		} else {
 			// this should never be reached
 			Logger.error(
@@ -111,7 +111,7 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 			return null;
 		}
 
-		return bounds.unwrapOrElse(error -> {
+		return snippet.unwrapOrElse(error -> {
 			Logger.error(
 					"Error finding declaration of '{}' for tooltip: {}",
 					this.getFullDeobfuscatedName(target),
@@ -121,7 +121,7 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 		});
 	}
 
-	private Result<TrimmedBounds, String> getVariableBounds(
+	private Result<Snippet, String> getVariableSnippet(
 			DecompiledClassSource source, Token target, LocalVariableEntry targetEntry
 	) {
 		final MethodEntry parent = targetEntry.getParent();
@@ -134,14 +134,14 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 			return this.findLambdaVariable(source, target, targetEntry, parent);
 		} else {
 			if (targetEntry.isArgument()) {
-				return this.findMethodBounds(source, parentToken, parent);
+				return this.findMethodSnippet(source, parentToken, parent);
 			} else {
-				return this.findLocalBounds(source, parentToken, target);
+				return this.findLocalSnippet(source, parentToken, target);
 			}
 		}
 	}
 
-	private Result<TrimmedBounds, String> findLambdaVariable(
+	private Result<Snippet, String> findLambdaVariable(
 			DecompiledClassSource source, Token target, LocalVariableEntry targetEntry, MethodEntry parent
 	) {
 		final LineIndexer lineIndexer = new LineIndexer(source.toString());
@@ -161,19 +161,19 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 									.map(parentBegin -> parentLambda
 										.getBody()
 										.getRange()
-										.map(bodyRange -> toTrimmedBounds(lineIndexer, parentBegin, bodyRange.begin))
-										.<Result<TrimmedBounds, String>>map(Result::ok)
+										.map(bodyRange -> toSnippet(lineIndexer, parentBegin, bodyRange.begin))
+										.<Result<Snippet, String>>map(Result::ok)
 										.orElseGet(() -> Result.err("no parent lambda body range!")))
 									.orElseGet(() -> Result.err("no parent lambda begin"));
 							} else {
 								final Statement parentBody = parentLambda.getBody();
 								return parentBody.toBlockStmt()
-									.map(parentBlock -> findLocalBounds(target, parentBlock, lineIndexer, LAMBDA))
+									.map(parentBlock -> findLocalSnippet(target, parentBlock, lineIndexer, LAMBDA))
 									.orElseGet(() -> parentBody.asExpressionStmt()
 										.getExpression()
 										.toVariableDeclarationExpr()
 										.map(variableExpr ->
-											findVariableExpressionBounds(target, variableExpr, lineIndexer)
+											findVariableExpressionSnippet(target, variableExpr, lineIndexer)
 										)
 										.orElseGet(() -> Result.err("local declared in non-declaration expression!"))
 									);
@@ -181,7 +181,7 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 						})
 						.orElseGet(() -> Result.err("failed to find local's parent lambda!")));
 				} else {
-					return Result.<TrimmedBounds, String>err("no parent token for non-synthetic parent!");
+					return Result.<Snippet, String>err("no parent token for non-synthetic parent!");
 				}
 			})
 			.orElseGet(() -> Result.err("no parent definition!"));
@@ -193,17 +193,17 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 				.getFullName();
 	}
 
-	private Result<TrimmedBounds, String> findClassBounds(
+	private Result<Snippet, String> findClassSnippet(
 			DecompiledClassSource source, Token target, ClassEntry targetEntry
 	) {
 		return this.getNodeType(targetEntry).andThen(nodeType -> {
 			final LineIndexer lineIndexer = new LineIndexer(source.toString());
 			return findDeclaration(source, target, nodeType, lineIndexer)
-				.andThen(declaration -> findTypeDeclarationBounds(declaration, lineIndexer));
+				.andThen(declaration -> findTypeDeclarationSnippet(declaration, lineIndexer));
 		});
 	}
 
-	private static Result<TrimmedBounds, String> findTypeDeclarationBounds(
+	private static Result<Snippet, String> findTypeDeclarationSnippet(
 			TypeDeclaration<?> declaration, LineIndexer lineIndexer
 	) {
 		return declaration
@@ -212,10 +212,10 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 				.map(openCurlyBrace -> openCurlyBrace
 					.getRange()
 					.map(openCurlyRange -> openCurlyRange.begin)
-					.map(openCurlyPos -> toTrimmedBounds(
+					.map(openCurlyPos -> toSnippet(
 						lineIndexer, declaration.getBegin().orElseThrow(), openCurlyPos
 					))
-					.<Result<TrimmedBounds, String>>map(Result::ok)
+					.<Result<Snippet, String>>map(Result::ok)
 					.orElseGet(() -> Result.err("no class open curly brace range!")))
 				.orElseGet(() -> Result.err("no class open curly brace!"))
 			)
@@ -243,7 +243,7 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 	}
 
 	// TODO test record component getters
-	private Result<TrimmedBounds, String> findMethodBounds(
+	private Result<Snippet, String> findMethodSnippet(
 			DecompiledClassSource source, Token target, MethodEntry targetEntry
 	) {
 		final LineIndexer lineIndexer = new LineIndexer(source.toString());
@@ -266,14 +266,14 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 					.getRange()
 					.<Result<Range, String>>map(Result::ok)
 					.orElseGet(() -> Result.err("no method body range!"))
-					.map(bodyRange -> toTrimmedBounds(lineIndexer, range.begin, bodyRange.begin))
+					.map(bodyRange -> toSnippet(lineIndexer, range.begin, bodyRange.begin))
 				)
 				// no body: abstract
-				.orElseGet(() -> Result.ok(toTrimmedBounds(lineIndexer, range)));
+				.orElseGet(() -> Result.ok(toSnippet(lineIndexer, range)));
 		});
 	}
 
-	private Result<TrimmedBounds, String> findFieldBounds(
+	private Result<Snippet, String> findFieldSnippet(
 			DecompiledClassSource source, Token target, FieldEntry targetEntry
 	) {
 		final EntryIndex entryIndex = this.gui.getController().getProject().getJarIndex().getIndex(EntryIndex.class);
@@ -281,12 +281,12 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 		return Optional.ofNullable(entryIndex.getDefinition(targetEntry))
 			.map(targetDef -> {
 				if (targetDef.getAccess().isEnum()) {
-					return findEnumConstantBounds(source, target);
+					return findEnumConstantSnippet(source, target);
 				} else {
 					return Optional.ofNullable(entryIndex.getDefinition(targetDef.getParent()))
 						.map(parent -> parent.isRecord() && !targetDef.getAccess().isStatic()
 							? this.findComponentParent(source, parent)
-							: findRegularFieldBounds(source, target)
+							: findRegularFieldSnippet(source, target)
 						)
 						.orElseGet(() -> Result.err("no field parent definition!"));
 				}
@@ -294,7 +294,7 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 			.orElseGet(() -> Result.err(NO_ENTRY_DEFINITION));
 	}
 
-	private Result<TrimmedBounds, String> findComponentParent(DecompiledClassSource source, ClassDefEntry parent) {
+	private Result<Snippet, String> findComponentParent(DecompiledClassSource source, ClassDefEntry parent) {
 		final Token parentToken = source.getIndex().getDeclarationToken(parent);
 
 		final LineIndexer lineIndexer = new LineIndexer(source.toString());
@@ -309,12 +309,12 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 						.map(implToken -> implToken
 							.getRange()
 							.map(implRange -> implRange.begin.right(-1))
-							.map(beforeImpl -> toTrimmedBounds(
+							.map(beforeImpl -> toSnippet(
 								lineIndexer,
 								parentDeclaration.getBegin().orElseThrow(),
 								beforeImpl
 							))
-							.<Result<TrimmedBounds, String>>map(Result::ok)
+							.<Result<Snippet, String>>map(Result::ok)
 							.orElseGet(() -> Result.err("no parent record implements token range!"))
 						)
 						.orElseGet(() -> Result.err("record implements types but has no implements token!"))
@@ -322,17 +322,17 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 					.orElseGet(() -> Result.err("no parent record token range!"))
 				)
 				// no implemented types
-				.orElseGet(() -> findTypeDeclarationBounds(parentDeclaration, lineIndexer))
+				.orElseGet(() -> findTypeDeclarationSnippet(parentDeclaration, lineIndexer))
 			);
 	}
 
-	private static Result<TrimmedBounds, String> findEnumConstantBounds(DecompiledClassSource source, Token target) {
+	private static Result<Snippet, String> findEnumConstantSnippet(DecompiledClassSource source, Token target) {
 		final LineIndexer lineIndexer = new LineIndexer(source.toString());
 		return findDeclaration(source, target, EnumConstantDeclaration.class, lineIndexer)
-			.andThen(declaration -> Result.ok(toTrimmedBounds(lineIndexer, declaration.getRange().orElseThrow())));
+			.andThen(declaration -> Result.ok(toSnippet(lineIndexer, declaration.getRange().orElseThrow())));
 	}
 
-	private static Result<TrimmedBounds, String> findRegularFieldBounds(DecompiledClassSource source, Token target) {
+	private static Result<Snippet, String> findRegularFieldSnippet(DecompiledClassSource source, Token target) {
 		final LineIndexer lineIndexer = new LineIndexer(source.toString());
 		return findDeclaration(source, target, FieldDeclaration.class, lineIndexer).andThen(declaration -> declaration
 			.getTokenRange()
@@ -341,14 +341,14 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 				return declaration.getVariables().stream()
 					.filter(variable -> rangeContains(lineIndexer, variable, target))
 					.findFirst()
-					.map(variable -> toDeclaratorBounds(range, variable, lineIndexer))
+					.map(variable -> toDeclaratorSnippet(range, variable, lineIndexer))
 					.orElseGet(() -> Result.err("no matching field declarator!"));
 			})
 			.orElseGet(() -> Result.err(NO_TOKEN_RANGE))
 		);
 	}
 
-	private Result<TrimmedBounds, String> findLocalBounds(
+	private Result<Snippet, String> findLocalSnippet(
 			DecompiledClassSource source, Token parentToken, Token targetToken
 	) {
 		final LineIndexer lineIndexer = new LineIndexer(source.toString());
@@ -358,11 +358,11 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 				.getBody()
 				.<Result<BlockStmt, String>>map(Result::ok)
 				.orElseGet(() -> Result.err("no method body!"))
-				.andThen(parentBody -> findLocalBounds(targetToken, parentBody, lineIndexer, METHOD))
+				.andThen(parentBody -> findLocalSnippet(targetToken, parentBody, lineIndexer, METHOD))
 			);
 	}
 
-	private static Result<TrimmedBounds, String> findLocalBounds(
+	private static Result<Snippet, String> findLocalSnippet(
 			Token target, BlockStmt parentBody, LineIndexer lineIndexer, String parentType
 	) {
 		return parentBody
@@ -375,11 +375,11 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 			.flatMap(Optional::stream)
 			.filter(variableExpr -> rangeContains(lineIndexer, variableExpr, target))
 			.max(depthComparatorOf(lineIndexer))
-			.map(variableExpr -> findVariableExpressionBounds(target, variableExpr, lineIndexer))
+			.map(variableExpr -> findVariableExpressionSnippet(target, variableExpr, lineIndexer))
 			.orElseGet(() -> Result.err("failed to find local in parent %s!".formatted(parentType)));
 	}
 
-	private static Result<TrimmedBounds, String> findVariableExpressionBounds(
+	private static Result<Snippet, String> findVariableExpressionSnippet(
 			Token targetToken, VariableDeclarationExpr variableExpr, LineIndexer lineIndexer
 	) {
 		return variableExpr
@@ -388,7 +388,7 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 			.filter(variable -> rangeContains(lineIndexer, variable, targetToken))
 			.findFirst()
 			.map(targetVariable ->
-				toDeclaratorBounds(variableExpr.getRange().orElseThrow(), targetVariable, lineIndexer)
+				toDeclaratorSnippet(variableExpr.getRange().orElseThrow(), targetVariable, lineIndexer)
 			)
 			.orElseGet(() -> Result.err("failed to find local in variable expression!"));
 	}
@@ -426,11 +426,11 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 				.orElseGet(() -> Result.err("failed to parse source: " + parseResult.getProblems()));
 	}
 
-	private static Result<TrimmedBounds, String> toDeclaratorBounds(
+	private static Result<Snippet, String> toDeclaratorSnippet(
 			Range outerRange, VariableDeclarator variable, LineIndexer lineIndexer
 	) {
 		if (outerRange.begin.line == outerRange.end.line) {
-			return Result.ok(toTrimmedBounds(lineIndexer, outerRange));
+			return Result.ok(toSnippet(lineIndexer, outerRange));
 		} else {
 			return variable
 				.getTokenRange()
@@ -442,7 +442,7 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 					.orElse(Result.ok(outerRange.end))
 				)
 				.orElseGet(() -> Result.err("no variable token range!"))
-				.map(end -> toTrimmedBounds(lineIndexer, outerRange.begin, end));
+				.map(end -> toSnippet(lineIndexer, outerRange.begin, end));
 		}
 	}
 
@@ -472,17 +472,17 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 		}
 	}
 
-	private static TrimmedBounds toTrimmedBounds(LineIndexer lineIndexer, Range range) {
-		return toTrimmedBounds(lineIndexer, range.begin, range.end);
+	private static Snippet toSnippet(LineIndexer lineIndexer, Range range) {
+		return toSnippet(lineIndexer, range.begin, range.end);
 	}
 
-	private static TrimmedBounds toTrimmedBounds(LineIndexer lineIndexer, Position startPos, Position endPos) {
+	private static Snippet toSnippet(LineIndexer lineIndexer, Position startPos, Position endPos) {
 		final int start = lineIndexer.getIndex(startPos);
 		int end = lineIndexer.getIndex(endPos);
 		while (Character.isWhitespace(lineIndexer.getString().charAt(end))) {
 			end--;
 		}
 
-		return new TrimmedBounds(start, end + 1);
+		return new Snippet(start, end + 1);
 	}
 }

@@ -5,6 +5,8 @@ public class Constructors {
 		new Constructors("outer arg");
 
 		new Methods() {
+			// multiline declaration to test unindenting
+			@Deprecated
 			@Override
 			void abstraction() {
 				// tests #252

@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LineIndexer {
-	private static final Pattern LINE_END = Pattern.compile("\\r\\n?|\\n");
+	public static final Pattern LINE_END = Pattern.compile("\\r\\n?|\\n");
 
 	private final List<Integer> indexesByLine = new ArrayList<>();
 	private final Matcher lineEndMatcher;

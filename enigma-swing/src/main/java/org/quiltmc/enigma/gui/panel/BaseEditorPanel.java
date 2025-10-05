@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.panel;
 
+import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.class_handle.ClassHandleError;
@@ -21,6 +22,7 @@ import org.quiltmc.enigma.gui.highlight.SelectionHighlightPainter;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
+import org.quiltmc.enigma.util.LineIndexer;
 import org.quiltmc.enigma.util.Result;
 import org.quiltmc.enigma.util.Utils;
 import org.tinylog.Logger;
@@ -56,6 +58,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 
 public class BaseEditorPanel {
 	protected final JPanel ui = new JPanel();
@@ -130,7 +133,7 @@ public class BaseEditorPanel {
 
 	protected void setClassHandle(
 			ClassHandle handle, boolean closeOldHandle,
-			@Nullable Function<DecompiledClassSource, TrimmedBounds> trimFactory
+			@Nullable Function<DecompiledClassSource, Snippet> snippetFactory
 	) {
 		ClassEntry old = null;
 		if (this.classHandler != null) {
@@ -140,12 +143,12 @@ public class BaseEditorPanel {
 			}
 		}
 
-		this.setClassHandleImpl(old, handle, trimFactory);
+		this.setClassHandleImpl(old, handle, snippetFactory);
 	}
 
 	protected void setClassHandleImpl(
 			ClassEntry old, ClassHandle handle,
-			@Nullable Function<DecompiledClassSource, TrimmedBounds> trimFactory
+			@Nullable Function<DecompiledClassSource, Snippet> snippetFactory
 	) {
 		this.setDisplayMode(DisplayMode.IN_PROGRESS);
 		this.setCursorReference(null);
@@ -153,7 +156,7 @@ public class BaseEditorPanel {
 		this.classHandler = ClassHandler.of(handle, new ClassHandleListener() {
 			@Override
 			public void onMappedSourceChanged(ClassHandle h, Result<DecompiledClassSource, ClassHandleError> res) {
-				BaseEditorPanel.this.handleDecompilerResult(res, trimFactory);
+				BaseEditorPanel.this.handleDecompilerResult(res, snippetFactory);
 			}
 
 			@Override
@@ -167,7 +170,7 @@ public class BaseEditorPanel {
 		});
 
 		handle.getSource().thenAcceptAsync(
-				res -> BaseEditorPanel.this.handleDecompilerResult(res, trimFactory),
+				res -> BaseEditorPanel.this.handleDecompilerResult(res, snippetFactory),
 				SwingUtilities::invokeLater
 		);
 	}
@@ -184,11 +187,11 @@ public class BaseEditorPanel {
 
 	private void handleDecompilerResult(
 			Result<DecompiledClassSource, ClassHandleError> res,
-			@Nullable Function<DecompiledClassSource, TrimmedBounds> trimFactory
+			@Nullable Function<DecompiledClassSource, Snippet> snippetFactory
 	) {
 		SwingUtilities.invokeLater(() -> {
 			if (res.isOk()) {
-				this.setSource(res.unwrap(), trimFactory);
+				this.setSource(res.unwrap(), snippetFactory);
 			} else {
 				this.displayError(res.unwrapErr());
 			}
@@ -303,7 +306,7 @@ public class BaseEditorPanel {
 
 	protected void setSource(
 			DecompiledClassSource source,
-			@Nullable Function<DecompiledClassSource, TrimmedBounds> trimFactory
+			@Nullable Function<DecompiledClassSource, Snippet> snippetFactor
 	) {
 		this.setDisplayMode(DisplayMode.SUCCESS);
 		if (source == null) {
@@ -340,12 +343,11 @@ public class BaseEditorPanel {
 			this.editor.getHighlighter().removeAllHighlights();
 
 			this.editor.setText(this.source.toString());
-			final TrimmedBounds trimmedBounds = trimFactory == null ? null : trimFactory.apply(this.source);
-			if (trimmedBounds == null) {
+			final Snippet snippet = snippetFactor == null ? null : snippetFactor.apply(this.source);
+			if (snippet == null) {
 				this.sourceBounds = new DefaultBounds();
 			} else {
-				this.sourceBounds = trimmedBounds;
-				newCaretPos = this.trimSource(trimmedBounds, newCaretPos);
+				newCaretPos = this.trimSource(snippet, newCaretPos);
 			}
 
 			this.setHighlightedTokens(source.getTokenStore(), source.getHighlightedTokens());
@@ -366,11 +368,16 @@ public class BaseEditorPanel {
 		}
 	}
 
-	// TODO strip indent
-	private int trimSource(TrimmedBounds bounds, int originalCaretPos) {
+	private int trimSource(Snippet snippet, int originalCaretPos) {
 		final String sourceString = this.source.toString();
-		this.sourceBounds = new TrimmedBounds(bounds.start(), Math.min(bounds.end(), sourceString.length()));
-		this.editor.setText(sourceString.substring(this.sourceBounds.start(), this.sourceBounds.end()));
+
+		final int end = Math.min(sourceString.length(), snippet.end);
+
+		final Unindented unindented = Unindented.of(sourceString, snippet.start, end);
+
+		this.sourceBounds = new TrimmedBounds(snippet.start, end, unindented.indentOffsets);
+		this.editor.setText(unindented.snippet);
+
 		return Utils.clamp((long) originalCaretPos - this.sourceBounds.start(), 0, this.editor.getText().length());
 	}
 
@@ -553,7 +560,103 @@ public class BaseEditorPanel {
 		return deobfRef == null ? this.classHandler.handle.getRef() : deobfRef;
 	}
 
-	protected sealed interface SourceBounds {
+	public record Snippet(int start, int end) {
+		public Snippet {
+			if (start < 0) {
+				throw new IllegalArgumentException("start must not be negative!");
+			}
+
+			if (start > end) {
+				throw new IllegalArgumentException("start must not be greater than end!");
+			}
+		}
+	}
+
+	private record LineOffset(int sourceStart, int sourceEnd, int offset) {
+		boolean contains(Token token) {
+			return this.sourceStart <= token.start && this.sourceEnd >= token.end;
+		}
+	}
+
+	/**
+	 * An unindented snippet of source code along with the data required
+	 * to map tokens from their original position in the source code.
+	 *
+	 * @param snippet       the unindented code snippet
+	 * @param indentOffsets the cumulative offset resulting from stripped indents for each line, if any
+	 */
+	private record Unindented(String snippet, ImmutableList<LineOffset> indentOffsets) {
+		static Unindented ofNoIndent(String source, int start, int end) {
+			return new Unindented(source.substring(start, end), ImmutableList.of());
+		}
+
+		/**
+		 * Gets the unindented snippet of the passed {@code source} between the passed {@code start} and {@code end}.
+		 *
+		 * <p> The amount of indent is determined by looking for spaces/tabs <em>before</em> the passed {@code start}.
+		 * If the first character before {@code start} is a tab, {@code source} is considered to be tab-indented,
+		 * likewise for a space.
+		 *
+		 * <p> If any line is less indented than the first line, the whole snippet is considered to have <em>no</em>
+		 * indent; that doesn't fit expected formatting.
+		 */
+		static Unindented of(String source, int start, int end) {
+			if (start == 0) {
+				return ofNoIndent(source, start, end);
+			} else {
+				final char indentChar = source.charAt(start - 1);
+				if (indentChar == '\t' || indentChar == ' ') {
+					final int firstLineIndent;
+					{
+						int currentIndent = 1;
+						while (source.charAt(start - currentIndent - 1) == indentChar) {
+							currentIndent++;
+						}
+
+						firstLineIndent = currentIndent;
+					}
+
+					final Matcher lineMatcher = LineIndexer.LINE_END.matcher(source);
+					final var snippet = new StringBuilder();
+					final ImmutableList.Builder<LineOffset> indents = ImmutableList.builder();
+
+					int prevIndentEnd = start;
+					int prevSourceLineStart = start;
+					int indentOffset = 0;
+					while (lineMatcher.find(prevIndentEnd)) {
+						final int currentIndentEnd;
+						if (lineMatcher.end() < end) {
+							currentIndentEnd = lineMatcher.end() + firstLineIndent;
+							for (int i = lineMatcher.end(); i < end && i < currentIndentEnd; i++) {
+								if (source.charAt(i) != indentChar) {
+									// if any line is indented less than the first, no indent
+									return ofNoIndent(source, start, end);
+								}
+							}
+						} else {
+							snippet.append(source, prevIndentEnd, end);
+							indents.add(new LineOffset(prevSourceLineStart, end, indentOffset));
+
+							break;
+						}
+
+						snippet.append(source, prevIndentEnd, lineMatcher.end());
+						indents.add(new LineOffset(prevSourceLineStart, lineMatcher.end(), indentOffset));
+
+						prevIndentEnd = currentIndentEnd;
+						prevSourceLineStart = currentIndentEnd - firstLineIndent;
+						indentOffset += firstLineIndent;
+					}
+
+					return new Unindented(snippet.toString(), indents.build());
+				} else {
+					return ofNoIndent(source, start, end);
+				}
+			}
+		}
+	}
+
+	private sealed interface SourceBounds {
 		int start();
 
 		int end();
@@ -566,21 +669,22 @@ public class BaseEditorPanel {
 			return this.contains(token.start) && this.contains(token.end);
 		}
 
-		default Optional<Token> offsetOf(@Nullable Token token) {
-			return token == null || !this.contains(token)
-				? Optional.empty()
-				: Optional.of(new Token(token.start - this.start(), token.end - this.start(), token.text));
-		}
+		Optional<Token> offsetOf(@Nullable Token token);
 	}
 
-	protected record TrimmedBounds(int start, int end) implements SourceBounds {
-		public TrimmedBounds {
-			if (start < 0) {
-				throw new IllegalArgumentException("start must not be negative!");
-			}
+	private record TrimmedBounds(int start, int end, ImmutableList<LineOffset> indentOffsets) implements SourceBounds {
+		@Override
+		public Optional<Token> offsetOf(@Nullable Token token) {
+			if (token == null || !this.contains(token)) {
+				return Optional.empty();
+			} else {
+				final int offset = this.start() + this.indentOffsets().stream()
+						.filter(lineOffset -> lineOffset.contains(token))
+						.findFirst()
+						.map(LineOffset::offset)
+						.orElse(0);
 
-			if (start > end) {
-				throw new IllegalArgumentException("start must not be greater than end!");
+				return Optional.of(token.move(-offset));
 			}
 		}
 	}

@@ -405,9 +405,9 @@ public class EditorPanel extends BaseEditorPanel {
 	@Override
 	protected void setClassHandleImpl(
 			ClassEntry old, ClassHandle handle,
-			@Nullable Function<DecompiledClassSource, TrimmedBounds> trimFactory
+			@Nullable Function<DecompiledClassSource, Snippet> snippetFactory
 	) {
-		super.setClassHandleImpl(old, handle, trimFactory);
+		super.setClassHandleImpl(old, handle, snippetFactory);
 
 		handle.addListener(new ClassHandleListener() {
 			@Override
