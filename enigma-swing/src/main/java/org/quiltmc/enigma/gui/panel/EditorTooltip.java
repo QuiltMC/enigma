@@ -1,9 +1,11 @@
 package org.quiltmc.enigma.gui.panel;
 
+import org.quiltmc.enigma.api.EnigmaProject;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
+import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
-import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.gui.Gui;
 
 import javax.annotation.Nullable;
@@ -14,6 +16,7 @@ import javax.swing.JWindow;
 import java.awt.BorderLayout;
 import java.awt.MouseInfo;
 import java.awt.Window;
+import java.util.Optional;
 
 public class EditorTooltip extends JWindow {
 	private final Gui gui;
@@ -42,32 +45,27 @@ public class EditorTooltip extends JWindow {
 	public void open(Entry<?> target) {
 		this.content.removeAll();
 
-		final Entry<?> deobfTarget = this.gui.getController().getProject().getRemapper().deobfuscate(target);
-
-		// TODO show parent name instead
-		this.content.add(new JLabel(deobfTarget.getFullName()));
-
 		if (this.declarationSnippet != null) {
 			this.declarationSnippet.classHandler.removeListener();
 			this.declarationSnippet = null;
 		}
 
-		if (target instanceof ParentedEntry<?> parentedTarget) {
-			final ClassEntry targetTopClass = parentedTarget.getTopLevelClass();
+		this.content.add(new JLabel(this.getParentName(target).orElse("From un-packaged class")));
 
-			final ClassHandle targetTopClassHandle = this.gui.getController().getClassHandleProvider()
-					.openClass(targetTopClass);
+		final ClassEntry targetTopClass = target.getTopLevelClass();
 
-			if (targetTopClassHandle != null) {
-				this.declarationSnippet = new DeclarationSnippetPanel(this.gui, target, targetTopClassHandle);
+		final ClassHandle targetTopClassHandle = this.gui.getController().getClassHandleProvider()
+				.openClass(targetTopClass);
 
-				// TODO create method that packs and adjusts position as necessary
-				this.declarationSnippet.addSourceSetListener(source -> this.pack());
+		if (targetTopClassHandle != null) {
+			this.declarationSnippet = new DeclarationSnippetPanel(this.gui, target, targetTopClassHandle);
 
-				this.content.add(this.declarationSnippet.ui);
-			} else {
-				this.content.add(new JLabel("No source available"));
-			}
+			// TODO create method that packs and adjusts position as necessary
+			this.declarationSnippet.addSourceSetListener(source -> this.pack());
+
+			this.content.add(this.declarationSnippet.ui);
+		} else {
+			this.content.add(new JLabel("No source available"));
 		}
 
 		// TODO offset from cursor slightly + ensure on-screen
@@ -87,5 +85,53 @@ public class EditorTooltip extends JWindow {
 		if (this.declarationSnippet != null) {
 			this.declarationSnippet.classHandler.removeListener();
 		}
+	}
+
+	private Optional<String> getParentName(Entry<?> entry) {
+		final var builder = new StringBuilder();
+
+		Entry<?> parent = entry.getParent();
+		if (parent != null) {
+			while (true) {
+				if (!builder.isEmpty()) {
+					builder.insert(0, '.');
+				}
+
+				builder.insert(0, this.getSimpleName(parent));
+
+				final Entry<?> nextParent = parent.getParent();
+				if (nextParent == null) {
+					if (parent instanceof ClassEntry parentClass) {
+						final String parentPackage = parentClass.getPackageName();
+						if (parentPackage != null) {
+							final String dotPackage = parentPackage.replace('/', '.');
+							builder.insert(0, dotPackage);
+						}
+					}
+
+					break;
+				} else {
+					parent = nextParent;
+				}
+			}
+		}
+
+		return builder.isEmpty() ? Optional.empty() : Optional.of(builder.toString());
+	}
+
+	private String getSimpleName(Entry<?> entry) {
+		final EnigmaProject project = this.gui.getController().getProject();
+
+		final String simpleObfName = entry.getSimpleName();
+		if (!simpleObfName.isEmpty() && Character.isJavaIdentifierStart(simpleObfName.charAt(0))) {
+			final AccessFlags access = project.getJarIndex().getIndex(EntryIndex.class).getEntryAccess(entry);
+			if (access == null || !(access.isSynthetic())) {
+				return project.getRemapper().deobfuscate(entry).getSimpleName();
+			} else {
+				return "<synthetic>";
+			}
+		}
+
+		return "<anonymous>";
 	}
 }

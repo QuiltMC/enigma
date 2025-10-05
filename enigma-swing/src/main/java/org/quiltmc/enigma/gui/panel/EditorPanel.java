@@ -43,7 +43,6 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -57,7 +56,6 @@ import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
 public class EditorPanel extends BaseEditorPanel {
 	private static final int MOUSE_STOPPED_MOVING_DELAY = 100;
-	private static final Pattern CLASS_PUNCTUATION = Pattern.compile("[/\\$]");
 
 	private final NavigatorPanel navigatorPanel;
 	private final EnigmaQuickFindToolBar quickFindToolBar = new EnigmaQuickFindToolBar();
@@ -348,11 +346,6 @@ public class EditorPanel extends BaseEditorPanel {
 		} else {
 			outAction.accept(absolutePos);
 		}
-	}
-
-	// TODO use for tooltip parent label/link
-	private static String getFullDotName(Entry<?> entry) {
-		return CLASS_PUNCTUATION.matcher(entry.getFullName()).replaceAll(".");
 	}
 
 	public void onRename(boolean isNewMapping) {
