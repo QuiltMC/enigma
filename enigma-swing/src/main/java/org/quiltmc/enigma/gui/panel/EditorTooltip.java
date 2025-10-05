@@ -7,17 +7,23 @@ import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.gui.Gui;
+import org.quiltmc.enigma.gui.config.Config;
 
 import javax.annotation.Nullable;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
+import javax.swing.JSeparator;
+import javax.swing.JTextArea;
 import javax.swing.JWindow;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.MouseInfo;
 import java.awt.Window;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class EditorTooltip extends JWindow {
 	private final Gui gui;
@@ -51,12 +57,20 @@ public class EditorTooltip extends JWindow {
 			this.declarationSnippet = null;
 		}
 
-		{
-			final Box fromRow = Box.createHorizontalBox();
-			fromRow.add(new JLabel("From: "));
-			fromRow.add(new JLabel(this.getParentName(target).orElse("un-packaged class")));
-			fromRow.add(Box.createHorizontalGlue());
-			this.content.add(fromRow);
+		this.addRow(new JLabel("From: "), new JLabel(this.getParentName(target).orElse("un-packaged class")));
+
+		final String javadoc = this.gui.getController().getProject().getRemapper().getMapping(target).javadoc();
+		if (javadoc != null) {
+			this.add(new JSeparator());
+
+			final JTextArea javadocComponent = new JTextArea(javadoc);
+			javadocComponent.setLineWrap(true);
+			javadocComponent.setWrapStyleWord(true);
+			javadocComponent.setForeground(Config.getCurrentSyntaxPaneColors().comment.value());
+			javadocComponent.setFont(Config.currentFonts().editor.value().deriveFont(Font.ITALIC));
+			javadocComponent.setBackground(new Color(0, 0, 0, 0));
+
+			this.addRow(javadocComponent);
 		}
 
 		{
@@ -75,10 +89,7 @@ public class EditorTooltip extends JWindow {
 				sourceInfo = new JLabel("No source available");
 			}
 
-			final Box sourceRow = Box.createHorizontalBox();
-			sourceRow.add(sourceInfo);
-			sourceRow.add(Box.createHorizontalGlue());
-			this.content.add(sourceRow);
+			this.addRow(sourceInfo);
 		}
 
 		// TODO offset from cursor slightly + ensure on-screen
@@ -89,6 +100,21 @@ public class EditorTooltip extends JWindow {
 		this.pack();
 
 		this.setVisible(true);
+	}
+
+	private void addRow(Component... components) {
+		this.addRow(row -> {
+			for (final Component component : components) {
+				row.add(component);
+			}
+		});
+	}
+
+	private void addRow(Consumer<Box> rowInitializer) {
+		final Box row = Box.createHorizontalBox();
+		rowInitializer.accept(row);
+		row.add(Box.createHorizontalGlue());
+		this.add(row);
 	}
 
 	public void close() {
