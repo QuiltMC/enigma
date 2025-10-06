@@ -2,7 +2,6 @@ package org.quiltmc.enigma.gui.panel;
 
 import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.EnigmaProject;
-import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -57,6 +56,7 @@ public class EditorTooltip extends JWindow {
 		super();
 
 		this.gui = gui;
+		// TODO add insets
 		this.content = new Box(BoxLayout.PAGE_AXIS);
 
 		this.setAlwaysOnTop(true);
@@ -224,13 +224,7 @@ public class EditorTooltip extends JWindow {
 					public void mouseClicked(MouseEvent e) {
 						if (e.getButton() == MouseEvent.BUTTON1) {
 							EditorTooltip.this.declarationSnippet.consumeEditorMouseTarget((token, entry) -> {
-								final EntryReference<Entry<?>, Entry<?>> reference =
-										EditorTooltip.this.declarationSnippet.getReference(token);
-								final Entry<?> target = reference == null
-										? entry
-										: EditorTooltip.this.declarationSnippet.resolveReference(reference);
-
-								EditorTooltip.this.navigateOnClick(target, e.getModifiersEx());
+								EditorTooltip.this.navigateOnClick(entry, e.getModifiersEx());
 							});
 						}
 					}

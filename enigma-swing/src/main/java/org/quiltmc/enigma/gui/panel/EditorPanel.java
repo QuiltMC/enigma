@@ -62,41 +62,41 @@ public class EditorPanel extends BaseEditorPanel {
 	private final Timer mouseStoppedMovingTimer = new Timer(MOUSE_STOPPED_MOVING_DELAY, e -> {
 		if (Config.editor().tooltip.enable.value()) {
 			this.consumeEditorMouseTarget(
-					(targetToken, targetEntry) -> {
-						this.hideTokenTooltipTimer.stop();
+					(token, entry) -> {
+						this.hideTooltipTimer.stop();
 						if (this.tooltip.isVisible()) {
-							this.showTokenTooltipTimer.stop();
+							this.showTooltipTimer.stop();
 
-							if (!targetToken.equals(this.lastMouseTargetToken)) {
-								this.lastMouseTargetToken = targetToken;
-								this.openTooltip(targetEntry);
+							if (!token.equals(this.lastMouseTargetToken)) {
+								this.lastMouseTargetToken = token;
+								this.openTooltip(entry);
 							}
 						} else {
-							this.lastMouseTargetToken = targetToken;
-							this.showTokenTooltipTimer.start();
+							this.lastMouseTargetToken = token;
+							this.showTooltipTimer.start();
 						}
 					},
 					() -> {
 						this.lastMouseTargetToken = null;
-						this.showTokenTooltipTimer.stop();
-						this.hideTokenTooltipTimer.start();
+						this.showTooltipTimer.stop();
+						this.hideTooltipTimer.start();
 					}
 			);
 		}
 	});
 
-	private final Timer showTokenTooltipTimer = new Timer(
+	private final Timer showTooltipTimer = new Timer(
 			ToolTipManager.sharedInstance().getInitialDelay() - MOUSE_STOPPED_MOVING_DELAY, e -> {
-				this.consumeEditorMouseTarget((targetToken, targetEntry) -> {
-					if (targetToken.equals(this.lastMouseTargetToken)) {
+				this.consumeEditorMouseTarget((token, entry) -> {
+					if (token.equals(this.lastMouseTargetToken)) {
 						this.tooltip.setVisible(true);
-						this.openTooltip(targetEntry);
+						this.openTooltip(entry);
 					}
 				});
 			}
 	);
 
-	private final Timer hideTokenTooltipTimer = new Timer(
+	private final Timer hideTooltipTimer = new Timer(
 			ToolTipManager.sharedInstance().getDismissDelay() - MOUSE_STOPPED_MOVING_DELAY,
 			e -> this.closeTooltip()
 	);
@@ -191,8 +191,8 @@ public class EditorPanel extends BaseEditorPanel {
 		this.editor.addCaretListener(event -> this.onCaretMove(event.getDot()));
 
 		this.mouseStoppedMovingTimer.setRepeats(false);
-		this.showTokenTooltipTimer.setRepeats(false);
-		this.hideTokenTooltipTimer.setRepeats(false);
+		this.showTooltipTimer.setRepeats(false);
+		this.hideTooltipTimer.setRepeats(false);
 
 		this.tooltip.setVisible(false);
 
@@ -226,7 +226,7 @@ public class EditorPanel extends BaseEditorPanel {
 			@Override
 			public void mouseMoved(MouseEvent e) {
 				if (Config.editor().tooltip.interactable.value()) {
-					EditorPanel.this.hideTokenTooltipTimer.stop();
+					EditorPanel.this.hideTooltipTimer.stop();
 				}
 			}
 		});
@@ -272,8 +272,8 @@ public class EditorPanel extends BaseEditorPanel {
 		this.tooltip.close();
 		this.lastMouseTargetToken = null;
 		this.mouseStoppedMovingTimer.stop();
-		this.showTokenTooltipTimer.stop();
-		this.hideTokenTooltipTimer.stop();
+		this.showTooltipTimer.stop();
+		this.hideTooltipTimer.stop();
 	}
 
 	private void openTooltip(Entry<?> target) {

@@ -292,7 +292,7 @@ public class BaseEditorPanel {
 					.ifPresentOrElse(
 						token -> Optional.of(token)
 							.map(this::getReference)
-							.map(reference -> reference.entry)
+							.map(this::resolveReference)
 							.ifPresentOrElse(
 								entry -> action.accept(token, entry),
 								onNoTarget
@@ -388,7 +388,6 @@ public class BaseEditorPanel {
 			return null;
 		}
 
-		// TODO offset is wrong for Constructors::abstraction (multi-line)
 		return this.source.getIndex().getReferenceToken(this.sourceBounds.offsetOf(pos));
 	}
 
