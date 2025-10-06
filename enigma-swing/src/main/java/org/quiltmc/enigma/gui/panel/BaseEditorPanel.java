@@ -555,34 +555,66 @@ public class BaseEditorPanel {
 		}
 	}
 
-	public void navigateToToken(Token token) {
-		if (token == null) {
-			throw new IllegalArgumentException("Token cannot be null!");
+	/**
+	 * Attempts navigating to and momentarily highlighting the passed {@code token}.
+	 *
+	 * @param token the token to navigate to, in {@linkplain #sourceBounds bounded} space
+	 */
+	public void navigateToToken(@Nullable Token token) {
+		final Token unBoundedToken = this.navigateToTokenImpl(token);
+		if (unBoundedToken == null) {
+			return;
 		}
 
-		this.navigateToToken(token, SelectionHighlightPainter.INSTANCE);
+		// highlight the token momentarily
+		final Timer timer = new Timer(200, null);
+		timer.addActionListener(new ActionListener() {
+			private int counter = 0;
+			private Object highlight = null;
+
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				if (this.counter % 2 == 0) {
+					this.highlight = BaseEditorPanel.this.addHighlight(unBoundedToken, SelectionHighlightPainter.INSTANCE);
+				} else if (this.highlight != null) {
+					BaseEditorPanel.this.editor.getHighlighter().removeHighlight(this.highlight);
+				}
+
+				if (this.counter++ > 6) {
+					timer.stop();
+				}
+			}
+		});
+
+		timer.start();
 	}
 
 	/**
-	 * @return {@code true} if navigation was successful, or {@code false} otherwise
+	 * @return a token equivalent to the passed {@code boundedToken} with its position shifted so it aligns with the
+	 * un-bounded source if navigation was successful, or {@code null} otherwise
 	 */
-	protected boolean navigateToToken(@Nullable Token token, HighlightPainter highlightPainter) {
-		final Token offsetToken = this.sourceBounds.offsetOf(token).orElse(null);
-		if (offsetToken == null) {
+	@Nullable
+	protected Token navigateToTokenImpl(@Nullable Token boundedToken) {
+		if (boundedToken == null) {
+			return null;
+		}
+
+		final Token unBoundedToken = this.sourceBounds.offsetOf(boundedToken).orElse(null);
+		if (unBoundedToken == null) {
 			// token out of bounds
-			return false;
+			return null;
 		}
 
 		// set the caret position to the token
-		this.editor.setCaretPosition(offsetToken.start);
+		this.editor.setCaretPosition(unBoundedToken.start);
 		this.editor.grabFocus();
 
 		try {
 			// make sure the token is visible in the scroll window
-			Rectangle2D start = this.editor.modelToView2D(offsetToken.start);
-			Rectangle2D end = this.editor.modelToView2D(offsetToken.start);
+			Rectangle2D start = this.editor.modelToView2D(unBoundedToken.start);
+			Rectangle2D end = this.editor.modelToView2D(unBoundedToken.start);
 			if (start == null || end == null) {
-				return false;
+				return null;
 			}
 
 			Rectangle show = new Rectangle();
@@ -593,38 +625,20 @@ public class BaseEditorPanel {
 			if (!this.settingSource) {
 				throw new RuntimeException(ex);
 			} else {
-				return false;
+				return null;
 			}
 		}
 
-		// highlight the token momentarily
-		Timer timer = new Timer(200, new ActionListener() {
-			private int counter = 0;
-			private Object highlight = null;
+		return unBoundedToken;
+	}
 
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				if (this.counter % 2 == 0) {
-					try {
-						this.highlight = BaseEditorPanel.this.editor.getHighlighter()
-								.addHighlight(offsetToken.start, offsetToken.end, highlightPainter);
-					} catch (BadLocationException ex) {
-						// don't care
-					}
-				} else if (this.highlight != null) {
-					BaseEditorPanel.this.editor.getHighlighter().removeHighlight(this.highlight);
-				}
-
-				if (this.counter++ > 6) {
-					Timer timer = (Timer) event.getSource();
-					timer.stop();
-				}
-			}
-		});
-
-		timer.start();
-
-		return true;
+	protected Object addHighlight(Token token, HighlightPainter highlightPainter) {
+		try {
+			return BaseEditorPanel.this.editor.getHighlighter()
+					.addHighlight(token.start, token.end, highlightPainter);
+		} catch (BadLocationException ex) {
+			return null;
+		}
 	}
 
 	public JPanel getUi() {

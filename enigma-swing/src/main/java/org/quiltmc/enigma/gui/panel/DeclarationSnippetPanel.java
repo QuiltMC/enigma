@@ -38,7 +38,8 @@ import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.highlight.SelectionHighlightPainter;
+import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.util.LineIndexer;
 import org.quiltmc.enigma.util.Result;
 import org.quiltmc.syntaxpain.LineNumbersRuler;
@@ -72,12 +73,17 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 				.ifPresent(lineNumbers -> lineNumbers.deinstall(this.editor));
 
 		this.addSourceSetListener(source -> {
-			final Token declarationToken = source.getIndex().getDeclarationToken(target);
-			// TODO create custom highlighter
-			if (!this.navigateToToken(declarationToken, SelectionHighlightPainter.INSTANCE)) {
+			final Token unBoundedToken = this.navigateToTokenImpl(source.getIndex().getDeclarationToken(target));
+			if (unBoundedToken == null) {
 				// the source isn't very useful if it couldn't be trimmed and the declaration couldn't be navigated to
 				// set this text so it doesn't waste space or cause confusion
 				this.editor.setText("// Unable to locate declaration");
+				this.editor.getHighlighter().removeAllHighlights();
+			} else {
+				this.addHighlight(unBoundedToken, BoxHighlightPainter.create(
+						new Color(0, 0, 0, 0),
+						Config.getCurrentSyntaxPaneColors().selectionHighlight.value()
+				));
 			}
 		});
 
