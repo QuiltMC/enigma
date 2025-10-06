@@ -147,10 +147,8 @@ public class EditorPanel extends BaseEditorPanel {
 		// global listener so tooltip hides even if clicking outside editor
 		Toolkit.getDefaultToolkit().addAWTEventListener(
 				e -> {
-					if (e instanceof MouseEvent mouseEvent && mouseEvent.getID() == MouseEvent.MOUSE_PRESSED) {
-						if (this.tooltip.isVisible()) {
-							consumeMousePositionOut(this.tooltip.getContentPane(), absolute -> this.closeTooltip());
-						}
+					if (e.getID() == MouseEvent.MOUSE_PRESSED && this.tooltip.isVisible()) {
+						consumeMousePositionOut(this.tooltip.getContentPane(), absolute -> this.closeTooltip());
 					}
 				},
 				MouseEvent.MOUSE_PRESSED
@@ -211,23 +209,26 @@ public class EditorPanel extends BaseEditorPanel {
 		this.tooltip.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				consumeMousePositionIn(EditorPanel.this.editor, (absolutMousePosition, editorMousePosition) -> {
-					final MouseEvent editorMouseEvent = new MouseEvent(
-							EditorPanel.this.editor, e.getID(), e.getWhen(), e.getModifiersEx(),
-							editorMousePosition.x, editorMousePosition.y,
-							absolutMousePosition.x, absolutMousePosition.y,
-							e.getClickCount(), e.isPopupTrigger(), e.getButton()
-					);
+				if (!Config.editor().tooltip.interactable.value()) {
+					// if not interactable, forward event to editor
+					consumeMousePositionIn(EditorPanel.this.editor, (absolutMousePosition, editorMousePosition) -> {
+						final MouseEvent editorMouseEvent = new MouseEvent(
+								EditorPanel.this.editor, e.getID(), e.getWhen(), e.getModifiersEx(),
+								editorMousePosition.x, editorMousePosition.y,
+								absolutMousePosition.x, absolutMousePosition.y,
+								e.getClickCount(), e.isPopupTrigger(), e.getButton()
+						);
 
-					for (final MouseListener listener : EditorPanel.this.editor.getMouseListeners()) {
-						listener.mousePressed(editorMouseEvent);
-						if (editorMouseEvent.isConsumed()) {
-							break;
+						for (final MouseListener listener : EditorPanel.this.editor.getMouseListeners()) {
+							listener.mousePressed(editorMouseEvent);
+							if (editorMouseEvent.isConsumed()) {
+								break;
+							}
 						}
-					}
-				});
+					});
 
-				e.consume();
+					e.consume();
+				}
 			}
 		});
 
