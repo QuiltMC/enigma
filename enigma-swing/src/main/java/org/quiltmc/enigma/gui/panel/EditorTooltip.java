@@ -138,6 +138,8 @@ public class EditorTooltip extends JWindow {
 		final Font italEditorFont = editorFont.deriveFont(Font.ITALIC);
 
 		this.add(rowOf(row -> {
+			// TODO add stat icon if enabled
+			// TODO add class/record/enum/method icon
 			final JLabel from = labelOf("from", italEditorFont);
 			// the italics cause it to overlap with the colon if it has no right padding
 			from.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 1));
@@ -165,7 +167,7 @@ public class EditorTooltip extends JWindow {
 				parentClicked = null;
 			}
 
-			final JLabel parentLabel = labelOf(this.getParentName(target).orElse("un-packaged class"), parentFont);
+			final JLabel parentLabel = labelOf(this.getParentName(target).orElse("<no package>"), parentFont);
 
 			if (parentClicked != null) {
 				parentLabel.addMouseListener(parentClicked);
@@ -174,6 +176,7 @@ public class EditorTooltip extends JWindow {
 			row.add(parentLabel);
 		}));
 
+		// TODO make javadocs and snippet copyable
 		final String javadoc = this.gui.getController().getProject().getRemapper().getMapping(target).javadoc();
 		final ImmutableList<ParamJavadoc> paramJavadocs = this.paramJavadocsOf(target, italEditorFont, stopInteraction);
 		if (javadoc != null || !paramJavadocs.isEmpty()) {
@@ -213,6 +216,7 @@ public class EditorTooltip extends JWindow {
 
 			final Component sourceInfo;
 			if (targetTopClassHandle != null) {
+				// TODO expand right to fill width
 				this.declarationSnippet = new DeclarationSnippetPanel(this.gui, target, targetTopClassHandle);
 
 				this.declarationSnippet.editor.addMouseListener(new MouseAdapter() {

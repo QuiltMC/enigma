@@ -779,7 +779,7 @@ public class BaseEditorPanel {
 		@Override
 		public int offsetOf(int boundedPos) {
 			final int searchStart = boundedPos + this.start;
-			return this.indentOffsets().reverse().stream()
+			return this.indentOffsets().stream()
 				.flatMap(indentOffset -> {
 					final int potentialPos = searchStart + indentOffset.offset;
 					return indentOffset.contains(potentialPos) ? Stream.of(potentialPos) : Stream.empty();

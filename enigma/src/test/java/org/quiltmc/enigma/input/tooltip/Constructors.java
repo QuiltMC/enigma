@@ -11,6 +11,10 @@ public class Constructors {
 			void abstraction() {
 				// tests #252
 				System.out.println(outerArg);
+
+				if (this == null) {
+					this.abstraction();
+				}
 			}
 		};
 	}
