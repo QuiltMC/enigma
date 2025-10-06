@@ -5,7 +5,6 @@ import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
-import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
@@ -18,14 +17,11 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.syntaxpain.DefaultSyntaxAction;
 import org.quiltmc.syntaxpain.SyntaxDocument;
-import org.quiltmc.enigma.util.Result;
-import org.quiltmc.enigma.gui.event.EditorActionListener;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.Toolkit;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -365,13 +361,7 @@ public class EditorPanel extends BaseEditorPanel {
 
 	private void navigateToCursorReference() {
 		if (this.cursorReference != null) {
-			final Entry<?> referenceEntry = this.cursorReference.entry;
-			final Entry<?> navigationEntry = this.cursorReference.context == null
-					? this.controller.getProject().getRemapper().getObfResolver()
-						.resolveFirstEntry(referenceEntry, ResolutionStrategy.RESOLVE_ROOT)
-					: referenceEntry;
-
-			this.controller.navigateTo(navigationEntry);
+			this.controller.navigateTo(this.resolveReference(this.cursorReference));
 		}
 	}
 

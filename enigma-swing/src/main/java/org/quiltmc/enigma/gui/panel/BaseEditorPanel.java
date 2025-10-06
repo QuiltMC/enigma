@@ -10,6 +10,8 @@ import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.api.source.TokenStore;
 import org.quiltmc.enigma.api.source.TokenType;
+import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
+import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.gui.BrowserCaret;
@@ -61,10 +63,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
+import java.util.stream.Stream;
 
 public class BaseEditorPanel {
 	protected final JPanel ui = new JPanel();
@@ -365,6 +367,18 @@ public class BaseEditorPanel {
 		this.editor.setFont(ScaleUtil.getFont(this.editor.getFont().getFontName(), Font.PLAIN, this.fontSize));
 	}
 
+	protected Entry<?> resolveReference(EntryReference<Entry<?>, Entry<?>> reference) {
+		final Entry<?> navigationEntry;
+		if (reference.context == null) {
+			final EntryResolver resolver = this.controller.getProject().getRemapper().getObfResolver();
+			navigationEntry = resolver.resolveFirstEntry(reference.entry, ResolutionStrategy.RESOLVE_ROOT);
+		} else {
+			navigationEntry = reference.entry;
+		}
+
+		return navigationEntry;
+	}
+
 	protected void setCursorReference(EntryReference<Entry<?>, Entry<?>> ref) {
 		this.cursorReference = ref;
 	}
@@ -374,6 +388,7 @@ public class BaseEditorPanel {
 			return null;
 		}
 
+		// TODO offset is wrong for Constructors::abstraction (multi-line)
 		return this.source.getIndex().getReferenceToken(this.sourceBounds.offsetOf(pos));
 	}
 
@@ -656,11 +671,11 @@ public class BaseEditorPanel {
 
 	private record LineOffset(int sourceStart, int sourceEnd, int offset) {
 		boolean contains(int pos) {
-			return this.sourceStart <= pos && this.sourceEnd >= pos;
+			return this.sourceStart <= pos && pos < this.sourceEnd;
 		}
 
 		boolean contains(Token token) {
-			return this.sourceStart <= token.start && this.sourceEnd >= token.end;
+			return this.sourceStart <= token.start && token.end < this.sourceEnd;
 		}
 	}
 
@@ -752,35 +767,40 @@ public class BaseEditorPanel {
 		}
 
 		default boolean contains(Token token) {
-			return token.start >= this.start() && token.end <= this.end();
+			return this.start() <= token.start && token.end <= this.end();
 		}
 
-		int offsetOf(int pos);
+		int offsetOf(int unBoundedPos);
 
-		Optional<Token> offsetOf(@Nullable Token token);
+		Optional<Token> offsetOf(@Nullable Token boundedToken);
 	}
 
 	private record TrimmedBounds(int start, int end, ImmutableList<LineOffset> indentOffsets) implements SourceBounds {
 		@Override
-		public int offsetOf(int pos) {
-			return pos + this.getOffset(pos, LineOffset::contains);
+		public int offsetOf(int boundedPos) {
+			final int searchStart = boundedPos + this.start;
+			return this.indentOffsets().reverse().stream()
+				.flatMap(indentOffset -> {
+					final int potentialPos = searchStart + indentOffset.offset;
+					return indentOffset.contains(potentialPos) ? Stream.of(potentialPos) : Stream.empty();
+				})
+				.findFirst()
+				.orElse(searchStart);
 		}
 
 		@Override
-		public Optional<Token> offsetOf(@Nullable Token token) {
-			if (token == null || !this.contains(token)) {
+		public Optional<Token> offsetOf(@Nullable Token unBoundedToken) {
+			if (unBoundedToken == null || !this.contains(unBoundedToken)) {
 				return Optional.empty();
 			} else {
-				return Optional.of(token.move(-this.getOffset(token, LineOffset::contains)));
-			}
-		}
+				final int offset = this.start() + this.indentOffsets().stream()
+						.filter(lineOffset -> lineOffset.contains(unBoundedToken))
+						.findFirst()
+						.map(LineOffset::offset)
+						.orElse(0);
 
-		private <T> int getOffset(T t, BiPredicate<LineOffset, T> predicate) {
-			return this.start() + this.indentOffsets().stream()
-				.filter(lineOffset -> predicate.test(lineOffset, t))
-				.findFirst()
-				.map(LineOffset::offset)
-				.orElse(0);
+				return Optional.of(unBoundedToken.move(-offset));
+			}
 		}
 	}
 
@@ -796,13 +816,13 @@ public class BaseEditorPanel {
 		}
 
 		@Override
-		public int offsetOf(int pos) {
-			return pos;
+		public int offsetOf(int unBoundedPos) {
+			return unBoundedPos;
 		}
 
 		@Override
-		public Optional<Token> offsetOf(Token token) {
-			return token == null || this.end() < token.end ? Optional.empty() : Optional.of(token);
+		public Optional<Token> offsetOf(Token boundedToken) {
+			return boundedToken == null || this.end() < boundedToken.end ? Optional.empty() : Optional.of(boundedToken);
 		}
 	}
 

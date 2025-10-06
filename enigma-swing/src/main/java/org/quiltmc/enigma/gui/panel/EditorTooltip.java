@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.panel;
 
 import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.EnigmaProject;
+import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -34,6 +35,9 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.font.TextAttribute;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -139,7 +143,35 @@ public class EditorTooltip extends JWindow {
 			from.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 1));
 			row.add(from);
 			row.add(colonLabelOf(""));
-			row.add(labelOf(this.getParentName(target).orElse("un-packaged class"), editorFont));
+			final Font parentFont;
+			@Nullable
+			final MouseListener parentClicked;
+			final Entry<?> parent = target.getParent();
+			if (stopInteraction == null && parent != null) {
+				@SuppressWarnings("rawtypes")
+				final Map attributes = editorFont.getAttributes();
+				//noinspection unchecked
+				attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+				//noinspection unchecked
+				parentFont = editorFont.deriveFont(attributes);
+				parentClicked = new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						EditorTooltip.this.navigateOnClick(parent, e.getModifiersEx());
+					}
+				};
+			} else {
+				parentFont = editorFont;
+				parentClicked = null;
+			}
+
+			final JLabel parentLabel = labelOf(this.getParentName(target).orElse("un-packaged class"), parentFont);
+
+			if (parentClicked != null) {
+				parentLabel.addMouseListener(parentClicked);
+			}
+
+			row.add(parentLabel);
 		}));
 
 		final String javadoc = this.gui.getController().getProject().getRemapper().getMapping(target).javadoc();
@@ -186,13 +218,20 @@ public class EditorTooltip extends JWindow {
 				this.declarationSnippet.editor.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseClicked(MouseEvent e) {
-						EditorTooltip.this.declarationSnippet.consumeEditorMouseTarget((token, entry) -> {
-							EditorTooltip.this.openImpl(entry);
-						});
+						if (e.getButton() == MouseEvent.BUTTON1) {
+							EditorTooltip.this.declarationSnippet.consumeEditorMouseTarget((token, entry) -> {
+								final EntryReference<Entry<?>, Entry<?>> reference =
+										EditorTooltip.this.declarationSnippet.getReference(token);
+								final Entry<?> target = reference == null
+										? entry
+										: EditorTooltip.this.declarationSnippet.resolveReference(reference);
+
+								EditorTooltip.this.navigateOnClick(target, e.getModifiersEx());
+							});
+						}
 					}
 				});
 
-				// TODO create method that packs and adjusts position as necessary
 				this.declarationSnippet.addSourceSetListener(source -> this.pack());
 
 				if (stopInteraction != null) {
@@ -208,10 +247,18 @@ public class EditorTooltip extends JWindow {
 		}
 
 		// TODO clamp size
-		// TODO create method that packs and adjusts position as necessary
 		this.pack();
 
 		this.setVisible(true);
+	}
+
+	private void navigateOnClick(Entry<?> entry, int modifiers) {
+		if ((modifiers & MouseEvent.CTRL_DOWN_MASK) != 0) {
+			this.close();
+			this.gui.getController().navigateTo(entry);
+		} else {
+			this.openImpl(entry);
+		}
 	}
 
 	private static JLabel colonLabelOf(String text) {
