@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.panel;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.Runnables;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.class_handle.ClassHandleError;
@@ -42,11 +43,14 @@ import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Highlighter.HighlightPainter;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.MouseInfo;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -56,6 +60,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -260,6 +266,82 @@ public class BaseEditorPanel {
 		this.mode = mode;
 	}
 
+	/**
+	 * @see #consumeEditorMouseTarget(BiConsumer, Runnable)
+	 */
+	protected void consumeEditorMouseTarget(BiConsumer<Token, Entry<?>> action) {
+		this.consumeEditorMouseTarget(action, Runnables.doNothing());
+	}
+
+	/**
+	 * If the mouse is currently over a {@link Token} in the {@link #editor} that resolves to an {@link Entry}, passes
+	 * the token and entry to the passed {@code action}.<br>
+	 * Otherwise, calls the passed {@code onNoTarget}.
+	 *
+	 * @param action     the action to run when the mouse is over a token that resolves to an entry
+	 * @param onNoTarget the action to run when the mouse is not over a token that resolves to an entry
+	 */
+	protected void consumeEditorMouseTarget(BiConsumer<Token, Entry<?>> action, Runnable onNoTarget) {
+		BaseEditorPanel.consumeMousePositionIn(this.editor,
+				(absoluteMouse, relativeMouse) -> Optional.of(relativeMouse)
+					.map(this.editor::viewToModel2D)
+					.filter(textPos -> textPos >= 0)
+					.map(this::getToken)
+					.ifPresentOrElse(
+						token -> Optional.of(token)
+							.map(this::getReference)
+							.map(reference -> reference.entry)
+							.ifPresentOrElse(
+								entry -> action.accept(token, entry),
+								onNoTarget
+							),
+						onNoTarget
+					),
+				ignored -> onNoTarget.run()
+		);
+	}
+
+	/**
+	 * @see #consumeMousePositionIn(Component, BiConsumer, Consumer)
+	 */
+	protected static void consumeMousePositionIn(Component component, BiConsumer<Point, Point> inAction) {
+		BaseEditorPanel.consumeMousePositionIn(component, inAction, pos -> { });
+	}
+
+	/**
+	 * @see #consumeMousePositionIn(Component, BiConsumer, Consumer)
+	 */
+	protected static void consumeMousePositionOut(Component component, Consumer<Point> outAction) {
+		BaseEditorPanel.consumeMousePositionIn(component, (absolut, relative) -> { }, outAction);
+	}
+
+	/**
+	 * If the passed {@code component} {@link Component#contains(Point) contains} the mouse, passes the absolute mouse
+	 * position and its position relative to the passed {@code component} to the passed {@code inAction}.<br>
+	 * Otherwise, passes the absolute mouse position to the passed {@code outAction}.
+	 *
+	 * @param component the component which may contain the mouse pointer
+	 * @param inAction  the action to run if the mouse is inside the passed {@code component};
+	 *                  receives the mouse's absolute position and its position relative to the component
+	 * @param outAction the action to run if the mouse is outside the passed {@code component};
+	 *                  receives the mouse's absolute position
+	 */
+	private static void consumeMousePositionIn(
+			Component component, BiConsumer<Point, Point> inAction, Consumer<Point> outAction
+	) {
+		final Point absolutePos = MouseInfo.getPointerInfo().getLocation();
+
+		final Point componentPos = component.getLocationOnScreen();
+		final Point relativePos = new Point(absolutePos);
+		relativePos.translate(-componentPos.x, -componentPos.y);
+
+		if (component.contains(relativePos)) {
+			inAction.accept(absolutePos, relativePos);
+		} else {
+			outAction.accept(absolutePos);
+		}
+	}
+
 	protected void initEditorPane(JPanel editorPane) {
 		final GridBagConstraints constraints = new GridBagConstraints();
 		constraints.gridx = 0;
@@ -292,7 +374,7 @@ public class BaseEditorPanel {
 			return null;
 		}
 
-		return this.source.getIndex().getReferenceToken(pos);
+		return this.source.getIndex().getReferenceToken(this.sourceBounds.offsetOf(pos));
 	}
 
 	@Nullable
@@ -573,6 +655,10 @@ public class BaseEditorPanel {
 	}
 
 	private record LineOffset(int sourceStart, int sourceEnd, int offset) {
+		boolean contains(int pos) {
+			return this.sourceStart <= pos && this.sourceEnd >= pos;
+		}
+
 		boolean contains(Token token) {
 			return this.sourceStart <= token.start && this.sourceEnd >= token.end;
 		}
@@ -666,26 +752,35 @@ public class BaseEditorPanel {
 		}
 
 		default boolean contains(Token token) {
-			return this.contains(token.start) && this.contains(token.end);
+			return token.start >= this.start() && token.end <= this.end();
 		}
+
+		int offsetOf(int pos);
 
 		Optional<Token> offsetOf(@Nullable Token token);
 	}
 
 	private record TrimmedBounds(int start, int end, ImmutableList<LineOffset> indentOffsets) implements SourceBounds {
 		@Override
+		public int offsetOf(int pos) {
+			return pos + this.getOffset(pos, LineOffset::contains);
+		}
+
+		@Override
 		public Optional<Token> offsetOf(@Nullable Token token) {
 			if (token == null || !this.contains(token)) {
 				return Optional.empty();
 			} else {
-				final int offset = this.start() + this.indentOffsets().stream()
-						.filter(lineOffset -> lineOffset.contains(token))
-						.findFirst()
-						.map(LineOffset::offset)
-						.orElse(0);
-
-				return Optional.of(token.move(-offset));
+				return Optional.of(token.move(-this.getOffset(token, LineOffset::contains)));
 			}
+		}
+
+		private <T> int getOffset(T t, BiPredicate<LineOffset, T> predicate) {
+			return this.start() + this.indentOffsets().stream()
+				.filter(lineOffset -> predicate.test(lineOffset, t))
+				.findFirst()
+				.map(LineOffset::offset)
+				.orElse(0);
 		}
 	}
 
@@ -698,6 +793,11 @@ public class BaseEditorPanel {
 		@Override
 		public int end() {
 			return BaseEditorPanel.this.source.toString().length();
+		}
+
+		@Override
+		public int offsetOf(int pos) {
+			return pos;
 		}
 
 		@Override

@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.gui.panel;
 
-import com.google.common.util.concurrent.Runnables;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
@@ -25,8 +24,6 @@ import org.quiltmc.enigma.gui.event.EditorActionListener;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.MouseInfo;
-import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -40,9 +37,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import javax.swing.JComponent;
@@ -288,82 +282,6 @@ public class EditorPanel extends BaseEditorPanel {
 
 	private void openTooltip(Entry<?> target) {
 		this.tooltip.open(target);
-	}
-
-	/**
-	 * @see #consumeEditorMouseTarget(BiConsumer, Runnable)
-	 */
-	private void consumeEditorMouseTarget(BiConsumer<Token, Entry<?>> action) {
-		this.consumeEditorMouseTarget(action, Runnables.doNothing());
-	}
-
-	/**
-	 * If the mouse is currently over a {@link Token} in the {@link #editor} that resolves to an {@link Entry}, passes
-	 * the token and entry to the passed {@code action}.<br>
-	 * Otherwise, calls the passed {@code onNoTarget}.
-	 *
-	 * @param action     the action to run when the mouse is over a token that resolves to an entry
-	 * @param onNoTarget the action to run when the mouse is not over a token that resolves to an entry
-	 */
-	private void consumeEditorMouseTarget(BiConsumer<Token, Entry<?>> action, Runnable onNoTarget) {
-		consumeMousePositionIn(this.editor,
-				(absoluteMouse, relativeMouse) -> Optional.of(relativeMouse)
-					.map(this.editor::viewToModel2D)
-					.filter(textPos -> textPos >= 0)
-					.map(this::getToken)
-					.ifPresentOrElse(
-						token -> Optional.of(token)
-							.map(this::getReference)
-							.map(reference -> reference.entry)
-							.ifPresentOrElse(
-								entry -> action.accept(token, entry),
-								onNoTarget
-							),
-						onNoTarget
-					),
-				ignored -> onNoTarget.run()
-		);
-	}
-
-	/**
-	 * @see #consumeMousePositionIn(Component, BiConsumer, Consumer)
-	 */
-	private static void consumeMousePositionIn(Component component, BiConsumer<Point, Point> inAction) {
-		consumeMousePositionIn(component, inAction, pos -> { });
-	}
-
-	/**
-	 * @see #consumeMousePositionIn(Component, BiConsumer, Consumer)
-	 */
-	private static void consumeMousePositionOut(Component component, Consumer<Point> outAction) {
-		consumeMousePositionIn(component, (absolut, relative) -> { }, outAction);
-	}
-
-	/**
-	 * If the passed {@code component} {@link Component#contains(Point) contains} the mouse, passes the absolute mouse
-	 * position and its position relative to the passed {@code component} to the passed {@code inAction}.<br>
-	 * Otherwise, passes the absolute mouse position to the passed {@code outAction}.
-	 *
-	 * @param component the component which may contain the mouse pointer
-	 * @param inAction  the action to run if the mouse is inside the passed {@code component};
-	 *                  receives the mouse's absolute position and its position relative to the component
-	 * @param outAction the action to run if the mouse is outside the passed {@code component};
-	 *                  receives the mouse's absolute position
-	 */
-	private static void consumeMousePositionIn(
-			Component component, BiConsumer<Point, Point> inAction, Consumer<Point> outAction
-	) {
-		final Point absolutePos = MouseInfo.getPointerInfo().getLocation();
-
-		final Point componentPos = component.getLocationOnScreen();
-		final Point relativePos = new Point(absolutePos);
-		relativePos.translate(-componentPos.x, -componentPos.y);
-
-		if (component.contains(relativePos)) {
-			inAction.accept(absolutePos, relativePos);
-		} else {
-			outAction.accept(absolutePos);
-		}
 	}
 
 	public void onRename(boolean isNewMapping) {

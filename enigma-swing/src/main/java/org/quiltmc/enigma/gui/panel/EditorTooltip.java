@@ -107,6 +107,13 @@ public class EditorTooltip extends JWindow {
 	 * @param target the entry whose information will be displayed
 	 */
 	public void open(Entry<?> target) {
+		this.openImpl(target);
+
+		// TODO offset from cursor slightly + ensure on-screen
+		this.setLocation(MouseInfo.getPointerInfo().getLocation());
+	}
+
+	private void openImpl(Entry<?> target) {
 		this.content.removeAll();
 
 		@Nullable
@@ -176,6 +183,15 @@ public class EditorTooltip extends JWindow {
 			if (targetTopClassHandle != null) {
 				this.declarationSnippet = new DeclarationSnippetPanel(this.gui, target, targetTopClassHandle);
 
+				this.declarationSnippet.editor.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						EditorTooltip.this.declarationSnippet.consumeEditorMouseTarget((token, entry) -> {
+							EditorTooltip.this.openImpl(entry);
+						});
+					}
+				});
+
 				// TODO create method that packs and adjusts position as necessary
 				this.declarationSnippet.addSourceSetListener(source -> this.pack());
 
@@ -190,9 +206,6 @@ public class EditorTooltip extends JWindow {
 
 			this.add(rowOf(sourceInfo));
 		}
-
-		// TODO offset from cursor slightly + ensure on-screen
-		this.setLocation(MouseInfo.getPointerInfo().getLocation());
 
 		// TODO clamp size
 		// TODO create method that packs and adjusts position as necessary
