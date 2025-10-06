@@ -320,7 +320,7 @@ public class EditorTooltip extends JWindow {
 					.collect(toImmutableList());
 			}
 		} else {
-			// TODO if target is a record, add its components' javadocs
+			// TODO add record component javadocs once there's a RecordIndex
 			return ImmutableList.of();
 		}
 	}

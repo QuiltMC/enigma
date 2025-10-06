@@ -252,7 +252,7 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 			.orElseGet(() -> Result.err(NO_ENTRY_DEFINITION));
 	}
 
-	// TODO test record component getters
+	// TODO fix this for record component getters once there's a RecordIndex
 	private Result<Snippet, String> findMethodSnippet(
 			DecompiledClassSource source, Token target, MethodEntry targetEntry
 	) {
