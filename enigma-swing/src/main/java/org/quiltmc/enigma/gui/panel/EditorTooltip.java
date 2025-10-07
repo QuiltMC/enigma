@@ -14,7 +14,6 @@ import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 
 import javax.annotation.Nullable;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -22,6 +21,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JWindow;
+import javax.swing.border.Border;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -42,10 +42,23 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static javax.swing.BorderFactory.createEmptyBorder;
+import static javax.swing.BorderFactory.createLineBorder;
 
 public class EditorTooltip extends JWindow {
 	private static final int MOUSE_PAD = 5;
 	private static final int SMALL_MOVE_THRESHOLD = 10;
+
+	private static final int OUTER_ROW_PAD = 8;
+	private static final int INNER_ROW_PAD = 2;
+
+	private static Border topRowInsetsOf() {
+		return createEmptyBorder(OUTER_ROW_PAD, OUTER_ROW_PAD, INNER_ROW_PAD, OUTER_ROW_PAD);
+	}
+
+	private static Border innerRowInsetsOf() {
+		return createEmptyBorder(INNER_ROW_PAD, OUTER_ROW_PAD, INNER_ROW_PAD, OUTER_ROW_PAD);
+	}
 
 	private final Gui gui;
 	private final Box content;
@@ -61,13 +74,14 @@ public class EditorTooltip extends JWindow {
 		super();
 
 		this.gui = gui;
-		// TODO add insets
 		this.content = new Box(BoxLayout.PAGE_AXIS);
 
 		this.setAlwaysOnTop(true);
 		this.setType(Window.Type.POPUP);
 		this.setLayout(new BorderLayout());
+
 		this.setContentPane(this.content);
+		this.content.setBorder(createLineBorder(Config.getCurrentSyntaxPaneColors().lineNumbersSelected.value()));
 
 		Toolkit.getDefaultToolkit().addAWTEventListener(
 				e -> {
@@ -128,20 +142,16 @@ public class EditorTooltip extends JWindow {
 			}
 		};
 
-		if (this.declarationSnippet != null) {
-			this.declarationSnippet.classHandler.removeListener();
-			this.declarationSnippet = null;
-		}
-
 		final Font editorFont = Config.currentFonts().editor.value();
 		final Font italEditorFont = editorFont.deriveFont(Font.ITALIC);
 
 		this.add(rowOf(row -> {
+			row.setBorder(topRowInsetsOf());
 			// TODO add stat icon if enabled
 			// TODO add class/record/enum/method icon
 			final JLabel from = labelOf("from", italEditorFont);
 			// the italics cause it to overlap with the colon if it has no right padding
-			from.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 1));
+			from.setBorder(createEmptyBorder(0, 0, 0, 1));
 			row.add(from);
 			row.add(colonLabelOf(""));
 			final Font parentFont;
@@ -182,13 +192,16 @@ public class EditorTooltip extends JWindow {
 			this.add(new JSeparator());
 
 			if (javadoc != null) {
-				this.add(rowOf(javadocOf(javadoc, italEditorFont, stopInteraction)));
+				this.add(rowOf(row -> {
+					row.setBorder(innerRowInsetsOf());
+					row.add(javadocOf(javadoc, italEditorFont, stopInteraction));
+				}));
 			}
 
 			if (!paramJavadocs.isEmpty()) {
 				// TODO for some reason the param grid has extra space above and below it
 				final JPanel params = new JPanel(new GridBagLayout());
-				params.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+				params.setBorder(createEmptyBorder(2, 2, 2, 2));
 
 				final GridBagConstraints nameConstraints = new GridBagConstraints();
 				nameConstraints.gridx = 0;
@@ -205,8 +218,16 @@ public class EditorTooltip extends JWindow {
 					params.add(paramJavadoc.javadoc, javadocConstraints);
 				}
 
-				this.add(params);
+				this.add(rowOf(row -> {
+					row.setBorder(innerRowInsetsOf());
+					row.add(params);
+				}));
 			}
+		}
+
+		if (this.declarationSnippet != null) {
+			this.declarationSnippet.classHandler.removeListener();
+			this.declarationSnippet = null;
 		}
 
 		{
@@ -394,7 +415,7 @@ public class EditorTooltip extends JWindow {
 
 	private static JLabel colonLabelOf(String text) {
 		final JLabel label = labelOf(text + ":", Config.currentFonts().editor.value());
-		label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 2));
+		label.setBorder(createEmptyBorder(0, 0, 0, 2));
 
 		return label;
 	}
@@ -416,7 +437,7 @@ public class EditorTooltip extends JWindow {
 		text.setBackground(invisibleColorOf());
 		text.setCaretColor(invisibleColorOf());
 		text.getCaret().setSelectionVisible(true);
-		text.setBorder(BorderFactory.createEmptyBorder());
+		text.setBorder(createEmptyBorder());
 
 		if (stopInteraction != null) {
 			text.addMouseListener(stopInteraction);
@@ -470,7 +491,7 @@ public class EditorTooltip extends JWindow {
 		final Box row = Box.createHorizontalBox();
 		rowInitializer.accept(row);
 		row.add(Box.createHorizontalGlue());
-		row.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+		// row.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 
 		return row;
 	}
