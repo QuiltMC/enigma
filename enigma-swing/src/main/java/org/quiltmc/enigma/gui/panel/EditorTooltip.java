@@ -25,6 +25,7 @@ import javax.swing.JWindow;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -43,6 +44,9 @@ import java.util.function.Consumer;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 
 public class EditorTooltip extends JWindow {
+	private static final int MOUSE_PAD = 5;
+	private static final int SMALL_MOVE_THRESHOLD = 10;
+
 	private final Gui gui;
 	private final Box content;
 
@@ -52,6 +56,7 @@ public class EditorTooltip extends JWindow {
 	@Nullable
 	private DeclarationSnippetPanel declarationSnippet;
 
+	// TODO clamp size
 	public EditorTooltip(Gui gui) {
 		super();
 
@@ -73,10 +78,6 @@ public class EditorTooltip extends JWindow {
 				MouseEvent.MOUSE_RELEASED
 		);
 
-		// TODO
-		//  - update tooltip with clicked entry declaration
-		//  - add a "bread crumbs" back button
-		//  - open entry tab on ctrl-click or "Got to source" button click
 		this.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -97,9 +98,9 @@ public class EditorTooltip extends JWindow {
 			public void mouseDragged(MouseEvent e) {
 				final Point dragStart = EditorTooltip.this.dragStart;
 				if (dragStart != null) {
-					final Point location = EditorTooltip.this.getLocation();
-					location.translate(e.getX() - dragStart.x, e.getY() - dragStart.y);
-					EditorTooltip.this.setLocation(location);
+					final Point pos = EditorTooltip.this.getLocation();
+					pos.translate(e.getX() - dragStart.x, e.getY() - dragStart.y);
+					EditorTooltip.this.setLocation(pos);
 				}
 			}
 		});
@@ -111,13 +112,11 @@ public class EditorTooltip extends JWindow {
 	 * @param target the entry whose information will be displayed
 	 */
 	public void open(Entry<?> target) {
-		this.openImpl(target);
-
-		// TODO offset from cursor slightly + ensure on-screen
-		this.setLocation(MouseInfo.getPointerInfo().getLocation());
+		this.populateWith(target, true);
+		this.setVisible(true);
 	}
 
-	private void openImpl(Entry<?> target) {
+	private void populateWith(Entry<?> target, boolean opening) {
 		this.content.removeAll();
 
 		@Nullable
@@ -230,7 +229,25 @@ public class EditorTooltip extends JWindow {
 					}
 				});
 
-				this.declarationSnippet.addSourceSetListener(source -> this.pack());
+				{
+					final Dimension oldSize = opening ? null : this.getSize();
+					final Point oldMousePos = MouseInfo.getPointerInfo().getLocation();
+					this.declarationSnippet.addSourceSetListener(source -> {
+						this.pack();
+
+						if (oldSize == null) {
+							// opening
+							if (oldMousePos.distance(MouseInfo.getPointerInfo().getLocation()) < SMALL_MOVE_THRESHOLD) {
+								this.moveNearCursor();
+							} else {
+								this.moveOnScreen();
+							}
+						} else {
+							// not opening
+							this.moveMaintainingAnchor(oldMousePos, oldSize);
+						}
+					});
+				}
 
 				if (stopInteraction != null) {
 					this.declarationSnippet.editor.addMouseListener(stopInteraction);
@@ -244,10 +261,111 @@ public class EditorTooltip extends JWindow {
 			this.add(rowOf(sourceInfo));
 		}
 
-		// TODO clamp size
 		this.pack();
 
-		this.setVisible(true);
+		if (opening) {
+			this.moveNearCursor();
+		} else {
+			this.moveOnScreen();
+		}
+	}
+
+	/**
+	 * Moves this so it's near but not under the cursor, favoring the bottom right.
+	 *
+	 * <p> Also ensures this is entirely on-screen.
+	 */
+	private void moveNearCursor() {
+		if (!this.isShowing()) {
+			return;
+		}
+
+		final Dimension size = this.getSize();
+		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		final Point mousePos = MouseInfo.getPointerInfo().getLocation();
+
+		final int x = findCoordinateSpace(
+				size.width, screenSize.width,
+				mousePos.x - MOUSE_PAD, mousePos.x + MOUSE_PAD
+		);
+
+		final int y = findCoordinateSpace(
+				size.height, screenSize.height,
+				mousePos.y - MOUSE_PAD, mousePos.y + MOUSE_PAD
+		);
+
+		this.setLocation(x, y);
+	}
+
+	/**
+	 * After resizing, moves this so that the old distance between the cursor and the closest corner remains the same.
+	 *
+	 * <p> Also ensures this is entirely on-screen.
+	 */
+	private void moveMaintainingAnchor(Point oldMousePos, Dimension oldSize) {
+		if (!this.isShowing()) {
+			return;
+		}
+
+		final Point pos = this.getLocationOnScreen();
+
+		final int oldLeft = oldMousePos.x - pos.x;
+		final int oldRight = pos.x + oldSize.width - oldMousePos.x;
+		final boolean anchorRight = oldLeft >= oldRight;
+
+		final int oldTop = oldMousePos.y - pos.y;
+		final int oldBottom = pos.y + oldSize.height - oldMousePos.y;
+		final boolean anchorBottom = oldTop >= oldBottom;
+
+		if (anchorRight || anchorBottom) {
+			final Dimension newSize = this.getSize();
+
+			final int x;
+			if (anchorRight) {
+				final int widthDiff = oldSize.width - newSize.width;
+				x = pos.x + widthDiff;
+			} else {
+				x = pos.x;
+			}
+
+			final int y;
+			if (anchorBottom) {
+				final int heightDiff = oldSize.height - newSize.height;
+				y = pos.y + heightDiff;
+			} else {
+				y = pos.y;
+			}
+
+			this.setLocation(x, y);
+		}
+
+		this.moveOnScreen();
+	}
+
+	/**
+	 * Ensures this is entirely on-screen.
+	 */
+	private void moveOnScreen() {
+		if (!this.isShowing()) {
+			return;
+		}
+
+		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		final Dimension size = this.getSize();
+		final Point pos = this.getLocationOnScreen();
+
+		final int xOffScreen = pos.x + size.width - screenSize.width;
+		final int yOffScreen = pos.y + size.height - screenSize.height;
+
+		final boolean moveX = xOffScreen > 0;
+		final boolean moveY = yOffScreen > 0;
+
+		if (moveX || moveY) {
+			final int x = pos.x - (moveX ? xOffScreen : 0);
+			final int y = pos.y - (moveY ? yOffScreen : 0);
+
+			this.setLocation(x, y);
+		}
 	}
 
 	private void navigateOnClick(Entry<?> entry, int modifiers) {
@@ -255,7 +373,22 @@ public class EditorTooltip extends JWindow {
 			this.close();
 			this.gui.getController().navigateTo(entry);
 		} else {
-			this.openImpl(entry);
+			this.populateWith(entry, false);
+		}
+	}
+
+	private static int findCoordinateSpace(int size, int screenSize, int mouseMin, int mouseMax) {
+		final double spaceAfter = screenSize - mouseMax;
+		if (spaceAfter >= size) {
+			return mouseMax;
+		} else {
+			final int spaceBefore = mouseMin - size;
+			if (spaceBefore >= 0) {
+				return spaceBefore;
+			} else {
+				// doesn't fit before or after; align with screen edge that gives more space
+				return spaceAfter < spaceBefore ? 0 : screenSize - size;
+			}
 		}
 	}
 

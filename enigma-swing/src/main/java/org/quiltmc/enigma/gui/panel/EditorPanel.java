@@ -76,11 +76,15 @@ public class EditorPanel extends BaseEditorPanel {
 							this.showTooltipTimer.start();
 						}
 					},
-					() -> {
-						this.lastMouseTargetToken = null;
-						this.showTooltipTimer.stop();
-						this.hideTooltipTimer.start();
-					}
+					() -> consumeMousePositionIn(
+						this.tooltip.getContentPane(),
+						(absolute, relative) -> this.hideTooltipTimer.stop(),
+						absolute -> {
+							this.lastMouseTargetToken = null;
+							this.showTooltipTimer.stop();
+							this.hideTooltipTimer.start();
+						}
+					)
 			);
 		}
 	});
@@ -179,16 +183,29 @@ public class EditorPanel extends BaseEditorPanel {
 			}
 		};
 
+		this.tooltip.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				if (e.getOppositeComponent() != EditorPanel.this.editor) {
+					EditorPanel.this.closeTooltip();
+				}
+			}
+		});
+
 		this.editor.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
-				EditorPanel.this.closeTooltip();
+				if (e.getOppositeComponent() != EditorPanel.this.tooltip) {
+					EditorPanel.this.closeTooltip();
+				}
 			}
 		});
 
 		this.editor.addMouseListener(editorMouseAdapter);
 		this.editor.addMouseMotionListener(editorMouseAdapter);
 		this.editor.addCaretListener(event -> this.onCaretMove(event.getDot()));
+
+		this.editorScrollPane.getViewport().addChangeListener(e -> this.closeTooltip());
 
 		this.mouseStoppedMovingTimer.setRepeats(false);
 		this.showTooltipTimer.setRepeats(false);
@@ -218,6 +235,9 @@ public class EditorPanel extends BaseEditorPanel {
 					});
 
 					e.consume();
+				} else {
+					EditorPanel.this.mouseStoppedMovingTimer.stop();
+					EditorPanel.this.hideTooltipTimer.stop();
 				}
 			}
 		});
@@ -226,6 +246,7 @@ public class EditorPanel extends BaseEditorPanel {
 			@Override
 			public void mouseMoved(MouseEvent e) {
 				if (Config.editor().tooltip.interactable.value()) {
+					EditorPanel.this.mouseStoppedMovingTimer.stop();
 					EditorPanel.this.hideTooltipTimer.stop();
 				}
 			}

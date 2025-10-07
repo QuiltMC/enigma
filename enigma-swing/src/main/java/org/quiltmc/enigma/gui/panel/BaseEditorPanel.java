@@ -307,14 +307,14 @@ public class BaseEditorPanel {
 	 * @see #consumeMousePositionIn(Component, BiConsumer, Consumer)
 	 */
 	protected static void consumeMousePositionIn(Component component, BiConsumer<Point, Point> inAction) {
-		BaseEditorPanel.consumeMousePositionIn(component, inAction, pos -> { });
+		consumeMousePositionIn(component, inAction, pos -> { });
 	}
 
 	/**
 	 * @see #consumeMousePositionIn(Component, BiConsumer, Consumer)
 	 */
 	protected static void consumeMousePositionOut(Component component, Consumer<Point> outAction) {
-		BaseEditorPanel.consumeMousePositionIn(component, (absolut, relative) -> { }, outAction);
+		consumeMousePositionIn(component, (absolut, relative) -> { }, outAction);
 	}
 
 	/**
@@ -328,20 +328,22 @@ public class BaseEditorPanel {
 	 * @param outAction the action to run if the mouse is outside the passed {@code component};
 	 *                  receives the mouse's absolute position
 	 */
-	private static void consumeMousePositionIn(
+	protected static void consumeMousePositionIn(
 			Component component, BiConsumer<Point, Point> inAction, Consumer<Point> outAction
 	) {
 		final Point absolutePos = MouseInfo.getPointerInfo().getLocation();
+		if (component.isShowing()) {
+			final Point componentPos = component.getLocationOnScreen();
+			final Point relativePos = new Point(absolutePos);
+			relativePos.translate(-componentPos.x, -componentPos.y);
 
-		final Point componentPos = component.getLocationOnScreen();
-		final Point relativePos = new Point(absolutePos);
-		relativePos.translate(-componentPos.x, -componentPos.y);
-
-		if (component.contains(relativePos)) {
-			inAction.accept(absolutePos, relativePos);
-		} else {
-			outAction.accept(absolutePos);
+			if (component.contains(relativePos)) {
+				inAction.accept(absolutePos, relativePos);
+				return;
+			}
 		}
+
+		outAction.accept(absolutePos);
 	}
 
 	protected void initEditorPane(JPanel editorPane) {
