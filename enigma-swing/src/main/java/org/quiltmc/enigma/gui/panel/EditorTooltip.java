@@ -15,13 +15,11 @@ import org.quiltmc.enigma.gui.config.Config;
 
 import javax.annotation.Nullable;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JWindow;
-import javax.swing.border.Border;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -39,7 +37,9 @@ import java.awt.event.MouseListener;
 import java.awt.font.TextAttribute;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static javax.swing.BorderFactory.createEmptyBorder;
@@ -52,16 +52,24 @@ public class EditorTooltip extends JWindow {
 	private static final int OUTER_ROW_PAD = 8;
 	private static final int INNER_ROW_PAD = 2;
 
-	private static Border topRowInsetsOf() {
-		return createEmptyBorder(OUTER_ROW_PAD, OUTER_ROW_PAD, INNER_ROW_PAD, OUTER_ROW_PAD);
+	private static void setTopRowInsets(GridBagConstraints constraints) {
+		constraints.insets.left = OUTER_ROW_PAD;
+		constraints.insets.right = OUTER_ROW_PAD;
+		constraints.insets.top = OUTER_ROW_PAD;
+
+		constraints.insets.bottom = INNER_ROW_PAD;
 	}
 
-	private static Border innerRowInsetsOf() {
-		return createEmptyBorder(INNER_ROW_PAD, OUTER_ROW_PAD, INNER_ROW_PAD, OUTER_ROW_PAD);
+	private static void setInnerRowInsets(GridBagConstraints constraints) {
+		constraints.insets.left = OUTER_ROW_PAD;
+		constraints.insets.right = OUTER_ROW_PAD;
+
+		constraints.insets.top = INNER_ROW_PAD;
+		constraints.insets.bottom = INNER_ROW_PAD;
 	}
 
 	private final Gui gui;
-	private final Box content;
+	private final JPanel content;
 
 	@Nullable
 	private Point dragStart;
@@ -74,7 +82,7 @@ public class EditorTooltip extends JWindow {
 		super();
 
 		this.gui = gui;
-		this.content = new Box(BoxLayout.PAGE_AXIS);
+		this.content = new JPanel(new GridBagLayout());
 
 		this.setAlwaysOnTop(true);
 		this.setType(Window.Type.POPUP);
@@ -145,82 +153,104 @@ public class EditorTooltip extends JWindow {
 		final Font editorFont = Config.currentFonts().editor.value();
 		final Font italEditorFont = editorFont.deriveFont(Font.ITALIC);
 
-		this.add(rowOf(row -> {
-			row.setBorder(topRowInsetsOf());
-			// TODO add stat icon if enabled
-			// TODO add class/record/enum/method icon
-			final JLabel from = labelOf("from", italEditorFont);
-			// the italics cause it to overlap with the colon if it has no right padding
-			from.setBorder(createEmptyBorder(0, 0, 0, 1));
-			row.add(from);
-			row.add(colonLabelOf(""));
-			final Font parentFont;
-			@Nullable
-			final MouseListener parentClicked;
-			final Entry<?> parent = target.getParent();
-			if (stopInteraction == null && parent != null) {
-				@SuppressWarnings("rawtypes")
-				final Map attributes = editorFont.getAttributes();
-				//noinspection unchecked
-				attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
-				//noinspection unchecked
-				parentFont = editorFont.deriveFont(attributes);
-				parentClicked = new MouseAdapter() {
-					@Override
-					public void mouseClicked(MouseEvent e) {
-						EditorTooltip.this.navigateOnClick(parent, e.getModifiersEx());
-					}
-				};
-			} else {
-				parentFont = editorFont;
-				parentClicked = null;
+		final AtomicInteger gridY = new AtomicInteger(0);
+
+		// from: ... label
+		this.addRow(
+			constraints -> {
+				setTopRowInsets(constraints);
+				constraints.anchor = GridBagConstraints.LINE_START;
+				constraints.gridx = 0;
+				constraints.gridy = gridY.getAndIncrement();
+			},
+			row -> {
+				// TODO add stat icon if enabled
+				// TODO add class/record/enum/method icon
+				final JLabel from = labelOf("from", italEditorFont);
+				// the italics cause it to overlap with the colon if it has no right padding
+				from.setBorder(createEmptyBorder(0, 0, 0, 1));
+				row.add(from);
+				row.add(colonLabelOf(""));
+				final Font parentFont;
+				@Nullable
+				final MouseListener parentClicked;
+				final Entry<?> parent = target.getParent();
+				if (stopInteraction == null && parent != null) {
+					@SuppressWarnings("rawtypes")
+					final Map attributes = editorFont.getAttributes();
+					//noinspection unchecked
+					attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+					//noinspection unchecked
+					parentFont = editorFont.deriveFont(attributes);
+					parentClicked = new MouseAdapter() {
+						@Override
+						public void mouseClicked(MouseEvent e) {
+							EditorTooltip.this.navigateOnClick(parent, e.getModifiersEx());
+						}
+					};
+				} else {
+					// TODO navigate to to parent package in a classes docker on ctrl+click
+					parentFont = editorFont;
+					parentClicked = null;
+				}
+
+				final JLabel parentLabel = labelOf(this.getParentName(target).orElse("<no package>"), parentFont);
+
+				if (parentClicked != null) {
+					parentLabel.addMouseListener(parentClicked);
+				}
+
+				row.add(parentLabel);
+				row.add(Box.createHorizontalGlue());
 			}
-
-			final JLabel parentLabel = labelOf(this.getParentName(target).orElse("<no package>"), parentFont);
-
-			if (parentClicked != null) {
-				parentLabel.addMouseListener(parentClicked);
-			}
-
-			row.add(parentLabel);
-		}));
+		);
 
 		// TODO make javadocs and snippet copyable
 		final String javadoc = this.gui.getController().getProject().getRemapper().getMapping(target).javadoc();
 		final ImmutableList<ParamJavadoc> paramJavadocs = this.paramJavadocsOf(target, italEditorFont, stopInteraction);
 		if (javadoc != null || !paramJavadocs.isEmpty()) {
-			this.add(new JSeparator());
+			this.addRow(new JSeparator(), constraints -> {
+				constraints.gridx = 0;
+				constraints.gridy = gridY.getAndIncrement();
+			});
 
 			if (javadoc != null) {
-				this.add(rowOf(row -> {
-					row.setBorder(innerRowInsetsOf());
-					row.add(javadocOf(javadoc, italEditorFont, stopInteraction));
-				}));
+				this.addRow(javadocOf(javadoc, italEditorFont, stopInteraction), constraints -> {
+					setInnerRowInsets(constraints);
+					constraints.anchor = GridBagConstraints.LINE_START;
+					constraints.weightx = 1;
+					constraints.fill = GridBagConstraints.HORIZONTAL;
+					constraints.gridx = 0;
+					constraints.gridy = gridY.getAndIncrement();
+				});
 			}
 
 			if (!paramJavadocs.isEmpty()) {
-				// TODO for some reason the param grid has extra space above and below it
 				final JPanel params = new JPanel(new GridBagLayout());
-				params.setBorder(createEmptyBorder(2, 2, 2, 2));
-
-				final GridBagConstraints nameConstraints = new GridBagConstraints();
-				nameConstraints.gridx = 0;
-				nameConstraints.anchor = GridBagConstraints.FIRST_LINE_END;
-
-				final GridBagConstraints javadocConstraints = new GridBagConstraints();
-				javadocConstraints.gridx = 1;
-				javadocConstraints.fill = GridBagConstraints.HORIZONTAL;
-				javadocConstraints.weightx = 1;
-				javadocConstraints.anchor = GridBagConstraints.LINE_START;
+				final AtomicInteger paramsGridY = new AtomicInteger(0);
 
 				for (final ParamJavadoc paramJavadoc : paramJavadocs) {
-					params.add(paramJavadoc.name, nameConstraints);
-					params.add(paramJavadoc.javadoc, javadocConstraints);
+					params.add(paramJavadoc.name, createConstraints(constraints -> {
+						constraints.gridx = 0;
+						constraints.gridy = paramsGridY.get();
+						constraints.anchor = GridBagConstraints.FIRST_LINE_END;
+					}));
+
+					params.add(paramJavadoc.javadoc, createConstraints(constraints -> {
+						constraints.gridx = 1;
+						constraints.gridy = paramsGridY.getAndIncrement();
+						constraints.weightx = 1;
+						constraints.fill = GridBagConstraints.HORIZONTAL;
+						constraints.anchor = GridBagConstraints.LINE_START;
+					}));
 				}
 
-				this.add(rowOf(row -> {
-					row.setBorder(innerRowInsetsOf());
-					row.add(params);
+				this.add(params, createConstraints(constraints -> {
+					setInnerRowInsets(constraints);
+					constraints.gridx = 0;
+					constraints.gridy = gridY.getAndIncrement();
+					constraints.weightx = 1;
+					constraints.fill = GridBagConstraints.HORIZONTAL;
 				}));
 			}
 		}
@@ -236,7 +266,6 @@ public class EditorTooltip extends JWindow {
 
 			final Component sourceInfo;
 			if (targetTopClassHandle != null) {
-				// TODO expand right to fill width
 				this.declarationSnippet = new DeclarationSnippetPanel(this.gui, target, targetTopClassHandle);
 
 				this.declarationSnippet.editor.addMouseListener(new MouseAdapter() {
@@ -254,6 +283,9 @@ public class EditorTooltip extends JWindow {
 					final Dimension oldSize = opening ? null : this.getSize();
 					final Point oldMousePos = MouseInfo.getPointerInfo().getLocation();
 					this.declarationSnippet.addSourceSetListener(source -> {
+						this.pack();
+						// swing </3
+						// a second call is required to eliminate extra space
 						this.pack();
 
 						if (oldSize == null) {
@@ -279,7 +311,13 @@ public class EditorTooltip extends JWindow {
 				sourceInfo = labelOf("No source available", italEditorFont);
 			}
 
-			this.add(rowOf(sourceInfo));
+			this.addRow(sourceInfo, constraints -> {
+				constraints.weightx = 1;
+				constraints.fill = GridBagConstraints.HORIZONTAL;
+				constraints.anchor = GridBagConstraints.LINE_START;
+				constraints.gridx = 0;
+				constraints.gridy = gridY.getAndIncrement();
+			});
 		}
 
 		this.pack();
@@ -427,7 +465,6 @@ public class EditorTooltip extends JWindow {
 		return label;
 	}
 
-	// TODO for some reason sometimes there's extra space below the text, about one line's worth
 	private static JTextArea javadocOf(String javadoc, Font font, MouseAdapter stopInteraction) {
 		final JTextArea text = new JTextArea(javadoc);
 		text.setLineWrap(true);
@@ -479,21 +516,27 @@ public class EditorTooltip extends JWindow {
 		}
 	}
 
-	private static Box rowOf(Component... components) {
-		return rowOf(row -> {
-			for (final Component component : components) {
-				row.add(component);
-			}
-		});
+	private void addRow(Consumer<GridBagConstraints> constrainer, Consumer<Box> initializer) {
+		this.addRow(Box::createHorizontalBox, constrainer, initializer);
 	}
 
-	private static Box rowOf(Consumer<Box> rowInitializer) {
-		final Box row = Box.createHorizontalBox();
-		rowInitializer.accept(row);
-		row.add(Box.createHorizontalGlue());
-		// row.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+	private <C extends Component> void addRow(
+			Supplier<C> factory, Consumer<GridBagConstraints> constrainer, Consumer<C> initializer
+	) {
+		final C component = factory.get();
+		initializer.accept(component);
 
-		return row;
+		this.addRow(component, constrainer);
+	}
+
+	private void addRow(Component component, Consumer<GridBagConstraints> constrainer) {
+		this.add(component, createConstraints(constrainer));
+	}
+
+	private static GridBagConstraints createConstraints(Consumer<GridBagConstraints> initializer) {
+		final GridBagConstraints constraints = new GridBagConstraints();
+		initializer.accept(constraints);
+		return constraints;
 	}
 
 	public void close() {
