@@ -77,7 +77,6 @@ public class EditorTooltip extends JWindow {
 	@Nullable
 	private DeclarationSnippetPanel declarationSnippet;
 
-	// TODO clamp size
 	public EditorTooltip(Gui gui) {
 		super();
 
@@ -164,8 +163,6 @@ public class EditorTooltip extends JWindow {
 				constraints.gridy = gridY.getAndIncrement();
 			},
 			row -> {
-				// TODO add stat icon if enabled
-				// TODO add class/record/enum/method icon
 				final JLabel from = labelOf("from", italEditorFont);
 				// the italics cause it to overlap with the colon if it has no right padding
 				from.setBorder(createEmptyBorder(0, 0, 0, 1));
