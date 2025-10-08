@@ -84,7 +84,11 @@ public class JavaSyntaxKit extends DefaultEditorKit implements ViewFactory {
 
 		Color caretColor = SyntaxpainConfiguration.getTextColor();
 		editorPane.setCaretColor(caretColor);
-		this.addQuickFindAction(editorPane);
+
+		if (SyntaxpainConfiguration.isQuickFindDialogEnabled()) {
+			this.addQuickFindDialogAction(editorPane);
+		}
+
 		this.addComponents(editorPane);
 	}
 
@@ -103,13 +107,13 @@ public class JavaSyntaxKit extends DefaultEditorKit implements ViewFactory {
 	/**
 	 * Sets up the quick find action.
 	 */
-	public void addQuickFindAction(JEditorPane editorPane) {
+	public void addQuickFindDialogAction(JEditorPane editorPane) {
 		InputMap inputMap = new InputMap();
 		inputMap.setParent(editorPane.getInputMap());
 		ActionMap actionMap = new ActionMap();
 		actionMap.setParent(editorPane.getActionMap());
 
-		QuickFindAction action = new QuickFindAction();
+		QuickFindDialogAction action = new QuickFindDialogAction();
 		actionMap.put(action.getClass().getSimpleName(), action);
 
 		KeyStroke stroke = KeyStroke.getKeyStroke("control F");

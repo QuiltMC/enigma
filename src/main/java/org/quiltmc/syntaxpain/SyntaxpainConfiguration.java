@@ -1,5 +1,6 @@
 package org.quiltmc.syntaxpain;
 
+import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
 import java.awt.Color;
 import java.awt.Font;
@@ -138,10 +139,27 @@ public class SyntaxpainConfiguration {
 		JavaSyntaxKit.setFont(font);
 	}
 
-	public static QuickFindDialog getQuickFindDialog(JTextComponent component) {
-		return quickFindDialogFactory.apply(component);
+	/**
+	 * @return whether automatic installation of {@link QuickFindDialog}s in {@link JEditorPane}s is enabled
+	 */
+	public static boolean isQuickFindDialogEnabled() {
+		return quickFindDialogFactory != null;
 	}
 
+	/**
+	 * @return a new dialog, or {@code null} if {@linkplain  #isQuickFindDialogEnabled dialogs are disabled}
+	 */
+	public static QuickFindDialog getQuickFindDialog(JTextComponent component) {
+		return quickFindDialogFactory == null ? null : quickFindDialogFactory.apply(component);
+	}
+
+	/**
+	 * Set's the factory method used by {@link #getQuickFindDialog(JTextComponent)} to create new dialogs.
+	 *
+	 * <p> Pass {@code null} to disable automatic installation of {@link QuickFindDialog}s in {@link JEditorPane}s.
+	 *
+	 * @param dialogFactory the dialog factory; may be {@code null}, but a factory must not return {@code null}
+	 */
 	public static void setQuickFindDialogFactory(Function<JTextComponent, QuickFindDialog> dialogFactory) {
 		quickFindDialogFactory = dialogFactory;
 	}

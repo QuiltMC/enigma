@@ -3,9 +3,9 @@ package org.quiltmc.syntaxpain;
 import javax.swing.text.JTextComponent;
 import java.awt.event.ActionEvent;
 
-public final class QuickFindAction extends DefaultSyntaxAction {
-	public QuickFindAction() {
-		super("quick-find");
+public final class QuickFindDialogAction extends DefaultSyntaxAction {
+	public QuickFindDialogAction() {
+		super("quick-find-dialog");
 	}
 
 	@Override
@@ -33,11 +33,13 @@ public final class QuickFindAction extends DefaultSyntaxAction {
 		}
 
 		public void showFindDialog(JTextComponent target) {
-			if (this.findDialog == null) {
-				this.findDialog = SyntaxpainConfiguration.getQuickFindDialog(target);
-			}
+			if (SyntaxpainConfiguration.isQuickFindDialogEnabled()) {
+				if (this.findDialog == null) {
+					this.findDialog = SyntaxpainConfiguration.getQuickFindDialog(target);
+				}
 
-			this.findDialog.showFor(target);
+				this.findDialog.showFor(target);
+			}
 		}
 	}
 }
