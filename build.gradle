@@ -13,7 +13,7 @@ repositories {
 final ENV = System.getenv()
 
 group = 'org.quiltmc'
-version = "0.1.5${ENV.GITHUB_ACTIONS ? '' : '+local'}"
+version = "0.1.6${ENV.GITHUB_ACTIONS ? '' : '+local'}"
 
 // exclude auto-generated jflex lexer from checkstyle
 tasks.withType(Checkstyle).configureEach {
