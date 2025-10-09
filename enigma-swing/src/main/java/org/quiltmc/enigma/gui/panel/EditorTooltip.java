@@ -79,6 +79,15 @@ public class EditorTooltip extends JWindow {
 		constraints.insets.bottom = INNER_ROW_PAD;
 	}
 
+	private static void setBottomRowInsets(GridBagConstraints constraints) {
+		constraints.insets.left = OUTER_ROW_PAD;
+		constraints.insets.right = OUTER_ROW_PAD;
+		constraints.insets.bottom = OUTER_ROW_PAD;
+
+		constraints.insets.top = INNER_ROW_PAD;
+	}
+
+
 	private final Gui gui;
 	private final JPanel content;
 
@@ -189,10 +198,7 @@ public class EditorTooltip extends JWindow {
 		final String javadoc = this.gui.getController().getProject().getRemapper().getMapping(target).javadoc();
 		final ImmutableList<ParamJavadoc> paramJavadocs = this.paramJavadocsOf(target, italEditorFont, stopInteraction);
 		if (javadoc != null || !paramJavadocs.isEmpty()) {
-			this.addRow(new JSeparator(), constraints -> {
-				constraints.gridx = 0;
-				constraints.gridy = gridY.getAndIncrement();
-			});
+			this.addSeparator(gridY.getAndIncrement());
 
 			if (javadoc != null) {
 				this.addRow(javadocOf(javadoc, italEditorFont, stopInteraction), constraints -> {
@@ -244,7 +250,6 @@ public class EditorTooltip extends JWindow {
 			final ClassHandle targetTopClassHandle = this.gui.getController().getClassHandleProvider()
 					.openClass(target.getTopLevelClass());
 
-			final Component sourceInfo;
 			if (targetTopClassHandle != null) {
 				this.declarationSnippet = new DeclarationSnippetPanel(this.gui, target, targetTopClassHandle);
 
@@ -286,18 +291,25 @@ public class EditorTooltip extends JWindow {
 					this.declarationSnippet.editor.addMouseListener(stopInteraction);
 				}
 
-				sourceInfo = this.declarationSnippet.ui;
+				this.addRow(this.declarationSnippet.ui, constraints -> {
+					constraints.weightx = 1;
+					constraints.fill = GridBagConstraints.HORIZONTAL;
+					constraints.anchor = GridBagConstraints.LINE_START;
+					constraints.gridx = 0;
+					constraints.gridy = gridY.getAndIncrement();
+				});
 			} else {
-				sourceInfo = labelOf("No source available", italEditorFont);
-			}
+				this.addSeparator(gridY.getAndIncrement());
 
-			this.addRow(sourceInfo, constraints -> {
-				constraints.weightx = 1;
-				constraints.fill = GridBagConstraints.HORIZONTAL;
-				constraints.anchor = GridBagConstraints.LINE_START;
-				constraints.gridx = 0;
-				constraints.gridy = gridY.getAndIncrement();
-			});
+				this.addRow(labelOf("No source available", italEditorFont), constraints -> {
+					constraints.weightx = 1;
+					constraints.fill = GridBagConstraints.HORIZONTAL;
+					constraints.anchor = GridBagConstraints.LINE_START;
+					constraints.gridx = 0;
+					constraints.gridy = gridY.getAndIncrement();
+					setInnerRowInsets(constraints);
+				});
+			}
 		}
 
 		this.pack();
@@ -307,6 +319,15 @@ public class EditorTooltip extends JWindow {
 		} else {
 			this.moveOnScreen();
 		}
+	}
+
+	private void addSeparator(int gridY) {
+		this.addRow(new JSeparator(), constraints -> {
+			constraints.gridx = 0;
+			constraints.gridy = gridY;
+			constraints.weightx = 1;
+			constraints.fill = GridBagConstraints.HORIZONTAL;
+		});
 	}
 
 	/**
