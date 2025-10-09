@@ -104,6 +104,7 @@ public class EditorTabbedPane {
 		if (activeEditor != null) {
 			activeEditor.getEditor().requestFocus();
 		}
+
 		this.gui.updateStructure(activeEditor);
 		this.gui.showCursorReference(activeEditor != null ? activeEditor.getCursorReference() : null);
 		ed.destroy();

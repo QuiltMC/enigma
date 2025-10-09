@@ -39,17 +39,17 @@ public class ClosableTabTitlePane {
 				Point pt = new Point(e.getXOnScreen(), e.getYOnScreen());
 				SwingUtilities.convertPointFromScreen(pt, this.parent);
 				MouseEvent e1 = new MouseEvent(
-					this.parent,
-					e.getID(),
-					e.getWhen(),
-					e.getModifiersEx(),
-					(int) pt.getX(),
-					(int) pt.getY(),
-					e.getXOnScreen(),
-					e.getYOnScreen(),
-					e.getClickCount(),
-					e.isPopupTrigger(),
-					e.getButton()
+						this.parent,
+						e.getID(),
+						e.getWhen(),
+						e.getModifiersEx(),
+						(int) pt.getX(),
+						(int) pt.getY(),
+						e.getXOnScreen(),
+						e.getYOnScreen(),
+						e.getClickCount(),
+						e.isPopupTrigger(),
+						e.getButton()
 				);
 				this.parent.dispatchEvent(e1);
 			}
