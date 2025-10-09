@@ -101,7 +101,9 @@ public class EditorTabbedPane {
 		this.openFiles.remove(ed.getUi());
 		this.editors.inverse().remove(ed);
 		EditorPanel activeEditor = this.getActiveEditor();
-		activeEditor.getEditor().requestFocus();
+		if (activeEditor != null) {
+			activeEditor.getEditor().requestFocus();
+		}
 		this.gui.updateStructure(activeEditor);
 		this.gui.showCursorReference(activeEditor != null ? activeEditor.getCursorReference() : null);
 		ed.destroy();
