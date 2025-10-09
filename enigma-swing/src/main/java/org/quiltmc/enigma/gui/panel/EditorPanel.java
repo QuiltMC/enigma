@@ -148,6 +148,21 @@ public class EditorPanel extends BaseEditorPanel {
 				MouseEvent.MOUSE_PRESSED
 		);
 
+		Toolkit.getDefaultToolkit().addAWTEventListener(
+				e -> {
+					if (e instanceof FocusEvent focusEvent) {
+						final Component gainer = focusEvent.getID() == FocusEvent.FOCUS_GAINED
+								? focusEvent.getComponent()
+								: focusEvent.getOppositeComponent();
+
+						if (gainer == null || !SwingUtilities.isDescendingFrom(gainer, this.ui)) {
+							this.closeTooltip();
+						}
+					}
+				},
+				FocusEvent.FOCUS_EVENT_MASK
+		);
+
 		final MouseAdapter editorMouseAdapter = new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -161,8 +176,8 @@ public class EditorPanel extends BaseEditorPanel {
 			public void mousePressed(MouseEvent mouseEvent) {
 				EditorPanel.this.tooltip.setVisible(false);
 				EditorPanel.this.mouseStoppedMovingTimer.stop();
-				EditorPanel.this.showTokenTooltipTimer.stop();
-				EditorPanel.this.hideTokenTooltipTimer.stop();
+				EditorPanel.this.showTooltipTimer.stop();
+				EditorPanel.this.hideTooltipTimer.stop();
 			}
 
 			@Override
@@ -182,24 +197,6 @@ public class EditorPanel extends BaseEditorPanel {
 				EditorPanel.this.mouseStoppedMovingTimer.restart();
 			}
 		};
-
-		this.tooltip.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusLost(FocusEvent e) {
-				if (e.getOppositeComponent() != EditorPanel.this.editor) {
-					EditorPanel.this.closeTooltip();
-				}
-			}
-		});
-
-		this.editor.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusLost(FocusEvent e) {
-				if (e.getOppositeComponent() != EditorPanel.this.tooltip) {
-					EditorPanel.this.closeTooltip();
-				}
-			}
-		});
 
 		this.editor.addMouseListener(editorMouseAdapter);
 		this.editor.addMouseMotionListener(editorMouseAdapter);
