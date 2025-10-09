@@ -7,11 +7,18 @@ import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.docker.AllClassesDocker;
+import org.quiltmc.enigma.gui.docker.ClassesDocker;
+import org.quiltmc.enigma.gui.docker.DeobfuscatedClassesDocker;
+import org.quiltmc.enigma.gui.docker.Docker;
+import org.quiltmc.enigma.gui.docker.ObfuscatedClassesDocker;
 
 import javax.annotation.Nullable;
 import javax.swing.Box;
@@ -20,6 +27,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JWindow;
+import javax.swing.tree.TreePath;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -35,11 +43,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.font.TextAttribute;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static javax.swing.BorderFactory.createEmptyBorder;
@@ -154,52 +165,24 @@ public class EditorTooltip extends JWindow {
 
 		final AtomicInteger gridY = new AtomicInteger(0);
 
-		// from: ... label
+		// from: <parent> label
 		this.addRow(
-			constraints -> {
-				setTopRowInsets(constraints);
-				constraints.anchor = GridBagConstraints.LINE_START;
-				constraints.gridx = 0;
-				constraints.gridy = gridY.getAndIncrement();
-			},
-			row -> {
-				final JLabel from = labelOf("from", italEditorFont);
-				// the italics cause it to overlap with the colon if it has no right padding
-				from.setBorder(createEmptyBorder(0, 0, 0, 1));
-				row.add(from);
-				row.add(colonLabelOf(""));
-				final Font parentFont;
-				@Nullable
-				final MouseListener parentClicked;
-				final Entry<?> parent = target.getParent();
-				if (stopInteraction == null && parent != null) {
-					@SuppressWarnings("rawtypes")
-					final Map attributes = editorFont.getAttributes();
-					//noinspection unchecked
-					attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
-					//noinspection unchecked
-					parentFont = editorFont.deriveFont(attributes);
-					parentClicked = new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							EditorTooltip.this.navigateOnClick(parent, e.getModifiersEx());
-						}
-					};
-				} else {
-					// TODO navigate to to parent package in a classes docker on ctrl+click
-					parentFont = editorFont;
-					parentClicked = null;
+				constraints -> {
+					setTopRowInsets(constraints);
+					constraints.anchor = GridBagConstraints.LINE_START;
+					constraints.gridx = 0;
+					constraints.gridy = gridY.getAndIncrement();
+				},
+				row -> {
+					final JLabel from = labelOf("from", italEditorFont);
+					// the italics cause it to overlap with the colon if it has no right padding
+					from.setBorder(createEmptyBorder(0, 0, 0, 1));
+					row.add(from);
+					row.add(colonLabelOf(""));
+
+					row.add(this.parentLabelOf(target, editorFont, stopInteraction));
+					row.add(Box.createHorizontalGlue());
 				}
-
-				final JLabel parentLabel = labelOf(this.getParentName(target).orElse("<no package>"), parentFont);
-
-				if (parentClicked != null) {
-					parentLabel.addMouseListener(parentClicked);
-				}
-
-				row.add(parentLabel);
-				row.add(Box.createHorizontalGlue());
-			}
 		);
 
 		// TODO make javadocs and snippet copyable
@@ -270,7 +253,7 @@ public class EditorTooltip extends JWindow {
 					public void mouseClicked(MouseEvent e) {
 						if (e.getButton() == MouseEvent.BUTTON1) {
 							EditorTooltip.this.declarationSnippet.consumeEditorMouseTarget((token, entry) -> {
-								EditorTooltip.this.navigateOnClick(entry, e.getModifiersEx());
+								EditorTooltip.this.onEntryClick(entry, e.getModifiersEx());
 							});
 						}
 					}
@@ -424,7 +407,7 @@ public class EditorTooltip extends JWindow {
 		}
 	}
 
-	private void navigateOnClick(Entry<?> entry, int modifiers) {
+	private void onEntryClick(Entry<?> entry, int modifiers) {
 		if ((modifiers & MouseEvent.CTRL_DOWN_MASK) != 0) {
 			this.close();
 			this.gui.getController().navigateTo(entry);
@@ -545,32 +528,123 @@ public class EditorTooltip extends JWindow {
 		}
 	}
 
-	private Optional<String> getParentName(Entry<?> entry) {
-		final var builder = new StringBuilder();
+	private JLabel parentLabelOf(Entry<?> entry, Font font, @Nullable MouseAdapter stopInteraction) {
+		final var nameBuilder = new StringBuilder();
 
 		final Runnable tryDot = () -> {
-			if (!builder.isEmpty()) {
-				builder.insert(0, '.');
+			if (!nameBuilder.isEmpty()) {
+				nameBuilder.insert(0, '.');
 			}
 		};
 
-		Entry<?> parent = entry.getParent();
+		final Entry<?> immediateParent = entry.getParent();
+		Entry<?> parent = immediateParent;
 		while (parent != null) {
 			tryDot.run();
 
-			builder.insert(0, this.getSimpleName(parent));
+			nameBuilder.insert(0, this.getSimpleName(parent));
 
 			parent = parent.getParent();
 		}
 
-		final String packageName = entry.getTopLevelClass().getPackageName();
+		final ClassEntry topClass = entry.getTopLevelClass();
+
+		final String packageName = topClass.getPackageName();
 		if (packageName != null) {
 			tryDot.run();
 
-			builder.insert(0, packageName.replace('/', '.'));
+			nameBuilder.insert(0, packageName.replace('/', '.'));
 		}
 
-		return builder.isEmpty() ? Optional.empty() : Optional.of(builder.toString());
+		@Nullable
+		final MouseListener parentClicked;
+		if (stopInteraction == null && immediateParent != null) {
+			parentClicked = new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					EditorTooltip.this.onEntryClick(immediateParent, e.getModifiersEx());
+				}
+			};
+		} else {
+			parentClicked = packageName == null ? null : this.createPackagedClickedListener(topClass);
+		}
+
+		final JLabel parentLabel = new JLabel(nameBuilder.isEmpty() ? "<no package>" : nameBuilder.toString());
+
+		final Font parentFont;
+		if (parentClicked != null) {
+			parentLabel.addMouseListener(parentClicked);
+
+			@SuppressWarnings("rawtypes")
+			final Map attributes = font.getAttributes();
+			//noinspection unchecked
+			attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+			//noinspection unchecked
+			parentFont = font.deriveFont(attributes);
+		} else {
+			parentFont = font;
+		}
+
+		parentLabel.setFont(parentFont);
+
+		return parentLabel;
+	}
+
+	@Nullable
+	private MouseListener createPackagedClickedListener(ClassEntry topClass) {
+		final List<ClassesDocker> dockers = Stream
+				.of(AllClassesDocker.class, DeobfuscatedClassesDocker.class, ObfuscatedClassesDocker.class)
+				.<ClassesDocker>mapMulti((dockerClass, keep) -> {
+					final ClassesDocker docker = EditorTooltip.this.gui.getDockerManager().getDocker(dockerClass);
+
+					if (docker.getClassSelector().getPackageManager().getClassNode(topClass) != null) {
+						keep.accept(docker);
+					}
+				})
+				.toList();
+
+		if (dockers.isEmpty()) {
+			return null;
+		}
+
+		return new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if ((e.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) != 0) {
+					final Set<Docker> activeDockers = new HashSet<>(
+							EditorTooltip.this.gui.getDockerManager().getActiveDockers().values()
+					);
+
+					final List<ClassesDocker> sortedDockers = dockers.stream()
+							// active first
+							.sorted((left, right) -> {
+								final boolean leftActive = activeDockers.contains(left);
+								final boolean rightActive = activeDockers.contains(right);
+
+								if (leftActive == rightActive) {
+									return 0;
+								} else {
+									return leftActive ? -1 : 1;
+								}
+							})
+							.toList();
+
+					for (final ClassesDocker docker : sortedDockers) {
+						final ClassSelector selector = docker.getClassSelector();
+						final TreePath path = selector.getPackageManager()
+								.getPackagePathOrEmpty(topClass.getPackageName())
+								.orElse(null);
+						if (path != null) {
+							selector.setSelectionPath(path);
+							EditorTooltip.this.gui.openDocker(docker.getClass());
+							EditorTooltip.this.close();
+
+							return;
+						}
+					}
+				}
+			}
+		};
 	}
 
 	private String getSimpleName(Entry<?> entry) {
