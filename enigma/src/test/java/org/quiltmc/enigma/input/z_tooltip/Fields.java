@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.input.tooltip;
+package org.quiltmc.enigma.input.z_tooltip;
 
 public class Fields {
 	static final String STATIC_FIELD = "static field";

@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.input.tooltip;
+package org.quiltmc.enigma.input.z_tooltip;
 
 public enum Enums {
 	FIRST, SECOND(2),

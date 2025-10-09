@@ -79,15 +79,6 @@ public class EditorTooltip extends JWindow {
 		constraints.insets.bottom = INNER_ROW_PAD;
 	}
 
-	private static void setBottomRowInsets(GridBagConstraints constraints) {
-		constraints.insets.left = OUTER_ROW_PAD;
-		constraints.insets.right = OUTER_ROW_PAD;
-		constraints.insets.bottom = OUTER_ROW_PAD;
-
-		constraints.insets.top = INNER_ROW_PAD;
-	}
-
-
 	private final Gui gui;
 	private final JPanel content;
 
@@ -579,21 +570,27 @@ public class EditorTooltip extends JWindow {
 
 		@Nullable
 		final MouseListener parentClicked;
-		if (stopInteraction == null && immediateParent != null) {
-			parentClicked = new MouseAdapter() {
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					EditorTooltip.this.onEntryClick(immediateParent, e.getModifiersEx());
-				}
-			};
+		if (stopInteraction == null) {
+			if (immediateParent != null) {
+				parentClicked = new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						EditorTooltip.this.onEntryClick(immediateParent, e.getModifiersEx());
+					}
+				};
+			} else {
+				parentClicked = packageName == null ? null : this.createPackagedClickedListener(topClass);
+			}
 		} else {
-			parentClicked = packageName == null ? null : this.createPackagedClickedListener(topClass);
+			parentClicked = null;
 		}
 
 		final JLabel parentLabel = new JLabel(nameBuilder.isEmpty() ? "<no package>" : nameBuilder.toString());
 
 		final Font parentFont;
-		if (parentClicked != null) {
+		if (parentClicked == null) {
+			parentFont = font;
+		} else {
 			parentLabel.addMouseListener(parentClicked);
 
 			@SuppressWarnings("rawtypes")
@@ -602,8 +599,6 @@ public class EditorTooltip extends JWindow {
 			attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
 			//noinspection unchecked
 			parentFont = font.deriveFont(attributes);
-		} else {
-			parentFont = font;
 		}
 
 		parentLabel.setFont(parentFont);
