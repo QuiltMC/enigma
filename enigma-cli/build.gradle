@@ -6,6 +6,7 @@ plugins {
 
 dependencies {
 	shadow(implementation project(':enigma'))
+	implementation libs.asm
 	testImplementation(testFixtures(project(':enigma')))
 }
 

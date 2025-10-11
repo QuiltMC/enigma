@@ -1,0 +1,3 @@
+CLASS Z OtherReturnInterface
+	METHOD a abstractMethod (I)C
+		ARG 1 intParam

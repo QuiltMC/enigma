@@ -560,14 +560,18 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void applyChange(ValidationContext vc, EntryChange<?> change) {
-		this.applyChange(vc, change, true);
+		this.applyChange(vc, change, true, true);
 	}
 
-	public void applyChange(ValidationContext vc, EntryChange<?> change, boolean updateSwingState) {
+	public void applyChange(ValidationContext vc, EntryChange<?> change, boolean updateSwingState, boolean autosave) {
 		this.applyChange0(vc, change, updateSwingState);
 		this.gui.updateStructure(this.gui.getActiveEditor());
 		if (!vc.canProceed()) {
 			return;
+		}
+
+		if (autosave && Config.main().features.autoSaveMappings.value() && this.gui.mappingsFileChooser.getSelectedFile() != null) {
+			this.gui.getController().saveMappings(this.gui.mappingsFileChooser.getSelectedFile().toPath(), true);
 		}
 
 		this.sendPacket(new EntryChangeC2SPacket(change));

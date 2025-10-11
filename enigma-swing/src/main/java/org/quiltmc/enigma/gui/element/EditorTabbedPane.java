@@ -48,15 +48,18 @@ public class EditorTabbedPane {
 
 	public EditorPanel openClass(ClassEntry entry) {
 		EditorPanel activeEditor = this.getActiveEditor();
-		EditorPanel editorPanel = this.editors.computeIfAbsent(entry, classEntry -> {
-			ClassHandle ch = this.gui.getController().getClassHandleProvider().openClass(classEntry);
-			if (ch == null) return null;
+		EditorPanel entryEditor = this.editors.computeIfAbsent(entry, editing -> {
+			ClassHandle classHandle = this.gui.getController().getClassHandleProvider().openClass(editing);
+			if (classHandle == null) {
+				return null;
+			}
+
 			this.navigator = new NavigatorPanel(this.gui);
 			EditorPanel newEditor = new EditorPanel(this.gui, this.navigator);
-			newEditor.setClassHandle(ch);
-			this.openFiles.addTab(newEditor.getFileName(), newEditor.getUi());
+			newEditor.setClassHandle(classHandle);
+			this.openFiles.addTab(newEditor.getSimpleClassName(), newEditor.getUi());
 
-			ClosableTabTitlePane titlePane = new ClosableTabTitlePane(newEditor.getFileName(), () -> this.closeEditor(newEditor));
+			ClosableTabTitlePane titlePane = new ClosableTabTitlePane(newEditor.getSimpleClassName(), newEditor.getFullClassName(), () -> this.closeEditor(newEditor));
 			this.openFiles.setTabComponentAt(this.openFiles.indexOfComponent(newEditor.getUi()), titlePane.getUi());
 			titlePane.setTabbedPane(this.openFiles);
 
@@ -76,7 +79,7 @@ public class EditorTabbedPane {
 
 				@Override
 				public void onTitleChanged(EditorPanel editor, String title) {
-					titlePane.setText(editor.getFileName());
+					titlePane.setText(editor.getSimpleClassName(), editor.getFullClassName());
 				}
 			});
 
@@ -87,19 +90,20 @@ public class EditorTabbedPane {
 			return newEditor;
 		});
 
-		if (editorPanel != null && activeEditor != editorPanel) {
+		if (entryEditor != null && activeEditor != entryEditor) {
 			this.openFiles.setSelectedComponent(this.editors.get(entry).getUi());
-			this.gui.updateStructure(editorPanel);
-			this.gui.showCursorReference(editorPanel.getCursorReference());
+			this.gui.updateStructure(entryEditor);
+			this.gui.showCursorReference(entryEditor.getCursorReference());
 		}
 
-		return editorPanel;
+		return entryEditor;
 	}
 
 	public void closeEditor(EditorPanel ed) {
 		this.openFiles.remove(ed.getUi());
 		this.editors.inverse().remove(ed);
 		EditorPanel activeEditor = this.getActiveEditor();
+		activeEditor.getEditor().requestFocus();
 		this.gui.updateStructure(activeEditor);
 		this.gui.showCursorReference(activeEditor != null ? activeEditor.getCursorReference() : null);
 		ed.destroy();
@@ -153,6 +157,7 @@ public class EditorTabbedPane {
 			}
 
 			EditorPanel activeEditor = this.getActiveEditor();
+			activeEditor.getEditor().requestFocus();
 			this.gui.updateStructure(activeEditor);
 			this.gui.showCursorReference(activeEditor != null ? activeEditor.getCursorReference() : null);
 		}

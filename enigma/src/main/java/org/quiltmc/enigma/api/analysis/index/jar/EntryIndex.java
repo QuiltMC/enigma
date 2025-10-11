@@ -10,6 +10,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
@@ -25,6 +26,7 @@ public class EntryIndex implements JarIndexer {
 	private final Map<FieldEntry, FieldDefEntry> fieldDefinitions = new HashMap<>();
 	private final Map<MethodEntry, MethodDefEntry> methodDefinitions = new HashMap<>();
 	private final Map<ClassEntry, ClassDefEntry> classDefinitions = new HashMap<>();
+	private final Map<LocalVariableEntry, LocalVariableDefEntry> parameterDefinitions = new HashMap<>();
 
 	@Override
 	public void indexClass(ClassDefEntry classEntry) {
@@ -34,6 +36,9 @@ public class EntryIndex implements JarIndexer {
 	@Override
 	public void indexMethod(MethodDefEntry methodEntry) {
 		this.methodDefinitions.put(methodEntry, methodEntry);
+		methodEntry.streamParameters(this).forEach(paramEntry ->
+				this.parameterDefinitions.put(paramEntry, paramEntry)
+		);
 	}
 
 	@Override
@@ -54,6 +59,10 @@ public class EntryIndex implements JarIndexer {
 		for (MethodEntry entry : this.getMethods()) {
 			this.tree.insert(entry, null);
 		}
+
+		for (LocalVariableEntry entry : this.getParameters()) {
+			this.tree.insert(entry, null);
+		}
 	}
 
 	public boolean hasClass(ClassEntry entry) {
@@ -64,6 +73,10 @@ public class EntryIndex implements JarIndexer {
 		return this.methodDefinitions.containsKey(entry);
 	}
 
+	public boolean hasParameter(LocalVariableEntry entry) {
+		return this.parameterDefinitions.containsKey(entry);
+	}
+
 	public boolean hasField(FieldEntry entry) {
 		return this.fieldDefinitions.containsKey(entry);
 	}
@@ -71,7 +84,7 @@ public class EntryIndex implements JarIndexer {
 	/**
 	 * Checks whether the entry has been indexed and therefore exists in the JAR file.
 	 * <br>
-	 * For parameters, which are not indexed, checks the parent method and partially verifies their indices.
+	 * For parameters, checks the parent method and partially verifies their indices.
 	 * To fully validate a parameter's index, use {@link EnigmaProject#validateParameterIndex(LocalVariableEntry)}.
 	 *
 	 * @param entry the entry to check
@@ -85,8 +98,7 @@ public class EntryIndex implements JarIndexer {
 		} else if (entry instanceof FieldEntry fieldEntry) {
 			return this.hasField(fieldEntry);
 		} else if (entry instanceof LocalVariableEntry localVariableEntry) {
-			MethodEntry parent = localVariableEntry.getParent();
-			if (this.hasEntry(parent)) {
+			if (this.hasParameter(localVariableEntry)) {
 				return this.validateParameterIndex(localVariableEntry);
 			}
 		}
@@ -117,6 +129,12 @@ public class EntryIndex implements JarIndexer {
 	}
 
 	@Nullable
+	public AccessFlags getParameterAccess(LocalVariableEntry entry) {
+		var def = this.parameterDefinitions.get(entry);
+		return def == null ? null : this.getMethodAccess(def.getParent());
+	}
+
+	@Nullable
 	public AccessFlags getFieldAccess(FieldEntry entry) {
 		var def = this.fieldDefinitions.get(entry);
 		return def == null ? null : def.getAccess();
@@ -135,7 +153,7 @@ public class EntryIndex implements JarIndexer {
 		} else if (entry instanceof FieldEntry fieldEntry) {
 			return this.getFieldAccess(fieldEntry);
 		} else if (entry instanceof LocalVariableEntry localVariableEntry) {
-			return this.getMethodAccess(localVariableEntry.getParent());
+			return this.getParameterAccess(localVariableEntry);
 		} else if (entry instanceof ClassEntry classEntry) {
 			return this.getClassAccess(classEntry);
 		}
@@ -154,6 +172,11 @@ public class EntryIndex implements JarIndexer {
 	}
 
 	@Nullable
+	public LocalVariableDefEntry getDefinition(LocalVariableEntry entry) {
+		return this.parameterDefinitions.get(entry);
+	}
+
+	@Nullable
 	public FieldDefEntry getDefinition(FieldEntry entry) {
 		return this.fieldDefinitions.get(entry);
 	}
@@ -164,6 +187,10 @@ public class EntryIndex implements JarIndexer {
 
 	public Collection<MethodEntry> getMethods() {
 		return this.methodDefinitions.keySet();
+	}
+
+	public Collection<LocalVariableEntry> getParameters() {
+		return this.parameterDefinitions.keySet();
 	}
 
 	public Collection<FieldEntry> getFields() {
