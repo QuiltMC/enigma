@@ -238,6 +238,10 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			this.syntheticMethods.add(span);
 			this.syntheticEntryBySpan.put(span, entry);
 			StructClass entryClass = DecompilerContext.getStructContext().getClass(entry.getParent().getFullName());
+			if (entryClass == null) {
+				continue;
+			}
+
 			StructMethod entryMethod = entryClass.getMethod(entry.getName(), entry.getDesc().toString());
 			this.pairContext(entryClass, entryMethod, childNode);
 		}
@@ -383,7 +387,9 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			return; // Parsing failed
 		}
 
-		while (!this.classStack.isEmpty() && this.classRanges.get(this.classStack.peek()).getEnd() < range.start) {
+		while (!this.classStack.isEmpty()
+				&& (!this.classRanges.containsKey(this.classStack.peek())
+				|| this.classRanges.get(this.classStack.peek()).getEnd() < range.start)) {
 			this.classStack.pop();
 		}
 	}
