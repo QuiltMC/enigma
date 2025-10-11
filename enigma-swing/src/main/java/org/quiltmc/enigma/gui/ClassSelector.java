@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
+import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
+
 public class ClassSelector extends JTree {
 	public static final Comparator<ClassEntry> DEOBF_CLASS_COMPARATOR = Comparator.comparing(ClassEntry::getFullName);
 
@@ -49,27 +51,29 @@ public class ClassSelector extends JTree {
 			}
 		}));
 
-		this.addKeyListener(GuiUtil.onKeyPress(e -> {
-			TreePath[] paths = this.getSelectionPaths();
-
+		putKeyBindAction(KeyBinds.EDITOR_TOGGLE_MAPPING, this, e -> {
+			final TreePath[] paths = this.getSelectionPaths();
 			if (paths != null) {
-				if (KeyBinds.EDITOR_TOGGLE_MAPPING.matches(e)) {
-					for (TreePath path : paths) {
-						if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
-							gui.toggleMappingFromEntry(node.getObfEntry());
-						}
+				for (final TreePath path : paths) {
+					if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
+						gui.toggleMappingFromEntry(node.getObfEntry());
 					}
 				}
+			}
+		});
 
-				if (this.selectionListener != null && KeyBinds.SELECT.matches(e)) {
-					for (TreePath path : paths) {
+		putKeyBindAction(KeyBinds.SELECT, this, e -> {
+			if (this.selectionListener != null) {
+				final TreePath[] paths = this.getSelectionPaths();
+				if (paths != null) {
+					for (final TreePath path : paths) {
 						if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
 							this.selectionListener.onSelectClass(node.getObfEntry());
 						}
 					}
 				}
 			}
-		}));
+		});
 
 		this.setCellRenderer(new ClassTreeCellRenderer(gui, this));
 		ToolTipManager.sharedInstance().registerComponent(this);

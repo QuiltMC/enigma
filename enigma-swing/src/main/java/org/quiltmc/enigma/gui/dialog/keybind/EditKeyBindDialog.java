@@ -170,7 +170,7 @@ public class EditKeyBindDialog extends JDialog {
 	}
 
 	private boolean isNewCombination(CombinationPanel panel) {
-		return panel.getOriginalCombination() != KeyBind.Combination.EMPTY;
+		return panel.getOriginalCombination() == KeyBind.Combination.EMPTY;
 	}
 
 	// Stop editing all combination panels but the excluded one
