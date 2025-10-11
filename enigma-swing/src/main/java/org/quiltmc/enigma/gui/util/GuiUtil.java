@@ -30,9 +30,12 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Font;
+import java.awt.MouseInfo;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -57,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class GuiUtil {
@@ -328,6 +332,49 @@ public final class GuiUtil {
 				actionMap.put(actionKey, action);
 			}
 		}
+	}
+
+	/**
+	 * @see #consumeMousePositionIn(Component, BiConsumer, Consumer)
+	 */
+	public static void consumeMousePositionIn(Component component, BiConsumer<Point, Point> inAction) {
+		consumeMousePositionIn(component, inAction, pos -> { });
+	}
+
+	/**
+	 * @see #consumeMousePositionIn(Component, BiConsumer, Consumer)
+	 */
+	public static void consumeMousePositionOut(Component component, Consumer<Point> outAction) {
+		consumeMousePositionIn(component, (absolut, relative) -> { }, outAction);
+	}
+
+	/**
+	 * If the passed {@code component} {@link Component#contains(Point) contains} the mouse, passes the absolute mouse
+	 * position and its position relative to the passed {@code component} to the passed {@code inAction}.<br>
+	 * Otherwise, passes the absolute mouse position to the passed {@code outAction}.
+	 *
+	 * @param component the component which may contain the mouse pointer
+	 * @param inAction  the action to run if the mouse is inside the passed {@code component};
+	 *                  receives the mouse's absolute position and its position relative to the component
+	 * @param outAction the action to run if the mouse is outside the passed {@code component};
+	 *                  receives the mouse's absolute position
+	 */
+	public static void consumeMousePositionIn(
+			Component component, BiConsumer<Point, Point> inAction, Consumer<Point> outAction
+	) {
+		final Point absolutePos = MouseInfo.getPointerInfo().getLocation();
+		if (component.isShowing()) {
+			final Point componentPos = component.getLocationOnScreen();
+			final Point relativePos = new Point(absolutePos);
+			relativePos.translate(-componentPos.x, -componentPos.y);
+
+			if (component.contains(relativePos)) {
+				inAction.accept(absolutePos, relativePos);
+				return;
+			}
+		}
+
+		outAction.accept(absolutePos);
 	}
 
 	public enum FocusCondition {

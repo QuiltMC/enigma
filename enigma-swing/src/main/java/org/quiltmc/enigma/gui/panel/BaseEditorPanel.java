@@ -45,14 +45,11 @@ import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Highlighter.HighlightPainter;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.MouseInfo;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -67,6 +64,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.stream.Stream;
+
+import static org.quiltmc.enigma.gui.util.GuiUtil.consumeMousePositionIn;
 
 public class BaseEditorPanel {
 	protected final JPanel ui = new JPanel();
@@ -284,7 +283,8 @@ public class BaseEditorPanel {
 	 * @param onNoTarget the action to run when the mouse is not over a token that resolves to an entry
 	 */
 	protected void consumeEditorMouseTarget(BiConsumer<Token, Entry<?>> action, Runnable onNoTarget) {
-		BaseEditorPanel.consumeMousePositionIn(this.editor,
+		consumeMousePositionIn(
+				this.editor,
 				(absoluteMouse, relativeMouse) -> Optional.of(relativeMouse)
 					.map(this.editor::viewToModel2D)
 					.filter(textPos -> textPos >= 0)
@@ -301,49 +301,6 @@ public class BaseEditorPanel {
 					),
 				ignored -> onNoTarget.run()
 		);
-	}
-
-	/**
-	 * @see #consumeMousePositionIn(Component, BiConsumer, Consumer)
-	 */
-	protected static void consumeMousePositionIn(Component component, BiConsumer<Point, Point> inAction) {
-		consumeMousePositionIn(component, inAction, pos -> { });
-	}
-
-	/**
-	 * @see #consumeMousePositionIn(Component, BiConsumer, Consumer)
-	 */
-	protected static void consumeMousePositionOut(Component component, Consumer<Point> outAction) {
-		consumeMousePositionIn(component, (absolut, relative) -> { }, outAction);
-	}
-
-	/**
-	 * If the passed {@code component} {@link Component#contains(Point) contains} the mouse, passes the absolute mouse
-	 * position and its position relative to the passed {@code component} to the passed {@code inAction}.<br>
-	 * Otherwise, passes the absolute mouse position to the passed {@code outAction}.
-	 *
-	 * @param component the component which may contain the mouse pointer
-	 * @param inAction  the action to run if the mouse is inside the passed {@code component};
-	 *                  receives the mouse's absolute position and its position relative to the component
-	 * @param outAction the action to run if the mouse is outside the passed {@code component};
-	 *                  receives the mouse's absolute position
-	 */
-	protected static void consumeMousePositionIn(
-			Component component, BiConsumer<Point, Point> inAction, Consumer<Point> outAction
-	) {
-		final Point absolutePos = MouseInfo.getPointerInfo().getLocation();
-		if (component.isShowing()) {
-			final Point componentPos = component.getLocationOnScreen();
-			final Point relativePos = new Point(absolutePos);
-			relativePos.translate(-componentPos.x, -componentPos.y);
-
-			if (component.contains(relativePos)) {
-				inAction.accept(absolutePos, relativePos);
-				return;
-			}
-		}
-
-		outAction.accept(absolutePos);
 	}
 
 	protected void initEditorPane(JPanel editorPane) {

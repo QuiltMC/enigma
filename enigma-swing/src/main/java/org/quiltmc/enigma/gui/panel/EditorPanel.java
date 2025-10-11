@@ -42,6 +42,8 @@ import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.text.JTextComponent;
 
+import static org.quiltmc.enigma.gui.util.GuiUtil.consumeMousePositionIn;
+import static org.quiltmc.enigma.gui.util.GuiUtil.consumeMousePositionOut;
 import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
