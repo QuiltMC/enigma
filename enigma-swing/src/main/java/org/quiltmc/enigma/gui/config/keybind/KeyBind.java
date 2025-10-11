@@ -1,12 +1,18 @@
 package org.quiltmc.enigma.gui.config.keybind;
 
+import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
 import org.tinylog.Logger;
 
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 
 public record KeyBind(String name, String category, List<Combination> combinations) {
@@ -42,6 +48,12 @@ public record KeyBind(String name, String category, List<Combination> combinatio
 		this.combinations.addAll(other.combinations);
 	}
 
+	/**
+	 * Prefer using component's {@link InputMap}s and {@link ActionMap}s to checking this in {@link KeyListener}s.
+	 *
+	 * @see GuiUtil#putKeyBindAction(KeyBind, JComponent, GuiUtil.FocusCondition, ActionListener)
+	 */
+	@Deprecated
 	public boolean matches(KeyEvent e) {
 		return this.combinations.stream().anyMatch(c -> c.matches(e));
 	}

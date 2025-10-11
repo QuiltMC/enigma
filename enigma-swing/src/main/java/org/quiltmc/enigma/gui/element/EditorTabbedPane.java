@@ -16,9 +16,14 @@ import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import javax.annotation.Nullable;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+
+import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
+import static javax.swing.SwingUtilities.getUIInputMap;
 
 public class EditorTabbedPane {
 	private final JTabbedPane openFiles = new JTabbedPane(SwingConstants.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -34,6 +39,11 @@ public class EditorTabbedPane {
 		this.navigator = new NavigatorPanel(this.gui);
 
 		this.openFiles.addMouseListener(GuiUtil.onMousePress(this::onTabPressed));
+		final InputMap openFilesInputMap = getUIInputMap(this.openFiles, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		if (openFilesInputMap != null) {
+			// remove default JTabbedPane binding that conflicts with KeyBind for editors
+			openFilesInputMap.remove(KeyBinds.ENTRY_NAVIGATOR_LAST.toKeyStroke());
+		}
 	}
 
 	public EditorPanel openClass(ClassEntry entry) {
@@ -73,17 +83,9 @@ public class EditorTabbedPane {
 				}
 			});
 
-			newEditor.getEditor().addKeyListener(GuiUtil.onKeyPress(keyEvent -> {
-				if (KeyBinds.EDITOR_CLOSE_TAB.matches(keyEvent)) {
-					this.closeEditor(newEditor);
-				} else if (KeyBinds.ENTRY_NAVIGATOR_NEXT.matches(keyEvent)) {
-					newEditor.getNavigatorPanel().navigateDown();
-					keyEvent.consume();
-				} else if (KeyBinds.ENTRY_NAVIGATOR_LAST.matches(keyEvent)) {
-					newEditor.getNavigatorPanel().navigateUp();
-					keyEvent.consume();
-				}
-			}));
+			putKeyBindAction(KeyBinds.EDITOR_CLOSE_TAB, newEditor.getEditor(), e -> this.closeEditor(newEditor));
+			putKeyBindAction(KeyBinds.ENTRY_NAVIGATOR_NEXT, newEditor.getEditor(), e -> newEditor.getNavigatorPanel().navigateDown());
+			putKeyBindAction(KeyBinds.ENTRY_NAVIGATOR_LAST, newEditor.getEditor(), e -> newEditor.getNavigatorPanel().navigateUp());
 
 			return newEditor;
 		});

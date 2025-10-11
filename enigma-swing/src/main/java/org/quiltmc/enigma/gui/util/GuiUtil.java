@@ -7,15 +7,20 @@ import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.gui.config.keybind.KeyBind;
 import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
 import org.quiltmc.enigma.util.Os;
 
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.Icon;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolTip;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.Timer;
@@ -31,6 +36,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -52,7 +58,11 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public class GuiUtil {
+public final class GuiUtil {
+	private GuiUtil() {
+		throw new UnsupportedOperationException();
+	}
+
 	public static final Icon CLASS_ICON = loadIcon("class");
 	public static final Icon INTERFACE_ICON = loadIcon("interface");
 	public static final Icon ENUM_ICON = loadIcon("enum");
@@ -273,5 +283,66 @@ public class GuiUtil {
 
 	public static Icon getDownChevron() {
 		return ThemeUtil.isDarkLaf() ? CHEVRON_DOWN_WHITE : CHEVRON_DOWN_BLACK;
+	}
+
+	public static void putKeyBindAction(KeyBind keyBind, JComponent component, ActionListener listener) {
+		putKeyBindAction(keyBind, component, FocusCondition.WHEN_IN_FOCUSED_WINDOW, listener);
+	}
+
+	public static void putKeyBindAction(
+			KeyBind keyBind, JComponent component, FocusCondition condition, ActionListener listener
+	) {
+		putKeyBindAction(keyBind, component, condition, new SimpleAction(listener));
+	}
+
+	public static void putKeyBindAction(
+			KeyBind keyBind, JComponent component, FocusCondition condition, Action action
+	) {
+		final InputMap inputMap = component.getInputMap(condition.value);
+
+		if (inputMap != null) {
+			final String actionKey = keyBind.name();
+
+			final KeyStroke[] keys = inputMap.keys();
+			if (keys != null) {
+				for (final KeyStroke key : keys) {
+					final Object value = inputMap.get(key);
+					if (actionKey.equals(value)) {
+						// remove previous bindings to action
+						inputMap.remove(key);
+					}
+				}
+			}
+
+			keyBind.combinations().stream().map(combo -> combo.toKeyStroke(0))
+					.forEach(key -> inputMap.put(key, actionKey));
+
+			final ActionMap actionMap = component.getActionMap();
+			if (actionMap != null) {
+				actionMap.remove(actionKey);
+				actionMap.put(actionKey, action);
+			}
+		}
+	}
+
+	public enum FocusCondition {
+		/**
+		 * @see JComponent#WHEN_IN_FOCUSED_WINDOW
+		 */
+		WHEN_IN_FOCUSED_WINDOW(JComponent.WHEN_IN_FOCUSED_WINDOW),
+		/**
+		 * @see JComponent#WHEN_FOCUSED
+		 */
+		WHEN_FOCUSED(JComponent.WHEN_FOCUSED),
+		/**
+		 * @see JComponent#WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+		 */
+		WHEN_ANCESTOR_OF_FOCUSED_COMPONENT(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+		private final int value;
+
+		FocusCondition(int value) {
+			this.value = value;
+		}
 	}
 }
