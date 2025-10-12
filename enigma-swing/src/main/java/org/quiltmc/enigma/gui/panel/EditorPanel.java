@@ -21,7 +21,6 @@ import org.quiltmc.syntaxpain.SyntaxDocument;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -43,7 +42,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.text.JTextComponent;
 
 import static org.quiltmc.enigma.gui.util.GuiUtil.consumeMousePositionIn;
-import static org.quiltmc.enigma.gui.util.GuiUtil.consumeMousePositionOut;
 import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
@@ -104,7 +102,7 @@ public class EditorPanel extends BaseEditorPanel {
 
 	private final Timer hideTooltipTimer = new Timer(
 			ToolTipManager.sharedInstance().getDismissDelay() - MOUSE_STOPPED_MOVING_DELAY,
-			e -> this.closeTooltip()
+			e -> this.entryTooltip.close()
 	);
 
 	private final List<EditorActionListener> listeners = new ArrayList<>();
@@ -140,38 +138,12 @@ public class EditorPanel extends BaseEditorPanel {
 		this.popupMenu = new EditorPopupMenu(this, gui);
 		this.editor.setComponentPopupMenu(this.popupMenu.getUi());
 
-		// global listener so tooltip hides even if clicking outside editor
-		Toolkit.getDefaultToolkit().addAWTEventListener(
-				e -> {
-					if (e.getID() == MouseEvent.MOUSE_PRESSED && this.entryTooltip.isVisible()) {
-						consumeMousePositionOut(this.entryTooltip.getContentPane(), absolute -> this.closeTooltip());
-					}
-				},
-				MouseEvent.MOUSE_PRESSED
-		);
+		this.entryTooltip.addCloseListener(this::onTooltipClose);
 
-		Toolkit.getDefaultToolkit().addAWTEventListener(
-				e -> {
-					if (e instanceof FocusEvent focusEvent) {
-						final Component gainer = focusEvent.getID() == FocusEvent.FOCUS_GAINED
-								? focusEvent.getComponent()
-								: focusEvent.getOppositeComponent();
-
-						if (gainer == null || !(
-								SwingUtilities.isDescendingFrom(gainer, this.ui)
-									|| SwingUtilities.isDescendingFrom(gainer, this.entryTooltip.getContentPane())
-						)) {
-							this.closeTooltip();
-						}
-					}
-				},
-				FocusEvent.FOCUS_EVENT_MASK
-		);
-
-		final MouseAdapter editorMouseAdapter = new MouseAdapter() {
+		this.editor.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
-				if ((e.getModifiersEx() & CTRL_DOWN_MASK) != 0 && e.getButton() == MouseEvent.BUTTON1) {
+			public void mouseClicked(MouseEvent e1) {
+				if ((e1.getModifiersEx() & CTRL_DOWN_MASK) != 0 && e1.getButton() == MouseEvent.BUTTON1) {
 					// ctrl + left click
 					EditorPanel.this.navigateToCursorReference();
 				}
@@ -186,28 +158,28 @@ public class EditorPanel extends BaseEditorPanel {
 			}
 
 			@Override
-			public void mouseReleased(MouseEvent e) {
-				switch (e.getButton()) {
+			public void mouseReleased(MouseEvent e1) {
+				switch (e1.getButton()) {
 					case MouseEvent.BUTTON3 -> // Right click
-						EditorPanel.this.editor.setCaretPosition(EditorPanel.this.editor.viewToModel2D(e.getPoint()));
+						EditorPanel.this.editor.setCaretPosition(EditorPanel.this.editor.viewToModel2D(e1.getPoint()));
 					case 4 -> // Back navigation
 						gui.getController().openPreviousReference();
 					case 5 -> // Forward navigation
 						gui.getController().openNextReference();
 				}
 			}
+		});
 
+		this.editor.addMouseMotionListener(new MouseAdapter() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
 				EditorPanel.this.mouseStoppedMovingTimer.restart();
 			}
-		};
+		});
 
-		this.editor.addMouseListener(editorMouseAdapter);
-		this.editor.addMouseMotionListener(editorMouseAdapter);
 		this.editor.addCaretListener(event -> this.onCaretMove(event.getDot()));
 
-		this.editorScrollPane.getViewport().addChangeListener(e -> this.closeTooltip());
+		this.editorScrollPane.getViewport().addChangeListener(e -> this.entryTooltip.close());
 
 		this.mouseStoppedMovingTimer.setRepeats(false);
 		this.showTooltipTimer.setRepeats(false);
@@ -291,8 +263,7 @@ public class EditorPanel extends BaseEditorPanel {
 		this.ui.putClientProperty(EditorPanel.class, this);
 	}
 
-	private void closeTooltip() {
-		this.entryTooltip.close();
+	private void onTooltipClose() {
 		this.lastMouseTargetToken = null;
 		this.mouseStoppedMovingTimer.stop();
 		this.showTooltipTimer.stop();

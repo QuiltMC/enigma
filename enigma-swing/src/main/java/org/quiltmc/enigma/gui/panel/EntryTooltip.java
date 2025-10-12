@@ -43,6 +43,8 @@ import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.font.TextAttribute;
 import java.util.HashSet;
 import java.util.List;
@@ -64,6 +66,8 @@ public class EntryTooltip extends JWindow {
 
 	private final Gui gui;
 	private final JPanel content;
+
+	private final Set<Runnable> closeListeners = new HashSet<>();
 
 	private int zoomAmount;
 
@@ -121,6 +125,13 @@ public class EntryTooltip extends JWindow {
 				}
 			}
 		});
+
+		this.addWindowFocusListener(new WindowAdapter() {
+			@Override
+			public void windowLostFocus(WindowEvent e) {
+				EntryTooltip.this.close();
+			}
+		});
 	}
 
 	/**
@@ -170,7 +181,6 @@ public class EntryTooltip extends JWindow {
 			);
 		}
 
-		// TODO make javadocs and snippet copyable
 		final String javadoc = this.gui.getController().getProject().getRemapper().getMapping(target).javadoc();
 		final ImmutableList<ParamJavadoc> paramJavadocs =
 				this.paramJavadocsOf(target, editorFont, italEditorFont, stopInteraction);
@@ -298,6 +308,14 @@ public class EntryTooltip extends JWindow {
 		} else {
 			this.moveOnScreen();
 		}
+	}
+
+	public void addCloseListener(Runnable listener) {
+		this.closeListeners.add(listener);
+	}
+
+	public void removeCloseListener(Runnable listener) {
+		this.closeListeners.remove(listener);
 	}
 
 	/**
@@ -499,12 +517,14 @@ public class EntryTooltip extends JWindow {
 
 	public void close() {
 		this.setVisible(false);
-		this.content.removeAll();
+		// this.content.removeAll();
 
 		if (this.declarationSnippet != null) {
 			this.declarationSnippet.classHandler.removeListener();
 			this.declarationSnippet = null;
 		}
+
+		this.closeListeners.forEach(Runnable::run);
 	}
 
 	private JLabel parentLabelOf(Entry<?> entry, Font font, @Nullable MouseAdapter stopInteraction) {
