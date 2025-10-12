@@ -304,13 +304,12 @@ public class BaseEditorPanel {
 	}
 
 	protected void initEditorPane(JPanel editorPane) {
-		final GridBagConstraints constraints = new GridBagConstraints();
-		constraints.gridx = 0;
-		constraints.gridy = 0;
-		constraints.weightx = 1.0;
-		constraints.weighty = 1.0;
-		constraints.fill = GridBagConstraints.BOTH;
-		editorPane.add(this.editorScrollPane, constraints);
+		editorPane.add(this.editorScrollPane, GridBagConstraintsBuilder.create()
+				.pos(0, 0)
+				.weight(1, 1)
+				.fill(GridBagConstraints.BOTH)
+				.build()
+		);
 	}
 
 	public void offsetEditorZoom(int zoomAmount) {

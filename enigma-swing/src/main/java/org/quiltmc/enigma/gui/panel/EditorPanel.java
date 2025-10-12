@@ -15,12 +15,12 @@ import org.quiltmc.enigma.gui.event.EditorActionListener;
 import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.syntaxpain.DefaultSyntaxAction;
 import org.quiltmc.syntaxpain.SyntaxDocument;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
@@ -309,26 +309,24 @@ public class EditorPanel extends BaseEditorPanel {
 
 	@Override
 	protected void initEditorPane(JPanel editorPane) {
-		final GridBagConstraints navigatorConstraints = new GridBagConstraints();
-		navigatorConstraints.gridx = 0;
-		navigatorConstraints.gridy = 0;
-		navigatorConstraints.weightx = 1.0;
-		navigatorConstraints.weighty = 1.0;
-		navigatorConstraints.anchor = GridBagConstraints.FIRST_LINE_END;
-		navigatorConstraints.insets = new Insets(32, 32, 32, 32);
-		navigatorConstraints.ipadx = 16;
-		navigatorConstraints.ipady = 16;
-		editorPane.add(this.navigatorPanel, navigatorConstraints);
+		editorPane.add(this.navigatorPanel, GridBagConstraintsBuilder.create()
+				.pos(0, 0)
+				.weight(1, 1)
+				.anchor(GridBagConstraints.FIRST_LINE_END)
+				.insets(32)
+				.padding(16)
+				.build()
+		);
 
 		super.initEditorPane(editorPane);
 
-		final var quickFindConstraints = new GridBagConstraints();
-		quickFindConstraints.gridx = 0;
-		quickFindConstraints.weightx = 1.0;
-		quickFindConstraints.weighty = 0;
-		quickFindConstraints.anchor = GridBagConstraints.PAGE_END;
-		quickFindConstraints.fill = GridBagConstraints.HORIZONTAL;
-		editorPane.add(this.quickFindToolBar, quickFindConstraints);
+		editorPane.add(this.quickFindToolBar, GridBagConstraintsBuilder.create()
+				.pos(0, 1)
+				.weightX(1)
+				.anchor(GridBagConstraints.PAGE_END)
+				.fill(GridBagConstraints.HORIZONTAL)
+				.build()
+		);
 	}
 
 	@Nullable
