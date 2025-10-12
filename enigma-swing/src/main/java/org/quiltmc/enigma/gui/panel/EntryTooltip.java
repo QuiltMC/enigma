@@ -19,6 +19,8 @@ import org.quiltmc.enigma.gui.docker.ClassesDocker;
 import org.quiltmc.enigma.gui.docker.DeobfuscatedClassesDocker;
 import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.docker.ObfuscatedClassesDocker;
+import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
+import org.quiltmc.enigma.gui.util.ScaleUtil;
 
 import javax.annotation.Nullable;
 import javax.swing.Box;
@@ -30,7 +32,6 @@ import javax.swing.JWindow;
 import javax.swing.tree.TreePath;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -48,39 +49,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.BorderFactory.createLineBorder;
 
-public class EditorTooltip extends JWindow {
+public class EntryTooltip extends JWindow {
 	private static final int MOUSE_PAD = 5;
 	private static final int SMALL_MOVE_THRESHOLD = 10;
 
-	private static final int OUTER_ROW_PAD = 8;
-	private static final int INNER_ROW_PAD = 2;
-
-	private static void setTopRowInsets(GridBagConstraints constraints) {
-		constraints.insets.left = OUTER_ROW_PAD;
-		constraints.insets.right = OUTER_ROW_PAD;
-		constraints.insets.top = OUTER_ROW_PAD;
-
-		constraints.insets.bottom = INNER_ROW_PAD;
-	}
-
-	private static void setInnerRowInsets(GridBagConstraints constraints) {
-		constraints.insets.left = OUTER_ROW_PAD;
-		constraints.insets.right = OUTER_ROW_PAD;
-
-		constraints.insets.top = INNER_ROW_PAD;
-		constraints.insets.bottom = INNER_ROW_PAD;
-	}
+	private static final int ROW_OUTER_INSET = 8;
+	private static final int ROW_INNER_INSET = 2;
 
 	private final Gui gui;
 	private final JPanel content;
+
+	private int zoomAmount;
 
 	@Nullable
 	private Point dragStart;
@@ -88,7 +73,7 @@ public class EditorTooltip extends JWindow {
 	@Nullable
 	private DeclarationSnippetPanel declarationSnippet;
 
-	public EditorTooltip(Gui gui) {
+	public EntryTooltip(Gui gui) {
 		super();
 
 		this.gui = gui;
@@ -104,7 +89,7 @@ public class EditorTooltip extends JWindow {
 		Toolkit.getDefaultToolkit().addAWTEventListener(
 				e -> {
 					if (e instanceof MouseEvent mouseEvent && mouseEvent.getID() == MouseEvent.MOUSE_RELEASED) {
-						EditorTooltip.this.dragStart = null;
+						EntryTooltip.this.dragStart = null;
 					}
 				},
 				MouseEvent.MOUSE_RELEASED
@@ -114,13 +99,13 @@ public class EditorTooltip extends JWindow {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				if (Config.editor().tooltip.interactable.value()) {
-					EditorTooltip.this.dragStart = e.getButton() == MouseEvent.BUTTON1
+					EntryTooltip.this.dragStart = e.getButton() == MouseEvent.BUTTON1
 							? new Point(e.getX(), e.getY())
 							: null;
 
 					e.consume();
 				} else {
-					EditorTooltip.this.close();
+					EntryTooltip.this.close();
 				}
 			}
 		});
@@ -128,11 +113,11 @@ public class EditorTooltip extends JWindow {
 		this.addMouseMotionListener(new MouseAdapter() {
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				final Point dragStart = EditorTooltip.this.dragStart;
+				final Point dragStart = EntryTooltip.this.dragStart;
 				if (dragStart != null) {
-					final Point pos = EditorTooltip.this.getLocation();
+					final Point pos = EntryTooltip.this.getLocation();
 					pos.translate(e.getX() - dragStart.x, e.getY() - dragStart.y);
-					EditorTooltip.this.setLocation(pos);
+					EntryTooltip.this.setLocation(pos);
 				}
 			}
 		});
@@ -155,51 +140,52 @@ public class EditorTooltip extends JWindow {
 		final MouseAdapter stopInteraction = Config.editor().tooltip.interactable.value() ? null : new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				EditorTooltip.this.close();
+				EntryTooltip.this.close();
 				e.consume();
 			}
 		};
 
-		final Font editorFont = Config.currentFonts().editor.value();
-		final Font italEditorFont = editorFont.deriveFont(Font.ITALIC);
+		final Font editorFont = ScaleUtil.scaleFont(Config.currentFonts().editor.value());
+		final Font italEditorFont = ScaleUtil.scaleFont(Config.currentFonts().editor.value().deriveFont(Font.ITALIC));
 
 		final AtomicInteger gridY = new AtomicInteger(0);
 
-		// from: <parent> label
-		this.addRow(
-				constraints -> {
-					setTopRowInsets(constraints);
-					constraints.anchor = GridBagConstraints.LINE_START;
-					constraints.gridx = 0;
-					constraints.gridy = gridY.getAndIncrement();
-				},
-				row -> {
-					final JLabel from = labelOf("from", italEditorFont);
-					// the italics cause it to overlap with the colon if it has no right padding
-					from.setBorder(createEmptyBorder(0, 0, 0, 1));
-					row.add(from);
-					row.add(colonLabelOf(""));
+		{
+			final Box parentLabelRow = Box.createHorizontalBox();
 
-					row.add(this.parentLabelOf(target, editorFont, stopInteraction));
-					row.add(Box.createHorizontalGlue());
-				}
-		);
+			final JLabel from = labelOf("from", italEditorFont);
+			// the italics cause it to overlap with the colon if it has no right padding
+			from.setBorder(createEmptyBorder(0, 0, 0, 1));
+			parentLabelRow.add(from);
+			parentLabelRow.add(colonLabelOf("", editorFont));
+
+			parentLabelRow.add(this.parentLabelOf(target, editorFont, stopInteraction));
+			parentLabelRow.add(Box.createHorizontalGlue());
+
+			this.add(parentLabelRow, GridBagConstraintsBuilder.create()
+					.pos(0, gridY.getAndIncrement())
+					.insets(ROW_OUTER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET)
+					.anchor(GridBagConstraints.LINE_START)
+					.build()
+			);
+		}
 
 		// TODO make javadocs and snippet copyable
 		final String javadoc = this.gui.getController().getProject().getRemapper().getMapping(target).javadoc();
-		final ImmutableList<ParamJavadoc> paramJavadocs = this.paramJavadocsOf(target, italEditorFont, stopInteraction);
+		final ImmutableList<ParamJavadoc> paramJavadocs =
+				this.paramJavadocsOf(target, editorFont, italEditorFont, stopInteraction);
 		if (javadoc != null || !paramJavadocs.isEmpty()) {
 			this.addSeparator(gridY.getAndIncrement());
 
 			if (javadoc != null) {
-				this.addRow(javadocOf(javadoc, italEditorFont, stopInteraction), constraints -> {
-					setInnerRowInsets(constraints);
-					constraints.anchor = GridBagConstraints.LINE_START;
-					constraints.weightx = 1;
-					constraints.fill = GridBagConstraints.HORIZONTAL;
-					constraints.gridx = 0;
-					constraints.gridy = gridY.getAndIncrement();
-				});
+				this.add(javadocOf(javadoc, italEditorFont, stopInteraction), GridBagConstraintsBuilder.create()
+						.pos(0, gridY.getAndIncrement())
+						.insets(ROW_INNER_INSET, ROW_OUTER_INSET)
+						.weightX(1)
+						.fill(GridBagConstraints.HORIZONTAL)
+						.anchor(GridBagConstraints.LINE_START)
+						.build()
+				);
 			}
 
 			if (!paramJavadocs.isEmpty()) {
@@ -207,28 +193,28 @@ public class EditorTooltip extends JWindow {
 				final AtomicInteger paramsGridY = new AtomicInteger(0);
 
 				for (final ParamJavadoc paramJavadoc : paramJavadocs) {
-					params.add(paramJavadoc.name, createConstraints(constraints -> {
-						constraints.gridx = 0;
-						constraints.gridy = paramsGridY.get();
-						constraints.anchor = GridBagConstraints.FIRST_LINE_END;
-					}));
+					params.add(paramJavadoc.name, GridBagConstraintsBuilder.create()
+							.pos(0, paramsGridY.get())
+							.anchor(GridBagConstraints.FIRST_LINE_END)
+							.build()
+					);
 
-					params.add(paramJavadoc.javadoc, createConstraints(constraints -> {
-						constraints.gridx = 1;
-						constraints.gridy = paramsGridY.getAndIncrement();
-						constraints.weightx = 1;
-						constraints.fill = GridBagConstraints.HORIZONTAL;
-						constraints.anchor = GridBagConstraints.LINE_START;
-					}));
+					params.add(paramJavadoc.javadoc, GridBagConstraintsBuilder.create()
+							.pos(1, paramsGridY.getAndIncrement())
+							.weightX(1)
+							.fill(GridBagConstraints.HORIZONTAL)
+							.anchor(GridBagConstraints.LINE_START)
+							.build()
+					);
 				}
 
-				this.add(params, createConstraints(constraints -> {
-					setInnerRowInsets(constraints);
-					constraints.gridx = 0;
-					constraints.gridy = gridY.getAndIncrement();
-					constraints.weightx = 1;
-					constraints.fill = GridBagConstraints.HORIZONTAL;
-				}));
+				this.add(params, GridBagConstraintsBuilder.create()
+						.insets(ROW_INNER_INSET, ROW_OUTER_INSET)
+						.pos(0, gridY.getAndIncrement())
+						.weightX(1)
+						.fill(GridBagConstraints.HORIZONTAL)
+						.build()
+				);
 			}
 		}
 
@@ -244,12 +230,14 @@ public class EditorTooltip extends JWindow {
 			if (targetTopClassHandle != null) {
 				this.declarationSnippet = new DeclarationSnippetPanel(this.gui, target, targetTopClassHandle);
 
+				this.declarationSnippet.offsetEditorZoom(this.zoomAmount);
+
 				this.declarationSnippet.editor.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseClicked(MouseEvent e) {
 						if (e.getButton() == MouseEvent.BUTTON1) {
-							EditorTooltip.this.declarationSnippet.consumeEditorMouseTarget((token, entry) -> {
-								EditorTooltip.this.onEntryClick(entry, e.getModifiersEx());
+							EntryTooltip.this.declarationSnippet.consumeEditorMouseTarget((token, entry) -> {
+								EntryTooltip.this.onEntryClick(entry, e.getModifiersEx());
 							});
 						}
 					}
@@ -282,24 +270,24 @@ public class EditorTooltip extends JWindow {
 					this.declarationSnippet.editor.addMouseListener(stopInteraction);
 				}
 
-				this.addRow(this.declarationSnippet.ui, constraints -> {
-					constraints.weightx = 1;
-					constraints.fill = GridBagConstraints.HORIZONTAL;
-					constraints.anchor = GridBagConstraints.LINE_START;
-					constraints.gridx = 0;
-					constraints.gridy = gridY.getAndIncrement();
-				});
+				this.add(this.declarationSnippet.ui, GridBagConstraintsBuilder.create()
+						.pos(0, gridY.getAndIncrement())
+						.weightX(1)
+						.fill(GridBagConstraints.HORIZONTAL)
+						.anchor(GridBagConstraints.LINE_START)
+						.build()
+				);
 			} else {
 				this.addSeparator(gridY.getAndIncrement());
 
-				this.addRow(labelOf("No source available", italEditorFont), constraints -> {
-					constraints.weightx = 1;
-					constraints.fill = GridBagConstraints.HORIZONTAL;
-					constraints.anchor = GridBagConstraints.LINE_START;
-					constraints.gridx = 0;
-					constraints.gridy = gridY.getAndIncrement();
-					setInnerRowInsets(constraints);
-				});
+				this.add(labelOf("No source available", italEditorFont), GridBagConstraintsBuilder.create()
+						.pos(0, gridY.getAndIncrement())
+						.weightX(1)
+						.fill(GridBagConstraints.HORIZONTAL)
+						.anchor(GridBagConstraints.LINE_START)
+						.insets(ROW_INNER_INSET, ROW_OUTER_INSET)
+						.build()
+				);
 			}
 		}
 
@@ -310,15 +298,6 @@ public class EditorTooltip extends JWindow {
 		} else {
 			this.moveOnScreen();
 		}
-	}
-
-	private void addSeparator(int gridY) {
-		this.addRow(new JSeparator(), constraints -> {
-			constraints.gridx = 0;
-			constraints.gridy = gridY;
-			constraints.weightx = 1;
-			constraints.fill = GridBagConstraints.HORIZONTAL;
-		});
 	}
 
 	/**
@@ -443,8 +422,8 @@ public class EditorTooltip extends JWindow {
 		}
 	}
 
-	private static JLabel colonLabelOf(String text) {
-		final JLabel label = labelOf(text + ":", Config.currentFonts().editor.value());
+	private static JLabel colonLabelOf(String text, Font font) {
+		final JLabel label = labelOf(text + ":", font);
 		label.setBorder(createEmptyBorder(0, 0, 0, 2));
 
 		return label;
@@ -479,7 +458,9 @@ public class EditorTooltip extends JWindow {
 		return new Color(0, 0, 0, 0);
 	}
 
-	private ImmutableList<ParamJavadoc> paramJavadocsOf(Entry<?> target, Font font, MouseAdapter stopInteraction) {
+	private ImmutableList<ParamJavadoc> paramJavadocsOf(
+			Entry<?> target, Font nameFont, Font javadocFont, MouseAdapter stopInteraction
+	) {
 		final EnigmaProject project = this.gui.getController().getProject();
 		final EntryIndex entryIndex = project.getJarIndex().getIndex(EntryIndex.class);
 
@@ -494,8 +475,8 @@ public class EditorTooltip extends JWindow {
 					.<ParamJavadoc>mapMulti((param, add) -> {
 						final EntryMapping mapping = remapper.getMapping(param);
 						if (mapping.javadoc() != null) {
-							final JLabel name = colonLabelOf(remapper.deobfuscate(param).getSimpleName());
-							final JTextArea javadoc = javadocOf(mapping.javadoc(), font, stopInteraction);
+							final JLabel name = colonLabelOf(remapper.deobfuscate(param).getSimpleName(), nameFont);
+							final JTextArea javadoc = javadocOf(mapping.javadoc(), javadocFont, stopInteraction);
 
 							add.accept(new ParamJavadoc(name, javadoc));
 						}
@@ -508,27 +489,12 @@ public class EditorTooltip extends JWindow {
 		}
 	}
 
-	private void addRow(Consumer<GridBagConstraints> constrainer, Consumer<Box> initializer) {
-		this.addRow(Box::createHorizontalBox, constrainer, initializer);
-	}
-
-	private <C extends Component> void addRow(
-			Supplier<C> factory, Consumer<GridBagConstraints> constrainer, Consumer<C> initializer
-	) {
-		final C component = factory.get();
-		initializer.accept(component);
-
-		this.addRow(component, constrainer);
-	}
-
-	private void addRow(Component component, Consumer<GridBagConstraints> constrainer) {
-		this.add(component, createConstraints(constrainer));
-	}
-
-	private static GridBagConstraints createConstraints(Consumer<GridBagConstraints> initializer) {
-		final GridBagConstraints constraints = new GridBagConstraints();
-		initializer.accept(constraints);
-		return constraints;
+	private void addSeparator(int gridY) {
+		this.add(new JSeparator(), GridBagConstraintsBuilder.create()
+				.pos(0, gridY)
+				.weightX(1)
+				.fill(GridBagConstraints.HORIZONTAL)
+				.build());
 	}
 
 	public void close() {
@@ -537,6 +503,7 @@ public class EditorTooltip extends JWindow {
 
 		if (this.declarationSnippet != null) {
 			this.declarationSnippet.classHandler.removeListener();
+			this.declarationSnippet = null;
 		}
 	}
 
@@ -575,7 +542,7 @@ public class EditorTooltip extends JWindow {
 				parentClicked = new MouseAdapter() {
 					@Override
 					public void mouseClicked(MouseEvent e) {
-						EditorTooltip.this.onEntryClick(immediateParent, e.getModifiersEx());
+						EntryTooltip.this.onEntryClick(immediateParent, e.getModifiersEx());
 					}
 				};
 			} else {
@@ -611,7 +578,7 @@ public class EditorTooltip extends JWindow {
 		final List<ClassesDocker> dockers = Stream
 				.of(AllClassesDocker.class, DeobfuscatedClassesDocker.class, ObfuscatedClassesDocker.class)
 				.<ClassesDocker>mapMulti((dockerClass, keep) -> {
-					final ClassesDocker docker = EditorTooltip.this.gui.getDockerManager().getDocker(dockerClass);
+					final ClassesDocker docker = EntryTooltip.this.gui.getDockerManager().getDocker(dockerClass);
 
 					if (docker.getClassSelector().getPackageManager().getClassNode(topClass) != null) {
 						keep.accept(docker);
@@ -628,7 +595,7 @@ public class EditorTooltip extends JWindow {
 			public void mouseClicked(MouseEvent e) {
 				if ((e.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) != 0) {
 					final Set<Docker> activeDockers = new HashSet<>(
-							EditorTooltip.this.gui.getDockerManager().getActiveDockers().values()
+							EntryTooltip.this.gui.getDockerManager().getActiveDockers().values()
 					);
 
 					final List<ClassesDocker> sortedDockers = dockers.stream()
@@ -652,8 +619,8 @@ public class EditorTooltip extends JWindow {
 								.orElse(null);
 						if (path != null) {
 							selector.setSelectionPath(path);
-							EditorTooltip.this.gui.openDocker(docker.getClass());
-							EditorTooltip.this.close();
+							EntryTooltip.this.gui.openDocker(docker.getClass());
+							EntryTooltip.this.close();
 
 							return;
 						}
@@ -677,6 +644,14 @@ public class EditorTooltip extends JWindow {
 		}
 
 		return "<anonymous>";
+	}
+
+	public void setZoom(int amount) {
+		this.zoomAmount = amount;
+	}
+
+	public void resetZoom() {
+		this.zoomAmount = 0;
 	}
 
 	private record ParamJavadoc(JLabel name, JTextArea javadoc) { }

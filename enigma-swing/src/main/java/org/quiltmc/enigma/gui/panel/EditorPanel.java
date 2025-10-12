@@ -55,7 +55,7 @@ public class EditorPanel extends BaseEditorPanel {
 	private final EditorPopupMenu popupMenu;
 
 	// DIY tooltip because JToolTip can't be moved or resized
-	private final EditorTooltip tooltip = new EditorTooltip(this.gui);
+	private final EntryTooltip entryTooltip = new EntryTooltip(this.gui);
 
 	@Nullable
 	private Token lastMouseTargetToken;
@@ -66,7 +66,7 @@ public class EditorPanel extends BaseEditorPanel {
 			this.consumeEditorMouseTarget(
 					(token, entry) -> {
 						this.hideTooltipTimer.stop();
-						if (this.tooltip.isVisible()) {
+						if (this.entryTooltip.isVisible()) {
 							this.showTooltipTimer.stop();
 
 							if (!token.equals(this.lastMouseTargetToken)) {
@@ -79,7 +79,7 @@ public class EditorPanel extends BaseEditorPanel {
 						}
 					},
 					() -> consumeMousePositionIn(
-						this.tooltip.getContentPane(),
+						this.entryTooltip.getContentPane(),
 						(absolute, relative) -> this.hideTooltipTimer.stop(),
 						absolute -> {
 							this.lastMouseTargetToken = null;
@@ -95,7 +95,7 @@ public class EditorPanel extends BaseEditorPanel {
 			ToolTipManager.sharedInstance().getInitialDelay() - MOUSE_STOPPED_MOVING_DELAY, e -> {
 				this.consumeEditorMouseTarget((token, entry) -> {
 					if (token.equals(this.lastMouseTargetToken)) {
-						this.tooltip.setVisible(true);
+						this.entryTooltip.setVisible(true);
 						this.openTooltip(entry);
 					}
 				});
@@ -143,8 +143,8 @@ public class EditorPanel extends BaseEditorPanel {
 		// global listener so tooltip hides even if clicking outside editor
 		Toolkit.getDefaultToolkit().addAWTEventListener(
 				e -> {
-					if (e.getID() == MouseEvent.MOUSE_PRESSED && this.tooltip.isVisible()) {
-						consumeMousePositionOut(this.tooltip.getContentPane(), absolute -> this.closeTooltip());
+					if (e.getID() == MouseEvent.MOUSE_PRESSED && this.entryTooltip.isVisible()) {
+						consumeMousePositionOut(this.entryTooltip.getContentPane(), absolute -> this.closeTooltip());
 					}
 				},
 				MouseEvent.MOUSE_PRESSED
@@ -176,7 +176,7 @@ public class EditorPanel extends BaseEditorPanel {
 
 			@Override
 			public void mousePressed(MouseEvent mouseEvent) {
-				EditorPanel.this.tooltip.setVisible(false);
+				EditorPanel.this.entryTooltip.setVisible(false);
 				EditorPanel.this.mouseStoppedMovingTimer.stop();
 				EditorPanel.this.showTooltipTimer.stop();
 				EditorPanel.this.hideTooltipTimer.stop();
@@ -210,9 +210,9 @@ public class EditorPanel extends BaseEditorPanel {
 		this.showTooltipTimer.setRepeats(false);
 		this.hideTooltipTimer.setRepeats(false);
 
-		this.tooltip.setVisible(false);
+		this.entryTooltip.setVisible(false);
 
-		this.tooltip.addMouseListener(new MouseAdapter() {
+		this.entryTooltip.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				if (!Config.editor().tooltip.interactable.value()) {
@@ -241,7 +241,7 @@ public class EditorPanel extends BaseEditorPanel {
 			}
 		});
 
-		this.tooltip.addMouseMotionListener(new MouseAdapter() {
+		this.entryTooltip.addMouseMotionListener(new MouseAdapter() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
 				if (Config.editor().tooltip.interactable.value()) {
@@ -289,7 +289,7 @@ public class EditorPanel extends BaseEditorPanel {
 	}
 
 	private void closeTooltip() {
-		this.tooltip.close();
+		this.entryTooltip.close();
 		this.lastMouseTargetToken = null;
 		this.mouseStoppedMovingTimer.stop();
 		this.showTooltipTimer.stop();
@@ -297,7 +297,7 @@ public class EditorPanel extends BaseEditorPanel {
 	}
 
 	private void openTooltip(Entry<?> target) {
-		this.tooltip.open(target);
+		this.entryTooltip.open(target);
 	}
 
 	public void onRename(boolean isNewMapping) {
@@ -358,7 +358,7 @@ public class EditorPanel extends BaseEditorPanel {
 			@Override
 			public void onDeobfRefChanged(ClassHandle h, ClassEntry deobfRef) {
 				SwingUtilities.invokeLater(() -> EditorPanel.this.listeners.forEach(l -> l
-					.onTitleChanged(EditorPanel.this, EditorPanel.this.getSimpleClassName()))
+						.onTitleChanged(EditorPanel.this, EditorPanel.this.getSimpleClassName()))
 				);
 			}
 
@@ -392,6 +392,18 @@ public class EditorPanel extends BaseEditorPanel {
 		this.popupMenu.updateUiState();
 
 		this.listeners.forEach(l -> l.onCursorReferenceChanged(this, ref));
+	}
+
+	@Override
+	public void offsetEditorZoom(int zoomAmount) {
+		super.offsetEditorZoom(zoomAmount);
+		this.entryTooltip.setZoom(zoomAmount);
+	}
+
+	@Override
+	public void resetEditorZoom() {
+		super.resetEditorZoom();
+		this.entryTooltip.resetZoom();
 	}
 
 	public void addListener(EditorActionListener listener) {
