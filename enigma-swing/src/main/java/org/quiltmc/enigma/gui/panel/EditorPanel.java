@@ -172,7 +172,9 @@ public class EditorPanel extends BaseEditorPanel {
 		this.editor.addMouseMotionListener(new MouseAdapter() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				EditorPanel.this.mouseStoppedMovingTimer.restart();
+				if (!EditorPanel.this.entryTooltip.hasRepopulated()) {
+					EditorPanel.this.mouseStoppedMovingTimer.restart();
+				}
 			}
 		});
 

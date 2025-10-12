@@ -70,6 +70,7 @@ public class EntryTooltip extends JWindow {
 	private final Set<Runnable> closeListeners = new HashSet<>();
 
 	private int zoomAmount;
+	private boolean repopulated;
 
 	@Nullable
 	private Point dragStart;
@@ -134,6 +135,13 @@ public class EntryTooltip extends JWindow {
 		});
 	}
 
+	// Sometimes when re-populating and resizing+moving, the cursor may be briefly over the parent EditorPanel.
+	// This is used to stop EditorPanel from starting its mouseStoppedMovingTimer which may reset the tooltip to the
+	// token under the cursor, discarding the re-populated content.
+	public boolean hasRepopulated() {
+		return this.repopulated;
+	}
+
 	/**
 	 * Opens this tooltip and populates it with information about the passed {@code target}.
 	 *
@@ -145,6 +153,7 @@ public class EntryTooltip extends JWindow {
 	}
 
 	private void populateWith(Entry<?> target, boolean opening) {
+		this.repopulated = !opening;
 		this.content.removeAll();
 
 		@Nullable
@@ -518,8 +527,9 @@ public class EntryTooltip extends JWindow {
 	}
 
 	public void close() {
+		this.repopulated = false;
 		this.setVisible(false);
-		// this.content.removeAll();
+		this.content.removeAll();
 
 		if (this.declarationSnippet != null) {
 			this.declarationSnippet.classHandler.removeListener();
