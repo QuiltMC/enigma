@@ -74,7 +74,7 @@ public class EntryTooltip extends JWindow {
 	private DeclarationSnippetPanel declarationSnippet;
 
 	public EntryTooltip(Gui gui) {
-		super();
+		super(gui.getFrame());
 
 		this.gui = gui;
 		this.content = new JPanel(new GridBagLayout());

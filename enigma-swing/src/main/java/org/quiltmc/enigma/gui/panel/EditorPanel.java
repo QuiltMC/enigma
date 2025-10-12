@@ -157,7 +157,10 @@ public class EditorPanel extends BaseEditorPanel {
 								? focusEvent.getComponent()
 								: focusEvent.getOppositeComponent();
 
-						if (gainer == null || !SwingUtilities.isDescendingFrom(gainer, this.ui)) {
+						if (gainer == null || !(
+								SwingUtilities.isDescendingFrom(gainer, this.ui)
+									|| SwingUtilities.isDescendingFrom(gainer, this.entryTooltip.getContentPane())
+						)) {
 							this.closeTooltip();
 						}
 					}
