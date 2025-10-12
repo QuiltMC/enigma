@@ -242,16 +242,18 @@ public class EntryTooltip extends JWindow {
 
 				this.declarationSnippet.offsetEditorZoom(this.zoomAmount);
 
-				this.declarationSnippet.editor.addMouseListener(new MouseAdapter() {
-					@Override
-					public void mouseClicked(MouseEvent e) {
-						if (e.getButton() == MouseEvent.BUTTON1) {
-							EntryTooltip.this.declarationSnippet.consumeEditorMouseTarget((token, entry) -> {
-								EntryTooltip.this.onEntryClick(entry, e.getModifiersEx());
-							});
+				if (stopInteraction == null) {
+					this.declarationSnippet.editor.addMouseListener(new MouseAdapter() {
+						@Override
+						public void mouseClicked(MouseEvent e) {
+							if (e.getButton() == MouseEvent.BUTTON1) {
+								EntryTooltip.this.declarationSnippet.consumeEditorMouseTarget((token, entry) -> {
+									EntryTooltip.this.onEntryClick(entry, e.getModifiersEx());
+								});
+							}
 						}
-					}
-				});
+					});
+				}
 
 				{
 					final Dimension oldSize = opening ? null : this.getSize();

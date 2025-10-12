@@ -29,7 +29,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -186,35 +185,6 @@ public class EditorPanel extends BaseEditorPanel {
 		this.hideTooltipTimer.setRepeats(false);
 
 		this.entryTooltip.setVisible(false);
-
-		this.entryTooltip.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				if (!Config.editor().tooltip.interactable.value()) {
-					// if not interactable, forward event to editor
-					consumeMousePositionIn(EditorPanel.this.editor, (absolutMousePosition, editorMousePosition) -> {
-						final MouseEvent editorMouseEvent = new MouseEvent(
-								EditorPanel.this.editor, e.getID(), e.getWhen(), e.getModifiersEx(),
-								editorMousePosition.x, editorMousePosition.y,
-								absolutMousePosition.x, absolutMousePosition.y,
-								e.getClickCount(), e.isPopupTrigger(), e.getButton()
-						);
-
-						for (final MouseListener listener : EditorPanel.this.editor.getMouseListeners()) {
-							listener.mousePressed(editorMouseEvent);
-							if (editorMouseEvent.isConsumed()) {
-								break;
-							}
-						}
-					});
-
-					e.consume();
-				} else {
-					EditorPanel.this.mouseStoppedMovingTimer.stop();
-					EditorPanel.this.hideTooltipTimer.stop();
-				}
-			}
-		});
 
 		this.entryTooltip.addMouseMotionListener(new MouseAdapter() {
 			@Override
