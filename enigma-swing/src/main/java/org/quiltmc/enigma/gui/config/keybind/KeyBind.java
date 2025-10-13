@@ -49,7 +49,7 @@ public record KeyBind(String name, String category, List<Combination> combinatio
 	}
 
 	/**
-	 * Prefer using component's {@link InputMap}s and {@link ActionMap}s to checking this in {@link KeyListener}s.
+	 * Prefer using components' {@link InputMap}s and {@link ActionMap}s to checking this in {@link KeyListener}s.
 	 *
 	 * @see GuiUtil#putKeyBindAction(KeyBind, JComponent, GuiUtil.FocusCondition, ActionListener)
 	 */
