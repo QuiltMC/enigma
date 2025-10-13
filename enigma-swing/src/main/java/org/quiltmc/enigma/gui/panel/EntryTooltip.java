@@ -659,6 +659,7 @@ public class EntryTooltip extends JWindow {
 							EntryTooltip.this.gui.openDocker(docker.getClass());
 
 							selector.setSelectionPath(path);
+							selector.scrollPathToVisible(path);
 							selector.requestFocus();
 
 							return;
