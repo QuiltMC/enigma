@@ -34,9 +34,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * The Enigma config is separated into five different files: {@link Config the main config (this one)},
- * {@link NetConfig the networking configuration}, {@link KeyBindConfig the keybinding configuration},
- * {@link DockerConfig the docker configuration}, and {@link DecompilerConfig the decompiler configuration}.
+ * Enigma config is separated into several {@value #FORMAT} files with names matching the methods used to access them:
+ * <ul>
+ *     <li> {@link #main()} (this one)
+ *     <li> {@link #net()} (networking)
+ *     <li> {@link #keybind()}
+ *     <li> {@link #docker()}
+ *     <li> {@link #decompiler()}
+ *     <li> {@link #editor()}
+ * </ul>
+ *
+ * {@value #THEME_FAMILY} also holds a config file for each theme;
+ * the active theme is accessible via {@link #currentTheme()}.
  */
 @SerializedNameConvention(NamingSchemes.SNAKE_CASE)
 @Processor("processChange")
@@ -113,11 +122,11 @@ public final class Config extends ReflectiveConfig {
 		return main().stats;
 	}
 
-	public static DockerConfig dockers() {
+	public static DockerConfig docker() {
 		return DOCKER;
 	}
 
-	public static KeyBindConfig keyBinds() {
+	public static KeyBindConfig keybind() {
 		return KEYBIND;
 	}
 
