@@ -645,8 +645,8 @@ public class EntryTooltip extends JWindow {
 							})
 							.toList();
 
-                    final String packageName = EntryTooltip.this.gui.getController().getProject().getRemapper()
-                            .deobfuscate(topClass)
+					final String packageName = EntryTooltip.this.gui.getController().getProject().getRemapper()
+							.deobfuscate(topClass)
 							.getPackageName();
 
 					for (final ClassesDocker docker : sortedDockers) {
@@ -656,8 +656,10 @@ public class EntryTooltip extends JWindow {
 								.orElse(null);
 						if (path != null) {
 							EntryTooltip.this.close();
-							selector.setSelectionPath(path);
 							EntryTooltip.this.gui.openDocker(docker.getClass());
+
+							selector.setSelectionPath(path);
+							selector.requestFocus();
 
 							return;
 						}
