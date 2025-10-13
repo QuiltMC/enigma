@@ -103,7 +103,7 @@ public class EntryTooltip extends JWindow {
 		this.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				if (Config.editor().tooltip.interactable.value()) {
+				if (Config.editor().entryTooltip.interactable.value()) {
 					EntryTooltip.this.dragStart = e.getButton() == MouseEvent.BUTTON1
 							? new Point(e.getX(), e.getY())
 							: null;
@@ -157,7 +157,7 @@ public class EntryTooltip extends JWindow {
 		this.content.removeAll();
 
 		@Nullable
-		final MouseAdapter stopInteraction = Config.editor().tooltip.interactable.value() ? null : new MouseAdapter() {
+		final MouseAdapter stopInteraction = Config.editor().entryTooltip.interactable.value() ? null : new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				EntryTooltip.this.close();

@@ -64,15 +64,15 @@ public class EnigmaQuickFindToolBar extends QuickFindToolBar {
 		this.persistentCheckBox.addActionListener(this);
 		this.persistentCheckBox.addItemListener(e -> {
 			final boolean selected = this.persistentCheckBox.isSelected();
-			if (selected != Config.main().persistentEditorQuickFind.value()) {
-				Config.main().persistentEditorQuickFind.setValue(selected);
+			if (selected != Config.editor().persistentQuickFind.value()) {
+				Config.editor().persistentQuickFind.setValue(selected);
 			}
 
 			// request focus so when it's lost this may be dismissed
 			this.requestFocus();
 		});
-		this.persistentCheckBox.setSelected(Config.main().persistentEditorQuickFind.value());
-		Config.main().persistentEditorQuickFind.registerCallback(callback -> {
+		this.persistentCheckBox.setSelected(Config.editor().persistentQuickFind.value());
+		Config.editor().persistentQuickFind.registerCallback(callback -> {
 			final Boolean configured = callback.value();
 			if (this.persistentCheckBox.isSelected() != configured) {
 				this.persistentCheckBox.setSelected(configured);
