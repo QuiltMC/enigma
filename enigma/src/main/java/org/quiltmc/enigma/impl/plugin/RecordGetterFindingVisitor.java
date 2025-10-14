@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.impl.plugin;
 
+import com.google.common.collect.BiMap;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -18,19 +19,22 @@ import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 final class RecordGetterFindingVisitor extends ClassVisitor {
 	private ClassEntry clazz;
-	private final Map<FieldEntry, MethodEntry> fieldToMethod;
+	private final BiMap<FieldEntry, MethodEntry> gettersByField;
 	private final Set<RecordComponentNode> recordComponents = new HashSet<>();
 	private final Set<FieldNode> fields = new HashSet<>();
 	private final Set<MethodNode> methods = new HashSet<>();
 
-	RecordGetterFindingVisitor(Map<FieldEntry, MethodEntry> fieldToMethod) {
+	RecordGetterFindingVisitor(BiMap<FieldEntry, MethodEntry> gettersByField) {
 		super(Enigma.ASM_VERSION);
-		this.fieldToMethod = fieldToMethod;
+		this.gettersByField = gettersByField;
+	}
+
+	public BiMap<FieldEntry, MethodEntry> getGettersByField() {
+		return this.gettersByField;
 	}
 
 	@Override
@@ -103,11 +107,11 @@ final class RecordGetterFindingVisitor extends ClassVisitor {
 						&& instructions.get(2).getOpcode() == Opcodes.ALOAD
 						&& instructions.get(3) instanceof FieldInsnNode fieldInsn
 						&& fieldInsn.getOpcode() == Opcodes.GETFIELD
-						&& fieldInsn.owner.equals(this.clazz.getName())
+						&& fieldInsn.owner.equals(this.clazz.getFullName())
 						&& fieldInsn.desc.equals(field.desc)
 						&& fieldInsn.name.equals(field.name)
 						&& instructions.get(4).getOpcode() >= Opcodes.IRETURN && instructions.get(4).getOpcode() <= Opcodes.ARETURN) {
-					this.fieldToMethod.put(new FieldEntry(this.clazz, field.name, new TypeDescriptor(field.desc)), new MethodEntry(this.clazz, method.name, new MethodDescriptor(method.desc)));
+					this.gettersByField.put(new FieldEntry(this.clazz, field.name, new TypeDescriptor(field.desc)), new MethodEntry(this.clazz, method.name, new MethodDescriptor(method.desc)));
 				}
 			}
 		}

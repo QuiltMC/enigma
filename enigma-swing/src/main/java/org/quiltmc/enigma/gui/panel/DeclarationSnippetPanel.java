@@ -27,8 +27,10 @@ import com.github.javaparser.ast.nodeTypes.NodeWithRange;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
+import com.google.common.collect.BiMap;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
+import org.quiltmc.enigma.api.service.JarIndexerService;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
@@ -40,11 +42,13 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
+import org.quiltmc.enigma.impl.plugin.RecordGetterFindingService;
 import org.quiltmc.enigma.util.LineIndexer;
 import org.quiltmc.enigma.util.Result;
 import org.quiltmc.syntaxpain.LineNumbersRuler;
 import org.tinylog.Logger;
 
+import javax.annotation.Nullable;
 import javax.swing.JViewport;
 import java.awt.Color;
 import java.util.Comparator;
@@ -73,7 +77,11 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 				.ifPresent(lineNumbers -> lineNumbers.deinstall(this.editor));
 
 		this.addSourceSetListener(source -> {
-			final Token unBoundedToken = this.navigateToTokenImpl(source.getIndex().getDeclarationToken(target));
+			@Nullable
+			final Token unBoundedToken = this.resolveTarget(source, target)
+					.map(Target::token)
+					.map(this::navigateToTokenImpl)
+					.orElse(null);
 			if (unBoundedToken == null) {
 				// the source isn't very useful if it couldn't be trimmed and the declaration couldn't be navigated to
 				// set this text so it doesn't waste space or cause confusion
@@ -94,41 +102,45 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 		this.editor.getCaret().setSelectionVisible(true);
 	}
 
-	private Snippet createSnippet(DecompiledClassSource source, Entry<?> target) {
-		final Token targetToken = source.getIndex().getDeclarationToken(target);
+	private Snippet createSnippet(DecompiledClassSource source, Entry<?> targetEntry) {
+		return this.resolveTarget(source, targetEntry)
+			.map(target -> this.createSnippet(source, target.token, target.entry))
+			.orElse(null);
+	}
 
-		if (targetToken == null) {
-			// This can happen as a result of #252: Issue with lost parameter connection.
-			// This can also happen when the token is from a library.
-			return null;
-		}
-
+	private Snippet createSnippet(DecompiledClassSource source, Token targetToken, Entry<?> targetEntry) {
 		final Result<Snippet, String> snippet;
-		if (target instanceof ClassEntry targetClass) {
+		if (targetEntry instanceof ClassEntry targetClass) {
 			snippet = this.findClassSnippet(source, targetToken, targetClass);
-		} else if (target instanceof MethodEntry targetMethod) {
+		} else if (targetEntry instanceof MethodEntry targetMethod) {
 			snippet = this.findMethodSnippet(source, targetToken, targetMethod);
-		} else if (target instanceof FieldEntry targetField) {
+		} else if (targetEntry instanceof FieldEntry targetField) {
 			snippet = this.findFieldSnippet(source, targetToken, targetField);
-		} else if (target instanceof LocalVariableEntry targetLocal) {
+		} else if (targetEntry instanceof LocalVariableEntry targetLocal) {
 			snippet = this.getVariableSnippet(source, targetToken, targetLocal);
 		} else {
 			// this should never be reached
 			Logger.error(
 					"Error trimming tooltip for '{}': unrecognized target entry type!",
-					this.getFullDeobfuscatedName(target)
+					this.getFullDeobfuscatedName(targetEntry)
 			);
+
 			return null;
 		}
 
 		return snippet.unwrapOrElse(error -> {
-			Logger.error(
-					"Error finding declaration of '{}' for tooltip: {}",
-					this.getFullDeobfuscatedName(target),
-					error
-			);
+			this.logDeclarationSearchError(targetEntry, error);
+
 			return null;
 		});
+	}
+
+	private void logDeclarationSearchError(Entry<?> targetEntry, String error) {
+		Logger.error(
+				"Error searching for declaration of '{}' for tooltip: {}",
+				this.getFullDeobfuscatedName(targetEntry),
+				error
+		);
 	}
 
 	private Result<Snippet, String> getVariableSnippet(
@@ -252,7 +264,6 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 			.orElseGet(() -> Result.err(NO_ENTRY_DEFINITION));
 	}
 
-	// TODO fix this for record component getters once there's a RecordIndex
 	private Result<Snippet, String> findMethodSnippet(
 			DecompiledClassSource source, Token target, MethodEntry targetEntry
 	) {
@@ -495,4 +506,33 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 
 		return new Snippet(start, end + 1);
 	}
+
+	private Optional<Target> resolveTarget(DecompiledClassSource source, Entry<?> targetEntry) {
+		return Optional.ofNullable(source.getIndex().getDeclarationToken(targetEntry))
+			.map(token -> new Target(token, targetEntry))
+			.or(() -> {
+				if (targetEntry instanceof MethodEntry targetMethod) {
+					// try to find record component getter's corresponding field instead
+					return this.gui.getController()
+						.getProject()
+						.getEnigma()
+						.getService(JarIndexerService.TYPE, RecordGetterFindingService.ID)
+						.map(service -> (RecordGetterFindingService) service)
+						.map(RecordGetterFindingService::getGettersByField)
+						.map(BiMap::inverse)
+						.map(recordFieldByGetter -> recordFieldByGetter.get(targetMethod))
+						.flatMap(recordField -> Optional
+							.ofNullable(source.getIndex().getDeclarationToken(recordField))
+							.map(fieldToken -> new Target(fieldToken, recordField))
+						);
+				} else {
+					// This can happen as a result of #252: Issue with lost parameter connection.
+					// This can also happen when the token is from a library.
+
+					return Optional.empty();
+				}
+			});
+	}
+
+	private record Target(Token token, Entry<?> entry) { }
 }

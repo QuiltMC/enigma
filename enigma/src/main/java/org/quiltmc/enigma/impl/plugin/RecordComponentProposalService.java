@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.impl.plugin;
 
+import com.google.common.collect.BiMap;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
@@ -18,7 +19,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public record RecordComponentProposalService(Map<FieldEntry, MethodEntry> fieldToGetter) implements NameProposalService {
+public record RecordComponentProposalService(BiMap<FieldEntry, MethodEntry> gettersByField) implements NameProposalService {
+	public static final String ID = "enigma:record_component_proposer";
+
 	@Nullable
 	@Override
 	public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
@@ -88,12 +91,12 @@ public record RecordComponentProposalService(Map<FieldEntry, MethodEntry> fieldT
 	}
 
 	public boolean isGetter(FieldEntry obfFieldEntry, MethodEntry method) {
-		var getter = this.fieldToGetter.get(obfFieldEntry);
+		var getter = this.gettersByField.get(obfFieldEntry);
 		return getter != null && getter.equals(method);
 	}
 
 	@Override
 	public String getId() {
-		return "enigma:record_component_proposer";
+		return ID;
 	}
 }
