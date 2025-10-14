@@ -54,7 +54,6 @@ final class RecordIndexingVisitor extends ClassVisitor {
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 		super.visit(version, access, name, signature, superName, interfaces);
 		this.clazz = (access & Opcodes.ACC_RECORD) != 0 ? new ClassEntry(name) : null;
-		this.recordComponents.clear();
 	}
 
 	@Override
@@ -90,6 +89,11 @@ final class RecordIndexingVisitor extends ClassVisitor {
 		super.visitEnd();
 		try {
 			this.collectResults();
+
+			this.clazz = null;
+			this.recordComponents.clear();
+			this.fields.clear();
+			this.methods.clear();
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
