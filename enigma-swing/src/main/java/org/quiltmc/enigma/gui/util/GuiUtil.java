@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.util;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.service.JarIndexerService;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
@@ -9,6 +10,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.gui.config.keybind.KeyBind;
 import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
+import org.quiltmc.enigma.impl.plugin.RecordIndexingService;
 import org.quiltmc.enigma.util.Os;
 
 import javax.swing.Action;
@@ -60,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -375,6 +378,14 @@ public final class GuiUtil {
 		}
 
 		outAction.accept(absolutePos);
+	}
+
+	public static Optional<RecordIndexingService> getRecordIndexingService(Gui gui) {
+		return gui.getController()
+				.getProject()
+				.getEnigma()
+				.getService(JarIndexerService.TYPE, RecordIndexingService.ID)
+				.map(service -> (RecordIndexingService) service);
 	}
 
 	public enum FocusCondition {

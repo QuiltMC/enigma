@@ -1,6 +1,8 @@
 package org.quiltmc.enigma.impl.plugin;
 
 import com.google.common.collect.BiMap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -21,20 +23,31 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import java.util.HashSet;
 import java.util.Set;
 
-final class RecordGetterFindingVisitor extends ClassVisitor {
+final class RecordIndexingVisitor extends ClassVisitor {
 	private ClassEntry clazz;
-	private final BiMap<FieldEntry, MethodEntry> gettersByField;
 	private final Set<RecordComponentNode> recordComponents = new HashSet<>();
 	private final Set<FieldNode> fields = new HashSet<>();
 	private final Set<MethodNode> methods = new HashSet<>();
 
-	RecordGetterFindingVisitor(BiMap<FieldEntry, MethodEntry> gettersByField) {
+	private final BiMap<FieldEntry, MethodEntry> gettersByField;
+	private final Multimap<ClassEntry, FieldEntry> fieldsByClass = HashMultimap.create();
+	private final Multimap<ClassEntry, MethodEntry> methodsByClass = HashMultimap.create();
+
+	RecordIndexingVisitor(BiMap<FieldEntry, MethodEntry> gettersByField) {
 		super(Enigma.ASM_VERSION);
 		this.gettersByField = gettersByField;
 	}
 
 	public BiMap<FieldEntry, MethodEntry> getGettersByField() {
 		return this.gettersByField;
+	}
+
+	public Multimap<ClassEntry, FieldEntry> getFieldsByClass() {
+		return this.fieldsByClass;
+	}
+
+	public Multimap<ClassEntry, MethodEntry> getMethodsByClass() {
+		return this.methodsByClass;
 	}
 
 	@Override
@@ -76,15 +89,17 @@ final class RecordGetterFindingVisitor extends ClassVisitor {
 	public void visitEnd() {
 		super.visitEnd();
 		try {
-			if (this.clazz != null) {
-				this.collectResults();
-			}
+			this.collectResults();
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
 	}
 
 	private void collectResults() {
+		if (this.clazz == null) {
+			return;
+		}
+
 		for (RecordComponentNode component : this.recordComponents) {
 			FieldNode field = null;
 			for (FieldNode node : this.fields) {
@@ -103,15 +118,23 @@ final class RecordGetterFindingVisitor extends ClassVisitor {
 
 				// match bytecode to exact expected bytecode for a getter
 				// only check important instructions (ignore new frame instructions, etc.)
-				if (instructions.size() == 6
-						&& instructions.get(2).getOpcode() == Opcodes.ALOAD
-						&& instructions.get(3) instanceof FieldInsnNode fieldInsn
-						&& fieldInsn.getOpcode() == Opcodes.GETFIELD
-						&& fieldInsn.owner.equals(this.clazz.getFullName())
-						&& fieldInsn.desc.equals(field.desc)
-						&& fieldInsn.name.equals(field.name)
-						&& instructions.get(4).getOpcode() >= Opcodes.IRETURN && instructions.get(4).getOpcode() <= Opcodes.ARETURN) {
-					this.gettersByField.put(new FieldEntry(this.clazz, field.name, new TypeDescriptor(field.desc)), new MethodEntry(this.clazz, method.name, new MethodDescriptor(method.desc)));
+				if (
+						instructions.size() == 6
+							&& instructions.get(2).getOpcode() == Opcodes.ALOAD
+							&& instructions.get(3) instanceof FieldInsnNode fieldInsn
+							&& fieldInsn.getOpcode() == Opcodes.GETFIELD
+							&& fieldInsn.owner.equals(this.clazz.getFullName())
+							&& fieldInsn.desc.equals(field.desc)
+							&& fieldInsn.name.equals(field.name)
+							&& instructions.get(4).getOpcode() >= Opcodes.IRETURN
+							&& instructions.get(4).getOpcode() <= Opcodes.ARETURN
+				) {
+					final FieldEntry fieldEntry = new FieldEntry(this.clazz, field.name, new TypeDescriptor(field.desc));
+					final MethodEntry methodEntry = new MethodEntry(this.clazz, method.name, new MethodDescriptor(method.desc));
+
+					this.gettersByField.put(fieldEntry, methodEntry);
+					this.fieldsByClass.put(this.clazz, fieldEntry);
+					this.methodsByClass.put(this.clazz, methodEntry);
 				}
 			}
 		}

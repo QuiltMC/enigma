@@ -30,7 +30,6 @@ import com.github.javaparser.ast.stmt.Statement;
 import com.google.common.collect.BiMap;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
-import org.quiltmc.enigma.api.service.JarIndexerService;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
@@ -42,7 +41,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
-import org.quiltmc.enigma.impl.plugin.RecordGetterFindingService;
+import org.quiltmc.enigma.impl.plugin.RecordIndexingService;
 import org.quiltmc.enigma.util.LineIndexer;
 import org.quiltmc.enigma.util.Result;
 import org.quiltmc.syntaxpain.LineNumbersRuler;
@@ -56,6 +55,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static org.quiltmc.enigma.gui.util.GuiUtil.getRecordIndexingService;
 import static java.util.Comparator.comparingInt;
 
 public class DeclarationSnippetPanel extends BaseEditorPanel {
@@ -513,12 +513,8 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 			.or(() -> {
 				if (targetEntry instanceof MethodEntry targetMethod) {
 					// try to find record component getter's corresponding field instead
-					return this.gui.getController()
-						.getProject()
-						.getEnigma()
-						.getService(JarIndexerService.TYPE, RecordGetterFindingService.ID)
-						.map(service -> (RecordGetterFindingService) service)
-						.map(RecordGetterFindingService::getGettersByField)
+					return getRecordIndexingService(this.gui)
+						.map(RecordIndexingService::getGettersByField)
 						.map(BiMap::inverse)
 						.map(recordFieldByGetter -> recordFieldByGetter.get(targetMethod))
 						.flatMap(recordField -> Optional

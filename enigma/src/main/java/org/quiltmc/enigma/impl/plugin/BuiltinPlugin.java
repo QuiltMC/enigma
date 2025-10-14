@@ -67,9 +67,9 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 
 	private static void registerRecordNamingService(EnigmaPluginContext ctx) {
 		final BiMap<FieldEntry, MethodEntry> gettersByField = HashBiMap.create();
-		final RecordGetterFindingVisitor visitor = new RecordGetterFindingVisitor(gettersByField);
+		final RecordIndexingVisitor visitor = new RecordIndexingVisitor(gettersByField);
 
-		ctx.registerService(JarIndexerService.TYPE, ctx1 -> new RecordGetterFindingService(visitor));
+		ctx.registerService(JarIndexerService.TYPE, ctx1 -> new RecordIndexingService(visitor));
 		ctx.registerService(NameProposalService.TYPE, ctx1 -> new RecordComponentProposalService(gettersByField));
 	}
 

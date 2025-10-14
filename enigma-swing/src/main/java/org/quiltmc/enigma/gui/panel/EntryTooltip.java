@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.panel;
 
+import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
@@ -9,7 +10,6 @@ import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
-import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.Gui;
@@ -21,6 +21,7 @@ import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.docker.ObfuscatedClassesDocker;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
+import org.quiltmc.enigma.impl.plugin.RecordIndexingService;
 
 import javax.annotation.Nullable;
 import javax.swing.Box;
@@ -46,14 +47,17 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.font.TextAttribute;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static org.quiltmc.enigma.gui.util.GuiUtil.getRecordIndexingService;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.BorderFactory.createLineBorder;
 
@@ -190,7 +194,7 @@ public class EntryTooltip extends JWindow {
 			);
 		}
 
-		final String javadoc = this.gui.getController().getProject().getRemapper().getMapping(target).javadoc();
+		final String javadoc = this.getJavadoc(target).orElse(null);
 		final ImmutableList<ParamJavadoc> paramJavadocs =
 				this.paramJavadocsOf(target, editorFont, italEditorFont, stopInteraction);
 		if (javadoc != null || !paramJavadocs.isEmpty()) {
@@ -319,6 +323,22 @@ public class EntryTooltip extends JWindow {
 		} else {
 			this.moveOnScreen();
 		}
+	}
+
+	private Optional<String> getJavadoc(Entry<?> target) {
+		final EntryRemapper remapper = this.gui.getController().getProject().getRemapper();
+		return Optional
+			.ofNullable(remapper.getMapping(target).javadoc())
+			.or(() -> target instanceof MethodEntry targetMethod
+				// try getting record field javadocs for record getters if the getter has no javadoc
+				? getRecordIndexingService(this.gui)
+					.map(RecordIndexingService::getGettersByField)
+					.map(BiMap::inverse)
+					.map(fieldsByGetter -> fieldsByGetter.get(targetMethod))
+					.map(remapper::getMapping)
+					.map(EntryMapping::javadoc)
+				: Optional.empty()
+			);
 	}
 
 	public void addCloseListener(Runnable listener) {
@@ -493,29 +513,35 @@ public class EntryTooltip extends JWindow {
 		final EnigmaProject project = this.gui.getController().getProject();
 		final EntryIndex entryIndex = project.getJarIndex().getIndex(EntryIndex.class);
 
+		final Stream<Entry<?>> entries;
 		if (target instanceof MethodEntry targetMethod) {
-			final MethodDefEntry methodDef = entryIndex.getDefinition(targetMethod);
-			if (methodDef == null) {
-				return ImmutableList.of();
-			} else {
-				final EntryRemapper remapper = project.getRemapper();
-
-				return methodDef.getParameters(entryIndex).stream()
-					.<ParamJavadoc>mapMulti((param, add) -> {
-						final EntryMapping mapping = remapper.getMapping(param);
-						if (mapping.javadoc() != null) {
-							final JLabel name = colonLabelOf(remapper.deobfuscate(param).getSimpleName(), nameFont);
-							final JTextArea javadoc = javadocOf(mapping.javadoc(), javadocFont, stopInteraction);
-
-							add.accept(new ParamJavadoc(name, javadoc));
-						}
-					})
-					.collect(toImmutableList());
-			}
+			entries = Optional
+					.ofNullable(entryIndex.getDefinition(targetMethod))
+					.stream()
+					.flatMap(methodDef -> methodDef.getParameters(entryIndex).stream());
+		} else if (target instanceof ClassEntry targetClass) {
+			entries = getRecordIndexingService(this.gui)
+					.map(RecordIndexingService::getFieldsByClass)
+					.map(fieldsByClass -> fieldsByClass.get(targetClass))
+					.stream()
+					.flatMap(Collection::stream);
 		} else {
-			// TODO add record component javadocs once there's a RecordIndex
-			return ImmutableList.of();
+			entries = Stream.empty();
 		}
+
+		final EntryRemapper remapper = project.getRemapper();
+
+		return entries
+			.<ParamJavadoc>mapMulti((param, add) -> {
+				final EntryMapping mapping = remapper.getMapping(param);
+				if (mapping.javadoc() != null) {
+					final JLabel name = colonLabelOf(remapper.deobfuscate(param).getSimpleName(), nameFont);
+					final JTextArea javadoc = javadocOf(mapping.javadoc(), javadocFont, stopInteraction);
+
+					add.accept(new ParamJavadoc(name, javadoc));
+				}
+			})
+			.collect(toImmutableList());
 	}
 
 	private void addSeparator(int gridY) {
