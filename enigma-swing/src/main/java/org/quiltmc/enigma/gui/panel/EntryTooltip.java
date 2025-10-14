@@ -10,6 +10,7 @@ import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.Gui;
@@ -335,6 +336,8 @@ public class EntryTooltip extends JWindow {
 					.map(RecordIndexingService::getGettersByField)
 					.map(BiMap::inverse)
 					.map(fieldsByGetter -> fieldsByGetter.get(targetMethod))
+					// this cast is required on java 17 for some reason
+					.map(entry -> (FieldEntry) entry)
 					.map(remapper::getMapping)
 					.map(EntryMapping::javadoc)
 				: Optional.empty()
