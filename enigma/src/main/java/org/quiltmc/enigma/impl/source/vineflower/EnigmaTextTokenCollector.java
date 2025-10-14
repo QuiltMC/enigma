@@ -347,13 +347,12 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	}
 
 	private TextRange getTextRangeForNode(Node node) {
-		Optional<Range> rangeOpt = node.getRange();
-		if (rangeOpt.isEmpty()) {
+		if (!node.hasRange()) {
 			Logger.error("No range for node of type {}", node.getClass().getSimpleName());
 			return null;
 		}
 
-		Range range = rangeOpt.get();
+		Range range = node.getRange().orElseThrow();
 		int start = this.lineIndexer.getIndex(range.begin);
 		int end = this.lineIndexer.getIndex(range.end);
 		return new TextRange(start, end - start);
