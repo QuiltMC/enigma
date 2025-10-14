@@ -29,6 +29,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -53,6 +55,7 @@ public class EditorPanel extends BaseEditorPanel {
 
 	// DIY tooltip because JToolTip can't be moved or resized
 	private final EntryTooltip entryTooltip = new EntryTooltip(this.gui);
+	private final WindowAdapter guiLostFocusListener;
 
 	@Nullable
 	private Token lastMouseTargetToken;
@@ -138,6 +141,15 @@ public class EditorPanel extends BaseEditorPanel {
 		this.editor.setComponentPopupMenu(this.popupMenu.getUi());
 
 		this.entryTooltip.addCloseListener(this::onTooltipClose);
+		this.guiLostFocusListener = new WindowAdapter() {
+			@Override
+			public void windowLostFocus(WindowEvent e) {
+				if (e.getOppositeWindow() != EditorPanel.this.entryTooltip) {
+					EditorPanel.this.entryTooltip.close();
+				}
+			}
+		};
+		this.gui.getFrame().addWindowFocusListener(this.guiLostFocusListener);
 
 		this.editor.addMouseListener(new MouseAdapter() {
 			@Override
@@ -285,6 +297,12 @@ public class EditorPanel extends BaseEditorPanel {
 		}
 
 		return null;
+	}
+
+	@Override
+	public void destroy() {
+		super.destroy();
+		this.gui.getFrame().removeWindowFocusListener(this.guiLostFocusListener);
 	}
 
 	public NavigatorPanel getNavigatorPanel() {
