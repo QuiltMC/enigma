@@ -398,12 +398,21 @@ public class BaseEditorPanel {
 			this.source = source;
 			this.editor.getHighlighter().removeAllHighlights();
 
-			this.editor.setText(this.source.toString());
 			final Snippet snippet = snippetFactor == null ? null : snippetFactor.apply(this.source);
 			if (snippet == null) {
+				this.editor.setText(this.source.toString());
 				this.sourceBounds = new DefaultBounds();
 			} else {
-				newCaretPos = this.trimSource(snippet, newCaretPos);
+				final String sourceString = this.source.toString();
+
+				final int end = Math.min(sourceString.length(), snippet.end);
+
+				final Unindented unindented = Unindented.of(sourceString, snippet.start, end);
+
+				this.sourceBounds = new TrimmedBounds(snippet.start, end, unindented.indentOffsets);
+				this.editor.setText(unindented.snippet);
+
+				newCaretPos = Utils.clamp((long) newCaretPos - this.sourceBounds.start(), 0, this.editor.getText().length());
 			}
 
 			this.setHighlightedTokens(source.getTokenStore(), source.getHighlightedTokens());
@@ -422,19 +431,6 @@ public class BaseEditorPanel {
 			this.showReferenceImpl(this.nextReference);
 			this.nextReference = null;
 		}
-	}
-
-	private int trimSource(Snippet snippet, int originalCaretPos) {
-		final String sourceString = this.source.toString();
-
-		final int end = Math.min(sourceString.length(), snippet.end);
-
-		final Unindented unindented = Unindented.of(sourceString, snippet.start, end);
-
-		this.sourceBounds = new TrimmedBounds(snippet.start, end, unindented.indentOffsets);
-		this.editor.setText(unindented.snippet);
-
-		return Utils.clamp((long) originalCaretPos - this.sourceBounds.start(), 0, this.editor.getText().length());
 	}
 
 	protected void addSourceSetListener(Consumer<DecompiledClassSource> listener) {
