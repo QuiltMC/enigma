@@ -30,6 +30,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JWindow;
 import javax.swing.tree.TreePath;
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -40,6 +41,7 @@ import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -128,6 +130,15 @@ public class EntryTooltip extends JWindow {
 				}
 			}
 		});
+
+		Toolkit.getDefaultToolkit().addAWTEventListener(
+				e -> {
+					if (this.isShowing() && e.getID() == KeyEvent.KEY_PRESSED) {
+						this.close();
+					}
+				},
+				AWTEvent.KEY_EVENT_MASK
+		);
 
 		this.addWindowFocusListener(new WindowAdapter() {
 			@Override
