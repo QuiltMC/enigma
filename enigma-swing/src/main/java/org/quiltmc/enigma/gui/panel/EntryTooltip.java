@@ -133,7 +133,7 @@ public class EntryTooltip extends JWindow {
 
 		Toolkit.getDefaultToolkit().addAWTEventListener(
 				e -> {
-					if (this.isShowing() && e.getID() == KeyEvent.KEY_PRESSED) {
+					if (this.isShowing() && e.getID() == KeyEvent.KEY_TYPED) {
 						this.close();
 					}
 				},
