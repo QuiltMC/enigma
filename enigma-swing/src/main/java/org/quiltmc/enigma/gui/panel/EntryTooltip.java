@@ -388,32 +388,19 @@ public class EntryTooltip extends JWindow {
 
 		final int oldLeft = oldMousePos.x - pos.x;
 		final int oldRight = pos.x + oldSize.width - oldMousePos.x;
-		final boolean anchorRight = oldLeft >= oldRight;
+		final boolean anchorRight = oldLeft > oldRight;
 
 		final int oldTop = oldMousePos.y - pos.y;
 		final int oldBottom = pos.y + oldSize.height - oldMousePos.y;
-		final boolean anchorBottom = oldTop >= oldBottom;
+		final boolean anchorBottom = oldTop > oldBottom;
 
 		if (anchorRight || anchorBottom) {
 			final Dimension newSize = this.getSize();
 
-			final int x;
-			if (anchorRight) {
-				final int widthDiff = oldSize.width - newSize.width;
-				x = pos.x + widthDiff;
-			} else {
-				x = pos.x;
-			}
+			final int xDiff = anchorRight ? oldSize.width - newSize.width : 0;
+			final int yDiff = anchorBottom ? oldSize.height - newSize.height : 0;
 
-			final int y;
-			if (anchorBottom) {
-				final int heightDiff = oldSize.height - newSize.height;
-				y = pos.y + heightDiff;
-			} else {
-				y = pos.y;
-			}
-
-			this.setLocation(x, y);
+			this.setLocation(pos.x + xDiff, pos.y + yDiff);
 		}
 
 		this.moveOnScreen();
