@@ -14,6 +14,7 @@ import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.gui.BrowserCaret;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
@@ -66,6 +67,7 @@ import java.util.regex.Matcher;
 import java.util.stream.Stream;
 
 import static org.quiltmc.enigma.gui.util.GuiUtil.consumeMousePositionIn;
+import static org.quiltmc.enigma.gui.util.GuiUtil.getRecordIndexingService;
 
 public class BaseEditorPanel {
 	protected final JPanel ui = new JPanel();
@@ -504,7 +506,20 @@ public class BaseEditorPanel {
 			return;
 		}
 
-		List<Token> tokens = this.controller.getTokensForReference(this.source, reference);
+		final List<Token> tokens = Optional.of(this.controller.getTokensForReference(this.source, reference))
+				.filter(directTokens -> !directTokens.isEmpty())
+				.or(() -> {
+					// record component getters often don't have a declaration token
+					// try to get the field declaration instead
+					return reference.entry instanceof MethodEntry method
+						? getRecordIndexingService(this.gui)
+							.map(service -> service.getComponentField(method))
+							.map(field -> EntryReference.<Entry<?>, Entry<?>>declaration(field, field.getName()))
+							.map(fieldReference -> this.controller.getTokensForReference(this.source, fieldReference))
+						: Optional.empty();
+				})
+				.orElse(List.of());
+
 		if (tokens.isEmpty()) {
 			// DEBUG
 			Logger.debug("No tokens found for {} in {}", reference, this.classHandler.getHandle().getRef());
