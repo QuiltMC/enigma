@@ -807,7 +807,7 @@ public class BaseEditorPanel {
 		}
 
 		@Override
-		public Optional<Token> offsetOf(Token boundedToken) {
+		public Optional<Token> offsetOf(@Nullable Token boundedToken) {
 			return boundedToken == null || this.end() < boundedToken.end ? Optional.empty() : Optional.of(boundedToken);
 		}
 	}
