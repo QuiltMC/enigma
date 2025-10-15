@@ -362,7 +362,7 @@ public class BaseEditorPanel {
 
 	protected void setSource(
 			DecompiledClassSource source,
-			@Nullable Function<DecompiledClassSource, Snippet> snippetFactor
+			@Nullable Function<DecompiledClassSource, Snippet> snippetFactory
 	) {
 		this.setDisplayMode(DisplayMode.SUCCESS);
 		if (source == null) {
@@ -398,7 +398,7 @@ public class BaseEditorPanel {
 			this.source = source;
 			this.editor.getHighlighter().removeAllHighlights();
 
-			final Snippet snippet = snippetFactor == null ? null : snippetFactor.apply(this.source);
+			final Snippet snippet = snippetFactory == null ? null : snippetFactory.apply(this.source);
 			if (snippet == null) {
 				this.editor.setText(this.source.toString());
 				this.sourceBounds = new DefaultBounds();
