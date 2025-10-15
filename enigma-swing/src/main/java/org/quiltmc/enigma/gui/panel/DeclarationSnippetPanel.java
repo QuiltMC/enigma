@@ -27,7 +27,6 @@ import com.github.javaparser.ast.nodeTypes.NodeWithRange;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
-import com.google.common.collect.BiMap;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
@@ -41,7 +40,6 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
-import org.quiltmc.enigma.impl.plugin.RecordIndexingService;
 import org.quiltmc.enigma.util.LineIndexer;
 import org.quiltmc.enigma.util.Result;
 import org.quiltmc.syntaxpain.LineNumbersRuler;
@@ -514,12 +512,10 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 				if (targetEntry instanceof MethodEntry targetMethod) {
 					// try to find record component getter's corresponding field instead
 					return getRecordIndexingService(this.gui)
-						.map(RecordIndexingService::getGettersByField)
-						.map(BiMap::inverse)
-						.map(recordFieldByGetter -> recordFieldByGetter.get(targetMethod))
-						.flatMap(recordField -> Optional
-							.ofNullable(source.getIndex().getDeclarationToken(recordField))
-							.map(fieldToken -> new Target(fieldToken, recordField))
+						.map(service -> service.getComponentField(targetMethod))
+						.flatMap(componentField -> Optional
+							.ofNullable(source.getIndex().getDeclarationToken(componentField))
+							.map(fieldToken -> new Target(fieldToken, componentField))
 						);
 				} else {
 					// This can happen as a result of #252: Issue with lost parameter connection.

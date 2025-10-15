@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.impl.plugin;
 
 import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import org.objectweb.asm.ClassVisitor;
@@ -20,8 +21,10 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 
 final class RecordIndexingVisitor extends ClassVisitor {
 	private ClassEntry clazz;
@@ -33,21 +36,27 @@ final class RecordIndexingVisitor extends ClassVisitor {
 	private final Multimap<ClassEntry, FieldEntry> fieldsByClass = HashMultimap.create();
 	private final Multimap<ClassEntry, MethodEntry> methodsByClass = HashMultimap.create();
 
-	RecordIndexingVisitor(BiMap<FieldEntry, MethodEntry> gettersByField) {
+	RecordIndexingVisitor() {
 		super(Enigma.ASM_VERSION);
-		this.gettersByField = gettersByField;
+		this.gettersByField = HashBiMap.create();
 	}
 
-	public BiMap<FieldEntry, MethodEntry> getGettersByField() {
-		return this.gettersByField;
+	@Nullable
+	public MethodEntry getComponentGetter(FieldEntry componentField) {
+		return this.gettersByField.get(componentField);
 	}
 
-	public Multimap<ClassEntry, FieldEntry> getFieldsByClass() {
-		return this.fieldsByClass;
+	@Nullable
+	public FieldEntry getComponentField(MethodEntry componentGetter) {
+		return this.gettersByField.inverse().get(componentGetter);
 	}
 
-	public Multimap<ClassEntry, MethodEntry> getMethodsByClass() {
-		return this.methodsByClass;
+	public Stream<FieldEntry> streamComponentFields(ClassEntry recordEntry) {
+		return this.fieldsByClass.get(recordEntry).stream();
+	}
+
+	public Stream<MethodEntry> streamComponentMethods(ClassEntry recordEntry) {
+		return this.methodsByClass.get(recordEntry).stream();
 	}
 
 	@Override

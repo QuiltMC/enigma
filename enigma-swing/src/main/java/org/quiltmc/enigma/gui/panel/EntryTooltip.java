@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.gui.panel;
 
-import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
@@ -22,7 +21,6 @@ import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.docker.ObfuscatedClassesDocker;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.impl.plugin.RecordIndexingService;
 
 import javax.annotation.Nullable;
 import javax.swing.Box;
@@ -48,7 +46,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.font.TextAttribute;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -333,9 +330,7 @@ public class EntryTooltip extends JWindow {
 			.or(() -> target instanceof MethodEntry targetMethod
 				// try getting record field javadocs for record getters if the getter has no javadoc
 				? getRecordIndexingService(this.gui)
-					.map(RecordIndexingService::getGettersByField)
-					.map(BiMap::inverse)
-					.map(fieldsByGetter -> fieldsByGetter.get(targetMethod))
+					.map(service -> service.getComponentField(targetMethod))
 					// this cast is required on java 17 for some reason
 					.map(entry -> (FieldEntry) entry)
 					.map(remapper::getMapping)
@@ -524,10 +519,8 @@ public class EntryTooltip extends JWindow {
 					.flatMap(methodDef -> methodDef.getParameters(entryIndex).stream());
 		} else if (target instanceof ClassEntry targetClass) {
 			entries = getRecordIndexingService(this.gui)
-					.map(RecordIndexingService::getFieldsByClass)
-					.map(fieldsByClass -> fieldsByClass.get(targetClass))
 					.stream()
-					.flatMap(Collection::stream);
+					.flatMap(service -> service.streamComponentFields(targetClass));
 		} else {
 			entries = Stream.empty();
 		}

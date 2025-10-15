@@ -1,7 +1,5 @@
 package org.quiltmc.enigma.impl.plugin;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.Multimap;
 import org.objectweb.asm.tree.ClassNode;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
@@ -10,7 +8,9 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
+import javax.annotation.Nullable;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public class RecordIndexingService implements JarIndexerService {
 	public static final String ID = "enigma:record_component_indexer";
@@ -21,16 +21,22 @@ public class RecordIndexingService implements JarIndexerService {
 		this.visitor = visitor;
 	}
 
-	public BiMap<FieldEntry, MethodEntry> getGettersByField() {
-		return this.visitor.getGettersByField();
+	@Nullable
+	public MethodEntry getComponentGetter(FieldEntry componentField) {
+		return this.visitor.getComponentGetter(componentField);
 	}
 
-	public Multimap<ClassEntry, FieldEntry> getFieldsByClass() {
-		return this.visitor.getFieldsByClass();
+	@Nullable
+	public FieldEntry getComponentField(MethodEntry componentGetter) {
+		return this.visitor.getComponentField(componentGetter);
 	}
 
-	public Multimap<ClassEntry, MethodEntry> getMethodsByClass() {
-		return this.visitor.getMethodsByClass();
+	public Stream<FieldEntry> streamComponentFields(ClassEntry recordEntry) {
+		return this.visitor.streamComponentFields(recordEntry);
+	}
+
+	public Stream<MethodEntry> streamComponentMethods(ClassEntry recordEntry) {
+		return this.visitor.streamComponentMethods(recordEntry);
 	}
 
 	@Override

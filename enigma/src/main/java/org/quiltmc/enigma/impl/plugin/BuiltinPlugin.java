@@ -1,7 +1,5 @@
 package org.quiltmc.enigma.impl.plugin;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
 import org.quiltmc.enigma.api.EnigmaPlugin;
@@ -16,8 +14,6 @@ import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
-import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
-import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -66,11 +62,10 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 	}
 
 	private static void registerRecordNamingService(EnigmaPluginContext ctx) {
-		final BiMap<FieldEntry, MethodEntry> gettersByField = HashBiMap.create();
-		final RecordIndexingVisitor visitor = new RecordIndexingVisitor(gettersByField);
+		final RecordIndexingVisitor visitor = new RecordIndexingVisitor();
 
 		ctx.registerService(JarIndexerService.TYPE, ctx1 -> new RecordIndexingService(visitor));
-		ctx.registerService(NameProposalService.TYPE, ctx1 -> new RecordComponentProposalService(gettersByField));
+		ctx.registerService(NameProposalService.TYPE, ctx1 -> new RecordComponentProposalService(visitor));
 	}
 
 	private static void registerSpecializedMethodNamingService(EnigmaPluginContext ctx) {
