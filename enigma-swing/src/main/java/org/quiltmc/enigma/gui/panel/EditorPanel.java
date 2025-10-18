@@ -9,6 +9,7 @@ import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindToolBar;
 import org.quiltmc.enigma.gui.element.EditorPopupMenu;
 import org.quiltmc.enigma.gui.element.NavigatorPanel;
@@ -17,6 +18,7 @@ import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
+import org.quiltmc.syntaxpain.LineNumbersRuler;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -83,6 +85,15 @@ public class EditorPanel extends BaseEditorPanel {
 				}
 			});
 		}
+
+		final SyntaxPaneProperties.Colors syntaxColors = Config.getCurrentSyntaxPaneColors();
+
+		final LineNumbersRuler ruler = LineNumbersRuler.install(new LineNumbersRuler(
+			this.editor, syntaxColors.lineNumbersSelected.value()
+		));
+		ruler.setForeground(syntaxColors.lineNumbersForeground.value());
+		ruler.setBackground(syntaxColors.lineNumbersBackground.value());
+		ruler.setFont(this.editor.getFont());
 
 		this.quickFindToolBar.setVisible(false);
 		// init editor popup menu
