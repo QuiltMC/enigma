@@ -39,7 +39,6 @@ public class QuickFindToolBar extends JToolBar implements DocumentListener, Acti
 	protected static final int SEARCH_FIELD_MIN_WIDTH = 60;
 	private static final int SEARCH_FIELD_MIN_HEIGHT = 24;
 
-	protected final Markers.SimpleMarker marker = new Markers.SimpleMarker(Color.PINK);
 	protected WeakReference<JTextComponent> target = new WeakReference<>(null);
 	protected WeakReference<DocumentSearchData> searchData = new WeakReference<>(null);
 	protected int prevCaretPos;
@@ -195,7 +194,6 @@ public class QuickFindToolBar extends JToolBar implements DocumentListener, Acti
 		this.setVisible(false);
 		final JTextComponent target = this.target.get();
 		if (target != null) {
-			Markers.removeMarkers(target, this.marker);
 			target.requestFocus();
 		}
 	}
