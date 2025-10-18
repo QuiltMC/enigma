@@ -22,6 +22,7 @@ import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.GuiController;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.gui.highlight.SelectionHighlightPainter;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
@@ -30,6 +31,9 @@ import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.LineIndexer;
 import org.quiltmc.enigma.util.Result;
 import org.quiltmc.enigma.util.Utils;
+import org.quiltmc.syntaxpain.JavaSyntaxKit;
+import org.quiltmc.syntaxpain.LineNumbersRuler;
+import org.quiltmc.syntaxpain.PairsMarker;
 import org.tinylog.Logger;
 
 import javax.swing.JButton;
@@ -109,14 +113,29 @@ public class BaseEditorPanel {
 		this.gui = gui;
 		this.controller = gui.getController();
 
+		final SyntaxPaneProperties.Colors syntaxColors = Config.getCurrentSyntaxPaneColors();
+
 		this.editor.setEditable(false);
 		this.editor.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		this.editor.setSelectionColor(new Color(31, 46, 90));
 		this.editor.setCaret(new BrowserCaret());
 		this.editor.setFont(ScaleUtil.getFont(this.editor.getFont().getFontName(), Font.PLAIN, this.fontSize));
-		this.editor.setCaretColor(Config.getCurrentSyntaxPaneColors().caret.value());
-		this.editor.setContentType("text/enigma-sources");
-		this.editor.setBackground(Config.getCurrentSyntaxPaneColors().editorBackground.value());
+		this.editor.setCaretColor(syntaxColors.caret.value());
+		this.editor.setContentType(JavaSyntaxKit.CONTENT_TYPE);
+
+		final PairsMarker pairsMarker = new PairsMarker();
+		pairsMarker.configure();
+		pairsMarker.install(this.editor);
+
+		final LineNumbersRuler ruler = new LineNumbersRuler();
+		ruler.configure();
+		ruler.install(this.editor);
+
+		this.editor.setFont(Config.currentFonts().editor.value());
+        this.editor.setCaretColor(syntaxColors.text.value());
+
+
+		this.editor.setBackground(syntaxColors.editorBackground.value());
 		// set unit increment to height of one line, the amount scrolled per
 		// mouse wheel rotation is then controlled by OS settings
 		this.editorScrollPane.getVerticalScrollBar().setUnitIncrement(this.editor.getFontMetrics(this.editor.getFont()).getHeight());
