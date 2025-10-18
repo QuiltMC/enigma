@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.config.theme;
 
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.syntaxpain.JavaSyntaxKit;
@@ -24,9 +25,25 @@ public final class ThemeUtil {
 		Config.configureTheme();
 		Config.setGlobalLaf();
 		ThemeUtil.setFonts();
-		Config.updateSyntaxpain();
 		UIManager.put("ScrollBar.showButtons", true);
+
+		final SyntaxPaneProperties.Colors syntaxColors = Config.getCurrentSyntaxPaneColors();
+		JavaSyntaxKit.setSyntaxColors(
+			syntaxColors.highlight.value(),
+			syntaxColors.string.value(),
+			syntaxColors.number.value(),
+			syntaxColors.operator.value(),
+			syntaxColors.delimiter.value(),
+			syntaxColors.type.value(),
+			syntaxColors.identifier.value(),
+			syntaxColors.comment.value(),
+			syntaxColors.text.value(),
+			new Color(0xcc6600)
+		);
+
 		JEditorPane.registerEditorKitForContentType(JavaSyntaxKit.CONTENT_TYPE, JavaSyntaxKit.class.getName());
+
+
 		ScaleUtil.applyScaling();
 	}
 

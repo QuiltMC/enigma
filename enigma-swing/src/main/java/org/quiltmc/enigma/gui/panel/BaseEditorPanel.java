@@ -124,7 +124,7 @@ public class BaseEditorPanel {
 
 		PairsMarker.install(new PairsMarker(this.editor, new Color(0xffbb77)));
 
-		this.editor.setFont(Config.currentFonts().editor.value());
+		this.editor.setFont(ScaleUtil.scaleFont(Config.currentFonts().editor.value()));
         this.editor.setCaretColor(syntaxColors.text.value());
 
 		this.editor.setBackground(syntaxColors.editorBackground.value());
