@@ -26,7 +26,7 @@ public final class ThemeUtil {
 		ThemeUtil.setFonts();
 		Config.updateSyntaxpain();
 		UIManager.put("ScrollBar.showButtons", true);
-		JEditorPane.registerEditorKitForContentType("text/enigma-sources", JavaSyntaxKit.class.getName());
+		JEditorPane.registerEditorKitForContentType(JavaSyntaxKit.CONTENT_TYPE, JavaSyntaxKit.class.getName());
 		ScaleUtil.applyScaling();
 	}
 

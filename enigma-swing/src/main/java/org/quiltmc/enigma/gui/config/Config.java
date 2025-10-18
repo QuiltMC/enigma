@@ -262,8 +262,6 @@ public final class Config extends ReflectiveConfig {
 		SyntaxPaneProperties.Colors colors = getCurrentSyntaxPaneColors();
 
 		SyntaxpainConfiguration.setEditorFont(fonts.editor.value());
-		// disable dialog; EditorPanel uses a tool bar component instead
-		SyntaxpainConfiguration.setQuickFindDialogFactory(null);
 
 		SyntaxpainConfiguration.setLineRulerPrimaryColor(colors.lineNumbersForeground.value());
 		SyntaxpainConfiguration.setLineRulerSecondaryColor(colors.lineNumbersBackground.value());
