@@ -25,7 +25,6 @@ import org.quiltmc.enigma.gui.config.theme.properties.NoneThemeProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.SystemThemeProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.util.I18n;
-import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
 import javax.swing.UnsupportedLookAndFeelException;
 import java.awt.Dimension;
@@ -252,30 +251,6 @@ public final class Config extends ReflectiveConfig {
 		public ComplexConfigValue copy() {
 			return this;
 		}
-	}
-
-	/**
-	 * Updates the backend library Syntaxpain, used for code highlighting and other editor things.
-	 */
-	public static void updateSyntaxpain() {
-		Theme.Fonts fonts = currentFonts();
-		SyntaxPaneProperties.Colors colors = getCurrentSyntaxPaneColors();
-
-		SyntaxpainConfiguration.setEditorFont(fonts.editor.value());
-
-		SyntaxpainConfiguration.setLineRulerPrimaryColor(colors.lineNumbersForeground.value());
-		SyntaxpainConfiguration.setLineRulerSecondaryColor(colors.lineNumbersBackground.value());
-		SyntaxpainConfiguration.setLineRulerSelectionColor(colors.lineNumbersSelected.value());
-
-		SyntaxpainConfiguration.setHighlightColor(colors.highlight.value());
-		SyntaxpainConfiguration.setStringColor(colors.string.value());
-		SyntaxpainConfiguration.setNumberColor(colors.number.value());
-		SyntaxpainConfiguration.setOperatorColor(colors.operator.value());
-		SyntaxpainConfiguration.setDelimiterColor(colors.delimiter.value());
-		SyntaxpainConfiguration.setTypeColor(colors.type.value());
-		SyntaxpainConfiguration.setIdentifierColor(colors.identifier.value());
-		SyntaxpainConfiguration.setCommentColour(colors.comment.value());
-		SyntaxpainConfiguration.setTextColor(colors.text.value());
 	}
 
 	public enum ThemeChoice implements ConfigSerializableObject<String> {
