@@ -14,13 +14,10 @@
 
 package org.quiltmc.syntaxpain;
 
-import javax.swing.JEditorPane;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.JTextComponent;
 import java.awt.Color;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * This class highlights any pairs of the given language.  Pairs are defined
@@ -28,12 +25,19 @@ import java.beans.PropertyChangeListener;
  *
  * @author Ayman Al-Sairafi
  */
-public class PairsMarker implements CaretListener, SyntaxComponent, PropertyChangeListener {
-	private JTextComponent pane;
-	private Markers.SimpleMarker marker;
-	private Status status;
+public class PairsMarker implements CaretListener {
+	public static <M extends PairsMarker> M install(M marker) {
+        marker.pane.addCaretListener(marker);
 
-	public PairsMarker() {
+		return marker;
+	}
+
+	protected final JTextComponent pane;
+	protected final Markers.SimpleMarker marker;
+
+	public PairsMarker(JTextComponent pane, Color color) {
+		this.pane = pane;
+		this.marker = new Markers.SimpleMarker(color);
 	}
 
 	@Override
@@ -57,36 +61,5 @@ public class PairsMarker implements CaretListener, SyntaxComponent, PropertyChan
 	 */
 	public void removeMarkers() {
 		Markers.removeMarkers(this.pane, this.marker);
-	}
-
-	@Override
-	public void configure() {
-		Color markerColor = new Color(0xffbb77);
-		this.marker = new Markers.SimpleMarker(markerColor);
-	}
-
-	@Override
-	public void install(JEditorPane editor) {
-		this.pane = editor;
-		this.pane.addCaretListener(this);
-		this.status = Status.INSTALLING;
-	}
-
-	@Override
-	public void deinstall(JEditorPane editor) {
-		this.status = Status.DEINSTALLING;
-		this.pane.removeCaretListener(this);
-		this.removeMarkers();
-	}
-
-	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals("document")) {
-			this.pane.removeCaretListener(this);
-			if (this.status.equals(Status.INSTALLING)) {
-				this.pane.addCaretListener(this);
-				this.removeMarkers();
-			}
-		}
 	}
 }
