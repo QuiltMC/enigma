@@ -36,9 +36,6 @@ public class SyntaxView extends PlainView {
 	private static final Logger log = Logger.getLogger(SyntaxView.class.getName());
 	private final SyntaxStyleMap styles;
 
-	/**
-	 * Construct a new view using the given configuration and prefix given
-	 */
 	public SyntaxView(Element element, SyntaxStyleMap styles) {
 		super(element);
 		this.styles = styles;
