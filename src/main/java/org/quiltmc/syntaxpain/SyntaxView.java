@@ -15,11 +15,14 @@
 
 package org.quiltmc.syntaxpain;
 
+import javax.swing.plaf.TextUI;
+import javax.swing.plaf.basic.BasicTextUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.PlainView;
 import javax.swing.text.Segment;
+import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import java.awt.Color;
 import java.awt.Font;

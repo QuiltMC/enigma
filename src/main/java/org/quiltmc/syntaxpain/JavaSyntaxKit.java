@@ -17,49 +17,21 @@ package org.quiltmc.syntaxpain;
 
 import org.quiltmc.syntaxpain.generated.JavaLexer;
 
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JEditorPane;
-import javax.swing.KeyStroke;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
-import java.awt.Color;
-import java.awt.Font;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 
+@SuppressWarnings("unused")
 public class JavaSyntaxKit extends DefaultEditorKit implements ViewFactory {
+	public static final String CONTENT_TYPE = "text/enigma-sources";
 	private final Lexer lexer;
-	private final Map<JEditorPane, List<SyntaxComponent>> editorComponents = new WeakHashMap<>();
-	private static Font font = null;
 
 	public JavaSyntaxKit() {
 		super();
 		// JavaLexer is generated automagically by jflex based on the java.jflex file
 		this.lexer = new JavaLexer();
-	}
-
-	public void addComponents(JEditorPane editorPane) {
-		this.installComponent(editorPane, new PairsMarker());
-		this.installComponent(editorPane, new LineNumbersRuler());
-	}
-
-	public void installComponent(JEditorPane pane, SyntaxComponent comp) {
-		comp.configure();
-		comp.install(pane);
-		this.editorComponents.computeIfAbsent(pane, k -> new ArrayList<>());
-		this.editorComponents.get(pane).add(comp);
-	}
-
-	public static void setFont(Font newFont) {
-		font = newFont;
 	}
 
 	@Override
@@ -73,64 +45,12 @@ public class JavaSyntaxKit extends DefaultEditorKit implements ViewFactory {
 	}
 
 	@Override
-	public void install(JEditorPane editorPane) {
-		super.install(editorPane);
-
-		if (font == null) {
-			font = SyntaxpainConfiguration.getEditorFont();
-		}
-
-		editorPane.setFont(font);
-
-		Color caretColor = SyntaxpainConfiguration.getTextColor();
-		editorPane.setCaretColor(caretColor);
-
-		if (SyntaxpainConfiguration.isQuickFindDialogEnabled()) {
-			this.addQuickFindDialogAction(editorPane);
-		}
-
-		this.addComponents(editorPane);
-	}
-
-	@Override
-	public void deinstall(JEditorPane editorPane) {
-		for (SyntaxComponent c : this.editorComponents.get(editorPane)) {
-			c.deinstall(editorPane);
-		}
-
-		this.editorComponents.clear();
-		editorPane.getInputMap().clear();
-		ActionMap m = editorPane.getActionMap();
-		m.clear();
-	}
-
-	/**
-	 * Sets up the quick find action.
-	 */
-	public void addQuickFindDialogAction(JEditorPane editorPane) {
-		InputMap inputMap = new InputMap();
-		inputMap.setParent(editorPane.getInputMap());
-		ActionMap actionMap = new ActionMap();
-		actionMap.setParent(editorPane.getActionMap());
-
-		QuickFindDialogAction action = new QuickFindDialogAction();
-		actionMap.put(action.getClass().getSimpleName(), action);
-
-		KeyStroke stroke = KeyStroke.getKeyStroke("control F");
-		action.putValue(Action.ACCELERATOR_KEY, stroke);
-		inputMap.put(stroke, action.getClass().getSimpleName());
-
-		editorPane.setActionMap(actionMap);
-		editorPane.setInputMap(JTextComponent.WHEN_FOCUSED, inputMap);
-	}
-
-	@Override
 	public Document createDefaultDocument() {
 		return new SyntaxDocument(this.lexer);
 	}
 
 	@Override
 	public String getContentType() {
-		return "text/enigma-sources";
+		return CONTENT_TYPE;
 	}
 }

@@ -15,13 +15,9 @@
 
 package org.quiltmc.syntaxpain;
 
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -83,13 +79,5 @@ public class Util {
 		}
 
 		return count;
-	}
-
-	public static void addEscapeListener(EscapeListener dialog) {
-		ActionListener escListener = e -> dialog.escapePressed();
-
-		dialog.getRootPane().registerKeyboardAction(escListener,
-				KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-				JComponent.WHEN_IN_FOCUSED_WINDOW);
 	}
 }
