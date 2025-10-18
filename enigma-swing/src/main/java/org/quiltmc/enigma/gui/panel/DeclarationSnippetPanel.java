@@ -43,10 +43,8 @@ import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.LineIndexer;
 import org.quiltmc.enigma.util.Result;
-import org.quiltmc.syntaxpain.LineNumbersRuler;
 import org.tinylog.Logger;
 
-import javax.swing.JViewport;
 import java.awt.Color;
 import java.util.Comparator;
 import java.util.Optional;
@@ -66,13 +64,7 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 	public DeclarationSnippetPanel(Gui gui, Entry<?> target, ClassHandle targetTopClassHandle) {
 		super(gui);
 
-		Optional.ofNullable(this.editorScrollPane.getRowHeader())
-				.map(JViewport::getView)
-				// LineNumbersRuler is installed by syntaxpain
-				.map(view -> view instanceof LineNumbersRuler lineNumbers ? lineNumbers : null)
-				// TODO offset line numbers instead of removing them once
-				//  offsets are implemented in syntaxpain
-				.ifPresent(lineNumbers -> lineNumbers.deinstall(this.editor));
+		// TODO add offset line numbers instead of removing them once offsets are implemented in syntaxpain
 
 		this.addSourceSetListener(source -> {
 			if (!this.isBounded()) {

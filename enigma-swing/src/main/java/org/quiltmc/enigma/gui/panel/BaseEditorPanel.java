@@ -32,7 +32,6 @@ import org.quiltmc.enigma.util.LineIndexer;
 import org.quiltmc.enigma.util.Result;
 import org.quiltmc.enigma.util.Utils;
 import org.quiltmc.syntaxpain.JavaSyntaxKit;
-import org.quiltmc.syntaxpain.LineNumbersRuler;
 import org.quiltmc.syntaxpain.PairsMarker;
 import org.tinylog.Logger;
 
@@ -123,17 +122,10 @@ public class BaseEditorPanel {
 		this.editor.setCaretColor(syntaxColors.caret.value());
 		this.editor.setContentType(JavaSyntaxKit.CONTENT_TYPE);
 
-		final PairsMarker pairsMarker = new PairsMarker();
-		pairsMarker.configure();
-		pairsMarker.install(this.editor);
-
-		final LineNumbersRuler ruler = new LineNumbersRuler();
-		ruler.configure();
-		ruler.install(this.editor);
+		PairsMarker.install(new PairsMarker(this.editor, new Color(0xffbb77)));
 
 		this.editor.setFont(Config.currentFonts().editor.value());
         this.editor.setCaretColor(syntaxColors.text.value());
-
 
 		this.editor.setBackground(syntaxColors.editorBackground.value());
 		// set unit increment to height of one line, the amount scrolled per
