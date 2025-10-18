@@ -22,10 +22,35 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
+import java.awt.Color;
 
 @SuppressWarnings("unused")
 public class JavaSyntaxKit extends DefaultEditorKit implements ViewFactory {
 	public static final String CONTENT_TYPE = "text/enigma-sources";
+
+	private static SyntaxStyleMap styles = new SyntaxStyleMap(
+		new Color(0x3333EE),
+		new Color(0xCC6600),
+		new Color(0x999933),
+		new Color(0x000000),
+		new Color(0x000000),
+		new Color(0x000000),
+		new Color(0x000000),
+		new Color(0x339933),
+		new Color(0x000000),
+		new Color(0xcc6600)
+	);
+
+	public static void setSyntaxColors(
+		Color highlight, Color string, Color number, Color operator, Color delimiter,
+		Color type, Color identifier, Color comment, Color text, Color regex
+	) {
+		styles = new SyntaxStyleMap(
+			highlight, string, number, operator, delimiter,
+			type, identifier, comment, text, regex
+		);
+	}
+
 	private final Lexer lexer;
 
 	public JavaSyntaxKit() {
@@ -41,7 +66,7 @@ public class JavaSyntaxKit extends DefaultEditorKit implements ViewFactory {
 
 	@Override
 	public View create(Element element) {
-		return new SyntaxView(element);
+		return new SyntaxView(element, styles);
 	}
 
 	@Override

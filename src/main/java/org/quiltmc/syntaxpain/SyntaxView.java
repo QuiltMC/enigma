@@ -15,14 +15,11 @@
 
 package org.quiltmc.syntaxpain;
 
-import javax.swing.plaf.TextUI;
-import javax.swing.plaf.basic.BasicTextUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.PlainView;
 import javax.swing.text.Segment;
-import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import java.awt.Color;
 import java.awt.Font;
@@ -37,22 +34,14 @@ import java.util.logging.Logger;
 
 public class SyntaxView extends PlainView {
 	private static final Logger log = Logger.getLogger(SyntaxView.class.getName());
-	private int rightMarginColumn;
-	private Color rightMarginColor;
-	private SyntaxStyle defaultStyle;
+	private final SyntaxStyleMap styles;
 
 	/**
 	 * Construct a new view using the given configuration and prefix given
 	 */
-	public SyntaxView(Element element) {
+	public SyntaxView(Element element, SyntaxStyleMap styles) {
 		super(element);
-		this.configure();
-	}
-
-	private void configure() {
-		this.rightMarginColor = new Color(0xFF7777);
-		this.rightMarginColumn = 0;
-		this.defaultStyle = SyntaxStyle.getStyle(TokenType.DEFAULT);
+		this.styles = styles;
 	}
 
 	@Override
@@ -62,14 +51,6 @@ public class SyntaxView extends PlainView {
 		Color saveColor = graphics.getColor();
 		SyntaxDocument doc = (SyntaxDocument) this.getDocument();
 		Segment segment = this.getLineBuffer();
-		// Draw the right margin first, if needed.  This way the text overlays
-		// the margin
-		if (this.rightMarginColumn > 0) {
-			int m_x = this.rightMarginColumn * graphics.getFontMetrics().charWidth('m');
-			int h = graphics.getFontMetrics().getHeight();
-			graphics.setColor(this.rightMarginColor);
-			graphics.drawLine(m_x, (int) y, m_x, (int) y - h);
-		}
 
 		try {
 			// Colour the parts
@@ -82,7 +63,7 @@ public class SyntaxView extends PlainView {
 				// it in the default type
 				if (start < t.start) {
 					doc.getText(start, t.start - start, segment);
-					x = this.defaultStyle.drawText(segment, (int) x, (int) y, graphics, this, start);
+					x = this.styles.drawText(TokenType.DEFAULT, segment, (int) x, (int) y, graphics, this, start);
 				}
 
 				// t and s are the actual start and length of what we should
@@ -103,14 +84,14 @@ public class SyntaxView extends PlainView {
 				}
 
 				doc.getText(s, l, segment);
-				x = SyntaxStyle.drawText(segment, x, y, graphics, this, t);
+				x = this.styles.drawText(segment, x, y, graphics, this, t);
 				start = t.end();
 			}
 
 			// now for any remaining text not tokenized:
 			if (start < p1) {
 				doc.getText(start, p1 - start, segment);
-				x = this.defaultStyle.drawText(segment, x, y, graphics, this, start);
+				x = this.styles.drawText(TokenType.DEFAULT, segment, x, y, graphics, this, start);
 			}
 		} catch (BadLocationException ex) {
 			log.log(Level.SEVERE, "Requested: " + ex.offsetRequested(), ex);
@@ -124,13 +105,6 @@ public class SyntaxView extends PlainView {
 
 	@Override
 	protected float drawSelectedText(Graphics2D graphics, float x, float y, int p0, int p1) throws BadLocationException {
-		if (this.rightMarginColumn > 0) {
-			int m_x = this.rightMarginColumn * graphics.getFontMetrics().charWidth('m');
-			int h = graphics.getFontMetrics().getHeight();
-			graphics.setColor(this.rightMarginColor);
-			graphics.drawLine(m_x, (int) y, m_x, (int) (y - h));
-		}
-
 		return super.drawSelectedText(graphics, x, y, p0, p1);
 	}
 
