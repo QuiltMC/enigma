@@ -33,11 +33,11 @@ public class PairsMarker implements CaretListener {
 	}
 
 	protected final JTextComponent pane;
-	protected final Markers.SimpleMarker marker;
+	protected final SimpleMarker marker;
 
 	public PairsMarker(JTextComponent pane, Color color) {
 		this.pane = pane;
-		this.marker = new Markers.SimpleMarker(color);
+		this.marker = new SimpleMarker(color);
 	}
 
 	@Override
@@ -48,10 +48,10 @@ public class PairsMarker implements CaretListener {
 		if (doc != null) {
 			Token token = doc.getTokenAt(pos);
 			if (token != null && token.pairValue != 0) {
-				Markers.markToken(this.pane, token, this.marker);
+				this.marker.markToken(this.pane, token);
 				Token other = doc.getPairFor(token);
 				if (other != null) {
-					Markers.markToken(this.pane, other, this.marker);
+					this.marker.markToken(this.pane, other);
 				}
 			}
 		}
@@ -62,6 +62,6 @@ public class PairsMarker implements CaretListener {
 	 * when the editor-kit is removed.
 	 */
 	public void removeMarkers() {
-		Markers.removeMarkers(this.pane, this.marker);
+		this.marker.removeMarkers(this.pane);
 	}
 }
