@@ -32,6 +32,7 @@ import org.quiltmc.enigma.util.LineIndexer;
 import org.quiltmc.enigma.util.Result;
 import org.quiltmc.enigma.util.Utils;
 import org.quiltmc.syntaxpain.JavaSyntaxKit;
+import org.quiltmc.syntaxpain.LineNumbersRuler;
 import org.quiltmc.syntaxpain.PairsMarker;
 import org.tinylog.Logger;
 
@@ -144,6 +145,17 @@ public class BaseEditorPanel {
 		this.deobfuscatedPainter = ThemeUtil.createDeobfuscatedPainter();
 
 		this.retryButton.addActionListener(e -> this.redecompileClass());
+	}
+
+	protected void installEditorRuler(int lineOffset) {
+		final SyntaxPaneProperties.Colors syntaxColors = Config.getCurrentSyntaxPaneColors();
+
+		final LineNumbersRuler ruler = LineNumbersRuler.install(new LineNumbersRuler(
+			this.editor, syntaxColors.lineNumbersSelected.value(), lineOffset
+		));
+		ruler.setForeground(syntaxColors.lineNumbersForeground.value());
+		ruler.setBackground(syntaxColors.lineNumbersBackground.value());
+		ruler.setFont(this.editor.getFont());
 	}
 
 	public void setClassHandle(ClassHandle handle) {
