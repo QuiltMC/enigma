@@ -35,6 +35,12 @@ public class LineIndexer {
 
 	public int getIndex(Position position) {
 		final int lineIndex = this.getStartIndex(position.line - Position.FIRST_LINE);
-		return lineIndex < 0 ? lineIndex : lineIndex + position.column - Position.FIRST_COLUMN;
+		if (lineIndex < 0) {
+			return lineIndex;
+		} else {
+			final int index = lineIndex + position.column - Position.FIRST_COLUMN;
+
+			return index < this.string.length() ? index : -1;
+		}
 	}
 }
