@@ -3,6 +3,8 @@ package org.quiltmc.enigma.util;
 import com.github.javaparser.Position;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,5 +44,26 @@ public class LineIndexer {
 
 			return index < this.string.length() ? index : -1;
 		}
+	}
+
+	public int getLine(int index) {
+		if (this.indexesByLine.get(this.indexesByLine.size() - 1) >= index) {
+			final int found = Collections.binarySearch(this.indexesByLine, index, Comparator.comparingInt(Integer::intValue));
+
+			// -(found + 2) because binarySearch returns -(insertion point) - 1 when not found,
+			// so we add 1 to undo their -1 and add another 1 because we want the preceding line
+			return found >= 0 ? found : -(found + 2);
+		} else {
+			while (this.lineEndMatcher.find()) {
+				final int lineStart = this.lineEndMatcher.end();
+				this.indexesByLine.add(lineStart);
+
+				if (lineStart >= index) {
+					return this.indexesByLine.size() - 2;
+				}
+			}
+		}
+
+		return -1;
 	}
 }

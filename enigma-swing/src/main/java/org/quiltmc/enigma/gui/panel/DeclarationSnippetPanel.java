@@ -75,11 +75,17 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 			} else {
 				this.resolveTarget(source, target)
 						.map(Target::token)
-						.map(this::navigateToTokenImpl)
-						.ifPresent(boundedToken -> this.addHighlight(boundedToken, BoxHighlightPainter.create(
-							new Color(0, 0, 0, 0),
-							Config.getCurrentSyntaxPaneColors().selectionHighlight.value()
-						)));
+						.ifPresent(unBoundedToken -> {
+							this.installEditorRuler(new LineIndexer(source.toString()).getLine(unBoundedToken.start));
+
+							final Token boundedToken = this.navigateToTokenImpl(unBoundedToken);
+							if (boundedToken != null) {
+								this.addHighlight(boundedToken, BoxHighlightPainter.create(
+										new Color(0, 0, 0, 0),
+										Config.getCurrentSyntaxPaneColors().selectionHighlight.value()
+								));
+							}
+						});
 			}
 		});
 
