@@ -23,7 +23,6 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import java.awt.Color;
@@ -37,8 +36,6 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static javax.swing.BorderFactory.createEmptyBorder;
 
@@ -76,7 +73,7 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 	 *
 	 * @return line number
 	 */
-	protected static int getLineNumber(JTextComponent editor, int pos) throws BadLocationException {
+	public static int getLineNumber(JTextComponent editor, int pos) {
 		final SyntaxDocument doc = SyntaxDocument.getFrom(editor);
 		if (doc != null) {
 			return doc.getLineNumberAt(pos);
@@ -85,20 +82,16 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 		}
 	}
 
-	protected static int getLineCount(JTextComponent pane) {
+	public static int getLineCount(JTextComponent pane) {
 		final SyntaxDocument doc = SyntaxDocument.getFrom(pane);
 		if (doc != null) {
 			return doc.getLineCount();
 		}
 
 		int count = 0;
-		try {
-			int p = pane.getDocument().getLength() - 1;
-			if (p > 0) {
-				count = getLineNumber(pane, p);
-			}
-		} catch (BadLocationException ex) {
-			Logger.getLogger(LineNumbersRuler.class.getName()).log(Level.SEVERE, null, ex);
+		int p = pane.getDocument().getLength() - 1;
+		if (p > 0) {
+			count = getLineNumber(pane, p);
 		}
 
 		return count;
@@ -123,8 +116,9 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 	// Text component this TextTextLineNumber component is in sync with
 	protected final JEditorPane editor;
 	protected final Color currentLineColor;
+    protected final int lineOffset;
 
-	//  Keep history information to reduce the number of times the component
+    //  Keep history information to reduce the number of times the component
 	//  needs to be repainted
 	private int lastDigits;
 	private int lastHeight;
@@ -133,10 +127,15 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 	private String numbersFormat = "%3d";
 
 	public LineNumbersRuler(JEditorPane editor, Color currentLineColor) {
+		this(editor, currentLineColor, 0);
+	}
+
+	public LineNumbersRuler(JEditorPane editor, Color currentLineColor, int lineOffset) {
 		this.editor = editor;
 		this.currentLineColor = currentLineColor;
+        this.lineOffset = lineOffset;
 
-		final Insets editorInsets = this.editor.getInsets();
+        final Insets editorInsets = this.editor.getInsets();
 		this.setBorder(createEmptyBorder(editorInsets.top, 5, editorInsets.bottom, 5));
 
 		// required for toggle-lines to correctly repaint
@@ -148,7 +147,7 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 	 */
 	private void setPreferredWidth(boolean force) {
 		int lines = getLineCount(this.editor);
-		int digits = Math.max(String.valueOf(lines).length(), MINIMUM_DISPLAY_DIGITS);
+		int digits = Math.max(String.valueOf(lines + this.lineOffset).length(), MINIMUM_DISPLAY_DIGITS);
 
 		// Update sizes when number of digits in the line number changes
 
@@ -174,35 +173,29 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
-		FontMetrics fontMetrics = this.getFontMetrics(this.getFont());
-		Insets insets = this.getInsets();
-		int currentLine = -1;
-		try {
-			currentLine = getLineNumber(this.editor, this.editor.getCaretPosition());
-		} catch (BadLocationException ex) {
-			// this won't happen, even if it does, we can ignore it and we will not have
-			// a current line to worry about...
-		}
+		final FontMetrics fontMetrics = this.getFontMetrics(this.getFont());
+		final Insets insets = this.getInsets();
+		final int currentLine = getLineNumber(this.editor, this.editor.getCaretPosition());
 
-		int lh = fontMetrics.getHeight();
-		int maxLines = getLineCount(this.editor);
+        final int lineHeight = fontMetrics.getHeight();
+		final int maxLines = getLineCount(this.editor);
 		SyntaxView.setRenderingHits((Graphics2D) g);
 
-		Rectangle clip = g.getClip().getBounds();
-		int topLine = (int) (clip.getY() / lh);
-		int bottomLine = Math.min(maxLines, (int) (clip.getHeight() + lh - 1) / lh + topLine + 1);
+		final Rectangle clip = g.getClip().getBounds();
+		final int topLine = (int) (clip.getY() / lineHeight);
+		final int bottomLine = Math.min(maxLines, (int) (clip.getHeight() + lineHeight - 1) / lineHeight + topLine + 1);
 
 		for (int line = topLine; line < bottomLine; line++) {
-			String lineNumber = String.format(this.numbersFormat, line + 1);
-			int y = line * lh + insets.top;
-			int yt = y + fontMetrics.getAscent();
+			final String lineNumber = String.format(this.numbersFormat, line + 1 + this.lineOffset);
+			final int top = line * lineHeight + insets.top;
+			final int stringBottom = top + fontMetrics.getAscent();
 			if (line == currentLine) {
 				g.setColor(this.currentLineColor);
-				g.fillRect(0, y, this.getWidth(), lh);
+				g.fillRect(0, top, this.getWidth(), lineHeight);
 				g.setColor(this.getForeground());
-				g.drawString(lineNumber, insets.left, yt);
+				g.drawString(lineNumber, insets.left, stringBottom);
 			} else {
-				g.drawString(lineNumber, insets.left, yt);
+				g.drawString(lineNumber, insets.left, stringBottom);
 			}
 		}
 	}
