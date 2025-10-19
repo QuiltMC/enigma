@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 public class LineIndexer {
 	public static final Pattern LINE_END = Pattern.compile("\\r\\n?|\\n");
+	public static final Comparator<Integer> INT_COMPARATOR = Comparator.comparingInt(Integer::intValue);
 
 	private final List<Integer> indexesByLine = new ArrayList<>();
 	private final Matcher lineEndMatcher;
@@ -48,17 +49,18 @@ public class LineIndexer {
 
 	public int getLine(int index) {
 		if (this.indexesByLine.get(this.indexesByLine.size() - 1) >= index) {
-			final int found = Collections.binarySearch(this.indexesByLine, index, Comparator.comparingInt(Integer::intValue));
+			final int found = Collections.binarySearch(this.indexesByLine, index, INT_COMPARATOR);
 
-			// -(found + 2) because binarySearch returns -(insertion point) - 1 when not found,
-			// so we add 1 to undo their -1 and add another 1 because we want the preceding line
-			return found >= 0 ? found : -(found + 2);
+			// -found - 2 because binarySearch returns -(insertion point) - 1 when not found;
+			// subtract 1 to undo their 1 and subtract another 1 to get the preceding line
+			return found >= 0 ? found : -found - 2;
 		} else {
 			while (this.lineEndMatcher.find()) {
 				final int lineStart = this.lineEndMatcher.end();
 				this.indexesByLine.add(lineStart);
 
 				if (lineStart >= index) {
+					// -2 to get the preceding line
 					return this.indexesByLine.size() - 2;
 				}
 			}
