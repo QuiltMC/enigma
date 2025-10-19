@@ -29,8 +29,10 @@ public class LineIndexer {
 	}
 
 	public int getStartIndex(int line) {
-		while (line >= this.indexesByLine.size() && this.lineEndMatcher.find()) {
-			this.indexesByLine.add(this.lineEndMatcher.end());
+		while (line >= this.indexesByLine.size()) {
+			if (this.collectLine() < 0) {
+				break;
+			}
 		}
 
 		return line < this.indexesByLine.size() ? this.indexesByLine.get(line) : -1;
@@ -55,10 +57,8 @@ public class LineIndexer {
 			// subtract 1 to undo their 1 and subtract another 1 to get the preceding line
 			return found >= 0 ? found : -found - 2;
 		} else {
-			while (this.lineEndMatcher.find()) {
-				final int lineStart = this.lineEndMatcher.end();
-				this.indexesByLine.add(lineStart);
-
+			int lineStart;
+			while ((lineStart = this.collectLine()) > 0) {
 				if (lineStart >= index) {
 					// -2 to get the preceding line
 					return this.indexesByLine.size() - 2;
@@ -67,5 +67,16 @@ public class LineIndexer {
 		}
 
 		return -1;
+	}
+
+	private int collectLine() {
+		if (this.lineEndMatcher.find()) {
+			final int lineStart = this.lineEndMatcher.end();
+			this.indexesByLine.add(lineStart);
+
+			return lineStart;
+		} else {
+			return -1;
+		}
 	}
 }
