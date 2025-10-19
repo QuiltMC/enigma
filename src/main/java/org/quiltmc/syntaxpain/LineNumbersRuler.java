@@ -25,6 +25,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -36,6 +37,8 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static javax.swing.BorderFactory.createEmptyBorder;
 
@@ -65,6 +68,40 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 		}
 
 		return ruler;
+	}
+
+	/**
+	 * Gets the Line Number at the give position of the editor component.
+	 * The first line number is ZERO
+	 *
+	 * @return line number
+	 */
+	protected static int getLineNumber(JTextComponent editor, int pos) throws BadLocationException {
+		final SyntaxDocument doc = SyntaxDocument.getFrom(editor);
+		if (doc != null) {
+			return doc.getLineNumberAt(pos);
+		} else {
+			return editor.getDocument().getDefaultRootElement().getElementIndex(pos);
+		}
+	}
+
+	protected static int getLineCount(JTextComponent pane) {
+		final SyntaxDocument doc = SyntaxDocument.getFrom(pane);
+		if (doc != null) {
+			return doc.getLineCount();
+		}
+
+		int count = 0;
+		try {
+			int p = pane.getDocument().getLength() - 1;
+			if (p > 0) {
+				count = getLineNumber(pane, p);
+			}
+		} catch (BadLocationException ex) {
+			Logger.getLogger(LineNumbersRuler.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
+		return count;
 	}
 
 	/**
@@ -110,7 +147,7 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 	 * Calculate the width needed to display the maximum line number
 	 */
 	private void setPreferredWidth(boolean force) {
-		int lines = Util.getLineCount(this.editor);
+		int lines = getLineCount(this.editor);
 		int digits = Math.max(String.valueOf(lines).length(), MINIMUM_DISPLAY_DIGITS);
 
 		// Update sizes when number of digits in the line number changes
@@ -141,14 +178,14 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 		Insets insets = this.getInsets();
 		int currentLine = -1;
 		try {
-			currentLine = Util.getLineNumber(this.editor, this.editor.getCaretPosition());
+			currentLine = getLineNumber(this.editor, this.editor.getCaretPosition());
 		} catch (BadLocationException ex) {
 			// this won't happen, even if it does, we can ignore it and we will not have
 			// a current line to worry about...
 		}
 
 		int lh = fontMetrics.getHeight();
-		int maxLines = Util.getLineCount(this.editor);
+		int maxLines = getLineCount(this.editor);
 		SyntaxView.setRenderingHits((Graphics2D) g);
 
 		Rectangle clip = g.getClip().getBounds();
