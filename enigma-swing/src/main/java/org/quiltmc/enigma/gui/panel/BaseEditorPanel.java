@@ -530,8 +530,8 @@ public class BaseEditorPanel {
 	 * @param token the token to navigate to, in {@linkplain #sourceBounds bounded} space
 	 */
 	public void navigateToToken(@Nullable Token token) {
-		final Token unBoundedToken = this.navigateToTokenImpl(token);
-		if (unBoundedToken == null) {
+		final Token boundedToken = this.navigateToTokenImpl(token);
+		if (boundedToken == null) {
 			return;
 		}
 
@@ -544,7 +544,7 @@ public class BaseEditorPanel {
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				if (this.counter % 2 == 0) {
-					this.highlight = BaseEditorPanel.this.addHighlight(unBoundedToken, SelectionHighlightPainter.INSTANCE);
+					this.highlight = BaseEditorPanel.this.addHighlight(boundedToken, SelectionHighlightPainter.INSTANCE);
 				} else if (this.highlight != null) {
 					BaseEditorPanel.this.editor.getHighlighter().removeHighlight(this.highlight);
 				}
@@ -559,29 +559,29 @@ public class BaseEditorPanel {
 	}
 
 	/**
-	 * @return a token equivalent to the passed {@code boundedToken} with its position shifted so it aligns with the
-	 * un-bounded source if navigation was successful, or {@code null} otherwise
+	 * @return a token equivalent to the passed {@code unBoundedToken} with its position shifted so it aligns with the
+	 * bounded source if navigation was successful, or {@code null} otherwise
 	 */
 	@Nullable
-	protected Token navigateToTokenImpl(@Nullable Token boundedToken) {
-		if (boundedToken == null) {
+	protected Token navigateToTokenImpl(@Nullable Token unBoundedToken) {
+		if (unBoundedToken == null) {
 			return null;
 		}
 
-		final Token unBoundedToken = this.sourceBounds.offsetOf(boundedToken).orElse(null);
-		if (unBoundedToken == null) {
+		final Token boundedToken = this.sourceBounds.offsetOf(unBoundedToken).orElse(null);
+		if (boundedToken == null) {
 			// token out of bounds
 			return null;
 		}
 
 		// set the caret position to the token
-		this.editor.setCaretPosition(unBoundedToken.start);
+		this.editor.setCaretPosition(boundedToken.start);
 		this.editor.grabFocus();
 
 		try {
 			// make sure the token is visible in the scroll window
-			Rectangle2D start = this.editor.modelToView2D(unBoundedToken.start);
-			Rectangle2D end = this.editor.modelToView2D(unBoundedToken.start);
+			Rectangle2D start = this.editor.modelToView2D(boundedToken.start);
+			Rectangle2D end = this.editor.modelToView2D(boundedToken.start);
 			if (start == null || end == null) {
 				return null;
 			}
@@ -598,7 +598,7 @@ public class BaseEditorPanel {
 			}
 		}
 
-		return unBoundedToken;
+		return boundedToken;
 	}
 
 	protected Object addHighlight(Token token, HighlightPainter highlightPainter) {

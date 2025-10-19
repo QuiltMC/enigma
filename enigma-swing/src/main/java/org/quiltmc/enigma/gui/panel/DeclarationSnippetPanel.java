@@ -76,17 +76,17 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 
 		this.addSourceSetListener(source -> {
 			@Nullable
-			final Token unBoundedToken = this.resolveTarget(source, target)
+			final Token boundedToken = this.resolveTarget(source, target)
 					.map(Target::token)
 					.map(this::navigateToTokenImpl)
 					.orElse(null);
-			if (unBoundedToken == null) {
+			if (boundedToken == null) {
 				// the source isn't very useful if it couldn't be trimmed and the declaration couldn't be navigated to
 				// set this text so it doesn't waste space or cause confusion
 				this.editor.setText("// Unable to locate declaration");
 				this.editor.getHighlighter().removeAllHighlights();
 			} else {
-				this.addHighlight(unBoundedToken, BoxHighlightPainter.create(
+				this.addHighlight(boundedToken, BoxHighlightPainter.create(
 						new Color(0, 0, 0, 0),
 						Config.getCurrentSyntaxPaneColors().selectionHighlight.value()
 				));
