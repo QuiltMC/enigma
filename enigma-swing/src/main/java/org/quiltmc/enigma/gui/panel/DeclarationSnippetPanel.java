@@ -102,43 +102,32 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 
 	private Snippet createSnippet(DecompiledClassSource source, Entry<?> targetEntry) {
 		return this.resolveTarget(source, targetEntry)
-			.map(target -> this.createSnippet(source, target.token, target.entry))
+			.map(target -> this.findSnippet(source, target.token, target.entry))
+			.map(snippet -> snippet.unwrapOrElse(error -> {
+				Logger.error(
+						"Error searching for declaration of '{}' for tooltip: {}",
+						this.getFullDeobfuscatedName(targetEntry),
+						error
+				);
+
+				return null;
+			}))
 			.orElse(null);
 	}
 
-	private Snippet createSnippet(DecompiledClassSource source, Token targetToken, Entry<?> targetEntry) {
-		final Result<Snippet, String> snippet;
+	private Result<Snippet, String> findSnippet(DecompiledClassSource source, Token targetToken, Entry<?> targetEntry) {
 		if (targetEntry instanceof ClassEntry targetClass) {
-			snippet = this.findClassSnippet(source, targetToken, targetClass);
+			return this.findClassSnippet(source, targetToken, targetClass);
 		} else if (targetEntry instanceof MethodEntry targetMethod) {
-			snippet = this.findMethodSnippet(source, targetToken, targetMethod);
+			return this.findMethodSnippet(source, targetToken, targetMethod);
 		} else if (targetEntry instanceof FieldEntry targetField) {
-			snippet = this.findFieldSnippet(source, targetToken, targetField);
+			return this.findFieldSnippet(source, targetToken, targetField);
 		} else if (targetEntry instanceof LocalVariableEntry targetLocal) {
-			snippet = this.getVariableSnippet(source, targetToken, targetLocal);
+			return this.getVariableSnippet(source, targetToken, targetLocal);
 		} else {
 			// this should never be reached
-			Logger.error(
-					"Error trimming tooltip for '{}': unrecognized target entry type!",
-					this.getFullDeobfuscatedName(targetEntry)
-			);
-
-			return null;
+			return Result.err("unrecognized target entry type!");
 		}
-
-		return snippet.unwrapOrElse(error -> {
-			this.logDeclarationSearchError(targetEntry, error);
-
-			return null;
-		});
-	}
-
-	private void logDeclarationSearchError(Entry<?> targetEntry, String error) {
-		Logger.error(
-				"Error searching for declaration of '{}' for tooltip: {}",
-				this.getFullDeobfuscatedName(targetEntry),
-				error
-		);
 	}
 
 	private Result<Snippet, String> getVariableSnippet(
