@@ -45,6 +45,9 @@ public class DarculaThemeProperties extends AbstractDarculaThemeProperties {
 				.lineNumbersBackground(new SerializableColor(0xFF313335))
 				.lineNumbersSelected(new SerializableColor(0xFF606366))
 
+				.selection(new SerializableColor(0xFF14587A))
+				.pairsMarker(new SerializableColor(0xBFAF8B57))
+
 				.obfuscated(new SerializableColor(0x4DFF5555))
 				.obfuscatedOutline(new SerializableColor(0x80FF5555))
 
@@ -54,8 +57,8 @@ public class DarculaThemeProperties extends AbstractDarculaThemeProperties {
 				.deobfuscated(new SerializableColor(0x4D50FA7B))
 				.deobfuscatedOutline(new SerializableColor(0x8050FA7B))
 
-				.fallback(new SerializableColor(0x4Daa5500))
-				.fallbackOutline(new SerializableColor(0x80d86f06))
+				.fallback(new SerializableColor(0x4DAA5500))
+				.fallbackOutline(new SerializableColor(0x80D86F06))
 
 				.editorBackground(new SerializableColor(0xFF282A36))
 				.highlight(new SerializableColor(0xFFFF79C6))
