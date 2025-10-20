@@ -126,7 +126,7 @@ public class BaseEditorPanel {
 		PairsMarker.install(new PairsMarker(this.editor, new Color(0xffbb77)));
 
 		this.editor.setFont(ScaleUtil.scaleFont(Config.currentFonts().editor.value()));
-        this.editor.setCaretColor(syntaxColors.text.value());
+		this.editor.setCaretColor(syntaxColors.text.value());
 
 		this.editor.setBackground(syntaxColors.editorBackground.value());
 		// set unit increment to height of one line, the amount scrolled per
@@ -151,7 +151,7 @@ public class BaseEditorPanel {
 		final SyntaxPaneProperties.Colors syntaxColors = Config.getCurrentSyntaxPaneColors();
 
 		final LineNumbersRuler ruler = LineNumbersRuler.install(new LineNumbersRuler(
-			this.editor, syntaxColors.lineNumbersSelected.value(), lineOffset
+				this.editor, syntaxColors.lineNumbersSelected.value(), lineOffset
 		));
 		ruler.setForeground(syntaxColors.lineNumbersForeground.value());
 		ruler.setBackground(syntaxColors.lineNumbersBackground.value());
