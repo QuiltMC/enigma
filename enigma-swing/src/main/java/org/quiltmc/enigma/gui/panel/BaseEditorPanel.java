@@ -639,6 +639,10 @@ public class BaseEditorPanel {
 		}
 	}
 
+	protected SourceBounds getSourceBounds() {
+		return this.sourceBounds;
+	}
+
 	public JPanel getUi() {
 		return this.ui;
 	}
@@ -768,7 +772,7 @@ public class BaseEditorPanel {
 		}
 	}
 
-	private sealed interface SourceBounds {
+	protected sealed interface SourceBounds {
 		int start();
 
 		int end();
