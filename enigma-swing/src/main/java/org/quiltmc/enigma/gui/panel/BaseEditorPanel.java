@@ -49,7 +49,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Highlighter.HighlightPainter;
-import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -117,13 +116,13 @@ public class BaseEditorPanel {
 
 		this.editor.setEditable(false);
 		this.editor.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		this.editor.setSelectionColor(new Color(31, 46, 90));
+		this.editor.setSelectionColor(syntaxColors.selection.value());
 		this.editor.setCaret(new BrowserCaret());
 		this.editor.setFont(ScaleUtil.getFont(this.editor.getFont().getFontName(), Font.PLAIN, this.fontSize));
 		this.editor.setCaretColor(syntaxColors.caret.value());
 		this.editor.setContentType(JavaSyntaxKit.CONTENT_TYPE);
 
-		PairsMarker.install(new PairsMarker(this.editor, new Color(0xffbb77)));
+		PairsMarker.install(new PairsMarker(this.editor, syntaxColors.pairsMarker.value()));
 
 		this.editor.setFont(ScaleUtil.scaleFont(Config.currentFonts().editor.value()));
 		this.editor.setCaretColor(syntaxColors.text.value());
