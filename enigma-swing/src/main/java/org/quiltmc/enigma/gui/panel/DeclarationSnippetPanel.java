@@ -64,7 +64,12 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 	public DeclarationSnippetPanel(Gui gui, Entry<?> target, ClassHandle targetTopClassHandle) {
 		super(gui);
 
-		// TODO add offset line numbers instead of removing them once offsets are implemented in syntaxpain
+		this.getEditor().setEditable(false);
+
+		this.editor.setCaretColor(new Color(0, 0, 0, 0));
+		this.editor.getCaret().setSelectionVisible(true);
+
+		this.setClassHandle(targetTopClassHandle, false, source -> this.createSnippet(source, target));
 
 		this.addSourceSetListener(source -> {
 			if (!this.isBounded()) {
@@ -73,27 +78,17 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 				this.editor.setText("// " + I18n.translate("editor.snippet.message.no_declaration_found"));
 				this.editor.getHighlighter().removeAllHighlights();
 			} else {
+				this.installEditorRuler(new LineIndexer(source.toString()).getLine(this.getSourceBounds().start()));
+
 				this.resolveTarget(source, target)
 						.map(Target::token)
-						.ifPresent(unBoundedToken -> {
-							this.installEditorRuler(new LineIndexer(source.toString()).getLine(unBoundedToken.start));
-
-							final Token boundedToken = this.navigateToTokenImpl(unBoundedToken);
-							if (boundedToken != null) {
-								this.addHighlight(boundedToken, BoxHighlightPainter.create(
-										new Color(0, 0, 0, 0),
-										Config.getCurrentSyntaxPaneColors().selectionHighlight.value()
-								));
-							}
-						});
+						.map(this::navigateToTokenImpl)
+						.ifPresent(boundedToken -> this.addHighlight(boundedToken, BoxHighlightPainter.create(
+							new Color(0, 0, 0, 0),
+							Config.getCurrentSyntaxPaneColors().selectionHighlight.value()
+						)));
 			}
 		});
-
-		this.getEditor().setEditable(false);
-		this.setClassHandle(targetTopClassHandle, false, source -> this.createSnippet(source, target));
-
-		this.editor.setCaretColor(new Color(0, 0, 0, 0));
-		this.editor.getCaret().setSelectionVisible(true);
 	}
 
 	private Snippet createSnippet(DecompiledClassSource source, Entry<?> targetEntry) {
