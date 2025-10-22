@@ -54,8 +54,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -101,6 +99,9 @@ public class BaseEditorPanel {
 	private final BoxHighlightPainter deobfuscatedPainter;
 	private final BoxHighlightPainter debugPainter;
 	private final BoxHighlightPainter fallbackPainter;
+
+	@Nullable
+	private SelectionHighlightHandler selectionHighlightHandler;
 
 	protected ClassHandler classHandler;
 	private DecompiledClassSource source;
@@ -561,26 +562,32 @@ public class BaseEditorPanel {
 		}
 
 		// highlight the token momentarily
-		final Timer timer = new Timer(200, null);
-		timer.addActionListener(new ActionListener() {
-			private int counter = 0;
-			private Object highlight = null;
+		// final Timer timer = new Timer(200, null);
+		// timer.addActionListener(new ActionListener() {
+		// 	private int counter = 0;
+		// 	private Object highlight = null;
+		//
+		// 	@Override
+		// 	public void actionPerformed(ActionEvent event) {
+		// 		if (this.counter % 2 == 0) {
+		// 			this.highlight = BaseEditorPanel.this.addHighlight(boundedToken, SelectionHighlightPainter.INSTANCE);
+		// 		} else if (this.highlight != null) {
+		// 			BaseEditorPanel.this.editor.getHighlighter().removeHighlight(this.highlight);
+		// 		}
+		//
+		// 		if (this.counter++ > 6) {
+		// 			timer.stop();
+		// 		}
+		// 	}
+		// });
+		//
+		// timer.start();
 
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				if (this.counter % 2 == 0) {
-					this.highlight = BaseEditorPanel.this.addHighlight(boundedToken, SelectionHighlightPainter.INSTANCE);
-				} else if (this.highlight != null) {
-					BaseEditorPanel.this.editor.getHighlighter().removeHighlight(this.highlight);
-				}
+		if (this.selectionHighlightHandler != null) {
+			this.selectionHighlightHandler.finish();
+		}
 
-				if (this.counter++ > 6) {
-					timer.stop();
-				}
-			}
-		});
-
-		timer.start();
+		this.selectionHighlightHandler = this.startHighlighting(boundedToken);
 	}
 
 	/**
@@ -666,6 +673,48 @@ public class BaseEditorPanel {
 	private ClassEntry getDeobfOrObfHandleRef() {
 		final ClassEntry deobfRef = this.classHandler.handle.getDeobfRef();
 		return deobfRef == null ? this.classHandler.handle.getRef() : deobfRef;
+	}
+
+	private SelectionHighlightHandler startHighlighting(Token token) {
+		final SelectionHighlightHandler handler = new SelectionHighlightHandler(token, 200);
+
+		handler.start();
+
+		return handler;
+	}
+
+	private class SelectionHighlightHandler extends Timer {
+		int counter = 0;
+		Object highlight = null;
+
+		SelectionHighlightHandler(Token token, int delay) {
+			super(delay, null);
+			this.addActionListener(e -> {
+				if (this.counter % 2 == 0) {
+					this.highlight = BaseEditorPanel.this.addHighlight(token, SelectionHighlightPainter.INSTANCE);
+				} else {
+					this.removeHighlight();
+				}
+
+				if (this.counter++ > 6) {
+					this.finish();
+				}
+			});
+		}
+
+		void removeHighlight() {
+			if (SelectionHighlightHandler.this.highlight != null) {
+				BaseEditorPanel.this.editor.getHighlighter().removeHighlight(SelectionHighlightHandler.this.highlight);
+			}
+		}
+
+		void finish() {
+			this.stop();
+			this.removeHighlight();
+			if (BaseEditorPanel.this.selectionHighlightHandler == this) {
+				BaseEditorPanel.this.selectionHighlightHandler = null;
+			}
+		}
 	}
 
 	public record Snippet(int start, int end) {
