@@ -689,6 +689,9 @@ public class BaseEditorPanel {
 
 		SelectionHighlightHandler(Token token, int delay) {
 			super(delay, null);
+
+			this.setInitialDelay(0);
+
 			this.addActionListener(e -> {
 				if (this.counter % 2 == 0) {
 					this.highlight = BaseEditorPanel.this.addHighlight(token, SelectionHighlightPainter.INSTANCE);
@@ -703,8 +706,8 @@ public class BaseEditorPanel {
 		}
 
 		void removeHighlight() {
-			if (SelectionHighlightHandler.this.highlight != null) {
-				BaseEditorPanel.this.editor.getHighlighter().removeHighlight(SelectionHighlightHandler.this.highlight);
+			if (this.highlight != null) {
+				BaseEditorPanel.this.editor.getHighlighter().removeHighlight(this.highlight);
 			}
 		}
 
