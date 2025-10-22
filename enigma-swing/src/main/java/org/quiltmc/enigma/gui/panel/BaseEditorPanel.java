@@ -21,6 +21,7 @@ import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.GuiController;
 import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.config.SelectionHighlightSection;
 import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
@@ -561,33 +562,23 @@ public class BaseEditorPanel {
 			return;
 		}
 
-		// highlight the token momentarily
-		// final Timer timer = new Timer(200, null);
-		// timer.addActionListener(new ActionListener() {
-		// 	private int counter = 0;
-		// 	private Object highlight = null;
-		//
-		// 	@Override
-		// 	public void actionPerformed(ActionEvent event) {
-		// 		if (this.counter % 2 == 0) {
-		// 			this.highlight = BaseEditorPanel.this.addHighlight(boundedToken, SelectionHighlightPainter.INSTANCE);
-		// 		} else if (this.highlight != null) {
-		// 			BaseEditorPanel.this.editor.getHighlighter().removeHighlight(this.highlight);
-		// 		}
-		//
-		// 		if (this.counter++ > 6) {
-		// 			timer.stop();
-		// 		}
-		// 	}
-		// });
-		//
-		// timer.start();
+		this.startHighlightingSelection(boundedToken);
+	}
 
+	private void startHighlightingSelection(Token token) {
 		if (this.selectionHighlightHandler != null) {
 			this.selectionHighlightHandler.finish();
 		}
 
-		this.selectionHighlightHandler = this.startHighlighting(boundedToken);
+		final SelectionHighlightSection config = Config.editor().selectionHighlight;
+		final int blinks = config.getBlinks();
+		if (blinks > 0) {
+			final SelectionHighlightHandler handler = new SelectionHighlightHandler(token, config.getBlinkDelay(), blinks);
+
+			handler.start();
+
+			this.selectionHighlightHandler = handler;
+		}
 	}
 
 	/**
@@ -675,31 +666,31 @@ public class BaseEditorPanel {
 		return deobfRef == null ? this.classHandler.handle.getRef() : deobfRef;
 	}
 
-	private SelectionHighlightHandler startHighlighting(Token token) {
-		final SelectionHighlightHandler handler = new SelectionHighlightHandler(token, 200);
-
-		handler.start();
-
-		return handler;
-	}
-
 	private class SelectionHighlightHandler extends Timer {
+		static final int BLINK_INTERVAL = 2;
+
+		final int counterMax;
+
 		int counter = 0;
 		Object highlight = null;
 
-		SelectionHighlightHandler(Token token, int delay) {
+		SelectionHighlightHandler(Token token, int delay, int blinks) {
 			super(delay, null);
+
+			this.counterMax = blinks * BLINK_INTERVAL;
 
 			this.setInitialDelay(0);
 
 			this.addActionListener(e -> {
-				if (this.counter % 2 == 0) {
-					this.highlight = BaseEditorPanel.this.addHighlight(token, SelectionHighlightPainter.INSTANCE);
-				} else {
-					this.removeHighlight();
-				}
+				if (this.counter < this.counterMax) {
+					if (this.counter % BLINK_INTERVAL == 0) {
+						this.highlight = BaseEditorPanel.this.addHighlight(token, SelectionHighlightPainter.INSTANCE);
+					} else {
+						this.removeHighlight();
+					}
 
-				if (this.counter++ > 6) {
+					this.counter++;
+				} else {
 					this.finish();
 				}
 			});
