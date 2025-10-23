@@ -61,6 +61,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -156,11 +157,14 @@ public class BaseEditorPanel {
 		ruler.setFont(this.editor.getFont());
 	}
 
-	public void setClassHandle(ClassHandle handle) {
-		this.setClassHandle(handle, true, null);
+	/**
+	 * @return a future whose completion indicates that this editor's class handle and source have been set
+	 */
+	public CompletableFuture<?> setClassHandle(ClassHandle handle) {
+		return this.setClassHandle(handle, true, null);
 	}
 
-	protected void setClassHandle(
+	protected CompletableFuture<?> setClassHandle(
 			ClassHandle handle, boolean closeOldHandle,
 			@Nullable Function<DecompiledClassSource, Snippet> snippetFactory
 	) {
@@ -172,10 +176,10 @@ public class BaseEditorPanel {
 			}
 		}
 
-		this.setClassHandleImpl(old, handle, snippetFactory);
+		return this.setClassHandleImpl(old, handle, snippetFactory);
 	}
 
-	protected void setClassHandleImpl(
+	protected CompletableFuture<?> setClassHandleImpl(
 			ClassEntry old, ClassHandle handle,
 			@Nullable Function<DecompiledClassSource, Snippet> snippetFactory
 	) {
@@ -198,10 +202,12 @@ public class BaseEditorPanel {
 			}
 		});
 
-		handle.getSource().thenAcceptAsync(
-				res -> BaseEditorPanel.this.handleDecompilerResult(res, snippetFactory),
-				SwingUtilities::invokeLater
-		);
+		return handle.getSource()
+			.thenApplyAsync(
+					res -> this.handleDecompilerResult(res, snippetFactory),
+					SwingUtilities::invokeLater
+			)
+			.thenAcceptAsync(CompletableFuture::join);
 	}
 
 	public void destroy() {
@@ -214,19 +220,22 @@ public class BaseEditorPanel {
 		}
 	}
 
-	private void handleDecompilerResult(
+	private CompletableFuture<?> handleDecompilerResult(
 			Result<DecompiledClassSource, ClassHandleError> res,
 			@Nullable Function<DecompiledClassSource, Snippet> snippetFactory
 	) {
-		SwingUtilities.invokeLater(() -> {
-			if (res.isOk()) {
-				this.setSource(res.unwrap(), snippetFactory);
-			} else {
-				this.displayError(res.unwrapErr());
-			}
+		return CompletableFuture.runAsync(
+			() -> {
+				if (res.isOk()) {
+					this.setSource(res.unwrap(), snippetFactory);
+				} else {
+					this.displayError(res.unwrapErr());
+				}
 
-			this.nextReference = null;
-		});
+				this.nextReference = null;
+			},
+			SwingUtilities::invokeLater
+		);
 	}
 
 	private void displayError(ClassHandleError t) {
