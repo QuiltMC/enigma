@@ -55,7 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
@@ -194,7 +193,7 @@ public class EntryTooltip extends JWindow {
 		final Font editorFont = ScaleUtil.scaleFont(Config.currentFonts().editor.value());
 		final Font italEditorFont = ScaleUtil.scaleFont(Config.currentFonts().editor.value().deriveFont(Font.ITALIC));
 
-		final AtomicInteger gridY = new AtomicInteger(0);
+		int gridY = 0;
 
 		{
 			final Box parentLabelRow = Box.createHorizontalBox();
@@ -209,7 +208,7 @@ public class EntryTooltip extends JWindow {
 			parentLabelRow.add(Box.createHorizontalGlue());
 
 			this.add(parentLabelRow, GridBagConstraintsBuilder.create()
-					.pos(0, gridY.getAndIncrement())
+					.pos(0, gridY++)
 					.insets(ROW_OUTER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET)
 					.anchor(GridBagConstraints.LINE_START)
 					.build()
@@ -223,14 +222,14 @@ public class EntryTooltip extends JWindow {
 		// The snippet has its own scroll pane, but wrapping it in this one effectively disables its resizing.
 		final var mainScroll = new JScrollPane(mainContent);
 		mainScroll.setBorder(createEmptyBorder());
-		final var mainGridY = new AtomicInteger(0);
+		int mainGridY = 0;
 
 		final String javadoc = this.getJavadoc(target).orElse(null);
 		final ImmutableList<ParamJavadoc> paramJavadocs =
 				this.paramJavadocsOf(target, editorFont, italEditorFont, stopInteraction);
 		if (javadoc != null || !paramJavadocs.isEmpty()) {
 			mainContent.add(new JSeparator(), GridBagConstraintsBuilder.create()
-					.pos(0, mainGridY.getAndIncrement())
+					.pos(0, mainGridY++)
 					.weightX(1)
 					.fill(GridBagConstraints.HORIZONTAL)
 					.build()
@@ -238,7 +237,7 @@ public class EntryTooltip extends JWindow {
 
 			if (javadoc != null) {
 				mainContent.add(javadocOf(javadoc, italEditorFont, stopInteraction), GridBagConstraintsBuilder.create()
-						.pos(0, mainGridY.getAndIncrement())
+						.pos(0, mainGridY++)
 						.insets(ROW_INNER_INSET, ROW_OUTER_INSET)
 						.weightX(1)
 						.fill(GridBagConstraints.HORIZONTAL)
@@ -249,17 +248,17 @@ public class EntryTooltip extends JWindow {
 
 			if (!paramJavadocs.isEmpty()) {
 				final JPanel params = new JPanel(new GridBagLayout());
-				final AtomicInteger paramsGridY = new AtomicInteger(0);
+				int paramsGridY = 0;
 
 				for (final ParamJavadoc paramJavadoc : paramJavadocs) {
 					params.add(paramJavadoc.name, GridBagConstraintsBuilder.create()
-							.pos(0, paramsGridY.get())
+							.pos(0, paramsGridY)
 							.anchor(GridBagConstraints.FIRST_LINE_END)
 							.build()
 					);
 
 					params.add(paramJavadoc.javadoc, GridBagConstraintsBuilder.create()
-							.pos(1, paramsGridY.getAndIncrement())
+							.pos(1, paramsGridY++)
 							.weightX(1)
 							.fill(GridBagConstraints.HORIZONTAL)
 							.anchor(GridBagConstraints.LINE_START)
@@ -269,7 +268,7 @@ public class EntryTooltip extends JWindow {
 
 				mainContent.add(params, GridBagConstraintsBuilder.create()
 						.insets(ROW_INNER_INSET, ROW_OUTER_INSET)
-						.pos(0, mainGridY.getAndIncrement())
+						.pos(0, mainGridY++)
 						.weightX(1)
 						.fill(GridBagConstraints.HORIZONTAL)
 						.build()
@@ -342,7 +341,7 @@ public class EntryTooltip extends JWindow {
 				}
 
 				mainContent.add(this.declarationSnippet.ui, GridBagConstraintsBuilder.create()
-						.pos(0, mainGridY.getAndIncrement())
+						.pos(0, mainGridY++)
 						.weightX(1)
 						.fill(GridBagConstraints.HORIZONTAL)
 						.anchor(GridBagConstraints.LINE_START)
@@ -350,14 +349,14 @@ public class EntryTooltip extends JWindow {
 				);
 			} else {
 				mainContent.add(new JSeparator(), GridBagConstraintsBuilder.create()
-						.pos(0, mainGridY.getAndIncrement())
+						.pos(0, mainGridY++)
 						.weightX(1)
 						.fill(GridBagConstraints.HORIZONTAL)
 						.build()
 				);
 
 				mainContent.add(labelOf("No source available", italEditorFont), GridBagConstraintsBuilder.create()
-						.pos(0, mainGridY.getAndIncrement())
+						.pos(0, mainGridY++)
 						.weightX(1)
 						.fill(GridBagConstraints.HORIZONTAL)
 						.anchor(GridBagConstraints.LINE_START)
@@ -368,7 +367,7 @@ public class EntryTooltip extends JWindow {
 		}
 
 		this.add(mainScroll, GridBagConstraintsBuilder.create()
-				.pos(0, gridY.getAndIncrement())
+				.pos(0, gridY++)
 				.weight(1, 1)
 				.fill(GridBagConstraints.BOTH)
 				.build()
