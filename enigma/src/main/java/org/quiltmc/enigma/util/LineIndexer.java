@@ -59,7 +59,9 @@ public class LineIndexer {
 		} else {
 			int lineStart;
 			while ((lineStart = this.collectLine()) > 0) {
-				if (lineStart >= index) {
+				if (lineStart == index) {
+					return this.indexesByLine.size() - 1;
+				} else if (lineStart > index) {
 					// -2 to get the preceding line
 					return this.indexesByLine.size() - 2;
 				}

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -104,12 +105,7 @@ public class LineIndexerTest {
 			for (int index = lineStartIndex; index < lineEndIndex; index++) {
 				final int line = indexer.getLine(index);
 
-				final int finalIndex = index;
-				final int finalExpectedLine = expectedLine;
-				assertEquals(expectedLine, line, () ->
-						"expected index %s to have line %s, but had line %s!"
-							.formatted(finalIndex, finalExpectedLine, line)
-				);
+				assertEquals(expectedLine, line, unexpectedLineMessageFactoryOf(index, expectedLine, line));
 			}
 
 			if (lastLine) {
@@ -118,5 +114,20 @@ public class LineIndexerTest {
 		}
 
 		assertEquals(-1, indexer.getLine(SUBJECT.length()));
+	}
+
+	@Test
+	void testGetLineAtStartOfLine() {
+		final LineIndexer indexer = createIndexer();
+
+		final int index = START_INDEX_EXPECTATIONS.get(1);
+		final int line = indexer.getLine(index);
+		final int expectedLine = 1;
+		assertEquals(expectedLine, line, unexpectedLineMessageFactoryOf(index, expectedLine, line));
+	}
+
+	private static Supplier<String> unexpectedLineMessageFactoryOf(int index, int expectedLine, int line) {
+		return () -> "expected index %s to have line %s, but had line %s!"
+			.formatted(index, expectedLine, line);
 	}
 }
