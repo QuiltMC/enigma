@@ -230,11 +230,11 @@ public class EntryTooltip extends JWindow {
 				this.paramJavadocsOf(target, editorFont, italEditorFont, stopInteraction);
 		if (javadoc != null || !paramJavadocs.isEmpty()) {
 			mainContent.add(new JSeparator(), GridBagConstraintsBuilder.create()
-				.pos(0, mainGridY.getAndIncrement())
-				.weightX(1)
-				.fill(GridBagConstraints.HORIZONTAL)
-				.build());
-
+					.pos(0, mainGridY.getAndIncrement())
+					.weightX(1)
+					.fill(GridBagConstraints.HORIZONTAL)
+					.build()
+			);
 
 			if (javadoc != null) {
 				mainContent.add(javadocOf(javadoc, italEditorFont, stopInteraction), GridBagConstraintsBuilder.create()
@@ -350,11 +350,11 @@ public class EntryTooltip extends JWindow {
 				);
 			} else {
 				mainContent.add(new JSeparator(), GridBagConstraintsBuilder.create()
-					.pos(0, mainGridY.getAndIncrement())
-					.weightX(1)
-					.fill(GridBagConstraints.HORIZONTAL)
-					.build());
-
+						.pos(0, mainGridY.getAndIncrement())
+						.weightX(1)
+						.fill(GridBagConstraints.HORIZONTAL)
+						.build()
+				);
 
 				mainContent.add(labelOf("No source available", italEditorFont), GridBagConstraintsBuilder.create()
 						.pos(0, mainGridY.getAndIncrement())
