@@ -148,6 +148,17 @@ public class EntryTooltip extends JWindow {
 		});
 	}
 
+	// setting/overriding max size does not work; getMaximumSize is never called
+	@Override
+	public Dimension getPreferredSize() {
+		final Dimension superPreferred = super.getPreferredSize();
+		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		return new Dimension(
+			Math.min(superPreferred.width, screenSize.width / 2),
+			Math.min(superPreferred.height, screenSize.height / 2)
+		);
+	}
+
 	// Sometimes when re-populating and resizing+moving, the cursor may be briefly over the parent EditorPanel.
 	// This is used to stop EditorPanel from starting its mouseStoppedMovingTimer which may reset the tooltip to the
 	// token under the cursor, discarding the re-populated content.
