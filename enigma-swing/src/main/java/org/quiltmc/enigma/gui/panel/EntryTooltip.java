@@ -26,6 +26,8 @@ import javax.annotation.Nullable;
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JWindow;
@@ -214,15 +216,24 @@ public class EntryTooltip extends JWindow {
 			);
 		}
 
+		final var mainContent = new JPanel(new GridBagLayout());
+		final var mainScroll = new JScrollPane(mainContent);
+		final var mainGridY = new AtomicInteger(0);
+
 		final String javadoc = this.getJavadoc(target).orElse(null);
 		final ImmutableList<ParamJavadoc> paramJavadocs =
 				this.paramJavadocsOf(target, editorFont, italEditorFont, stopInteraction);
 		if (javadoc != null || !paramJavadocs.isEmpty()) {
-			this.addSeparator(gridY.getAndIncrement());
+			mainContent.add(new JSeparator(), GridBagConstraintsBuilder.create()
+				.pos(0, mainGridY.getAndIncrement())
+				.weightX(1)
+				.fill(GridBagConstraints.HORIZONTAL)
+				.build());
+
 
 			if (javadoc != null) {
-				this.add(javadocOf(javadoc, italEditorFont, stopInteraction), GridBagConstraintsBuilder.create()
-						.pos(0, gridY.getAndIncrement())
+				mainContent.add(javadocOf(javadoc, italEditorFont, stopInteraction), GridBagConstraintsBuilder.create()
+						.pos(0, mainGridY.getAndIncrement())
 						.insets(ROW_INNER_INSET, ROW_OUTER_INSET)
 						.weightX(1)
 						.fill(GridBagConstraints.HORIZONTAL)
@@ -251,9 +262,9 @@ public class EntryTooltip extends JWindow {
 					);
 				}
 
-				this.add(params, GridBagConstraintsBuilder.create()
+				mainContent.add(params, GridBagConstraintsBuilder.create()
 						.insets(ROW_INNER_INSET, ROW_OUTER_INSET)
-						.pos(0, gridY.getAndIncrement())
+						.pos(0, mainGridY.getAndIncrement())
 						.weightX(1)
 						.fill(GridBagConstraints.HORIZONTAL)
 						.build()
@@ -297,6 +308,10 @@ public class EntryTooltip extends JWindow {
 						// a second call is required to eliminate extra space
 						this.pack();
 
+						final JScrollBar vertical = mainScroll.getVerticalScrollBar();
+						// scroll to bottom so declaration snippet is in view
+						vertical.setValue(vertical.getMaximum());
+
 						if (oldSize == null) {
 							// opening
 							if (oldMousePos.distance(MouseInfo.getPointerInfo().getLocation()) < SMALL_MOVE_THRESHOLD) {
@@ -315,18 +330,23 @@ public class EntryTooltip extends JWindow {
 					this.declarationSnippet.editor.addMouseListener(stopInteraction);
 				}
 
-				this.add(this.declarationSnippet.ui, GridBagConstraintsBuilder.create()
-						.pos(0, gridY.getAndIncrement())
+				mainContent.add(this.declarationSnippet.ui, GridBagConstraintsBuilder.create()
+						.pos(0, mainGridY.getAndIncrement())
 						.weightX(1)
 						.fill(GridBagConstraints.HORIZONTAL)
 						.anchor(GridBagConstraints.LINE_START)
 						.build()
 				);
 			} else {
-				this.addSeparator(gridY.getAndIncrement());
+				mainContent.add(new JSeparator(), GridBagConstraintsBuilder.create()
+					.pos(0, mainGridY.getAndIncrement())
+					.weightX(1)
+					.fill(GridBagConstraints.HORIZONTAL)
+					.build());
 
-				this.add(labelOf("No source available", italEditorFont), GridBagConstraintsBuilder.create()
-						.pos(0, gridY.getAndIncrement())
+
+				mainContent.add(labelOf("No source available", italEditorFont), GridBagConstraintsBuilder.create()
+						.pos(0, mainGridY.getAndIncrement())
 						.weightX(1)
 						.fill(GridBagConstraints.HORIZONTAL)
 						.anchor(GridBagConstraints.LINE_START)
@@ -335,6 +355,13 @@ public class EntryTooltip extends JWindow {
 				);
 			}
 		}
+
+		this.add(mainScroll, GridBagConstraintsBuilder.create()
+				.pos(0, gridY.getAndIncrement())
+				.weight(1, 1)
+				.fill(GridBagConstraints.BOTH)
+				.build()
+		);
 
 		this.pack();
 
@@ -547,14 +574,6 @@ public class EntryTooltip extends JWindow {
 				}
 			})
 			.collect(toImmutableList());
-	}
-
-	private void addSeparator(int gridY) {
-		this.add(new JSeparator(), GridBagConstraintsBuilder.create()
-				.pos(0, gridY)
-				.weightX(1)
-				.fill(GridBagConstraints.HORIZONTAL)
-				.build());
 	}
 
 	public void close() {
