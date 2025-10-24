@@ -217,7 +217,12 @@ public class EntryTooltip extends JWindow {
 		}
 
 		final var mainContent = new JPanel(new GridBagLayout());
+		// Put all main content in one big scroll pane.
+		// Ideally there'd be separate javadoc and snippet scroll panes, but multiple scroll pane children
+		// of a grid bag parent don't play nice when space is limited.
+		// The snippet has its own scroll pane, but wrapping it in this one effectively disables its resizing.
 		final var mainScroll = new JScrollPane(mainContent);
+		mainScroll.setBorder(createEmptyBorder());
 		final var mainGridY = new AtomicInteger(0);
 
 		final String javadoc = this.getJavadoc(target).orElse(null);
@@ -307,6 +312,12 @@ public class EntryTooltip extends JWindow {
 						// swing </3
 						// a second call is required to eliminate extra space
 						this.pack();
+
+						if (this.declarationSnippet != null) {
+							// without this, the editor gets focus and has a blue border
+							// but only when it's in a scroll pane, for some reason
+							this.declarationSnippet.ui.requestFocus();
+						}
 
 						final JScrollBar vertical = mainScroll.getVerticalScrollBar();
 						// scroll to bottom so declaration snippet is in view
