@@ -2,6 +2,7 @@ package org.quiltmc.enigma.util;
 
 import com.google.common.io.CharStreams;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -16,12 +17,43 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Supplier;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class Utils {
+	public static final Future<Void> DUMMY_FUTURE = new Future<>() {
+		@Override
+		public boolean cancel(boolean mayInterruptIfRunning) {
+			return false;
+		}
+
+		@Override
+		public boolean isCancelled() {
+			return false;
+		}
+
+		@Override
+		public boolean isDone() {
+			return true;
+		}
+
+		@Override
+		public Void get() {
+			return null;
+		}
+
+		@Override
+		public Void get(long timeout, @Nonnull TimeUnit unit) {
+			return null;
+		}
+	};
+
+	public static final Supplier<Boolean> SUPPLY_FALSE = () -> false;
+
 	public static String readStreamToString(InputStream in) throws IOException {
 		return CharStreams.toString(new InputStreamReader(in, StandardCharsets.UTF_8));
 	}

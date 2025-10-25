@@ -1,18 +1,23 @@
 package org.quiltmc.enigma.gui.node;
 
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.util.Utils;
 
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import java.util.Comparator;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.function.Supplier;
 
 public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	private final ClassEntry obfEntry;
@@ -37,47 +42,82 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 	 * Reloads the stats for this class node and updates the icon in the provided class selector.
 	 * Exits if no project is open.
 	 *
-	 * @param gui the current gui instance
-	 * @param selector the class selector to reload on
+	 * @param gui             the current gui instance
+	 * @param selector        the class selector to reload on
 	 * @param updateIfPresent whether to update the stats if they have already been generated for this node
+	 *
+	 * @return a future whose completion indicates that all asynchronous work has finished
 	 */
-	public void reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent) {
+	public Future<?> reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent) {
+		return this.reloadStats(gui, selector, updateIfPresent, Utils.SUPPLY_FALSE);
+	}
+
+	/**
+	 * Reloads the stats for this class node and updates the icon in the provided class selector.
+	 * Exits if no project is open.
+	 *
+	 * @param gui             the current gui instance
+	 * @param selector        the class selector to reload on
+	 * @param updateIfPresent whether to update the stats if they have already been generated for this node
+	 * @param shouldCancel    a supplier that may be used to cancel asynchronous work if it returns
+	 *                        {@code true} before the work has started
+	 *
+	 * @return a future whose completion indicates that no asynchronous work remains, whether
+	 * because it was canceled using the passed {@code shouldCancel} method or because it finished normally
+	 */
+	public Future<?> reloadStats(Gui gui, ClassSelector selector, boolean updateIfPresent, Supplier<Boolean> shouldCancel) {
 		StatsGenerator generator = gui.getController().getStatsGenerator();
 		if (generator == null) {
-			return;
+			return Utils.DUMMY_FUTURE;
 		}
 
-		SwingWorker<ClassSelectorClassNode, Void> iconUpdateWorker = new SwingWorker<>() {
+		SwingWorker<ProjectStatsResult, Void> iconUpdateWorker = new SwingWorker<>() {
 			@Override
-			protected ClassSelectorClassNode doInBackground() {
-				var parameters = Config.stats().createIconGenParameters(gui.getEditableStatTypes());
+			protected ProjectStatsResult doInBackground() {
+				if (shouldCancel.get()) {
+					return null;
+				} else {
+					var parameters = Config.stats().createIconGenParameters(gui.getEditableStatTypes());
 
-				if (generator.getResultNullable(parameters) == null && generator.getOverallProgress() == null) {
-					generator.generate(ProgressListener.createEmpty(), parameters);
-				} else if (updateIfPresent) {
-					generator.generate(ProgressListener.createEmpty(), ClassSelectorClassNode.this.getObfEntry(), parameters);
+					if (generator.getResultNullable(parameters) == null && generator.getOverallProgress() == null) {
+						return generator.generate(ProgressListener.createEmpty(), parameters);
+					} else if (updateIfPresent) {
+						return generator.generate(ProgressListener.createEmpty(), ClassSelectorClassNode.this.getObfEntry(), parameters);
+					} else {
+						return null;
+					}
 				}
-
-				return ClassSelectorClassNode.this;
 			}
 
 			@Override
 			public void done() {
-				try {
-					var parameters = Config.stats().createIconGenParameters(gui.getEditableStatTypes());
-					((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(generator.getResultNullable(parameters), ClassSelectorClassNode.this.getObfEntry()));
-				} catch (NullPointerException ignored) {
-					// do nothing. this seems to be a race condition, likely a bug in FlatLAF caused by us suppressing the default tree icons
-					// ignoring this error should never cause issues since it only occurs at startup
-				}
+				if (!shouldCancel.get()) {
+					final ProjectStatsResult result;
+					try {
+						result = this.get();
+					} catch (ExecutionException | InterruptedException e) {
+						throw new RuntimeException(e);
+					}
 
-				SwingUtilities.invokeLater(() -> selector.reload(ClassSelectorClassNode.this, false));
+					if (result != null) {
+						try {
+							((DefaultTreeCellRenderer) selector.getCellRenderer()).setIcon(GuiUtil.getDeobfuscationIcon(result, ClassSelectorClassNode.this.getObfEntry()));
+						} catch (NullPointerException ignored) {
+							// do nothing. this seems to be a race condition, likely a bug in FlatLAF caused by us suppressing the default tree icons
+							// ignoring this error should never cause issues since it only occurs at startup
+						}
+
+						SwingUtilities.invokeLater(() -> selector.reload(ClassSelectorClassNode.this, false));
+					}
+				}
 			}
 		};
 
 		if (Config.main().features.enableClassTreeStatIcons.value()) {
 			SwingUtilities.invokeLater(iconUpdateWorker::execute);
 		}
+
+		return iconUpdateWorker;
 	}
 
 	@Override
