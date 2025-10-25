@@ -178,6 +178,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 			}
 
 			Map<String, LambdaNode> rootNodes = new HashMap<>();
+			Map<String, Integer> seenMethods = new HashMap<>();
 			for (var member : type.getMembers()) {
 				if (member instanceof TypeDeclaration<?>) {
 					continue;
@@ -188,7 +189,7 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 					this.findLambdasInSource(constructor.getBody(), rootNode);
 				} else if (member instanceof MethodDeclaration method) {
 					if (method.getBody().isPresent()) {
-						LambdaNode rootNode = rootNodes.computeIfAbsent(method.getNameAsString(), c -> new LambdaNode());
+						LambdaNode rootNode = rootNodes.computeIfAbsent(getUniqueName(method.getNameAsString(), seenMethods), c -> new LambdaNode());
 						this.findLambdasInSource(method.getBody().get(), rootNode);
 					}
 				} else {
@@ -208,14 +209,26 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 				throw new IllegalStateException("Class bytecode not found");
 			}
 
+			seenMethods.clear();
 			for (StructMethod method : clazz.getMethods()) {
-				LambdaNode rootNode = rootNodes.get(method.getName());
+				LambdaNode rootNode = rootNodes.get(getUniqueName(method.getName(), seenMethods));
 				if (rootNode == null) {
 					continue;
 				}
 
 				this.pairContext(clazz, method, rootNode);
 			}
+		}
+	}
+
+	private static String getUniqueName(String methodName, Map<String, Integer> seenMethods) {
+		if (!seenMethods.containsKey(methodName)) {
+			seenMethods.put(methodName, 1);
+			return methodName;
+		} else {
+			int oldIndex = seenMethods.get(methodName);
+			seenMethods.put(methodName, oldIndex + 1);
+			return methodName + "#" + oldIndex;
 		}
 	}
 
