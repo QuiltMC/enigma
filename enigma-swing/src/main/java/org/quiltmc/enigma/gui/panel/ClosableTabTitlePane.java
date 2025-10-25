@@ -8,7 +8,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.Component;
@@ -39,7 +38,7 @@ public class ClosableTabTitlePane {
 		this.closeButton.setFocusPainted(false);
 		this.closeButton.setFocusable(false);
 		this.closeButton.setOpaque(true);
-		this.closeButton.setIcon(UIManager.getIcon("InternalFrame.closeIcon"));
+		this.closeButton.setIcon(GuiUtil.getCloseIcon());
 		this.closeButton.putClientProperty("paintActive", Boolean.TRUE);
 		this.closeButton.setBorder(new EmptyBorder(0, 0, 0, 0));
 		this.closeButton.putClientProperty(AccessibleContext.ACCESSIBLE_NAME_PROPERTY, "Close");

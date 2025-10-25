@@ -13,6 +13,7 @@ import org.quiltmc.enigma.gui.GuiController;
 import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
+import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindToolBar;
 import org.quiltmc.enigma.gui.element.EditorPopupMenu;
 import org.quiltmc.enigma.gui.element.NavigatorPanel;
 import org.quiltmc.enigma.gui.event.EditorActionListener;
@@ -28,6 +29,8 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Result;
+import org.quiltmc.syntaxpain.DefaultSyntaxAction;
+import org.quiltmc.syntaxpain.SyntaxDocument;
 import org.tinylog.Logger;
 
 import java.awt.Color;
@@ -41,6 +44,9 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -66,6 +72,7 @@ import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter.HighlightPainter;
+import javax.swing.text.JTextComponent;
 
 import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
@@ -74,6 +81,7 @@ public class EditorPanel {
 	private final JPanel ui = new JPanel();
 	private final JEditorPane editor = new JEditorPane();
 	private final JScrollPane editorScrollPane = new JScrollPane(this.editor);
+	private final EnigmaQuickFindToolBar quickFindToolBar = new EnigmaQuickFindToolBar();
 	private final EditorPopupMenu popupMenu;
 
 	// progress UI
@@ -122,6 +130,27 @@ public class EditorPanel {
 		this.editor.setCaretColor(Config.getCurrentSyntaxPaneColors().caret.value());
 		this.editor.setContentType("text/enigma-sources");
 		this.editor.setBackground(Config.getCurrentSyntaxPaneColors().editorBackground.value());
+
+		// HACK to prevent DefaultCaret from calling setSelectionVisible(false) when quickFind gains focus
+		if (this.editor.getCaret() instanceof FocusListener caretFocusListener) {
+			this.editor.removeFocusListener(caretFocusListener);
+			this.editor.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusGained(FocusEvent e) {
+					caretFocusListener.focusGained(e);
+				}
+
+				@Override
+				public void focusLost(FocusEvent e) {
+					EditorPanel.this.editor.getCaret().setVisible(false);
+					EditorPanel.this.editor.getCaret().setSelectionVisible(
+							EditorPanel.this.editor.hasFocus() || EditorPanel.this.quickFindToolBar.isVisible()
+					);
+				}
+			});
+		}
+
+		this.quickFindToolBar.setVisible(false);
 
 		// set unit increment to height of one line, the amount scrolled per
 		// mouse wheel rotation is then controlled by OS settings
@@ -326,24 +355,39 @@ public class EditorPanel {
 				};
 				editorPane.setLayout(new GridBagLayout());
 
-				GridBagConstraints constraints = new GridBagConstraints();
-				constraints.gridx = 0;
-				constraints.gridy = 0;
-				constraints.weightx = 1.0;
-				constraints.weighty = 1.0;
-				constraints.anchor = GridBagConstraints.FIRST_LINE_END;
-				constraints.insets = new Insets(32, 32, 32, 32);
-				constraints.ipadx = 16;
-				constraints.ipady = 16;
-				editorPane.add(this.navigatorPanel, constraints);
+				{
+					final var navigatorConstraints = new GridBagConstraints();
+					navigatorConstraints.gridx = 0;
+					navigatorConstraints.gridy = 0;
+					navigatorConstraints.weightx = 1.0;
+					navigatorConstraints.weighty = 1.0;
+					navigatorConstraints.anchor = GridBagConstraints.FIRST_LINE_END;
+					navigatorConstraints.insets = new Insets(32, 32, 32, 32);
+					navigatorConstraints.ipadx = 16;
+					navigatorConstraints.ipady = 16;
+					editorPane.add(this.navigatorPanel, navigatorConstraints);
+				}
 
-				constraints = new GridBagConstraints();
-				constraints.gridx = 0;
-				constraints.gridy = 0;
-				constraints.weightx = 1.0;
-				constraints.weighty = 1.0;
-				constraints.fill = GridBagConstraints.BOTH;
-				editorPane.add(this.editorScrollPane, constraints);
+				{
+					final var scrollConstraints = new GridBagConstraints();
+					scrollConstraints.gridx = 0;
+					scrollConstraints.gridy = 0;
+					scrollConstraints.weightx = 1.0;
+					scrollConstraints.weighty = 1.0;
+					scrollConstraints.fill = GridBagConstraints.BOTH;
+					editorPane.add(this.editorScrollPane, scrollConstraints);
+				}
+
+				{
+					final var quickFindConstraints = new GridBagConstraints();
+					quickFindConstraints.gridx = 0;
+					quickFindConstraints.weightx = 1.0;
+					quickFindConstraints.weighty = 0;
+					quickFindConstraints.anchor = GridBagConstraints.PAGE_END;
+					quickFindConstraints.fill = GridBagConstraints.HORIZONTAL;
+					editorPane.add(this.quickFindToolBar, quickFindConstraints);
+				}
+
 				this.ui.add(editorPane);
 				break;
 			}
@@ -644,6 +688,7 @@ public class EditorPanel {
 
 	public void retranslateUi() {
 		this.popupMenu.retranslateUi();
+		this.quickFindToolBar.translate();
 	}
 
 	public void reloadKeyBinds() {
@@ -654,6 +699,13 @@ public class EditorPanel {
 		});
 		putKeyBindAction(KeyBinds.EDITOR_ZOOM_IN, this.editor, e -> this.offsetEditorZoom(2));
 		putKeyBindAction(KeyBinds.EDITOR_ZOOM_OUT, this.editor, e -> this.offsetEditorZoom(-2));
+		putKeyBindAction(KeyBinds.EDITOR_QUICK_FIND, this.editor, new DefaultSyntaxAction("quick-find-tool-bar") {
+			@Override
+			public void actionPerformed(JTextComponent target, SyntaxDocument sDoc, int dot, ActionEvent e) {
+				EditorPanel.this.quickFindToolBar.showFor(target);
+			}
+		});
+		this.quickFindToolBar.reloadKeyBinds();
 
 		this.popupMenu.getButtonKeyBinds().forEach((key, button) -> putKeyBindAction(key, this.editor, e -> button.doClick()));
 	}

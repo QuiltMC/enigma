@@ -150,6 +150,7 @@
 	"editor.quick_find.use_regex": "Use regex",
 	"editor.quick_find.wrap": "Wrap",
 	"editor.quick_find.not_found": "Not found!",
+	"editor.quick_find.persistent": "Persistent",
 
 	"info_panel.identifier": "Identifier Info",
 	"info_panel.identifier.none": "No identifier selected",
@@ -342,6 +343,7 @@
 	"keybind.editor.zoom_out": "Zoom in",
 	"keybind.editor.close_tab": "Close editor tab",
 	"keybind.editor.reload_class": "Reload open class",
+	"keybind.editor.quick_find": "Quick find",
 	"keybind.editor.navigate_next": "Navigate to next entry",
 	"keybind.editor.navigate_last": "Navigate to last entry",
 	"keybind.menu.search": "Search",
