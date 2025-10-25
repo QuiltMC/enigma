@@ -9,12 +9,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ProjectStatsResult implements StatsProvider {
 	private final EnigmaProject project;
 
 	private final Map<String, List<StatsResult>> packageToClasses = new HashMap<>();
-	private final Map<ClassEntry, StatsResult> stats = new HashMap<>();
+	private final Map<ClassEntry, StatsResult> stats = new ConcurrentHashMap<>();
 	private final Map<String, StatsResult> packageStats = new HashMap<>();
 
 	private StatsResult overall;

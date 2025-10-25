@@ -68,7 +68,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.IntFunction;
+import java.util.stream.Stream;
 
 public class Gui {
 	private final MainWindow mainWindow;
@@ -105,6 +110,20 @@ public class Gui {
 	public final SearchDialog searchDialog;
 
 	private final boolean testEnvironment;
+
+	/**
+	 * Executor for {@link #reloadStats(ClassEntry, boolean) reloadStats} work.
+	 *
+	 * <p> Executes all work from one call to {@link #reloadStats(ClassEntry, boolean) reloadStats}
+	 * before starting work for the next call.
+	 * Fixes <a href="https://github.com/QuiltMC/enigma/issues/271">#271</a>.
+	 */
+	private final Executor reloadStatsExecutor = Executors.newSingleThreadExecutor();
+	/**
+	 * Setting this to true cancels unstarted work from the last call to
+	 * {@link #reloadStats(ClassEntry, boolean) reloadStats}.
+	 */
+	private AtomicBoolean priorReloadStatsCanceler = new AtomicBoolean(false);
 
 	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean testEnvironment) {
 		this.dockerManager = new DockerManager(this);
@@ -609,24 +628,42 @@ public class Gui {
 
 	/**
 	 * Reloads stats for the provided class in all selectors.
+	 *
 	 * @param classEntry the class to reload
 	 * @param propagate whether to also reload ancestors of the class
 	 */
 	public void reloadStats(ClassEntry classEntry, boolean propagate) {
+		this.priorReloadStatsCanceler.set(true);
+		final AtomicBoolean currentReloadCanceler = new AtomicBoolean(false);
+		this.priorReloadStatsCanceler = currentReloadCanceler;
+
 		List<ClassEntry> toUpdate = new ArrayList<>();
 		toUpdate.add(classEntry);
 		if (propagate) {
-			Collection<ClassEntry> parents = this.controller.getProject().getJarIndex().getIndex(InheritanceIndex.class).getAncestors(classEntry);
+			Collection<ClassEntry> parents = this.controller.getProject().getJarIndex().getIndex(InheritanceIndex.class)
+					.getAncestors(classEntry);
 			toUpdate.addAll(parents);
 		}
 
-		for (Docker value : this.dockerManager.getDockers()) {
-			if (value instanceof ClassesDocker docker) {
-				for (ClassEntry entry : toUpdate) {
-					docker.getClassSelector().reloadStats(entry);
-				}
-			}
-		}
+		final List<Runnable> currentReloads = this.dockerManager.getDockers().stream()
+				.flatMap(docker -> docker instanceof ClassesDocker classes ? Stream.of(classes) : Stream.empty())
+				.flatMap(docker -> toUpdate.stream().<Runnable>map(updating -> () -> {
+					try {
+						docker.getClassSelector().reloadStats(updating, currentReloadCanceler::get).get();
+					} catch (InterruptedException | ExecutionException e) {
+						throw new RuntimeException(e);
+					}
+				}))
+				.toList();
+
+		this.reloadStatsExecutor.execute(() -> CompletableFuture
+				.allOf(
+					currentReloads.stream()
+						.map(CompletableFuture::runAsync)
+						.toArray(CompletableFuture[]::new)
+				)
+				.join()
+		);
 	}
 
 	public SearchDialog getSearchDialog() {
