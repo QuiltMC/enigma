@@ -64,7 +64,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	@Override
 	public String getContextualName() {
 		if (this.isInnerClass()) {
-			return this.parent.getSimpleName() + "$" + this.name;
+			return this.parent.getContextualName() + "$" + this.name;
 		}
 
 		return this.getSimpleName();
