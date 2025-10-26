@@ -6,9 +6,11 @@ import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
+import org.quiltmc.enigma.api.source.TokenStore;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindToolBar;
 import org.quiltmc.enigma.gui.element.EditorPopupMenu;
 import org.quiltmc.enigma.gui.element.NavigatorPanel;
@@ -18,7 +20,9 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.syntaxpain.PairsMarker;
+import org.tinylog.Logger;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.KeyboardFocusManager;
@@ -44,6 +48,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 
@@ -53,6 +58,12 @@ import static javax.swing.SwingUtilities.isDescendingFrom;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
 public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
+	private static final int DEOBFUSCATED_PRIORITY = 0;
+	private static final int PROPOSED_PRIORITY = DEOBFUSCATED_PRIORITY + 1;
+	private static final int FALLBACK_PRIORITY = PROPOSED_PRIORITY + 1;
+	private static final int OBFUSCATED_PRIORITY = FALLBACK_PRIORITY + 1;
+	private static final int DEBUG_PRIORITY = OBFUSCATED_PRIORITY + 1;
+
 	private final NavigatorPanel navigatorPanel;
 	private final EnigmaQuickFindToolBar quickFindToolBar = new EnigmaQuickFindToolBar();
 	private final EditorPopupMenu popupMenu;
@@ -152,6 +163,54 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 			if (this.navigatorPanel != null) {
 				this.navigatorPanel.resetEntries(source.getIndex().declarations());
 			}
+
+			this.editorScrollPane.clearMarkers();
+
+			final SyntaxPaneProperties.Colors colors = Config.getCurrentSyntaxPaneColors();
+			final TokenStore tokenStore = source.getTokenStore();
+			tokenStore.getByType().forEach((type, tokens) -> {
+				final Color nonFallbackColor;
+				final int nonFallbackPriority;
+				switch (type) {
+					case OBFUSCATED -> {
+						nonFallbackColor = colors.obfuscatedOutline.value();
+						nonFallbackPriority = OBFUSCATED_PRIORITY;
+					}
+					case DEOBFUSCATED -> {
+						nonFallbackColor = colors.deobfuscatedOutline.value();
+						nonFallbackPriority = DEOBFUSCATED_PRIORITY;
+					}
+					case JAR_PROPOSED, DYNAMIC_PROPOSED -> {
+						nonFallbackColor = colors.proposedOutline.value();
+						nonFallbackPriority = PROPOSED_PRIORITY;
+					}
+					case DEBUG -> {
+						nonFallbackColor = colors.debugTokenOutline.value();
+						nonFallbackPriority = DEBUG_PRIORITY;
+					}
+					default -> throw new AssertionError();
+				}
+
+				for (final Token token : tokens) {
+					final Color color;
+					final int priority;
+					if (tokenStore.isFallback(token)) {
+						color = colors.fallbackOutline.value();
+						priority = FALLBACK_PRIORITY;
+					} else {
+						color = nonFallbackColor;
+						priority = nonFallbackPriority;
+					}
+
+					try {
+						final int tokenPos = (int) this.editor.modelToView2D(token.start).getCenterY();
+
+						this.editorScrollPane.addMarker(tokenPos, color, priority);
+					} catch (BadLocationException e) {
+						Logger.warn("Tried to add marker for token with bad location: " + token);
+					}
+				}
+			});
 		});
 
 		this.ui.putClientProperty(EditorPanel.class, this);
@@ -219,6 +278,8 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 			@Nullable Function<DecompiledClassSource, Snippet> snippetFactory
 	) {
 		final CompletableFuture<?> superFuture = super.setClassHandleImpl(old, handle, snippetFactory);
+
+		this.editorScrollPane.clearMarkers();
 
 		handle.addListener(new ClassHandleListener() {
 			@Override
