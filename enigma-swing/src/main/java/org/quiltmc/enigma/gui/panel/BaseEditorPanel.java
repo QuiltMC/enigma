@@ -580,9 +580,10 @@ public class BaseEditorPanel {
 		}
 
 		final SelectionHighlightSection config = Config.editor().selectionHighlight;
-		final int blinks = config.getBlinks();
+		final int blinks = config.blinks.value();
 		if (blinks > 0) {
-			final SelectionHighlightHandler handler = new SelectionHighlightHandler(token, config.getBlinkDelay(), blinks);
+			final SelectionHighlightHandler handler =
+					new SelectionHighlightHandler(token, config.blinkDelay.value(), blinks);
 
 			handler.start();
 
