@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -51,7 +52,7 @@ import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 import static javax.swing.SwingUtilities.isDescendingFrom;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
-public class EditorPanel extends BaseEditorPanel {
+public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 	private final NavigatorPanel navigatorPanel;
 	private final EnigmaQuickFindToolBar quickFindToolBar = new EnigmaQuickFindToolBar();
 	private final EditorPopupMenu popupMenu;
@@ -154,6 +155,11 @@ public class EditorPanel extends BaseEditorPanel {
 		});
 
 		this.ui.putClientProperty(EditorPanel.class, this);
+	}
+
+	@Override
+	protected MarkableScrollPane createEditorScrollPane(JEditorPane editor) {
+		return new MarkableScrollPane(editor);
 	}
 
 	public void onRename(boolean isNewMapping) {

@@ -45,6 +45,8 @@ import org.quiltmc.enigma.util.LineIndexer;
 import org.quiltmc.enigma.util.Result;
 import org.tinylog.Logger;
 
+import javax.swing.JEditorPane;
+import javax.swing.JScrollPane;
 import java.awt.Color;
 import java.util.Comparator;
 import java.util.Optional;
@@ -54,7 +56,7 @@ import java.util.function.Predicate;
 import static org.quiltmc.enigma.gui.util.GuiUtil.getRecordIndexingService;
 import static java.util.Comparator.comparingInt;
 
-public class DeclarationSnippetPanel extends BaseEditorPanel {
+public class DeclarationSnippetPanel extends AbstractEditorPanel<JScrollPane> {
 	private static final String NO_ENTRY_DEFINITION = "no entry definition!";
 	private static final String NO_TOKEN_RANGE = "no token range!";
 	// used to compose error messages
@@ -89,6 +91,11 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 						)));
 			}
 		});
+	}
+
+	@Override
+	protected JScrollPane createEditorScrollPane(JEditorPane editor) {
+		return new JScrollPane(editor);
 	}
 
 	private Snippet createSnippet(DecompiledClassSource source, Entry<?> targetEntry) {
