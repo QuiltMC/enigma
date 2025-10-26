@@ -553,7 +553,7 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 						? Optional.of(new MarkerParams(colors.obfuscatedOutline.value(), OBFUSCATED_PRIORITY))
 						: Optional.empty();
 					case DEOBFUSCATED -> this.deobfuscated
-						? Optional.of(new MarkerParams(colors.deobfuscated.value(), DEOBFUSCATED_PRIORITY))
+						? Optional.of(new MarkerParams(colors.deobfuscatedOutline.value(), DEOBFUSCATED_PRIORITY))
 						: Optional.empty();
 					case JAR_PROPOSED, DYNAMIC_PROPOSED -> this.proposed
 						? Optional.of(new MarkerParams(colors.proposedOutline.value(), PROPOSED_PRIORITY))
