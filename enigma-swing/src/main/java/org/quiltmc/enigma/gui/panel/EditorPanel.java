@@ -7,8 +7,10 @@ import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.source.TokenStore;
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.config.EntryMarkersSection;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindToolBar;
@@ -41,7 +43,9 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.Optional;
 import java.util.function.Function;
+import javax.annotation.Nonnull;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -71,6 +75,9 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 	private final TooltipManager tooltipManager = new TooltipManager();
 
 	private final List<EditorActionListener> listeners = new ArrayList<>();
+
+	@Nonnull
+	private MarkablePredicate markablePredicate;
 
 	public EditorPanel(Gui gui, NavigatorPanel navigator) {
 		super(gui);
@@ -164,56 +171,63 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 				this.navigatorPanel.resetEntries(source.getIndex().declarations());
 			}
 
-			this.editorScrollPane.clearMarkers();
-
-			final SyntaxPaneProperties.Colors colors = Config.getCurrentSyntaxPaneColors();
-			final TokenStore tokenStore = source.getTokenStore();
-			tokenStore.getByType().forEach((type, tokens) -> {
-				final Color nonFallbackColor;
-				final int nonFallbackPriority;
-				switch (type) {
-					case OBFUSCATED -> {
-						nonFallbackColor = colors.obfuscatedOutline.value();
-						nonFallbackPriority = OBFUSCATED_PRIORITY;
-					}
-					case DEOBFUSCATED -> {
-						nonFallbackColor = colors.deobfuscatedOutline.value();
-						nonFallbackPriority = DEOBFUSCATED_PRIORITY;
-					}
-					case JAR_PROPOSED, DYNAMIC_PROPOSED -> {
-						nonFallbackColor = colors.proposedOutline.value();
-						nonFallbackPriority = PROPOSED_PRIORITY;
-					}
-					case DEBUG -> {
-						nonFallbackColor = colors.debugTokenOutline.value();
-						nonFallbackPriority = DEBUG_PRIORITY;
-					}
-					default -> throw new AssertionError();
-				}
-
-				for (final Token token : tokens) {
-					final Color color;
-					final int priority;
-					if (tokenStore.isFallback(token)) {
-						color = colors.fallbackOutline.value();
-						priority = FALLBACK_PRIORITY;
-					} else {
-						color = nonFallbackColor;
-						priority = nonFallbackPriority;
-					}
-
-					try {
-						final int tokenPos = (int) this.editor.modelToView2D(token.start).getCenterY();
-
-						this.editorScrollPane.addMarker(tokenPos, color, priority);
-					} catch (BadLocationException e) {
-						Logger.warn("Tried to add marker for token with bad location: " + token);
-					}
-				}
-			});
+			this.refreshMarkers(source);
 		});
 
 		this.ui.putClientProperty(EditorPanel.class, this);
+
+		this.markablePredicate = MarkablePredicate.of();
+		final EntryMarkersSection markersConfig = Config.editor().entryMarkers;
+		markersConfig.markObfuscated.registerCallback(obfuscated -> {
+			if (obfuscated.value() != this.markablePredicate.obfuscated) {
+				this.refreshMarkablePredicate();
+			}
+		});
+		markersConfig.markFallback.registerCallback(fallback -> {
+			if (fallback.value() != this.markablePredicate.fallback) {
+				this.refreshMarkablePredicate();
+			}
+		});
+		markersConfig.markProposed.registerCallback(proposed -> {
+			if (proposed.value() != this.markablePredicate.proposed) {
+				this.refreshMarkablePredicate();
+			}
+		});
+		markersConfig.markDeobfuscated.registerCallback(deobfuscated -> {
+			if (deobfuscated.value() != this.markablePredicate.deobfuscated) {
+				this.refreshMarkablePredicate();
+			}
+		});
+	}
+
+	private void refreshMarkablePredicate() {
+		this.markablePredicate = MarkablePredicate.of();
+
+		final DecompiledClassSource source = this.getSource();
+		if (source != null) {
+			this.refreshMarkers(source);
+		} else {
+			this.editorScrollPane.clearMarkers();
+		}
+	}
+
+	private void refreshMarkers(DecompiledClassSource source) {
+		this.editorScrollPane.clearMarkers();
+
+		final TokenStore tokenStore = source.getTokenStore();
+		tokenStore.getByType().forEach((type, tokens) -> {
+			for (final Token token : tokens) {
+				this.markablePredicate.getParams(token, type, tokenStore).ifPresent(params -> {
+					try {
+						final int tokenPos = (int) this.editor.modelToView2D(token.start).getCenterY();
+
+						this.editorScrollPane.addMarker(tokenPos, params.color, params.priority);
+					} catch (BadLocationException e) {
+						Logger.warn("Tried to add marker for token with bad location: " + token);
+					}
+				});
+			}
+		});
 	}
 
 	@Override
@@ -515,4 +529,41 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 			Toolkit.getDefaultToolkit().removeAWTEventListener(this.globalKeyListener);
 		}
 	}
+
+	private record MarkablePredicate(boolean obfuscated, boolean fallback, boolean proposed, boolean deobfuscated) {
+		static MarkablePredicate of() {
+			final EntryMarkersSection markersConfig = Config.editor().entryMarkers;
+			return new MarkablePredicate(
+				markersConfig.markObfuscated.value(),
+				markersConfig.markFallback.value(),
+				markersConfig.markProposed.value(),
+				markersConfig.markDeobfuscated.value()
+			);
+		}
+
+		Optional<MarkerParams> getParams(Token token, TokenType type, TokenStore tokenStore) {
+			final SyntaxPaneProperties.Colors colors = Config.getCurrentSyntaxPaneColors();
+			if (tokenStore.isFallback(token)) {
+				return this.fallback
+					? Optional.of(new MarkerParams(colors.fallbackOutline.value(), FALLBACK_PRIORITY))
+					: Optional.empty();
+			} else {
+				return switch (type) {
+					case OBFUSCATED -> this.obfuscated
+						? Optional.of(new MarkerParams(colors.obfuscatedOutline.value(), OBFUSCATED_PRIORITY))
+						: Optional.empty();
+					case DEOBFUSCATED -> this.deobfuscated
+						? Optional.of(new MarkerParams(colors.deobfuscated.value(), DEOBFUSCATED_PRIORITY))
+						: Optional.empty();
+					case JAR_PROPOSED, DYNAMIC_PROPOSED -> this.proposed
+						? Optional.of(new MarkerParams(colors.proposedOutline.value(), PROPOSED_PRIORITY))
+						: Optional.empty();
+					// these only appear if debugTokenHighlights is true, so no need for a separate marker config
+					case DEBUG -> Optional.of(new MarkerParams(colors.debugTokenOutline.value(), DEBUG_PRIORITY));
+				};
+			}
+		}
+	}
+
+	private record MarkerParams(Color color, int priority) { }
 }
