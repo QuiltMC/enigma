@@ -71,7 +71,7 @@ import static org.quiltmc.enigma.gui.util.GuiUtil.getRecordIndexingService;
 public class BaseEditorPanel {
 	protected final JPanel ui = new JPanel();
 	protected final JEditorPane editor = new JEditorPane();
-	protected final JScrollPane editorScrollPane = new JScrollPane(this.editor);
+	protected final MarkableScrollPane editorScrollPane = new MarkableScrollPane(this.editor);
 
 	protected final GuiController controller;
 	protected final Gui gui;
