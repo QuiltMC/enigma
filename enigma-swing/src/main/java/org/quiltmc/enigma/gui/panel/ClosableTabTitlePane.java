@@ -16,6 +16,7 @@ import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 public class ClosableTabTitlePane {
 	private final JPanel ui;
@@ -29,8 +30,34 @@ public class ClosableTabTitlePane {
 		this.ui = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 2));
 		this.ui.setOpaque(false);
 
+		final MouseListener mousePressedDispatcher = GuiUtil.onMousePress(e -> {
+			// for some reason registering a mouse listener on this or any child makes
+			// events never go to the tabbed pane, so we have to redirect
+			// the event for tab selection and context menu to work
+			if (this.parent != null) {
+				Point pt = new Point(e.getXOnScreen(), e.getYOnScreen());
+				SwingUtilities.convertPointFromScreen(pt, this.parent);
+				MouseEvent e1 = new MouseEvent(
+						this.parent,
+						e.getID(),
+						e.getWhen(),
+						e.getModifiersEx(),
+						(int) pt.getX(),
+						(int) pt.getY(),
+						e.getXOnScreen(),
+						e.getYOnScreen(),
+						e.getClickCount(),
+						e.isPopupTrigger(),
+						e.getButton()
+				);
+				this.parent.dispatchEvent(e1);
+			}
+		});
+
 		this.title = new JLabel(title);
 		this.title.setToolTipText(tooltip);
+		this.title.addMouseListener(mousePressedDispatcher);
+
 		this.ui.add(this.title);
 
 		// Adapted from javax.swing.plaf.metal.MetalTitlePane
@@ -52,36 +79,12 @@ public class ClosableTabTitlePane {
 			}
 		}));
 
+		this.ui.addMouseListener(mousePressedDispatcher);
 		this.ui.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (SwingUtilities.isMiddleMouseButton(e)) {
 					onClose.run();
-				}
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-				// for some reason registering a mouse listener on this makes
-				// events never go to the tabbed pane, so we have to redirect
-				// the event for tab selection and context menu to work
-				if (ClosableTabTitlePane.this.parent != null) {
-					Point pt = new Point(e.getXOnScreen(), e.getYOnScreen());
-					SwingUtilities.convertPointFromScreen(pt, ClosableTabTitlePane.this.parent);
-					MouseEvent e1 = new MouseEvent(
-							ClosableTabTitlePane.this.parent,
-							e.getID(),
-							e.getWhen(),
-							e.getModifiersEx(),
-							(int) pt.getX(),
-							(int) pt.getY(),
-							e.getXOnScreen(),
-							e.getYOnScreen(),
-							e.getClickCount(),
-							e.isPopupTrigger(),
-							e.getButton()
-					);
-					ClosableTabTitlePane.this.parent.dispatchEvent(e1);
 				}
 			}
 
