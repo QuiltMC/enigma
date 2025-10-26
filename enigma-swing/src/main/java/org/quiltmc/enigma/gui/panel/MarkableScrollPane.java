@@ -76,17 +76,6 @@ public class MarkableScrollPane extends JScrollPane {
 	) {
 		super(view, verticalPolicy.vertical, horizontalPolicy.horizontal);
 
-		{
-			// DEBUG
-			final int crowdedPos = 50;
-			this.addMarker(crowdedPos, Color.BLUE, 0);
-			this.addMarker(crowdedPos, Color.GREEN, 1);
-			// not rendered when maxConcurrentMarkers < 3
-			this.addMarker(crowdedPos, Color.PINK, -1);
-
-			this.addMarker(100, Color.CYAN, 0);
-		}
-
 		this.markerWidth = ScaleUtil.scale(DEFAULT_MARKER_WIDTH);
 		this.markerHeight = ScaleUtil.scale(DEFAULT_MARKER_HEIGHT);
 
@@ -258,12 +247,6 @@ public class MarkableScrollPane extends JScrollPane {
 			}
 
 			this.pendingMarkerPositions.clear();
-
-			{
-				// DEBUG
-				graphics.setColor(new Color(255, 0, 0, 100));
-				graphics.fillRect(this.areaX, this.areaY, MarkableScrollPane.this.markerWidth, this.areaHeight);
-			}
 
 			for (final MarkersPainter painter : this.paintersByPos.values()) {
 				painter.paint(graphics);
