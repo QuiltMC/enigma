@@ -174,12 +174,12 @@ public class EntryTooltip extends JWindow {
 	 *
 	 * @param target the entry whose information will be displayed
 	 */
-	public void open(Entry<?> target) {
-		this.populateWith(target, true);
+	public void open(Entry<?> target, boolean inherited) {
+		this.populateWith(target, inherited, true);
 		this.setVisible(true);
 	}
 
-	private void populateWith(Entry<?> target, boolean opening) {
+	private void populateWith(Entry<?> target, boolean inherited, boolean opening) {
 		this.repopulated = !opening;
 		this.content.removeAll();
 
@@ -200,7 +200,7 @@ public class EntryTooltip extends JWindow {
 		{
 			final Box parentLabelRow = Box.createHorizontalBox();
 
-			final JLabel from = labelOf("from", italEditorFont);
+			final JLabel from = labelOf(inherited ? "inherited from" : "from", italEditorFont);
 			// the italics cause it to overlap with the colon if it has no right padding
 			from.setBorder(createEmptyBorder(0, 0, 0, 1));
 			parentLabelRow.add(from);
@@ -297,9 +297,11 @@ public class EntryTooltip extends JWindow {
 						@Override
 						public void mouseClicked(MouseEvent e) {
 							if (e.getButton() == MouseEvent.BUTTON1) {
-								EntryTooltip.this.declarationSnippet.consumeEditorMouseTarget((token, entry) -> {
-									EntryTooltip.this.onEntryClick(entry, e.getModifiersEx());
-								});
+								EntryTooltip.this.declarationSnippet
+										.consumeEditorMouseTarget((token, entry, resolvedParent) -> {
+											EntryTooltip.this.onEntryClick(entry, e.getModifiersEx());
+										}
+								);
 							}
 						}
 					});
@@ -498,7 +500,7 @@ public class EntryTooltip extends JWindow {
 			this.close();
 			this.gui.getController().navigateTo(entry);
 		} else {
-			this.populateWith(entry, false);
+			this.populateWith(entry, false, false);
 		}
 	}
 

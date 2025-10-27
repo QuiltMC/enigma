@@ -60,7 +60,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -270,21 +269,22 @@ public class BaseEditorPanel {
 	}
 
 	/**
-	 * @see #consumeEditorMouseTarget(BiConsumer, Runnable)
+	 * @see #consumeEditorMouseTarget(MouseTargetAction, Runnable)
 	 */
-	protected void consumeEditorMouseTarget(BiConsumer<Token, Entry<?>> action) {
+	protected void consumeEditorMouseTarget(MouseTargetAction action) {
 		this.consumeEditorMouseTarget(action, Runnables.doNothing());
 	}
 
 	/**
 	 * If the mouse is currently over a {@link Token} in the {@link #editor} that resolves to an {@link Entry}, passes
-	 * the token and entry to the passed {@code action}.<br>
+	 * the token and entry to the passed {@code action},
+	 * along with whether the entry is a resolved parent of the targeted entry.<br>
 	 * Otherwise, calls the passed {@code onNoTarget}.
 	 *
 	 * @param action     the action to run when the mouse is over a token that resolves to an entry
 	 * @param onNoTarget the action to run when the mouse is not over a token that resolves to an entry
 	 */
-	protected void consumeEditorMouseTarget(BiConsumer<Token, Entry<?>> action, Runnable onNoTarget) {
+	protected void consumeEditorMouseTarget(MouseTargetAction action, Runnable onNoTarget) {
 		consumeMousePositionIn(
 				this.editor,
 				(absoluteMouse, relativeMouse) -> Optional.of(relativeMouse)
@@ -294,9 +294,11 @@ public class BaseEditorPanel {
 					.ifPresentOrElse(
 						token -> Optional.of(token)
 							.map(this::getReference)
-							.map(this::resolveReference)
 							.ifPresentOrElse(
-								entry -> action.accept(token, entry),
+								reference -> {
+									final Entry<?> resolved = this.resolveReference(reference);
+									action.run(token, resolved, !resolved.equals(reference.entry));
+								},
 								onNoTarget
 							),
 						onNoTarget
@@ -841,5 +843,10 @@ public class BaseEditorPanel {
 		public void removeListener() {
 			this.handle.removeListener(this.listener);
 		}
+	}
+
+	@FunctionalInterface
+	protected interface MouseTargetAction {
+		void run(Token token, Entry<?> entry, boolean resolvedParent);
 	}
 }

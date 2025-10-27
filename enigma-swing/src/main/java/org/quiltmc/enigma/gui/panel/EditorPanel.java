@@ -64,14 +64,14 @@ public class EditorPanel extends BaseEditorPanel {
 	private final Timer mouseStoppedMovingTimer = new Timer(MOUSE_STOPPED_MOVING_DELAY, e -> {
 		if (Config.editor().entryTooltip.enable.value()) {
 			this.consumeEditorMouseTarget(
-					(token, entry) -> {
+					(token, entry, resolvedParent) -> {
 						this.hideTooltipTimer.stop();
 						if (this.entryTooltip.isVisible()) {
 							this.showTooltipTimer.stop();
 
 							if (!token.equals(this.lastMouseTargetToken)) {
 								this.lastMouseTargetToken = token;
-								this.openTooltip(entry);
+								this.openTooltip(entry, resolvedParent);
 							}
 						} else {
 							this.lastMouseTargetToken = token;
@@ -93,10 +93,10 @@ public class EditorPanel extends BaseEditorPanel {
 
 	private final Timer showTooltipTimer = new Timer(
 			ToolTipManager.sharedInstance().getInitialDelay() - MOUSE_STOPPED_MOVING_DELAY, e -> {
-				this.consumeEditorMouseTarget((token, entry) -> {
+				this.consumeEditorMouseTarget((token, entry, resolvedParent) -> {
 					if (token.equals(this.lastMouseTargetToken)) {
 						this.entryTooltip.setVisible(true);
-						this.openTooltip(entry);
+						this.openTooltip(entry, resolvedParent);
 					}
 				});
 			}
@@ -254,8 +254,8 @@ public class EditorPanel extends BaseEditorPanel {
 		this.hideTooltipTimer.stop();
 	}
 
-	private void openTooltip(Entry<?> target) {
-		this.entryTooltip.open(target);
+	private void openTooltip(Entry<?> target, boolean inherited) {
+		this.entryTooltip.open(target, inherited);
 	}
 
 	public void onRename(boolean isNewMapping) {
