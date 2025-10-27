@@ -117,7 +117,7 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 		this.editor.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e1) {
-				if ((e1.getModifiersEx() & CTRL_DOWN_MASK) != 0 && e1.getButton() == MouseEvent.BUTTON1) {
+				if (!e1.isConsumed() && (e1.getModifiersEx() & CTRL_DOWN_MASK) != 0 && e1.getButton() == MouseEvent.BUTTON1) {
 					// ctrl + left click
 					EditorPanel.this.navigateToCursorReference();
 				}
@@ -221,7 +221,13 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 					try {
 						final int tokenPos = (int) this.editor.modelToView2D(token.start).getCenterY();
 
-						this.editorScrollPane.addMarker(tokenPos, params.color, params.priority);
+						// TODO show/hide tooltip on mouse enter/exit
+						this.editorScrollPane.addMarker(tokenPos, params.color, params.priority, new MouseAdapter() {
+							@Override
+							public void mouseClicked(MouseEvent e) {
+								EditorPanel.this.navigateToToken(token);
+							}
+						});
 					} catch (BadLocationException e) {
 						Logger.warn("Tried to add marker for token with bad location: " + token);
 					}
