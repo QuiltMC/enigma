@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.TreeMultiset;
+import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 
 import javax.annotation.Nonnull;
@@ -14,9 +15,12 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,10 +28,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
-// TODO add marker MouseListener and MouseMotionListener support
 public class MarkableScrollPane extends JScrollPane {
 	private static final int DEFAULT_MARKER_WIDTH = 10;
 	private static final int DEFAULT_MARKER_HEIGHT = 5;
@@ -43,6 +49,7 @@ public class MarkableScrollPane extends JScrollPane {
 
 	@Nullable
 	private PaintState paintState;
+	private MouseListener viewMouseListener;
 
 	/**
 	 * Constructs a scroll pane with no view,
@@ -109,6 +116,60 @@ public class MarkableScrollPane extends JScrollPane {
 		});
 	}
 
+	@Override
+	public void setViewportView(Component view) {
+		final Component oldView = this.getViewport().getView();
+		if (oldView != null) {
+			oldView.removeMouseListener(this.viewMouseListener);
+		}
+
+		super.setViewportView(view);
+
+		this.viewMouseListener = new MouseListener() {
+			private void tryMarkerListeners(MouseEvent e, BiConsumer<MouseListener, MouseEvent> eventAction) {
+				if (MarkableScrollPane.this.paintState != null) {
+					final Point relativePos = GuiUtil
+							.getRelativePos(MarkableScrollPane.this, e.getXOnScreen(), e.getYOnScreen());
+					MarkableScrollPane.this.paintState
+							.findSpanContaining(
+								relativePos.x, relativePos.y,
+								span -> span.getMarker().mouseListener.isPresent()
+							)
+							.map(span -> span.getMarker().mouseListener.orElseThrow())
+							.ifPresent(listener -> eventAction.accept(listener, e));
+				}
+			}
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				this.tryMarkerListeners(e, MouseListener::mouseClicked);
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				this.tryMarkerListeners(e, MouseListener::mousePressed);
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				this.tryMarkerListeners(e, MouseListener::mouseReleased);
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				this.tryMarkerListeners(e, MouseListener::mouseEntered);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				this.tryMarkerListeners(e, MouseListener::mouseExited);
+			}
+		};
+
+		// add the listener to the view because this doesn't receive clicks within the view
+		view.addMouseListener(this.viewMouseListener);
+	}
+
 	/**
 	 * Adds a marker with passed {@code color} at the given {@code pos}.
 	 *
@@ -118,12 +179,12 @@ public class MarkableScrollPane extends JScrollPane {
 	 *                 {@link #maxConcurrentMarkers} of the highest priority markers will be rendered
 	 * @return         an object which may be used to remove the marker by passing it to {@link #removeMarker(Object)}
 	 */
-	public Object addMarker(int pos, Color color, int priority) {
+	public Object addMarker(int pos, Color color, int priority, @Nullable MouseListener mouseListener) {
 		if (pos < 0) {
 			throw new IllegalArgumentException("pos must not be negative!");
 		}
 
-		final Marker marker = new Marker(color, priority);
+		final Marker marker = new Marker(color, priority, Optional.ofNullable(mouseListener));
 		this.markersByPos.put(pos, marker);
 
 		if (this.paintState != null) {
@@ -136,7 +197,7 @@ public class MarkableScrollPane extends JScrollPane {
 	/**
 	 * Removes the passed {@code marker} if it belongs to this scroll pane.
 	 *
-	 * @param marker an object previously returned by {@link #addMarker(int, Color, int)}
+	 * @param marker an object previously returned by {@link #addMarker(int, Color, int, MouseListener)}
 	 */
 	public void removeMarker(Object marker) {
 		if (marker instanceof Marker removing) {
@@ -189,7 +250,8 @@ public class MarkableScrollPane extends JScrollPane {
 		final int verticalScrollBarWidth = this.verticalScrollBar == null || !this.verticalScrollBar.isVisible()
 				? 0 : this.verticalScrollBar.getWidth();
 
-		final int viewHeight = this.getViewport().getView().getPreferredSize().height;
+		final Component view = this.getViewport().getView();
+		final int viewHeight = view.getPreferredSize().height;
 
 		final int areaHeight;
 		if (viewHeight < bounds.height) {
@@ -276,9 +338,28 @@ public class MarkableScrollPane extends JScrollPane {
 			this.paintersByPos.clear();
 			this.pendingMarkerPositions.clear();
 		}
+
+		Optional<Marker.Span> findSpanContaining(int x, int y, Predicate<Marker.Span> predicate) {
+			if (this.areaContains(x, y)) {
+				return this.paintersByPos.values().stream()
+					.filter(painter -> painter.y <= y && y <= painter.y + painter.height)
+					.flatMap(painter -> painter.spans.stream())
+					.filter(predicate)
+					.filter(span -> span.x <= x && x <= span.x + span.width)
+					.findFirst();
+			} else {
+				return Optional.empty();
+			}
+		}
+
+		boolean areaContains(int x, int y) {
+			return this.areaX <= x && x <= this.areaX + MarkableScrollPane.this.markerWidth
+				&& this.areaY <= y && y <= this.areaY + this.areaHeight;
+		}
 	}
 
-	private record Marker(Color color, int priority) implements Comparable<Marker> {
+	private record Marker(Color color, int priority, Optional<MouseListener> mouseListener)
+			implements Comparable<Marker> {
 		@Override
 		public int compareTo(@Nonnull Marker other) {
 			return other.priority - this.priority;
