@@ -19,8 +19,8 @@ public class EditorConfig extends ReflectiveConfig {
 
 	@Comment(
 			"""
-			Settings for the editor's selection highlighting; used to highlight tokens that have been navigated to.
-			The color of the highlight is defined per-theme (in themes/) by [syntax_pane_colors] -> selection_highlight.\
+			Settings for the editor's selection highlighting; used to highlight entries that have been navigated to.
+			The color of the highlight is defined per-theme (in themes/) by [syntax_pane_colors] > selection_highlight.\
 			"""
 	)
 	public final SelectionHighlightSection selectionHighlight = new SelectionHighlightSection();
