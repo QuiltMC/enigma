@@ -738,15 +738,15 @@ public class EntryTooltip extends JWindow {
 
 		final String simpleObfName = entry.getSimpleName();
 		if (!simpleObfName.isEmpty()) {
-			if (Character.isJavaIdentifierStart(simpleObfName.charAt(0))) {
+			if (entry instanceof MethodEntry method && method.isConstructor()) {
+				return simpleObfName;
+			} else if (Character.isJavaIdentifierStart(simpleObfName.charAt(0))) {
 				final AccessFlags access = project.getJarIndex().getIndex(EntryIndex.class).getEntryAccess(entry);
 				if (access == null || !(access.isSynthetic())) {
 					return project.getRemapper().deobfuscate(entry).getSimpleName();
 				} else {
 					return "<synthetic>";
 				}
-			} else if (simpleObfName.equals("<init>")) {
-				return simpleObfName;
 			}
 		}
 
