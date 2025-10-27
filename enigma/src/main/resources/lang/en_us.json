@@ -73,6 +73,15 @@
 	"menu.view.themes.metal": "Metal",
 	"menu.view.themes.system": "System",
 	"menu.view.themes.none": "None (JVM Default)",
+	"menu.view.selection_highlight": "Selection Highlight",
+	"menu.view.selection_highlight.blinks": "Blink count (%s)",
+	"menu.view.selection_highlight.blinks.dialog_title": "Blink Count",
+	"menu.view.selection_highlight.blinks.dialog_explanation":
+	"The number of times to blink highlighting that indicates a token that has been navigated to.",
+	"menu.view.selection_highlight.blink_delay": "Blink delay (%sms)",
+	"menu.view.selection_highlight.blink_delay.dialog_title": "Blink Delay",
+	"menu.view.selection_highlight.blink_delay.dialog_explanation":
+	"The milliseconds to blink on and off highlighting that indicates a token that has been navigated to.",
 	"menu.view.languages": "Languages",
 	"menu.view.scale": "Scale",
 	"menu.view.scale.custom": "Custom...",
@@ -280,6 +289,8 @@
 	"prompt.create_server.port": "Port:",
 	"prompt.create_server.confirm": "Start",
 	"prompt.password": "Password:",
+
+	"prompt.input.int_range": "Enter a whole number between %s and %s (inclusive):",
 
 	"disconnect.disconnected": "Disconnected",
 	"disconnect.server_closed": "Server closed",
