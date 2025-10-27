@@ -69,6 +69,8 @@ public class EntryTooltip extends JWindow {
 	private static final int ROW_OUTER_INSET = 8;
 	private static final int ROW_INNER_INSET = 2;
 
+	private static final int DEFAULT_MAX_WIDTH = 600;
+
 	private final Gui gui;
 	private final JPanel content;
 
@@ -155,7 +157,7 @@ public class EntryTooltip extends JWindow {
 		final Dimension superPreferred = super.getPreferredSize();
 		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		return new Dimension(
-			Math.min(superPreferred.width, screenSize.width / 2),
+			Math.min(Math.min(superPreferred.width, screenSize.width / 2), ScaleUtil.scale(DEFAULT_MAX_WIDTH)),
 			Math.min(superPreferred.height, screenSize.height / 2)
 		);
 	}
