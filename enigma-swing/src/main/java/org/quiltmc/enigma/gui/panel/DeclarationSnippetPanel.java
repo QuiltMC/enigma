@@ -45,7 +45,6 @@ import org.quiltmc.enigma.util.Result;
 import org.quiltmc.syntaxpain.LineNumbersRuler;
 import org.tinylog.Logger;
 
-import javax.annotation.Nullable;
 import javax.swing.JViewport;
 import java.awt.Color;
 import java.util.Comparator;
@@ -75,21 +74,19 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 				.ifPresent(lineNumbers -> lineNumbers.deinstall(this.editor));
 
 		this.addSourceSetListener(source -> {
-			@Nullable
-			final Token boundedToken = this.resolveTarget(source, target)
-					.map(Target::token)
-					.map(this::navigateToTokenImpl)
-					.orElse(null);
-			if (boundedToken == null) {
-				// the source isn't very useful if it couldn't be trimmed and the declaration couldn't be navigated to
+			if (!this.isBounded()) {
+				// the source isn't very useful if it couldn't be trimmed
 				// set this text so it doesn't waste space or cause confusion
 				this.editor.setText("// Unable to locate declaration");
 				this.editor.getHighlighter().removeAllHighlights();
 			} else {
-				this.addHighlight(boundedToken, BoxHighlightPainter.create(
-						new Color(0, 0, 0, 0),
-						Config.getCurrentSyntaxPaneColors().selectionHighlight.value()
-				));
+				this.resolveTarget(source, target)
+						.map(Target::token)
+						.map(this::navigateToTokenImpl)
+						.ifPresent(boundedToken -> this.addHighlight(boundedToken, BoxHighlightPainter.create(
+							new Color(0, 0, 0, 0),
+							Config.getCurrentSyntaxPaneColors().selectionHighlight.value()
+						)));
 			}
 		});
 

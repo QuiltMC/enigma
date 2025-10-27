@@ -441,6 +441,10 @@ public class BaseEditorPanel {
 		this.sourceSetListeners.remove(listener);
 	}
 
+	protected boolean isBounded() {
+		return this.sourceBounds instanceof TrimmedBounds;
+	}
+
 	public void setHighlightedTokens(TokenStore tokenStore, Map<TokenType, ? extends Collection<Token>> tokens) {
 		// remove any old highlighters
 		this.editor.getHighlighter().removeAllHighlights();
