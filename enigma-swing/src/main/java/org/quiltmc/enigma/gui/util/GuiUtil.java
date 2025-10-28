@@ -367,9 +367,7 @@ public final class GuiUtil {
 	) {
 		final Point absolutePos = MouseInfo.getPointerInfo().getLocation();
 		if (component.isShowing()) {
-			final Point componentPos = component.getLocationOnScreen();
-			final Point relativePos = new Point(absolutePos);
-			relativePos.translate(-componentPos.x, -componentPos.y);
+			final Point relativePos = getRelativePos(component, absolutePos);
 
 			if (component.contains(relativePos)) {
 				inAction.accept(absolutePos, relativePos);
@@ -378,6 +376,18 @@ public final class GuiUtil {
 		}
 
 		outAction.accept(absolutePos);
+	}
+
+	public static Point getRelativePos(Component component, Point absolutePos) {
+		return getRelativePos(component, absolutePos.x, absolutePos.y);
+	}
+
+	public static Point getRelativePos(Component component, int absoluteX, int absoluteY) {
+		final Point componentPos = component.getLocationOnScreen();
+		componentPos.setLocation(-componentPos.x, -componentPos.y);
+		componentPos.translate(absoluteX, absoluteY);
+
+		return componentPos;
 	}
 
 	public static Optional<RecordIndexingService> getRecordIndexingService(Gui gui) {

@@ -21,6 +21,7 @@ import org.quiltmc.syntaxpain.SyntaxDocument;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -44,6 +45,7 @@ import javax.swing.text.JTextComponent;
 
 import static org.quiltmc.enigma.gui.util.GuiUtil.consumeMousePositionIn;
 import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
+import static javax.swing.SwingUtilities.isDescendingFrom;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
 public class EditorPanel extends BaseEditorPanel {
@@ -255,7 +257,11 @@ public class EditorPanel extends BaseEditorPanel {
 	}
 
 	private void openTooltip(Entry<?> target, boolean inherited) {
-		this.entryTooltip.open(target, inherited);
+		final Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+		final Component eventReceiver = focusOwner != null && isDescendingFrom(focusOwner, this.gui.getFrame())
+				? focusOwner : null;
+
+		this.entryTooltip.open(target, inherited, eventReceiver);
 	}
 
 	public void onRename(boolean isNewMapping) {

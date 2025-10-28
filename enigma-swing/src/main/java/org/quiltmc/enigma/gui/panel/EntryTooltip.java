@@ -35,6 +35,7 @@ import javax.swing.tree.TreePath;
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -85,6 +86,9 @@ public class EntryTooltip extends JWindow {
 	@Nullable
 	private DeclarationSnippetPanel declarationSnippet;
 
+	@Nullable
+	private Component eventReceiver;
+
 	public EntryTooltip(Gui gui) {
 		super(gui.getFrame());
 
@@ -117,6 +121,7 @@ public class EntryTooltip extends JWindow {
 
 					e.consume();
 				} else {
+					// dispatching mouse events here causes cast exceptions when receivers get unexpected event sources
 					EntryTooltip.this.close();
 				}
 			}
@@ -137,7 +142,7 @@ public class EntryTooltip extends JWindow {
 		Toolkit.getDefaultToolkit().addAWTEventListener(
 				e -> {
 					if (this.isShowing() && e.getID() == KeyEvent.KEY_TYPED) {
-						this.close();
+						this.closeAndDispatch(e);
 					}
 				},
 				AWTEvent.KEY_EVENT_MASK
@@ -172,9 +177,13 @@ public class EntryTooltip extends JWindow {
 	/**
 	 * Opens this tooltip and populates it with information about the passed {@code target}.
 	 *
-	 * @param target the entry whose information will be displayed
+	 * @param target        the entry whose information will be displayed
+	 * @param inherited     whether this tooltip is displaying information about the parent of another entry
+	 * @param eventReceiver a component to receive events such as key presses that cause this tooltip to close;
+	 *                      may be {@code null}
 	 */
-	public void open(Entry<?> target, boolean inherited) {
+	public void open(Entry<?> target, boolean inherited, @Nullable Component eventReceiver) {
+		this.eventReceiver = eventReceiver;
 		this.populateWith(target, inherited, true);
 		this.setVisible(true);
 	}
@@ -184,13 +193,16 @@ public class EntryTooltip extends JWindow {
 		this.content.removeAll();
 
 		@Nullable
-		final MouseAdapter stopInteraction = Config.editor().entryTooltip.interactable.value() ? null : new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				EntryTooltip.this.close();
-				e.consume();
-			}
-		};
+		final MouseAdapter stopInteraction = Config.editor().entryTooltip.interactable.value()
+				? null : new MouseAdapter() {
+					@Override
+					public void mousePressed(MouseEvent e) {
+						// dispatching mouse events here causes cast exceptions when
+						// receivers get unexpected event sources
+						EntryTooltip.this.close();
+						e.consume();
+					}
+				};
 
 		final Font editorFont = ScaleUtil.scaleFont(Config.currentFonts().editor.value());
 		final Font italEditorFont = ScaleUtil.scaleFont(Config.currentFonts().editor.value().deriveFont(Font.ITALIC));
@@ -591,9 +603,22 @@ public class EntryTooltip extends JWindow {
 	}
 
 	public void close() {
+		this.closeAndDispatch(null);
+	}
+
+	private void closeAndDispatch(@Nullable AWTEvent dispatching) {
 		this.repopulated = false;
 		this.setVisible(false);
 		this.content.removeAll();
+
+		if (this.eventReceiver != null) {
+			if (dispatching != null) {
+				// this must be dispatched after setting not visible to avoid a stack overflow in the event dispatching
+				this.eventReceiver.dispatchEvent(dispatching);
+			}
+
+			this.eventReceiver = null;
+		}
 
 		if (this.declarationSnippet != null) {
 			this.declarationSnippet.classHandler.removeListener();
