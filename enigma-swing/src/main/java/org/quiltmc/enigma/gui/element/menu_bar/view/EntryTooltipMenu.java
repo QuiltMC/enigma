@@ -7,11 +7,11 @@ import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JCheckBoxMenuItem;
 
-import static org.quiltmc.enigma.gui.util.GuiUtil.createSyncedCheckBox;
+import static org.quiltmc.enigma.gui.util.GuiUtil.createSyncedMenuCheckBox;
 
 public class EntryTooltipMenu extends AbstractEnigmaMenu {
-	private final JCheckBoxMenuItem enable = createSyncedCheckBox(Config.editor().entryTooltip.enable);
-	private final JCheckBoxMenuItem interactable = createSyncedCheckBox(Config.editor().entryTooltip.interactable);
+	private final JCheckBoxMenuItem enable = createSyncedMenuCheckBox(Config.editor().entryTooltip.enable);
+	private final JCheckBoxMenuItem interactable = createSyncedMenuCheckBox(Config.editor().entryTooltip.interactable);
 
 	protected EntryTooltipMenu(Gui gui) {
 		super(gui);

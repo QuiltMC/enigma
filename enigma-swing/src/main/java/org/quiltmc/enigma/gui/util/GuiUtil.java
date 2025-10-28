@@ -14,10 +14,12 @@ import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
 import org.quiltmc.enigma.impl.plugin.RecordIndexingService;
 import org.quiltmc.enigma.util.Os;
 
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.InputMap;
+import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -67,6 +69,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public final class GuiUtil {
 	private GuiUtil() {
@@ -405,8 +408,15 @@ public final class GuiUtil {
 	 *
 	 * @see #syncStateWithConfig(JCheckBoxMenuItem, TrackedValue)
 	 */
-	public static JCheckBoxMenuItem createSyncedCheckBox(TrackedValue<Boolean> config) {
+	public static JCheckBoxMenuItem createSyncedMenuCheckBox(TrackedValue<Boolean> config) {
 		final var box = new JCheckBoxMenuItem();
+		syncStateWithConfig(box, config);
+
+		return box;
+	}
+
+	public static JCheckBox createSyncedCheckBox(TrackedValue<Boolean> config) {
+		final var box = new JCheckBox();
 		syncStateWithConfig(box, config);
 
 		return box;
@@ -417,22 +427,34 @@ public final class GuiUtil {
 	 * {@link  JCheckBoxMenuItem#getState() state} of the {@code box} and the
 	 * {@link TrackedValue#value() value} of the {@code config} in sync.
 	 *
-	 * @see #createSyncedCheckBox(TrackedValue)
+	 * @see #createSyncedMenuCheckBox(TrackedValue)
 	 */
 	public static void syncStateWithConfig(JCheckBoxMenuItem box, TrackedValue<Boolean> config) {
-		box.setState(config.value());
+		syncStateWithConfigImpl(box, box::setState, box::getState, config);
+	}
 
-		box.addActionListener(e -> {
-			final boolean checked = box.getState();
-			if (checked != config.value()) {
-				config.setValue(checked);
+	public static void syncStateWithConfig(JCheckBox box, TrackedValue<Boolean> config) {
+		syncStateWithConfigImpl(box, box::setSelected, box::isSelected, config);
+	}
+
+	private static void syncStateWithConfigImpl(
+			AbstractButton button,
+			Consumer<Boolean> buttonSetter, Supplier<Boolean> buttonGetter,
+			TrackedValue<Boolean> config
+	) {
+		buttonSetter.accept(config.value());
+
+		button.addActionListener(e -> {
+			final boolean buttonValue = buttonGetter.get();
+			if (buttonValue != config.value()) {
+				config.setValue(buttonValue);
 			}
 		});
 
 		config.registerCallback(updated -> {
-			final boolean configured = updated.value();
-			if (configured != box.getState()) {
-				box.setState(configured);
+			final boolean configValue = updated.value();
+			if (configValue != buttonGetter.get()) {
+				buttonSetter.accept(configValue);
 			}
 		});
 	}
