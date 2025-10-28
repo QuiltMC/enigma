@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.util;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.service.JarIndexerService;
 import org.quiltmc.enigma.gui.Gui;
@@ -17,6 +18,7 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.InputMap;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -396,6 +398,43 @@ public final class GuiUtil {
 				.getEnigma()
 				.getService(JarIndexerService.TYPE, RecordIndexingService.ID)
 				.map(service -> (RecordIndexingService) service);
+	}
+
+	/**
+	 * Creates a {@link JCheckBoxMenuItem} that is kept in sync with the passed {@code config}.
+	 *
+	 * @see #syncStateWithConfig(JCheckBoxMenuItem, TrackedValue)
+	 */
+	public static JCheckBoxMenuItem createSyncedCheckBox(TrackedValue<Boolean> config) {
+		final var box = new JCheckBoxMenuItem();
+		syncStateWithConfig(box, config);
+
+		return box;
+	}
+
+	/**
+	 * Adds listeners to the passed {@code box} and {@code config} that keep the
+	 * {@link  JCheckBoxMenuItem#getState() state} of the {@code box} and the
+	 * {@link TrackedValue#value() value} of the {@code config} in sync.
+	 *
+	 * @see #createSyncedCheckBox(TrackedValue)
+	 */
+	public static void syncStateWithConfig(JCheckBoxMenuItem box, TrackedValue<Boolean> config) {
+		box.setState(config.value());
+
+		box.addActionListener(e -> {
+			final boolean checked = box.getState();
+			if (checked != config.value()) {
+				config.setValue(checked);
+			}
+		});
+
+		config.registerCallback(updated -> {
+			final boolean configured = updated.value();
+			if (configured != box.getState()) {
+				box.setState(configured);
+			}
+		});
 	}
 
 	public enum FocusCondition {
