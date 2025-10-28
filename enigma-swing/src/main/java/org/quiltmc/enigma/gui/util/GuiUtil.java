@@ -429,7 +429,7 @@ public final class GuiUtil {
 
 	/**
 	 * Adds listeners to the passed {@code box} and {@code config} that keep the
-	 * {@link  JCheckBoxMenuItem#getState() state} of the {@code box} and the
+	 * {@link JCheckBoxMenuItem#getState() state} of the {@code box} and the
 	 * {@link TrackedValue#value() value} of the {@code config} in sync.
 	 *
 	 * @see #createSyncedMenuCheckBox(TrackedValue)
@@ -438,6 +438,13 @@ public final class GuiUtil {
 		syncStateWithConfigImpl(box, box::setState, box::getState, config);
 	}
 
+	/**
+	 * Adds listeners to the passed {@code box} and {@code config} that keep the
+	 * {@linkplain JCheckBox#isSelected() selected state} of the {@code box} and the
+	 * {@link TrackedValue#value() value} of the {@code config} in sync.
+	 *
+	 * @see #createSyncedCheckBox(TrackedValue)
+	 */
 	public static void syncStateWithConfig(JCheckBox box, TrackedValue<Boolean> config) {
 		syncStateWithConfigImpl(box, box::setSelected, box::isSelected, config);
 	}
