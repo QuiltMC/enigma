@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static org.quiltmc.enigma.gui.util.GuiUtil.consumeMousePositionOut;
 import static org.quiltmc.enigma.gui.util.GuiUtil.getRecordIndexingService;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.BorderFactory.createLineBorder;
@@ -104,11 +105,19 @@ public class EntryTooltip extends JWindow {
 
 		Toolkit.getDefaultToolkit().addAWTEventListener(
 				e -> {
-					if (e instanceof MouseEvent mouseEvent && mouseEvent.getID() == MouseEvent.MOUSE_RELEASED) {
-						EntryTooltip.this.dragStart = null;
+					if (e instanceof MouseEvent mouseEvent) {
+						final int id = mouseEvent.getID();
+						if (id == MouseEvent.MOUSE_RELEASED) {
+							EntryTooltip.this.dragStart = null;
+						} else if (
+								this.isVisible()
+									&& id == MouseEvent.MOUSE_PRESSED || id == MouseEvent.MOUSE_CLICKED
+						) {
+							consumeMousePositionOut(this, ignored -> this.close());
+						}
 					}
 				},
-				MouseEvent.MOUSE_RELEASED
+				MouseEvent.MOUSE_EVENT_MASK
 		);
 
 		this.addMouseListener(new MouseAdapter() {

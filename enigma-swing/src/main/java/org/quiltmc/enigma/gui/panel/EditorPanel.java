@@ -164,10 +164,7 @@ public class EditorPanel extends BaseEditorPanel {
 
 			@Override
 			public void mousePressed(MouseEvent mouseEvent) {
-				EditorPanel.this.entryTooltip.setVisible(false);
-				EditorPanel.this.mouseStoppedMovingTimer.stop();
-				EditorPanel.this.showTooltipTimer.stop();
-				EditorPanel.this.hideTooltipTimer.stop();
+				EditorPanel.this.entryTooltip.close();
 			}
 
 			@Override
