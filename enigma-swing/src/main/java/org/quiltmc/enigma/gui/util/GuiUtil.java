@@ -415,6 +415,11 @@ public final class GuiUtil {
 		return box;
 	}
 
+	/**
+	 * Creates a {@link JCheckBox} that is kept in sync with the passed {@code config}.
+	 *
+	 * @see #syncStateWithConfig(JCheckBox, TrackedValue)
+	 */
 	public static JCheckBox createSyncedCheckBox(TrackedValue<Boolean> config) {
 		final var box = new JCheckBox();
 		syncStateWithConfig(box, config);
