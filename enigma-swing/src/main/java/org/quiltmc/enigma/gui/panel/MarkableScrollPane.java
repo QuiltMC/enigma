@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.panel;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -82,6 +83,8 @@ public class MarkableScrollPane extends JScrollPane {
 			ScrollBarPolicy verticalPolicy, ScrollBarPolicy horizontalPolicy
 	) {
 		super(view, verticalPolicy.vertical, horizontalPolicy.horizontal);
+
+		Preconditions.checkArgument(maxConcurrentMarkers > 0, "maxConcurrentMarkers must be positive!");
 
 		this.markerWidth = ScaleUtil.scale(DEFAULT_MARKER_WIDTH);
 		this.markerHeight = ScaleUtil.scale(DEFAULT_MARKER_HEIGHT);
@@ -285,13 +288,15 @@ public class MarkableScrollPane extends JScrollPane {
 	}
 
 	private class PaintState {
+		// order with greatest position first so lesser positions are painted later and thus on top
+		final TreeMap<Integer, MarkersPainter> paintersByPos = new TreeMap<>(Collections.reverseOrder());
+
 		final int areaX;
 		final int areaY;
 		final int areaHeight;
 
 		final int viewHeight;
 		final Set<Integer> pendingMarkerPositions;
-		final Map<Integer, MarkersPainter> paintersByPos;
 
 		PaintState(int areaX, int areaY, int areaHeight, int viewHeight, Collection<Integer> pendingMarkerPositions) {
 			this.areaX = areaX;
@@ -299,8 +304,6 @@ public class MarkableScrollPane extends JScrollPane {
 			this.areaHeight = areaHeight;
 			this.viewHeight = viewHeight;
 			this.pendingMarkerPositions = new HashSet<>(pendingMarkerPositions);
-			// order with greatest position first so lesser positions are rendered later and thus on top
-			this.paintersByPos = new TreeMap<>(Collections.reverseOrder());
 		}
 
 		void paint(Graphics graphics) {
@@ -341,7 +344,9 @@ public class MarkableScrollPane extends JScrollPane {
 
 		Optional<Marker.Span> findSpanContaining(int x, int y, Predicate<Marker.Span> predicate) {
 			if (this.areaContains(x, y)) {
-				return this.paintersByPos.values().stream()
+				// default ordering puts greatest positions first so lesser positions are painted on top
+				// check in reverse order so the lesser positions (on top) are checked first
+				return this.paintersByPos.descendingMap().values().stream()
 					.filter(painter -> painter.y <= y && y <= painter.y + painter.height)
 					.flatMap(painter -> painter.spans.stream())
 					.filter(predicate)
@@ -387,9 +392,7 @@ public class MarkableScrollPane extends JScrollPane {
 
 		MarkersPainter(List<Marker> markers, int x, int y, int height) {
 			final int markerCount = markers.size();
-			if (markerCount < 1) {
-				throw new IllegalArgumentException("no markers!");
-			}
+			Preconditions.checkArgument(markerCount > 0, "no markers!");
 
 			this.y = y;
 			this.height = height;
