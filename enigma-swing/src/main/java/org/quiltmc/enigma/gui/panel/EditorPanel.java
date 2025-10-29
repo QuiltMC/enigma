@@ -22,6 +22,8 @@ import org.quiltmc.syntaxpain.SyntaxDocument;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.KeyboardFocusManager;
+import java.awt.Toolkit;
+import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -49,65 +51,11 @@ import static javax.swing.SwingUtilities.isDescendingFrom;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
 public class EditorPanel extends BaseEditorPanel {
-	private static final int MOUSE_STOPPED_MOVING_DELAY = 100;
-
 	private final NavigatorPanel navigatorPanel;
 	private final EnigmaQuickFindToolBar quickFindToolBar = new EnigmaQuickFindToolBar();
 	private final EditorPopupMenu popupMenu;
 
-	// DIY tooltip because JToolTip can't be moved or resized
-	private final EntryTooltip entryTooltip = new EntryTooltip(this.gui);
-	private final WindowAdapter guiLostFocusListener;
-
-	@Nullable
-	private Token lastMouseTargetToken;
-
-	// avoid finding the mouse entry every mouse movement update
-	private final Timer mouseStoppedMovingTimer = new Timer(MOUSE_STOPPED_MOVING_DELAY, e -> {
-		if (Config.editor().entryTooltip.enable.value()) {
-			this.consumeEditorMouseTarget(
-					(token, entry, resolvedParent) -> {
-						this.hideTooltipTimer.stop();
-						if (this.entryTooltip.isVisible()) {
-							this.showTooltipTimer.stop();
-
-							if (!token.equals(this.lastMouseTargetToken)) {
-								this.lastMouseTargetToken = token;
-								this.openTooltip(entry, resolvedParent);
-							}
-						} else {
-							this.lastMouseTargetToken = token;
-							this.showTooltipTimer.start();
-						}
-					},
-					() -> consumeMousePositionIn(
-						this.entryTooltip.getContentPane(),
-						(absolute, relative) -> this.hideTooltipTimer.stop(),
-						absolute -> {
-							this.lastMouseTargetToken = null;
-							this.showTooltipTimer.stop();
-							this.hideTooltipTimer.start();
-						}
-					)
-			);
-		}
-	});
-
-	private final Timer showTooltipTimer = new Timer(
-			ToolTipManager.sharedInstance().getInitialDelay() - MOUSE_STOPPED_MOVING_DELAY, e -> {
-				this.consumeEditorMouseTarget((token, entry, resolvedParent) -> {
-					if (token.equals(this.lastMouseTargetToken)) {
-						this.entryTooltip.setVisible(true);
-						this.openTooltip(entry, resolvedParent);
-					}
-				});
-			}
-	);
-
-	private final Timer hideTooltipTimer = new Timer(
-			ToolTipManager.sharedInstance().getDismissDelay() - MOUSE_STOPPED_MOVING_DELAY,
-			e -> this.entryTooltip.close()
-	);
+	private final TooltipManager tooltipManager = new TooltipManager();
 
 	private final List<EditorActionListener> listeners = new ArrayList<>();
 
@@ -142,17 +90,6 @@ public class EditorPanel extends BaseEditorPanel {
 		this.popupMenu = new EditorPopupMenu(this, gui);
 		this.editor.setComponentPopupMenu(this.popupMenu.getUi());
 
-		this.entryTooltip.addCloseListener(this::onTooltipClose);
-		this.guiLostFocusListener = new WindowAdapter() {
-			@Override
-			public void windowLostFocus(WindowEvent e) {
-				if (e.getOppositeWindow() != EditorPanel.this.entryTooltip) {
-					EditorPanel.this.entryTooltip.close();
-				}
-			}
-		};
-		this.gui.getFrame().addWindowFocusListener(this.guiLostFocusListener);
-
 		this.editor.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e1) {
@@ -160,11 +97,6 @@ public class EditorPanel extends BaseEditorPanel {
 					// ctrl + left click
 					EditorPanel.this.navigateToCursorReference();
 				}
-			}
-
-			@Override
-			public void mousePressed(MouseEvent mouseEvent) {
-				EditorPanel.this.entryTooltip.close();
 			}
 
 			@Override
@@ -180,34 +112,7 @@ public class EditorPanel extends BaseEditorPanel {
 			}
 		});
 
-		this.editor.addMouseMotionListener(new MouseAdapter() {
-			@Override
-			public void mouseMoved(MouseEvent e) {
-				if (!EditorPanel.this.entryTooltip.hasRepopulated()) {
-					EditorPanel.this.mouseStoppedMovingTimer.restart();
-				}
-			}
-		});
-
 		this.editor.addCaretListener(event -> this.onCaretMove(event.getDot()));
-
-		this.editorScrollPane.getViewport().addChangeListener(e -> this.entryTooltip.close());
-
-		this.mouseStoppedMovingTimer.setRepeats(false);
-		this.showTooltipTimer.setRepeats(false);
-		this.hideTooltipTimer.setRepeats(false);
-
-		this.entryTooltip.setVisible(false);
-
-		this.entryTooltip.addMouseMotionListener(new MouseAdapter() {
-			@Override
-			public void mouseMoved(MouseEvent e) {
-				if (Config.editor().entryTooltip.interactable.value()) {
-					EditorPanel.this.mouseStoppedMovingTimer.stop();
-					EditorPanel.this.hideTooltipTimer.stop();
-				}
-			}
-		});
 
 		this.editor.addKeyListener(new KeyAdapter() {
 			@Override
@@ -244,21 +149,6 @@ public class EditorPanel extends BaseEditorPanel {
 		});
 
 		this.ui.putClientProperty(EditorPanel.class, this);
-	}
-
-	private void onTooltipClose() {
-		this.lastMouseTargetToken = null;
-		this.mouseStoppedMovingTimer.stop();
-		this.showTooltipTimer.stop();
-		this.hideTooltipTimer.stop();
-	}
-
-	private void openTooltip(Entry<?> target, boolean inherited) {
-		final Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-		final Component eventReceiver = focusOwner != null && isDescendingFrom(focusOwner, this.gui.getFrame())
-				? focusOwner : null;
-
-		this.entryTooltip.open(target, inherited, eventReceiver);
 	}
 
 	public void onRename(boolean isNewMapping) {
@@ -305,7 +195,7 @@ public class EditorPanel extends BaseEditorPanel {
 	@Override
 	public void destroy() {
 		super.destroy();
-		this.gui.getFrame().removeWindowFocusListener(this.guiLostFocusListener);
+		this.tooltipManager.removeExternalListeners();
 	}
 
 	public NavigatorPanel getNavigatorPanel() {
@@ -362,13 +252,13 @@ public class EditorPanel extends BaseEditorPanel {
 	@Override
 	public void offsetEditorZoom(int zoomAmount) {
 		super.offsetEditorZoom(zoomAmount);
-		this.entryTooltip.setZoom(zoomAmount);
+		this.tooltipManager.entryTooltip.setZoom(zoomAmount);
 	}
 
 	@Override
 	public void resetEditorZoom() {
 		super.resetEditorZoom();
-		this.entryTooltip.resetZoom();
+		this.tooltipManager.entryTooltip.resetZoom();
 	}
 
 	public void addListener(EditorActionListener listener) {
@@ -401,5 +291,151 @@ public class EditorPanel extends BaseEditorPanel {
 		this.quickFindToolBar.reloadKeyBinds();
 
 		this.popupMenu.getButtonKeyBinds().forEach((key, button) -> putKeyBindAction(key, this.editor, e -> button.doClick()));
+	}
+
+	private class TooltipManager {
+		static final int MOUSE_STOPPED_MOVING_DELAY = 100;
+
+		// DIY tooltip because JToolTip can't be moved or resized
+		private final EntryTooltip entryTooltip = new EntryTooltip(EditorPanel.this.gui);
+
+		private final WindowAdapter guiFocusListener = new WindowAdapter() {
+			@Override
+			public void windowLostFocus(WindowEvent e) {
+				if (e.getOppositeWindow() != TooltipManager.this.entryTooltip) {
+					TooltipManager.this.entryTooltip.close();
+				}
+			}
+		};
+
+		private final AWTEventListener globalKeyListener = e -> {
+			if (e.getID() == KeyEvent.KEY_TYPED || e.getID() == KeyEvent.KEY_PRESSED) {
+				this.reset();
+			}
+		};
+
+		@Nullable
+		private Token lastMouseTargetToken;
+
+		// Avoid finding the mouse entry every mouse movement update.
+		// This also reduces the chances of accidentally updating the tooltip with
+		// a new entry's content as you move your mouse to the tooltip.
+		final Timer mouseStoppedMovingTimer = new Timer(MOUSE_STOPPED_MOVING_DELAY, e -> {
+			if (Config.editor().entryTooltip.enable.value()) {
+				EditorPanel.this.consumeEditorMouseTarget(
+						(token, entry, resolvedParent) -> {
+							this.hideTimer.stop();
+							if (this.entryTooltip.isVisible()) {
+								this.showTimer.stop();
+
+								if (!token.equals(this.lastMouseTargetToken)) {
+									this.lastMouseTargetToken = token;
+									this.openTooltip(entry, resolvedParent);
+								}
+							} else {
+								this.lastMouseTargetToken = token;
+								this.showTimer.start();
+							}
+						},
+						() -> consumeMousePositionIn(
+							this.entryTooltip.getContentPane(),
+							(absolute, relative) -> this.hideTimer.stop(),
+							absolute -> {
+								this.lastMouseTargetToken = null;
+								this.showTimer.stop();
+								this.hideTimer.start();
+							}
+						)
+				);
+			}
+		});
+
+		final Timer showTimer = new Timer(
+				ToolTipManager.sharedInstance().getInitialDelay() - MOUSE_STOPPED_MOVING_DELAY, e -> {
+					EditorPanel.this.consumeEditorMouseTarget((token, entry, resolvedParent) -> {
+						if (token.equals(this.lastMouseTargetToken)) {
+							this.entryTooltip.setVisible(true);
+							this.openTooltip(entry, resolvedParent);
+						}
+					});
+				}
+		);
+
+		final Timer hideTimer = new Timer(
+				ToolTipManager.sharedInstance().getDismissDelay() - MOUSE_STOPPED_MOVING_DELAY,
+				e -> this.entryTooltip.close()
+		);
+
+		TooltipManager() {
+			this.mouseStoppedMovingTimer.setRepeats(false);
+			this.showTimer.setRepeats(false);
+			this.hideTimer.setRepeats(false);
+
+			this.entryTooltip.setVisible(false);
+
+			this.entryTooltip.addMouseMotionListener(new MouseAdapter() {
+				@Override
+				public void mouseMoved(MouseEvent e) {
+					if (Config.editor().entryTooltip.interactable.value()) {
+						TooltipManager.this.mouseStoppedMovingTimer.stop();
+						TooltipManager.this.hideTimer.stop();
+					}
+				}
+			});
+
+			this.entryTooltip.addCloseListener(TooltipManager.this::reset);
+
+			EditorPanel.this.editor.addKeyListener(new KeyAdapter() {
+				@Override
+				public void keyTyped(KeyEvent e) {
+					TooltipManager.this.reset();
+				}
+			});
+
+			EditorPanel.this.editor.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent mouseEvent) {
+					TooltipManager.this.entryTooltip.close();
+				}
+			});
+
+			EditorPanel.this.editor.addMouseMotionListener(new MouseAdapter() {
+				@Override
+				public void mouseMoved(MouseEvent e) {
+					if (!TooltipManager.this.entryTooltip.hasRepopulated()) {
+						TooltipManager.this.mouseStoppedMovingTimer.restart();
+					}
+				}
+			});
+
+			EditorPanel.this.editorScrollPane.getViewport().addChangeListener(e -> this.entryTooltip.close());
+
+			this.addExternalListeners();
+		}
+
+		void reset() {
+			this.lastMouseTargetToken = null;
+			this.mouseStoppedMovingTimer.stop();
+			this.showTimer.stop();
+			this.hideTimer.stop();
+		}
+
+		void openTooltip(Entry<?> target, boolean inherited) {
+			final Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+			final Component eventReceiver = focusOwner != null && isDescendingFrom(focusOwner, EditorPanel.this.gui.getFrame())
+					? focusOwner : null;
+
+			this.entryTooltip.open(target, inherited, eventReceiver);
+		}
+
+		void addExternalListeners() {
+			EditorPanel.this.gui.getFrame().addWindowFocusListener(this.guiFocusListener);
+			Toolkit.getDefaultToolkit().addAWTEventListener(this.globalKeyListener, KeyEvent.KEY_EVENT_MASK);
+		}
+
+		void removeExternalListeners() {
+			EditorPanel.this.gui.getFrame().removeWindowFocusListener(this.guiFocusListener);
+			Toolkit.getDefaultToolkit().removeAWTEventListener(this.globalKeyListener);
+		}
 	}
 }

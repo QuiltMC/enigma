@@ -44,6 +44,7 @@ import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.AWTEventListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -76,6 +77,23 @@ public class EntryTooltip extends JWindow {
 	private final Gui gui;
 	private final JPanel content;
 
+	private final AWTEventListener globalMouseListener = e -> {
+		if (e instanceof MouseEvent mouseEvent) {
+			final int id = mouseEvent.getID();
+			if (id == MouseEvent.MOUSE_RELEASED) {
+				EntryTooltip.this.dragStart = null;
+			} else if (this.isVisible() && id == MouseEvent.MOUSE_PRESSED || id == MouseEvent.MOUSE_CLICKED) {
+				consumeMousePositionOut(this, ignored -> this.close());
+			}
+		}
+	};
+
+	private final AWTEventListener globalKeyListener = e -> {
+		if (this.isShowing() && e.getID() == KeyEvent.KEY_TYPED) {
+			this.closeAndDispatch(e);
+		}
+	};
+
 	private final Set<Runnable> closeListeners = new HashSet<>();
 
 	private int zoomAmount;
@@ -102,23 +120,6 @@ public class EntryTooltip extends JWindow {
 
 		this.setContentPane(this.content);
 		this.content.setBorder(createLineBorder(Config.getCurrentSyntaxPaneColors().lineNumbersSelected.value()));
-
-		Toolkit.getDefaultToolkit().addAWTEventListener(
-				e -> {
-					if (e instanceof MouseEvent mouseEvent) {
-						final int id = mouseEvent.getID();
-						if (id == MouseEvent.MOUSE_RELEASED) {
-							EntryTooltip.this.dragStart = null;
-						} else if (
-								this.isVisible()
-									&& id == MouseEvent.MOUSE_PRESSED || id == MouseEvent.MOUSE_CLICKED
-						) {
-							consumeMousePositionOut(this, ignored -> this.close());
-						}
-					}
-				},
-				MouseEvent.MOUSE_EVENT_MASK
-		);
 
 		this.addMouseListener(new MouseAdapter() {
 			@Override
@@ -147,15 +148,6 @@ public class EntryTooltip extends JWindow {
 				}
 			}
 		});
-
-		Toolkit.getDefaultToolkit().addAWTEventListener(
-				e -> {
-					if (this.isShowing() && e.getID() == KeyEvent.KEY_TYPED) {
-						this.closeAndDispatch(e);
-					}
-				},
-				AWTEvent.KEY_EVENT_MASK
-		);
 
 		this.addWindowFocusListener(new WindowAdapter() {
 			@Override
@@ -195,6 +187,8 @@ public class EntryTooltip extends JWindow {
 		this.eventReceiver = eventReceiver;
 		this.populateWith(target, inherited, true);
 		this.setVisible(true);
+
+		this.addExternalListeners();
 	}
 
 	private void populateWith(Entry<?> target, boolean inherited, boolean opening) {
@@ -431,6 +425,16 @@ public class EntryTooltip extends JWindow {
 		this.closeListeners.remove(listener);
 	}
 
+	private void addExternalListeners() {
+		Toolkit.getDefaultToolkit().addAWTEventListener(this.globalMouseListener, MouseEvent.MOUSE_EVENT_MASK);
+		Toolkit.getDefaultToolkit().addAWTEventListener(this.globalKeyListener, AWTEvent.KEY_EVENT_MASK);
+	}
+
+	private void removeExternalListeners() {
+		Toolkit.getDefaultToolkit().removeAWTEventListener(this.globalMouseListener);
+		Toolkit.getDefaultToolkit().removeAWTEventListener(this.globalKeyListener);
+	}
+
 	/**
 	 * Moves this so it's near but not under the cursor, favoring the bottom right.
 	 *
@@ -616,6 +620,8 @@ public class EntryTooltip extends JWindow {
 	}
 
 	private void closeAndDispatch(@Nullable AWTEvent dispatching) {
+		this.removeExternalListeners();
+
 		this.repopulated = false;
 		this.setVisible(false);
 		this.content.removeAll();
