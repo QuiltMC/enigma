@@ -218,6 +218,8 @@ public class EditorPanel {
 			}
 		});
 
+		this.popupMenu.getButtonKeyBinds().keySet().forEach(keyBind -> keyBind.removeUiConflicts(this.editor));
+
 		this.reloadKeyBinds();
 
 		this.retryButton.addActionListener(e -> this.redecompileClass());

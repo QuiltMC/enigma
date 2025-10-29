@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.util;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
@@ -344,10 +345,16 @@ public final class GuiUtil {
 		 */
 		WHEN_ANCESTOR_OF_FOCUSED_COMPONENT(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
+		public static final ImmutableList<FocusCondition> VALUES = ImmutableList.copyOf(values());
+
 		private final int value;
 
 		FocusCondition(int value) {
 			this.value = value;
+		}
+
+		public int getValue() {
+			return this.value;
 		}
 	}
 }

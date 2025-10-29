@@ -15,12 +15,18 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 
+import static javax.swing.SwingUtilities.getUIInputMap;
+
 public record KeyBind(String name, String category, List<Combination> combinations) {
 	public record Combination(int keyCode, int keyModifiers) {
 		public static final Combination EMPTY = new Combination(-1, 0);
 
 		public boolean matches(KeyEvent e) {
 			return e.getKeyCode() == this.keyCode && e.getModifiersEx() == this.keyModifiers;
+		}
+
+		public KeyStroke toKeyStroke() {
+			return this.toKeyStroke(0);
 		}
 
 		public KeyStroke toKeyStroke(int modifiers) {
@@ -72,6 +78,19 @@ public record KeyBind(String name, String category, List<Combination> combinatio
 
 	public boolean isEmpty() {
 		return this.combinations.isEmpty();
+	}
+
+	public void removeUiConflicts(JComponent component) {
+		final List<KeyStroke> keyStrokes = this.combinations.stream().map(Combination::toKeyStroke).toList();
+
+		for (final GuiUtil.FocusCondition condition : GuiUtil.FocusCondition.VALUES) {
+			InputMap uiInputMap = getUIInputMap(component, condition.getValue());
+			while (uiInputMap != null) {
+				keyStrokes.forEach(uiInputMap::remove);
+
+				uiInputMap = uiInputMap.getParent();
+			}
+		}
 	}
 
 	public String[] serializeCombinations() {
