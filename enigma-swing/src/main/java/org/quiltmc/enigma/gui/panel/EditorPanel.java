@@ -297,9 +297,9 @@ public class EditorPanel extends BaseEditorPanel {
 		static final int MOUSE_STOPPED_MOVING_DELAY = 100;
 
 		// DIY tooltip because JToolTip can't be moved or resized
-		private final EntryTooltip entryTooltip = new EntryTooltip(EditorPanel.this.gui);
+		final EntryTooltip entryTooltip = new EntryTooltip(EditorPanel.this.gui);
 
-		private final WindowAdapter guiFocusListener = new WindowAdapter() {
+		final WindowAdapter guiFocusListener = new WindowAdapter() {
 			@Override
 			public void windowLostFocus(WindowEvent e) {
 				if (e.getOppositeWindow() != TooltipManager.this.entryTooltip) {
@@ -308,14 +308,11 @@ public class EditorPanel extends BaseEditorPanel {
 			}
 		};
 
-		private final AWTEventListener globalKeyListener = e -> {
+		final AWTEventListener globalKeyListener = e -> {
 			if (e.getID() == KeyEvent.KEY_TYPED || e.getID() == KeyEvent.KEY_PRESSED) {
 				this.reset();
 			}
 		};
-
-		@Nullable
-		private Token lastMouseTargetToken;
 
 		// Avoid finding the mouse entry every mouse movement update.
 		// This also reduces the chances of accidentally updating the tooltip with
@@ -365,6 +362,9 @@ public class EditorPanel extends BaseEditorPanel {
 				ToolTipManager.sharedInstance().getDismissDelay() - MOUSE_STOPPED_MOVING_DELAY,
 				e -> this.entryTooltip.close()
 		);
+
+		@Nullable
+		Token lastMouseTargetToken;
 
 		TooltipManager() {
 			this.mouseStoppedMovingTimer.setRepeats(false);
