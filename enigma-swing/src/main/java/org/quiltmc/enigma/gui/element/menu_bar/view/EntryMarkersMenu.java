@@ -8,6 +8,7 @@ import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
+import javax.swing.JToolBar;
 
 public class EntryMarkersMenu extends AbstractEnigmaMenu {
 	private final JCheckBoxMenuItem tooltip = GuiUtil
@@ -31,6 +32,7 @@ public class EntryMarkersMenu extends AbstractEnigmaMenu {
 		this.add(this.tooltip);
 
 		this.markMenu.add(this.onlyMarkDeclarations);
+		this.markMenu.add(new JToolBar.Separator());
 		this.markMenu.add(this.markObfuscated);
 		this.markMenu.add(this.markFallback);
 		this.markMenu.add(this.markProposed);
