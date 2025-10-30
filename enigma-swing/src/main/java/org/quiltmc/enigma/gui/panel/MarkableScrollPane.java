@@ -20,8 +20,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class MarkableScrollPane extends JScrollPane {
@@ -50,7 +50,7 @@ public class MarkableScrollPane extends JScrollPane {
 
 	@Nullable
 	private PaintState paintState;
-	private MouseListener viewMouseListener;
+	private MouseAdapter viewMouseAdapter;
 
 	/**
 	 * Constructs a scroll pane with no view,
@@ -123,71 +123,104 @@ public class MarkableScrollPane extends JScrollPane {
 	public void setViewportView(Component view) {
 		final Component oldView = this.getViewport().getView();
 		if (oldView != null) {
-			oldView.removeMouseListener(this.viewMouseListener);
+			oldView.removeMouseListener(this.viewMouseAdapter);
+			oldView.removeMouseMotionListener(this.viewMouseAdapter);
 		}
 
 		super.setViewportView(view);
 
-		this.viewMouseListener = new MouseListener() {
-			private void tryMarkerListeners(MouseEvent e, BiConsumer<MouseListener, MouseEvent> eventAction) {
-				if (MarkableScrollPane.this.paintState != null) {
-					final Point relativePos = GuiUtil
-							.getRelativePos(MarkableScrollPane.this, e.getXOnScreen(), e.getYOnScreen());
-					MarkableScrollPane.this.paintState
-							.findSpanContaining(
-								relativePos.x, relativePos.y,
-								span -> span.getMarker().mouseListener.isPresent()
-							)
-							.map(span -> span.getMarker().mouseListener.orElseThrow())
-							.ifPresent(listener -> eventAction.accept(listener, e));
+		this.viewMouseAdapter = new MouseAdapter() {
+			static MouseEvent withId(MouseEvent e, int id) {
+				return new MouseEvent(
+					(Component) e.getSource(), id, e.getWhen(), e.getModifiersEx(),
+					e.getX(), e.getY(), e.getXOnScreen(), e.getYOnScreen(),
+					e.getClickCount(), e.isPopupTrigger(), e.getButton()
+				);
+			}
+
+			@Nullable
+			MarkerListener lastEntered;
+
+			Optional<MarkerListener> findMarkerListener(MouseEvent e) {
+				if (MarkableScrollPane.this.paintState == null) {
+					return Optional.empty();
+				} else {
+					final Point relativePos =
+							GuiUtil.getRelativePos(MarkableScrollPane.this, e.getXOnScreen(), e.getYOnScreen());
+					return MarkableScrollPane.this.paintState
+						.findSpanContaining(
+							relativePos.x, relativePos.y,
+							span -> span.getMarker().listener.isPresent()
+						)
+						.map(span -> span.getMarker().listener.orElseThrow());
 				}
+			}
+
+			void tryMarkerListeners(MouseEvent e, Consumer<MarkerListener> listen) {
+				this.findMarkerListener(e).ifPresent(listen);
 			}
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				this.tryMarkerListeners(e, MouseListener::mouseClicked);
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-				this.tryMarkerListeners(e, MouseListener::mousePressed);
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				this.tryMarkerListeners(e, MouseListener::mouseReleased);
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				this.tryMarkerListeners(e, MouseListener::mouseEntered);
+				this.tryMarkerListeners(e, MarkerListener::mouseClicked);
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				this.tryMarkerListeners(e, MouseListener::mouseExited);
+				this.mouseExitedImpl();
+			}
+
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				this.tryMarkerListeners(e, MarkerListener::mouseMoved);
+
+				this.findMarkerListener(e).ifPresentOrElse(
+						listener -> {
+							if (listener != this.lastEntered) {
+								if (this.lastEntered == null) {
+									listener.mouseEntered();
+								} else {
+									listener.mouseTransferred();
+								}
+
+								this.lastEntered = listener;
+							}
+						},
+						this::mouseExitedImpl
+				);
+			}
+
+			private void mouseExitedImpl() {
+				if (this.lastEntered != null) {
+					this.lastEntered.mouseExited();
+					this.lastEntered = null;
+				}
 			}
 		};
 
 		// add the listener to the view because this doesn't receive clicks within the view
-		view.addMouseListener(this.viewMouseListener);
+		view.addMouseListener(this.viewMouseAdapter);
+		view.addMouseMotionListener(this.viewMouseAdapter);
 	}
 
 	/**
 	 * Adds a marker with passed {@code color} at the given {@code pos}.
 	 *
-	 * @param pos      the vertical center of the marker within the space of this scroll pane's view
-	 * @param color    the color of the marker
-	 * @param priority the priority of the marker; if there are multiple markers at the same position, only up to
-	 *                 {@link #maxConcurrentMarkers} of the highest priority markers will be rendered
-	 * @return         an object which may be used to remove the marker by passing it to {@link #removeMarker(Object)}
+	 * @param pos            the vertical center of the marker within the space of this scroll pane's view
+	 * @param color          the color of the marker
+	 * @param priority       the priority of the marker; if there are multiple markers at the same position, only up to
+	 *                       {@link #maxConcurrentMarkers} of the highest priority markers will be rendered
+	 * @param listener  	 a listener for events within the marker; may be null
+	 *
+	 * @return an object which may be used to remove the marker by passing it to {@link #removeMarker(Object)}
 	 */
-	public Object addMarker(int pos, Color color, int priority, @Nullable MouseListener mouseListener) {
+	public Object addMarker(int pos, Color color, int priority, @Nullable MarkerListener listener) {
 		if (pos < 0) {
 			throw new IllegalArgumentException("pos must not be negative!");
 		}
 
-		final Marker marker = new Marker(color, priority, Optional.ofNullable(mouseListener));
+		final Marker marker = new Marker(color, priority, Optional.ofNullable(listener));
+
 		this.markersByPos.put(pos, marker);
 
 		if (this.paintState != null) {
@@ -200,7 +233,7 @@ public class MarkableScrollPane extends JScrollPane {
 	/**
 	 * Removes the passed {@code marker} if it belongs to this scroll pane.
 	 *
-	 * @param marker an object previously returned by {@link #addMarker(int, Color, int, MouseListener)}
+	 * @param marker an object previously returned by {@link #addMarker(int, Color, int, MarkerListener)}
 	 */
 	public void removeMarker(Object marker) {
 		if (marker instanceof Marker removing) {
@@ -363,8 +396,7 @@ public class MarkableScrollPane extends JScrollPane {
 		}
 	}
 
-	private record Marker(Color color, int priority, Optional<MouseListener> mouseListener)
-			implements Comparable<Marker> {
+	private record Marker(Color color, int priority, Optional<MarkerListener> listener) implements Comparable<Marker> {
 		@Override
 		public int compareTo(@Nonnull Marker other) {
 			return other.priority - this.priority;
@@ -421,5 +453,20 @@ public class MarkableScrollPane extends JScrollPane {
 				graphics.fillRect(span.x, this.y, span.width, this.height);
 			}
 		}
+	}
+
+	public interface MarkerListener {
+		void mouseClicked();
+
+		void mouseExited();
+
+		void mouseEntered();
+
+		/**
+		 * Called when the mouse moves between two adjacent markers.
+		 */
+		void mouseTransferred();
+
+		void mouseMoved();
 	}
 }
