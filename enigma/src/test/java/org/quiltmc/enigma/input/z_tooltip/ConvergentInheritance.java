@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.input.z_tooltip;
 
 public class ConvergentInheritance {
-	static abstract class Named {
+	abstract static class Named {
 		public abstract void setName(String name);
 	}
 
