@@ -11,6 +11,7 @@ import org.quiltmc.enigma.api.event.ClassHandleListener;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.source.TokenStore;
 import org.quiltmc.enigma.api.source.TokenType;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.EntryMarkersSection;
@@ -557,6 +558,10 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 						EditorPanel.this.getReference(token);
 
 				if (reference != null) {
+					if (reference.entry instanceof MethodEntry method && method.isConstructor()) {
+						return;
+					}
+
 					final Entry<?> resolved = EditorPanel.this.resolveReference(reference);
 					final EntryReference<Entry<?>, Entry<?>> declaration = EntryReference
 							.declaration(resolved, resolved.getName());
