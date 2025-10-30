@@ -7,7 +7,7 @@ import org.quiltmc.config.api.metadata.NamingSchemes;
 import org.quiltmc.config.api.values.TrackedValue;
 
 @SerializedNameConvention(NamingSchemes.SNAKE_CASE)
-public class EntryTooltipSection extends ReflectiveConfig.Section {
+public class EntryTooltipsSection extends ReflectiveConfig.Section {
 	@Comment("Whether tooltips are enabled.")
 	public final TrackedValue<Boolean> enable = this.value(true);
 

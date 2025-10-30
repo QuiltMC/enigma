@@ -318,7 +318,7 @@ public class EditorPanel extends BaseEditorPanel {
 		// This also reduces the chances of accidentally updating the tooltip with
 		// a new entry's content as you move your mouse to the tooltip.
 		final Timer mouseStoppedMovingTimer = new Timer(MOUSE_STOPPED_MOVING_DELAY, e -> {
-			if (Config.editor().entryTooltip.enable.value()) {
+			if (Config.editor().entryTooltips.enable.value()) {
 				EditorPanel.this.consumeEditorMouseTarget(
 						(token, entry, resolvedParent) -> {
 							this.hideTimer.stop();
@@ -376,7 +376,7 @@ public class EditorPanel extends BaseEditorPanel {
 			this.entryTooltip.addMouseMotionListener(new MouseAdapter() {
 				@Override
 				public void mouseMoved(MouseEvent e) {
-					if (Config.editor().entryTooltip.interactable.value()) {
+					if (Config.editor().entryTooltips.interactable.value()) {
 						TooltipManager.this.mouseStoppedMovingTimer.stop();
 						TooltipManager.this.hideTimer.stop();
 					}

@@ -11,6 +11,6 @@ public class EditorConfig extends ReflectiveConfig {
 	@Comment("Whether editors' quick find toolbars should remain visible when they lose focus.")
 	public final TrackedValue<Boolean> persistentQuickFind = this.value(true);
 
-	@Comment("Settings for the editor's entry tooltip.")
-	public final EntryTooltipSection entryTooltip = new EntryTooltipSection();
+	@Comment("Settings for editors' entry tooltips.")
+	public final EntryTooltipsSection entryTooltips = new EntryTooltipsSection();
 }
