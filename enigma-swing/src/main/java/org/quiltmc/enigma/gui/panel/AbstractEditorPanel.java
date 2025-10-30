@@ -540,7 +540,18 @@ public abstract class AbstractEditorPanel<S extends JScrollPane> {
 			return;
 		}
 
-		final List<Token> tokens = Optional.of(this.controller.getTokensForReference(this.source, reference))
+		final List<Token> tokens = this.getReferences(reference);
+
+		if (tokens.isEmpty()) {
+			// DEBUG
+			Logger.debug("No tokens found for {} in {}", reference, this.classHandler.getHandle().getRef());
+		} else {
+			this.gui.showTokens(this, tokens);
+		}
+	}
+
+	protected List<Token> getReferences(EntryReference<Entry<?>, Entry<?>> reference) {
+		return Optional.of(this.controller.getTokensForReference(this.source, reference))
 				.filter(directTokens -> !directTokens.isEmpty())
 				.or(() -> {
 					// record component getters often don't have a declaration token
@@ -553,13 +564,6 @@ public abstract class AbstractEditorPanel<S extends JScrollPane> {
 							: Optional.empty();
 				})
 				.orElse(List.of());
-
-		if (tokens.isEmpty()) {
-			// DEBUG
-			Logger.debug("No tokens found for {} in {}", reference, this.classHandler.getHandle().getRef());
-		} else {
-			this.gui.showTokens(this, tokens);
-		}
 	}
 
 	/**
