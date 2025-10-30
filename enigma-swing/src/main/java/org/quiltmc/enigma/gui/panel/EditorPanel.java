@@ -174,6 +174,7 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 		this.ui.putClientProperty(EditorPanel.class, this);
 
 		final EntryMarkersSection markersConfig = Config.editor().entryMarkers;
+		this.registerMarkerRefresher(markersConfig.onlyMarkDeclarations, MarkerManager::onlyMarksDeclarations);
 		this.registerMarkerRefresher(markersConfig.markObfuscated, MarkerManager::marksObfuscated);
 		this.registerMarkerRefresher(markersConfig.markFallback, MarkerManager::marksFallback);
 		this.registerMarkerRefresher(markersConfig.markProposed, MarkerManager::marksProposed);
@@ -363,6 +364,7 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 	private MarkerManager createMarkerManager() {
 		final EntryMarkersSection markersConfig = Config.editor().entryMarkers;
 		return new MarkerManager(
+			markersConfig.onlyMarkDeclarations.value(),
 			markersConfig.markObfuscated.value(),
 			markersConfig.markFallback.value(),
 			markersConfig.markProposed.value(),
@@ -531,12 +533,18 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 			);
 		}
 
+		final boolean onlyMarkDeclarations;
+
 		final boolean markObfuscated;
 		final boolean markFallback;
 		final boolean markProposed;
 		final boolean markDeobfuscated;
 
-		MarkerManager(boolean markObfuscated, boolean markFallback, boolean markProposed, boolean markDeobfuscated) {
+		MarkerManager(
+				boolean onlyMarkDeclarations,
+				boolean markObfuscated, boolean markFallback, boolean markProposed, boolean markDeobfuscated
+		) {
+			this.onlyMarkDeclarations = onlyMarkDeclarations;
 			this.markObfuscated = markObfuscated;
 			this.markFallback = markFallback;
 			this.markProposed = markProposed;
@@ -544,6 +552,26 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 		}
 
 		void tryMarking(Token token, TokenType type, TokenStore tokenStore) {
+			if (this.onlyMarkDeclarations) {
+				final EntryReference<Entry<?>, Entry<?>> reference =
+						EditorPanel.this.getReference(token);
+
+				if (reference != null) {
+					final Entry<?> resolved = EditorPanel.this.resolveReference(reference);
+					final EntryReference<Entry<?>, Entry<?>> declaration = EntryReference
+							.declaration(resolved, resolved.getName());
+
+					if (
+							EditorPanel.this.getReferences(declaration).stream()
+								.findFirst()
+								.filter(declarationToken -> !declarationToken.equals(token))
+								.isPresent()
+					) {
+						return;
+					}
+				}
+			}
+
 			@Nullable
 			final TrackedValue<ThemeProperties.SerializableColor> colorConfig =
 					this.getColorConfig(token, type, tokenStore);
@@ -556,43 +584,7 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 					final Color color = colorConfig.value();
 					EditorPanel.this.editorScrollPane.addMarker(
 							tokenPos, color, priority,
-							new MarkableScrollPane.MarkerListener() {
-								@Override
-								public void mouseClicked() {
-									EditorPanel.this.navigateToToken(token);
-								}
-
-								@Override
-								public void mouseExited() {
-									if (EditorPanel.this.tooltipManager.lastMouseTargetToken == null) {
-										EditorPanel.this.tooltipManager.entryTooltip.close();
-									}
-								}
-
-								@Override
-								public void mouseEntered() {
-									// dont' resolve the token for markers
-									final EntryReference<Entry<?>, Entry<?>> reference =
-											EditorPanel.this.getReference(token);
-									if (reference != null) {
-										EditorPanel.this.tooltipManager.reset();
-										EditorPanel.this.tooltipManager.openTooltip(reference.entry, false);
-									}
-								}
-
-								// This is used instead of just exit+enter because closing immediately before opening
-								// causes the (slightly delayed) window lost focus listener to close the tooltip
-								// for the new marker immediately after opening it.
-								@Override
-								public void mouseTransferred() {
-									this.mouseEntered();
-								}
-
-								@Override
-								public void mouseMoved() {
-									EditorPanel.this.tooltipManager.reset();
-								}
-							}
+							new EntryMarkerListener(token)
 					);
 				} catch (BadLocationException e) {
 					Logger.warn("Tried to add marker for token with bad location: " + token);
@@ -622,6 +614,10 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 			}
 		}
 
+		boolean onlyMarksDeclarations() {
+			return this.onlyMarkDeclarations;
+		}
+
 		boolean marksObfuscated() {
 			return this.markObfuscated;
 		}
@@ -636,6 +632,57 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 
 		boolean marksDeobfuscated() {
 			return this.markDeobfuscated;
+		}
+	}
+
+	private class EntryMarkerListener implements MarkableScrollPane.MarkerListener {
+		private final Token token;
+
+		EntryMarkerListener(Token token) {
+			this.token = token;
+		}
+
+		@Override
+		public void mouseClicked() {
+			EditorPanel.this.navigateToToken(this.token);
+		}
+
+		@Override
+		public void mouseExited() {
+			if (
+					Config.editor().entryMarkers.tooltip.value()
+						&& EditorPanel.this.tooltipManager.lastMouseTargetToken == null
+			) {
+				EditorPanel.this.tooltipManager.entryTooltip.close();
+			}
+		}
+
+		@Override
+		public void mouseEntered() {
+			if (Config.editor().entryMarkers.tooltip.value()) {
+				// dont' resolve the token for markers
+				final EntryReference<Entry<?>, Entry<?>> reference =
+						EditorPanel.this.getReference(this.token);
+				if (reference != null) {
+					EditorPanel.this.tooltipManager.reset();
+					EditorPanel.this.tooltipManager.openTooltip(reference.entry, false);
+				}
+			}
+		}
+
+		// This is used instead of just exit+enter because closing immediately before opening
+		// causes the (slightly delayed) window lost focus listener to close the tooltip
+		// for the new marker immediately after opening it.
+		@Override
+		public void mouseTransferred() {
+			this.mouseEntered();
+		}
+
+		@Override
+		public void mouseMoved() {
+			if (Config.editor().entryMarkers.tooltip.value()) {
+				EditorPanel.this.tooltipManager.reset();
+			}
 		}
 	}
 }

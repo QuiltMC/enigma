@@ -243,6 +243,7 @@ public class MarkableScrollPane extends JScrollPane {
 
 		if (this.paintState != null) {
 			this.paintState.pendingMarkerPositions.add(pos);
+			this.repaint();
 		}
 
 		return marker;

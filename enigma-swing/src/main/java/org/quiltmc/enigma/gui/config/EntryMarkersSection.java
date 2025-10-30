@@ -8,8 +8,11 @@ import org.quiltmc.config.api.values.TrackedValue;
 
 @SerializedNameConvention(NamingSchemes.SNAKE_CASE)
 public class EntryMarkersSection extends ReflectiveConfig.Section {
-	@Comment("Whether markers can be clicked to navigate to their corresponding entries.")
-	public final TrackedValue<Boolean> interactable = this.value(true);
+	@Comment("Whether markers should have tooltips showing their corresponding entries.")
+	public final TrackedValue<Boolean> tooltip = this.value(true);
+
+	@Comment("Whether only declaration entries should be marked.")
+	public final TrackedValue<Boolean> onlyMarkDeclarations = this.value(false);
 
 	@Comment("Whether obfuscated entries should be marked.")
 	public final TrackedValue<Boolean> markObfuscated = this.value(true);
