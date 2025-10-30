@@ -35,6 +35,23 @@ import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+/**
+ * A scroll pane that renders markers in its view along the right edge, to the left of the vertical scroll bar.<br>
+ * Markers support custom {@linkplain Color colors} and {@linkplain MarkerListener listeners}.
+ *
+ * <p> Markers are associated with a vertical position within the vertical space of this scroll pane's view;
+ * markers with a position greater than the height of the current view are not rendered.
+ * Multiple markers may be rendered at the same position. Markers with the highest priority (specified when
+ * {@linkplain #addMarker(int, Color, int, MarkerListener) added}) will be rendered left-most.
+ * No more than {@link #maxConcurrentMarkers} will be rendered at the same position. If there are excess markers, those
+ * with lowest priority will be skipped. There's no guarantee which marker will be rendered when priorities are tied.
+ * When multiple markers are rendered at the same location, each will be narrower so their total width is equal to a
+ * single marker's.
+ *
+ * @see #addMarker(int, Color, int, MarkerListener)
+ * @see #removeMarker(Object)
+ * @see MarkerListener
+ */
 public class MarkableScrollPane extends JScrollPane {
 	private static final int DEFAULT_MARKER_WIDTH = 10;
 	private static final int DEFAULT_MARKER_HEIGHT = 5;
@@ -72,11 +89,15 @@ public class MarkableScrollPane extends JScrollPane {
 
 	/**
 	 * @param view                 the component to display in this scroll pane's view port
-	 * @param maxConcurrentMarkers the maximum number of markers that will be rendered at the same position;
+	 * @param maxConcurrentMarkers a (positive) number limiting how many markers will be rendered at the same position;
 	 *                             more markers may be added, but only up to this number of markers
 	 *                             with the highest priority will be rendered
 	 * @param verticalPolicy       the vertical scroll bar policy
 	 * @param horizontalPolicy     the horizontal scroll bar policy
+	 *
+	 * @throws IllegalArgumentException if {@code maxConcurrentMarkers} is not positive
+	 *
+	 * @see #addMarker(int, Color, int, MarkerListener)
 	 */
 	public MarkableScrollPane(
 			@Nullable Component view, int maxConcurrentMarkers,
@@ -130,14 +151,6 @@ public class MarkableScrollPane extends JScrollPane {
 		super.setViewportView(view);
 
 		this.viewMouseAdapter = new MouseAdapter() {
-			static MouseEvent withId(MouseEvent e, int id) {
-				return new MouseEvent(
-					(Component) e.getSource(), id, e.getWhen(), e.getModifiersEx(),
-					e.getX(), e.getY(), e.getXOnScreen(), e.getYOnScreen(),
-					e.getClickCount(), e.isPopupTrigger(), e.getButton()
-				);
-			}
-
 			@Nullable
 			MarkerListener lastEntered;
 
@@ -206,18 +219,23 @@ public class MarkableScrollPane extends JScrollPane {
 	/**
 	 * Adds a marker with passed {@code color} at the given {@code pos}.
 	 *
-	 * @param pos            the vertical center of the marker within the space of this scroll pane's view
+	 * @param pos            the vertical center of the marker within the space of this scroll pane's view;
+	 *                       must not be negative; if greater than the height of the current view,
+	 *                       the marker will not be rendered
 	 * @param color          the color of the marker
 	 * @param priority       the priority of the marker; if there are multiple markers at the same position, only up to
 	 *                       {@link #maxConcurrentMarkers} of the highest priority markers will be rendered
-	 * @param listener  	 a listener for events within the marker; may be null
+	 * @param listener  	 a listener for events within the marker; may be {@code null}
 	 *
 	 * @return an object which may be used to remove the marker by passing it to {@link #removeMarker(Object)}
+	 *
+	 * @throws IllegalArgumentException if {@code pos} is negative
+	 *
+	 * @see #removeMarker(Object)
+	 * @see MarkerListener
 	 */
 	public Object addMarker(int pos, Color color, int priority, @Nullable MarkerListener listener) {
-		if (pos < 0) {
-			throw new IllegalArgumentException("pos must not be negative!");
-		}
+		Preconditions.checkArgument(pos >= 0, "pos must not be negative!");
 
 		final Marker marker = new Marker(color, priority, Optional.ofNullable(listener));
 
@@ -234,6 +252,9 @@ public class MarkableScrollPane extends JScrollPane {
 	 * Removes the passed {@code marker} if it belongs to this scroll pane.
 	 *
 	 * @param marker an object previously returned by {@link #addMarker(int, Color, int, MarkerListener)}
+	 *
+	 * @see #addMarker(int, Color, int, MarkerListener)
+	 * @see #clearMarkers()
 	 */
 	public void removeMarker(Object marker) {
 		if (marker instanceof Marker removing) {
@@ -307,8 +328,20 @@ public class MarkableScrollPane extends JScrollPane {
 	}
 
 	public enum ScrollBarPolicy {
+		/**
+		 * @see ScrollPaneConstants#HORIZONTAL_SCROLLBAR_AS_NEEDED
+		 * @see ScrollPaneConstants#VERTICAL_SCROLLBAR_AS_NEEDED
+		 */
 		AS_NEEDED(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED),
+		/**
+		 * @see ScrollPaneConstants#HORIZONTAL_SCROLLBAR_ALWAYS
+		 * @see ScrollPaneConstants#VERTICAL_SCROLLBAR_ALWAYS
+		 */
 		ALWAYS(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS),
+		/**
+		 * @see ScrollPaneConstants#HORIZONTAL_SCROLLBAR_NEVER
+		 * @see ScrollPaneConstants#VERTICAL_SCROLLBAR_NEVER
+		 */
 		NEVER(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
 		private final int horizontal;
@@ -455,18 +488,37 @@ public class MarkableScrollPane extends JScrollPane {
 		}
 	}
 
+	/**
+	 * A listener for marker events.
+	 *
+	 * @see #addMarker(int, Color, int, MarkerListener)
+	 */
 	public interface MarkerListener {
+		/**
+		 * Called when the mouse clicks the marker.
+		 */
 		void mouseClicked();
 
-		void mouseExited();
-
+		/**
+		 * Called when the mouse enters the marker.
+		 */
 		void mouseEntered();
 
 		/**
-		 * Called when the mouse moves between two adjacent markers.
+		 * Called when the mouse exits the marker.
+		 *
+		 * <p> <em>Not</em> called when the mouse moves to an adjacent marker; see {@link #mouseTransferred()}.
+		 */
+		void mouseExited();
+
+		/**
+		 * Called when the mouse moves from an adjacent marker to the marker.
 		 */
 		void mouseTransferred();
 
+		/**
+		 * Called when the mouse within the marker.
+		 */
 		void mouseMoved();
 	}
 }
