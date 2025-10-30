@@ -554,13 +554,46 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 
 					final int priority = Objects.requireNonNull(MARKER_PRIORITIES_BY_COLOR_CONFIG.get(colorConfig));
 					final Color color = colorConfig.value();
-					EditorPanel.this.editorScrollPane.addMarker(tokenPos, color, priority, new MouseAdapter() {
-						// TODO show/hide tooltip on mouse enter/exit
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							EditorPanel.this.navigateToToken(token);
-						}
-					});
+					EditorPanel.this.editorScrollPane.addMarker(
+							tokenPos, color, priority,
+							new MarkableScrollPane.MarkerListener() {
+								@Override
+								public void mouseClicked() {
+									EditorPanel.this.navigateToToken(token);
+								}
+
+								@Override
+								public void mouseExited() {
+									if (EditorPanel.this.tooltipManager.lastMouseTargetToken == null) {
+										EditorPanel.this.tooltipManager.entryTooltip.close();
+									}
+								}
+
+								@Override
+								public void mouseEntered() {
+									// dont' resolve the token for markers
+									final EntryReference<Entry<?>, Entry<?>> reference =
+											EditorPanel.this.getReference(token);
+									if (reference != null) {
+										EditorPanel.this.tooltipManager.reset();
+										EditorPanel.this.tooltipManager.openTooltip(reference.entry, false);
+									}
+								}
+
+								// This is used instead of just exit+enter because closing immediately before opening
+								// causes the (slightly delayed) window lost focus listener to close the tooltip
+								// for the new marker immediately after opening it.
+								@Override
+								public void mouseTransferred() {
+									this.mouseEntered();
+								}
+
+								@Override
+								public void mouseMoved() {
+									EditorPanel.this.tooltipManager.reset();
+								}
+							}
+					);
 				} catch (BadLocationException e) {
 					Logger.warn("Tried to add marker for token with bad location: " + token);
 				}
