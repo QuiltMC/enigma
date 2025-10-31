@@ -21,6 +21,7 @@ import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.docker.ObfuscatedClassesDocker;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
+import org.quiltmc.enigma.util.Utils;
 
 import javax.annotation.Nullable;
 import javax.swing.Box;
@@ -477,7 +478,16 @@ public class EntryTooltip extends JWindow {
 	}
 
 	/**
-	 * After resizing, moves this so that the old distance between the cursor and the closest corner remains the same.
+	 * After resizing, moves this so that the cursor is at an 'equivalent' relative location.
+	 *
+	 *  <p> The way the equivalent location is determined depends on whether this grew or shrunk, independently for the
+	 *  {@code x} and {@code y} axes:
+	 *  <ul>
+	 *      <li> if this grew in an axis, then the distance between the cursor and the closest edge perpendicular to
+	 *      that axis is maintained
+	 *      <li> if this shrunk in an axis, then the ratio of the distances between the cursor and the two edges
+	 *      perpendicular to that axis is maintained
+	 *  </ul>
 	 *
 	 * <p> Also ensures this is entirely on-screen.
 	 */
@@ -488,24 +498,38 @@ public class EntryTooltip extends JWindow {
 
 		final Point pos = this.getLocationOnScreen();
 
-		final int oldLeft = oldMousePos.x - pos.x;
-		final int oldRight = pos.x + oldSize.width - oldMousePos.x;
-		final boolean anchorRight = oldLeft > oldRight;
+		final int left = oldMousePos.x - pos.x;
+		final int top = oldMousePos.y - pos.y;
 
-		final int oldTop = oldMousePos.y - pos.y;
-		final int oldBottom = pos.y + oldSize.height - oldMousePos.y;
-		final boolean anchorBottom = oldTop > oldBottom;
+		final Dimension newSize = this.getSize();
 
-		if (anchorRight || anchorBottom) {
-			final Dimension newSize = this.getSize();
-
-			final int xDiff = anchorRight ? oldSize.width - newSize.width : 0;
-			final int yDiff = anchorBottom ? oldSize.height - newSize.height : 0;
-
-			this.setLocation(pos.x + xDiff, pos.y + yDiff);
+		final int anchoredX;
+		if (oldSize.width > newSize.width) {
+			final int targetLeft = (int) ((double) (left * newSize.width) / oldSize.width);
+			anchoredX = pos.x + left - targetLeft;
+		} else {
+			final int oldRight = pos.x + oldSize.width - oldMousePos.x;
+			final int xDiff = left > oldRight ? oldSize.width - newSize.width : 0;
+			anchoredX = pos.x + xDiff;
 		}
 
-		this.moveOnScreen();
+		final int anchoredY;
+		if (oldSize.height > newSize.height) {
+			final int targetTop = (int) ((double) (top * newSize.height) / oldSize.height);
+			anchoredY = pos.y + top - targetTop;
+		} else {
+			final int oldBottom = pos.y + oldSize.height - oldMousePos.y;
+			final int yDiff = top > oldBottom ? oldSize.height - newSize.height : 0;
+			anchoredY = pos.y + yDiff;
+		}
+
+		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		final int targetX = Utils.clamp(anchoredX, 0, screenSize.width - newSize.width);
+		final int targetY = Utils.clamp(anchoredY, 0, screenSize.height - newSize.height);
+
+		if (targetX != pos.x || targetY != pos.y) {
+			this.setLocation(targetX, targetY);
+		}
 	}
 
 	/**
