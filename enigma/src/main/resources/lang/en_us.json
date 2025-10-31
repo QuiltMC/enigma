@@ -93,6 +93,7 @@
 	"menu.view.entry_tooltips.interactable": "Allow tooltip interaction",
 	"menu.view.entry_markers": "Entry Markers",
 	"menu.view.entry_markers.tooltip": "Marker tooltips",
+	"menu.view.entry_markers.max_markers_per_line": "Max markers per line (%s)",
 	"menu.view.entry_markers.mark": "Mark entries",
 	"menu.view.entry_markers.mark.only_declarations": "Only declarations",
 	"menu.view.entry_markers.mark.obfuscated": "Obfuscated",
