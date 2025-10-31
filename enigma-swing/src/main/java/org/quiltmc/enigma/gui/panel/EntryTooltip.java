@@ -45,6 +45,7 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.AWTEventListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -89,8 +90,21 @@ public class EntryTooltip extends JWindow {
 	};
 
 	private final AWTEventListener globalKeyListener = e -> {
-		if (this.isShowing() && e.getID() == KeyEvent.KEY_TYPED) {
-			this.closeAndDispatch(e);
+		if (this.isShowing()) {
+			final int id = e.getID();
+			if (id == KeyEvent.KEY_TYPED) {
+				this.closeAndDispatch(e);
+			} else if (id == KeyEvent.KEY_PRESSED && e instanceof KeyEvent keyEvent) {
+				final int modifiers = keyEvent.getModifiersEx();
+				final int keyCode = keyEvent.getKeyCode();
+				if (
+						modifiers != 0 && keyCode != KeyEvent.VK_CONTROL
+							// special case ctrl+c so an editor's copy doesn't overwrite text copied by a tooltip's copy
+							&& !(keyCode == KeyEvent.VK_C && modifiers == InputEvent.CTRL_DOWN_MASK)
+				) {
+					this.closeAndDispatch(e);
+				}
+			}
 		}
 	};
 
