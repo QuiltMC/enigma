@@ -180,6 +180,10 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 		this.registerMarkerRefresher(markersConfig.markFallback, MarkerManager::marksFallback);
 		this.registerMarkerRefresher(markersConfig.markProposed, MarkerManager::marksProposed);
 		this.registerMarkerRefresher(markersConfig.markDeobfuscated, MarkerManager::marksDeobfuscated);
+
+		markersConfig.maxMarkersPerLine.registerCallback(updated -> {
+			this.editorScrollPane.setMaxConcurrentMarkers(updated.value());
+		});
 	}
 
 	private void registerMarkerRefresher(TrackedValue<Boolean> config, Predicate<MarkerManager> handlerGetter) {
@@ -210,7 +214,7 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 
 	@Override
 	protected MarkableScrollPane createEditorScrollPane(JEditorPane editor) {
-		return new MarkableScrollPane(editor);
+		return new MarkableScrollPane(editor, Config.editor().entryMarkers.maxMarkersPerLine.value());
 	}
 
 	public void onRename(boolean isNewMapping) {

@@ -53,49 +53,41 @@ import java.util.function.Predicate;
  * @see MarkerListener
  */
 public class MarkableScrollPane extends JScrollPane {
+	private static void requireNonNegative(int value, String name) {
+		Preconditions.checkArgument(value >= 0, "%s (%s) must not be negative!".formatted(value, name));
+	}
+
 	private static final int DEFAULT_MARKER_WIDTH = 10;
 	private static final int DEFAULT_MARKER_HEIGHT = 5;
-
-	private static final int DEFAULT_MAX_CONCURRENT_MARKERS = 2;
 
 	private final Multimap<Integer, Marker> markersByPos = Multimaps.newMultimap(new HashMap<>(), TreeMultiset::create);
 
 	private final int markerWidth;
 	private final int markerHeight;
 
-	private final int maxConcurrentMarkers;
+	private int maxConcurrentMarkers;
 
 	@Nullable
 	private PaintState paintState;
 	private MouseAdapter viewMouseAdapter;
 
 	/**
-	 * Constructs a scroll pane with no view,
-	 * {@value DEFAULT_MAX_CONCURRENT_MARKERS} max concurrent markers,
+	 * Constructs a scroll pane displaying the passed {@code view} and {@code maxConcurrentMarkers},
 	 * and {@link ScrollBarPolicy#AS_NEEDED AS_NEEDED} scroll bar policies.
+	 *
+	 * @see #MarkableScrollPane(Component, int, ScrollBarPolicy, ScrollBarPolicy)
 	 */
-	public MarkableScrollPane() {
-		this(null);
-	}
-
-	/**
-	 * Constructs a scroll pane displaying the passed {@code view},
-	 * {@value DEFAULT_MAX_CONCURRENT_MARKERS} max concurrent markers,
-	 * and {@link ScrollBarPolicy#AS_NEEDED AS_NEEDED} scroll bar policies.
-	 */
-	public MarkableScrollPane(Component view) {
-		this(view, DEFAULT_MAX_CONCURRENT_MARKERS, ScrollBarPolicy.AS_NEEDED, ScrollBarPolicy.AS_NEEDED);
+	public MarkableScrollPane(@Nullable Component view, int maxConcurrentMarkers) {
+		this(view, maxConcurrentMarkers, ScrollBarPolicy.AS_NEEDED, ScrollBarPolicy.AS_NEEDED);
 	}
 
 	/**
 	 * @param view                 the component to display in this scroll pane's view port
-	 * @param maxConcurrentMarkers a (positive) number limiting how many markers will be rendered at the same position;
-	 *                             more markers may be added, but only up to this number of markers
-	 *                             with the highest priority will be rendered
+	 * @param maxConcurrentMarkers see {@link #setMaxConcurrentMarkers(int)}
 	 * @param verticalPolicy       the vertical scroll bar policy
 	 * @param horizontalPolicy     the horizontal scroll bar policy
 	 *
-	 * @throws IllegalArgumentException if {@code maxConcurrentMarkers} is not positive
+	 * @throws IllegalArgumentException if {@code maxConcurrentMarkers} is negative
 	 *
 	 * @see #addMarker(int, Color, int, MarkerListener)
 	 */
@@ -105,12 +97,10 @@ public class MarkableScrollPane extends JScrollPane {
 	) {
 		super(view, verticalPolicy.vertical, horizontalPolicy.horizontal);
 
-		Preconditions.checkArgument(maxConcurrentMarkers > 0, "maxConcurrentMarkers must be positive!");
+		this.setMaxConcurrentMarkers(maxConcurrentMarkers);
 
 		this.markerWidth = ScaleUtil.scale(DEFAULT_MARKER_WIDTH);
 		this.markerHeight = ScaleUtil.scale(DEFAULT_MARKER_HEIGHT);
-
-		this.maxConcurrentMarkers = maxConcurrentMarkers;
 
 		this.addComponentListener(new ComponentListener() {
 			void refreshMarkers() {
@@ -138,6 +128,94 @@ public class MarkableScrollPane extends JScrollPane {
 				this.refreshMarkers();
 			}
 		});
+	}
+
+	/**
+	 * Adds a marker with passed {@code color} at the given {@code pos}.
+	 *
+	 * @param pos            the vertical center of the marker within the space of this scroll pane's view;
+	 *                       must not be negative; if greater than the height of the current view,
+	 *                       the marker will not be rendered
+	 * @param color          the color of the marker
+	 * @param priority       the priority of the marker; if there are multiple markers at the same position, only up to
+	 *                       {@link #maxConcurrentMarkers} of the highest priority markers will be rendered
+	 * @param listener  	 a listener for events within the marker; may be {@code null}
+	 *
+	 * @return an object which may be used to remove the marker by passing it to {@link #removeMarker(Object)}
+	 *
+	 * @throws IllegalArgumentException if {@code pos} is negative
+	 *
+	 * @see #removeMarker(Object)
+	 * @see MarkerListener
+	 */
+	public Object addMarker(int pos, Color color, int priority, @Nullable MarkerListener listener) {
+		requireNonNegative(pos, "pos");
+
+		final Marker marker = new Marker(color, priority, Optional.ofNullable(listener));
+
+		this.markersByPos.put(pos, marker);
+
+		if (this.paintState != null) {
+			this.paintState.pendingMarkerPositions.add(pos);
+			this.repaint();
+		}
+
+		return marker;
+	}
+
+	/**
+	 * Removes the passed {@code marker} if it belongs to this scroll pane.
+	 *
+	 * @param marker an object previously returned by {@link #addMarker(int, Color, int, MarkerListener)}
+	 *
+	 * @see #addMarker(int, Color, int, MarkerListener)
+	 * @see #clearMarkers()
+	 */
+	public void removeMarker(Object marker) {
+		if (marker instanceof Marker removing) {
+			final Iterator<Map.Entry<Integer, Marker>> itr = this.markersByPos.entries().iterator();
+
+			while (itr.hasNext()) {
+				final Map.Entry<Integer, Marker> entry = itr.next();
+				if (entry.getValue() == removing) {
+					itr.remove();
+					if (this.paintState != null) {
+						this.paintState.pendingMarkerPositions.add(entry.getKey());
+					}
+
+					break;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Removes all markers from this scroll pane.
+	 */
+	public void clearMarkers() {
+		this.markersByPos.clear();
+
+		if (this.paintState != null) {
+			this.paintState.clearMarkers();
+		}
+	}
+
+	/**
+	 * @param maxConcurrentMarkers a (non-negative) number limiting how many markers will be rendered at the same position;
+	 *            more markers may be added, but only up to this number of markers with the highest priority will be
+	 *            rendered
+	 *
+	 * @throws IllegalArgumentException if {@code maxConcurrentMarkers} is negative
+	 */
+	public void setMaxConcurrentMarkers(int maxConcurrentMarkers) {
+		requireNonNegative(maxConcurrentMarkers, "maxConcurrentMarkers");
+
+		if (maxConcurrentMarkers != this.maxConcurrentMarkers) {
+			this.maxConcurrentMarkers = maxConcurrentMarkers;
+
+			this.clearPaintState();
+			this.repaint();
+		}
 	}
 
 	@Override
@@ -214,76 +292,6 @@ public class MarkableScrollPane extends JScrollPane {
 		// add the listener to the view because this doesn't receive clicks within the view
 		view.addMouseListener(this.viewMouseAdapter);
 		view.addMouseMotionListener(this.viewMouseAdapter);
-	}
-
-	/**
-	 * Adds a marker with passed {@code color} at the given {@code pos}.
-	 *
-	 * @param pos            the vertical center of the marker within the space of this scroll pane's view;
-	 *                       must not be negative; if greater than the height of the current view,
-	 *                       the marker will not be rendered
-	 * @param color          the color of the marker
-	 * @param priority       the priority of the marker; if there are multiple markers at the same position, only up to
-	 *                       {@link #maxConcurrentMarkers} of the highest priority markers will be rendered
-	 * @param listener  	 a listener for events within the marker; may be {@code null}
-	 *
-	 * @return an object which may be used to remove the marker by passing it to {@link #removeMarker(Object)}
-	 *
-	 * @throws IllegalArgumentException if {@code pos} is negative
-	 *
-	 * @see #removeMarker(Object)
-	 * @see MarkerListener
-	 */
-	public Object addMarker(int pos, Color color, int priority, @Nullable MarkerListener listener) {
-		Preconditions.checkArgument(pos >= 0, "pos must not be negative!");
-
-		final Marker marker = new Marker(color, priority, Optional.ofNullable(listener));
-
-		this.markersByPos.put(pos, marker);
-
-		if (this.paintState != null) {
-			this.paintState.pendingMarkerPositions.add(pos);
-			this.repaint();
-		}
-
-		return marker;
-	}
-
-	/**
-	 * Removes the passed {@code marker} if it belongs to this scroll pane.
-	 *
-	 * @param marker an object previously returned by {@link #addMarker(int, Color, int, MarkerListener)}
-	 *
-	 * @see #addMarker(int, Color, int, MarkerListener)
-	 * @see #clearMarkers()
-	 */
-	public void removeMarker(Object marker) {
-		if (marker instanceof Marker removing) {
-			final Iterator<Map.Entry<Integer, Marker>> itr = this.markersByPos.entries().iterator();
-
-			while (itr.hasNext()) {
-				final Map.Entry<Integer, Marker> entry = itr.next();
-				if (entry.getValue() == removing) {
-					itr.remove();
-					if (this.paintState != null) {
-						this.paintState.pendingMarkerPositions.add(entry.getKey());
-					}
-
-					break;
-				}
-			}
-		}
-	}
-
-	/**
-	 * Removes all markers from this scroll pane.
-	 */
-	public void clearMarkers() {
-		this.markersByPos.clear();
-
-		if (this.paintState != null) {
-			this.paintState.clearMarkers();
-		}
 	}
 
 	@Override
@@ -386,7 +394,7 @@ public class MarkableScrollPane extends JScrollPane {
 		}
 
 		void refreshPainter(int pos, Collection<Marker> markers) {
-			if (pos < this.viewHeight && !markers.isEmpty()) {
+			if (pos < this.viewHeight && !markers.isEmpty() && MarkableScrollPane.this.maxConcurrentMarkers > 0) {
 				final int scaledPos = this.viewHeight > this.areaHeight
 						? pos * this.areaHeight / this.viewHeight
 						: pos;
