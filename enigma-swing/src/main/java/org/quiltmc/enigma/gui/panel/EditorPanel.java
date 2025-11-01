@@ -725,9 +725,8 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 			this.content.add(snippet.ui);
 
 			snippet.setSource(EditorPanel.this.getSource(), source -> {
-				// TODO attach a lineIndexer to DecompiledClassSource
 				final String sourceString = source.toString();
-				final LineIndexer lineIndexer = new LineIndexer(sourceString);
+				final LineIndexer lineIndexer = source.getLineIndexer();
 				final int line = lineIndexer.getLine(target.start);
 				int lineStart = lineIndexer.getStartIndex(line);
 				int lineEnd = lineIndexer.getStartIndex(line + 1);
