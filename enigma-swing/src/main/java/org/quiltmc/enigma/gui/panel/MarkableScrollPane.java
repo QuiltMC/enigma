@@ -428,8 +428,8 @@ public class MarkableScrollPane extends JScrollPane {
 					this.paintersByPos.remove(pos);
 
 					final MarkersPainterBuilder builder = builderByScaledPos.computeIfAbsent(scaledPos, builderPos -> {
-						final int top = Math.max(builderPos - MarkableScrollPane.this.markerHeight / 2, 0);
-						final int bottom = Math.min(top + MarkableScrollPane.this.markerHeight, this.areaHeight);
+						final int top = Math.max(builderPos - MarkableScrollPane.this.markerHeight / 2, this.areaY);
+						final int bottom = Math.min(top + MarkableScrollPane.this.markerHeight, this.areaY + this.areaHeight);
 
 						return new MarkersPainterBuilder(pos, top, bottom);
 					});
