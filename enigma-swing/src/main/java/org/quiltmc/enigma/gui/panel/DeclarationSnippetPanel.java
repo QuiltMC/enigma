@@ -71,8 +71,6 @@ public class DeclarationSnippetPanel extends AbstractEditorPanel<JScrollPane> {
 		this.editor.setCaretColor(new Color(0, 0, 0, 0));
 		this.editor.getCaret().setSelectionVisible(true);
 
-		this.setClassHandle(targetTopClassHandle, false, source -> this.createSnippet(source, target));
-
 		this.addSourceSetListener(source -> {
 			if (!this.isBounded()) {
 				// the source isn't very useful if it couldn't be trimmed
@@ -91,6 +89,8 @@ public class DeclarationSnippetPanel extends AbstractEditorPanel<JScrollPane> {
 						)));
 			}
 		});
+
+		this.setClassHandle(targetTopClassHandle, false, source -> this.createSnippet(source, target));
 	}
 
 	@Override
