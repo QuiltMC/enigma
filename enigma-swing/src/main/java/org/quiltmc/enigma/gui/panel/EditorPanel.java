@@ -26,16 +26,16 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.syntaxpain.PairsMarker;
+import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.LineIndexer;
 import org.tinylog.Logger;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.KeyboardFocusManager;
-import java.awt.MouseInfo;
-import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.AWTEventListener;
@@ -76,7 +76,7 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 	private final EnigmaQuickFindToolBar quickFindToolBar = new EnigmaQuickFindToolBar();
 	private final EditorPopupMenu popupMenu;
 
-	private final TooltipManager tooltipManager = new TooltipManager();
+	private final EntryTooltipManager entryTooltipManager = new EntryTooltipManager();
 
 	private final List<EditorActionListener> listeners = new ArrayList<>();
 
@@ -267,7 +267,7 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 	@Override
 	public void destroy() {
 		super.destroy();
-		this.tooltipManager.removeExternalListeners();
+		this.entryTooltipManager.removeExternalListeners();
 	}
 
 	public NavigatorPanel getNavigatorPanel() {
@@ -328,13 +328,13 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 	@Override
 	public void offsetEditorZoom(int zoomAmount) {
 		super.offsetEditorZoom(zoomAmount);
-		this.tooltipManager.entryTooltip.setZoom(zoomAmount);
+		this.entryTooltipManager.tooltip.setZoom(zoomAmount);
 	}
 
 	@Override
 	public void resetEditorZoom() {
 		super.resetEditorZoom();
-		this.tooltipManager.entryTooltip.resetZoom();
+		this.entryTooltipManager.tooltip.resetZoom();
 	}
 
 	public void addListener(EditorActionListener listener) {
@@ -383,16 +383,16 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 		);
 	}
 
-	private class TooltipManager {
+	private class EntryTooltipManager {
 		static final int MOUSE_STOPPED_MOVING_DELAY = 100;
 
-		final EntryTooltip entryTooltip = new EntryTooltip(EditorPanel.this.gui);
+		final EntryTooltip tooltip = new EntryTooltip(EditorPanel.this.gui);
 
 		final WindowAdapter guiFocusListener = new WindowAdapter() {
 			@Override
 			public void windowLostFocus(WindowEvent e) {
-				if (e.getOppositeWindow() != TooltipManager.this.entryTooltip) {
-					TooltipManager.this.entryTooltip.close();
+				if (e.getOppositeWindow() != EntryTooltipManager.this.tooltip) {
+					EntryTooltipManager.this.tooltip.close();
 				}
 			}
 		};
@@ -407,11 +407,14 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 		// This also reduces the chances of accidentally updating the tooltip with
 		// a new entry's content as you move your mouse to the tooltip.
 		final Timer mouseStoppedMovingTimer = new Timer(MOUSE_STOPPED_MOVING_DELAY, e -> {
-			if (Config.editor().entryTooltips.enable.value()) {
+			if (
+					Config.editor().entryTooltips.enable.value()
+						&& !EditorPanel.this.markerManager.markerTooltip.isShowing()
+			) {
 				EditorPanel.this.consumeEditorMouseTarget(
 						(token, entry, resolvedParent) -> {
 							this.hideTimer.stop();
-							if (this.entryTooltip.isVisible()) {
+							if (this.tooltip.isVisible()) {
 								this.showTimer.stop();
 
 								if (!token.equals(this.lastMouseTargetToken)) {
@@ -424,7 +427,7 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 							}
 						},
 						() -> consumeMousePositionIn(
-							this.entryTooltip.getContentPane(),
+							this.tooltip.getContentPane(),
 							(absolute, relative) -> this.hideTimer.stop(),
 							absolute -> {
 								this.lastMouseTargetToken = null;
@@ -440,7 +443,7 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 				ToolTipManager.sharedInstance().getInitialDelay() - MOUSE_STOPPED_MOVING_DELAY, e -> {
 					EditorPanel.this.consumeEditorMouseTarget((token, entry, resolvedParent) -> {
 						if (token.equals(this.lastMouseTargetToken)) {
-							this.entryTooltip.setVisible(true);
+							this.tooltip.setVisible(true);
 							this.openTooltip(entry, resolvedParent);
 						}
 					});
@@ -449,55 +452,55 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 
 		final Timer hideTimer = new Timer(
 				ToolTipManager.sharedInstance().getDismissDelay() - MOUSE_STOPPED_MOVING_DELAY,
-				e -> this.entryTooltip.close()
+				e -> this.tooltip.close()
 		);
 
 		@Nullable
 		Token lastMouseTargetToken;
 
-		TooltipManager() {
+		EntryTooltipManager() {
 			this.mouseStoppedMovingTimer.setRepeats(false);
 			this.showTimer.setRepeats(false);
 			this.hideTimer.setRepeats(false);
 
-			this.entryTooltip.setVisible(false);
+			this.tooltip.setVisible(false);
 
-			this.entryTooltip.addMouseMotionListener(new MouseAdapter() {
+			this.tooltip.addMouseMotionListener(new MouseAdapter() {
 				@Override
 				public void mouseMoved(MouseEvent e) {
 					if (Config.editor().entryTooltips.interactable.value()) {
-						TooltipManager.this.mouseStoppedMovingTimer.stop();
-						TooltipManager.this.hideTimer.stop();
+						EntryTooltipManager.this.mouseStoppedMovingTimer.stop();
+						EntryTooltipManager.this.hideTimer.stop();
 					}
 				}
 			});
 
-			this.entryTooltip.addCloseListener(TooltipManager.this::reset);
+			this.tooltip.addCloseListener(EntryTooltipManager.this::reset);
 
 			EditorPanel.this.editor.addKeyListener(new KeyAdapter() {
 				@Override
 				public void keyTyped(KeyEvent e) {
-					TooltipManager.this.reset();
+					EntryTooltipManager.this.reset();
 				}
 			});
 
 			EditorPanel.this.editor.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent mouseEvent) {
-					TooltipManager.this.entryTooltip.close();
+					EntryTooltipManager.this.tooltip.close();
 				}
 			});
 
 			EditorPanel.this.editor.addMouseMotionListener(new MouseAdapter() {
 				@Override
 				public void mouseMoved(MouseEvent e) {
-					if (!TooltipManager.this.entryTooltip.hasRepopulated()) {
-						TooltipManager.this.mouseStoppedMovingTimer.restart();
+					if (!EntryTooltipManager.this.tooltip.hasRepopulated()) {
+						EntryTooltipManager.this.mouseStoppedMovingTimer.restart();
 					}
 				}
 			});
 
-			EditorPanel.this.editorScrollPane.getViewport().addChangeListener(e -> this.entryTooltip.close());
+			EditorPanel.this.editorScrollPane.getViewport().addChangeListener(e -> this.tooltip.close());
 
 			this.addExternalListeners();
 		}
@@ -514,7 +517,7 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 			final Component eventReceiver = focusOwner != null && isDescendingFrom(focusOwner, EditorPanel.this.gui.getFrame())
 					? focusOwner : null;
 
-			this.entryTooltip.open(target, inherited, eventReceiver);
+			this.tooltip.open(target, inherited, eventReceiver);
 		}
 
 		void addExternalListeners() {
@@ -658,55 +661,49 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 			}
 
 			@Override
-			public void mouseClicked() {
+			public void mouseClicked(int x, int y) {
 				EditorPanel.this.navigateToToken(this.token);
 			}
 
 			@Override
-			public void mouseExited() {
+			public void mouseExited(int x, int y) {
 				if (
 						Config.editor().entryMarkers.tooltip.value()
-							&& EditorPanel.this.tooltipManager.lastMouseTargetToken == null
+							&& EditorPanel.this.entryTooltipManager.lastMouseTargetToken == null
 				) {
 					MarkerManager.this.markerTooltip.close();
 				}
 			}
 
 			@Override
-			public void mouseEntered() {
+			public void mouseEntered(int x, int y) {
 				if (Config.editor().entryMarkers.tooltip.value()) {
-					// dont' resolve the token for markers
-					final EntryReference<Entry<?>, Entry<?>> reference =
-							EditorPanel.this.getReference(this.token);
-					if (reference != null) {
-						EditorPanel.this.tooltipManager.reset();
-						// TODO pass marker middle-left edge pos to listeners and then pass it here so the tooltip
-						//  can position itself relative to that instead of the mouse
-						MarkerManager.this.markerTooltip.open(this.token);
-					}
+					EditorPanel.this.entryTooltipManager.tooltip.close();
+					MarkerManager.this.markerTooltip.open(this.token, x, y);
 				}
 			}
 
-			// TODO comment is probably obsolete
-			// This is used instead of just exit+enter because closing immediately before opening
-			// causes the (slightly delayed) window lost focus listener to close the tooltip
-			// for the new marker immediately after opening it.
 			@Override
-			public void mouseTransferred() {
-				this.mouseEntered();
+			public void mouseTransferred(int x, int y) {
+				this.mouseEntered(x, y);
 			}
 
 			@Override
-			public void mouseMoved() {
+			public void mouseMoved(int x, int y) {
 				if (Config.editor().entryMarkers.tooltip.value()) {
-					EditorPanel.this.tooltipManager.reset();
+					EditorPanel.this.entryTooltipManager.tooltip.close();
 				}
 			}
 		}
 	}
 
 	private class MarkerTooltip extends JWindow {
+		public static final int DEFAULT_MARKER_PAD = 5;
 		final JPanel content = new JPanel();
+
+		// HACK to make getPreferredSize aware of its (future) position
+		// negative values indicate it's un-set and should be ignored
+		int right = -1;
 
 		MarkerTooltip() {
 			this.setContentPane(this.content);
@@ -716,7 +713,7 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 			this.setLayout(new BorderLayout());
 		}
 
-		void open(Token target) {
+		void open(Token target, int markerX, int markerY) {
 			this.content.removeAll();
 
 			if (EditorPanel.this.classHandler == null) {
@@ -750,13 +747,13 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 				return new Snippet(lineStart, lineEnd);
 			});
 
+			this.right = markerX - ScaleUtil.scale(DEFAULT_MARKER_PAD);
+
 			this.pack();
 
-			final Point mousePos = MouseInfo.getPointerInfo().getLocation();
-			final int x = mousePos.x - this.getWidth();
-			final int y = mousePos.y - this.getHeight() / 2;
+			this.setLocation(this.right - this.getWidth(), markerY - this.getHeight() / 2);
 
-			this.setLocation(x, y);
+			this.right = -1;
 
 			this.setVisible(true);
 		}
@@ -764,6 +761,21 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 		void close() {
 			this.setVisible(false);
 			this.content.removeAll();
+		}
+
+		@Override
+		public Dimension getPreferredSize() {
+			final Dimension size = super.getPreferredSize();
+
+			if (this.right >= 0) {
+				final int left = this.right - size.width;
+				if (left < 0) {
+					// don't extend off the left side of the screen
+					size.width += left;
+				}
+			}
+
+			return size;
 		}
 	}
 }
