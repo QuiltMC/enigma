@@ -171,6 +171,7 @@ public abstract class AbstractEditorPanel<S extends JScrollPane> {
 	) {
 		ClassEntry old = null;
 		if (this.classHandler != null) {
+			this.classHandler.removeListener();
 			old = this.classHandler.getHandle().getRef();
 			if (closeOldHandle) {
 				this.classHandler.getHandle().close();
