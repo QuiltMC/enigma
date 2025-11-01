@@ -105,7 +105,10 @@ public class MarkableScrollPane extends JScrollPane {
 			void refreshMarkers() {
 				MarkableScrollPane.this.paintState = MarkableScrollPane.this.createPaintState();
 
-				MarkableScrollPane.this.repaint(MarkableScrollPane.this.paintState.createArea());
+				// I tried repainting only the old and new paintState areas here, but it sometimes left artifacts of
+				// previously painted markers when quickly resizing a right-side docker.
+				// Doing a full repaint avoids that artifacting.
+				MarkableScrollPane.this.repaint();
 			}
 
 			@Override
