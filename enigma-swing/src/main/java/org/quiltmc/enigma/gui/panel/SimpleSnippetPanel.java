@@ -16,17 +16,15 @@ public class SimpleSnippetPanel extends AbstractEditorPanel<JScrollPane> {
 		super(gui);
 
 		this.addSourceSetListener(source -> {
-			if (this.isBounded()) {
-				this.installEditorRuler(new LineIndexer(source.toString()).getLine(this.getSourceBounds().start()));
+			this.installEditorRuler(new LineIndexer(source.toString()).getLine(this.getSourceBounds().start()));
 
-				if (target != null) {
-					final Token boundedTarget = this.navigateToTokenImpl(target);
-					if (boundedTarget != null) {
-						this.addHighlight(boundedTarget, BoxHighlightPainter.create(
-								new Color(0, 0, 0, 0),
-								Config.getCurrentSyntaxPaneColors().selectionHighlight.value()
-						));
-					}
+			if (target != null) {
+				final Token boundedTarget = this.navigateToTokenImpl(target);
+				if (boundedTarget != null) {
+					this.addHighlight(boundedTarget, BoxHighlightPainter.create(
+							new Color(0, 0, 0, 0),
+							Config.getCurrentSyntaxPaneColors().selectionHighlight.value()
+					));
 				}
 			}
 		});
