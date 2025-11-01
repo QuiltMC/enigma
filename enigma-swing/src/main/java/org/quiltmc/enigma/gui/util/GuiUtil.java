@@ -402,6 +402,13 @@ public final class GuiUtil {
 		return componentPos;
 	}
 
+	public static Point getAbsolutePos(Component component, int relativeX, int relativeY) {
+		final Point componentPos = component.getLocationOnScreen();
+		componentPos.translate(relativeX, relativeY);
+
+		return componentPos;
+	}
+
 	public static Optional<RecordIndexingService> getRecordIndexingService(Gui gui) {
 		return gui.getController()
 				.getProject()
