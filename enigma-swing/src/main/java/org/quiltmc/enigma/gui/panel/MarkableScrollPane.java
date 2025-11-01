@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.Multiset;
 import com.google.common.collect.TreeMultiset;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
@@ -23,12 +24,12 @@ import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
@@ -336,6 +337,30 @@ public class MarkableScrollPane extends JScrollPane {
 		return new PaintState(areaX, areaY, areaHeight, viewHeight, this.markersByPos.keySet());
 	}
 
+	private MarkersPainter markersPainterOf(List<Marker> markers, int x, int y, int height) {
+		final int markerCount = markers.size();
+		Preconditions.checkArgument(markerCount > 0, "no markers!");
+
+		if (markerCount == 1) {
+			final ImmutableList<Marker.Span> spans = ImmutableList
+					.of(markers.get(0).new Span(x, MarkableScrollPane.this.markerWidth));
+			return new MarkersPainter(spans, y, height);
+		} else {
+			final int spanWidth = MarkableScrollPane.this.markerWidth / markerCount;
+			// in case of non-evenly divisible width, give the most to the first marker: it has the highest priority
+			final int firstSpanWidth = MarkableScrollPane.this.markerWidth - spanWidth * (markerCount - 1);
+
+			final ImmutableList.Builder<Marker.Span> spansBuilder = ImmutableList.builder();
+			spansBuilder.add(markers.get(0).new Span(x, firstSpanWidth));
+
+			for (int i = 1; i < markerCount; i++) {
+				spansBuilder.add(markers.get(i).new Span(x + firstSpanWidth + spanWidth * (i - 1), spanWidth));
+			}
+
+			return new MarkersPainter(spansBuilder.build(), y, height);
+		}
+	}
+
 	public enum ScrollBarPolicy {
 		/**
 		 * @see ScrollPaneConstants#HORIZONTAL_SCROLLBAR_AS_NEEDED
@@ -363,8 +388,7 @@ public class MarkableScrollPane extends JScrollPane {
 	}
 
 	private class PaintState {
-		// order with greatest position first so lesser positions are painted later and thus on top
-		final TreeMap<Integer, MarkersPainter> paintersByPos = new TreeMap<>(Collections.reverseOrder());
+		final NavigableMap<Integer, MarkersPainter> paintersByPos = new TreeMap<>();
 
 		final int areaX;
 		final int areaY;
@@ -382,33 +406,68 @@ public class MarkableScrollPane extends JScrollPane {
 		}
 
 		void paint(Graphics graphics) {
+			final Map<Integer, MarkersPainterBuilder> builderByScaledPos = new TreeMap<>();
+
 			for (final int pos : this.pendingMarkerPositions) {
-				this.refreshPainter(pos, MarkableScrollPane.this.markersByPos.get(pos));
+				final Collection<Marker> markers = MarkableScrollPane.this.markersByPos.get(pos);
+				if (pos < this.viewHeight && !markers.isEmpty() && MarkableScrollPane.this.maxConcurrentMarkers > 0) {
+					final int scaledPos = this.viewHeight > this.areaHeight
+							? pos * this.areaHeight / this.viewHeight
+							: pos;
+
+					this.paintersByPos.remove(pos);
+
+					builderByScaledPos
+							.computeIfAbsent(scaledPos, builderPos -> {
+								final int markerTop = Math.max(builderPos - MarkableScrollPane.this.markerHeight / 2, 0);
+								final int markerBottom = Math.min(markerTop + MarkableScrollPane.this.markerHeight, this.areaHeight);
+
+								return new MarkersPainterBuilder(pos, markerTop, markerBottom);
+							})
+							.addMarkers(markers);
+				} else {
+					this.paintersByPos.remove(pos);
+				}
+			}
+
+			if (!builderByScaledPos.isEmpty()) {
+				final Iterator<MarkersPainterBuilder> buildersItr = builderByScaledPos.values().iterator();
+				MarkersPainterBuilder currentBuilder = buildersItr.next();
+				while (true) {
+					final Map.Entry<Integer, MarkersPainter> above = this.paintersByPos.lowerEntry(currentBuilder.pos);
+					if (above != null) {
+						final MarkersPainter aboveReplacement = currentBuilder.eliminateOverlap(above.getValue());
+						if (aboveReplacement != null) {
+							above.setValue(aboveReplacement);
+						}
+					}
+
+					final Map.Entry<Integer, MarkersPainter> below = this.paintersByPos.higherEntry(currentBuilder.pos);
+					if (below != null) {
+						final MarkersPainter belowReplacement = currentBuilder.eliminateOverlap(below.getValue());
+						if (belowReplacement != null) {
+							below.setValue(belowReplacement);
+						}
+					}
+
+					if (buildersItr.hasNext()) {
+						final MarkersPainterBuilder nextBuilder = buildersItr.next();
+						currentBuilder.eliminateOverlap(nextBuilder);
+						currentBuilder = nextBuilder;
+					} else {
+						break;
+					}
+				}
+
+				for (final MarkersPainterBuilder builder : builderByScaledPos.values()) {
+					this.paintersByPos.put(builder.pos, builder.build(this.areaX));
+				}
 			}
 
 			this.pendingMarkerPositions.clear();
 
 			for (final MarkersPainter painter : this.paintersByPos.values()) {
 				painter.paint(graphics);
-			}
-		}
-
-		void refreshPainter(int pos, Collection<Marker> markers) {
-			if (pos < this.viewHeight && !markers.isEmpty() && MarkableScrollPane.this.maxConcurrentMarkers > 0) {
-				final int scaledPos = this.viewHeight > this.areaHeight
-						? pos * this.areaHeight / this.viewHeight
-						: pos;
-
-				final int markerY = Math.max(scaledPos - MarkableScrollPane.this.markerHeight / 2, 0);
-				final int markerHeight = Math.min(MarkableScrollPane.this.markerHeight, this.areaHeight - markerY);
-
-				final List<Marker> posMarkers = markers.stream()
-						.limit(MarkableScrollPane.this.maxConcurrentMarkers)
-						.toList();
-
-				this.paintersByPos.put(pos, new MarkersPainter(posMarkers, this.areaX, markerY, markerHeight));
-			} else {
-				this.paintersByPos.remove(pos);
 			}
 		}
 
@@ -419,9 +478,7 @@ public class MarkableScrollPane extends JScrollPane {
 
 		Optional<Marker.Span> findSpanContaining(int x, int y, Predicate<Marker.Span> predicate) {
 			if (this.areaContains(x, y)) {
-				// default ordering puts greatest positions first so lesser positions are painted on top
-				// check in reverse order so the lesser positions (on top) are checked first
-				return this.paintersByPos.descendingMap().values().stream()
+				return this.paintersByPos.values().stream()
 					.filter(painter -> painter.y <= y && y <= painter.y + painter.height)
 					.flatMap(painter -> painter.spans.stream())
 					.filter(predicate)
@@ -459,41 +516,77 @@ public class MarkableScrollPane extends JScrollPane {
 		}
 	}
 
-	private class MarkersPainter {
-		final ImmutableList<Marker.Span> spans;
-		final int y;
-		final int height;
-
-		MarkersPainter(List<Marker> markers, int x, int y, int height) {
-			final int markerCount = markers.size();
-			Preconditions.checkArgument(markerCount > 0, "no markers!");
-
-			this.y = y;
-			this.height = height;
-
-			if (markerCount == 1) {
-				this.spans = ImmutableList.of(markers.get(0).new Span(x, MarkableScrollPane.this.markerWidth));
-			} else {
-				final int spanWidth = MarkableScrollPane.this.markerWidth / markerCount;
-				// in case of non-evenly divisible width, give the most to the first marker: it has the highest priority
-				final int firstSpanWidth = MarkableScrollPane.this.markerWidth - spanWidth * (markerCount - 1);
-
-				final ImmutableList.Builder<Marker.Span> spansBuilder = ImmutableList.builder();
-				spansBuilder.add(markers.get(0).new Span(x, firstSpanWidth));
-
-				for (int i = 1; i < markerCount; i++) {
-					spansBuilder.add(markers.get(i).new Span(x + firstSpanWidth + spanWidth * (i - 1), spanWidth));
-				}
-
-				this.spans = spansBuilder.build();
-			}
-		}
-
+	private record MarkersPainter(ImmutableList<Marker.Span> spans, int y, int height) {
 		void paint(Graphics graphics) {
 			for (final Marker.Span span : this.spans) {
 				graphics.setColor(span.getMarker().color);
 				graphics.fillRect(span.x, this.y, span.width, this.height);
 			}
+		}
+
+		MarkersPainter withMovedTop(int amount) {
+			return new MarkersPainter(this.spans, this.y + amount, this.height - amount);
+		}
+
+		MarkersPainter withMovedBottom(int amount) {
+			return new MarkersPainter(this.spans, this.y, this.height + amount);
+		}
+	}
+
+	private class MarkersPainterBuilder {
+		final int pos;
+		int top;
+		int bottom;
+		final Multiset<Marker> markers = TreeMultiset.create();
+
+		MarkersPainterBuilder(int pos, int top, int bottom) {
+			this.pos = pos;
+			this.top = top;
+			this.bottom = bottom;
+		}
+
+		void addMarkers(Collection<Marker> markers) {
+			this.markers.addAll(markers);
+		}
+
+		void eliminateOverlap(MarkersPainterBuilder lower) {
+			final int spaceBelow = lower.top - this.bottom;
+			if (spaceBelow < 0) {
+				final int thisAdjustment = spaceBelow / 2;
+				final int otherAdjustment = spaceBelow - thisAdjustment;
+
+				this.bottom += thisAdjustment;
+				lower.top -= otherAdjustment;
+			}
+		}
+
+		MarkersPainter eliminateOverlap(MarkersPainter painter) {
+			final int spaceAbove = painter.y + painter.height - this.top;
+			if (spaceAbove < 0) {
+				final int painterAdjustment = spaceAbove / 2;
+				final int thisAdjustment = spaceAbove - painterAdjustment;
+
+				this.top -= thisAdjustment;
+				return painter.withMovedBottom(painterAdjustment);
+			} else {
+				final int spaceBelow = painter.y - this.bottom;
+				if (spaceBelow < 0) {
+					final int thisAdjustment = spaceBelow / 2;
+					final int painterAdjustment = spaceBelow - thisAdjustment;
+
+					this.bottom += thisAdjustment;
+					return painter.withMovedTop(painterAdjustment);
+				}
+			}
+
+			return null;
+		}
+
+		MarkersPainter build(int x) {
+			final List<Marker> markers = this.markers.stream()
+					.limit(MarkableScrollPane.this.maxConcurrentMarkers)
+					.toList();
+			return MarkableScrollPane.this.markersPainterOf(markers, x, this.top, this.bottom - this.top);
 		}
 	}
 
