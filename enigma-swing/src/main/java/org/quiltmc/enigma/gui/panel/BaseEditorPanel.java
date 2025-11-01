@@ -33,7 +33,6 @@ import org.quiltmc.enigma.util.Result;
 import org.quiltmc.enigma.util.Utils;
 import org.quiltmc.syntaxpain.JavaSyntaxKit;
 import org.quiltmc.syntaxpain.LineNumbersRuler;
-import org.quiltmc.syntaxpain.PairsMarker;
 import org.tinylog.Logger;
 
 import javax.swing.JButton;
@@ -121,8 +120,6 @@ public class BaseEditorPanel {
 		this.editor.setFont(ScaleUtil.getFont(this.editor.getFont().getFontName(), Font.PLAIN, this.fontSize));
 		this.editor.setCaretColor(syntaxColors.caret.value());
 		this.editor.setContentType(JavaSyntaxKit.CONTENT_TYPE);
-
-		PairsMarker.install(new PairsMarker(this.editor, syntaxColors.pairsMarker.value()));
 
 		this.editor.setFont(ScaleUtil.scaleFont(Config.currentFonts().editor.value()));
 		this.editor.setCaretColor(syntaxColors.text.value());

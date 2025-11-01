@@ -17,6 +17,7 @@ import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
+import org.quiltmc.syntaxpain.PairsMarker;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -64,6 +65,8 @@ public class EditorPanel extends BaseEditorPanel {
 		this.navigatorPanel = navigator;
 
 		this.editor.addCaretListener(event -> this.onCaretMove(event.getDot()));
+
+		PairsMarker.install(new PairsMarker(this.editor, Config.getCurrentSyntaxPaneColors().pairsMarker.value()));
 
 		// HACK to prevent DefaultCaret from calling setSelectionVisible(false) when quickFind gains focus
 		if (this.editor.getCaret() instanceof FocusListener caretFocusListener) {
