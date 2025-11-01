@@ -103,8 +103,9 @@ public class MarkableScrollPane extends JScrollPane {
 
 		this.addComponentListener(new ComponentListener() {
 			void refreshMarkers() {
-				MarkableScrollPane.this.clearPaintState();
-				MarkableScrollPane.this.repaint();
+				MarkableScrollPane.this.paintState = MarkableScrollPane.this.createPaintState();
+
+				MarkableScrollPane.this.repaint(MarkableScrollPane.this.paintState.createArea());
 			}
 
 			@Override
@@ -124,7 +125,7 @@ public class MarkableScrollPane extends JScrollPane {
 
 			@Override
 			public void componentHidden(ComponentEvent e) {
-				this.refreshMarkers();
+				MarkableScrollPane.this.paintState = null;
 			}
 		});
 	}
@@ -154,10 +155,12 @@ public class MarkableScrollPane extends JScrollPane {
 
 		this.markersByPos.put(pos, marker);
 
-		if (this.paintState != null) {
-			this.paintState.pendingMarkerPositions.add(pos);
-			this.repaint();
+		if (this.paintState == null) {
+			this.paintState = this.createPaintState();
 		}
+
+		this.paintState.pendingMarkerPositions.add(pos);
+		this.repaint(this.paintState.createArea());
 
 		return marker;
 	}
@@ -174,11 +177,12 @@ public class MarkableScrollPane extends JScrollPane {
 		if (marker instanceof Marker removing) {
 			final boolean removed = this.markersByPos.remove(removing.pos, removing);
 			if (removed) {
-				if (this.paintState != null) {
-					this.paintState.pendingMarkerPositions.add(removing.pos);
-					// TODO try the repaint method that takes a rectangle
-					this.repaint();
+				if (this.paintState == null) {
+					this.paintState = this.createPaintState();
 				}
+
+				this.paintState.pendingMarkerPositions.add(removing.pos);
+				this.repaint(this.paintState.createArea());
 			}
 		}
 	}
@@ -207,8 +211,8 @@ public class MarkableScrollPane extends JScrollPane {
 		if (maxConcurrentMarkers != this.maxConcurrentMarkers) {
 			this.maxConcurrentMarkers = maxConcurrentMarkers;
 
-			this.clearPaintState();
-			this.repaint();
+			this.paintState = this.createPaintState();
+			this.repaint(this.paintState.createArea());
 		}
 	}
 
@@ -292,10 +296,6 @@ public class MarkableScrollPane extends JScrollPane {
 		}
 
 		this.paintState.paint(graphics);
-	}
-
-	private void clearPaintState() {
-		this.paintState = null;
 	}
 
 	private PaintState createPaintState() {
@@ -528,6 +528,10 @@ public class MarkableScrollPane extends JScrollPane {
 		boolean areaContains(int x, int y) {
 			return this.areaX <= x && x <= this.areaX + MarkableScrollPane.this.markerWidth
 				&& this.areaY <= y && y <= this.areaY + this.areaHeight;
+		}
+
+		Rectangle createArea() {
+			return new Rectangle(this.areaX, this.areaY, MarkableScrollPane.this.markerWidth, this.areaHeight);
 		}
 	}
 
