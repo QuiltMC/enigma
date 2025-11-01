@@ -406,25 +406,61 @@ public class MarkableScrollPane extends JScrollPane {
 		}
 
 		void paint(Graphics graphics) {
+			this.update();
+
+			for (final MarkersPainter painter : this.paintersByPos.values()) {
+				painter.paint(graphics);
+			}
+		}
+
+		void update() {
+			if (this.pendingMarkerPositions.isEmpty()) {
+				return;
+			}
+
 			final Map<Integer, MarkersPainterBuilder> builderByScaledPos = new TreeMap<>();
 
 			for (final int pos : this.pendingMarkerPositions) {
 				final Collection<Marker> markers = MarkableScrollPane.this.markersByPos.get(pos);
 				if (pos < this.viewHeight && !markers.isEmpty() && MarkableScrollPane.this.maxConcurrentMarkers > 0) {
-					final int scaledPos = this.viewHeight > this.areaHeight
-							? pos * this.areaHeight / this.viewHeight
-							: pos;
+					final int scaledPos = this.scalePos(pos);
 
 					this.paintersByPos.remove(pos);
 
-					builderByScaledPos
-							.computeIfAbsent(scaledPos, builderPos -> {
-								final int markerTop = Math.max(builderPos - MarkableScrollPane.this.markerHeight / 2, 0);
-								final int markerBottom = Math.min(markerTop + MarkableScrollPane.this.markerHeight, this.areaHeight);
+					final MarkersPainterBuilder builder = builderByScaledPos.computeIfAbsent(scaledPos, builderPos -> {
+						final int top = Math.max(builderPos - MarkableScrollPane.this.markerHeight / 2, 0);
+						final int bottom = Math.min(top + MarkableScrollPane.this.markerHeight, this.areaHeight);
 
-								return new MarkersPainterBuilder(pos, markerTop, markerBottom);
-							})
-							.addMarkers(markers);
+						return new MarkersPainterBuilder(pos, top, bottom);
+					});
+
+					builder.addMarkers(markers);
+
+					Integer abovePos = this.paintersByPos.lowerKey(pos);
+					while (abovePos != null) {
+						final int aboveScaled = this.scalePos(abovePos);
+						if (aboveScaled == scaledPos) {
+							this.paintersByPos.remove(abovePos);
+							builder.addMarkers(MarkableScrollPane.this.markersByPos.get(abovePos));
+
+							abovePos = this.paintersByPos.lowerKey(abovePos);
+						} else {
+							break;
+						}
+					}
+
+					Integer belowPos = this.paintersByPos.higherKey(pos);
+					while (belowPos != null) {
+						final int belowScaled = this.scalePos(belowPos);
+						if (belowScaled == scaledPos) {
+							this.paintersByPos.remove(belowPos);
+							builder.addMarkers(MarkableScrollPane.this.markersByPos.get(belowPos));
+
+							belowPos = this.paintersByPos.higherKey(belowPos);
+						} else {
+							break;
+						}
+					}
 				} else {
 					this.paintersByPos.remove(pos);
 				}
@@ -465,10 +501,12 @@ public class MarkableScrollPane extends JScrollPane {
 			}
 
 			this.pendingMarkerPositions.clear();
+		}
 
-			for (final MarkersPainter painter : this.paintersByPos.values()) {
-				painter.paint(graphics);
-			}
+		private int scalePos(int pos) {
+			return this.viewHeight > this.areaHeight
+				? pos * this.areaHeight / this.viewHeight
+				: pos;
 		}
 
 		void clearMarkers() {
