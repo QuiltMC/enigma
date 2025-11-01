@@ -37,7 +37,7 @@ public class SimpleSnippetPanel extends AbstractEditorPanel<JScrollPane> {
 		return new JScrollPane(
 			editor,
 			JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-			JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+			JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
 		);
 	}
 }

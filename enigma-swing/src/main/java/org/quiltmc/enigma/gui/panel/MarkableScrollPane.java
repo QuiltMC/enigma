@@ -33,8 +33,6 @@ import java.util.NavigableMap;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 /**
  * A scroll pane that renders markers in its view along the right edge, to the left of the vertical scroll bar.<br>
@@ -46,8 +44,8 @@ import java.util.function.Predicate;
  * {@linkplain #addMarker(int, Color, int, MarkerListener) added}) will be rendered left-most.
  * No more than {@link #maxConcurrentMarkers} will be rendered at the same position. If there are excess markers, those
  * with lowest priority will be skipped. There's no guarantee which marker will be rendered when priorities are tied.
- * When multiple markers are rendered at the same location, each will be narrower so their total width is equal to a
- * single marker's.
+ * When multiple markers are rendered at the same location, each will be narrower so the total width remains constant
+ * regardless of the number of markers at a position.
  *
  * @see #addMarker(int, Color, int, MarkerListener)
  * @see #removeMarker(Object)
@@ -55,7 +53,7 @@ import java.util.function.Predicate;
  */
 public class MarkableScrollPane extends JScrollPane {
 	private static void requireNonNegative(int value, String name) {
-		Preconditions.checkArgument(value >= 0, "%s (%s) must not be negative!".formatted(value, name));
+		Preconditions.checkArgument(value >= 0, "%s (%s) must not be negative!".formatted(name, value));
 	}
 
 	private static final int DEFAULT_MARKER_WIDTH = 10;
@@ -152,7 +150,7 @@ public class MarkableScrollPane extends JScrollPane {
 	public Object addMarker(int pos, Color color, int priority, @Nullable MarkerListener listener) {
 		requireNonNegative(pos, "pos");
 
-		final Marker marker = new Marker(color, priority, Optional.ofNullable(listener));
+		final Marker marker = new Marker(color, priority, pos, Optional.ofNullable(listener));
 
 		this.markersByPos.put(pos, marker);
 
@@ -174,17 +172,12 @@ public class MarkableScrollPane extends JScrollPane {
 	 */
 	public void removeMarker(Object marker) {
 		if (marker instanceof Marker removing) {
-			final Iterator<Map.Entry<Integer, Marker>> itr = this.markersByPos.entries().iterator();
-
-			while (itr.hasNext()) {
-				final Map.Entry<Integer, Marker> entry = itr.next();
-				if (entry.getValue() == removing) {
-					itr.remove();
-					if (this.paintState != null) {
-						this.paintState.pendingMarkerPositions.add(entry.getKey());
-					}
-
-					break;
+			final boolean removed = this.markersByPos.remove(removing.pos, removing);
+			if (removed) {
+				if (this.paintState != null) {
+					this.paintState.pendingMarkerPositions.add(removing.pos);
+					// TODO try the repaint method that takes a rectangle
+					this.repaint();
 				}
 			}
 		}
@@ -231,25 +224,20 @@ public class MarkableScrollPane extends JScrollPane {
 
 		this.viewMouseAdapter = new MouseAdapter() {
 			@Nullable
-			MarkerListener lastEntered;
+			ListenerPos lastListenerPos;
 
-			Optional<MarkerListener> findMarkerListener(MouseEvent e) {
+			Optional<ListenerPos> findListenerPos(MouseEvent e) {
 				if (MarkableScrollPane.this.paintState == null) {
 					return Optional.empty();
 				} else {
-					final Point relativePos =
-							GuiUtil.getRelativePos(MarkableScrollPane.this, e.getXOnScreen(), e.getYOnScreen());
-					return MarkableScrollPane.this.paintState
-						.findSpanContaining(
-							relativePos.x, relativePos.y,
-							span -> span.getMarker().listener.isPresent()
-						)
-						.map(span -> span.getMarker().listener.orElseThrow());
+					final Point relativePos = GuiUtil
+							.getRelativePos(MarkableScrollPane.this, e.getXOnScreen(), e.getYOnScreen());
+					return MarkableScrollPane.this.paintState.findListenerPos(relativePos.x, relativePos.y);
 				}
 			}
 
-			void tryMarkerListeners(MouseEvent e, Consumer<MarkerListener> listen) {
-				this.findMarkerListener(e).ifPresent(listen);
+			void tryMarkerListeners(MouseEvent e, ListenerMethod method) {
+				this.findListenerPos(e).ifPresent(listenerPos -> listenerPos.invoke(method));
 			}
 
 			@Override
@@ -266,16 +254,16 @@ public class MarkableScrollPane extends JScrollPane {
 			public void mouseMoved(MouseEvent e) {
 				this.tryMarkerListeners(e, MarkerListener::mouseMoved);
 
-				this.findMarkerListener(e).ifPresentOrElse(
-						listener -> {
-							if (listener != this.lastEntered) {
-								if (this.lastEntered == null) {
-									listener.mouseEntered();
+				this.findListenerPos(e).ifPresentOrElse(
+						listenerPos -> {
+							if (!listenerPos.equals(this.lastListenerPos)) {
+								if (this.lastListenerPos == null) {
+									listenerPos.invoke(MarkerListener::mouseEntered);
 								} else {
-									listener.mouseTransferred();
+									listenerPos.invoke(MarkerListener::mouseTransferred);
 								}
 
-								this.lastEntered = listener;
+								this.lastListenerPos = listenerPos;
 							}
 						},
 						this::mouseExitedImpl
@@ -283,9 +271,9 @@ public class MarkableScrollPane extends JScrollPane {
 			}
 
 			private void mouseExitedImpl() {
-				if (this.lastEntered != null) {
-					this.lastEntered.mouseExited();
-					this.lastEntered = null;
+				if (this.lastListenerPos != null) {
+					this.lastListenerPos.invoke(MarkerListener::mouseExited);
+					this.lastListenerPos = null;
 				}
 			}
 		};
@@ -337,14 +325,14 @@ public class MarkableScrollPane extends JScrollPane {
 		return new PaintState(areaX, areaY, areaHeight, viewHeight, this.markersByPos.keySet());
 	}
 
-	private MarkersPainter markersPainterOf(List<Marker> markers, int x, int y, int height) {
+	private MarkersPainter markersPainterOf(List<Marker> markers, int scaledPos, int x, int y, int height) {
 		final int markerCount = markers.size();
 		Preconditions.checkArgument(markerCount > 0, "no markers!");
 
 		if (markerCount == 1) {
 			final ImmutableList<Marker.Span> spans = ImmutableList
 					.of(markers.get(0).new Span(x, MarkableScrollPane.this.markerWidth));
-			return new MarkersPainter(spans, y, height);
+			return new MarkersPainter(spans, scaledPos, y, height);
 		} else {
 			final int spanWidth = MarkableScrollPane.this.markerWidth / markerCount;
 			// in case of non-evenly divisible width, give the most to the first marker: it has the highest priority
@@ -357,7 +345,7 @@ public class MarkableScrollPane extends JScrollPane {
 				spansBuilder.add(markers.get(i).new Span(x + firstSpanWidth + spanWidth * (i - 1), spanWidth));
 			}
 
-			return new MarkersPainter(spansBuilder.build(), y, height);
+			return new MarkersPainter(spansBuilder.build(), scaledPos, y, height);
 		}
 	}
 
@@ -431,7 +419,7 @@ public class MarkableScrollPane extends JScrollPane {
 						final int top = Math.max(builderPos - MarkableScrollPane.this.markerHeight / 2, this.areaY);
 						final int bottom = Math.min(top + MarkableScrollPane.this.markerHeight, this.areaY + this.areaHeight);
 
-						return new MarkersPainterBuilder(pos, top, bottom);
+						return new MarkersPainterBuilder(pos, scaledPos, top, bottom);
 					});
 
 					builder.addMarkers(markers);
@@ -514,13 +502,23 @@ public class MarkableScrollPane extends JScrollPane {
 			this.pendingMarkerPositions.clear();
 		}
 
-		Optional<Marker.Span> findSpanContaining(int x, int y, Predicate<Marker.Span> predicate) {
+		Optional<ListenerPos> findListenerPos(int x, int y) {
 			if (this.areaContains(x, y)) {
 				return this.paintersByPos.values().stream()
 					.filter(painter -> painter.y <= y && y <= painter.y + painter.height)
-					.flatMap(painter -> painter.spans.stream())
-					.filter(predicate)
-					.filter(span -> span.x <= x && x <= span.x + span.width)
+					.flatMap(painter -> painter
+						.spans.stream()
+						.filter(span -> span.getMarker().listener.isPresent())
+						.filter(span -> span.x <= x && x <= span.x + span.width)
+						.findFirst()
+						.map(span -> {
+							final Point absolutePos = GuiUtil
+									.getAbsolutePos(MarkableScrollPane.this, this.areaX, painter.scaledPos);
+
+							return new ListenerPos(span.getMarker().listener.orElseThrow(), absolutePos.x, absolutePos.y);
+						})
+						.stream()
+					)
 					.findFirst();
 			} else {
 				return Optional.empty();
@@ -533,7 +531,8 @@ public class MarkableScrollPane extends JScrollPane {
 		}
 	}
 
-	private record Marker(Color color, int priority, Optional<MarkerListener> listener) implements Comparable<Marker> {
+	private record Marker(Color color, int priority, int pos, Optional<MarkerListener> listener)
+			implements Comparable<Marker> {
 		@Override
 		public int compareTo(@Nonnull Marker other) {
 			return other.priority - this.priority;
@@ -554,7 +553,7 @@ public class MarkableScrollPane extends JScrollPane {
 		}
 	}
 
-	private record MarkersPainter(ImmutableList<Marker.Span> spans, int y, int height) {
+	private record MarkersPainter(ImmutableList<Marker.Span> spans, int scaledPos, int y, int height) {
 		void paint(Graphics graphics) {
 			for (final Marker.Span span : this.spans) {
 				graphics.setColor(span.getMarker().color);
@@ -562,23 +561,28 @@ public class MarkableScrollPane extends JScrollPane {
 			}
 		}
 
-		MarkersPainter withMovedTop(int amount) {
-			return new MarkersPainter(this.spans, this.y + amount, this.height - amount);
+		MarkersPainter withTopMoved(int amount) {
+			return new MarkersPainter(this.spans, this.scaledPos, this.y + amount, this.height - amount);
 		}
 
-		MarkersPainter withMovedBottom(int amount) {
-			return new MarkersPainter(this.spans, this.y, this.height + amount);
+		MarkersPainter withBottomMoved(int amount) {
+			return new MarkersPainter(this.spans, this.scaledPos, this.y, this.height + amount);
 		}
 	}
 
 	private class MarkersPainterBuilder {
 		final int pos;
-		int top;
-		int bottom;
+		final int scaledPos;
+
 		final Multiset<Marker> markers = TreeMultiset.create();
 
-		MarkersPainterBuilder(int pos, int top, int bottom) {
+		int top;
+		int bottom;
+
+		MarkersPainterBuilder(int pos, int scaledPos, int top, int bottom) {
 			this.pos = pos;
+			this.scaledPos = scaledPos;
+
 			this.top = top;
 			this.bottom = bottom;
 		}
@@ -598,6 +602,7 @@ public class MarkableScrollPane extends JScrollPane {
 			}
 		}
 
+		@Nullable
 		MarkersPainter eliminateOverlap(MarkersPainter painter) {
 			final int spaceAbove = painter.y + painter.height - this.top;
 			if (spaceAbove < 0) {
@@ -605,7 +610,7 @@ public class MarkableScrollPane extends JScrollPane {
 				final int thisAdjustment = spaceAbove - painterAdjustment;
 
 				this.top -= thisAdjustment;
-				return painter.withMovedBottom(painterAdjustment);
+				return painter.withBottomMoved(painterAdjustment);
 			} else {
 				final int spaceBelow = painter.y - this.bottom;
 				if (spaceBelow < 0) {
@@ -613,7 +618,7 @@ public class MarkableScrollPane extends JScrollPane {
 					final int painterAdjustment = spaceBelow - thisAdjustment;
 
 					this.bottom += thisAdjustment;
-					return painter.withMovedTop(painterAdjustment);
+					return painter.withTopMoved(painterAdjustment);
 				}
 			}
 
@@ -624,12 +629,15 @@ public class MarkableScrollPane extends JScrollPane {
 			final List<Marker> markers = this.markers.stream()
 					.limit(MarkableScrollPane.this.maxConcurrentMarkers)
 					.toList();
-			return MarkableScrollPane.this.markersPainterOf(markers, x, this.top, this.bottom - this.top);
+
+			return MarkableScrollPane.this.markersPainterOf(markers, this.scaledPos, x, this.top, this.bottom - this.top);
 		}
 	}
 
 	/**
 	 * A listener for marker events.
+	 *
+	 * <p> Listener methods receive the absolute position of the marker's left edge on the screen.
 	 *
 	 * @see #addMarker(int, Color, int, MarkerListener)
 	 */
@@ -637,28 +645,45 @@ public class MarkableScrollPane extends JScrollPane {
 		/**
 		 * Called when the mouse clicks the marker.
 		 */
-		void mouseClicked();
+		void mouseClicked(int x, int y);
 
 		/**
 		 * Called when the mouse enters the marker.
 		 */
-		void mouseEntered();
+		void mouseEntered(int x, int y);
 
 		/**
 		 * Called when the mouse exits the marker.
 		 *
-		 * <p> <em>Not</em> called when the mouse moves to an adjacent marker; see {@link #mouseTransferred()}.
+		 * <p> <em>Not</em> called when the mouse moves to an adjacent marker;
+		 * see {@link #mouseTransferred}.
 		 */
-		void mouseExited();
+		void mouseExited(int x, int y);
 
 		/**
 		 * Called when the mouse moves from an adjacent marker to the marker.
 		 */
-		void mouseTransferred();
+		void mouseTransferred(int x, int y);
 
 		/**
 		 * Called when the mouse within the marker.
 		 */
-		void mouseMoved();
+		void mouseMoved(int x, int y);
+	}
+
+	private record ListenerPos(MarkerListener listener, int x, int y) {
+		void invoke(ListenerMethod method) {
+			method.listen(this.listener, this.x, this.y);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			return o instanceof ListenerPos other && other.listener == this.listener;
+		}
+	}
+
+	@FunctionalInterface
+	private interface ListenerMethod {
+		void listen(MarkerListener listener, int x, int pos);
 	}
 }
