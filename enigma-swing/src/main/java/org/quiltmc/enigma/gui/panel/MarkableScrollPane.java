@@ -122,9 +122,7 @@ public class MarkableScrollPane extends JScrollPane {
 			}
 
 			@Override
-			public void componentShown(ComponentEvent e) {
-				this.refreshMarkers();
-			}
+			public void componentShown(ComponentEvent e) { }
 
 			@Override
 			public void componentHidden(ComponentEvent e) {
