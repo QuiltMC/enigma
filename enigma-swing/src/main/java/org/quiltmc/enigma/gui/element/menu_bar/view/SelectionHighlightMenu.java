@@ -5,10 +5,13 @@ import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.SelectionHighlightSection;
 import org.quiltmc.enigma.gui.element.IntRangeConfigMenuItem;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
 
+import javax.swing.JMenu;
+
 public class SelectionHighlightMenu extends AbstractEnigmaMenu {
-	private final IntRangeConfigMenuItem blinks;
+	private final JMenu blinksMenu;
 	private final IntRangeConfigMenuItem blinkDelay;
 
 	protected SelectionHighlightMenu(Gui gui) {
@@ -16,10 +19,10 @@ public class SelectionHighlightMenu extends AbstractEnigmaMenu {
 
 		final SelectionHighlightSection config = Config.editor().selectionHighlight;
 
-		this.blinks = new IntRangeConfigMenuItem(
-				gui, config.blinks,
+		this.blinksMenu = GuiUtil.createIntConfigRadioMenu(
+				config.blinks,
 				SelectionHighlightSection.MIN_BLINKS, SelectionHighlightSection.MAX_BLINKS,
-				"menu.view.selection_highlight.blinks"
+				this::retranslateBlinksMenu
 		);
 
 		this.blinkDelay = new IntRangeConfigMenuItem(
@@ -28,15 +31,24 @@ public class SelectionHighlightMenu extends AbstractEnigmaMenu {
 				"menu.view.selection_highlight.blink_delay"
 		);
 
-		this.add(this.blinks);
+		this.add(this.blinksMenu);
 		this.add(this.blinkDelay);
+
+		this.retranslate();
 	}
 
 	@Override
 	public void retranslate() {
 		this.setText(I18n.translate("menu.view.selection_highlight"));
 
-		this.blinks.retranslate();
+		this.retranslateBlinksMenu();
 		this.blinkDelay.retranslate();
+	}
+
+	private void retranslateBlinksMenu() {
+		this.blinksMenu.setText(I18n.translateFormatted(
+				"menu.view.selection_highlight.blinks",
+				Config.editor().selectionHighlight.blinks.value())
+		);
 	}
 }
