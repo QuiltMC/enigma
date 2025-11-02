@@ -75,9 +75,6 @@
 	"menu.view.themes.none": "None (JVM Default)",
 	"menu.view.selection_highlight": "Selection Highlight",
 	"menu.view.selection_highlight.blinks": "Blink count (%s)",
-	"menu.view.selection_highlight.blinks.dialog_title": "Blink Count",
-	"menu.view.selection_highlight.blinks.dialog_explanation":
-	"The number of times to blink highlighting that indicates an entry that has been navigated to.",
 	"menu.view.selection_highlight.blink_delay": "Blink delay (%sms)",
 	"menu.view.selection_highlight.blink_delay.dialog_title": "Blink Delay",
 	"menu.view.selection_highlight.blink_delay.dialog_explanation":
