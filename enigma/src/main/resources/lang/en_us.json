@@ -268,6 +268,8 @@
 	"prompt.open": "Open",
 	"prompt.error": "Error",
 	"prompt.invalid_input": "Invalid input",
+	"prompt.number.not_whole": "Not a whole number",
+	"prompt.number.not_in_range": "Not in range [%s, %s]",
 
 	"prompt.search.classes": "Classes",
 	"prompt.search.methods": "Methods",

@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.util;
 
+import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Result;
 
 import javax.annotation.Nullable;
@@ -7,7 +8,6 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -18,34 +18,36 @@ import static javax.swing.BorderFactory.createEmptyBorder;
 
 public class NumberInputDialog<N extends Number> extends JDialog {
 	private static final int INSET = 4;
-	// private static final int PADDING = 2;
 
 	/**
 	 * Only returns {@code null} if the passed {@code initialValue} is {@code null} and valid input was not submitted.
 	 *
+	 *  <p>
 	 * TODO
+	 *
 	 * @param owner
-	 * @param title
-	 * @param message
 	 * @param initialValue
 	 * @param min
 	 * @param max
+	 * @param title
+	 * @param message
 	 * @return
 	 */
 	public static Integer promptInt(
-			@Nullable Frame owner, String title, String message,
-			@Nullable Integer initialValue, int min, int max
+			@Nullable Frame owner, @Nullable Integer initialValue, int min, int max,
+			String title, String message, String submit
 	) {
 		validateBoundedArgs(initialValue, min, max);
 
-		final NumberTextField<Integer> field = new NumberTextField<>(
+		final var field = new NumberTextField<>(
 				initialValue,
-				// TODO translatable
-				createBoundedParser(min, max, Integer::parseInt, "Not a whole number!")
+				createBoundedParser(min, max, Integer::parseInt, I18n.translate("prompt.number.not_whole"))
 		);
 
-		// TODO translatable
-		final var dialog = new NumberInputDialog<>(owner, title, message, "cancel", "submit", field);
+		final var dialog = new NumberInputDialog<>(
+				owner, field,
+				title, message, I18n.translate("prompt.cancel"), submit
+		);
 		dialog.setFont(ScaleUtil.scaleFont(dialog.getFont()));
 
 		dialog.pack();
@@ -72,16 +74,15 @@ public class NumberInputDialog<N extends Number> extends JDialog {
 	}
 
 	private static <N extends Number & Comparable<N>> Function<String, Result<N, String>> createBoundedParser(
-			N min, N max, Function<String, N> rawParser, String formatErrorMessage
+			N min, N max, Function<String, N> baseParser, String formatErrorMessage
 	) {
 		return input -> {
 			try {
-				final N parsed = rawParser.apply(input);
+				final N parsed = baseParser.apply(input);
 				if (isInRange(parsed, min, max)) {
 					return Result.ok(parsed);
 				} else {
-					// TODO translatable
-					return Result.err("Not in range [%s, %s]!".formatted(min, max));
+					return Result.err(I18n.translateFormatted("prompt.number.not_in_range", min, max));
 				}
 			} catch (NumberFormatException e) {
 				return Result.err(formatErrorMessage);
@@ -101,8 +102,8 @@ public class NumberInputDialog<N extends Number> extends JDialog {
 	protected final JButton submit;
 
 	protected NumberInputDialog(
-			@Nullable Frame owner, String title, String message, String cancel, String submit,
-			NumberTextField<N> field
+			@Nullable Frame owner, NumberTextField<N> field,
+			String title, String message, String cancel, String submit
 	) {
 		super(owner, title, true);
 

@@ -114,7 +114,10 @@ public class NumberTextField<N extends Number> extends JTextField {
 	}
 
 	private void setBorder(boolean valid) {
-		final Color indicatorColor = valid ? new Color(0, 0, 0, 0) : Color.RED;
+		final Color indicatorColor = valid
+				// transparent indicator border even if valid to ensure consistent spacing
+				? new Color(0, 0, 0, 0)
+				: Config.getCurrentSyntaxPaneColors().error.value();
 		final Border indicatorBorder = createLineBorder(indicatorColor);
 		final Border padBorder = createEmptyBorder(1, 1, 1, 1);
 		final Border innerBorder = Config.currentTheme().createBorder();

@@ -53,7 +53,10 @@ public class IntRangeConfigMenuItem extends JMenuItem {
 			final String title = I18n.translate(dialogTitleTranslationKey);
 			final String message = I18n.translate(dialogExplanationTranslationKey) + "\n"
 					+ I18n.translateFormatted("prompt.input.int_range", min, max);
-			final int input = NumberInputDialog.promptInt(gui.getFrame(), title, message, config.value(), min, max);
+			final int input = NumberInputDialog.promptInt(
+					gui.getFrame(), config.value(), min, max,
+					title, message, I18n.translate("prompt.save")
+			);
 
 			if (!config.value().equals(input)) {
 				config.setValue(input);
