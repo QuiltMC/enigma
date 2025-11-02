@@ -24,7 +24,7 @@ public class NumberTextField<N extends Number> extends JTextField {
 	@Nullable
 	private Result<N, String> editResult;
 
-	private final Set<ValidListener> validListeners = new HashSet<>();
+	private final Set<EditListener<N>> editListeners = new HashSet<>();
 
 	public NumberTextField(@Nullable N initialValue, Function<String, Result<N, String>> parser) {
 		this.parser = parser;
@@ -79,19 +79,19 @@ public class NumberTextField<N extends Number> extends JTextField {
 		return this.value;
 	}
 
-	public void addValidListener(ValidListener listener) {
-		this.validListeners.add(listener);
+	public void addEditListener(EditListener<N> listener) {
+		this.editListeners.add(listener);
 	}
 
-	public void removeValidListener(ValidListener listener) {
-		this.validListeners.remove(listener);
+	public void removeValidListener(EditListener<N> listener) {
+		this.editListeners.remove(listener);
 	}
 
 	/**
 	 * {@linkplain #parser Parses} this field's current {@linkplain #getText() text} and assigns the result to
 	 * {@link #editResult}.
 	 *
-	 * <p> Also invokes {@link #validListeners} when the validity of {@link #editResult} changes.
+	 * <p> Also invokes {@link #editListeners} when the validity of {@link #editResult} changes.
 	 */
 	private void onEdit() {
 		final boolean hadResult;
@@ -109,8 +109,9 @@ public class NumberTextField<N extends Number> extends JTextField {
 		final boolean ok = this.editResult.isOk();
 		if (!hadResult || wasOk != ok) {
 			this.setBorder(ok);
-			this.validListeners.forEach(listener -> listener.listen(ok));
 		}
+
+		this.editListeners.forEach(listener -> listener.listen(this.editResult));
 	}
 
 	private void setBorder(boolean valid) {
@@ -126,10 +127,11 @@ public class NumberTextField<N extends Number> extends JTextField {
 	}
 
 	/**
-	 * A listener which is invoked when a field's edited value's validity changes. It receives the new validity.
+	 * A listener which is invoked when a field's edited value's validity changes. It the error if the edited value is
+	 * invalid, or {@code null} otherwise.
 	 */
 	@FunctionalInterface
-	public interface ValidListener {
-		void listen(boolean valid);
+	public interface EditListener<N extends Number> {
+		void listen(Result<N, String> edit);
 	}
 }
