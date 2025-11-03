@@ -82,6 +82,7 @@
 	"menu.view.languages": "Languages",
 	"menu.view.scale": "Scale",
 	"menu.view.scale.custom": "Custom...",
+	"menu.view.scale.custom.selected": "Custom (%.1f%%)...",
 	"menu.view.scale.custom.title": "Custom Scale",
 	"menu.view.scale.custom.explanation": "The interface scale percent. Applied next restart.",
 	"menu.view.stat_icons": "Stat Icons",
