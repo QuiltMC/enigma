@@ -25,8 +25,8 @@ public class ScaleUtil {
 	private static final List<ScaleChangeListener> listeners = new ArrayList<>();
 
 	public static void setScaleFactor(float scaleFactor) {
-		float oldScale = Config.main().scaleFactor.value();
-		float clamped = Utils.clamp(scaleFactor, 0.25f, 10.0f);
+		final float oldScale = Config.main().scaleFactor.value();
+		final float clamped = Utils.clamp(scaleFactor, Config.MIN_SCALE_FACTOR, Config.MAX_SCALE_FACTOR);
 		Config.main().scaleFactor.setValue(clamped, true);
 		listeners.forEach(l -> l.onScaleChanged(clamped, oldScale));
 	}
