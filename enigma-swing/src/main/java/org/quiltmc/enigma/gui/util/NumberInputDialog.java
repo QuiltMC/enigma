@@ -54,29 +54,9 @@ public class NumberInputDialog<N extends Number, D extends NumberInputDialog<N, 
 		validateStep(step, 0);
 
 		final var field = new NumberTextField<>(
-				initialValue,
-				createBoundedParser(min, max, Integer::parseInt, I18n.translate("prompt.number.not_whole"))
+				createBoundedParser(min, max, Integer::parseInt, I18n.translate("prompt.number.not_whole")),
+				initialValue
 		);
-
-		final BiFunction<NumberInputDialog<Integer, ?>, Integer, Integer> upStepper = (dialog, value) -> {
-			final int stepped = value + step;
-			if (stepped >= max) {
-				dialog.stepUp.setEnabled(false);
-				return max;
-			} else {
-				return stepped;
-			}
-		};
-
-		final BiFunction<NumberInputDialog<Integer, ?>, Integer, Integer> downStepper = (dialog, value) -> {
-			final int stepped = value + step;
-			if (min >= stepped) {
-				dialog.stepDown.setEnabled(false);
-				return min;
-			} else {
-				return stepped;
-			}
-		};
 
 		final var numberDialog = new NumberInputDialog<>(
 				owner, title, message, I18n.translate("prompt.cancel"), submit, field,
