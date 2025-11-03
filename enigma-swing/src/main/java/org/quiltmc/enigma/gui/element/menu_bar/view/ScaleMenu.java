@@ -12,7 +12,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.JRadioButtonMenuItem;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 
@@ -54,14 +53,36 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 	public void retranslate() {
 		this.setText(I18n.translate("menu.view.scale"));
 
-		this.customScaleButton.setText(I18n.translate("menu.view.scale.custom"));
+		this.retranslateCustomButton();
 		this.forEachDefaultScaleOption((scaleFactor, realFactor) -> this.options.get(realFactor).setText(String.format("%d%%", scaleFactor)));
 	}
 
 	@Override
 	public void updateState(boolean jarOpen, ConnectionState state) {
-		JRadioButtonMenuItem option = this.options.get(Config.main().scaleFactor.value());
-		Objects.requireNonNullElse(option, this.customScaleButton).setSelected(true);
+		final JRadioButtonMenuItem option = this.options.get(Config.main().scaleFactor.value());
+		if (option == null) {
+			this.customScaleButton.setSelected(true);
+			this.retranslateCustomButton();
+		} else {
+			final boolean wasCustom = this.customScaleButton.isSelected();
+
+			option.setSelected(true);
+
+			if (wasCustom) {
+				this.retranslateCustomButton();
+			}
+		}
+	}
+
+	private void retranslateCustomButton() {
+		final String text = this.customScaleButton.isSelected()
+				? I18n.translateFormatted(
+					"menu.view.scale.custom.selected",
+					Config.main().scaleFactor.value() * PERCENT_FACTOR
+				)
+				: I18n.translate("menu.view.scale.custom");
+
+		this.customScaleButton.setText(text);
 	}
 
 	private void onScaleClicked(float realScale) {
