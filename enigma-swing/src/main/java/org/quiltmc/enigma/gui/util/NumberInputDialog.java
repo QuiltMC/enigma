@@ -160,6 +160,7 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 		numberDialog.pack();
 		numberDialog.setLocationRelativeTo(owner);
 
+		numberDialog.field.requestFocus();
 		numberDialog.setVisible(true);
 		numberDialog.dispose();
 
