@@ -10,8 +10,6 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -20,32 +18,46 @@ import java.util.Objects;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import java.util.stream.IntStream;
 
 import static javax.swing.BorderFactory.createEmptyBorder;
 
+/**
+ * A dialog that prompts the user for a number within a specified range.
+ *
+ * <p> User input can be obtained from the static {@code prompt...} methods which create single-use dialogs.
+ *
+ * @param <N> the type of number the dialog collects
+ *
+ * @see #promptInt
+ * @see #promptFloat
+ */
 public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog {
 	private static final int INSET = 4;
 
 	/**
-	 * Only returns {@code null} if the passed {@code initialValue} is {@code null} and valid input was not submitted.
+	 * Prompts the user for an int between the passed {@code min} and {@code max}, inclusive.
 	 *
-	 * <p> TODO
+	 * @param owner        the {@link Frame} from which the dialog is displayed
+	 * @param initialValue the initial value
+	 * @param min          the minimum value
+	 * @param max          the maximum value
+	 * @param step         the amount to step the value by when the user clicks step up/down buttons; must be positive
+	 * @param title        the title displayed in the window's title bar
+	 * @param message      the message prompting the user for input
 	 *
-	 * @param owner        TODO
-	 * @param initialValue TODO
-	 * @param min          TODO
-	 * @param max          TODO
-	 * @param step         TODO
-	 * @param title        TODO
-	 * @param message      TODO
+	 * @return the user's input if it was submitted, or the passed {@code initialValue} otherwise;
+	 *         only {@code null} if the passed {@code initialValue} was {@code null} and input was not submitted
 	 *
-	 * @return TODO
+	 * @throws IllegalArgumentException if:
+	 * <ul>
+	 *     <li> the passed {@code min} is not strictly less than the passed {@code max}
+	 *     <li> the passed {@code initialValue} is non-{@code null} and not between the passed
+	 *          {@code min} and {@code max}
+	 *     <li> the passed {@code step} is not positive
+	 *     <li> the passed {@code step} is greater than the difference between the passed {@code min} and {@code max}
+	 * </ul>
 	 *
-	 * @throws IllegalArgumentException if the passed {@code min} is not strictly less than the passed {@code max}
-	 * @throws IllegalArgumentException if the passed {@code initialValue} is non-{@code null} and not between the
-	 *                                  passed {@code min} and {@code max}
-	 * @throws IllegalArgumentException if the passed {@code step} is not positive
+	 * @see #promptFloat
 	 */
 	public static Integer promptInt(
 			@Nullable Frame owner, @Nullable Integer initialValue, int min, int max, int step,
@@ -66,24 +78,29 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 	}
 
 	/**
-	 * Only returns {@code null} if the passed {@code initialValue} is {@code null} and valid input was not submitted.
+	 * Prompts the user for a float between the passed {@code min} and {@code max}, inclusive.
 	 *
-	 * <p> TODO
+	 * @param owner        the {@link Frame} from which the dialog is displayed
+	 * @param initialValue the initial value
+	 * @param min          the minimum value
+	 * @param max          the maximum value
+	 * @param step         the amount to step the value by when the user clicks step up/down buttons; must be positive
+	 * @param title        the title displayed in the window's title bar
+	 * @param message      the message prompting the user for input
 	 *
-	 * @param owner        TODO
-	 * @param initialValue TODO
-	 * @param min          TODO
-	 * @param max          TODO
-	 * @param step         TODO
-	 * @param title        TODO
-	 * @param message      TODO
+	 * @return the user's input if it was submitted, or the passed {@code initialValue} otherwise;
+	 *         only {@code null} if the passed {@code initialValue} was {@code null} and input was not submitted
 	 *
-	 * @return TODO
+	 * @throws IllegalArgumentException if:
+	 * <ul>
+	 *     <li> the passed {@code min} is not strictly less than the passed {@code max}
+	 *     <li> the passed {@code initialValue} is non-{@code null} and not between the passed
+	 *          {@code min} and {@code max}
+	 *     <li> the passed {@code step} is not positive
+	 *     <li> the passed {@code step} is greater than the difference between the passed {@code min} and {@code max}
+	 * </ul>
 	 *
-	 * @throws IllegalArgumentException if the passed {@code min} is not strictly less than the passed {@code max}
-	 * @throws IllegalArgumentException if the passed {@code initialValue} is non-{@code null} and not between the
-	 *                                  passed {@code min} and {@code max}
-	 * @throws IllegalArgumentException if the passed {@code step} is not positive
+	 * @see #promptInt
 	 */
 	public static Float promptFloat(
 			@Nullable Frame owner, @Nullable Float initialValue, float min, float max, float step,
@@ -123,6 +140,14 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 			throw new IllegalArgumentException("step (%s) must be positive!".formatted(step));
 		}
 
+		final N rangeSize = subtract.apply(max, min);
+		if (step.compareTo(rangeSize) > 0) {
+			throw new IllegalArgumentException(
+				"step (%s) must not be greater than the size (%s) of the range [%s, %s]!"
+					.formatted(step, rangeSize, min, max)
+			);
+		}
+
 		final var numberDialog = new NumberInputDialog<>(
 				owner, title, message, I18n.translate("prompt.cancel"), submit,
 				initialValue, min, max,
@@ -154,7 +179,7 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 	protected final JButton stepUp = new JButton();
 	protected final JButton stepDown = new JButton();
 
-	protected final JTextArea error = new MinimumSizeTextArea();
+	protected final JTextArea error = new JTextArea();
 
 	protected final JButton cancel = new JButton();
 	protected final JButton submit = new JButton();
@@ -285,6 +310,12 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 		}
 	}
 
+	/**
+	 * Shows the passed {@code error} as feedback to the user.
+	 *
+	 * <p> {@code this.error} is repainted, but nothing is re-packed,
+	 * so error messages wider than the width of the dialog won't render correctly.
+	 */
 	private void showError(String error) {
 		this.error.setForeground(Config.getCurrentSyntaxPaneColors().error.value());
 		this.error.setText(error);
@@ -292,27 +323,8 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 	}
 
 	private void hideError() {
-		this.error.setForeground(new Color(0, 0, 0, 0));
+		this.error.setForeground(new Color(0, true));
 		// repainting just this.error leaves an artifact of this.field's error border
 		this.repaint();
-	}
-
-	/**
-	 * A text area whose preferred size is at least as large as its font's largest character.
-	 */
-	private static class MinimumSizeTextArea extends JTextArea {
-		@Override
-		public Dimension getPreferredSize() {
-			final Dimension size = super.getPreferredSize();
-
-			final FontMetrics fontMetrics = this.getFontMetrics(this.getFont());
-			final int fontHeight = fontMetrics.getHeight();
-			final int maxFontWidth = IntStream.of(fontMetrics.getWidths()).max().orElse(1);
-
-			size.height = Math.max(size.height, fontHeight);
-			size.width = Math.max(size.width, maxFontWidth);
-
-			return size;
-		}
 	}
 }
