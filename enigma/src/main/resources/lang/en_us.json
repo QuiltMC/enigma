@@ -83,6 +83,7 @@
 	"menu.view.scale": "Scale",
 	"menu.view.scale.custom": "Custom...",
 	"menu.view.scale.custom.title": "Custom Scale",
+	"menu.view.scale.custom.explanation": "The interface scale percent. Applied next restart.",
 	"menu.view.stat_icons": "Stat Icons",
 	"menu.view.stat_icons.include_synthetic": "Include synthetic parameters",
 	"menu.view.stat_icons.count_fallback": "Count fallback-proposed names",
@@ -268,6 +269,7 @@
 	"prompt.open": "Open",
 	"prompt.error": "Error",
 	"prompt.invalid_input": "Invalid input",
+	"prompt.number.not_number": "Not a number",
 	"prompt.number.not_whole": "Not a whole number",
 	"prompt.number.not_in_range": "Not in range [%s, %s]",
 
@@ -289,6 +291,7 @@
 	"prompt.create_server.confirm": "Start",
 	"prompt.password": "Password:",
 
+	"prompt.input.number_range": "Enter a number between %s and %s (inclusive):",
 	"prompt.input.int_range": "Enter a whole number between %s and %s (inclusive):",
 
 	"disconnect.disconnected": "Disconnected",
