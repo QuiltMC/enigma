@@ -5,6 +5,7 @@ import org.quiltmc.enigma.util.Result;
 
 import javax.annotation.Nullable;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -17,7 +18,6 @@ import static javax.swing.BorderFactory.createCompoundBorder;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.BorderFactory.createLineBorder;
 
-// TODO filter key presses (e.g. only allow number characters for ints)
 public class NumberTextField<N extends Number> extends JTextField {
 	private final Function<String, Result<N, String>> parser;
 
@@ -27,7 +27,11 @@ public class NumberTextField<N extends Number> extends JTextField {
 
 	private final Set<EditListener<N>> editListeners = new HashSet<>();
 
-	public NumberTextField(@Nullable N initialValue, Function<String, Result<N, String>> parser) {
+	/**
+	 * @param parser       TODO
+	 * @param initialValue TODO
+	 */
+	public NumberTextField(Function<String, Result<N, String>> parser, @Nullable N initialValue) {
 		this.parser = parser;
 		this.value = initialValue;
 
@@ -40,17 +44,19 @@ public class NumberTextField<N extends Number> extends JTextField {
 		this.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				NumberTextField.this.onEdit();
+				NumberTextField.this.onEdit(true);
 			}
 
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				NumberTextField.this.onEdit();
+				// don't play error noise when deleting
+				// also setText always removes text first and fires removeUpdate with empty text
+				NumberTextField.this.onEdit(false);
 			}
 
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-				NumberTextField.this.onEdit();
+				NumberTextField.this.onEdit(true);
 			}
 		});
 	}
@@ -99,7 +105,7 @@ public class NumberTextField<N extends Number> extends JTextField {
 	 *
 	 * <p> Also invokes {@link #editListeners}.
 	 */
-	private void onEdit() {
+	private void onEdit(boolean invalidFeedback) {
 		final boolean hadResult;
 		final boolean wasOk;
 		if (this.editResult == null) {
@@ -113,6 +119,11 @@ public class NumberTextField<N extends Number> extends JTextField {
 		this.editResult = this.parser.apply(this.getText().trim());
 
 		final boolean ok = this.editResult.isOk();
+
+		if (invalidFeedback && !ok) {
+			UIManager.getLookAndFeel().provideErrorFeedback(this);
+		}
+
 		if (!hadResult || wasOk != ok) {
 			this.setBorder(ok);
 		}
@@ -123,7 +134,7 @@ public class NumberTextField<N extends Number> extends JTextField {
 	private void setBorder(boolean valid) {
 		final Color indicatorColor = valid
 				// transparent indicator border even if valid to ensure consistent spacing
-				? new Color(0, 0, 0, 0)
+				? new Color(0, true)
 				: Config.getCurrentSyntaxPaneColors().error.value();
 		final Border indicatorBorder = createLineBorder(indicatorColor);
 		final Border padBorder = createEmptyBorder(1, 1, 1, 1);
