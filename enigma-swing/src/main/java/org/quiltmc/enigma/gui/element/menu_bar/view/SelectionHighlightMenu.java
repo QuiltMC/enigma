@@ -27,7 +27,7 @@ public class SelectionHighlightMenu extends AbstractEnigmaMenu {
 
 		this.blinkDelay = new BoundedIntConfigMenuItem(
 				gui, config.blinkDelay,
-				SelectionHighlightSection.MIN_BLINK_DELAY, SelectionHighlightSection.MAX_BLINK_DELAY, 100,
+				SelectionHighlightSection.MIN_BLINK_DELAY, SelectionHighlightSection.MAX_BLINK_DELAY, 100, 10,
 				"menu.view.selection_highlight.blink_delay"
 		);
 

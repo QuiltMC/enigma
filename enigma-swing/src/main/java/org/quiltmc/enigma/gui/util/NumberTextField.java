@@ -25,6 +25,7 @@ import static javax.swing.BorderFactory.createLineBorder;
  * <p> The value is only updated when {@link #tryCommit} is called while the edit result is valid.
  *
  * @param <N> the type of number the field holds
+ * @param <E> the type or error held by invalid edit results
  *
  * @see #getValue()
  * @see #getEditOrValue()
@@ -32,14 +33,14 @@ import static javax.swing.BorderFactory.createLineBorder;
  * @see #tryCommit()
  * @see #addEditListener(EditListener)
  */
-public class NumberTextField<N extends Number> extends JTextField {
-	private final Function<String, Result<N, String>> parse;
+public class NumberTextField<N extends Number, E> extends JTextField {
+	private final Function<String, Result<N, E>> parse;
 
 	private N value;
 	@Nullable
-	private Result<N, String> editResult;
+	private Result<N, E> editResult;
 
-	private final Set<EditListener<N>> editListeners = new HashSet<>();
+	private final Set<EditListener<N, E>> editListeners = new HashSet<>();
 
 	/**
 	 * @param initialValue the initial value
@@ -48,7 +49,7 @@ public class NumberTextField<N extends Number> extends JTextField {
 	 *
 	 * @see #addEditListener(EditListener)
 	 */
-	public NumberTextField(@Nullable N initialValue, Function<String, Result<N, String>> parse) {
+	public NumberTextField(@Nullable N initialValue, Function<String, Result<N, E>> parse) {
 		this.parse = parse;
 		this.value = initialValue;
 
@@ -144,11 +145,11 @@ public class NumberTextField<N extends Number> extends JTextField {
 	/**
 	 * @see EditListener
 	 */
-	public void addEditListener(EditListener<N> listener) {
+	public void addEditListener(EditListener<N, E> listener) {
 		this.editListeners.add(listener);
 	}
 
-	public void removeEditListener(EditListener<N> listener) {
+	public void removeEditListener(EditListener<N, E> listener) {
 		this.editListeners.remove(listener);
 	}
 
@@ -201,7 +202,7 @@ public class NumberTextField<N extends Number> extends JTextField {
 	 * invalid, or {@code null} otherwise.
 	 */
 	@FunctionalInterface
-	public interface EditListener<N extends Number> {
-		void listen(Result<N, String> edit);
+	public interface EditListener<N extends Number, E> {
+		void listen(Result<N, E> edit);
 	}
 }
