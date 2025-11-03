@@ -25,6 +25,7 @@ public class IntRangeConfigMenuItem extends JMenuItem {
 	 *                           this should coincide with any minimum imposed on the passed {@code config}
 	 * @param max                the maximum allowed value
 	 *                           this should coincide with any maximum imposed on the passed {@code config}
+	 * @param step               TODO
 	 * @param rootTranslationKey a translation key for deriving translations as follows:
 	 *                           <ul>
 	 *                               <li> this component's text: the unmodified key
@@ -34,16 +35,20 @@ public class IntRangeConfigMenuItem extends JMenuItem {
 	 *                                    {@value #DIALOG_EXPLANATION_TRANSLATION_KEY_SUFFIX} appended
 	 *                           </ul>
 	 */
-	public IntRangeConfigMenuItem(Gui gui, TrackedValue<Integer> config, int min, int max, String rootTranslationKey) {
+	public IntRangeConfigMenuItem(
+			Gui gui, TrackedValue<Integer> config,
+			int min, int max, int step,
+			String rootTranslationKey
+	) {
 		this(
-				gui, config, min, max, rootTranslationKey,
+				gui, config, min, max, step, rootTranslationKey,
 				rootTranslationKey + DIALOG_TITLE_TRANSLATION_KEY_SUFFIX,
 				rootTranslationKey + DIALOG_EXPLANATION_TRANSLATION_KEY_SUFFIX
 		);
 	}
 
 	private IntRangeConfigMenuItem(
-			Gui gui, TrackedValue<Integer> config, int min, int max,
+			Gui gui, TrackedValue<Integer> config, int min, int max, int step,
 			String translationKey, String dialogTitleTranslationKey, String dialogExplanationTranslationKey
 	) {
 		this.config = config;
@@ -54,7 +59,7 @@ public class IntRangeConfigMenuItem extends JMenuItem {
 			final String message = I18n.translate(dialogExplanationTranslationKey) + "\n"
 					+ I18n.translateFormatted("prompt.input.int_range", min, max);
 			final int input = NumberInputDialog.promptInt(
-					gui.getFrame(), config.value(), min, max,
+					gui.getFrame(), config.value(), min, max, step,
 					title, message, I18n.translate("prompt.save")
 			);
 
