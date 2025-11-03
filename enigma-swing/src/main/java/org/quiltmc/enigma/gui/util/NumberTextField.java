@@ -129,6 +129,9 @@ public class NumberTextField<N extends Number> extends JTextField {
 	 * any validation performed during parsing is bypassed.
 	 *
 	 * @param editValue the edited value; must <em>not</em> be {@code null}
+	 *
+	 * @see #tryCommit()
+	 * @see #getEditOrValue()
 	 */
 	public void edit(N editValue) {
 		this.editResult = Result.ok(editValue);
