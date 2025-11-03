@@ -20,9 +20,9 @@ import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.BorderFactory.createLineBorder;
 
 /**
- * A text field that only allows number input. Holds a value and an edited result.
+ * A text field that only allows number input. Holds a value and an edit result.
  *
- * <p> The value is only updated when {@link #tryCommit} is called while the edited result is valid.
+ * <p> The value is only updated when {@link #tryCommit} is called while the edit result is valid.
  *
  * @param <N> the type of number the field holds
  *
@@ -42,8 +42,11 @@ public class NumberTextField<N extends Number> extends JTextField {
 	private final Set<EditListener<N>> editListeners = new HashSet<>();
 
 	/**
-	 * @param initialValue TODO
-	 * @param parse        TODO
+	 * @param initialValue the initial value
+	 * @param parse        the method used to parse user input; its results are passed to
+	 *                     {@linkplain EditListener#listen(Result) listeners}
+	 *
+	 * @see #addEditListener(EditListener)
 	 */
 	public NumberTextField(@Nullable N initialValue, Function<String, Result<N, String>> parse) {
 		this.parse = parse;
@@ -75,15 +78,14 @@ public class NumberTextField<N extends Number> extends JTextField {
 		});
 	}
 
-	public Result<N, String> tryCommit() {
-		if (this.editResult == null) {
-			return Result.ok(this.value);
-		} else {
+	/**
+	 * If the most recent edit was valid, commits it to the held value.
+	 */
+	public void tryCommit() {
+		if (this.editResult != null) {
 			this.editResult.ok().ifPresent(edited -> this.value = edited);
 
-			final var result = this.editResult;
 			this.editResult = null;
-			return result;
 		}
 	}
 
@@ -120,18 +122,25 @@ public class NumberTextField<N extends Number> extends JTextField {
 	}
 
 	/**
-	 * TODO
+	 * Sets a (valid) edit result and updates the user-facing text.<br>
+	 * Does <em>not</em> set the held value; use {@link #tryCommit()} afterward to set the value.
 	 *
-	 * @param value the edited value; must <em>not</em> be {@code null}
+	 * <p> Since the passed {@code editValue} is not {@linkplain #parse parsed},
+	 * any validation performed during parsing is bypassed.
+	 *
+	 * @param editValue the edited value; must <em>not</em> be {@code null}
 	 */
-	public void edit(N value) {
-		this.editResult = Result.ok(value);
+	public void edit(N editValue) {
+		this.editResult = Result.ok(editValue);
 		this.setBorder(true);
-		this.setText(value.toString());
+		this.setText(editValue.toString());
 
 		this.editListeners.forEach(listener -> listener.listen(this.editResult));
 	}
 
+	/**
+	 * @see EditListener
+	 */
 	public void addEditListener(EditListener<N> listener) {
 		this.editListeners.add(listener);
 	}
