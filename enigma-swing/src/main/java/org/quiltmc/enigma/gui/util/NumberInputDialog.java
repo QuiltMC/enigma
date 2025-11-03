@@ -1,14 +1,17 @@
 package org.quiltmc.enigma.gui.util;
 
 import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Result;
 
 import javax.annotation.Nullable;
+import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.UIManager;
 import java.awt.Color;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
@@ -19,6 +22,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 import static javax.swing.BorderFactory.createEmptyBorder;
 
 /**
@@ -171,8 +175,18 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 		return min.compareTo(value) <= 0 && value.compareTo(max) <= 0;
 	}
 
+	private static void clickOrProvideErrorFeedback(AbstractButton button) {
+		if (button.isEnabled()) {
+			button.doClick();
+		} else {
+			UIManager.getLookAndFeel().provideErrorFeedback(button);
+		}
+	}
+
 	protected final N min;
 	protected final N max;
+
+	protected final JPanel content = new JPanel(new GridBagLayout());
 
 	protected final JTextArea message = new JTextArea();
 
@@ -198,7 +212,8 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 		this.setAlwaysOnTop(true);
 		this.setType(Window.Type.POPUP);
 		this.setResizable(false);
-		this.setLayout(new GridBagLayout());
+		this.setContentPane(this.content);
+		// this.setLayout(new GridBagLayout());
 
 		this.message.setText(message);
 		this.message.setEditable(false);
@@ -275,6 +290,11 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 				this.showError(edit.unwrapErr());
 			}
 		});
+
+		putKeyBindAction(KeyBinds.DIALOG_SAVE, this.content, e -> clickOrProvideErrorFeedback(this.submit));
+		putKeyBindAction(KeyBinds.EXIT, this.content, e -> this.dispose());
+		putKeyBindAction(KeyBinds.STEP_UP, this.content, e -> clickOrProvideErrorFeedback(this.stepUp));
+		putKeyBindAction(KeyBinds.STEP_DOWN, this.content, e -> clickOrProvideErrorFeedback(this.stepDown));
 
 		final GridBagConstraintsBuilder baseBuilder = GridBagConstraintsBuilder.create();
 		final GridBagConstraintsBuilder insetBuilder = baseBuilder.insets(INSET);
