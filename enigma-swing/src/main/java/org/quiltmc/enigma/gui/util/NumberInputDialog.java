@@ -13,14 +13,15 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Window;
-import java.util.Objects;
+import java.awt.event.KeyEvent;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
 import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 import static javax.swing.BorderFactory.createEmptyBorder;
@@ -45,7 +46,9 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 	 * @param initialValue the initial value
 	 * @param min          the minimum value
 	 * @param max          the maximum value
-	 * @param step         the amount to step the value by when the user clicks step up/down buttons; must be positive
+	 * @param defaultStep  the amount to step the value by when the user clicks step up/down buttons; must be positive
+	 * @param altStep      the amount to step the value by when the user inputs {@link  KeyBinds#ALT_STEP_UP} or
+	 *                     {@link KeyBinds#ALT_STEP_DOWN}; must be positive
 	 * @param title        the title displayed in the window's title bar
 	 * @param message      the message prompting the user for input
 	 *
@@ -57,25 +60,27 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 	 *     <li> the passed {@code min} is not strictly less than the passed {@code max}
 	 *     <li> the passed {@code initialValue} is non-{@code null} and not between the passed
 	 *          {@code min} and {@code max}
-	 *     <li> the passed {@code step} is not positive
-	 *     <li> the passed {@code step} is greater than the difference between the passed {@code min} and {@code max}
+	 *     <li> the passed {@code step} or {@code altStep} is not positive
+	 *     <li> the passed {@code step} or {@code altStep} is greater than the difference between the passed
+	 *          {@code min} and {@code max}
 	 * </ul>
 	 *
 	 * @see #promptFloat
 	 */
 	public static Integer promptInt(
-			@Nullable Frame owner, @Nullable Integer initialValue, int min, int max, int step,
+			@Nullable Frame owner,
+			@Nullable Integer initialValue, int min, int max, int defaultStep, int altStep,
 			String title, String message, String submit
 	) {
 		return promptNumber(
 				owner, title, message, submit,
-				initialValue, min, max, step, 0,
+				initialValue, min, max, defaultStep, altStep, 0,
 				Integer::sum, (left, right) -> left - right,
 				input -> {
 					try {
 						return Result.ok(Integer.parseInt(input));
 					} catch (NumberFormatException e) {
-						return Result.err(I18n.translate("prompt.number.not_whole"));
+						return Error.Type.OTHER.err(I18n.translate("prompt.number.not_whole"));
 					}
 				}
 		);
@@ -88,7 +93,9 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 	 * @param initialValue the initial value
 	 * @param min          the minimum value
 	 * @param max          the maximum value
-	 * @param step         the amount to step the value by when the user clicks step up/down buttons; must be positive
+	 * @param defaultStep  the amount to step the value by when the user clicks step up/down buttons; must be positive
+	 * @param altStep      the amount to step the value by when the user inputs {@link  KeyBinds#ALT_STEP_UP} or
+	 *                     {@link KeyBinds#ALT_STEP_DOWN}; must be positive
 	 * @param title        the title displayed in the window's title bar
 	 * @param message      the message prompting the user for input
 	 *
@@ -100,25 +107,27 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 	 *     <li> the passed {@code min} is not strictly less than the passed {@code max}
 	 *     <li> the passed {@code initialValue} is non-{@code null} and not between the passed
 	 *          {@code min} and {@code max}
-	 *     <li> the passed {@code step} is not positive
-	 *     <li> the passed {@code step} is greater than the difference between the passed {@code min} and {@code max}
+	 *     <li> the passed {@code step} or {@code altStep} is not positive
+	 *     <li> the passed {@code step} or {@code altStep} is greater than the difference between the passed
+	 *          {@code min} and {@code max}
 	 * </ul>
 	 *
 	 * @see #promptInt
 	 */
 	public static Float promptFloat(
-			@Nullable Frame owner, @Nullable Float initialValue, float min, float max, float step,
+			@Nullable Frame owner,
+			@Nullable Float initialValue, float min, float max, float defaultStep, float altStep,
 			String title, String message, String submit
 	) {
 		return promptNumber(
 				owner, title, message, submit,
-				initialValue, min, max, step, 0f,
+				initialValue, min, max, defaultStep, altStep, 0f,
 				Float::sum, (left, right) -> left - right,
 				input -> {
 					try {
 						return Result.ok(Float.parseFloat(input));
 					} catch (NumberFormatException e) {
-						return Result.err(I18n.translate("prompt.number.not_number"));
+						return Error.Type.OTHER.err(I18n.translate("prompt.number.not_number"));
 					}
 				}
 		);
@@ -126,37 +135,36 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 
 	private static <N extends Number & Comparable<N>> N promptNumber(
 			@Nullable Frame owner, String title, String message, String submit,
-			@Nullable N initialValue, N min, N max, N step, N zero,
+			@Nullable N initialValue, N min, N max, N defaultStep, N altStep, N zero,
 			BinaryOperator<N> add, BinaryOperator<N> subtract,
-			Function<String, Result<N, String>> parse
+			Function<String, Result<N, Error>> parse
 	) {
 		if (min.compareTo(max) >= 0) {
 			throw new IllegalArgumentException("min (%s) must be strictly less than max (%s)!".formatted(min, max));
 		}
 
-		if (initialValue != null & !isInRange(initialValue, min, max)) {
+		if (initialValue != null && !isInRange(initialValue, min, max)) {
 			throw new IllegalArgumentException(
 				"initialValue (%s) is out of range [%s, %s]!".formatted(initialValue, min, max)
 			);
 		}
 
-		if (zero.compareTo(step) >= 0) {
-			throw new IllegalArgumentException("step (%s) must be positive!".formatted(step));
+		if (zero.compareTo(defaultStep) >= 0) {
+			throw new IllegalArgumentException("step (%s) must be positive!".formatted(defaultStep));
 		}
 
 		final N rangeSize = subtract.apply(max, min);
-		if (step.compareTo(rangeSize) > 0) {
+		if (defaultStep.compareTo(rangeSize) > 0) {
 			throw new IllegalArgumentException(
 				"step (%s) must not be greater than the size (%s) of the range [%s, %s]!"
-					.formatted(step, rangeSize, min, max)
+					.formatted(defaultStep, rangeSize, min, max)
 			);
 		}
 
 		final var numberDialog = new NumberInputDialog<>(
 				owner, title, message, I18n.translate("prompt.cancel"), submit,
-				initialValue, min, max,
-				value -> add.apply(value, step), value -> subtract.apply(value, step),
-				parse
+				initialValue, min, max, defaultStep, altStep,
+				add, subtract, parse
 		);
 
 		numberDialog.setFont(ScaleUtil.scaleFont(numberDialog.getFont()));
@@ -175,90 +183,88 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 		return min.compareTo(value) <= 0 && value.compareTo(max) <= 0;
 	}
 
-	private static void clickOrProvideErrorFeedback(AbstractButton button) {
-		if (button.isEnabled()) {
-			button.doClick();
+	private static <C extends Component> void ifEnabledElseErrorFeedback(C component, Consumer<C> onEnabled) {
+		if (component.isEnabled()) {
+			onEnabled.accept(component);
 		} else {
-			UIManager.getLookAndFeel().provideErrorFeedback(button);
+			UIManager.getLookAndFeel().provideErrorFeedback(component);
 		}
+	}
+
+	private static <N extends Number> String outOfRangeMessageOf(N min, N max) {
+		return I18n.translateFormatted("prompt.number.not_in_range", min, max);
 	}
 
 	protected final N min;
 	protected final N max;
 
-	protected final JPanel content = new JPanel(new GridBagLayout());
+	protected final BinaryOperator<N> add;
+	protected final BinaryOperator<N> subtract;
 
+	// children
+	// message row
 	protected final JTextArea message = new JTextArea();
-
-	protected final NumberTextField<N> field;
-	protected final JButton stepUp = new JButton();
-	protected final JButton stepDown = new JButton();
-
+	// field row
+	protected final NumberTextField<N, Error> field;
+	protected final JButton stepUpButton = new JButton();
+	protected final JButton stepDownButton = new JButton();
+	// error row
 	protected final JTextArea error = new JTextArea();
-
+	// button row
 	protected final JButton cancel = new JButton();
 	protected final JButton submit = new JButton();
 
+	/**
+	 * Constructs a dialog and initializes its components. Performs no input validation.
+	 */
 	protected NumberInputDialog(
 			@Nullable Frame owner, String title, String message, String cancel, String submit,
-			@Nullable N initialValue, N min, N max,
-			UnaryOperator<N> stepUp, UnaryOperator<N> stepDown, Function<String, Result<N, String>> parse
+			@Nullable N initialValue, N min, N max, N defaultStep, N altStep,
+			BinaryOperator<N> add, BinaryOperator<N> subtract, Function<String, Result<N, Error>> parse
 	) {
-		super(owner, title, true);
-
-		this.min = min;
-		this.max = max;
+		this(owner, title, min, max, add, subtract, new NumberTextField<>(initialValue, input -> {
+			return parse.apply(input).andThen(parsed -> {
+				if (min.compareTo(parsed) > 0) {
+					return Error.Type.LOW.err(outOfRangeMessageOf(min, max));
+				} else if (parsed.compareTo(max) > 0) {
+					return Error.Type.HIGH.err(outOfRangeMessageOf(min, max));
+				} else {
+					return Result.ok(parsed);
+				}
+			});
+		}));
 
 		this.setAlwaysOnTop(true);
 		this.setType(Window.Type.POPUP);
 		this.setResizable(false);
-		this.setContentPane(this.content);
-		// this.setLayout(new GridBagLayout());
+		final var content = new JPanel(new GridBagLayout());
+		this.setContentPane(content);
 
 		this.message.setText(message);
 		this.message.setEditable(false);
 		this.message.setBorder(createEmptyBorder());
 
-		this.field = new NumberTextField<>(initialValue, input -> {
-			return parse.apply(input).andThen(parsed -> {
-				if (isInRange(parsed, min, max)) {
-					return Result.ok(parsed);
-				} else {
-					return Result.err(I18n.translateFormatted("prompt.number.not_in_range", min, max));
-				}
-			});
+		final Runnable stepUpDefault = () -> this.stepUpBy(defaultStep);
+		final Runnable stepUpAlt = () -> this.stepUpBy(altStep);
+		final Runnable stepDownDefault = () -> this.stepDownBy(defaultStep);
+		final Runnable stepDownAlt = () -> this.stepDownBy(altStep);
+
+		this.stepUpButton.setIcon(GuiUtil.getUpChevron());
+		this.stepUpButton.addActionListener(e -> {
+			if ((e.getModifiers() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
+				stepUpAlt.run();
+			} else {
+				stepUpDefault.run();
+			}
 		});
 
-		this.stepUp.setIcon(GuiUtil.getUpChevron());
-		this.stepUp.addActionListener(e -> {
-			this.stepDown.setEnabled(true);
-
-			final N stepped = stepUp.apply(this.field.getEditOrValue());
-			final N clamped;
-			if (stepped.compareTo(max) >= 0) {
-				this.stepUp.setEnabled(false);
-				clamped = max;
+		this.stepDownButton.setIcon(GuiUtil.getDownChevron());
+		this.stepDownButton.addActionListener(e -> {
+			if ((e.getModifiers() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
+				stepDownAlt.run();
 			} else {
-				clamped = stepped;
+				stepDownDefault.run();
 			}
-
-			this.field.edit(clamped);
-		});
-
-		this.stepDown.setIcon(GuiUtil.getDownChevron());
-		this.stepDown.addActionListener(e -> {
-			this.stepUp.setEnabled(true);
-
-			final N stepped = stepDown.apply(this.field.getEditOrValue());
-			final N clamped;
-			if (min.compareTo(stepped) >= 0) {
-				this.stepDown.setEnabled(false);
-				clamped = min;
-			} else {
-				clamped = stepped;
-			}
-
-			this.field.edit(clamped);
 		});
 
 		this.error.setEditable(false);
@@ -277,24 +283,38 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 		this.submit.setEnabled(false);
 
 		if (initialValue != null) {
-			this.updateStepButtons(initialValue);
+			this.updateStepButtons(Result.ok(initialValue));
 		}
 
 		this.field.addEditListener(edit -> {
 			if (edit.isOk()) {
 				this.submit.setEnabled(true);
 				this.hideError();
-				this.updateStepButtons(edit.unwrap());
 			} else {
-				this.submit.setEnabled(false);
-				this.showError(edit.unwrapErr());
+				this.showError(edit.unwrapErr().message);
 			}
+
+			this.updateStepButtons(edit);
 		});
 
-		putKeyBindAction(KeyBinds.DIALOG_SAVE, this.content, e -> clickOrProvideErrorFeedback(this.submit));
-		putKeyBindAction(KeyBinds.EXIT, this.content, e -> this.dispose());
-		putKeyBindAction(KeyBinds.STEP_UP, this.content, e -> clickOrProvideErrorFeedback(this.stepUp));
-		putKeyBindAction(KeyBinds.STEP_DOWN, this.content, e -> clickOrProvideErrorFeedback(this.stepDown));
+		putKeyBindAction(KeyBinds.DIALOG_SAVE, content, e -> ifEnabledElseErrorFeedback(
+				this.submit, AbstractButton::doClick
+		));
+		putKeyBindAction(KeyBinds.EXIT, content, e -> this.dispose());
+
+		putKeyBindAction(KeyBinds.STEP_UP, content, e -> ifEnabledElseErrorFeedback(
+				this.stepUpButton, ignored -> stepUpDefault.run()
+		));
+		putKeyBindAction(KeyBinds.ALT_STEP_UP, content, e -> ifEnabledElseErrorFeedback(
+				this.stepUpButton, ignored -> stepUpAlt.run()
+		));
+
+		putKeyBindAction(KeyBinds.STEP_DOWN, content, e -> ifEnabledElseErrorFeedback(
+				this.stepDownButton, ignored -> stepDownDefault.run()
+		));
+		putKeyBindAction(KeyBinds.ALT_STEP_DOWN, content, e -> ifEnabledElseErrorFeedback(
+				this.stepDownButton, ignored -> stepDownAlt.run()
+		));
 
 		final GridBagConstraintsBuilder baseBuilder = GridBagConstraintsBuilder.create();
 		final GridBagConstraintsBuilder insetBuilder = baseBuilder.insets(INSET);
@@ -311,8 +331,8 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 				.fill(GridBagConstraints.BOTH)
 				.build()
 		);
-		fieldRow.add(this.stepUp, baseBuilder.insets(0, 0, INSET, 0).pos(1, 0).build());
-		fieldRow.add(this.stepDown, baseBuilder.pos(1, 1).build());
+		fieldRow.add(this.stepUpButton, baseBuilder.insets(0, 0, INSET, 0).pos(1, 0).build());
+		fieldRow.add(this.stepDownButton, baseBuilder.pos(1, 1).build());
 		this.add(fieldRow, insetBuilder.pos(0, y++).fill(GridBagConstraints.HORIZONTAL).build());
 
 		this.add(this.error, insetBuilder.pos(0, y++).build());
@@ -323,12 +343,61 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 		this.add(buttonRow, insetBuilder.pos(0, y++).anchor(GridBagConstraints.LINE_END).build());
 	}
 
-	private void updateStepButtons(N value) {
-		if (Objects.equals(value, this.max)) {
-			this.stepUp.setEnabled(false);
-		} else if (Objects.equals(value, this.min)) {
-			this.stepDown.setEnabled(false);
+	/**
+	 * Constructs a dialog by initializing its fields. Performs no further setup.
+	 */
+	protected NumberInputDialog(
+			@Nullable Frame owner, String title, N min, N max,
+			BinaryOperator<N> add, BinaryOperator<N> subtract, NumberTextField<N, Error> field
+	) {
+		super(owner, title, true);
+
+		this.min = min;
+		this.max = max;
+
+		this.add = add;
+		this.subtract = subtract;
+
+		this.field = field;
+	}
+
+	protected void updateStepButtons(Result<N, Error> edit) {
+		final boolean enableUp;
+		final boolean enableDown;
+
+		if (edit.isOk()) {
+			final N value = edit.unwrap();
+			if (this.min.compareTo(value) >= 0) {
+				enableUp = true;
+				enableDown = false;
+			} else if (value.compareTo(this.max) >= 0) {
+				enableUp = false;
+				enableDown = true;
+			} else {
+				enableUp = true;
+				enableDown = true;
+			}
+		} else {
+			final Error.Type error = edit.unwrapErr().type;
+			switch (error) {
+				case LOW -> {
+					enableUp = true;
+					enableDown = false;
+				}
+				case HIGH -> {
+					enableUp = false;
+					enableDown = true;
+				}
+				case OTHER -> {
+					enableUp = true;
+					enableDown = true;
+				}
+				default -> throw new AssertionError();
+			}
 		}
+
+		this.stepUpButton.setEnabled(enableUp);
+		this.stepDownButton.setEnabled(enableDown);
 	}
 
 	/**
@@ -337,15 +406,55 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 	 * <p> {@code this.error} is repainted, but nothing is re-packed,
 	 * so error messages wider than the width of the dialog won't render correctly.
 	 */
-	private void showError(String error) {
+	protected void showError(String error) {
 		this.error.setForeground(Config.getCurrentSyntaxPaneColors().error.value());
 		this.error.setText(error);
 		this.error.repaint();
 	}
 
-	private void hideError() {
+	protected void hideError() {
 		this.error.setForeground(new Color(0, true));
 		// repainting just this.error leaves an artifact of this.field's error border
 		this.repaint();
+	}
+
+	protected void stepUpBy(N step) {
+		this.stepDownButton.setEnabled(true);
+
+		final N stepped = this.add.apply(this.field.getEditOrValue(), step);
+		final N clamped;
+		if (stepped.compareTo(this.max) >= 0) {
+			this.stepUpButton.setEnabled(false);
+			clamped = this.max;
+		} else {
+			clamped = stepped;
+		}
+
+		this.field.edit(clamped);
+	}
+
+	protected void stepDownBy(N step) {
+		this.stepUpButton.setEnabled(true);
+
+		final N stepped = this.subtract.apply(this.field.getEditOrValue(), step);
+		final N clamped;
+		if (this.min.compareTo(stepped) >= 0) {
+			this.stepDownButton.setEnabled(false);
+			clamped = this.min;
+		} else {
+			clamped = stepped;
+		}
+
+		this.field.edit(clamped);
+	}
+
+	protected record Error(Error.Type type, String message) {
+		protected enum Type {
+			LOW, HIGH, OTHER;
+
+			public <O> Result<O, Error> err(String message) {
+				return Result.err(new Error(this, message));
+			}
+		}
 	}
 }

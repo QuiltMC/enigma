@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.element;
 
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.Gui;
+import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.util.NumberInputDialog;
 import org.quiltmc.enigma.util.I18n;
 
@@ -25,7 +26,10 @@ public class BoundedIntConfigMenuItem extends JMenuItem {
 	 *                           this should coincide with any minimum imposed on the passed {@code config}
 	 * @param max                the maximum allowed value
 	 *                           this should coincide with any maximum imposed on the passed {@code config}
-	 * @param step               TODO
+	 * @param defaultStep        the amount to step the value by when the user clicks step up/down buttons;
+	 *                           must be positive
+	 * @param altStep            the amount to step the value by when the user inputs {@link  KeyBinds#ALT_STEP_UP} or
+	 *                           {@link KeyBinds#ALT_STEP_DOWN}; must be positive
 	 * @param rootTranslationKey a translation key for deriving translations as follows:
 	 *                           <ul>
 	 *                               <li> this component's text: the unmodified key
@@ -37,18 +41,18 @@ public class BoundedIntConfigMenuItem extends JMenuItem {
 	 */
 	public BoundedIntConfigMenuItem(
 			Gui gui, TrackedValue<Integer> config,
-			int min, int max, int step,
+			int min, int max, int defaultStep, int altStep,
 			String rootTranslationKey
 	) {
 		this(
-				gui, config, min, max, step, rootTranslationKey,
+				gui, config, min, max, defaultStep, altStep, rootTranslationKey,
 				rootTranslationKey + DIALOG_TITLE_TRANSLATION_KEY_SUFFIX,
 				rootTranslationKey + DIALOG_EXPLANATION_TRANSLATION_KEY_SUFFIX
 		);
 	}
 
 	private BoundedIntConfigMenuItem(
-			Gui gui, TrackedValue<Integer> config, int min, int max, int step,
+			Gui gui, TrackedValue<Integer> config, int min, int max, int defaultStep, int altStep,
 			String translationKey, String dialogTitleTranslationKey, String dialogExplanationTranslationKey
 	) {
 		this.config = config;
@@ -59,7 +63,7 @@ public class BoundedIntConfigMenuItem extends JMenuItem {
 			final String message = I18n.translate(dialogExplanationTranslationKey) + "\n"
 					+ I18n.translateFormatted("prompt.input.int_range", min, max);
 			final int input = NumberInputDialog.promptInt(
-					gui.getFrame(), config.value(), min, max, step,
+					gui.getFrame(), config.value(), min, max, defaultStep, altStep,
 					title, message, I18n.translate("prompt.save")
 			);
 
