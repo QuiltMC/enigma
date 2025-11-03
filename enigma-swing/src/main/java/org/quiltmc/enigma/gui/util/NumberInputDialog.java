@@ -17,13 +17,14 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Window;
 import java.util.Objects;
-import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 
 import static javax.swing.BorderFactory.createEmptyBorder;
 
-public class NumberInputDialog<N extends Number, D extends NumberInputDialog<N, D>> extends JDialog {
+public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog {
 	private static final int INSET = 4;
 
 	/**
@@ -50,47 +51,86 @@ public class NumberInputDialog<N extends Number, D extends NumberInputDialog<N, 
 			@Nullable Frame owner, @Nullable Integer initialValue, int min, int max, int step,
 			String title, String message, String submit
 	) {
-		validateBoundedArgs(initialValue, min, max);
-		validateStep(step, 0);
-
-		final var field = new NumberTextField<>(
-				createBoundedParser(min, max, Integer::parseInt, I18n.translate("prompt.number.not_whole")),
-				initialValue
-		);
-
-		final var numberDialog = new NumberInputDialog<>(
-				owner, title, message, I18n.translate("prompt.cancel"), submit, field,
-				(dialog, value) -> {
-					dialog.stepDown.setEnabled(true);
-
-					final int stepped = value + step;
-					if (stepped >= max) {
-						dialog.stepUp.setEnabled(false);
-						return max;
-					} else {
-						return stepped;
-					}
-				},
-				(dialog, value) -> {
-					dialog.stepUp.setEnabled(true);
-
-					final int stepped = value - step;
-					if (min >= stepped) {
-						dialog.stepDown.setEnabled(false);
-						return min;
-					} else {
-						return stepped;
+		return promptNumber(
+				owner, title, message, submit,
+				initialValue, min, max, step, 0,
+				Integer::sum, (left, right) -> left - right,
+				input -> {
+					try {
+						return Result.ok(Integer.parseInt(input));
+					} catch (NumberFormatException e) {
+						return Result.err(I18n.translate("prompt.number.not_whole"));
 					}
 				}
 		);
+	}
+
+	/**
+	 * Only returns {@code null} if the passed {@code initialValue} is {@code null} and valid input was not submitted.
+	 *
+	 * <p> TODO
+	 *
+	 * @param owner        TODO
+	 * @param initialValue TODO
+	 * @param min          TODO
+	 * @param max          TODO
+	 * @param step         TODO
+	 * @param title        TODO
+	 * @param message      TODO
+	 *
+	 * @return TODO
+	 *
+	 * @throws IllegalArgumentException if the passed {@code min} is not strictly less than the passed {@code max}
+	 * @throws IllegalArgumentException if the passed {@code initialValue} is non-{@code null} and not between the
+	 *                                  passed {@code min} and {@code max}
+	 * @throws IllegalArgumentException if the passed {@code step} is not positive
+	 */
+	public static Float promptFloat(
+			@Nullable Frame owner, @Nullable Float initialValue, float min, float max, float step,
+			String title, String message, String submit
+	) {
+		return promptNumber(
+				owner, title, message, submit,
+				initialValue, min, max, step, 0f,
+				Float::sum, (left, right) -> left - right,
+				input -> {
+					try {
+						return Result.ok(Float.parseFloat(input));
+					} catch (NumberFormatException e) {
+						return Result.err(I18n.translate("prompt.number.not_number"));
+					}
+				}
+		);
+	}
+
+	private static <N extends Number & Comparable<N>> N promptNumber(
+			@Nullable Frame owner, String title, String message, String submit,
+			@Nullable N initialValue, N min, N max, N step, N zero,
+			BinaryOperator<N> add, BinaryOperator<N> subtract,
+			Function<String, Result<N, String>> parse
+	) {
+		if (min.compareTo(max) >= 0) {
+			throw new IllegalArgumentException("min (%s) must be strictly less than max (%s)!".formatted(min, max));
+		}
+
+		if (initialValue != null & !isInRange(initialValue, min, max)) {
+			throw new IllegalArgumentException(
+				"initialValue (%s) is out of range [%s, %s]!".formatted(initialValue, min, max)
+			);
+		}
+
+		if (zero.compareTo(step) >= 0) {
+			throw new IllegalArgumentException("step (%s) must be positive!".formatted(step));
+		}
+
+		final var numberDialog = new NumberInputDialog<>(
+				owner, title, message, I18n.translate("prompt.cancel"), submit,
+				initialValue, min, max,
+				value -> add.apply(value, step), value -> subtract.apply(value, step),
+				parse
+		);
 
 		numberDialog.setFont(ScaleUtil.scaleFont(numberDialog.getFont()));
-
-		if (Objects.equals(initialValue, max)) {
-			numberDialog.stepUp.setEnabled(false);
-		} else if (Objects.equals(initialValue, min)) {
-			numberDialog.stepDown.setEnabled(false);
-		}
 
 		numberDialog.pack();
 		numberDialog.setLocationRelativeTo(owner);
@@ -101,46 +141,12 @@ public class NumberInputDialog<N extends Number, D extends NumberInputDialog<N, 
 		return numberDialog.field.getValue();
 	}
 
-	// TODO promptFloat
-
-	private static <N extends Number & Comparable<N>> void validateBoundedArgs(@Nullable N initialValue, N min, N max) {
-		if (min.compareTo(max) >= 0) {
-			throw new IllegalArgumentException("min (%s) must be strictly less than max (%s)!".formatted(min, max));
-		}
-
-		if (initialValue != null & !isInRange(initialValue, min, max)) {
-			throw new IllegalArgumentException(
-				"initialValue (%s) is out of range [%s, %s]!".formatted(initialValue, min, max)
-			);
-		}
-	}
-
-	private static <N extends Number & Comparable<N>> void validateStep(N stepAmount, N zero) {
-		if (zero.compareTo(stepAmount) >= 0) {
-			throw new IllegalArgumentException("step (%s) must be positive!".formatted(stepAmount));
-		}
-	}
-
-	private static <N extends Number & Comparable<N>> Function<String, Result<N, String>> createBoundedParser(
-			N min, N max, Function<String, N> baseParser, String formatErrorMessage
-	) {
-		return input -> {
-			try {
-				final N parsed = baseParser.apply(input);
-				if (isInRange(parsed, min, max)) {
-					return Result.ok(parsed);
-				} else {
-					return Result.err(I18n.translateFormatted("prompt.number.not_in_range", min, max));
-				}
-			} catch (NumberFormatException e) {
-				return Result.err(formatErrorMessage);
-			}
-		};
-	}
-
 	private static <N extends Number & Comparable<N>> boolean isInRange(N value, N min, N max) {
 		return min.compareTo(value) <= 0 && value.compareTo(max) <= 0;
 	}
+
+	protected final N min;
+	protected final N max;
 
 	protected final JTextArea message = new JTextArea();
 
@@ -155,10 +161,13 @@ public class NumberInputDialog<N extends Number, D extends NumberInputDialog<N, 
 
 	protected NumberInputDialog(
 			@Nullable Frame owner, String title, String message, String cancel, String submit,
-			NumberTextField<N> field,
-			BiFunction<NumberInputDialog<N, D>, N, N> stepUp, BiFunction<NumberInputDialog<N, D>, N, N> stepDown
+			@Nullable N initialValue, N min, N max,
+			UnaryOperator<N> stepUp, UnaryOperator<N> stepDown, Function<String, Result<N, String>> parse
 	) {
 		super(owner, title, true);
+
+		this.min = min;
+		this.max = max;
 
 		this.setAlwaysOnTop(true);
 		this.setType(Window.Type.POPUP);
@@ -169,14 +178,47 @@ public class NumberInputDialog<N extends Number, D extends NumberInputDialog<N, 
 		this.message.setEditable(false);
 		this.message.setBorder(createEmptyBorder());
 
-		this.field = field;
+		this.field = new NumberTextField<>(initialValue, input -> {
+			return parse.apply(input).andThen(parsed -> {
+				if (isInRange(parsed, min, max)) {
+					return Result.ok(parsed);
+				} else {
+					return Result.err(I18n.translateFormatted("prompt.number.not_in_range", min, max));
+				}
+			});
+		});
 
-		// TODO step button actions
 		this.stepUp.setIcon(GuiUtil.getUpChevron());
-		this.stepUp.addActionListener(e -> this.field.setValue(stepUp.apply(this, this.field.getValue())));
+		this.stepUp.addActionListener(e -> {
+			this.stepDown.setEnabled(true);
+
+			final N stepped = stepUp.apply(this.field.getEditOrValue());
+			final N clamped;
+			if (stepped.compareTo(max) >= 0) {
+				this.stepUp.setEnabled(false);
+				clamped = max;
+			} else {
+				clamped = stepped;
+			}
+
+			this.field.edit(clamped);
+		});
 
 		this.stepDown.setIcon(GuiUtil.getDownChevron());
-		this.stepDown.addActionListener(e -> this.field.setValue(stepDown.apply(this, this.field.getValue())));
+		this.stepDown.addActionListener(e -> {
+			this.stepUp.setEnabled(true);
+
+			final N stepped = stepDown.apply(this.field.getEditOrValue());
+			final N clamped;
+			if (min.compareTo(stepped) >= 0) {
+				this.stepDown.setEnabled(false);
+				clamped = min;
+			} else {
+				clamped = stepped;
+			}
+
+			this.field.edit(clamped);
+		});
 
 		this.error.setEditable(false);
 		this.error.setLineWrap(false);
@@ -193,10 +235,15 @@ public class NumberInputDialog<N extends Number, D extends NumberInputDialog<N, 
 		});
 		this.submit.setEnabled(false);
 
+		if (initialValue != null) {
+			this.updateStepButtons(initialValue);
+		}
+
 		this.field.addEditListener(edit -> {
 			if (edit.isOk()) {
 				this.submit.setEnabled(true);
 				this.hideError();
+				this.updateStepButtons(edit.unwrap());
 			} else {
 				this.submit.setEnabled(false);
 				this.showError(edit.unwrapErr());
@@ -228,6 +275,14 @@ public class NumberInputDialog<N extends Number, D extends NumberInputDialog<N, 
 		buttonRow.add(this.cancel, baseBuilder.insets(0, INSET, 0, 0).pos(0, 0).build());
 		buttonRow.add(this.submit, baseBuilder.pos(1, 0).build());
 		this.add(buttonRow, insetBuilder.pos(0, y++).anchor(GridBagConstraints.LINE_END).build());
+	}
+
+	private void updateStepButtons(N value) {
+		if (Objects.equals(value, this.max)) {
+			this.stepUp.setEnabled(false);
+		} else if (Objects.equals(value, this.min)) {
+			this.stepDown.setEnabled(false);
+		}
 	}
 
 	private void showError(String error) {

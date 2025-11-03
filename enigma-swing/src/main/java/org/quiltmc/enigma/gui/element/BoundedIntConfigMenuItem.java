@@ -7,7 +7,7 @@ import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JMenuItem;
 
-public class IntRangeConfigMenuItem extends JMenuItem {
+public class BoundedIntConfigMenuItem extends JMenuItem {
 	public static final String DIALOG_TITLE_TRANSLATION_KEY_SUFFIX = ".dialog_title";
 	public static final String DIALOG_EXPLANATION_TRANSLATION_KEY_SUFFIX = ".dialog_explanation";
 	private final TrackedValue<Integer> config;
@@ -35,7 +35,7 @@ public class IntRangeConfigMenuItem extends JMenuItem {
 	 *                                    {@value #DIALOG_EXPLANATION_TRANSLATION_KEY_SUFFIX} appended
 	 *                           </ul>
 	 */
-	public IntRangeConfigMenuItem(
+	public BoundedIntConfigMenuItem(
 			Gui gui, TrackedValue<Integer> config,
 			int min, int max, int step,
 			String rootTranslationKey
@@ -47,7 +47,7 @@ public class IntRangeConfigMenuItem extends JMenuItem {
 		);
 	}
 
-	private IntRangeConfigMenuItem(
+	private BoundedIntConfigMenuItem(
 			Gui gui, TrackedValue<Integer> config, int min, int max, int step,
 			String translationKey, String dialogTitleTranslationKey, String dialogExplanationTranslationKey
 	) {

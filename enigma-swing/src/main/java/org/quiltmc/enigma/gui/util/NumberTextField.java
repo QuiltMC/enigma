@@ -11,6 +11,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.Color;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -18,8 +19,21 @@ import static javax.swing.BorderFactory.createCompoundBorder;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.BorderFactory.createLineBorder;
 
+/**
+ * A text field that only allows number input. Holds a value and an edited result.
+ *
+ * <p> The value is only updated when {@link #tryCommit} is called while the edited result is valid.
+ *
+ * @param <N> the type of number the field holds
+ *
+ * @see #getValue()
+ * @see #getEditOrValue()
+ * @see #edit(Number)
+ * @see #tryCommit()
+ * @see #addEditListener(EditListener)
+ */
 public class NumberTextField<N extends Number> extends JTextField {
-	private final Function<String, Result<N, String>> parser;
+	private final Function<String, Result<N, String>> parse;
 
 	private N value;
 	@Nullable
@@ -28,11 +42,11 @@ public class NumberTextField<N extends Number> extends JTextField {
 	private final Set<EditListener<N>> editListeners = new HashSet<>();
 
 	/**
-	 * @param parser       TODO
 	 * @param initialValue TODO
+	 * @param parse        TODO
 	 */
-	public NumberTextField(Function<String, Result<N, String>> parser, @Nullable N initialValue) {
-		this.parser = parser;
+	public NumberTextField(@Nullable N initialValue, Function<String, Result<N, String>> parse) {
+		this.parse = parse;
 		this.value = initialValue;
 
 		if (initialValue != null) {
@@ -74,21 +88,48 @@ public class NumberTextField<N extends Number> extends JTextField {
 	}
 
 	/**
-	 * Returns the current value.
-	 *
-	 * <p> The current value may not match the edited value if editing has occurred since the last
-	 * {@linkplain #tryCommit() commit} or if the edited value is invalid.
+	 * Gets the currently committed value.
 	 *
 	 * <p> The value will only be {@code null} if {@code null} was passed as the {@code initialValue}
-	 * or to {@link #setValue(Number)} and a valid edit hasn't since been {@linkplain #tryCommit() commited}.
+	 * and a valid edit hasn't since been {@linkplain #tryCommit() commited}.
+	 *
+	 * @return the current value
+	 *
+	 * @see #getEditOrValue()
+	 * @see #edit(Number)
+	 * @see #tryCommit()
 	 */
 	public N getValue() {
 		return this.value;
 	}
 
-	public void setValue(@Nullable N value) {
-		this.value = value;
-		this.setText(value == null ? "" : value.toString());
+	/**
+	 * Gets the currently edited value if it's valid, or the currently committed value otherwise.
+	 *
+	 * <p> Only returns {@code null} if {@code null} was passed as the {@code initialValue}
+	 * and there's been no valid edit.
+	 *
+	 * @return the result of the most recent edit if valid, or the current value otherwise
+	 *
+	 * @see #getValue()
+	 * @see #edit(Number)
+	 * @see #tryCommit()
+	 */
+	public N getEditOrValue() {
+		return Optional.ofNullable(this.editResult).flatMap(result -> result.ok()).orElse(this.value);
+	}
+
+	/**
+	 * TODO
+	 *
+	 * @param value the edited value; must <em>not</em> be {@code null}
+	 */
+	public void edit(N value) {
+		this.editResult = Result.ok(value);
+		this.setBorder(true);
+		this.setText(value.toString());
+
+		this.editListeners.forEach(listener -> listener.listen(this.editResult));
 	}
 
 	public void addEditListener(EditListener<N> listener) {
@@ -100,7 +141,7 @@ public class NumberTextField<N extends Number> extends JTextField {
 	}
 
 	/**
-	 * {@linkplain #parser Parses} this field's current {@linkplain #getText() text} and assigns the result to
+	 * {@linkplain #parse Parses} this field's current {@linkplain #getText() text} and assigns the result to
 	 * {@link #editResult}.
 	 *
 	 * <p> Also invokes {@link #editListeners}.
@@ -116,7 +157,7 @@ public class NumberTextField<N extends Number> extends JTextField {
 			wasOk = this.editResult.isOk();
 		}
 
-		this.editResult = this.parser.apply(this.getText().trim());
+		this.editResult = this.parse.apply(this.getText().trim());
 
 		final boolean ok = this.editResult.isOk();
 

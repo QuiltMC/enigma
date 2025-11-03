@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.element.menu_bar.view;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.SelectionHighlightSection;
-import org.quiltmc.enigma.gui.element.IntRangeConfigMenuItem;
+import org.quiltmc.enigma.gui.element.BoundedIntConfigMenuItem;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
@@ -12,7 +12,7 @@ import javax.swing.JMenu;
 
 public class SelectionHighlightMenu extends AbstractEnigmaMenu {
 	private final JMenu blinksMenu;
-	private final IntRangeConfigMenuItem blinkDelay;
+	private final BoundedIntConfigMenuItem blinkDelay;
 
 	protected SelectionHighlightMenu(Gui gui) {
 		super(gui);
@@ -25,7 +25,7 @@ public class SelectionHighlightMenu extends AbstractEnigmaMenu {
 				this::retranslateBlinksMenu
 		);
 
-		this.blinkDelay = new IntRangeConfigMenuItem(
+		this.blinkDelay = new BoundedIntConfigMenuItem(
 				gui, config.blinkDelay,
 				SelectionHighlightSection.MIN_BLINK_DELAY, SelectionHighlightSection.MAX_BLINK_DELAY, 100,
 				"menu.view.selection_highlight.blink_delay"
