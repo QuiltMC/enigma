@@ -6,7 +6,6 @@ import com.github.swingdpi.plaf.MetalTweaker;
 import com.github.swingdpi.plaf.NimbusTweaker;
 import com.github.swingdpi.plaf.WindowsTweaker;
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.util.Utils;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -16,29 +15,10 @@ import javax.swing.border.Border;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.function.Function;
 
 public class ScaleUtil {
-	private static final List<ScaleChangeListener> listeners = new ArrayList<>();
-
-	public static void setScaleFactor(float scaleFactor) {
-		final float oldScale = Config.main().scaleFactor.value();
-		final float clamped = Utils.clamp(scaleFactor, Config.MIN_SCALE_FACTOR, Config.MAX_SCALE_FACTOR);
-		Config.main().scaleFactor.setValue(clamped, true);
-		listeners.forEach(l -> l.onScaleChanged(clamped, oldScale));
-	}
-
-	public static void addListener(ScaleChangeListener listener) {
-		listeners.add(listener);
-	}
-
-	public static void removeListener(ScaleChangeListener listener) {
-		listeners.remove(listener);
-	}
-
 	public static Dimension getDimension(int width, int height) {
 		return new Dimension(scale(width), scale(height));
 	}

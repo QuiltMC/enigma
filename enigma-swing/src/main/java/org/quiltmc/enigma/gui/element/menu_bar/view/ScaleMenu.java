@@ -6,7 +6,6 @@ import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.ChangeDialog;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
 import org.quiltmc.enigma.gui.util.NumberInputDialog;
-import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.ButtonGroup;
@@ -48,7 +47,7 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 		// note: as of refactoring this code, there is no other path which updates scale
 		// this code is therefore currently pointless
 		// and exists only for a possible future in which some other code path is updating scale *without* calling Gui#updateUiState
-		ScaleUtil.addListener((newScale, oldScale) -> this.updateState());
+		Config.main().scaleFactor.registerCallback(updated -> this.updateState());
 	}
 
 	@Override
@@ -66,7 +65,7 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 	}
 
 	private void onScaleClicked(float realScale) {
-		ScaleUtil.setScaleFactor(realScale);
+		Config.main().scaleFactor.setValue(realScale);
 		ChangeDialog.show(this.gui.getFrame());
 	}
 
@@ -84,7 +83,7 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 		final float newScale = newPercent / PERCENT_FACTOR;
 
 		if (newScale != oldScale) {
-			ScaleUtil.setScaleFactor(newScale);
+			Config.main().scaleFactor.setValue(newScale);
 			ChangeDialog.show(this.gui.getFrame());
 		}
 
