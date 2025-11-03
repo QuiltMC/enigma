@@ -300,7 +300,7 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 		putKeyBindAction(KeyBinds.DIALOG_SAVE, content, e -> ifEnabledElseErrorFeedback(
 				this.submit, AbstractButton::doClick
 		));
-		putKeyBindAction(KeyBinds.EXIT, content, e -> this.dispose());
+		putKeyBindAction(KeyBinds.EXIT, content, e -> this.cancel.doClick());
 
 		putKeyBindAction(KeyBinds.STEP_UP, content, e -> ifEnabledElseErrorFeedback(
 				this.stepUpButton, ignored -> stepUpDefault.run()
