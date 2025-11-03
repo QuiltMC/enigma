@@ -16,52 +16,109 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Window;
+import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import static javax.swing.BorderFactory.createEmptyBorder;
 
-public class NumberInputDialog<N extends Number> extends JDialog {
+public class NumberInputDialog<N extends Number, D extends NumberInputDialog<N, D>> extends JDialog {
 	private static final int INSET = 4;
 
 	/**
 	 * Only returns {@code null} if the passed {@code initialValue} is {@code null} and valid input was not submitted.
 	 *
-	 * <p>
-	 * TODO
+	 * <p> TODO
 	 *
-	 * @param owner
-	 * @param initialValue
-	 * @param min
-	 * @param max
-	 * @param title
-	 * @param message
-	 * @return
+	 * @param owner        TODO
+	 * @param initialValue TODO
+	 * @param min          TODO
+	 * @param max          TODO
+	 * @param step         TODO
+	 * @param title        TODO
+	 * @param message      TODO
+	 *
+	 * @return TODO
+	 *
+	 * @throws IllegalArgumentException if the passed {@code min} is not strictly less than the passed {@code max}
+	 * @throws IllegalArgumentException if the passed {@code initialValue} is non-{@code null} and not between the
+	 *                                  passed {@code min} and {@code max}
+	 * @throws IllegalArgumentException if the passed {@code step} is not positive
 	 */
 	public static Integer promptInt(
-			@Nullable Frame owner, @Nullable Integer initialValue, int min, int max,
+			@Nullable Frame owner, @Nullable Integer initialValue, int min, int max, int step,
 			String title, String message, String submit
 	) {
 		validateBoundedArgs(initialValue, min, max);
+		validateStep(step, 0);
 
 		final var field = new NumberTextField<>(
 				initialValue,
 				createBoundedParser(min, max, Integer::parseInt, I18n.translate("prompt.number.not_whole"))
 		);
 
-		final var dialog = new NumberInputDialog<>(
-				owner, field,
-				title, message, I18n.translate("prompt.cancel"), submit
+		final BiFunction<NumberInputDialog<Integer, ?>, Integer, Integer> upStepper = (dialog, value) -> {
+			final int stepped = value + step;
+			if (stepped >= max) {
+				dialog.stepUp.setEnabled(false);
+				return max;
+			} else {
+				return stepped;
+			}
+		};
+
+		final BiFunction<NumberInputDialog<Integer, ?>, Integer, Integer> downStepper = (dialog, value) -> {
+			final int stepped = value + step;
+			if (min >= stepped) {
+				dialog.stepDown.setEnabled(false);
+				return min;
+			} else {
+				return stepped;
+			}
+		};
+
+		final var numberDialog = new NumberInputDialog<>(
+				owner, title, message, I18n.translate("prompt.cancel"), submit, field,
+				(dialog, value) -> {
+					dialog.stepDown.setEnabled(true);
+
+					final int stepped = value + step;
+					if (stepped >= max) {
+						dialog.stepUp.setEnabled(false);
+						return max;
+					} else {
+						return stepped;
+					}
+				},
+				(dialog, value) -> {
+					dialog.stepUp.setEnabled(true);
+
+					final int stepped = value - step;
+					if (min >= stepped) {
+						dialog.stepDown.setEnabled(false);
+						return min;
+					} else {
+						return stepped;
+					}
+				}
 		);
-		dialog.setFont(ScaleUtil.scaleFont(dialog.getFont()));
 
-		dialog.pack();
-		dialog.setLocationRelativeTo(owner);
+		numberDialog.setFont(ScaleUtil.scaleFont(numberDialog.getFont()));
 
-		dialog.setVisible(true);
-		dialog.dispose();
+		if (Objects.equals(initialValue, max)) {
+			numberDialog.stepUp.setEnabled(false);
+		} else if (Objects.equals(initialValue, min)) {
+			numberDialog.stepDown.setEnabled(false);
+		}
 
-		return dialog.field.getValue();
+		numberDialog.pack();
+		numberDialog.setLocationRelativeTo(owner);
+
+		numberDialog.setVisible(true);
+		numberDialog.dispose();
+
+		return numberDialog.field.getValue();
 	}
 
 	// TODO promptFloat
@@ -75,6 +132,12 @@ public class NumberInputDialog<N extends Number> extends JDialog {
 			throw new IllegalArgumentException(
 				"initialValue (%s) is out of range [%s, %s]!".formatted(initialValue, min, max)
 			);
+		}
+	}
+
+	private static <N extends Number & Comparable<N>> void validateStep(N stepAmount, N zero) {
+		if (zero.compareTo(stepAmount) >= 0) {
+			throw new IllegalArgumentException("step (%s) must be positive!".formatted(stepAmount));
 		}
 	}
 
@@ -111,8 +174,9 @@ public class NumberInputDialog<N extends Number> extends JDialog {
 	protected final JButton submit = new JButton();
 
 	protected NumberInputDialog(
-			@Nullable Frame owner, NumberTextField<N> field,
-			String title, String message, String cancel, String submit
+			@Nullable Frame owner, String title, String message, String cancel, String submit,
+			NumberTextField<N> field,
+			BiFunction<NumberInputDialog<N, D>, N, N> stepUp, BiFunction<NumberInputDialog<N, D>, N, N> stepDown
 	) {
 		super(owner, title, true);
 
@@ -129,7 +193,10 @@ public class NumberInputDialog<N extends Number> extends JDialog {
 
 		// TODO step button actions
 		this.stepUp.setIcon(GuiUtil.getUpChevron());
+		this.stepUp.addActionListener(e -> this.field.setValue(stepUp.apply(this, this.field.getValue())));
+
 		this.stepDown.setIcon(GuiUtil.getDownChevron());
+		this.stepDown.addActionListener(e -> this.field.setValue(stepDown.apply(this, this.field.getValue())));
 
 		this.error.setEditable(false);
 		this.error.setLineWrap(false);

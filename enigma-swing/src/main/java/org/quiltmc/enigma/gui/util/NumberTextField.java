@@ -17,6 +17,7 @@ import static javax.swing.BorderFactory.createCompoundBorder;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.BorderFactory.createLineBorder;
 
+// TODO filter key presses (e.g. only allow number characters for ints)
 public class NumberTextField<N extends Number> extends JTextField {
 	private final Function<String, Result<N, String>> parser;
 
@@ -72,18 +73,23 @@ public class NumberTextField<N extends Number> extends JTextField {
 	 * <p> The current value may not match the edited value if editing has occurred since the last
 	 * {@linkplain #tryCommit() commit} or if the edited value is invalid.
 	 *
-	 * <p> The value will only be {@code null} if this field was created with a {@code null} {@code initialValue} and
-	 * a valid edit hasn't been {@linkplain #tryCommit() commited}.
+	 * <p> The value will only be {@code null} if {@code null} was passed as the {@code initialValue}
+	 * or to {@link #setValue(Number)} and a valid edit hasn't since been {@linkplain #tryCommit() commited}.
 	 */
 	public N getValue() {
 		return this.value;
+	}
+
+	public void setValue(@Nullable N value) {
+		this.value = value;
+		this.setText(value == null ? "" : value.toString());
 	}
 
 	public void addEditListener(EditListener<N> listener) {
 		this.editListeners.add(listener);
 	}
 
-	public void removeValidListener(EditListener<N> listener) {
+	public void removeEditListener(EditListener<N> listener) {
 		this.editListeners.remove(listener);
 	}
 
@@ -91,7 +97,7 @@ public class NumberTextField<N extends Number> extends JTextField {
 	 * {@linkplain #parser Parses} this field's current {@linkplain #getText() text} and assigns the result to
 	 * {@link #editResult}.
 	 *
-	 * <p> Also invokes {@link #editListeners} when the validity of {@link #editResult} changes.
+	 * <p> Also invokes {@link #editListeners}.
 	 */
 	private void onEdit() {
 		final boolean hadResult;
