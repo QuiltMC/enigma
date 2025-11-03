@@ -97,7 +97,8 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 				+ I18n.translateFormatted("prompt.input.number_range", MIN_SCALE_PERCENT, MAX_SCALE_PERCENT);
 
 		final float newPercent = NumberInputDialog.promptFloat(
-				this.gui.getFrame(), oldScale * PERCENT_FACTOR, MIN_SCALE_PERCENT, MAX_SCALE_PERCENT, 10,
+				this.gui.getFrame(),
+				oldScale * PERCENT_FACTOR, MIN_SCALE_PERCENT, MAX_SCALE_PERCENT, 10, 1,
 				I18n.translate("menu.view.scale.custom.title"), message, I18n.translate("prompt.save")
 		);
 
