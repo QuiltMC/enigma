@@ -291,13 +291,14 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 		}
 
 		this.field.addEditListener(edit -> {
-			if (edit.isOk()) {
-				this.submit.setEnabled(true);
+			final boolean ok = edit.isOk();
+			if (ok) {
 				this.hideError();
 			} else {
 				this.showError(edit.unwrapErr().message);
 			}
 
+			this.submit.setEnabled(ok);
 			this.updateStepButtons(edit);
 		});
 
