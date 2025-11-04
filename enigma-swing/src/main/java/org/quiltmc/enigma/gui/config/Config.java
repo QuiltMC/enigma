@@ -52,7 +52,7 @@ import java.util.Objects;
 @Processor("processChange")
 public final class Config extends ReflectiveConfig {
 	public static final float MIN_SCALE_FACTOR = 0.25f;
-	public static final float MAX_SCALE_FACTOR = 10.0f;
+	public static final float MAX_SCALE_FACTOR = 5.0f;
 
 	private static final String FORMAT = "toml";
 	private static final String FAMILY = "enigma";
