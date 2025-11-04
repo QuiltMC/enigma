@@ -485,6 +485,8 @@ public final class GuiUtil {
 	 * <p> Listeners are added to keep the selected radio item and the passed {@code config}'s
 	 * {@link TrackedValue#value() value} in sync.
 	 *
+	 * <p> Consider using {@link NumberInputDialog#promptInt} instead for large int ranges.
+	 *
 	 * @param config   the config value to sync with
 	 * @param min      the minimum allowed value
 	 * 	 *             this should coincide with any minimum imposed on the passed {@code config}
@@ -493,7 +495,7 @@ public final class GuiUtil {
 	 * @param onUpdate a function to run whenever the passed {@code config} changes, whether because a radio item was
 	 *                 clicked or because another source updated it
 	 *
-	 *  @return a newly created menu allowing configuration of the passed {@code config}
+	 * @return a newly created menu allowing configuration of the passed {@code config}
 	 */
 	public static JMenu createIntConfigRadioMenu(
 			TrackedValue<Integer> config, int min, int max, Runnable onUpdate
