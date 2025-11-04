@@ -152,13 +152,24 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 		}
 
 		if (zero.compareTo(defaultStep) >= 0) {
-			throw new IllegalArgumentException("step (%s) must be positive!".formatted(defaultStep));
+			throw new IllegalArgumentException("defaultStep (%s) must be positive!".formatted(defaultStep));
+		}
+
+		if (zero.compareTo(altStep) >= 0) {
+			throw new IllegalArgumentException("altStep (%s) must be positive!".formatted(defaultStep));
 		}
 
 		final N rangeSize = subtract.apply(max, min);
 		if (defaultStep.compareTo(rangeSize) > 0) {
 			throw new IllegalArgumentException(
-				"step (%s) must not be greater than the size (%s) of the range [%s, %s]!"
+				"defaultStep (%s) must not be greater than the size (%s) of the range [%s, %s]!"
+					.formatted(defaultStep, rangeSize, min, max)
+			);
+		}
+
+		if (altStep.compareTo(rangeSize) > 0) {
+			throw new IllegalArgumentException(
+				"altStep (%s) must not be greater than the size (%s) of the range [%s, %s]!"
 					.formatted(defaultStep, rangeSize, min, max)
 			);
 		}
