@@ -42,6 +42,8 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 	/**
 	 * Prompts the user for an int between the passed {@code min} and {@code max}, inclusive.
 	 *
+	 * <p> Consider using {@link GuiUtil#createIntConfigRadioMenu} instead for small int ranges.
+	 *
 	 * @param owner        the {@link Frame} from which the dialog is displayed
 	 * @param initialValue the initial value
 	 * @param min          the minimum value
