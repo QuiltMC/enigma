@@ -81,9 +81,6 @@ public final class Config extends ReflectiveConfig {
 	@Comment("The settings for the statistics window.")
 	public final StatsSection stats = new StatsSection();
 
-	@Comment("Contains all features that can be toggled on or off.")
-	public final FeaturesSection features = new FeaturesSection();
-
 	@Comment("You shouldn't enable options in this section unless you know what you're doing!")
 	public final DevSection development = new DevSection();
 

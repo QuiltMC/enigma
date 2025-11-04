@@ -194,7 +194,7 @@ public class PackageRenamer {
 				classSelector.restoreExpansionState(entry.getValue());
 			}
 
-			if (Config.main().features.autoSaveMappings.value() && this.gui.mappingsFileChooser.getSelectedFile() != null) {
+			if (Config.editor().autoSaveMappings.value() && this.gui.mappingsFileChooser.getSelectedFile() != null) {
 				this.gui.getController().saveMappings(this.gui.mappingsFileChooser.getSelectedFile().toPath(), true);
 			}
 		});
