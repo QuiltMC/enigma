@@ -183,6 +183,10 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 		return min.compareTo(value) <= 0 && value.compareTo(max) <= 0;
 	}
 
+	private static void ifEnabledElseErrorFeedback(Component component, Runnable onEnabled) {
+		ifEnabledElseErrorFeedback(component, ignored -> onEnabled.run());
+	}
+
 	private static <C extends Component> void ifEnabledElseErrorFeedback(C component, Consumer<C> onEnabled) {
 		if (component.isEnabled()) {
 			onEnabled.accept(component);
@@ -297,24 +301,29 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 			this.updateStepButtons(edit);
 		});
 
-		putKeyBindAction(KeyBinds.DIALOG_SAVE, content, e -> ifEnabledElseErrorFeedback(
-				this.submit, AbstractButton::doClick
-		));
+		putKeyBindAction(
+				KeyBinds.DIALOG_SAVE, content,
+				e -> ifEnabledElseErrorFeedback(this.submit, AbstractButton::doClick)
+		);
 		putKeyBindAction(KeyBinds.EXIT, content, e -> this.cancel.doClick());
 
-		putKeyBindAction(KeyBinds.STEP_UP, content, e -> ifEnabledElseErrorFeedback(
-				this.stepUpButton, ignored -> stepUpDefault.run()
-		));
-		putKeyBindAction(KeyBinds.ALT_STEP_UP, content, e -> ifEnabledElseErrorFeedback(
-				this.stepUpButton, ignored -> stepUpAlt.run()
-		));
+		putKeyBindAction(
+				KeyBinds.STEP_UP, content,
+				e -> ifEnabledElseErrorFeedback(this.stepUpButton, stepUpDefault)
+		);
+		putKeyBindAction(
+				KeyBinds.ALT_STEP_UP, content,
+				e -> ifEnabledElseErrorFeedback(this.stepUpButton, stepUpAlt)
+		);
 
-		putKeyBindAction(KeyBinds.STEP_DOWN, content, e -> ifEnabledElseErrorFeedback(
-				this.stepDownButton, ignored -> stepDownDefault.run()
-		));
-		putKeyBindAction(KeyBinds.ALT_STEP_DOWN, content, e -> ifEnabledElseErrorFeedback(
-				this.stepDownButton, ignored -> stepDownAlt.run()
-		));
+		putKeyBindAction(
+				KeyBinds.STEP_DOWN, content,
+				e -> ifEnabledElseErrorFeedback(this.stepDownButton, stepDownDefault)
+		);
+		putKeyBindAction(
+				KeyBinds.ALT_STEP_DOWN, content,
+				e -> ifEnabledElseErrorFeedback(this.stepDownButton, stepDownAlt)
+		);
 
 		final GridBagConstraintsBuilder baseBuilder = GridBagConstraintsBuilder.create();
 		final GridBagConstraintsBuilder insetBuilder = baseBuilder.insets(INSET);
