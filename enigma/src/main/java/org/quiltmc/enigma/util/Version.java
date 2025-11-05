@@ -19,6 +19,8 @@ public record Version(int major, int minor, int patch) implements Comparable<Ver
 	public static final Comparator<Version> COMPLETE_COMPARATOR = MAJOR_MINOR_COMPARATOR
 			.thenComparing(PATCH_COMPARATOR);
 
+	private static final String SEPARATOR = ".";
+
 	private static void validateNonNegative(int value, String name) {
 		Preconditions.checkArgument(value >= 0, "%s (%s) must not be negative!".formatted(name, value));
 	}
@@ -32,5 +34,10 @@ public record Version(int major, int minor, int patch) implements Comparable<Ver
 	@Override
 	public int compareTo(@Nonnull Version other) {
 		return COMPLETE_COMPARATOR.compare(this, other);
+	}
+
+	@Override
+	public String toString() {
+		return this.major + SEPARATOR + this.minor + SEPARATOR + this.patch;
 	}
 }

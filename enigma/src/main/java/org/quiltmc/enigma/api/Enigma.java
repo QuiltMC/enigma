@@ -63,6 +63,7 @@ public class Enigma {
 	public static final String URL = "https://quiltmc.org";
 	public static final int ASM_VERSION = Opcodes.ASM9;
 
+	// These must be compile-time constants.
 	public static final int MAJOR_VERSION = 2;
 	public static final int MINOR_VERSION = 6;
 	public static final int PATCH_VERSION = 2;
@@ -331,7 +332,8 @@ public class Enigma {
 					plugin.init(pluginContext);
 				} else {
 					throw new IllegalStateException(
-						"Plugin %s does not support this version of Enigma!".formatted(plugin)
+						"Plugin does not support Enigma %s: %s"
+							.formatted(CURRENT_VERSION, plugin.getName())
 					);
 				}
 			}

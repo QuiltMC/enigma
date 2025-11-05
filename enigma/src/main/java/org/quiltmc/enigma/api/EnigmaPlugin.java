@@ -23,7 +23,7 @@ public interface EnigmaPlugin {
 	 * version this plugin was compiled against.
 	 *
 	 * <p> If {@code false} is returned, an exception will be thrown during initialization. To make the error more
-	 * readable, plugin implementers may override {@link Object#toString()} so that it returns a name identifying the
+	 * readable, plugin implementers may override {@link #getName()} so that it returns a name clearly identifying the
 	 * plugin.
 	 *
 	 * <p> Custom implementations of this method may use {@link Version#compareTo(Version)} or any of {@link Version}'s
@@ -34,5 +34,16 @@ public interface EnigmaPlugin {
 	default boolean supportsEnigmaVersion(@Nonnull Version enigmaVersion) {
 		return Enigma.MAJOR_VERSION == enigmaVersion.major()
 			&& Enigma.MINOR_VERSION == enigmaVersion.minor();
+	}
+
+	/**
+	 * Gets the name of the plugin; used for error reporting.
+	 *
+	 * <p> The default implementation simply returns {@link Object#toString()}.
+	 *
+	 * @return the name of this plugin
+	 */
+	default String getName() {
+		return this.toString();
 	}
 }
