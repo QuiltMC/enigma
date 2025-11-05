@@ -1,25 +1,25 @@
 [versions]
-shadow = "8.1.1"
+shadow = "9.2.2"
 
-guava = "33.2.1-jre"
-gson = "2.10.1"
-asm = "9.7.1"
+guava = "33.5.0-jre"
+gson = "2.13.2"
+asm = "9.9"
 jopt = "6.0-alpha-3"
 flatlaf = "3.4"
 syntaxpain = "0.2.0"
 swing_dpi = "0.10"
 fontchooser = "2.5.2"
-tinylog = "2.6.2"
+tinylog = "2.7.0"
 quilt_config = "1.3.2"
 javaparser = "3.27.0"
 
-vineflower = "1.11.0"
+vineflower = "1.11.2"
 cfr = "0.2.2"
 procyon = "0.6.0"
 
-junit = "5.10.3"
+junit = "6.0.1"
 hamcrest = "3.0"
-jimfs = "1.3.0"
+jimfs = "1.3.1"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
@@ -60,4 +60,4 @@ tinylog = ["tinylog_api", "tinylog_impl"]
 quilt_config = ["quilt_config", "quilt_config_toml"]
 
 [plugins]
-shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
