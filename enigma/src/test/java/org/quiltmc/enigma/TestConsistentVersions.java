@@ -20,9 +20,9 @@ public class TestConsistentVersions {
 	void test() {
 		final Matcher matcher = VERSION.matcher(Enigma.VERSION);
 		if (matcher.matches()) {
-			Assertions.assertEquals(Integer.parseInt(matcher.group(MAJOR)), Enigma.MAJOR_VERSION);
-			Assertions.assertEquals(Integer.parseInt(matcher.group(MINOR)), Enigma.MINOR_VERSION);
-			Assertions.assertEquals(Integer.parseInt(matcher.group(PATCH)), Enigma.PATCH_VERSION);
+			Assertions.assertEquals(matcher.group(MAJOR), Integer.toString(Enigma.MAJOR_VERSION));
+			Assertions.assertEquals(matcher.group(MINOR), Integer.toString(Enigma.MINOR_VERSION));
+			Assertions.assertEquals(matcher.group(PATCH), Integer.toString(Enigma.PATCH_VERSION));
 		} else {
 			throw new IllegalStateException("Failed to parse Enigma.VERSION!");
 		}
