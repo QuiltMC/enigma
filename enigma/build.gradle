@@ -78,7 +78,7 @@ static String taskNameFrom(String name) {
 def registerTestJarTasks(String name, String... input) {
 	String taskName = taskNameFrom(name)
 	final testJar = tasks.register("${taskName}TestJar", Jar.class) {
-		group("test-setup")
+		group = "test-setup"
 		from(sourceSets.test.output) {
 			include input
 		}
@@ -92,7 +92,7 @@ def registerTestJarTasks(String name, String... input) {
 		: file('src/test/resources/proguard-test.conf')
 
 	final testObf = tasks.register("${taskName}TestObf", ProGuardTask) {
-		group("test-setup")
+		group = "test-setup"
 
 		configuration confFileArg
 
@@ -120,9 +120,9 @@ file('src/test/java/org/quiltmc/enigma/input').listFiles().each { f ->
 publishing {
 	publications {
 		"$project.name"(MavenPublication) {
-			groupId project.group
-			artifactId project.name
-			version project.version
+			groupId = project.group
+			artifactId = project.name
+			version = project.version
 			from components.java
 		}
 	}

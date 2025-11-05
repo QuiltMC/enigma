@@ -124,9 +124,9 @@ registerPrintColorKeyGroupsMapCode("FlatDarcula", new FlatDarculaLaf())
 publishing {
 	publications {
 		"$project.name"(MavenPublication) {
-			groupId project.group
-			artifactId project.name
-			version project.version
+			groupId = project.group
+			artifactId = project.name
+			version = project.version
 			from components.java
 		}
 	}
