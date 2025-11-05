@@ -1,5 +1,7 @@
 import proguard.gradle.ProGuardTask
 
+import java.util.regex.Pattern
+
 plugins {
 	id 'checkstyle'
 	id 'java-library'
@@ -114,6 +116,80 @@ registerTestJarTasks("complete", "org/quiltmc/enigma/input/**/*.class")
 file('src/test/java/org/quiltmc/enigma/input').listFiles().each { f ->
 	if (f.directory) {
 		registerTestJarTasks(f.name, "org/quiltmc/enigma/input/$f.name/**/*.class", "org/quiltmc/enigma/input/Keep.class")
+	}
+}
+
+tasks.register("copyAndBumpEnigma", Copy) {
+	inputs.property('projectVersion', project.version)
+
+	final destPath = 'bumped-enigma-copy'
+
+	from project.rootDir
+
+	final excludedProjectDirs = [project(':enigma-cli'), project(':enigma-server'), project(':enigma-swing')]
+		.collect { it.projectDir }
+
+	final excludedPaths = [
+		'.git', '.github', '.gradle', '.idea', 'gradlew', 'gradlew.bat', 'gradle/wrapper',
+		'buildSrc/.gradle', 'buildSrc/build'
+	].collect { rootProject.file(it) }
+
+	final Set<File> excluded = excludedProjectDirs + excludedPaths
+
+	exclude {
+		it.file in excluded
+	}
+
+	into project.layout.buildDirectory.map { it.dir(destPath)}
+
+	doFirst {
+		// lazy exclusions
+		exclude {
+			it.file in project.layout.buildDirectory.get().asFile
+		}
+
+		// already excluded whole build dir, but just in case explicitly exclude dest dir to avoid copy recursion
+		exclude {
+			it.file in destinationDir
+		}
+
+		// prevent accidental task recursion
+		if (source.getElements().get().any { it.getAsFile().toPath().iterator().any { it.toString() == destPath } }) {
+			throw new GradleException("${name} cannot be run from its own copy!")
+		}
+	}
+
+	doLast {
+		final dest = destinationDir.toPath()
+
+		// only bump minor version, don't bother resetting patch to 0
+		bumpCopyVersion(dest.resolve('build.gradle'), 'version', ~/(?m)^\s*version = '\d+.(\d+).\d+(?:\+.*)?'$/)
+		bumpCopyVersion(
+			dest.resolve('enigma/src/main/java/org/quiltmc/enigma/api/Enigma.java'),
+			'MINOR_VERSION', ~/(?m)^\s*public static final int MINOR_VERSION = (\d+);$/
+		)
+	}
+}
+
+static void bumpCopyVersion(java.nio.file.Path path, String variableName, Pattern pattern) {
+	final matcher = pattern.matcher(path.text)
+	if (matcher.find()) {
+		final firstStart = matcher.start()
+
+		final number = Integer.parseInt(matcher.group(1))
+
+		final numberStart = matcher.start(1)
+		final numberEnd = matcher.end(1)
+
+		if (matcher.find()) {
+			throw new GradleException(
+				"Found multiple occurences of ${variableName} in ${path.last()} at ${firstStart} and ${matcher.start()}!"
+			)
+		}
+
+		path.text = path.text.substring(0, numberStart) + (number + 1) + path.text.substring(numberEnd)
+	} else {
+		throw new GradleException("Failed to find ${variableName} in copy's ${path.last()}!")
 	}
 }
 
