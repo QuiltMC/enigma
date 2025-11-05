@@ -40,7 +40,7 @@ public record Version(int major, int minor, int patch) implements Comparable<Ver
 	 * @param minor the minor number part
 	 * @param patch the patch number part
 	 *
-	 * @throws IllegalArgumentException if {@code major}, {@code minor}, or {@code patch} is negative
+	 * @throws IllegalArgumentException if the passed {@code major}, {@code minor}, or {@code patch} is negative
 	 */
 	public Version {
 		validateNonNegative(major, "major");
