@@ -13,11 +13,11 @@ public record Version(int major, int minor, int patch) implements Comparable<Ver
 	public static final Comparator<Version> PATCH_COMPARATOR = Comparator
 			.comparing(Version::patch, Integer::compareTo);
 
-	public static final Comparator<Version> MAJOR_MINOR_COMPARATOR = MAJOR_COMPARATOR
-			.thenComparing(MINOR_COMPARATOR);
+	public static final Comparator<Version> MAJOR_MINOR_COMPARATOR =
+			MAJOR_COMPARATOR.thenComparing(MINOR_COMPARATOR);
 
-	public static final Comparator<Version> COMPLETE_COMPARATOR = MAJOR_MINOR_COMPARATOR
-			.thenComparing(PATCH_COMPARATOR);
+	public static final Comparator<Version> COMPLETE_COMPARATOR =
+			MAJOR_MINOR_COMPARATOR.thenComparing(PATCH_COMPARATOR);
 
 	private static final String SEPARATOR = ".";
 
