@@ -19,8 +19,8 @@ public interface EnigmaPlugin {
 	 *
 	 * <p> The default implementation returns {@code true} if and only if the passed {@code enigmaVersion}'s
 	 * {@linkplain Version#major() major} and {@linkplain Version#minor() minor} parts match the respective
-	 * {@linkplain Enigma#MAJOR_VERSION major} and {@linkplain Enigma#MINOR_VERSION minor} version parts of the Enigma
-	 * version this plugin was compiled against.
+	 * {@linkplain Enigma#MAJOR_VERSION major} and {@linkplain Enigma#MINOR_VERSION minor} parts of the Enigma version
+	 * this plugin was compiled against.
 	 *
 	 * <p> If {@code false} is returned, an exception will be thrown during initialization. To make the error more
 	 * readable, a plugin may override {@link #getName()} to return a name clearly identifying itself.
