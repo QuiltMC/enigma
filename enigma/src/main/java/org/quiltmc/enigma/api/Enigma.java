@@ -31,6 +31,7 @@ import org.quiltmc.enigma.util.Utils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableListMultimap;
 import org.objectweb.asm.Opcodes;
+import org.quiltmc.enigma.util.Version;
 import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
@@ -65,6 +66,8 @@ public class Enigma {
 	public static final int MAJOR_VERSION = 2;
 	public static final int MINOR_VERSION = 6;
 	public static final int PATCH_VERSION = 2;
+
+	private static final Version CURRENT_VERSION = new Version(MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION);
 
 	private final EnigmaProfile profile;
 	private final EnigmaServices services;
@@ -324,7 +327,13 @@ public class Enigma {
 		public Enigma build() {
 			PluginContext pluginContext = new PluginContext(this.profile);
 			for (EnigmaPlugin plugin : this.plugins) {
-				plugin.init(pluginContext);
+				if (plugin.supportsEnigmaVersion(CURRENT_VERSION)) {
+					plugin.init(pluginContext);
+				} else {
+					throw new IllegalStateException(
+						"Plugin %s does not support this version of Enigma!".formatted(plugin)
+					);
+				}
 			}
 
 			EnigmaServices services = pluginContext.buildServices();
