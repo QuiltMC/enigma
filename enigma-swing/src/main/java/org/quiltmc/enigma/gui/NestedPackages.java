@@ -1,10 +1,10 @@
 package org.quiltmc.enigma.gui;
 
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.gui.node.ClassSelectorClassNode;
 import org.quiltmc.enigma.gui.node.ClassSelectorPackageNode;
 import org.quiltmc.enigma.gui.node.SortedMutableTreeNode;
-import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
-import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;

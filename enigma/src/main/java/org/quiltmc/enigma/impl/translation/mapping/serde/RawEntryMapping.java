@@ -1,9 +1,9 @@
 package org.quiltmc.enigma.impl.translation.mapping.serde;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 

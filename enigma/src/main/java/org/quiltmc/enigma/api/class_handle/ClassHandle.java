@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.api.class_handle;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
 import org.quiltmc.enigma.api.source.Source;
@@ -7,7 +8,6 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.util.Result;
 
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 
 /**
  * A handle to a class file. Can be treated similarly to a handle to a file.

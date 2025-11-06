@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.name_proposal;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,6 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.tinylog.Logger;
 
-import javax.annotation.Nullable;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.file.Path;

@@ -1,22 +1,22 @@
 package org.quiltmc.enigma.gui.dialog;
 
+import org.drjekyll.fontchooser.FontChooser;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.theme.Theme;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
-import org.drjekyll.fontchooser.FontChooser;
 
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JList;
 import java.awt.Container;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.List;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JList;
 
 public class FontDialog extends JDialog {
 	private static final List<TrackedValue<Theme.Fonts.SerializableFont>> FONTS = List.of(

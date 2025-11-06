@@ -4,9 +4,9 @@ import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.panel.EditorPanel;
 import org.quiltmc.enigma.util.I18n;
 
-import java.awt.Component;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import java.awt.Component;
 
 public class EditorTabPopupMenu {
 	private final JPopupMenu ui;

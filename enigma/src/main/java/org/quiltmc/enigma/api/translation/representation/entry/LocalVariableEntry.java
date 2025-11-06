@@ -1,12 +1,12 @@
 package org.quiltmc.enigma.api.translation.representation.entry;
 
 import com.google.common.base.Preconditions;
+import org.jspecify.annotations.NonNull;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 
 import java.util.Objects;
-import javax.annotation.Nonnull;
 
 public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Comparable<LocalVariableEntry> {
 	protected final int index;
@@ -40,7 +40,7 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 	}
 
 	@Override
-	protected TranslateResult<LocalVariableEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
+	protected TranslateResult<LocalVariableEntry> extendedTranslate(Translator translator, @NonNull EntryMapping mapping) {
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 		String javadoc = mapping.javadoc();
 		return TranslateResult.of(

@@ -2,12 +2,12 @@ package org.quiltmc.enigma.gui.node;
 
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
+import org.quiltmc.enigma.api.stats.StatsGenerator;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.GuiUtil;
-import org.quiltmc.enigma.api.stats.StatsGenerator;
-import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.util.Utils;
 
 import javax.swing.SwingUtilities;

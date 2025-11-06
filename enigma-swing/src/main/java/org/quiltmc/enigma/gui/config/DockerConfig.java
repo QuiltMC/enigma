@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.config;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.annotations.Comment;
 import org.quiltmc.config.api.annotations.SerializedNameConvention;
@@ -11,7 +12,6 @@ import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.docker.DockerManager;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 

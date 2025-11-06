@@ -2,11 +2,11 @@ package org.quiltmc.enigma.gui.util;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
-import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.keybind.KeyBind;
 import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
 import org.quiltmc.enigma.util.Os;

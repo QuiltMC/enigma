@@ -9,8 +9,8 @@ import org.quiltmc.config.api.values.ValueMap;
 import org.quiltmc.config.implementor_api.ConfigEnvironment;
 import org.quiltmc.config.implementor_api.ConfigFactory;
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.ThemeProperties;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 
 import javax.swing.BorderFactory;
 import javax.swing.UnsupportedLookAndFeelException;

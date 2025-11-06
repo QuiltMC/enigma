@@ -3,7 +3,7 @@ package org.quiltmc.enigma.input.inheritance_tree;
 // a
 public abstract class BaseClass {
 	// a
-	private String name;
+	private final String name;
 
 	// <init>(Ljava/lang/String;)V
 	protected BaseClass(String name) {

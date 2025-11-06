@@ -1,18 +1,18 @@
 package org.quiltmc.enigma.api.class_provider;
 
-import org.quiltmc.enigma.api.Enigma;
-import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
-import org.quiltmc.enigma.impl.bytecode.translator.LocalVariableFixVisitor;
-import org.quiltmc.enigma.impl.bytecode.translator.SourceFixVisitor;
+import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.impl.bytecode.translator.LocalVariableFixVisitor;
+import org.quiltmc.enigma.impl.bytecode.translator.SourceFixVisitor;
 
 import java.util.Collection;
-import javax.annotation.Nullable;
 
 /**
  * Wraps a ClassProvider to apply fixes to the following problems introduced by the obfuscator,

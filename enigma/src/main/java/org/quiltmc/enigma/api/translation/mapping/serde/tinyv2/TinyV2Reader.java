@@ -1,12 +1,10 @@
 package org.quiltmc.enigma.api.translation.mapping.serde.tinyv2;
 
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.impl.translation.mapping.serde.MappingHelper;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.MappingPair;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingsReader;
-import org.quiltmc.enigma.impl.translation.mapping.serde.RawEntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
@@ -16,6 +14,8 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.impl.translation.mapping.serde.MappingHelper;
+import org.quiltmc.enigma.impl.translation.mapping.serde.RawEntryMapping;
 import org.quiltmc.enigma.util.I18n;
 
 import java.io.IOException;

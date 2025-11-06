@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.api.translation.representation.entry;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.translation.Translatable;
 import org.quiltmc.enigma.impl.translation.mapping.IdentifierValidation;
 import org.quiltmc.enigma.util.validation.ValidationContext;
@@ -7,7 +8,6 @@ import org.quiltmc.enigma.util.validation.ValidationContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 
 public interface Entry<P extends Entry<?>> extends Translatable {
 	/**

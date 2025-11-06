@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.command;
 
-import org.quiltmc.enigma.TestUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.quiltmc.enigma.TestUtil;
 
 import java.nio.file.Path;
 

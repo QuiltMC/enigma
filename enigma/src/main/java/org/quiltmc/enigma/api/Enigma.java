@@ -1,39 +1,39 @@
 package org.quiltmc.enigma.api;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.io.MoreFiles;
+import org.jspecify.annotations.Nullable;
+import org.objectweb.asm.Opcodes;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.LibrariesJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
-import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
-import org.quiltmc.enigma.impl.analysis.ClassLoaderClassProvider;
-import org.quiltmc.enigma.api.service.EnigmaService;
-import org.quiltmc.enigma.api.service.EnigmaServiceContext;
-import org.quiltmc.enigma.api.service.EnigmaServiceFactory;
-import org.quiltmc.enigma.api.service.EnigmaServiceType;
-import org.quiltmc.enigma.api.service.JarIndexerService;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.CombiningClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
+import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
+import org.quiltmc.enigma.api.service.EnigmaService;
+import org.quiltmc.enigma.api.service.EnigmaServiceContext;
+import org.quiltmc.enigma.api.service.EnigmaServiceFactory;
+import org.quiltmc.enigma.api.service.EnigmaServiceType;
+import org.quiltmc.enigma.api.service.JarIndexerService;
 import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.serde.FileType;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.impl.analysis.ClassLoaderClassProvider;
 import org.quiltmc.enigma.util.Either;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Utils;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableListMultimap;
-import org.objectweb.asm.Opcodes;
 import org.tinylog.Logger;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -360,7 +360,7 @@ public class Enigma {
 			this.services.put(serviceType, service);
 		}
 
-		private <T extends EnigmaService> EnigmaServiceContext<T> getServiceContext(@Nullable EnigmaProfile.Service serviceProfile) {
+		private <T extends EnigmaService> EnigmaServiceContext<T> getServiceContext(EnigmaProfile.@Nullable Service serviceProfile) {
 			return new EnigmaServiceContext<>() {
 				@Override
 				public Optional<Either<String, List<String>>> getArgument(String key) {

@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.command;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

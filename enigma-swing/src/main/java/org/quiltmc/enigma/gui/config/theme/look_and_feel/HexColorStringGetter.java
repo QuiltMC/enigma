@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.gui.config.theme.look_and_feel;
 
-import org.quiltmc.enigma.gui.config.theme.properties.composite.LookAndFeelProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.ThemeProperties;
+import org.quiltmc.enigma.gui.config.theme.properties.composite.LookAndFeelProperties;
 
 import java.util.function.Function;
 

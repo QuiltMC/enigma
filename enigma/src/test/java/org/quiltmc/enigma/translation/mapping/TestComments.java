@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.translation.mapping;
 
+import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.TestUtil;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
@@ -10,7 +11,6 @@ import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.serde.enigma.EnigmaMappingsReader;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;

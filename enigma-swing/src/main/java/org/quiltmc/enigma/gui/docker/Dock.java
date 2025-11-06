@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.docker;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.DockerConfig;
@@ -7,7 +8,6 @@ import org.quiltmc.enigma.gui.docker.component.DockerButton;
 import org.quiltmc.enigma.gui.docker.component.DockerSelector;
 import org.quiltmc.enigma.gui.docker.component.Draggable;
 
-import javax.annotation.Nullable;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import java.awt.BorderLayout;

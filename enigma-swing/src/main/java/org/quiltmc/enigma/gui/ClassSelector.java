@@ -1,14 +1,14 @@
 package org.quiltmc.enigma.gui;
 
+import org.jspecify.annotations.Nullable;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.element.ClassTreeCellRenderer;
 import org.quiltmc.enigma.gui.node.ClassSelectorClassNode;
 import org.quiltmc.enigma.gui.node.SortedMutableTreeNode;
 import org.quiltmc.enigma.gui.util.GuiUtil;
-import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.util.Utils;
 
-import javax.annotation.Nullable;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;

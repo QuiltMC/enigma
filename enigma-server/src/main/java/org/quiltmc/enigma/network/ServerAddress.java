@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.network;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
+
 import java.util.Objects;
 
 public class ServerAddress {

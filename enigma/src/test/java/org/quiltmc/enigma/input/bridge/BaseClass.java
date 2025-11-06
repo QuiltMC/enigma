@@ -3,11 +3,11 @@ package org.quiltmc.enigma.input.bridge;
 // a
 public class BaseClass {
 	// a
-	private int x;
+	private final int x;
 	// b
-	private int y;
+	private final int y;
 	// c
-	private int z;
+	private final int z;
 
 	// <init>(III)V
 	public BaseClass(int x, int y, int z) {

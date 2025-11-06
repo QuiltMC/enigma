@@ -1,11 +1,11 @@
 package org.quiltmc.enigma.api.service;
 
+import org.jspecify.annotations.Nullable;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.tree.ClassNode;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
-import org.objectweb.asm.ClassVisitor;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 
-import javax.annotation.Nullable;
 import java.util.Set;
 
 /**

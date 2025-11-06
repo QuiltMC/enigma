@@ -1,12 +1,11 @@
 package org.quiltmc.enigma.impl.source.vineflower;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.source.Decompiler;
 import org.quiltmc.enigma.api.source.Source;
 import org.quiltmc.enigma.api.source.SourceSettings;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
-
-import javax.annotation.Nullable;
 
 public class VineflowerDecompiler implements Decompiler {
 	private final ClassProvider classProvider;

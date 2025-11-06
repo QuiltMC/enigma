@@ -1,5 +1,8 @@
 package org.quiltmc.enigma.gui.element;
 
+import org.quiltmc.enigma.api.stats.ProjectStatsResult;
+import org.quiltmc.enigma.api.stats.StatsGenerator;
+import org.quiltmc.enigma.api.stats.StatsResult;
 import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.GuiController;
@@ -7,9 +10,6 @@ import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.node.ClassSelectorClassNode;
 import org.quiltmc.enigma.gui.node.ClassSelectorPackageNode;
 import org.quiltmc.enigma.gui.util.GuiUtil;
-import org.quiltmc.enigma.api.stats.ProjectStatsResult;
-import org.quiltmc.enigma.api.stats.StatsResult;
-import org.quiltmc.enigma.api.stats.StatsGenerator;
 
 import javax.swing.BoxLayout;
 import javax.swing.Icon;

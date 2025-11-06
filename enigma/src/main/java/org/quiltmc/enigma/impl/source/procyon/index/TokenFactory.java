@@ -5,8 +5,8 @@ import com.strobel.decompiler.languages.java.ast.AstNode;
 import com.strobel.decompiler.languages.java.ast.ConstructorDeclaration;
 import com.strobel.decompiler.languages.java.ast.Identifier;
 import com.strobel.decompiler.languages.java.ast.TypeDeclaration;
-import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.api.source.SourceIndex;
+import org.quiltmc.enigma.api.source.Token;
 import org.tinylog.Logger;
 
 import java.util.regex.Pattern;

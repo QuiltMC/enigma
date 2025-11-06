@@ -1,14 +1,14 @@
 package org.quiltmc.enigma.impl.bytecode.translator;
 
 import com.google.common.base.CharMatcher;
-import org.quiltmc.enigma.impl.translation.LocalNameGenerator;
-import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
-import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
-import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
+import org.quiltmc.enigma.impl.translation.LocalNameGenerator;
 
 import java.util.HashMap;
 import java.util.List;

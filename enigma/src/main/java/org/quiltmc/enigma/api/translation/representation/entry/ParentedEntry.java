@@ -1,15 +1,14 @@
 package org.quiltmc.enigma.api.translation.representation.entry;
 
 import com.google.common.base.Preconditions;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMap;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 	protected final P parent;
@@ -30,7 +29,7 @@ public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 	@Override
 	public abstract ParentedEntry<P> withName(String name);
 
-	protected abstract TranslateResult<? extends ParentedEntry<P>> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping);
+	protected abstract TranslateResult<? extends ParentedEntry<P>> extendedTranslate(Translator translator, @NonNull EntryMapping mapping);
 
 	@Override
 	public String getName() {

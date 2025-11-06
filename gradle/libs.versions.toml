@@ -4,6 +4,7 @@ shadow = "9.2.2"
 guava = "33.5.0-jre"
 gson = "2.13.2"
 asm = "9.9"
+jspecify = "1.0.0"
 jopt = "6.0-alpha-3"
 flatlaf = "3.4"
 syntaxpain = "0.2.0"
@@ -29,6 +30,8 @@ asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
 asm_commons = { module = "org.ow2.asm:asm-commons", version.ref = "asm" }
 asm_tree = { module = "org.ow2.asm:asm-tree", version.ref = "asm" }
 asm_util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
+
+jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 
 tinylog_api = { module = "org.tinylog:tinylog-api", version.ref = "tinylog" }
 tinylog_impl = { module = "org.tinylog:tinylog-impl", version.ref = "tinylog" }

@@ -1,35 +1,40 @@
 package org.quiltmc.enigma;
 
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.EntryReference;
+import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.ReferenceIndex;
 import org.quiltmc.enigma.api.analysis.tree.ClassImplementationsTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.ClassInheritanceTreeNode;
-import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.api.analysis.EntryReference;
-import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
-import org.quiltmc.enigma.impl.analysis.IndexTreeBuilder;
 import org.quiltmc.enigma.api.analysis.tree.MethodImplementationsTreeNode;
 import org.quiltmc.enigma.api.analysis.tree.MethodInheritanceTreeNode;
-import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
-import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
-import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
+import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.translation.VoidTranslator;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
+import org.quiltmc.enigma.impl.analysis.IndexTreeBuilder;
 
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 
 public class TestJarIndexLoneClass {
 	public static final Path JAR = TestUtil.obfJar("lone_class");

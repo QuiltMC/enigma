@@ -1,13 +1,13 @@
 package org.quiltmc.enigma.api.analysis.index.jar;
 
 import com.google.common.collect.ImmutableListMultimap;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.analysis.ReferenceTargetType;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.Lambda;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

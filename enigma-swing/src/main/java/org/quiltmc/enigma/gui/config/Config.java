@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.config;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.annotations.Alias;
 import org.quiltmc.config.api.annotations.Comment;
@@ -26,7 +27,6 @@ import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProper
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
-import javax.annotation.Nullable;
 import javax.swing.UnsupportedLookAndFeelException;
 import java.awt.Dimension;
 import java.awt.Point;

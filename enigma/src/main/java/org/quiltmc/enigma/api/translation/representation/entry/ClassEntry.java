@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.api.translation.representation.entry;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -7,8 +9,6 @@ import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.impl.translation.mapping.IdentifierValidation;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 
@@ -71,7 +71,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	@Override
-	public TranslateResult<? extends ClassEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
+	public TranslateResult<? extends ClassEntry> extendedTranslate(Translator translator, @NonNull EntryMapping mapping) {
 		if (this.name.charAt(0) == '[') {
 			TranslateResult<TypeDescriptor> translatedName = translator.extendedTranslate(new TypeDescriptor(this.name));
 			return translatedName.map(desc -> new ClassEntry(this.parent, desc.toString()));
@@ -150,7 +150,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		return this.parent;
 	}
 
-	@Nonnull
+	@NonNull
 	public ClassEntry getOutermostClass() {
 		if (this.parent == null) {
 			return this;

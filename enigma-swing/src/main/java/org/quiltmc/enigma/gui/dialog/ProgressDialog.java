@@ -9,16 +9,16 @@ import org.quiltmc.enigma.gui.util.ProgressBar;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
 
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.util.concurrent.CompletableFuture;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.util.concurrent.CompletableFuture;
 
 public class ProgressDialog extends ProgressBar implements AutoCloseable {
 	private final JDialog dialog;

@@ -1,15 +1,15 @@
 package org.quiltmc.enigma.impl.analysis.index;
 
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
-import org.quiltmc.enigma.impl.analysis.MethodNodeWithAction;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndexer;
 import org.quiltmc.enigma.api.translation.representation.ParameterAccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
+import org.quiltmc.enigma.impl.analysis.MethodNodeWithAction;
 
 public class IndexClassVisitor extends ClassVisitor {
 	private final JarIndexer indexer;

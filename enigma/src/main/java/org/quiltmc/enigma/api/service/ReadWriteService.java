@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.api.service;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
@@ -10,7 +11,6 @@ import org.quiltmc.enigma.api.translation.mapping.serde.MappingsReader;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 

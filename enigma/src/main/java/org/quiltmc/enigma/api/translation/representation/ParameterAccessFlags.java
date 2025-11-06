@@ -5,7 +5,7 @@ import org.objectweb.asm.Opcodes;
 public class ParameterAccessFlags {
 	public static final ParameterAccessFlags DEFAULT = new ParameterAccessFlags(0);
 
-	private int flags;
+	private final int flags;
 
 	public ParameterAccessFlags(int flags) {
 		this.flags = flags;

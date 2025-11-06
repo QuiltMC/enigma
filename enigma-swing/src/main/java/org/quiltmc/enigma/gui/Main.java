@@ -1,18 +1,18 @@
 package org.quiltmc.enigma.gui;
 
-import org.quiltmc.enigma.api.EnigmaProfile;
-import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
-import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
-import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.dialog.CrashDialog;
-import org.quiltmc.enigma.util.I18n;
-import org.quiltmc.enigma.util.validation.Message;
-import org.quiltmc.enigma.util.validation.ParameterizedMessage;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import joptsimple.ValueConverter;
+import org.quiltmc.enigma.api.EnigmaProfile;
+import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
+import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
+import org.quiltmc.enigma.gui.dialog.CrashDialog;
+import org.quiltmc.enigma.util.I18n;
+import org.quiltmc.enigma.util.validation.Message;
+import org.quiltmc.enigma.util.validation.ParameterizedMessage;
 import org.tinylog.Logger;
 
 import java.io.IOException;

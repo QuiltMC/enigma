@@ -6,8 +6,8 @@ import com.strobel.decompiler.languages.java.ast.DepthFirstAstVisitor;
 import com.strobel.decompiler.languages.java.ast.Keys;
 import com.strobel.decompiler.languages.java.ast.TypeDeclaration;
 import org.quiltmc.enigma.api.source.SourceIndex;
-import org.quiltmc.enigma.impl.source.procyon.EntryParser;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
+import org.quiltmc.enigma.impl.source.procyon.EntryParser;
 
 public class SourceIndexVisitor extends DepthFirstAstVisitor<SourceIndex, Void> {
 	@Override

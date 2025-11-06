@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.translation.mapping;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,6 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.test.bytecode.ClassNodeBuilder;
 import org.quiltmc.enigma.test.bytecode.MethodNodeBuilder;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;

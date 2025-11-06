@@ -11,10 +11,13 @@ import com.strobel.decompiler.languages.java.JavaFormattingOptions;
 import com.strobel.decompiler.languages.java.ast.AstBuilder;
 import com.strobel.decompiler.languages.java.ast.CompilationUnit;
 import com.strobel.decompiler.languages.java.ast.InsertParenthesesVisitor;
+import org.jspecify.annotations.Nullable;
+import org.objectweb.asm.tree.ClassNode;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
-import org.quiltmc.enigma.api.source.Source;
 import org.quiltmc.enigma.api.source.Decompiler;
+import org.quiltmc.enigma.api.source.Source;
 import org.quiltmc.enigma.api.source.SourceSettings;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.impl.source.procyon.transformer.AddJavadocsAstTransform;
 import org.quiltmc.enigma.impl.source.procyon.transformer.DropImportAstTransform;
 import org.quiltmc.enigma.impl.source.procyon.transformer.DropVarModifiersAstTransform;
@@ -23,11 +26,7 @@ import org.quiltmc.enigma.impl.source.procyon.transformer.Java8Generics;
 import org.quiltmc.enigma.impl.source.procyon.transformer.ObfuscatedEnumSwitchRewriterTransform;
 import org.quiltmc.enigma.impl.source.procyon.transformer.RemoveObjectCasts;
 import org.quiltmc.enigma.impl.source.procyon.transformer.VarargsFixer;
-import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.util.AsmUtil;
-import org.objectweb.asm.tree.ClassNode;
-
-import javax.annotation.Nullable;
 
 public class ProcyonDecompiler implements Decompiler {
 	private final SourceSettings settings;
