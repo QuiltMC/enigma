@@ -115,7 +115,7 @@ public class TestDeterministicWrite {
 			case 8 -> "Z";
 			case 9 -> "V";
 			default -> // Class
-				"L" + classes.get(random.nextInt(classes.size())).getFullName() + ";";
+					"L" + classes.get(random.nextInt(classes.size())).getFullName() + ";";
 		};
 	}
 

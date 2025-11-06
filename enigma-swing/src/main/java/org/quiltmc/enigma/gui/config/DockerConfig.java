@@ -44,8 +44,7 @@ public class DockerConfig extends ReflectiveConfig {
 		this.putButtonLocation(docker.getId(), new Docker.Location(side, verticalLocation));
 	}
 
-	@Nullable
-	public Docker.Location getButtonLocation(String id) {
+	public Docker.@Nullable Location getButtonLocation(String id) {
 		return this.buttonLocations.value().get(id);
 	}
 
@@ -141,10 +140,10 @@ public class DockerConfig extends ReflectiveConfig {
 		@Override
 		public ValueMap<String> getRepresentation() {
 			return ValueMap.builder("")
-				.put("top", this.top)
-				.put("bottom", this.bottom)
-				.put("full", this.full)
-				.build();
+					.put("top", this.top)
+					.put("bottom", this.bottom)
+					.put("full", this.full)
+					.build();
 		}
 
 		@Override
@@ -155,10 +154,10 @@ public class DockerConfig extends ReflectiveConfig {
 		@Override
 		public String toString() {
 			return "SelectedDockers["
-				+ "top='" + this.top + "'"
-				+ ", bottom='" + this.bottom + "'"
-				+ ", full='" + this.full + "'"
-				+ "]";
+					+ "top='" + this.top + "'"
+					+ ", bottom='" + this.bottom + "'"
+					+ ", full='" + this.full + "'"
+					+ "]";
 		}
 	}
 }

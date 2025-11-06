@@ -143,7 +143,7 @@ public final class Config extends ReflectiveConfig {
 		try {
 			currentTheme().setGlobalLaf();
 		} catch (UnsupportedLookAndFeelException | ClassNotFoundException
-			| InstantiationException | IllegalAccessException e
+				| InstantiationException | IllegalAccessException e
 		) {
 			throw new Error("Failed to set global look and feel", e);
 		}

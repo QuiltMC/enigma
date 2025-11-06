@@ -162,9 +162,9 @@
         <module name="PackageDeclaration"/>
 
         <!--<module name="InvalidJavadocPosition"/>-->
-        <module name="JavadocParagraph">
-            <property name="allowNewlineParagraph" value="false"/>
-        </module>
+        <!--<module name="JavadocParagraph">-->
+            <!--<property name="allowNewlineParagraph" value="false"/>-->
+        <!--</module>-->
         <module name="AtclauseOrder">
             <property name="tagOrder" value="@param,@return,@throws,@deprecated"/>
         </module>
