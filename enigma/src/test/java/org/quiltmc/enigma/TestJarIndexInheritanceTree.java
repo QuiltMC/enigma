@@ -83,8 +83,8 @@ public class TestJarIndexInheritanceTree {
 
 	@Test
 	public void access() {
-		assertThat(this.index.getIndex(EntryIndex.class).getFieldAccess(NAME_FIELD), is(new AccessFlags(Opcodes.ACC_PRIVATE)));
-		assertThat(this.index.getIndex(EntryIndex.class).getFieldAccess(NUM_THINGS_FIELD), is(new AccessFlags(Opcodes.ACC_PRIVATE)));
+		assertThat(this.index.getIndex(EntryIndex.class).getFieldAccess(NAME_FIELD), is(new AccessFlags(Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL)));
+		assertThat(this.index.getIndex(EntryIndex.class).getFieldAccess(NUM_THINGS_FIELD), is(new AccessFlags(Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL)));
 	}
 
 	@Test

@@ -2,6 +2,7 @@ package org.quiltmc.enigma;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.objectweb.asm.Opcodes;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
@@ -68,7 +69,7 @@ public class TestJarIndexLoneClass {
 	@Test
 	public void access() {
 		EntryIndex entryIndex = this.index.getIndex(EntryIndex.class);
-		assertThat(entryIndex.getFieldAccess(TestEntryFactory.newField("a", "a", "Ljava/lang/String;")), is(AccessFlags.PRIVATE));
+		assertThat(entryIndex.getFieldAccess(TestEntryFactory.newField("a", "a", "Ljava/lang/String;")), is(new AccessFlags(Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL)));
 		assertThat(entryIndex.getMethodAccess(TestEntryFactory.newMethod("a", "a", "()Ljava/lang/String;")), is(AccessFlags.PUBLIC));
 		assertThat(entryIndex.getFieldAccess(TestEntryFactory.newField("a", "b", "Ljava/lang/String;")), is(nullValue()));
 		assertThat(entryIndex.getFieldAccess(TestEntryFactory.newField("a", "a", "LFoo;")), is(nullValue()));
