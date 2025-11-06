@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.api;
 
 import org.quiltmc.enigma.util.Version;
+import org.tinylog.Logger;
 
 import javax.annotation.Nonnull;
 import java.util.Comparator;
@@ -31,11 +32,22 @@ public interface EnigmaPlugin {
 	 * @param enigmaVersion the Enigma version
 	 */
 	default boolean supportsEnigmaVersion(@Nonnull Version enigmaVersion) {
-		// DEBUG
-		throw new AssertionError("supportsEnigmaVersion sees minor version: " + Enigma.MINOR_VERSION);
+		final EnigmaVersionMarked versionAnnotation = this.getClass().getAnnotation(EnigmaVersionMarked.class);
+		if (versionAnnotation == null) {
+			Logger.error(
+					"""
+					Unable to determine compatibility of plugin: {}
+					\tPlugin has no {} annotation and does not override supportsEnigmaVersion.
+					\tIt was likely built with a pre-2.7.x version of Enigma and may cause issues.\
+					""",
+					this.getName(), EnigmaVersionMarked.class.getSimpleName()
+			);
 
-		// return Enigma.MAJOR_VERSION == enigmaVersion.major()
-		// 	&& Enigma.MINOR_VERSION == enigmaVersion.minor();
+			return true;
+		} else {
+			return versionAnnotation.major() == enigmaVersion.major()
+				&& versionAnnotation.minor() == enigmaVersion.minor();
+		}
 	}
 
 	/**
