@@ -243,6 +243,7 @@ tasks.register('runDummyPluginAgainstBumpedEnigma', JavaExec) {
 
 		return Files
 			.find(copyBuildLibs, 1) { path, attributes -> path.fileName.toString().endsWith('-all.jar')}
+			// TODO exclude non-bumped versions instead of assuming bumped is last
 			.sorted(Collections.reverseOrder())
 			.findFirst()
 			.orElseThrow { new GradleException('No bumped Enigma jar to run!') }

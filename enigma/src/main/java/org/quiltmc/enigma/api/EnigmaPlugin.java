@@ -4,7 +4,9 @@ import org.quiltmc.enigma.util.Version;
 import org.tinylog.Logger;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.stream.Stream;
 
 /**
  * An enigma plugin represents a collection of {@link org.quiltmc.enigma.api.service.EnigmaService services} that perform different functions.
@@ -45,6 +47,11 @@ public interface EnigmaPlugin {
 
 			return true;
 		} else {
+			{ // DEBUG
+				System.out.println("versionAnnotation: " + versionAnnotation);
+				System.out.println("enigmaVersion: " + enigmaVersion);
+			}
+
 			return versionAnnotation.major() == enigmaVersion.major()
 				&& versionAnnotation.minor() == enigmaVersion.minor();
 		}

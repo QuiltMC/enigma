@@ -16,7 +16,9 @@ import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.util.Version;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +31,11 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 		registerSpecializedMethodNamingService(ctx);
 		registerDecompilerServices(ctx);
 		BuiltinMappingFormats.register(ctx);
+	}
+
+	@Override
+	public boolean supportsEnigmaVersion(@Nonnull Version enigmaVersion) {
+		return true;
 	}
 
 	private static void registerEnumNamingService(EnigmaPluginContext ctx) {
