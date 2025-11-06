@@ -8,6 +8,14 @@ plugins {
 	id 'java-test-fixtures'
 }
 
+// final PROVIDERS = project.providers
+
+interface ExecProvider {
+	@javax.inject.Inject
+	ExecOperations getOperations()
+}
+final EXEC = objects.newInstance(ExecProvider).operations
+
 dependencies {
 	implementation libs.bundles.asm
 
@@ -119,12 +127,14 @@ file('src/test/java/org/quiltmc/enigma/input').listFiles().each { f ->
 	}
 }
 
-tasks.register("copyAndBumpEnigma", Copy) {
+// syncing, bumping, and jar-ing must all be one task because they all output to bumped-enigma-copy
+tasks.register("syncBumpAndJarEnigma", Sync) {
 	inputs.property('projectVersion', project.version)
 
 	final destPath = 'bumped-enigma-copy'
 
 	from project.rootDir
+	into project.layout.buildDirectory.map { it.dir(destPath) }
 
 	final excludedProjectDirs = [project(':enigma-cli'), project(':enigma-server'), project(':enigma-swing')]
 		.collect { it.projectDir }
@@ -140,15 +150,15 @@ tasks.register("copyAndBumpEnigma", Copy) {
 		it.file in excluded
 	}
 
-	into project.layout.buildDirectory.map { it.dir(destPath)}
-
+	final projectBuildDir = project.layout.buildDirectory
+	final projectRootDir = project.rootDir
 	doFirst {
 		// lazy exclusions
 		exclude {
-			it.file in project.layout.buildDirectory.get().asFile
+			it.file in projectBuildDir.get().asFile
 		}
 
-		// already excluded whole build dir, but just in case explicitly exclude dest dir to avoid copy recursion
+		// already excluded whole build dir, but just in case, explicitly exclude dest dir to avoid copy recursion
 		exclude {
 			it.file in destinationDir
 		}
@@ -168,6 +178,17 @@ tasks.register("copyAndBumpEnigma", Copy) {
 			dest.resolve('enigma/src/main/java/org/quiltmc/enigma/api/Enigma.java'),
 			'MINOR_VERSION', ~/(?m)^\s*public static final int MINOR_VERSION = (\d+);$/
 		)
+
+		// this causes the task to always be out-of-date
+		// copying gradle/wrapper, etc. and executing the copy instead did not help
+		EXEC.exec {
+			workingDir(destinationDir)
+
+			final executableName = System.properties['os.name'].toLowerCase().contains('windows')
+				? './gradlew.bat' : './gradlew'
+			executable(projectRootDir.toPath().resolve(executableName))
+			args 'jar'
+		}
 	}
 }
 
