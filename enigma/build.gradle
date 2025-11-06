@@ -1,5 +1,6 @@
 import proguard.gradle.ProGuardTask
 
+import java.nio.file.Files
 import java.util.regex.Pattern
 
 plugins {
@@ -16,6 +17,15 @@ interface ExecProvider {
 }
 final EXEC = objects.newInstance(ExecProvider).operations
 
+sourceSets {
+	dummyPlugin
+}
+
+configurations {
+	dummyPluginRuntimeClasspath.extendsFrom runtimeClasspath
+	dummyPluginCompileClasspath.extendsFrom compileClasspath
+}
+
 dependencies {
 	implementation libs.bundles.asm
 
@@ -30,6 +40,8 @@ dependencies {
 
 	testFixturesImplementation libs.asm
 	testFixturesImplementation libs.asm.tree
+
+	dummyPluginImplementation(project)
 }
 
 // Generate "version.properties" file
@@ -127,8 +139,15 @@ file('src/test/java/org/quiltmc/enigma/input').listFiles().each { f ->
 	}
 }
 
+final dummyPluginJar = tasks.register('dummyPluginJar', Jar) {
+	from sourceSets.dummyPlugin.output
+
+	archiveFileName = "dummy-plugin.jar"
+	destinationDirectory = project.layout.buildDirectory.dir('dummy-plugin')
+}
+
 // syncing, bumping, and jar-ing must all be one task because they all output to bumped-enigma-copy
-tasks.register("syncBumpAndJarEnigma", Sync) {
+final syncBumpAndJarEnigma = tasks.register("syncBumpAndJarEnigma", Sync) {
 	inputs.property('projectVersion', project.version)
 
 	final destPath = 'bumped-enigma-copy'
@@ -136,12 +155,12 @@ tasks.register("syncBumpAndJarEnigma", Sync) {
 	from project.rootDir
 	into project.layout.buildDirectory.map { it.dir(destPath) }
 
-	final excludedProjectDirs = [project(':enigma-cli'), project(':enigma-server'), project(':enigma-swing')]
+	final excludedProjectDirs = [ /*project(':enigma-cli'), */project(':enigma-server'), project(':enigma-swing') ]
 		.collect { it.projectDir }
 
 	final excludedPaths = [
 		'.git', '.github', '.gradle', '.idea', 'gradlew', 'gradlew.bat', 'gradle/wrapper',
-		'buildSrc/.gradle', 'buildSrc/build'
+		'buildSrc/.gradle', 'buildSrc/build', 'enigma/src/dummyPlugin'
 	].collect { rootProject.file(it) }
 
 	final Set<File> excluded = excludedProjectDirs + excludedPaths
@@ -150,25 +169,25 @@ tasks.register("syncBumpAndJarEnigma", Sync) {
 		it.file in excluded
 	}
 
-	final projectBuildDir = project.layout.buildDirectory
-	final projectRootDir = project.rootDir
+	// This can't be done lazily in doFirst because it needs to be excluded when task dependencies are checked
+	// so the task doesn't depend on processDummyPluginResources.
+	exclude {
+		it.file in project.layout.buildDirectory.get().asFile
+	}
+
+	// already excluded whole build dir, but just in case, explicitly exclude dest dir to avoid copy recursion
+	exclude {
+		it.file in destinationDir
+	}
+
 	doFirst {
-		// lazy exclusions
-		exclude {
-			it.file in projectBuildDir.get().asFile
-		}
-
-		// already excluded whole build dir, but just in case, explicitly exclude dest dir to avoid copy recursion
-		exclude {
-			it.file in destinationDir
-		}
-
 		// prevent accidental task recursion
 		if (source.getElements().get().any { it.getAsFile().toPath().iterator().any { it.toString() == destPath } }) {
 			throw new GradleException("${name} cannot be run from its own copy!")
 		}
 	}
 
+	final projectRootDir = project.rootDir
 	doLast {
 		final dest = destinationDir.toPath()
 
@@ -187,7 +206,7 @@ tasks.register("syncBumpAndJarEnigma", Sync) {
 			final executableName = System.properties['os.name'].toLowerCase().contains('windows')
 				? './gradlew.bat' : './gradlew'
 			executable(projectRootDir.toPath().resolve(executableName))
-			args 'jar'
+			args ':enigma-cli:shadowJar'
 		}
 	}
 }
@@ -211,6 +230,46 @@ static void bumpCopyVersion(java.nio.file.Path path, String variableName, Patter
 		path.text = path.text.substring(0, numberStart) + (number + 1) + path.text.substring(numberEnd)
 	} else {
 		throw new GradleException("Failed to find ${variableName} in copy's ${path.last()}!")
+	}
+}
+
+tasks.register('runDummyPluginAgainstBumpedEnigma', JavaExec) {
+	final projectDir = project.projectDir
+	final libsDir = project.layout.buildDirectory.dir('libs')
+	final Provider<java.nio.file.Path> bumpedJarPath = syncBumpAndJarEnigma.map(Sync::getDestinationDir).zip(libsDir) { bumpDest, libs ->
+		final relativeBuildLibs = projectDir.toPath().relativize(libs.asFile.toPath())
+		// final copyBuildLibs = bumpDest.toPath().resolve('enigma').resolve(relativeBuildLibs)
+		final copyBuildLibs = bumpDest.toPath().resolve('enigma-cli').resolve(relativeBuildLibs)
+
+		return Files
+			.find(copyBuildLibs, 1) { path, attributes -> path.fileName.toString().endsWith('-all.jar')}
+			.sorted(Collections.reverseOrder())
+			.findFirst()
+			.orElseThrow { new GradleException('No bumped Enigma jar to run!') }
+	}
+
+	dependsOn(syncBumpAndJarEnigma, jar)
+
+	final dummyPluginJarFile = dummyPluginJar.flatMap(Jar::getArchiveFile)
+
+	inputs.files(bumpedJarPath, dummyPluginJarFile)
+
+	mainClass = 'org.quiltmc.enigma.command.Main'
+
+	classpath(bumpedJarPath, dummyPluginJarFile)
+
+	doFirst {
+		// DEBUG
+		println "bumpedJar: ${bumpedJarPath.get()}"
+
+		println('dummyJar: ' + dummyPluginJarFile.get().asFile)
+
+		// classpath(bumpedJarPath.get(), dummyPluginJarFile.get().asFile)
+
+		args 'print-stats', bumpedJarPath.get(), bumpedJarPath.get()
+
+		// args('-jar', bumpedJarPath.get().toString())
+		// classpath(dummyPluginJarFile.get().asFile.toString())
 	}
 }
 

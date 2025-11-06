@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.input.z_plugin;
+package org.quiltmc.internal.dummy_plugin;
 
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaPluginContext;

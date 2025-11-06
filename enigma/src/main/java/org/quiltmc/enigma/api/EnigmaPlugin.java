@@ -31,8 +31,11 @@ public interface EnigmaPlugin {
 	 * @param enigmaVersion the Enigma version
 	 */
 	default boolean supportsEnigmaVersion(@Nonnull Version enigmaVersion) {
-		return Enigma.MAJOR_VERSION == enigmaVersion.major()
-			&& Enigma.MINOR_VERSION == enigmaVersion.minor();
+		// DEBUG
+		throw new AssertionError("supportsEnigmaVersion sees minor version: " + Enigma.MINOR_VERSION);
+
+		// return Enigma.MAJOR_VERSION == enigmaVersion.major()
+		// 	&& Enigma.MINOR_VERSION == enigmaVersion.minor();
 	}
 
 	/**
