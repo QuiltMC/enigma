@@ -9,8 +9,7 @@ import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.service.ObfuscationTestService;
 import org.quiltmc.enigma.api.source.TokenType;
-import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeUtil;
-import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.*;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
@@ -21,8 +20,6 @@ import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.impl.translation.mapping.MappingsChecker;
-import org.quiltmc.enigma.api.translation.mapping.tree.DeltaTrackingTree;
-import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
@@ -99,6 +96,16 @@ public class EnigmaProject {
 		}
 
 		// update dynamically proposed names
+		this.remapper.insertDynamicallyProposedMappings(null, null, null);
+	}
+
+	public void updateMappingsForClass(ClassEntry classEntry, EntryTree<EntryMapping> mappings, ProgressListener progress) {
+		EntryTree<EntryMapping> jarProposedMappings = this.remapper != null ? this.remapper.getJarProposedMappings() : new HashEntryTree<>();
+		EntryTree<EntryMapping> mergedTree = EntryTreeUtil.merge(jarProposedMappings, mappings);
+		this.mappingsIndex.reindexClass(classEntry, this.remapper.getMappings(), mergedTree, progress);
+
+		this.remapper = EntryRemapper.mapped(this.enigma, this.jarIndex, this.mappingsIndex, jarProposedMappings, mappings, this.enigma.getNameProposalServices());
+
 		this.remapper.insertDynamicallyProposedMappings(null, null, null);
 	}
 

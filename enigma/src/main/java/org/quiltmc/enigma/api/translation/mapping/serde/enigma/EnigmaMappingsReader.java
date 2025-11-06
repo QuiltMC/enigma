@@ -78,12 +78,30 @@ public enum EnigmaMappingsReader implements MappingsReader {
 
 			return mappings;
 		}
+
+		@Override
+		public EntryTree<EntryMapping> readClass(Path path, ClassEntry classEntry, ProgressListener progress) throws MappingParseException, IOException {
+			progress.init(1, I18n.translate("progress.mappings.enigma_directory.loading"));
+
+			EntryTree<EntryMapping> mappings = new HashEntryTree<>();
+			Path mappingsFile = path.resolve(classEntry.getFullName() + ".mapping");
+			readFile(mappingsFile, mappings);
+			progress.step(1, I18n.translate("progress.mappings.enigma_directory.done"));
+			return mappings;
+		}
 	},
 	ZIP {
 		@Override
 		public EntryTree<EntryMapping> read(Path zip, ProgressListener progress) throws MappingParseException, IOException {
 			try (FileSystem fs = FileSystems.newFileSystem(zip, (ClassLoader) null)) {
 				return DIRECTORY.read(fs.getPath("/"), progress);
+			}
+		}
+
+		@Override
+		public EntryTree<EntryMapping> readClass(Path zip, ClassEntry classEntry, ProgressListener progress) throws MappingParseException, IOException {
+			try (FileSystem fs = FileSystems.newFileSystem(zip, (ClassLoader) null)) {
+				return DIRECTORY.readClass(fs.getPath("/"), classEntry, progress);
 			}
 		}
 	};

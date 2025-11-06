@@ -196,6 +196,24 @@ public class GuiController implements ClientPacketHandler {
 		this.chp.invalidateJavadoc();
 	}
 
+	public void reloadMappingsForClass(ClassEntry entry) {
+		try {
+			EntryTree<EntryMapping> mappings = this.readWriteService.readClass(this.loadedMappingPath, entry, ProgressListener.createEmpty());
+			this.reloadMappingsForClass(entry, mappings);
+		} catch (MappingParseException e) {
+			JOptionPane.showMessageDialog(this.gui.getFrame(), e.getMessage());
+		} catch (Exception e) {
+			CrashDialog.show(e);
+		}
+
+	}
+
+	public void reloadMappingsForClass(ClassEntry entry, EntryTree<EntryMapping> mappings) {
+		this.project.updateMappingsForClass(entry, mappings, new ProgressDialog(this.gui.getFrame()));
+		this.gui.reloadStats(entry, true);
+		this.chp.invalidateJavadoc();
+	}
+
 	public void regenerateAndUpdateStatIcons() {
 		if (Config.main().features.enableClassTreeStatIcons.value()) {
 			ProgressListener progressListener = ProgressListener.createEmpty();

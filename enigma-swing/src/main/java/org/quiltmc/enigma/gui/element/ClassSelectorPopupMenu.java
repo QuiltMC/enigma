@@ -26,6 +26,7 @@ public class ClassSelectorPopupMenu {
 	private final JMenuItem renameClass = new JMenuItem();
 	private final JMenuItem regenerateStats = new JMenuItem();
 	private final JMenuItem toggleMapping = new JMenuItem();
+	private final JMenuItem reloadMappings = new JMenuItem();
 	private final JMenuItem expandAll = new JMenuItem();
 	private final JMenuItem collapseAll = new JMenuItem();
 
@@ -40,6 +41,7 @@ public class ClassSelectorPopupMenu {
 		}
 
 		this.ui.add(this.regenerateStats);
+		this.ui.add(this.reloadMappings);
 		this.ui.add(this.toggleMapping);
 		this.ui.addSeparator();
 		this.ui.add(this.expandAll);
@@ -67,6 +69,7 @@ public class ClassSelectorPopupMenu {
 		});
 
 		this.regenerateStats.addActionListener(a -> this.gui.reloadStats(this.selector.getSelectedClassObf(), false));
+		this.reloadMappings.addActionListener(l -> this.gui.getController().reloadMappingsForClass(this.selector.getSelectedClassObf()));
 
 		this.expandAll.addActionListener(a -> this.selector.expandAll());
 		this.collapseAll.addActionListener(a -> this.selector.collapseAll());
@@ -134,6 +137,8 @@ public class ClassSelectorPopupMenu {
 		// only enable regenerate stats if selected path is a class
 		this.regenerateStats.setEnabled(selected != null);
 
+		this.reloadMappings.setEnabled(selected != null);
+
 		// update toggle mapping text to match
 		this.toggleMapping.setEnabled(selected != null);
 		if (selected != null) {
@@ -155,5 +160,6 @@ public class ClassSelectorPopupMenu {
 		this.collapseAll.setText(I18n.translate("popup_menu.class_selector.collapse_all"));
 		this.toggleMapping.setText(I18n.translate("popup_menu.mark_deobfuscated"));
 		this.regenerateStats.setText(I18n.translate("popup_menu.class_selector.regenerate_stats"));
+		this.reloadMappings.setText(I18n.translate("popup_menu.class_selector.reload_mappings"));
 	}
 }

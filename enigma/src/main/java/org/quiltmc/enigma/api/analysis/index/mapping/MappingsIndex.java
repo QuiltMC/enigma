@@ -72,6 +72,23 @@ public class MappingsIndex implements MappingsIndexer {
 			nodes.addAll(node.getNodesRecursively());
 		}
 
+		this.indexNodes(nodes, true);
+	}
+
+	public void reindexClass(ClassEntry classEntry, EntryTree<EntryMapping> oldMappings, EntryTree<EntryMapping> newMappings, ProgressListener progress) {
+		this.progress = progress;
+		oldMappings.remove(classEntry);
+
+		EntryTreeNode<EntryMapping> classNode = newMappings.findNode(classEntry);
+		if (classNode == null) {
+			throw new IllegalArgumentException("Class entry not found in mappings");
+		}
+
+		oldMappings.insert(classNode);
+		this.indexNodes(classNode.getNodesRecursively(), false);
+	}
+
+	private void indexNodes(Collection<? extends EntryTreeNode<EntryMapping>> nodes, boolean postProcess) {
 		this.work = nodes.isEmpty() ? 1 : nodes.size();
 		this.progress.init(this.work, I18n.translate("progress.mappings.indexing.mappings"));
 
@@ -80,8 +97,8 @@ public class MappingsIndex implements MappingsIndexer {
 			EntryMapping mapping = node.getValue();
 
 			if (mapping != null) {
-				if (entry instanceof ClassEntry classEntry) {
-					this.indexClassMapping(mapping, classEntry);
+				if (entry instanceof ClassEntry clsEntry) {
+					this.indexClassMapping(mapping, clsEntry);
 				} else if (entry instanceof MethodEntry methodEntry) {
 					this.indexMethodMapping(mapping, methodEntry);
 				} else if (entry instanceof FieldEntry fieldEntry) {
@@ -94,7 +111,9 @@ public class MappingsIndex implements MappingsIndexer {
 			this.progress.step(this.work++, I18n.translate("progress.mappings.indexing.mappings"));
 		}
 
-		this.processIndex(this);
+		if (postProcess) {
+			this.processIndex(this);
+		}
 
 		this.progress = null;
 		this.work = 0;
