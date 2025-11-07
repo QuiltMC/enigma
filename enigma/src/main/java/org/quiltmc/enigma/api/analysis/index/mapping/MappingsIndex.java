@@ -97,8 +97,8 @@ public class MappingsIndex implements MappingsIndexer {
 			EntryMapping mapping = node.getValue();
 
 			if (mapping != null) {
-				if (entry instanceof ClassEntry clsEntry) {
-					this.indexClassMapping(mapping, clsEntry);
+				if (entry instanceof ClassEntry classEntry) {
+					this.indexClassMapping(mapping, classEntry);
 				} else if (entry instanceof MethodEntry methodEntry) {
 					this.indexMethodMapping(mapping, methodEntry);
 				} else if (entry instanceof FieldEntry fieldEntry) {
