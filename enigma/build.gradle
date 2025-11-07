@@ -17,13 +17,27 @@ interface ExecProvider {
 }
 final EXEC = objects.newInstance(ExecProvider).operations
 
+final dummyPluginPath = project.file('src/dummyPlugin').toPath()
+Closure<SourceSet> configureDummyPluginSourceSet = {
+	final dir = dummyPluginPath.resolve(it.name);
+	java {
+		srcDirs dir.resolve('java')
+	}
+
+	resources {
+		srcDirs dir.resolve('resources')
+	}
+}
+
 sourceSets {
-	dummyPlugin
+	recommendedImplPlugin configureDummyPluginSourceSet
+	preHandlingPlugin configureDummyPluginSourceSet
 }
 
 configurations {
-	dummyPluginRuntimeClasspath.extendsFrom runtimeClasspath
-	dummyPluginCompileClasspath.extendsFrom compileClasspath
+	recommendedImplPluginRuntimeClasspath.extendsFrom runtimeClasspath
+	recommendedImplPluginCompileClasspath.extendsFrom compileClasspath
+	// preHandlingPlugin doesn't extend because it has its own EnigmaPlugin interface
 }
 
 dependencies {
@@ -41,7 +55,8 @@ dependencies {
 	testFixturesImplementation libs.asm
 	testFixturesImplementation libs.asm.tree
 
-	dummyPluginImplementation(project)
+	recommendedImplPluginImplementation(project)
+	// preHandlingPlugin doesn't depend on project because it has its own EnigmaPlugin interface
 }
 
 // Generate "version.properties" file
@@ -138,6 +153,7 @@ file('src/test/java/org/quiltmc/enigma/input').listFiles().each { f ->
 		registerTestJarTasks(f.name, "org/quiltmc/enigma/input/$f.name/**/*.class", "org/quiltmc/enigma/input/Keep.class")
 	}
 }
+
 
 final dummyPluginJar = tasks.register('dummyPluginJar', Jar) {
 	from sourceSets.dummyPlugin.output

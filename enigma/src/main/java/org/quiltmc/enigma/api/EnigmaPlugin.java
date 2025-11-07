@@ -1,12 +1,9 @@
 package org.quiltmc.enigma.api;
 
 import org.quiltmc.enigma.util.Version;
-import org.tinylog.Logger;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.stream.Stream;
 
 /**
  * An enigma plugin represents a collection of {@link org.quiltmc.enigma.api.service.EnigmaService services} that perform different functions.
