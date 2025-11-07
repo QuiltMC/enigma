@@ -169,7 +169,7 @@ final pluginJarTask = tasks.register('preHandlingPluginJar', Jar) {
 	destinationDirectory = dummyPluginsDest
 }
 
-tasks.register('runPreHandlingPluginAgainstCurrentEnigma', JavaExec) {
+tasks.register('testPreHandlingPluginAgainstCurrentEnigma', JavaExec) { task ->
 	final projectVersion = project.version
 
 	inputs.property('projectVersion', projectVersion)
@@ -186,8 +186,26 @@ tasks.register('runPreHandlingPluginAgainstCurrentEnigma', JavaExec) {
 
 	classpath(cliShadowJar, pluginJarFile)
 
+	final error = new ByteArrayOutputStream()
+	errorOutput error
+
+	ignoreExitValue true
+
 	doFirst {
 		args 'print-stats', pluginJarFile.get().asFile, pluginJarFile.get().asFile
+	}
+
+	doLast {
+		final err = error.toString()
+		if (!err.contains('Plugin was probably built using a pre-2.7 version of Enigma.')) {
+			throw new GradleException(
+				"""
+				PreHandlingPlugin did not fail as expected!
+					Error output:
+					${err}
+				""".stripIndent()
+			)
+		}
 	}
 }
 
