@@ -223,7 +223,9 @@ final syncBumpAndJarEnigma = tasks.register("syncBumpAndJarEnigma", Sync) {
 
 	final excludedPaths = [
 		'.git', '.github', '.gradle', '.idea', 'gradlew', 'gradlew.bat', 'gradle/wrapper',
-		'buildSrc/.gradle', 'buildSrc/build', 'enigma/src/dummyPlugin'
+		'buildSrc/.gradle', 'buildSrc/build',
+		project.projectDir.toPath().resolve('src/dummyPlugin'),
+		project(':enigma-cli').projectDir.toPath().resolve('build')
 	].collect { rootProject.file(it) }
 
 	final Set<File> excluded = excludedProjectDirs + excludedPaths
