@@ -20,10 +20,13 @@ public interface EnigmaPlugin {
 	/**
 	 * Returns whether this plugin supports the passed {@code enigmaVersion}.
 	 *
-	 * <p> The default implementation returns {@code true} if and only if the passed {@code enigmaVersion}'s
-	 * {@linkplain Version#major() major} and {@linkplain Version#minor() minor} parts match the respective
-	 * {@linkplain Enigma#MAJOR_VERSION major} and {@linkplain Enigma#MINOR_VERSION minor} parts of the Enigma version
-	 * this plugin was compiled against.
+	 * <p> The recommended implementation is
+	 * <pre><code>
+	 *     return Enigma.MAJOR_VERSION == enigmaVersion.major()
+	 *         && Enigma.MINOR_VERSION == enigmaVersion.minor();
+	 * </code></pre>
+	 * which matches version with the same major and minor parts as the Enigma version the plugin was compiled against,
+	 * but allows any patch.
 	 *
 	 * <p> If {@code false} is returned, an exception will be thrown during initialization. To make the error more
 	 * readable, a plugin may override {@link #getName()} to return a name clearly identifying itself.
@@ -31,31 +34,9 @@ public interface EnigmaPlugin {
 	 * <p> Custom implementations of this method may use {@link Version#compareTo(Version)} or any of {@link Version}'s
 	 * static {@link Comparator}s to easily match various version ranges.
 	 *
-	 * @param enigmaVersion the Enigma version
+	 * @param enigmaVersion the run-time Enigma version
 	 */
-	default boolean supportsEnigmaVersion(@Nonnull Version enigmaVersion) {
-		final EnigmaVersionMarked versionAnnotation = this.getClass().getAnnotation(EnigmaVersionMarked.class);
-		if (versionAnnotation == null) {
-			Logger.error(
-					"""
-					Unable to determine compatibility of plugin: {}
-					\tPlugin has no {} annotation and does not override supportsEnigmaVersion.
-					\tIt was likely built with a pre-2.7.x version of Enigma and may cause issues.\
-					""",
-					this.getName(), EnigmaVersionMarked.class.getSimpleName()
-			);
-
-			return true;
-		} else {
-			{ // DEBUG
-				System.out.println("versionAnnotation: " + versionAnnotation);
-				System.out.println("enigmaVersion: " + enigmaVersion);
-			}
-
-			return versionAnnotation.major() == enigmaVersion.major()
-				&& versionAnnotation.minor() == enigmaVersion.minor();
-		}
-	}
+	boolean supportsEnigmaVersion(@Nonnull Version enigmaVersion);
 
 	/**
 	 * Gets the name of the plugin; used for error reporting.
