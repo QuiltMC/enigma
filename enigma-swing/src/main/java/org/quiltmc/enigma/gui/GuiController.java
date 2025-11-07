@@ -205,7 +205,6 @@ public class GuiController implements ClientPacketHandler {
 		} catch (Exception e) {
 			CrashDialog.show(e);
 		}
-
 	}
 
 	public void reloadMappingsForClass(ClassEntry entry, EntryTree<EntryMapping> mappings) {
