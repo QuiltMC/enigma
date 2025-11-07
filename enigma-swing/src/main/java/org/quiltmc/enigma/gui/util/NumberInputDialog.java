@@ -22,6 +22,8 @@ import java.awt.event.KeyEvent;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 import static javax.swing.BorderFactory.createEmptyBorder;
@@ -231,6 +233,9 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 	protected final JButton cancel = new JButton();
 	protected final JButton submit = new JButton();
 
+	@Nullable
+	private Error.Type lastError;
+
 	/**
 	 * Constructs a dialog and initializes its components. Performs no input validation.
 	 */
@@ -300,19 +305,23 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 		this.submit.setEnabled(false);
 
 		if (initialValue != null) {
-			this.updateStepButtons(Result.ok(initialValue));
+			this.updateStepButtons(initialValue);
 		}
 
 		this.field.addEditListener(edit -> {
 			final boolean ok = edit.isOk();
 			if (ok) {
+				this.lastError = null;
 				this.hideError();
+				this.updateStepButtons(edit.unwrap());
 			} else {
-				this.showError(edit.unwrapErr().message);
+				final Error error = edit.unwrapErr();
+				this.lastError = error.type;
+				this.showError(error.message);
+				this.updateStepButtons(error.type);
 			}
 
 			this.submit.setEnabled(ok);
-			this.updateStepButtons(edit);
 		});
 
 		putKeyBindAction(
@@ -384,39 +393,59 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 		this.field = field;
 	}
 
-	protected void updateStepButtons(Result<N, Error> edit) {
+	@Nullable
+	protected Error.Type getLastError() {
+		return this.lastError;
+	}
+
+	/**
+	 * @return the clamped {@code value}
+	 */
+	protected N updateStepButtons(N value) {
 		final boolean enableUp;
 		final boolean enableDown;
 
-		if (edit.isOk()) {
-			final N value = edit.unwrap();
-			if (this.min.compareTo(value) >= 0) {
+		final N clamped;
+		if (this.min.compareTo(value) >= 0) {
+			enableUp = true;
+			enableDown = false;
+
+			clamped = this.min;
+		} else if (value.compareTo(this.max) >= 0) {
+			enableUp = false;
+			enableDown = true;
+
+			clamped = this.max;
+		} else {
+			enableUp = true;
+			enableDown = true;
+
+			clamped = value;
+		}
+
+		this.stepUpButton.setEnabled(enableUp);
+		this.stepDownButton.setEnabled(enableDown);
+
+		return clamped;
+	}
+
+	private void updateStepButtons(Error.Type errorType) {
+		final boolean enableUp;
+		final boolean enableDown;
+		switch (errorType) {
+			case LOW -> {
 				enableUp = true;
 				enableDown = false;
-			} else if (value.compareTo(this.max) >= 0) {
+			}
+			case HIGH -> {
 				enableUp = false;
 				enableDown = true;
-			} else {
+			}
+			case OTHER -> {
 				enableUp = true;
 				enableDown = true;
 			}
-		} else {
-			final Error.Type error = edit.unwrapErr().type;
-			switch (error) {
-				case LOW -> {
-					enableUp = true;
-					enableDown = false;
-				}
-				case HIGH -> {
-					enableUp = false;
-					enableDown = true;
-				}
-				case OTHER -> {
-					enableUp = true;
-					enableDown = true;
-				}
-				default -> throw new AssertionError();
-			}
+			default -> throw new AssertionError();
 		}
 
 		this.stepUpButton.setEnabled(enableUp);
@@ -442,33 +471,65 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 	}
 
 	protected void stepUpBy(N step) {
-		this.stepDownButton.setEnabled(true);
-
-		final N stepped = this.add.apply(this.field.getEditOrValue(), step);
-		final N clamped;
-		if (stepped.compareTo(this.max) >= 0) {
-			this.stepUpButton.setEnabled(false);
-			clamped = this.max;
-		} else {
-			clamped = stepped;
+		if (!this.tryStepErrorUp()) {
+			this.stepBy(step, this.add);
 		}
+	}
+
+	protected void stepDownBy(N step) {
+		if (!this.tryStepErrorDown()) {
+			this.stepBy(step, this.subtract);
+		}
+	}
+
+	protected void stepBy(N step, BinaryOperator<N> operation) {
+		this.stepUpButton.setEnabled(true);
+
+		final N stepped = operation.apply(this.field.getEditOrValue(), step);
+
+		final N clamped = this.updateStepButtons(stepped);
 
 		this.field.edit(clamped);
 	}
 
-	protected void stepDownBy(N step) {
-		this.stepUpButton.setEnabled(true);
-
-		final N stepped = this.subtract.apply(this.field.getEditOrValue(), step);
-		final N clamped;
-		if (this.min.compareTo(stepped) >= 0) {
-			this.stepDownButton.setEnabled(false);
-			clamped = this.min;
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	protected boolean tryStepErrorUp() {
+		if (this.lastError == null) {
+			return false;
 		} else {
-			clamped = stepped;
-		}
+			switch (this.lastError) {
+				case LOW, OTHER -> {
+					this.lastError = null;
 
-		this.field.edit(clamped);
+					this.field.edit(this.min);
+
+					this.stepUpButton.setEnabled(true);
+					this.stepDownButton.setEnabled(false);
+				}
+			}
+
+			return true;
+		}
+	}
+
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	protected boolean tryStepErrorDown() {
+		if (this.lastError == null) {
+			return false;
+		} else {
+			switch (this.lastError) {
+				case HIGH, OTHER -> {
+					this.lastError = null;
+
+					this.field.edit(this.max);
+
+					this.stepUpButton.setEnabled(false);
+					this.stepDownButton.setEnabled(true);
+				}
+			}
+
+			return true;
+		}
 	}
 
 	protected record Error(Error.Type type, String message) {
