@@ -154,12 +154,12 @@ file('src/test/java/org/quiltmc/enigma/input').listFiles().each { f ->
 	}
 }
 
+final dummyPluginsDest = project.layout.buildDirectory.dir('dummy-plugin')
+final recommendedImplPluginJar = tasks.register('recommendedImplPluginJar', Jar) {
+	from sourceSets.recommendedImplPlugin.output
 
-final dummyPluginJar = tasks.register('dummyPluginJar', Jar) {
-	from sourceSets.dummyPlugin.output
-
-	archiveFileName = "dummy-plugin.jar"
-	destinationDirectory = project.layout.buildDirectory.dir('dummy-plugin')
+	archiveFileName = "recommended-impl-plugin.jar"
+	destinationDirectory = dummyPluginsDest
 }
 
 // syncing, bumping, and jar-ing must all be one task because they all output to bumped-enigma-copy
@@ -171,7 +171,7 @@ final syncBumpAndJarEnigma = tasks.register("syncBumpAndJarEnigma", Sync) {
 	from project.rootDir
 	into project.layout.buildDirectory.map { it.dir(destPath) }
 
-	final excludedProjectDirs = [ /*project(':enigma-cli'), */project(':enigma-server'), project(':enigma-swing') ]
+	final excludedProjectDirs = [ project(':enigma-server'), project(':enigma-swing') ]
 		.collect { it.projectDir }
 
 	final excludedPaths = [
@@ -249,12 +249,11 @@ static void bumpCopyVersion(java.nio.file.Path path, String variableName, Patter
 	}
 }
 
-tasks.register('runDummyPluginAgainstBumpedEnigma', JavaExec) {
+tasks.register('runRecommendedImplPluginAgainstBumpedEnigma', JavaExec) {
 	final projectDir = project.projectDir
 	final libsDir = project.layout.buildDirectory.dir('libs')
 	final Provider<java.nio.file.Path> bumpedJarPath = syncBumpAndJarEnigma.map(Sync::getDestinationDir).zip(libsDir) { bumpDest, libs ->
 		final relativeBuildLibs = projectDir.toPath().relativize(libs.asFile.toPath())
-		// final copyBuildLibs = bumpDest.toPath().resolve('enigma').resolve(relativeBuildLibs)
 		final copyBuildLibs = bumpDest.toPath().resolve('enigma-cli').resolve(relativeBuildLibs)
 
 		return Files
@@ -265,28 +264,18 @@ tasks.register('runDummyPluginAgainstBumpedEnigma', JavaExec) {
 			.orElseThrow { new GradleException('No bumped Enigma jar to run!') }
 	}
 
-	dependsOn(syncBumpAndJarEnigma, jar)
+	dependsOn(syncBumpAndJarEnigma, recommendedImplPluginJar)
 
-	final dummyPluginJarFile = dummyPluginJar.flatMap(Jar::getArchiveFile)
+	final pluginJarFile = recommendedImplPluginJar.flatMap(Jar::getArchiveFile)
 
-	inputs.files(bumpedJarPath, dummyPluginJarFile)
+	inputs.files(bumpedJarPath, pluginJarFile)
 
 	mainClass = 'org.quiltmc.enigma.command.Main'
 
-	classpath(bumpedJarPath, dummyPluginJarFile)
+	classpath(bumpedJarPath, pluginJarFile)
 
 	doFirst {
-		// DEBUG
-		println "bumpedJar: ${bumpedJarPath.get()}"
-
-		println('dummyJar: ' + dummyPluginJarFile.get().asFile)
-
-		// classpath(bumpedJarPath.get(), dummyPluginJarFile.get().asFile)
-
 		args 'print-stats', bumpedJarPath.get(), bumpedJarPath.get()
-
-		// args('-jar', bumpedJarPath.get().toString())
-		// classpath(dummyPluginJarFile.get().asFile.toString())
 	}
 }
 
