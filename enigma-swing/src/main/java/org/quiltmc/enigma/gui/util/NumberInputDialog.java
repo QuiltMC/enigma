@@ -18,12 +18,10 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Window;
-import java.awt.event.KeyEvent;
+import java.awt.event.ActionEvent;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 import static javax.swing.BorderFactory.createEmptyBorder;
@@ -273,7 +271,7 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 
 		this.stepUpButton.setIcon(GuiUtil.getUpChevron());
 		this.stepUpButton.addActionListener(e -> {
-			if ((e.getModifiers() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
+			if ((e.getModifiers() & ActionEvent.SHIFT_MASK) != 0) {
 				stepUpAlt.run();
 			} else {
 				stepUpDefault.run();
@@ -282,7 +280,7 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 
 		this.stepDownButton.setIcon(GuiUtil.getDownChevron());
 		this.stepDownButton.addActionListener(e -> {
-			if ((e.getModifiers() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
+			if ((e.getModifiers() & ActionEvent.SHIFT_MASK) != 0) {
 				stepDownAlt.run();
 			} else {
 				stepDownDefault.run();
