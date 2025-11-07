@@ -169,7 +169,8 @@ final pluginJarTask = tasks.register('preHandlingPluginJar', Jar) {
 	destinationDirectory = dummyPluginsDest
 }
 
-tasks.register('testPreHandlingPluginAgainstCurrentEnigma', JavaExec) { task ->
+final testPreHandlingPluginAgainstCurrentEnigma = tasks
+		.register('testPreHandlingPluginAgainstCurrentEnigma', JavaExec) { task ->
 	final projectVersion = project.version
 
 	inputs.property('projectVersion', projectVersion)
@@ -295,7 +296,8 @@ static void bumpCopyVersion(java.nio.file.Path path, String variableName, Patter
 	}
 }
 
-tasks.register('testRecommendedImplPluginAgainstBumpedEnigma', JavaExec) {
+final testRecommendedImplPluginAgainstBumpedEnigma = tasks
+		.register('testRecommendedImplPluginAgainstBumpedEnigma', JavaExec) {
 	final projectVersion = project.version
 
 	inputs.property('projectVersion', projectVersion)
@@ -353,6 +355,8 @@ tasks.register('testRecommendedImplPluginAgainstBumpedEnigma', JavaExec) {
 		}
 	}
 }
+
+test.dependsOn(testPreHandlingPluginAgainstCurrentEnigma, testRecommendedImplPluginAgainstBumpedEnigma)
 
 publishing {
 	publications {
