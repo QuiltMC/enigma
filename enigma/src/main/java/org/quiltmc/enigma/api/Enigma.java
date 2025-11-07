@@ -328,12 +328,22 @@ public class Enigma {
 		public Enigma build() {
 			PluginContext pluginContext = new PluginContext(this.profile);
 			for (EnigmaPlugin plugin : this.plugins) {
-				if (plugin.supportsEnigmaVersion(CURRENT_VERSION)) {
-					plugin.init(pluginContext);
-				} else {
+				try {
+					if (plugin.supportsEnigmaVersion(CURRENT_VERSION)) {
+						plugin.init(pluginContext);
+					} else {
+						throw new IllegalStateException(
+							"Plugin does not support Enigma %s: %s"
+								.formatted(VERSION, plugin.getName())
+						);
+					}
+				} catch (AbstractMethodError e) {
 					throw new IllegalStateException(
-						"Plugin does not support Enigma %s: %s"
-							.formatted(VERSION, plugin.getName())
+						"""
+						Error loading plugin: %s
+						\tPlugin was probably built using a pre-2.7 version of Enigma.\
+						""".formatted(plugin.getClass().getName()),
+						e
 					);
 				}
 			}
