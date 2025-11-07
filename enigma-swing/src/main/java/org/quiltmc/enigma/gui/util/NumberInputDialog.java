@@ -48,9 +48,12 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 	 * @param initialValue the initial value
 	 * @param min          the minimum value
 	 * @param max          the maximum value
-	 * @param defaultStep  the amount to step the value by when the user clicks step up/down buttons; must be positive
-	 * @param altStep      the amount to step the value by when the user inputs {@link  KeyBinds#ALT_STEP_UP} or
-	 *                     {@link KeyBinds#ALT_STEP_DOWN}; must be positive
+	 * @param defaultStep  the amount to step the value by when the user clicks a step up/down button or inputs
+	 *                     {@link KeyBinds#STEP_UP STEP_UP}/{@link KeyBinds#STEP_DOWN STEP_DOWN};
+	 *                     must be positive
+	 * @param altStep      the amount to step the value by when the user inputs
+	 *                     {@link KeyBinds#ALT_STEP_UP ALT_STEP_UP}/{@link KeyBinds#ALT_STEP_DOWN ALT_STEP_DOWN};
+	 *                     must be positive
 	 * @param title        the title displayed in the window's title bar
 	 * @param message      the message prompting the user for input
 	 *
@@ -95,9 +98,12 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 	 * @param initialValue the initial value
 	 * @param min          the minimum value
 	 * @param max          the maximum value
-	 * @param defaultStep  the amount to step the value by when the user clicks step up/down buttons; must be positive
-	 * @param altStep      the amount to step the value by when the user inputs {@link  KeyBinds#ALT_STEP_UP} or
-	 *                     {@link KeyBinds#ALT_STEP_DOWN}; must be positive
+	 * @param defaultStep  the amount to step the value by when the user clicks a step up/down button or inputs
+	 *                     {@link KeyBinds#STEP_UP STEP_UP}/{@link KeyBinds#STEP_DOWN STEP_DOWN};
+	 *                     must be positive
+	 * @param altStep      the amount to step the value by when the user inputs
+	 *                     {@link KeyBinds#ALT_STEP_UP ALT_STEP_UP}/{@link KeyBinds#ALT_STEP_DOWN ALT_STEP_DOWN};
+	 *                     must be positive
 	 * @param title        the title displayed in the window's title bar
 	 * @param message      the message prompting the user for input
 	 *
