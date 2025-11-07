@@ -487,8 +487,6 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 	}
 
 	protected void stepBy(N step, BinaryOperator<N> operation) {
-		this.stepUpButton.setEnabled(true);
-
 		final N stepped = operation.apply(this.field.getEditOrValue(), step);
 
 		final N clamped = this.updateStepButtons(stepped);
