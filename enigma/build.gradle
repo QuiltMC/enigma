@@ -162,6 +162,35 @@ final recommendedImplPluginJar = tasks.register('recommendedImplPluginJar', Jar)
 	destinationDirectory = dummyPluginsDest
 }
 
+final pluginJarTask = tasks.register('preHandlingPluginJar', Jar) {
+	from sourceSets.preHandlingPlugin.output
+
+	archiveFileName = "pre-handling-plugin.jar"
+	destinationDirectory = dummyPluginsDest
+}
+
+tasks.register('runPreHandlingPluginAgainstCurrentEnigma', JavaExec) {
+	final projectVersion = project.version
+
+	inputs.property('projectVersion', projectVersion)
+
+	final cliShadowJarTask = project(':enigma-cli').tasks.named('shadowJar', Jar)
+	dependsOn(cliShadowJarTask, pluginJarTask)
+
+	final pluginJarFile = pluginJarTask.flatMap(Jar::getArchiveFile)
+	final cliShadowJar = cliShadowJarTask.flatMap(Jar::getArchiveFile)
+
+	inputs.files(cliShadowJar, pluginJarFile)
+
+	mainClass = 'org.quiltmc.enigma.command.Main'
+
+	classpath(cliShadowJar, pluginJarFile)
+
+	doFirst {
+		args 'print-stats', pluginJarFile.get().asFile, pluginJarFile.get().asFile
+	}
+}
+
 // syncing, bumping, and jar-ing must all be one task because they all output to bumped-enigma-copy
 final syncBumpAndJarEnigma = tasks.register("syncBumpAndJarEnigma", Sync) {
 	inputs.property('projectVersion', project.version)
@@ -287,7 +316,7 @@ tasks.register('runRecommendedImplPluginAgainstBumpedEnigma', JavaExec) {
 	classpath(bumpedJarPath, pluginJarFile)
 
 	doFirst {
-		args 'print-stats', bumpedJarPath.get(), bumpedJarPath.get()
+		args 'print-stats', pluginJarFile.get().asFile, pluginJarFile.get().asFile
 	}
 }
 
