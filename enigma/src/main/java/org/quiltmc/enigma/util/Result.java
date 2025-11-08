@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.util;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -13,7 +12,7 @@ import java.util.function.Function;
  * @param <T> the value type held by a successful result
  * @param <E> the error type held by an unsuccessful result
  */
-public sealed interface Result<T, E> {
+public sealed interface Result<T, E> permits OkResult, ErrResult {
 	/**
 	 * Creates a successful result holding the passed {@code value}.
 	 *
@@ -27,7 +26,7 @@ public sealed interface Result<T, E> {
 	 * @throws NullPointerException if the passed {@code value} is {@code null}
 	 */
 	static <T, E> Result<T, E> ok(T value) {
-		return new Ok<>(value);
+		return new OkResult<>(value);
 	}
 
 	/**
@@ -43,7 +42,7 @@ public sealed interface Result<T, E> {
 	 * @throws NullPointerException if the passed {@code error} is {@code null}
 	 */
 	static <T, E> Result<T, E> err(E error) {
-		return new Err<>(error);
+		return new ErrResult<>(error);
 	}
 
 	/**
@@ -136,150 +135,4 @@ public sealed interface Result<T, E> {
 	 * @param <U> the value type held by a returned successful result
 	 */
 	<U> Result<U, E> andThen(Function<T, Result<U, E>> next);
-
-	record Ok<T, E>(T value) implements Result<T, E> {
-		public Ok {
-			Objects.requireNonNull(value);
-		}
-
-		@Override
-		public boolean isOk() {
-			return true;
-		}
-
-		@Override
-		public boolean isErr() {
-			return false;
-		}
-
-		@Override
-		public Optional<T> ok() {
-			return Optional.of(this.value);
-		}
-
-		@Override
-		public Optional<E> err() {
-			return Optional.empty();
-		}
-
-		@Override
-		public T unwrap() {
-			return this.value;
-		}
-
-		@Override
-		public E unwrapErr() {
-			throw new IllegalStateException(String.format("Called Result.unwrapErr on an Ok value: %s", this.value));
-		}
-
-		@Override
-		public T unwrapOr(T fallback) {
-			return this.value;
-		}
-
-		@Override
-		public T unwrapOrElse(Function<E, T> fallback) {
-			return this.value;
-		}
-
-		@Override
-		public <U> Result<U, E> map(Function<T, U> mapper) {
-			return Result.ok(mapper.apply(this.value));
-		}
-
-		@Override
-		@SuppressWarnings("unchecked")
-		public <F> Result<T, F> mapErr(Function<E, F> mapper) {
-			return (Result<T, F>) this;
-		}
-
-		@Override
-		public <U> Result<U, E> and(Result<U, E> next) {
-			return next;
-		}
-
-		@Override
-		public <U> Result<U, E> andThen(Function<T, Result<U, E>> next) {
-			return next.apply(this.value);
-		}
-
-		@Override
-		public String toString() {
-			return String.format("Result.Ok(%s)", this.value);
-		}
-	}
-
-	record Err<T, E>(E error) implements Result<T, E> {
-		public Err {
-			Objects.requireNonNull(error);
-		}
-
-		@Override
-		public boolean isOk() {
-			return false;
-		}
-
-		@Override
-		public boolean isErr() {
-			return true;
-		}
-
-		@Override
-		public Optional<T> ok() {
-			return Optional.empty();
-		}
-
-		@Override
-		public Optional<E> err() {
-			return Optional.of(this.error);
-		}
-
-		@Override
-		public T unwrap() {
-			throw new IllegalStateException(String.format("Called Result.unwrap on an Err value: %s", this.error));
-		}
-
-		@Override
-		public E unwrapErr() {
-			return this.error;
-		}
-
-		@Override
-		public T unwrapOr(T fallback) {
-			return fallback;
-		}
-
-		@Override
-		public T unwrapOrElse(Function<E, T> fallback) {
-			return fallback.apply(this.error);
-		}
-
-		@Override
-		@SuppressWarnings("unchecked")
-		public <U> Result<U, E> map(Function<T, U> mapper) {
-			return (Result<U, E>) this;
-		}
-
-		@Override
-		public <F> Result<T, F> mapErr(Function<E, F> mapper) {
-			return Result.err(mapper.apply(this.error));
-		}
-
-		@Override
-		@SuppressWarnings("unchecked")
-		public <U> Result<U, E> and(Result<U, E> next) {
-			return (Result<U, E>) this;
-		}
-
-		@Override
-		@SuppressWarnings("unchecked")
-		public <U> Result<U, E> andThen(Function<T, Result<U, E>> next) {
-			return (Result<U, E>) this;
-		}
-
-		@Override
-		public String toString() {
-			return String.format("Result.Err(%s)", this.error);
-		}
-	}
 }
