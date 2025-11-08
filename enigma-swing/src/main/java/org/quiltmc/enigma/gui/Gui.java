@@ -79,7 +79,6 @@ import java.util.function.IntFunction;
 import java.util.stream.Stream;
 
 public class Gui {
-	private static final int DEFAULT_MIN_LEFT_ON_SCREEN = 300;
 	private static final int DEFAULT_MIN_TOP_ON_SCREEN = 200;
 
 	private final MainWindow mainWindow;
@@ -238,7 +237,9 @@ public class Gui {
 		final Point windowPos = Config.main().windowPos.value().toPoint();
 		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
-		final int clampedX = Utils.clamp(windowPos.x, 0, screenSize.width - ScaleUtil.scale(DEFAULT_MIN_LEFT_ON_SCREEN));
+		// keep the whole width (or as much as will fit) on-screen so window controls in the title bar are accessible
+		final int clampedX = Utils.clamp(windowPos.x, 0, Math.max(0, screenSize.width - frame.getSize().width));
+		// allow some of the bottom to be off-screen, but not the top, because of the title bar
 		final int clampedY = Utils.clamp(windowPos.y, 0, screenSize.height - ScaleUtil.scale(DEFAULT_MIN_TOP_ON_SCREEN));
 
 		if (windowPos.x != clampedX || windowPos.y != clampedY) {
