@@ -307,6 +307,7 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 			this.setVisible(false);
 		});
 		this.submit.setEnabled(false);
+		this.getRootPane().setDefaultButton(this.submit);
 
 		if (initialValue != null) {
 			this.updateStepButtons(initialValue);
