@@ -4,103 +4,183 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
-public final class Result<T, E> {
-	private final T ok;
-	private final E err;
-
-	private Result(T ok, E err) {
-		this.ok = ok;
-		this.err = err;
+public sealed interface Result<T, E> {
+	static <T, E> Result<T, E> ok(T ok) {
+		return new Ok<>(ok);
 	}
 
-	public static <T, E> Result<T, E> ok(T ok) {
-		return new Result<>(Objects.requireNonNull(ok), null);
+	static <T, E> Result<T, E> err(E err) {
+		return new Err<>(err);
 	}
 
-	public static <T, E> Result<T, E> err(E err) {
-		return new Result<>(null, Objects.requireNonNull(err));
+	boolean isOk();
+
+	boolean isErr();
+
+	Optional<T> ok();
+
+	Optional<E> err();
+
+	T unwrap();
+
+	E unwrapErr();
+
+	T unwrapOr(T fallback);
+
+	T unwrapOrElse(Function<E, T> fallback);
+
+	<U> Result<U, E> map(Function<T, U> mapper);
+
+	<F> Result<T, F> mapErr(Function<E, F> mapper);
+
+	<U> Result<U, E> and(Result<U, E> next);
+
+	<U> Result<U, E> andThen(Function<T, Result<U, E>> op);
+
+	record Ok<T, E>(T value) implements Result<T, E> {
+		public Ok {
+			Objects.requireNonNull(value);
+		}
+
+		@Override
+		public boolean isOk() {
+			return true;
+		}
+
+		@Override
+		public boolean isErr() {
+			return false;
+		}
+
+		@Override
+		public Optional<T> ok() {
+			return Optional.of(this.value);
+		}
+
+		@Override
+		public Optional<E> err() {
+			return Optional.empty();
+		}
+
+		@Override
+		public T unwrap() {
+			return this.value;
+		}
+
+		@Override
+		public E unwrapErr() {
+			throw new IllegalStateException(String.format("Called Result.unwrapErr on an Ok value: %s", this.value));
+		}
+
+		@Override
+		public T unwrapOr(T fallback) {
+			return this.value;
+		}
+
+		@Override
+		public T unwrapOrElse(Function<E, T> fallback) {
+			return this.value;
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public <U> Result<U, E> map(Function<T, U> mapper) {
+			return (Result<U, E>) this;
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public <F> Result<T, F> mapErr(Function<E, F> mapper) {
+			return (Result<T, F>) this;
+		}
+
+		@Override
+		public <U> Result<U, E> and(Result<U, E> next) {
+			return next;
+		}
+
+		@Override
+		public <U> Result<U, E> andThen(Function<T, Result<U, E>> op) {
+			return op.apply(this.value);
+		}
+
+		@Override
+		public String toString() {
+			return String.format("Result.Ok(%s)", this.value);
+		}
 	}
 
-	public boolean isOk() {
-		return this.ok != null;
-	}
+	record Err<T, E>(E value) implements Result<T, E> {
+		public Err {
+			Objects.requireNonNull(value);
+		}
 
-	public boolean isErr() {
-		return this.err != null;
-	}
+		@Override
+		public boolean isOk() {
+			return false;
+		}
 
-	public Optional<T> ok() {
-		return Optional.ofNullable(this.ok);
-	}
+		@Override
+		public boolean isErr() {
+			return true;
+		}
 
-	public Optional<E> err() {
-		return Optional.ofNullable(this.err);
-	}
+		@Override
+		public Optional<T> ok() {
+			return Optional.empty();
+		}
 
-	public T unwrap() {
-		if (this.isOk()) return this.ok;
-		throw new IllegalStateException(String.format("Called Result.unwrap on an Err value: %s", this.err));
-	}
+		@Override
+		public Optional<E> err() {
+			return Optional.of(this.value);
+		}
 
-	public E unwrapErr() {
-		if (this.isErr()) return this.err;
-		throw new IllegalStateException(String.format("Called Result.unwrapErr on an Ok value: %s", this.ok));
-	}
+		@Override
+		public T unwrap() {
+			throw new IllegalStateException(String.format("Called Result.unwrap on an Err value: %s", this.value));
+		}
 
-	public T unwrapOr(T fallback) {
-		if (this.isOk()) return this.ok;
-		return fallback;
-	}
+		@Override
+		public E unwrapErr() {
+			return this.value;
+		}
 
-	public T unwrapOrElse(Function<E, T> fn) {
-		if (this.isOk()) return this.ok;
-		return fn.apply(this.err);
-	}
+		@Override
+		public T unwrapOr(T fallback) {
+			return fallback;
+		}
 
-	@SuppressWarnings("unchecked")
-	public <U> Result<U, E> map(Function<T, U> op) {
-		if (!this.isOk()) return (Result<U, E>) this;
-		return Result.ok(op.apply(this.ok));
-	}
+		@Override
+		public T unwrapOrElse(Function<E, T> fallback) {
+			return fallback.apply(this.value);
+		}
 
-	@SuppressWarnings("unchecked")
-	public <F> Result<T, F> mapErr(Function<E, F> op) {
-		if (!this.isErr()) return (Result<T, F>) this;
-		return Result.err(op.apply(this.err));
-	}
+		@Override
+		@SuppressWarnings("unchecked")
+		public <U> Result<U, E> map(Function<T, U> mapper) {
+			return (Result<U, E>) this;
+		}
 
-	@SuppressWarnings("unchecked")
-	public <U> Result<U, E> and(Result<U, E> next) {
-		if (this.isErr()) return (Result<U, E>) this;
-		return next;
-	}
+		@Override
+		public <F> Result<T, F> mapErr(Function<E, F> mapper) {
+			return Result.err(mapper.apply(this.value));
+		}
 
-	@SuppressWarnings("unchecked")
-	public <U> Result<U, E> andThen(Function<T, Result<U, E>> op) {
-		if (this.isErr()) return (Result<U, E>) this;
-		return op.apply(this.ok);
-	}
+		@Override
+		@SuppressWarnings("unchecked")
+		public <U> Result<U, E> and(Result<U, E> next) {
+			return (Result<U, E>) this;
+		}
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || this.getClass() != o.getClass()) return false;
-		Result<?, ?> result = (Result<?, ?>) o;
-		return Objects.equals(this.ok, result.ok)
-				&& Objects.equals(this.err, result.err);
-	}
+		@Override
+		@SuppressWarnings("unchecked")
+		public <U> Result<U, E> andThen(Function<T, Result<U, E>> op) {
+			return (Result<U, E>) this;
+		}
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(this.ok, this.err);
-	}
-
-	@Override
-	public String toString() {
-		if (this.isOk()) {
-			return String.format("Result.Ok(%s)", this.ok);
-		} else {
-			return String.format("Result.Err(%s)", this.err);
+		@Override
+		public String toString() {
+			return String.format("Result.Err(%s)", this.value);
 		}
 	}
 }
