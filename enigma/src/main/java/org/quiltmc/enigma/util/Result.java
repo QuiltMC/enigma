@@ -128,14 +128,14 @@ public sealed interface Result<T, E> {
 	<U> Result<U, E> and(Result<U, E> next);
 
 	/**
-	 * @param op a function that generates a new result from this result's value if this result is a success
+	 * @param next a function that generates a new result from this result's value if this result is a success
 	 *
-	 * @return the result created by applying the passed {@code op} to this result's value if this result is a success,
-	 * or this result otherwise
+	 * @return the result created by applying the passed {@code next} function to this result's value
+	 * if this result is a success, or this result otherwise
 	 *
 	 * @param <U> the value type held by a returned successful result
 	 */
-	<U> Result<U, E> andThen(Function<T, Result<U, E>> op);
+	<U> Result<U, E> andThen(Function<T, Result<U, E>> next);
 
 	record Ok<T, E>(T value) implements Result<T, E> {
 		public Ok {
@@ -199,8 +199,8 @@ public sealed interface Result<T, E> {
 		}
 
 		@Override
-		public <U> Result<U, E> andThen(Function<T, Result<U, E>> op) {
-			return op.apply(this.value);
+		public <U> Result<U, E> andThen(Function<T, Result<U, E>> next) {
+			return next.apply(this.value);
 		}
 
 		@Override
@@ -273,7 +273,7 @@ public sealed interface Result<T, E> {
 
 		@Override
 		@SuppressWarnings("unchecked")
-		public <U> Result<U, E> andThen(Function<T, Result<U, E>> op) {
+		public <U> Result<U, E> andThen(Function<T, Result<U, E>> next) {
 			return (Result<U, E>) this;
 		}
 
