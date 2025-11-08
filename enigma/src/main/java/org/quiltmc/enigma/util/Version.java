@@ -7,7 +7,7 @@ import java.util.Comparator;
 
 /**
  * Represents a version with {@link #major}, {@link #minor}, and {@link #patch} number parts.<br>
- * Each part must be non-negative.
+ * Each part is non-negative.
  *
  * <p> A version's string representation concatenates its parts and separates them with {@value SEPARATOR}.<br>
  * So {@code 1.2.3} represents a version whose {@link #major}, {@link #minor}, and {@link #patch} parts are

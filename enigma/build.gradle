@@ -209,8 +209,8 @@ final testPreHandlingPluginAgainstCurrentEnigma = tasks
 	}
 }
 
-// syncing, bumping, and jar-ing must all be one task because they all output to bumped-enigma-copy
-final syncBumpAndJarEnigma = tasks.register("syncBumpAndJarEnigma", Sync) {
+// copying, bumping, and jar-ing must all be one task because they all output to bumped-enigma-copy
+final copyBumpAndJarEnigma = tasks.register("copyBumpAndJarEnigma", Sync) {
 	inputs.property('projectVersion', project.version)
 
 	final destPath = 'bumped-enigma-copy'
@@ -240,7 +240,7 @@ final syncBumpAndJarEnigma = tasks.register("syncBumpAndJarEnigma", Sync) {
 		it.file in project.layout.buildDirectory.get().asFile
 	}
 
-	// already excluded whole build dir, but just in case, explicitly exclude dest dir to avoid copy recursion
+	// already excluded whole build dir, but just in case: explicitly exclude dest dir to avoid copy recursion
 	exclude {
 		it.file in destinationDir
 	}
@@ -306,27 +306,29 @@ final testRecommendedImplPluginAgainstBumpedEnigma = tasks
 
 	final projectDir = project.projectDir
 	final libsDir = project.layout.buildDirectory.dir('libs')
-	final Provider<java.nio.file.Path> bumpedJarPath = syncBumpAndJarEnigma.map(Sync::getDestinationDir).zip(libsDir) { bumpDest, libs ->
-		final relativeBuildLibs = projectDir.toPath().relativize(libs.asFile.toPath())
-		final copyBuildLibs = bumpDest.toPath().resolve('enigma-cli').resolve(relativeBuildLibs)
+	final Provider<java.nio.file.Path> bumpedJarPath = copyBumpAndJarEnigma
+		.map(Sync::getDestinationDir)
+		.zip(libsDir) { bumpDest, libs ->
+			final relativeBuildLibs = projectDir.toPath().relativize(libs.asFile.toPath())
+			final copyBuildLibs = bumpDest.toPath().resolve('enigma-cli').resolve(relativeBuildLibs)
 
-		final bumpedJars = Files
-			.find(copyBuildLibs, 1) { path, attributes ->
-				!path.fileName.toString().endsWith("${projectVersion}-all.jar")
-					&& path.fileName.toString().endsWith('-all.jar')
+			final bumpedJars = Files
+				.find(copyBuildLibs, 1) { path, attributes ->
+					!path.fileName.toString().endsWith("${projectVersion}-all.jar")
+						&& path.fileName.toString().endsWith('-all.jar')
+				}
+				.toList()
+
+			if (bumpedJars.isEmpty()) {
+				throw new GradleException('No bumped Enigma jar to run!')
+			} else if (bumpedJars.size() > 1) {
+				throw new GradleException('Multiple bumped Enigma jars found!')
+			} else {
+				return bumpedJars.first()
 			}
-			.toList()
-
-		if (bumpedJars.isEmpty()) {
-			throw new GradleException('No bumped Enigma jar to run!')
-		} else if (bumpedJars.size() > 1) {
-			throw new GradleException('Multiple bumped Enigma jars found!')
-		} else {
-			return bumpedJars.first()
 		}
-	}
 
-	dependsOn(syncBumpAndJarEnigma, recommendedImplPluginJar)
+	dependsOn(copyBumpAndJarEnigma, recommendedImplPluginJar)
 
 	final pluginJarFile = recommendedImplPluginJar.flatMap(Jar::getArchiveFile)
 

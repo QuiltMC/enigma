@@ -63,9 +63,23 @@ public class Enigma {
 	public static final String URL = "https://quiltmc.org";
 	public static final int ASM_VERSION = Opcodes.ASM9;
 
-	// These are compile-time constants.
+	/**
+	 * A compile-time constant which compilers can inline in
+	 * {@link EnigmaPlugin#supportsEnigmaVersion(Version)} implementations,
+	 * allowing plugins to 'remember' the version of Enigma they were built with.
+	 */
 	public static final int MAJOR_VERSION = 2;
+	/**
+	 * A compile-time constant which compilers can inline in
+	 * {@link EnigmaPlugin#supportsEnigmaVersion(Version)} implementations,
+	 * allowing plugins to 'remember' the version of Enigma they were built with.
+	 */
 	public static final int MINOR_VERSION = 6;
+	/**
+	 * A compile-time constant which compilers can inline in
+	 * {@link EnigmaPlugin#supportsEnigmaVersion(Version)} implementations,
+	 * allowing plugins to 'remember' the version of Enigma they were built with.
+	 */
 	public static final int PATCH_VERSION = 2;
 
 	private static final Version CURRENT_VERSION = new Version(MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION);
