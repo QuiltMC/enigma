@@ -137,7 +137,8 @@ public class ClassSelectorPopupMenu {
 		// only enable regenerate stats if selected path is a class
 		this.regenerateStats.setEnabled(selected != null);
 
-		this.reloadMappings.setEnabled(selected != null);
+		// only enable reload mappings if selected path is a class and a read-write service exists to reload from
+		this.reloadMappings.setEnabled(selected != null && this.gui.getController().getReadWriteService() != null);
 
 		// update toggle mapping text to match
 		this.toggleMapping.setEnabled(selected != null);
