@@ -209,9 +209,9 @@ public sealed interface Result<T, E> {
 		}
 	}
 
-	record Err<T, E>(E value) implements Result<T, E> {
+	record Err<T, E>(E error) implements Result<T, E> {
 		public Err {
-			Objects.requireNonNull(value);
+			Objects.requireNonNull(error);
 		}
 
 		@Override
@@ -231,17 +231,17 @@ public sealed interface Result<T, E> {
 
 		@Override
 		public Optional<E> err() {
-			return Optional.of(this.value);
+			return Optional.of(this.error);
 		}
 
 		@Override
 		public T unwrap() {
-			throw new IllegalStateException(String.format("Called Result.unwrap on an Err value: %s", this.value));
+			throw new IllegalStateException(String.format("Called Result.unwrap on an Err value: %s", this.error));
 		}
 
 		@Override
 		public E unwrapErr() {
-			return this.value;
+			return this.error;
 		}
 
 		@Override
@@ -251,7 +251,7 @@ public sealed interface Result<T, E> {
 
 		@Override
 		public T unwrapOrElse(Function<E, T> fallback) {
-			return fallback.apply(this.value);
+			return fallback.apply(this.error);
 		}
 
 		@Override
@@ -262,7 +262,7 @@ public sealed interface Result<T, E> {
 
 		@Override
 		public <F> Result<T, F> mapErr(Function<E, F> mapper) {
-			return Result.err(mapper.apply(this.value));
+			return Result.err(mapper.apply(this.error));
 		}
 
 		@Override
@@ -279,7 +279,7 @@ public sealed interface Result<T, E> {
 
 		@Override
 		public String toString() {
-			return String.format("Result.Err(%s)", this.value);
+			return String.format("Result.Err(%s)", this.error);
 		}
 	}
 }
