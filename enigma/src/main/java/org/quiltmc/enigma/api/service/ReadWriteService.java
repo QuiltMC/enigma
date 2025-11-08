@@ -9,6 +9,7 @@ import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingsReader;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -59,6 +60,15 @@ public interface ReadWriteService extends EnigmaService, MappingsWriter, Mapping
 				}
 
 				return reader.read(path, progress);
+			}
+
+			@Override
+			public EntryTree<EntryMapping> readClass(Path path, ClassEntry classEntry, ProgressListener progress) throws MappingParseException, IOException {
+				if (reader == null) {
+					throw new UnsupportedOperationException("This service does not support reading!");
+				}
+
+				return reader.readClass(path, classEntry, progress);
 			}
 
 			@Override
