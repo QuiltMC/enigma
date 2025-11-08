@@ -7,7 +7,7 @@ import java.util.function.Function;
 /**
  * Represents the result of an operation which may or may not have been successful.
  *
- * <p> A result holds either a value if type {@code T} which is the result of a successful operation,
+ * <p> A result holds either a value of type {@code T} which is the result of a successful operation,
  * or an error of type {@code E} which is the result of a failed operation.
  *
  * @param <T> the value type held by a successful result
