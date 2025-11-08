@@ -85,7 +85,10 @@ public enum EnigmaMappingsReader implements MappingsReader {
 
 			EntryTree<EntryMapping> mappings = new HashEntryTree<>();
 			Path mappingsFile = path.resolve(classEntry.getFullName() + ".mapping");
-			readFile(mappingsFile, mappings);
+			if (Files.exists(mappingsFile) && Files.isRegularFile(mappingsFile)) {
+				readFile(mappingsFile, mappings);
+			}
+
 			progress.step(1, I18n.translate("progress.mappings.enigma_directory.done"));
 			return mappings;
 		}

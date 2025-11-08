@@ -81,7 +81,7 @@ public class MappingsIndex implements MappingsIndexer {
 
 		EntryTreeNode<EntryMapping> classNode = newMappings.findNode(classEntry);
 		if (classNode == null) {
-			throw new IllegalArgumentException("Class entry " + classEntry.getFullName() + " not found in mappings");
+			return; // Mappings were either removed or never existed in the first place
 		}
 
 		oldMappings.insert(classNode);
