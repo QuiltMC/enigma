@@ -17,7 +17,7 @@ public sealed interface Result<T, E> {
 	/**
 	 * Creates a successful result holding the passed {@code value}.
 	 *
-	 * @param value the value held by the returned result; must not be null
+	 * @param value the value held by the returned result; must not be {@code null}
 	 *
 	 * @param <T> the value type held by a successful result
 	 * @param <E> the error type held by an unsuccessful result
@@ -33,7 +33,7 @@ public sealed interface Result<T, E> {
 	/**
 	 * Creates an error result holding the passed {@code error}.
 	 *
-	 * @param error the error held by the returned result; must not be null
+	 * @param error the error held by the returned result; must not be {@code null}
 	 *
 	 * @param <T> the value type held by a successful result
 	 * @param <E> the error type held by an unsuccessful result
