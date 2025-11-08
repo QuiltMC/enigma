@@ -14,17 +14,17 @@ import java.util.Comparator;
  * {@code 1}, {@code 2}, and {@code 3}, respectively.
  */
 public record Version(int major, int minor, int patch) implements Comparable<Version> {
-	public static final Comparator<Version> MAJOR_COMPARATOR = Comparator
+	private static final Comparator<Version> MAJOR_COMPARATOR = Comparator
 			.comparing(Version::major, Integer::compareTo);
-	public static final Comparator<Version> MINOR_COMPARATOR = Comparator
+	private static final Comparator<Version> MINOR_COMPARATOR = Comparator
 			.comparing(Version::minor, Integer::compareTo);
-	public static final Comparator<Version> PATCH_COMPARATOR = Comparator
+	private static final Comparator<Version> PATCH_COMPARATOR = Comparator
 			.comparing(Version::patch, Integer::compareTo);
 
-	public static final Comparator<Version> MAJOR_MINOR_COMPARATOR =
+	private static final Comparator<Version> MAJOR_MINOR_COMPARATOR =
 			MAJOR_COMPARATOR.thenComparing(MINOR_COMPARATOR);
 
-	public static final Comparator<Version> COMPLETE_COMPARATOR =
+	private static final Comparator<Version> COMPLETE_COMPARATOR =
 			MAJOR_MINOR_COMPARATOR.thenComparing(PATCH_COMPARATOR);
 
 	private static final String SEPARATOR = ".";
@@ -64,6 +64,20 @@ public record Version(int major, int minor, int patch) implements Comparable<Ver
 	@Override
 	public int compareTo(@Nonnull Version other) {
 		return COMPLETE_COMPARATOR.compare(this, other);
+	}
+
+	/**
+	 * Compares only the {@link #major} number parts.
+	 */
+	public int compareMajorTo(@Nonnull Version other) {
+		return MAJOR_COMPARATOR.compare(this, other);
+	}
+
+	/**
+	 * Compares the {@link #major} and {@link #minor} number parts, in that order.
+	 */
+	public int compareMajorMinorTo(@Nonnull Version other) {
+		return MAJOR_MINOR_COMPARATOR.compare(this, other);
 	}
 
 	@Override

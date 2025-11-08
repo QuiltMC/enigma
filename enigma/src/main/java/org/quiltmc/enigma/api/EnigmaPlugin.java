@@ -28,8 +28,13 @@ public interface EnigmaPlugin {
 	 * <p> If {@code false} is returned, an exception will be thrown during initialization. To make the error more
 	 * readable, a plugin may override {@link #getName()} to return a name clearly identifying itself.
 	 *
-	 * <p> Custom implementations of this method may use {@link Version#compareTo(Version)} or any of {@link Version}'s
-	 * static {@link Comparator}s to easily match various version ranges.
+	 * <p> Custom implementations of this method may use {@link Version}s {@code compare...} methods to easily match
+	 * various version ranges:
+	 * <ul>
+	 *     <li> {@link Version#compareTo(Version)}
+	 * 	   <li> {@link Version#compareMajorTo(Version)}
+	 * 	   <li> {@link Version#compareMajorMinorTo(Version)}
+	 * </ul>
 	 *
 	 * @param enigmaVersion the run-time Enigma version
 	 */
