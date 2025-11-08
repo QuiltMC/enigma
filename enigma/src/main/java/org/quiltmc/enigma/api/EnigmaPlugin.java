@@ -3,7 +3,6 @@ package org.quiltmc.enigma.api;
 import org.quiltmc.enigma.util.Version;
 
 import javax.annotation.Nonnull;
-import java.util.Comparator;
 
 /**
  * An enigma plugin represents a collection of {@link org.quiltmc.enigma.api.service.EnigmaService services} that perform different functions.
