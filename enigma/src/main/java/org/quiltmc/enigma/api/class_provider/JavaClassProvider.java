@@ -24,6 +24,7 @@ public class JavaClassProvider implements ClassProvider {
 	private static final String CLASS_EXTENSION = ".class";
 	private static final Pattern JAVA_CLASS_PATTERN = Pattern.compile("^java/.*" + Pattern.quote(CLASS_EXTENSION) + "$");
 
+	// note: not a complete set
 	private static final ImmutableSet<String> UN_ANALYZABLE_CLASS_NAMES = ImmutableSet.of(
 			"java/lang/module/ModuleDescriptor",
 			"java/io/PrintStream"
