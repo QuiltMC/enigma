@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.*;
 public class TestJarIndexInheritanceTree {
 	public static final Path JAR = TestUtil.obfJar("inheritance_tree");
 
+	private static final ClassEntry OBJECT_CLASS = TestEntryFactory.newClass("java/lang/Object");
 	private static final ClassEntry BASE_CLASS = TestEntryFactory.newClass("a");
 	private static final ClassEntry SUB_CLASS_A = TestEntryFactory.newClass("b");
 	private static final ClassEntry SUB_CLASS_AA = TestEntryFactory.newClass("d");
@@ -57,24 +58,23 @@ public class TestJarIndexInheritanceTree {
 		InheritanceIndex index = this.index.getIndex(InheritanceIndex.class);
 
 		// base class
-		assertThat(index.getParents(BASE_CLASS), is(empty()));
-		assertThat(index.getAncestors(BASE_CLASS), is(empty()));
-		assertThat(index.getChildren(BASE_CLASS), containsInAnyOrder(SUB_CLASS_A, SUB_CLASS_B
-		));
+		assertThat(index.getParents(BASE_CLASS), containsInAnyOrder(OBJECT_CLASS));
+		assertThat(index.getAncestors(BASE_CLASS), containsInAnyOrder(OBJECT_CLASS));
+		assertThat(index.getChildren(BASE_CLASS), containsInAnyOrder(SUB_CLASS_A, SUB_CLASS_B));
 
 		// subclass a
 		assertThat(index.getParents(SUB_CLASS_A), contains(BASE_CLASS));
-		assertThat(index.getAncestors(SUB_CLASS_A), containsInAnyOrder(BASE_CLASS));
+		assertThat(index.getAncestors(SUB_CLASS_A), containsInAnyOrder(BASE_CLASS, OBJECT_CLASS));
 		assertThat(index.getChildren(SUB_CLASS_A), contains(SUB_CLASS_AA));
 
 		// subclass aa
 		assertThat(index.getParents(SUB_CLASS_AA), contains(SUB_CLASS_A));
-		assertThat(index.getAncestors(SUB_CLASS_AA), containsInAnyOrder(SUB_CLASS_A, BASE_CLASS));
+		assertThat(index.getAncestors(SUB_CLASS_AA), containsInAnyOrder(SUB_CLASS_A, BASE_CLASS, OBJECT_CLASS));
 		assertThat(index.getChildren(SUB_CLASS_AA), is(empty()));
 
 		// subclass b
 		assertThat(index.getParents(SUB_CLASS_B), contains(BASE_CLASS));
-		assertThat(index.getAncestors(SUB_CLASS_B), containsInAnyOrder(BASE_CLASS));
+		assertThat(index.getAncestors(SUB_CLASS_B), containsInAnyOrder(BASE_CLASS, OBJECT_CLASS));
 		assertThat(index.getChildren(SUB_CLASS_B), is(empty()));
 	}
 

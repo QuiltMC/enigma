@@ -15,6 +15,7 @@ Enigma includes the following open-source libraries:
  - [FlatLaf](https://github.com/JFormDesigner/FlatLaf) (Apache-2.0)
  - [jopt-simple](https://github.com/jopt-simple/jopt-simple) (MIT)
  - [ASM](https://asm.ow2.io/) (BSD-3-Clause)
+ - [JavaParser](https://javaparser.org/) (Apache-2.0)
 
 ## Usage
 

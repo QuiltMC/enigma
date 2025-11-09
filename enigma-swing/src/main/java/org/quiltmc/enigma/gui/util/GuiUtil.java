@@ -2,7 +2,9 @@ package org.quiltmc.enigma.gui.util;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.google.common.collect.ImmutableList;
+import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
+import org.quiltmc.enigma.api.service.JarIndexerService;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
@@ -10,12 +12,16 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.gui.config.keybind.KeyBind;
 import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
+import org.quiltmc.enigma.impl.plugin.RecordIndexingService;
 import org.quiltmc.enigma.util.Os;
 
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.InputMap;
+import javax.swing.JCheckBox;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -31,9 +37,12 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Font;
+import java.awt.MouseInfo;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -58,7 +67,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public final class GuiUtil {
 	private GuiUtil() {
@@ -329,6 +341,135 @@ public final class GuiUtil {
 				actionMap.put(actionKey, action);
 			}
 		}
+	}
+
+	/**
+	 * @see #consumeMousePositionIn(Component, BiConsumer, Consumer)
+	 */
+	public static void consumeMousePositionIn(Component component, BiConsumer<Point, Point> inAction) {
+		consumeMousePositionIn(component, inAction, pos -> { });
+	}
+
+	/**
+	 * @see #consumeMousePositionIn(Component, BiConsumer, Consumer)
+	 */
+	public static void consumeMousePositionOut(Component component, Consumer<Point> outAction) {
+		consumeMousePositionIn(component, (absolut, relative) -> { }, outAction);
+	}
+
+	/**
+	 * If the passed {@code component} {@link Component#contains(Point) contains} the mouse, passes the absolute mouse
+	 * position and its position relative to the passed {@code component} to the passed {@code inAction}.<br>
+	 * Otherwise, passes the absolute mouse position to the passed {@code outAction}.
+	 *
+	 * @param component the component which may contain the mouse pointer
+	 * @param inAction  the action to run if the mouse is inside the passed {@code component};
+	 *                  receives the mouse's absolute position and its position relative to the component
+	 * @param outAction the action to run if the mouse is outside the passed {@code component};
+	 *                  receives the mouse's absolute position
+	 */
+	public static void consumeMousePositionIn(
+			Component component, BiConsumer<Point, Point> inAction, Consumer<Point> outAction
+	) {
+		final Point absolutePos = MouseInfo.getPointerInfo().getLocation();
+		if (component.isShowing()) {
+			final Point relativePos = getRelativePos(component, absolutePos);
+
+			if (component.contains(relativePos)) {
+				inAction.accept(absolutePos, relativePos);
+				return;
+			}
+		}
+
+		outAction.accept(absolutePos);
+	}
+
+	public static Point getRelativePos(Component component, Point absolutePos) {
+		return getRelativePos(component, absolutePos.x, absolutePos.y);
+	}
+
+	public static Point getRelativePos(Component component, int absoluteX, int absoluteY) {
+		final Point componentPos = component.getLocationOnScreen();
+		componentPos.setLocation(-componentPos.x, -componentPos.y);
+		componentPos.translate(absoluteX, absoluteY);
+
+		return componentPos;
+	}
+
+	public static Optional<RecordIndexingService> getRecordIndexingService(Gui gui) {
+		return gui.getController()
+				.getProject()
+				.getEnigma()
+				.getService(JarIndexerService.TYPE, RecordIndexingService.ID)
+				.map(service -> (RecordIndexingService) service);
+	}
+
+	/**
+	 * Creates a {@link JCheckBoxMenuItem} that is kept in sync with the passed {@code config}.
+	 *
+	 * @see #syncStateWithConfig(JCheckBoxMenuItem, TrackedValue)
+	 */
+	public static JCheckBoxMenuItem createSyncedMenuCheckBox(TrackedValue<Boolean> config) {
+		final var box = new JCheckBoxMenuItem();
+		syncStateWithConfig(box, config);
+
+		return box;
+	}
+
+	/**
+	 * Creates a {@link JCheckBox} that is kept in sync with the passed {@code config}.
+	 *
+	 * @see #syncStateWithConfig(JCheckBox, TrackedValue)
+	 */
+	public static JCheckBox createSyncedCheckBox(TrackedValue<Boolean> config) {
+		final var box = new JCheckBox();
+		syncStateWithConfig(box, config);
+
+		return box;
+	}
+
+	/**
+	 * Adds listeners to the passed {@code box} and {@code config} that keep the
+	 * {@link JCheckBoxMenuItem#getState() state} of the {@code box} and the
+	 * {@link TrackedValue#value() value} of the {@code config} in sync.
+	 *
+	 * @see #createSyncedMenuCheckBox(TrackedValue)
+	 */
+	public static void syncStateWithConfig(JCheckBoxMenuItem box, TrackedValue<Boolean> config) {
+		syncStateWithConfigImpl(box, box::setState, box::getState, config);
+	}
+
+	/**
+	 * Adds listeners to the passed {@code box} and {@code config} that keep the
+	 * {@linkplain JCheckBox#isSelected() selected state} of the {@code box} and the
+	 * {@link TrackedValue#value() value} of the {@code config} in sync.
+	 *
+	 * @see #createSyncedCheckBox(TrackedValue)
+	 */
+	public static void syncStateWithConfig(JCheckBox box, TrackedValue<Boolean> config) {
+		syncStateWithConfigImpl(box, box::setSelected, box::isSelected, config);
+	}
+
+	private static void syncStateWithConfigImpl(
+			AbstractButton button,
+			Consumer<Boolean> buttonSetter, Supplier<Boolean> buttonGetter,
+			TrackedValue<Boolean> config
+	) {
+		buttonSetter.accept(config.value());
+
+		button.addActionListener(e -> {
+			final boolean buttonValue = buttonGetter.get();
+			if (buttonValue != config.value()) {
+				config.setValue(buttonValue);
+			}
+		});
+
+		config.registerCallback(updated -> {
+			final boolean configValue = updated.value();
+			if (configValue != buttonGetter.get()) {
+				buttonSetter.accept(configValue);
+			}
+		});
 	}
 
 	public enum FocusCondition {
