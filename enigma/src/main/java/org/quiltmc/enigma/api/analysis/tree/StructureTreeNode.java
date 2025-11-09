@@ -12,6 +12,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
+import org.quiltmc.enigma.impl.EnigmaProjectImpl;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
@@ -38,6 +39,10 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 	}
 
 	public void load(EnigmaProject project, StructureTreeOptions options) {
+		this.loadImpl((EnigmaProjectImpl) project, options);
+	}
+
+	private void loadImpl(EnigmaProjectImpl project, StructureTreeOptions options) {
 		Stream<ParentedEntry<?>> children = project.getJarIndex().getChildrenByClass().get(this.parentEntry).stream();
 
 		children = switch (options.obfuscationVisibility()) {
