@@ -139,6 +139,8 @@ public class EditorPanel extends BaseEditorPanel {
 			}
 		});
 
+		this.popupMenu.getButtonKeyBinds().keySet().forEach(keyBind -> keyBind.removeUiConflicts(this.editor));
+
 		this.reloadKeyBinds();
 		this.addSourceSetListener(source -> {
 			if (this.navigatorPanel != null) {
