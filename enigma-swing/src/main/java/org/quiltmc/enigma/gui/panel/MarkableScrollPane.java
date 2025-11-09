@@ -412,7 +412,7 @@ public class MarkableScrollPane extends JScrollPane {
 			for (final int pos : this.pendingMarkerPositions) {
 				final Collection<Marker> markers = MarkableScrollPane.this.markersByPos.get(pos);
 				if (pos < this.viewHeight && !markers.isEmpty() && MarkableScrollPane.this.maxConcurrentMarkers > 0) {
-					final int scaledPos = this.scalePos(pos);
+					final int scaledPos = this.scalePos(pos) + this.areaY;
 
 					this.paintersByPos.remove(pos);
 
