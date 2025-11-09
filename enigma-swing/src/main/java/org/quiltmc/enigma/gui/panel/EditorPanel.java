@@ -142,9 +142,7 @@ public class EditorPanel extends BaseEditorPanel {
 		this.reloadKeyBinds();
 		this.addSourceSetListener(source -> {
 			if (this.navigatorPanel != null) {
-				for (Entry<?> entry : source.getIndex().declarations()) {
-					this.navigatorPanel.addEntry(entry);
-				}
+				this.navigatorPanel.resetEntries(source.getIndex().declarations());
 			}
 		});
 
