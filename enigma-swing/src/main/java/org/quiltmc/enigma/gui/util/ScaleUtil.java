@@ -6,6 +6,7 @@ import com.github.swingdpi.plaf.MetalTweaker;
 import com.github.swingdpi.plaf.NimbusTweaker;
 import com.github.swingdpi.plaf.WindowsTweaker;
 import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.util.Utils;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
 import java.awt.Dimension;
@@ -26,7 +27,7 @@ public class ScaleUtil {
 
 	public static void setScaleFactor(float scaleFactor) {
 		float oldScale = Config.main().scaleFactor.value();
-		float clamped = Math.min(Math.max(0.25f, scaleFactor), 10.0f);
+		float clamped = Utils.clamp(scaleFactor, 0.25f, 10.0f);
 		Config.main().scaleFactor.setValue(clamped, true);
 		listeners.forEach(l -> l.onScaleChanged(clamped, oldScale));
 	}

@@ -90,7 +90,7 @@ public class ClassTreeCellRenderer extends DefaultTreeCellRenderer {
 			JLabel nodeLabel = new JLabel(icon);
 			panel.add(nodeLabel);
 
-			if (Config.main().features.enableClassTreeStatIcons.value()) {
+			if (Config.stats().enableClassTreeStatIcons.value()) {
 				if (this.controller.getStatsGenerator() != null) {
 					ProjectStatsResult stats = this.controller.getStatsGenerator().getResultNullable(Config.stats().createIconGenParameters(this.controller.getGui().getEditableStatTypes()));
 					if (stats == null) {

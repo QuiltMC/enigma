@@ -1,5 +1,9 @@
 package org.quiltmc.enigma.impl.plugin;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -17,27 +21,48 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
-final class RecordGetterFindingVisitor extends ClassVisitor {
+final class RecordIndexingVisitor extends ClassVisitor {
 	private ClassEntry clazz;
-	private final Map<FieldEntry, MethodEntry> fieldToMethod;
 	private final Set<RecordComponentNode> recordComponents = new HashSet<>();
 	private final Set<FieldNode> fields = new HashSet<>();
 	private final Set<MethodNode> methods = new HashSet<>();
 
-	RecordGetterFindingVisitor(Map<FieldEntry, MethodEntry> fieldToMethod) {
+	private final BiMap<FieldEntry, MethodEntry> gettersByField;
+	private final Multimap<ClassEntry, FieldEntry> fieldsByClass = HashMultimap.create();
+	private final Multimap<ClassEntry, MethodEntry> methodsByClass = HashMultimap.create();
+
+	RecordIndexingVisitor() {
 		super(Enigma.ASM_VERSION);
-		this.fieldToMethod = fieldToMethod;
+		this.gettersByField = HashBiMap.create();
+	}
+
+	@Nullable
+	public MethodEntry getComponentGetter(FieldEntry componentField) {
+		return this.gettersByField.get(componentField);
+	}
+
+	@Nullable
+	public FieldEntry getComponentField(MethodEntry componentGetter) {
+		return this.gettersByField.inverse().get(componentGetter);
+	}
+
+	public Stream<FieldEntry> streamComponentFields(ClassEntry recordEntry) {
+		return this.fieldsByClass.get(recordEntry).stream();
+	}
+
+	public Stream<MethodEntry> streamComponentMethods(ClassEntry recordEntry) {
+		return this.methodsByClass.get(recordEntry).stream();
 	}
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 		super.visit(version, access, name, signature, superName, interfaces);
 		this.clazz = (access & Opcodes.ACC_RECORD) != 0 ? new ClassEntry(name) : null;
-		this.recordComponents.clear();
 	}
 
 	@Override
@@ -72,15 +97,22 @@ final class RecordGetterFindingVisitor extends ClassVisitor {
 	public void visitEnd() {
 		super.visitEnd();
 		try {
-			if (this.clazz != null) {
-				this.collectResults();
-			}
+			this.collectResults();
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
+		} finally {
+			this.clazz = null;
+			this.recordComponents.clear();
+			this.fields.clear();
+			this.methods.clear();
 		}
 	}
 
 	private void collectResults() {
+		if (this.clazz == null) {
+			return;
+		}
+
 		for (RecordComponentNode component : this.recordComponents) {
 			FieldNode field = null;
 			for (FieldNode node : this.fields) {
@@ -99,15 +131,23 @@ final class RecordGetterFindingVisitor extends ClassVisitor {
 
 				// match bytecode to exact expected bytecode for a getter
 				// only check important instructions (ignore new frame instructions, etc.)
-				if (instructions.size() == 6
-						&& instructions.get(2).getOpcode() == Opcodes.ALOAD
-						&& instructions.get(3) instanceof FieldInsnNode fieldInsn
-						&& fieldInsn.getOpcode() == Opcodes.GETFIELD
-						&& fieldInsn.owner.equals(this.clazz.getName())
-						&& fieldInsn.desc.equals(field.desc)
-						&& fieldInsn.name.equals(field.name)
-						&& instructions.get(4).getOpcode() >= Opcodes.IRETURN && instructions.get(4).getOpcode() <= Opcodes.ARETURN) {
-					this.fieldToMethod.put(new FieldEntry(this.clazz, field.name, new TypeDescriptor(field.desc)), new MethodEntry(this.clazz, method.name, new MethodDescriptor(method.desc)));
+				if (
+						instructions.size() == 6
+							&& instructions.get(2).getOpcode() == Opcodes.ALOAD
+							&& instructions.get(3) instanceof FieldInsnNode fieldInsn
+							&& fieldInsn.getOpcode() == Opcodes.GETFIELD
+							&& fieldInsn.owner.equals(this.clazz.getFullName())
+							&& fieldInsn.desc.equals(field.desc)
+							&& fieldInsn.name.equals(field.name)
+							&& instructions.get(4).getOpcode() >= Opcodes.IRETURN
+							&& instructions.get(4).getOpcode() <= Opcodes.ARETURN
+				) {
+					final FieldEntry fieldEntry = new FieldEntry(this.clazz, field.name, new TypeDescriptor(field.desc));
+					final MethodEntry methodEntry = new MethodEntry(this.clazz, method.name, new MethodDescriptor(method.desc));
+
+					this.gettersByField.put(fieldEntry, methodEntry);
+					this.fieldsByClass.put(this.clazz, fieldEntry);
+					this.methodsByClass.put(this.clazz, methodEntry);
 				}
 			}
 		}

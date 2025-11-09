@@ -8,15 +8,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LineIndexer {
-	private static final Pattern LINE_END = Pattern.compile("\\r\\n?|\\n");
+	public static final Pattern LINE_END = Pattern.compile("\\r\\n?|\\n");
 
 	private final List<Integer> indexesByLine = new ArrayList<>();
 	private final Matcher lineEndMatcher;
+	private final String string;
 
 	public LineIndexer(String string) {
 		// the first line always starts at 0
 		this.indexesByLine.add(0);
-		this.lineEndMatcher = LINE_END.matcher(string);
+		this.string = string;
+		this.lineEndMatcher = LINE_END.matcher(this.string);
+	}
+
+	public String getString() {
+		return this.string;
 	}
 
 	public int getStartIndex(int line) {
@@ -29,6 +35,12 @@ public class LineIndexer {
 
 	public int getIndex(Position position) {
 		final int lineIndex = this.getStartIndex(position.line - Position.FIRST_LINE);
-		return lineIndex < 0 ? lineIndex : lineIndex + position.column - Position.FIRST_COLUMN;
+		if (lineIndex < 0) {
+			return lineIndex;
+		} else {
+			final int index = lineIndex + position.column - Position.FIRST_COLUMN;
+
+			return index < this.string.length() ? index : -1;
+		}
 	}
 }
