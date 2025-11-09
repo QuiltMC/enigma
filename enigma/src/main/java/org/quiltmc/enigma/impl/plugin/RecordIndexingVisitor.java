@@ -98,13 +98,13 @@ final class RecordIndexingVisitor extends ClassVisitor {
 		super.visitEnd();
 		try {
 			this.collectResults();
-
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		} finally {
 			this.clazz = null;
 			this.recordComponents.clear();
 			this.fields.clear();
 			this.methods.clear();
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
 		}
 	}
 
