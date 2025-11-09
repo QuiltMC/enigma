@@ -40,6 +40,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
+import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.LineIndexer;
 import org.quiltmc.enigma.util.Result;
 import org.quiltmc.syntaxpain.LineNumbersRuler;
@@ -77,7 +78,7 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 			if (!this.isBounded()) {
 				// the source isn't very useful if it couldn't be trimmed
 				// set this text so it doesn't waste space or cause confusion
-				this.editor.setText("// Unable to locate declaration");
+				this.editor.setText("// " + I18n.translate("editor.snippet.message.no_declaration_found"));
 				this.editor.getHighlighter().removeAllHighlights();
 			} else {
 				this.resolveTarget(source, target)
