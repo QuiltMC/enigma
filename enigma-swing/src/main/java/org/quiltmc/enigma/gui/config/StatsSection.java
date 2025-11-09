@@ -22,6 +22,9 @@ public class StatsSection extends ReflectiveConfig.Section {
 	public final TrackedValue<Boolean> shouldIncludeSyntheticParameters = this.value(false);
 	public final TrackedValue<Boolean> shouldCountFallbackNames = this.value(false);
 
+	@Comment("Enables statistic icons in the class tree. This has a major performance impact on JAR files with lots of classes.")
+	public final TrackedValue<Boolean> enableClassTreeStatIcons = this.value(true);
+
 	public Set<StatType> getIncludedTypesForIcons(Set<StatType> editableTypes) {
 		var types = new HashSet<>(editableTypes);
 		types.removeIf(type -> !this.includedStatTypes.value().contains(type));

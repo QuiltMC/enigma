@@ -10,26 +10,28 @@ import org.quiltmc.enigma.api.analysis.index.jar.EnclosingMethodIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
+import org.quiltmc.enigma.api.service.ObfuscationTestService;
+import org.quiltmc.enigma.api.source.TokenType;
+import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
+import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
+import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeUtil;
+import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
+import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
 import org.quiltmc.enigma.api.service.DecompilerService;
-import org.quiltmc.enigma.api.service.ObfuscationTestService;
 import org.quiltmc.enigma.api.source.Decompiler;
 import org.quiltmc.enigma.api.source.SourceSettings;
-import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.mapping.tree.DeltaTrackingTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
-import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeUtil;
-import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
-import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.impl.translation.mapping.MappingsChecker;
 import org.quiltmc.enigma.util.I18n;
 import org.tinylog.Logger;
@@ -41,9 +43,11 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -56,22 +60,25 @@ public class EnigmaProject {
 	private final ClassProvider classProvider;
 	private final JarIndex jarIndex;
 	private final JarIndex libIndex;
+	private final JarIndex combinedIndex;
 	private final byte[] jarChecksum;
+	private final Map<MethodEntry, Boolean> libraryMethodOverrideCache = new HashMap<>();
 
 	private EntryRemapper remapper;
 	private MappingsIndex mappingsIndex;
 
-	public EnigmaProject(Enigma enigma, Path jarPath, ClassProvider classProvider, JarIndex jarIndex, JarIndex libIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedNames, byte[] jarChecksum) {
+	public EnigmaProject(Enigma enigma, Path jarPath, ClassProvider classProvider, JarIndex jarIndex, JarIndex libIndex, JarIndex combinedIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedNames, byte[] jarChecksum) {
 		Preconditions.checkArgument(jarChecksum.length == 20);
 		this.enigma = enigma;
 		this.jarPath = jarPath;
 		this.classProvider = classProvider;
 		this.jarIndex = jarIndex;
 		this.libIndex = libIndex;
+		this.combinedIndex = combinedIndex;
 		this.jarChecksum = jarChecksum;
 
 		this.mappingsIndex = mappingsIndex;
-		this.remapper = EntryRemapper.mapped(enigma, jarIndex, this.mappingsIndex, proposedNames, new HashEntryTree<>(), this.enigma.getNameProposalServices());
+		this.remapper = EntryRemapper.mapped(this.enigma, this.combinedIndex, this.mappingsIndex, proposedNames, new HashEntryTree<>(), this.enigma.getNameProposalServices());
 	}
 
 	/**
@@ -90,12 +97,12 @@ public class EnigmaProject {
 			EntryTree<EntryMapping> mergedTree = EntryTreeUtil.merge(jarProposedMappings, mappings);
 
 			this.mappingsIndex.indexMappings(mergedTree, progress);
-			this.remapper = EntryRemapper.mapped(this.enigma, this.jarIndex, this.mappingsIndex, jarProposedMappings, mappings, this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.mapped(this.enigma, this.combinedIndex, this.mappingsIndex, jarProposedMappings, mappings, this.enigma.getNameProposalServices());
 		} else if (!jarProposedMappings.isEmpty()) {
 			this.mappingsIndex.indexMappings(jarProposedMappings, progress);
-			this.remapper = EntryRemapper.mapped(this.enigma, this.jarIndex, this.mappingsIndex, jarProposedMappings, new HashEntryTree<>(), this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.mapped(this.enigma, this.combinedIndex, this.mappingsIndex, jarProposedMappings, new HashEntryTree<>(), this.enigma.getNameProposalServices());
 		} else {
-			this.remapper = EntryRemapper.empty(this.enigma, this.jarIndex, this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.empty(this.enigma, this.combinedIndex, this.enigma.getNameProposalServices());
 		}
 
 		// update dynamically proposed names
@@ -114,8 +121,25 @@ public class EnigmaProject {
 		return this.classProvider;
 	}
 
+	/**
+	 * Gets the index of the main jar of this project; the jar being mapped.
+	 */
 	public JarIndex getJarIndex() {
 		return this.jarIndex;
+	}
+
+	/**
+	 * Gets the index of the library jars of this project.
+	 */
+	public JarIndex getLibIndex() {
+		return this.libIndex;
+	}
+
+	/**
+	 * Gets the index of the main jar <em>and</em> library jars of this project.
+	 */
+	public JarIndex getCombinedIndex() {
+		return this.combinedIndex;
 	}
 
 	public MappingsIndex getMappingsIndex() {
@@ -199,6 +223,10 @@ public class EnigmaProject {
 					|| isEnumValueOfMethod(parent, obfMethodEntry))) {
 				return false;
 			}
+
+			if (this.isLibraryMethodOverride(obfMethodEntry)) {
+				return false;
+			}
 		} else if (obfEntry instanceof LocalVariableEntry localEntry && !localEntry.isArgument()) {
 			return false;
 		} else if (obfEntry instanceof LocalVariableEntry localEntry && localEntry.isArgument()) {
@@ -214,6 +242,36 @@ public class EnigmaProject {
 		}
 
 		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
+	}
+
+	private boolean isLibraryMethodOverride(MethodEntry methodEntry) {
+		final Boolean cached = this.libraryMethodOverrideCache.get(methodEntry);
+		if (cached != null) {
+			return cached;
+		} else {
+			if (this.combinedIndex.getIndex(EntryIndex.class).hasMethod(methodEntry)) {
+				final EntryResolver combinedResolver = this.combinedIndex.getEntryResolver();
+				final Set<MethodEntry> equivalents = combinedResolver.resolveEquivalentMethods(methodEntry);
+				final Set<MethodEntry> roots = equivalents.stream()
+						.flatMap(equivalent -> combinedResolver.resolveEntry(equivalent, ResolutionStrategy.RESOLVE_ROOT).stream())
+						.collect(Collectors.toSet());
+
+				final Set<MethodEntry> equivalentsAndRoots = Stream
+						.concat(equivalents.stream(), roots.stream())
+						.collect(Collectors.toSet());
+
+				final EntryIndex jarEntryIndex = this.jarIndex.getIndex(EntryIndex.class);
+				final boolean anyNonJar = equivalentsAndRoots.stream().anyMatch(method -> !jarEntryIndex.hasMethod(method));
+
+				equivalentsAndRoots.forEach(method -> this.libraryMethodOverrideCache.put(method, anyNonJar));
+
+				return anyNonJar;
+			} else {
+				this.libraryMethodOverrideCache.put(methodEntry, false);
+
+				return false;
+			}
+		}
 	}
 
 	private static boolean isEnumValueOfMethod(ClassDefEntry parent, MethodEntry method) {

@@ -18,7 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public record RecordComponentProposalService(Map<FieldEntry, MethodEntry> fieldToGetter) implements NameProposalService {
+public record RecordComponentProposalService(RecordIndexingVisitor visitor) implements NameProposalService {
+	public static final String ID = "enigma:record_component_proposer";
+
 	@Nullable
 	@Override
 	public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
@@ -88,12 +90,12 @@ public record RecordComponentProposalService(Map<FieldEntry, MethodEntry> fieldT
 	}
 
 	public boolean isGetter(FieldEntry obfFieldEntry, MethodEntry method) {
-		var getter = this.fieldToGetter.get(obfFieldEntry);
+		final MethodEntry getter = this.visitor.getComponentGetter(obfFieldEntry);
 		return getter != null && getter.equals(method);
 	}
 
 	@Override
 	public String getId() {
-		return "enigma:record_component_proposer";
+		return ID;
 	}
 }

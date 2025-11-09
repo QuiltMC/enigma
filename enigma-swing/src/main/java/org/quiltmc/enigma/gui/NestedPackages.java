@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class NestedPackages {
 	private final SortedMutableTreeNode root;
@@ -75,9 +76,16 @@ public class NestedPackages {
 		return this.root;
 	}
 
+	/**
+	 * @return the path to the passed {@code packageName} if present, or the path the {@link #root} otherwise
+	 */
 	public TreePath getPackagePath(String packageName) {
-		var node = this.packageToNode.getOrDefault(packageName, this.root);
-		return new TreePath(node.getPath());
+		return this.getPackagePathOrEmpty(packageName).orElseGet(() -> new TreePath(this.root.getPath()));
+	}
+
+	public Optional<TreePath> getPackagePathOrEmpty(String packageName) {
+		return Optional.ofNullable(this.packageToNode.get(packageName))
+				.map(node -> new TreePath(node.getPath()));
 	}
 
 	public ClassSelectorClassNode getClassNode(ClassEntry entry) {

@@ -13,16 +13,13 @@ import org.quiltmc.enigma.gui.panel.ClosableTabTitlePane;
 import org.quiltmc.enigma.gui.panel.EditorPanel;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
-import static javax.swing.SwingUtilities.getUIInputMap;
 import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 
 public class EditorTabbedPane {
@@ -39,11 +36,7 @@ public class EditorTabbedPane {
 		this.navigator = new NavigatorPanel(this.gui);
 
 		this.openFiles.addMouseListener(GuiUtil.onMousePress(this::onTabPressed));
-		final InputMap openFilesInputMap = getUIInputMap(this.openFiles, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-		if (openFilesInputMap != null) {
-			// remove default JTabbedPane binding that conflicts with KeyBind for editors
-			openFilesInputMap.remove(KeyBinds.ENTRY_NAVIGATOR_LAST.toKeyStroke());
-		}
+		KeyBinds.ENTRY_NAVIGATOR_LAST.removeUiConflicts(this.openFiles);
 	}
 
 	public EditorPanel openClass(ClassEntry entry) {

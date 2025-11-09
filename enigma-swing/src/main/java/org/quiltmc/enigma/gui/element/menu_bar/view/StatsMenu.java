@@ -58,7 +58,7 @@ public class StatsMenu extends AbstractEnigmaMenu {
 
 	@Override
 	public void updateState(boolean jarOpen, ConnectionState state) {
-		this.enableIcons.setSelected(Config.main().features.enableClassTreeStatIcons.value());
+		this.enableIcons.setSelected(Config.stats().enableClassTreeStatIcons.value());
 		this.includeSynthetic.setSelected(Config.main().stats.shouldIncludeSyntheticParameters.value());
 		this.countFallback.setSelected(Config.main().stats.shouldCountFallbackNames.value());
 
@@ -69,7 +69,7 @@ public class StatsMenu extends AbstractEnigmaMenu {
 	}
 
 	private void onEnableIconsClicked() {
-		Config.main().features.enableClassTreeStatIcons.setValue(this.enableIcons.isSelected());
+		Config.stats().enableClassTreeStatIcons.setValue(this.enableIcons.isSelected());
 		this.updateIconsLater();
 	}
 
