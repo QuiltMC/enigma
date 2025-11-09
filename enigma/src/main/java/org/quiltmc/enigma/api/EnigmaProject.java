@@ -10,13 +10,13 @@ import org.quiltmc.enigma.api.analysis.index.jar.EnclosingMethodIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
+import org.quiltmc.enigma.api.service.JarIndexerService;
 import org.quiltmc.enigma.api.service.ObfuscationTestService;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeUtil;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
-import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
 import org.quiltmc.enigma.api.service.DecompilerService;
@@ -32,6 +32,9 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
+import org.quiltmc.enigma.impl.plugin.EnumConstantIndexingService;
 import org.quiltmc.enigma.impl.translation.mapping.MappingsChecker;
 import org.quiltmc.enigma.util.I18n;
 import org.tinylog.Logger;
@@ -48,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -199,7 +203,7 @@ public class EnigmaProject {
 		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
 	}
 
-	public boolean isRenamable(Entry<?> obfEntry) {
+	public boolean isInternallyRenamable(Entry<?> obfEntry) {
 		if (obfEntry instanceof MethodEntry obfMethodEntry) {
 			// constructors are not renamable!
 			if (obfMethodEntry.isConstructor()) {
@@ -227,9 +231,11 @@ public class EnigmaProject {
 			if (this.isLibraryMethodOverride(obfMethodEntry)) {
 				return false;
 			}
-		} else if (obfEntry instanceof LocalVariableEntry localEntry && !localEntry.isArgument()) {
-			return false;
-		} else if (obfEntry instanceof LocalVariableEntry localEntry && localEntry.isArgument()) {
+		} else if (obfEntry instanceof LocalVariableEntry localEntry) {
+			if (!localEntry.isArgument()) {
+				return false;
+			}
+
 			MethodEntry method = localEntry.getParent();
 			ClassDefEntry parent = this.jarIndex.getIndex(EntryIndex.class).getDefinition(method.getParent());
 
@@ -274,8 +280,32 @@ public class EnigmaProject {
 		}
 	}
 
+	public boolean isRenamable(Entry<?> obfEntry) {
+		if (this.isInternallyRenamable(obfEntry)) {
+			if (obfEntry instanceof FieldEntry fieldEntry) {
+				return !this.getEnumConstantIndexingService()
+					.map(service -> service.isEnumConstant(fieldEntry))
+					.orElse(false);
+			} else {
+				return true;
+			}
+		} else {
+			return false;
+		}
+	}
+
+	private Optional<EnumConstantIndexingService> getEnumConstantIndexingService() {
+		return this.getEnigma()
+			.getService(JarIndexerService.TYPE, EnumConstantIndexingService.ID)
+			.map(service -> (EnumConstantIndexingService) service);
+	}
+
 	private static boolean isEnumValueOfMethod(ClassDefEntry parent, MethodEntry method) {
 		return parent != null && parent.isEnum() && method.getName().equals("valueOf") && method.getDesc().toString().equals("(Ljava/lang/String;)L" + parent.getFullName() + ";");
+	}
+
+	public boolean isInternallyRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {
+		return obfReference.isNamed() && this.isInternallyRenamable(obfReference.getNameableEntry());
 	}
 
 	public boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {

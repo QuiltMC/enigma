@@ -68,6 +68,10 @@ public class DecompiledClassSource {
 			} else {
 				target.add(project, EntryMapping.OBFUSCATED, movedToken);
 			}
+		} else if (project.isInternallyRenamable(reference)) {
+			if (translatedEntry != null && !translatedEntry.isObfuscated()) {
+				return translatedEntry.getValue().getSourceRemapName();
+			}
 		} else if (DEBUG_TOKEN_HIGHLIGHTS) {
 			target.add(project, new EntryMapping(null, null, TokenType.DEBUG, null), movedToken);
 		}
