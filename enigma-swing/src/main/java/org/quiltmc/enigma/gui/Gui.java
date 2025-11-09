@@ -238,7 +238,7 @@ public class Gui {
 		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
 		// keep the whole width (or as much as will fit) on-screen so window controls in the title bar are accessible
-		final int clampedX = Utils.clamp(windowPos.x, 0, Math.max(0, screenSize.width - frame.getSize().width));
+		final int clampedX = Utils.clamp(windowPos.x, 0, Math.max(0, screenSize.width - frame.getWidth()));
 		// allow some of the bottom to be off-screen, but not the top, because of the title bar
 		final int clampedY = Utils.clamp(windowPos.y, 0, screenSize.height - ScaleUtil.scale(DEFAULT_MIN_TOP_ON_SCREEN));
 
