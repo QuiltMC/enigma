@@ -24,8 +24,10 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
+import javax.swing.tree.TreeNode;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,6 +35,9 @@ import static org.hamcrest.Matchers.*;
 
 public class TestJarIndexLoneClass {
 	public static final Path JAR = TestUtil.obfJar("lone_class");
+
+	private static final ClassEntry OBJECT_CLASS = TestEntryFactory.newClass("java/lang/Object");
+
 	private final JarIndex index;
 
 	public TestJarIndexLoneClass() throws Exception {
@@ -52,10 +57,10 @@ public class TestJarIndexLoneClass {
 	@Test
 	public void translationIndex() {
 		InheritanceIndex inheritanceIndex = this.index.getIndex(InheritanceIndex.class);
-		assertThat(inheritanceIndex.getParents(new ClassEntry("a")), is(empty()));
-		assertThat(inheritanceIndex.getParents(new ClassEntry("org/quiltmc/enigma/input/Keep")), is(empty()));
-		assertThat(inheritanceIndex.getAncestors(new ClassEntry("a")), is(empty()));
-		assertThat(inheritanceIndex.getAncestors(new ClassEntry("org/quiltmc/enigma/input/Keep")), is(empty()));
+		assertThat(inheritanceIndex.getParents(new ClassEntry("a")), containsInAnyOrder(OBJECT_CLASS));
+		assertThat(inheritanceIndex.getParents(new ClassEntry("org/quiltmc/enigma/input/Keep")), containsInAnyOrder(OBJECT_CLASS));
+		assertThat(inheritanceIndex.getAncestors(new ClassEntry("a")), containsInAnyOrder(OBJECT_CLASS));
+		assertThat(inheritanceIndex.getAncestors(new ClassEntry("org/quiltmc/enigma/input/Keep")), containsInAnyOrder(OBJECT_CLASS));
 		assertThat(inheritanceIndex.getChildren(new ClassEntry("a")), is(empty()));
 		assertThat(inheritanceIndex.getChildren(new ClassEntry("org/quiltmc/enigma/input/Keep")), is(empty()));
 	}
@@ -72,10 +77,27 @@ public class TestJarIndexLoneClass {
 	@Test
 	public void classInheritance() {
 		IndexTreeBuilder treeBuilder = new IndexTreeBuilder(this.index);
-		ClassInheritanceTreeNode node = treeBuilder.buildClassInheritance(VoidTranslator.INSTANCE, TestEntryFactory.newClass("a"));
-		assertThat(node, is(not(nullValue())));
-		assertThat(node.getClassName(), is("a"));
-		assertThat(node.getChildCount(), is(0));
+		ClassInheritanceTreeNode root = treeBuilder.buildClassInheritance(VoidTranslator.INSTANCE, TestEntryFactory.newClass("a"));
+		assertThat(root, is(not(nullValue())));
+
+		final ClassInheritanceTreeNode a = findChild(root, "a");
+		assertThat(a, is(not(nullValue())));
+		assertThat(a.getChildCount(), is(0));
+	}
+
+	private static ClassInheritanceTreeNode findChild(ClassInheritanceTreeNode root, String childName) {
+		final Iterator<TreeNode> childItr = root.children().asIterator();
+		while (childItr.hasNext()) {
+			final TreeNode childNode = childItr.next();
+			if (
+					childNode instanceof ClassInheritanceTreeNode inheritanceNode
+						&& inheritanceNode.getClassName().equals(childName)
+			) {
+				return inheritanceNode;
+			}
+		}
+
+		return null;
 	}
 
 	@Test
@@ -130,7 +152,7 @@ public class TestJarIndexLoneClass {
 
 	@Test
 	public void interfaces() {
-		assertThat(this.index.getIndex(InheritanceIndex.class).getParents(new ClassEntry("a")), is(empty()));
+		assertThat(this.index.getIndex(InheritanceIndex.class).getParents(new ClassEntry("a")), containsInAnyOrder(OBJECT_CLASS));
 	}
 
 	@Test
