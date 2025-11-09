@@ -108,6 +108,7 @@
 	"menu.help.about.version": "Version: %s",
 	"menu.help.about.version.external": "%s Version: %s",
 	"menu.help.github": "Github Page",
+	"menu.help.search": "Search menus",
 
 	"popup_menu.rename": "Rename",
 	"popup_menu.paste": "Paste text",
