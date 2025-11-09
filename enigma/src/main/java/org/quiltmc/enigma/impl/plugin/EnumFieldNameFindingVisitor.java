@@ -18,10 +18,11 @@ import org.objectweb.asm.tree.analysis.SourceValue;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -30,13 +31,13 @@ import java.util.Set;
 final class EnumFieldNameFindingVisitor extends ClassVisitor {
 	private ClassEntry clazz;
 	private String className;
-	private final Map<Entry<?>, String> mappings;
+	private final Map<FieldEntry, String> enumConstants;
 	private final Set<Pair<String, String>> enumFields = new HashSet<>();
 	private final List<MethodNode> classInits = new ArrayList<>();
 
-	EnumFieldNameFindingVisitor(Map<Entry<?>, String> mappings) {
+	EnumFieldNameFindingVisitor() {
 		super(Enigma.ASM_VERSION);
-		this.mappings = mappings;
+		this.enumConstants = new HashMap<>();
 	}
 
 	@Override
@@ -44,8 +45,6 @@ final class EnumFieldNameFindingVisitor extends ClassVisitor {
 		super.visit(version, access, name, signature, superName, interfaces);
 		this.className = name;
 		this.clazz = new ClassEntry(name);
-		this.enumFields.clear();
-		this.classInits.clear();
 	}
 
 	@Override
@@ -76,7 +75,19 @@ final class EnumFieldNameFindingVisitor extends ClassVisitor {
 			this.collectResults();
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
+		} finally {
+			this.enumFields.clear();
+			this.classInits.clear();
 		}
+	}
+
+	public boolean isEnumConstant(FieldEntry field) {
+		return this.enumConstants.containsKey(field);
+	}
+
+	@Nullable
+	public String getEnumConstantName(FieldEntry field) {
+		return this.enumConstants.get(field);
 	}
 
 	private void collectResults() throws Exception {
@@ -108,7 +119,7 @@ final class EnumFieldNameFindingVisitor extends ClassVisitor {
 				}
 
 				if (s != null) {
-					this.mappings.put(new FieldEntry(this.clazz, ((FieldInsnNode) instr2).name, new TypeDescriptor(((FieldInsnNode) instr2).desc)), s);
+					this.enumConstants.put(new FieldEntry(this.clazz, ((FieldInsnNode) instr2).name, new TypeDescriptor(((FieldInsnNode) instr2).desc)), s);
 				}
 
 				// report otherwise?
