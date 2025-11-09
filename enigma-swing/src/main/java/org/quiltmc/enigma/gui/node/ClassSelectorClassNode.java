@@ -113,7 +113,7 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 			}
 		};
 
-		if (Config.main().features.enableClassTreeStatIcons.value()) {
+		if (Config.stats().enableClassTreeStatIcons.value()) {
 			SwingUtilities.invokeLater(iconUpdateWorker::execute);
 		}
 

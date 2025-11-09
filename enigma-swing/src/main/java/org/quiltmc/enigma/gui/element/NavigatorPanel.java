@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.gui.element;
 
-import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.source.Token;
@@ -18,10 +17,14 @@ import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A panel with buttons to navigate to the next and previous items in its entry collection.
@@ -31,7 +34,8 @@ public class NavigatorPanel extends JPanel {
 
 	private final Gui gui;
 	private final JLabel statsLabel;
-	private final Map<TokenType, List<Entry<?>>> entries = new HashMap<>();
+	private final Set<Entry<?>> allEntries = new LinkedHashSet<>();
+	private final Map<TokenType, Map<Entry<?>, Integer>> entryIndexesByType = new HashMap<>();
 
 	private int currentIndex = 0;
 	private TokenType selectedType;
@@ -54,9 +58,7 @@ public class NavigatorPanel extends JPanel {
 		});
 		this.selectedType = TokenType.OBFUSCATED;
 
-		for (TokenType type : SUPPORTED_TOKEN_TYPES) {
-			this.entries.put(type, new ArrayList<>());
-		}
+		this.initEntryIndexesByType();
 
 		JButton up = new JButton(GuiUtil.getUpChevron());
 		up.addActionListener(event -> this.navigateUp());
@@ -70,6 +72,12 @@ public class NavigatorPanel extends JPanel {
 
 		// transparent background
 		this.setBackground(new Color(0, 0, 0, 0));
+	}
+
+	private void initEntryIndexesByType() {
+		for (TokenType type : SUPPORTED_TOKEN_TYPES) {
+			this.entryIndexesByType.put(type, new LinkedHashMap<>());
+		}
 	}
 
 	/**
@@ -92,10 +100,10 @@ public class NavigatorPanel extends JPanel {
 	}
 
 	private void wrapIndex() {
-		List<Entry<?>> currentEntrySet = this.entries.get(this.selectedType);
+		final int selectedEntryTypeCount = this.entryIndexesByType.get(this.selectedType).size();
 		if (this.currentIndex < 0) {
-			this.currentIndex = currentEntrySet.size() - 1;
-		} else if (this.currentIndex >= currentEntrySet.size()) {
+			this.currentIndex = selectedEntryTypeCount - 1;
+		} else if (this.currentIndex >= selectedEntryTypeCount) {
 			this.currentIndex = 0;
 		}
 	}
@@ -105,16 +113,16 @@ public class NavigatorPanel extends JPanel {
 	}
 
 	private void tryNavigate(boolean reverse) {
-		List<Entry<?>> currentEntrySet = this.entries.get(this.selectedType);
-		if (!currentEntrySet.isEmpty()) {
-			Entry<?> entry = this.getClosestEntryToCursor(currentEntrySet, reverse);
+		Map<Entry<?>, Integer> selectedEntryIndexes = this.entryIndexesByType.get(this.selectedType);
+		if (!selectedEntryIndexes.isEmpty()) {
+			Entry<?> entry = this.getClosestEntryToCursor(selectedEntryIndexes.keySet(), reverse);
 			this.gui.getController().navigateTo(entry);
-			this.currentIndex = currentEntrySet.indexOf(entry);
+			this.currentIndex = selectedEntryIndexes.get(entry);
 			this.updateStatsLabel();
 		}
 	}
 
-	public Entry<?> getClosestEntryToCursor(List<Entry<?>> currentEntrySet, boolean reverse) {
+	public Entry<?> getClosestEntryToCursor(Collection<Entry<?>> currentEntrySet, boolean reverse) {
 		List<Entry<?>> possibleEntriesCopy = new ArrayList<>(currentEntrySet);
 		if (reverse) {
 			Collections.reverse(possibleEntriesCopy);
@@ -134,52 +142,38 @@ public class NavigatorPanel extends JPanel {
 		return possibleEntriesCopy.get(0);
 	}
 
-	/**
-	 * Adds the provided entry to this navigator's pool and sorts it.
-	 * @param entry the entry to add
-	 */
-	public void addEntry(@Nullable Entry<?> entry) {
-		EnigmaProject project = this.gui.getController().getProject();
-		if (entry != null && this.gui.isEditable(EditableType.fromEntry(entry)) && project.isRenamable(entry) && project.isNavigable(entry)) {
-			TokenType tokenType = this.getTokenType(entry);
-			List<Entry<?>> entries = this.entries.get(tokenType);
+	public void resetEntries(Iterable<Entry<?>> newEntries) {
+		this.allEntries.clear();
+		this.initEntryIndexesByType();
 
-			if (!entries.contains(entry)) {
-				entries.add(entry);
-				this.updateStatsLabel();
+		EnigmaProject project = this.gui.getController().getProject();
+		for (Entry<?> entry : newEntries) {
+			if (entry != null && this.gui.isEditable(EditableType.fromEntry(entry)) && project.isRenamable(entry) && project.isNavigable(entry)) {
+				if (!this.allEntries.contains(entry)) {
+					Map<Entry<?>, Integer> entryIndexesOfType = this.entryIndexesByType.get(this.getTokenType(entry));
+					if (entryIndexesOfType != null) {
+						this.allEntries.add(entry);
+						entryIndexesOfType.put(entry, entryIndexesOfType.size());
+					}
+				}
 			}
 		}
+
+		this.updateStatsLabel();
 	}
 
 	/**
 	 * Rechecks and updates all token types.
-	 * @see #updateTokenType(Entry)
 	 */
 	public void updateAllTokenTypes() {
-		for (var list : this.entries.values()) {
-			var copy = new ArrayList<>(list);
+		this.initEntryIndexesByType();
 
-			for (var target : copy) {
-				this.updateTokenType(target);
+		for (Entry<?> entry : this.allEntries) {
+			Map<Entry<?>, Integer> entryIndexesOfType = this.entryIndexesByType.get(this.getTokenType(entry));
+			if (entryIndexesOfType != null) {
+				entryIndexesOfType.put(entry, entryIndexesOfType.size());
 			}
 		}
-	}
-
-	/**
-	 * Checks if the entry should be moved to a different token type, and updates it if so.
-	 * Assumes that the entry's old token type matches the currently selected token type.
-	 * @param target the entry to check
-	 */
-	public void updateTokenType(Entry<?> target) {
-		TokenType tokenType = this.getTokenType(target);
-		for (var entry : this.entries.entrySet()) {
-			if (entry.getValue() != null && entry.getValue().remove(target)) {
-				break;
-			}
-		}
-
-		this.entries.get(tokenType).add(target);
-		this.updateStatsLabel();
 	}
 
 	private TokenType getTokenType(Entry<?> target) {
@@ -191,8 +185,13 @@ public class NavigatorPanel extends JPanel {
 	}
 
 	private void updateStatsLabel() {
-		int index = this.entries.get(this.selectedType).isEmpty() ? 0 : this.currentIndex + 1;
-		String indexString = String.valueOf(index).length() == 1 ? "0" + index : String.valueOf(index);
-		this.statsLabel.setText(indexString + "/" + this.entries.get(this.selectedType).size());
+		final Map<Entry<?>, Integer> entryIndexesOfType = this.entryIndexesByType.get(this.selectedType);
+		final String index = String.valueOf(entryIndexesOfType.isEmpty() ? 0 : this.currentIndex + 1);
+		final String total = String.valueOf(entryIndexesOfType.size());
+
+		final int lengthDiff = total.length() - index.length();
+		final String paddedIndex = lengthDiff == 0 ? index : "0".repeat(lengthDiff) + index;
+
+		this.statsLabel.setText(paddedIndex + "/" + total);
 	}
 }
