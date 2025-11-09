@@ -161,7 +161,7 @@
         <module name="OuterTypeFilename"/>
         <module name="PackageDeclaration"/>
 
-        <!--<module name="InvalidJavadocPosition"/>-->
+        <module name="InvalidJavadocPosition"/>
         <!--<module name="JavadocParagraph">-->
             <!--<property name="allowNewlineParagraph" value="false"/>-->
         <!--</module>-->

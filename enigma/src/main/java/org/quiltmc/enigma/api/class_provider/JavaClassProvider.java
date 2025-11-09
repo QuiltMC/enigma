@@ -1,11 +1,11 @@
 package org.quiltmc.enigma.api.class_provider;
 
 import com.google.common.collect.ImmutableSet;
+import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.module.ModuleReader;

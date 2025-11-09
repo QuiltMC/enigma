@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.panel;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Runnables;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.class_handle.ClassHandleError;
@@ -31,7 +32,6 @@ import org.quiltmc.enigma.util.Result;
 import org.quiltmc.enigma.util.Utils;
 import org.tinylog.Logger;
 
-import javax.annotation.Nullable;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -514,11 +514,11 @@ public class BaseEditorPanel {
 					// record component getters often don't have a declaration token
 					// try to get the field declaration instead
 					return reference.entry instanceof MethodEntry method
-						? getRecordIndexingService(this.gui)
-							.map(service -> service.getComponentField(method))
-							.map(field -> EntryReference.<Entry<?>, Entry<?>>declaration(field, field.getName()))
-							.map(fieldReference -> this.controller.getTokensForReference(this.source, fieldReference))
-						: Optional.empty();
+							? getRecordIndexingService(this.gui)
+									.map(service -> service.getComponentField(method))
+									.map(field -> EntryReference.<Entry<?>, Entry<?>>declaration(field, field.getName()))
+									.map(fieldReference -> this.controller.getTokensForReference(this.source, fieldReference))
+							: Optional.empty();
 				})
 				.orElse(List.of());
 

@@ -1,8 +1,12 @@
 package org.quiltmc.enigma.api;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Streams;
 import com.google.common.io.MoreFiles;
+import org.jspecify.annotations.Nullable;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.quiltmc.enigma.api.analysis.index.jar.CombinedJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
@@ -11,7 +15,12 @@ import org.quiltmc.enigma.api.analysis.index.jar.LibrariesJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.ReferenceIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
+import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
+import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
+import org.quiltmc.enigma.api.class_provider.CombiningClassProvider;
+import org.quiltmc.enigma.api.class_provider.JarClassProvider;
+import org.quiltmc.enigma.api.class_provider.ObfuscationFixClassProvider;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;

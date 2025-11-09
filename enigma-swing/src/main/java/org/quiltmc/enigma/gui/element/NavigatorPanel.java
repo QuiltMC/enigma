@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.gui.element;
 
-import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.source.Token;
