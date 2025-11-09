@@ -1,19 +1,27 @@
 package org.quiltmc.enigma.api.analysis.index.jar;
 
-import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.impl.analysis.index.AbstractJarIndex;
 
+import java.util.Collection;
+
+/**
+ * An index of the main jar of an {@link EnigmaProject}.
+ */
 public class MainJarIndex extends AbstractJarIndex {
-	public MainJarIndex(JarIndexer... indexers) {
-		super(indexers);
+	public MainJarIndex(
+			EntryIndex entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex,
+			BridgeMethodIndex bridgeMethodIndex, JarIndexer... otherIndexers
+	) {
+		super(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex, otherIndexers);
 	}
 
 	/**
 	 * Creates an empty index, configured to use all built-in indexers.
 	 * @return the newly created index
 	 */
-	public static JarIndex empty() {
+	public static MainJarIndex empty() {
 		EntryIndex entryIndex = new EntryIndex();
 		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
 		ReferenceIndex referenceIndex = new ReferenceIndex();
@@ -21,7 +29,10 @@ public class MainJarIndex extends AbstractJarIndex {
 		PackageVisibilityIndex packageVisibilityIndex = new PackageVisibilityIndex();
 		EnclosingMethodIndex enclosingMethodIndex = new EnclosingMethodIndex();
 		LambdaIndex lambdaIndex = new LambdaIndex();
-		return new MainJarIndex(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex, packageVisibilityIndex, enclosingMethodIndex, lambdaIndex);
+		return new MainJarIndex(
+				entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex,
+				packageVisibilityIndex, enclosingMethodIndex, lambdaIndex
+		);
 	}
 
 	@Override
@@ -30,7 +41,7 @@ public class MainJarIndex extends AbstractJarIndex {
 	}
 
 	@Override
-	public void indexJar(ProjectClassProvider classProvider, ProgressListener progress) {
-		this.indexJar(classProvider.getMainClassNames(), classProvider, progress);
+	public Collection<String> getIndexableClassNames(ProjectClassProvider classProvider) {
+		return classProvider.getMainClassNames();
 	}
 }

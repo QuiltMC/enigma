@@ -16,6 +16,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.Document;
 
+import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
+
 /**
  * A label that converts into an editable text field when you click it.
  */
@@ -47,13 +49,8 @@ public class ConvertingTextField {
 			}
 		});
 
-		this.textField.addKeyListener(GuiUtil.onKeyPress(e -> {
-			if (KeyBinds.EXIT.matches(e)) {
-				this.stopEditing(true);
-			} else if (KeyBinds.DIALOG_SAVE.matches(e)) {
-				this.stopEditing(false);
-			}
-		}));
+		putKeyBindAction(KeyBinds.EXIT, this.textField, e -> this.stopEditing(true));
+		putKeyBindAction(KeyBinds.DIALOG_SAVE, this.textField, e -> this.stopEditing(false));
 
 		this.ui.add(this.label);
 	}

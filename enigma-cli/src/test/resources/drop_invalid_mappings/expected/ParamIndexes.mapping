@@ -1,0 +1,7 @@
+CLASS a ParamIndexes
+	METHOD a staticMethod (IC)V
+		ARG 0 param1
+		ARG 1 param2
+	METHOD b instanceMethod (IC)V
+		ARG 1 param1
+		ARG 2 param2

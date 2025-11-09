@@ -1,4 +1,4 @@
-import quilt.internal.task.ProGuardExecTask
+import proguard.gradle.ProGuardTask
 
 plugins {
 	id 'application'
@@ -19,12 +19,7 @@ application {
 }
 
 tasks.named('test') {
-	inputs.files(
-		project(':enigma').tasks
-			.withType(ProGuardExecTask)
-			.named('completeTestObf')
-			.get().outJar
-	)
+	inputs.files(project(':enigma').tasks.named('completeTestObf', ProGuardTask).map { it.outJarFileCollection })
 }
 
 publishing {

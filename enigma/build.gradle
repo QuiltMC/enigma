@@ -1,16 +1,9 @@
-import org.gradle.api.internal.ConventionMapping
-import quilt.internal.task.ProGuardExecTask
-
-import java.util.stream.Stream
+import proguard.gradle.ProGuardTask
 
 plugins {
 	id 'checkstyle'
 	id 'java-library'
 	id 'java-test-fixtures'
-}
-
-configurations {
-	proGuard
 }
 
 dependencies {
@@ -19,10 +12,9 @@ dependencies {
 	implementation libs.vineflower
 	implementation libs.cfr
 	implementation libs.procyon
+	implementation libs.javaparser
 
 	implementation libs.quilt.config
-
-	proGuard libs.proguard
 
 	testImplementation libs.jimfs
 
@@ -30,12 +22,13 @@ dependencies {
 	testFixturesImplementation libs.asm.tree
 }
 
-// Generate "version.txt" file
+// Generate "version.properties" file
 
-ext.genOutputDir = file("$buildDir/generated-resources")
+final GEN_OUTPUT = project.layout.buildDirectory.dir('generated-resources')
 
-task generateVersionFile {
-	ext.outputFile = file("$genOutputDir/version.properties")
+tasks.register('generateVersionFile') {
+	final outputFile = GEN_OUTPUT.map { it.file('version.properties') }
+
 	inputs.property("version", project.version)
 	inputs.property("vineflower-version", libs.vineflower.get().versionConstraint.displayName)
 	inputs.property("cfr-version", libs.cfr.get().versionConstraint.displayName)
@@ -43,34 +36,48 @@ task generateVersionFile {
 
 	outputs.file(outputFile)
 	doLast {
-		outputFile.text = inputs.properties.entrySet()
+		outputFile.get().asFile.text = inputs.properties.entrySet()
 				.collect { "$it.key = $it.value" }.join("\n")
 	}
 }
 
-sourceSets.main.output.dir genOutputDir, builtBy: generateVersionFile
+sourceSets.main.output.dir GEN_OUTPUT, builtBy: generateVersionFile
 
-static String convertToGradleTaskName(String name) {
-	String newName = new String(name);
+static String taskNameFrom(String name) {
+	final length = name.length()
 
-	for (int i = 0; i < name.length(); i++) {
-		if (name.charAt(i) == '_') {
-			var toReplace = '_' + name.charAt(i + 1)
-			var newChar = name.charAt(i + 1).toUpperCase().toString()
-			newName = newName.replace(toReplace, newChar)
+	if (length == 0) {
+		throw new IllegalArgumentException("name must not be empty!")
+	}
+
+	final builder = new StringBuilder()
+
+	final first = name.charAt(0)
+
+	final underscore = (char) '_'
+	if (first != underscore) {
+		builder.append(Character.toLowerCase(first))
+	}
+
+	for (int i = 1; i < length; i++) {
+		final c = name.charAt(i)
+		if (c == underscore) {
+			if (i < length - 1) {
+				builder.append(Character.toUpperCase(name.charAt(++i)))
+			}
+		} else {
+			builder.append(Character.toLowerCase(c))
 		}
 	}
 
-	return newName
+	return builder.toString()
 }
 
 // Generate obfuscated JARs for tests
 // If your test fails for class file version problem with proguard, run gradle with -Dorg.gradle.java.home="<older jdk>" flag
 def registerTestJarTasks(String name, String... input) {
-	String taskName = convertToGradleTaskName(name)
-	def libraryJarsArg = "<java.home>/jmods/java.base.jmod(!**.jar;!module-info.class)"
-
-	final testJarTask = tasks.register("${taskName}TestJar", Jar.class) {
+	String taskName = taskNameFrom(name)
+	final testJar = tasks.register("${taskName}TestJar", Jar.class) {
 		group("test-setup")
 		from(sourceSets.test.output) {
 			include input
@@ -80,35 +87,33 @@ def registerTestJarTasks(String name, String... input) {
 		destinationDirectory = file('build/test-inputs')
 	}
 
-	var confFileArg = 'src/test/resources/proguard-test.conf'
-	if (file("src/test/resources/proguard-$name-test.conf").exists()) {
-		confFileArg = "src/test/resources/proguard-$name-test.conf"
-	}
+	final customConfFile = file("src/test/resources/proguard-$name-test.conf")
+	final confFileArg = customConfFile.exists() ? customConfFile
+		: file('src/test/resources/proguard-test.conf')
 
-	tasks.register("${taskName}TestObf", ProGuardExecTask) {
+	final testObf = tasks.register("${taskName}TestObf", ProGuardTask) {
 		group("test-setup")
-		classpath configurations.proGuard
 
-		confFile = confFileArg
-		inputs.file confFileArg
+		configuration confFileArg
 
-		libraryJars = libraryJarsArg
+		libraryjars(
+			[jarfilter: '!**.jar', filter: '!module-info.class'],
+			"${System.getProperty('java.home')}/jmods/java.base.jmod"
+		)
 
-		inJar = testJarTask.get().archiveFile
+		injars testJar.map { it.archiveFile }
 
-		outJar = file("build/test-obf/${name}.jar")
+		outjars file("build/test-obf/${name}.jar")
 	}
+
+	test.dependsOn(testObf)
 }
 
 registerTestJarTasks("complete", "org/quiltmc/enigma/input/**/*.class")
-test.dependsOn("completeTestObf")
 
 file('src/test/java/org/quiltmc/enigma/input').listFiles().each { f ->
 	if (f.directory) {
-		String taskName = convertToGradleTaskName(f.name)
-
 		registerTestJarTasks(f.name, "org/quiltmc/enigma/input/$f.name/**/*.class", "org/quiltmc/enigma/input/Keep.class")
-		test.dependsOn("${taskName}TestObf")
 	}
 }
 

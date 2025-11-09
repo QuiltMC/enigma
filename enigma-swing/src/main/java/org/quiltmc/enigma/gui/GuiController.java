@@ -197,7 +197,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void regenerateAndUpdateStatIcons() {
-		if (Config.main().features.enableClassTreeStatIcons.value()) {
+		if (Config.stats().enableClassTreeStatIcons.value()) {
 			ProgressListener progressListener = ProgressListener.createEmpty();
 			this.gui.getMainWindow().getStatusBar().syncWith(progressListener);
 
@@ -560,14 +560,18 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void applyChange(ValidationContext vc, EntryChange<?> change) {
-		this.applyChange(vc, change, true);
+		this.applyChange(vc, change, true, true);
 	}
 
-	public void applyChange(ValidationContext vc, EntryChange<?> change, boolean updateSwingState) {
+	public void applyChange(ValidationContext vc, EntryChange<?> change, boolean updateSwingState, boolean autosave) {
 		this.applyChange0(vc, change, updateSwingState);
 		this.gui.updateStructure(this.gui.getActiveEditor());
 		if (!vc.canProceed()) {
 			return;
+		}
+
+		if (autosave && Config.editor().autoSaveMappings.value() && this.gui.mappingsFileChooser.getSelectedFile() != null) {
+			this.gui.getController().saveMappings(this.gui.mappingsFileChooser.getSelectedFile().toPath(), true);
 		}
 
 		this.sendPacket(new EntryChangeC2SPacket(change));
@@ -682,7 +686,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void createServer(String username, int port, char[] password) throws IOException {
-		this.server = new IntegratedEnigmaServer(this.project.getJarChecksum(), password, EntryRemapper.mapped(this.project.getEnigma(), this.project.getJarIndex(), this.project.getMappingsIndex(), new HashEntryTree<>(this.project.getRemapper().getJarProposedMappings()), new HashEntryTree<>(this.project.getRemapper().getDeobfMappings()), this.project.getEnigma().getNameProposalServices()), port);
+		this.server = new IntegratedEnigmaServer(this.project.getJarChecksum(), password, EntryRemapper.mapped(this.project.getEnigma(), this.project.getCombinedIndex(), this.project.getMappingsIndex(), new HashEntryTree<>(this.project.getRemapper().getJarProposedMappings()), new HashEntryTree<>(this.project.getRemapper().getDeobfMappings()), this.project.getEnigma().getNameProposalServices()), port);
 		this.server.start();
 		this.client = new IntegratedEnigmaClient(this, "127.0.0.1", port);
 		this.client.connect();

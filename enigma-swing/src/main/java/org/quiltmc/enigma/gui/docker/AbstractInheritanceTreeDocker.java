@@ -11,6 +11,7 @@ import org.quiltmc.enigma.util.I18n;
 import javax.annotation.Nullable;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -26,6 +27,7 @@ public abstract class AbstractInheritanceTreeDocker extends Docker {
 	private final JLabel inactiveLabel = new JLabel();
 	private final JLabel notFoundLabel = new JLabel();
 	private final JPanel textPanel;
+	private final JPanel treePanel;
 	private final String inactiveTextKey;
 	private final String notFoundKey;
 
@@ -33,10 +35,14 @@ public abstract class AbstractInheritanceTreeDocker extends Docker {
 		super(gui);
 
 		this.textPanel = new JPanel(new BorderLayout());
+		this.textPanel.add(this.inactiveLabel, BorderLayout.NORTH);
+
+		this.treePanel = new JPanel(new BorderLayout());
+		this.treePanel.add(new JScrollPane(this.tree));
+
 		this.inactiveTextKey = inactiveTextKey;
 		this.notFoundKey = notFoundKey;
 		this.retranslateUi();
-		this.textPanel.add(this.inactiveLabel, BorderLayout.NORTH);
 		this.add(this.textPanel);
 
 		this.tree.setModel(null);
@@ -67,7 +73,7 @@ public abstract class AbstractInheritanceTreeDocker extends Docker {
 		this.tree.setModel(model);
 		if (model != null) {
 			this.remove(this.textPanel);
-			this.add(this.tree);
+			this.add(this.treePanel);
 		} else {
 			this.textPanel.remove(this.inactiveLabel);
 			this.textPanel.add(this.notFoundLabel, BorderLayout.NORTH);
@@ -82,9 +88,14 @@ public abstract class AbstractInheritanceTreeDocker extends Docker {
 		if (node != null) {
 			// show the tree at the root
 			TreePath path = GuiUtil.getPathToRoot(node);
-			this.setupTree(new DefaultTreeModel((TreeNode) path.getPathComponent(0)));
-			this.tree.expandPath(path);
-			this.tree.setSelectionRow(this.tree.getRowForPath(path));
+			TreeNode root = (TreeNode) path.getPathComponent(0);
+			if (root.children().hasMoreElements()) { // do not display a tree with no inheritance (only a root entry)
+				this.setupTree(new DefaultTreeModel(root));
+				this.tree.expandPath(path);
+				this.tree.setSelectionRow(this.tree.getRowForPath(path));
+			} else {
+				this.setupTree(null);
+			}
 		} else {
 			this.setupTree(null);
 		}

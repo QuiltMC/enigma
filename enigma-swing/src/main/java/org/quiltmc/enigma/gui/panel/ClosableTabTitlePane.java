@@ -8,35 +8,64 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 public class ClosableTabTitlePane {
 	private final JPanel ui;
 	private final JButton closeButton;
-	private final JLabel label;
+	private final JLabel title;
 
 	private ChangeListener cachedChangeListener;
 	private JTabbedPane parent;
 
-	public ClosableTabTitlePane(String text, Runnable onClose) {
+	public ClosableTabTitlePane(String title, String tooltip, Runnable onClose) {
 		this.ui = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 2));
 		this.ui.setOpaque(false);
-		this.label = new JLabel(text);
-		this.ui.add(this.label);
+
+		final MouseListener mousePressedDispatcher = GuiUtil.onMousePress(e -> {
+			// for some reason registering a mouse listener on this or any child makes
+			// events never go to the tabbed pane, so we have to redirect
+			// the event for tab selection and context menu to work
+			if (this.parent != null) {
+				Point pt = new Point(e.getXOnScreen(), e.getYOnScreen());
+				SwingUtilities.convertPointFromScreen(pt, this.parent);
+				MouseEvent e1 = new MouseEvent(
+						this.parent,
+						e.getID(),
+						e.getWhen(),
+						e.getModifiersEx(),
+						(int) pt.getX(),
+						(int) pt.getY(),
+						e.getXOnScreen(),
+						e.getYOnScreen(),
+						e.getClickCount(),
+						e.isPopupTrigger(),
+						e.getButton()
+				);
+				this.parent.dispatchEvent(e1);
+			}
+		});
+
+		this.title = new JLabel(title);
+		this.title.setToolTipText(tooltip);
+		this.title.addMouseListener(mousePressedDispatcher);
+
+		this.ui.add(this.title);
 
 		// Adapted from javax.swing.plaf.metal.MetalTitlePane
 		this.closeButton = new JButton();
 		this.closeButton.setFocusPainted(false);
 		this.closeButton.setFocusable(false);
 		this.closeButton.setOpaque(true);
-		this.closeButton.setIcon(UIManager.getIcon("InternalFrame.closeIcon"));
+		this.closeButton.setIcon(GuiUtil.getCloseIcon());
 		this.closeButton.putClientProperty("paintActive", Boolean.TRUE);
 		this.closeButton.setBorder(new EmptyBorder(0, 0, 0, 0));
 		this.closeButton.putClientProperty(AccessibleContext.ACCESSIBLE_NAME_PROPERTY, "Close");
@@ -50,6 +79,7 @@ public class ClosableTabTitlePane {
 			}
 		}));
 
+		this.ui.addMouseListener(mousePressedDispatcher);
 		this.ui.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -59,27 +89,18 @@ public class ClosableTabTitlePane {
 			}
 
 			@Override
-			public void mousePressed(MouseEvent e) {
-				// for some reason registering a mouse listener on this makes
-				// events never go to the tabbed pane, so we have to redirect
-				// the event for tab selection and context menu to work
-				if (ClosableTabTitlePane.this.parent != null) {
-					Point pt = new Point(e.getXOnScreen(), e.getYOnScreen());
-					SwingUtilities.convertPointFromScreen(pt, ClosableTabTitlePane.this.parent);
-					MouseEvent e1 = new MouseEvent(
-							ClosableTabTitlePane.this.parent,
-							e.getID(),
-							e.getWhen(),
-							e.getModifiersEx(),
-							(int) pt.getX(),
-							(int) pt.getY(),
-							e.getXOnScreen(),
-							e.getYOnScreen(),
-							e.getClickCount(),
-							e.isPopupTrigger(),
-							e.getButton()
-					);
-					ClosableTabTitlePane.this.parent.dispatchEvent(e1);
+			public void mouseEntered(MouseEvent e) {
+				ClosableTabTitlePane.this.closeButton.setEnabled(true);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				if (!ClosableTabTitlePane.this.isActive(ClosableTabTitlePane.this.parent)) {
+					final Component target = SwingUtilities.getDeepestComponentAt(e.getComponent(), e.getX(), e.getY());
+					if (target == null || !SwingUtilities.isDescendingFrom(target, ClosableTabTitlePane.this.ui)) {
+						// only disable if mouse is not over this ui or descendants
+						ClosableTabTitlePane.this.closeButton.setEnabled(false);
+					}
 				}
 			}
 		});
@@ -101,24 +122,29 @@ public class ClosableTabTitlePane {
 		this.parent = pane;
 	}
 
-	public void setText(String text) {
-		this.label.setText(text);
+	public void setText(String title, String tooltip) {
+		this.title.setText(title);
+		this.title.setToolTipText(tooltip);
 	}
 
-	public String getText() {
-		return this.label.getText();
+	public String getTitle() {
+		return this.title.getText();
 	}
 
 	private void updateState(JTabbedPane pane) {
-		int selectedIndex = pane.getSelectedIndex();
-		boolean isActive = selectedIndex != -1 && pane.getTabComponentAt(selectedIndex) == this.ui;
-		this.closeButton.setEnabled(isActive);
-		this.closeButton.putClientProperty("paintActive", isActive);
+		final boolean active = this.isActive(pane);
+		this.closeButton.setEnabled(active);
+		this.closeButton.putClientProperty("paintActive", active);
 
 		this.ui.remove(this.closeButton);
 		this.ui.add(this.closeButton);
 
 		this.ui.repaint();
+	}
+
+	private boolean isActive(JTabbedPane pane) {
+		int selectedIndex = pane.getSelectedIndex();
+		return selectedIndex != -1 && pane.getTabComponentAt(selectedIndex) == this.ui;
 	}
 
 	public JPanel getUi() {

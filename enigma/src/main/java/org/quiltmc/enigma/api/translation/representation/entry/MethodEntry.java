@@ -1,6 +1,8 @@
 package org.quiltmc.enigma.api.translation.representation.entry;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.MapMaker;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
@@ -12,12 +14,18 @@ import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 
 public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable<MethodEntry> {
 	@Nonnull
 	protected final MethodDescriptor descriptor;
+
+	private final Map<EntryIndex, ImmutableList<LocalVariableDefEntry>> paramCache =
+			new MapMaker().weakKeys().makeMap();
 
 	public MethodEntry(ClassEntry parent, String name, MethodDescriptor descriptor) {
 		this(parent, name, descriptor, null);
@@ -52,25 +60,38 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	/**
 	 * Get a list of all parameters in this method. All parameters will have an empty name.
 	 *
+	 * <p> Use {@link #streamParameters(EntryIndex)} if the extra context provided by {@link LocalVariableDefEntry}s
+	 * is required, or to avoid creation of a new list.
+	 *
 	 * @param index the entry index
 	 * @return a list of this method's parameters
 	 */
 	public List<LocalVariableEntry> getParameters(EntryIndex index) {
-		List<LocalVariableEntry> parameters = new ArrayList<>();
+		return this.streamParameters(index).collect(Collectors.toCollection(ArrayList::new));
+	}
+
+	/**
+	 * Provides access to all parameters in this method. All parameters will have an empty name.
+	 *
+	 * @param index the entry index
+	 * @return a stream of this method's parameters
+	 */
+	public Stream<LocalVariableDefEntry> streamParameters(EntryIndex index) {
 		AccessFlags flags = index.getMethodAccess(this);
+		return flags == null ? Stream.empty() : this.paramCache
+				.computeIfAbsent(index, ignored -> {
+					int i = flags.isStatic() ? 0 : 1;
+					ImmutableList.Builder<LocalVariableDefEntry> parameters = ImmutableList.builder();
+					for (ArgumentDescriptor arg : this.descriptor.getArgumentDescs()) {
+						LocalVariableDefEntry argEntry = new LocalVariableDefEntry(this, i, arg);
+						parameters.add(argEntry);
 
-		if (flags != null) {
-			int i = flags.isStatic() ? 0 : 1;
+						i += arg.getSize();
+					}
 
-			for (ArgumentDescriptor arg : this.descriptor.getArgumentDescs()) {
-				LocalVariableEntry argEntry = new LocalVariableEntry(this, i);
-				parameters.add(argEntry);
-
-				i += arg.getSize();
-			}
-		}
-
-		return parameters;
+					return parameters.build();
+				})
+				.stream();
 	}
 
 	/**

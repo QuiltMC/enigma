@@ -47,7 +47,8 @@ public final class FillClassMappingsCommand extends Command<Required, Optional> 
 	void runImpl(Required required, Optional optional) throws Exception {
 		run(
 				required.inputJar, required.inputMappings, required.mappingOutput,
-				optional.fillAll, optional.obfuscatedNamespace, optional.deobfuscatedNamespace
+				optional.fillAll != null && optional.fillAll,
+				optional.obfuscatedNamespace, optional.deobfuscatedNamespace
 		);
 	}
 
@@ -133,5 +134,5 @@ public final class FillClassMappingsCommand extends Command<Required, Optional> 
 
 	record Required(Path inputJar, Path inputMappings, Path mappingOutput) { }
 
-	record Optional(boolean fillAll, String obfuscatedNamespace, String deobfuscatedNamespace) { }
+	record Optional(Boolean fillAll, String obfuscatedNamespace, String deobfuscatedNamespace) { }
 }

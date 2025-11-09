@@ -6,6 +6,7 @@ import org.quiltmc.enigma.gui.node.ClassSelectorClassNode;
 import org.quiltmc.enigma.gui.node.SortedMutableTreeNode;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.util.Utils;
 
 import javax.annotation.Nullable;
 import javax.swing.JTree;
@@ -18,6 +19,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.Future;
+import java.util.function.Supplier;
+
+import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 
 public class ClassSelector extends JTree {
 	public static final Comparator<ClassEntry> DEOBF_CLASS_COMPARATOR = Comparator.comparing(ClassEntry::getFullName);
@@ -49,27 +54,29 @@ public class ClassSelector extends JTree {
 			}
 		}));
 
-		this.addKeyListener(GuiUtil.onKeyPress(e -> {
-			TreePath[] paths = this.getSelectionPaths();
-
+		putKeyBindAction(KeyBinds.EDITOR_TOGGLE_MAPPING, this, e -> {
+			final TreePath[] paths = this.getSelectionPaths();
 			if (paths != null) {
-				if (KeyBinds.EDITOR_TOGGLE_MAPPING.matches(e)) {
-					for (TreePath path : paths) {
-						if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
-							gui.toggleMappingFromEntry(node.getObfEntry());
-						}
+				for (final TreePath path : paths) {
+					if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
+						gui.toggleMappingFromEntry(node.getObfEntry());
 					}
 				}
+			}
+		});
 
-				if (this.selectionListener != null && KeyBinds.SELECT.matches(e)) {
-					for (TreePath path : paths) {
+		putKeyBindAction(KeyBinds.SELECT, this, e -> {
+			if (this.selectionListener != null) {
+				final TreePath[] paths = this.getSelectionPaths();
+				if (paths != null) {
+					for (final TreePath path : paths) {
 						if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
 							this.selectionListener.onSelectClass(node.getObfEntry());
 						}
 					}
 				}
 			}
-		}));
+		});
 
 		this.setCellRenderer(new ClassTreeCellRenderer(gui, this));
 		ToolTipManager.sharedInstance().registerComponent(this);
@@ -295,12 +302,29 @@ public class ClassSelector extends JTree {
 	 * On completion, the class's stats icon will be updated.
 	 *
 	 * @param classEntry the class to reload stats for
+	 *
+	 * @return a future whose completion indicates that all asynchronous work has finished
 	 */
-	public void reloadStats(ClassEntry classEntry) {
+	public Future<?> reloadStats(ClassEntry classEntry) {
+		return this.reloadStats(classEntry, Utils.SUPPLY_FALSE);
+	}
+
+	/**
+	 * Requests an asynchronous reload of the stats for the given class.
+	 * On completion, the class's stats icon will be updated.
+	 *
+	 * @param classEntry   the class to reload stats for
+	 * @param shouldCancel a supplier that may be used to cancel asynchronous work if it returns
+	 *                     {@code true} before the work has started
+	 *
+	 * @return a future whose completion indicates that no asynchronous work remains, whether
+	 * because it was canceled using the passed {@code shouldCancel} method or because it finished normally
+	 */
+	public Future<?> reloadStats(ClassEntry classEntry, Supplier<Boolean> shouldCancel) {
 		ClassSelectorClassNode node = this.packageManager.getClassNode(classEntry);
-		if (node != null) {
-			node.reloadStats(this.controller.getGui(), this, true);
-		}
+		return node == null
+				? Utils.DUMMY_FUTURE
+				: node.reloadStats(this.controller.getGui(), this, true, shouldCancel);
 	}
 
 	public interface ClassSelectionListener {

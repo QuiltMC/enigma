@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.impl.analysis.index;
 
-import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.impl.analysis.MethodNodeWithAction;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndexer;
 import org.quiltmc.enigma.api.translation.representation.ParameterAccessFlags;
@@ -15,7 +14,7 @@ public class IndexClassVisitor extends ClassVisitor {
 	private final JarIndexer indexer;
 	private ClassDefEntry classEntry;
 
-	public IndexClassVisitor(JarIndex indexer, int api) {
+	public IndexClassVisitor(JarIndexer indexer, int api) {
 		super(api);
 		this.indexer = indexer;
 	}

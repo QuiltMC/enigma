@@ -19,12 +19,14 @@ public final class KeyBinds {
 	public static final KeyBind EXIT = KeyBind.builder("close").key(KeyEvent.VK_ESCAPE).build();
 	public static final KeyBind SELECT = KeyBind.builder("select").key(KeyEvent.VK_ENTER).build();
 	public static final KeyBind DIALOG_SAVE = KeyBind.builder("dialog_save").key(KeyEvent.VK_ENTER).build();
+	public static final KeyBind MULTILINE_DIALOG_SAVE = KeyBind.builder("multiline_dialog_save").mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_ENTER).build();
 
 	public static final KeyBind QUICK_FIND_DIALOG_IGNORE_CASE = KeyBind.builder("ignore_case", QUICK_FIND_DIALOG_CATEGORY).key(KeyEvent.VK_C).build();
 	public static final KeyBind QUICK_FIND_DIALOG_REGEX = KeyBind.builder("regex", QUICK_FIND_DIALOG_CATEGORY).key(KeyEvent.VK_R).build();
 	public static final KeyBind QUICK_FIND_DIALOG_WRAP = KeyBind.builder("wrap", QUICK_FIND_DIALOG_CATEGORY).key(KeyEvent.VK_W).build();
 	public static final KeyBind QUICK_FIND_DIALOG_NEXT = KeyBind.builder("next", QUICK_FIND_DIALOG_CATEGORY).key(KeyEvent.VK_ENTER).build();
 	public static final KeyBind QUICK_FIND_DIALOG_PREVIOUS = KeyBind.builder("previous", QUICK_FIND_DIALOG_CATEGORY).mod(InputEvent.SHIFT_DOWN_MASK).key(KeyEvent.VK_ENTER).build();
+	public static final KeyBind QUICK_FIND_DIALOG_CLOSE = KeyBind.builder("close_quick_find", QUICK_FIND_DIALOG_CATEGORY).key(KeyEvent.VK_ESCAPE).build();
 	public static final KeyBind SEARCH_DIALOG_NEXT = KeyBind.builder("next", SEARCH_DIALOG_CATEGORY).key(KeyEvent.VK_DOWN).build();
 	public static final KeyBind SEARCH_DIALOG_PREVIOUS = KeyBind.builder("previous", SEARCH_DIALOG_CATEGORY).key(KeyEvent.VK_UP).build();
 
@@ -35,7 +37,7 @@ public final class KeyBinds {
 	public static final KeyBind EDITOR_SEARCH_STRUCTURE = KeyBind.builder("search_structure", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK).key(KeyEvent.VK_T).build();
 	public static final KeyBind EDITOR_SHOW_INHERITANCE = KeyBind.builder("show_inheritance", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_I).build();
 	public static final KeyBind EDITOR_SHOW_IMPLEMENTATIONS = KeyBind.builder("show_implementations", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_M).build();
-	public static final KeyBind EDITOR_SHOW_CALLS = KeyBind.builder("show_calls", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_C).build();
+	public static final KeyBind EDITOR_SHOW_CALLS = KeyBind.builder("show_calls", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK).key(KeyEvent.VK_C).build();
 	public static final KeyBind EDITOR_SHOW_CALLS_SPECIFIC = KeyBind.builder("show_calls_specific", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK).key(KeyEvent.VK_C).build();
 	public static final KeyBind EDITOR_OPEN_ENTRY = KeyBind.builder("open_entry", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_N).build();
 	public static final KeyBind EDITOR_OPEN_PREVIOUS = KeyBind.builder("open_previous", EDITOR_CATEGORY).mod(InputEvent.CTRL_DOWN_MASK).key(KeyEvent.VK_P).build();
@@ -61,10 +63,10 @@ public final class KeyBinds {
 	public static final KeyBind SEARCH_METHOD = KeyBind.builder("search_method", MENU_CATEGORY).build();
 	public static final KeyBind SEARCH_FIELD = KeyBind.builder("search_field", MENU_CATEGORY).build();
 
-	private static final List<KeyBind> DEFAULT_KEY_BINDS = Stream.of(EXIT, SELECT, DIALOG_SAVE, QUICK_FIND_DIALOG_NEXT,
-			QUICK_FIND_DIALOG_PREVIOUS, SEARCH_DIALOG_NEXT, SEARCH_DIALOG_PREVIOUS, EDITOR_RENAME, EDITOR_PASTE,
-			EDITOR_EDIT_JAVADOC, EDITOR_SHOW_INHERITANCE, EDITOR_SHOW_IMPLEMENTATIONS, EDITOR_SHOW_CALLS,
-			EDITOR_SHOW_CALLS_SPECIFIC, EDITOR_OPEN_ENTRY, EDITOR_OPEN_PREVIOUS, EDITOR_OPEN_NEXT,
+	private static final List<KeyBind> DEFAULT_KEY_BINDS = Stream.of(EXIT, SELECT, DIALOG_SAVE, MULTILINE_DIALOG_SAVE,
+			QUICK_FIND_DIALOG_NEXT, QUICK_FIND_DIALOG_PREVIOUS, QUICK_FIND_DIALOG_CLOSE, SEARCH_DIALOG_NEXT, SEARCH_DIALOG_PREVIOUS,
+			EDITOR_RENAME, EDITOR_PASTE, EDITOR_EDIT_JAVADOC, EDITOR_SHOW_INHERITANCE, EDITOR_SHOW_IMPLEMENTATIONS,
+			EDITOR_SHOW_CALLS, EDITOR_SHOW_CALLS_SPECIFIC, EDITOR_OPEN_ENTRY, EDITOR_OPEN_PREVIOUS, EDITOR_OPEN_NEXT,
 			EDITOR_TOGGLE_MAPPING, EDITOR_ZOOM_IN, EDITOR_ZOOM_OUT, EDITOR_CLOSE_TAB, EDITOR_RELOAD_CLASS,
 			EDITOR_QUICK_FIND, EDITOR_SHOW_STRUCTURE, EDITOR_SEARCH_STRUCTURE, SAVE_MAPPINGS, DROP_MAPPINGS,
 			RELOAD_MAPPINGS, RELOAD_ALL, MAPPING_STATS, SEARCH, SEARCH_ALL, SEARCH_CLASS, SEARCH_METHOD, SEARCH_FIELD).map(KeyBind::toImmutable).toList();
@@ -72,9 +74,10 @@ public final class KeyBinds {
 	private static final List<KeyBind> CONFIGURABLE_KEY_BINDS = List.of(EDITOR_RENAME, EDITOR_PASTE, EDITOR_EDIT_JAVADOC,
 			EDITOR_SHOW_INHERITANCE, EDITOR_SHOW_IMPLEMENTATIONS, EDITOR_SHOW_CALLS, EDITOR_SHOW_CALLS_SPECIFIC,
 			EDITOR_OPEN_ENTRY, EDITOR_OPEN_PREVIOUS, EDITOR_OPEN_NEXT, EDITOR_TOGGLE_MAPPING, EDITOR_ZOOM_IN,
-			EDITOR_ZOOM_OUT, EDITOR_CLOSE_TAB, EDITOR_RELOAD_CLASS, EDITOR_SHOW_STRUCTURE, EDITOR_SEARCH_STRUCTURE,
-			SAVE_MAPPINGS, DROP_MAPPINGS, RELOAD_MAPPINGS, RELOAD_ALL, MAPPING_STATS, SEARCH, SEARCH_ALL, SEARCH_CLASS,
-			SEARCH_METHOD, SEARCH_FIELD);
+			EDITOR_ZOOM_OUT, EDITOR_CLOSE_TAB, EDITOR_RELOAD_CLASS, EDITOR_QUICK_FIND, EDITOR_SHOW_STRUCTURE,
+			EDITOR_SEARCH_STRUCTURE, SAVE_MAPPINGS, DROP_MAPPINGS, RELOAD_MAPPINGS, RELOAD_ALL, MAPPING_STATS, SEARCH,
+			SEARCH_ALL, SEARCH_CLASS, SEARCH_METHOD, SEARCH_FIELD
+	);
 	// Editing entries in CONFIGURABLE_KEY_BINDS directly wouldn't allow to revert the changes instead of saving
 	private static List<KeyBind> editableKeyBinds;
 
@@ -92,7 +95,7 @@ public final class KeyBinds {
 
 	public static void loadConfig() {
 		for (KeyBind keyBind : CONFIGURABLE_KEY_BINDS) {
-			keyBind.deserializeCombinations(Config.keyBinds().getKeyCodes(keyBind));
+			keyBind.deserializeCombinations(Config.keybind().getKeyCodes(keyBind));
 		}
 
 		resetEditableKeyBinds();
@@ -104,7 +107,7 @@ public final class KeyBinds {
 			KeyBind editedKeyBind = editableKeyBinds.get(i);
 			if (!editedKeyBind.equals(keyBind)) {
 				keyBind.setFrom(editedKeyBind);
-				Config.keyBinds().setBind(editedKeyBind);
+				Config.keybind().setBind(editedKeyBind);
 			}
 		}
 	}

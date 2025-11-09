@@ -1,7 +1,6 @@
 package org.quiltmc.enigma.gui.dialog;
 
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
-import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
 
 import java.awt.BorderLayout;
@@ -11,6 +10,8 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 
 public class ChangeDialog {
 	public static void show(Window parent) {
@@ -31,11 +32,7 @@ public class ChangeDialog {
 		JButton okButton = new JButton(I18n.translate("prompt.ok"));
 		buttonPanel.add(okButton);
 		okButton.addActionListener(event -> frame.dispose());
-		okButton.addKeyListener(GuiUtil.onKeyPress(e -> {
-			if (KeyBinds.EXIT.matches(e)) {
-				frame.dispose();
-			}
-		}));
+		putKeyBindAction(KeyBinds.EXIT, okButton, e -> frame.dispose());
 
 		// show the frame
 		frame.pack();
