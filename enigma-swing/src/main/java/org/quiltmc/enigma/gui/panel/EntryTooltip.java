@@ -21,6 +21,7 @@ import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.docker.ObfuscatedClassesDocker;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
+import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Utils;
 
 import javax.annotation.Nullable;
@@ -230,7 +231,10 @@ public class EntryTooltip extends JWindow {
 		{
 			final Box parentLabelRow = Box.createHorizontalBox();
 
-			final JLabel from = labelOf(inherited ? "inherited from" : "from", italEditorFont);
+			final JLabel from = labelOf(
+					I18n.translate(inherited ? "editor.tooltip.label.inherited_from" : "editor.tooltip.label.from"),
+					italEditorFont
+			);
 			// the italics cause it to overlap with the colon if it has no right padding
 			from.setBorder(createEmptyBorder(0, 0, 0, 1));
 			parentLabelRow.add(from);
@@ -389,13 +393,15 @@ public class EntryTooltip extends JWindow {
 						.build()
 				);
 
-				mainContent.add(labelOf("No source available", italEditorFont), GridBagConstraintsBuilder.create()
-						.pos(0, mainGridY++)
-						.weightX(1)
-						.fill(GridBagConstraints.HORIZONTAL)
-						.anchor(GridBagConstraints.LINE_START)
-						.insets(ROW_INNER_INSET, ROW_OUTER_INSET)
-						.build()
+				mainContent.add(
+						labelOf(I18n.translate("editor.tooltip.message.no_source"), italEditorFont),
+						GridBagConstraintsBuilder.create()
+							.pos(0, mainGridY++)
+							.weightX(1)
+							.fill(GridBagConstraints.HORIZONTAL)
+							.anchor(GridBagConstraints.LINE_START)
+							.insets(ROW_INNER_INSET, ROW_OUTER_INSET)
+							.build()
 				);
 			}
 		}

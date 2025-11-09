@@ -154,6 +154,9 @@
 	"editor.quick_find.wrap": "Wrap",
 	"editor.quick_find.not_found": "Not found!",
 	"editor.quick_find.persistent": "Persistent",
+	"editor.tooltip.label.from": "from",
+	"editor.tooltip.label.inherited_from": "inherited from",
+	"editor.tooltip.message.no_source": "No source available",
 
 	"info_panel.identifier": "Identifier Info",
 	"info_panel.identifier.none": "No identifier selected",
