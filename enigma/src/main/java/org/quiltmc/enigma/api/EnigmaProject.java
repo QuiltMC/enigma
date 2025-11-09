@@ -121,14 +121,23 @@ public class EnigmaProject {
 		return this.classProvider;
 	}
 
+	/**
+	 * Gets the index of the main jar of this project; the jar being mapped.
+	 */
 	public JarIndex getJarIndex() {
 		return this.jarIndex;
 	}
 
+	/**
+	 * Gets the index of the library jars of this project.
+	 */
 	public JarIndex getLibIndex() {
 		return this.libIndex;
 	}
 
+	/**
+	 * Gets the index of the main jar <em>and</em> library jars of this project.
+	 */
 	public JarIndex getCombinedIndex() {
 		return this.combinedIndex;
 	}
