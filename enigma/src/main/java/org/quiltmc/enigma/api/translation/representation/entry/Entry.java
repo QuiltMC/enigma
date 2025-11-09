@@ -130,18 +130,16 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	boolean canShadow(Entry<?> entry);
 
 	default ClassEntry getContainingClass() {
-		ClassEntry last = null;
 		Entry<?> current = this;
 		while (current != null) {
 			if (current instanceof ClassEntry classEntry) {
-				last = classEntry;
-				break;
+				return classEntry;
 			}
 
 			current = current.getParent();
 		}
 
-		return Objects.requireNonNull(last, () -> String.format("%s has no containing class?", this));
+		throw new IllegalStateException(String.format("%s has no containing class?", this));
 	}
 
 	default ClassEntry getTopLevelClass() {
