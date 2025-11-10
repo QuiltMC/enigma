@@ -9,8 +9,6 @@ plugins {
 	id 'java-test-fixtures'
 }
 
-// final PROVIDERS = project.providers
-
 interface ExecProvider {
 	@javax.inject.Inject
 	ExecOperations getOperations()
