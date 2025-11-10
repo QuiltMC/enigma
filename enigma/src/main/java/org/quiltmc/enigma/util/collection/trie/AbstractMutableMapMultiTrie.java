@@ -1,11 +1,11 @@
 package org.quiltmc.enigma.util.collection.trie;
 
-import org.quiltmc.enigma.util.collection.trie.AbstractMutableMapMultiTrie.MutableMapNode;
+import org.quiltmc.enigma.util.collection.trie.AbstractMutableMapMultiTrie.Node;
 import com.google.common.collect.Multimap;
 
 import java.util.Map;
 
-public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends MutableMapNode<K, S, V, N>>
+public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, V, N>>
 		extends AbstractMapMultiTrie<K, S, V, N>
 		implements MutableMultiTrie<K, S, V> {
 	private final View view = new View();
@@ -34,10 +34,10 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends MutableMapN
 		return this.view;
 	}
 
-	protected abstract static class MutableMapNode<K, S, V, N extends MutableMapNode<K, S, V, N>>
-			extends MapNode<K, V, N>
+	protected abstract static class Node<K, S, V, N extends Node<K, S, V, N>>
+			extends AbstractMapMultiTrie.Node<K, V, N>
 			implements MutableMultiTrie.Node<K, S, V> {
-		protected MutableMapNode(Map<K, N> children, Multimap<K, V> leaves) {
+		protected Node(Map<K, N> children, Multimap<K, V> leaves) {
 			super(children, leaves);
 		}
 
