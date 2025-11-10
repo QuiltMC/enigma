@@ -250,7 +250,7 @@ final copyBumpAndJarEnigma = tasks.register("copyBumpAndJarEnigma", Sync) {
 		}
 	}
 
-	final projectRootDir = project.rootDir
+	final projectRootPath = project.rootDir.toPath()
 	doLast {
 		final dest = destinationDir.toPath()
 
@@ -261,6 +261,12 @@ final copyBumpAndJarEnigma = tasks.register("copyBumpAndJarEnigma", Sync) {
 			'MINOR_VERSION', ~/(?m)^\s*public static final int MINOR_VERSION = (\d+);$/
 		)
 
+		// create empty directories for excluded sub-projects
+		// gradle won't allow configuring projects with empty directories
+		excludedProjectDirs.each {
+			Files.createDirectories(dest.resolve(projectRootPath.relativize(it.toPath())))
+		}
+
 		// this causes the task to always be out-of-date
 		// copying gradle/wrapper, etc. and executing the copy instead did not help
 		EXEC.exec {
@@ -268,7 +274,7 @@ final copyBumpAndJarEnigma = tasks.register("copyBumpAndJarEnigma", Sync) {
 
 			final executableName = System.properties['os.name'].toLowerCase().contains('windows')
 				? './gradlew.bat' : './gradlew'
-			executable(projectRootDir.toPath().resolve(executableName))
+			executable(projectRootPath.resolve(executableName))
 			args ':enigma-cli:shadowJar'
 		}
 	}
