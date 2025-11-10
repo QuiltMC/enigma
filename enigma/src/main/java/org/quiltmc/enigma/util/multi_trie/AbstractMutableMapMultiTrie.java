@@ -30,7 +30,7 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 	}
 
 	@Override
-	public MultiTrie<K, S, V> view() {
+	public MultiTrie<K, S, V> getView() {
 		return this.view;
 	}
 

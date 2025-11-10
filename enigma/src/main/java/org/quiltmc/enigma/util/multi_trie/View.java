@@ -5,7 +5,7 @@ import org.quiltmc.enigma.util.Utils;
 import javax.annotation.Nonnull;
 
 /**
- * An unmodifiable view of a {@link MutableMultiTrie}, for use in {@link MutableMultiTrie#view()} implementations.
+ * An unmodifiable view of a {@link MutableMultiTrie}, for use in {@link MutableMultiTrie#getView()} implementations.
  */
 public final class View<K, S, V> implements MultiTrie<K, S, V> {
 	private final MutableMultiTrie<K, S, V> viewed;
