@@ -185,9 +185,9 @@ final testPreHandlingPluginAgainstCurrentEnigma = tasks
 
 	classpath(cliShadowJar, pluginJarFile)
 
-	errorOutput new ByteArrayOutputStream()
+	errorOutput = new ByteArrayOutputStream()
 
-	ignoreExitValue true
+	ignoreExitValue = true
 
 	doFirst {
 		args 'print-stats', pluginJarFile.get().asFile, pluginJarFile.get().asFile
@@ -234,8 +234,9 @@ final copyBumpAndJarEnigma = tasks.register("copyBumpAndJarEnigma", Sync) {
 
 	// This can't be done lazily in doFirst because it needs to be excluded when task dependencies are checked
 	// so the task doesn't depend on processDummyPluginResources.
+	final buildDir = project.layout.buildDirectory.get().asFile
 	exclude {
-		it.file in project.layout.buildDirectory.get().asFile
+		it.file in buildDir
 	}
 
 	// already excluded whole build dir, but just in case: explicitly exclude dest dir to avoid copy recursion
@@ -342,9 +343,9 @@ final testRecommendedImplPluginAgainstBumpedEnigma = tasks
 
 	classpath(bumpedJarPath, pluginJarFile)
 
-	errorOutput new ByteArrayOutputStream()
+	errorOutput = new ByteArrayOutputStream()
 
-	ignoreExitValue true
+	ignoreExitValue = true
 
 	doFirst {
 		args 'print-stats', pluginJarFile.get().asFile, pluginJarFile.get().asFile
