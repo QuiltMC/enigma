@@ -16,7 +16,7 @@ public final class StringHashMultiTrie<V> extends StringMultiTrie<V, Node<V>> {
 		super(createEmptyNode());
 	}
 
-	static final class Node<V> extends StringMultiTrie.StringNode<V, Node<V>> {
+	static final class Node<V> extends StringMultiTrie.Node<V, Node<V>> {
 		private Node(Map<Character, Node<V>> children, Multimap<Character, V> leaves) {
 			super(children, leaves);
 		}

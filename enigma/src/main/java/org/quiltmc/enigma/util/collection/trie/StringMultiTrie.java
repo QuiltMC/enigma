@@ -1,11 +1,11 @@
 package org.quiltmc.enigma.util.collection.trie;
 
 import com.google.common.collect.Multimap;
-import org.quiltmc.enigma.util.collection.trie.StringMultiTrie.StringNode;
+import org.quiltmc.enigma.util.collection.trie.StringMultiTrie.Node;
 
 import java.util.Map;
 
-public class StringMultiTrie<V, N extends StringNode<V, N>>
+public class StringMultiTrie<V, N extends Node<V, N>>
 		extends AbstractMutableMapMultiTrie<Character, String, V, N> {
 	protected StringMultiTrie(N root) {
 		super(root);
@@ -21,9 +21,9 @@ public class StringMultiTrie<V, N extends StringNode<V, N>>
 		return node == null ? EmptyNode.get() : node;
 	}
 
-	protected abstract static class StringNode<V, N extends StringNode<V, N>>
-			extends AbstractMutableMapMultiTrie.MutableMapNode<Character, String, V, N> {
-		protected StringNode(Map<Character, N> children, Multimap<Character, V> leaves) {
+	protected abstract static class Node<V, N extends Node<V, N>>
+			extends AbstractMutableMapMultiTrie.Node<Character, String, V, N> {
+		protected Node(Map<Character, N> children, Multimap<Character, V> leaves) {
 			super(children, leaves);
 		}
 
