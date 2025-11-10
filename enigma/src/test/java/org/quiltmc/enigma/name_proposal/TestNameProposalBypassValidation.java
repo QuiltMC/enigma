@@ -27,6 +27,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.impl.plugin.BuiltinPlugin;
+import org.quiltmc.enigma.test.plugin.AnyVersionEnigmaPlugin;
 import org.quiltmc.enigma.util.validation.PrintNotifier;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 
@@ -155,7 +156,7 @@ public class TestNameProposalBypassValidation {
 		return project.getEnigma().getReadWriteService(project.getEnigma().getSupportedFileTypes().stream().filter(file -> file.getExtensions().contains("mapping") && !file.isDirectory()).findFirst().get()).get();
 	}
 
-	private record TestPlugin(boolean bypass, boolean dynamicOnly) implements EnigmaPlugin {
+	private record TestPlugin(boolean bypass, boolean dynamicOnly) implements AnyVersionEnigmaPlugin {
 		@Override
 		public void init(EnigmaPluginContext ctx) {
 			ctx.registerService(NameProposalService.TYPE, ctx1 -> new TestFieldProposer());

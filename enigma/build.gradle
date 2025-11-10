@@ -1,9 +1,41 @@
 import proguard.gradle.ProGuardTask
 
+import java.nio.file.Files
+import java.util.regex.Pattern
+
 plugins {
 	id 'checkstyle'
 	id 'java-library'
 	id 'java-test-fixtures'
+}
+
+interface ExecProvider {
+	@javax.inject.Inject
+	ExecOperations getOperations()
+}
+final EXEC = objects.newInstance(ExecProvider).operations
+
+final dummyPluginPath = project.file('src/dummyPlugin').toPath()
+Closure<SourceSet> configureDummyPluginSourceSet = {
+	final dir = dummyPluginPath.resolve(it.name);
+	java {
+		srcDirs dir.resolve('java')
+	}
+
+	resources {
+		srcDirs dir.resolve('resources')
+	}
+}
+
+sourceSets {
+	recommendedImplPlugin configureDummyPluginSourceSet
+	preHandlingPlugin configureDummyPluginSourceSet
+}
+
+configurations {
+	recommendedImplPluginRuntimeClasspath.extendsFrom runtimeClasspath
+	recommendedImplPluginCompileClasspath.extendsFrom compileClasspath
+	// preHandlingPlugin doesn't extend because it has its own EnigmaPlugin interface
 }
 
 dependencies {
@@ -20,6 +52,9 @@ dependencies {
 
 	testFixturesImplementation libs.asm
 	testFixturesImplementation libs.asm.tree
+
+	recommendedImplPluginImplementation(project)
+	// preHandlingPlugin doesn't depend on project because it has its own EnigmaPlugin interface
 }
 
 // Generate "version.properties" file
@@ -116,6 +151,214 @@ file('src/test/java/org/quiltmc/enigma/input').listFiles().each { f ->
 		registerTestJarTasks(f.name, "org/quiltmc/enigma/input/$f.name/**/*.class", "org/quiltmc/enigma/input/Keep.class")
 	}
 }
+
+final dummyPluginsDest = project.layout.buildDirectory.dir('dummy-plugin')
+final recommendedImplPluginJar = tasks.register('recommendedImplPluginJar', Jar) {
+	from sourceSets.recommendedImplPlugin.output
+
+	archiveFileName = "recommended-impl-plugin.jar"
+	destinationDirectory = dummyPluginsDest
+}
+
+final pluginJarTask = tasks.register('preHandlingPluginJar', Jar) {
+	from sourceSets.preHandlingPlugin.output
+
+	archiveFileName = "pre-handling-plugin.jar"
+	destinationDirectory = dummyPluginsDest
+}
+
+final testPreHandlingPluginAgainstCurrentEnigma = tasks
+		.register('testPreHandlingPluginAgainstCurrentEnigma', JavaExec) { task ->
+	final projectVersion = project.version
+
+	inputs.property('projectVersion', projectVersion)
+
+	final cliShadowJarTask = project(':enigma-cli').tasks.named('shadowJar', Jar)
+	dependsOn(cliShadowJarTask, pluginJarTask)
+
+	final pluginJarFile = pluginJarTask.flatMap(Jar::getArchiveFile)
+	final cliShadowJar = cliShadowJarTask.flatMap(Jar::getArchiveFile)
+
+	inputs.files(cliShadowJar, pluginJarFile)
+
+	mainClass = 'org.quiltmc.enigma.command.Main'
+
+	classpath(cliShadowJar, pluginJarFile)
+
+	errorOutput new ByteArrayOutputStream()
+
+	ignoreExitValue true
+
+	doFirst {
+		args 'print-stats', pluginJarFile.get().asFile, pluginJarFile.get().asFile
+	}
+
+	doLast {
+		final err = errorOutput.toString()
+		if (!err.contains('Plugin was probably built using a pre-2.7 version of Enigma.')) {
+			throw new GradleException(
+				"""
+				PreHandlingPlugin did not fail as expected!
+					Error output:
+					${err}
+				""".stripIndent()
+			)
+		}
+	}
+}
+
+// copying, bumping, and jar-ing must all be one task because they all output to bumped-enigma-copy
+final copyBumpAndJarEnigma = tasks.register("copyBumpAndJarEnigma", Sync) {
+	inputs.property('projectVersion', project.version)
+
+	final destPath = 'bumped-enigma-copy'
+
+	from project.rootDir
+	into project.layout.buildDirectory.map { it.dir(destPath) }
+
+	final excludedProjectDirs = [ project(':enigma-server'), project(':enigma-swing') ]
+		.collect { it.projectDir }
+
+	final excludedPaths = [
+		'.git', '.github', '.gradle', '.idea', 'gradlew', 'gradlew.bat', 'gradle/wrapper',
+		'buildSrc/.gradle', 'buildSrc/build',
+		project.projectDir.toPath().resolve('src/dummyPlugin'),
+		project(':enigma-cli').projectDir.toPath().resolve('build')
+	].collect { rootProject.file(it) }
+
+	final Set<File> excluded = excludedProjectDirs + excludedPaths
+
+	exclude {
+		it.file in excluded
+	}
+
+	// This can't be done lazily in doFirst because it needs to be excluded when task dependencies are checked
+	// so the task doesn't depend on processDummyPluginResources.
+	exclude {
+		it.file in project.layout.buildDirectory.get().asFile
+	}
+
+	// already excluded whole build dir, but just in case: explicitly exclude dest dir to avoid copy recursion
+	exclude {
+		it.file in destinationDir
+	}
+
+	doFirst {
+		// prevent accidental task recursion
+		if (source.getElements().get().any { it.asFile.toPath().iterator().any { it.toString() == destPath } }) {
+			throw new GradleException("${name} cannot be run from its own copy!")
+		}
+	}
+
+	final projectRootDir = project.rootDir
+	doLast {
+		final dest = destinationDir.toPath()
+
+		// only bump minor version, don't bother resetting patch to 0
+		bumpCopyVersion(dest.resolve('build.gradle'), 'version', ~/(?m)^\s*version = '\d+.(\d+).\d+(?:\+.*)?'$/)
+		bumpCopyVersion(
+			dest.resolve('enigma/src/main/java/org/quiltmc/enigma/api/Enigma.java'),
+			'MINOR_VERSION', ~/(?m)^\s*public static final int MINOR_VERSION = (\d+);$/
+		)
+
+		// this causes the task to always be out-of-date
+		// copying gradle/wrapper, etc. and executing the copy instead did not help
+		EXEC.exec {
+			workingDir(destinationDir)
+
+			final executableName = System.properties['os.name'].toLowerCase().contains('windows')
+				? './gradlew.bat' : './gradlew'
+			executable(projectRootDir.toPath().resolve(executableName))
+			args ':enigma-cli:shadowJar'
+		}
+	}
+}
+
+static void bumpCopyVersion(java.nio.file.Path path, String variableName, Pattern pattern) {
+	final matcher = pattern.matcher(path.text)
+	if (matcher.find()) {
+		final firstStart = matcher.start()
+
+		final number = Integer.parseInt(matcher.group(1))
+
+		final numberStart = matcher.start(1)
+		final numberEnd = matcher.end(1)
+
+		if (matcher.find()) {
+			throw new GradleException(
+				"Found multiple occurences of ${variableName} in ${path.last()} at ${firstStart} and ${matcher.start()}!"
+			)
+		}
+
+		path.text = path.text.substring(0, numberStart) + (number + 1) + path.text.substring(numberEnd)
+	} else {
+		throw new GradleException("Failed to find ${variableName} in copy's ${path.last()}!")
+	}
+}
+
+final testRecommendedImplPluginAgainstBumpedEnigma = tasks
+		.register('testRecommendedImplPluginAgainstBumpedEnigma', JavaExec) {
+	final projectVersion = project.version
+
+	inputs.property('projectVersion', projectVersion)
+
+	final projectDir = project.projectDir
+	final libsDir = project.layout.buildDirectory.dir('libs')
+	final Provider<java.nio.file.Path> bumpedJarPath = copyBumpAndJarEnigma
+		.map(Sync::getDestinationDir)
+		.zip(libsDir) { bumpDest, libs ->
+			final relativeBuildLibs = projectDir.toPath().relativize(libs.asFile.toPath())
+			final copyBuildLibs = bumpDest.toPath().resolve('enigma-cli').resolve(relativeBuildLibs)
+
+			final bumpedJars = Files
+				.find(copyBuildLibs, 1) { path, attributes ->
+					!path.fileName.toString().endsWith("${projectVersion}-all.jar")
+						&& path.fileName.toString().endsWith('-all.jar')
+				}
+				.toList()
+
+			if (bumpedJars.isEmpty()) {
+				throw new GradleException('No bumped Enigma jar to run!')
+			} else if (bumpedJars.size() > 1) {
+				throw new GradleException('Multiple bumped Enigma jars found!')
+			} else {
+				return bumpedJars.first()
+			}
+		}
+
+	dependsOn(copyBumpAndJarEnigma, recommendedImplPluginJar)
+
+	final pluginJarFile = recommendedImplPluginJar.flatMap(Jar::getArchiveFile)
+
+	inputs.files(bumpedJarPath, pluginJarFile)
+
+	mainClass = 'org.quiltmc.enigma.command.Main'
+
+	classpath(bumpedJarPath, pluginJarFile)
+
+	errorOutput new ByteArrayOutputStream()
+
+	ignoreExitValue true
+
+	doFirst {
+		args 'print-stats', pluginJarFile.get().asFile, pluginJarFile.get().asFile
+	}
+
+	doLast {
+		final err = errorOutput.toString()
+		if (!err.contains('Plugin does not support Enigma ')) {
+			throw new GradleException(
+				"""
+				RecommendedImplPlugin did not fail as expected!
+					Error output:
+					${err}
+				""".stripIndent()
+			)
+		}
+	}
+}
+
+test.dependsOn(testPreHandlingPluginAgainstCurrentEnigma, testRecommendedImplPluginAgainstBumpedEnigma)
 
 publishing {
 	publications {

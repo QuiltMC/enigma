@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.TestEntryFactory;
 import org.quiltmc.enigma.TestUtil;
 import org.quiltmc.enigma.api.Enigma;
-import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaPluginContext;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
@@ -25,6 +24,7 @@ import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.impl.plugin.BuiltinPlugin;
+import org.quiltmc.enigma.test.plugin.AnyVersionEnigmaPlugin;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -111,7 +111,7 @@ public class TestFallbackNameProposal {
 		}
 	}
 
-	private static class TestPlugin implements EnigmaPlugin {
+	private static class TestPlugin implements AnyVersionEnigmaPlugin {
 		@Override
 		public void init(EnigmaPluginContext ctx) {
 			ctx.registerService(NameProposalService.TYPE, ctx1 -> new TestPlugin.TestFieldProposerNoFallback());
