@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.util.collection.trie;
+package org.quiltmc.enigma.util.multi_trie;
 
 import javax.annotation.Nonnull;
 import java.util.stream.Stream;
