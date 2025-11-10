@@ -10,7 +10,7 @@ public interface MutableMultiTrie<K, S, V> extends MultiTrie<K, S, V> {
 	/**
 	 * @return a live, unmodifiable view of this trie
 	 */
-	MultiTrie<K, S, V> view();
+	MultiTrie<K, S, V> getView();
 
 	/**
 	 * @implSpec implementations should not have {@code public} visibility; users should never see node mutation methods
