@@ -18,7 +18,7 @@ public abstract class AbstractMapMultiTrie<K, S, V, N extends Node<K, V, N>> imp
 
 	@Override
 	public MultiTrie.Node<K, V> getRoot() {
-		return null;
+		return this.root;
 	}
 
 	protected static class Node<K, V, N extends Node<K, V, N>> implements MultiTrie.Node<K, V> {
