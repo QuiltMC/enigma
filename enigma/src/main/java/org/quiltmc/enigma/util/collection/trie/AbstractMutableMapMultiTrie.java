@@ -3,13 +3,12 @@ package org.quiltmc.enigma.util.collection.trie;
 import org.quiltmc.enigma.util.collection.trie.AbstractMutableMapMultiTrie.Node;
 import com.google.common.collect.Multimap;
 
-import javax.annotation.Nonnull;
 import java.util.Map;
 
 public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, V, N>>
 		extends AbstractMapMultiTrie<K, S, V, N>
 		implements MutableMultiTrie<K, S, V> {
-	private final View view = new View();
+	private final View<K, S, V> view = new View<>(this);
 
 	protected AbstractMutableMapMultiTrie(N root) {
 		super(root);
@@ -99,18 +98,5 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 		protected abstract boolean isEmptySequence(S sequence);
 
 		protected record FirstSplit<K, S>(K first, S suffix) { }
-	}
-
-	private class View implements MultiTrie<K, S, V> {
-		@Override
-		public Node<K, V> getRoot() {
-			return AbstractMutableMapMultiTrie.this.root;
-		}
-
-		@Nonnull
-		@Override
-		public Node<K, V> get(S prefix) {
-			return AbstractMutableMapMultiTrie.this.get(prefix);
-		}
 	}
 }
