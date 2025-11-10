@@ -1,6 +1,6 @@
-package org.quiltmc.enigma.util.collection.trie;
+package org.quiltmc.enigma.util.multi_trie;
 
-import org.quiltmc.enigma.util.collection.trie.AbstractMutableMapMultiTrie.Node;
+import org.quiltmc.enigma.util.multi_trie.AbstractMutableMapMultiTrie.Node;
 import com.google.common.collect.Multimap;
 
 import java.util.Map;

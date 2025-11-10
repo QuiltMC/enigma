@@ -1,8 +1,8 @@
-package org.quiltmc.enigma.util.collection.trie;
+package org.quiltmc.enigma.util.multi_trie;
 
 import com.google.common.collect.Multimap;
 import org.quiltmc.enigma.util.Utils;
-import org.quiltmc.enigma.util.collection.trie.AbstractMapMultiTrie.Node;
+import org.quiltmc.enigma.util.multi_trie.AbstractMapMultiTrie.Node;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.util.collection.trie;
+package org.quiltmc.enigma.util.multi_trie;
 
 public interface MutableMultiTrie<K, S, V> extends MultiTrie<K, S, V> {
 	void put(S sequence, V value);
