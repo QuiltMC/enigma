@@ -2,13 +2,13 @@ package org.quiltmc.enigma.gui.element.menu_bar;
 
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
+import org.quiltmc.enigma.gui.element.PlaceheldTextField;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 public class SearchMenusMenu extends AbstractEnigmaMenu {
-	final JTextField field = new JTextField();
+	final PlaceheldTextField field = new PlaceheldTextField();
 	final JPanel results = new JPanel();
 
 	protected SearchMenusMenu(Gui gui) {
@@ -33,6 +33,6 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	public void retranslate() {
 		// TODO check any caching
 		this.setText(I18n.translate("menu.help.search"));
-		// TODO translate field placeholder
+		this.field.setPlaceholder(I18n.translate("menu.help.search.placeholder"));
 	}
 }
