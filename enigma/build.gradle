@@ -245,7 +245,7 @@ final copyBumpAndJarEnigma = tasks.register("copyBumpAndJarEnigma", Sync) {
 
 	doFirst {
 		// prevent accidental task recursion
-		if (source.getElements().get().any { it.getAsFile().toPath().iterator().any { it.toString() == destPath } }) {
+		if (source.getElements().get().any { it.asFile.toPath().iterator().any { it.toString() == destPath } }) {
 			throw new GradleException("${name} cannot be run from its own copy!")
 		}
 	}
