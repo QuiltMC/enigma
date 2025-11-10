@@ -20,9 +20,9 @@ public class TestConsistentVersions {
 	void test() {
 		final Matcher matcher = VERSION.matcher(Enigma.VERSION);
 		if (matcher.matches()) {
-			Assertions.assertEquals(matcher.group(MAJOR), Integer.toString(Enigma.MAJOR_VERSION));
-			Assertions.assertEquals(matcher.group(MINOR), Integer.toString(Enigma.MINOR_VERSION));
-			Assertions.assertEquals(matcher.group(PATCH), Integer.toString(Enigma.PATCH_VERSION));
+			Assertions.assertEquals(matcher.group(MAJOR), Integer.toString(Enigma.MAJOR_VERSION), "Version mismatch between Enigma#VERSION and build.gradle major version!");
+			Assertions.assertEquals(matcher.group(MINOR), Integer.toString(Enigma.MINOR_VERSION), "Version mismatch between Enigma#VERSION and build.gradle minor version!");
+			Assertions.assertEquals(matcher.group(PATCH), Integer.toString(Enigma.PATCH_VERSION), "Version mismatch between Enigma#VERSION and build.gradle patch version!");
 		} else {
 			throw new IllegalStateException("Failed to parse Enigma.VERSION!");
 		}
