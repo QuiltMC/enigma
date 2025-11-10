@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.util.collection.trie;
 
+import javax.annotation.Nonnull;
 import java.util.stream.Stream;
 
 /**
@@ -42,6 +43,7 @@ public interface MultiTrie<K, S, V> {
 			return this.getSize() == 0;
 		}
 
+		@Nonnull
 		Node<K, V> next(K key);
 	}
 }
