@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.util.collection.trie;
 
 import com.google.common.collect.Multimap;
+import org.quiltmc.enigma.util.Utils;
 import org.quiltmc.enigma.util.collection.trie.AbstractMapMultiTrie.Node;
 
 import javax.annotation.Nonnull;
@@ -25,8 +26,8 @@ public abstract class AbstractMapMultiTrie<K, S, V, N extends Node<K, V, N>> imp
 		protected final Multimap<K, V> leaves;
 
 		protected Node(Map<K, N> children, Multimap<K, V> leaves) {
-			this.children = children;
-			this.leaves = leaves;
+			this.children = Utils.requireNonNull(children, "children");
+			this.leaves = Utils.requireNonNull(leaves, "leaves");
 		}
 
 		@Override

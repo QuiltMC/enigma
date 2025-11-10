@@ -196,4 +196,12 @@ public class Utils {
 	public static double clamp(double value, double min, double max) {
 		return Math.min(max, Math.max(value, min));
 	}
+
+	public static <T> T requireNonNull(T value, String name) {
+		if (value == null) {
+			throw new NullPointerException(name + " must not be null!");
+		} else {
+			return value;
+		}
+	}
 }
