@@ -197,7 +197,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void regenerateAndUpdateStatIcons() {
-		if (Config.main().features.enableClassTreeStatIcons.value()) {
+		if (Config.stats().enableClassTreeStatIcons.value()) {
 			ProgressListener progressListener = ProgressListener.createEmpty();
 			this.gui.getMainWindow().getStatusBar().syncWith(progressListener);
 
@@ -570,7 +570,7 @@ public class GuiController implements ClientPacketHandler {
 			return;
 		}
 
-		if (autosave && Config.main().features.autoSaveMappings.value() && this.gui.mappingsFileChooser.getSelectedFile() != null) {
+		if (autosave && Config.editor().autoSaveMappings.value() && this.gui.mappingsFileChooser.getSelectedFile() != null) {
 			this.gui.getController().saveMappings(this.gui.mappingsFileChooser.getSelectedFile().toPath(), true);
 		}
 
@@ -686,7 +686,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void createServer(String username, int port, char[] password) throws IOException {
-		this.server = new IntegratedEnigmaServer(this.project.getJarChecksum(), password, EntryRemapper.mapped(this.project.getEnigma(), this.project.getJarIndex(), this.project.getMappingsIndex(), new HashEntryTree<>(this.project.getRemapper().getJarProposedMappings()), new HashEntryTree<>(this.project.getRemapper().getDeobfMappings()), this.project.getEnigma().getNameProposalServices()), port);
+		this.server = new IntegratedEnigmaServer(this.project.getJarChecksum(), password, EntryRemapper.mapped(this.project.getEnigma(), this.project.getCombinedIndex(), this.project.getMappingsIndex(), new HashEntryTree<>(this.project.getRemapper().getJarProposedMappings()), new HashEntryTree<>(this.project.getRemapper().getDeobfMappings()), this.project.getEnigma().getNameProposalServices()), port);
 		this.server.start();
 		this.client = new IntegratedEnigmaClient(this, "127.0.0.1", port);
 		this.client.connect();

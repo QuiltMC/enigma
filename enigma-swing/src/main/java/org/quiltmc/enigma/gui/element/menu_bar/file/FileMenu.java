@@ -80,7 +80,7 @@ public class FileMenu extends AbstractEnigmaMenu {
 		this.jarCloseItem.addActionListener(e -> this.gui.getController().closeJar());
 		this.maxRecentFilesItem.addActionListener(e -> this.onMaxRecentFilesClicked());
 		this.saveMappingsItem.addActionListener(e -> this.onSaveMappingsClicked());
-		this.autoSaveMappingsItem.addActionListener(e -> Config.main().features.autoSaveMappings.setValue(this.autoSaveMappingsItem.getState()));
+		this.autoSaveMappingsItem.addActionListener(e -> Config.editor().autoSaveMappings.setValue(this.autoSaveMappingsItem.getState()));
 		this.closeMappingsItem.addActionListener(e -> this.onCloseMappingsClicked());
 		this.dropMappingsItem.addActionListener(e -> this.gui.getController().dropMappings());
 		this.reloadMappingsItem.addActionListener(e -> this.onReloadMappingsClicked());
@@ -109,7 +109,7 @@ public class FileMenu extends AbstractEnigmaMenu {
 		this.saveMappingsItem.setEnabled(jarOpen && this.gui.mappingsFileChooser.getSelectedFile() != null && this.gui.getConnectionState() != ConnectionState.CONNECTED);
 		this.saveMappingsAs.updateState();
 		this.autoSaveMappingsItem.setEnabled(jarOpen);
-		this.autoSaveMappingsItem.setState(Config.main().features.autoSaveMappings.value());
+		this.autoSaveMappingsItem.setState(Config.editor().autoSaveMappings.value());
 		this.closeMappingsItem.setEnabled(jarOpen);
 		this.reloadMappingsItem.setEnabled(jarOpen);
 		this.reloadAllItem.setEnabled(jarOpen);

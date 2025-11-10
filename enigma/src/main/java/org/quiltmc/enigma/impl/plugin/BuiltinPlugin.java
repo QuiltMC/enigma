@@ -14,8 +14,6 @@ import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
-import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
-import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.Version;
 
 import javax.annotation.Nonnull;
@@ -71,11 +69,10 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 	}
 
 	private static void registerRecordNamingService(EnigmaPluginContext ctx) {
-		final Map<FieldEntry, MethodEntry> fieldToGetter = new HashMap<>();
-		final RecordGetterFindingVisitor visitor = new RecordGetterFindingVisitor(fieldToGetter);
+		final RecordIndexingVisitor visitor = new RecordIndexingVisitor();
 
-		ctx.registerService(JarIndexerService.TYPE, ctx1 -> JarIndexerService.fromVisitor(visitor, "enigma:record_component_indexer"));
-		ctx.registerService(NameProposalService.TYPE, ctx1 -> new RecordComponentProposalService(fieldToGetter));
+		ctx.registerService(JarIndexerService.TYPE, ctx1 -> new RecordIndexingService(visitor));
+		ctx.registerService(NameProposalService.TYPE, ctx1 -> new RecordComponentProposalService(visitor));
 	}
 
 	private static void registerSpecializedMethodNamingService(EnigmaPluginContext ctx) {

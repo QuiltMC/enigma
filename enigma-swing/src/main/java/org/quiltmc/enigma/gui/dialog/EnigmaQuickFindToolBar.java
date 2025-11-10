@@ -25,14 +25,15 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.SwingConstants;
 
+import static org.quiltmc.enigma.gui.util.GuiUtil.createSyncedCheckBox;
 import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 
 /**
  * Extension of {@link QuickFindToolBar} to allow using keybindings, and improve UI.
  */
 public class EnigmaQuickFindToolBar extends QuickFindToolBar {
-	protected JCheckBox persistentCheckBox;
-	protected JButton closeButton;
+	protected final JCheckBox persistentCheckBox = createSyncedCheckBox(Config.editor().persistentQuickFind);
+	protected final JButton closeButton = new JButton();
 
 	public EnigmaQuickFindToolBar() {
 		super();
@@ -56,33 +57,17 @@ public class EnigmaQuickFindToolBar extends QuickFindToolBar {
 
 		this.addSeparator();
 
-		this.persistentCheckBox = new JCheckBox();
 		this.persistentCheckBox.setFocusable(false);
 		this.persistentCheckBox.setOpaque(false);
 		this.persistentCheckBox.setVerticalTextPosition(SwingConstants.BOTTOM);
 		this.persistentCheckBox.setHorizontalTextPosition(SwingConstants.LEADING);
 		this.persistentCheckBox.addActionListener(this);
-		this.persistentCheckBox.addItemListener(e -> {
-			final boolean selected = this.persistentCheckBox.isSelected();
-			if (selected != Config.main().persistentEditorQuickFind.value()) {
-				Config.main().persistentEditorQuickFind.setValue(selected);
-			}
-
-			// request focus so when it's lost this may be dismissed
-			this.requestFocus();
-		});
-		this.persistentCheckBox.setSelected(Config.main().persistentEditorQuickFind.value());
-		Config.main().persistentEditorQuickFind.registerCallback(callback -> {
-			final Boolean configured = callback.value();
-			if (this.persistentCheckBox.isSelected() != configured) {
-				this.persistentCheckBox.setSelected(configured);
-			}
-		});
+		// request focus so when it's lost this may be dismissed
+		this.persistentCheckBox.addItemListener(e -> this.requestFocus());
 		this.add(this.persistentCheckBox);
 
 		this.addSeparator();
 
-		this.closeButton = new JButton();
 		this.closeButton.setIcon(GuiUtil.getCloseIcon());
 		this.closeButton.setFocusable(false);
 		this.closeButton.setOpaque(false);

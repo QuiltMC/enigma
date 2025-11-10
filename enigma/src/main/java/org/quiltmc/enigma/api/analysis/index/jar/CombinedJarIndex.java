@@ -7,10 +7,10 @@ import org.quiltmc.enigma.impl.analysis.index.AbstractJarIndex;
 import java.util.Collection;
 
 /**
- * An index of the main jar of an {@link EnigmaProject}.
+ * An index of the main jar <em>and</em> library jars of an {@link EnigmaProject}.
  */
-public class MainJarIndex extends AbstractJarIndex {
-	public MainJarIndex(
+public class CombinedJarIndex extends AbstractJarIndex {
+	public CombinedJarIndex(
 			EntryIndex entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex,
 			BridgeMethodIndex bridgeMethodIndex, JarIndexer... otherIndexers
 	) {
@@ -21,27 +21,26 @@ public class MainJarIndex extends AbstractJarIndex {
 	 * Creates an empty index, configured to use all built-in indexers.
 	 * @return the newly created index
 	 */
-	public static MainJarIndex empty() {
+	public static CombinedJarIndex empty() {
 		EntryIndex entryIndex = new EntryIndex();
-		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
 		ReferenceIndex referenceIndex = new ReferenceIndex();
-		BridgeMethodIndex bridgeMethodIndex = new BridgeMethodIndex(entryIndex, inheritanceIndex, referenceIndex);
-		PackageVisibilityIndex packageVisibilityIndex = new PackageVisibilityIndex();
-		EnclosingMethodIndex enclosingMethodIndex = new EnclosingMethodIndex();
+		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
 		LambdaIndex lambdaIndex = new LambdaIndex();
-		return new MainJarIndex(
-				entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex,
-				packageVisibilityIndex, enclosingMethodIndex, lambdaIndex
+		return new CombinedJarIndex(
+				entryIndex, inheritanceIndex, referenceIndex,
+				new BridgeMethodIndex(entryIndex, inheritanceIndex, referenceIndex),
+				// required by MappingValidator
+				lambdaIndex
 		);
 	}
 
 	@Override
 	public String getTranslationKey() {
-		return "progress.jar.indexing.jar";
+		return "progress.jar.indexing.combined";
 	}
 
 	@Override
 	public Collection<String> getIndexableClassNames(ProjectClassProvider classProvider) {
-		return classProvider.getMainClassNames();
+		return classProvider.getClassNames();
 	}
 }
