@@ -20,6 +20,7 @@ public interface MultiTrie<K, S, V> {
 		return this.getRoot().next(key);
 	}
 
+	@Nonnull
 	Node<K, V> get(S prefix);
 
 	default long getSize() {

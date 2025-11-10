@@ -3,6 +3,7 @@ package org.quiltmc.enigma.util.collection.trie;
 import org.quiltmc.enigma.util.collection.trie.AbstractMutableMapMultiTrie.Node;
 import com.google.common.collect.Multimap;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
 
 public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, V, N>>
@@ -106,6 +107,7 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 			return AbstractMutableMapMultiTrie.this.root;
 		}
 
+		@Nonnull
 		@Override
 		public Node<K, V> get(S prefix) {
 			return AbstractMutableMapMultiTrie.this.get(prefix);

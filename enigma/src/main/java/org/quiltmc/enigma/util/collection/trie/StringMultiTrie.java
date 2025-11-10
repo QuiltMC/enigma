@@ -3,6 +3,7 @@ package org.quiltmc.enigma.util.collection.trie;
 import com.google.common.collect.Multimap;
 import org.quiltmc.enigma.util.collection.trie.StringMultiTrie.Node;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
 
 public class StringMultiTrie<V, N extends Node<V, N>>
@@ -11,6 +12,7 @@ public class StringMultiTrie<V, N extends Node<V, N>>
 		super(root);
 	}
 
+	@Nonnull
 	@Override
 	public MultiTrie.Node<Character, V> get(String prefix) {
 		N node = this.root;
