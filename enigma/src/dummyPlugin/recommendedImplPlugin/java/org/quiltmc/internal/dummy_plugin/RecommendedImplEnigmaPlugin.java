@@ -22,7 +22,7 @@ public class RecommendedImplEnigmaPlugin implements EnigmaPlugin {
 	@Override
 	public boolean supportsEnigmaVersion(@NonNull Version enigmaVersion) {
 		return Enigma.MAJOR_VERSION == enigmaVersion.major()
-			&& Enigma.MINOR_VERSION == enigmaVersion.minor();
+				&& Enigma.MINOR_VERSION == enigmaVersion.minor();
 	}
 
 	@Override
