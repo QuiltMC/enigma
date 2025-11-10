@@ -3,7 +3,6 @@ package org.quiltmc.enigma;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.api.Enigma;
-import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaPluginContext;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.service.ReadWriteService;
@@ -12,6 +11,7 @@ import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.api.translation.mapping.serde.FileType;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.test.plugin.AnyVersionEnigmaPlugin;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -69,7 +69,7 @@ public class TestPluginValidation {
 		});
 	}
 
-	private static class DuplicateFileTypeTestPlugin implements EnigmaPlugin {
+	private static class DuplicateFileTypeTestPlugin implements AnyVersionEnigmaPlugin {
 		@Override
 		public void init(EnigmaPluginContext ctx) {
 			registerService(ctx, "test:grind", "gaming");
@@ -77,7 +77,7 @@ public class TestPluginValidation {
 		}
 	}
 
-	private static class DuplicateIdTestPlugin implements EnigmaPlugin {
+	private static class DuplicateIdTestPlugin implements AnyVersionEnigmaPlugin {
 		@Override
 		public void init(EnigmaPluginContext ctx) {
 			registerService(ctx, "grind:ground");
@@ -85,7 +85,7 @@ public class TestPluginValidation {
 		}
 	}
 
-	private static class IdTestPlugin implements EnigmaPlugin {
+	private static class IdTestPlugin implements AnyVersionEnigmaPlugin {
 		@Override
 		public void init(EnigmaPluginContext ctx) {
 			// empty

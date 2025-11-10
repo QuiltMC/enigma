@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.TestUtil;
 import org.quiltmc.enigma.api.Enigma;
-import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaPluginContext;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
@@ -20,6 +19,7 @@ import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.test.plugin.AnyVersionEnigmaPlugin;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 import org.tinylog.Logger;
 
@@ -114,7 +114,7 @@ public class TestNameProposal {
 		Assertions.assertEquals(new EntryMapping("TestFooOwner", null, TokenType.DYNAMIC_PROPOSED, "test:owner_name"), project.getRemapper().getMapping(entry2.get().getParent()));
 	}
 
-	private static class TestPlugin implements EnigmaPlugin {
+	private static class TestPlugin implements AnyVersionEnigmaPlugin {
 		@Override
 		public void init(EnigmaPluginContext ctx) {
 			nameAllFields(ctx, "d");

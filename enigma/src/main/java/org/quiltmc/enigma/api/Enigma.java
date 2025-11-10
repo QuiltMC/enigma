@@ -43,6 +43,7 @@ import org.quiltmc.enigma.util.Utils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableListMultimap;
 import org.objectweb.asm.Opcodes;
+import org.quiltmc.enigma.util.Version;
 import org.tinylog.Logger;
 
 import javax.annotation.Nullable;
@@ -78,6 +79,27 @@ public class Enigma {
 	public static final String PROCYON_VERSION;
 	public static final String URL = "https://quiltmc.org";
 	public static final int ASM_VERSION = Opcodes.ASM9;
+
+	/**
+	 * A compile-time constant which compilers can inline in
+	 * {@link EnigmaPlugin#supportsEnigmaVersion(Version)} implementations,
+	 * allowing plugins to 'remember' the version of Enigma they were built with.
+	 */
+	public static final int MAJOR_VERSION = 2;
+	/**
+	 * A compile-time constant which compilers can inline in
+	 * {@link EnigmaPlugin#supportsEnigmaVersion(Version)} implementations,
+	 * allowing plugins to 'remember' the version of Enigma they were built with.
+	 */
+	public static final int MINOR_VERSION = 6;
+	/**
+	 * A compile-time constant which compilers can inline in
+	 * {@link EnigmaPlugin#supportsEnigmaVersion(Version)} implementations,
+	 * allowing plugins to 'remember' the version of Enigma they were built with.
+	 */
+	public static final int PATCH_VERSION = 2;
+
+	private static final Version CURRENT_VERSION = new Version(MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION);
 
 	private final EnigmaProfile profile;
 	private final EnigmaServices services;
@@ -411,7 +433,24 @@ public class Enigma {
 		public Enigma build() {
 			PluginContext pluginContext = new PluginContext(this.profile);
 			for (EnigmaPlugin plugin : this.plugins) {
-				plugin.init(pluginContext);
+				try {
+					if (plugin.supportsEnigmaVersion(CURRENT_VERSION)) {
+						plugin.init(pluginContext);
+					} else {
+						throw new IllegalStateException(
+							"Plugin does not support Enigma %s: %s"
+								.formatted(VERSION, plugin.getName())
+						);
+					}
+				} catch (AbstractMethodError e) {
+					throw new IllegalStateException(
+						"""
+						Error loading plugin: %s
+						\tPlugin was probably built using a pre-2.7 version of Enigma.\
+						""".formatted(plugin.getClass().getName()),
+						e
+					);
+				}
 			}
 
 			EnigmaServices services = pluginContext.buildServices();

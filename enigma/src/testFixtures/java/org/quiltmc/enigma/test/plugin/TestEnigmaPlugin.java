@@ -1,7 +1,6 @@
 package org.quiltmc.enigma.test.plugin;
 
 import org.quiltmc.enigma.api.Enigma;
-import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaPluginContext;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
@@ -15,7 +14,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TestEnigmaPlugin implements EnigmaPlugin {
+public class TestEnigmaPlugin implements AnyVersionEnigmaPlugin {
 	@Override
 	public void init(EnigmaPluginContext ctx) {
 		this.registerParameterNamingService(ctx);
