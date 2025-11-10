@@ -13,7 +13,7 @@ public abstract class AbstractMapMultiTrie<K, S, V, N extends Node<K, V, N>> imp
 	protected final N root;
 
 	protected AbstractMapMultiTrie(N root) {
-		this.root = root;
+		this.root = Utils.requireNonNull(root, "root");
 	}
 
 	@Override
