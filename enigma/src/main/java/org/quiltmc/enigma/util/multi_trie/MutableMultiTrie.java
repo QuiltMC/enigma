@@ -1,5 +1,12 @@
 package org.quiltmc.enigma.util.multi_trie;
 
+/**
+ * A multi-trie that allows modification which can also provide unmodifiable views of its contents.
+ *
+ * @param <K> the type of keys
+ * @param <S> the type of sequences
+ * @param <V> the type of values
+ */
 public interface MutableMultiTrie<K, S, V> extends MultiTrie<K, S, V> {
 	void put(S sequence, V value);
 
@@ -26,6 +33,9 @@ public interface MutableMultiTrie<K, S, V> extends MultiTrie<K, S, V> {
 
 		boolean removeAll(S sequence);
 
+		/**
+		 * @return al live, unmodifiable view of this node
+		 */
 		MultiTrie.Node<K, V> getView();
 	}
 }

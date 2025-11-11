@@ -22,19 +22,19 @@ public class CompositeStringMultiTrieTest {
 			final Node<Character, Association> node = trie.get(prefix);
 
 			assertThat(
-				"Unexpected values for prefix \"%s\"".formatted(prefix),
+				"Unexpected values for prefix \"%s\"!".formatted(prefix),
 				node.streamValues().toArray(),
 				arrayContainingInAnyOrder(associations.toArray())
 			);
 
 			assertThat(
-				"Unexpected leaves for prefix \"%s\"".formatted(prefix),
+				"Unexpected leaves for prefix \"%s\"!".formatted(prefix),
 				node.streamLeaves().toArray(),
 				arrayContainingInAnyOrder(associations.stream().filter(a -> a.isLeafOf(prefix)).toArray())
 			);
 
 			assertThat(
-				"Unexpected branches for prefix \"%s\"".formatted(prefix),
+				"Unexpected branches for prefix \"%s\"!".formatted(prefix),
 				node.streamBranches().toArray(),
 				arrayContainingInAnyOrder(associations.stream().filter(a -> a.isBranchOf(prefix)).toArray())
 			);

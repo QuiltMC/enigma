@@ -7,18 +7,20 @@ import java.util.stream.Stream;
  * A multi-trie (or prefix tree) associates a sequence of keys with one or more values.
  *
  * <p> Values can be looked up by a prefix of their key sequence; all values associated with a sequence beginning with
- * the prefix will be returned.
+ * the prefix will be returned.<br>
+ * The prefix can be passed either all at once to {@link #get},
+ * or key-by-key to {@link Node#next} starting with {@link #getRoot}.
+ *
+ * @implSpec {@code S} sequence types should represent an ordered sequence of keys of type {@code K};
+ * sequences that represent the same sequence of keys should be equivalent
  *
  * @param <K> the type of keys
  * @param <S> the type of sequences
  * @param <V> the type of values
  */
 public interface MultiTrie<K, S, V> {
+	@Nonnull
 	Node<K, V> getRoot();
-
-	default Node<K, V> start(K key) {
-		return this.getRoot().next(key);
-	}
 
 	@Nonnull
 	Node<K, V> get(S prefix);
@@ -31,6 +33,10 @@ public interface MultiTrie<K, S, V> {
 		return this.getSize() == 0;
 	}
 
+	/**
+	 * @param <K> the type of keys
+	 * @param <V> the type of values
+	 */
 	interface Node<K, V> {
 		Stream<V> streamLeaves();
 		Stream<V> streamBranches();
