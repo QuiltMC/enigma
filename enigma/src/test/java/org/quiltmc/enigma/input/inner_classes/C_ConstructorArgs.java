@@ -9,7 +9,7 @@ public class C_ConstructorArgs {
 	}
 
 	class Inner {
-		private int a;
+		private final int a;
 
 		Inner(int a) {
 			this.a = a;

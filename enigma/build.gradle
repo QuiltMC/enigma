@@ -113,7 +113,7 @@ static String taskNameFrom(String name) {
 def registerTestJarTasks(String name, String... input) {
 	String taskName = taskNameFrom(name)
 	final testJar = tasks.register("${taskName}TestJar", Jar.class) {
-		group("test-setup")
+		group = "test-setup"
 		from(sourceSets.test.output) {
 			include input
 		}
@@ -127,7 +127,7 @@ def registerTestJarTasks(String name, String... input) {
 		: file('src/test/resources/proguard-test.conf')
 
 	final testObf = tasks.register("${taskName}TestObf", ProGuardTask) {
-		group("test-setup")
+		group = "test-setup"
 
 		configuration confFileArg
 
@@ -185,9 +185,9 @@ final testPreHandlingPluginAgainstCurrentEnigma = tasks
 
 	classpath(cliShadowJar, pluginJarFile)
 
-	errorOutput new ByteArrayOutputStream()
+	errorOutput = new ByteArrayOutputStream()
 
-	ignoreExitValue true
+	ignoreExitValue = true
 
 	doFirst {
 		args 'print-stats', pluginJarFile.get().asFile, pluginJarFile.get().asFile
@@ -234,8 +234,9 @@ final copyBumpAndJarEnigma = tasks.register("copyBumpAndJarEnigma", Sync) {
 
 	// This can't be done lazily in doFirst because it needs to be excluded when task dependencies are checked
 	// so the task doesn't depend on processDummyPluginResources.
+	final buildDir = project.layout.buildDirectory.get().asFile
 	exclude {
-		it.file in project.layout.buildDirectory.get().asFile
+		it.file in buildDir
 	}
 
 	// already excluded whole build dir, but just in case: explicitly exclude dest dir to avoid copy recursion
@@ -250,7 +251,7 @@ final copyBumpAndJarEnigma = tasks.register("copyBumpAndJarEnigma", Sync) {
 		}
 	}
 
-	final projectRootDir = project.rootDir
+	final projectRootPath = project.rootDir.toPath()
 	doLast {
 		final dest = destinationDir.toPath()
 
@@ -261,6 +262,12 @@ final copyBumpAndJarEnigma = tasks.register("copyBumpAndJarEnigma", Sync) {
 			'MINOR_VERSION', ~/(?m)^\s*public static final int MINOR_VERSION = (\d+);$/
 		)
 
+		// create empty directories for excluded sub-projects
+		// gradle won't allow configuring projects with empty directories
+		excludedProjectDirs.each {
+			Files.createDirectories(dest.resolve(projectRootPath.relativize(it.toPath())))
+		}
+
 		// this causes the task to always be out-of-date
 		// copying gradle/wrapper, etc. and executing the copy instead did not help
 		EXEC.exec {
@@ -268,7 +275,7 @@ final copyBumpAndJarEnigma = tasks.register("copyBumpAndJarEnigma", Sync) {
 
 			final executableName = System.properties['os.name'].toLowerCase().contains('windows')
 				? './gradlew.bat' : './gradlew'
-			executable(projectRootDir.toPath().resolve(executableName))
+			executable(projectRootPath.resolve(executableName))
 			args ':enigma-cli:shadowJar'
 		}
 	}
@@ -336,9 +343,9 @@ final testRecommendedImplPluginAgainstBumpedEnigma = tasks
 
 	classpath(bumpedJarPath, pluginJarFile)
 
-	errorOutput new ByteArrayOutputStream()
+	errorOutput = new ByteArrayOutputStream()
 
-	ignoreExitValue true
+	ignoreExitValue = true
 
 	doFirst {
 		args 'print-stats', pluginJarFile.get().asFile, pluginJarFile.get().asFile
@@ -363,9 +370,9 @@ test.dependsOn(testPreHandlingPluginAgainstCurrentEnigma, testRecommendedImplPlu
 publishing {
 	publications {
 		"$project.name"(MavenPublication) {
-			groupId project.group
-			artifactId project.name
-			version project.version
+			groupId = project.group
+			artifactId = project.name
+			version = project.version
 			from components.java
 		}
 	}

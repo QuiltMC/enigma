@@ -1,13 +1,13 @@
 package org.quiltmc.enigma.api.translation.mapping.tree;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMap;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -108,7 +108,7 @@ public record MergedEntryMappingTree(EntryTree<EntryMapping> mainTree, EntryTree
 		return mergeNodeStreams(this.mainTree.getRootNodes(), this.secondaryTree.getRootNodes());
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public Iterator<EntryTreeNode<EntryMapping>> iterator() {
 		return this.getRootNodes().flatMap(n -> n.getNodesRecursively().stream())

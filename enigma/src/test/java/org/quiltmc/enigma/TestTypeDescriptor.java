@@ -1,14 +1,14 @@
 package org.quiltmc.enigma;
 
-import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestTypeDescriptor {
 	@Test

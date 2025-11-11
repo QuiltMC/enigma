@@ -15,13 +15,13 @@ import com.strobel.decompiler.languages.java.ast.ParameterDeclaration;
 import com.strobel.decompiler.languages.java.ast.Roles;
 import com.strobel.decompiler.languages.java.ast.TypeDeclaration;
 import com.strobel.decompiler.languages.java.ast.transforms.IAstTransform;
-import org.quiltmc.enigma.impl.source.procyon.EntryParser;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
+import org.quiltmc.enigma.impl.source.procyon.EntryParser;
 
 import java.util.ArrayList;
 import java.util.Collections;

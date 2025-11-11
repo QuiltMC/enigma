@@ -2,14 +2,14 @@ package org.quiltmc.enigma.gui.highlight;
 
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Highlighter;
+import javax.swing.text.JTextComponent;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Highlighter;
-import javax.swing.text.JTextComponent;
 
 public class BoxHighlightPainter implements Highlighter.HighlightPainter {
 	private final Color fillColor;

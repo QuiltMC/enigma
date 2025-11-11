@@ -1,5 +1,7 @@
 package org.quiltmc.enigma;
 
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
@@ -8,8 +10,6 @@ import org.quiltmc.enigma.api.service.DecompilerService;
 import org.quiltmc.enigma.api.source.Decompilers;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -18,7 +18,11 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
 
 public class DecompilationTest {
 	public static final Path JAR = TestUtil.obfJar("decompiler");

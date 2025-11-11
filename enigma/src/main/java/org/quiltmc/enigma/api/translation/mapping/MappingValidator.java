@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
@@ -16,7 +17,6 @@ import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.util.validation.Message;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 
-import javax.annotation.Nullable;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -86,7 +86,7 @@ public class MappingValidator {
 				String originalPackageName = classEntry.getPackageName();
 
 				return (originalPackageName == null && packageName == null)
-					|| (packageName != null && packageName.equals(originalPackageName));
+						|| (packageName != null && packageName.equals(originalPackageName));
 			}).toList());
 		}
 

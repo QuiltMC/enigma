@@ -1,21 +1,21 @@
 package org.quiltmc.enigma.gui.element;
 
 import com.google.common.collect.HashBiMap;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.event.EditorActionListener;
 import org.quiltmc.enigma.gui.panel.ClosableTabTitlePane;
 import org.quiltmc.enigma.gui.panel.EditorPanel;
 import org.quiltmc.enigma.gui.util.GuiUtil;
-import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
-import javax.annotation.Nullable;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;

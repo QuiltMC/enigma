@@ -471,8 +471,8 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 			final Range range = node.getRange().orElseThrow();
 
 			return lineIndexer.getIndex(range.begin) <= token.start
-				// subtract one because Token.end is exclusive
-				&& lineIndexer.getIndex(range.end) >= token.end - 1;
+					// subtract one because Token.end is exclusive
+					&& lineIndexer.getIndex(range.end) >= token.end - 1;
 		} else {
 			return false;
 		}

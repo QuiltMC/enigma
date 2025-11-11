@@ -1,9 +1,14 @@
 package org.quiltmc.enigma.translation.mapping;
 
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.RepetitionInfo;
+import org.quiltmc.enigma.TestEntryFactory;
+import org.quiltmc.enigma.TestUtil;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.TestUtil;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
@@ -13,16 +18,11 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.validation.Message;
 import org.quiltmc.enigma.util.validation.ParameterizedMessage;
 import org.quiltmc.enigma.util.validation.ValidationContext;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.RepetitionInfo;
-import org.quiltmc.enigma.TestEntryFactory;
 
 import java.nio.file.Path;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 
 public class TestMappingValidator {
 	private static final String REPEATED_TEST_NAME = RepeatedTest.DISPLAY_NAME_PLACEHOLDER + " :: repetition " + RepeatedTest.CURRENT_REPETITION_PLACEHOLDER + "/" + RepeatedTest.TOTAL_REPETITIONS_PLACEHOLDER;

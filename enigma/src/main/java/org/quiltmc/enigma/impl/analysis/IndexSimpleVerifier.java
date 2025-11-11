@@ -1,14 +1,14 @@
 package org.quiltmc.enigma.impl.analysis;
 
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.analysis.BasicValue;
+import org.objectweb.asm.tree.analysis.SimpleVerifier;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.analysis.BasicValue;
-import org.objectweb.asm.tree.analysis.SimpleVerifier;
 
 import java.util.Set;
 

@@ -1,9 +1,5 @@
 package org.quiltmc.enigma.impl.source.vineflower;
 
-import org.quiltmc.enigma.api.source.Source;
-import org.quiltmc.enigma.api.source.SourceIndex;
-import org.quiltmc.enigma.api.source.SourceSettings;
-import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import net.fabricmc.fernflower.api.IFabricJavadocProvider;
 import org.jetbrains.java.decompiler.main.decompiler.BaseDecompiler;
 import org.jetbrains.java.decompiler.main.extern.IContextSource;
@@ -11,10 +7,14 @@ import org.jetbrains.java.decompiler.main.extern.IFernflowerLogger;
 import org.jetbrains.java.decompiler.main.extern.IFernflowerPreferences;
 import org.jetbrains.java.decompiler.main.extern.IResultSaver;
 import org.jetbrains.java.decompiler.main.extern.TextTokenVisitor;
+import org.jspecify.annotations.Nullable;
+import org.quiltmc.enigma.api.source.Source;
+import org.quiltmc.enigma.api.source.SourceIndex;
+import org.quiltmc.enigma.api.source.SourceSettings;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.Nullable;
 
 public class VineflowerSource implements Source {
 	private final IContextSource contextSource;

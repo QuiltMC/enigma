@@ -6,13 +6,13 @@ import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.syntaxpain.JavaSyntaxKit;
 
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.image.BufferedImage;
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
 
 public final class ThemeUtil {
 	private ThemeUtil() { }

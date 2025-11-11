@@ -2,9 +2,9 @@ package org.quiltmc.enigma.api.class_provider;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.tree.ClassNode;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;

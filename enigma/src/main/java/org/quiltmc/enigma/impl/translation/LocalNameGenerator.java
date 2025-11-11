@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.impl.translation;
 
-import org.quiltmc.enigma.impl.translation.mapping.IdentifierValidation;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
+import org.quiltmc.enigma.impl.translation.mapping.IdentifierValidation;
 import org.tinylog.Logger;
 
 import java.util.Collection;

@@ -3,7 +3,7 @@ package org.quiltmc.enigma.input.inheritance_tree;
 // c extends a
 public class SubclassB extends BaseClass {
 	// a
-	private int numThings;
+	private final int numThings;
 
 	// <init>()V
 	protected SubclassB() {
@@ -24,6 +24,6 @@ public class SubclassB extends BaseClass {
 	// b()V
 	public void doBThings() {
 		// access to a
-		System.out.println("" + this.numThings + " B things!");
+		System.out.println(this.numThings + " B things!");
 	}
 }

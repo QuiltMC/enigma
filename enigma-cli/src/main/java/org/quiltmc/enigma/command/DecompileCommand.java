@@ -2,8 +2,8 @@ package org.quiltmc.enigma.command;
 
 import com.google.common.collect.ImmutableList;
 import org.quiltmc.enigma.api.EnigmaProject;
-import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.EnigmaProject.DecompileErrorStrategy;
+import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.service.DecompilerService;
 import org.quiltmc.enigma.api.source.Decompilers;
 import org.quiltmc.enigma.command.DecompileCommand.Required;

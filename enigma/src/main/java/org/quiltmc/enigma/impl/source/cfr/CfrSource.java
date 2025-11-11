@@ -1,9 +1,5 @@
 package org.quiltmc.enigma.impl.source.cfr;
 
-import org.quiltmc.enigma.api.source.Source;
-import org.quiltmc.enigma.api.source.SourceIndex;
-import org.quiltmc.enigma.api.source.SourceSettings;
-import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.benf.cfr.reader.apiunreleased.ClassFileSource2;
 import org.benf.cfr.reader.entities.ClassFile;
 import org.benf.cfr.reader.mapping.MappingFactory;
@@ -15,8 +11,11 @@ import org.benf.cfr.reader.util.CannotLoadClassException;
 import org.benf.cfr.reader.util.collections.ListFactory;
 import org.benf.cfr.reader.util.getopt.Options;
 import org.benf.cfr.reader.util.getopt.OptionsImpl;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
+import org.quiltmc.enigma.api.source.Source;
+import org.quiltmc.enigma.api.source.SourceIndex;
+import org.quiltmc.enigma.api.source.SourceSettings;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 
 public class CfrSource implements Source {
 	private final String className;

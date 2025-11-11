@@ -2,12 +2,13 @@ package org.quiltmc.enigma.command;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
-import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
@@ -33,7 +34,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 

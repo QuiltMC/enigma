@@ -6,8 +6,6 @@ import org.quiltmc.enigma.api.translation.mapping.EntryMap;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
-import org.quiltmc.enigma.impl.translation.mapping.serde.LfPrintWriter;
-import org.quiltmc.enigma.impl.translation.mapping.serde.MappingHelper;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingsWriter;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
@@ -16,6 +14,8 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.impl.translation.mapping.serde.LfPrintWriter;
+import org.quiltmc.enigma.impl.translation.mapping.serde.MappingHelper;
 import org.tinylog.Logger;
 
 import java.io.IOException;

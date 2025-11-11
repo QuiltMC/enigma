@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaProfile;
@@ -7,12 +8,11 @@ import org.quiltmc.enigma.api.stats.GenerationParameters;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
-import org.quiltmc.enigma.command.PrintStatsCommand.Required;
 import org.quiltmc.enigma.command.PrintStatsCommand.Optional;
+import org.quiltmc.enigma.command.PrintStatsCommand.Required;
 import org.quiltmc.enigma.util.I18n;
 import org.tinylog.Logger;
 
-import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Set;

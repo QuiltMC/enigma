@@ -1,10 +1,10 @@
 package org.quiltmc.enigma.api.class_provider;
 
 import com.google.common.collect.ImmutableSet;
-import org.quiltmc.enigma.util.AsmUtil;
+import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.tree.ClassNode;
+import org.quiltmc.enigma.util.AsmUtil;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;

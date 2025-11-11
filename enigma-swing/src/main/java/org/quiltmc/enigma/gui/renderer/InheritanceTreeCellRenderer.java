@@ -6,10 +6,10 @@ import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 
-import java.awt.Component;
-import java.awt.Font;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import java.awt.Component;
+import java.awt.Font;
 
 public class InheritanceTreeCellRenderer extends DefaultTreeCellRenderer {
 	private final Gui gui;

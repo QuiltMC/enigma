@@ -1,11 +1,10 @@
 package org.quiltmc.internal.dummy_plugin;
 
+import org.jspecify.annotations.NonNull;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaPluginContext;
 import org.quiltmc.enigma.util.Version;
-
-import javax.annotation.Nonnull;
 
 /**
  * A dummy plugin to be compiled against the current Enigma version and run against the copied+bumped Enigma version
@@ -21,9 +20,9 @@ public class RecommendedImplEnigmaPlugin implements EnigmaPlugin {
 	}
 
 	@Override
-	public boolean supportsEnigmaVersion(@Nonnull Version enigmaVersion) {
+	public boolean supportsEnigmaVersion(@NonNull Version enigmaVersion) {
 		return Enigma.MAJOR_VERSION == enigmaVersion.major()
-			&& Enigma.MINOR_VERSION == enigmaVersion.minor();
+				&& Enigma.MINOR_VERSION == enigmaVersion.minor();
 	}
 
 	@Override

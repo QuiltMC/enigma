@@ -1,10 +1,10 @@
 package org.quiltmc.enigma.impl.bytecode.translator;
 
+import org.objectweb.asm.AnnotationVisitor;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
-import org.objectweb.asm.AnnotationVisitor;
 
 public class TranslationAnnotationVisitor extends AnnotationVisitor {
 	private final Translator translator;

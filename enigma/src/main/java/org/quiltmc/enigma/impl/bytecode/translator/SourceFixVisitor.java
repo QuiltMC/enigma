@@ -1,13 +1,13 @@
 package org.quiltmc.enigma.impl.bytecode.translator;
 
-import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
-import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
-import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
-import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 
 public class SourceFixVisitor extends ClassVisitor {
 	private final JarIndex index;

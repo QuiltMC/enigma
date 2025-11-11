@@ -3,13 +3,13 @@ package org.quiltmc.enigma.gui.highlight;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 
+import javax.swing.text.Highlighter;
+import javax.swing.text.JTextComponent;
 import java.awt.BasicStroke;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import javax.swing.text.Highlighter;
-import javax.swing.text.JTextComponent;
 
 public class SelectionHighlightPainter implements Highlighter.HighlightPainter {
 	public static final SelectionHighlightPainter INSTANCE = new SelectionHighlightPainter();

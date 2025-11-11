@@ -4,15 +4,15 @@ import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.gui.util.ProgressBar;
 import org.quiltmc.enigma.util.I18n;
 
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.Timer;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.GridLayout;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.Timer;
 
 /**
  * Implements a generic status bar for use in windows. The API is loosely based

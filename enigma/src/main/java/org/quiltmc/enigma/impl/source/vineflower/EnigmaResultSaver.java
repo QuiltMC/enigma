@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.impl.source.vineflower;
 
-import org.quiltmc.enigma.api.source.SourceIndex;
 import org.jetbrains.java.decompiler.main.extern.IResultSaver;
+import org.quiltmc.enigma.api.source.SourceIndex;
 
 import java.util.jar.Manifest;
 

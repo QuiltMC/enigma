@@ -10,13 +10,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.service.EnigmaServiceType;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.util.Either;
 import org.tinylog.Logger;
 
-import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

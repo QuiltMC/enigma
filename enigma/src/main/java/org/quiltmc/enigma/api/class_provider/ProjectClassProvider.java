@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.api.class_provider;
 
+import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.tree.ClassNode;
 
-import javax.annotation.Nullable;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;

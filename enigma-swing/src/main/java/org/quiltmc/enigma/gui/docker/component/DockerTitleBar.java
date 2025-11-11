@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.gui.docker.component;
 
 import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.docker.Dock;
+import org.quiltmc.enigma.gui.docker.Docker;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;

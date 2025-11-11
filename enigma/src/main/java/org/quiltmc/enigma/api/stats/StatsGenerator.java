@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.api.stats;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
@@ -21,7 +22,6 @@ import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.util.I18n;
 import org.tinylog.Logger;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;

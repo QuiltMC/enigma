@@ -1,14 +1,13 @@
 package org.quiltmc.enigma.api.translation.representation.entry;
 
 import com.google.common.base.Preconditions;
+import org.jspecify.annotations.NonNull;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
 import org.quiltmc.enigma.api.translation.representation.Signature;
-
-import javax.annotation.Nonnull;
 
 public class MethodDefEntry extends MethodEntry implements DefEntry<ClassEntry> {
 	private final AccessFlags access;
@@ -40,7 +39,7 @@ public class MethodDefEntry extends MethodEntry implements DefEntry<ClassEntry> 
 	}
 
 	@Override
-	protected TranslateResult<MethodDefEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
+	protected TranslateResult<MethodDefEntry> extendedTranslate(Translator translator, @NonNull EntryMapping mapping) {
 		MethodDescriptor translatedDesc = translator.translate(this.descriptor);
 		Signature translatedSignature = translator.translate(this.signature);
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;

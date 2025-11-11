@@ -92,11 +92,11 @@ public class ArgMapTest {
 		assertEquals(expectation, TEST_SUBJECT.buildValuesByName(values1));
 
 		final String[] values2 = Stream
-			.concat(
-				unnamedValues.stream(),
-				reversedNamed.stream().map(ArgMapTest::getNamedValue)
-			)
-			.toArray(String[]::new);
+				.concat(
+					unnamedValues.stream(),
+					reversedNamed.stream().map(ArgMapTest::getNamedValue)
+				)
+				.toArray(String[]::new);
 
 		assertEquals(expectation, TEST_SUBJECT.buildValuesByName(values2));
 	}

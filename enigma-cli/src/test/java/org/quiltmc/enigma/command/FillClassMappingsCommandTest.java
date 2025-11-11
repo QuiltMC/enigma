@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.TestUtil;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -8,7 +9,6 @@ import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
-import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

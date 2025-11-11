@@ -1,13 +1,13 @@
 package org.quiltmc.enigma.impl.source.bytecode;
 
+import org.jspecify.annotations.Nullable;
+import org.objectweb.asm.tree.ClassNode;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
 import org.quiltmc.enigma.api.source.Decompiler;
 import org.quiltmc.enigma.api.source.Source;
 import org.quiltmc.enigma.api.source.SourceSettings;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
-import org.objectweb.asm.tree.ClassNode;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 

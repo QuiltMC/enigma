@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.util;
 
 import com.google.common.base.Preconditions;
+import org.jspecify.annotations.NonNull;
 
-import javax.annotation.Nonnull;
 import java.util.Comparator;
 
 /**
@@ -62,21 +62,21 @@ public record Version(int major, int minor, int patch) implements Comparable<Ver
 	 *         or {@code 0} if this version equals the passed {@code other} version
 	 */
 	@Override
-	public int compareTo(@Nonnull Version other) {
+	public int compareTo(@NonNull Version other) {
 		return COMPLETE_COMPARATOR.compare(this, other);
 	}
 
 	/**
 	 * Compares only the {@link #major} number parts.
 	 */
-	public int compareMajorTo(@Nonnull Version other) {
+	public int compareMajorTo(@NonNull Version other) {
 		return MAJOR_COMPARATOR.compare(this, other);
 	}
 
 	/**
 	 * Compares the {@link #major} and {@link #minor} number parts, in that order.
 	 */
-	public int compareMajorMinorTo(@Nonnull Version other) {
+	public int compareMajorMinorTo(@NonNull Version other) {
 		return MAJOR_MINOR_COMPARATOR.compare(this, other);
 	}
 

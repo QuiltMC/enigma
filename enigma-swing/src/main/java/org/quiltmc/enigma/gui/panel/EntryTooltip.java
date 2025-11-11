@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.panel;
 
 import com.google.common.collect.ImmutableList;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
@@ -24,7 +25,6 @@ import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Utils;
 
-import javax.annotation.Nullable;
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;

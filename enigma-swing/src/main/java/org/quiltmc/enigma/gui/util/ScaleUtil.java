@@ -9,6 +9,11 @@ import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.util.Utils;
 import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
@@ -16,11 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
 
 public class ScaleUtil {
 	private static final List<ScaleChangeListener> listeners = new ArrayList<>();

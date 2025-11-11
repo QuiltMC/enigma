@@ -2,13 +2,13 @@ package org.quiltmc.enigma.api.translation;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
 public interface Translator {
 	@Nullable

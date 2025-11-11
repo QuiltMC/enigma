@@ -10,5 +10,5 @@ public enum TestEnum {
 	Seven,
 	Eight,
 	Nine,
-	Ten;
+	Ten
 }

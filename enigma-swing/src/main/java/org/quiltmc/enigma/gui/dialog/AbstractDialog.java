@@ -7,6 +7,10 @@ import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Pair;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -15,10 +19,6 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.List;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 public abstract class AbstractDialog extends JDialog {
 	protected final ValidationContext vc;

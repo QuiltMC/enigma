@@ -5,6 +5,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
@@ -17,11 +18,10 @@ import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
-import org.quiltmc.enigma.command.SearchMappingsCommand.Required;
 import org.quiltmc.enigma.command.SearchMappingsCommand.Optionals;
+import org.quiltmc.enigma.command.SearchMappingsCommand.Required;
 import org.tinylog.Logger;
 
-import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,8 +37,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.quiltmc.enigma.util.Utils.andJoin;
 import static java.util.Comparator.comparingInt;
+import static org.quiltmc.enigma.util.Utils.andJoin;
 
 public final class SearchMappingsCommand extends Command<Required, Optionals> {
 	private static final PredicateParser<Access, AccessFlags> ACCESS_PREDICATE_PARSER = new PredicateParser<>(

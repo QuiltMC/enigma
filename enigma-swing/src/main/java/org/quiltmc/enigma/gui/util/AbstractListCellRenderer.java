@@ -1,7 +1,5 @@
 package org.quiltmc.enigma.gui.util;
 
-import java.awt.Component;
-import java.awt.event.MouseEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JList;
@@ -10,6 +8,8 @@ import javax.swing.ListCellRenderer;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import java.awt.Component;
+import java.awt.event.MouseEvent;
 
 public abstract class AbstractListCellRenderer<E> extends JPanel implements ListCellRenderer<E> {
 	private static final Border NO_FOCUS_BORDER = BorderFactory.createEmptyBorder(1, 1, 1, 1);

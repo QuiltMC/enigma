@@ -2,9 +2,9 @@ package org.quiltmc.enigma.gui.renderer;
 
 import org.quiltmc.enigma.network.ServerMessage;
 
-import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
+import java.awt.Component;
 
 // For now, just render the translated text.
 // TODO: Icons or something later?

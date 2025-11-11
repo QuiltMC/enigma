@@ -98,11 +98,11 @@ public class TestInvalidIdentifiers {
 		// abstract
 		abstract class Abstract implements Interface {
 			// transient
-			private char m;
+			private final char m;
 			// volatile
-			private boolean b = false;
+			private final boolean b = false;
 			// false
-			private boolean c = true;
+			private final boolean c = true;
 
 			Abstract() {
 				this.m = 'o';

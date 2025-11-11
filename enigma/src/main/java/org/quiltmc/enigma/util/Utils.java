@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.util;
 
 import com.google.common.io.CharStreams;
+import org.jspecify.annotations.NonNull;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -47,7 +47,7 @@ public class Utils {
 		}
 
 		@Override
-		public Void get(long timeout, @Nonnull TimeUnit unit) {
+		public Void get(long timeout, @NonNull TimeUnit unit) {
 			return null;
 		}
 	};

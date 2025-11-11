@@ -15,11 +15,11 @@ import com.strobel.decompiler.languages.java.ast.SimpleType;
 import com.strobel.decompiler.languages.java.ast.TypeDeclaration;
 import com.strobel.decompiler.languages.java.ast.VariableInitializer;
 import org.quiltmc.enigma.api.source.SourceIndex;
-import org.quiltmc.enigma.impl.source.procyon.EntryParser;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
+import org.quiltmc.enigma.impl.source.procyon.EntryParser;
 
 public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	private final ClassDefEntry classEntry;
