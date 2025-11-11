@@ -27,19 +27,33 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 		return this.root.getView();
 	}
 
+	@Nonnull
+	@Override
+	public MultiTrie.Node<K, V> get(S prefix) {
+		N node = this.root;
+		for (int i = 0; i < node.getLength(prefix); i++) {
+			node = node.nextImpl(node.getKey(prefix, i));
+			if (node == null) {
+				return EmptyNode.get();
+			}
+		}
+
+		return node.getView();
+	}
+
 	@Override
 	public void put(S sequence, V value) {
-		this.root.put(Utils.requireNonNull(sequence, SEQUENCE), Utils.requireNonNull(value, VALUE));
+		this.root.put(Utils.requireNonNull(sequence, SEQUENCE), Utils.requireNonNull(value, VALUE), 0);
 	}
 
 	@Override
 	public boolean remove(S sequence, V value) {
-		return this.root.remove(Utils.requireNonNull(sequence, SEQUENCE), Utils.requireNonNull(value, VALUE));
+		return this.root.remove(Utils.requireNonNull(sequence, SEQUENCE), Utils.requireNonNull(value, VALUE), 0);
 	}
 
 	@Override
 	public boolean removeAll(S sequence) {
-		return this.root.removeAll(Utils.requireNonNull(sequence, SEQUENCE));
+		return this.root.removeAll(Utils.requireNonNull(sequence, SEQUENCE), 0);
 	}
 
 	@Override
@@ -61,21 +75,19 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 		}
 
 		@Override
-		public void put(S sequence, V value) {
-			if (this.isEmptySequence(sequence)) {
+		public void put(S sequence, V value, int startIndex) {
+			if (this.getLength(sequence) <= startIndex) {
 				this.leaves.add(value);
 			} else {
-				final FirstSplit<K, S> split = this.splitFirst(sequence);
-
 				this.children
-						.computeIfAbsent(split.first, ignored -> this.createEmpty())
-						.put(split.suffix, value);
+						.computeIfAbsent(this.getKey(sequence, startIndex), ignored -> this.createChild())
+						.put(sequence, value, startIndex + 1);
 			}
 		}
 
 		@Override
-		public boolean remove(S sequence, V value) {
-			final boolean removed = this.removeImpl(sequence, value);
+		public boolean remove(S sequence, V value, int startIndex) {
+			final boolean removed = this.removeImpl(sequence, value, startIndex);
 			if (removed) {
 				this.pruneIfEmpty();
 
@@ -86,8 +98,8 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 		}
 
 		@Override
-		public boolean removeAll(S sequence) {
-			final boolean removed = this.removeAllImpl(sequence);
+		public boolean removeAll(S sequence, int startIndex) {
+			final boolean removed = this.removeAllImpl(sequence, startIndex);
 			if (removed) {
 				this.pruneIfEmpty();
 
@@ -102,18 +114,17 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 			return this.view;
 		}
 
-		protected boolean removeImpl(S sequence, V value) {
-			if (this.isEmptySequence(sequence)) {
+		protected boolean removeImpl(S sequence, V value, int startIndex) {
+			if (this.getLength(sequence) <= startIndex) {
 				return this.leaves.remove(value);
 			} else {
-				final FirstSplit<K, S> split = this.splitFirst(sequence);
-				final N next = this.nextImpl(split.first);
-				return next != null && next.remove(split.suffix, value);
+				final N next = this.nextImpl(this.getKey(sequence, startIndex));
+				return next != null && next.remove(sequence, value, startIndex + 1);
 			}
 		}
 
-		protected boolean removeAllImpl(S sequence) {
-			if (this.isEmptySequence(sequence)) {
+		protected boolean removeAllImpl(S sequence, int startIndex) {
+			if (this.getLength(sequence) <= startIndex) {
 				if (this.leaves.isEmpty()) {
 					return false;
 				} else {
@@ -122,9 +133,8 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 					return true;
 				}
 			} else {
-				final FirstSplit<K, S> split = this.splitFirst(sequence);
-				final N next = this.nextImpl(split.first);
-				return next != null && next.removeAll(split.suffix);
+				final N next = this.nextImpl(this.getKey(sequence, startIndex));
+				return next != null && next.removeAll(sequence, startIndex + 1);
 			}
 		}
 
@@ -141,22 +151,10 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 		protected abstract N getSelf();
 
 		/**
-		 * @return a new, empty node instance
+		 * @return a new, empty child node instance
 		 */
 		@Nonnull
 		@Pure
-		protected abstract N createEmpty();
-
-		/**
-		 * Splits the first key from the passed {@code sequence} and returns that key and the remaining suffix.
-		 *
-		 * @implNote when invoked by {@link AbstractMutableMapMultiTrie}, the passed {@code sequence} is guaranteed
-		 * non-empty according to {@link #isEmptySequence(Object)}
-		 */
-		protected abstract FirstSplit<K, S> splitFirst(S sequence);
-
-		protected abstract boolean isEmptySequence(S sequence);
-
-		protected record FirstSplit<K, S>(K first, S suffix) { }
+		protected abstract N createChild();
 	}
 }

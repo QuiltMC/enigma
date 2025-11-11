@@ -34,12 +34,28 @@ public interface MultiTrie<K, S, V> {
 	}
 
 	/**
+	 * Represents values associated with a prefix in a {@link MultiTrie}.
+	 *
 	 * @param <K> the type of keys
 	 * @param <V> the type of values
 	 */
 	interface Node<K, V> {
+		/**
+		 * @return a {@link Stream} containing all values with no more keys in their associated sequence;<br>
+		 * i.e. the prefix this node is associated with is the <em>whole</em> sequence the values are associated with
+		 */
 		Stream<V> streamLeaves();
+
+		/**
+		 * @return a {@link Stream} containing all values with more keys in their associated sequence;<br>
+		 * i.e. the prefix this node is associated with is <em>not</em>
+		 * the whole sequence the values are associated with
+		 */
 		Stream<V> streamBranches();
+
+		/**
+		 * @return a {@link Stream} containing all values associated with the prefix this node is associated with
+		 */
 		Stream<V> streamValues();
 
 		default long getSize() {
