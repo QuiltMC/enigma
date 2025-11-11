@@ -1,12 +1,13 @@
 package org.quiltmc.enigma.util.multi_trie;
 
+import com.google.common.collect.BiMap;
 import org.checkerframework.dataflow.qual.Pure;
 import org.quiltmc.enigma.util.Utils;
 import org.quiltmc.enigma.util.multi_trie.AbstractMutableMapMultiTrie.Node;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.Map;
 
 public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, V, N>>
 		extends AbstractMapMultiTrie<K, S, V, N>
@@ -20,15 +21,10 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 		super(root);
 	}
 
+	@Nonnull
 	@Override
 	public MultiTrie.Node<K, V> getRoot() {
 		return this.root.getView();
-	}
-
-	@Override
-	public MultiTrie.Node<K, V> start(K key) {
-		final N next = this.root.nextImpl(key);
-		return next == null ? EmptyNode.get() : next.getView();
 	}
 
 	@Override
@@ -54,10 +50,14 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 	protected abstract static class Node<K, S, V, N extends Node<K, S, V, N>>
 			extends AbstractMapMultiTrie.Node<K, V, N>
 			implements MutableMultiTrie.Node<K, S, V> {
+		@Nullable
+		protected final Node<K, S, V, N> parent;
+
 		private final NodeView<K, V> view = new NodeView<>(this);
 
-		protected Node(Map<K, N> children, Collection<V> leaves) {
+		protected Node(@Nullable Node<K, S, V, N> parent, BiMap<K, N> children, Collection<V> leaves) {
 			super(children, leaves);
+			this.parent = parent;
 		}
 
 		@Override
@@ -73,9 +73,36 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 			}
 		}
 
-		// TODO trim from parent when empty
 		@Override
 		public boolean remove(S sequence, V value) {
+			final boolean removed = this.removeImpl(sequence, value);
+			if (removed) {
+				this.pruneIfEmpty();
+
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+		@Override
+		public boolean removeAll(S sequence) {
+			final boolean removed = this.removeAllImpl(sequence);
+			if (removed) {
+				this.pruneIfEmpty();
+
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+		@Override
+		public MultiTrie.Node<K, V> getView() {
+			return this.view;
+		}
+
+		protected boolean removeImpl(S sequence, V value) {
 			if (this.isEmptySequence(sequence)) {
 				return this.leaves.remove(value);
 			} else {
@@ -85,11 +112,9 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 			}
 		}
 
-		@Override
-		public boolean removeAll(S sequence) {
+		protected boolean removeAllImpl(S sequence) {
 			if (this.isEmptySequence(sequence)) {
 				if (this.leaves.isEmpty()) {
-					// this should only happen for roots
 					return false;
 				} else {
 					this.leaves.clear();
@@ -103,10 +128,17 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 			}
 		}
 
-		@Override
-		public MultiTrie.Node<K, V> getView() {
-			return this.view;
+		protected void pruneIfEmpty() {
+			if (this.parent != null && this.isEmpty()) {
+				this.parent.children.inverse().remove(this.getSelf());
+			}
 		}
+
+		/**
+		 * @return this node
+		 */
+		@Pure
+		protected abstract N getSelf();
 
 		/**
 		 * @return a new, empty node instance

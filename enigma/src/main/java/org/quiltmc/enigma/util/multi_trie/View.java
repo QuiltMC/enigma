@@ -15,6 +15,7 @@ public final class View<K, S, V> implements MultiTrie<K, S, V> {
 		this.viewed = Utils.requireNonNull(viewed, "viewed");
 	}
 
+	@Nonnull
 	@Override
 	public Node<K, V> getRoot() {
 		return this.viewed.getRoot();
