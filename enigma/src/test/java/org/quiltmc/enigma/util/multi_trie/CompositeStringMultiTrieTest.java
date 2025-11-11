@@ -1,22 +1,19 @@
-package org.quiltmc.enigma.util;
+package org.quiltmc.enigma.util.multi_trie;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.util.multi_trie.MultiTrie.Node;
-import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CompositeStringMultiTrieTest {
 	@Test
-	void testAssociatedPrefixes() {
-		final CompositeStringMultiTrie<Association> trie = CompositeStringMultiTrie.createHashed();
-
-		Association.BY_PREFIX.values().stream().distinct().forEach(association -> {
-			trie.put(association.key, association);
-		});
+	void testPut() {
+		final CompositeStringMultiTrie<Association> trie = Association.createAndPopulateTrie();
 
 		Association.BY_PREFIX.asMap().forEach((prefix, associations) -> {
 			final Node<Character, Association> node = trie.get(prefix);
@@ -39,6 +36,42 @@ public class CompositeStringMultiTrieTest {
 				arrayContainingInAnyOrder(associations.stream().filter(a -> a.isBranchOf(prefix)).toArray())
 			);
 		});
+	}
+
+	@Test
+	void testRemove() {
+		final CompositeStringMultiTrie<Association> trie = Association.createAndPopulateTrie();
+
+		Association.BY_PREFIX.asMap().forEach((prefix, associations) -> {
+			for (final Association association : associations) {
+				assertThat(
+					"Unexpected [non]removal of \"%s\" with prefix \"%s\"!".formatted(association, prefix),
+					association.isLeafOf(prefix),
+					is(trie.remove(prefix, association))
+				);
+			}
+		});
+
+		assertTrue(
+			trie.isEmpty(),
+			"Expected trie to be empty, but had contents: " + trie.getRoot().streamValues().toList()
+		);
+
+		assertThat(
+			"Expected root's children to be pruned, but it had children!",
+			AbstractMapMultiTrieAccessor.getRootChildCount(trie),
+			is(0)
+		);
+	}
+
+	@Test
+	void testPutMulti() {
+		// TODO
+	}
+
+	@Test
+	void testRemoveAll() {
+		// TODO
 	}
 
 	record Association(String key) {
@@ -84,6 +117,16 @@ public class CompositeStringMultiTrieTest {
 			});
 
 			BY_PREFIX = byPrefix.build();
+		}
+
+		static CompositeStringMultiTrie<Association> createAndPopulateTrie() {
+			final CompositeStringMultiTrie<Association> trie = CompositeStringMultiTrie.createHashed();
+
+			Association.BY_PREFIX.values().stream().distinct().forEach(association -> {
+				trie.put(association.key, association);
+			});
+
+			return trie;
 		}
 
 		boolean isLeafOf(String prefix) {
