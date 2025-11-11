@@ -7,10 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.util.multi_trie.MultiTrie.Node;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -100,14 +101,36 @@ public class CompositeStringMultiTrieTest {
 		assertEmpty(trie);
 	}
 
+	@Test
+	void testRemoveAll() {
+		final CompositeStringMultiTrie<MultiAssociation> trie = MultiAssociation.createAndPopulateTrie();
+
+		Association.BY_PREFIX.asMap().forEach((prefix, associations) -> {
+			final List<Association> leaves = associations.stream()
+				.filter(association -> association.isLeafOf(prefix))
+				.toList();
+
+			final boolean expectRemoval = !leaves.isEmpty();
+			assertEquals(expectRemoval, trie.removeAll(prefix), () -> {
+				return expectRemoval
+					? "Expected removal of leaves with prefix \"%s\": %s"
+						.formatted(prefix, MultiAssociation.streamWith(leaves.stream()).toList())
+					: "Expected no removal of nodes with prefix \"%s\": %s"
+						.formatted(prefix, MultiAssociation.streamWith(associations.stream()).toList());
+			});
+		});
+
+		assertEmpty(trie);
+	}
+
 	private static <T> void assertRemovalResult(
 		CompositeStringMultiTrie<T> trie, boolean expectRemoval, String prefix, T value
 	) {
 		assertEquals(
 			expectRemoval,
 			trie.remove(prefix, value),
-			() -> "Unexpected %sremoval of \"%s\" with prefix \"%s\"!"
-				.formatted(expectRemoval ? "non-" : "", value, prefix)
+			() -> "Expected%s removal of \"%s\" with prefix \"%s\"!"
+				.formatted(expectRemoval ? "" : " no", value, prefix)
 		);
 	}
 
@@ -124,18 +147,13 @@ public class CompositeStringMultiTrieTest {
 		);
 	}
 
-	@Test
-	void testRemoveAll() {
-		// TODO
-	}
-
 	private static <T> void assertUnorderedContentsForPrefix(
 			String prefix, String arrayName, Stream<T> expected, Stream<T> actual
 	) {
 		assertThat(
 			"Unexpected %s for prefix \"%s\"!".formatted(arrayName, prefix),
-			actual.toArray(),
-			arrayContainingInAnyOrder(expected.toArray())
+			actual.toList(),
+			containsInAnyOrder(expected.toArray())
 		);
 	}
 
