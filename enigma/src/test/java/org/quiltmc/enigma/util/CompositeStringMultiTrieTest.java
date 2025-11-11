@@ -22,19 +22,19 @@ public class CompositeStringMultiTrieTest {
 			final Node<Character, Association> node = trie.get(prefix);
 
 			assertThat(
-				"Unexpected values for prefix " + prefix,
+				"Unexpected values for prefix \"%s\"".formatted(prefix),
 				node.streamValues().toArray(),
 				arrayContainingInAnyOrder(associations.toArray())
 			);
 
 			assertThat(
-				"Unexpected leaves for prefix " + prefix,
+				"Unexpected leaves for prefix \"%s\"".formatted(prefix),
 				node.streamLeaves().toArray(),
 				arrayContainingInAnyOrder(associations.stream().filter(a -> a.isLeafOf(prefix)).toArray())
 			);
 
 			assertThat(
-				"Unexpected branches for prefix " + prefix,
+				"Unexpected branches for prefix \"%s\"".formatted(prefix),
 				node.streamBranches().toArray(),
 				arrayContainingInAnyOrder(associations.stream().filter(a -> a.isBranchOf(prefix)).toArray())
 			);
@@ -42,6 +42,8 @@ public class CompositeStringMultiTrieTest {
 	}
 
 	record Association(String key) {
+		static final Association EMPTY = new Association("");
+
 		static final Association A = new Association("A");
 		static final Association AB = new Association("AB");
 		static final Association ABC = new Association("ABC");
@@ -61,7 +63,8 @@ public class CompositeStringMultiTrieTest {
 		static final Association OWT = new Association("OWT");
 		static final Association EERHT = new Association("EERHT");
 
-		static final ImmutableList<Association> NON_EMPTY = ImmutableList.of(
+		static final ImmutableList<Association> ALL = ImmutableList.of(
+			EMPTY,
 			A, AB, ABC,
 			BA, CBA,
 			I, II, III,
@@ -74,12 +77,8 @@ public class CompositeStringMultiTrieTest {
 		static {
 			final ImmutableMultimap.Builder<String, Association> byPrefix = ImmutableMultimap.builder();
 
-			NON_EMPTY.forEach(association -> {
-				if (association.key.isEmpty()) {
-					throw new IllegalStateException("NON_EMPTY contains empty association!");
-				}
-
-				for (int i = 1; i <= association.key.length(); i++) {
+			ALL.forEach(association -> {
+				for (int i = 0; i <= association.key.length(); i++) {
 					byPrefix.put(association.key.substring(0, i), association);
 				}
 			});
