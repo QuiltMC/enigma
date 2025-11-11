@@ -3,7 +3,6 @@ package org.quiltmc.enigma.util.multi_trie;
 import com.google.common.collect.BiMap;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.Node;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 
@@ -13,17 +12,6 @@ public class StringMultiTrie<V, N extends Node<V, N>>
 		super(root);
 	}
 
-	@Nonnull
-	@Override
-	public MultiTrie.Node<Character, V> get(String prefix) {
-		N node = this.root;
-		for (int i = 0; i < prefix.length() && node != null; i++) {
-			node = node.nextImpl(prefix.charAt(i));
-		}
-
-		return node == null ? EmptyNode.get() : node.getView();
-	}
-
 	protected abstract static class Node<V, N extends Node<V, N>>
 			extends AbstractMutableMapMultiTrie.Node<Character, String, V, N> {
 		protected Node(@Nullable Node<V, N> parent, BiMap<Character, N> children, Collection<V> leaves) {
@@ -31,13 +19,13 @@ public class StringMultiTrie<V, N extends Node<V, N>>
 		}
 
 		@Override
-		protected FirstSplit<Character, String> splitFirst(String sequence) {
-			return new FirstSplit<>(sequence.charAt(0), sequence.substring(1));
+		public int getLength(String sequence) {
+			return sequence.length();
 		}
 
 		@Override
-		protected boolean isEmptySequence(String sequence) {
-			return sequence.isEmpty();
+		public Character getKey(String sequence, int index) {
+			return sequence.charAt(index);
 		}
 	}
 }
