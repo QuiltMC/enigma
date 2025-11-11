@@ -1,16 +1,26 @@
 package org.quiltmc.enigma.util.multi_trie;
 
+import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.util.multi_trie.MultiTrie.Node;
 
+import java.util.Collection;
+import java.util.stream.Stream;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
-import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static org.quiltmc.enigma.util.multi_trie.AbstractMapMultiTrieAccessor.getRootChildren;
+
 public class CompositeStringMultiTrieTest {
+	private static final String VALUES = "values";
+	private static final String LEAVES = "leaves";
+	private static final String BRANCHES = "branches";
+
 	@Test
 	void testPut() {
 		final CompositeStringMultiTrie<Association> trie = Association.createAndPopulateTrie();
@@ -18,22 +28,45 @@ public class CompositeStringMultiTrieTest {
 		Association.BY_PREFIX.asMap().forEach((prefix, associations) -> {
 			final Node<Character, Association> node = trie.get(prefix);
 
-			assertThat(
-				"Unexpected values for prefix \"%s\"!".formatted(prefix),
-				node.streamValues().toArray(),
-				arrayContainingInAnyOrder(associations.toArray())
+			assertUnorderedContentsForPrefix(prefix, VALUES, associations.stream(), node.streamValues());
+
+			assertUnorderedContentsForPrefix(
+				prefix, LEAVES,
+				associations.stream().filter(association -> association.isLeafOf(prefix)),
+				node.streamLeaves()
 			);
 
-			assertThat(
-				"Unexpected leaves for prefix \"%s\"!".formatted(prefix),
-				node.streamLeaves().toArray(),
-				arrayContainingInAnyOrder(associations.stream().filter(a -> a.isLeafOf(prefix)).toArray())
+			assertUnorderedContentsForPrefix(
+				prefix, BRANCHES,
+				associations.stream().filter(association -> association.isBranchOf(prefix)),
+				node.streamBranches()
+			);
+		});
+	}
+
+	@Test
+	void testPutMulti() {
+		final CompositeStringMultiTrie<MultiAssociation> trie = MultiAssociation.createAndPopulateTrie();
+
+		Association.BY_PREFIX.asMap().forEach((prefix, associations) -> {
+			final Node<Character, MultiAssociation> node = trie.get(prefix);
+
+			assertUnorderedContentsForPrefix(
+				prefix, VALUES,
+				MultiAssociation.streamWith(associations.stream()),
+				node.streamValues()
 			);
 
-			assertThat(
-				"Unexpected branches for prefix \"%s\"!".formatted(prefix),
-				node.streamBranches().toArray(),
-				arrayContainingInAnyOrder(associations.stream().filter(a -> a.isBranchOf(prefix)).toArray())
+			assertUnorderedContentsForPrefix(
+				prefix, LEAVES,
+				MultiAssociation.streamWith(associations.stream().filter(association -> association.isLeafOf(prefix))),
+				node.streamLeaves()
+			);
+
+			assertUnorderedContentsForPrefix(
+				prefix, BRANCHES,
+				MultiAssociation.streamWith(associations.stream().filter(a -> a.isBranchOf(prefix))),
+				node.streamBranches()
 			);
 		});
 	}
@@ -44,34 +77,41 @@ public class CompositeStringMultiTrieTest {
 
 		Association.BY_PREFIX.asMap().forEach((prefix, associations) -> {
 			for (final Association association : associations) {
-				assertThat(
-					"Unexpected [non]removal of \"%s\" with prefix \"%s\"!".formatted(association, prefix),
-					association.isLeafOf(prefix),
-					is(trie.remove(prefix, association))
+				final boolean expectation = association.isLeafOf(prefix);
+				assertEquals(
+					expectation,
+					trie.remove(prefix, association),
+					() -> "Unexpected%s removal of \"%s\" with prefix \"%s\"!"
+						.formatted(expectation ? "" : " no", association, prefix)
 				);
 			}
 		});
 
 		assertTrue(
 			trie.isEmpty(),
-			"Expected trie to be empty, but had contents: " + trie.getRoot().streamValues().toList()
+			() ->"Expected trie to be empty, but had it contents: " + trie.getRoot().streamValues().toList()
 		);
 
-		assertThat(
-			"Expected root's children to be pruned, but it had children!",
-			AbstractMapMultiTrieAccessor.getRootChildCount(trie),
-			is(0)
+		final BiMap<Character, ? extends Node<Character, Association>> rootChildren = getRootChildren(trie);
+		assertTrue(
+			rootChildren.isEmpty(),
+			() -> "Expected root's children to be pruned, but it had children: " + rootChildren
 		);
-	}
-
-	@Test
-	void testPutMulti() {
-		// TODO
 	}
 
 	@Test
 	void testRemoveAll() {
 		// TODO
+	}
+
+	private static <T> void assertUnorderedContentsForPrefix(
+			String prefix, String arrayName, Stream<T> expected, Stream<T> actual
+	) {
+		assertThat(
+			"Unexpected %s for prefix \"%s\"!".formatted(arrayName, prefix),
+			actual.toArray(),
+			arrayContainingInAnyOrder(expected.toArray())
+		);
 	}
 
 	record Association(String key) {
@@ -122,9 +162,9 @@ public class CompositeStringMultiTrieTest {
 		static CompositeStringMultiTrie<Association> createAndPopulateTrie() {
 			final CompositeStringMultiTrie<Association> trie = CompositeStringMultiTrie.createHashed();
 
-			Association.BY_PREFIX.values().stream().distinct().forEach(association -> {
+			for (final Association association : ALL) {
 				trie.put(association.key, association);
-			});
+			}
 
 			return trie;
 		}
@@ -135,6 +175,55 @@ public class CompositeStringMultiTrieTest {
 
 		boolean isBranchOf(String prefix) {
 			return this.key.length() > prefix.length() && this.key.startsWith(prefix);
+		}
+	}
+
+	record MultiAssociation(Association association, int id) {
+		static final int MAX_COUNT = 3;
+
+		static final ImmutableList<MultiAssociation> ALL;
+		static final ImmutableMultimap<Association, MultiAssociation> BY_ASSOCIATION;
+
+		static {
+			final ImmutableList.Builder<MultiAssociation> all = ImmutableList.builder();
+
+			final ImmutableMultimap.Builder<Association, MultiAssociation> byAssociation = ImmutableMultimap.builder();
+
+			int id = 0;
+			int count = 1;
+			for (final Association association : Association.ALL) {
+				int currentCount = count;
+				while (currentCount > 0) {
+					final MultiAssociation multiAssociation = new MultiAssociation(association, id++);
+
+					all.add(multiAssociation);
+					byAssociation.put(association, multiAssociation);
+
+					currentCount--;
+				}
+
+				// prevent needless exponential growth
+				count = (count % MAX_COUNT) + 1;
+			}
+
+			ALL = all.build();
+			BY_ASSOCIATION = byAssociation.build();
+		}
+
+		static CompositeStringMultiTrie<MultiAssociation> createAndPopulateTrie() {
+			final CompositeStringMultiTrie<MultiAssociation> trie = CompositeStringMultiTrie.createHashed();
+
+			for (final MultiAssociation multiAssociation : ALL) {
+				trie.put(multiAssociation.association.key, multiAssociation);
+			}
+
+			return trie;
+		}
+
+		static Stream<MultiAssociation> streamWith(Stream<Association> associations) {
+			return associations
+				.map(MultiAssociation.BY_ASSOCIATION::get)
+				.flatMap(Collection::stream);
 		}
 	}
 }
