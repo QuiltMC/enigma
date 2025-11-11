@@ -1,8 +1,10 @@
 package org.quiltmc.enigma.util.multi_trie;
 
+import org.checkerframework.dataflow.qual.Pure;
 import org.quiltmc.enigma.util.multi_trie.AbstractMutableMapMultiTrie.Node;
 import com.google.common.collect.Multimap;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
 
 public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, V, N>>
@@ -85,6 +87,11 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 			}
 		}
 
+		/**
+		 * @return a new, empty node instance
+		 */
+		@Nonnull
+		@Pure
 		protected abstract N createEmpty();
 
 		/**

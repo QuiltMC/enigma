@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import org.quiltmc.enigma.util.multi_trie.StringHashMultiTrie.Node;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +23,7 @@ public final class StringHashMultiTrie<V> extends StringMultiTrie<V, Node<V>> {
 		}
 
 		@Override
+		@Nonnull
 		protected Node<V> createEmpty() {
 			return createEmptyNode();
 		}
