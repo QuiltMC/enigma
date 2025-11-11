@@ -77,22 +77,47 @@ public class CompositeStringMultiTrieTest {
 
 		Association.BY_PREFIX.asMap().forEach((prefix, associations) -> {
 			for (final Association association : associations) {
-				final boolean expectation = association.isLeafOf(prefix);
-				assertEquals(
-					expectation,
-					trie.remove(prefix, association),
-					() -> "Unexpected%s removal of \"%s\" with prefix \"%s\"!"
-						.formatted(expectation ? "" : " no", association, prefix)
-				);
+				assertRemovalResult(trie, association.isLeafOf(prefix), prefix, association);
 			}
 		});
 
+		assertEmpty(trie);
+	}
+
+	@Test
+	void testRemoveMulti() {
+		final CompositeStringMultiTrie<MultiAssociation> trie = MultiAssociation.createAndPopulateTrie();
+
+		Association.BY_PREFIX.asMap().forEach((prefix, associations) -> {
+			for (final Association association : associations) {
+				final boolean expectRemoval = association.isLeafOf(prefix);
+				for (final MultiAssociation multiAssociation : MultiAssociation.BY_ASSOCIATION.get(association)) {
+					assertRemovalResult(trie, expectRemoval, prefix, multiAssociation);
+				}
+			}
+		});
+
+		assertEmpty(trie);
+	}
+
+	private static <T> void assertRemovalResult(
+		CompositeStringMultiTrie<T> trie, boolean expectRemoval, String prefix, T value
+	) {
+		assertEquals(
+			expectRemoval,
+			trie.remove(prefix, value),
+			() -> "Unexpected %sremoval of \"%s\" with prefix \"%s\"!"
+				.formatted(expectRemoval ? "non-" : "", value, prefix)
+		);
+	}
+
+	private static void assertEmpty(CompositeStringMultiTrie<?> trie) {
 		assertTrue(
 			trie.isEmpty(),
 			() ->"Expected trie to be empty, but had it contents: " + trie.getRoot().streamValues().toList()
 		);
 
-		final BiMap<Character, ? extends Node<Character, Association>> rootChildren = getRootChildren(trie);
+		final BiMap<Character, ? extends Node<Character, ?>> rootChildren = getRootChildren(trie);
 		assertTrue(
 			rootChildren.isEmpty(),
 			() -> "Expected root's children to be pruned, but it had children: " + rootChildren
