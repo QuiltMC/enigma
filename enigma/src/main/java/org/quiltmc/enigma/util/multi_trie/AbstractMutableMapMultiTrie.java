@@ -1,15 +1,19 @@
 package org.quiltmc.enigma.util.multi_trie;
 
 import org.checkerframework.dataflow.qual.Pure;
+import org.quiltmc.enigma.util.Utils;
 import org.quiltmc.enigma.util.multi_trie.AbstractMutableMapMultiTrie.Node;
-import com.google.common.collect.Multimap;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.Map;
 
 public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, V, N>>
 		extends AbstractMapMultiTrie<K, S, V, N>
 		implements MutableMultiTrie<K, S, V> {
+	private static final String SEQUENCE = "sequence";
+	private static final String VALUE = "value";
+
 	private final View<K, S, V> view = new View<>(this);
 
 	protected AbstractMutableMapMultiTrie(N root) {
@@ -18,17 +22,17 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 
 	@Override
 	public void put(S sequence, V value) {
-		this.root.put(sequence, value);
+		this.root.put(Utils.requireNonNull(sequence, SEQUENCE), Utils.requireNonNull(value, VALUE));
 	}
 
 	@Override
 	public boolean remove(S sequence, V value) {
-		return this.root.remove(sequence, value);
+		return this.root.remove(Utils.requireNonNull(sequence, SEQUENCE), Utils.requireNonNull(value, VALUE));
 	}
 
 	@Override
 	public boolean removeAll(S sequence) {
-		return this.root.removeAll(sequence);
+		return this.root.removeAll(Utils.requireNonNull(sequence, SEQUENCE));
 	}
 
 	@Override
@@ -39,51 +43,49 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 	protected abstract static class Node<K, S, V, N extends Node<K, S, V, N>>
 			extends AbstractMapMultiTrie.Node<K, V, N>
 			implements MutableMultiTrie.Node<K, S, V> {
-		protected Node(Map<K, N> children, Multimap<K, V> leaves) {
+		protected Node(Map<K, N> children, Collection<V> leaves) {
 			super(children, leaves);
 		}
 
 		@Override
 		public void put(S sequence, V value) {
-			final FirstSplit<K, S> split = this.splitFirst(sequence);
-			if (this.isEmptySequence(split.suffix)) {
-				this.leaves.put(split.first, value);
+			if (this.isEmptySequence(sequence)) {
+				this.leaves.add(value);
 			} else {
-				final N empty = this.createEmpty();
-				empty.put(split.suffix, value);
-				this.children.put(split.first, empty);
+				final FirstSplit<K, S> split = this.splitFirst(sequence);
+
+				this.children
+						.computeIfAbsent(split.first, ignored -> this.createEmpty())
+						.put(split.suffix, value);
 			}
 		}
 
 		@Override
 		public boolean remove(S sequence, V value) {
-			final FirstSplit<K, S> split = this.splitFirst(sequence);
-			if (this.isEmptySequence(split.suffix)) {
-				return this.leaves.remove(split.first, value);
+			if (this.isEmptySequence(sequence)) {
+				return this.leaves.remove(value);
 			} else {
-				for (final N child : this.children.values()) {
-					if (child.remove(split.suffix, value)) {
-						return true;
-					}
-				}
-
-				return false;
+				final FirstSplit<K, S> split = this.splitFirst(sequence);
+				final N next = this.nextImpl(split.first);
+				return next != null && next.remove(split.suffix, value);
 			}
 		}
 
 		@Override
 		public boolean removeAll(S sequence) {
-			final FirstSplit<K, S> split = this.splitFirst(sequence);
-			if (this.isEmptySequence(split.suffix)) {
-				return !this.leaves.removeAll(split.first).isEmpty();
-			} else {
-				for (final N child : this.children.values()) {
-					if (child.removeAll(split.suffix)) {
-						return true;
-					}
-				}
+			if (this.isEmptySequence(sequence)) {
+				if (this.leaves.isEmpty()) {
+					// this should only happen for roots
+					return false;
+				} else {
+					this.leaves.clear();
 
-				return false;
+					return true;
+				}
+			} else {
+				final FirstSplit<K, S> split = this.splitFirst(sequence);
+				final N next = this.nextImpl(split.first);
+				return next != null && next.removeAll(split.suffix);
 			}
 		}
 
