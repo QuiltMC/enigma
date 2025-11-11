@@ -21,5 +21,7 @@ public interface MutableMultiTrie<K, S, V> extends MultiTrie<K, S, V> {
 		boolean remove(S sequence, V value);
 
 		boolean removeAll(S sequence);
+
+		// TODO trim method, for empty nodes
 	}
 }

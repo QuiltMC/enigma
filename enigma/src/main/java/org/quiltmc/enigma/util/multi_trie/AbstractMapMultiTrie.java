@@ -1,11 +1,11 @@
 package org.quiltmc.enigma.util.multi_trie;
 
-import com.google.common.collect.Multimap;
 import org.quiltmc.enigma.util.Utils;
 import org.quiltmc.enigma.util.multi_trie.AbstractMapMultiTrie.Node;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -23,16 +23,16 @@ public abstract class AbstractMapMultiTrie<K, S, V, N extends Node<K, V, N>> imp
 
 	protected static class Node<K, V, N extends Node<K, V, N>> implements MultiTrie.Node<K, V> {
 		protected final Map<K, N> children;
-		protected final Multimap<K, V> leaves;
+		protected final Collection<V> leaves;
 
-		protected Node(Map<K, N> children, Multimap<K, V> leaves) {
+		protected Node(Map<K, N> children, Collection<V> leaves) {
 			this.children = Utils.requireNonNull(children, "children");
 			this.leaves = Utils.requireNonNull(leaves, "leaves");
 		}
 
 		@Override
 		public Stream<V> streamLeaves() {
-			return this.leaves.values().stream();
+			return this.leaves.stream();
 		}
 
 		@Override
@@ -48,7 +48,7 @@ public abstract class AbstractMapMultiTrie<K, S, V, N extends Node<K, V, N>> imp
 		@Override
 		@Nonnull
 		public MultiTrie.Node<K, V> next(K key) {
-			final Node<K, V, N> next = this.nextImpl(key);
+			final Node<K, V, N> next = this.nextImpl(Utils.requireNonNull(key, "key"));
 			return next == null ? EmptyNode.get() : next;
 		}
 
