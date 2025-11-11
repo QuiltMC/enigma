@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.api.translation.representation;
 
-import org.quiltmc.enigma.impl.analysis.Access;
 import org.objectweb.asm.Opcodes;
+import org.quiltmc.enigma.impl.analysis.Access;
 
 import java.lang.reflect.Modifier;
 

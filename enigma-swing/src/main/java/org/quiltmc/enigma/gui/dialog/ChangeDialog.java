@@ -3,13 +3,13 @@ package org.quiltmc.enigma.gui.dialog;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.util.I18n;
 
-import java.awt.BorderLayout;
-import java.awt.Dialog;
-import java.awt.Window;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import java.awt.BorderLayout;
+import java.awt.Dialog;
+import java.awt.Window;
 
 import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 

@@ -1,13 +1,12 @@
 package org.quiltmc.enigma.util;
 
+import org.jspecify.annotations.NonNull;
 import org.quiltmc.enigma.api.source.TokenType;
-import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
-import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.mapping.EntryChange;
+import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
+import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.util.validation.ValidationContext;
-
-import javax.annotation.Nonnull;
 
 public class EntryUtil {
 	public static EntryMapping applyChange(ValidationContext vc, EntryRemapper remapper, EntryChange<?> change) {
@@ -27,7 +26,7 @@ public class EntryUtil {
 	 * @param change the changes to make
 	 * @return the updated mapping
 	 */
-	public static EntryMapping applyChange(@Nonnull EntryMapping self, EntryChange<?> change) {
+	public static EntryMapping applyChange(@NonNull EntryMapping self, EntryChange<?> change) {
 		// note: a bit more complicated than it needs to be, to avoid tripping over validation done on EntryMapping objects.
 		// this is a necessary sacrifice!
 

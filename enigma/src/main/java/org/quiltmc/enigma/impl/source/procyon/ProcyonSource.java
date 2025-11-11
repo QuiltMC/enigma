@@ -6,9 +6,9 @@ import com.strobel.decompiler.languages.java.JavaOutputVisitor;
 import com.strobel.decompiler.languages.java.ast.CompilationUnit;
 import org.quiltmc.enigma.api.source.Source;
 import org.quiltmc.enigma.api.source.SourceIndex;
+import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.impl.source.procyon.index.SourceIndexVisitor;
 import org.quiltmc.enigma.impl.source.procyon.transformer.AddJavadocsAstTransform;
-import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 
 import java.io.StringWriter;
 

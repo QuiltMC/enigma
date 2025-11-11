@@ -1,10 +1,10 @@
 package org.quiltmc.enigma.impl.bytecode.translator;
 
-import org.quiltmc.enigma.api.translation.Translator;
-import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.RecordComponentVisitor;
 import org.objectweb.asm.TypePath;
+import org.quiltmc.enigma.api.translation.Translator;
+import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 
 public class TranslationRecordComponentVisitor extends RecordComponentVisitor {
 	private final Translator translator;

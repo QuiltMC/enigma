@@ -1,8 +1,7 @@
 package org.quiltmc.enigma.api;
 
+import org.jspecify.annotations.NonNull;
 import org.quiltmc.enigma.util.Version;
-
-import javax.annotation.Nonnull;
 
 /**
  * An enigma plugin represents a collection of {@link org.quiltmc.enigma.api.service.EnigmaService services} that perform different functions.
@@ -37,7 +36,7 @@ public interface EnigmaPlugin {
 	 *
 	 * @param enigmaVersion the run-time Enigma version
 	 */
-	boolean supportsEnigmaVersion(@Nonnull Version enigmaVersion);
+	boolean supportsEnigmaVersion(@NonNull Version enigmaVersion);
 
 	/**
 	 * Gets the name of the plugin; used for error reporting.

@@ -1,14 +1,14 @@
 package org.quiltmc.enigma;
 
+import org.junit.jupiter.api.Test;
+import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.MainJarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.PackageVisibilityIndex;
-import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.class_provider.CachingClassProvider;
 import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
-import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 

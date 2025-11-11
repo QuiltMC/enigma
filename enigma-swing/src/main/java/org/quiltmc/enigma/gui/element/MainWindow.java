@@ -4,11 +4,11 @@ import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.docker.component.DockerSelector;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
+import java.awt.BorderLayout;
+import java.awt.Container;
 
 public class MainWindow {
 	private final JFrame frame;

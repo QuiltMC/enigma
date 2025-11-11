@@ -1,10 +1,11 @@
 package org.quiltmc.enigma.command;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaProfile;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
-import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.service.NameProposalService;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
@@ -17,16 +18,15 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.command.InsertProposedMappingsCommand.Optional;
+import org.quiltmc.enigma.command.InsertProposedMappingsCommand.Required;
 import org.quiltmc.enigma.util.Utils;
 import org.quiltmc.enigma.util.validation.ValidationContext;
-import org.quiltmc.enigma.command.InsertProposedMappingsCommand.Required;
-import org.quiltmc.enigma.command.InsertProposedMappingsCommand.Optional;
 import org.tinylog.Logger;
 
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.Nullable;
 
 import static org.quiltmc.enigma.command.CommonArguments.DEOBFUSCATED_NAMESPACE;
 import static org.quiltmc.enigma.command.CommonArguments.ENIGMA_PROFILE;

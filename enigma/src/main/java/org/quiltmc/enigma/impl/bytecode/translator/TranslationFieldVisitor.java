@@ -1,11 +1,11 @@
 package org.quiltmc.enigma.impl.bytecode.translator;
 
-import org.quiltmc.enigma.api.translation.Translator;
-import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
-import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.TypePath;
+import org.quiltmc.enigma.api.translation.Translator;
+import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;
 
 public class TranslationFieldVisitor extends FieldVisitor {
 	private final FieldDefEntry fieldEntry;

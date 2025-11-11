@@ -1,13 +1,16 @@
 package org.quiltmc.enigma;
 
+import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.api.source.Decompilers;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
-import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 public class TestTokensConstructors extends TokenChecker {
 	private static final Path JAR = TestUtil.obfJar("constructors");

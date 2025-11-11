@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
@@ -23,12 +25,10 @@ import org.tinylog.Logger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class EntryRemapper {
 	private final EntryTree<EntryMapping> deobfMappings;
@@ -70,15 +70,15 @@ public class EntryRemapper {
 		return new EntryRemapper(enigma, index, MappingsIndex.empty(), new HashEntryTree<>(), new HashEntryTree<>(), proposalServices);
 	}
 
-	public void validatePutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping) {
+	public void validatePutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @NonNull EntryMapping deobfMapping) {
 		this.doPutMapping(vc, obfuscatedEntry, deobfMapping, true);
 	}
 
-	public void putMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping) {
+	public void putMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @NonNull EntryMapping deobfMapping) {
 		this.doPutMapping(vc, obfuscatedEntry, deobfMapping, false);
 	}
 
-	private void doPutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping, boolean validateOnly) {
+	private void doPutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @NonNull EntryMapping deobfMapping, boolean validateOnly) {
 		EntryMapping oldMapping = this.getMapping(obfuscatedEntry);
 		boolean renaming = !Objects.equals(oldMapping.targetName(), deobfMapping.targetName());
 
@@ -169,7 +169,7 @@ public class EntryRemapper {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	public EntryMapping getMapping(Entry<?> entry) {
 		EntryMapping entryMapping = this.mappings.get(entry);
 		return entryMapping == null ? EntryMapping.OBFUSCATED : entryMapping;

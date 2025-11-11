@@ -1,12 +1,12 @@
 package org.quiltmc.enigma.gui.docker;
 
-import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.renderer.InheritanceTreeCellRenderer;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.gui.Gui;
+import org.quiltmc.enigma.gui.renderer.InheritanceTreeCellRenderer;
 
-import javax.annotation.Nullable;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public class InheritanceTreeDocker extends AbstractInheritanceTreeDocker {

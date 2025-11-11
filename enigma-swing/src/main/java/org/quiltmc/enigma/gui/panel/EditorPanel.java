@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.panel;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
@@ -37,7 +38,6 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -103,11 +103,11 @@ public class EditorPanel extends BaseEditorPanel {
 			public void mouseReleased(MouseEvent e1) {
 				switch (e1.getButton()) {
 					case MouseEvent.BUTTON3 -> // Right click
-						EditorPanel.this.editor.setCaretPosition(EditorPanel.this.editor.viewToModel2D(e1.getPoint()));
+							EditorPanel.this.editor.setCaretPosition(EditorPanel.this.editor.viewToModel2D(e1.getPoint()));
 					case 4 -> // Back navigation
-						gui.getController().openPreviousReference();
+							gui.getController().openPreviousReference();
 					case 5 -> // Forward navigation
-						gui.getController().openNextReference();
+							gui.getController().openNextReference();
 				}
 			}
 		});

@@ -1,10 +1,10 @@
 package org.quiltmc.enigma.impl.source.bytecode;
 
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.util.TraceClassVisitor;
 import org.quiltmc.enigma.api.source.Source;
 import org.quiltmc.enigma.api.source.SourceIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.util.TraceClassVisitor;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

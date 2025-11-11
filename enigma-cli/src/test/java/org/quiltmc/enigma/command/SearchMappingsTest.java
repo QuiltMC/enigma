@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.command;
 
 import com.google.common.collect.ImmutableList;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.TestUtil;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
@@ -8,7 +9,6 @@ import org.quiltmc.enigma.command.SearchMappingsCommand.ResultType;
 import org.quiltmc.enigma.command.SearchMappingsCommand.Sort;
 import org.tinylog.Logger;
 
-import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.function.Predicate;

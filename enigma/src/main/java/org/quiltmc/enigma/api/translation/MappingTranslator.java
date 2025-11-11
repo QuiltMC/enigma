@@ -1,10 +1,9 @@
 package org.quiltmc.enigma.api.translation;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.translation.mapping.EntryMap;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
-
-import javax.annotation.Nullable;
 
 public class MappingTranslator implements Translator {
 	private final EntryMap<EntryMapping> mappings;

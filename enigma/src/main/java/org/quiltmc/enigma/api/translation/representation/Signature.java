@@ -1,6 +1,8 @@
 package org.quiltmc.enigma.api.translation.representation;
 
-import org.quiltmc.enigma.impl.bytecode.translator.TranslationSignatureVisitor;
+import org.objectweb.asm.signature.SignatureReader;
+import org.objectweb.asm.signature.SignatureVisitor;
+import org.objectweb.asm.signature.SignatureWriter;
 import org.quiltmc.enigma.api.translation.Translatable;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
@@ -8,9 +10,7 @@ import org.quiltmc.enigma.api.translation.mapping.EntryMap;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
-import org.objectweb.asm.signature.SignatureReader;
-import org.objectweb.asm.signature.SignatureVisitor;
-import org.objectweb.asm.signature.SignatureWriter;
+import org.quiltmc.enigma.impl.bytecode.translator.TranslationSignatureVisitor;
 
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;

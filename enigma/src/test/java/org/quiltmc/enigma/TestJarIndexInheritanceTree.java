@@ -1,5 +1,8 @@
 package org.quiltmc.enigma;
 
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+import org.objectweb.asm.Opcodes;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
@@ -17,15 +20,15 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
-import org.objectweb.asm.Opcodes;
 
 import java.nio.file.Path;
 import java.util.Collection;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
 
 public class TestJarIndexInheritanceTree {
 	public static final Path JAR = TestUtil.obfJar("inheritance_tree");
@@ -80,8 +83,8 @@ public class TestJarIndexInheritanceTree {
 
 	@Test
 	public void access() {
-		assertThat(this.index.getIndex(EntryIndex.class).getFieldAccess(NAME_FIELD), is(new AccessFlags(Opcodes.ACC_PRIVATE)));
-		assertThat(this.index.getIndex(EntryIndex.class).getFieldAccess(NUM_THINGS_FIELD), is(new AccessFlags(Opcodes.ACC_PRIVATE)));
+		assertThat(this.index.getIndex(EntryIndex.class).getFieldAccess(NAME_FIELD), is(new AccessFlags(Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL)));
+		assertThat(this.index.getIndex(EntryIndex.class).getFieldAccess(NUM_THINGS_FIELD), is(new AccessFlags(Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL)));
 	}
 
 	@Test

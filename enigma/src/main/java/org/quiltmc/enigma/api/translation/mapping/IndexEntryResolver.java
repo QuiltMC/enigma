@@ -1,18 +1,19 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
-import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
-import org.quiltmc.enigma.impl.analysis.IndexTreeBuilder;
-import org.quiltmc.enigma.api.analysis.tree.MethodImplementationsTreeNode;
-import org.quiltmc.enigma.api.analysis.tree.MethodInheritanceTreeNode;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
+import org.quiltmc.enigma.api.analysis.tree.MethodImplementationsTreeNode;
+import org.quiltmc.enigma.api.analysis.tree.MethodInheritanceTreeNode;
 import org.quiltmc.enigma.api.translation.VoidTranslator;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.impl.analysis.IndexTreeBuilder;
 import org.tinylog.Logger;
 
 import java.util.Collection;
@@ -20,7 +21,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.Nullable;
 
 public class IndexEntryResolver implements EntryResolver {
 	private final EntryIndex entryIndex;

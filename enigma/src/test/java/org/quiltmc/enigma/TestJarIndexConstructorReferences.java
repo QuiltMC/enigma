@@ -1,5 +1,7 @@
 package org.quiltmc.enigma;
 
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
@@ -12,14 +14,14 @@ import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.util.Collection;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
 
 public class TestJarIndexConstructorReferences {
 	public static final Path JAR = TestUtil.obfJar("constructors");

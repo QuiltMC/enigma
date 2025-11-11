@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.api.translation.mapping.tree;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.translation.Translatable;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
@@ -10,7 +11,6 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
 import java.util.Collection;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 
 public interface EntryTree<T> extends EntryMap<T>, Iterable<EntryTreeNode<T>>, Translatable {
 	Collection<Entry<?>> getChildren(Entry<?> entry);

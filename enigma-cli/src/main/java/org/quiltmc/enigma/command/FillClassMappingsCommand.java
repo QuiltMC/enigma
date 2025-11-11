@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.command;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
@@ -13,12 +14,11 @@ import org.quiltmc.enigma.api.translation.mapping.tree.EntryTreeNode;
 import org.quiltmc.enigma.api.translation.mapping.tree.HashEntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
-import org.quiltmc.enigma.util.Utils;
-import org.quiltmc.enigma.command.FillClassMappingsCommand.Required;
 import org.quiltmc.enigma.command.FillClassMappingsCommand.Optional;
+import org.quiltmc.enigma.command.FillClassMappingsCommand.Required;
+import org.quiltmc.enigma.util.Utils;
 import org.tinylog.Logger;
 
-import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.List;
 

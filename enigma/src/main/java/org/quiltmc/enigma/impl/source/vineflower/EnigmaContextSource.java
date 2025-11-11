@@ -1,11 +1,11 @@
 package org.quiltmc.enigma.impl.source.vineflower;
 
-import org.jetbrains.java.decompiler.main.extern.IFernflowerPreferences;
-import org.quiltmc.enigma.api.class_provider.ClassProvider;
-import org.quiltmc.enigma.util.AsmUtil;
 import org.jetbrains.java.decompiler.main.extern.IContextSource;
+import org.jetbrains.java.decompiler.main.extern.IFernflowerPreferences;
 import org.jetbrains.java.decompiler.main.extern.IResultSaver;
 import org.objectweb.asm.tree.ClassNode;
+import org.quiltmc.enigma.api.class_provider.ClassProvider;
+import org.quiltmc.enigma.util.AsmUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

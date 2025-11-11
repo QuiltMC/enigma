@@ -3,9 +3,9 @@ package org.quiltmc.enigma.gui.renderer;
 import org.quiltmc.enigma.api.analysis.tree.StructureTreeOptions;
 import org.quiltmc.enigma.util.I18n;
 
-import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
+import java.awt.Component;
 
 public class StructureOptionListCellRenderer extends DefaultListCellRenderer {
 	@Override

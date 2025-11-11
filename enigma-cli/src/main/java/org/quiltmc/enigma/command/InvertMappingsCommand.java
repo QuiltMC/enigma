@@ -1,17 +1,17 @@
 package org.quiltmc.enigma.command;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.Enigma;
-import org.quiltmc.enigma.util.MappingOperations;
-import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
+import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
-import org.quiltmc.enigma.util.Utils;
-import org.quiltmc.enigma.command.InvertMappingsCommand.Required;
 import org.quiltmc.enigma.command.InvertMappingsCommand.Optional;
+import org.quiltmc.enigma.command.InvertMappingsCommand.Required;
+import org.quiltmc.enigma.util.MappingOperations;
+import org.quiltmc.enigma.util.Utils;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 

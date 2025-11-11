@@ -1,13 +1,13 @@
 package org.quiltmc.enigma.api.translation.mapping.tree;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.translation.Translator;
 import org.quiltmc.enigma.api.translation.mapping.EntryMap;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -165,7 +165,7 @@ public class HashEntryTree<T> implements EntryTree<T> {
 	}
 
 	@Override
-	@Nonnull
+	@NonNull
 	public Iterator<EntryTreeNode<T>> iterator() {
 		Collection<EntryTreeNode<T>> nodes = new ArrayList<>();
 		for (EntryTreeNode<T> node : this.root.values()) {

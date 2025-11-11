@@ -1,9 +1,8 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.source.TokenType;
-
-import javax.annotation.Nullable;
 
 public record EntryMapping(
 		@Nullable String targetName,

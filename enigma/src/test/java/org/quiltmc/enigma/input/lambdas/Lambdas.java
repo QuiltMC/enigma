@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class Lambdas {
-	private List<Lambdas> children = new ArrayList<>();
+	private final List<Lambdas> children = new ArrayList<>();
 
 	public Stream<Lambdas> stream() {
 		return Stream.concat(Stream.of(this), this.children.stream().flatMap(Lambdas::stream));

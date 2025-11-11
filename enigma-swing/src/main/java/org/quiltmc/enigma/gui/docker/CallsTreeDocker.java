@@ -2,22 +2,18 @@ package org.quiltmc.enigma.gui.docker;
 
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.tree.ReferenceTreeNode;
-import org.quiltmc.enigma.gui.Gui;
-import org.quiltmc.enigma.gui.renderer.TokenListCellRenderer;
-import org.quiltmc.enigma.gui.renderer.CallsTreeCellRenderer;
-import org.quiltmc.enigma.gui.util.GuiUtil;
-import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.gui.util.SingleTreeSelectionModel;
 import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.gui.Gui;
+import org.quiltmc.enigma.gui.renderer.CallsTreeCellRenderer;
+import org.quiltmc.enigma.gui.renderer.TokenListCellRenderer;
+import org.quiltmc.enigma.gui.util.GuiUtil;
+import org.quiltmc.enigma.gui.util.ScaleUtil;
+import org.quiltmc.enigma.gui.util.SingleTreeSelectionModel;
 
-import java.awt.BorderLayout;
-import java.awt.event.MouseEvent;
-import java.util.Collection;
-import java.util.Vector;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -26,6 +22,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import java.awt.BorderLayout;
+import java.awt.event.MouseEvent;
+import java.util.Collection;
+import java.util.Vector;
 
 public class CallsTreeDocker extends Docker {
 	private final JTree tree = new JTree();

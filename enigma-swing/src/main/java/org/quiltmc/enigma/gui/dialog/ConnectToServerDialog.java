@@ -9,14 +9,14 @@ import org.quiltmc.enigma.util.Pair;
 import org.quiltmc.enigma.util.validation.Message;
 import org.quiltmc.enigma.util.validation.StandardValidation;
 
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
 
 public class ConnectToServerDialog extends AbstractDialog {
 	private JTextField usernameField;
