@@ -13,7 +13,11 @@ public interface MutableMultiTrie<K, S, V> extends MultiTrie<K, S, V> {
 	MultiTrie<K, S, V> getView();
 
 	/**
-	 * @implSpec implementations should not have {@code public} visibility; users should never see node mutation methods
+	 * @implSpec mutable nodes should not be returned from public methods, return a
+	 * {@linkplain #getView() view} instead; users should never see node mutation methods
+	 *
+	 * @implNote most implementations should remove themselves from any
+	 * backing data structures when the node becomes empty
 	 */
 	interface Node<K, S, V> extends MultiTrie.Node<K, V> {
 		void put(S sequence, V value);
@@ -22,6 +26,6 @@ public interface MutableMultiTrie<K, S, V> extends MultiTrie<K, S, V> {
 
 		boolean removeAll(S sequence);
 
-		// TODO trim method, for empty nodes
+		MultiTrie.Node<K, V> getView();
 	}
 }

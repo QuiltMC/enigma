@@ -20,7 +20,7 @@ public class StringMultiTrie<V, N extends Node<V, N>>
 			node = node.nextImpl(prefix.charAt(i));
 		}
 
-		return node == null ? EmptyNode.get() : node;
+		return node == null ? EmptyNode.get() : node.getView();
 	}
 
 	protected abstract static class Node<V, N extends Node<V, N>>

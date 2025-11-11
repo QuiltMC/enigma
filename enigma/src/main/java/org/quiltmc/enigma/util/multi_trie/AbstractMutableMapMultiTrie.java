@@ -21,6 +21,17 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 	}
 
 	@Override
+	public MultiTrie.Node<K, V> getRoot() {
+		return this.root.getView();
+	}
+
+	@Override
+	public MultiTrie.Node<K, V> start(K key) {
+		final N next = this.root.nextImpl(key);
+		return next == null ? EmptyNode.get() : next.getView();
+	}
+
+	@Override
 	public void put(S sequence, V value) {
 		this.root.put(Utils.requireNonNull(sequence, SEQUENCE), Utils.requireNonNull(value, VALUE));
 	}
@@ -43,6 +54,8 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 	protected abstract static class Node<K, S, V, N extends Node<K, S, V, N>>
 			extends AbstractMapMultiTrie.Node<K, V, N>
 			implements MutableMultiTrie.Node<K, S, V> {
+		private final NodeView<K, V> view = new NodeView<>(this);
+
 		protected Node(Map<K, N> children, Collection<V> leaves) {
 			super(children, leaves);
 		}
@@ -60,6 +73,7 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 			}
 		}
 
+		// TODO trim from parent when empty
 		@Override
 		public boolean remove(S sequence, V value) {
 			if (this.isEmptySequence(sequence)) {
@@ -87,6 +101,11 @@ public abstract class AbstractMutableMapMultiTrie<K, S, V, N extends Node<K, S, 
 				final N next = this.nextImpl(split.first);
 				return next != null && next.removeAll(split.suffix);
 			}
+		}
+
+		@Override
+		public MultiTrie.Node<K, V> getView() {
+			return this.view;
 		}
 
 		/**
