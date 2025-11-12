@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 /**
  * An empty, immutable, singleton {@link MultiTrie.Node} implementation.
  *
- * <p> {@link MultiTrie.Node#next(Object)} implementations may return {@linkplain #get() the empty node}
+ * <p> {@link MultiTrie.Node#nextOrEmpty(Object)} implementations may return {@linkplain #get() the empty node}
  * when nodes have no branches.
  *
  * @implNote <em>not</em> intended to be stored in tries
