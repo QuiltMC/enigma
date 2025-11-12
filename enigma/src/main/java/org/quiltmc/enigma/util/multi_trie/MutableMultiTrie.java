@@ -1,9 +1,11 @@
 package org.quiltmc.enigma.util.multi_trie;
 
+import org.quiltmc.enigma.util.Utils;
 import org.quiltmc.enigma.util.multi_trie.MutableMultiTrie.Node;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.stream.Stream;
 
 /**
  * A multi-trie that allows modification which can also provide unmodifiable views of its contents.
@@ -19,7 +21,7 @@ public interface MutableMultiTrie<K, V, N extends Node<K, V>> extends MultiTrie<
 	/**
 	 * @return a live, unmodifiable view of this trie
 	 */
-	MultiTrie<K, V> getView();
+	View<K, V> getView();
 
 	/**
 	 * A mutable node representing values associated with a {@link MutableMultiTrie}.
@@ -33,38 +35,89 @@ public interface MutableMultiTrie<K, V, N extends Node<K, V>> extends MultiTrie<
 		Node<K, V> next(K key);
 
 		/**
-         * @param value      the value to associate
-         * @param sequence   the full sequence the value will be associated with in this node's trie
-         * @param startIndex the index in the passed {@code sequence} at which this node's suffix starts;
-		 *                   may be greater than or equal to the passed {@code sequence}'s
-		 *                   {@linkplain #getLength(Object) length}, indicating that the value is a leaf
+		 * @param value a value to add to this node's leaves, associating it with the sequence leading to this node.
 		 */
 		void put(V value);
 
 		/**
-		 * @param value      the value to dissociate
-		 * @param sequence   the full sequence the value may be associated with in this node's trie
-		 * @param startIndex the index in the passed {@code sequence} at which this node's suffix starts;
-		 *                   may be greater than or equal to the passed {@code sequence}'s
-		 *                   {@linkplain #getLength(Object) length}, indicating that the value is a leaf
+		 * @param value a value to remove from this node's leaves
 		 *
-		 * @return {@code true} if a value was dissociated, or {@code false} otherwise
+		 * @return {@code true} if a value was removed, or {@code false} otherwise
 		 */
 		boolean remove(V value);
 
 		/**
-		 * @param sequence   the full sequence whose values are to be dissociated
-		 * @param startIndex the index in the passed {@code sequence} at which this node's suffix starts;
-		 *                   may be greater than or equal to the passed {@code sequence}'s
-		 *                   {@linkplain #getLength(Object) length}, indicating that the value is a leaf
+		 * Removes all leaves from this node.
 		 *
-		 * @return {@code true} if any values were dissociated, or {@code false} otherwise
+		 * @return {@code true} if any values were removed, or {@code false} otherwise
 		 */
 		boolean removeAll();
 
 		/**
 		 * @return a live, unmodifiable view of this node
 		 */
-		MultiTrie.Node<K, V> getView();
+		View<K, V> getView();
+
+		interface View<K, V> extends MultiTrie.Node<K, V> {
+			@Override
+			@Nonnull
+			View<K, V> next(K key);
+
+			@Override
+			@Nonnull
+			default View<K, V> nextOrEmpty(K key) {
+				return this.next(key);
+			}
+
+			class Impl<K, V> implements View<K, V> {
+				protected final Node<K, V> viewed;
+
+				public Impl(Node<K, V> viewed) {
+					this.viewed = viewed;
+				}
+
+				@Override
+				public Stream<V> streamLeaves() {
+					return this.viewed.streamLeaves();
+				}
+
+				@Override
+				public Stream<V> streamBranches() {
+					return this.viewed.streamBranches();
+				}
+
+				@Override
+				public Stream<V> streamValues() {
+					return this.viewed.streamValues();
+				}
+
+				@Nonnull
+				@Override
+				public View<K, V> next(K key) {
+					final Node<K, V> next = this.viewed.next(key);
+					return next == null ? EmptyNode.get() : next.getView();
+				}
+			}
+		}
+	}
+
+	interface View<K, V> extends MultiTrie<K, V> {
+		@Nonnull
+		@Override
+		MutableMultiTrie.Node.View<K, V> getRoot();
+
+		class Impl<K, V> implements View<K, V> {
+			protected final MutableMultiTrie<K, V, ? extends MutableMultiTrie.Node<K, V>> viewed;
+
+			public Impl(MutableMultiTrie<K, V, ? extends MutableMultiTrie.Node<K, V>> viewed) {
+				this.viewed = Utils.requireNonNull(viewed, "viewed");
+			}
+
+			@Nonnull
+			@Override
+			public MutableMultiTrie.Node.View<K, V> getRoot() {
+				return this.viewed.getRoot().getView();
+			}
+		}
 	}
 }
