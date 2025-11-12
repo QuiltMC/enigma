@@ -11,14 +11,14 @@ import java.util.Collection;
 public abstract class AbstractMutableMapMultiTrie<K, V, N extends Node<K, V, N>>
 		extends AbstractMapMultiTrie<K, V, N>
 		implements MutableMultiTrie<K, V, N> {
-	private final View<K, V> view = new View<>(this);
+	private final MutableMultiTrie.View<K, V> view = new MutableMultiTrie.View.Impl<>(this);
 
 	protected AbstractMutableMapMultiTrie(N root) {
 		super(root);
 	}
 
 	@Override
-	public MultiTrie<K, V> getView() {
+	public View<K, V> getView() {
 		return this.view;
 	}
 
@@ -28,7 +28,7 @@ public abstract class AbstractMutableMapMultiTrie<K, V, N extends Node<K, V, N>>
 		@Nullable
 		protected final N parent;
 
-		private final NodeView<K, V> view = new NodeView<>(this);
+		private final View<K, V> view = new View.Impl<>(this);
 
 		protected Node(@Nullable N parent, BiMap<K, N> children, Collection<V> leaves) {
 			super(children, leaves);
@@ -65,7 +65,7 @@ public abstract class AbstractMutableMapMultiTrie<K, V, N extends Node<K, V, N>>
 		}
 
 		@Override
-		public MultiTrie.Node<K, V> getView() {
+		public View<K, V> getView() {
 			return this.view;
 		}
 

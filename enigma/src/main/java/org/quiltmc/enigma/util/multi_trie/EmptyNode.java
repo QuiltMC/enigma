@@ -11,7 +11,7 @@ import java.util.stream.Stream;
  *
  * @implNote <em>not</em> intended to be stored in tries
  */
-public final class EmptyNode<K, V> implements MultiTrie.Node<K, V> {
+public final class EmptyNode<K, V> implements MutableMultiTrie.Node.View<K, V> {
 	private static final EmptyNode<?, ?> INSTANCE = new EmptyNode<>();
 
 	@SuppressWarnings("unchecked")
@@ -38,7 +38,7 @@ public final class EmptyNode<K, V> implements MultiTrie.Node<K, V> {
 
 	@Override
 	@Nonnull
-	public MultiTrie.Node<K, V> next(K key) {
+	public EmptyNode<K, V> next(K key) {
 		return this;
 	}
 }
