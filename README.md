@@ -16,6 +16,7 @@ Enigma includes the following open-source libraries:
  - [jopt-simple](https://github.com/jopt-simple/jopt-simple) (MIT)
  - [ASM](https://asm.ow2.io/) (BSD-3-Clause)
  - [JavaParser](https://javaparser.org/) (Apache-2.0)
+ - [JSpecify](https://jspecify.dev/) (Apache-2.0)
 
 ## Usage
 
