@@ -4,9 +4,9 @@ import javax.annotation.Nonnull;
 import java.util.stream.Stream;
 
 public class NodeView<K, V> implements MultiTrie.Node<K, V> {
-	private final MutableMultiTrie.Node<K, ?, V> viewed;
+	private final MutableMultiTrie.Node<K, V> viewed;
 
-	public NodeView(MutableMultiTrie.Node<K, ?, V> viewed) {
+	public NodeView(MutableMultiTrie.Node<K, V> viewed) {
 		this.viewed = viewed;
 	}
 
@@ -28,6 +28,13 @@ public class NodeView<K, V> implements MultiTrie.Node<K, V> {
 	@Nonnull
 	@Override
 	public MultiTrie.Node<K, V> next(K key) {
-		return this.viewed.next(key);
+		final MutableMultiTrie.Node<K, V> next = this.viewed.next(key);
+		return next == null ? EmptyNode.get() : next.getView();
+	}
+
+	@Nonnull
+	@Override
+	public MultiTrie.Node<K, V> nextOrEmpty(K key) {
+		return this.next(key);
 	}
 }

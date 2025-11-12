@@ -5,11 +5,10 @@ import org.quiltmc.enigma.util.Utils;
 import org.quiltmc.enigma.util.multi_trie.AbstractMapMultiTrie.Node;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.stream.Stream;
 
-public abstract class AbstractMapMultiTrie<K, S, V, N extends Node<K, V, N>> implements MultiTrie<K, S, V> {
+public abstract class AbstractMapMultiTrie<K, V, N extends Node<K, V, N>> implements MultiTrie<K, V> {
 	protected final N root;
 
 	protected AbstractMapMultiTrie(N root) {
@@ -18,7 +17,7 @@ public abstract class AbstractMapMultiTrie<K, S, V, N extends Node<K, V, N>> imp
 
 	@Nonnull
 	@Override
-	public MultiTrie.Node<K, V> getRoot() {
+	public N getRoot() {
 		return this.root;
 	}
 
@@ -27,7 +26,7 @@ public abstract class AbstractMapMultiTrie<K, S, V, N extends Node<K, V, N>> imp
 	 * @param <V> the type of values
 	 * @param <N> the type of this node
 	 */
-	protected static class Node<K, V, N extends Node<K, V, N>> implements MultiTrie.Node<K, V> {
+	protected abstract static class Node<K, V, N extends Node<K, V, N>> implements MultiTrie.Node<K, V> {
 		protected final BiMap<K, N> children;
 		protected final Collection<V> leaves;
 
@@ -52,15 +51,8 @@ public abstract class AbstractMapMultiTrie<K, S, V, N extends Node<K, V, N>> imp
 		}
 
 		@Override
-		@Nonnull
-		public MultiTrie.Node<K, V> next(K key) {
-			final Node<K, V, N> next = this.nextImpl(Utils.requireNonNull(key, "key"));
-			return next == null ? EmptyNode.get() : next;
-		}
-
-		@Nullable
-		protected N nextImpl(K key) {
-			return this.children.get(key);
+		public N next(K key) {
+			return this.children.get(Utils.requireNonNull(key, "key"));
 		}
 	}
 }

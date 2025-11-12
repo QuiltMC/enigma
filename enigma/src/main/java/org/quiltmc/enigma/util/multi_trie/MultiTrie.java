@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.util.multi_trie;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.stream.Stream;
 
 /**
@@ -8,22 +9,17 @@ import java.util.stream.Stream;
  *
  * <p> Values can be looked up by a prefix of their key sequence; all values associated with a sequence beginning with
  * the prefix will be returned.<br>
- * The prefix can be passed either all at once to {@link #get},
- * or key-by-key to {@link Node#next} starting with {@link #getRoot}.
+ * The prefix is passed key-by-key to {@link Node#next} starting with {@link #getRoot}.
  *
  * @implSpec {@code S} sequence types should represent an ordered sequence of keys of type {@code K};
  * sequences that represent the same sequence of keys should be equivalent
  *
  * @param <K> the type of keys
- * @param <S> the type of sequences
  * @param <V> the type of values
  */
-public interface MultiTrie<K, S, V> {
+public interface MultiTrie<K, V> {
 	@Nonnull
 	Node<K, V> getRoot();
-
-	@Nonnull
-	Node<K, V> get(S prefix);
 
 	default long getSize() {
 		return this.getRoot().getSize();
@@ -66,7 +62,13 @@ public interface MultiTrie<K, S, V> {
 			return this.getSize() == 0;
 		}
 
-		@Nonnull
+		@Nullable
 		Node<K, V> next(K key);
+
+		@Nonnull
+		default Node<K, V> nextOrEmpty(K key) {
+			final Node<K, V> next = this.next(key);
+			return next == null ? EmptyNode.get() : next;
+		}
 	}
 }

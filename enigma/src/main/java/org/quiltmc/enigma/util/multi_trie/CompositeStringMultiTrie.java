@@ -35,8 +35,10 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Node<V
 		super(createNode(null, childrenFactory, leavesFactory));
 	}
 
-	protected static final class Node<V> extends StringMultiTrie.Node<V, Node<V>> {
+	public static final class Node<V> extends AbstractMutableMapMultiTrie.Node<Character, V, Node<V>> {
 		private final UnaryOperator<Node<V>> childFactory;
+
+		// private final View view = new View();
 
 		private Node(
 				@Nullable Node<V> parent, BiMap<Character, Node<V>> children, Collection<V> leaves,
@@ -47,6 +49,7 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Node<V
 			this.childFactory = childFactory;
 		}
 
+		@Nonnull
 		@Override
 		protected Node<V> getSelf() {
 			return this;

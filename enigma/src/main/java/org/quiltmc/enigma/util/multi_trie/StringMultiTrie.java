@@ -1,31 +1,83 @@
 package org.quiltmc.enigma.util.multi_trie;
 
-import com.google.common.collect.BiMap;
-import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.Node;
+import org.quiltmc.enigma.util.Utils;
 
-import javax.annotation.Nullable;
-import java.util.Collection;
+import javax.annotation.Nonnull;
 
-public class StringMultiTrie<V, N extends Node<V, N>>
-		extends AbstractMutableMapMultiTrie<Character, String, V, N> {
+public abstract class StringMultiTrie<V, N extends AbstractMutableMapMultiTrie.Node<Character, V, N>>
+		extends AbstractMutableMapMultiTrie<Character, V, N> {
+	private static final String PREFIX = "prefix";
+	private static final String STRING = "string";
+	private static final String VALUE = "value";
+
 	protected StringMultiTrie(N root) {
 		super(root);
 	}
 
-	protected abstract static class Node<V, N extends Node<V, N>>
-			extends AbstractMutableMapMultiTrie.Node<Character, String, V, N> {
-		protected Node(@Nullable Node<V, N> parent, BiMap<Character, N> children, Collection<V> leaves) {
-			super(parent, children, leaves);
+	public N get(String prefix) {
+		Utils.requireNonNull(prefix, PREFIX);
+
+		N node = this.root;
+		for (int i = 0; i < prefix.length(); i++) {
+			node = node.next(prefix.charAt(i));
+			if (node == null) {
+				return null;
+			}
 		}
 
-		@Override
-		public int getLength(String sequence) {
-			return sequence.length();
+		return node;
+	}
+
+	@Nonnull
+	public MultiTrie.Node<Character, V> getView(String prefix) {
+		final N node = this.get(prefix);
+		return node == null ? EmptyNode.get() : node.getView();
+	}
+
+	@Nonnull
+	public N put(String string, V value) {
+		Utils.requireNonNull(string, STRING);
+		Utils.requireNonNull(value, VALUE);
+
+		N node = this.root;
+		for (int i = 0; i < string.length(); i++) {
+			final N parent = node;
+			node = node.children.computeIfAbsent(string.charAt(i), ignored -> parent.createChild());
 		}
 
-		@Override
-		public Character getKey(String sequence, int index) {
-			return sequence.charAt(index);
+		node.put(value);
+
+		return node;
+	}
+
+	public boolean remove(String string, V value) {
+		Utils.requireNonNull(string, STRING);
+		Utils.requireNonNull(value, VALUE);
+
+		N node = this.root;
+		for (int i = 0; i < string.length(); i++) {
+			node = node.next(string.charAt(i));
+
+			if (node == null) {
+				return false;
+			}
 		}
+
+		return node.remove(value);
+	}
+
+	public boolean removeAll(String string) {
+		Utils.requireNonNull(string, STRING);
+
+		N node = this.root;
+		for (int i = 0; i < string.length(); i++) {
+			node = node.next(string.charAt(i));
+
+			if (node == null) {
+				return false;
+			}
+		}
+
+		return node.removeAll();
 	}
 }
