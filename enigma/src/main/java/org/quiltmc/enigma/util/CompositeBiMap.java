@@ -72,7 +72,8 @@ public class CompositeBiMap<K, V> implements BiMap<K, V> {
 					.formatted(value, this.reverse.get(value))
 			);
 		} else {
-			return this.forcePut(key, value);
+			this.reverse.put(value, key);
+			return this.forward.put(key, value);
 		}
 	}
 
@@ -90,6 +91,7 @@ public class CompositeBiMap<K, V> implements BiMap<K, V> {
 	@CheckForNull
 	@Override
 	public V forcePut(K key, V value) {
+		this.reverse.remove(value);
 		this.reverse.put(value, key);
 		return this.forward.put(key, value);
 	}
