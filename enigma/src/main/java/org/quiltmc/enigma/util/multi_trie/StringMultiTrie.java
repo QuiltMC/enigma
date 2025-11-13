@@ -51,7 +51,8 @@ public abstract class StringMultiTrie<V, N extends MutableMapNode<Character, V, 
 		N node = this.getRoot();
 		for (int i = 0; i < string.length(); i++) {
 			final N parent = node;
-			node = node.getChildren().computeIfAbsent(string.charAt(i), ignored -> parent.createChild());
+			final char key = string.charAt(i);
+			node = node.getChildren().computeIfAbsent(key, ignored -> parent.createChild(key));
 		}
 
 		node.put(value);

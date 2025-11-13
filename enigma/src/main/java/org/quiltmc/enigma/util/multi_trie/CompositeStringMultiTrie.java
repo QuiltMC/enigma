@@ -1,48 +1,57 @@
 package org.quiltmc.enigma.util.multi_trie;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie.Node;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 
 public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Node<V>> {
 	private final Node<V> root;
 	private final View view = new View();
 
 	public static <V> CompositeStringMultiTrie<V> createHashed() {
-		return of(HashBiMap::create, HashSet::new);
+		return of(HashMap::new, HashSet::new);
 	}
 
 	public static <V> CompositeStringMultiTrie<V> of(
-			Supplier<BiMap<Character, Node<V>>> childrenFactory,
+			Supplier<Map<Character, Node<V>>> childrenFactory,
 			Supplier<Collection<V>> leavesFactory
 	) {
 		return new CompositeStringMultiTrie<>(childrenFactory, leavesFactory);
 	}
 
-	private static <V> Node<V> createNode(
-			@Nullable Node<V> parent,
-			Supplier<BiMap<Character, Node<V>>> childrenFactory,
+	private static <V> Node<V> createRoot(
+			Supplier<Map<Character, Node<V>>> childrenFactory,
 			Supplier<Collection<V>> leavesFactory
 	) {
 		return new Node<>(
-				parent, childrenFactory.get(), leavesFactory.get(),
-				self -> createNode(self, childrenFactory, leavesFactory)
+				Optional.empty(), childrenFactory.get(), leavesFactory.get(),
+				selfAccess -> createNode(selfAccess, childrenFactory, leavesFactory)
+		);
+	}
+
+	private static <V> Node<V> createNode(
+			MutableMapNode.ParentAccess<Node<V>, Character> parentAccess,
+			Supplier<Map<Character, Node<V>>> childrenFactory,
+			Supplier<Collection<V>> leavesFactory
+	) {
+		return new Node<>(
+				Optional.of(parentAccess), childrenFactory.get(), leavesFactory.get(),
+				selfAccess -> createNode(selfAccess, childrenFactory, leavesFactory)
 		);
 	}
 
 	private CompositeStringMultiTrie(
-			Supplier<BiMap<Character, Node<V>>> childrenFactory,
+			Supplier<Map<Character, Node<V>>> childrenFactory,
 			Supplier<Collection<V>> leavesFactory
 	) {
-		this.root = createNode(null, childrenFactory, leavesFactory);
+		this.root = createRoot(childrenFactory, leavesFactory);
 	}
 
 	@Nonnull
@@ -57,23 +66,23 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Node<V
 		return this.view;
 	}
 
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static final class Node<V> extends MutableMapNode<Character, V, Node<V>> {
-		@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-		private final Optional<Node<V>> parent;
+		private final Optional<ParentAccess<Node<V>, Character>> parentAccess;
 
-		private final BiMap<Character, Node<V>> children;
+		private final Map<Character, Node<V>> children;
 		private final Collection<V> leaves;
 
-		private final UnaryOperator<Node<V>> childFactory;
+		private final Function<ParentAccess<Node<V>, Character>, Node<V>> childFactory;
 
 		private final NodeView<Character, V> view = new NodeView<>(this);
 
 		private Node(
-				@Nullable Node<V> parent,
-				BiMap<Character, Node<V>> children, Collection<V> leaves,
-				UnaryOperator<Node<V>> childFactory
+				Optional<ParentAccess<Node<V>, Character>> parentAccess,
+				Map<Character, Node<V>> children, Collection<V> leaves,
+				Function<ParentAccess<Node<V>, Character>, Node<V>> childFactory
 		) {
-			this.parent = Optional.ofNullable(parent);
+			this.parentAccess = parentAccess;
 			this.children = children;
 			this.leaves = leaves;
 			this.childFactory = childFactory;
@@ -86,14 +95,14 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Node<V
 		}
 
 		@Override
-		protected Optional<Node<V>> getParent() {
-			return this.parent;
+		protected Optional<ParentAccess<Node<V>, Character>> getParentAccess() {
+			return this.parentAccess;
 		}
 
 		@Nonnull
 		@Override
-		protected Node<V> createChild() {
-			return this.childFactory.apply(this);
+		protected Node<V> createChildImpl(ParentAccess<Node<V>, Character> parentAccess) {
+			return this.childFactory.apply(parentAccess);
 		}
 
 		@Override
@@ -103,7 +112,7 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Node<V
 
 		@Override
 		@Nonnull
-		protected BiMap<Character, Node<V>> getChildren() {
+		protected Map<Character, Node<V>> getChildren() {
 			return this.children;
 		}
 
