@@ -15,8 +15,9 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static org.quiltmc.enigma.util.multi_trie.AbstractMapMultiTrieAccessor.getRootChildren;
-
+/**
+ * TODO key-by-key access tests
+ */
 public class CompositeStringMultiTrieTest {
 	private static final String VALUES = "values";
 	private static final String LEAVES = "leaves";
@@ -140,7 +141,7 @@ public class CompositeStringMultiTrieTest {
 			() ->"Expected trie to be empty, but had it contents: " + trie.getRoot().streamValues().toList()
 		);
 
-		final BiMap<Character, ? extends Node<Character, ?>> rootChildren = getRootChildren(trie);
+		final BiMap<Character, ? extends Node<Character, ?>> rootChildren = trie.getRoot().getChildren();
 		assertTrue(
 			rootChildren.isEmpty(),
 			() -> "Expected root's children to be pruned, but it had children: " + rootChildren
