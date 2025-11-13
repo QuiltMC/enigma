@@ -8,12 +8,23 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Node<V>> {
+	private final Node<V> root;
+	private final View view = new View();
+
 	public static <V> CompositeStringMultiTrie<V> createHashed() {
-		return new CompositeStringMultiTrie<>(HashBiMap::create, HashSet::new);
+		return of(HashBiMap::create, HashSet::new);
+	}
+
+	public static <V> CompositeStringMultiTrie<V> of(
+			Supplier<BiMap<Character, Node<V>>> childrenFactory,
+			Supplier<Collection<V>> leavesFactory
+	) {
+		return new CompositeStringMultiTrie<>(childrenFactory, leavesFactory);
 	}
 
 	private static <V> Node<V> createNode(
@@ -22,8 +33,7 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Node<V
 			Supplier<Collection<V>> leavesFactory
 	) {
 		return new Node<>(
-				parent,
-				childrenFactory.get(), leavesFactory.get(),
+				parent, childrenFactory.get(), leavesFactory.get(),
 				self -> createNode(self, childrenFactory, leavesFactory)
 		);
 	}
@@ -32,20 +42,40 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Node<V
 			Supplier<BiMap<Character, Node<V>>> childrenFactory,
 			Supplier<Collection<V>> leavesFactory
 	) {
-		super(createNode(null, childrenFactory, leavesFactory));
+		this.root = createNode(null, childrenFactory, leavesFactory);
 	}
 
-	public static final class Node<V> extends AbstractMutableMapMultiTrie.Node<Character, V, Node<V>> {
+	@Nonnull
+	@Override
+	public Node<V> getRoot() {
+		return this.root;
+	}
+
+	@Override
+	@Nonnull
+	public StringMultiTrie.View<V, Node<V>> getView() {
+		return this.view;
+	}
+
+	public static final class Node<V> extends MutableMapNode<Character, V, Node<V>> {
+		@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+		private final Optional<Node<V>> parent;
+
+		private final BiMap<Character, Node<V>> children;
+		private final Collection<V> leaves;
+
 		private final UnaryOperator<Node<V>> childFactory;
 
-		// private final View view = new View();
+		private final NodeView<Character, V> view = new NodeView<>(this);
 
 		private Node(
-				@Nullable Node<V> parent, BiMap<Character, Node<V>> children, Collection<V> leaves,
+				@Nullable Node<V> parent,
+				BiMap<Character, Node<V>> children, Collection<V> leaves,
 				UnaryOperator<Node<V>> childFactory
 		) {
-			super(parent, children, leaves);
-
+			this.parent = Optional.ofNullable(parent);
+			this.children = children;
+			this.leaves = leaves;
 			this.childFactory = childFactory;
 		}
 
@@ -55,10 +85,38 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Node<V
 			return this;
 		}
 
+		@Override
+		protected Optional<Node<V>> getParent() {
+			return this.parent;
+		}
+
 		@Nonnull
 		@Override
 		protected Node<V> createChild() {
 			return this.childFactory.apply(this);
+		}
+
+		@Override
+		protected Collection<V> getLeaves() {
+			return this.leaves;
+		}
+
+		@Override
+		@Nonnull
+		protected BiMap<Character, Node<V>> getChildren() {
+			return this.children;
+		}
+
+		@Override
+		public MultiTrie.Node<Character, V> getView() {
+			return this.view;
+		}
+	}
+
+	private class View extends StringMultiTrie.View<V, Node<V>> {
+		@Override
+		protected StringMultiTrie<V, CompositeStringMultiTrie.Node<V>> getViewed() {
+			return CompositeStringMultiTrie.this;
 		}
 	}
 }
