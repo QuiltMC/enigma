@@ -155,7 +155,7 @@ public class CompositeBiMap<K, V> implements BiMap<K, V> {
 	}
 
 	private class LiveSet<E> implements Set<E> {
-		private static UnsupportedOperationException createAddException(String elementName) {
+		private static UnsupportedOperationException addExceptionOf(String elementName) {
 			return new UnsupportedOperationException("Cannot add to map via " + elementName + " set!");
 		}
 
@@ -210,7 +210,7 @@ public class CompositeBiMap<K, V> implements BiMap<K, V> {
 
 		@Override
 		public boolean add(E element) {
-			throw createAddException(this.elementName);
+			throw addExceptionOf(this.elementName);
 		}
 
 		@Override
@@ -231,7 +231,7 @@ public class CompositeBiMap<K, V> implements BiMap<K, V> {
 
 		@Override
 		public boolean addAll(@Nonnull Collection<? extends E> collection) {
-			throw createAddException(this.elementName);
+			throw addExceptionOf(this.elementName);
 		}
 
 		@Override
