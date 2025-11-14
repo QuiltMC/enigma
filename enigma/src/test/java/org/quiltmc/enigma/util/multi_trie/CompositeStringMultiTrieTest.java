@@ -24,7 +24,7 @@ public class CompositeStringMultiTrieTest {
 
 	// test key-by-key put's orphan logic
 	@Test
-	void testPutKeyByKeyRootDown() {
+	void testPutKeyByKeyFromRoot() {
 		final CompositeStringMultiTrie<Integer> trie = CompositeStringMultiTrie.createHashed();
 
 		for (int depth = 0; depth < KEY_BY_KEY_SUBJECT.length(); depth++) {
@@ -41,8 +41,9 @@ public class CompositeStringMultiTrieTest {
 		}
 	}
 
+	// tests that key-by-key put's orphan logic propagates from stems to the root
 	@Test
-	void testPutKeyByKeyStemUp() {
+	void testPutKeyByKeyFromStems() {
 		final CompositeStringMultiTrie<Integer> trie = CompositeStringMultiTrie.createHashed();
 
 		for (int depth = KEY_BY_KEY_SUBJECT.length() - 1; depth >= 0; depth--) {
