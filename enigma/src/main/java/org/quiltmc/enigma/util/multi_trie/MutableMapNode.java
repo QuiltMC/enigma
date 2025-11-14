@@ -74,13 +74,33 @@ public abstract class MutableMapNode<K, V, B extends MutableMapNode.Branch<K, V,
 	/**
 	 * Removes the branch node associated with the passed {@code key} if that node is empty.
 	 *
-	 * @implNote This should only be passed one of <em>this</em> node's branches.
+	 * @implNote This should only be passed one of <em>this</em> node's {@linkplain #getBranches() branches}.
 	 *
 	 * @return {@code true} if the branch was pruned, or {@code false otherwise}
 	 */
 	protected boolean pruneIfEmpty(Branch<K, V, B> branch) {
 		if (branch.isEmpty()) {
 			this.getBranches().remove(branch.getKey());
+
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * If the passed {@code branch} is an {@linkplain #orphans orphan},
+	 * removes it from {@linkplain #orphans} and puts it in {@linkplain #getBranches() branches}.
+	 *
+	 * @implNote only non-empty branches should be passed to this method;
+	 * it's called when a node may have changed from empty to non-empty
+	 *
+	 * @return {@code true} if the passed {@code branch} was an orphan, or {@code false} otherwise
+	 */
+	protected boolean tryAdopt(Branch<K, V, B> branch) {
+		final boolean wasOrphan = this.orphans.remove(branch.getKey()) != null;
+		if (wasOrphan) {
+			this.getBranches().put(branch.getKey(), branch.getSelf());
 
 			return true;
 		} else {
@@ -128,10 +148,7 @@ public abstract class MutableMapNode<K, V, B extends MutableMapNode.Branch<K, V,
 		@Override
 		public void put(V value) {
 			super.put(value);
-			final boolean wasOrphan = this.getParent().orphans.remove(this.getKey()) != null;
-			if (wasOrphan) {
-				this.getParent().getBranches().put(this.getKey(), this.getSelf());
-			}
+			this.getParent().tryAdopt(this);
 		}
 
 		@Override
@@ -160,6 +177,17 @@ public abstract class MutableMapNode<K, V, B extends MutableMapNode.Branch<K, V,
 		protected boolean pruneIfEmpty(Branch<K, V, B> branch) {
 			if (super.pruneIfEmpty(branch)) {
 				this.getParent().pruneIfEmpty(this);
+
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+		@Override
+		protected boolean tryAdopt(Branch<K, V, B> branch) {
+			if (super.tryAdopt(branch)) {
+				this.getParent().tryAdopt(this);
 
 				return true;
 			} else {

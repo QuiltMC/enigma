@@ -15,11 +15,64 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// TODO key-by-key access tests
 public class CompositeStringMultiTrieTest {
 	private static final String VALUES = "values";
 	private static final String LEAVES = "leaves";
 	private static final String BRANCHES = "branches";
+
+	private static final String KEY_BY_KEY_SUBJECT = "key-by-key subject";
+
+	// test key-by-key put's orphan logic
+	@Test
+	void testPutKeyByKeyRootDown() {
+		final CompositeStringMultiTrie<Integer> trie = CompositeStringMultiTrie.createHashed();
+
+		for (int depth = 0; depth < KEY_BY_KEY_SUBJECT.length(); depth++) {
+			MutableMapNode<Character, Integer, ?> node = trie.getRoot();
+			for (int iKey = 0; iKey <= depth; iKey++) {
+				node = node.next(KEY_BY_KEY_SUBJECT.charAt(iKey));
+			}
+
+			node.put(depth);
+
+			assertOneLeaf(node);
+
+			assertTrieSize(trie, depth + 1);
+		}
+	}
+
+	@Test
+	void testPutKeyByKeyStemUp() {
+		final CompositeStringMultiTrie<Integer> trie = CompositeStringMultiTrie.createHashed();
+
+		for (int depth = KEY_BY_KEY_SUBJECT.length() - 1; depth >= 0; depth--) {
+			MutableMapNode<Character, Integer, ?> node = trie.getRoot();
+			for (int iKey = 0; iKey <= depth; iKey++) {
+				node = node.next(KEY_BY_KEY_SUBJECT.charAt(iKey));
+			}
+
+			node.put(depth);
+
+			assertOneLeaf(node);
+
+			assertTrieSize(trie, KEY_BY_KEY_SUBJECT.length() - depth);
+		}
+	}
+
+	private static void assertOneLeaf(MutableMapNode<Character, Integer, ?> node) {
+		assertEquals(
+			1, node.streamLeaves().count(),
+			() -> "Expected node to have only one leaf, but had the following: " + node.streamLeaves().toList()
+		);
+	}
+
+	private static void assertTrieSize(CompositeStringMultiTrie<Integer> trie, int expectedSize) {
+		assertEquals(
+			expectedSize, trie.getSize(),
+			() -> "Expected node to have %s values, but had the following: %s"
+				.formatted(expectedSize, trie.getRoot().streamValues().toList())
+		);
+	}
 
 	@Test
 	void testPut() {
