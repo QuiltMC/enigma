@@ -6,13 +6,13 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
- * A {@link MultiTrie.Node} that stores child nodes in a {@link Map}.
+ * A {@link MultiTrie.Node} that stores branch nodes in a {@link Map}.
  *
  * @param <K> the type of keys
  * @param <V> the type of values
- * @param <N> the type of this node
+ * @param <B> the type of branch nodes
  */
-public abstract class MapNode<K, V, N extends MapNode<K, V, N>> implements MultiTrie.Node<K, V> {
+public abstract class MapNode<K, V, B extends MapNode<K, V, B>> implements MultiTrie.Node<K, V> {
 	@Override
 	public Stream<V> streamStems() {
 		return this.getBranches().values().stream().flatMap(MapNode::streamValues);
@@ -24,5 +24,5 @@ public abstract class MapNode<K, V, N extends MapNode<K, V, N>> implements Multi
 	}
 
 	@Pure
-	protected abstract Map<K, N> getBranches();
+	protected abstract Map<K, B> getBranches();
 }

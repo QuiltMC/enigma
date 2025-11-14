@@ -64,7 +64,7 @@ public abstract class StringMultiTrie<V, B extends MutableMapNode.Branch<Charact
 
 		MutableMapNode<Character, V, B> node = this.getRoot();
 		for (int i = 0; i < string.length(); i++) {
-			node = node.nextImpl(string.charAt(i));
+			node = node.nextBranch(string.charAt(i));
 
 			if (node == null) {
 				return false;
@@ -79,7 +79,7 @@ public abstract class StringMultiTrie<V, B extends MutableMapNode.Branch<Charact
 
 		MutableMapNode<Character, V, B> node = this.getRoot();
 		for (int i = 0; i < string.length(); i++) {
-			node = node.nextImpl(string.charAt(i));
+			node = node.nextBranch(string.charAt(i));
 
 			if (node == null) {
 				return false;

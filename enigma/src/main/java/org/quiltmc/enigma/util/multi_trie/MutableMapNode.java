@@ -10,9 +10,10 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
- * A {@link MutableMultiTrie.Node} that stores child nodes in a {@link Map}.
+ * A {@link MutableMultiTrie.Node} that stores branch nodes in a {@link Map}.
  *
- * <p> Nodes are aware of their keys so that they can manage their presence in maps.
+ * <p> Branch nodes are aware of their keys so that they can help their parents manage their presence in maps for
+ * trimming of empty nodes and adoption of orphan nodes.
  *
  * @param <K> the type of keys
  * @param <V> the type of values
@@ -26,7 +27,9 @@ public abstract class MutableMapNode<K, V, B extends MutableMapNode.Branch<K, V,
 	 *
 	 * <p> They may be moved to {@link #getBranches()} when they become non-empty.
 	 *
-	 * @implNote Using a map with weak value references prevents memory leaks when users look up a sequence with no
+	 * @implNote Keeping orphans in this map ensures there is only ever one node corresponding to a given sequence,
+	 * avoiding any need to merge multiple nodes corresponding to the same sequence.<br>
+	 * Using a map with weak value references prevents memory leaks when users look up a sequence with no
 	 * values and don't put any value in it.
 	 */
 	final Map<K, B> orphans = new MapMaker().weakValues().makeMap();
@@ -38,12 +41,12 @@ public abstract class MutableMapNode<K, V, B extends MutableMapNode.Branch<K, V,
 
 	@Override
 	public B next(K key) {
-		final B next = this.nextImpl(Utils.requireNonNull(key, "key"));
-		return next == null ? this.orphans.computeIfAbsent(key, ignored -> this.createBranch(key)) : next;
+		final B next = this.nextBranch(Utils.requireNonNull(key, "key"));
+		return next == null ? this.orphans.computeIfAbsent(key, this::createBranch) : next;
 	}
 
 	@Nullable
-	protected B nextImpl(K key) {
+	protected B nextBranch(K key) {
 		return this.getBranches().get(key);
 	}
 
@@ -68,9 +71,16 @@ public abstract class MutableMapNode<K, V, B extends MutableMapNode.Branch<K, V,
 		}
 	}
 
-	protected boolean pruneIfEmpty(K key) {
-		if (this.getBranches().get(key).isEmpty()) {
-			this.getBranches().remove(key);
+	/**
+	 * Removes the branch node associated with the passed {@code key} if that node is empty.
+	 *
+	 * @implNote This should only be passed one of <em>this</em> node's branches.
+	 *
+	 * @return {@code true} if the branch was pruned, or {@code false otherwise}
+	 */
+	protected boolean pruneIfEmpty(Branch<K, V, B> branch) {
+		if (branch.isEmpty()) {
+			this.getBranches().remove(branch.getKey());
 
 			return true;
 		} else {
@@ -88,15 +98,24 @@ public abstract class MutableMapNode<K, V, B extends MutableMapNode.Branch<K, V,
 	protected abstract Collection<V> getLeaves();
 
 	/**
+	 * A non-root node.
+	 *
+	 * <p> Adds logic for managing its orphan status and propagating pruning upwards.
 	 *
 	 * @param <K> the type of keys
 	 * @param <V> the type of values
-	 * @param <B> the type of this node
+	 * @param <B> the type of this branch and of this branch's branches
 	 */
 	protected abstract static class Branch<K, V, B extends Branch<K, V, B>> extends MutableMapNode<K, V, B> {
+		/**
+		 * @return this branch's parent; may or may not be another branch node
+		 */
 		@Pure
 		protected abstract MutableMapNode<K, V, B> getParent();
 
+		/**
+		 * @return the last key in this branch's sequence; the key this branch's parent stores it under
+		 */
 		@Pure
 		protected abstract K getKey();
 
@@ -118,7 +137,7 @@ public abstract class MutableMapNode<K, V, B extends MutableMapNode.Branch<K, V,
 		@Override
 		public boolean removeLeaf(V value) {
 			if (this.getLeaves().remove(value)) {
-				this.getParent().pruneIfEmpty(this.getKey());
+				this.getParent().pruneIfEmpty(this);
 
 				return true;
 			} else {
@@ -129,7 +148,7 @@ public abstract class MutableMapNode<K, V, B extends MutableMapNode.Branch<K, V,
 		@Override
 		public boolean clearLeaves() {
 			if (super.clearLeaves()) {
-				this.getParent().pruneIfEmpty(this.getKey());
+				this.getParent().pruneIfEmpty(this);
 
 				return true;
 			} else {
@@ -138,9 +157,9 @@ public abstract class MutableMapNode<K, V, B extends MutableMapNode.Branch<K, V,
 		}
 
 		@Override
-		protected boolean pruneIfEmpty(K key) {
-			if (super.pruneIfEmpty(key)) {
-				this.getParent().pruneIfEmpty(this.getKey());
+		protected boolean pruneIfEmpty(Branch<K, V, B> branch) {
+			if (super.pruneIfEmpty(branch)) {
+				this.getParent().pruneIfEmpty(this);
 
 				return true;
 			} else {
