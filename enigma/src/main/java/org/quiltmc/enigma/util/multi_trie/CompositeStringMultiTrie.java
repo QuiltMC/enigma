@@ -6,14 +6,41 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.function.Supplier;
 
+/**
+ * A {@link StringMultiTrie} that allows customization of nodes' backing data structures.
+ *
+ * @param <V> the type of values
+ *
+ * @see #of(Supplier, Supplier)
+ * @see #createHashed()
+ */
 public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, CompositeStringMultiTrie.Branch<V>> {
 	private final Root<V> root;
 	private final View view = new View();
 
+	/**
+	 * Creates a trie with nodes whose branches are held in {@link HashMap}s
+	 * and whose leaves are held in {@link HashSet}s.
+	 *
+	 * @param <V> the type of values stored in the created trie
+	 *
+	 * @see #of(Supplier, Supplier)
+	 */
 	public static <V> CompositeStringMultiTrie<V> createHashed() {
 		return of(HashMap::new, HashSet::new);
 	}
 
+	/**
+	 * Creates a trie with nodes whose branches are held in maps created by the passed {@code branchesFactory}
+	 * and whose leaves are held in collections created by the passed {@code leavesFactory}.
+	 *
+	 * @param branchesFactory a pure method that creates a new, empty {@link Map} in which to hold branch nodes
+	 * @param leavesFactory   a pure method that create a new, empty {@link Collection} in which to hold leaf values
+	 *
+	 * @param <V> the type of values stored in the created trie
+	 *
+	 * @see #createHashed()
+	 */
 	public static <V> CompositeStringMultiTrie<V> of(
 			Supplier<Map<Character, Branch<V>>> branchesFactory,
 			Supplier<Collection<V>> leavesFactory
