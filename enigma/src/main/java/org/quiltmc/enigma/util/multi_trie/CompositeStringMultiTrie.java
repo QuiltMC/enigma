@@ -54,7 +54,7 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Compos
 
 		private final CompositeStringMultiTrie.Branch.Factory<V> branchFactory;
 
-		private final NodeView<Character, V> view = new NodeView<>(this);
+		private final View<Character, V> view = new View<>(this);
 
 		private Root(
 				Map<Character, CompositeStringMultiTrie.Branch<V>> branches, Collection<V> leaves,
@@ -95,7 +95,7 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Compos
 
 		private final CompositeStringMultiTrie.Branch.Factory<V> branchFactory;
 
-		private final MultiTrie.Node<Character, V> view = new NodeView<>(this);
+		private final MultiTrie.Node<Character, V> view = new View<>(this);
 
 		private Branch(
 				MutableMapNode<Character, V, CompositeStringMultiTrie.Branch<V>> parent, char key,
