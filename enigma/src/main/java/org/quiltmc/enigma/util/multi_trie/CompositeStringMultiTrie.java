@@ -1,18 +1,13 @@
 package org.quiltmc.enigma.util.multi_trie;
 
-import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie.Node;
-
-import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
-public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Node<V>> {
-	private final Node<V> root;
+public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, CompositeStringMultiTrie.Branch<V>> {
+	private final Root<V> root;
 	private final View view = new View();
 
 	public static <V> CompositeStringMultiTrie<V> createHashed() {
@@ -20,89 +15,59 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Node<V
 	}
 
 	public static <V> CompositeStringMultiTrie<V> of(
-			Supplier<Map<Character, Node<V>>> childrenFactory,
+			Supplier<Map<Character, Branch<V>>> branchesFactory,
 			Supplier<Collection<V>> leavesFactory
 	) {
-		return new CompositeStringMultiTrie<>(childrenFactory, leavesFactory);
+		return new CompositeStringMultiTrie<>(branchesFactory, leavesFactory);
 	}
 
-	private static <V> Node<V> createRoot(
-			Supplier<Map<Character, Node<V>>> childrenFactory,
+	private static <V> Root<V> createRoot(
+			Supplier<Map<Character, Branch<V>>> branchesFactory,
 			Supplier<Collection<V>> leavesFactory
 	) {
-		return new Node<>(
-				Optional.empty(), childrenFactory.get(), leavesFactory.get(),
-				selfAccess -> createNode(selfAccess, childrenFactory, leavesFactory)
-		);
-	}
-
-	private static <V> Node<V> createNode(
-			MutableMapNode.ParentAccess<Node<V>, Character> parentAccess,
-			Supplier<Map<Character, Node<V>>> childrenFactory,
-			Supplier<Collection<V>> leavesFactory
-	) {
-		return new Node<>(
-				Optional.of(parentAccess), childrenFactory.get(), leavesFactory.get(),
-				selfAccess -> createNode(selfAccess, childrenFactory, leavesFactory)
+		return new Root<>(
+				branchesFactory.get(), leavesFactory.get(),
+				new Branch.Factory<>(leavesFactory, branchesFactory)
 		);
 	}
 
 	private CompositeStringMultiTrie(
-			Supplier<Map<Character, Node<V>>> childrenFactory,
+			Supplier<Map<Character, Branch<V>>> childrenFactory,
 			Supplier<Collection<V>> leavesFactory
 	) {
 		this.root = createRoot(childrenFactory, leavesFactory);
 	}
 
-	@Nonnull
 	@Override
-	public Node<V> getRoot() {
+	public MutableMapNode<Character, V, Branch<V>> getRoot() {
 		return this.root;
 	}
 
 	@Override
-	@Nonnull
-	public StringMultiTrie.View<V, Node<V>> getView() {
+	public StringMultiTrie.View<V> getView() {
 		return this.view;
 	}
 
-	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-	public static final class Node<V> extends MutableMapNode<Character, V, Node<V>> {
-		private final Optional<ParentAccess<Node<V>, Character>> parentAccess;
-
-		private final Map<Character, Node<V>> children;
+	private static final class Root<V> extends MutableMapNode<Character, V, Branch<V>> {
 		private final Collection<V> leaves;
+		private final Map<Character, CompositeStringMultiTrie.Branch<V>> branches;
 
-		private final Function<ParentAccess<Node<V>, Character>, Node<V>> childFactory;
+		private final CompositeStringMultiTrie.Branch.Factory<V> branchFactory;
 
 		private final NodeView<Character, V> view = new NodeView<>(this);
 
-		private Node(
-				Optional<ParentAccess<Node<V>, Character>> parentAccess,
-				Map<Character, Node<V>> children, Collection<V> leaves,
-				Function<ParentAccess<Node<V>, Character>, Node<V>> childFactory
+		private Root(
+				Map<Character, CompositeStringMultiTrie.Branch<V>> branches, Collection<V> leaves,
+				CompositeStringMultiTrie.Branch.Factory<V> branchFactory
 		) {
-			this.parentAccess = parentAccess;
-			this.children = children;
 			this.leaves = leaves;
-			this.childFactory = childFactory;
-		}
-
-		@Nonnull
-		@Override
-		protected Node<V> getSelf() {
-			return this;
+			this.branches = branches;
+			this.branchFactory = branchFactory;
 		}
 
 		@Override
-		protected Optional<ParentAccess<Node<V>, Character>> getParentAccess() {
-			return this.parentAccess;
-		}
-
-		@Nonnull
-		@Override
-		protected Node<V> createChildImpl(ParentAccess<Node<V>, Character> parentAccess) {
-			return this.childFactory.apply(parentAccess);
+		protected CompositeStringMultiTrie.Branch<V> createBranch(Character key) {
+			return this.branchFactory.create(key, this);
 		}
 
 		@Override
@@ -111,9 +76,8 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Node<V
 		}
 
 		@Override
-		@Nonnull
-		protected Map<Character, Node<V>> getChildren() {
-			return this.children;
+		protected Map<Character, CompositeStringMultiTrie.Branch<V>> getBranches() {
+			return this.branches;
 		}
 
 		@Override
@@ -122,9 +86,83 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Node<V
 		}
 	}
 
-	private class View extends StringMultiTrie.View<V, Node<V>> {
+	public static final class Branch<V> extends MutableMapNode.Branch<Character, V, Branch<V>> {
+		private final MutableMapNode<Character, V, CompositeStringMultiTrie.Branch<V>> parent;
+		private final Character key;
+
+		private final Collection<V> leaves;
+		private final Map<Character, CompositeStringMultiTrie.Branch<V>> branches;
+
+		private final CompositeStringMultiTrie.Branch.Factory<V> branchFactory;
+
+		private final MultiTrie.Node<Character, V> view = new NodeView<>(this);
+
+		private Branch(
+				MutableMapNode<Character, V, CompositeStringMultiTrie.Branch<V>> parent, char key,
+				Collection<V> leaves, Map<Character, CompositeStringMultiTrie.Branch<V>> branches,
+				CompositeStringMultiTrie.Branch.Factory<V> branchFactory
+		) {
+			this.parent = parent;
+			this.key = key;
+
+			this.leaves = leaves;
+			this.branches = branches;
+			this.branchFactory = branchFactory;
+		}
+
 		@Override
-		protected StringMultiTrie<V, CompositeStringMultiTrie.Node<V>> getViewed() {
+		protected MutableMapNode<Character, V, CompositeStringMultiTrie.Branch<V>> getParent() {
+			return this.parent;
+		}
+
+		@Override
+		protected Character getKey() {
+			return this.key;
+		}
+
+		@Override
+		protected CompositeStringMultiTrie.Branch<V> getSelf() {
+			return this;
+		}
+
+		@Override
+		protected CompositeStringMultiTrie.Branch<V> createBranch(Character key) {
+			return this.branchFactory.create(key, this);
+		}
+
+		@Override
+		protected Collection<V> getLeaves() {
+			return this.leaves;
+		}
+
+		@Override
+		protected Map<Character, CompositeStringMultiTrie.Branch<V>> getBranches() {
+			return this.branches;
+		}
+
+		@Override
+		public MultiTrie.Node<Character, V> getView() {
+			return this.view;
+		}
+
+		private record Factory<V>(
+				Supplier<Collection<V>> leavesFactory,
+				Supplier<Map<Character, CompositeStringMultiTrie.Branch<V>>> branchesFactory
+		) {
+			CompositeStringMultiTrie.Branch<V> create(
+					char key, MutableMapNode<Character, V, CompositeStringMultiTrie.Branch<V>> parent
+			) {
+				return new CompositeStringMultiTrie.Branch<>(
+						parent, key, this.leavesFactory.get(), this.branchesFactory.get(),
+						new CompositeStringMultiTrie.Branch.Factory<>(this.leavesFactory, this.branchesFactory)
+				);
+			}
+		}
+	}
+
+	private class View extends StringMultiTrie.View<V> {
+		@Override
+		protected StringMultiTrie<V, ?> getViewed() {
 			return CompositeStringMultiTrie.this;
 		}
 	}

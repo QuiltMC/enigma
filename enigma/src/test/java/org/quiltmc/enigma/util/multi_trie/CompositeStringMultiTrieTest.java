@@ -39,7 +39,7 @@ public class CompositeStringMultiTrieTest {
 			assertUnorderedContentsForPrefix(
 				prefix, BRANCHES,
 				associations.stream().filter(association -> association.isBranchOf(prefix)),
-				node.streamBranches()
+				node.streamStems()
 			);
 		});
 	}
@@ -66,7 +66,7 @@ public class CompositeStringMultiTrieTest {
 			assertUnorderedContentsForPrefix(
 				prefix, BRANCHES,
 				MultiAssociation.streamWith(associations.stream().filter(a -> a.isBranchOf(prefix))),
-				node.streamBranches()
+				node.streamStems()
 			);
 		});
 	}
@@ -139,7 +139,7 @@ public class CompositeStringMultiTrieTest {
 			() ->"Expected trie to be empty, but had it contents: " + trie.getRoot().streamValues().toList()
 		);
 
-		final Map<Character, ? extends Node<Character, ?>> rootChildren = trie.getRoot().getChildren();
+		final Map<Character, ? extends Node<Character, ?>> rootChildren = trie.getRoot().getBranches();
 		assertTrue(
 			rootChildren.isEmpty(),
 			() -> "Expected root's children to be pruned, but it had children: " + rootChildren

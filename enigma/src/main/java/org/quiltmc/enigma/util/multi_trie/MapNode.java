@@ -2,7 +2,6 @@ package org.quiltmc.enigma.util.multi_trie;
 
 import org.checkerframework.dataflow.qual.Pure;
 
-import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -15,16 +14,15 @@ import java.util.stream.Stream;
  */
 public abstract class MapNode<K, V, N extends MapNode<K, V, N>> implements MultiTrie.Node<K, V> {
 	@Override
-	public Stream<V> streamBranches() {
-		return this.getChildren().values().stream().flatMap(MapNode::streamValues);
+	public Stream<V> streamStems() {
+		return this.getBranches().values().stream().flatMap(MapNode::streamValues);
 	}
 
 	@Override
 	public Stream<V> streamValues() {
-		return Stream.concat(this.streamLeaves(), this.streamBranches());
+		return Stream.concat(this.streamLeaves(), this.streamStems());
 	}
 
-	@Nonnull
 	@Pure
-	protected abstract Map<K, N> getChildren();
+	protected abstract Map<K, N> getBranches();
 }

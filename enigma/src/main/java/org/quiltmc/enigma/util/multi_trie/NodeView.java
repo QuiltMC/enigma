@@ -16,8 +16,8 @@ public final class NodeView<K, V> implements MultiTrie.Node<K, V> {
 	}
 
 	@Override
-	public Stream<V> streamBranches() {
-		return this.viewed.streamBranches();
+	public Stream<V> streamStems() {
+		return this.viewed.streamStems();
 	}
 
 	@Override

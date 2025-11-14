@@ -1,19 +1,14 @@
 package org.quiltmc.enigma.util.multi_trie;
 
-import org.quiltmc.enigma.util.multi_trie.MutableMultiTrie.Node;
-
-import javax.annotation.Nonnull;
-
 /**
  * A multi-trie that allows modification which can also provide unmodifiable views of its contents.
  *
  * @param <K> the type of keys
  * @param <V> the type of values
  */
-public interface MutableMultiTrie<K, V, N extends Node<K, V>> extends MultiTrie<K, V> {
-	@Nonnull
+public interface MutableMultiTrie<K, V> extends MultiTrie<K, V> {
 	@Override
-	N getRoot();
+	MutableMultiTrie.Node<K, V> getRoot();
 
 	/**
 	 * @return a live, unmodifiable view of this trie
@@ -28,7 +23,6 @@ public interface MutableMultiTrie<K, V, N extends Node<K, V>> extends MultiTrie<
 	 */
 	interface Node<K, V> extends MultiTrie.Node<K, V> {
 		@Override
-		@Nonnull
 		Node<K, V> next(K key);
 
 		/**
@@ -41,14 +35,14 @@ public interface MutableMultiTrie<K, V, N extends Node<K, V>> extends MultiTrie<
 		 *
 		 * @return {@code true} if a value was removed, or {@code false} otherwise
 		 */
-		boolean remove(V value);
+		boolean removeLeaf(V value);
 
 		/**
 		 * Removes all leaves from this node.
 		 *
 		 * @return {@code true} if any values were removed, or {@code false} otherwise
 		 */
-		boolean removeAll();
+		boolean clearLeaves();
 
 		/**
 		 * @return a live, unmodifiable view of this node

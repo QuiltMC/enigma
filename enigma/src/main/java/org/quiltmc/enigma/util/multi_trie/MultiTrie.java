@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.util.multi_trie;
 
-import javax.annotation.Nonnull;
 import java.util.stream.Stream;
 
 /**
@@ -17,7 +16,6 @@ import java.util.stream.Stream;
  * @param <V> the type of values
  */
 public interface MultiTrie<K, V> {
-	@Nonnull
 	Node<K, V> getRoot();
 
 	default long getSize() {
@@ -46,7 +44,7 @@ public interface MultiTrie<K, V> {
 		 * i.e. the prefix this node is associated with is <em>not</em>
 		 * the whole sequence the values are associated with
 		 */
-		Stream<V> streamBranches();
+		Stream<V> streamStems();
 
 		/**
 		 * @return a {@link Stream} containing all values associated with the prefix this node is associated with
@@ -61,7 +59,6 @@ public interface MultiTrie<K, V> {
 			return this.getSize() == 0;
 		}
 
-		@Nonnull
 		Node<K, V> next(K key);
 	}
 }
