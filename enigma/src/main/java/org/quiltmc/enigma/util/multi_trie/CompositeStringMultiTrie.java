@@ -48,21 +48,14 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Compos
 		return new CompositeStringMultiTrie<>(branchesFactory, leavesFactory);
 	}
 
-	private static <V> Root<V> createRoot(
-			Supplier<Map<Character, Branch<V>>> branchesFactory,
-			Supplier<Collection<V>> leavesFactory
-	) {
-		return new Root<>(
-				branchesFactory.get(), leavesFactory.get(),
-				new Branch.Factory<>(leavesFactory, branchesFactory)
-		);
-	}
-
 	private CompositeStringMultiTrie(
 			Supplier<Map<Character, Branch<V>>> childrenFactory,
 			Supplier<Collection<V>> leavesFactory
 	) {
-		this.root = createRoot(childrenFactory, leavesFactory);
+		this.root = new Root<>(
+			childrenFactory.get(), leavesFactory.get(),
+			new Branch.Factory<>(leavesFactory, childrenFactory)
+		);
 	}
 
 	@Override
@@ -181,7 +174,7 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Compos
 			) {
 				return new CompositeStringMultiTrie.Branch<>(
 						parent, key, this.leavesFactory.get(), this.branchesFactory.get(),
-						new CompositeStringMultiTrie.Branch.Factory<>(this.leavesFactory, this.branchesFactory)
+						this
 				);
 			}
 		}
