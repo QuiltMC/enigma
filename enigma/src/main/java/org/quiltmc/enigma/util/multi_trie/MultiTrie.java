@@ -5,23 +5,31 @@ import java.util.stream.Stream;
 /**
  * A multi-trie (or prefix tree) associates a sequence of keys with one or more values.
  *
- * <p> Values can be looked up by a prefix of their key sequence; all values associated with a sequence beginning with
- * the prefix will be returned.<br>
+ * <p> Values can be looked up by a prefix of their key sequence; a {@link Node} holding all values associated with a
+ * sequence beginning with the prefix will be returned.<br>
  * The prefix is passed key-by-key to {@link Node#next} starting with {@link #getRoot}.
- *
- * @implSpec {@code S} sequence types should represent an ordered sequence of keys of type {@code K};
- * sequences that represent the same sequence of keys should be equivalent
  *
  * @param <K> the type of keys
  * @param <V> the type of values
  */
 public interface MultiTrie<K, V> {
+	/**
+	 * The root is the node associated with the empty sequence.
+	 *
+	 * <p> Other nodes can be looked up via the root.
+	 */
 	Node<K, V> getRoot();
 
+	/**
+	 * @return the total number of values in this trie
+	 */
 	default long getSize() {
 		return this.getRoot().getSize();
 	}
 
+	/**
+	 * @return {@code true} if this trie contains no values, or {@code false} otherwise
+	 */
 	default boolean isEmpty() {
 		return this.getSize() == 0;
 	}
@@ -51,14 +59,24 @@ public interface MultiTrie<K, V> {
 		 */
 		Stream<V> streamValues();
 
+		/**
+		 * @return the total number of {@linkplain #streamValues() values} associated with this node's prefix
+		 */
 		default long getSize() {
 			return this.streamValues().count();
 		}
 
+		/**
+		 * @return {@code true} if this node contains no {@linkplain #streamValues() values}, or {@code false} otherwise
+		 */
 		default boolean isEmpty() {
 			return this.getSize() == 0;
 		}
 
+		/**
+		 * @return the node associated with the sequence formed by appending the passed
+		 * {@code key} to this node's sequence
+		 */
 		Node<K, V> next(K key);
 	}
 }
