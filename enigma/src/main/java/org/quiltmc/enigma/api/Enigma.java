@@ -91,13 +91,13 @@ public class Enigma {
 	 * {@link EnigmaPlugin#supportsEnigmaVersion(Version)} implementations,
 	 * allowing plugins to 'remember' the version of Enigma they were built with.
 	 */
-	public static final int MINOR_VERSION = 6;
+	public static final int MINOR_VERSION = 7;
 	/**
 	 * A compile-time constant which compilers can inline in
 	 * {@link EnigmaPlugin#supportsEnigmaVersion(Version)} implementations,
 	 * allowing plugins to 'remember' the version of Enigma they were built with.
 	 */
-	public static final int PATCH_VERSION = 2;
+	public static final int PATCH_VERSION = 0;
 
 	private static final Version CURRENT_VERSION = new Version(MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION);
 
