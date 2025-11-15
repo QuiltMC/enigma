@@ -385,7 +385,7 @@ Blood, sweat, refactors, enhancements, tears, unit tests, bugfixes, blood, and m
         - allows searching for mappings using regular expressions. and normal expressions. as you desire
         - includes extensive options for filtering by types, access, names, and more
         - allows sorting by name, package, and depth
-    - added specification by name for command arguments (`parameter=value`) instead of positionally ([#280](https://github.com/QuiltMC/enigma/pull/280))
+    - added specification by name for command arguments (`parameter=value`) instead of by position ([#280](https://github.com/QuiltMC/enigma/pull/280))
         - the two can be mixed as long as all positional arguments come before named args
         - any argument can be specified either by name or position
         - this is necessary for the new search command which has an unfathomable FIFTEEN possible arguments
@@ -416,7 +416,7 @@ Blood, sweat, refactors, enhancements, tears, unit tests, bugfixes, blood, and m
         - the stats dialogue will default to the parameters for the icons, with changes made there being transient (except for the dialog-exclusive package filter)
     - added a GUI toggle for disabling/enabling icons
     - the tree will now update in real time as settings are changed
-- added indexing for parameters via `EntryIndex` ([#282](https://github.com/QuiltMC/enigma/pull/282))
+- added indexing for parameters via `EntryIndex` ([#282](https://github.com/QuiltMC/enigma/pull/282), [#298](https://github.com/QuiltMC/enigma/pull/298))
     - fixed wrong types occasionally being displayed in the editor panel
     - the editor panel will now show `<unknown>` for non-parameter entries in the LVT
 - added a search bar for the structure panel ([#266](https://github.com/QuiltMC/enigma/pull/266))
@@ -436,7 +436,7 @@ Blood, sweat, refactors, enhancements, tears, unit tests, bugfixes, blood, and m
     - added an option for allowing quick find to be persistent when the user clicks off
     - replaced the backend, eliminating some weirdness and making it more responsive
         - one weird part of the code down. 1000 to go
-    - fixed the dialog sometimes becoming detached from the editor and appearing outside the main window
+    - fixed the bar sometimes becoming detached from the editor and appearing outside the main window
     - fixed the first token clicked after opening the quick find dialog immediately navigating ([#270](https://github.com/QuiltMC/enigma/pull/270))
 - added navigation to method calls inside lambdas and static initializers ([#308](https://github.com/QuiltMC/enigma/pull/308))
     - uses parsing of the source code to obtain tokens for these calls, which can then be navigated via the editor
@@ -457,7 +457,7 @@ Blood, sweat, refactors, enhancements, tears, unit tests, bugfixes, blood, and m
         - your config will not automatically be migrated, make sure to update if you're using this option!
     - removed `main#features`
 - updated the navigator and fixed some issues ([#269](https://github.com/QuiltMC/enigma/pull/269), [#305](https://github.com/QuiltMC/enigma/pull/305))
-    - navigation is now relevant to the cursor instead of an invisibly stored position
+    - navigation is now relative to the cursor instead of an invisibly stored position
     - fixed the panel's count not updating properly when reloading mappings
     - fixed entries sometimes becoming improperly ordered when their types changed
     - fixed zero padding on label not always matching between index and total (`03/3` -> `03/03`)
