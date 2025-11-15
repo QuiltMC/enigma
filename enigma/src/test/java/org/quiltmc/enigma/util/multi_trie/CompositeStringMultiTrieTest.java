@@ -3,7 +3,9 @@ package org.quiltmc.enigma.util.multi_trie;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
 import org.quiltmc.enigma.util.multi_trie.MultiTrie.Node;
+import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.MutableCharacterNode;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,13 +24,36 @@ public class CompositeStringMultiTrieTest {
 
 	private static final String KEY_BY_KEY_SUBJECT = "key-by-key subject";
 
+	private static final String IGNORE_CASE_SUBJECT = "aBrAcAdAnIeL";
+
+	@SuppressWarnings("SameParameterValue")
+	private static String caseInverted(String string) {
+		final StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < string.length(); i++) {
+			final char c = string.charAt(i);
+
+			final char inverted;
+			if (Character.isLowerCase(c)) {
+				inverted = Character.toUpperCase(c);
+			} else if (Character.isUpperCase(c)) {
+				inverted = Character.toLowerCase(c);
+			} else {
+				inverted = c;
+			}
+
+			builder.append(inverted);
+		}
+
+		return builder.toString();
+	}
+
 	// test key-by-key put's orphan logic
 	@Test
 	void testPutKeyByKeyFromRoot() {
 		final CompositeStringMultiTrie<Integer> trie = CompositeStringMultiTrie.createHashed();
 
 		for (int depth = 0; depth < KEY_BY_KEY_SUBJECT.length(); depth++) {
-			MutableMapNode<Character, Integer, ?> node = trie.getRoot();
+			MutableCharacterNode<Integer, ?> node = trie.getRoot();
 			for (int iKey = 0; iKey <= depth; iKey++) {
 				node = node.next(KEY_BY_KEY_SUBJECT.charAt(iKey));
 			}
@@ -47,7 +72,7 @@ public class CompositeStringMultiTrieTest {
 		final CompositeStringMultiTrie<Integer> trie = CompositeStringMultiTrie.createHashed();
 
 		for (int depth = KEY_BY_KEY_SUBJECT.length() - 1; depth >= 0; depth--) {
-			MutableMapNode<Character, Integer, ?> node = trie.getRoot();
+			MutableCharacterNode<Integer, ?> node = trie.getRoot();
 			for (int iKey = 0; iKey <= depth; iKey++) {
 				node = node.next(KEY_BY_KEY_SUBJECT.charAt(iKey));
 			}
@@ -60,7 +85,7 @@ public class CompositeStringMultiTrieTest {
 		}
 	}
 
-	private static void assertOneLeaf(MutableMapNode<Character, Integer, ?> node) {
+	private static void assertOneLeaf(MutableCharacterNode<?, ?> node) {
 		assertEquals(
 			1, node.streamLeaves().count(),
 			() -> "Expected node to have only one leaf, but had the following: " + node.streamLeaves().toList()
@@ -208,6 +233,47 @@ public class CompositeStringMultiTrieTest {
 			actual.toList(),
 			containsInAnyOrder(expected.toArray())
 		);
+	}
+
+	@Test
+	void testNextIgnoreCase() {
+		final CompositeStringMultiTrie<String> trie = CompositeStringMultiTrie.createHashed();
+
+		trie.put(IGNORE_CASE_SUBJECT, IGNORE_CASE_SUBJECT);
+
+		final String invertedSubject = caseInverted(IGNORE_CASE_SUBJECT);
+		MutableCharacterNode<String, ?> node = trie.getRoot();
+		for (int i = 0; i < invertedSubject.length(); i++) {
+			node = node.nextIgnoreCase(invertedSubject.charAt(i));
+
+			assertOneValue(node);
+		}
+
+		assertOneLeaf(node);
+	}
+
+	private static void assertOneValue(MutableCharacterNode<String, ?> node) {
+		assertEquals(
+			1, node.getSize(),
+			"Expected node to have only one value, but had the following: " + node.streamValues().toList()
+		);
+	}
+
+	@Test
+	void testGetIgnoreCase() {
+		final CompositeStringMultiTrie<String> trie = CompositeStringMultiTrie.createHashed();
+
+		trie.put(IGNORE_CASE_SUBJECT, IGNORE_CASE_SUBJECT);
+
+		final String invertedSubject = caseInverted(IGNORE_CASE_SUBJECT);
+
+		final MutableCharacterNode<String, ?> node = trie.getIgnoreCase(invertedSubject);
+
+		assertOneValue(node);
+
+		node.streamLeaves()
+			.findAny()
+			.orElseThrow(() -> new AssertionFailedError("Expected node to have a leaf, but had none!"));
 	}
 
 	record Association(String key) {
