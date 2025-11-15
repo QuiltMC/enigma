@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -203,5 +204,16 @@ public class Utils {
 		} else {
 			return value;
 		}
+	}
+
+	@SafeVarargs
+	public static <T> Optional<T> findFirstNonNull(T... values) {
+		for (final T value : values) {
+			if (value != null) {
+				return Optional.of(value);
+			}
+		}
+
+		return Optional.empty();
 	}
 }

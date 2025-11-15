@@ -4,7 +4,7 @@ import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JMenuItem;
@@ -12,7 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-public class OpenRecentMenu extends AbstractEnigmaMenu {
+public class OpenRecentMenu extends AbstractSearchableEnigmaMenu {
 	protected OpenRecentMenu(Gui gui) {
 		super(gui);
 	}

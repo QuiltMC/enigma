@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.element.menu_bar.view;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.ButtonGroup;
@@ -13,7 +13,7 @@ import java.util.Map;
 
 import static org.quiltmc.enigma.gui.NotificationManager.ServerNotificationLevel;
 
-public class NotificationsMenu extends AbstractEnigmaMenu {
+public class NotificationsMenu extends AbstractSearchableEnigmaMenu {
 	private final Map<ServerNotificationLevel, JRadioButtonMenuItem> buttons = new HashMap<>();
 
 	public NotificationsMenu(Gui gui) {

@@ -4,7 +4,7 @@ import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.ChangeDialog;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
 
@@ -17,7 +17,7 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 
-public class ScaleMenu extends AbstractEnigmaMenu {
+public class ScaleMenu extends AbstractSearchableEnigmaMenu {
 	private final int[] defaultOptions = {100, 125, 150, 175, 200};
 	private final ButtonGroup optionsGroup = new ButtonGroup();
 	private final Map<Float, JRadioButtonMenuItem> options = new HashMap<>();

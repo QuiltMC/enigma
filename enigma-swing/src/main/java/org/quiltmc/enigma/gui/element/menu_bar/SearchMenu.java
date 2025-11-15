@@ -8,7 +8,7 @@ import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JMenuItem;
 
-public class SearchMenu extends AbstractEnigmaMenu {
+public class SearchMenu extends AbstractSearchableEnigmaMenu {
 	private final JMenuItem searchItem = new JMenuItem(GuiUtil.DEOBFUSCATED_ICON);
 	private final JMenuItem searchAllItem = new JMenuItem(GuiUtil.DEOBFUSCATED_ICON);
 	private final JMenuItem searchClassItem = new JMenuItem(GuiUtil.CLASS_ICON);

@@ -15,7 +15,7 @@ import javax.swing.JOptionPane;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class CollabMenu extends AbstractEnigmaMenu {
+public class CollabMenu extends AbstractSearchableEnigmaMenu {
 	private final JMenuItem connectItem = new JMenuItem();
 	private final JMenuItem startServerItem = new JMenuItem();
 
