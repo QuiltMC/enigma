@@ -10,16 +10,18 @@ import java.util.function.BiFunction;
 /**
  * A {@link MutableMultiTrie} that associates sequences of characters with values of type {@code V}.
  *
- * <p> Adds convenience methods for accessing contents by passing a {@link String} instead of passing individual
- * characters to nodes:
+ * <p> Adds {@link String}/{@link Character}-specific convenience methods for accessing its contents:
  * <ul>
  *     <li> {@link #get(String)}
+ *     <li> {@link #getIgnoreCase(String)}
  *     <li> {@link #put(String, Object)}
  *     <li> {@link #remove(String, Object)}
  *     <li> {@link #removeAll(String)}
+ *     <li> {@link CharacterNode#nextIgnoreCase(Character)}
  * </ul>
  *
- * <p> {@linkplain #getView() Views} also provide a {@link #get(String)} method.
+ * <p> {@linkplain #getView() Views} also provide {@link View#get(String) get} and
+ * {@link View#getIgnoreCase(String) getIgnoreCase} methods.
  *
  * @param <V> the type of values
  * @param <B> the type of branch nodes
