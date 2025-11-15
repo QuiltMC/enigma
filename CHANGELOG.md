@@ -366,3 +366,117 @@ A wealth of bugfixes brought to you by rai, iota, and friends. You'll be rich. T
 - fixed deobfuscation level icons not immediately updating after stat generation completes (thanks [pitheguy](https://github.com/PiTheGuy)!)
 - improved wording of some save dialogs (thanks [pitheguy](https://github.com/PiTheGuy)!)
 - improved `PackageIndex` javadoc
+
+# 2.7.0
+
+Featuring code from supersaiyansubtlety, pitheguy, and rai, your recently bereaved QM team has fought through their grief over Quilt Mappings to bring you this release.
+Blood, sweat, refactors, enhancements, tears, unit tests, bugfixes, blood, and more have gone into this release.
+
+- added tooltips showing javadoc and declarations for entries ([#307](https://github.com/QuiltMC/enigma/pull/307))
+    - contains 3 elements:
+        - navigable links to parent classes
+            - clicking a class will open its tooltip, control-clicking a package will navigate to and expand it in the tree
+        - formatted javadoc
+        - snippet of code from the declaration
+    - tooltips are movable via dragging
+    - tooltips can be disabled or made non-interactable via the config
+- reworked commands and added a new search command
+    - added a new `search-mappings` command ([#282](https://github.com/QuiltMC/enigma/pull/282))
+        - allows searching for mappings using regular expressions. and normal expressions. as you desire
+        - includes extensive options for filtering by types, access, names, and more
+        - allows sorting by name, package, and depth
+    - added specification by name for command arguments (`parameter=value`) instead of positionally ([#280](https://github.com/QuiltMC/enigma/pull/280))
+        - the two can be mixed as long as all positional arguments come before named args
+        - any argument can be specified either by name or position
+        - this is necessary for the new search command which has an unfathomable FIFTEEN possible arguments
+    - added generation parameters as arguments to `PrintStatsCommand` ([#297](https://github.com/QuiltMC/enigma/pull/297))
+    - fixed several bugs in existing commands (where are all these bugs coming from)
+        - fixed `InvertMappingsCommand` using `OUTPUT_FOLDER` instead of `MAPPING_OUTPUT`, meaning it didn't support alternate formats
+        - fixed `InvertMappingsCommand`'s arguments skipping an index
+        - fixed `ENIGMA_PROFILE` argument not verifying it was a file
+        - fixed `ComposeMappingsCommand` not properly declaring its optional args
+        - fixed `DecompileCommand` using the `OUTPUT_JAR` arg instead of an output directory
+        - fixed broken test suite on windows
+    - refactored code surrounding commands ([#277](https://github.com/QuiltMC/enigma/pull/277))
+        - these changes clarify that we do not currently support adding custom commands. but we might in the future... stay tuned
+        - gave each command a private constructor with one definitive instance
+        - sealed `Command`
+        - eliminated `ComposedArgument`, make `Argument` a record instead of an enum
+            - default arguments are now stored in `CommonArguments`
+        - made `Main`'s map of commands immutable
+- added autosave option in the GUI ([#276](https://github.com/QuiltMC/enigma/pull/276), [#285](https://github.com/QuiltMC/enigma/pull/285), [#300](https://github.com/QuiltMC/enigma/pull/300))
+    - this will be off by default, as it can be destructive due to the lack of ways to restore old mappings
+        - in the future, this will be addressed via backup mappings and undo functionality
+    - saving occurs each time a mapping is changed and will run in the background
+- improved API and GUI around statistics ([#255](https://github.com/QuiltMC/enigma/pull/255))
+    - added an option for treating fallback-proposed entries as mapped for stat generation
+    - improved performance for stat reloads via ordering work and cancelling unnecessary jobs ([#301](https://github.com/QuiltMC/enigma/pull/301))
+    - fixed a rare CME when generating stats
+    - configured generation parameters for stats will now control the tree icons
+        - the stats dialogue will default to the parameters for the icons, with changes made there being transient (except for the dialog-exclusive package filter)
+    - added a GUI toggle for disabling/enabling icons
+    - the tree will now update in real time as settings are changed
+- added indexing for parameters via `EntryIndex` ([#282](https://github.com/QuiltMC/enigma/pull/282))
+    - fixed wrong types occasionally being displayed in the editor panel
+    - the editor panel will now show `<unknown>` for non-parameter entries in the LVT
+- added a search bar for the structure panel ([#266](https://github.com/QuiltMC/enigma/pull/266))
+    - added a new keybind for opening the structure panel (`ctrl + t`)
+        - `ctrl + shift + t` will open the panel with the search selected
+- cleaned up backend around menu bar ([#261](https://github.com/QuiltMC/enigma/pull/261))
+    - now consistently updates state and retranslates everywhere
+- improved proguard implementation for tests ([#289](https://github.com/QuiltMC/enigma/pull/289))
+- improved editor tabs ([#296](https://github.com/QuiltMC/enigma/pull/296))
+    - fixed unfocused tabs not showing the close button on hover
+    - now focuses the editor after a tab is clicked or closed
+    - added a tooltip to tab titles for viewing the fully qualified name
+- improved reliability of a few keybinds via removing possible conflicts ([#303](https://github.com/QuiltMC/enigma/pull/303))
+    - changed default keybind for `EDITOR_SHOW_CALLS` to `ctrl + alt + c`, as the old keybind of `ctrl + c` would both copy text and show calls
+- improved quick find bar in the editor ([#304](https://github.com/QuiltMC/enigma/pull/304))
+    - added configuration for the default quick find keybind (default `ctrl + f`)
+    - added an option for allowing quick find to be persistent when the user clicks off
+    - replaced the backend, eliminating some weirdness and making it more responsive
+        - one weird part of the code down. 1000 to go
+    - fixed the dialog sometimes becoming detached from the editor and appearing outside the main window
+    - fixed the first token clicked after opening the quick find dialog immediately navigating ([#270](https://github.com/QuiltMC/enigma/pull/270))
+- added navigation to method calls inside lambdas and static initializers ([#308](https://github.com/QuiltMC/enigma/pull/308))
+    - uses parsing of the source code to obtain tokens for these calls, which can then be navigated via the editor
+    - this is yet another small change that vastly improves how reliable the GUI feels
+- improved indexing for libraries ([#306](https://github.com/QuiltMC/enigma/pull/306))
+    - exposed a combined index for libraries and main jar entries
+    - disabled renaming entries that are declared in libs
+    - fixed issues related to enigma not understanding that all classes inherit from `Object`, such as the ability to map a `String` method with no args as `toString` without the conflict detector noticing
+    - not all the JDK is indexed yet, as we encountered issues with ASM's analysis
+- added error handling for plugins ([#330](https://github.com/QuiltMC/enigma/pull/330))
+    - plugins are now required to implement a `supportsEnigmaVersion` method to define which versions they're compatible with
+        - we recommend matching major and minor, allowing any patch, since breaking API changes can and will be made in minor versions (like this one!)
+        - we're thinking of calling this innovative release scheme 'raiver'. let us know why this is a great idea in the discord
+    - `AbstractMethodError`s due to the unimplemented method will be caught and reported with an error message
+- updated organisation of config files
+    - added new file, `editor.toml`
+    - moved `enableClassTreeStatIcons` to `main#stats`
+        - your config will not automatically be migrated, make sure to update if you're using this option!
+    - removed `main#features`
+- updated the navigator and fixed some issues ([#269](https://github.com/QuiltMC/enigma/pull/269), [#305](https://github.com/QuiltMC/enigma/pull/305))
+    - navigation is now relevant to the cursor instead of an invisibly stored position
+    - fixed the panel's count not updating properly when reloading mappings
+    - fixed entries sometimes becoming improperly ordered when their types changed
+    - fixed zero padding on label not always matching between index and total (`03/3` -> `03/03`)
+    - fixed entry navigator keybinds not always triggering ([#275](https://github.com/QuiltMC/enigma/pull/275))
+        - enigma 2.7: the keybind reliability update
+- fixed classes being renamable via the context menu when `CLASS` is not configured as an editable type ([#299](https://github.com/QuiltMC/enigma/pull/299))
+- fixed translations for mapping formats
+- updated dependencies ([#334](https://github.com/QuiltMC/enigma/pull/334))
+    - shadow: `8.1.1` -> `9.2.2`
+    - guava: `33.2.1` -> `33.5.0`
+    - gson: `2.10.1` -> `2.13.2`
+    - asm: `9.7.1` -> `9.9`
+    - tinylog: `2.6.2` -> `2.7.0` (omg they're just like us fr)
+    - vineflower: `1.11.0` -> `1.11.2`
+    - junit: `5.10.3` -> `6.0.1`
+    - jimfs: `1.3.0` -> `1.3.1`
+    - gradle: `8.7` -> `9.2.0`
+    - syntaxpain: `0.1.5` -> `0.2.0`
+    - new: `jspecify`: `1.0.0`
+        - all nullability annotations have been moved away from `javax` to use jspecify
+    - new: `javaparser`: `3.27.0`
+        - required for supporting navigation to lambdas and static init
