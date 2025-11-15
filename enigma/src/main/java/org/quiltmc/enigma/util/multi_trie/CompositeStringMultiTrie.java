@@ -72,9 +72,7 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Branch
 		return this.view;
 	}
 
-	public static final class Root<V>
-			extends MutableMapNode<Character, V, Branch<V>>
-			implements MutableCharacterNode<V, Branch<V>> {
+	public static final class Root<V> extends StringMultiTrie.Root<V, Branch<V>> {
 		private final Collection<V> leaves;
 		private final Map<Character, CompositeStringMultiTrie.Branch<V>> branches;
 
@@ -112,7 +110,7 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Branch
 		}
 	}
 
-	public static final class Branch<V> extends StringMultiTrie.BranchNode<V, Branch<V>> {
+	public static final class Branch<V> extends StringMultiTrie.Branch<V, Branch<V>> {
 		private final MutableMapNode<Character, V, CompositeStringMultiTrie.Branch<V>> parent;
 		private final Character key;
 
