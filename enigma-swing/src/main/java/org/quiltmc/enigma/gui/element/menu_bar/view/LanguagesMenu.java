@@ -3,7 +3,7 @@ package org.quiltmc.enigma.gui.element.menu_bar.view;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.gui.util.LanguageUtil;
 import org.quiltmc.enigma.util.I18n;
 
@@ -12,7 +12,7 @@ import javax.swing.JRadioButtonMenuItem;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LanguagesMenu extends AbstractEnigmaMenu {
+public class LanguagesMenu extends AbstractSearchableEnigmaMenu {
 	private final Map<String, JRadioButtonMenuItem> languages = new HashMap<>();
 
 	protected LanguagesMenu(Gui gui) {

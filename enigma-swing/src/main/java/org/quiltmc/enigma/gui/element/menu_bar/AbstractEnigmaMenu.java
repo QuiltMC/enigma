@@ -4,10 +4,10 @@ import org.quiltmc.enigma.gui.Gui;
 
 import javax.swing.JMenu;
 
-public class AbstractEnigmaMenu extends JMenu implements EnigmaMenu {
+public abstract class AbstractEnigmaMenu extends JMenu implements EnigmaMenu {
 	protected final Gui gui;
 
-	protected AbstractEnigmaMenu(Gui gui) {
+	public AbstractEnigmaMenu(Gui gui) {
 		this.gui = gui;
 	}
 

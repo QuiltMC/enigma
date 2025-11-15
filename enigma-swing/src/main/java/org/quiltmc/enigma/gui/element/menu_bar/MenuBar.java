@@ -8,6 +8,7 @@ import org.quiltmc.enigma.gui.element.menu_bar.view.ViewMenu;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class MenuBar {
 	private final List<EnigmaMenu> menus = new ArrayList<>();
@@ -76,5 +77,9 @@ public class MenuBar {
 
 	public FileMenu getFileMenu() {
 		return this.fileMenu;
+	}
+
+	public Stream<EnigmaMenu> streamMenus() {
+		return this.menus.stream();
 	}
 }

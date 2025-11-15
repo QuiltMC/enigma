@@ -1,21 +1,28 @@
 package org.quiltmc.enigma.gui.element;
 
+import org.quiltmc.enigma.util.Utils;
+
 import javax.annotation.Nullable;
 import javax.swing.JTextField;
+import javax.swing.MenuElement;
+import javax.swing.MenuSelectionManager;
 import javax.swing.text.Document;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.util.Map;
 
 /**
  * A text field that displays placeholder text when it's empty.
  */
-public class PlaceheldTextField extends JTextField {
+public class PlaceheldTextField extends JTextField implements MenuElement {
 	private static final String DESKTOP_FONT_HINTS_KEY = "awt.font.desktophints";
 
 	@Nullable
@@ -98,7 +105,8 @@ public class PlaceheldTextField extends JTextField {
 				}
 			}
 
-			graphics.setColor(this.placeholderColor == null ? this.getForeground() : this.placeholderColor);
+			Utils.findFirstNonNull(this.placeholderColor, this.getDisabledTextColor(), this.getForeground())
+					.ifPresent(graphics::setColor);
 			graphics.setFont(this.getFont());
 
 			final Insets insets = this.getInsets();
@@ -116,9 +124,28 @@ public class PlaceheldTextField extends JTextField {
 
 	/**
 	 * @param color the placeholder color for this field; if {@code null}, the
-	 * {@linkplain #getForeground() foreground color} will be used
+	 * {@linkplain #getDisabledTextColor() disabled color} will be used
 	 */
 	public void setPlaceholderColor(@Nullable Color color) {
 		this.placeholderColor = color;
+	}
+
+	@Override
+	public void processMouseEvent(MouseEvent event, MenuElement[] path, MenuSelectionManager manager) { }
+
+	@Override
+	public void processKeyEvent(KeyEvent event, MenuElement[] path, MenuSelectionManager manager) { }
+
+	@Override
+	public void menuSelectionChanged(boolean isIncluded) { }
+
+	@Override
+	public MenuElement[] getSubElements() {
+		return new MenuElement[0];
+	}
+
+	@Override
+	public Component getComponent() {
+		return this;
 	}
 }

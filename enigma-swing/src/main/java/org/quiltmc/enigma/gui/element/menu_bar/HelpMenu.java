@@ -7,7 +7,7 @@ import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JMenuItem;
 
-public class HelpMenu extends AbstractEnigmaMenu {
+public class HelpMenu extends AbstractSearchableEnigmaMenu {
 	private final JMenuItem aboutItem = new JMenuItem();
 	private final JMenuItem githubItem = new JMenuItem();
 	private final SearchMenusMenu searchItem;

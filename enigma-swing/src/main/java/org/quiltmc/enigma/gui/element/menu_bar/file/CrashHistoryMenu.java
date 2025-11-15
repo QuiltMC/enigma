@@ -3,13 +3,13 @@ package org.quiltmc.enigma.gui.element.menu_bar.file;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.dialog.CrashDialog;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JMenuItem;
 
-public class CrashHistoryMenu extends AbstractEnigmaMenu {
+public class CrashHistoryMenu extends AbstractSearchableEnigmaMenu {
 	protected CrashHistoryMenu(Gui gui) {
 		super(gui);
 	}

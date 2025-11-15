@@ -4,7 +4,7 @@ import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.gui.util.ExtensionFileFilter;
 import org.quiltmc.enigma.util.I18n;
 
@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class SaveMappingsAsMenu extends AbstractEnigmaMenu {
+public class SaveMappingsAsMenu extends AbstractSearchableEnigmaMenu {
 	private final Map<ReadWriteService, JMenuItem> items = new HashMap<>();
 
 	protected SaveMappingsAsMenu(Gui gui) {

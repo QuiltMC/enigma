@@ -4,7 +4,7 @@ import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.ChangeDialog;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.ButtonGroup;
@@ -15,7 +15,7 @@ import java.util.Map;
 
 import static org.quiltmc.enigma.gui.config.Config.ThemeChoice;
 
-public class ThemesMenu extends AbstractEnigmaMenu {
+public class ThemesMenu extends AbstractSearchableEnigmaMenu {
 	private final Map<ThemeChoice, JRadioButtonMenuItem> themes = new HashMap<>();
 
 	protected ThemesMenu(Gui gui) {

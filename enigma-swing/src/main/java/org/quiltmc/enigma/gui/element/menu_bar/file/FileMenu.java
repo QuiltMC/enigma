@@ -7,7 +7,7 @@ import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.dialog.StatsDialog;
 import org.quiltmc.enigma.gui.dialog.keybind.ConfigureKeyBindsDialog;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.gui.util.ExtensionFileFilter;
 import org.quiltmc.enigma.util.I18n;
 
@@ -21,7 +21,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
-public class FileMenu extends AbstractEnigmaMenu {
+public class FileMenu extends AbstractSearchableEnigmaMenu {
 	private final SaveMappingsAsMenu saveMappingsAs;
 	private final CrashHistoryMenu crashHistory;
 	private final OpenRecentMenu openRecent;

@@ -3,12 +3,12 @@ package org.quiltmc.enigma.gui.element.menu_bar.view;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.dialog.FontDialog;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JMenuItem;
 
-public class ViewMenu extends AbstractEnigmaMenu {
+public class ViewMenu extends AbstractSearchableEnigmaMenu {
 	private final StatsMenu stats;
 	private final NotificationsMenu notifications;
 	private final LanguagesMenu languages;

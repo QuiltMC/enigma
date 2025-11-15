@@ -26,7 +26,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 
-public class DevMenu extends AbstractEnigmaMenu {
+public class DevMenu extends AbstractSearchableEnigmaMenu {
 	private final JCheckBoxMenuItem showMappingSourcePluginItem = new JCheckBoxMenuItem();
 	private final JCheckBoxMenuItem debugTokenHighlightsItem = new JCheckBoxMenuItem();
 	private final JCheckBoxMenuItem logClientPacketsItem = new JCheckBoxMenuItem();

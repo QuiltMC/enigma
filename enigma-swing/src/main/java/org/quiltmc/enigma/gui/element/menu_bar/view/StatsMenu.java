@@ -4,7 +4,7 @@ import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JCheckBoxMenuItem;
@@ -15,7 +15,7 @@ import java.util.Map;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
 
-public class StatsMenu extends AbstractEnigmaMenu {
+public class StatsMenu extends AbstractSearchableEnigmaMenu {
 	private final JCheckBoxMenuItem enableIcons = new JCheckBoxMenuItem();
 	private final JCheckBoxMenuItem includeSynthetic = new JCheckBoxMenuItem();
 	private final JCheckBoxMenuItem countFallback = new JCheckBoxMenuItem();

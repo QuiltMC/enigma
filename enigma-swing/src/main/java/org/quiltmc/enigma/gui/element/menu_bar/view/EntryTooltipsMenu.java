@@ -2,14 +2,14 @@ package org.quiltmc.enigma.gui.element.menu_bar.view;
 
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JCheckBoxMenuItem;
 
 import static org.quiltmc.enigma.gui.util.GuiUtil.createSyncedMenuCheckBox;
 
-public class EntryTooltipsMenu extends AbstractEnigmaMenu {
+public class EntryTooltipsMenu extends AbstractSearchableEnigmaMenu {
 	private final JCheckBoxMenuItem enable = createSyncedMenuCheckBox(Config.editor().entryTooltips.enable);
 	private final JCheckBoxMenuItem interactable = createSyncedMenuCheckBox(Config.editor().entryTooltips.interactable);
 
