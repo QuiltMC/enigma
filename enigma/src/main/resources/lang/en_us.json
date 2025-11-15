@@ -110,6 +110,7 @@
 	"menu.help.github": "Github Page",
 	"menu.help.search": "Search menus",
 	"menu.help.search.placeholder": "Search menus...",
+	"menu.help.search.no_results": "No results",
 
 	"popup_menu.rename": "Rename",
 	"popup_menu.paste": "Paste text",
