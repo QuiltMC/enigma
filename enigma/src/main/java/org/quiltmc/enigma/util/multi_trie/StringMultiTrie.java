@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.util.multi_trie;
 
 import org.quiltmc.enigma.util.Utils;
-import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.BranchNode;
-import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.MutableCharacterNode;
+import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.Branch;
+import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.Root;
 
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -26,13 +26,9 @@ import java.util.function.BiFunction;
  * @param <V> the type of values
  * @param <B> the type of branch nodes
  */
-public abstract class StringMultiTrie
-		<
-			V, B extends BranchNode<V, B> & MutableCharacterNode<V, B>,
-			R extends MutableMapNode<Character, V, B> & MutableCharacterNode<V, B>
-		>
+public abstract class StringMultiTrie<V, B extends Branch<V, B>, R extends Root<V, B>>
 		implements MutableMultiTrie<Character, V> {
-	private static Optional<Character> tryToggleCase(char c) {
+	protected static Optional<Character> tryToggleCase(char c) {
 		if (Character.isUpperCase(c)) {
 			return Optional.of(Character.toLowerCase(c));
 		} else if (Character.isLowerCase(c)) {
@@ -66,10 +62,6 @@ public abstract class StringMultiTrie
 		Utils.requireNonNull(prefix, PREFIX);
 
 		MutableCharacterNode<V, B> node = this.getRoot();
-		if (prefix.isEmpty()) {
-			return node;
-		}
-
 		for (int i = 0; i < prefix.length(); i++) {
 			node = next.apply(node, prefix.charAt(i));
 		}
@@ -83,19 +75,22 @@ public abstract class StringMultiTrie
 
 		final R root = this.getRoot();
 		if (string.isEmpty()) {
+			root.put(value);
+
 			return root;
 		}
 
-		B node = root.next(string.charAt(0));
+		// Don't use next, initially creating orphans, because we always put a value,
+		// so all orphans would be adopted anyway.
+		B branch = root.getBranches().computeIfAbsent(string.charAt(0), root::createBranch);
 		for (int i = 1; i < string.length(); i++) {
-			final B parent = node;
-			final char key = string.charAt(i);
-			node = node.getBranches().computeIfAbsent(key, ignored -> parent.createBranch(key));
+			final B parent = branch;
+			branch = branch.getBranches().computeIfAbsent(string.charAt(i), parent::createBranch);
 		}
 
-		node.put(value);
+		branch.put(value);
 
-		return node;
+		return branch;
 	}
 
 	public boolean remove(String string, V value) {
@@ -159,15 +154,15 @@ public abstract class StringMultiTrie
 		}
 	}
 
-	public abstract static class BranchNode<V, B extends BranchNode<V, B>>
+	public abstract static class Root<V, B extends Branch<V, B>>
+			extends MutableMapNode<Character, V, B>
+			implements MutableCharacterNode<V, B> { }
+
+	public abstract static class Branch<V, B extends Branch<V, B>>
 			extends MutableMapNode.Branch<Character, V, B>
 			implements MutableCharacterNode<V, B> { }
 
-	public abstract static class View
-			<
-				V, B extends BranchNode<V, B> & MutableCharacterNode<V, B>,
-				R extends MutableMapNode<Character, V, B> & MutableCharacterNode<V, B>
-			>
+	public abstract static class View<V, B extends Branch<V, B>, R extends Root<V, B>>
 			implements MultiTrie<Character, V> {
 		@Override
 		public CharacterNode<V> getRoot() {
