@@ -14,6 +14,10 @@ import javax.swing.JMenuItem;
 import javax.swing.MenuElement;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -45,10 +49,39 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		this.add(this.field);
 		this.add(this.noResults);
 
+		// Always focus field, but don't always select its text, because it loses focus when packing new search results.
 		this.field.addHierarchyListener(e -> {
 			if (this.field.isShowing()) {
 				this.field.requestFocus();
-				this.field.selectAll();
+			}
+		});
+
+		// Only select field text when the menu is selected, so text isn't selected when packing new search results.
+		this.addMenuListener(new MenuListener() {
+			final HierarchyListener fieldTextSelector = new HierarchyListener() {
+				@Override
+				public void hierarchyChanged(HierarchyEvent e) {
+					if (SearchMenusMenu.this.field.isShowing()) {
+						SearchMenusMenu.this.field.removeHierarchyListener(this);
+
+						SearchMenusMenu.this.field.selectAll();
+					}
+				}
+			};
+
+			@Override
+			public void menuSelected(MenuEvent e) {
+				SearchMenusMenu.this.field.addHierarchyListener(this.fieldTextSelector);
+			}
+
+			@Override
+			public void menuDeselected(MenuEvent e) {
+				SearchMenusMenu.this.field.removeHierarchyListener(this.fieldTextSelector);
+			}
+
+			@Override
+			public void menuCanceled(MenuEvent e) {
+				SearchMenusMenu.this.field.removeHierarchyListener(this.fieldTextSelector);
 			}
 		});
 
@@ -58,22 +91,20 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 				if (searchTerm.isEmpty()) {
 					SearchMenusMenu.this.noResults.setVisible(false);
-					SearchMenusMenu.this.invalidate();
-					SearchMenusMenu.this.repaint();
 					SearchMenusMenu.this.resultManager.clearCurrent();
+
+					SearchMenusMenu.this.getPopupMenu().pack();
 				} else {
 					switch (SearchMenusMenu.this.resultManager.updateResultItems(searchTerm)) {
 						case NO_RESULTS -> {
-							SearchMenusMenu.this.noResults.setVisible(false);
+							SearchMenusMenu.this.noResults.setVisible(true);
 
-							SearchMenusMenu.this.getPopupMenu().pack();
 							SearchMenusMenu.this.getPopupMenu().pack();
 						}
 						case SAME_RESULTS -> { }
 						case DIFFERENT_RESULTS -> {
-							SearchMenusMenu.this.noResults.setVisible(true);
+							SearchMenusMenu.this.noResults.setVisible(false);
 
-							SearchMenusMenu.this.getPopupMenu().pack();
 							SearchMenusMenu.this.getPopupMenu().pack();
 						}
 					}
@@ -112,6 +143,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		this.setText(I18n.translate("menu.help.search"));
 		this.field.setPlaceholder(I18n.translate("menu.help.search.placeholder"));
+		this.noResults.setText(I18n.translate("menu.help.search.no_results"));
 	}
 
 	private static class Result {
