@@ -6,8 +6,8 @@ import org.quiltmc.enigma.gui.element.PlaceheldTextField;
 import org.quiltmc.enigma.gui.element.SearchableElement;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie;
-import org.quiltmc.enigma.util.multi_trie.MultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie;
+import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.CharacterNode;
 
 import javax.annotation.Nullable;
 import javax.swing.JMenuItem;
@@ -168,7 +168,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 	private class ResultManager {
 		@Nullable
-		StringMultiTrie.View<Result> resultTrie;
+		StringMultiTrie.View<Result, ?, ?> resultTrie;
 		@Nullable
 		CurrentResults currentResults;
 
@@ -182,9 +182,9 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				if (this.currentResults.searchTerm.length() == searchTerm.length()) {
 					return UpdateOutcome.SAME_RESULTS;
 				} else {
-					MultiTrie.Node<Character, Result> resultNode = this.currentResults.results;
+					CharacterNode<Result> resultNode = this.currentResults.results;
 					for (int i = this.currentResults.searchTerm.length(); i < searchTerm.length(); i++) {
-						resultNode = resultNode.next(searchTerm.charAt(i));
+						resultNode = resultNode.nextIgnoreCase(searchTerm.charAt(i));
 					}
 
 					if (resultNode.isEmpty()) {
@@ -215,7 +215,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		}
 
 		UpdateOutcome initializeCurrentResults(String searchTerm) {
-			final MultiTrie.Node<Character, Result> results = this.getResultTrie().get(searchTerm);
+			final CharacterNode<Result> results = this.getResultTrie().getIgnoreCase(searchTerm);
 			if (results.isEmpty()) {
 				this.clearCurrent();
 
@@ -228,7 +228,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 		}
 
-		StringMultiTrie.View<Result> getResultTrie() {
+		StringMultiTrie.View<Result, ?, ?> getResultTrie() {
 			if (this.resultTrie == null) {
 				this.resultTrie = this.buildResultTrie();
 			}
@@ -251,7 +251,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 		}
 
-		StringMultiTrie.View<Result> buildResultTrie() {
+		StringMultiTrie.View<Result, ?, ?> buildResultTrie() {
 			final CompositeStringMultiTrie<Result> elementsBuilder = CompositeStringMultiTrie.createHashed();
 			SearchMenusMenu.this.gui.getMenuBar()
 					.streamMenus()
@@ -269,7 +269,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			return elementsBuilder.getView();
 		}
 
-		record CurrentResults(MultiTrie.Node<Character, Result> results, String searchTerm) { }
+		record CurrentResults(CharacterNode<Result> results, String searchTerm) { }
 
 		enum UpdateOutcome {
 			NO_RESULTS, SAME_RESULTS, DIFFERENT_RESULTS

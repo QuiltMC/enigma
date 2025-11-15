@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.util.multi_trie;
 
-import javax.annotation.Nonnull;
 import java.util.stream.Stream;
 
 /**
@@ -52,33 +51,23 @@ public interface MutableMultiTrie<K, V> extends MultiTrie<K, V> {
 		 */
 		MultiTrie.Node<K, V> getView();
 
-		class View<K, V> implements MultiTrie.Node<K, V> {
-			protected final Node<K, V> viewed;
-
-			protected View(Node<K, V> viewed) {
-				this.viewed = viewed;
-			}
-
+		abstract class View<K, V> implements MultiTrie.Node<K, V> {
 			@Override
 			public Stream<V> streamLeaves() {
-				return this.viewed.streamLeaves();
+				return this.getViewed().streamLeaves();
 			}
 
 			@Override
 			public Stream<V> streamStems() {
-				return this.viewed.streamStems();
+				return this.getViewed().streamStems();
 			}
 
 			@Override
 			public Stream<V> streamValues() {
-				return this.viewed.streamValues();
+				return this.getViewed().streamValues();
 			}
 
-			@Nonnull
-			@Override
-			public MultiTrie.Node<K, V> next(K key) {
-				return this.viewed.next(key).getView();
-			}
+			protected abstract Node<K, V> getViewed();
 		}
 	}
 }
