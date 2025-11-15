@@ -1,8 +1,7 @@
 package org.quiltmc.enigma.util.multi_trie;
 
 import org.quiltmc.enigma.util.Utils;
-import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.Branch;
-import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.Root;
+import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.MutableCharacterNode;
 
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -26,7 +25,12 @@ import java.util.function.BiFunction;
  * @param <V> the type of values
  * @param <B> the type of branch nodes
  */
-public abstract class StringMultiTrie<V, B extends Branch<V, B>, R extends Root<V, B>>
+public abstract class StringMultiTrie
+		<
+			V,
+			B extends MutableMapNode.Branch<Character, V, B> & MutableCharacterNode<V, B>,
+			R extends MutableMapNode<Character, V, B> & MutableCharacterNode<V, B>
+		>
 		implements MutableMultiTrie<Character, V> {
 	protected static Optional<Character> tryToggleCase(char c) {
 		if (Character.isUpperCase(c)) {
@@ -154,15 +158,12 @@ public abstract class StringMultiTrie<V, B extends Branch<V, B>, R extends Root<
 		}
 	}
 
-	public abstract static class Root<V, B extends Branch<V, B>>
-			extends MutableMapNode<Character, V, B>
-			implements MutableCharacterNode<V, B> { }
-
-	public abstract static class Branch<V, B extends Branch<V, B>>
-			extends MutableMapNode.Branch<Character, V, B>
-			implements MutableCharacterNode<V, B> { }
-
-	public abstract static class View<V, B extends Branch<V, B>, R extends Root<V, B>>
+	public abstract static class View
+			<
+				V,
+				B extends MutableMapNode.Branch<Character, V, B> & MutableCharacterNode<V, B>,
+				R extends MutableMapNode<Character, V, B> & MutableCharacterNode<V, B>
+			>
 			implements MultiTrie<Character, V> {
 		@Override
 		public CharacterNode<V> getRoot() {
