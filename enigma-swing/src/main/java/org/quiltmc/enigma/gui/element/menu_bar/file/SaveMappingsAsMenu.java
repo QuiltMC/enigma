@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class SaveMappingsAsMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.file.mappings.save_as";
+
 	private final Map<ReadWriteService, JMenuItem> items = new HashMap<>();
 
 	protected SaveMappingsAsMenu(Gui gui) {
@@ -33,7 +35,7 @@ public class SaveMappingsAsMenu extends AbstractSearchableEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.file.mappings.save_as"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 
 		this.forEachFormat(format -> this.items.get(format).setText(I18n.translate(format.getId())));
 	}
@@ -64,5 +66,10 @@ public class SaveMappingsAsMenu extends AbstractSearchableEnigmaMenu {
 				consumer.accept(format);
 			}
 		});
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

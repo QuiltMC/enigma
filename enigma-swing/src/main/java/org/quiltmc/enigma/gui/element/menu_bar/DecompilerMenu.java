@@ -11,6 +11,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 
 public class DecompilerMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.decompiler";
+
 	private final JMenuItem decompilerSettingsItem = new JMenuItem();
 
 	public DecompilerMenu(Gui gui) {
@@ -41,7 +43,12 @@ public class DecompilerMenu extends AbstractSearchableEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.decompiler"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 		this.decompilerSettingsItem.setText(I18n.translate("menu.decompiler.settings"));
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

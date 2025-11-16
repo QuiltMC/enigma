@@ -16,6 +16,8 @@ import java.util.Map;
 import static org.quiltmc.enigma.gui.config.Config.ThemeChoice;
 
 public class ThemesMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.view.themes";
+
 	private final Map<ThemeChoice, JRadioButtonMenuItem> themes = new HashMap<>();
 
 	protected ThemesMenu(Gui gui) {
@@ -34,7 +36,7 @@ public class ThemesMenu extends AbstractSearchableEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.view.themes"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 
 		for (ThemeChoice theme : ThemeChoice.values()) {
 			this.themes.get(theme).setText(I18n.translate("menu.view.themes." + theme.name().toLowerCase(Locale.ROOT)));
@@ -53,5 +55,10 @@ public class ThemesMenu extends AbstractSearchableEnigmaMenu {
 	private void onThemeClicked(ThemeChoice theme) {
 		Config.main().theme.setValue(theme, true);
 		ChangeDialog.show(this.gui.getFrame());
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

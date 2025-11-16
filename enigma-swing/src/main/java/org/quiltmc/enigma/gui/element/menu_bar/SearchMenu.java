@@ -9,6 +9,8 @@ import org.quiltmc.enigma.util.I18n;
 import javax.swing.JMenuItem;
 
 public class SearchMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.search";
+
 	private final JMenuItem searchItem = new JMenuItem(GuiUtil.DEOBFUSCATED_ICON);
 	private final JMenuItem searchAllItem = new JMenuItem(GuiUtil.DEOBFUSCATED_ICON);
 	private final JMenuItem searchClassItem = new JMenuItem(GuiUtil.CLASS_ICON);
@@ -33,7 +35,7 @@ public class SearchMenu extends AbstractSearchableEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.search"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 		this.searchItem.setText(I18n.translate("menu.search"));
 		this.searchAllItem.setText(I18n.translate("menu.search.all"));
 		this.searchClassItem.setText(I18n.translate("menu.search.class"));
@@ -54,5 +56,10 @@ public class SearchMenu extends AbstractSearchableEnigmaMenu {
 		if (this.gui.getController().getProject() != null) {
 			this.gui.getSearchDialog().show(clear, types);
 		}
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

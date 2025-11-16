@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class FileMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.file";
+
 	private final SaveMappingsAsMenu saveMappingsAs;
 	private final CrashHistoryMenu crashHistory;
 	private final OpenRecentMenu openRecent;
@@ -122,7 +124,7 @@ public class FileMenu extends AbstractSearchableEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.file"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 		this.jarOpenItem.setText(I18n.translate("menu.file.jar.open"));
 		this.jarCloseItem.setText(I18n.translate("menu.file.jar.close"));
 		this.openRecent.retranslate();
@@ -261,5 +263,10 @@ public class FileMenu extends AbstractSearchableEnigmaMenu {
 			this.gui.getController().exportJar(path);
 			Config.main().stats.lastSelectedDir.setValue(this.gui.exportJarFileChooser.getCurrentDirectory().getAbsolutePath(), true);
 		}
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

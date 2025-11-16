@@ -27,6 +27,8 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 
 public class DevMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "dev.menu";
+
 	private final JCheckBoxMenuItem showMappingSourcePluginItem = new JCheckBoxMenuItem();
 	private final JCheckBoxMenuItem debugTokenHighlightsItem = new JCheckBoxMenuItem();
 	private final JCheckBoxMenuItem logClientPacketsItem = new JCheckBoxMenuItem();
@@ -48,7 +50,7 @@ public class DevMenu extends AbstractSearchableEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText("Dev");
+		this.setText(I18n.translate(TRANSLATION_KEY));
 
 		this.showMappingSourcePluginItem.setText(I18n.translate("dev.menu.show_mapping_source_plugin"));
 		this.debugTokenHighlightsItem.setText(I18n.translate("dev.menu.debug_token_highlights"));
@@ -127,5 +129,10 @@ public class DevMenu extends AbstractSearchableEnigmaMenu {
 		EntryTreePrinter.print(new PrintWriter(text), mappings);
 
 		this.showSavableTextAreaDialog(I18n.translate("dev.mapping_tree"), text.toString(), "mapping_tree.txt");
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }
