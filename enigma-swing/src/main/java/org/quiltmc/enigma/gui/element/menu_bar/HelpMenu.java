@@ -8,6 +8,8 @@ import org.quiltmc.enigma.util.I18n;
 import javax.swing.JMenuItem;
 
 public class HelpMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.help";
+
 	private final JMenuItem aboutItem = new JMenuItem();
 	private final JMenuItem githubItem = new JMenuItem();
 	private final SearchMenusMenu searchItem;
@@ -27,7 +29,7 @@ public class HelpMenu extends AbstractSearchableEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.help"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 		this.aboutItem.setText(I18n.translate("menu.help.about"));
 		this.githubItem.setText(I18n.translate("menu.help.github"));
 		this.searchItem.retranslate();
@@ -35,5 +37,10 @@ public class HelpMenu extends AbstractSearchableEnigmaMenu {
 
 	private void onGithubClicked() {
 		GuiUtil.openUrl("https://github.com/QuiltMC/Enigma");
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

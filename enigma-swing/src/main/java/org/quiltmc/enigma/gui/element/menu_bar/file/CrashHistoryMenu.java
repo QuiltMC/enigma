@@ -10,13 +10,15 @@ import javax.swing.ButtonGroup;
 import javax.swing.JMenuItem;
 
 public class CrashHistoryMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.file.crash_history";
+
 	protected CrashHistoryMenu(Gui gui) {
 		super(gui);
 	}
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.file.crash_history"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 	}
 
 	@Override
@@ -39,5 +41,10 @@ public class CrashHistoryMenu extends AbstractSearchableEnigmaMenu {
 
 	private void onCrashClicked(Throwable throwable) {
 		CrashDialog.show(throwable, false);
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

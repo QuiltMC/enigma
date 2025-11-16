@@ -14,6 +14,8 @@ import java.util.Map;
 import static org.quiltmc.enigma.gui.NotificationManager.ServerNotificationLevel;
 
 public class NotificationsMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.view.notifications";
+
 	private final Map<ServerNotificationLevel, JRadioButtonMenuItem> buttons = new HashMap<>();
 
 	public NotificationsMenu(Gui gui) {
@@ -31,7 +33,7 @@ public class NotificationsMenu extends AbstractSearchableEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.view.notifications"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 
 		for (ServerNotificationLevel level : ServerNotificationLevel.values()) {
 			this.buttons.get(level).setText(level.getText());
@@ -43,5 +45,10 @@ public class NotificationsMenu extends AbstractSearchableEnigmaMenu {
 		for (ServerNotificationLevel level : ServerNotificationLevel.values()) {
 			this.buttons.get(level).setSelected(level.equals(Config.main().serverNotificationLevel.value()));
 		}
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

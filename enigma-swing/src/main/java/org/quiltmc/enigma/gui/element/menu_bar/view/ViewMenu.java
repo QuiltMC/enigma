@@ -9,6 +9,8 @@ import org.quiltmc.enigma.util.I18n;
 import javax.swing.JMenuItem;
 
 public class ViewMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.view";
+
 	private final StatsMenu stats;
 	private final NotificationsMenu notifications;
 	private final LanguagesMenu languages;
@@ -40,7 +42,7 @@ public class ViewMenu extends AbstractSearchableEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.view"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 
 		this.themes.retranslate();
 		this.notifications.retranslate();
@@ -61,5 +63,10 @@ public class ViewMenu extends AbstractSearchableEnigmaMenu {
 
 	private void onFontClicked(Gui gui) {
 		FontDialog.display(gui.getFrame());
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

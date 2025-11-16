@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class CollabMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.collab";
+
 	private final JMenuItem connectItem = new JMenuItem();
 	private final JMenuItem startServerItem = new JMenuItem();
 
@@ -31,7 +33,7 @@ public class CollabMenu extends AbstractSearchableEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.collab"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 		this.retranslate(this.gui.getConnectionState());
 	}
 
@@ -101,5 +103,10 @@ public class CollabMenu extends AbstractSearchableEnigmaMenu {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), e.toString(), I18n.translate("menu.collab.server.start.error"), JOptionPane.ERROR_MESSAGE);
 			this.gui.getController().disconnectIfConnected(null);
 		}
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

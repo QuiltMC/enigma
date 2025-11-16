@@ -13,13 +13,15 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class OpenRecentMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.file.open_recent_project";
+
 	protected OpenRecentMenu(Gui gui) {
 		super(gui);
 	}
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.file.open_recent_project"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 	}
 
 	@Override
@@ -86,5 +88,10 @@ public class OpenRecentMenu extends AbstractSearchableEnigmaMenu {
 		}
 
 		return i != 0 ? a.getRoot().resolve(a.subpath(0, i)) : null;
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

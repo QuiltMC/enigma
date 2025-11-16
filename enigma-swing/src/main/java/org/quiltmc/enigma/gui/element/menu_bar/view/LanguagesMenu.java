@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LanguagesMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.view.languages";
+
 	private final Map<String, JRadioButtonMenuItem> languages = new HashMap<>();
 
 	protected LanguagesMenu(Gui gui) {
@@ -31,7 +33,7 @@ public class LanguagesMenu extends AbstractSearchableEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.view.languages"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 
 		for (String lang : I18n.getAvailableLanguages()) {
 			this.languages.get(lang).setText(I18n.getLanguageName(lang));
@@ -51,5 +53,10 @@ public class LanguagesMenu extends AbstractSearchableEnigmaMenu {
 		Config.main().language.setValue(lang, true);
 		I18n.setLanguage(lang);
 		LanguageUtil.dispatchLanguageChange();
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

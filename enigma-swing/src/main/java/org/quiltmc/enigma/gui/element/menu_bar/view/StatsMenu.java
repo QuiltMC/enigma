@@ -16,6 +16,8 @@ import java.util.Map;
 import static java.util.concurrent.CompletableFuture.runAsync;
 
 public class StatsMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.view.stat_icons";
+
 	private final JCheckBoxMenuItem enableIcons = new JCheckBoxMenuItem();
 	private final JCheckBoxMenuItem includeSynthetic = new JCheckBoxMenuItem();
 	private final JCheckBoxMenuItem countFallback = new JCheckBoxMenuItem();
@@ -44,7 +46,7 @@ public class StatsMenu extends AbstractSearchableEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.view.stat_icons"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 
 		this.enableIcons.setText(I18n.translate("menu.view.stat_icons.enable_icons"));
 		this.includeSynthetic.setText(I18n.translate("menu.view.stat_icons.include_synthetic"));
@@ -97,5 +99,10 @@ public class StatsMenu extends AbstractSearchableEnigmaMenu {
 
 	private void updateIconsLater() {
 		SwingUtilities.invokeLater(() -> runAsync(() -> this.gui.getController().regenerateAndUpdateStatIcons()));
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

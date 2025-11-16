@@ -148,18 +148,16 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 	private static class Result {
 		final SearchableElement element;
-		final String alias;
 
 		@Nullable JMenuItem item;
 
-		Result(SearchableElement element, String alias) {
+		Result(SearchableElement element) {
 			this.element = element;
-			this.alias = alias;
 		}
 
 		JMenuItem getItem() {
 			if (this.item == null) {
-				this.item = new JMenuItem(this.alias);
+				this.item = new JMenuItem(this.element.getSearchName());
 			}
 
 			return this.item;
@@ -261,9 +259,10 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 							keep.accept(searchable);
 						}
 					})
-					.forEach(searchable -> searchable
-						.streamSearchAliases()
-						.forEach(alias -> elementsBuilder.put(alias, new Result(searchable, alias)))
+					.map(Result::new)
+					.forEach(result -> result
+						.element.streamSearchAliases()
+						.forEach(alias -> elementsBuilder.put(alias, result))
 					);
 
 			return elementsBuilder.getView();

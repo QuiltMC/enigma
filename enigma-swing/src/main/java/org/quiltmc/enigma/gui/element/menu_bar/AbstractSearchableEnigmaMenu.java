@@ -3,16 +3,14 @@ package org.quiltmc.enigma.gui.element.menu_bar;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.element.SearchableElement;
 
-import java.util.stream.Stream;
-
 public abstract class AbstractSearchableEnigmaMenu extends AbstractEnigmaMenu implements SearchableElement {
 	protected AbstractSearchableEnigmaMenu(Gui gui) {
 		super(gui);
 	}
 
 	@Override
-	public Stream<String> streamSearchAliases() {
-		return Stream.of(this.getText());
+	public String getSearchName() {
+		return this.getText();
 	}
 
 	@Override
