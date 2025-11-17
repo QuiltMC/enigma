@@ -40,6 +40,7 @@ final class RecordIndexingVisitor extends ClassVisitor {
 	// visitation state fields; cleared in visitEnd()
 	private ClassEntry clazz;
 	private final Set<RecordComponentNode> recordComponents = new HashSet<>();
+	// TODO investigate this; may need to replace clazz with a class stack and to change this to fieldsByNameByClass
 	// this is a multimap because inner classes' fields go in the same map as their outer class's
 	private final Multimap<String, FieldNode> fieldsByName = HashMultimap.create();
 	private final Multimap<String, MethodNode> methodsByDescriptor = HashMultimap.create();

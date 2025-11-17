@@ -15,12 +15,18 @@ import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.impl.plugin.RecordComponentProposalService;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.file.Path;
 
+/**
+ * Many record tests rely on the fact that proguard consistently names things in order a, b, c... which results in
+ * most default record component getters having the same name as their fields.<br>
+ * Changing proguard's naming configs could break many tests.
+ */
 public class TestRecordComponentProposal {
 	private static final Path JAR = TestUtil.obfJar("records");
 	private static EnigmaProject project;
@@ -71,32 +77,129 @@ public class TestRecordComponentProposal {
 	}
 
 	@Test
-	void testMismatchRecordComponentProposal() {
-		// name of getter mismatches with name of field
-		ClassEntry cClass = TestEntryFactory.newClass("d");
-		FieldEntry aField = TestEntryFactory.newField(cClass, "a", "I");
-		MethodEntry fakeAGetter = TestEntryFactory.newMethod(cClass, "a", "()I");
-		MethodEntry realAGetter = TestEntryFactory.newMethod(cClass, "b", "()I");
+	void testFakeGetterWrongInstructions() {
+		final ClassEntry fakeGetterWrongInstructionsRecord = TestEntryFactory.newClass("h");
+		final FieldEntry componentField = TestEntryFactory.newField(fakeGetterWrongInstructionsRecord, "a", "I");
+		final MethodEntry fakeGetter = TestEntryFactory.newMethod(fakeGetterWrongInstructionsRecord, "a", "()I");
+		final MethodEntry componentGetter = TestEntryFactory.newMethod(fakeGetterWrongInstructionsRecord, "b", "()I");
 
-		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(aField).tokenType());
-		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(fakeAGetter).tokenType());
-		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(realAGetter).tokenType());
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(componentField).tokenType());
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(fakeGetter).tokenType());
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(componentGetter).tokenType());
 
-		project.getRemapper().putMapping(TestUtil.newVC(), aField, new EntryMapping("mapped"));
+		final String targetName = "mapped";
+		project.getRemapper().putMapping(TestUtil.newVC(), componentField, new EntryMapping(targetName));
 
-		var fieldMapping = project.getRemapper().getMapping(aField);
-		Assertions.assertEquals(TokenType.DEOBFUSCATED, fieldMapping.tokenType());
-		Assertions.assertEquals("mapped", fieldMapping.targetName());
+		final EntryMapping fieldMapping = project.getRemapper().getMapping(componentField);
+		Assertions.assertSame(TokenType.DEOBFUSCATED, fieldMapping.tokenType());
+		Assertions.assertEquals(targetName, fieldMapping.targetName());
 
 		// fake getter should NOT be mapped
-		var fakeGetterMapping = project.getRemapper().getMapping(fakeAGetter);
+		final EntryMapping fakeGetterMapping = project.getRemapper().getMapping(fakeGetter);
 		Assertions.assertEquals(TokenType.OBFUSCATED, fakeGetterMapping.tokenType());
 
-		// real getter SHOULD be mapped
-		var realGetterMapping = project.getRemapper().getMapping(realAGetter);
-		Assertions.assertEquals(TokenType.DYNAMIC_PROPOSED, realGetterMapping.tokenType());
-		Assertions.assertEquals("mapped", realGetterMapping.targetName());
-		Assertions.assertEquals("enigma:record_component_proposer", realGetterMapping.sourcePluginId());
+		// real getter should also NOT be mapped
+		// it's impossible to determine that it's the real getter
+		// this behavior matches decompilers'
+		final EntryMapping componentGetterMapping = project.getRemapper().getMapping(componentGetter);
+		Assertions.assertEquals(TokenType.OBFUSCATED, componentGetterMapping.tokenType());
+	}
+
+	@Test
+	void testFakeGetterRightInstructions() {
+		final ClassEntry fakeGetterRightInstructionsRecord = TestEntryFactory.newClass("g");
+		final FieldEntry componentField = TestEntryFactory.newField(fakeGetterRightInstructionsRecord, "a", "I");
+		final MethodEntry fakeGetter = TestEntryFactory.newMethod(fakeGetterRightInstructionsRecord, "a", "()I");
+		final MethodEntry componentGetter = TestEntryFactory.newMethod(fakeGetterRightInstructionsRecord, "b", "()I");
+
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(componentField).tokenType());
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(fakeGetter).tokenType());
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(componentGetter).tokenType());
+
+		final String targetName = "mapped";
+		project.getRemapper().putMapping(TestUtil.newVC(), componentField, new EntryMapping(targetName));
+
+		// FAKE getter SHOULD be mapped
+		// Assuming it's the getter - based on name, access, descriptor and instructions - matches decompilers'
+		// assumptions.
+		// Decompilers assume it's a default getter and hide it, so we propose a name to prevent un-completable stats.
+		final EntryMapping fakeGetterMappings = project.getRemapper().getMapping(fakeGetter);
+		Assertions.assertEquals(TokenType.DYNAMIC_PROPOSED, fakeGetterMappings.tokenType());
+		Assertions.assertEquals(targetName, fakeGetterMappings.targetName());
+		Assertions.assertEquals(RecordComponentProposalService.ID, fakeGetterMappings.sourcePluginId());
+
+		// real getter should NOT be mapped
+		final EntryMapping componentGetterMapping = project.getRemapper().getMapping(componentGetter);
+		Assertions.assertEquals(TokenType.OBFUSCATED, componentGetterMapping.tokenType());
+	}
+
+	@Test
+	void testBridgeRecord() {
+		final String doubleDesc = "Ljava/lang/Double;";
+		final String stringGetterDesc = "()" + doubleDesc;
+
+		final ClassEntry bridgeRecord = TestEntryFactory.newClass("f");
+		final FieldEntry getField = TestEntryFactory.newField(bridgeRecord, "a", doubleDesc);
+		final MethodEntry getGetter = TestEntryFactory.newMethod(bridgeRecord, "a", stringGetterDesc);
+		final MethodEntry getBridge = TestEntryFactory.newMethod(bridgeRecord, "get", "()Ljava/lang/Object;");
+
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(getField).tokenType());
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(getGetter).tokenType());
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(getBridge).tokenType());
+
+		final String targetName = "mapped";
+		project.getRemapper().putMapping(TestUtil.newVC(), getField, new EntryMapping(targetName));
+
+		final EntryMapping fieldMapping = project.getRemapper().getMapping(getField);
+		Assertions.assertSame(TokenType.DEOBFUSCATED, fieldMapping.tokenType());
+		Assertions.assertEquals(targetName, fieldMapping.targetName());
+
+		// getter should be mapped; it should be the only getter candidate
+		final EntryMapping getterMapping = project.getRemapper().getMapping(getGetter);
+		Assertions.assertSame(TokenType.DYNAMIC_PROPOSED, getterMapping.tokenType());
+		Assertions.assertEquals(targetName, getterMapping.targetName());
+		Assertions.assertEquals(RecordComponentProposalService.ID, getterMapping.sourcePluginId());
+
+		// bridge should not be mapped; it should not be a getter candidate because
+		// it has the wrong access and descriptor
+		final EntryMapping bridgeMapping = project.getRemapper().getMapping(getBridge);
+		Assertions.assertEquals(TokenType.OBFUSCATED, bridgeMapping.tokenType());
+	}
+
+	@Test
+	void testIllegalGetterNameExclusion() {
+		final String stringDesc = "Ljava/lang/String;";
+		final String stringGetterDesc = "()" + stringDesc;
+
+		final ClassEntry stringComponentOverrideGetterRecord = TestEntryFactory.newClass("i");
+		final FieldEntry stringField = TestEntryFactory.newField(stringComponentOverrideGetterRecord, "a", stringDesc);
+		final MethodEntry stringGetter = TestEntryFactory
+			.newMethod(stringComponentOverrideGetterRecord, "a", stringGetterDesc);
+		final MethodEntry toString = TestEntryFactory
+			.newMethod(stringComponentOverrideGetterRecord, "toString", stringGetterDesc);
+
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(stringField).tokenType());
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(stringGetter).tokenType());
+		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(toString).tokenType());
+
+		final String targetName = "mapped";
+		project.getRemapper().putMapping(TestUtil.newVC(), stringField, new EntryMapping(targetName));
+
+		final EntryMapping fieldMapping = project.getRemapper().getMapping(stringField);
+		Assertions.assertSame(TokenType.DEOBFUSCATED, fieldMapping.tokenType());
+		Assertions.assertEquals(targetName, fieldMapping.targetName());
+
+		// getter should be mapped; it should be the only getter candidate: toString should be excluded from candidates
+		// because its name is not a legal component name
+		final EntryMapping getterMapping = project.getRemapper().getMapping(stringGetter);
+		Assertions.assertSame(TokenType.DYNAMIC_PROPOSED, getterMapping.tokenType());
+		Assertions.assertEquals(targetName, getterMapping.targetName());
+		Assertions.assertEquals(RecordComponentProposalService.ID, getterMapping.sourcePluginId());
+
+		// toString should not be mapped because it's name doesn't match the field,
+		// its name is no a legal component name, and it's a library method (unmappable)
+		final EntryMapping bridgeMapping = project.getRemapper().getMapping(toString);
+		Assertions.assertEquals(TokenType.OBFUSCATED, bridgeMapping.tokenType());
 	}
 
 	@Test
