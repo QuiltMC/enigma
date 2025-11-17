@@ -46,27 +46,33 @@ final class RecordIndexingVisitor extends ClassVisitor {
 
 	// index fields; contents publicly queryable
 	private final Multimap<ClassEntry, FieldEntry> componentFieldsByClass = HashMultimap.create();
-	// holds methods that are at least probably getters for their field keys; superset of definiteComponentGettersByField
-	private final BiMap<FieldEntry, MethodEntry> componentGettersByField = HashBiMap.create();
 	// holds methods that are definitely the getters for their field keys
 	private final BiMap<FieldEntry, MethodEntry> definiteComponentGettersByField = HashBiMap.create();
-	// holds methods that are at least probably getters; superset of definiteComponentGettersByClass
-	private final Multimap<ClassEntry, MethodEntry> componentGettersByClass = HashMultimap.create();
+	// holds methods that are probably, but not certainly getters for their field keys
+	private final BiMap<FieldEntry, MethodEntry> probableComponentGettersByField = HashBiMap.create();
 	// holds methods that are definitely component getters
 	private final Multimap<ClassEntry, MethodEntry> definiteComponentGettersByClass = HashMultimap.create();
+	// holds methods that are probably, but not certainly getters
+	private final Multimap<ClassEntry, MethodEntry> probableComponentGettersByClass = HashMultimap.create();
 
 	RecordIndexingVisitor() {
 		super(Enigma.ASM_VERSION);
 	}
 
+	// TODO javadoc
 	@Nullable
 	public MethodEntry getComponentGetter(FieldEntry componentField) {
-		return this.componentGettersByField.get(componentField);
+		final MethodEntry definiteGetter = this.definiteComponentGettersByField.get(componentField);
+		return definiteGetter == null ? this.probableComponentGettersByField.get(componentField) : definiteGetter;
 	}
 
+	// TODO javadoc
 	@Nullable
 	public FieldEntry getComponentField(MethodEntry componentGetter) {
-		return this.componentGettersByField.inverse().get(componentGetter);
+		final FieldEntry definiteField = this.definiteComponentGettersByField.inverse().get(componentGetter);
+		return definiteField == null
+			? this.probableComponentGettersByField.inverse().get(componentGetter)
+			: definiteField;
 	}
 
 	// TODO javadoc, prevent directly naming method (always match field)
@@ -81,17 +87,39 @@ final class RecordIndexingVisitor extends ClassVisitor {
 		return this.definiteComponentGettersByField.inverse().get(componentGetter);
 	}
 
+	// TODO javadoc
+	@Nullable
+	public MethodEntry getProbableComponentGetter(FieldEntry componentField) {
+		return this.probableComponentGettersByField.get(componentField);
+	}
+
+	// TODO javadoc
+	@Nullable
+	public FieldEntry getProbableComponentField(MethodEntry componentGetter) {
+		return this.probableComponentGettersByField.inverse().get(componentGetter);
+	}
+
+	// TODO javadoc
 	public Stream<FieldEntry> streamComponentFields(ClassEntry recordEntry) {
 		return this.componentFieldsByClass.get(recordEntry).stream();
 	}
 
+	// TODO javadoc
 	public Stream<MethodEntry> streamComponentMethods(ClassEntry recordEntry) {
-		return this.componentGettersByClass.get(recordEntry).stream();
+		return Stream.concat(
+			this.definiteComponentGettersByClass.get(recordEntry).stream(),
+			this.probableComponentGettersByClass.get(recordEntry).stream()
+		);
 	}
 
 	// TODO javadoc
 	public Stream<MethodEntry> streamDefiniteComponentMethods(ClassEntry recordEntry) {
 		return this.definiteComponentGettersByClass.get(recordEntry).stream();
+	}
+
+	// TODO javadoc
+	public Stream<MethodEntry> streamProbableComponentMethods(ClassEntry recordEntry) {
+		return this.probableComponentGettersByClass.get(recordEntry).stream();
 	}
 
 	@Override
@@ -210,12 +238,12 @@ final class RecordIndexingVisitor extends ClassVisitor {
 		final MethodEntry getterEntry =
 			new MethodEntry(this.clazz, getterNode.name, new MethodDescriptor(getterNode.desc));
 
-		this.componentGettersByField.put(fieldEntry, getterEntry);
-		this.componentGettersByClass.put(this.clazz, getterEntry);
-
 		if (definite) {
 			this.definiteComponentGettersByField.put(fieldEntry, getterEntry);
 			this.definiteComponentGettersByClass.put(this.clazz, getterEntry);
+		} else {
+			this.probableComponentGettersByField.put(fieldEntry, getterEntry);
+			this.probableComponentGettersByClass.put(this.clazz, getterEntry);
 		}
 	}
 }
