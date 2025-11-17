@@ -131,6 +131,10 @@ def registerTestJarTasks(String name, String... input) {
 
 		configuration confFileArg
 
+		final outDir = project.layout.buildDirectory.map { it.dir('test-obf') }
+
+		printmapping(outDir.map { it.dir("${name}.map") })
+
 		libraryjars(
 			[jarfilter: '!**.jar', filter: '!module-info.class'],
 			"${System.getProperty('java.home')}/jmods/java.base.jmod"
@@ -138,7 +142,7 @@ def registerTestJarTasks(String name, String... input) {
 
 		injars testJar.map { it.archiveFile }
 
-		outjars file("build/test-obf/${name}.jar")
+		outjars outDir.map { it.dir("${name}.jar") }
 	}
 
 	test.dependsOn(testObf)
