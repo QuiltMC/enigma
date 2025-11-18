@@ -140,6 +140,7 @@ public class TestRecordComponentProposal {
 
 		final ClassEntry bridgeRecord = TestEntryFactory.newClass("f");
 		final FieldEntry getField = TestEntryFactory.newField(bridgeRecord, "a", doubleDesc);
+		// once Supplier is indexed as a lib, this should be named get
 		final MethodEntry getGetter = TestEntryFactory.newMethod(bridgeRecord, "a", stringGetterDesc);
 		final MethodEntry getBridge = TestEntryFactory.newMethod(bridgeRecord, "get", "()Ljava/lang/Object;");
 
@@ -197,7 +198,7 @@ public class TestRecordComponentProposal {
 		Assertions.assertEquals(RecordComponentProposalService.ID, getterMapping.sourcePluginId());
 
 		// toString should not be mapped because it's name doesn't match the field,
-		// its name is no a legal component name, and it's a library method (unmappable)
+		// its name is not a legal component name, and it's a library method (unmappable)
 		final EntryMapping bridgeMapping = project.getRemapper().getMapping(toString);
 		Assertions.assertEquals(TokenType.OBFUSCATED, bridgeMapping.tokenType());
 	}
