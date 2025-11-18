@@ -1,9 +1,9 @@
 package org.quiltmc.enigma.gui.util;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.util.Result;
 
-import javax.annotation.Nullable;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
