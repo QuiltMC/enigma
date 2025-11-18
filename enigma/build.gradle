@@ -109,7 +109,7 @@ static String taskNameFrom(String name) {
 }
 
 
-final obfuscateAllTestInput = tasks.register('obfuscateAllTestInput') {
+final obfuscateTestInputs = tasks.register('obfuscateTestInputs') {
 	group = 'test-setup'
 }
 
@@ -150,7 +150,7 @@ def registerTestJarTasks(String name, String... input) {
 		outjars outDir.map { it.dir("${name}.jar") }
 	}
 
-	tasks.named('obfuscateAllTestInput') {
+	tasks.named('obfuscateTestInputs') {
 		dependsOn(testObf)
 	}
 }
@@ -376,7 +376,7 @@ final testRecommendedImplPluginAgainstBumpedEnigma = tasks
 	}
 }
 
-test.dependsOn(obfuscateAllTestInput, testPreHandlingPluginAgainstCurrentEnigma, testRecommendedImplPluginAgainstBumpedEnigma)
+test.dependsOn(obfuscateTestInputs, testPreHandlingPluginAgainstCurrentEnigma, testRecommendedImplPluginAgainstBumpedEnigma)
 
 publishing {
 	publications {
