@@ -277,34 +277,13 @@ public class CompositeStringMultiTrieTest {
 	}
 
 	record Association(String key) {
-		static final Association EMPTY = new Association("");
-
-		static final Association A = new Association("A");
-		static final Association AB = new Association("AB");
-		static final Association ABC = new Association("ABC");
-
-		static final Association BA = new Association("BA");
-		static final Association CBA = new Association("CBA");
-
-		static final Association I = new Association("I");
-		static final Association II = new Association("II");
-		static final Association III = new Association("III");
-
-		static final Association ONE = new Association("ONE");
-		static final Association TWO = new Association("TWO");
-		static final Association THREE = new Association("THREE");
-
-		static final Association ENO = new Association("ENO");
-		static final Association OWT = new Association("OWT");
-		static final Association EERHT = new Association("EERHT");
-
 		static final ImmutableList<Association> ALL = ImmutableList.of(
-				EMPTY,
-				A, AB, ABC,
-				BA, CBA,
-				I, II, III,
-				ONE, TWO, THREE,
-				ENO, OWT, EERHT
+			new Association(""),
+			new Association("A"), new Association("AB"), new Association("ABC"),
+			new Association("BA"), new Association("CBA"),
+			new Association("I"), new Association("II"), new Association("III"),
+			new Association("ONE"), new Association("TWO"), new Association("THREE"),
+			new Association("ENO"), new Association("OWT"), new Association("EERHT")
 		);
 
 		static final ImmutableMultimap<String, Association> BY_PREFIX;
