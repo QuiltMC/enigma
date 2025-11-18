@@ -15,7 +15,7 @@ public interface MutableMultiTrie<K, V> extends MultiTrie<K, V> {
 	/**
 	 * @return a live, unmodifiable view of this trie
 	 */
-	MultiTrie<K, V> getView();
+	MultiTrie<K, V> view();
 
 	/**
 	 * A mutable node representing values associated with a {@link MutableMultiTrie}.
@@ -49,7 +49,7 @@ public interface MutableMultiTrie<K, V> extends MultiTrie<K, V> {
 		/**
 		 * @return a live, unmodifiable view of this node
 		 */
-		MultiTrie.Node<K, V> getView();
+		MultiTrie.Node<K, V> view();
 
 		abstract class View<K, V> implements MultiTrie.Node<K, V> {
 			@Override

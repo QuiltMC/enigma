@@ -68,7 +68,7 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Branch
 	}
 
 	@Override
-	public StringMultiTrie.View<V, Branch<V>, Root<V>> getView() {
+	public StringMultiTrie.View<V, Branch<V>, Root<V>> view() {
 		return this.view;
 	}
 
@@ -107,7 +107,7 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Branch
 		}
 
 		@Override
-		public CharacterNode<V> getView() {
+		public CharacterNode<V> view() {
 			return this.view;
 		}
 	}
@@ -169,7 +169,7 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Branch
 		}
 
 		@Override
-		public CharacterNode<V> getView() {
+		public CharacterNode<V> view() {
 			return this.view;
 		}
 
@@ -205,7 +205,7 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Branch
 		@NonNull
 		@Override
 		public CharacterNode<V> next(Character key) {
-			return this.viewed.next(key).getView();
+			return this.viewed.next(key).view();
 		}
 
 		@Override

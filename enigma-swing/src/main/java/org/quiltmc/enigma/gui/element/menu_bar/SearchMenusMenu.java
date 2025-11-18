@@ -264,7 +264,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 						.forEach(alias -> elementsBuilder.put(alias, result))
 					);
 
-			return elementsBuilder.getView();
+			return elementsBuilder.view();
 		}
 
 		record CurrentResults(CharacterNode<Result> results, String searchTerm) { }
