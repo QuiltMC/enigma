@@ -2,6 +2,7 @@ package org.quiltmc.enigma.impl;
 
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
+import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 import org.quiltmc.enigma.api.Enigma;
@@ -41,7 +42,6 @@ import org.quiltmc.enigma.impl.translation.mapping.MappingsChecker;
 import org.quiltmc.enigma.util.I18n;
 import org.tinylog.Logger;
 
-import javax.annotation.Nullable;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
