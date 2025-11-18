@@ -509,10 +509,9 @@ public final class GuiUtil {
 							choiceItem.setSelected(true);
 						}
 
-						final int finalChoice = choice;
 						choiceItem.addActionListener(e -> {
-							if (!choiceItem.isSelected()) {
-								config.setValue(finalChoice);
+							if (!config.value().equals(choice)) {
+								config.setValue(choice);
 								onUpdate.run();
 							}
 						});
