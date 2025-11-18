@@ -76,8 +76,8 @@ final class RecordIndexingVisitor extends ClassVisitor {
 	public FieldEntry getComponentField(MethodEntry componentGetter) {
 		final FieldEntry definiteField = this.definiteComponentGettersByField.inverse().get(componentGetter);
 		return definiteField == null
-			? this.probableComponentGettersByField.inverse().get(componentGetter)
-			: definiteField;
+				? this.probableComponentGettersByField.inverse().get(componentGetter)
+				: definiteField;
 	}
 
 	/**
@@ -239,14 +239,14 @@ final class RecordIndexingVisitor extends ClassVisitor {
 									.filter(method -> {
 										final InsnList instructions = method.instructions;
 										return instructions.size() == 6
-											&& instructions.get(2).getOpcode() == Opcodes.ALOAD
-											&& instructions.get(3) instanceof FieldInsnNode fieldInsn
-											&& fieldInsn.getOpcode() == Opcodes.GETFIELD
-											&& fieldInsn.owner.equals(this.clazz.getFullName())
-											&& fieldInsn.desc.equals(field.desc)
-											&& fieldInsn.name.equals(field.name)
-											&& instructions.get(4).getOpcode() >= Opcodes.IRETURN
-											&& instructions.get(4).getOpcode() <= Opcodes.ARETURN;
+												&& instructions.get(2).getOpcode() == Opcodes.ALOAD
+												&& instructions.get(3) instanceof FieldInsnNode fieldInsn
+												&& fieldInsn.getOpcode() == Opcodes.GETFIELD
+												&& fieldInsn.owner.equals(this.clazz.getFullName())
+												&& fieldInsn.desc.equals(field.desc)
+												&& fieldInsn.name.equals(field.name)
+												&& instructions.get(4).getOpcode() >= Opcodes.IRETURN
+												&& instructions.get(4).getOpcode() <= Opcodes.ARETURN;
 									})
 									.findAny()
 									.ifPresent(getter -> this.indexGetter(getter, fieldEntry, false));
