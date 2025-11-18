@@ -1,12 +1,12 @@
 package org.quiltmc.enigma.gui.panel;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.util.LineIndexer;
 
-import javax.annotation.Nullable;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 import java.awt.Color;
