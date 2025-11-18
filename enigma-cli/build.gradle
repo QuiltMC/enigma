@@ -15,7 +15,7 @@ application {
 	jar.manifest.attributes 'Main-Class': mainClass
 }
 
-test.dependsOn(project(':enigma').tasks.named('obfuscateAllTestInput'))
+test.dependsOn(project(':enigma').tasks.named('obfuscateTestInputs'))
 
 publishing {
 	publications {
