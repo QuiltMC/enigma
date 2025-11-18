@@ -619,14 +619,14 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 			} else {
 				return switch (type) {
 					case OBFUSCATED -> this.markObfuscated
-						? Config.getCurrentSyntaxPaneColors().obfuscatedOutline
-						: null;
+							? Config.getCurrentSyntaxPaneColors().obfuscatedOutline
+							: null;
 					case DEOBFUSCATED -> this.markDeobfuscated
-						? Config.getCurrentSyntaxPaneColors().deobfuscatedOutline
-						: null;
+							? Config.getCurrentSyntaxPaneColors().deobfuscatedOutline
+							: null;
 					case JAR_PROPOSED, DYNAMIC_PROPOSED -> this.markProposed
-						? Config.getCurrentSyntaxPaneColors().proposedOutline
-						: null;
+							? Config.getCurrentSyntaxPaneColors().proposedOutline
+							: null;
 					// these only appear if debugTokenHighlights is true, so no need for a separate marker config
 					case DEBUG -> Config.getCurrentSyntaxPaneColors().debugTokenOutline;
 				};
