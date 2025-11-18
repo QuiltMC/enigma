@@ -28,8 +28,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-// TODO add tests
-// TODO javadoc, including getter uncertainty
+/**
+ * @see RecordIndexingService
+ */
 final class RecordIndexingVisitor extends ClassVisitor {
 	private static final int REQUIRED_GETTER_ACCESS = Opcodes.ACC_PUBLIC;
 	private static final int ILLEGAL_GETTER_ACCESS = Opcodes.ACC_SYNTHETIC | Opcodes.ACC_BRIDGE | Opcodes.ACC_STATIC;
@@ -40,8 +41,7 @@ final class RecordIndexingVisitor extends ClassVisitor {
 	// visitation state fields; cleared in visitEnd()
 	private ClassEntry clazz;
 	private final Set<RecordComponentNode> recordComponents = new HashSet<>();
-	// TODO investigate this; may need to replace clazz with a class stack and to change this to fieldsByNameByClass
-	// this is a multimap because inner classes' fields go in the same map as their outer class's
+	// this is a multimap because proguard can give component fields with different types the same name
 	private final Multimap<String, FieldNode> fieldsByName = HashMultimap.create();
 	private final Multimap<String, MethodNode> methodsByDescriptor = HashMultimap.create();
 
@@ -60,14 +60,18 @@ final class RecordIndexingVisitor extends ClassVisitor {
 		super(Enigma.ASM_VERSION);
 	}
 
-	// TODO javadoc
+	/**
+	 * @see RecordIndexingService#getComponentGetter(FieldEntry)
+	 */
 	@Nullable
 	public MethodEntry getComponentGetter(FieldEntry componentField) {
 		final MethodEntry definiteGetter = this.definiteComponentGettersByField.get(componentField);
 		return definiteGetter == null ? this.probableComponentGettersByField.get(componentField) : definiteGetter;
 	}
 
-	// TODO javadoc
+	/**
+	 * @see RecordIndexingService#getComponentField(MethodEntry)
+	 */
 	@Nullable
 	public FieldEntry getComponentField(MethodEntry componentGetter) {
 		final FieldEntry definiteField = this.definiteComponentGettersByField.inverse().get(componentGetter);
@@ -76,36 +80,48 @@ final class RecordIndexingVisitor extends ClassVisitor {
 			: definiteField;
 	}
 
-	// TODO javadoc, prevent directly naming method (always match field)
+	/**
+	 * @see RecordIndexingService#getDefiniteComponentGetter(FieldEntry)
+	 */
 	@Nullable
 	public MethodEntry getDefiniteComponentGetter(FieldEntry componentField) {
 		return this.definiteComponentGettersByField.get(componentField);
 	}
 
-	// TODO javadoc
+	/**
+	 * @see RecordIndexingService#getDefiniteComponentField(MethodEntry)
+	 */
 	@Nullable
 	public FieldEntry getDefiniteComponentField(MethodEntry componentGetter) {
 		return this.definiteComponentGettersByField.inverse().get(componentGetter);
 	}
 
-	// TODO javadoc
+	/**
+	 * @see RecordIndexingService#getProbableComponentGetter(FieldEntry)
+	 */
 	@Nullable
 	public MethodEntry getProbableComponentGetter(FieldEntry componentField) {
 		return this.probableComponentGettersByField.get(componentField);
 	}
 
-	// TODO javadoc
+	/**
+	 * @see RecordIndexingService#getProbableComponentField(MethodEntry)
+	 */
 	@Nullable
 	public FieldEntry getProbableComponentField(MethodEntry componentGetter) {
 		return this.probableComponentGettersByField.inverse().get(componentGetter);
 	}
 
-	// TODO javadoc
+	/**
+	 * @see RecordIndexingService#streamComponentFields(ClassEntry)
+	 */
 	public Stream<FieldEntry> streamComponentFields(ClassEntry recordEntry) {
 		return this.componentFieldsByClass.get(recordEntry).stream();
 	}
 
-	// TODO javadoc
+	/**
+	 * @see RecordIndexingService#streamComponentMethods(ClassEntry)
+	 */
 	public Stream<MethodEntry> streamComponentMethods(ClassEntry recordEntry) {
 		return Stream.concat(
 			this.definiteComponentGettersByClass.get(recordEntry).stream(),
@@ -113,12 +129,16 @@ final class RecordIndexingVisitor extends ClassVisitor {
 		);
 	}
 
-	// TODO javadoc
+	/**
+	 * @see RecordIndexingService#streamDefiniteComponentMethods(ClassEntry)
+	 */
 	public Stream<MethodEntry> streamDefiniteComponentMethods(ClassEntry recordEntry) {
 		return this.definiteComponentGettersByClass.get(recordEntry).stream();
 	}
 
-	// TODO javadoc
+	/**
+	 * @see RecordIndexingService#streamProbableComponentMethods(ClassEntry)
+	 */
 	public Stream<MethodEntry> streamProbableComponentMethods(ClassEntry recordEntry) {
 		return this.probableComponentGettersByClass.get(recordEntry).stream();
 	}
