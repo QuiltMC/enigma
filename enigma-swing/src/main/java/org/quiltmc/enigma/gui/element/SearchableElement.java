@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 public interface SearchableElement extends MenuElement {
-
 	String ALIASES_SUFFIX = ".aliases";
 	String ALIAS_DELIMITER = ";";
 

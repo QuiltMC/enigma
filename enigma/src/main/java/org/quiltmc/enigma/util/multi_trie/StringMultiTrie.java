@@ -135,8 +135,8 @@ public abstract class StringMultiTrie
 		default CharacterNode<V> nextIgnoreCase(Character key) {
 			final CharacterNode<V> next = this.next(key);
 			return next.isEmpty()
-				? tryToggleCase(key).map(this::next).orElse(next)
-				: next;
+					? tryToggleCase(key).map(this::next).orElse(next)
+					: next;
 		}
 	}
 
@@ -153,8 +153,8 @@ public abstract class StringMultiTrie
 		default MutableCharacterNode<V, B> nextIgnoreCase(Character key) {
 			final MutableCharacterNode<V, B> next = this.next(key);
 			return next.isEmpty()
-				? tryToggleCase(key).<MutableCharacterNode<V, B>>map(this::next).orElse(next)
-				: next;
+					? tryToggleCase(key).<MutableCharacterNode<V, B>>map(this::next).orElse(next)
+					: next;
 		}
 	}
 

@@ -87,16 +87,16 @@ public class CompositeStringMultiTrieTest {
 
 	private static void assertOneLeaf(MutableCharacterNode<?, ?> node) {
 		assertEquals(
-			1, node.streamLeaves().count(),
-			() -> "Expected node to have only one leaf, but had the following: " + node.streamLeaves().toList()
+				1, node.streamLeaves().count(),
+				() -> "Expected node to have only one leaf, but had the following: " + node.streamLeaves().toList()
 		);
 	}
 
 	private static void assertTrieSize(CompositeStringMultiTrie<Integer> trie, int expectedSize) {
 		assertEquals(
-			expectedSize, trie.getSize(),
-			() -> "Expected node to have %s values, but had the following: %s"
-				.formatted(expectedSize, trie.getRoot().streamValues().toList())
+				expectedSize, trie.getSize(),
+				() -> "Expected node to have %s values, but had the following: %s"
+					.formatted(expectedSize, trie.getRoot().streamValues().toList())
 		);
 	}
 
@@ -110,15 +110,15 @@ public class CompositeStringMultiTrieTest {
 			assertUnorderedContentsForPrefix(prefix, VALUES, associations.stream(), node.streamValues());
 
 			assertUnorderedContentsForPrefix(
-				prefix, LEAVES,
-				associations.stream().filter(association -> association.isLeafOf(prefix)),
-				node.streamLeaves()
+					prefix, LEAVES,
+					associations.stream().filter(association -> association.isLeafOf(prefix)),
+					node.streamLeaves()
 			);
 
 			assertUnorderedContentsForPrefix(
-				prefix, BRANCHES,
-				associations.stream().filter(association -> association.isBranchOf(prefix)),
-				node.streamStems()
+					prefix, BRANCHES,
+					associations.stream().filter(association -> association.isBranchOf(prefix)),
+					node.streamStems()
 			);
 		});
 	}
@@ -131,21 +131,21 @@ public class CompositeStringMultiTrieTest {
 			final Node<Character, MultiAssociation> node = trie.get(prefix);
 
 			assertUnorderedContentsForPrefix(
-				prefix, VALUES,
-				MultiAssociation.streamWith(associations.stream()),
-				node.streamValues()
+					prefix, VALUES,
+					MultiAssociation.streamWith(associations.stream()),
+					node.streamValues()
 			);
 
 			assertUnorderedContentsForPrefix(
-				prefix, LEAVES,
-				MultiAssociation.streamWith(associations.stream().filter(association -> association.isLeafOf(prefix))),
-				node.streamLeaves()
+					prefix, LEAVES,
+					MultiAssociation.streamWith(associations.stream().filter(association -> association.isLeafOf(prefix))),
+					node.streamLeaves()
 			);
 
 			assertUnorderedContentsForPrefix(
-				prefix, BRANCHES,
-				MultiAssociation.streamWith(associations.stream().filter(a -> a.isBranchOf(prefix))),
-				node.streamStems()
+					prefix, BRANCHES,
+					MultiAssociation.streamWith(associations.stream().filter(a -> a.isBranchOf(prefix))),
+					node.streamStems()
 			);
 		});
 	}
@@ -185,16 +185,16 @@ public class CompositeStringMultiTrieTest {
 
 		Association.BY_PREFIX.asMap().forEach((prefix, associations) -> {
 			final List<Association> leaves = associations.stream()
-				.filter(association -> association.isLeafOf(prefix))
-				.toList();
+					.filter(association -> association.isLeafOf(prefix))
+					.toList();
 
 			final boolean expectRemoval = !leaves.isEmpty();
 			assertEquals(expectRemoval, trie.removeAll(prefix), () -> {
 				return expectRemoval
-					? "Expected removal of leaves with prefix \"%s\": %s"
-						.formatted(prefix, MultiAssociation.streamWith(leaves.stream()).toList())
-					: "Expected no removal of nodes with prefix \"%s\": %s"
-						.formatted(prefix, MultiAssociation.streamWith(associations.stream()).toList());
+						? "Expected removal of leaves with prefix \"%s\": %s"
+							.formatted(prefix, MultiAssociation.streamWith(leaves.stream()).toList())
+						: "Expected no removal of nodes with prefix \"%s\": %s"
+							.formatted(prefix, MultiAssociation.streamWith(associations.stream()).toList());
 			});
 		});
 
@@ -202,26 +202,26 @@ public class CompositeStringMultiTrieTest {
 	}
 
 	private static <T> void assertRemovalResult(
-		CompositeStringMultiTrie<T> trie, boolean expectRemoval, String prefix, T value
+			CompositeStringMultiTrie<T> trie, boolean expectRemoval, String prefix, T value
 	) {
 		assertEquals(
-			expectRemoval,
-			trie.remove(prefix, value),
-			() -> "Expected%s removal of \"%s\" with prefix \"%s\"!"
-				.formatted(expectRemoval ? "" : " no", value, prefix)
+				expectRemoval,
+				trie.remove(prefix, value),
+				() -> "Expected%s removal of \"%s\" with prefix \"%s\"!"
+					.formatted(expectRemoval ? "" : " no", value, prefix)
 		);
 	}
 
 	private static void assertEmpty(CompositeStringMultiTrie<?> trie) {
 		assertTrue(
-			trie.isEmpty(),
-			() ->"Expected trie to be empty, but had it contents: " + trie.getRoot().streamValues().toList()
+				trie.isEmpty(),
+				() -> "Expected trie to be empty, but had it contents: " + trie.getRoot().streamValues().toList()
 		);
 
 		final Map<Character, ? extends Node<Character, ?>> rootChildren = trie.getRoot().getBranches();
 		assertTrue(
-			rootChildren.isEmpty(),
-			() -> "Expected root's children to be pruned, but it had children: " + rootChildren
+				rootChildren.isEmpty(),
+				() -> "Expected root's children to be pruned, but it had children: " + rootChildren
 		);
 	}
 
@@ -229,9 +229,9 @@ public class CompositeStringMultiTrieTest {
 			String prefix, String arrayName, Stream<T> expected, Stream<T> actual
 	) {
 		assertThat(
-			"Unexpected %s for prefix \"%s\"!".formatted(arrayName, prefix),
-			actual.toList(),
-			containsInAnyOrder(expected.toArray())
+				"Unexpected %s for prefix \"%s\"!".formatted(arrayName, prefix),
+				actual.toList(),
+				containsInAnyOrder(expected.toArray())
 		);
 	}
 
@@ -254,8 +254,8 @@ public class CompositeStringMultiTrieTest {
 
 	private static void assertOneValue(MutableCharacterNode<String, ?> node) {
 		assertEquals(
-			1, node.getSize(),
-			"Expected node to have only one value, but had the following: " + node.streamValues().toList()
+				1, node.getSize(),
+				"Expected node to have only one value, but had the following: " + node.streamValues().toList()
 		);
 	}
 
@@ -272,8 +272,8 @@ public class CompositeStringMultiTrieTest {
 		assertOneValue(node);
 
 		node.streamLeaves()
-			.findAny()
-			.orElseThrow(() -> new AssertionFailedError("Expected node to have a leaf, but had none!"));
+				.findAny()
+				.orElseThrow(() -> new AssertionFailedError("Expected node to have a leaf, but had none!"));
 	}
 
 	record Association(String key) {
@@ -299,12 +299,12 @@ public class CompositeStringMultiTrieTest {
 		static final Association EERHT = new Association("EERHT");
 
 		static final ImmutableList<Association> ALL = ImmutableList.of(
-			EMPTY,
-			A, AB, ABC,
-			BA, CBA,
-			I, II, III,
-			ONE, TWO, THREE,
-			ENO, OWT, EERHT
+				EMPTY,
+				A, AB, ABC,
+				BA, CBA,
+				I, II, III,
+				ONE, TWO, THREE,
+				ENO, OWT, EERHT
 		);
 
 		static final ImmutableMultimap<String, Association> BY_PREFIX;
