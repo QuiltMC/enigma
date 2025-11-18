@@ -494,8 +494,8 @@ public class MarkableScrollPane extends JScrollPane {
 
 		private int scalePos(int pos) {
 			return this.viewHeight > this.areaHeight
-				? pos * this.areaHeight / this.viewHeight
-				: pos;
+					? pos * this.areaHeight / this.viewHeight
+					: pos;
 		}
 
 		void clearMarkers() {
@@ -528,7 +528,7 @@ public class MarkableScrollPane extends JScrollPane {
 
 		boolean areaContains(int x, int y) {
 			return this.areaX <= x && x <= this.areaX + MarkableScrollPane.this.markerWidth
-				&& this.areaY <= y && y <= this.areaY + this.areaHeight;
+					&& this.areaY <= y && y <= this.areaY + this.areaHeight;
 		}
 
 		Rectangle createArea() {
