@@ -1,11 +1,11 @@
 package org.quiltmc.enigma.gui.util;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Result;
 
-import javax.annotation.Nullable;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -237,8 +237,7 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 	protected final JButton cancel = new JButton();
 	protected final JButton submit = new JButton();
 
-	@Nullable
-	private Error.Type lastError;
+	private Error.@Nullable Type lastError;
 
 	/**
 	 * Constructs a dialog and initializes its components. Performs no input validation.
@@ -398,8 +397,7 @@ public class NumberInputDialog<N extends Number & Comparable<N>> extends JDialog
 		this.field = field;
 	}
 
-	@Nullable
-	protected Error.Type getLastError() {
+	protected Error.@Nullable Type getLastError() {
 		return this.lastError;
 	}
 
