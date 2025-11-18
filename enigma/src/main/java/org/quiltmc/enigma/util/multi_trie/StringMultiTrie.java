@@ -19,7 +19,7 @@ import java.util.function.BiFunction;
  *     <li> {@link CharacterNode#nextIgnoreCase(Character)}
  * </ul>
  *
- * <p> {@linkplain #getView() Views} also provide {@link View#get(String) get} and
+ * <p> {@linkplain #view() Views} also provide {@link View#get(String) get} and
  * {@link View#getIgnoreCase(String) getIgnoreCase} methods.
  *
  * @param <V> the type of values
@@ -50,7 +50,7 @@ public abstract class StringMultiTrie
 	public abstract R getRoot();
 
 	@Override
-	public abstract View<V, B, R> getView();
+	public abstract View<V, B, R> view();
 
 	public MutableCharacterNode<V, B> get(String prefix) {
 		return this.getImpl(prefix, MutableCharacterNode::next);
@@ -147,7 +147,7 @@ public abstract class StringMultiTrie
 		B next(Character key);
 
 		@Override
-		CharacterNode<V> getView();
+		CharacterNode<V> view();
 
 		@Override
 		default MutableCharacterNode<V, B> nextIgnoreCase(Character key) {
@@ -167,15 +167,15 @@ public abstract class StringMultiTrie
 			implements MultiTrie<Character, V> {
 		@Override
 		public CharacterNode<V> getRoot() {
-			return this.getViewed().getRoot().getView();
+			return this.getViewed().getRoot().view();
 		}
 
 		public CharacterNode<V> get(String prefix) {
-			return this.getViewed().get(prefix).getView();
+			return this.getViewed().get(prefix).view();
 		}
 
 		public CharacterNode<V> getIgnoreCase(String prefix) {
-			return this.getViewed().getIgnoreCase(prefix).getView();
+			return this.getViewed().getIgnoreCase(prefix).view();
 		}
 
 		protected abstract StringMultiTrie<V, B, R> getViewed();
