@@ -174,9 +174,9 @@ public class TestRecordComponentProposal {
 		final ClassEntry stringComponentOverrideGetterRecord = TestEntryFactory.newClass("i");
 		final FieldEntry stringField = TestEntryFactory.newField(stringComponentOverrideGetterRecord, "a", stringDesc);
 		final MethodEntry stringGetter = TestEntryFactory
-			.newMethod(stringComponentOverrideGetterRecord, "a", stringGetterDesc);
+				.newMethod(stringComponentOverrideGetterRecord, "a", stringGetterDesc);
 		final MethodEntry toString = TestEntryFactory
-			.newMethod(stringComponentOverrideGetterRecord, "toString", stringGetterDesc);
+				 .newMethod(stringComponentOverrideGetterRecord, "toString", stringGetterDesc);
 
 		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(stringField).tokenType());
 		Assertions.assertSame(TokenType.OBFUSCATED, project.getRemapper().getMapping(stringGetter).tokenType());
