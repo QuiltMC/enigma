@@ -111,7 +111,7 @@ public class DocumentSearchData {
 			return false;
 		}
 
-		SyntaxDocument sDoc = Util.getSyntaxDocument(target);
+		SyntaxDocument sDoc = SyntaxDocument.getFrom(target);
 		if (sDoc == null) {
 			return false;
 		}
@@ -166,7 +166,7 @@ public class DocumentSearchData {
 			return false;
 		}
 
-		SyntaxDocument sDoc = Util.getSyntaxDocument(target);
+		SyntaxDocument sDoc = SyntaxDocument.getFrom(target);
 		if (sDoc == null) {
 			return false;
 		}

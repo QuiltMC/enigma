@@ -15,7 +15,6 @@
 
 package org.quiltmc.syntaxpain;
 
-import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -24,7 +23,6 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import java.awt.Color;
@@ -39,6 +37,8 @@ import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import static javax.swing.BorderFactory.createEmptyBorder;
+
 /**
  * This class will display line numbers for a related text component. The text
  * component must use the same line height for each line.
@@ -50,27 +50,57 @@ import java.beans.PropertyChangeListener;
  *
  * @author Ayman Al-Sairafi, Hanns Holger Rutz
  */
-public class LineNumbersRuler extends JPanel implements CaretListener, DocumentListener, PropertyChangeListener, SyntaxComponent {
-	private Status status;
-	private static final int MAX_HEIGHT = 0x100000; // issue #36 - avoid overflow on HiDPI monitors
-	//  Text component this TextTextLineNumber component is in sync with
-	private JEditorPane editor;
+public class LineNumbersRuler extends JPanel implements CaretListener, DocumentListener, PropertyChangeListener {
+	// issue #36 - avoid overflow on HiDPI monitors
+	private static final int MAX_HEIGHT = 0x100000;
 	private static final int MINIMUM_DISPLAY_DIGITS = 2;
-	//  Keep history information to reduce the number of times the component
-	//  needs to be repainted
-	private int lastDigits;
-	private int lastHeight;
-	private int lastLine;
-	// The formatting to use for displaying numbers.  Use in String.format(numbersFormat, line)
-	private String numbersFormat = "%3d";
 
-	private Color currentLineColor;
+	public static <R extends LineNumbersRuler> R install(R ruler) {
+		ruler.editor.getDocument().addDocumentListener(ruler);
+		ruler.editor.addCaretListener(ruler);
+		ruler.editor.addPropertyChangeListener(ruler);
+		final JScrollPane scrollPane = getScrollPane(ruler.editor);
+		if (scrollPane != null) {
+			scrollPane.setRowHeaderView(ruler);
+		}
+
+		return ruler;
+	}
 
 	/**
-	 * Returns the JScrollPane that contains this EditorPane, or null if no
-	 * JScrollPane is the parent of this editor
+	 * Gets the Line Number at the give position of the editor component.
+	 * The first line number is ZERO
+	 *
+	 * @return line number
 	 */
-	public JScrollPane getScrollPane(JTextComponent editorPane) {
+	public static int getLineNumber(JTextComponent editor, int pos) {
+		final SyntaxDocument doc = SyntaxDocument.getFrom(editor);
+		if (doc != null) {
+			return doc.getLineNumberAt(pos);
+		} else {
+			return editor.getDocument().getDefaultRootElement().getElementIndex(pos);
+		}
+	}
+
+	public static int getLineCount(JTextComponent pane) {
+		final SyntaxDocument doc = SyntaxDocument.getFrom(pane);
+		if (doc != null) {
+			return doc.getLineCount();
+		}
+
+		int count = 0;
+		int p = pane.getDocument().getLength() - 1;
+		if (p > 0) {
+			count = getLineNumber(pane, p);
+		}
+
+		return count;
+	}
+
+	/**
+	 * @return the {@link JScrollPane} of the {@link JEditorPane}, or null if there is no {@link JScrollPane} parent
+	 */
+	private static JScrollPane getScrollPane(JEditorPane editorPane) {
 		Container p = editorPane.getParent();
 		while (p != null) {
 			if (p instanceof JScrollPane) {
@@ -83,55 +113,41 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 		return null;
 	}
 
-	@Override
-	public void configure() {
-		Color foreground = SyntaxpainConfiguration.getLineRulerPrimaryColor();
-		this.setForeground(foreground);
-		Color back = SyntaxpainConfiguration.getLineRulerSecondaryColor();
-		this.setBackground(back);
-		this.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-		this.currentLineColor = SyntaxpainConfiguration.getLineRulerSelectionColor();
+	// Text component this TextTextLineNumber component is in sync with
+	protected final JEditorPane editor;
+	protected final Color currentLineColor;
+    protected final int lineOffset;
+
+    //  Keep history information to reduce the number of times the component
+	//  needs to be repainted
+	private int lastDigits;
+	private int lastHeight;
+	private int lastLine;
+	// The formatting to use for displaying numbers.  Use in String.format(numbersFormat, line)
+	private String numbersFormat = "%3d";
+
+	public LineNumbersRuler(JEditorPane editor, Color currentLineColor) {
+		this(editor, currentLineColor, 0);
 	}
 
-	@Override
-	public void install(final JEditorPane editor) {
+	public LineNumbersRuler(JEditorPane editor, Color currentLineColor, int lineOffset) {
 		this.editor = editor;
+		this.currentLineColor = currentLineColor;
+        this.lineOffset = lineOffset;
 
-		this.setFont(editor.getFont());
+        final Insets editorInsets = this.editor.getInsets();
+		this.setBorder(createEmptyBorder(editorInsets.top, 5, editorInsets.bottom, 5));
 
-		Insets ein = editor.getInsets();
-		if (ein.top != 0 || ein.bottom != 0) {
-			Insets curr = this.getInsets();
-			this.setBorder(BorderFactory.createEmptyBorder(ein.top, curr.left, ein.bottom, curr.right));
-		}
-
-		editor.getDocument().addDocumentListener(this);
-		editor.addCaretListener(this);
-		editor.addPropertyChangeListener(this);
-		JScrollPane sp = this.getScrollPane(editor);
-		if (sp != null) sp.setRowHeaderView(this);
-		this.setPreferredWidth(false);    // required for toggle-lines to correctly repaint
-		this.status = Status.INSTALLING;
-	}
-
-	@Override
-	public void deinstall(JEditorPane editor) {
-		this.status = Status.DEINSTALLING;
-		editor.getDocument().removeDocumentListener(this);
-		editor.removeCaretListener(this);
-		editor.removePropertyChangeListener(this);
-		JScrollPane sp = this.getScrollPane(editor);
-		if (sp != null) {
-			sp.setRowHeaderView(null);
-		}
+		// required for toggle-lines to correctly repaint
+		this.setPreferredWidth(false);
 	}
 
 	/**
 	 * Calculate the width needed to display the maximum line number
 	 */
 	private void setPreferredWidth(boolean force) {
-		int lines = Util.getLineCount(this.editor);
-		int digits = Math.max(String.valueOf(lines).length(), MINIMUM_DISPLAY_DIGITS);
+		int lines = getLineCount(this.editor);
+		int digits = Math.max(String.valueOf(lines + this.lineOffset).length(), MINIMUM_DISPLAY_DIGITS);
 
 		// Update sizes when number of digits in the line number changes
 
@@ -157,35 +173,29 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
-		FontMetrics fontMetrics = this.getFontMetrics(this.getFont());
-		Insets insets = this.getInsets();
-		int currentLine = -1;
-		try {
-			currentLine = Util.getLineNumber(this.editor, this.editor.getCaretPosition());
-		} catch (BadLocationException ex) {
-			// this won't happen, even if it does, we can ignore it and we will not have
-			// a current line to worry about...
-		}
+		final FontMetrics fontMetrics = this.getFontMetrics(this.getFont());
+		final Insets insets = this.getInsets();
+		final int currentLine = getLineNumber(this.editor, this.editor.getCaretPosition());
 
-		int lh = fontMetrics.getHeight();
-		int maxLines = Util.getLineCount(this.editor);
+        final int lineHeight = fontMetrics.getHeight();
+		final int maxLines = getLineCount(this.editor);
 		SyntaxView.setRenderingHits((Graphics2D) g);
 
-		Rectangle clip = g.getClip().getBounds();
-		int topLine = (int) (clip.getY() / lh);
-		int bottomLine = Math.min(maxLines, (int) (clip.getHeight() + lh - 1) / lh + topLine + 1);
+		final Rectangle clip = g.getClip().getBounds();
+		final int topLine = (int) (clip.getY() / lineHeight);
+		final int bottomLine = Math.min(maxLines, (int) (clip.getHeight() + lineHeight - 1) / lineHeight + topLine + 1);
 
 		for (int line = topLine; line < bottomLine; line++) {
-			String lineNumber = String.format(this.numbersFormat, line + 1);
-			int y = line * lh + insets.top;
-			int yt = y + fontMetrics.getAscent();
+			final String lineNumber = String.format(this.numbersFormat, line + 1 + this.lineOffset);
+			final int top = line * lineHeight + insets.top;
+			final int stringBottom = top + fontMetrics.getAscent();
 			if (line == currentLine) {
 				g.setColor(this.currentLineColor);
-				g.fillRect(0, y, this.getWidth(), lh);
+				g.fillRect(0, top, this.getWidth(), lineHeight);
 				g.setColor(this.getForeground());
-				g.drawString(lineNumber, insets.left, yt);
+				g.drawString(lineNumber, insets.left, stringBottom);
 			} else {
-				g.drawString(lineNumber, insets.left, yt);
+				g.drawString(lineNumber, insets.left, stringBottom);
 			}
 		}
 	}
@@ -244,20 +254,7 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		String prop = evt.getPropertyName();
-		if (prop.equals("document")) {
-			if (evt.getOldValue() instanceof SyntaxDocument) {
-				SyntaxDocument syntaxDocument = (SyntaxDocument) evt.getOldValue();
-				syntaxDocument.removeDocumentListener(this);
-			}
-
-			if (evt.getNewValue() instanceof SyntaxDocument && this.status.equals(Status.INSTALLING)) {
-				SyntaxDocument syntaxDocument = (SyntaxDocument) evt.getNewValue();
-				syntaxDocument.addDocumentListener(this);
-				this.setPreferredWidth(false);
-				this.repaint();
-			}
-		} else if (prop.equals("font") && evt.getNewValue() instanceof Font) {
+        if (evt.getPropertyName().equals("font") && evt.getNewValue() instanceof Font) {
 			this.setFont((Font) evt.getNewValue());
 			this.setPreferredWidth(true);
 		}

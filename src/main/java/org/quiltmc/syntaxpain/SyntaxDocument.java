@@ -26,7 +26,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Segment;
 
@@ -38,6 +40,24 @@ import javax.swing.text.Segment;
  * @author Ayman Al-Sairafi, Hanns Holger Rutz
  */
 public class SyntaxDocument extends PlainDocument {
+	/**
+	 * A helper function that will return the SyntaxDocument attached to the
+	 * given text component.  Return null if the document is not a
+	 * SyntaxDocument, or if the text component is null
+	 */
+	public static SyntaxDocument getFrom(JTextComponent component) {
+		if (component == null) {
+			return null;
+		}
+
+		Document doc = component.getDocument();
+		if (doc instanceof SyntaxDocument) {
+			return (SyntaxDocument) doc;
+		} else {
+			return null;
+		}
+	}
+
 	private final Lexer lexer;
 	private List<Token> tokens;
 

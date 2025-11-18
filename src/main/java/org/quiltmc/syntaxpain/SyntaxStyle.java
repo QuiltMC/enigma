@@ -16,11 +16,8 @@
 package org.quiltmc.syntaxpain;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.text.Segment;
 import javax.swing.text.TabExpander;
 import javax.swing.text.Utilities;
@@ -32,46 +29,6 @@ import javax.swing.text.Utilities;
  * @author Ayman Al-Sairafi, Hanns Holger Rutz
  */
 public record SyntaxStyle(Color color, int fontStyle) {
-	private static final Map<TokenType, SyntaxStyle> styles = new HashMap<>();
-
-	static {
-		styles.put(TokenType.KEYWORD, new SyntaxStyle(SyntaxpainConfiguration.getHighlightColor(), Font.PLAIN));
-		styles.put(TokenType.KEYWORD2, new SyntaxStyle(SyntaxpainConfiguration.getHighlightColor(), Font.BOLD + Font.ITALIC));
-		styles.put(TokenType.STRING, new SyntaxStyle(SyntaxpainConfiguration.getStringColor(), Font.PLAIN));
-		styles.put(TokenType.STRING2, new SyntaxStyle(SyntaxpainConfiguration.getStringColor(), Font.BOLD));
-		styles.put(TokenType.NUMBER, new SyntaxStyle(SyntaxpainConfiguration.getNumberColor(), Font.PLAIN));
-		styles.put(TokenType.OPERATOR, new SyntaxStyle(SyntaxpainConfiguration.getOperatorColor(), Font.PLAIN));
-		styles.put(TokenType.DELIMITER, new SyntaxStyle(SyntaxpainConfiguration.getDelimiterColor(), Font.BOLD));
-		styles.put(TokenType.TYPE, new SyntaxStyle(SyntaxpainConfiguration.getTypeColor(), Font.ITALIC));
-		styles.put(TokenType.TYPE2, new SyntaxStyle(SyntaxpainConfiguration.getTypeColor(), Font.BOLD));
-		styles.put(TokenType.TYPE3, new SyntaxStyle(SyntaxpainConfiguration.getTypeColor(), Font.BOLD + Font.ITALIC));
-		styles.put(TokenType.IDENTIFIER, new SyntaxStyle(SyntaxpainConfiguration.getIdentifierColor(), Font.PLAIN));
-		styles.put(TokenType.COMMENT, new SyntaxStyle(SyntaxpainConfiguration.getCommentColour(), Font.ITALIC));
-		styles.put(TokenType.COMMENT2, new SyntaxStyle(SyntaxpainConfiguration.getCommentColour(), Font.BOLD + Font.ITALIC));
-		styles.put(TokenType.DEFAULT, new SyntaxStyle(SyntaxpainConfiguration.getTextColor(), Font.PLAIN));
-		styles.put(TokenType.WARNING, new SyntaxStyle(SyntaxpainConfiguration.getTextColor(), Font.PLAIN));
-		styles.put(TokenType.ERROR, new SyntaxStyle(SyntaxpainConfiguration.getTextColor(), Font.BOLD + Font.ITALIC));
-		styles.put(TokenType.REGEX, new SyntaxStyle(SyntaxpainConfiguration.getRegexColor(), Font.PLAIN));
-		styles.put(TokenType.REGEX2, new SyntaxStyle(SyntaxpainConfiguration.getRegexColor(), Font.BOLD));
-	}
-
-	/**
-	 * Returns the style for the given TokenType
-	 */
-	public static SyntaxStyle getStyle(TokenType type) {
-		return styles.get(type);
-	}
-
-	/**
-	 * Draws the given Token. This will simply find the proper SyntaxStyle for
-	 * the TokenType and then asks the proper Style to draw the text of the
-	 * Token.
-	 */
-	public static float drawText(Segment segment, float x, float y, Graphics2D graphics, TabExpander e, Token token) {
-		SyntaxStyle s = getStyle(token.type);
-		return s.drawText(segment, x, y, graphics, e, token.start);
-	}
-
 	/**
 	 * Draw text.  This can directly call the Utilities.drawTabbedText.
 	 * Subclasses can override this method to provide any other decorations.
