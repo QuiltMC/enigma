@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.input.z_tooltip;
+package org.quiltmc.enigma.input.tooltip;
 
 public class Constructors {
 	public Constructors(String outerArg) {
