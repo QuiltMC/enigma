@@ -2,9 +2,8 @@ package org.quiltmc.enigma.util;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.MapMaker;
+import org.jspecify.annotations.NonNull;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -63,7 +62,6 @@ public class CompositeBiMap<K, V> implements BiMap<K, V> {
 	 *
 	 * @see #put(Object, Object)
 	 */
-	@CheckForNull
 	@Override
 	public V put(K key, V value) {
 		if (this.containsValue(value)) {
@@ -88,7 +86,6 @@ public class CompositeBiMap<K, V> implements BiMap<K, V> {
 		}
 	}
 
-	@CheckForNull
 	@Override
 	public V forcePut(K key, V value) {
 		this.reverse.remove(value);
@@ -109,21 +106,21 @@ public class CompositeBiMap<K, V> implements BiMap<K, V> {
 
 	@SuppressWarnings("SuspiciousMethodCalls")
 	@Override
-	@Nonnull
+	@NonNull
 	public Set<K> keySet() {
 		return new LiveSet<>(Map.Entry::getKey, "key", this.forward::keySet, this.forward::containsKey);
 	}
 
 	@SuppressWarnings("SuspiciousMethodCalls")
 	@Override
-	@Nonnull
+	@NonNull
 	public Set<V> values() {
 		return new LiveSet<>(Map.Entry::getValue, "value", this.reverse::keySet, this.reverse::containsKey);
 	}
 
 	@SuppressWarnings("SuspiciousMethodCalls")
 	@Override
-	@Nonnull
+	@NonNull
 	public Set<Entry<K, V>> entrySet() {
 		return new LiveSet<>(
 				Function.identity(), "entry", this.forward::entrySet,
@@ -134,7 +131,7 @@ public class CompositeBiMap<K, V> implements BiMap<K, V> {
 	}
 
 	@Override
-	@Nonnull
+	@NonNull
 	public BiMap<V, K> inverse() {
 		if (this.inverse == null) {
 			this.inverse = new Inverse<>(this);
@@ -150,7 +147,7 @@ public class CompositeBiMap<K, V> implements BiMap<K, V> {
 		}
 
 		@Override
-		@Nonnull
+		@NonNull
 		public BiMap<K, V> inverse() {
 			return this.inverse;
 		}
@@ -193,20 +190,19 @@ public class CompositeBiMap<K, V> implements BiMap<K, V> {
 		}
 
 		@Override
-		@Nonnull
+		@NonNull
 		public Iterator<E> iterator() {
 			return new LiveIterator();
 		}
 
 		@Override
-		@Nonnull
-		public Object[] toArray() {
+		public Object @NonNull[] toArray() {
 			return this.getDelegateSet.get().toArray();
 		}
 
 		@Override
-		@Nonnull
-		public <T> T[] toArray(@Nonnull T[] array) {
+		@NonNull
+		public <T> T @NonNull[] toArray(T @NonNull[] array) {
 			return this.getDelegateSet.get().toArray(array);
 		}
 
@@ -221,7 +217,7 @@ public class CompositeBiMap<K, V> implements BiMap<K, V> {
 		}
 
 		@Override
-		public boolean containsAll(@Nonnull Collection<?> collection) {
+		public boolean containsAll(Collection<?> collection) {
 			for (final Object o : collection) {
 				if (!this.containsElement.test(o)) {
 					return false;
@@ -232,12 +228,12 @@ public class CompositeBiMap<K, V> implements BiMap<K, V> {
 		}
 
 		@Override
-		public boolean addAll(@Nonnull Collection<? extends E> collection) {
+		public boolean addAll(@NonNull Collection<? extends E> collection) {
 			throw addExceptionOf(this.elementName);
 		}
 
 		@Override
-		public boolean retainAll(@Nonnull Collection<?> collection) {
+		public boolean retainAll(@NonNull Collection<?> collection) {
 			return this.removeAllMatching(key -> !collection.contains(key));
 		}
 

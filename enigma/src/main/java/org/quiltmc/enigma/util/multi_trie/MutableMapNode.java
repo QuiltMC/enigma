@@ -1,10 +1,9 @@
 package org.quiltmc.enigma.util.multi_trie;
 
 import com.google.common.collect.MapMaker;
-import org.checkerframework.dataflow.qual.Pure;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.util.Utils;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -109,12 +108,15 @@ public abstract class MutableMapNode<K, V, B extends MutableMapNode.Branch<K, V,
 	}
 
 	/**
+	 * Implementations should be pure (stateless, no side effects).
+	 *
 	 * @return a new, empty branch node instance
 	 */
-	@Pure
 	protected abstract B createBranch(K key);
 
-	@Pure
+	/**
+	 * Implementations should be pure (stateless, no side effects).
+	 */
 	protected abstract Collection<V> getLeaves();
 
 	/**
@@ -128,21 +130,24 @@ public abstract class MutableMapNode<K, V, B extends MutableMapNode.Branch<K, V,
 	 */
 	protected abstract static class Branch<K, V, B extends Branch<K, V, B>> extends MutableMapNode<K, V, B> {
 		/**
+		 * Implementations should be pure (stateless, no side effects).
+		 *
 		 * @return this branch's parent; may or may not be another branch node
 		 */
-		@Pure
 		protected abstract MutableMapNode<K, V, B> getParent();
 
 		/**
+		 * Implementations should be pure (stateless, no side effects).
+		 *
 		 * @return the last key in this branch's sequence; the key this branch's parent stores it under
 		 */
-		@Pure
 		protected abstract K getKey();
 
 		/**
+		 * Implementations should be pure (stateless, no side effects).
+		 *
 		 * @return this branch
 		 */
-		@Pure
 		protected abstract B getSelf();
 
 		@Override

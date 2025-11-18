@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.element.menu_bar;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.element.PlaceheldTextField;
@@ -9,7 +10,6 @@ import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.CharacterNode;
 
-import javax.annotation.Nullable;
 import javax.swing.JMenuItem;
 import javax.swing.MenuElement;
 import javax.swing.event.DocumentEvent;
@@ -165,8 +165,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	}
 
 	private class ResultManager {
-		@Nullable
-		StringMultiTrie.View<Result, ?, ?> resultTrie;
+		StringMultiTrie.@Nullable View<Result, ?, ?> resultTrie;
 		@Nullable
 		CurrentResults currentResults;
 
