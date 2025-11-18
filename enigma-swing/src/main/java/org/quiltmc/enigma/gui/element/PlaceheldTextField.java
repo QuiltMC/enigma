@@ -1,8 +1,8 @@
 package org.quiltmc.enigma.gui.element;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.util.Utils;
 
-import javax.annotation.Nullable;
 import javax.swing.JTextField;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;

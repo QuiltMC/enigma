@@ -1,7 +1,5 @@
 package org.quiltmc.enigma.util.multi_trie;
 
-import org.checkerframework.dataflow.qual.Pure;
-
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -23,6 +21,8 @@ public abstract class MapNode<K, V, B extends MapNode<K, V, B>> implements Multi
 		return Stream.concat(this.streamLeaves(), this.streamStems());
 	}
 
-	@Pure
+	/**
+	 * Implementations should be pure (stateless, no side effects).
+	 */
 	protected abstract Map<K, B> getBranches();
 }

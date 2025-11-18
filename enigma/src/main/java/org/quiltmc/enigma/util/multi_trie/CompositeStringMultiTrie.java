@@ -1,9 +1,9 @@
 package org.quiltmc.enigma.util.multi_trie;
 
+import org.jspecify.annotations.NonNull;
 import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie.Branch;
 import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie.Root;
 
-import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -202,7 +202,7 @@ public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Branch
 			this.viewed = viewed;
 		}
 
-		@Nonnull
+		@NonNull
 		@Override
 		public CharacterNode<V> next(Character key) {
 			return this.viewed.next(key).getView();
