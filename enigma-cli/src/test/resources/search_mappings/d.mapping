@@ -1,4 +1,4 @@
-CLASS V
+CLASS d
 	FIELD a recordInt I
 	FIELD a recordString Ljava/lang/String;
 	FIELD b PRIVATE_STATIC_FINAL_INT_FIELD I

@@ -1,3 +1,0 @@
-CLASS r
-	METHOD a staticVoidMethod (Lt;)V
-		ARG 0 staticTypedParam
