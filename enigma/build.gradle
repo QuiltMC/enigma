@@ -109,7 +109,7 @@ static String taskNameFrom(String name) {
 }
 
 
-tasks.register('obfuscateAllTestInput') {
+final obfuscateAllTestInput = tasks.register('obfuscateAllTestInput') {
 	group = 'test-setup'
 }
 
@@ -376,7 +376,7 @@ final testRecommendedImplPluginAgainstBumpedEnigma = tasks
 	}
 }
 
-test.dependsOn(testPreHandlingPluginAgainstCurrentEnigma, testRecommendedImplPluginAgainstBumpedEnigma)
+test.dependsOn(obfuscateAllTestInput, testPreHandlingPluginAgainstCurrentEnigma, testRecommendedImplPluginAgainstBumpedEnigma)
 
 publishing {
 	publications {
