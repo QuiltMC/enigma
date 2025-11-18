@@ -6,11 +6,11 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.TreeMultiset;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import java.awt.Color;
@@ -539,7 +539,7 @@ public class MarkableScrollPane extends JScrollPane {
 	private record Marker(Color color, int priority, int pos, Optional<MarkerListener> listener)
 			implements Comparable<Marker> {
 		@Override
-		public int compareTo(@Nonnull Marker other) {
+		public int compareTo(@NonNull Marker other) {
 			return other.priority - this.priority;
 		}
 
