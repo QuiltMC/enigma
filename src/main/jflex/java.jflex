@@ -137,6 +137,7 @@ SingleCharacter = [^\r\n\'\\]
   "protected"                    |
   "transient"                    |
   "return"                       |
+  "record"                       |
   "void"                         |
   "static"                       |
   "while"                        |
