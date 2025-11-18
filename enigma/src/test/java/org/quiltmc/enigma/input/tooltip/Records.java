@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.input.z_tooltip;
+package org.quiltmc.enigma.input.tooltip;
 
 public record Records() {
 	public record WithStaticField(Boolean truth) {

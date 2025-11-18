@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.input.z_tooltip;
+package org.quiltmc.enigma.input.tooltip;
 
 public abstract class Methods {
 	private void parameterized(int i, Boolean z, Methods methods) { }
