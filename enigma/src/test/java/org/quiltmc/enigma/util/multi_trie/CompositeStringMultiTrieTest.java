@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMultimap;
 import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
 import org.quiltmc.enigma.util.multi_trie.MultiTrie.Node;
-import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.MutableCharacterNode;
+import org.quiltmc.enigma.util.multi_trie.MutableStringMultiTrie.MutableCharacterNode;
 
 import java.util.Collection;
 import java.util.List;
