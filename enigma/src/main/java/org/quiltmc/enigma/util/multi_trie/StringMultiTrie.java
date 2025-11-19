@@ -58,7 +58,7 @@ public interface StringMultiTrie<V> extends MultiTrie<Character, V> {
 		Node<V> next(Character key);
 
 		/**
-		 * @return a stream of 0, 1, or 2 non-{@linkplain #isEmpty() empty} nodes associated with the sequence formed
+		 * @return a stream of 0, 1, or 2 {@linkplain #isNonEmpty() non-empty} nodes associated with the sequence formed
 		 * by appending the passed {@code key} or its case variant to this node's sequence
 		 */
 		Stream<Node<V>> streamNextIgnoreCase(Character key);

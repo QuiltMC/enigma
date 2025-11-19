@@ -88,9 +88,20 @@ public interface MultiTrie<K, V> {
 
 		/**
 		 * @return {@code true} if this node contains no {@linkplain #streamValues() values}, or {@code false} otherwise
+		 *
+		 * @see #isNonEmpty()
 		 */
 		default boolean isEmpty() {
-			return this.getSize() == 0;
+			return !this.isNonEmpty();
+		}
+
+		/**
+		 * @return {@code false} if this node contains no {@linkplain #streamValues()}, or {@code true} otherwise
+		 *
+		 * @see #isEmpty()
+		 */
+		default boolean isNonEmpty() {
+			return this.getSize() > 0;
 		}
 
 		/**
