@@ -27,6 +27,12 @@ public interface MutableMultiTrie<K, V> extends MultiTrie<K, V> {
 		@Override
 		Node<K, V> next(K key);
 
+		@Override
+		Node<K, V> previous();
+
+		@Override
+		Node<K, V> previous(int steps);
+
 		/**
 		 * @param value a value to add to this node's leaves, associating it with the sequence leading to this node.
 		 */
@@ -65,6 +71,11 @@ public interface MutableMultiTrie<K, V> extends MultiTrie<K, V> {
 			@Override
 			public Stream<V> streamValues() {
 				return this.getViewed().streamValues();
+			}
+
+			@Override
+			public int getDepth() {
+				return this.getViewed().getDepth();
 			}
 
 			protected abstract Node<K, V> getViewed();

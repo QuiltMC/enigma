@@ -1,5 +1,8 @@
 package org.quiltmc.enigma.util.multi_trie;
 
+import com.google.common.base.Preconditions;
+
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 /**
@@ -41,6 +44,21 @@ public interface MultiTrie<K, V> {
 	 * @param <V> the type of values
 	 */
 	interface Node<K, V> {
+		static <K, V, N extends Node<K, V>> N previous(N node, int steps, UnaryOperator<N> previous) {
+			Preconditions.checkArgument(steps >= 0, "steps must not be negative!");
+
+			if (steps == 0) {
+				return node;
+			}
+
+			N prev = previous.apply(node);
+			while (--steps > 0 && prev.getDepth() > 0) {
+				prev = previous.apply(prev);
+			}
+
+			return prev;
+		}
+
 		/**
 		 * @return a {@link Stream} containing all values with no more keys in their associated sequence;<br>
 		 * i.e. the prefix this node is associated with is the <em>whole</em> sequence the values are associated with
@@ -57,7 +75,9 @@ public interface MultiTrie<K, V> {
 		/**
 		 * @return a {@link Stream} containing all values associated with the prefix this node is associated with
 		 */
-		Stream<V> streamValues();
+		default Stream<V> streamValues() {
+			return Stream.concat(this.streamLeaves(), this.streamStems());
+		}
 
 		/**
 		 * @return the total number of {@linkplain #streamValues() values} associated with this node's prefix
@@ -78,5 +98,23 @@ public interface MultiTrie<K, V> {
 		 * {@code key} to this node's sequence
 		 */
 		Node<K, V> next(K key);
+
+		/**
+		 * @return this node's parent if it is not the {@linkplain #getRoot() root}, otherwise returns this node
+		 */
+		Node<K, V> previous();
+
+		/**
+		 * Equivalent to chaining {@link #previous()} calls a number of times equal to the passed {@code steps}.
+		 *
+		 * @throws IllegalArgumentException if the passed {@code steps} is negative
+		 */
+		Node<K, V> previous(int steps);
+
+		/**
+		 * @return this node's depth: the length of the prefix it is associated with; the root returns {@code 0},
+		 * non-roots return positive integers
+		 */
+		int getDepth();
 	}
 }
