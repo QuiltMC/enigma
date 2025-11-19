@@ -97,7 +97,7 @@ public class Enigma {
 	 * {@link EnigmaPlugin#supportsEnigmaVersion(Version)} implementations,
 	 * allowing plugins to 'remember' the version of Enigma they were built with.
 	 */
-	public static final int PATCH_VERSION = 0;
+	public static final int PATCH_VERSION = 1;
 
 	private static final Version CURRENT_VERSION = new Version(MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION);
 
