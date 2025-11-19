@@ -30,7 +30,7 @@ public abstract class MutableMapNode<K, V, B extends Branch<K, V, B>> implements
 	 * Using a map with weak value references prevents memory leaks when users look up a sequence with no
 	 * values and don't put any value in it.
 	 */
-	final Map<K, B> orphans = new MapMaker().weakValues().makeMap();
+	private final Map<K, B> orphans = new MapMaker().weakValues().makeMap();
 
 	@Override
 	public Stream<V> streamStems() {
