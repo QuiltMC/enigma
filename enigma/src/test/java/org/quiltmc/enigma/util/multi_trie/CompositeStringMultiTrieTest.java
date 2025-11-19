@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
 import org.quiltmc.enigma.util.multi_trie.MutableStringMultiTrie.Node;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,9 @@ import java.util.stream.Stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CompositeStringMultiTrieTest {
@@ -91,14 +94,44 @@ public class CompositeStringMultiTrieTest {
 
 		for (int depth = 0; depth < KEY_BY_KEY_SUBJECT.length(); depth++) {
 			final Node<Integer> root = trie.getRoot();
-			assertThat("Unexpected root node depth", root.getDepth(), is(0));
+			assertThat("Root node depth", root.getDepth(), is(0));
 
 			Node<Integer> node = root;
 			for (int iKey = 0; iKey <= depth; iKey++) {
 				node = node.next(KEY_BY_KEY_SUBJECT.charAt(iKey));
 			}
 
-			assertThat("Unexpected branch node depth", node.getDepth(), is(depth + 1));
+			assertThat("Branch node depth", node.getDepth(), is(depth + 1));
+		}
+	}
+
+	@Test
+	void testPrevious() {
+		final CompositeStringMultiTrie<Object> trie = CompositeStringMultiTrie.createHashed();
+
+		final Node<Object> root = trie.getRoot();
+		assertSame(root, root.previous(), "Expected root.previous() to return itself!");
+
+		final List<Node<Object>> nodes = new ArrayList<>();
+		nodes.add(root);
+
+		Node<Object> node = root;
+		for (int iKey = 0; iKey < KEY_BY_KEY_SUBJECT.length(); iKey++) {
+			node = node.next(KEY_BY_KEY_SUBJECT.charAt(iKey));
+			nodes.add(node);
+		}
+
+		for (int i = nodes.size() - 1; i > 0; i--) {
+			final Node<Object> subjectNode = nodes.get(i);
+			final Node<Object> expectedPrev = nodes.get(i - 1);
+
+			assertThat(expectedPrev, sameInstance(subjectNode.previous()));
+
+			for (int steps = 0; steps < subjectNode.getDepth(); steps++) {
+				final Node<Object> expectedStepPrev = nodes.get(i - steps);
+
+				assertThat(expectedStepPrev, sameInstance(subjectNode.previous(steps)));
+			}
 		}
 	}
 
