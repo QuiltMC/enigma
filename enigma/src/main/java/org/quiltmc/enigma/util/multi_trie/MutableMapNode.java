@@ -93,7 +93,12 @@ public abstract class MutableMapNode<K, V, B extends Branch<K, V, B>> implements
 	 */
 	protected boolean pruneIfEmpty(Branch<K, V, B> branch) {
 		if (branch.isEmpty()) {
-			this.getBranches().remove(branch.getKey());
+			final K key = branch.getKey();
+			final B removed = this.getBranches().remove(key);
+			if (removed != null) {
+				// put back in orphans in case a user is still holding a reference
+				this.orphans.put(key, removed);
+			}
 
 			return true;
 		} else {
@@ -110,10 +115,10 @@ public abstract class MutableMapNode<K, V, B extends Branch<K, V, B>> implements
 	 *
 	 * @return {@code true} if the passed {@code branch} was an orphan, or {@code false} otherwise
 	 */
-	protected boolean tryAdopt(Branch<K, V, B> branch) {
-		final boolean wasOrphan = this.orphans.remove(branch.getKey()) != null;
-		if (wasOrphan) {
-			this.getBranches().put(branch.getKey(), branch.getSelf());
+	protected boolean adoptIfOrphan(Branch<K, V, B> branch) {
+		final B orphan = this.orphans.remove(branch.getKey());
+		if (orphan != null) {
+			this.getBranches().put(branch.getKey(), orphan);
 
 			return true;
 		} else {
@@ -157,17 +162,10 @@ public abstract class MutableMapNode<K, V, B extends Branch<K, V, B>> implements
 		 */
 		protected abstract K getKey();
 
-		/**
-		 * Implementations should be pure (stateless, no side effects).
-		 *
-		 * @return this branch
-		 */
-		protected abstract B getSelf();
-
 		@Override
 		public void put(V value) {
 			super.put(value);
-			this.getParent().tryAdopt(this);
+			this.getParent().adoptIfOrphan(this);
 		}
 
 		@Override
@@ -204,9 +202,9 @@ public abstract class MutableMapNode<K, V, B extends Branch<K, V, B>> implements
 		}
 
 		@Override
-		protected boolean tryAdopt(Branch<K, V, B> branch) {
-			if (super.tryAdopt(branch)) {
-				this.getParent().tryAdopt(this);
+		protected boolean adoptIfOrphan(Branch<K, V, B> branch) {
+			if (super.adoptIfOrphan(branch)) {
+				this.getParent().adoptIfOrphan(this);
 
 				return true;
 			} else {
