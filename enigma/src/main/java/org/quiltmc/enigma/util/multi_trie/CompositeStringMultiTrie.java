@@ -18,7 +18,7 @@ import java.util.function.Supplier;
  * @see #of(Supplier, Supplier)
  * @see #createHashed()
  */
-public final class CompositeStringMultiTrie<V> extends StringMultiTrie<V, Branch<V>, Root<V>> {
+public final class CompositeStringMultiTrie<V> implements StringMultiTrie<V, Branch<V>, Root<V>> {
 	private final Root<V> root;
 	private final View view = new View();
 

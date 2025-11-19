@@ -25,14 +25,14 @@ import java.util.function.BiFunction;
  * @param <V> the type of values
  * @param <B> the type of branch nodes
  */
-public abstract class StringMultiTrie
+public interface StringMultiTrie
 		<
 			V,
 			B extends MutableMapNode.Branch<Character, V, B> & MutableCharacterNode<V, B>,
 			R extends MutableMapNode<Character, V, B> & MutableCharacterNode<V, B>
 		>
-		implements MutableMultiTrie<Character, V> {
-	protected static Optional<Character> tryToggleCase(char c) {
+		extends MutableMultiTrie<Character, V> {
+	static Optional<Character> tryToggleCase(char c) {
 		if (Character.isUpperCase(c)) {
 			return Optional.of(Character.toLowerCase(c));
 		} else if (Character.isLowerCase(c)) {
@@ -42,21 +42,21 @@ public abstract class StringMultiTrie
 		}
 	}
 
-	private static final String PREFIX = "prefix";
-	private static final String STRING = "string";
-	private static final String VALUE = "value";
+	String PREFIX = "prefix";
+	String STRING = "string";
+	String VALUE = "value";
 
 	@Override
-	public abstract R getRoot();
+	R getRoot();
 
 	@Override
-	public abstract View<V, B, R> view();
+	View<V, B, R> view();
 
-	public MutableCharacterNode<V, B> get(String prefix) {
+	default MutableCharacterNode<V, B> get(String prefix) {
 		return this.getImpl(prefix, MutableCharacterNode::next);
 	}
 
-	public MutableCharacterNode<V, B> getIgnoreCase(String prefix) {
+	default MutableCharacterNode<V, B> getIgnoreCase(String prefix) {
 		return this.getImpl(prefix, MutableCharacterNode::nextIgnoreCase);
 	}
 
@@ -73,7 +73,7 @@ public abstract class StringMultiTrie
 		return node;
 	}
 
-	public MutableCharacterNode<V, B> put(String string, V value) {
+	default MutableCharacterNode<V, B> put(String string, V value) {
 		Utils.requireNonNull(string, STRING);
 		Utils.requireNonNull(value, VALUE);
 
@@ -97,7 +97,7 @@ public abstract class StringMultiTrie
 		return branch;
 	}
 
-	public boolean remove(String string, V value) {
+	default boolean remove(String string, V value) {
 		Utils.requireNonNull(string, STRING);
 		Utils.requireNonNull(value, VALUE);
 
@@ -113,7 +113,7 @@ public abstract class StringMultiTrie
 		return node.removeLeaf(value);
 	}
 
-	public boolean removeAll(String string) {
+	default boolean removeAll(String string) {
 		Utils.requireNonNull(string, STRING);
 
 		MutableMapNode<Character, V, B> node = this.getRoot();
@@ -128,7 +128,7 @@ public abstract class StringMultiTrie
 		return node.clearLeaves();
 	}
 
-	public interface CharacterNode<V> extends MultiTrie.Node<Character, V> {
+	interface CharacterNode<V> extends MultiTrie.Node<Character, V> {
 		@Override
 		CharacterNode<V> next(Character key);
 
@@ -146,7 +146,7 @@ public abstract class StringMultiTrie
 		CharacterNode<V> previous(int steps);
 	}
 
-	public interface MutableCharacterNode
+	interface MutableCharacterNode
 			<V, B extends MutableMapNode.Branch<Character, V, B> & MutableCharacterNode<V, B>>
 			extends CharacterNode<V>, MutableMultiTrie.Node<Character, V> {
 		@Override
@@ -170,7 +170,7 @@ public abstract class StringMultiTrie
 		}
 	}
 
-	public abstract static class View
+	abstract class View
 			<
 				V,
 				B extends MutableMapNode.Branch<Character, V, B> & MutableCharacterNode<V, B>,
