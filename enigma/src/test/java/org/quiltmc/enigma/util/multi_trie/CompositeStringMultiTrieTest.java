@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -81,6 +82,23 @@ public class CompositeStringMultiTrieTest {
 			assertOneLeaf(node);
 
 			assertTrieSize(trie, KEY_BY_KEY_SUBJECT.length() - depth);
+		}
+	}
+
+	@Test
+	void testDepth() {
+		final CompositeStringMultiTrie<Integer> trie = CompositeStringMultiTrie.createHashed();
+
+		for (int depth = 0; depth < KEY_BY_KEY_SUBJECT.length(); depth++) {
+			final Node<Integer> root = trie.getRoot();
+			assertThat("Unexpected root node depth", root.getDepth(), is(0));
+
+			Node<Integer> node = root;
+			for (int iKey = 0; iKey <= depth; iKey++) {
+				node = node.next(KEY_BY_KEY_SUBJECT.charAt(iKey));
+			}
+
+			assertThat("Unexpected branch node depth", node.getDepth(), is(depth + 1));
 		}
 	}
 
