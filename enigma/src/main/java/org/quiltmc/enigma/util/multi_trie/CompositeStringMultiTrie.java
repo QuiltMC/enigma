@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.util.multi_trie;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,7 +61,7 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 	}
 
 	@Override
-	public Root<V> getRoot() {
+	public Node<V> getRoot() {
 		return this.root;
 	}
 
@@ -68,7 +70,8 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 		return this.view;
 	}
 
-	public static final class Root<V>
+	@VisibleForTesting
+	static final class Root<V>
 			extends MutableMapNode<Character, V, Branch<V>>
 			implements Node<V> {
 		private final Collection<V> leaves;
@@ -88,12 +91,12 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 		}
 
 		@Override
-		public Root<V> previous() {
+		public Node<V> previous() {
 			return this;
 		}
 
 		@Override
-		public Root<V> previous(int steps) {
+		public Node<V> previous(int steps) {
 			return this;
 		}
 
