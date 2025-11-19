@@ -3,6 +3,7 @@ package org.quiltmc.enigma.util.multi_trie;
 import com.google.common.collect.MapMaker;
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.util.Utils;
+import org.quiltmc.enigma.util.multi_trie.MutableMapNode.Branch;
 
 import java.util.Collection;
 import java.util.Map;
@@ -18,9 +19,7 @@ import java.util.stream.Stream;
  * @param <V> the type of values
  * @param <B> the type of branch nodes
  */
-public abstract class MutableMapNode<K, V, B extends MutableMapNode.Branch<K, V, B>>
-		extends MapNode<K, V, B>
-		implements MutableMultiTrie.Node<K, V> {
+public abstract class MutableMapNode<K, V, B extends Branch<K, V, B>> implements MutableMultiTrie.Node<K, V> {
 	/**
 	 * Orphans are empty nodes.
 	 *
@@ -32,6 +31,21 @@ public abstract class MutableMapNode<K, V, B extends MutableMapNode.Branch<K, V,
 	 * values and don't put any value in it.
 	 */
 	final Map<K, B> orphans = new MapMaker().weakValues().makeMap();
+
+	@Override
+	public Stream<V> streamStems() {
+		return this.getBranches().values().stream().flatMap(MutableMapNode::streamValues);
+	}
+
+	@Override
+	public Stream<V> streamValues() {
+		return Stream.concat(this.streamLeaves(), this.streamStems());
+	}
+
+	/**
+	 * Implementations should be pure (stateless, no side effects).
+	 */
+	protected abstract Map<K, B> getBranches();
 
 	@Override
 	public Stream<V> streamLeaves() {

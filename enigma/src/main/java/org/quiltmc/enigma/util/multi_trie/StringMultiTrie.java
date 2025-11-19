@@ -138,6 +138,12 @@ public abstract class StringMultiTrie
 					? tryToggleCase(key).map(this::next).orElse(next)
 					: next;
 		}
+
+		@Override
+		CharacterNode<V> previous();
+
+		@Override
+		CharacterNode<V> previous(int steps);
 	}
 
 	public interface MutableCharacterNode
@@ -145,6 +151,12 @@ public abstract class StringMultiTrie
 			extends CharacterNode<V>, MutableMultiTrie.Node<Character, V> {
 		@Override
 		B next(Character key);
+
+		@Override
+		MutableCharacterNode<V, B> previous();
+
+		@Override
+		MutableCharacterNode<V, B> previous(int steps);
 
 		@Override
 		CharacterNode<V> view();
