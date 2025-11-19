@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -340,6 +341,32 @@ public class CompositeStringMultiTrieTest {
 		assertThat(
 				"Searching by non/inverted case keys should yield the same results!",
 				nodes, containsInAnyOrder(invertedNodes.toArray())
+		);
+	}
+
+	@Test
+	void testViews() {
+		final CompositeStringMultiTrie<Object> trie = CompositeStringMultiTrie.createHashed();
+
+		assertFalse(trie.view() instanceof MutableMultiTrie<?, ?>, "Trie view must not be mutable!");
+
+		assertFalse(trie.getRoot().view() instanceof MutableMultiTrie.Node<?, ?>, "Trie root view must not be mutable!");
+
+		assertThat(
+				"Root view should be the same as view root",
+				trie.view().getRoot(), sameInstance(trie.getRoot().view())
+		);
+
+		final char key = '1';
+
+		// orphan node
+		final Node<Object> node = trie.getRoot().next(key);
+
+		assertFalse(node.view() instanceof MutableMultiTrie.Node<?, ?>, "Trie branch view must not be mutable!");
+
+		assertThat(
+				"View lookups should be the same as trie lookup views",
+				node.view(), sameInstance(trie.view().getRoot().next(key))
 		);
 	}
 
