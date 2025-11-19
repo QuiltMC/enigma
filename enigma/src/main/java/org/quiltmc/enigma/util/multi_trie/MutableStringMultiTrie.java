@@ -44,7 +44,7 @@ public interface MutableStringMultiTrie<V> extends MutableMultiTrie<Character, V
 			final Character key = prefix.charAt(i);
 			nodes = nodes.stream()
 					.flatMap(node -> node.streamNextIgnoreCase(key))
-					.filter(node -> !node.isEmpty())
+					.filter(StringMultiTrie.Node::isNonEmpty)
 					.toList();
 			if (nodes.isEmpty()) {
 				return Stream.empty();
@@ -122,7 +122,7 @@ public interface MutableStringMultiTrie<V> extends MutableMultiTrie<Character, V
 				next.isEmpty() ? Stream.empty() : Stream.of(next.view()),
 				StringMultiTrie.tryToggleCase(key)
 					.map(this::next)
-					.filter(node -> !node.isEmpty())
+					.filter(Node::isNonEmpty)
 					.map(Node::view)
 					.stream()
 			);
