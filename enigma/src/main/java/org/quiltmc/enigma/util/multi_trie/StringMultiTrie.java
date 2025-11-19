@@ -43,14 +43,24 @@ public interface StringMultiTrie<V> extends MultiTrie<Character, V> {
 	@Override
 	Node<V> getRoot();
 
+	/**
+	 * @return the node associated with the passed {@code prefix}
+	 */
 	Node<V> get(String prefix);
 
+	/**
+	 * @return a {@link Stream} of all nodes associated with the passed {@code prefix}, ignoring case
+	 */
 	Stream<Node<V>> streamIgnoreCase(String prefix);
 
 	interface Node<V> extends MultiTrie.Node<Character, V> {
 		@Override
 		Node<V> next(Character key);
 
+		/**
+		 * @return a stream of 0, 1, or 2 non-{@linkplain #isEmpty() empty} nodes associated with the sequence formed
+		 * by appending the passed {@code key} or its case variant to this node's sequence
+		 */
 		Stream<Node<V>> streamNextIgnoreCase(Character key);
 
 		@Override
