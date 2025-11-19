@@ -4,8 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
-import org.quiltmc.enigma.util.multi_trie.MultiTrie.Node;
-import org.quiltmc.enigma.util.multi_trie.MutableStringMultiTrie.MutableCharacterNode;
+import org.quiltmc.enigma.util.multi_trie.MutableStringMultiTrie.Node;
 
 import java.util.Collection;
 import java.util.List;
@@ -53,7 +52,7 @@ public class CompositeStringMultiTrieTest {
 		final CompositeStringMultiTrie<Integer> trie = CompositeStringMultiTrie.createHashed();
 
 		for (int depth = 0; depth < KEY_BY_KEY_SUBJECT.length(); depth++) {
-			MutableCharacterNode<Integer> node = trie.getRoot();
+			Node<Integer> node = trie.getRoot();
 			for (int iKey = 0; iKey <= depth; iKey++) {
 				node = node.next(KEY_BY_KEY_SUBJECT.charAt(iKey));
 			}
@@ -72,7 +71,7 @@ public class CompositeStringMultiTrieTest {
 		final CompositeStringMultiTrie<Integer> trie = CompositeStringMultiTrie.createHashed();
 
 		for (int depth = KEY_BY_KEY_SUBJECT.length() - 1; depth >= 0; depth--) {
-			MutableCharacterNode<Integer> node = trie.getRoot();
+			Node<Integer> node = trie.getRoot();
 			for (int iKey = 0; iKey <= depth; iKey++) {
 				node = node.next(KEY_BY_KEY_SUBJECT.charAt(iKey));
 			}
@@ -85,7 +84,7 @@ public class CompositeStringMultiTrieTest {
 		}
 	}
 
-	private static void assertOneLeaf(MutableCharacterNode<?> node) {
+	private static void assertOneLeaf(Node<?> node) {
 		assertEquals(
 				1, node.streamLeaves().count(),
 				() -> "Expected node to have only one leaf, but had the following: " + node.streamLeaves().toList()
@@ -105,7 +104,7 @@ public class CompositeStringMultiTrieTest {
 		final CompositeStringMultiTrie<Association> trie = Association.createAndPopulateTrie();
 
 		Association.BY_PREFIX.asMap().forEach((prefix, associations) -> {
-			final Node<Character, Association> node = trie.get(prefix);
+			final MultiTrie.Node<Character, Association> node = trie.get(prefix);
 
 			assertUnorderedContentsForPrefix(prefix, VALUES, associations.stream(), node.streamValues());
 
@@ -128,7 +127,7 @@ public class CompositeStringMultiTrieTest {
 		final CompositeStringMultiTrie<MultiAssociation> trie = MultiAssociation.createAndPopulateTrie();
 
 		Association.BY_PREFIX.asMap().forEach((prefix, associations) -> {
-			final Node<Character, MultiAssociation> node = trie.get(prefix);
+			final MultiTrie.Node<Character, MultiAssociation> node = trie.get(prefix);
 
 			assertUnorderedContentsForPrefix(
 					prefix, VALUES,
@@ -218,7 +217,7 @@ public class CompositeStringMultiTrieTest {
 				() -> "Expected trie to be empty, but had it contents: " + trie.getRoot().streamValues().toList()
 		);
 
-		final Map<Character, ? extends Node<Character, ?>> rootChildren = trie.getRoot().getBranches();
+		final Map<Character, ? extends MultiTrie.Node<Character, ?>> rootChildren = trie.getRoot().getBranches();
 		assertTrue(
 				rootChildren.isEmpty(),
 				() -> "Expected root's children to be pruned, but it had children: " + rootChildren
@@ -242,7 +241,7 @@ public class CompositeStringMultiTrieTest {
 		trie.put(IGNORE_CASE_SUBJECT, IGNORE_CASE_SUBJECT);
 
 		final String invertedSubject = caseInverted(IGNORE_CASE_SUBJECT);
-		MutableCharacterNode<String> node = trie.getRoot();
+		Node<String> node = trie.getRoot();
 		for (int i = 0; i < invertedSubject.length(); i++) {
 			node = node.nextIgnoreCase(invertedSubject.charAt(i));
 
@@ -252,7 +251,7 @@ public class CompositeStringMultiTrieTest {
 		assertOneLeaf(node);
 	}
 
-	private static void assertOneValue(MutableCharacterNode<String> node) {
+	private static void assertOneValue(Node<String> node) {
 		assertEquals(
 				1, node.getSize(),
 				"Expected node to have only one value, but had the following: " + node.streamValues().toList()
@@ -267,7 +266,7 @@ public class CompositeStringMultiTrieTest {
 
 		final String invertedSubject = caseInverted(IGNORE_CASE_SUBJECT);
 
-		final MutableCharacterNode<String> node = trie.getIgnoreCase(invertedSubject);
+		final Node<String> node = trie.getIgnoreCase(invertedSubject);
 
 		assertOneValue(node);
 

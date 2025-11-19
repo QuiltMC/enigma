@@ -8,7 +8,7 @@ import org.quiltmc.enigma.gui.element.SearchableElement;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie;
-import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.CharacterNode;
+import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.Node;
 
 import javax.swing.JMenuItem;
 import javax.swing.MenuElement;
@@ -180,7 +180,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				if (this.currentResults.searchTerm.length() == searchTerm.length()) {
 					return UpdateOutcome.SAME_RESULTS;
 				} else {
-					CharacterNode<Result> resultNode = this.currentResults.results;
+					Node<Result> resultNode = this.currentResults.results;
 					for (int i = this.currentResults.searchTerm.length(); i < searchTerm.length(); i++) {
 						resultNode = resultNode.nextIgnoreCase(searchTerm.charAt(i));
 					}
@@ -213,7 +213,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		}
 
 		UpdateOutcome initializeCurrentResults(String searchTerm) {
-			final CharacterNode<Result> results = this.getResultTrie().getIgnoreCase(searchTerm);
+			final Node<Result> results = this.getResultTrie().getIgnoreCase(searchTerm);
 			if (results.isEmpty()) {
 				this.clearCurrent();
 
@@ -268,7 +268,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			return elementsBuilder.view();
 		}
 
-		record CurrentResults(CharacterNode<Result> results, String searchTerm) { }
+		record CurrentResults(Node<Result> results, String searchTerm) { }
 
 		enum UpdateOutcome {
 			NO_RESULTS, SAME_RESULTS, DIFFERENT_RESULTS
