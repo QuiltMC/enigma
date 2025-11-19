@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.gui.element;
+package org.quiltmc.enigma.gui.element.menu_bar;
 
 import org.quiltmc.enigma.util.I18n;
 
