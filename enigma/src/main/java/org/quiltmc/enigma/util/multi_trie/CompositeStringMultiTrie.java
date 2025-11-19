@@ -184,11 +184,6 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 		}
 
 		@Override
-		protected CompositeStringMultiTrie.Branch<V> getSelf() {
-			return this;
-		}
-
-		@Override
 		protected CompositeStringMultiTrie.Branch<V> createBranch(Character key) {
 			return this.branchFactory.create(key, this);
 		}
