@@ -1,8 +1,6 @@
 package org.quiltmc.enigma.util.multi_trie;
 
 import org.jspecify.annotations.NonNull;
-import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie.Branch;
-import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie.Root;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -18,7 +16,7 @@ import java.util.function.Supplier;
  * @see #of(Supplier, Supplier)
  * @see #createHashed()
  */
-public final class CompositeStringMultiTrie<V> implements StringMultiTrie<V, Branch<V>, Root<V>> {
+public final class CompositeStringMultiTrie<V> implements StringMultiTrie<V> {
 	private final Root<V> root;
 	private final View view = new View();
 
@@ -68,13 +66,13 @@ public final class CompositeStringMultiTrie<V> implements StringMultiTrie<V, Bra
 	}
 
 	@Override
-	public StringMultiTrie.View<V, Branch<V>, Root<V>> view() {
+	public StringMultiTrie.View<V> view() {
 		return this.view;
 	}
 
 	public static final class Root<V>
 			extends MutableMapNode<Character, V, Branch<V>>
-			implements MutableCharacterNode<V, Branch<V>> {
+			implements MutableCharacterNode<V> {
 		private final Collection<V> leaves;
 		private final Map<Character, CompositeStringMultiTrie.Branch<V>> branches;
 
@@ -129,9 +127,9 @@ public final class CompositeStringMultiTrie<V> implements StringMultiTrie<V, Bra
 
 	public static final class Branch<V>
 			extends MutableMapNode.Branch<Character, V, Branch<V>>
-			implements MutableCharacterNode<V, Branch<V>> {
+			implements MutableCharacterNode<V> {
 		private final MutableMapNode<Character, V, CompositeStringMultiTrie.Branch<V>> parent;
-		private final MutableCharacterNode<V, CompositeStringMultiTrie.Branch<V>> previous;
+		private final MutableCharacterNode<V> previous;
 		private final Character key;
 		private final int depth;
 
@@ -142,13 +140,11 @@ public final class CompositeStringMultiTrie<V> implements StringMultiTrie<V, Bra
 
 		private final NodeView<V> view = new NodeView<>(this);
 
-		private <
-				P extends MutableMapNode<Character, V, CompositeStringMultiTrie.Branch<V>>
-					& MutableCharacterNode<V, CompositeStringMultiTrie.Branch<V>>
-				> Branch(
-				P parent, char key,
-				int depth, Collection<V> leaves, Map<Character, CompositeStringMultiTrie.Branch<V>> branches,
-				Factory<V> branchFactory
+		private <P extends MutableMapNode<Character, V, CompositeStringMultiTrie.Branch<V>> & MutableCharacterNode<V>>
+				Branch(
+					P parent, char key,
+					int depth, Collection<V> leaves, Map<Character, CompositeStringMultiTrie.Branch<V>> branches,
+					Factory<V> branchFactory
 		) {
 			// two references to the same instance because both its types are necessary
 			this.parent = parent;
@@ -163,13 +159,13 @@ public final class CompositeStringMultiTrie<V> implements StringMultiTrie<V, Bra
 		}
 
 		@Override
-		public MutableCharacterNode<V, CompositeStringMultiTrie.Branch<V>> previous() {
+		public MutableCharacterNode<V> previous() {
 			return this.previous;
 		}
 
 		@Override
-		public MutableCharacterNode<V, CompositeStringMultiTrie.Branch<V>> previous(int steps) {
-			return MultiTrie.Node.<Character, V, MutableCharacterNode<V, CompositeStringMultiTrie.Branch<V>>>
+		public MutableCharacterNode<V> previous(int steps) {
+			return MultiTrie.Node.<Character, V, MutableCharacterNode<V>>
 				previous(this, steps, MutableCharacterNode::previous);
 		}
 
@@ -219,7 +215,7 @@ public final class CompositeStringMultiTrie<V> implements StringMultiTrie<V, Bra
 		) {
 			<
 					P extends MutableMapNode<Character, V, CompositeStringMultiTrie.Branch<V>>
-						& MutableCharacterNode<V, CompositeStringMultiTrie.Branch<V>>
+						& MutableCharacterNode<V>
 					> CompositeStringMultiTrie.Branch<V> create(char key, P parent) {
 				return new CompositeStringMultiTrie.Branch<>(
 						parent, key, parent.getDepth() + 1, this.leavesFactory.get(), this.branchesFactory.get(),
@@ -229,7 +225,7 @@ public final class CompositeStringMultiTrie<V> implements StringMultiTrie<V, Bra
 		}
 	}
 
-	private class View extends StringMultiTrie.View<V, Branch<V>, Root<V>> {
+	private class View extends StringMultiTrie.View.AbstractView<V> {
 		@Override
 		protected CompositeStringMultiTrie<V> getViewed() {
 			return CompositeStringMultiTrie.this;
@@ -237,9 +233,9 @@ public final class CompositeStringMultiTrie<V> implements StringMultiTrie<V, Bra
 	}
 
 	private static final class NodeView<V> extends Node.View<Character, V> implements CharacterNode<V> {
-		final MutableCharacterNode<V, Branch<V>> viewed;
+		final MutableCharacterNode<V> viewed;
 
-		NodeView(MutableCharacterNode<V, Branch<V>> viewed) {
+		NodeView(MutableCharacterNode<V> viewed) {
 			this.viewed = viewed;
 		}
 

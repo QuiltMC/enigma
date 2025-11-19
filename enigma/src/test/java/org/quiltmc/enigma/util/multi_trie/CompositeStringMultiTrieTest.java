@@ -53,7 +53,7 @@ public class CompositeStringMultiTrieTest {
 		final CompositeStringMultiTrie<Integer> trie = CompositeStringMultiTrie.createHashed();
 
 		for (int depth = 0; depth < KEY_BY_KEY_SUBJECT.length(); depth++) {
-			MutableCharacterNode<Integer, ?> node = trie.getRoot();
+			MutableCharacterNode<Integer> node = trie.getRoot();
 			for (int iKey = 0; iKey <= depth; iKey++) {
 				node = node.next(KEY_BY_KEY_SUBJECT.charAt(iKey));
 			}
@@ -72,7 +72,7 @@ public class CompositeStringMultiTrieTest {
 		final CompositeStringMultiTrie<Integer> trie = CompositeStringMultiTrie.createHashed();
 
 		for (int depth = KEY_BY_KEY_SUBJECT.length() - 1; depth >= 0; depth--) {
-			MutableCharacterNode<Integer, ?> node = trie.getRoot();
+			MutableCharacterNode<Integer> node = trie.getRoot();
 			for (int iKey = 0; iKey <= depth; iKey++) {
 				node = node.next(KEY_BY_KEY_SUBJECT.charAt(iKey));
 			}
@@ -85,7 +85,7 @@ public class CompositeStringMultiTrieTest {
 		}
 	}
 
-	private static void assertOneLeaf(MutableCharacterNode<?, ?> node) {
+	private static void assertOneLeaf(MutableCharacterNode<?> node) {
 		assertEquals(
 				1, node.streamLeaves().count(),
 				() -> "Expected node to have only one leaf, but had the following: " + node.streamLeaves().toList()
@@ -242,7 +242,7 @@ public class CompositeStringMultiTrieTest {
 		trie.put(IGNORE_CASE_SUBJECT, IGNORE_CASE_SUBJECT);
 
 		final String invertedSubject = caseInverted(IGNORE_CASE_SUBJECT);
-		MutableCharacterNode<String, ?> node = trie.getRoot();
+		MutableCharacterNode<String> node = trie.getRoot();
 		for (int i = 0; i < invertedSubject.length(); i++) {
 			node = node.nextIgnoreCase(invertedSubject.charAt(i));
 
@@ -252,7 +252,7 @@ public class CompositeStringMultiTrieTest {
 		assertOneLeaf(node);
 	}
 
-	private static void assertOneValue(MutableCharacterNode<String, ?> node) {
+	private static void assertOneValue(MutableCharacterNode<String> node) {
 		assertEquals(
 				1, node.getSize(),
 				"Expected node to have only one value, but had the following: " + node.streamValues().toList()
@@ -267,7 +267,7 @@ public class CompositeStringMultiTrieTest {
 
 		final String invertedSubject = caseInverted(IGNORE_CASE_SUBJECT);
 
-		final MutableCharacterNode<String, ?> node = trie.getIgnoreCase(invertedSubject);
+		final MutableCharacterNode<String> node = trie.getIgnoreCase(invertedSubject);
 
 		assertOneValue(node);
 

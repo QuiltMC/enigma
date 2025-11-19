@@ -1,7 +1,6 @@
 package org.quiltmc.enigma.util.multi_trie;
 
 import org.quiltmc.enigma.util.Utils;
-import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.MutableCharacterNode;
 
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -19,19 +18,12 @@ import java.util.function.BiFunction;
  *     <li> {@link CharacterNode#nextIgnoreCase(Character)}
  * </ul>
  *
- * <p> {@linkplain #view() Views} also provide {@link View#get(String) get} and
- * {@link View#getIgnoreCase(String) getIgnoreCase} methods.
+ * <p> {@linkplain #view() Views} also provide {@link View.AbstractView#get(String) get} and
+ * {@link View.AbstractView#getIgnoreCase(String) getIgnoreCase} methods.
  *
  * @param <V> the type of values
- * @param <B> the type of branch nodes
  */
-public interface StringMultiTrie
-		<
-			V,
-			B extends MutableMapNode.Branch<Character, V, B> & MutableCharacterNode<V, B>,
-			R extends MutableMapNode<Character, V, B> & MutableCharacterNode<V, B>
-		>
-		extends MutableMultiTrie<Character, V> {
+public interface StringMultiTrie<V> extends MutableMultiTrie<Character, V> {
 	static Optional<Character> tryToggleCase(char c) {
 		if (Character.isUpperCase(c)) {
 			return Optional.of(Character.toLowerCase(c));
@@ -47,25 +39,25 @@ public interface StringMultiTrie
 	String VALUE = "value";
 
 	@Override
-	R getRoot();
+	MutableCharacterNode<V> getRoot();
 
 	@Override
-	View<V, B, R> view();
+	View<V> view();
 
-	default MutableCharacterNode<V, B> get(String prefix) {
+	default MutableCharacterNode<V> get(String prefix) {
 		return this.getImpl(prefix, MutableCharacterNode::next);
 	}
 
-	default MutableCharacterNode<V, B> getIgnoreCase(String prefix) {
+	default MutableCharacterNode<V> getIgnoreCase(String prefix) {
 		return this.getImpl(prefix, MutableCharacterNode::nextIgnoreCase);
 	}
 
-	private MutableCharacterNode<V, B> getImpl(
-			String prefix, BiFunction<MutableCharacterNode<V, B>, Character, MutableCharacterNode<V, B>> next
+	private MutableCharacterNode<V> getImpl(
+			String prefix, BiFunction<MutableCharacterNode<V>, Character, MutableCharacterNode<V>> next
 	) {
 		Utils.requireNonNull(prefix, PREFIX);
 
-		MutableCharacterNode<V, B> node = this.getRoot();
+		MutableCharacterNode<V> node = this.getRoot();
 		for (int i = 0; i < prefix.length(); i++) {
 			node = next.apply(node, prefix.charAt(i));
 		}
@@ -73,39 +65,29 @@ public interface StringMultiTrie
 		return node;
 	}
 
-	default MutableCharacterNode<V, B> put(String string, V value) {
+	default MutableCharacterNode<V> put(String string, V value) {
 		Utils.requireNonNull(string, STRING);
 		Utils.requireNonNull(value, VALUE);
 
-		final R root = this.getRoot();
-		if (string.isEmpty()) {
-			root.put(value);
-
-			return root;
+		MutableCharacterNode<V> node = this.getRoot();
+		for (int i = 0; i < string.length(); i++) {
+			node = node.next(string.charAt(i));
 		}
 
-		// Don't use next, initially creating orphans, because we always put a value,
-		// so all orphans would be adopted anyway.
-		B branch = root.getBranches().computeIfAbsent(string.charAt(0), root::createBranch);
-		for (int i = 1; i < string.length(); i++) {
-			final B parent = branch;
-			branch = branch.getBranches().computeIfAbsent(string.charAt(i), parent::createBranch);
-		}
+		node.put(value);
 
-		branch.put(value);
-
-		return branch;
+		return node;
 	}
 
 	default boolean remove(String string, V value) {
 		Utils.requireNonNull(string, STRING);
 		Utils.requireNonNull(value, VALUE);
 
-		MutableMapNode<Character, V, B> node = this.getRoot();
+		MutableCharacterNode<V> node = this.getRoot();
 		for (int i = 0; i < string.length(); i++) {
-			node = node.nextBranch(string.charAt(i));
+			node = node.next(string.charAt(i));
 
-			if (node == null) {
+			if (node.isEmpty()) {
 				return false;
 			}
 		}
@@ -116,11 +98,11 @@ public interface StringMultiTrie
 	default boolean removeAll(String string) {
 		Utils.requireNonNull(string, STRING);
 
-		MutableMapNode<Character, V, B> node = this.getRoot();
+		MutableCharacterNode<V> node = this.getRoot();
 		for (int i = 0; i < string.length(); i++) {
-			node = node.nextBranch(string.charAt(i));
+			node = node.next(string.charAt(i));
 
-			if (node == null) {
+			if (node.isEmpty()) {
 				return false;
 			}
 		}
@@ -146,50 +128,53 @@ public interface StringMultiTrie
 		CharacterNode<V> previous(int steps);
 	}
 
-	interface MutableCharacterNode
-			<V, B extends MutableMapNode.Branch<Character, V, B> & MutableCharacterNode<V, B>>
-			extends CharacterNode<V>, MutableMultiTrie.Node<Character, V> {
+	interface MutableCharacterNode<V> extends CharacterNode<V>, MutableMultiTrie.Node<Character, V> {
 		@Override
-		B next(Character key);
+		MutableCharacterNode<V> next(Character key);
 
 		@Override
-		MutableCharacterNode<V, B> previous();
+		MutableCharacterNode<V> previous();
 
 		@Override
-		MutableCharacterNode<V, B> previous(int steps);
+		MutableCharacterNode<V> previous(int steps);
 
 		@Override
 		CharacterNode<V> view();
 
 		@Override
-		default MutableCharacterNode<V, B> nextIgnoreCase(Character key) {
-			final MutableCharacterNode<V, B> next = this.next(key);
+		default MutableCharacterNode<V> nextIgnoreCase(Character key) {
+			final MutableCharacterNode<V> next = this.next(key);
 			return next.isEmpty()
-					? tryToggleCase(key).<MutableCharacterNode<V, B>>map(this::next).orElse(next)
+					? tryToggleCase(key).map(this::next).orElse(next)
 					: next;
 		}
 	}
 
-	abstract class View
-			<
-				V,
-				B extends MutableMapNode.Branch<Character, V, B> & MutableCharacterNode<V, B>,
-				R extends MutableMapNode<Character, V, B> & MutableCharacterNode<V, B>
-			>
-			implements MultiTrie<Character, V> {
+	interface View<V> extends MultiTrie<Character, V> {
 		@Override
-		public CharacterNode<V> getRoot() {
-			return this.getViewed().getRoot().view();
-		}
+		CharacterNode<V> getRoot();
 
-		public CharacterNode<V> get(String prefix) {
-			return this.getViewed().get(prefix).view();
-		}
+		CharacterNode<V> get(String prefix);
 
-		public CharacterNode<V> getIgnoreCase(String prefix) {
-			return this.getViewed().getIgnoreCase(prefix).view();
-		}
+		CharacterNode<V> getIgnoreCase(String prefix);
 
-		protected abstract StringMultiTrie<V, B, R> getViewed();
+		abstract class AbstractView<V> implements View<V> {
+			@Override
+			public CharacterNode<V> getRoot() {
+				return this.getViewed().getRoot().view();
+			}
+
+			@Override
+			public CharacterNode<V> get(String prefix) {
+				return this.getViewed().get(prefix).view();
+			}
+
+			@Override
+			public CharacterNode<V> getIgnoreCase(String prefix) {
+				return this.getViewed().getIgnoreCase(prefix).view();
+			}
+
+			protected abstract StringMultiTrie<V> getViewed();
+		}
 	}
 }
