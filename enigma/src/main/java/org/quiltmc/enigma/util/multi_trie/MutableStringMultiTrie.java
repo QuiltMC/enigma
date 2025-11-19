@@ -120,7 +120,11 @@ public interface MutableStringMultiTrie<V> extends MutableMultiTrie<Character, V
 			final Node<V> next = this.next(key);
 			return Stream.concat(
 				next.isEmpty() ? Stream.empty() : Stream.of(next.view()),
-				StringMultiTrie.tryToggleCase(key).map(this::next).map(Node::view).stream()
+				StringMultiTrie.tryToggleCase(key)
+					.map(this::next)
+					.filter(node -> !node.isEmpty())
+					.map(Node::view)
+					.stream()
 			);
 		}
 	}
