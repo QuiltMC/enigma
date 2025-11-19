@@ -16,7 +16,7 @@ import java.util.function.Supplier;
  * @see #of(Supplier, Supplier)
  * @see #createHashed()
  */
-public final class CompositeStringMultiTrie<V> implements StringMultiTrie<V> {
+public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie<V> {
 	private final Root<V> root;
 	private final View view = new View();
 
@@ -66,7 +66,7 @@ public final class CompositeStringMultiTrie<V> implements StringMultiTrie<V> {
 	}
 
 	@Override
-	public StringMultiTrie.View<V> view() {
+	public MutableStringMultiTrie.View<V> view() {
 		return this.view;
 	}
 
@@ -225,14 +225,16 @@ public final class CompositeStringMultiTrie<V> implements StringMultiTrie<V> {
 		}
 	}
 
-	private class View extends StringMultiTrie.View.AbstractView<V> {
+	private class View extends MutableStringMultiTrie.View.AbstractView<V> {
 		@Override
 		protected CompositeStringMultiTrie<V> getViewed() {
 			return CompositeStringMultiTrie.this;
 		}
 	}
 
-	private static final class NodeView<V> extends Node.View<Character, V> implements CharacterNode<V> {
+	private static final class NodeView<V>
+			extends MutableMultiTrie.Node.View<Character, V>
+			implements CharacterNode<V> {
 		final MutableCharacterNode<V> viewed;
 
 		NodeView(MutableCharacterNode<V> viewed) {
@@ -256,7 +258,7 @@ public final class CompositeStringMultiTrie<V> implements StringMultiTrie<V> {
 		}
 
 		@Override
-		protected Node<Character, V> getViewed() {
+		protected MutableMultiTrie.Node<Character, V> getViewed() {
 			return this.viewed;
 		}
 	}

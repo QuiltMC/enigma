@@ -165,7 +165,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	}
 
 	private class ResultManager {
-		StringMultiTrie.@Nullable View<Result> resultTrie;
+		@Nullable
+		StringMultiTrie<Result> resultTrie;
 		@Nullable
 		CurrentResults currentResults;
 
@@ -225,7 +226,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 		}
 
-		StringMultiTrie.View<Result> getResultTrie() {
+		StringMultiTrie<Result> getResultTrie() {
 			if (this.resultTrie == null) {
 				this.resultTrie = this.buildResultTrie();
 			}
@@ -248,7 +249,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 		}
 
-		StringMultiTrie.View<Result> buildResultTrie() {
+		StringMultiTrie<Result> buildResultTrie() {
 			final CompositeStringMultiTrie<Result> elementsBuilder = CompositeStringMultiTrie.createHashed();
 			SearchMenusMenu.this.gui.getMenuBar()
 					.streamMenus()
