@@ -8,7 +8,6 @@ import org.quiltmc.enigma.gui.element.PlaceheldTextField;
 import org.quiltmc.enigma.gui.element.SearchableElement;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie;
-import org.quiltmc.enigma.util.multi_trie.MultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.Node;
 
@@ -21,9 +20,6 @@ import javax.swing.event.MenuListener;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
@@ -179,44 +175,84 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		 * @return {@code true} if there are any results, or {@code false} otherwise
 		 */
 		UpdateOutcome updateResultItems(String searchTerm) {
-			if (this.currentResults == null || !searchTerm.startsWith(this.currentResults.searchTerm)) {
+			if (this.currentResults == null) {
 				return this.initializeCurrentResults(searchTerm);
 			} else {
-				if (this.currentResults.searchTerm.length() == searchTerm.length()) {
+				final int commonPrefixLength =
+						getCommonPrefixLengthIgnoreCase(this.currentResults.searchTerm, searchTerm);
+				final int termLength = searchTerm.length();
+				final int currentTermLength = this.currentResults.searchTerm.length();
+
+				if (commonPrefixLength == 0) {
+					return this.initializeCurrentResults(searchTerm);
+				} else if (commonPrefixLength == termLength && commonPrefixLength == currentTermLength) {
 					return UpdateOutcome.SAME_RESULTS;
 				} else {
-					List<Node<Result>> resultNodes = this.currentResults.nodes;
-					for (int i = this.currentResults.searchTerm.length(); i < searchTerm.length(); i++) {
-						final Character key = searchTerm.charAt(i);
-						resultNodes = resultNodes.stream().flatMap(node -> node.streamNextIgnoreCase(key)).toList();
+					final ImmutableList<Node<Result>> commonPrefixNodes;
+					final int backSteps = currentTermLength - commonPrefixLength;
+					if (backSteps > 0) {
+						commonPrefixNodes = this.currentResults.nodes.stream()
+							.map(node -> node.previous(backSteps))
+							.distinct()
+							.collect(toImmutableList());
+					} else {
+						commonPrefixNodes = this.currentResults.nodes;
 					}
 
-					if (resultNodes.isEmpty()) {
-						this.clearCurrent();
+					if (termLength > commonPrefixLength) {
+						ImmutableList<Node<Result>> resultNodes = commonPrefixNodes;
+						for (int i = commonPrefixLength; i < termLength; i++) {
+							final Character key = searchTerm.charAt(i);
+							resultNodes = resultNodes.stream()
+								.flatMap(node -> node.streamNextIgnoreCase(key))
+								.collect(toImmutableList());
+						}
 
-						return UpdateOutcome.NO_RESULTS;
-					} else {
-						final Set<Result> newResults = resultNodes.stream()
-								.flatMap(MultiTrie.Node::streamValues)
-								.collect(Collectors.toSet());
+						if (resultNodes.isEmpty()) {
+							this.clearCurrent();
 
-						final Set<JMenuItem> excludedResults = this.currentResults.stream()
-								.filter(oldResult -> !newResults.contains(oldResult))
-								.map(Result::getItem)
-								.collect(Collectors.toSet());
-
-						if (excludedResults.isEmpty()) {
-							return UpdateOutcome.SAME_RESULTS;
+							return UpdateOutcome.NO_RESULTS;
 						} else {
-							excludedResults
-								.forEach(SearchMenusMenu.this::remove);
+							this.currentResults.stream().map(Result::getItem).forEach(SearchMenusMenu.this::remove);
 
 							this.currentResults = new CurrentResults(resultNodes, searchTerm);
 
+							this.currentResults.stream().map(Result::getItem).forEach(SearchMenusMenu.this::add);
+
 							return UpdateOutcome.DIFFERENT_RESULTS;
 						}
+					} else {
+						this.currentResults = new CurrentResults(commonPrefixNodes, searchTerm);
+
+						this.currentResults.stream().map(Result::getItem).forEach(SearchMenusMenu.this::add);
+
+						return UpdateOutcome.DIFFERENT_RESULTS;
 					}
 				}
+			}
+		}
+
+		private static int getCommonPrefixLengthIgnoreCase(String left, String right) {
+			final int minLength = Math.min(left.length(), right.length());
+
+			for (int i = 0; i < minLength; i++) {
+				if (!equalsIgnoreCase(left.charAt(i), right.charAt(i))) {
+					return i;
+				}
+			}
+
+			return minLength;
+		}
+
+		private static boolean equalsIgnoreCase(char left, char right) {
+			if (left == right) {
+				return true;
+			} else if (Character.isUpperCase(right)) {
+				return left == Character.toLowerCase(right);
+			} else if (Character.isLowerCase(right)) {
+				return left == Character.toUpperCase(right);
+			} else {
+				return false;
 			}
 		}
 
