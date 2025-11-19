@@ -116,9 +116,9 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 	// Text component this TextTextLineNumber component is in sync with
 	protected final JEditorPane editor;
 	protected final Color currentLineColor;
-    protected final int lineOffset;
+	protected final int lineOffset;
 
-    //  Keep history information to reduce the number of times the component
+	//  Keep history information to reduce the number of times the component
 	//  needs to be repainted
 	private int lastDigits;
 	private int lastHeight;
@@ -133,9 +133,9 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 	public LineNumbersRuler(JEditorPane editor, Color currentLineColor, int lineOffset) {
 		this.editor = editor;
 		this.currentLineColor = currentLineColor;
-        this.lineOffset = lineOffset;
+		this.lineOffset = lineOffset;
 
-        final Insets editorInsets = this.editor.getInsets();
+		final Insets editorInsets = this.editor.getInsets();
 		this.setBorder(createEmptyBorder(editorInsets.top, 5, editorInsets.bottom, 5));
 
 		// required for toggle-lines to correctly repaint
@@ -177,7 +177,7 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 		final Insets insets = this.getInsets();
 		final int currentLine = getLineNumber(this.editor, this.editor.getCaretPosition());
 
-        final int lineHeight = fontMetrics.getHeight();
+		final int lineHeight = fontMetrics.getHeight();
 		final int maxLines = getLineCount(this.editor);
 		SyntaxView.setRenderingHits((Graphics2D) g);
 
@@ -254,7 +254,7 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals("font") && evt.getNewValue() instanceof Font) {
+		if (evt.getPropertyName().equals("font") && evt.getNewValue() instanceof Font) {
 			this.setFont((Font) evt.getNewValue());
 			this.setPreferredWidth(true);
 		}

@@ -27,7 +27,7 @@ import java.awt.Color;
  */
 public class PairsMarker implements CaretListener {
 	public static <M extends PairsMarker> M install(M marker) {
-        marker.pane.addCaretListener(marker);
+		marker.pane.addCaretListener(marker);
 
 		return marker;
 	}

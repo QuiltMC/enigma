@@ -42,8 +42,8 @@ public class JavaSyntaxKit extends DefaultEditorKit implements ViewFactory {
 	);
 
 	public static void setSyntaxColors(
-		Color highlight, Color string, Color number, Color operator, Color delimiter,
-		Color type, Color identifier, Color comment, Color text, Color regex
+			Color highlight, Color string, Color number, Color operator, Color delimiter,
+			Color type, Color identifier, Color comment, Color text, Color regex
 	) {
 		styles = new SyntaxStyleMap(
 			highlight, string, number, operator, delimiter,
