@@ -2,7 +2,8 @@ package org.quiltmc.enigma.util.multi_trie;
 
 import org.quiltmc.enigma.util.Utils;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * A {@linkplain  MutableMultiTrie mutable} {@link StringMultiTrie}.
@@ -19,16 +20,6 @@ import java.util.Optional;
  * @param <V> the type of values
  */
 public interface MutableStringMultiTrie<V> extends MutableMultiTrie<Character, V>, StringMultiTrie<V> {
-	static Optional<Character> tryToggleCase(char c) {
-		if (Character.isUpperCase(c)) {
-			return Optional.of(Character.toLowerCase(c));
-		} else if (Character.isLowerCase(c)) {
-			return Optional.of(Character.toUpperCase(c));
-		} else {
-			return Optional.empty();
-		}
-	}
-
 	String STRING = "string";
 	String VALUE = "value";
 
@@ -41,8 +32,26 @@ public interface MutableStringMultiTrie<V> extends MutableMultiTrie<Character, V
 	}
 
 	@Override
-	default Node<V> getIgnoreCase(String prefix) {
-		return StringMultiTrie.get(prefix, this.getRoot(), Node::nextIgnoreCase);
+	default Stream<StringMultiTrie.Node<V>> streamIgnoreCase(String prefix) {
+		Utils.requireNonNull(prefix, "prefix");
+
+		if (this.isEmpty()) {
+			return Stream.empty();
+		}
+
+		List<StringMultiTrie.Node<V>> nodes = List.of(this.getRoot().view());
+		for (int i = 0; i < prefix.length(); i++) {
+			final Character key = prefix.charAt(i);
+			nodes = nodes.stream()
+					.flatMap(node -> node.streamNextIgnoreCase(key))
+					.filter(node -> !node.isEmpty())
+					.toList();
+			if (nodes.isEmpty()) {
+				return Stream.empty();
+			}
+		}
+
+		return nodes.stream();
 	}
 
 	@Override
@@ -107,11 +116,12 @@ public interface MutableStringMultiTrie<V> extends MutableMultiTrie<Character, V
 		StringMultiTrie.Node<V> view();
 
 		@Override
-		default Node<V> nextIgnoreCase(Character key) {
+		default Stream<StringMultiTrie.Node<V>> streamNextIgnoreCase(Character key) {
 			final Node<V> next = this.next(key);
-			return next.isEmpty()
-					? tryToggleCase(key).map(this::next).orElse(next)
-					: next;
+			return Stream.concat(
+				next.isEmpty() ? Stream.empty() : Stream.of(next.view()),
+				StringMultiTrie.tryToggleCase(key).map(this::next).map(Node::view).stream()
+			);
 		}
 	}
 
@@ -127,8 +137,8 @@ public interface MutableStringMultiTrie<V> extends MutableMultiTrie<Character, V
 		}
 
 		@Override
-		public Node<V> getIgnoreCase(String prefix) {
-			return this.getViewed().getIgnoreCase(prefix).view();
+		public Stream<StringMultiTrie.Node<V>> streamIgnoreCase(String prefix) {
+			return this.getViewed().streamIgnoreCase(prefix);
 		}
 
 		protected abstract MutableStringMultiTrie<V> getViewed();
