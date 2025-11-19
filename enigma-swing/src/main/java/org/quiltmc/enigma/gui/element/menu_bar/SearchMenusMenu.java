@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.element.menu_bar;
 
+import com.google.common.collect.ImmutableList;
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
@@ -7,6 +8,7 @@ import org.quiltmc.enigma.gui.element.PlaceheldTextField;
 import org.quiltmc.enigma.gui.element.SearchableElement;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie;
+import org.quiltmc.enigma.util.multi_trie.MultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.Node;
 
@@ -19,9 +21,12 @@ import javax.swing.event.MenuListener;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.google.common.collect.ImmutableList.toImmutableList;
 
 public class SearchMenusMenu extends AbstractEnigmaMenu {
 	/**
@@ -180,19 +185,22 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				if (this.currentResults.searchTerm.length() == searchTerm.length()) {
 					return UpdateOutcome.SAME_RESULTS;
 				} else {
-					Node<Result> resultNode = this.currentResults.results;
+					List<Node<Result>> resultNodes = this.currentResults.nodes;
 					for (int i = this.currentResults.searchTerm.length(); i < searchTerm.length(); i++) {
-						resultNode = resultNode.nextIgnoreCase(searchTerm.charAt(i));
+						final Character key = searchTerm.charAt(i);
+						resultNodes = resultNodes.stream().flatMap(node -> node.streamNextIgnoreCase(key)).toList();
 					}
 
-					if (resultNode.isEmpty()) {
+					if (resultNodes.isEmpty()) {
 						this.clearCurrent();
 
 						return UpdateOutcome.NO_RESULTS;
 					} else {
-						final Set<Result> newResults = resultNode.streamValues().collect(Collectors.toSet());
+						final Set<Result> newResults = resultNodes.stream()
+								.flatMap(MultiTrie.Node::streamValues)
+								.collect(Collectors.toSet());
 
-						final Set<JMenuItem> excludedResults = this.currentResults.results.streamValues()
+						final Set<JMenuItem> excludedResults = this.currentResults.stream()
 								.filter(oldResult -> !newResults.contains(oldResult))
 								.map(Result::getItem)
 								.collect(Collectors.toSet());
@@ -203,7 +211,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 							excludedResults
 								.forEach(SearchMenusMenu.this::remove);
 
-							this.currentResults = new CurrentResults(resultNode, searchTerm);
+							this.currentResults = new CurrentResults(resultNodes, searchTerm);
 
 							return UpdateOutcome.DIFFERENT_RESULTS;
 						}
@@ -213,14 +221,16 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		}
 
 		UpdateOutcome initializeCurrentResults(String searchTerm) {
-			final Node<Result> results = this.getResultTrie().getIgnoreCase(searchTerm);
-			if (results.isEmpty()) {
+			final ImmutableList<Node<Result>> resultNodes = this.getResultTrie()
+					.streamIgnoreCase(searchTerm)
+					.collect(toImmutableList());
+			if (resultNodes.isEmpty()) {
 				this.clearCurrent();
 
 				return UpdateOutcome.NO_RESULTS;
 			} else {
-				this.currentResults = new CurrentResults(results, searchTerm);
-				this.currentResults.results.streamValues().map(Result::getItem).forEach(SearchMenusMenu.this::add);
+				this.currentResults = new CurrentResults(resultNodes, searchTerm);
+				this.currentResults.stream().map(Result::getItem).forEach(SearchMenusMenu.this::add);
 
 				return UpdateOutcome.DIFFERENT_RESULTS;
 			}
@@ -241,7 +251,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		void clearCurrent() {
 			if (this.currentResults != null) {
-				this.currentResults.results.streamValues()
+				this.currentResults.stream()
 						.map(Result::getItem)
 						.forEach(SearchMenusMenu.this::remove);
 
@@ -268,7 +278,15 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			return elementsBuilder.view();
 		}
 
-		record CurrentResults(Node<Result> results, String searchTerm) { }
+		record CurrentResults(ImmutableList<Node<Result>> nodes, String searchTerm) {
+			CurrentResults(Iterable<Node<Result>> nodes, String searchTerm) {
+				this(ImmutableList.copyOf(nodes), searchTerm);
+			}
+
+			Stream<Result> stream() {
+				return this.nodes.stream().flatMap(StringMultiTrie.Node::streamValues);
+			}
+		}
 
 		enum UpdateOutcome {
 			NO_RESULTS, SAME_RESULTS, DIFFERENT_RESULTS

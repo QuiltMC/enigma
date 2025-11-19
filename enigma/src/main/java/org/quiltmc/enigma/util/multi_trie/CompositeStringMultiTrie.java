@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * A {@link StringMultiTrie} that allows customization of nodes' backing data structures.
@@ -236,6 +237,11 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 		@Override
 		public StringMultiTrie.Node<V> next(Character key) {
 			return this.viewed.next(key).view();
+		}
+
+		@Override
+		public Stream<StringMultiTrie.Node<V>> streamNextIgnoreCase(Character key) {
+			return this.viewed.streamNextIgnoreCase(key);
 		}
 
 		@Override

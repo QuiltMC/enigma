@@ -135,7 +135,7 @@ public class CompositeStringMultiTrieTest {
 		}
 	}
 
-	private static void assertOneLeaf(Node<?> node) {
+	private static void assertOneLeaf(StringMultiTrie.Node<?> node) {
 		assertEquals(
 				1, node.streamLeaves().count(),
 				() -> "Expected node to have only one leaf, but had the following: " + node.streamLeaves().toList()
@@ -287,23 +287,25 @@ public class CompositeStringMultiTrieTest {
 	}
 
 	@Test
-	void testNextIgnoreCase() {
+	void testStreamNextIgnoreCase() {
 		final CompositeStringMultiTrie<String> trie = CompositeStringMultiTrie.createHashed();
 
 		trie.put(IGNORE_CASE_SUBJECT, IGNORE_CASE_SUBJECT);
 
 		final String invertedSubject = caseInverted(IGNORE_CASE_SUBJECT);
-		Node<String> node = trie.getRoot();
+		List<StringMultiTrie.Node<String>> nodes = List.of(trie.getRoot());
 		for (int i = 0; i < invertedSubject.length(); i++) {
-			node = node.nextIgnoreCase(invertedSubject.charAt(i));
+			final char key = invertedSubject.charAt(i);
+			nodes = nodes.stream().flatMap(node -> node.streamNextIgnoreCase(key)).toList();
+			assertNodeCount(nodes, 1);
 
-			assertOneValue(node);
+			assertOneValue(nodes.get(0));
 		}
 
-		assertOneLeaf(node);
+		assertOneLeaf(nodes.get(0));
 	}
 
-	private static void assertOneValue(Node<String> node) {
+	private static void assertOneValue(StringMultiTrie.Node<String> node) {
 		assertEquals(
 				1, node.getSize(),
 				"Expected node to have only one value, but had the following: " + node.streamValues().toList()
@@ -318,13 +320,31 @@ public class CompositeStringMultiTrieTest {
 
 		final String invertedSubject = caseInverted(IGNORE_CASE_SUBJECT);
 
-		final Node<String> node = trie.getIgnoreCase(invertedSubject);
+		final List<StringMultiTrie.Node<String>> singleNodes = trie.streamIgnoreCase(invertedSubject).toList();
+		assertNodeCount(singleNodes, 1);
 
-		assertOneValue(node);
+		final StringMultiTrie.Node<String> singleNode = singleNodes.get(0);
+		assertOneValue(singleNode);
 
-		node.streamLeaves()
+		singleNode.streamLeaves()
 				.findAny()
 				.orElseThrow(() -> new AssertionFailedError("Expected node to have a leaf, but had none!"));
+
+		trie.put(invertedSubject, invertedSubject);
+
+		final List<StringMultiTrie.Node<String>> nodes = trie.streamIgnoreCase(IGNORE_CASE_SUBJECT).toList();
+		assertNodeCount(nodes, 2);
+
+		final List<StringMultiTrie.Node<String>> invertedNodes = trie.streamIgnoreCase(invertedSubject).toList();
+
+		assertThat(
+				"Searching by non/inverted case keys should yield the same results!",
+				nodes, containsInAnyOrder(invertedNodes.toArray())
+		);
+	}
+
+	private static void assertNodeCount(Collection<StringMultiTrie.Node<String>> nodes, int expected) {
+		assertThat("Node count", nodes.size(), is(expected));
 	}
 
 	record Association(String key) {
