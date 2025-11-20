@@ -5,6 +5,8 @@ import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.ChangeDialog;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.Retranslatable;
+import org.quiltmc.enigma.gui.element.menu_bar.SearchableElement;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.ButtonGroup;
@@ -18,19 +20,19 @@ import static org.quiltmc.enigma.gui.config.Config.ThemeChoice;
 public class ThemesMenu extends AbstractSearchableEnigmaMenu {
 	private static final String TRANSLATION_KEY = "menu.view.themes";
 
-	private final Map<ThemeChoice, JRadioButtonMenuItem> themes = new HashMap<>();
+	private final Map<ThemeChoice, ThemeItem> themes = new HashMap<>();
 
 	protected ThemesMenu(Gui gui) {
 		super(gui);
 
 		ButtonGroup themeGroup = new ButtonGroup();
 		for (ThemeChoice theme : ThemeChoice.values()) {
-			JRadioButtonMenuItem themeButton = new JRadioButtonMenuItem();
-			themeGroup.add(themeButton);
-			this.themes.put(theme, themeButton);
+			ThemeItem themeItem = new ThemeItem(theme);
+			themeGroup.add(themeItem);
+			this.themes.put(theme, themeItem);
 
-			this.add(themeButton);
-			themeButton.addActionListener(e -> this.onThemeClicked(theme));
+			this.add(themeItem);
+			themeItem.addActionListener(e -> this.onThemeClicked(theme));
 		}
 	}
 
@@ -38,9 +40,7 @@ public class ThemesMenu extends AbstractSearchableEnigmaMenu {
 	public void retranslate() {
 		this.setText(I18n.translate(TRANSLATION_KEY));
 
-		for (ThemeChoice theme : ThemeChoice.values()) {
-			this.themes.get(theme).setText(I18n.translate("menu.view.themes." + theme.name().toLowerCase(Locale.ROOT)));
-		}
+		this.themes.values().forEach(ThemeItem::retranslate);
 	}
 
 	@Override
@@ -60,5 +60,35 @@ public class ThemesMenu extends AbstractSearchableEnigmaMenu {
 	@Override
 	public String getAliasesTranslationKeyPrefix() {
 		return TRANSLATION_KEY;
+	}
+
+	private static final class ThemeItem extends JRadioButtonMenuItem implements SearchableElement, Retranslatable {
+		final ThemeChoice theme;
+		final String translationKey;
+
+		private ThemeItem(ThemeChoice theme) {
+			this.theme = theme;
+			this.translationKey = ThemesMenu.TRANSLATION_KEY + "." + theme.name().toLowerCase(Locale.ROOT);
+		}
+
+		@Override
+		public void retranslate() {
+			this.setText(I18n.translate(this.translationKey));
+		}
+
+		@Override
+		public String getSearchName() {
+			return this.getText();
+		}
+
+		@Override
+		public String getAliasesTranslationKeyPrefix() {
+			return this.translationKey;
+		}
+
+		@Override
+		public void onSearchClicked() {
+			this.doClick();
+		}
 	}
 }
