@@ -16,6 +16,7 @@ import org.quiltmc.enigma.gui.util.GuiUtil;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
+import java.util.concurrent.CompletableFuture;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -41,52 +42,71 @@ public class EditorTabbedPane {
 
 	public EditorPanel openClass(ClassEntry entry) {
 		EditorPanel activeEditor = this.getActiveEditor();
-		EditorPanel entryEditor = this.editors.computeIfAbsent(entry, editing -> {
-			ClassHandle classHandle = this.gui.getController().getClassHandleProvider().openClass(editing);
-			if (classHandle == null) {
-				return null;
+
+		final EditorPanel entryEditor;
+		final CompletableFuture<?> entryEditorReady;
+		{
+			final EditorPanel existingEditor = this.editors.get(entry);
+
+			if (existingEditor == null) {
+				ClassHandle classHandle = this.gui.getController().getClassHandleProvider().openClass(entry);
+				if (classHandle == null) {
+					entryEditor = null;
+					entryEditorReady = null;
+				} else {
+					this.navigator = new NavigatorPanel(this.gui);
+					final EditorPanel newEditor = new EditorPanel(this.gui, this.navigator);
+					entryEditorReady = newEditor.setClassHandle(classHandle);
+					this.openFiles.addTab(newEditor.getSimpleClassName(), newEditor.getUi());
+
+					ClosableTabTitlePane titlePane = new ClosableTabTitlePane(newEditor.getSimpleClassName(), newEditor.getFullClassName(), () -> this.closeEditor(newEditor));
+					this.openFiles.setTabComponentAt(this.openFiles.indexOfComponent(newEditor.getUi()), titlePane.getUi());
+					titlePane.setTabbedPane(this.openFiles);
+
+					newEditor.addListener(new EditorActionListener() {
+						@Override
+						public void onCursorReferenceChanged(EditorPanel editor, EntryReference<Entry<?>, Entry<?>> ref) {
+							if (editor == EditorTabbedPane.this.getActiveEditor()) {
+								EditorTabbedPane.this.gui.showCursorReference(ref);
+							}
+						}
+
+						@Override
+						public void onClassHandleChanged(EditorPanel editor, ClassEntry old, ClassHandle ch) {
+							EditorTabbedPane.this.editors.remove(old);
+							EditorTabbedPane.this.editors.put(ch.getRef(), editor);
+						}
+
+						@Override
+						public void onTitleChanged(EditorPanel editor, String title) {
+							titlePane.setText(editor.getSimpleClassName(), editor.getFullClassName());
+						}
+					});
+
+					putKeyBindAction(KeyBinds.EDITOR_CLOSE_TAB, newEditor.getEditor(), e -> this.closeEditor(newEditor));
+					putKeyBindAction(KeyBinds.ENTRY_NAVIGATOR_NEXT, newEditor.getEditor(), e -> newEditor.getNavigatorPanel().navigateDown());
+					putKeyBindAction(KeyBinds.ENTRY_NAVIGATOR_LAST, newEditor.getEditor(), e -> newEditor.getNavigatorPanel().navigateUp());
+
+					this.editors.put(entry, newEditor);
+
+					entryEditor = newEditor;
+				}
+			} else {
+				entryEditor = existingEditor;
+				entryEditorReady = null;
 			}
-
-			this.navigator = new NavigatorPanel(this.gui);
-			EditorPanel newEditor = new EditorPanel(this.gui, this.navigator);
-			newEditor.setClassHandle(classHandle);
-			this.openFiles.addTab(newEditor.getSimpleClassName(), newEditor.getUi());
-
-			ClosableTabTitlePane titlePane = new ClosableTabTitlePane(newEditor.getSimpleClassName(), newEditor.getFullClassName(), () -> this.closeEditor(newEditor));
-			this.openFiles.setTabComponentAt(this.openFiles.indexOfComponent(newEditor.getUi()), titlePane.getUi());
-			titlePane.setTabbedPane(this.openFiles);
-
-			newEditor.addListener(new EditorActionListener() {
-				@Override
-				public void onCursorReferenceChanged(EditorPanel editor, EntryReference<Entry<?>, Entry<?>> ref) {
-					if (editor == EditorTabbedPane.this.getActiveEditor()) {
-						EditorTabbedPane.this.gui.showCursorReference(ref);
-					}
-				}
-
-				@Override
-				public void onClassHandleChanged(EditorPanel editor, ClassEntry old, ClassHandle ch) {
-					EditorTabbedPane.this.editors.remove(old);
-					EditorTabbedPane.this.editors.put(ch.getRef(), editor);
-				}
-
-				@Override
-				public void onTitleChanged(EditorPanel editor, String title) {
-					titlePane.setText(editor.getSimpleClassName(), editor.getFullClassName());
-				}
-			});
-
-			putKeyBindAction(KeyBinds.EDITOR_CLOSE_TAB, newEditor.getEditor(), e -> this.closeEditor(newEditor));
-			putKeyBindAction(KeyBinds.ENTRY_NAVIGATOR_NEXT, newEditor.getEditor(), e -> newEditor.getNavigatorPanel().navigateDown());
-			putKeyBindAction(KeyBinds.ENTRY_NAVIGATOR_LAST, newEditor.getEditor(), e -> newEditor.getNavigatorPanel().navigateUp());
-
-			return newEditor;
-		});
+		}
 
 		if (entryEditor != null && activeEditor != entryEditor) {
-			this.openFiles.setSelectedComponent(this.editors.get(entry).getUi());
+			this.openFiles.setSelectedComponent(entryEditor.getUi());
 			this.gui.updateStructure(entryEditor);
-			this.gui.showCursorReference(entryEditor.getCursorReference());
+
+			final Runnable showReference = () -> this.gui.showCursorReference(entryEditor.getCursorReference());
+			if (entryEditorReady == null) {
+				showReference.run();
+			} else {
+				entryEditorReady.thenRunAsync(showReference, SwingUtilities::invokeLater);
+			}
 		}
 
 		return entryEditor;

@@ -27,6 +27,9 @@ public class DarcerulaThemeProperties extends AbstractDarculaThemeProperties {
 				.lineNumbersBackground(new SerializableColor(0xFF252729))
 				.lineNumbersSelected(new SerializableColor(0xFF353739))
 
+				.selection(new SerializableColor(0xFF003658))
+				.pairsMarker(new SerializableColor(0xBF9F7B47))
+
 				.obfuscated(new SerializableColor(0x31FF5555))
 				.obfuscatedOutline(new SerializableColor(0x89FF5555))
 

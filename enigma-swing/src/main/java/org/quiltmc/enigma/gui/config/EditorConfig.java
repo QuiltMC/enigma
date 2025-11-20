@@ -16,4 +16,15 @@ public class EditorConfig extends ReflectiveConfig {
 
 	@Comment("Settings for editors' entry tooltips.")
 	public final EntryTooltipsSection entryTooltips = new EntryTooltipsSection();
+
+	@Comment("Settings for markers on the right side of the editor indicating where different entry types are.")
+	public final EntryMarkersSection entryMarkers = new EntryMarkersSection();
+
+	@Comment(
+			"""
+			Settings for the editor's selection highlighting; used to highlight entries that have been navigated to.
+			The color of the highlight is defined per-theme (in themes/) by [syntax_pane_colors] > selection_highlight.\
+			"""
+	)
+	public final SelectionHighlightSection selectionHighlight = new SelectionHighlightSection();
 }
