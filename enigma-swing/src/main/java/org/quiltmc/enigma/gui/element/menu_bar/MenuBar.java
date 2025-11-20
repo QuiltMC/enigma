@@ -64,6 +64,8 @@ public class MenuBar {
 		for (EnigmaMenu menu : this.menus) {
 			menu.updateState(jarOpen, connectionState);
 		}
+
+		this.clearSearchMenusResults();
 	}
 
 	public void retranslateUi() {
