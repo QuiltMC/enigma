@@ -53,6 +53,10 @@ its translation file.
 |----------------------------------------------------------|----------------------------------------------------|
 | `Dev` menu                                               | `"dev.menu.aliases"`                               |
 | `Collab` menu                                            | `"menu.collab.aliases"`                            |
+| `Collab`>`Connect to Server`                             | `"menu.collab.connect.aliases"`                    |
+| `Collab`>`Disconnect`                                    | `"menu.collab.disconnect"`                         |
+| `Collab`>`Start Server`                                  | `"menu.collab.server.start.aliases"`               |
+| `Collab`>`Stop Server`                                   | `"menu.collab.server.stop"`                        |
 | `Decompiler` menu                                        | `"menu.decompiler.aliases"`                        |
 | `Help` menu                                              | `"menu.help.aliases"`                              |
 | `Search` menu                                            | `"menu.search.aliases"`                            |

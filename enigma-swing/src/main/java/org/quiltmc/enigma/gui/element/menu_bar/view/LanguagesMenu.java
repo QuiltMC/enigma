@@ -4,8 +4,8 @@ import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.ConventionalSearchableElement;
 import org.quiltmc.enigma.gui.element.menu_bar.Retranslatable;
-import org.quiltmc.enigma.gui.element.menu_bar.SearchableElement;
 import org.quiltmc.enigma.gui.util.LanguageUtil;
 import org.quiltmc.enigma.util.I18n;
 
@@ -60,7 +60,7 @@ public class LanguagesMenu extends AbstractSearchableEnigmaMenu {
 		return TRANSLATION_KEY;
 	}
 
-	private static final class LanguageItem extends JRadioButtonMenuItem implements SearchableElement, Retranslatable {
+	private static final class LanguageItem extends JRadioButtonMenuItem implements ConventionalSearchableElement, Retranslatable {
 		private final String language;
 
 		LanguageItem(String language) {
