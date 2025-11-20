@@ -32,6 +32,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 /**
  * Enigma config is separated into several {@value #FORMAT} files with names matching the methods used to access them:
@@ -237,7 +238,11 @@ public final class Config extends ReflectiveConfig {
 
 		@Override
 		public Vec2i convertFrom(ValueMap<Integer> representation) {
-			return new Vec2i(representation.get("x"), representation.get("y"));
+			final int defaultValue = Objects.requireNonNullElse(representation.getDefaultValue(), 0);
+			return new Vec2i(
+				representation.getOrDefault("x", defaultValue),
+				representation.getOrDefault("y", defaultValue)
+			);
 		}
 
 		@Override
