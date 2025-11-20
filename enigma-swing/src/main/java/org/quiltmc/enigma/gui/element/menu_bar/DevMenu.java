@@ -10,10 +10,8 @@ import org.quiltmc.enigma.util.I18n;
 import org.tinylog.Logger;
 
 import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -26,13 +24,17 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 
+import static org.quiltmc.enigma.gui.util.GuiUtil.syncStateWithConfig;
+
 public class DevMenu extends AbstractSearchableEnigmaMenu {
 	private static final String TRANSLATION_KEY = "dev.menu";
 
-	private final JCheckBoxMenuItem showMappingSourcePluginItem = new JCheckBoxMenuItem();
-	private final JCheckBoxMenuItem debugTokenHighlightsItem = new JCheckBoxMenuItem();
-	private final JCheckBoxMenuItem logClientPacketsItem = new JCheckBoxMenuItem();
-	private final JMenuItem printMappingTreeItem = new JMenuItem();
+	private final SimpleCheckBoxItem showMappingSourcePluginItem =
+		new SimpleCheckBoxItem("dev.menu.show_mapping_source_plugin");
+	private final SimpleCheckBoxItem debugTokenHighlightsItem =
+		new SimpleCheckBoxItem("dev.menu.debug_token_highlights");
+	private final SimpleCheckBoxItem logClientPacketsItem = new SimpleCheckBoxItem("dev.menu.log_client_packets");
+	private final SimpleItem printMappingTreeItem = new SimpleItem("dev.menu.print_mapping_tree");
 
 	public DevMenu(Gui gui) {
 		super(gui);
@@ -41,6 +43,10 @@ public class DevMenu extends AbstractSearchableEnigmaMenu {
 		this.add(this.debugTokenHighlightsItem);
 		this.add(this.logClientPacketsItem);
 		this.add(this.printMappingTreeItem);
+
+		syncStateWithConfig(this.showMappingSourcePluginItem, Config.main().development.showMappingSourcePlugin);
+		syncStateWithConfig(this.debugTokenHighlightsItem, Config.main().development.debugTokenHighlights);
+		syncStateWithConfig(this.logClientPacketsItem, Config.main().development.logClientPackets);
 
 		this.showMappingSourcePluginItem.addActionListener(e -> this.onShowMappingSourcePluginClicked());
 		this.debugTokenHighlightsItem.addActionListener(e -> this.onDebugTokenHighlightsClicked());
@@ -52,19 +58,15 @@ public class DevMenu extends AbstractSearchableEnigmaMenu {
 	public void retranslate() {
 		this.setText(I18n.translate(TRANSLATION_KEY));
 
-		this.showMappingSourcePluginItem.setText(I18n.translate("dev.menu.show_mapping_source_plugin"));
-		this.debugTokenHighlightsItem.setText(I18n.translate("dev.menu.debug_token_highlights"));
-		this.logClientPacketsItem.setText(I18n.translate("dev.menu.log_client_packets"));
-		this.printMappingTreeItem.setText(I18n.translate("dev.menu.print_mapping_tree"));
+		this.showMappingSourcePluginItem.retranslate();
+		this.debugTokenHighlightsItem.retranslate();
+		this.logClientPacketsItem.retranslate();
+		this.printMappingTreeItem.retranslate();
 	}
 
 	@Override
 	public void updateState(boolean jarOpen, ConnectionState state) {
 		this.printMappingTreeItem.setEnabled(jarOpen);
-
-		this.showMappingSourcePluginItem.setState(Config.main().development.showMappingSourcePlugin.value());
-		this.debugTokenHighlightsItem.setState(Config.main().development.debugTokenHighlights.value());
-		this.logClientPacketsItem.setState(Config.main().development.logClientPackets.value());
 	}
 
 	private void showSavableTextAreaDialog(String title, String text, @Nullable String fileName) {
