@@ -52,18 +52,22 @@ its translation file.
 | Element                                                  | Translation Key                                    |
 |----------------------------------------------------------|----------------------------------------------------|
 | `Dev` menu                                               | `"dev.menu.aliases"`                               |
-| `Dev`>`Show mapping source plugin`                       | "dev.menu.show_mapping_source_plugin"`             |
-| `Dev`>`Debug token highlights`                           | "dev.menu.debug_token_highlights"`                 |
-| `Dev`>`Log client packets`                               | "dev.menu.log_client_packets"`                     |
-| `Dev`>`Print mapping tree`                               | "dev.menu.print_mapping_tree"`                     |
+| `Dev`>`Show mapping source plugin`                       | `"dev.menu.show_mapping_source_plugin.aliases"`    |
+| `Dev`>`Debug token highlights`                           | `"dev.menu.debug_token_highlights.aliases"`        |
+| `Dev`>`Log client packets`                               | `"dev.menu.log_client_packets.aliases"`            |
+| `Dev`>`Print mapping tree`                               | `"dev.menu.print_mapping_tree.aliases"`            |
 | `Collab` menu                                            | `"menu.collab.aliases"`                            |
 | `Collab`>`Connect to Server`                             | `"menu.collab.connect.aliases"`                    |
-| `Collab`>`Disconnect`                                    | `"menu.collab.disconnect"`                         |
+| `Collab`>`Disconnect`                                    | `"menu.collab.disconnect.aliases"`                 |
 | `Collab`>`Start Server`                                  | `"menu.collab.server.start.aliases"`               |
-| `Collab`>`Stop Server`                                   | `"menu.collab.server.stop"`                        |
+| `Collab`>`Stop Server`                                   | `"menu.collab.server.stop.aliases"`                |
 | `Decompiler` menu                                        | `"menu.decompiler.aliases"`                        |
-| `Decompiler`>`Decompiler Settings`                       | `"menu.decompiler.settings"`                       |
+| `Decompiler`>`Decompiler Settings`                       | `"menu.decompiler.settings.aliases"`               |
 | `Search` menu                                            | `"menu.search.aliases"`                            |
+| `Search`>`Search All`                                    | `"menu.search.all.aliases"`                        |
+| `Search`>`Search Classes`                                | `"menu.search.class.aliases"`                      |
+| `Search`>`Search Methods`                                | `"menu.search.method.aliases"`                     |
+| `Search`>`Search Fields`                                 | `"menu.search.field.aliases"`                      |
 | `Crash History` menu                                     | `"menu.file.crash_history.aliases"`                |
 | `File` menu                                              | `"menu.file.aliases"`                              |
 | `File`>`Open Jar...`                                     | `"menu.file.jar.open.aliases"`                     |
@@ -104,10 +108,10 @@ its translation file.
 | `View`>`Stat Icons`>`Count fallback-proposed names`      | `"menu.view.stat_icons.count_fallback.aliases"`    |
 | `View`>`Stat Icons`>`Enable icons`                       | `"menu.view.stat_icons.enable_icons.aliases"`      |
 | `View`>`Stat Icons`>`Included types` menu                | `"menu.view.stat_icons.included_types.aliases"`    |
-| `View`>`Stat Icons`>`Included types`>`Methods`           | `"type.methods"`                                   |
-| `View`>`Stat Icons`>`Included types`>`Fields`            | `"type.fields"`                                    |
-| `View`>`Stat Icons`>`Included types`>`Parameters`        | `"type.parameters"`                                |
-| `View`>`Stat Icons`>`Included types`>`Classes`           | `"type.classes"`                                   |
+| `View`>`Stat Icons`>`Included types`>`Methods`           | `"type.methods.aliases"`                           |
+| `View`>`Stat Icons`>`Included types`>`Fields`            | `"type.fields.aliases"`                            |
+| `View`>`Stat Icons`>`Included types`>`Parameters`        | `"type.parameters.aliases"`                        |
+| `View`>`Stat Icons`>`Included types`>`Classes`           | `"type.classes.aliases"`                           |
 | `View`>`Entry Tooltips` menu                             | `"menu.view.entry_tooltips.aliases"`               |
 | `View`>`Entry Tooltips`>`Enable tooltips`                | `"menu.view.entry_tooltips.enable.aliases"`        |
 | `View`>`Entry Tooltips`>`Allow tooltip interaction`      | `"menu.view.entry_tooltips.interactable.aliases"`  |
@@ -119,4 +123,4 @@ its translation file.
 | `View`>`Themes`>`System`                                 | `"menu.view.themes.system.aliases"`                |
 | `View`>`Themes`>`None (JVM Default)`                     | `"menu.view.themes.none.aliases"`                  |
 | `View`>`Scale` menu                                      | `"menu.view.scale.aliases"`                        |
-| `View`>`Fonts...`                                        | `"menu.view.font"`                                 |
+| `View`>`Fonts...`                                        | `"menu.view.font.aliases"`                         |
