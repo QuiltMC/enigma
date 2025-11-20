@@ -15,6 +15,7 @@ public class MenuBar {
 
 	private final CollabMenu collabMenu;
 	private final FileMenu fileMenu;
+	private final HelpMenu helpMenu;
 
 	private final Gui gui;
 
@@ -26,7 +27,7 @@ public class MenuBar {
 		ViewMenu viewMenu = new ViewMenu(gui);
 		SearchMenu searchMenu = new SearchMenu(gui);
 		this.collabMenu = new CollabMenu(gui);
-		HelpMenu helpMenu = new HelpMenu(gui);
+		this.helpMenu = new HelpMenu(gui);
 		// Enabled with system property "enigma.development" or "--development" flag
 		DevMenu devMenu = new DevMenu(gui);
 
@@ -37,7 +38,7 @@ public class MenuBar {
 		this.addMenu(viewMenu);
 		this.addMenu(searchMenu);
 		this.addMenu(this.collabMenu);
-		this.addMenu(helpMenu);
+		this.addMenu(this.helpMenu);
 
 		if (Boolean.parseBoolean(System.getProperty("enigma.development")) || Config.main().development.anyEnabled) {
 			this.addMenu(devMenu);
@@ -69,6 +70,12 @@ public class MenuBar {
 		for (EnigmaMenu menu : this.menus) {
 			menu.retranslate();
 		}
+
+		this.clearSearchMenusResults();
+	}
+
+	public void clearSearchMenusResults() {
+		this.helpMenu.clearSearchMenusResults();
 	}
 
 	public CollabMenu getCollabMenu() {
