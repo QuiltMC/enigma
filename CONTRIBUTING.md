@@ -111,3 +111,4 @@ its translation file.
 | `View`>`Themes`>`System`                                 | `"menu.view.themes.system.aliases"`                |
 | `View`>`Themes`>`None (JVM Default)`                     | `"menu.view.themes.none.aliases"`                  |
 | `View`>`Scale` menu                                      | `"menu.view.scale.aliases"`                        |
+| `View`>`Fonts...`                                        | `"menu.view.font"`                                 |
