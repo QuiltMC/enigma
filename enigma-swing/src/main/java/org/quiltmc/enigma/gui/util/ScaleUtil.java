@@ -7,7 +7,6 @@ import com.github.swingdpi.plaf.NimbusTweaker;
 import com.github.swingdpi.plaf.WindowsTweaker;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.util.Utils;
-import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -84,9 +83,6 @@ public class ScaleUtil {
 		} else {
 			UiDefaultsScaler.updateAndApplyGlobalScaling((int) (100 * scale), true);
 		}
-
-		final Font font = SyntaxpainConfiguration.getEditorFont();
-		SyntaxpainConfiguration.setEditorFont(font.deriveFont((float) (font.getSize() * scale)));
 	}
 
 	// effectively UiDefaultsScaler::modifyDefaults but only for fonts
