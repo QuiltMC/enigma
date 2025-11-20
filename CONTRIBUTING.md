@@ -100,8 +100,14 @@ its translation file.
 | `View`>`Stat Icons`>`Included types`>`Fields`            | `"type.fields"`                                    |
 | `View`>`Stat Icons`>`Included types`>`Parameters`        | `"type.parameters"`                                |
 | `View`>`Stat Icons`>`Included types`>`Classes`           | `"type.classes"`                                   |
-| `Entry Tooltips` menu                                    | `"menu.view.entry_tooltips.aliases"`               |
-| `Entry Tooltips`>`Enable tooltips`                       | `"menu.view.entry_tooltips.enable.aliases"`        |
-| `Entry Tooltips`>`Allow tooltip interaction`             | `"menu.view.entry_tooltips.interactable.aliases"`  |
-| `Scale` menu                                             | `"menu.view.scale.aliases"`                        |
-| `Themes` menu                                            | `"menu.view.themes.aliases"`                       |
+| `View`>`Entry Tooltips` menu                             | `"menu.view.entry_tooltips.aliases"`               |
+| `View`>`Entry Tooltips`>`Enable tooltips`                | `"menu.view.entry_tooltips.enable.aliases"`        |
+| `View`>`Entry Tooltips`>`Allow tooltip interaction`      | `"menu.view.entry_tooltips.interactable.aliases"`  |
+| `View`>`Themes` menu                                     | `"menu.view.themes.aliases"`                       |
+| `View`>`Themes`>`Default`                                | `"menu.view.themes.default.aliases"`               |
+| `View`>`Themes`>`Darcula`                                | `"menu.view.themes.darcula.aliases"`               |
+| `View`>`Themes`>`Darcerula`                              | `"menu.view.themes.darcerula.aliases"`             |
+| `View`>`Themes`>`Metal`                                  | `"menu.view.themes.metal.aliases"`                 |
+| `View`>`Themes`>`System`                                 | `"menu.view.themes.system.aliases"`                |
+| `View`>`Themes`>`None (JVM Default)`                     | `"menu.view.themes.none.aliases"`                  |
+| `View`>`Scale` menu                                      | `"menu.view.scale.aliases"`                        |
