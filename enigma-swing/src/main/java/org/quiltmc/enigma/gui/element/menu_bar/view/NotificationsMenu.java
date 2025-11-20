@@ -4,10 +4,10 @@ import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.SimpleRadioItem;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JRadioButtonMenuItem;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,14 +16,14 @@ import static org.quiltmc.enigma.gui.NotificationManager.ServerNotificationLevel
 public class NotificationsMenu extends AbstractSearchableEnigmaMenu {
 	private static final String TRANSLATION_KEY = "menu.view.notifications";
 
-	private final Map<ServerNotificationLevel, JRadioButtonMenuItem> buttons = new HashMap<>();
+	private final Map<ServerNotificationLevel, SimpleRadioItem> buttons = new HashMap<>();
 
 	public NotificationsMenu(Gui gui) {
 		super(gui);
 
 		ButtonGroup buttonGroup = new ButtonGroup();
 		for (ServerNotificationLevel level : ServerNotificationLevel.values()) {
-			JRadioButtonMenuItem notificationsButton = new JRadioButtonMenuItem();
+			SimpleRadioItem notificationsButton = new SimpleRadioItem(level.getTranslationKey());
 			buttonGroup.add(notificationsButton);
 			this.buttons.put(level, notificationsButton);
 			notificationsButton.addActionListener(event -> Config.main().serverNotificationLevel.setValue(level, true));
@@ -35,9 +35,7 @@ public class NotificationsMenu extends AbstractSearchableEnigmaMenu {
 	public void retranslate() {
 		this.setText(I18n.translate(TRANSLATION_KEY));
 
-		for (ServerNotificationLevel level : ServerNotificationLevel.values()) {
-			this.buttons.get(level).setText(level.getText());
-		}
+		this.buttons.values().forEach(SimpleRadioItem::retranslate);
 	}
 
 	@Override
