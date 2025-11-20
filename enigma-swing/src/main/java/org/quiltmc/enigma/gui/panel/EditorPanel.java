@@ -17,8 +17,7 @@ import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
-import org.quiltmc.syntaxpain.DefaultSyntaxAction;
-import org.quiltmc.syntaxpain.SyntaxDocument;
+import org.quiltmc.syntaxpain.PairsMarker;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -44,6 +43,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.TextAction;
 
 import static org.quiltmc.enigma.gui.util.GuiUtil.consumeMousePositionIn;
 import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
@@ -66,6 +66,8 @@ public class EditorPanel extends BaseEditorPanel {
 
 		this.editor.addCaretListener(event -> this.onCaretMove(event.getDot()));
 
+		PairsMarker.install(new PairsMarker(this.editor, Config.getCurrentSyntaxPaneColors().pairsMarker.value()));
+
 		// HACK to prevent DefaultCaret from calling setSelectionVisible(false) when quickFind gains focus
 		if (this.editor.getCaret() instanceof FocusListener caretFocusListener) {
 			this.editor.removeFocusListener(caretFocusListener);
@@ -84,6 +86,8 @@ public class EditorPanel extends BaseEditorPanel {
 				}
 			});
 		}
+
+		this.installEditorRuler(0);
 
 		this.quickFindToolBar.setVisible(false);
 		// init editor popup menu
@@ -282,10 +286,13 @@ public class EditorPanel extends BaseEditorPanel {
 		});
 		putKeyBindAction(KeyBinds.EDITOR_ZOOM_IN, this.editor, e -> this.offsetEditorZoom(2));
 		putKeyBindAction(KeyBinds.EDITOR_ZOOM_OUT, this.editor, e -> this.offsetEditorZoom(-2));
-		putKeyBindAction(KeyBinds.EDITOR_QUICK_FIND, this.editor, new DefaultSyntaxAction("quick-find-tool-bar") {
+		putKeyBindAction(KeyBinds.EDITOR_QUICK_FIND, this.editor, new TextAction("quick-find-tool-bar") {
 			@Override
-			public void actionPerformed(JTextComponent target, SyntaxDocument sDoc, int dot, ActionEvent e) {
-				EditorPanel.this.quickFindToolBar.showFor(target);
+			public void actionPerformed(ActionEvent e) {
+				final JTextComponent target = this.getTextComponent(e);
+				if (e != null) {
+					EditorPanel.this.quickFindToolBar.showFor(target);
+				}
 			}
 		});
 		this.quickFindToolBar.reloadKeyBinds();

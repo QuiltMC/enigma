@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -88,5 +89,45 @@ public class LineIndexerTest {
 
 		assertEquals(-1, indexer.getIndex(fifthLine.right(1)));
 		assertEquals(-1, indexer.getIndex(fifthLine.nextLine()));
+	}
+
+	@Test
+	void testGetLine() {
+		final LineIndexer indexer = createIndexer();
+
+		for (int expectedLine = 0; ; expectedLine++) {
+			final int lineStartIndex = START_INDEX_EXPECTATIONS.get(expectedLine);
+			final int nextLineStartIndex = START_INDEX_EXPECTATIONS.get(expectedLine + 1);
+
+			final boolean lastLine = nextLineStartIndex < 0;
+
+			final int lineEndIndex = lastLine ? SUBJECT.length() : nextLineStartIndex;
+			for (int index = lineStartIndex; index < lineEndIndex; index++) {
+				final int line = indexer.getLine(index);
+
+				assertEquals(expectedLine, line, unexpectedLineMessageFactoryOf(index, expectedLine, line));
+			}
+
+			if (lastLine) {
+				break;
+			}
+		}
+
+		assertEquals(-1, indexer.getLine(SUBJECT.length()));
+	}
+
+	@Test
+	void testGetLineAtStartOfLine() {
+		final LineIndexer indexer = createIndexer();
+
+		final int index = START_INDEX_EXPECTATIONS.get(1);
+		final int line = indexer.getLine(index);
+		final int expectedLine = 1;
+		assertEquals(expectedLine, line, unexpectedLineMessageFactoryOf(index, expectedLine, line));
+	}
+
+	private static Supplier<String> unexpectedLineMessageFactoryOf(int index, int expectedLine, int line) {
+		return () -> "expected index %s to have line %s, but had line %s!"
+			.formatted(index, expectedLine, line);
 	}
 }

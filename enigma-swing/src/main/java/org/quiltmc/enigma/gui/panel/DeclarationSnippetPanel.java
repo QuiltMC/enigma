@@ -43,10 +43,8 @@ import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.LineIndexer;
 import org.quiltmc.enigma.util.Result;
-import org.quiltmc.syntaxpain.LineNumbersRuler;
 import org.tinylog.Logger;
 
-import javax.swing.JViewport;
 import java.awt.Color;
 import java.util.Comparator;
 import java.util.Optional;
@@ -66,13 +64,12 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 	public DeclarationSnippetPanel(Gui gui, Entry<?> target, ClassHandle targetTopClassHandle) {
 		super(gui);
 
-		Optional.ofNullable(this.editorScrollPane.getRowHeader())
-				.map(JViewport::getView)
-				// LineNumbersRuler is installed by syntaxpain
-				.map(view -> view instanceof LineNumbersRuler lineNumbers ? lineNumbers : null)
-				// TODO offset line numbers instead of removing them once
-				//  offsets are implemented in syntaxpain
-				.ifPresent(lineNumbers -> lineNumbers.deinstall(this.editor));
+		this.getEditor().setEditable(false);
+
+		this.editor.setCaretColor(new Color(0, 0, 0, 0));
+		this.editor.getCaret().setSelectionVisible(true);
+
+		this.setClassHandle(targetTopClassHandle, false, source -> this.createSnippet(source, target));
 
 		this.addSourceSetListener(source -> {
 			if (!this.isBounded()) {
@@ -81,6 +78,8 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 				this.editor.setText("// " + I18n.translate("editor.snippet.message.no_declaration_found"));
 				this.editor.getHighlighter().removeAllHighlights();
 			} else {
+				this.installEditorRuler(new LineIndexer(source.toString()).getLine(this.getSourceBounds().start()));
+
 				this.resolveTarget(source, target)
 						.map(Target::token)
 						.map(this::navigateToTokenImpl)
@@ -90,12 +89,6 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 						)));
 			}
 		});
-
-		this.getEditor().setEditable(false);
-		this.setClassHandle(targetTopClassHandle, false, source -> this.createSnippet(source, target));
-
-		this.editor.setCaretColor(new Color(0, 0, 0, 0));
-		this.editor.getCaret().setSelectionVisible(true);
 	}
 
 	private Snippet createSnippet(DecompiledClassSource source, Entry<?> targetEntry) {
