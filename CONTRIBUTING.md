@@ -63,7 +63,6 @@ its translation file.
 | `Collab`>`Stop Server`                                   | `"menu.collab.server.stop"`                        |
 | `Decompiler` menu                                        | `"menu.decompiler.aliases"`                        |
 | `Decompiler`>`Decompiler Settings`                       | `"menu.decompiler.settings"`                       |
-| `Help` menu                                              | `"menu.help.aliases"`                              |
 | `Search` menu                                            | `"menu.search.aliases"`                            |
 | `Crash History` menu                                     | `"menu.file.crash_history.aliases"`                |
 | `File` menu                                              | `"menu.file.aliases"`                              |
