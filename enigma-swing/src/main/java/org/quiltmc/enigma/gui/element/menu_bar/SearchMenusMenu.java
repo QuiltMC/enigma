@@ -132,14 +132,18 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		this.retranslate();
 	}
 
-	@Override
-	public void updateState(boolean jarOpen, ConnectionState state) {
+	public void clearResults() {
 		this.resultManager.clear();
 	}
 
 	@Override
+	public void updateState(boolean jarOpen, ConnectionState state) {
+		this.clearResults();
+	}
+
+	@Override
 	public void retranslate() {
-		this.resultManager.clear();
+		this.clearResults();
 
 		this.setText(I18n.translate("menu.help.search"));
 		this.field.setPlaceholder(I18n.translate("menu.help.search.placeholder"));

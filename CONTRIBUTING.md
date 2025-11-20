@@ -49,21 +49,36 @@ If you'd like to add search aliases to an element that doesn't already have alia
 its translation file.
 
 #### Complete list of search alias translation keys
-| Element                     | Translation Key                           |
-|-----------------------------|-------------------------------------------|
-| `Dev` menu                  | `"dev.menu.aliases"`                      |
-| `Collab` menu               | `"menu.collab.aliases"`                   |
-| `Decompiler` menu           | `"menu.decompiler.aliases"`               |
-| `Help` menu                 | `"menu.help.aliases"`                     |
-| `Search` menu               | `"menu.search.aliases"`                   |
-| `Crash History` menu        | `"menu.file.crash_history.aliases"`       |
-| `File` menu                 | `"menu.file.aliases"`                     |
-| `Open Recent Project` menu  | `"menu.file.open_recent_project.aliases"` |
-| `Save Mappings As...` menu  | `"menu.file.mappings.save_as.aliases"`    |
-| `View` menu                 | `"menu.view.aliases"`                     |
-| `Entry Tooltips` menu       | `"menu.view.entry_tooltips.aliases"`      |
-| `Languages` menu            | `"menu.view.languages.aliases"`           |
-| `Server Notifications` menu | `"menu.view.notifications.aliases"`       |
-| `Scale` menu                | `"menu.view.scale.aliases"`               |
-| `Stat Icons` menu           | `"menu.view.stat_icons.aliases"`          |
-| `Themes` menu               | `"menu.view.themes.aliases"`              |
+| Element                        | Translation Key                           |
+|--------------------------------|-------------------------------------------|
+| `Dev` menu                     | `"dev.menu.aliases"`                      |
+| `Collab` menu                  | `"menu.collab.aliases"`                   |
+| `Decompiler` menu              | `"menu.decompiler.aliases"`               |
+| `Help` menu                    | `"menu.help.aliases"`                     |
+| `Search` menu                  | `"menu.search.aliases"`                   |
+| `Crash History` menu           | `"menu.file.crash_history.aliases"`       |
+| `File` menu                    | `"menu.file.aliases"`                     |
+| `File`>`Open Jar...`           | `"menu.file.jar.open.aliases"`            |
+| `File`>`Close Jar`             | `"menu.file.jar.close.aliases"`           |
+| `File`>`Open Mappings...`      | `"menu.file.mappings.open.aliases"`       |
+| `File`>`Max Recent Projects`   | `"menu.file.max_recent_projects.aliases"` |
+| `File`>`Save Mappings`         | `"menu.file.mappings.save.aliases"`       |
+| `File`>`Auto Save Mappings`    | `"menu.file.mappings.auto_save.aliases"`  |
+| `File`>`Close Mappings`        | `"menu.file.mappings.close.aliases"`      |
+| `File`>`Drop Invalid Mappings` | `"menu.file.mappings.drop.aliases"`       |
+| `File`>`Reload Mappings`       | `"menu.file.reload_mappings.aliases"`     |
+| `File`>`Reload Jar/Mappings`   | `"menu.file.reload_all.aliases"`          |
+| `File`>`Export Source...`      | `"menu.file.export.source.aliases"`       |
+| `File`>`Export Jar...`         | `"menu.file.export.jar.aliases"`          |
+| `File`>`Mapping Stats...`      | `"menu.file.stats.aliases"`               |
+| `File`>`Configure Keybinds...` | `"menu.file.configure_keybinds.aliases"`  |
+| `File`>`Exit`                  | `"menu.file.exit.aliases"`                |
+| `Open Recent Project` menu     | `"menu.file.open_recent_project.aliases"` |
+| `Save Mappings As...` menu     | `"menu.file.mappings.save_as.aliases"`    |
+| `View` menu                    | `"menu.view.aliases"`                     |
+| `Entry Tooltips` menu          | `"menu.view.entry_tooltips.aliases"`      |
+| `Languages` menu               | `"menu.view.languages.aliases"`           |
+| `Server Notifications` menu    | `"menu.view.notifications.aliases"`       |
+| `Scale` menu                   | `"menu.view.scale.aliases"`               |
+| `Stat Icons` menu              | `"menu.view.stat_icons.aliases"`          |
+| `Themes` menu                  | `"menu.view.themes.aliases"`              |

@@ -12,19 +12,23 @@ public class HelpMenu extends AbstractSearchableEnigmaMenu {
 
 	private final JMenuItem aboutItem = new JMenuItem();
 	private final JMenuItem githubItem = new JMenuItem();
-	private final SearchMenusMenu searchItem;
+	private final SearchMenusMenu searchMenusMenu;
 
 	public HelpMenu(Gui gui) {
 		super(gui);
 
-		this.searchItem = new SearchMenusMenu(gui);
+		this.searchMenusMenu = new SearchMenusMenu(gui);
 
 		this.add(this.aboutItem);
 		this.add(this.githubItem);
-		this.add(this.searchItem);
+		this.add(this.searchMenusMenu);
 
 		this.aboutItem.addActionListener(e -> AboutDialog.show(this.gui.getFrame()));
 		this.githubItem.addActionListener(e -> this.onGithubClicked());
+	}
+
+	public void clearSearchMenusResults() {
+		this.searchMenusMenu.clearResults();
 	}
 
 	@Override
@@ -32,7 +36,7 @@ public class HelpMenu extends AbstractSearchableEnigmaMenu {
 		this.setText(I18n.translate(TRANSLATION_KEY));
 		this.aboutItem.setText(I18n.translate("menu.help.about"));
 		this.githubItem.setText(I18n.translate("menu.help.github"));
-		this.searchItem.retranslate();
+		this.searchMenusMenu.retranslate();
 	}
 
 	private void onGithubClicked() {
