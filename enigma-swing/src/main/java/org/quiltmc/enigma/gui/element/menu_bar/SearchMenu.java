@@ -6,8 +6,6 @@ import org.quiltmc.enigma.gui.dialog.SearchDialog;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
 
-import javax.swing.JMenuItem;
-
 public class SearchMenu extends AbstractSearchableEnigmaMenu {
 	private static final String TRANSLATION_KEY = "menu.search";
 

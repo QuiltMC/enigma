@@ -7,8 +7,6 @@ import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.gui.element.menu_bar.SimpleItem;
 import org.quiltmc.enigma.util.I18n;
 
-import javax.swing.JMenuItem;
-
 public class ViewMenu extends AbstractSearchableEnigmaMenu {
 	private static final String TRANSLATION_KEY = "menu.view";
 
