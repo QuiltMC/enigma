@@ -4,7 +4,7 @@ import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JMenuItem;
 
-public class SimpleItem extends JMenuItem implements SearchableElement, Retranslatable {
+public class SimpleItem extends JMenuItem implements ConventionalSearchableElement, Retranslatable {
 	private final String translationKey;
 
 	public SimpleItem(String translationKey) {
@@ -13,7 +13,7 @@ public class SimpleItem extends JMenuItem implements SearchableElement, Retransl
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate(this.getAliasesTranslationKeyPrefix()));
+		this.setText(I18n.translate(this.translationKey));
 	}
 
 	@Override

@@ -5,8 +5,8 @@ import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.ChangeDialog;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.ConventionalSearchableElement;
 import org.quiltmc.enigma.gui.element.menu_bar.Retranslatable;
-import org.quiltmc.enigma.gui.element.menu_bar.SearchableElement;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.ButtonGroup;
@@ -62,7 +62,7 @@ public class ThemesMenu extends AbstractSearchableEnigmaMenu {
 		return TRANSLATION_KEY;
 	}
 
-	private static final class ThemeItem extends JRadioButtonMenuItem implements SearchableElement, Retranslatable {
+	private static final class ThemeItem extends JRadioButtonMenuItem implements ConventionalSearchableElement, Retranslatable {
 		final ThemeChoice theme;
 		final String translationKey;
 

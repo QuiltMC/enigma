@@ -4,7 +4,7 @@ import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JRadioButtonMenuItem;
 
-public class SimpleRadioItem extends JRadioButtonMenuItem implements SearchableElement, Retranslatable {
+public class SimpleRadioItem extends JRadioButtonMenuItem implements ConventionalSearchableElement, Retranslatable {
 	private final String translationKey;
 
 	public SimpleRadioItem(String translationKey) {

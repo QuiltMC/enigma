@@ -4,7 +4,7 @@ import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JCheckBoxMenuItem;
 
-public class SimpleCheckBoxItem extends JCheckBoxMenuItem implements SearchableElement, Retranslatable {
+public class SimpleCheckBoxItem extends JCheckBoxMenuItem implements ConventionalSearchableElement, Retranslatable {
 	private final String translationKey;
 
 	public SimpleCheckBoxItem(String translationKey) {
