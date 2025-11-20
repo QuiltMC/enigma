@@ -4,6 +4,7 @@ import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.dialog.FontDialog;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.SimpleItem;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JMenuItem;
@@ -18,7 +19,7 @@ public class ViewMenu extends AbstractSearchableEnigmaMenu {
 	private final ScaleMenu scale;
 	private final EntryTooltipsMenu entryTooltips;
 
-	private final JMenuItem fontItem = new JMenuItem();
+	private final SimpleItem fontItem = new SimpleItem("menu.view.font");
 
 	public ViewMenu(Gui gui) {
 		super(gui);
@@ -50,7 +51,7 @@ public class ViewMenu extends AbstractSearchableEnigmaMenu {
 		this.scale.retranslate();
 		this.stats.retranslate();
 		this.entryTooltips.retranslate();
-		this.fontItem.setText(I18n.translate("menu.view.font"));
+		this.fontItem.retranslate();
 	}
 
 	@Override
