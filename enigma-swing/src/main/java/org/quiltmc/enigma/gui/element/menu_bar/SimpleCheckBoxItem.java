@@ -2,13 +2,32 @@ package org.quiltmc.enigma.gui.element.menu_bar;
 
 import org.quiltmc.enigma.util.I18n;
 
-public class SimpleCheckBoxItem extends SearchableCheckBoxItem implements Retranslatable {
+import javax.swing.JCheckBoxMenuItem;
+
+public class SimpleCheckBoxItem extends JCheckBoxMenuItem implements SearchableElement, Retranslatable {
+	private final String translationKey;
+
 	public SimpleCheckBoxItem(String translationKey) {
-		super(translationKey);
+		this.translationKey = translationKey;
 	}
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate(this.getAliasesTranslationKeyPrefix()));
+		this.setText(I18n.translate(this.translationKey));
+	}
+
+	@Override
+	public String getSearchName() {
+		return this.getText();
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return this.translationKey;
+	}
+
+	@Override
+	public void onSearchClicked() {
+		this.doClick();
 	}
 }

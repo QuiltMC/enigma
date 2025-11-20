@@ -81,10 +81,15 @@ its translation file.
 | `Save Mappings As...`>`Tiny v2`              | `"enigma:tiny_v2.aliases"`                        |
 | `Save Mappings As...`>`SRG File`             | `"enigma:srg_file.aliases"`                       |
 | `View` menu                                  | `"menu.view.aliases"`                             |
+| `View`>`Languages` menu                      | `"menu.view.languages.aliases"`                   |
+| `View`>`Languages`>`German`                  | `language.de_de.aliases`                          |
+| `View`>`Languages`>`English`                 | `language.en_us.aliases`                          |
+| `View`>`Languages`>`Français`                | `language.fr_fr.aliases`                          |
+| `View`>`Languages`>`日本語`                     | `language.ja_jp.aliases`                          |
+| `View`>`Languages`>`简体中文`                    | `language.zh_cn.aliases`                          |
 | `Entry Tooltips` menu                        | `"menu.view.entry_tooltips.aliases"`              |
 | `Entry Tooltips`>`Enable tooltips`           | `"menu.view.entry_tooltips.enable.aliases"`       |
 | `Entry Tooltips`>`Allow tooltip interaction` | `"menu.view.entry_tooltips.interactable.aliases"` |
-| `Languages` menu                             | `"menu.view.languages.aliases"`                   |
 | `Server Notifications` menu                  | `"menu.view.notifications.aliases"`               |
 | `Scale` menu                                 | `"menu.view.scale.aliases"`                       |
 | `Stat Icons` menu                            | `"menu.view.stat_icons.aliases"`                  |

@@ -4,6 +4,8 @@ import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.Retranslatable;
+import org.quiltmc.enigma.gui.element.menu_bar.SearchableElement;
 import org.quiltmc.enigma.gui.util.LanguageUtil;
 import org.quiltmc.enigma.util.I18n;
 
@@ -15,14 +17,14 @@ import java.util.Map;
 public class LanguagesMenu extends AbstractSearchableEnigmaMenu {
 	private static final String TRANSLATION_KEY = "menu.view.languages";
 
-	private final Map<String, JRadioButtonMenuItem> languages = new HashMap<>();
+	private final Map<String, LanguageItem> languages = new HashMap<>();
 
 	protected LanguagesMenu(Gui gui) {
 		super(gui);
 
 		ButtonGroup languageButtons = new ButtonGroup();
 		for (String lang : I18n.getAvailableLanguages()) {
-			JRadioButtonMenuItem languageButton = new JRadioButtonMenuItem(I18n.getLanguageName(lang));
+			LanguageItem languageButton = new LanguageItem(lang);
 			this.languages.put(lang, languageButton);
 			languageButtons.add(languageButton);
 			this.add(languageButton);
@@ -35,9 +37,7 @@ public class LanguagesMenu extends AbstractSearchableEnigmaMenu {
 	public void retranslate() {
 		this.setText(I18n.translate(TRANSLATION_KEY));
 
-		for (String lang : I18n.getAvailableLanguages()) {
-			this.languages.get(lang).setText(I18n.getLanguageName(lang));
-		}
+		this.languages.values().forEach(LanguageItem::retranslate);
 	}
 
 	@Override
@@ -58,5 +58,33 @@ public class LanguagesMenu extends AbstractSearchableEnigmaMenu {
 	@Override
 	public String getAliasesTranslationKeyPrefix() {
 		return TRANSLATION_KEY;
+	}
+
+	private static final class LanguageItem extends JRadioButtonMenuItem implements SearchableElement, Retranslatable {
+		private final String language;
+
+		LanguageItem(String language) {
+			this.language = language;
+		}
+
+		@Override
+		public void retranslate() {
+			this.setText(I18n.getLanguageName(this.language));
+		}
+
+		@Override
+		public String getSearchName() {
+			return this.getText();
+		}
+
+		@Override
+		public String getAliasesTranslationKeyPrefix() {
+			return "language." + this.language;
+		}
+
+		@Override
+		public void onSearchClicked() {
+			this.doClick();
+		}
 	}
 }
