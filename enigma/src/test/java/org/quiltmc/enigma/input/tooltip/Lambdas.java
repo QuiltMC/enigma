@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.input.z_tooltip;
+package org.quiltmc.enigma.input.tooltip;
 
 import java.util.ArrayList;
 import java.util.List;

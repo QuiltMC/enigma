@@ -1,4 +1,4 @@
-CLASS ac
+CLASS b
 	FIELD a floatField F
 	FIELD a intField I
 	FIELD a stringField Ljava/lang/String;
