@@ -1,6 +1,10 @@
 {
 	"language": "English",
 
+	"language.fr_fr.aliases": "French",
+	"language.ja_jp.aliases": "Japanese",
+	"language.zh_cn.aliases": "Chinese;Simplified Chinese",
+
 	"enigma:enigma_file": "Enigma File",
 	"enigma:enigma_directory": "Enigma Directory",
 	"enigma:enigma_zip": "Enigma ZIP",
