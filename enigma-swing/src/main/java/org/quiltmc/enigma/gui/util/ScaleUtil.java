@@ -6,8 +6,6 @@ import com.github.swingdpi.plaf.MetalTweaker;
 import com.github.swingdpi.plaf.NimbusTweaker;
 import com.github.swingdpi.plaf.WindowsTweaker;
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.util.Utils;
-import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -17,29 +15,10 @@ import javax.swing.border.Border;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.function.Function;
 
 public class ScaleUtil {
-	private static final List<ScaleChangeListener> listeners = new ArrayList<>();
-
-	public static void setScaleFactor(float scaleFactor) {
-		float oldScale = Config.main().scaleFactor.value();
-		float clamped = Utils.clamp(scaleFactor, 0.25f, 10.0f);
-		Config.main().scaleFactor.setValue(clamped, true);
-		listeners.forEach(l -> l.onScaleChanged(clamped, oldScale));
-	}
-
-	public static void addListener(ScaleChangeListener listener) {
-		listeners.add(listener);
-	}
-
-	public static void removeListener(ScaleChangeListener listener) {
-		listeners.remove(listener);
-	}
-
 	public static Dimension getDimension(int width, int height) {
 		return new Dimension(scale(width), scale(height));
 	}
@@ -84,9 +63,6 @@ public class ScaleUtil {
 		} else {
 			UiDefaultsScaler.updateAndApplyGlobalScaling((int) (100 * scale), true);
 		}
-
-		final Font font = SyntaxpainConfiguration.getEditorFont();
-		SyntaxpainConfiguration.setEditorFont(font.deriveFont((float) (font.getSize() * scale)));
 	}
 
 	// effectively UiDefaultsScaler::modifyDefaults but only for fonts

@@ -4,6 +4,7 @@ import org.jspecify.annotations.Nullable;
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.annotations.Alias;
 import org.quiltmc.config.api.annotations.Comment;
+import org.quiltmc.config.api.annotations.FloatRange;
 import org.quiltmc.config.api.annotations.Processor;
 import org.quiltmc.config.api.annotations.SerializedNameConvention;
 import org.quiltmc.config.api.metadata.NamingSchemes;
@@ -25,7 +26,6 @@ import org.quiltmc.enigma.gui.config.theme.properties.NoneThemeProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.SystemThemeProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.util.I18n;
-import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
 import javax.swing.UnsupportedLookAndFeelException;
 import java.awt.Dimension;
@@ -50,6 +50,9 @@ import java.nio.file.Paths;
 @SerializedNameConvention(NamingSchemes.SNAKE_CASE)
 @Processor("processChange")
 public final class Config extends ReflectiveConfig {
+	public static final float MIN_SCALE_FACTOR = 0.25f;
+	public static final float MAX_SCALE_FACTOR = 5.0f;
+
 	private static final String FORMAT = "toml";
 	private static final String FAMILY = "enigma";
 	private static final String THEME_FAMILY = FAMILY + "/theme";
@@ -67,6 +70,7 @@ public final class Config extends ReflectiveConfig {
 	@Processor("grabPossibleLanguages")
 	public final TrackedValue<String> language = this.value(I18n.DEFAULT_LANGUAGE);
 	@Comment("A float representing the current size of the UI. 1.0 represents 100% scaling.")
+	@FloatRange(min = MIN_SCALE_FACTOR, max = MAX_SCALE_FACTOR)
 	public final TrackedValue<Float> scaleFactor = this.value(1.0f);
 	@Comment("The maximum number of saved recent projects, for quickly reopening.")
 	public final TrackedValue<Integer> maxRecentProjects = this.value(10);
@@ -252,32 +256,6 @@ public final class Config extends ReflectiveConfig {
 		public ComplexConfigValue copy() {
 			return this;
 		}
-	}
-
-	/**
-	 * Updates the backend library Syntaxpain, used for code highlighting and other editor things.
-	 */
-	public static void updateSyntaxpain() {
-		Theme.Fonts fonts = currentFonts();
-		SyntaxPaneProperties.Colors colors = getCurrentSyntaxPaneColors();
-
-		SyntaxpainConfiguration.setEditorFont(fonts.editor.value());
-		// disable dialog; EditorPanel uses a tool bar component instead
-		SyntaxpainConfiguration.setQuickFindDialogFactory(null);
-
-		SyntaxpainConfiguration.setLineRulerPrimaryColor(colors.lineNumbersForeground.value());
-		SyntaxpainConfiguration.setLineRulerSecondaryColor(colors.lineNumbersBackground.value());
-		SyntaxpainConfiguration.setLineRulerSelectionColor(colors.lineNumbersSelected.value());
-
-		SyntaxpainConfiguration.setHighlightColor(colors.highlight.value());
-		SyntaxpainConfiguration.setStringColor(colors.string.value());
-		SyntaxpainConfiguration.setNumberColor(colors.number.value());
-		SyntaxpainConfiguration.setOperatorColor(colors.operator.value());
-		SyntaxpainConfiguration.setDelimiterColor(colors.delimiter.value());
-		SyntaxpainConfiguration.setTypeColor(colors.type.value());
-		SyntaxpainConfiguration.setIdentifierColor(colors.identifier.value());
-		SyntaxpainConfiguration.setCommentColour(colors.comment.value());
-		SyntaxpainConfiguration.setTextColor(colors.text.value());
 	}
 
 	public enum ThemeChoice implements ConfigSerializableObject<String> {

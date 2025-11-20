@@ -29,6 +29,7 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 		return colors;
 	}
 
+	@Override
 	public void configure() {
 		this.colors.configure();
 	}
@@ -36,10 +37,14 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 	/**
 	 * Default values are for light themes.
 	 */
-	public static class Colors implements Consumer<Config.SectionBuilder> {
+	public static final class Colors implements Consumer<Config.SectionBuilder> {
 		public final TrackedValue<ThemeProperties.SerializableColor> lineNumbersForeground;
 		public final TrackedValue<ThemeProperties.SerializableColor> lineNumbersBackground;
 		public final TrackedValue<ThemeProperties.SerializableColor> lineNumbersSelected;
+
+		public final TrackedValue<ThemeProperties.SerializableColor> selection;
+		public final TrackedValue<ThemeProperties.SerializableColor> pairsMarker;
+
 		public final TrackedValue<ThemeProperties.SerializableColor> obfuscated;
 		public final TrackedValue<ThemeProperties.SerializableColor> obfuscatedOutline;
 
@@ -66,12 +71,18 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 		public final TrackedValue<ThemeProperties.SerializableColor> text;
 		public final TrackedValue<ThemeProperties.SerializableColor> debugToken;
 		public final TrackedValue<ThemeProperties.SerializableColor> debugTokenOutline;
+
 		public final TrackedValue<ThemeProperties.SerializableColor> dockHighlight;
+		public final TrackedValue<ThemeProperties.SerializableColor> error;
 
 		private Colors(
 				ThemeProperties.SerializableColor lineNumbersForeground,
 				ThemeProperties.SerializableColor lineNumbersBackground,
 				ThemeProperties.SerializableColor lineNumbersSelected,
+
+				ThemeProperties.SerializableColor selection,
+				ThemeProperties.SerializableColor pairsMarker,
+
 				ThemeProperties.SerializableColor obfuscated,
 				ThemeProperties.SerializableColor obfuscatedOutline,
 
@@ -98,11 +109,17 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 				ThemeProperties.SerializableColor text,
 				ThemeProperties.SerializableColor debugToken,
 				ThemeProperties.SerializableColor debugTokenOutline,
-				ThemeProperties.SerializableColor dockHighlight
+
+				ThemeProperties.SerializableColor dockHighlight,
+				ThemeProperties.SerializableColor error
 		) {
 			this.lineNumbersForeground = TrackedValue.create(lineNumbersForeground, "line_numbers_foreground");
 			this.lineNumbersBackground = TrackedValue.create(lineNumbersBackground, "line_numbers_background");
 			this.lineNumbersSelected = TrackedValue.create(lineNumbersSelected, "line_numbers_selected");
+
+			this.selection = TrackedValue.create(selection, "selection");
+			this.pairsMarker = TrackedValue.create(pairsMarker, "pairs_marker");
+
 			this.obfuscated = TrackedValue.create(obfuscated, "obfuscated");
 			this.obfuscatedOutline = TrackedValue.create(obfuscatedOutline, "obfuscated_outline");
 
@@ -129,7 +146,9 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 			this.text = TrackedValue.create(text, "text");
 			this.debugToken = TrackedValue.create(debugToken, "debug_token");
 			this.debugTokenOutline = TrackedValue.create(debugTokenOutline, "debug_token_outline");
+
 			this.dockHighlight = TrackedValue.create(dockHighlight, "dock_highlight");
+			this.error = TrackedValue.create(error, "error");
 		}
 
 		public void configure() {
@@ -141,6 +160,9 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 				this.lineNumbersForeground,
 				this.lineNumbersBackground,
 				this.lineNumbersSelected,
+
+				this.selection,
+				this.pairsMarker,
 
 				this.obfuscated,
 				this.obfuscatedOutline,
@@ -167,7 +189,10 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 				this.text,
 
 				this.debugToken,
-				this.debugTokenOutline
+				this.debugTokenOutline,
+
+				this.dockHighlight,
+				this.error
 			);
 		}
 
@@ -180,6 +205,10 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 			private ThemeProperties.SerializableColor lineNumbersForeground = new ThemeProperties.SerializableColor(0xFF333300);
 			private ThemeProperties.SerializableColor lineNumbersBackground = new ThemeProperties.SerializableColor(0xFFEEEEFF);
 			private ThemeProperties.SerializableColor lineNumbersSelected = new ThemeProperties.SerializableColor(0xFFCCCCEE);
+
+			private ThemeProperties.SerializableColor selection = new ThemeProperties.SerializableColor(0xFF1F2E5A);
+			private ThemeProperties.SerializableColor pairsMarker = new ThemeProperties.SerializableColor(0xFFFFBB77);
+
 			private ThemeProperties.SerializableColor obfuscated = new ThemeProperties.SerializableColor(0xFFFFDCDC);
 			private ThemeProperties.SerializableColor obfuscatedOutline = new ThemeProperties.SerializableColor(0xFFA05050);
 
@@ -206,13 +235,19 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 			private ThemeProperties.SerializableColor text = new ThemeProperties.SerializableColor(0xFF000000);
 			private ThemeProperties.SerializableColor debugToken = new ThemeProperties.SerializableColor(0xFFD9BEF9);
 			private ThemeProperties.SerializableColor debugTokenOutline = new ThemeProperties.SerializableColor(0xFFBD93F9);
+
 			private ThemeProperties.SerializableColor dockHighlight = new ThemeProperties.SerializableColor(0xFF0000FF);
+			private ThemeProperties.SerializableColor error = new ThemeProperties.SerializableColor(0xFFFF0000);
 
 			public Colors build() {
 				return new Colors(
 					this.lineNumbersForeground,
 					this.lineNumbersBackground,
 					this.lineNumbersSelected,
+
+					this.selection,
+					this.pairsMarker,
+
 					this.obfuscated,
 					this.obfuscatedOutline,
 
@@ -239,7 +274,9 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 					this.text,
 					this.debugToken,
 					this.debugTokenOutline,
-					this.dockHighlight
+
+					this.dockHighlight,
+					this.error
 				);
 			}
 
@@ -255,6 +292,16 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 
 			public Builder lineNumbersSelected(ThemeProperties.SerializableColor lineNumbersSelected) {
 				this.lineNumbersSelected = lineNumbersSelected;
+				return this;
+			}
+
+			public Builder selection(ThemeProperties.SerializableColor selection) {
+				this.selection = selection;
+				return this;
+			}
+
+			public Builder pairsMarker(ThemeProperties.SerializableColor pairsMarker) {
+				this.pairsMarker = pairsMarker;
 				return this;
 			}
 
@@ -370,6 +417,11 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 
 			public Builder dockHighlight(ThemeProperties.SerializableColor dockHighlight) {
 				this.dockHighlight = dockHighlight;
+				return this;
+			}
+
+			public Builder error(ThemeProperties.SerializableColor error) {
+				this.error = error;
 				return this;
 			}
 		}
