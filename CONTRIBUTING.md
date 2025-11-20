@@ -52,6 +52,10 @@ its translation file.
 | Element                                                  | Translation Key                                    |
 |----------------------------------------------------------|----------------------------------------------------|
 | `Dev` menu                                               | `"dev.menu.aliases"`                               |
+| `Dev`>`Show mapping source plugin`                       | "dev.menu.show_mapping_source_plugin"`             |
+| `Dev`>`Debug token highlights`                           | "dev.menu.debug_token_highlights"`                 |
+| `Dev`>`Log client packets`                               | "dev.menu.log_client_packets"`                     |
+| `Dev`>`Print mapping tree`                               | "dev.menu.print_mapping_tree"`                     |
 | `Collab` menu                                            | `"menu.collab.aliases"`                            |
 | `Collab`>`Connect to Server`                             | `"menu.collab.connect.aliases"`                    |
 | `Collab`>`Disconnect`                                    | `"menu.collab.disconnect"`                         |
