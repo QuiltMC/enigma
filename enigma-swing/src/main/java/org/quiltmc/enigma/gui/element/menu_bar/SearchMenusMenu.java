@@ -189,7 +189,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		final ResultCache emptyCache = new ResultCache(
 				"",
-				CompositeStringMultiTrie.<Result>of(Map::of, List::of).getRoot().view(),
+				CompositeStringMultiTrie.<Result>of(List::of, ignored -> Map.of()).getRoot().view(),
 				ImmutableList.of()
 		);
 
