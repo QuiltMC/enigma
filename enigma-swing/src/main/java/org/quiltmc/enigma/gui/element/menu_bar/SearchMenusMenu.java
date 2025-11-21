@@ -33,10 +33,11 @@ import static com.google.common.collect.ImmutableList.toImmutableList;
 public class SearchMenusMenu extends AbstractEnigmaMenu {
 	/**
 	 * @return a breadth-first stream of the passed {@code root} element and all of its sub-elements,
-	 * excluding {@link SearchMenusMenu}s and their sub-elements
+	 * excluding the {@link HelpMenu} and its sub-elements; the help menu is not searchable because it must be open
+	 * to start searching in the first place
 	 */
 	private static Stream<MenuElement> streamElementTree(MenuElement root) {
-		return root instanceof SearchMenusMenu ? Stream.empty() : Stream.concat(
+		return root instanceof HelpMenu ? Stream.empty() : Stream.concat(
 				Stream.of(root),
 				Arrays.stream(root.getSubElements()).flatMap(SearchMenusMenu::streamElementTree)
 		);
