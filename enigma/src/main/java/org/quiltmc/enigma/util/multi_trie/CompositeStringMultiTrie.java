@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -14,10 +15,16 @@ import java.util.stream.Stream;
  *
  * @param <V> the type of values
  *
- * @see #of(Supplier, Supplier)
+ * @see #of(Supplier, IntFunction)
  * @see #createHashed()
  */
 public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie<V> {
+	private static final int HASHED_NODE_MIN_INITIAL_CAPACITY = 2;
+	private static final int HASHED_ROOT_INITIAL_CAPACITY_POWER = 4;
+	// 32
+	private static final int HASHED_ROOT_INITIAL_CAPACITY =
+			HASHED_NODE_MIN_INITIAL_CAPACITY << HASHED_ROOT_INITIAL_CAPACITY_POWER;
+
 	private final Root<V> root;
 	private final View view = new View();
 
@@ -27,37 +34,42 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 	 *
 	 * @param <V> the type of values stored in the created trie
 	 *
-	 * @see #of(Supplier, Supplier)
+	 * @see #of(Supplier, IntFunction)
 	 */
 	public static <V> CompositeStringMultiTrie<V> createHashed() {
-		return of(HashMap::new, HashSet::new);
+		// decrease minimum capacity by a factor of 2 at each depth
+		return of(HashSet::new, depth -> new HashMap<>(depth >= HASHED_ROOT_INITIAL_CAPACITY_POWER
+			? HASHED_NODE_MIN_INITIAL_CAPACITY
+			: HASHED_ROOT_INITIAL_CAPACITY >> depth
+		));
 	}
 
 	/**
 	 * Creates a trie with nodes whose branches are held in maps created by the passed {@code branchesFactory}
 	 * and whose leaves are held in collections created by the passed {@code leavesFactory}.
 	 *
-	 * @param branchesFactory a pure method that creates a new, empty {@link Map} in which to hold branch nodes
 	 * @param leavesFactory   a pure method that create a new, empty {@link Collection} in which to hold leaf values
+	 * @param branchesFactory a pure method that creates a new, empty {@link Map} in which to hold branch nodes;
+	 *                        it receives the depth of the node which may be used to calculate an initial capacity
 	 *
 	 * @param <V> the type of values stored in the created trie
 	 *
 	 * @see #createHashed()
 	 */
 	public static <V> CompositeStringMultiTrie<V> of(
-			Supplier<Map<Character, Branch<V>>> branchesFactory,
-			Supplier<Collection<V>> leavesFactory
+			Supplier<Collection<V>> leavesFactory,
+			IntFunction<Map<Character, Branch<V>>> branchesFactory
 	) {
-		return new CompositeStringMultiTrie<>(branchesFactory, leavesFactory);
+		return new CompositeStringMultiTrie<>(leavesFactory, branchesFactory);
 	}
 
 	private CompositeStringMultiTrie(
-			Supplier<Map<Character, Branch<V>>> childrenFactory,
-			Supplier<Collection<V>> leavesFactory
+			Supplier<Collection<V>> leavesFactory,
+			IntFunction<Map<Character, Branch<V>>> branchesFactory
 	) {
 		this.root = new Root<>(
-			childrenFactory.get(), leavesFactory.get(),
-			new Branch.Factory<>(leavesFactory, childrenFactory)
+			branchesFactory.apply(Root.DEPTH), leavesFactory.get(),
+			new Branch.Factory<>(leavesFactory, branchesFactory)
 		);
 	}
 
@@ -75,6 +87,8 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 	static final class Root<V>
 			extends MutableMapNode<Character, V, Branch<V>>
 			implements Node<V> {
+		private static final int DEPTH = 0;
+
 		private final Collection<V> leaves;
 		private final Map<Character, CompositeStringMultiTrie.Branch<V>> branches;
 
@@ -103,7 +117,7 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 
 		@Override
 		public int getDepth() {
-			return 0;
+			return DEPTH;
 		}
 
 		@Override
@@ -206,12 +220,14 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 
 		private record Factory<V>(
 				Supplier<Collection<V>> leavesFactory,
-				Supplier<Map<Character, CompositeStringMultiTrie.Branch<V>>> branchesFactory
+				IntFunction<Map<Character, CompositeStringMultiTrie.Branch<V>>> branchesFactory
 		) {
 			<P extends MutableMapNode<Character, V, CompositeStringMultiTrie.Branch<V>> & Node<V>>
 					CompositeStringMultiTrie.Branch<V> create(char key, P parent) {
+				final int depth = parent.getDepth() + 1;
 				return new CompositeStringMultiTrie.Branch<>(
-						parent, key, parent.getDepth() + 1, this.leavesFactory.get(), this.branchesFactory.get(),
+						parent, key, depth,
+						this.leavesFactory.get(), this.branchesFactory.apply(depth),
 						this
 				);
 			}
