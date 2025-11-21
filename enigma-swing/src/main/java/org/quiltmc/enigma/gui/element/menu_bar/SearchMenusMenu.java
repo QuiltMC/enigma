@@ -8,6 +8,7 @@ import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.element.PlaceheldTextField;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie;
+import org.quiltmc.enigma.util.multi_trie.EmptyStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.MutableStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.Node;
@@ -25,7 +26,6 @@ import java.awt.event.HierarchyListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
@@ -187,11 +187,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	private static final class Lookup {
 		static final int MAX_SUBSTRING_LENGTH = 2;
 
-		final ResultCache emptyCache = new ResultCache(
-				"",
-				CompositeStringMultiTrie.<Result>of(List::of, ignored -> Map.of()).getRoot().view(),
-				ImmutableList.of()
-		);
+		final ResultCache emptyCache = new ResultCache("", EmptyStringMultiTrie.Node.get(), ImmutableList.of());
 
 		static int getCommonPrefixLength(String left, String right) {
 			final int minLength = Math.min(left.length(), right.length());
