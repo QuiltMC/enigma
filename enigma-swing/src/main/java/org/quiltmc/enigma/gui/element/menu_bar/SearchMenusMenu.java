@@ -18,12 +18,10 @@ import javax.swing.MenuElement;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import java.awt.Component;
 import java.awt.Point;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -70,36 +68,19 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 		});
 
-		// TODO try PopupMenuListener instead
-		// Only select field text when the menu is selected, so text isn't selected when packing new search results.
-		this.addMenuListener(new MenuListener() {
-			final HierarchyListener fieldTextSelector = new HierarchyListener() {
-				@Override
-				public void hierarchyChanged(HierarchyEvent e) {
-					if (SearchMenusMenu.this.field.isShowing()) {
-						SearchMenusMenu.this.field.removeHierarchyListener(this);
-
-						SearchMenusMenu.this.field.selectAll();
-
-						SearchMenusMenu.this.updateResultItems();
-					}
-				}
-			};
-
+		this.getPopupMenu().addPopupMenuListener(new PopupMenuListener() {
 			@Override
-			public void menuSelected(MenuEvent e) {
-				SearchMenusMenu.this.field.addHierarchyListener(this.fieldTextSelector);
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+				SearchMenusMenu.this.field.selectAll();
+
+				SearchMenusMenu.this.updateResultItems();
 			}
 
 			@Override
-			public void menuDeselected(MenuEvent e) {
-				SearchMenusMenu.this.field.removeHierarchyListener(this.fieldTextSelector);
-			}
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) { }
 
 			@Override
-			public void menuCanceled(MenuEvent e) {
-				SearchMenusMenu.this.field.removeHierarchyListener(this.fieldTextSelector);
-			}
+			public void popupMenuCanceled(PopupMenuEvent e) { }
 		});
 
 		this.field.getDocument().addDocumentListener(new DocumentListener() {
