@@ -15,6 +15,7 @@ import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.Node;
 
 import javax.swing.JMenuItem;
 import javax.swing.MenuElement;
+import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.MenuEvent;
@@ -31,6 +32,9 @@ import java.util.stream.Stream;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 
 public class SearchMenusMenu extends AbstractEnigmaMenu {
+	@Nullable
+	private final Border defaultPopupBorder;
+
 	/**
 	 * @return a breadth-first stream of the passed {@code root} element and all of its sub-elements,
 	 * excluding the {@link HelpMenu} and its sub-elements; the help menu is not searchable because it must be open
@@ -52,6 +56,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	protected SearchMenusMenu(Gui gui) {
 		super(gui);
 
+		this.defaultPopupBorder = this.getPopupMenu().getBorder();
+
 		this.noResults.setEnabled(false);
 		this.noResults.setVisible(false);
 
@@ -64,6 +70,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 		});
 
+		// TODO try PopupMenuListener instead
 		// Only select field text when the menu is selected, so text isn't selected when packing new search results.
 		this.addMenuListener(new MenuListener() {
 			final HierarchyListener fieldTextSelector = new HierarchyListener() {
@@ -127,7 +134,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 			this.noResults.setVisible(!searchTerm.isEmpty());
 
-			this.positionAndPackPopup();
+			this.refreshPopup();
 		} else if (results instanceof Results.Different different) {
 			this.keepOnlyPermanentChildren();
 
@@ -135,16 +142,16 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 			different.results.forEach(this::add);
 
-			this.positionAndPackPopup();
+			this.refreshPopup();
 		} // else Results.Same
 	}
 
-	private void positionAndPackPopup() {
+	private void refreshPopup() {
+		// HACK: When popups are resizing in limited space, they may remove their borders.
+		// The border won't be restored when re-packing or showing, so manually restore the original border here.
+		this.getPopupMenu().setBorder(this.defaultPopupBorder);
 		this.getPopupMenu().pack();
 
-		// TODO the position is still off a bit (search "i" then delete it)
-		// if packing the popup previously forced it to move to stay on screen, it won't shift itself back
-		// reset it to default position to fix this
 		final Point popupMenuOrigin = this.getPopupMenuOrigin();
 		this.getPopupMenu().show(this, popupMenuOrigin.x, popupMenuOrigin.y);
 	}
