@@ -28,7 +28,7 @@ public class HelpMenu extends AbstractEnigmaMenu {
 	}
 
 	public void clearSearchMenusResults() {
-		this.searchMenusMenu.clearResults();
+		this.searchMenusMenu.clearLookup();
 	}
 
 	@Override
