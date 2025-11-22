@@ -19,8 +19,8 @@ import java.util.stream.Stream;
  * @see #createHashed()
  */
 public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie<V> {
-	private static final int HASHED_NODE_MIN_INITIAL_CAPACITY = 2;
-	private static final int HASHED_ROOT_INITIAL_CAPACITY_POWER = 4;
+	private static final int HASHED_NODE_MIN_INITIAL_CAPACITY = 1;
+	private static final int HASHED_ROOT_INITIAL_CAPACITY_POWER = 5;
 	// 32
 	private static final int HASHED_ROOT_INITIAL_CAPACITY =
 			HASHED_NODE_MIN_INITIAL_CAPACITY << HASHED_ROOT_INITIAL_CAPACITY_POWER;
