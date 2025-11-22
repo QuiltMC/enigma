@@ -1,6 +1,8 @@
 package org.quiltmc.enigma.gui.element.menu_bar;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.ConnectionState;
@@ -24,10 +26,16 @@ import java.awt.Component;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static com.google.common.collect.ImmutableMap.toImmutableMap;
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
 public class SearchMenusMenu extends AbstractEnigmaMenu {
 	@Nullable
@@ -176,7 +184,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	private static final class Lookup {
 		static final int MAX_SUBSTRING_LENGTH = 2;
 
-		final ResultCache emptyCache = new ResultCache("", EmptyStringMultiTrie.Node.get(), ImmutableList.of());
+		final ResultCache emptyCache = new ResultCache("", EmptyStringMultiTrie.Node.get(), ImmutableSet.of());
 
 		static int getCommonPrefixLength(String left, String right) {
 			final int minLength = Math.min(left.length(), right.length());
@@ -192,7 +200,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		static Lookup build(Gui gui) {
 			final CompositeStringMultiTrie<Result> prefixBuilder = CompositeStringMultiTrie.createHashed();
-			final CompositeStringMultiTrie<Result> substringBuilder = CompositeStringMultiTrie.createHashed();
+			final CompositeStringMultiTrie<Result> containingBuilder =
+					CompositeStringMultiTrie.createHashed();
 			gui.getMenuBar()
 					.streamMenus()
 					.flatMap(SearchMenusMenu::streamElementTree)
@@ -201,37 +210,49 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 							keep.accept(searchable);
 						}
 					})
-					.map(Result::new)
-					.forEach(result -> result.lowerCaseAliases.forEach(alias -> {
-						prefixBuilder.put(alias, result);
+					.forEach(element -> {
+						final ImmutableMap<String, String> aliasesByLowercase = element.streamSearchAliases()
+								.filter(alias -> !alias.isEmpty())
+								.collect(toImmutableMap(
+									String::toLowerCase,
+									Function.identity(),
+									// ignore case-insensitive duplicate aliases
+									(left, right) -> left
+								));
 
-						final int aliasLength = alias.length();
-						for (int start = 1; start < aliasLength; start++) {
-							final int end = Math.min(start + MAX_SUBSTRING_LENGTH, aliasLength);
-							MutableStringMultiTrie.Node<Result> node = substringBuilder.getRoot();
-							for (int i = start; i < end; i++) {
-								node = node.next(alias.charAt(i));
+						final Result result = new Result(element, aliasesByLowercase);
+
+						aliasesByLowercase.keySet().forEach(alias -> {
+							prefixBuilder.put(alias, result);
+
+							final int aliasLength = alias.length();
+							for (int start = 1; start < aliasLength; start++) {
+								final int end = Math.min(start + MAX_SUBSTRING_LENGTH, aliasLength);
+								MutableStringMultiTrie.Node<Result> node = containingBuilder.getRoot();
+								for (int i = start; i < end; i++) {
+									node = node.next(alias.charAt(i));
+								}
+
+								node.put(result);
 							}
+						});
+					});
 
-							node.put(result);
-						}
-					}));
-
-			return new Lookup(prefixBuilder.view(), substringBuilder.view());
+			return new Lookup(prefixBuilder.view(), containingBuilder.view());
 		}
 
 		// maps complete search aliases to their corresponding results
 		final StringMultiTrie<Result> prefixResults;
 		// maps all non-prefix MAX_SUBSTRING_LENGTH-length (or less) substrings of search
 		// aliases to their corresponding result; used to narrow down the search scope for substring matches
-		final StringMultiTrie<Result> substringResults;
+		final StringMultiTrie<Result> containingResults;
 
 		@NonNull
 		ResultCache resultCache = this.emptyCache;
 
-		Lookup(StringMultiTrie<Result> prefixResults, StringMultiTrie<Result> substringResults) {
+		Lookup(StringMultiTrie<Result> prefixResults, StringMultiTrie<Result> containingResults) {
 			this.prefixResults = prefixResults;
-			this.substringResults = substringResults;
+			this.containingResults = containingResults;
 		}
 
 		Results search(String term) {
@@ -260,24 +281,24 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		final class ResultCache {
 			final String term;
 			final Node<Result> prefixNode;
-			final ImmutableList<Result> containingResults;
+			final ImmutableSet<Result.ItemHolder> containingItems;
 
 			ResultCache(
-					String term, Node<Result> prefixNode, ImmutableList<Result> containingResults
+					String term, Node<Result> prefixNode, ImmutableSet<Result.ItemHolder> containingItems
 			) {
 				this.term = term;
 				this.prefixNode = prefixNode;
-				this.containingResults = containingResults;
+				this.containingItems = containingItems;
 			}
 
 			boolean hasResults() {
-				return !this.prefixNode.isEmpty() || !this.containingResults.isEmpty();
+				return !this.prefixNode.isEmpty() || !this.containingItems.isEmpty();
 			}
 
 			boolean hasSameResults(ResultCache other) {
 				return this == other
 						|| this.prefixNode == other.prefixNode
-							&& this.containingResults.equals(other.containingResults);
+							&& this.containingItems.equals(other.containingItems);
 			}
 
 			ResultCache updated(String term) {
@@ -304,16 +325,17 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 							}
 						}
 
-						final ImmutableList<Result> containingResults;
+						final ImmutableSet<Result.ItemHolder> containingItems;
 						if (termLength > thisTermLength && termLength > MAX_SUBSTRING_LENGTH) {
-							containingResults = this.containingResults.stream()
-								.filter(result -> result.anyLowerCaseAliasContains(term))
-								.collect(toImmutableList());
+							containingItems = this.containingItems.stream()
+								.map(item -> item.getOwner().findContainingItem(term))
+								.flatMap(Optional::stream)
+								.collect(toImmutableSet());
 						} else {
-							containingResults = this.buildContaining(term);
+							containingItems = this.buildContaining(term);
 						}
 
-						return new ResultCache(term, prefixNode, containingResults);
+						return new ResultCache(term, prefixNode, containingItems);
 					}
 				}
 			}
@@ -322,13 +344,13 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				return new ResultCache(term, Lookup.this.prefixResults.get(term), this.buildContaining(term));
 			}
 
-			ImmutableList<Result> buildContaining(String term) {
+			ImmutableSet<Result.ItemHolder> buildContaining(String term) {
 				final int termLength = term.length();
 				final List<Result> possibleResults = new ArrayList<>();
 				// start at 1 because prefixes are handled by prefixTrie
 				for (int start = 1; start <= termLength; start++) {
 					final int end = Math.min(start + MAX_SUBSTRING_LENGTH, termLength);
-					Node<Result> node = Lookup.this.substringResults.getRoot();
+					Node<Result> node = Lookup.this.containingResults.getRoot();
 					for (int i = start; i < end; i++) {
 						node = node.next(term.charAt(i));
 
@@ -342,43 +364,89 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 				return possibleResults.stream()
 					.distinct()
-					.filter(result -> result.anyLowerCaseAliasContains(term))
-					.collect(toImmutableList());
+					.map(result -> result.findContainingItem(term))
+					.flatMap(Optional::stream)
+					.collect(toImmutableSet());
 			}
 		}
 	}
 
 	private static class Result implements Comparable<Result> {
-		final SearchableElement element;
+		final SearchableElement searchable;
 
-		final ImmutableList<String> lowerCaseAliases;
+		final ImmutableMap<String, String> aliasesByLowercase;
+		final Map<String, ItemHolder> holdersByAlias;
 
-		// TODO display alias in item (if not search name)
-		@Nullable JMenuItem item;
+		Result(SearchableElement searchable, ImmutableMap<String, String> aliasesByLowercase) {
+			this.searchable = searchable;
 
-		Result(SearchableElement element) {
-			this.element = element;
-			this.lowerCaseAliases = this.element.streamSearchAliases()
-				.filter(alias -> !alias.isEmpty())
-				.map(String::toLowerCase)
-				.collect(toImmutableList());
-		}
-
-		JMenuItem getItem() {
-			if (this.item == null) {
-				this.item = new JMenuItem(this.element.getSearchName());
-			}
-
-			return this.item;
-		}
-
-		boolean anyLowerCaseAliasContains(String term) {
-			return this.lowerCaseAliases.stream().anyMatch(alias -> alias.contains(term));
+			this.aliasesByLowercase = aliasesByLowercase;
+			this.holdersByAlias = new HashMap<>(aliasesByLowercase.size());
 		}
 
 		@Override
 		public int compareTo(@NonNull Result other) {
-			return this.element.getSearchName().compareTo(other.element.getSearchName());
+			return this.searchable.getSearchName().compareTo(other.searchable.getSearchName());
+		}
+
+		SearchableElement getSearchable() {
+			return this.searchable;
+		}
+
+		Optional<ItemHolder> findContainingItem(String term) {
+			return this.aliasesByLowercase.entrySet().stream()
+				.filter(entry -> entry.getKey().contains(term))
+				.findFirst()
+				.map(Map.Entry::getValue)
+				.map(this::getItemHolderForAlias);
+		}
+
+		/**
+		 * @return the {@link ItemHolder} representing the alias prefixed with the passed {@code term}
+		 *
+		 * @throws IllegalArgumentException if no lowercase alias starts with the passed {@code term}
+		 */
+		ItemHolder getPrefixedItemOrThrow(String term) {
+			return this.aliasesByLowercase.entrySet()
+				.stream()
+				.filter(entry -> entry.getKey().startsWith(term))
+				.findFirst()
+				.map(Map.Entry::getValue)
+				.map(this::getItemHolderForAlias)
+				.orElseThrow(() -> new IllegalArgumentException(
+					"""
+					No lowercase alias starts with "%s"!
+					\tlowercase aliases: %s
+					""".formatted(term, this.aliasesByLowercase.keySet()))
+				);
+		}
+
+		ItemHolder getItemHolderForAlias(String alias) {
+			return this.holdersByAlias.computeIfAbsent(alias, ItemHolder::new);
+		}
+
+		class ItemHolder implements Comparable<ItemHolder> {
+			final JMenuItem item;
+
+			ItemHolder(String matchedAlias) {
+				final String searchName = Result.this.searchable.getSearchName();
+				this.item = new JMenuItem(
+					matchedAlias.equals(searchName) ? searchName : "%s (%s)".formatted(searchName, matchedAlias)
+				);
+			}
+
+			public Component getItem() {
+				return this.item;
+			}
+
+			Result getOwner() {
+				return Result.this;
+			}
+
+			@Override
+			public int compareTo(@NonNull ItemHolder other) {
+				return this.getOwner().compareTo(other.getOwner());
+			}
 		}
 	}
 
@@ -393,9 +461,21 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		record Different(ImmutableList<Component> results) implements Results {
 			static Different of(Lookup.ResultCache cache) {
+				final ImmutableMap<SearchableElement, Component> prefixedItemsByElement = cache.prefixNode
+						.streamValues()
+						.sorted()
+						.distinct()
+						.collect(toImmutableMap(
+							Result::getSearchable,
+							result -> result.getPrefixedItemOrThrow(cache.term).getItem()
+						));
+
 				return new Different(Stream
-					.concat(cache.prefixNode.streamValues().sorted(), cache.containingResults.stream().sorted())
-					.map(Result::getItem)
+					.concat(prefixedItemsByElement.values().stream(), cache.containingItems.stream()
+						.sorted()
+						.filter(holder -> !prefixedItemsByElement.containsKey(holder.getOwner().searchable))
+						.map(Result.ItemHolder::getItem)
+					)
 					.collect(toImmutableList())
 				);
 			}
