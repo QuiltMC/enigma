@@ -510,6 +510,10 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				this.item = matchedAlias.equals(searchName)
 						? new JMenuItem(searchName)
 						: new AliasedItem(searchName, matchedAlias);
+
+				this.item.addActionListener(e -> {
+					Result.this.searchable.onSearchClicked();
+				});
 			}
 
 			public Component getItem() {
