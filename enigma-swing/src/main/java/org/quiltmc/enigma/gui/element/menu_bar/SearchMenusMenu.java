@@ -191,7 +191,10 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		static final int NON_PREFIX_START = 1;
 		static final int MAX_SUBSTRING_LENGTH = 2;
 
-		final ResultCache emptyCache = new ResultCache("", EmptyStringMultiTrie.Node.get(), ImmutableSet.of());
+		final ResultCache emptyCache = new ResultCache(
+				"", EmptyStringMultiTrie.Node.get(),
+				ImmutableMap.of(), ImmutableSet.of()
+		);
 
 		static int getCommonPrefixLength(String left, String right) {
 			final int minLength = Math.min(left.length(), right.length());
@@ -286,15 +289,32 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		}
 
 		final class ResultCache {
+			static ImmutableSet<Result.ItemHolder> buildContaining(
+					String term, Set<Result> possibilities,
+					Set<SearchableElement> excluded
+			) {
+				return possibilities
+					.stream()
+					.filter(result -> !excluded.contains(result.searchable))
+					.map(result -> result.findContainingItem(term))
+					.flatMap(Optional::stream)
+					.sorted()
+					.collect(toImmutableSet());
+			}
+
 			final String term;
 			final Node<Result> prefixNode;
+			final ImmutableMap<SearchableElement, Component> prefixedItemsBySearchable;
 			final ImmutableSet<Result.ItemHolder> containingItems;
 
 			ResultCache(
-					String term, Node<Result> prefixNode, ImmutableSet<Result.ItemHolder> containingItems
+					String term, Node<Result> prefixNode,
+					ImmutableMap<SearchableElement, Component> prefixedItemsBySearchable,
+					ImmutableSet<Result.ItemHolder> containingItems
 			) {
 				this.term = term;
 				this.prefixNode = prefixNode;
+				this.prefixedItemsBySearchable = prefixedItemsBySearchable;
 				this.containingItems = containingItems;
 			}
 
@@ -314,15 +334,20 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				} else {
 					final int commonPrefixLength = getCommonPrefixLength(this.term, term);
 					final int termLength = term.length();
-					final int thisTermLength = this.term.length();
+					final int cachedTermLength = this.term.length();
 
 					if (commonPrefixLength == 0) {
 						return this.createFresh(term);
-					} else if (commonPrefixLength == termLength && commonPrefixLength == thisTermLength) {
+					} else if (commonPrefixLength == termLength && commonPrefixLength == cachedTermLength) {
 						return this;
 					} else {
-						Node<Result> prefixNode = this.prefixNode.previous(thisTermLength - commonPrefixLength);
+						final int backSteps = cachedTermLength - commonPrefixLength;
+						Node<Result> prefixNode = this.prefixNode.previous(backSteps);
+						// true iff this.term is a prefix of term or vice versa
+						final boolean oneTermIsPrefix;
 						if (termLength > commonPrefixLength) {
+							oneTermIsPrefix = backSteps == 0;
+
 							for (int i = commonPrefixLength; i < termLength; i++) {
 								prefixNode = prefixNode.next(term.charAt(i));
 
@@ -330,49 +355,74 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 									break;
 								}
 							}
+						} else {
+							oneTermIsPrefix = true;
+						}
+
+						final ImmutableMap<SearchableElement, Component> prefixedItemsBySearchable;
+						if (oneTermIsPrefix && this.prefixNode.getSize() == prefixNode.getSize()) {
+							prefixedItemsBySearchable = this.prefixedItemsBySearchable;
+						} else {
+							prefixedItemsBySearchable = buildPrefixedItemsBySearchable(term, prefixNode);
 						}
 
 						final ImmutableSet<Result.ItemHolder> containingItems;
-						if (termLength > thisTermLength) {
+						if (cachedTermLength == commonPrefixLength) {
 							if (termLength > MAX_SUBSTRING_LENGTH) {
 								containingItems = this.narrowedContainingItemsOf(term);
 							} else {
 								final Set<Result> containingPossibilities = this.getContainingPossibilities(term);
 								if (containingPossibilities.size() <= this.containingItems.size()) {
-									containingItems = containingPossibilities.stream()
-										.map(result -> result.findContainingItem(term))
-										.flatMap(Optional::stream)
-										.collect(toImmutableSet());
+									containingItems = buildContaining(
+										term, containingPossibilities,
+										prefixedItemsBySearchable.keySet()
+									);
 								} else {
 									containingItems = this.narrowedContainingItemsOf(term);
 								}
 							}
 						} else {
-							containingItems = this.buildContaining(term);
+							containingItems = this.buildContaining(term, prefixedItemsBySearchable.keySet());
 						}
 
-						return new ResultCache(term, prefixNode, containingItems);
+						return new ResultCache(term, prefixNode, prefixedItemsBySearchable, containingItems);
 					}
 				}
 			}
 
 			ResultCache createFresh(String term) {
-				return new ResultCache(term, Lookup.this.prefixResults.get(term), this.buildContaining(term));
+				final Node<Result> prefixNode = Lookup.this.prefixResults.get(term);
+				final ImmutableMap<SearchableElement, Component> prefixedItemsByElement =
+						buildPrefixedItemsBySearchable(term, prefixNode);
+				return new ResultCache(
+					term, prefixNode,
+					prefixedItemsByElement,
+					this.buildContaining(term, prefixedItemsByElement.keySet())
+				);
 			}
 
-			private ImmutableSet<Result.ItemHolder> narrowedContainingItemsOf(String term) {
+			static ImmutableMap<SearchableElement, Component> buildPrefixedItemsBySearchable(
+					String term, Node<Result> prefixNode
+			) {
+				return prefixNode
+					.streamValues()
+					.sorted()
+					.distinct()
+					.collect(toImmutableMap(
+						Result::getSearchable,
+						result -> result.getPrefixedItemOrThrow(term).getItem()
+					));
+			}
+
+			ImmutableSet<Result.ItemHolder> narrowedContainingItemsOf(String term) {
 				return this.containingItems.stream()
 					.map(item -> item.getOwner().findContainingItem(term))
 					.flatMap(Optional::stream)
 					.collect(toImmutableSet());
 			}
 
-			ImmutableSet<Result.ItemHolder> buildContaining(String term) {
-				return this.getContainingPossibilities(term)
-					.stream()
-					.map(result -> result.findContainingItem(term))
-					.flatMap(Optional::stream)
-					.collect(toImmutableSet());
+			ImmutableSet<Result.ItemHolder> buildContaining(String term, Set<SearchableElement> excluded) {
+				return buildContaining(term, this.getContainingPossibilities(term), excluded);
 			}
 
 			Set<Result> getContainingPossibilities(String term) {
@@ -561,20 +611,10 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		record Different(ImmutableList<Component> results) implements Results {
 			static Different of(Lookup.ResultCache cache) {
-				final ImmutableMap<SearchableElement, Component> prefixedItemsByElement = cache.prefixNode
-						.streamValues()
-						.sorted()
-						.distinct()
-						.collect(toImmutableMap(
-							Result::getSearchable,
-							result -> result.getPrefixedItemOrThrow(cache.term).getItem()
-						));
-
 				return new Different(Stream
-					.concat(prefixedItemsByElement.values().stream(), cache.containingItems.stream()
-						.sorted()
-						.filter(holder -> !prefixedItemsByElement.containsKey(holder.getOwner().searchable))
-						.map(Result.ItemHolder::getItem)
+					.concat(
+						cache.prefixedItemsBySearchable.values().stream(),
+						cache.containingItems.stream().map(Result.ItemHolder::getItem)
 					)
 					.collect(toImmutableList())
 				);
