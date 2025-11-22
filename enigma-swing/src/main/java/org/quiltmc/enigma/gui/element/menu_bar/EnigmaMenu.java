@@ -2,10 +2,13 @@ package org.quiltmc.enigma.gui.element.menu_bar;
 
 import org.quiltmc.enigma.gui.ConnectionState;
 
-public interface EnigmaMenu {
-	default void setKeyBinds() {}
+import javax.swing.MenuElement;
 
-	default void updateState(boolean jarOpen, ConnectionState state) {}
+public interface EnigmaMenu extends MenuElement, Retranslatable {
+	default void setKeyBinds() { }
 
-	default void retranslate() {}
+	default void updateState(boolean jarOpen, ConnectionState state) { }
+
+	@Override
+	default void retranslate() { }
 }

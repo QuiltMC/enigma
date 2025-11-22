@@ -4,26 +4,28 @@ import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.SimpleItem;
 import org.quiltmc.enigma.gui.util.ExtensionFileFilter;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JFileChooser;
-import javax.swing.JMenuItem;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class SaveMappingsAsMenu extends AbstractEnigmaMenu {
-	private final Map<ReadWriteService, JMenuItem> items = new HashMap<>();
+public class SaveMappingsAsMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.file.mappings.save_as";
+
+	private final Map<ReadWriteService, SimpleItem> items = new HashMap<>();
 
 	protected SaveMappingsAsMenu(Gui gui) {
 		super(gui);
 
 		this.forEachFormat(format -> {
-			JMenuItem item = new JMenuItem();
+			final SimpleItem item = new SimpleItem(format.getId());
 			this.items.put(format, item);
 			this.add(item);
 
@@ -33,9 +35,9 @@ public class SaveMappingsAsMenu extends AbstractEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.file.mappings.save_as"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 
-		this.forEachFormat(format -> this.items.get(format).setText(I18n.translate(format.getId())));
+		this.items.values().forEach(SimpleItem::retranslate);
 	}
 
 	@Override
@@ -64,5 +66,10 @@ public class SaveMappingsAsMenu extends AbstractEnigmaMenu {
 				consumer.accept(format);
 			}
 		});
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

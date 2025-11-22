@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -195,5 +196,24 @@ public class Utils {
 
 	public static double clamp(double value, double min, double max) {
 		return Math.min(max, Math.max(value, min));
+	}
+
+	public static <T> T requireNonNull(T value, String name) {
+		if (value == null) {
+			throw new NullPointerException(name + " must not be null!");
+		} else {
+			return value;
+		}
+	}
+
+	@SafeVarargs
+	public static <T> Optional<T> findFirstNonNull(T... values) {
+		for (final T value : values) {
+			if (value != null) {
+				return Optional.of(value);
+			}
+		}
+
+		return Optional.empty();
 	}
 }
