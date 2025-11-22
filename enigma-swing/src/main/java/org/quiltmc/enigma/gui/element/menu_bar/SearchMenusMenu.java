@@ -8,6 +8,7 @@ import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.element.PlaceheldTextField;
+import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.EmptyStringMultiTrie;
@@ -22,14 +23,19 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Point;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -182,6 +188,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	}
 
 	private static final class Lookup {
+		static final int NON_PREFIX_START = 1;
 		static final int MAX_SUBSTRING_LENGTH = 2;
 
 		final ResultCache emptyCache = new ResultCache("", EmptyStringMultiTrie.Node.get(), ImmutableSet.of());
@@ -226,7 +233,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 							prefixBuilder.put(alias, result);
 
 							final int aliasLength = alias.length();
-							for (int start = 1; start < aliasLength; start++) {
+							for (int start = NON_PREFIX_START; start < aliasLength; start++) {
 								final int end = Math.min(start + MAX_SUBSTRING_LENGTH, aliasLength);
 								MutableStringMultiTrie.Node<Result> node = containingBuilder.getRoot();
 								for (int i = start; i < end; i++) {
@@ -326,11 +333,20 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 						}
 
 						final ImmutableSet<Result.ItemHolder> containingItems;
-						if (termLength > thisTermLength && termLength > MAX_SUBSTRING_LENGTH) {
-							containingItems = this.containingItems.stream()
-								.map(item -> item.getOwner().findContainingItem(term))
-								.flatMap(Optional::stream)
-								.collect(toImmutableSet());
+						if (termLength > thisTermLength) {
+							if (termLength > MAX_SUBSTRING_LENGTH) {
+								containingItems = this.narrowedContainingItemsOf(term);
+							} else {
+								final Set<Result> containingPossibilities = this.getContainingPossibilities(term);
+								if (containingPossibilities.size() <= this.containingItems.size()) {
+									containingItems = containingPossibilities.stream()
+										.map(result -> result.findContainingItem(term))
+										.flatMap(Optional::stream)
+										.collect(toImmutableSet());
+								} else {
+									containingItems = this.narrowedContainingItemsOf(term);
+								}
+							}
 						} else {
 							containingItems = this.buildContaining(term);
 						}
@@ -344,11 +360,25 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				return new ResultCache(term, Lookup.this.prefixResults.get(term), this.buildContaining(term));
 			}
 
+			private ImmutableSet<Result.ItemHolder> narrowedContainingItemsOf(String term) {
+				return this.containingItems.stream()
+					.map(item -> item.getOwner().findContainingItem(term))
+					.flatMap(Optional::stream)
+					.collect(toImmutableSet());
+			}
+
 			ImmutableSet<Result.ItemHolder> buildContaining(String term) {
+				return this.getContainingPossibilities(term)
+					.stream()
+					.map(result -> result.findContainingItem(term))
+					.flatMap(Optional::stream)
+					.collect(toImmutableSet());
+			}
+
+			Set<Result> getContainingPossibilities(String term) {
 				final int termLength = term.length();
-				final List<Result> possibleResults = new ArrayList<>();
-				// start at 1 because prefixes are handled by prefixTrie
-				for (int start = 1; start <= termLength; start++) {
+				final Set<Result> possibilities = new HashSet<>();
+				for (int start = NON_PREFIX_START; start <= termLength; start++) {
 					final int end = Math.min(start + MAX_SUBSTRING_LENGTH, termLength);
 					Node<Result> node = Lookup.this.containingResults.getRoot();
 					for (int i = start; i < end; i++) {
@@ -359,14 +389,10 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 						}
 					}
 
-					node.streamValues().forEach(possibleResults::add);
+					node.streamValues().forEach(possibilities::add);
 				}
 
-				return possibleResults.stream()
-					.distinct()
-					.map(result -> result.findContainingItem(term))
-					.flatMap(Optional::stream)
-					.collect(toImmutableSet());
+				return possibilities;
 			}
 		}
 	}
@@ -416,9 +442,9 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				.orElseThrow(() -> new IllegalArgumentException(
 					"""
 					No lowercase alias starts with "%s"!
-					\tlowercase aliases: %s
-					""".formatted(term, this.aliasesByLowercase.keySet()))
-				);
+					\tlowercase aliases: %s\
+					""".formatted(term, this.aliasesByLowercase.keySet())
+				));
 		}
 
 		ItemHolder getItemHolderForAlias(String alias) {
@@ -430,9 +456,10 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 			ItemHolder(String matchedAlias) {
 				final String searchName = Result.this.searchable.getSearchName();
-				this.item = new JMenuItem(
-					matchedAlias.equals(searchName) ? searchName : "%s (%s)".formatted(searchName, matchedAlias)
-				);
+
+				this.item = matchedAlias.equals(searchName)
+						? new JMenuItem(searchName)
+						: new AliasedItem(searchName, matchedAlias);
 			}
 
 			public Component getItem() {
@@ -446,6 +473,79 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			@Override
 			public int compareTo(@NonNull ItemHolder other) {
 				return this.getOwner().compareTo(other.getOwner());
+			}
+
+			static class AliasedItem extends JMenuItem {
+				static final int UNSET_WIDTH = -1;
+
+				final String alias;
+
+				int aliasWidth = UNSET_WIDTH;
+				@Nullable
+				Font aliasFont;
+
+				AliasedItem(String searchName, String alias) {
+					super(searchName);
+
+					this.alias = alias;
+				}
+
+				@Override
+				public void setFont(Font font) {
+					super.setFont(font);
+
+					this.aliasWidth = UNSET_WIDTH;
+					this.aliasFont = null;
+				}
+
+				@Nullable
+				Font getAliasFont() {
+					if (this.aliasFont == null) {
+						final Font font = this.getFont();
+						if (font != null) {
+							this.aliasFont = font.deriveFont(Font.ITALIC);
+						}
+					}
+
+					return this.aliasFont;
+				}
+
+				@Override
+				public Dimension getPreferredSize() {
+					final Dimension size = super.getPreferredSize();
+
+					size.width += this.getAliasWidth();
+
+					return size;
+				}
+
+				@Override
+				public void paint(Graphics graphics) {
+					super.paint(graphics);
+
+					GuiUtil.trySetRenderingHints(graphics);
+					final Color color = this.getForeground();
+					if (color != null) {
+						graphics.setColor(color);
+					}
+
+					final Font aliasFont = this.getAliasFont();
+					if (aliasFont != null) {
+						graphics.setFont(aliasFont);
+					}
+
+					final Insets insets = this.getInsets();
+					final int baseY = graphics.getFontMetrics().getMaxAscent() + insets.top;
+					graphics.drawString(this.alias, this.getWidth() - insets.right - this.getAliasWidth(), baseY);
+				}
+
+				int getAliasWidth() {
+					if (this.aliasWidth < 0) {
+						this.aliasWidth = this.getFontMetrics(this.getAliasFont()).stringWidth(this.alias);
+					}
+
+					return this.aliasWidth;
+				}
 			}
 		}
 	}
