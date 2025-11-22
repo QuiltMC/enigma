@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.element;
 
 import org.jspecify.annotations.Nullable;
+import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.Utils;
 
 import javax.swing.JTextField;
@@ -10,33 +11,18 @@ import javax.swing.text.Document;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Insets;
-import java.awt.RenderingHints;
-import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.Map;
 
 /**
  * A text field that displays placeholder text when it's empty.
  */
 public class PlaceheldTextField extends JTextField implements MenuElement {
-	private static final String DESKTOP_FONT_HINTS_KEY = "awt.font.desktophints";
-
 	@Nullable
-	private static Map<?, ?> desktopFontHints = Toolkit.getDefaultToolkit().getDesktopProperty(DESKTOP_FONT_HINTS_KEY)
-			instanceof Map<?, ?> map ? map : null;
-
-	static {
-		Toolkit.getDefaultToolkit().addPropertyChangeListener(DESKTOP_FONT_HINTS_KEY, e -> {
-			desktopFontHints = e.getNewValue() instanceof Map<?, ?> map ? map : null;
-		});
-	}
-
-	@Nullable
-	private String placeholder;
+	private Placeholder placeholder;
 
 	@Nullable
 	private Color placeholderColor;
@@ -74,7 +60,7 @@ public class PlaceheldTextField extends JTextField implements MenuElement {
 	) {
 		super(doc, text, columns);
 
-		this.placeholder = placeholder;
+		this.placeholder = new Placeholder(placeholder);
 	}
 
 	@Override
@@ -84,9 +70,7 @@ public class PlaceheldTextField extends JTextField implements MenuElement {
 		if (this.placeholder != null) {
 			final Insets insets = this.getInsets();
 
-			final int placeholderWidth = this.getFontMetrics(this.getFont()).stringWidth(this.placeholder);
-
-			size.width = Math.max(insets.left + placeholderWidth + insets.right, size.width);
+			size.width = Math.max(insets.left + this.placeholder.getWidth() + insets.right, size.width);
 		}
 
 		return size;
@@ -97,13 +81,7 @@ public class PlaceheldTextField extends JTextField implements MenuElement {
 		super.paintComponent(graphics);
 
 		if (this.placeholder != null && this.getText().isEmpty()) {
-			if (graphics instanceof Graphics2D graphics2D) {
-				if (desktopFontHints == null) {
-					graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				} else {
-					graphics2D.setRenderingHints(desktopFontHints);
-				}
-			}
+			GuiUtil.trySetRenderingHints(graphics);
 
 			Utils.findFirstNonNull(this.placeholderColor, this.getDisabledTextColor(), this.getForeground())
 					.ifPresent(graphics::setColor);
@@ -111,7 +89,7 @@ public class PlaceheldTextField extends JTextField implements MenuElement {
 
 			final Insets insets = this.getInsets();
 			final int baseY = graphics.getFontMetrics().getMaxAscent() + insets.top;
-			graphics.drawString(this.placeholder, insets.left, baseY);
+			graphics.drawString(this.placeholder.text, insets.left, baseY);
 		}
 	}
 
@@ -119,7 +97,7 @@ public class PlaceheldTextField extends JTextField implements MenuElement {
 	 * @param placeholder the placeholder text for this field; if {@code null}, no placeholder will be shown
 	 */
 	public void setPlaceholder(@Nullable String placeholder) {
-		this.placeholder = placeholder;
+		this.placeholder = new Placeholder(placeholder);
 	}
 
 	/**
@@ -147,5 +125,39 @@ public class PlaceheldTextField extends JTextField implements MenuElement {
 	@Override
 	public Component getComponent() {
 		return this;
+	}
+
+	@Override
+	public void setFont(Font f) {
+		super.setFont(f);
+
+		if (this.placeholder != null) {
+			this.placeholder.clearWidth();
+		}
+	}
+
+	private class Placeholder {
+		static final int UNSET_WIDTH = -1;
+
+		final String text;
+
+		int width = UNSET_WIDTH;
+
+		Placeholder(String text) {
+			this.text = text;
+		}
+
+		int getWidth() {
+			if (this.width < 0) {
+				this.width = PlaceheldTextField.this
+					.getFontMetrics(PlaceheldTextField.this.getFont()).stringWidth(this.text);
+			}
+
+			return this.width;
+		}
+
+		void clearWidth() {
+			this.width = UNSET_WIDTH;
+		}
 	}
 }

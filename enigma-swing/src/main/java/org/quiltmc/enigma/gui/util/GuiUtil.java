@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.util;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.google.common.collect.ImmutableList;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.service.JarIndexerService;
@@ -41,8 +42,11 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -96,6 +100,28 @@ public final class GuiUtil {
 	public static final Icon CHEVRON_DOWN_BLACK = loadIcon("chevron-down-black");
 	public static final Icon CHEVRON_UP_WHITE = loadIcon("chevron-up-white");
 	public static final Icon CHEVRON_DOWN_WHITE = loadIcon("chevron-down-white");
+
+	private static final String DESKTOP_FONT_HINTS_KEY = "awt.font.desktophints";
+
+	@Nullable
+	private static Map<?, ?> desktopFontHints = Toolkit.getDefaultToolkit().getDesktopProperty(DESKTOP_FONT_HINTS_KEY)
+			instanceof Map<?, ?> map ? map : null;
+
+	static {
+		Toolkit.getDefaultToolkit().addPropertyChangeListener(DESKTOP_FONT_HINTS_KEY, e -> {
+			desktopFontHints = e.getNewValue() instanceof Map<?, ?> map ? map : null;
+		});
+	}
+
+	public static void trySetRenderingHints(Graphics graphics) {
+		if (graphics instanceof Graphics2D graphics2D) {
+			if (desktopFontHints == null) {
+				graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			} else {
+				graphics2D.setRenderingHints(desktopFontHints);
+			}
+		}
+	}
 
 	public static void openUrl(String url) {
 		try {
