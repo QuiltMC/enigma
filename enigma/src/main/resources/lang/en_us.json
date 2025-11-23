@@ -122,6 +122,8 @@
 	"menu.help.search": "Search menus",
 	"menu.help.search.placeholder": "Search menus...",
 	"menu.help.search.no_results": "No results",
+	"menu.help.search.hint.preview": "Hold shift to preview the selected result",
+	"menu.help.search.hint.execute": "Press enter to execute the selected result",
 
 	"popup_menu.rename": "Rename",
 	"popup_menu.paste": "Paste text",
