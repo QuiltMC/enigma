@@ -109,7 +109,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		// global listener because menu/item key listeners didn't fire
 		// also more reliably clears restorablePath
-		Toolkit.getDefaultToolkit().addAWTEventListener(KeyHandler.INSTANCE, AWTEvent.KEY_EVENT_MASK);
+		Toolkit.getDefaultToolkit().addAWTEventListener(new KeyHandler(), AWTEvent.KEY_EVENT_MASK);
 
 		this.defaultPopupBorder = this.getPopupMenu().getBorder();
 
@@ -199,13 +199,15 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	}
 
 	private void refreshPopup() {
-		// HACK: When popups are resizing in limited space, they may remove their borders.
-		// The border won't be restored when re-packing or showing, so manually restore the original border here.
-		this.getPopupMenu().setBorder(this.defaultPopupBorder);
-		this.getPopupMenu().pack();
+		if (this.isShowing()) {
+			// HACK: When popups are resizing in limited space, they may remove their borders.
+			// The border won't be restored when re-packing or showing, so manually restore the original border here.
+			this.getPopupMenu().setBorder(this.defaultPopupBorder);
+			this.getPopupMenu().pack();
 
-		final Point popupMenuOrigin = this.getPopupMenuOrigin();
-		this.getPopupMenu().show(this, popupMenuOrigin.x, popupMenuOrigin.y);
+			final Point popupMenuOrigin = this.getPopupMenuOrigin();
+			this.getPopupMenu().show(this, popupMenuOrigin.x, popupMenuOrigin.y);
+		}
 	}
 
 	private void addPermanentChildren() {
@@ -700,7 +702,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		}
 	}
 
-	private static class KeyHandler implements AWTEventListener {
+	private class KeyHandler implements AWTEventListener {
 		static final int PREVIEW_MODIFIER_MASK = InputEvent.SHIFT_DOWN_MASK;
 		static final int PREVIEW_MODIFIER_KEY = KeyEvent.VK_SHIFT;
 
@@ -712,8 +714,6 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				return null;
 			}
 		}
-
-		static final KeyHandler INSTANCE = new KeyHandler();
 
 		@Nullable
 		RestorablePath restorablePath;
@@ -729,6 +729,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 						final MenuElement selected = getLastOrNull(selectedPath);
 						if (selected != null) {
 							if (selected instanceof Result.ItemHolder.Item item) {
+								SearchMenusMenu.this.previewHint.dismiss();
+
 								this.restorablePath = new RestorablePath(item.getSearchable(), selectedPath);
 
 								item.selectSearchable();
@@ -743,13 +745,13 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 						if (modifiers == 0) {
 							final MenuSelectionManager manager = MenuSelectionManager.defaultManager();
 							if (getLastOrNull(manager.getSelectedPath()) instanceof Result.ItemHolder.Item item) {
-								clearSelectionAndChoose(item.getSearchable(), manager);
+								this.execute(item.getSearchable(), manager);
 							}
 						} else if (modifiers == PREVIEW_MODIFIER_MASK) {
 							if (this.restorablePath != null) {
 								final MenuSelectionManager manager = MenuSelectionManager.defaultManager();
 								if (this.restorablePath.searched == getLastOrNull(manager.getSelectedPath())) {
-									clearSelectionAndChoose(this.restorablePath.searched, manager);
+									this.execute(this.restorablePath.searched, manager);
 								}
 							}
 						}
@@ -770,19 +772,26 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 		}
 
+		void execute(SearchableElement searchable, MenuSelectionManager manager) {
+			SearchMenusMenu.this.executeHint.dismiss();
+			clearSelectionAndChoose(searchable, manager);
+		}
+
 		record RestorablePath(SearchableElement searched, MenuElement[] helpPath) { }
 	}
 
 	// not a MenuElement so it can't be selected
 	private class HintItem extends JPanel implements Retranslatable {
 		final String translationKey;
+		final TrackedValue<Boolean> config;
 
 		final JLabel infoIndicator = new JLabel("ⓘ");
 		final JLabel hint = new JLabel();
-		final JButton dismiss = new JButton("⊗");
+		final JButton dismissButton = new JButton("⊗");
 
 		HintItem(String translationKey, TrackedValue<Boolean> config) {
 			this.translationKey = translationKey;
+			this.config = config;
 
 			this.setBorder(createEmptyBorder(0, 2, 0, 0));
 
@@ -802,19 +811,21 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 					.build()
 			);
 
-			this.dismiss.setBorderPainted(false);
-			this.dismiss.setBackground(new Color(0, true));
-			this.dismiss.setMargin(new Insets(0, 0, 0, 0));
-			final Font oldDismissFont = this.dismiss.getFont();
-			this.dismiss.setFont(oldDismissFont.deriveFont(oldDismissFont.getSize2D() * 1.5f));
-			this.dismiss.addActionListener(e -> {
-				config.setValue(false);
-				this.setVisible(false);
-				SearchMenusMenu.this.refreshPopup();
-			});
-			this.add(this.dismiss);
+			this.dismissButton.setBorderPainted(false);
+			this.dismissButton.setBackground(new Color(0, true));
+			this.dismissButton.setMargin(new Insets(0, 0, 0, 0));
+			final Font oldDismissFont = this.dismissButton.getFont();
+			this.dismissButton.setFont(oldDismissFont.deriveFont(oldDismissFont.getSize2D() * 1.5f));
+			this.dismissButton.addActionListener(e -> this.dismiss());
+			this.add(this.dismissButton);
 
 			this.retranslate();
+		}
+
+		private void dismiss() {
+			this.config.setValue(false);
+			this.setVisible(false);
+			SearchMenusMenu.this.refreshPopup();
 		}
 
 		@Override
