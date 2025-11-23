@@ -3,6 +3,7 @@ package org.quiltmc.enigma.gui.element.menu_bar;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Streams;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.ConnectionState;
@@ -653,9 +654,15 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		record Different(ImmutableList<Component> results) implements Results {
 			static Different of(Lookup.ResultCache cache) {
-				return new Different(Stream
+				final Stream<Component> separator =
+						!cache.prefixedItemsBySearchable.isEmpty() && !cache.containingItems.isEmpty()
+							? Stream.of(new JPopupMenu.Separator())
+							: Stream.empty();
+
+				return new Different(Streams
 					.concat(
 						cache.prefixedItemsBySearchable.values().stream(),
+						separator,
 						cache.containingItems.stream()
 					)
 					.collect(toImmutableList())
