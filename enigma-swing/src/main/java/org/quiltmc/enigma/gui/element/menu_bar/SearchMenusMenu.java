@@ -16,13 +16,18 @@ import org.quiltmc.enigma.util.multi_trie.MutableStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.Node;
 
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.MenuElement;
+import javax.swing.MenuSelectionManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -30,9 +35,15 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.AWTEventListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -67,6 +78,10 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 	protected SearchMenusMenu(Gui gui) {
 		super(gui);
+
+		// global listener because menu/item key listeners didn't fire
+		// also more reliably clears restorablePath
+		Toolkit.getDefaultToolkit().addAWTEventListener(SearchPathPreviewer.INSTANCE, AWTEvent.KEY_EVENT_MASK);
 
 		this.defaultPopupBorder = this.getPopupMenu().getBorder();
 
@@ -289,7 +304,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		}
 
 		final class ResultCache {
-			static ImmutableSet<Result.ItemHolder> buildContaining(
+			static ImmutableSet<Result.Item> buildContaining(
 					String term, Set<Result> possibilities,
 					Set<SearchableElement> excluded
 			) {
@@ -305,12 +320,12 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			final String term;
 			final Node<Result> prefixNode;
 			final ImmutableMap<SearchableElement, Component> prefixedItemsBySearchable;
-			final ImmutableSet<Result.ItemHolder> containingItems;
+			final ImmutableSet<Result.Item> containingItems;
 
 			ResultCache(
 					String term, Node<Result> prefixNode,
 					ImmutableMap<SearchableElement, Component> prefixedItemsBySearchable,
-					ImmutableSet<Result.ItemHolder> containingItems
+					ImmutableSet<Result.Item> containingItems
 			) {
 				this.term = term;
 				this.prefixNode = prefixNode;
@@ -366,7 +381,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 							prefixedItemsBySearchable = buildPrefixedItemsBySearchable(term, prefixNode);
 						}
 
-						final ImmutableSet<Result.ItemHolder> containingItems;
+						final ImmutableSet<Result.Item> containingItems;
 						if (cachedTermLength == commonPrefixLength) {
 							if (termLength > MAX_SUBSTRING_LENGTH) {
 								containingItems = this.narrowedContainingItemsOf(term);
@@ -410,18 +425,18 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 					.distinct()
 					.collect(toImmutableMap(
 						Result::getSearchable,
-						result -> result.getPrefixedItemOrThrow(term).getItem()
+						result -> result.getPrefixedItemOrThrow(term)
 					));
 			}
 
-			ImmutableSet<Result.ItemHolder> narrowedContainingItemsOf(String term) {
+			ImmutableSet<Result.Item> narrowedContainingItemsOf(String term) {
 				return this.containingItems.stream()
 					.map(item -> item.getOwner().findContainingItem(term))
 					.flatMap(Optional::stream)
 					.collect(toImmutableSet());
 			}
 
-			ImmutableSet<Result.ItemHolder> buildContaining(String term, Set<SearchableElement> excluded) {
+			ImmutableSet<Result.Item> buildContaining(String term, Set<SearchableElement> excluded) {
 				return buildContaining(term, this.getContainingPossibilities(term), excluded);
 			}
 
@@ -451,13 +466,13 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		final SearchableElement searchable;
 
 		final ImmutableMap<String, String> aliasesByLowercase;
-		final Map<String, ItemHolder> holdersByAlias;
+		final Map<String, Item> itemsByAlias;
 
 		Result(SearchableElement searchable, ImmutableMap<String, String> aliasesByLowercase) {
 			this.searchable = searchable;
 
 			this.aliasesByLowercase = aliasesByLowercase;
-			this.holdersByAlias = new HashMap<>(aliasesByLowercase.size());
+			this.itemsByAlias = new HashMap<>(aliasesByLowercase.size());
 		}
 
 		@Override
@@ -469,26 +484,26 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			return this.searchable;
 		}
 
-		Optional<ItemHolder> findContainingItem(String term) {
+		Optional<Item> findContainingItem(String term) {
 			return this.aliasesByLowercase.entrySet().stream()
 				.filter(entry -> entry.getKey().contains(term))
 				.findFirst()
 				.map(Map.Entry::getValue)
-				.map(this::getItemHolderForAlias);
+				.map(this::getItemForAlias);
 		}
 
 		/**
-		 * @return the {@link ItemHolder} representing the alias prefixed with the passed {@code term}
+		 * @return the {@link Item} representing the alias prefixed with the passed {@code term}
 		 *
 		 * @throws IllegalArgumentException if no lowercase alias starts with the passed {@code term}
 		 */
-		ItemHolder getPrefixedItemOrThrow(String term) {
+		Item getPrefixedItemOrThrow(String term) {
 			return this.aliasesByLowercase.entrySet()
 				.stream()
 				.filter(entry -> entry.getKey().startsWith(term))
 				.findFirst()
 				.map(Map.Entry::getValue)
-				.map(this::getItemHolderForAlias)
+				.map(this::getItemForAlias)
 				.orElseThrow(() -> new IllegalArgumentException(
 					"""
 					No lowercase alias starts with "%s"!
@@ -497,27 +512,23 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				));
 		}
 
-		ItemHolder getItemHolderForAlias(String alias) {
-			return this.holdersByAlias.computeIfAbsent(alias, ItemHolder::new);
-		}
-
-		class ItemHolder implements Comparable<ItemHolder> {
-			final JMenuItem item;
-
-			ItemHolder(String matchedAlias) {
+		Item getItemForAlias(String alias) {
+			return this.itemsByAlias.computeIfAbsent(alias, itemAlias -> {
 				final String searchName = Result.this.searchable.getSearchName();
 
-				this.item = matchedAlias.equals(searchName)
-						? new JMenuItem(searchName)
-						: new AliasedItem(searchName, matchedAlias);
+				return itemAlias.equals(searchName)
+						? new Item(searchName)
+						: new AliasedItem(searchName, itemAlias);
+			});
+		}
 
-				this.item.addActionListener(e -> {
+		class Item extends JMenuItem implements Comparable<Item> {
+			Item(String searchName) {
+				super(searchName);
+
+				this.addActionListener(e -> {
 					Result.this.searchable.onSearchClicked();
 				});
-			}
-
-			public Component getItem() {
-				return this.item;
 			}
 
 			Result getOwner() {
@@ -525,81 +536,105 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 
 			@Override
-			public int compareTo(@NonNull ItemHolder other) {
+			public int compareTo(@NonNull Item other) {
 				return this.getOwner().compareTo(other.getOwner());
 			}
 
-			static class AliasedItem extends JMenuItem {
-				static final int UNSET_WIDTH = -1;
-
-				final String alias;
-
-				int aliasWidth = UNSET_WIDTH;
-				@Nullable
-				Font aliasFont;
-
-				AliasedItem(String searchName, String alias) {
-					super(searchName);
-
-					this.alias = alias;
-				}
-
-				@Override
-				public void setFont(Font font) {
-					super.setFont(font);
-
-					this.aliasWidth = UNSET_WIDTH;
-					this.aliasFont = null;
-				}
-
-				@Nullable
-				Font getAliasFont() {
-					if (this.aliasFont == null) {
-						final Font font = this.getFont();
-						if (font != null) {
-							this.aliasFont = font.deriveFont(Font.ITALIC);
-						}
+			void selectSearchable() {
+				final MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+				final List<MenuElement> pathBuilder = new LinkedList<>();
+				pathBuilder.add(this.getOwner().searchable);
+				Component element = this.getOwner().searchable.getComponent().getParent();
+				while (true) {
+					if (element instanceof JMenu menu) {
+						pathBuilder.add(0, menu);
+						element = menu.getParent();
+					} else if (element instanceof JPopupMenu popup) {
+						pathBuilder.add(0, popup);
+						element = popup.getInvoker();
+					} else {
+						break;
 					}
-
-					return this.aliasFont;
 				}
 
-				@Override
-				public Dimension getPreferredSize() {
-					final Dimension size = super.getPreferredSize();
+				if (element instanceof JMenuBar bar) {
+					pathBuilder.add(0, bar);
 
-					size.width += this.getAliasWidth();
-
-					return size;
+					manager.setSelectedPath(pathBuilder.toArray(pathBuilder.toArray(new MenuElement[0])));
 				}
+			}
+		}
 
-				@Override
-				public void paint(Graphics graphics) {
-					super.paint(graphics);
+		class AliasedItem extends Item {
+			static final int UNSET_WIDTH = -1;
 
-					GuiUtil.trySetRenderingHints(graphics);
-					final Color color = this.getForeground();
-					if (color != null) {
-						graphics.setColor(color);
+			final String alias;
+
+			int aliasWidth = UNSET_WIDTH;
+			@Nullable
+			Font aliasFont;
+
+			AliasedItem(String searchName, String alias) {
+				super(searchName);
+
+				this.alias = alias;
+			}
+
+			@Override
+			public void setFont(Font font) {
+				super.setFont(font);
+
+				this.aliasWidth = UNSET_WIDTH;
+				this.aliasFont = null;
+			}
+
+			@Nullable
+			Font getAliasFont() {
+				if (this.aliasFont == null) {
+					final Font font = this.getFont();
+					if (font != null) {
+						this.aliasFont = font.deriveFont(Font.ITALIC);
 					}
-
-					final Font aliasFont = this.getAliasFont();
-					if (aliasFont != null) {
-						graphics.setFont(aliasFont);
-					}
-
-					final Insets insets = this.getInsets();
-					final int baseY = graphics.getFontMetrics().getMaxAscent() + insets.top;
-					graphics.drawString(this.alias, this.getWidth() - insets.right - this.getAliasWidth(), baseY);
 				}
 
-				int getAliasWidth() {
-					if (this.aliasWidth < 0) {
-						this.aliasWidth = this.getFontMetrics(this.getAliasFont()).stringWidth(this.alias);
-					}
+				return this.aliasFont;
+			}
 
-					return this.aliasWidth;
+			@Override
+			public Dimension getPreferredSize() {
+				final Dimension size = super.getPreferredSize();
+
+				size.width += this.getAliasWidth();
+
+				return size;
+			}
+
+			@Override
+			public void paint(Graphics graphics) {
+				super.paint(graphics);
+
+				GuiUtil.trySetRenderingHints(graphics);
+				final Color color = this.getForeground();
+				if (color != null) {
+					graphics.setColor(color);
 				}
+
+				final Font aliasFont = this.getAliasFont();
+				if (aliasFont != null) {
+					graphics.setFont(aliasFont);
+				}
+
+				final Insets insets = this.getInsets();
+				final int baseY = graphics.getFontMetrics().getMaxAscent() + insets.top;
+				graphics.drawString(this.alias, this.getWidth() - insets.right - this.getAliasWidth(), baseY);
+			}
+
+			int getAliasWidth() {
+				if (this.aliasWidth < 0) {
+					this.aliasWidth = this.getFontMetrics(this.getAliasFont()).stringWidth(this.alias);
+				}
+
+				return this.aliasWidth;
 			}
 		}
 	}
@@ -618,11 +653,66 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				return new Different(Stream
 					.concat(
 						cache.prefixedItemsBySearchable.values().stream(),
-						cache.containingItems.stream().map(Result.ItemHolder::getItem)
+						cache.containingItems.stream()
 					)
 					.collect(toImmutableList())
 				);
 			}
 		}
+	}
+
+	private static class SearchPathPreviewer implements AWTEventListener {
+		static final int PREVIEW_MODIFIER_DOWN_MASK = InputEvent.SHIFT_DOWN_MASK;
+		static final int PREVIEW_MODIFIER_KEY = KeyEvent.VK_SHIFT;
+
+		static final SearchPathPreviewer INSTANCE = new SearchPathPreviewer();
+
+		@Nullable
+		RestorablePath restorablePath;
+
+		@Override
+		public void eventDispatched(AWTEvent e) {
+			if (e instanceof KeyEvent keyEvent) {
+				if (keyEvent.getID() == KeyEvent.KEY_PRESSED) {
+					if (
+							keyEvent.getKeyCode() == PREVIEW_MODIFIER_KEY
+								&& (keyEvent.getModifiersEx() & PREVIEW_MODIFIER_DOWN_MASK) != 0
+					) {
+						final MenuElement[] selectedPath = MenuSelectionManager.defaultManager()
+								.getSelectedPath();
+
+						if (selectedPath.length > 0) {
+							final MenuElement selectedElement = selectedPath[selectedPath.length - 1];
+							if (selectedElement instanceof Result.Item item) {
+								this.restorablePath =
+									new RestorablePath(item.getOwner().searchable, selectedPath);
+								item.selectSearchable();
+
+								return;
+							} else if (
+									this.restorablePath != null
+										&& this.restorablePath.searched == selectedElement
+							) {
+								return;
+							}
+						}
+					}
+
+					this.restorablePath = null;
+				} else if (keyEvent.getID() == KeyEvent.KEY_RELEASED) {
+					if (this.restorablePath != null) {
+						if (keyEvent.getKeyCode() == PREVIEW_MODIFIER_KEY) {
+							if (keyEvent.getModifiersEx() == 0) {
+								MenuSelectionManager.defaultManager().setSelectedPath(this.restorablePath.helpPath);
+							}
+						} else {
+							this.restorablePath = null;
+						}
+					}
+				}
+			}
+		}
+
+		record RestorablePath(SearchableElement searched, MenuElement[] helpPath) { }
 	}
 }
