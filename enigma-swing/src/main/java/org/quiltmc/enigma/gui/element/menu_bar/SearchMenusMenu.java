@@ -6,8 +6,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Streams;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
+import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.element.PlaceheldTextField;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.GuiUtil;
@@ -89,8 +91,15 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 	private final PlaceheldTextField field = new PlaceheldTextField();
 	private final JMenuItem noResults = new JMenuItem();
-	private final HintItem previewHint = new HintItem("menu.help.search.hint.preview");
-	private final HintItem executeHint = new HintItem("menu.help.search.hint.execute");
+
+	private final HintItem previewHint = new HintItem(
+			"menu.help.search.hint.preview",
+			Config.main().searchMenus.showPreviewHint
+	);
+	private final HintItem executeHint = new HintItem(
+			"menu.help.search.hint.execute",
+			Config.main().searchMenus.showExecuteHint
+	);
 
 	@Nullable
 	private Lookup lookup;
@@ -106,6 +115,9 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		this.noResults.setEnabled(false);
 		this.noResults.setVisible(false);
+
+		this.previewHint.setVisible(false);
+		this.executeHint.setVisible(false);
 
 		this.addPermanentChildren();
 
@@ -167,6 +179,9 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		if (results instanceof Results.None) {
 			this.keepOnlyPermanentChildren();
 
+			this.previewHint.setVisible(false);
+			this.executeHint.setVisible(false);
+
 			this.noResults.setVisible(!searchTerm.isEmpty());
 
 			this.refreshPopup();
@@ -174,6 +189,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			this.keepOnlyPermanentChildren();
 
 			this.noResults.setVisible(different.results.isEmpty());
+			this.previewHint.setVisible(Config.main().searchMenus.showPreviewHint.value());
+			this.executeHint.setVisible(Config.main().searchMenus.showExecuteHint.value());
 
 			different.results.forEach(this::add);
 
@@ -757,14 +774,14 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	}
 
 	// not a MenuElement so it can't be selected
-	private static class HintItem extends JPanel implements Retranslatable {
+	private class HintItem extends JPanel implements Retranslatable {
 		final String translationKey;
 
 		final JLabel infoIndicator = new JLabel("ⓘ");
 		final JLabel hint = new JLabel();
 		final JButton dismiss = new JButton("⊗");
 
-		HintItem(String translationKey) {
+		HintItem(String translationKey, TrackedValue<Boolean> config) {
 			this.translationKey = translationKey;
 
 			this.setBorder(createEmptyBorder(0, 2, 0, 0));
@@ -790,6 +807,11 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			this.dismiss.setMargin(new Insets(0, 0, 0, 0));
 			final Font oldDismissFont = this.dismiss.getFont();
 			this.dismiss.setFont(oldDismissFont.deriveFont(oldDismissFont.getSize2D() * 1.5f));
+			this.dismiss.addActionListener(e -> {
+				config.setValue(false);
+				this.setVisible(false);
+				SearchMenusMenu.this.refreshPopup();
+			});
 			this.add(this.dismiss);
 
 			this.retranslate();
