@@ -9,6 +9,7 @@ import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.element.PlaceheldTextField;
+import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie;
@@ -17,9 +18,13 @@ import org.quiltmc.enigma.util.multi_trie.MutableStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.Node;
 
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
@@ -35,6 +40,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -53,6 +60,7 @@ import java.util.stream.Stream;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
+import static javax.swing.BorderFactory.createEmptyBorder;
 
 public class SearchMenusMenu extends AbstractEnigmaMenu {
 	@Nullable
@@ -81,6 +89,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 	private final PlaceheldTextField field = new PlaceheldTextField();
 	private final JMenuItem noResults = new JMenuItem();
+	private final HintItem previewHint = new HintItem("menu.help.search.hint.preview");
+	private final HintItem executeHint = new HintItem("menu.help.search.hint.execute");
 
 	@Nullable
 	private Lookup lookup;
@@ -184,6 +194,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	private void addPermanentChildren() {
 		this.add(this.field);
 		this.add(this.noResults);
+		this.add(this.previewHint);
+		this.add(this.executeHint);
 	}
 
 	private void keepOnlyPermanentChildren() {
@@ -742,5 +754,50 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		}
 
 		record RestorablePath(SearchableElement searched, MenuElement[] helpPath) { }
+	}
+
+	// not a MenuElement so it can't be selected
+	private static class HintItem extends JPanel implements Retranslatable {
+		final String translationKey;
+
+		final JLabel infoIndicator = new JLabel("ⓘ");
+		final JLabel hint = new JLabel();
+		final JButton dismiss = new JButton("⊗");
+
+		HintItem(String translationKey) {
+			this.translationKey = translationKey;
+
+			this.setBorder(createEmptyBorder(0, 2, 0, 0));
+
+			this.setLayout(new GridBagLayout());
+
+			this.add(this.infoIndicator);
+
+			final var spacer = Box.createHorizontalBox();
+			spacer.setPreferredSize(new Dimension(3, 1));
+			this.add(spacer);
+
+			final Font oldHintFont = this.hint.getFont();
+			this.hint.setFont(oldHintFont.deriveFont(Font.ITALIC, oldHintFont.getSize2D() * 0.85f));
+			this.add(this.hint, GridBagConstraintsBuilder.create()
+					.weightX(1)
+					.fill(GridBagConstraints.HORIZONTAL)
+					.build()
+			);
+
+			this.dismiss.setBorderPainted(false);
+			this.dismiss.setBackground(new Color(0, true));
+			this.dismiss.setMargin(new Insets(0, 0, 0, 0));
+			final Font oldDismissFont = this.dismiss.getFont();
+			this.dismiss.setFont(oldDismissFont.deriveFont(oldDismissFont.getSize2D() * 1.5f));
+			this.add(this.dismiss);
+
+			this.retranslate();
+		}
+
+		@Override
+		public void retranslate() {
+			this.hint.setText(I18n.translate(this.translationKey));
+		}
 	}
 }
