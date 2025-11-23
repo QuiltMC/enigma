@@ -13,7 +13,7 @@ public abstract class AbstractSearchableEnigmaMenu extends AbstractEnigmaMenu im
 	}
 
 	@Override
-	public void onSearchClicked() {
-		this.doClick();
+	public void onSearchChosen() {
+		this.doClick(0);
 	}
 }

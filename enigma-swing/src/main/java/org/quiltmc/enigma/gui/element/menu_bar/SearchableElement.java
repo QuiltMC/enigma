@@ -19,5 +19,5 @@ public interface SearchableElement extends MenuElement {
 
 	String getSearchName();
 
-	void onSearchClicked();
+	void onSearchChosen();
 }
