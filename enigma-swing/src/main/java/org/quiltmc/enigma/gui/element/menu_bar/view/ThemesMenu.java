@@ -87,8 +87,8 @@ public class ThemesMenu extends AbstractSearchableEnigmaMenu {
 		}
 
 		@Override
-		public void onSearchClicked() {
-			this.doClick();
+		public void onSearchChosen() {
+			this.doClick(0);
 		}
 	}
 }

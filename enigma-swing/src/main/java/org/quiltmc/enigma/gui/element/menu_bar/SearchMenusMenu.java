@@ -69,6 +69,15 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		);
 	}
 
+	private static void clearSelectionAndChoose(SearchableElement searchable, MenuSelectionManager manager) {
+		// clearing the path ensures:
+		// - the help menu doesn't stay selected if onSearchChosen doesn't set the path
+		// - the current path doesn't interfere with onSearchChosen implementations that set the
+		//   path based on the current path
+		manager.clearSelectedPath();
+		searchable.onSearchChosen();
+	}
+
 	private final PlaceheldTextField field = new PlaceheldTextField();
 	private final JMenuItem noResults = new JMenuItem();
 
@@ -80,7 +89,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		// global listener because menu/item key listeners didn't fire
 		// also more reliably clears restorablePath
-		Toolkit.getDefaultToolkit().addAWTEventListener(SearchPathPreviewer.INSTANCE, AWTEvent.KEY_EVENT_MASK);
+		Toolkit.getDefaultToolkit().addAWTEventListener(KeyHandler.INSTANCE, AWTEvent.KEY_EVENT_MASK);
 
 		this.defaultPopupBorder = this.getPopupMenu().getBorder();
 
@@ -135,8 +144,6 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				SearchMenusMenu.this.updateResultItems();
 			}
 		});
-
-		// TODO KeyBinds: enter -> doClick on selected result
 
 		this.retranslate();
 	}
@@ -514,7 +521,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 					super(searchName);
 
 					this.addActionListener(e -> {
-						Result.this.searchable.onSearchClicked();
+						clearSelectionAndChoose(Result.this.searchable, MenuSelectionManager.defaultManager());
 					});
 				}
 
@@ -657,11 +664,20 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		}
 	}
 
-	private static class SearchPathPreviewer implements AWTEventListener {
-		static final int PREVIEW_MODIFIER_DOWN_MASK = InputEvent.SHIFT_DOWN_MASK;
+	private static class KeyHandler implements AWTEventListener {
+		static final int PREVIEW_MODIFIER_MASK = InputEvent.SHIFT_DOWN_MASK;
 		static final int PREVIEW_MODIFIER_KEY = KeyEvent.VK_SHIFT;
 
-		static final SearchPathPreviewer INSTANCE = new SearchPathPreviewer();
+		@Nullable
+		static <T> T getLastOrNull(T[] array) {
+			if (array.length > 0) {
+				return array[array.length - 1];
+			} else {
+				return null;
+			}
+		}
+
+		static final KeyHandler INSTANCE = new KeyHandler();
 
 		@Nullable
 		RestorablePath restorablePath;
@@ -670,26 +686,35 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		public void eventDispatched(AWTEvent e) {
 			if (e instanceof KeyEvent keyEvent) {
 				if (keyEvent.getID() == KeyEvent.KEY_PRESSED) {
-					if (
-							keyEvent.getKeyCode() == PREVIEW_MODIFIER_KEY
-								&& (keyEvent.getModifiersEx() & PREVIEW_MODIFIER_DOWN_MASK) != 0
-					) {
-						final MenuElement[] selectedPath = MenuSelectionManager.defaultManager()
-								.getSelectedPath();
+					final int keyCode = keyEvent.getKeyCode();
+					if (keyCode == PREVIEW_MODIFIER_KEY && keyEvent.getModifiersEx() == PREVIEW_MODIFIER_MASK) {
+						final MenuElement[] selectedPath = MenuSelectionManager.defaultManager().getSelectedPath();
 
-						if (selectedPath.length > 0) {
-							final MenuElement selectedElement = selectedPath[selectedPath.length - 1];
-							if (selectedElement instanceof Result.ItemHolder.Item item) {
-								this.restorablePath =
-									new RestorablePath(item.getSearchable(), selectedPath);
+						final MenuElement selected = getLastOrNull(selectedPath);
+						if (selected != null) {
+							if (selected instanceof Result.ItemHolder.Item item) {
+								this.restorablePath = new RestorablePath(item.getSearchable(), selectedPath);
+
 								item.selectSearchable();
 
 								return;
-							} else if (
-									this.restorablePath != null
-										&& this.restorablePath.searched == selectedElement
-							) {
+							} else if (this.restorablePath != null && this.restorablePath.searched == selected) {
 								return;
+							}
+						}
+					} else if (keyCode == KeyEvent.VK_ENTER) {
+						final int modifiers = keyEvent.getModifiersEx();
+						if (modifiers == 0) {
+							final MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+							if (getLastOrNull(manager.getSelectedPath()) instanceof Result.ItemHolder.Item item) {
+								clearSelectionAndChoose(item.getSearchable(), manager);
+							}
+						} else if (modifiers == PREVIEW_MODIFIER_MASK) {
+							if (this.restorablePath != null) {
+								final MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+								if (this.restorablePath.searched == getLastOrNull(manager.getSelectedPath())) {
+									clearSelectionAndChoose(this.restorablePath.searched, manager);
+								}
 							}
 						}
 					}

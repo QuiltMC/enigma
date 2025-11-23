@@ -27,7 +27,7 @@ public class SimpleCheckBoxItem extends JCheckBoxMenuItem implements Conventiona
 	}
 
 	@Override
-	public void onSearchClicked() {
-		this.doClick();
+	public void onSearchChosen() {
+		this.doClick(0);
 	}
 }

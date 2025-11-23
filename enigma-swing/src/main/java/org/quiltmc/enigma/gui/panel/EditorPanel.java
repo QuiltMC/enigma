@@ -290,7 +290,8 @@ public class EditorPanel extends BaseEditorPanel {
 		});
 		this.quickFindToolBar.reloadKeyBinds();
 
-		this.popupMenu.getButtonKeyBinds().forEach((key, button) -> putKeyBindAction(key, this.editor, e -> button.doClick()));
+		this.popupMenu.getButtonKeyBinds()
+				.forEach((key, button) -> putKeyBindAction(key, this.editor, e -> button.doClick(0)));
 	}
 
 	private class TooltipManager {

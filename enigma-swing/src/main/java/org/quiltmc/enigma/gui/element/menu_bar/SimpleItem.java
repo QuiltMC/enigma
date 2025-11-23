@@ -27,7 +27,7 @@ public class SimpleItem extends JMenuItem implements ConventionalSearchableEleme
 	}
 
 	@Override
-	public void onSearchClicked() {
-		this.doClick();
+	public void onSearchChosen() {
+		this.doClick(0);
 	}
 }
