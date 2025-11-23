@@ -22,6 +22,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -36,6 +37,7 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.AWTEventListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -93,6 +95,14 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		// Always focus field, but don't always select its text, because it loses focus when packing new search results.
 		this.field.addHierarchyListener(e -> {
 			if (this.field.isShowing()) {
+				final Window window = SwingUtilities.getWindowAncestor(this.field);
+				if (window != null && window.getType() == Window.Type.POPUP) {
+					// HACK: if PopupFactory::fitsOnScreen is false for light- and medium-weight popups, it makes a
+					// heavy-weight popup instead, whose HeavyWeightWindow component is by default is not focusable.
+					// It prevented this.field from focusing and receiving input.
+					window.setFocusableWindowState(true);
+				}
+
 				this.field.requestFocus();
 			}
 		});
