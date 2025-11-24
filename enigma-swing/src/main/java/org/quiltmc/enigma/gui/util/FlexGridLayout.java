@@ -93,13 +93,9 @@ public class FlexGridLayout implements LayoutManager2 {
 		null
 	}
 
-	public enum Alignment {
-		BEGIN, CENTER, END
-	}
-
 	record Constrained(
-		Component component, int width, int height, boolean fillX, boolean fillY, Alignment xAlignment,
-		Alignment yAlignment, int priority
+		Component component, int width, int height, boolean fillX, boolean fillY, FlexGridConstraints.Alignment xAlignment,
+		FlexGridConstraints.Alignment yAlignment, int priority
 	) {
 		static Constrained defaultOf(Component component) {
 			return new Constrained(
