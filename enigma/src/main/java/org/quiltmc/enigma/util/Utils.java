@@ -196,4 +196,12 @@ public class Utils {
 	public static double clamp(double value, double min, double max) {
 		return Math.min(max, Math.max(value, min));
 	}
+
+	public static int ceilDiv(int dividend, int divisor) {
+		return -Math.floorDiv(-dividend, divisor);
+	}
+
+	public static long ceilDiv(long dividend, long divisor) {
+		return -Math.floorDiv(-dividend, divisor);
+	}
 }
