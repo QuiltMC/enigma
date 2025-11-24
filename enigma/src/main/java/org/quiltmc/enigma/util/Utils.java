@@ -202,4 +202,12 @@ public class Utils {
 	public static <T> Stream<T> lazyConcat(Supplier<Stream<? extends T>>... streamers) {
 		return Stream.of(streamers).flatMap(Supplier::get);
 	}
+
+	public static int ceilDiv(int dividend, int divisor) {
+		return -Math.floorDiv(-dividend, divisor);
+	}
+
+	public static long ceilDiv(long dividend, long divisor) {
+		return -Math.floorDiv(-dividend, divisor);
+	}
 }
