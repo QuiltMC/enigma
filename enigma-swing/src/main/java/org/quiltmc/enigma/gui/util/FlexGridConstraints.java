@@ -10,8 +10,8 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 	static final int DEFAULT_HEIGHT = 1;
 	static final boolean DEFAULT_FILL_X = false;
 	static final boolean DEFAULT_FILL_Y = false;
-	static final FlexGridLayout.Alignment DEFAULT_X_ALIGNMENT = FlexGridLayout.Alignment.BEGIN;
-	static final FlexGridLayout.Alignment DEFAULT_Y_ALIGNMENT = FlexGridLayout.Alignment.CENTER;
+	static final Alignment DEFAULT_X_ALIGNMENT = Alignment.BEGIN;
+	static final Alignment DEFAULT_Y_ALIGNMENT = Alignment.CENTER;
 
 	public static Relative createRelative() {
 		return Relative.of();
@@ -21,7 +21,7 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		return Absolute.of();
 	}
 
-	private static FlexGridLayout.Alignment requireNonNullAlignment(FlexGridLayout.Alignment alignment) {
+	private static Alignment requireNonNullAlignment(Alignment alignment) {
 		return Objects.requireNonNull(alignment, "alignment must not be null!");
 	}
 
@@ -31,16 +31,16 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 	boolean fillX;
 	boolean fillY;
 
-	FlexGridLayout.Alignment xAlignment;
-	FlexGridLayout.Alignment yAlignment;
+	Alignment xAlignment;
+	Alignment yAlignment;
 
 	int priority;
 
 	private FlexGridConstraints(
-			int width, int height,
-			boolean fillX, boolean fillY,
-			FlexGridLayout.Alignment xAlignment, FlexGridLayout.Alignment yAlignment,
-			int priority
+		int width, int height,
+		boolean fillX, boolean fillY,
+		Alignment xAlignment, Alignment yAlignment,
+		int priority
 	) {
 		this.width = width;
 		this.height = height;
@@ -94,40 +94,40 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		return this.fill(true, true);
 	}
 
-	public C xAlignment(FlexGridLayout.Alignment alignment) {
+	public C xAlignment(Alignment alignment) {
 		this.xAlignment = requireNonNullAlignment(alignment);
 		return this.getSelf();
 	}
 
 	public C alignLeft() {
-		return this.xAlignment(FlexGridLayout.Alignment.BEGIN);
+		return this.xAlignment(Alignment.BEGIN);
 	}
 
 	public C alignRight() {
-		return this.xAlignment(FlexGridLayout.Alignment.END);
+		return this.xAlignment(Alignment.END);
 	}
 
-	public C yAlignment(FlexGridLayout.Alignment alignment) {
+	public C yAlignment(Alignment alignment) {
 		this.yAlignment = requireNonNullAlignment(alignment);
 		return this.getSelf();
 	}
 
 	public C alignTop() {
-		return this.yAlignment(FlexGridLayout.Alignment.BEGIN);
+		return this.yAlignment(Alignment.BEGIN);
 	}
 
 	public C alignBottom() {
-		return this.yAlignment(FlexGridLayout.Alignment.END);
+		return this.yAlignment(Alignment.END);
 	}
 
-	public C align(FlexGridLayout.Alignment x, FlexGridLayout.Alignment y) {
+	public C align(Alignment x, Alignment y) {
 		this.xAlignment(x);
 		this.yAlignment(y);
 		return this.getSelf();
 	}
 
 	public C alignCenter() {
-		return this.align(FlexGridLayout.Alignment.CENTER, FlexGridLayout.Alignment.CENTER);
+		return this.align(Alignment.CENTER, Alignment.CENTER);
 	}
 
 	public C priority(int priority) {
@@ -138,6 +138,10 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 	public abstract C copy();
 
 	protected abstract C getSelf();
+
+	public enum Alignment {
+		BEGIN, CENTER, END
+	}
 
 	public static final class Relative extends FlexGridConstraints<FlexGridConstraints.Relative> {
 		public static Relative of() {
@@ -150,10 +154,10 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		}
 
 		private Relative(
-				int width, int height,
-				boolean fillX, boolean fillY,
-				FlexGridLayout.Alignment xAlignment, FlexGridLayout.Alignment yAlignment,
-				int priority
+			int width, int height,
+			boolean fillX, boolean fillY,
+			Alignment xAlignment, Alignment yAlignment,
+			int priority
 		) {
 			super(width, height, fillX, fillY, xAlignment, yAlignment, priority);
 		}
@@ -206,11 +210,11 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		int y;
 
 		private Absolute(
-				int x, int y,
-				int width, int height,
-				boolean fillX, boolean fillY,
-				FlexGridLayout.Alignment xAlignment, FlexGridLayout.Alignment yAlignment,
-				int priority
+			int x, int y,
+			int width, int height,
+			boolean fillX, boolean fillY,
+			Alignment xAlignment, Alignment yAlignment,
+			int priority
 		) {
 			super(width, height, fillX, fillY, xAlignment, yAlignment, priority);
 
