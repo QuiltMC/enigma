@@ -28,7 +28,7 @@ class ConstrainedGrid {
 	private final SortedMap<Integer, Set<Component>> valuesByMaxX = new TreeMap<>();
 	private final SortedMap<Integer, Set<Component>> valuesByMaxY = new TreeMap<>();
 
-	public void put(int x, int y, Constrained value) {
+	void put(int x, int y, Constrained value) {
 		final Component component = value.component();
 		final Position oldPos = this.valuePositions.replace(component, new Position(x, y));
 		if (oldPos != null) {
@@ -47,14 +47,14 @@ class ConstrainedGrid {
 		this.valuesByMaxY.computeIfAbsent(y + value.getYExcess(), ConstrainedGrid::createValueSet).add(component);
 	}
 
-	public Stream<Constrained> get(int x, int y) {
+	Stream<Constrained> get(int x, int y) {
 		return this.grid.getOrDefault(x, Map.of())
 			.getOrDefault(y, Map.of())
 			.values()
 			.stream();
 	}
 
-	public boolean remove(Component value) {
+	boolean remove(Component value) {
 		final Position pos = this.valuePositions.remove(value);
 		if (pos != null) {
 			final Constrained removed = this.grid.get(pos.x).get(pos.y).remove(value);
@@ -67,21 +67,34 @@ class ConstrainedGrid {
 		}
 	}
 
-	public int getMaxXOrThrow() {
+	int getMaxXOrThrow() {
 		return this.valuesByMaxX.lastKey();
 	}
 
-	public int getMaxYOrThrow() {
+	int getMaxYOrThrow() {
 		return this.valuesByMaxY.lastKey();
 	}
 
-	public int getSize() {
+	int getSize() {
 		return this.valuesByMaxX.size();
 	}
 
-	public boolean isEmpty() {
+	boolean isEmpty() {
 		return this.valuesByMaxX.isEmpty();
 	}
 
+	void forEach(EntriesConsumer action) {
+		this.grid.forEach((x, column) -> {
+			column.forEach((y, constrainedByComponent) -> {
+				action.accept(x, y, constrainedByComponent.values().stream());
+			});
+		});
+	}
+
 	private record Position(int x, int y) { }
+
+	@FunctionalInterface
+	interface EntriesConsumer {
+		void accept(int x, int y, Stream<Constrained> values);
+	}
 }

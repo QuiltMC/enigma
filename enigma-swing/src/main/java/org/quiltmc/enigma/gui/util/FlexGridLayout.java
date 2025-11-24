@@ -1,14 +1,23 @@
 package org.quiltmc.enigma.gui.util;
 
+import com.google.common.collect.ImmutableMap;
 import org.jspecify.annotations.Nullable;
+import org.quiltmc.enigma.util.Utils;
 
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager2;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 public class FlexGridLayout implements LayoutManager2 {
 	private final ConstrainedGrid grid = new ConstrainedGrid();
+
+	private @Nullable Sizes preferredSizes;
+	private @Nullable Sizes minSizes;
+	private @Nullable Sizes maxSizes;
 
 	@Override
 	public void addLayoutComponent(Component component, @Nullable Object constraints) throws IllegalArgumentException {
@@ -76,17 +85,49 @@ public class FlexGridLayout implements LayoutManager2 {
 
 	@Override
 	public void invalidateLayout(Container target) {
-		// TODO
+		this.preferredSizes = null;
+		this.minSizes = null;
+		this.maxSizes = null;
 	}
 
 	@Override
-	public Dimension maximumLayoutSize(Container target) { }
+	public Dimension preferredLayoutSize(Container parent) {
+		return this.getPreferredSizes().createTotalDimension();
+	}
+
+	private Sizes getPreferredSizes() {
+		if (this.preferredSizes == null) {
+			this.preferredSizes = Sizes.calculate(this.grid, Component::getPreferredSize);
+		}
+
+		return this.preferredSizes;
+	}
 
 	@Override
-	public Dimension preferredLayoutSize(Container parent) { }
+	public Dimension minimumLayoutSize(Container parent) {
+		return this.getMinSizes().createTotalDimension();
+	}
+
+	private Sizes getMinSizes() {
+		if (this.minSizes == null) {
+			this.minSizes = Sizes.calculate(this.grid, Component::getMinimumSize);
+		}
+
+		return this.minSizes;
+	}
 
 	@Override
-	public Dimension minimumLayoutSize(Container parent) { }
+	public Dimension maximumLayoutSize(Container target) {
+		return this.getMaxSizes().createTotalDimension();
+	}
+
+	private Sizes getMaxSizes() {
+		if (this.maxSizes == null) {
+			this.maxSizes = Sizes.calculate(this.grid, Component::getMaximumSize);
+		}
+
+		return this.maxSizes;
+	}
 
 	@Override
 	public void layoutContainer(Container parent) {
@@ -94,8 +135,11 @@ public class FlexGridLayout implements LayoutManager2 {
 	}
 
 	record Constrained(
-		Component component, int width, int height, boolean fillX, boolean fillY, FlexGridConstraints.Alignment xAlignment,
-		FlexGridConstraints.Alignment yAlignment, int priority
+			Component component,
+			int width, int height,
+			boolean fillX, boolean fillY,
+			FlexGridConstraints.Alignment xAlignment, FlexGridConstraints.Alignment yAlignment,
+			int priority
 	) {
 		static Constrained defaultOf(Component component) {
 			return new Constrained(
@@ -123,6 +167,54 @@ public class FlexGridLayout implements LayoutManager2 {
 
 		int getYExcess() {
 			return this.height - 1;
+		}
+	}
+
+	private record Sizes(
+		int totalWidth, int totalHeight,
+		ImmutableMap<Integer, Integer> cellWidths, ImmutableMap<Integer, Integer> cellHeights,
+		ImmutableMap<Component, Dimension> componentSizes
+	) {
+		static Sizes calculate(ConstrainedGrid grid, Function<Component, Dimension> getSize) {
+			final Map<Component, Dimension> componentSizesBuilder = new HashMap<>();
+
+			final Map<Integer, Integer> cellWidthsBuilder = new HashMap<>();
+			final Map<Integer, Integer> cellHeightsBuilder = new HashMap<>();
+
+			grid.forEach((x, y, values) -> {
+				values.forEach(constrained -> {
+					final Dimension size = componentSizesBuilder
+						.computeIfAbsent(constrained.component, getSize);
+
+					final int componentCellWidth = Utils.ceilDiv(size.width, constrained.width);
+					for (int offset = 0; offset < constrained.width; offset++) {
+						cellWidthsBuilder.compute(x + offset, (ignored, width) -> {
+							return width == null ? componentCellWidth : width + componentCellWidth;
+						});
+					}
+
+					final int componentCellHeight = Utils.ceilDiv(size.height, constrained.height);
+					for (int offset = 0; offset < constrained.height; offset++) {
+						cellHeightsBuilder.compute(y + offset, (ignored, height) -> {
+							return height == null ? componentCellHeight : height + componentCellHeight;
+						});
+					}
+				});
+			});
+
+			final ImmutableMap<Integer, Integer> cellWidths = ImmutableMap.copyOf(cellWidthsBuilder);
+			final ImmutableMap<Integer, Integer> cellHeights = ImmutableMap.copyOf(cellHeightsBuilder);
+
+			return new Sizes(
+				cellWidths.values().stream().mapToInt(Integer::intValue).sum(),
+				cellHeights.values().stream().mapToInt(Integer::intValue).sum(),
+				cellWidths, cellHeights,
+				ImmutableMap.copyOf(componentSizesBuilder)
+			);
+		}
+
+		Dimension createTotalDimension() {
+			return new Dimension(this.totalWidth, this.totalHeight);
 		}
 	}
 }
