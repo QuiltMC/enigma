@@ -1,34 +1,69 @@
 package org.quiltmc.enigma.gui.util;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import org.jspecify.annotations.Nullable;
 
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager2;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Objects;
 
 public class FlexGridLayout implements LayoutManager2 {
-	private final Map<Integer, Multimap<Integer, Constrained>> grid = new HashMap<>();
-	private final Map<Component, Pos> posByComponent = new HashMap<>();
+	private final ConstrainedGrid grid = new ConstrainedGrid();
 
 	@Override
-	public void addLayoutComponent(Component comp, Object constraints) throws ClassCastException {
-		this.addLayoutComponent(comp, (Constraints) constraints);
+	public void addLayoutComponent(Component component, @Nullable Object constraints) throws IllegalArgumentException {
+		if (constraints == null) {
+			this.addDefaultConstrainedLayoutComponent(component);
+		} else if (constraints instanceof Constraints<?> typedConstraints) {
+			this.addLayoutComponent(component, typedConstraints);
+		} else {
+			throw new IllegalArgumentException(
+				"constraints type must be %s, but was %s!"
+					.formatted(Constraints.class.getName(), constraints.getClass().getName())
+			);
+		}
 	}
 
-	public void addLayoutComponent(Component component, Constraints constraints) {
-		final Constrained constrained = new Constrained(component, constraints);
-		final Pos oldPos = this.posByComponent.replace(component, new Pos(constraints.x, constraints.y));
-		if (oldPos != null) {
-			this.grid.get(oldPos.x).remove(oldPos.y, constrained);
-		}
+	public void addLayoutComponent(Component component, @Nullable Constraints<?> constraints) {
+		if (constraints == null) {
+			this.addDefaultConstrainedLayoutComponent(component);
+		} else {
+			final int x;
+			final int y;
+			if (constraints instanceof Constraints.Absolute absolute) {
+				x = absolute.x;
+				y = absolute.y;
+			} else {
+				x = this.getRelativeX();
+				y = this.getRelativeY();
+			}
 
-		this.grid.computeIfAbsent(constraints.x, ignored -> HashMultimap.create(8, 1))
-			.put(constraints.y, constrained);
+			this.grid.put(x, y, new Constrained(component, constraints));
+		}
+	}
+
+	@Override
+	public void addLayoutComponent(String ignored, Component component) {
+		this.addDefaultConstrainedLayoutComponent(component);
+	}
+
+	private void addDefaultConstrainedLayoutComponent(Component component) {
+		this.grid.put(this.getRelativeX(), this.getRelativeY(), Constrained.defaultOf(component));
+	}
+
+	private int getRelativeX() {
+		return this.grid.isEmpty() ? Constraints.Absolute.DEFAULT_X : this.grid.getMaxXOrThrow() + 1;
+	}
+
+	private int getRelativeY() {
+		return this.grid.isEmpty() ? Constraints.Absolute.DEFAULT_Y : this.grid.getMaxYOrThrow();
+	}
+
+	@Override
+	public void removeLayoutComponent(Component component) {
+		this.grid.remove(component);
 	}
 
 	@Override
@@ -36,27 +71,17 @@ public class FlexGridLayout implements LayoutManager2 {
 
 	@Override
 	public float getLayoutAlignmentX(Container target) {
-		return 0;
+		return 0.5f;
 	}
 
 	@Override
 	public float getLayoutAlignmentY(Container target) {
-		return 0;
+		return 0.5f;
 	}
 
 	@Override
 	public void invalidateLayout(Container target) {
 		// TODO
-	}
-
-	@Override
-	public void addLayoutComponent(String name, Component comp) {
-		null
-	}
-
-	@Override
-	public void removeLayoutComponent(Component comp) {
-		null
 	}
 
 	@Override
@@ -70,178 +95,308 @@ public class FlexGridLayout implements LayoutManager2 {
 		null
 	}
 
-	public static final class Constraints {
-		private static final int DEFAULT_X = 0;
-		private static final int DEFAULT_Y = 0;
+	public enum Alignment {
+		BEGIN, CENTER, END
+	}
+
+	public static sealed abstract class Constraints<C extends Constraints<C>> {
 		private static final int DEFAULT_PRIORITY = 0;
-		private static final Alignment DEFAULT_X_ALIGNMENT = Alignment.BEGIN;
-		private static final Alignment DEFAULT_Y_ALIGNMENT = Alignment.CENTER;
+		private static final int DEFAULT_WIDTH = 1;
+		private static final int DEFAULT_HEIGHT = 1;
 		private static final boolean DEFAULT_FILL_X = false;
 		private static final boolean DEFAULT_FILL_Y = false;
+		private static final Alignment DEFAULT_X_ALIGNMENT = Alignment.BEGIN;
+		private static final Alignment DEFAULT_Y_ALIGNMENT = Alignment.CENTER;
 
-		public static Constraints of() {
-			return new Constraints(
-				DEFAULT_X, DEFAULT_Y,
-				DEFAULT_PRIORITY,
-				DEFAULT_X_ALIGNMENT, DEFAULT_Y_ALIGNMENT,
-				DEFAULT_FILL_X, DEFAULT_FILL_Y
-			);
+		public static Relative createRelative() {
+			return Relative.of();
 		}
 
-		private int x;
-		private int y;
+		public static Absolute createAbsolute() {
+			return Absolute.of();
+		}
 
-		private int priority;
+		private static Alignment requireNonNullAlignment(Alignment alignment) {
+			return Objects.requireNonNull(alignment, "alignment must not be null!");
+		}
 
-		private Alignment xAlignment;
-		private Alignment yAlignment;
+		int width;
+		int height;
 
-		private boolean fillX;
-		private boolean fillY;
+		boolean fillX;
+		boolean fillY;
+
+		Alignment xAlignment;
+		Alignment yAlignment;
+
+		int priority;
 
 		private Constraints(
-			int x, int y,
-			int priority,
+			int width, int height,
+			boolean fillX, boolean fillY,
 			Alignment xAlignment, Alignment yAlignment,
-			boolean fillX, boolean fillY
+			int priority
 		) {
-			this.x = x;
-			this.y = y;
+			this.width = width;
+			this.height = height;
 
-			this.priority = priority;
+			this.fillX = fillX;
+			this.fillY = fillY;
 
 			this.xAlignment = xAlignment;
 			this.yAlignment = yAlignment;
 
-			this.fillX = fillX;
-			this.fillY = fillY;
-		}
-
-		public Constraints x(int x) {
-			Preconditions.checkArgument(x >= 0, "x must not be negative!");
-			this.x = x;
-			return this;
-		}
-
-		public Constraints nextRow() {
-			this.x++;
-			this.y = 0;
-			return this;
-		}
-
-		public Constraints y(int y) {
-			Preconditions.checkArgument(y >= 0, "y must not be negative!");
-			this.y = y;
-			return this;
-		}
-
-		public Constraints nextColumn() {
-			this.y++;
-			return this;
-		}
-
-		public Constraints pos(int x, int y) {
-			this.x(x);
-			this.y(y);
-			return this;
-		}
-
-		public Constraints priority(int priority) {
 			this.priority = priority;
-			return this;
 		}
 
-		public Constraints xAlignment(Alignment alignment) {
-			this.xAlignment = alignment;
-			return this;
+		public C width(int width) {
+			Preconditions.checkArgument(width > 0, "width must be positive!");
+			this.width = width;
+			return this.getSelf();
 		}
 
-		public Constraints alignLeft() {
-			return this.xAlignment(Alignment.BEGIN);
+		public C height(int height) {
+			Preconditions.checkArgument(height > 0, "height must be positive!");
+			this.height = height;
+			return this.getSelf();
 		}
 
-		public Constraints alignRight() {
-			return this.xAlignment(Alignment.END);
-		}
-
-		public Constraints yAlignment(Alignment alignment) {
-			this.yAlignment = alignment;
-			return this;
-		}
-
-		public Constraints alignTop() {
-			return this.yAlignment(Alignment.BEGIN);
-		}
-
-		public Constraints alignBottom() {
-			return this.yAlignment(Alignment.END);
-		}
-
-		public Constraints align(Alignment x, Alignment y) {
-			this.xAlignment(x);
-			this.yAlignment(y);
-			return this;
-		}
-
-		public Constraints alignCenter() {
-			return this.align(Alignment.CENTER, Alignment.CENTER);
-		}
-
-		public Constraints fillX(boolean fill) {
+		public C fillX(boolean fill) {
 			this.fillX = fill;
-			return this;
+			return this.getSelf();
 		}
 
-		public Constraints fillX() {
+		public C fillX() {
 			return this.fillX(true);
 		}
 
-		public Constraints fillY(boolean fill) {
+		public C fillY(boolean fill) {
 			this.fillY = fill;
-			return this;
+			return this.getSelf();
 		}
 
-		public Constraints fillY() {
+		public C fillY() {
 			return this.fillY(true);
 		}
 
-		public Constraints fill(boolean x, boolean y) {
+		public C fill(boolean x, boolean y) {
 			this.fillX(x);
 			this.fillY(y);
-			return this;
+			return this.getSelf();
 		}
 
-		public Constraints fillBoth() {
+		public C fillBoth() {
 			return this.fill(true, true);
 		}
 
-		public Constraints copy() {
-			return new Constraints(
-				this.x, this.y,
-				this.priority,
-				this.xAlignment, this.yAlignment,
-				this.fillX, this.fillY
-			);
+		public C xAlignment(Alignment alignment) {
+			this.xAlignment = requireNonNullAlignment(alignment);
+			return this.getSelf();
 		}
 
-		public enum Alignment {
-			BEGIN, CENTER, END
+		public C alignLeft() {
+			return this.xAlignment(Alignment.BEGIN);
+		}
+
+		public C alignRight() {
+			return this.xAlignment(Alignment.END);
+		}
+
+		public C yAlignment(Alignment alignment) {
+			this.yAlignment = requireNonNullAlignment(alignment);
+			return this.getSelf();
+		}
+
+		public C alignTop() {
+			return this.yAlignment(Alignment.BEGIN);
+		}
+
+		public C alignBottom() {
+			return this.yAlignment(Alignment.END);
+		}
+
+		public C align(Alignment x, Alignment y) {
+			this.xAlignment(x);
+			this.yAlignment(y);
+			return this.getSelf();
+		}
+
+		public C alignCenter() {
+			return this.align(Alignment.CENTER, Alignment.CENTER);
+		}
+
+		public C priority(int priority) {
+			this.priority = priority;
+			return this.getSelf();
+		}
+
+		public abstract C copy();
+
+		protected abstract C getSelf();
+
+		public static final class Relative extends Constraints<Relative> {
+			public static Relative of() {
+				return new Relative(
+					DEFAULT_WIDTH, DEFAULT_HEIGHT,
+					DEFAULT_FILL_X, DEFAULT_FILL_Y,
+					DEFAULT_X_ALIGNMENT, DEFAULT_Y_ALIGNMENT,
+					DEFAULT_PRIORITY
+				);
+			}
+
+			private Relative(
+				int width, int height,
+				boolean fillX, boolean fillY,
+				Alignment xAlignment, Alignment yAlignment,
+				int priority
+			) {
+				super(width, height, fillX, fillY, xAlignment, yAlignment, priority);
+			}
+
+			@Override
+			public Relative copy() {
+				return new Relative(
+					this.width, this.height,
+					this.fillX, this.fillY,
+					this.xAlignment, this.yAlignment,
+					this.priority
+				);
+			}
+
+			public Absolute toAbsolute() {
+				return new Absolute(
+					Absolute.DEFAULT_X, Absolute.DEFAULT_Y,
+					this.width, this.height,
+					this.fillX, this.fillY,
+					this.xAlignment, this.yAlignment,
+					this.priority
+				);
+			}
+
+			public Absolute toAbsolute(int x, int y) {
+				return this.toAbsolute().pos(x, y);
+			}
+
+			@Override
+			protected Relative getSelf() {
+				return this;
+			}
+		}
+
+		public static final class Absolute extends Constraints<Absolute> {
+			private static final int DEFAULT_X = 0;
+			private static final int DEFAULT_Y = 0;
+
+			public static Absolute of() {
+				return new Absolute(
+					DEFAULT_X, DEFAULT_Y,
+					DEFAULT_WIDTH, DEFAULT_HEIGHT,
+					DEFAULT_FILL_X, DEFAULT_FILL_Y,
+					DEFAULT_X_ALIGNMENT, DEFAULT_Y_ALIGNMENT,
+					DEFAULT_PRIORITY
+				);
+			}
+
+			private int x;
+			private int y;
+
+			private Absolute(
+				int x, int y,
+				int width, int height,
+				boolean fillX, boolean fillY,
+				Alignment xAlignment, Alignment yAlignment,
+				int priority
+			) {
+				super(width, height, fillX, fillY, xAlignment, yAlignment, priority);
+
+				this.x = x;
+				this.y = y;
+			}
+
+			public Absolute x(int x) {
+				this.x = x;
+				return this;
+			}
+
+			public Absolute nextRow() {
+				this.x++;
+				this.y = 0;
+				return this;
+			}
+
+			public Absolute y(int y) {
+				this.y = y;
+				return this;
+			}
+
+			public Absolute nextColumn() {
+				this.y++;
+				return this;
+			}
+
+			public Absolute pos(int x, int y) {
+				this.x(x);
+				this.y(y);
+				return this;
+			}
+
+			@Override
+			public Absolute copy() {
+				return new Absolute(
+					this.x, this.y,
+					this.width, this.height,
+					this.fillX, this.fillY,
+					this.xAlignment, this.yAlignment,
+					this.priority
+				);
+			}
+
+			public Relative toRelative() {
+				return new Relative(
+					this.width, this.height,
+					this.fillX, this.fillY,
+					this.xAlignment, this.yAlignment,
+					this.priority
+				);
+			}
+
+			@Override
+			protected Absolute getSelf() {
+				return this;
+			}
 		}
 	}
 
-	private record Constrained(
-		Component component, int priority,
-		Constraints.Alignment xAlignment, Constraints.Alignment yAlignment,
-		boolean fillX, boolean fillY
+	record Constrained(
+		Component component, int width, int height, boolean fillX, boolean fillY, Alignment xAlignment,
+		Alignment yAlignment, int priority
 	) {
-		Constrained(Component component, Constraints constraints) {
-			this(
-				component, constraints.priority,
-				constraints.xAlignment, constraints.yAlignment,
-				constraints.fillX, constraints.fillY
+		static Constrained defaultOf(Component component) {
+			return new Constrained(
+				component,
+				Constraints.DEFAULT_WIDTH, Constraints.DEFAULT_HEIGHT,
+				Constraints.DEFAULT_FILL_X, Constraints.DEFAULT_FILL_Y,
+				Constraints.DEFAULT_X_ALIGNMENT, Constraints.DEFAULT_Y_ALIGNMENT,
+				Constraints.DEFAULT_PRIORITY
 			);
 		}
-	}
 
-	private record Pos(int x, int y) { }
+		Constrained(Component component, Constraints<?> constraints) {
+			this(
+				component,
+				constraints.width, constraints.height,
+				constraints.fillX, constraints.fillY,
+				constraints.xAlignment, constraints.yAlignment,
+				constraints.priority
+			);
+		}
+
+		int getXExcess() {
+			return this.width - 1;
+		}
+
+		int getYExcess() {
+			return this.height - 1;
+		}
+	}
 }
