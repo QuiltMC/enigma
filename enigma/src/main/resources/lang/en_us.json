@@ -80,7 +80,7 @@
 	"menu.view.themes.darcerula.aliases": "Darker;Dracula",
 	"menu.view.themes.metal": "Metal",
 	"menu.view.themes.system": "System",
-	"menu.view.themes.system.aliases": "Os;Operating System",
+	"menu.view.themes.system.aliases": "OS;Operating System",
 	"menu.view.themes.none": "None (JVM Default)",
 	"menu.view.themes.none.aliases": "Java",
 	"menu.view.languages": "Languages",

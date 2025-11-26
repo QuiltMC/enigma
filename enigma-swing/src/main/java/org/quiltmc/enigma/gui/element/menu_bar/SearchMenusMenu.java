@@ -550,6 +550,16 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				return this.getSearchable().getSearchName().compareTo(other.getSearchable().getSearchName());
 			}
 
+			@Override
+			public int hashCode() {
+				return this.getSearchable().hashCode();
+			}
+
+			@Override
+			public boolean equals(Object o) {
+				return o instanceof ItemHolder other && this.getSearchable() == other.getSearchable();
+			}
+
 			class Item extends JMenuItem {
 				private static ImmutableList<MenuElement> buildPath(SearchableElement searchable) {
 					final List<MenuElement> pathBuilder = new LinkedList<>();
