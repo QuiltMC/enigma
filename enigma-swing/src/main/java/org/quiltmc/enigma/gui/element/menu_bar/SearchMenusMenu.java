@@ -92,13 +92,13 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	private final PlaceheldTextField field = new PlaceheldTextField();
 	private final JMenuItem noResults = new JMenuItem();
 
-	private final HintItem previewHint = new HintItem(
-			"menu.help.search.hint.preview",
-			Config.main().searchMenus.showPreviewHint
+	private final HintItem viewHint = new HintItem(
+			"menu.help.search.hint.view",
+			Config.main().searchMenus.showViewHint
 	);
-	private final HintItem executeHint = new HintItem(
-			"menu.help.search.hint.execute",
-			Config.main().searchMenus.showExecuteHint
+	private final HintItem chooseHint = new HintItem(
+			"menu.help.search.hint.choose",
+			Config.main().searchMenus.showChooseHint
 	);
 
 	@Nullable
@@ -116,8 +116,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		this.noResults.setEnabled(false);
 		this.noResults.setVisible(false);
 
-		this.previewHint.setVisible(false);
-		this.executeHint.setVisible(false);
+		this.viewHint.setVisible(false);
+		this.chooseHint.setVisible(false);
 
 		this.addPermanentChildren();
 
@@ -179,8 +179,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		if (results instanceof Results.None) {
 			this.keepOnlyPermanentChildren();
 
-			this.previewHint.setVisible(false);
-			this.executeHint.setVisible(false);
+			this.viewHint.setVisible(false);
+			this.chooseHint.setVisible(false);
 
 			this.noResults.setVisible(!searchTerm.isEmpty());
 
@@ -189,8 +189,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			this.keepOnlyPermanentChildren();
 
 			this.noResults.setVisible(different.results.isEmpty());
-			this.previewHint.setVisible(Config.main().searchMenus.showPreviewHint.value());
-			this.executeHint.setVisible(Config.main().searchMenus.showExecuteHint.value());
+			this.viewHint.configureVisibility();
+			this.chooseHint.configureVisibility();
 
 			different.results.forEach(this::add);
 
@@ -213,8 +213,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	private void addPermanentChildren() {
 		this.add(this.field);
 		this.add(this.noResults);
-		this.add(this.previewHint);
-		this.add(this.executeHint);
+		this.add(this.viewHint);
+		this.add(this.chooseHint);
 	}
 
 	private void keepOnlyPermanentChildren() {
@@ -729,7 +729,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 						final MenuElement selected = getLastOrNull(selectedPath);
 						if (selected != null) {
 							if (selected instanceof Result.ItemHolder.Item item) {
-								SearchMenusMenu.this.previewHint.dismiss();
+								SearchMenusMenu.this.viewHint.dismiss();
 
 								this.restorablePath = new RestorablePath(item.getSearchable(), selectedPath);
 
@@ -773,7 +773,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		}
 
 		void execute(SearchableElement searchable, MenuSelectionManager manager) {
-			SearchMenusMenu.this.executeHint.dismiss();
+			SearchMenusMenu.this.chooseHint.dismiss();
 			clearSelectionAndChoose(searchable, manager);
 		}
 
@@ -822,10 +822,14 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			this.retranslate();
 		}
 
-		private void dismiss() {
+		void dismiss() {
 			this.config.setValue(false);
 			this.setVisible(false);
 			SearchMenusMenu.this.refreshPopup();
+		}
+
+		void configureVisibility() {
+			this.setVisible(this.config.value());
 		}
 
 		@Override
