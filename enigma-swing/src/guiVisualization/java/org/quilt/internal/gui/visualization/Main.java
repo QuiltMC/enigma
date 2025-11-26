@@ -6,6 +6,10 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 
 public final class Main {
+	private Main() {
+		throw new UnsupportedOperationException();
+	}
+
 	private static final JFrame WINDOW = new JFrame();
 
 	public static void main(String[] args) {
@@ -20,9 +24,5 @@ public final class Main {
 
 		WINDOW.setBounds(x, y, width, height);
 		WINDOW.setVisible(true);
-	}
-
-	private Main() {
-		throw new UnsupportedOperationException();
 	}
 }
