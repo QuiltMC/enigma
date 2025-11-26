@@ -19,6 +19,7 @@ import org.quiltmc.enigma.util.multi_trie.EmptyStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.MutableStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.Node;
+import org.tinylog.Logger;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -57,6 +58,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
@@ -65,9 +67,6 @@ import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static javax.swing.BorderFactory.createEmptyBorder;
 
 public class SearchMenusMenu extends AbstractEnigmaMenu {
-	@Nullable
-	private final Border defaultPopupBorder;
-
 	/**
 	 * @return a breadth-first stream of the passed {@code root} element and all of its sub-elements,
 	 * excluding the {@link HelpMenu} and its sub-elements; the help menu is not searchable because it must be open
@@ -88,6 +87,9 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		manager.clearSelectedPath();
 		searchable.onSearchChosen();
 	}
+
+	@Nullable
+	private final Border defaultPopupBorder;
 
 	private final PlaceheldTextField field = new PlaceheldTextField();
 	private final JMenuItem noResults = new JMenuItem();
@@ -549,27 +551,10 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 
 			class Item extends JMenuItem {
-				Item(String searchName) {
-					super(searchName);
-
-					this.addActionListener(e -> {
-						clearSelectionAndChoose(Result.this.searchable, MenuSelectionManager.defaultManager());
-					});
-				}
-
-				boolean isSearchNamed() {
-					return true;
-				}
-
-				ItemHolder getHolder() {
-					return ItemHolder.this;
-				}
-
-				void selectSearchable() {
-					final MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+				private static ImmutableList<MenuElement> buildPath(SearchableElement searchable) {
 					final List<MenuElement> pathBuilder = new LinkedList<>();
-					pathBuilder.add(this.getSearchable());
-					Component element = this.getSearchable().getComponent().getParent();
+					pathBuilder.add(searchable);
+					Component element = searchable.getComponent().getParent();
 					while (true) {
 						if (element instanceof JMenu menu) {
 							pathBuilder.add(0, menu);
@@ -585,7 +570,69 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 					if (element instanceof JMenuBar bar) {
 						pathBuilder.add(0, bar);
 
-						manager.setSelectedPath(pathBuilder.toArray(pathBuilder.toArray(new MenuElement[0])));
+						return ImmutableList.copyOf(pathBuilder);
+					} else {
+						Logger.error(
+								"""
+								Failed to build path to %s!
+								\tPath does not begin with menu bar: %s
+								""".formatted(searchable.getSearchName(), pathBuilder)
+						);
+
+						return ImmutableList.of();
+					}
+				}
+
+				private final ImmutableList<MenuElement> path;
+
+				Item(String searchName) {
+					super(searchName);
+
+					this.addActionListener(e -> {
+						clearSelectionAndChoose(Result.this.searchable, MenuSelectionManager.defaultManager());
+					});
+
+					this.path = buildPath(this.getSearchable());
+
+					if (!this.path.isEmpty()) {
+						final String pathText = this.path.stream()
+								.flatMap(element -> {
+									if (element instanceof SearchableElement searchableElement) {
+										return Stream.of(searchableElement.getSearchName());
+									} else if (element.getComponent() instanceof JMenuItem menuItem) {
+										return Stream.of(menuItem.getText());
+									} else {
+										// JPopupMenus' names come from their parent JMenus; skip them
+										// JMenuBar has no name
+										if (element instanceof JPopupMenu || element instanceof JMenuBar) {
+											return Stream.empty();
+										} else {
+											Logger.error(
+													"Cannot determine name of menu element in path to %s: %s"
+														.formatted(searchName, element)
+											);
+
+											return Stream.of("???");
+										}
+									}
+								})
+								.collect(Collectors.joining(" > "));
+
+						this.setToolTipText(pathText);
+					}
+				}
+
+				boolean isSearchNamed() {
+					return true;
+				}
+
+				ItemHolder getHolder() {
+					return ItemHolder.this;
+				}
+
+				void selectSearchable() {
+					if (!this.path.isEmpty()) {
+						MenuSelectionManager.defaultManager().setSelectedPath(this.path.toArray(new MenuElement[0]));
 					}
 				}
 
