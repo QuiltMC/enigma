@@ -202,13 +202,19 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 	private void refreshPopup() {
 		if (this.isShowing()) {
+			final JPopupMenu popupMenu = this.getPopupMenu();
+
 			// HACK: When popups are resizing in limited space, they may remove their borders.
 			// The border won't be restored when re-packing or showing, so manually restore the original border here.
-			this.getPopupMenu().setBorder(this.defaultPopupBorder);
-			this.getPopupMenu().pack();
+			popupMenu.setBorder(this.defaultPopupBorder);
+			popupMenu.pack();
 
-			final Point popupMenuOrigin = this.getPopupMenuOrigin();
-			this.getPopupMenu().show(this, popupMenuOrigin.x, popupMenuOrigin.y);
+			// only re-show
+			// the initial showing from JMenu does the same thing and would cause an SOE if we also showed here
+			if (popupMenu.isShowing()) {
+				final Point newOrigin = this.getPopupMenuOrigin();
+				popupMenu.show(this, newOrigin.x, newOrigin.y);
+			}
 		}
 	}
 
@@ -323,11 +329,9 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		Results search(String term) {
 			if (term.isEmpty()) {
-				final boolean wasEmpty = !this.resultCache.hasResults();
-
 				this.resultCache = this.emptyCache;
 
-				return wasEmpty ? Results.Same.INSTANCE : Results.None.INSTANCE;
+				return Results.None.INSTANCE;
 			}
 
 			final ResultCache oldCache = this.resultCache;
