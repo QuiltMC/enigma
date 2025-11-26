@@ -23,7 +23,7 @@ class ConstrainedGrid {
 		return new HashSet<>();
 	}
 
-	private final Map<Integer, Map<Integer, Map<Component, Constrained>>> grid = new HashMap<>();
+	private final Map<Integer, Map<Integer, Map<Component, Constrained>>> grid = new TreeMap<>();
 	private final Map<Component, Position> valuePositions = new HashMap<>();
 	private final SortedMap<Integer, Set<Component>> valuesByMaxX = new TreeMap<>();
 	private final SortedMap<Integer, Set<Component>> valuesByMaxY = new TreeMap<>();
@@ -40,7 +40,7 @@ class ConstrainedGrid {
 		}
 
 		this.grid
-				.computeIfAbsent(x, ignored -> new HashMap<>())
+				.computeIfAbsent(x, ignored -> new TreeMap<>())
 				.computeIfAbsent(y, ignored -> new HashMap<>(1))
 				.put(component, value);
 		this.valuesByMaxX.computeIfAbsent(x + value.getXExcess(), ConstrainedGrid::createValueSet).add(component);
@@ -54,16 +54,12 @@ class ConstrainedGrid {
 			.stream();
 	}
 
-	boolean remove(Component value) {
+	void remove(Component value) {
 		final Position pos = this.valuePositions.remove(value);
 		if (pos != null) {
 			final Constrained removed = this.grid.get(pos.x).get(pos.y).remove(value);
 			this.valuesByMaxX.get(pos.x + removed.getXExcess()).remove(value);
 			this.valuesByMaxY.get(pos.y + removed.getYExcess()).remove(value);
-
-			return true;
-		} else {
-			return false;
 		}
 	}
 

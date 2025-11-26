@@ -28,6 +28,7 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 	int width;
 	int height;
 
+	// TODO merge fill+alignment
 	boolean fillX;
 	boolean fillY;
 
@@ -37,10 +38,10 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 	int priority;
 
 	private FlexGridConstraints(
-		int width, int height,
-		boolean fillX, boolean fillY,
-		Alignment xAlignment, Alignment yAlignment,
-		int priority
+			int width, int height,
+			boolean fillX, boolean fillY,
+			Alignment xAlignment, Alignment yAlignment,
+			int priority
 	) {
 		this.width = width;
 		this.height = height;
@@ -154,10 +155,10 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		}
 
 		private Relative(
-			int width, int height,
-			boolean fillX, boolean fillY,
-			Alignment xAlignment, Alignment yAlignment,
-			int priority
+				int width, int height,
+				boolean fillX, boolean fillY,
+				Alignment xAlignment, Alignment yAlignment,
+				int priority
 		) {
 			super(width, height, fillX, fillY, xAlignment, yAlignment, priority);
 		}
@@ -210,11 +211,11 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		int y;
 
 		private Absolute(
-			int x, int y,
-			int width, int height,
-			boolean fillX, boolean fillY,
-			Alignment xAlignment, Alignment yAlignment,
-			int priority
+				int x, int y,
+				int width, int height,
+				boolean fillX, boolean fillY,
+				Alignment xAlignment, Alignment yAlignment,
+				int priority
 		) {
 			super(width, height, fillX, fillY, xAlignment, yAlignment, priority);
 
