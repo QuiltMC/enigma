@@ -41,12 +41,12 @@ This means that aliases may not contain the `;` character.
 Some things to keep in mind when adding search aliases:
 - elements' names are always searchable; there's no need to add their names to their aliases
 - searching is case-insensitive, so there's no need to add variations that only differ in capitalization
-- searching matches prefixes, so there's no need to add variations that are prefixes of one another,
-just add the longest variation (note that the element name may be a prefix of an alias, as is the case with `Dev`'s
+- searching matches substrings, so there's no need to add a variation that's a substring of another variation,
+just add the longer variation (note that the element name may be a substring of an alias, as is the case with `Dev`'s
 `"Development"` alias)
 
 If you'd like to add search aliases to an element that doesn't already have aliases, add its alias translation key to
-its translation file.
+the translation file.
 
 #### Complete list of search alias translation keys
 | Element                                                  | Translation Key                                    |
