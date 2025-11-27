@@ -18,7 +18,6 @@ import java.awt.Insets;
 public class PlaceheldTextField extends JTextField {
 	protected static final int DEFAULT_COLUMNS = 0;
 
-	@Nullable
 	protected Placeholder placeholder;
 	@Nullable
 	private Color placeholderColor;
@@ -54,14 +53,14 @@ public class PlaceheldTextField extends JTextField {
 	 */
 	public PlaceheldTextField(Document doc, String text, @Nullable String placeholder, int columns) {
 		super(doc, text, columns);
-		this.placeholder = new Placeholder(placeholder);
+		this.setPlaceholder(placeholder);
 	}
 
 	@Override
 	public Dimension getPreferredSize() {
 		final Dimension size = super.getPreferredSize();
 
-		if (this.placeholder != null) {
+		if (!this.placeholder.isEmpty()) {
 			final Insets insets = this.getInsets();
 
 			size.width = Math.max(insets.left + this.placeholder.getWidth() + insets.right, size.width);
@@ -74,7 +73,7 @@ public class PlaceheldTextField extends JTextField {
 	protected void paintComponent(Graphics graphics) {
 		super.paintComponent(graphics);
 
-		if (this.placeholder != null && this.getText().isEmpty()) {
+		if (!this.placeholder.isEmpty() && this.getText().isEmpty()) {
 			GuiUtil.trySetRenderingHints(graphics);
 
 			Utils.findFirstNonNull(this.placeholderColor, this.getDisabledTextColor(), this.getForeground())
@@ -83,7 +82,7 @@ public class PlaceheldTextField extends JTextField {
 
 			final Insets insets = this.getInsets();
 			final int baseY = graphics.getFontMetrics().getMaxAscent() + insets.top;
-			graphics.drawString(this.placeholder.text, insets.left, baseY);
+			graphics.drawString(this.placeholder.getText(), insets.left, baseY);
 		}
 	}
 
@@ -91,11 +90,13 @@ public class PlaceheldTextField extends JTextField {
 	 * @param placeholder the placeholder text for this field; if {@code null}, no placeholder will be shown
 	 */
 	public void setPlaceholder(@Nullable String placeholder) {
-		this.placeholder = placeholder == null ? null : new Placeholder(placeholder);
+		this.placeholder = placeholder == null || placeholder.isEmpty()
+				? EmptyPlaceholder.INSTANCE
+				: new FullPlaceholder(placeholder);
 	}
 
 	public String getPlaceholder() {
-		return this.placeholder == null ? "" : this.placeholder.text;
+		return this.placeholder.getText();
 	}
 
 	@Nullable
@@ -115,23 +116,62 @@ public class PlaceheldTextField extends JTextField {
 	public void setFont(Font f) {
 		super.setFont(f);
 
-		if (this.placeholder != null) {
-			this.placeholder.clearWidth();
+		// placeholder is null when the super constructor calls setFont
+		if (this.placeholder instanceof FullPlaceholder full) {
+			full.clearWidth();
 		}
 	}
 
-	protected class Placeholder {
+	protected sealed interface Placeholder {
+		String getText();
+
+		boolean isEmpty();
+
+		int getWidth();
+	}
+
+	private static final class EmptyPlaceholder implements Placeholder {
+		static final EmptyPlaceholder INSTANCE = new EmptyPlaceholder();
+
+		@Override
+		public String getText() {
+			return "";
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return true;
+		}
+
+		@Override
+		public int getWidth() {
+			return 0;
+		}
+	}
+
+	private final class FullPlaceholder implements Placeholder {
 		static final int UNSET_WIDTH = -1;
 
 		final String text;
 
 		int width = UNSET_WIDTH;
 
-		Placeholder(String text) {
+		FullPlaceholder(String text) {
 			this.text = text;
 		}
 
-		int getWidth() {
+		@Override
+		public String getText() {
+			return this.text;
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return false;
+		}
+
+		@Override
+		public int getWidth() {
 			if (this.width < 0) {
 				this.width = PlaceheldTextField.this
 					.getFontMetrics(PlaceheldTextField.this.getFont()).stringWidth(this.text);
@@ -140,7 +180,7 @@ public class PlaceheldTextField extends JTextField {
 			return this.width;
 		}
 
-		void clearWidth() {
+		public void clearWidth() {
 			this.width = UNSET_WIDTH;
 		}
 	}
