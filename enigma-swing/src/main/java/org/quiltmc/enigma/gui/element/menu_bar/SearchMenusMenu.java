@@ -11,7 +11,6 @@ import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.GuiUtil;
-import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.EmptyStringMultiTrie;
@@ -67,7 +66,16 @@ import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static javax.swing.BorderFactory.createEmptyBorder;
 
 public class SearchMenusMenu extends AbstractEnigmaMenu {
-	private static final int MAX_INITIAL_RESULTS = 20;
+	private static final int MAX_INITIAL_RESULTS;
+
+	static {
+		// this is a heuristic that tries to make the initial results fit on screen
+		// this is to avoid the laggy creation of a scrolling heavy-weight popup while typing
+		// I (sss) tried measuring items as they were added and stopping when no more would fit, but that also lagged.
+		final int maxMaxInitialResults = 20;
+		final Float scale = Config.main().scaleFactor.value();
+		MAX_INITIAL_RESULTS = scale > 1 ? (int) (maxMaxInitialResults / scale) : maxMaxInitialResults;
+	}
 
 	/**
 	 * @return a breadth-first stream of the passed {@code root} element and all of its sub-elements,
@@ -157,7 +165,6 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		this.addPermanentChildren();
 
-		this.field.setFont(ScaleUtil.scaleFont(this.field.getFont()));
 		// Always focus field, but don't always select its text, because it loses focus when packing new search results.
 		this.field.addHierarchyListener(new HierarchyListener() {
 			@Nullable
@@ -244,7 +251,9 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			this.viewHint.configureVisibility();
 			this.chooseHint.configureVisibility();
 
-			// truncate results because the popup lags when packing numerous items, which can cause keystroke drops
+			// truncate results because the popup lags when packing numerous items
+			// - especially when a scrolling heavy-weight popup is required -
+			// which can cause keystroke drops
 			int remainingItems = MAX_INITIAL_RESULTS;
 			final UnmodifiableIterator<Result.ItemHolder.Item> prefixItr = different.prefixItems.iterator();
 			while (prefixItr.hasNext() && remainingItems > 0) {
