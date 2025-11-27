@@ -8,7 +8,6 @@ import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JRadioButtonMenuItem;
-import java.util.stream.Stream;
 
 public class DecompilerMenu extends AbstractSearchableEnigmaMenu {
 	private static final String TRANSLATION_KEY = "menu.decompiler";
@@ -55,11 +54,6 @@ public class DecompilerMenu extends AbstractSearchableEnigmaMenu {
 	private static final class DecompilerItem extends JRadioButtonMenuItem implements SearchableElement {
 		DecompilerItem(String name) {
 			super(name);
-		}
-
-		@Override
-		public Stream<String> streamSearchAliases() {
-			return Stream.of(this.getText());
 		}
 
 		@Override
