@@ -18,7 +18,7 @@ import java.awt.Insets;
 public class PlaceheldTextField extends JTextField {
 	protected static final int DEFAULT_COLUMNS = 0;
 
-	protected Placeholder placeholder;
+	private Placeholder placeholder;
 	@Nullable
 	private Color placeholderColor;
 
@@ -60,7 +60,7 @@ public class PlaceheldTextField extends JTextField {
 	public Dimension getPreferredSize() {
 		final Dimension size = super.getPreferredSize();
 
-		if (!this.placeholder.isEmpty()) {
+		if (this.placeholder.isFull()) {
 			final Insets insets = this.getInsets();
 
 			size.width = Math.max(insets.left + this.placeholder.getWidth() + insets.right, size.width);
@@ -73,7 +73,7 @@ public class PlaceheldTextField extends JTextField {
 	protected void paintComponent(Graphics graphics) {
 		super.paintComponent(graphics);
 
-		if (!this.placeholder.isEmpty() && this.getText().isEmpty()) {
+		if (this.placeholder.isFull() && this.getText().isEmpty()) {
 			GuiUtil.trySetRenderingHints(graphics);
 
 			Utils.findFirstNonNull(this.placeholderColor, this.getDisabledTextColor(), this.getForeground())
@@ -99,9 +99,8 @@ public class PlaceheldTextField extends JTextField {
 		return this.placeholder.getText();
 	}
 
-	@Nullable
-	protected Placeholder getPlaceholderObject() {
-		return this.placeholder;
+	protected int getPlaceholderWidth() {
+		return this.placeholder.getWidth();
 	}
 
 	/**
@@ -110,6 +109,11 @@ public class PlaceheldTextField extends JTextField {
 	 */
 	public void setPlaceholderColor(@Nullable Color color) {
 		this.placeholderColor = color;
+	}
+
+	@Nullable
+	public Color getPlaceholderColor() {
+		return this.placeholderColor;
 	}
 
 	@Override
@@ -122,10 +126,10 @@ public class PlaceheldTextField extends JTextField {
 		}
 	}
 
-	protected sealed interface Placeholder {
+	private sealed interface Placeholder {
 		String getText();
 
-		boolean isEmpty();
+		boolean isFull();
 
 		int getWidth();
 	}
@@ -139,8 +143,8 @@ public class PlaceheldTextField extends JTextField {
 		}
 
 		@Override
-		public boolean isEmpty() {
-			return true;
+		public boolean isFull() {
+			return false;
 		}
 
 		@Override
@@ -166,8 +170,8 @@ public class PlaceheldTextField extends JTextField {
 		}
 
 		@Override
-		public boolean isEmpty() {
-			return false;
+		public boolean isFull() {
+			return true;
 		}
 
 		@Override
