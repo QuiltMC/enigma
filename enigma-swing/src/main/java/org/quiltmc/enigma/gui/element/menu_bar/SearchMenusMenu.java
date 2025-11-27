@@ -9,7 +9,6 @@ import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.element.PlaceheldTextField;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
@@ -126,7 +125,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	@Nullable
 	private final Border defaultPopupBorder;
 
-	private final PlaceheldTextField field = new PlaceheldTextField();
+	private final PlaceheldMenuTextField field = new PlaceheldMenuTextField();
 	private final JMenuItem noResults = new JMenuItem();
 
 	private final HintItem viewHint = new HintItem(
