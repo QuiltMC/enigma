@@ -2,8 +2,6 @@ package org.quiltmc.enigma.gui.element.menu_bar;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Streams;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.config.api.values.TrackedValue;
@@ -63,10 +61,11 @@ import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
-import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static javax.swing.BorderFactory.createEmptyBorder;
 
 public class SearchMenusMenu extends AbstractEnigmaMenu {
+	private static final int MAX_INITIAL_RESULTS = 20;
+
 	/**
 	 * @return a breadth-first stream of the passed {@code root} element and all of its sub-elements,
 	 * excluding the {@link HelpMenu} and its sub-elements; the help menu is not searchable because it must be open
@@ -190,11 +189,35 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		} else if (results instanceof Results.Different different) {
 			this.keepOnlyPermanentChildren();
 
-			this.noResults.setVisible(different.results.isEmpty());
+			this.noResults.setVisible(different.isEmpty());
 			this.viewHint.configureVisibility();
 			this.chooseHint.configureVisibility();
 
-			different.results.forEach(this::add);
+			// truncate results because the popup lags when packing numerous items, which can cause keystroke drops
+			int remainingItems = MAX_INITIAL_RESULTS;
+			for (final Result.ItemHolder.Item result : different.prefixItems) {
+				if (remainingItems > 0) {
+					remainingItems--;
+					this.add(result);
+				} else {
+					break;
+				}
+			}
+
+			if (remainingItems > 0 && !different.containingItems.isEmpty()) {
+				if (!different.prefixItems.isEmpty()) {
+					this.add(new JPopupMenu.Separator());
+				}
+
+				for (final Result.ItemHolder.Item result : different.containingItems) {
+					if (remainingItems > 0) {
+						remainingItems--;
+						this.add(result);
+					} else {
+						break;
+					}
+				}
+			}
 
 			this.refreshPopup();
 		} // else Results.Same
@@ -262,7 +285,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		final ResultCache emptyCache = new ResultCache(
 				"", EmptyStringMultiTrie.Node.get(),
-				ImmutableMap.of(), ImmutableSet.of()
+				ImmutableMap.of(), ImmutableList.of()
 		);
 
 		static int getCommonPrefixLength(String left, String right) {
@@ -352,12 +375,12 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			final String term;
 			final Node<Result.ItemHolder> prefixNode;
 			final ImmutableMap<SearchableElement, Result.ItemHolder.Item> prefixedItemsBySearchable;
-			final ImmutableSet<Result.ItemHolder.Item> containingItems;
+			final ImmutableList<Result.ItemHolder.Item> containingItems;
 
 			ResultCache(
 					String term, Node<Result.ItemHolder> prefixNode,
 					ImmutableMap<SearchableElement, Result.ItemHolder.Item> prefixedItemsBySearchable,
-					ImmutableSet<Result.ItemHolder.Item> containingItems
+					ImmutableList<Result.ItemHolder.Item> containingItems
 			) {
 				this.term = term;
 				this.prefixNode = prefixNode;
@@ -413,7 +436,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 							prefixedItemsBySearchable = buildPrefixedItemsBySearchable(prefixNode);
 						}
 
-						final ImmutableSet<Result.ItemHolder.Item> containingItems;
+						final ImmutableList<Result.ItemHolder.Item> containingItems;
 						if (cachedTermLength == commonPrefixLength && termLength > MAX_SUBSTRING_LENGTH) {
 							containingItems = this.narrowedContainingItemsOf(term);
 						} else {
@@ -450,13 +473,13 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 					));
 			}
 
-			ImmutableSet<Result.ItemHolder.Item> narrowedContainingItemsOf(String term) {
+			ImmutableList<Result.ItemHolder.Item> narrowedContainingItemsOf(String term) {
 				return this.containingItems.stream()
 					.filter(item -> item.getHolder().lowercaseAlias.contains(term))
-					.collect(toImmutableSet());
+					.collect(toImmutableList());
 			}
 
-			ImmutableSet<Result.ItemHolder.Item> buildContaining(String term, Set<SearchableElement> excluded) {
+			ImmutableList<Result.ItemHolder.Item> buildContaining(String term, Set<SearchableElement> excluded) {
 				final int termLength = term.length();
 				final boolean longTerm = termLength > MAX_SUBSTRING_LENGTH;
 
@@ -488,7 +511,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				return stream
 					.sorted()
 					.map(Result.ItemHolder::getItem)
-					.collect(toImmutableSet());
+					.collect(toImmutableList());
 			}
 		}
 	}
@@ -744,21 +767,23 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			static final Same INSTANCE = new Same();
 		}
 
-		record Different(ImmutableList<Component> results) implements Results {
+		record Different(
+				ImmutableList<Result.ItemHolder.Item> prefixItems,
+				ImmutableList<Result.ItemHolder.Item> containingItems
+		) implements Results {
 			static Different of(Lookup.ResultCache cache) {
-				final Stream<Component> separator =
-						!cache.prefixedItemsBySearchable.isEmpty() && !cache.containingItems.isEmpty()
-							? Stream.of(new JPopupMenu.Separator())
-							: Stream.empty();
-
-				return new Different(Streams
-					.concat(
-						cache.prefixedItemsBySearchable.values().stream(),
-						separator,
-						cache.containingItems.stream()
-					)
-					.collect(toImmutableList())
+				return new Different(
+						cache.prefixedItemsBySearchable.values().stream().distinct().collect(toImmutableList()),
+						cache.containingItems.stream().distinct().collect(toImmutableList())
 				);
+			}
+
+			boolean isEmpty() {
+				return this.prefixItems.isEmpty() && this.containingItems.isEmpty();
+			}
+
+			int getSize() {
+				return this.prefixItems.size() + this.containingItems.size();
 			}
 		}
 	}
