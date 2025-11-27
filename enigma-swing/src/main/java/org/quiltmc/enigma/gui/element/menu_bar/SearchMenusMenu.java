@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.element.menu_bar;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.UnmodifiableIterator;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.config.api.values.TrackedValue;
@@ -195,28 +196,32 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 			// truncate results because the popup lags when packing numerous items, which can cause keystroke drops
 			int remainingItems = MAX_INITIAL_RESULTS;
-			for (final Result.ItemHolder.Item result : different.prefixItems) {
-				if (remainingItems > 0) {
-					remainingItems--;
-					this.add(result);
-				} else {
-					break;
-				}
+			final UnmodifiableIterator<Result.ItemHolder.Item> prefixItr = different.prefixItems.iterator();
+			while (prefixItr.hasNext() && remainingItems > 0) {
+				this.add(prefixItr.next());
+				remainingItems--;
 			}
 
-			if (remainingItems > 0 && !different.containingItems.isEmpty()) {
+			final UnmodifiableIterator<Result.ItemHolder.Item> containingItr = different.containingItems.iterator();
+			if (remainingItems > 0 && containingItr.hasNext()) {
 				if (!different.prefixItems.isEmpty()) {
 					this.add(new JPopupMenu.Separator());
 				}
 
-				for (final Result.ItemHolder.Item result : different.containingItems) {
-					if (remainingItems > 0) {
-						remainingItems--;
-						this.add(result);
-					} else {
-						break;
-					}
+				while (containingItr.hasNext() && remainingItems > 0) {
+					this.add(containingItr.next());
+					remainingItems--;
 				}
+			}
+
+			if (different.getSize() > MAX_INITIAL_RESULTS) {
+				final ImmutableList.Builder<Result.ItemHolder.Item> truncatedPrefixResults = ImmutableList.builder();
+				prefixItr.forEachRemaining(truncatedPrefixResults::add);
+
+				final ImmutableList.Builder<Result.ItemHolder.Item> truncatedContainingResults = ImmutableList.builder();
+				containingItr.forEachRemaining(truncatedContainingResults::add);
+
+				this.add(this.moreButtonOf(truncatedPrefixResults.build(), truncatedContainingResults.build()));
 			}
 
 			this.refreshPopup();
@@ -277,6 +282,35 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		this.setText(I18n.translate("menu.help.search"));
 		this.field.setPlaceholder(I18n.translate("menu.help.search.placeholder"));
 		this.noResults.setText(I18n.translate("menu.help.search.no_results"));
+	}
+
+	private JMenuItem moreButtonOf(
+			ImmutableList<Result.ItemHolder.Item> prefixItems,
+			ImmutableList<Result.ItemHolder.Item> containingItems
+	) {
+		final var button = new JMenuItem();
+
+		button.setText("⋯");
+
+		button.addActionListener(e -> {
+			this.remove(button);
+
+			prefixItems.forEach(this::add);
+
+			if (!prefixItems.isEmpty() && !containingItems.isEmpty()) {
+				this.add(new JPopupMenu.Separator());
+			}
+
+			containingItems.forEach(this::add);
+
+			// clicking the button closes the menu
+			// this re-opens it (which includes re-packing and selecting the search field)
+			this.doClick(0);
+			// de-select and move caret to end
+			this.field.setSelectionStart(Integer.MAX_VALUE);
+		});
+
+		return button;
 	}
 
 	private static final class Lookup {
