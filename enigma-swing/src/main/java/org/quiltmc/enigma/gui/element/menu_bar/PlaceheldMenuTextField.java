@@ -4,6 +4,7 @@ import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.element.PlaceheldTextField;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 
+import javax.swing.JMenuItem;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
 import javax.swing.UIManager;
@@ -13,6 +14,7 @@ import javax.swing.border.MatteBorder;
 import javax.swing.text.Document;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.event.KeyEvent;
@@ -37,6 +39,8 @@ public class PlaceheldMenuTextField extends PlaceheldTextField implements MenuEl
 	private CompoundBorder selectionBorder;
 
 	private boolean selectionIncluded;
+
+	private int minHeight = -1;
 
 	/**
 	 * @see PlaceheldTextField#PlaceheldTextField() PlaceheldTextField
@@ -164,5 +168,24 @@ public class PlaceheldMenuTextField extends PlaceheldTextField implements MenuEl
 	@Override
 	public Component getComponent() {
 		return this;
+	}
+
+	@Override
+	public Dimension getPreferredSize() {
+		final Dimension size = super.getPreferredSize();
+
+		size.height = Math.max(size.height, this.getMinHeight());
+
+		return size;
+	}
+
+	private int getMinHeight() {
+		if (this.minHeight < 0) {
+			// HACK: have at least the height of a menu item
+			// this fixes containing popup menus' positions being off at small scales when this is the only item
+			this.minHeight = new JMenuItem().getPreferredSize().height;
+		}
+
+		return this.minHeight;
 	}
 }
