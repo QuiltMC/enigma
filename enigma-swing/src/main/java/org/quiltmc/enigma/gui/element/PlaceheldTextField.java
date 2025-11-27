@@ -81,7 +81,10 @@ public class PlaceheldTextField extends JTextField {
 			graphics.setFont(this.getFont());
 
 			final Insets insets = this.getInsets();
-			final int baseY = graphics.getFontMetrics().getMaxAscent() + insets.top;
+			// HACK to keep the text vertically centered when subclasses adjust preferred height
+			final int extraTop = (this.getPreferredSize().height - super.getPreferredSize().height) / 2;
+			final int baseY = graphics.getFontMetrics().getMaxAscent() + insets.top + extraTop;
+
 			graphics.drawString(this.placeholder.getText(), insets.left, baseY);
 		}
 	}
