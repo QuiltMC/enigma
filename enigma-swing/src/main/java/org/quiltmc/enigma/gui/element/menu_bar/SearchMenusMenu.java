@@ -12,6 +12,7 @@ import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.element.PlaceheldTextField;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.GuiUtil;
+import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.EmptyStringMultiTrie;
@@ -49,6 +50,8 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.AWTEventListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
@@ -88,6 +91,38 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		searchable.onSearchChosen();
 	}
 
+	private static ImmutableList<MenuElement> buildPathTo(MenuElement target) {
+		final List<MenuElement> pathBuilder = new LinkedList<>();
+		pathBuilder.add(target);
+		Component element = target.getComponent().getParent();
+		while (true) {
+			if (element instanceof JMenu menu) {
+				pathBuilder.add(0, menu);
+				element = menu.getParent();
+			} else if (element instanceof JPopupMenu popup) {
+				pathBuilder.add(0, popup);
+				element = popup.getInvoker();
+			} else {
+				break;
+			}
+		}
+
+		if (element instanceof JMenuBar bar) {
+			pathBuilder.add(0, bar);
+
+			return ImmutableList.copyOf(pathBuilder);
+		} else {
+			Logger.error(
+					"""
+					Failed to build path to %s!
+					\tPath does not begin with menu bar: %s
+					""".formatted(target, pathBuilder)
+			);
+
+			return ImmutableList.of();
+		}
+	}
+
 	@Nullable
 	private final Border defaultPopupBorder;
 
@@ -123,18 +158,34 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		this.addPermanentChildren();
 
+		this.field.setFont(ScaleUtil.scaleFont(this.field.getFont()));
 		// Always focus field, but don't always select its text, because it loses focus when packing new search results.
-		this.field.addHierarchyListener(e -> {
-			if (this.field.isShowing()) {
-				final Window window = SwingUtilities.getWindowAncestor(this.field);
-				if (window != null && window.getType() == Window.Type.POPUP) {
-					// HACK: if PopupFactory::fitsOnScreen is false for light- and medium-weight popups, it makes a
-					// heavy-weight popup instead, whose HeavyWeightWindow component is by default is not focusable.
-					// It prevented this.field from focusing and receiving input.
-					window.setFocusableWindowState(true);
+		this.field.addHierarchyListener(new HierarchyListener() {
+			@Nullable
+			ImmutableList<MenuElement> fieldPath;
+
+			ImmutableList<MenuElement> getFieldPath() {
+				if (this.fieldPath == null) {
+					this.fieldPath = buildPathTo(SearchMenusMenu.this.field);
 				}
 
-				this.field.requestFocus();
+				return this.fieldPath;
+			}
+
+			@Override
+			public void hierarchyChanged(HierarchyEvent e) {
+				if (SearchMenusMenu.this.field.isShowing()) {
+					final Window window = SwingUtilities.getWindowAncestor(SearchMenusMenu.this.field);
+					if (window != null && window.getType() == Window.Type.POPUP) {
+						// HACK: if PopupFactory::fitsOnScreen is false for light- and medium-weight popups, it makes a
+						// heavy-weight popup instead, whose HeavyWeightWindow component is by default is not focusable.
+						// It prevented this.field from focusing and receiving input.
+						window.setFocusableWindowState(true);
+					}
+
+					SearchMenusMenu.this.field.requestFocus();
+					MenuSelectionManager.defaultManager().setSelectedPath(this.getFieldPath().toArray(new MenuElement[0]));
+				}
 			}
 		});
 
@@ -622,38 +673,6 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 
 			class Item extends JMenuItem {
-				private static ImmutableList<MenuElement> buildPath(SearchableElement searchable) {
-					final List<MenuElement> pathBuilder = new LinkedList<>();
-					pathBuilder.add(searchable);
-					Component element = searchable.getComponent().getParent();
-					while (true) {
-						if (element instanceof JMenu menu) {
-							pathBuilder.add(0, menu);
-							element = menu.getParent();
-						} else if (element instanceof JPopupMenu popup) {
-							pathBuilder.add(0, popup);
-							element = popup.getInvoker();
-						} else {
-							break;
-						}
-					}
-
-					if (element instanceof JMenuBar bar) {
-						pathBuilder.add(0, bar);
-
-						return ImmutableList.copyOf(pathBuilder);
-					} else {
-						Logger.error(
-								"""
-								Failed to build path to %s!
-								\tPath does not begin with menu bar: %s
-								""".formatted(searchable.getSearchName(), pathBuilder)
-						);
-
-						return ImmutableList.of();
-					}
-				}
-
 				private final ImmutableList<MenuElement> path;
 
 				Item(String searchName) {
@@ -663,7 +682,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 						clearSelectionAndChoose(Result.this.searchable, MenuSelectionManager.defaultManager());
 					});
 
-					this.path = buildPath(this.getSearchable());
+					this.path = buildPathTo(this.getSearchable());
 
 					if (!this.path.isEmpty()) {
 						final String pathText = this.path.stream()
