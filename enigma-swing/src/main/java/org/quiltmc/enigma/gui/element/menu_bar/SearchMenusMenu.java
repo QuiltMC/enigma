@@ -2,7 +2,6 @@ package org.quiltmc.enigma.gui.element.menu_bar;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.UnmodifiableIterator;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.config.api.values.TrackedValue;
@@ -66,17 +65,6 @@ import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static javax.swing.BorderFactory.createEmptyBorder;
 
 public class SearchMenusMenu extends AbstractEnigmaMenu {
-	private static final int MAX_INITIAL_RESULTS;
-
-	static {
-		// this is a heuristic that tries to make the initial results fit on screen
-		// this is to avoid the laggy creation of a scrolling heavy-weight popup while typing
-		// I (sss) tried measuring items as they were added and stopping when no more would fit, but that also lagged.
-		final int maxMaxInitialResults = 20;
-		final Float scale = Config.main().scaleFactor.value();
-		MAX_INITIAL_RESULTS = scale > 1 ? (int) (maxMaxInitialResults / scale) : maxMaxInitialResults;
-	}
-
 	/**
 	 * @return a breadth-first stream of the passed {@code root} element and all of its sub-elements,
 	 * excluding the {@link HelpMenu} and its sub-elements; the help menu is not searchable because it must be open
@@ -251,36 +239,14 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			this.viewHint.configureVisibility();
 			this.chooseHint.configureVisibility();
 
-			// truncate results because the popup lags when packing numerous items
-			// - especially when a scrolling heavy-weight popup is required -
-			// which can cause keystroke drops
-			int remainingItems = MAX_INITIAL_RESULTS;
-			final UnmodifiableIterator<Result.ItemHolder.Item> prefixItr = different.prefixItems.iterator();
-			while (prefixItr.hasNext() && remainingItems > 0) {
-				this.add(prefixItr.next());
-				remainingItems--;
-			}
+			different.prefixItems.forEach(this::add);
 
-			final UnmodifiableIterator<Result.ItemHolder.Item> containingItr = different.containingItems.iterator();
-			if (remainingItems > 0 && containingItr.hasNext()) {
+			if (!different.containingItems.isEmpty()) {
 				if (!different.prefixItems.isEmpty()) {
 					this.add(new JPopupMenu.Separator());
 				}
 
-				while (containingItr.hasNext() && remainingItems > 0) {
-					this.add(containingItr.next());
-					remainingItems--;
-				}
-			}
-
-			if (different.getSize() > MAX_INITIAL_RESULTS) {
-				final ImmutableList.Builder<Result.ItemHolder.Item> truncatedPrefixResults = ImmutableList.builder();
-				prefixItr.forEachRemaining(truncatedPrefixResults::add);
-
-				final ImmutableList.Builder<Result.ItemHolder.Item> truncatedContainingResults = ImmutableList.builder();
-				containingItr.forEachRemaining(truncatedContainingResults::add);
-
-				this.add(this.moreButtonOf(truncatedPrefixResults.build(), truncatedContainingResults.build()));
+				different.containingItems.forEach(this::add);
 			}
 
 			this.refreshPopup();
@@ -291,14 +257,16 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		if (this.isShowing()) {
 			final JPopupMenu popupMenu = this.getPopupMenu();
 
+			final int oldHeight = popupMenu.getHeight();
 			// HACK: When popups are resizing in limited space, they may remove their borders.
 			// The border won't be restored when re-packing or showing, so manually restore the original border here.
 			popupMenu.setBorder(this.defaultPopupBorder);
 			popupMenu.pack();
 
-			// only re-show
-			// the initial showing from JMenu does the same thing and would cause an SOE if we also showed here
-			if (popupMenu.isShowing()) {
+			// re-show if shrinking to move the popup back down in case it had to be shifted up to fit items
+			// re-showing can also result in dropped keystrokes; do so as infrequently as possible
+			// note: the initial showing from JMenu would cause an SOE if we also showed here for the initial showing
+			if (popupMenu.getHeight() < oldHeight && popupMenu.isShowing()) {
 				final Point newOrigin = this.getPopupMenuOrigin();
 				popupMenu.show(this, newOrigin.x, newOrigin.y);
 			}
@@ -341,35 +309,6 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		this.setText(I18n.translate("menu.help.search"));
 		this.field.setPlaceholder(I18n.translate("menu.help.search.placeholder"));
 		this.noResults.setText(I18n.translate("menu.help.search.no_results"));
-	}
-
-	private JMenuItem moreButtonOf(
-			ImmutableList<Result.ItemHolder.Item> prefixItems,
-			ImmutableList<Result.ItemHolder.Item> containingItems
-	) {
-		final var button = new JMenuItem();
-
-		button.setText("⋯");
-
-		button.addActionListener(e -> {
-			this.remove(button);
-
-			prefixItems.forEach(this::add);
-
-			if (!prefixItems.isEmpty() && !containingItems.isEmpty()) {
-				this.add(new JPopupMenu.Separator());
-			}
-
-			containingItems.forEach(this::add);
-
-			// clicking the button closes the menu
-			// this re-opens it (which includes re-packing and selecting the search field)
-			this.doClick(0);
-			// de-select and move caret to end
-			this.field.setSelectionStart(Integer.MAX_VALUE);
-		});
-
-		return button;
 	}
 
 	private static final class Lookup {
