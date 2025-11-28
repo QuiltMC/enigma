@@ -9,6 +9,7 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class Main {
 	private Main() {
@@ -21,7 +22,7 @@ public final class Main {
 	static {
 		registerVisualizer(new FlexGridRelativeRowVisualiser());
 		registerVisualizer(new FlexGridColumnVisualiser());
-		registerVisualizer(new FlexGridGridVisualiser());
+		registerVisualizer(new FlexGridQuiltVisualiser());
 		registerVisualizer(new FlexGridOverlapVisualiser());
 	}
 
@@ -44,21 +45,35 @@ public final class Main {
 		final int x = (screenSize.width - width) / 2;
 		final int y = (screenSize.height - height) / 2;
 
+		System.out.printf("size: %s x %s%n", width, height);
+
 		WINDOW.setBounds(x, y, width, height);
 		WINDOW.setVisible(true);
 	}
 
 	private static void registerVisualizer(Visualizer visualizer) {
 		final JButton button = new JButton(visualizer.getTitle());
+		final AtomicReference<JFrame> currentWindow = new AtomicReference<>();
+
 		button.addActionListener(e -> {
-			final JFrame window = new JFrame(visualizer.getTitle());
+			final JFrame window = currentWindow.updateAndGet(old -> {
+				if (old != null) {
+					old.dispose();
+				}
+
+				return new JFrame(visualizer.getTitle());
+			});
+
 			visualizer.visualizeWindow(window);
 
 			window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			window.addWindowListener(new WindowAdapter() {
 				@Override
 				public void windowClosed(WindowEvent e) {
-					WINDOW.requestFocus();
+					final JFrame window = currentWindow.get();
+					if (window == null || !window.isDisplayable()) {
+						WINDOW.requestFocus();
+					}
 				}
 			});
 
