@@ -170,6 +170,7 @@ public class FlexGridLayout implements LayoutManager2 {
 		}
 	}
 
+	// TODO fix erroneous overlap and inconsistent sizes
 	private Map<Integer, Integer> allocateCellSpace(AxisOperations ops, int remainingSpace) {
 		final SortedSet<Constrained.At> prioritizedConstrained = new TreeSet<>();
 		this.grid.forEach((x, y, values) -> {
