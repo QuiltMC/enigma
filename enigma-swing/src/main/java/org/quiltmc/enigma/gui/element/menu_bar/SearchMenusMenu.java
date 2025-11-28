@@ -797,10 +797,6 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			boolean isEmpty() {
 				return this.prefixItems.isEmpty() && this.containingItems.isEmpty();
 			}
-
-			int getSize() {
-				return this.prefixItems.size() + this.containingItems.size();
-			}
 		}
 	}
 
