@@ -1,6 +1,6 @@
 package org.quilt.internal.gui.visualization;
 
-import org.quiltmc.enigma.gui.util.FlexGridLayout;
+import org.quiltmc.enigma.gui.util.layout.flex_grid.FlexGridLayout;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;

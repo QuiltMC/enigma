@@ -1,17 +1,17 @@
-package org.quiltmc.enigma.gui.util;
+package org.quiltmc.enigma.gui.util.layout.flex_grid.constraints;
 
 import com.google.common.base.Preconditions;
 
 import java.util.Objects;
 
 public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C>> {
-	static final int DEFAULT_PRIORITY = 0;
-	static final int DEFAULT_WIDTH = 1;
-	static final int DEFAULT_HEIGHT = 1;
-	static final boolean DEFAULT_FILL_X = false;
-	static final boolean DEFAULT_FILL_Y = false;
-	static final Alignment DEFAULT_X_ALIGNMENT = Alignment.BEGIN;
-	static final Alignment DEFAULT_Y_ALIGNMENT = Alignment.CENTER;
+	public static final int DEFAULT_PRIORITY = 0;
+	public static final int DEFAULT_WIDTH = 1;
+	public static final int DEFAULT_HEIGHT = 1;
+	public static final boolean DEFAULT_FILL_X = false;
+	public static final boolean DEFAULT_FILL_Y = false;
+	public static final Alignment DEFAULT_X_ALIGNMENT = Alignment.BEGIN;
+	public static final Alignment DEFAULT_Y_ALIGNMENT = Alignment.CENTER;
 
 	public static Relative createRelative() {
 		return Relative.of();
@@ -52,6 +52,34 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		this.yAlignment = yAlignment;
 
 		this.priority = priority;
+	}
+
+	public int getWidth() {
+		return this.width;
+	}
+
+	public int getHeight() {
+		return this.height;
+	}
+
+	public boolean fillsX() {
+		return this.fillX;
+	}
+
+	public boolean fillsY() {
+		return this.fillY;
+	}
+
+	public Alignment getXAlignment() {
+		return this.xAlignment;
+	}
+
+	public Alignment getYAlignment() {
+		return this.yAlignment;
+	}
+
+	public int getPriority() {
+		return this.priority;
 	}
 
 	public C width(int width) {
@@ -199,8 +227,8 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 	}
 
 	public static final class Absolute extends FlexGridConstraints<FlexGridConstraints.Absolute> {
-		static final int DEFAULT_X = 0;
-		static final int DEFAULT_Y = 0;
+		public static final int DEFAULT_X = 0;
+		public static final int DEFAULT_Y = 0;
 
 		public static Absolute of() {
 			return new Absolute(
@@ -226,6 +254,14 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 
 			this.x = x;
 			this.y = y;
+		}
+
+		public int getX() {
+			return this.x;
+		}
+
+		public int getY() {
+			return this.y;
 		}
 
 		public Absolute x(int x) {
