@@ -109,6 +109,10 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		return this.fillX(true);
 	}
 
+	public C fillOnlyX() {
+		return this.fill(true, false);
+	}
+
 	public C fillY(boolean fill) {
 		this.fillY = fill;
 		return this.getSelf();
@@ -116,6 +120,10 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 
 	public C fillY() {
 		return this.fillY(true);
+	}
+
+	public C fillOnlyY() {
+		return this.fill(false, true);
 	}
 
 	public C fill(boolean x, boolean y) {
@@ -126,6 +134,10 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 
 	public C fillBoth() {
 		return this.fill(true, true);
+	}
+
+	public C fillNone() {
+		return this.fill(false, false);
 	}
 
 	public C xAlignment(Alignment alignment) {

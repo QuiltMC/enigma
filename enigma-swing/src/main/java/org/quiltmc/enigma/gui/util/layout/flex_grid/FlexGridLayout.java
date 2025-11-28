@@ -14,8 +14,7 @@ import java.awt.LayoutManager2;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.PriorityQueue;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -30,12 +29,12 @@ public class FlexGridLayout implements LayoutManager2 {
 	public void addLayoutComponent(Component component, @Nullable Object constraints) throws IllegalArgumentException {
 		if (constraints == null) {
 			this.addDefaultConstrainedLayoutComponent(component);
-		} else if (constraints instanceof FlexGridConstraints<?> typedConstraints) {
-			this.addLayoutComponent(component, typedConstraints);
+		} else if (constraints instanceof FlexGridConstraints<?> gridConstraints) {
+			this.addLayoutComponent(component, gridConstraints);
 		} else {
 			throw new IllegalArgumentException(
-				"constraints type must be %s, but was %s!"
-					.formatted(FlexGridConstraints.class.getName(), constraints.getClass().getName())
+				"constraints type %s does not extend %s!"
+					.formatted(constraints.getClass().getName(), FlexGridConstraints.class.getName())
 			);
 		}
 	}
@@ -185,28 +184,34 @@ public class FlexGridLayout implements LayoutManager2 {
 	}
 
 	private Map<Integer, Integer> allocateCellSpace(CartesianOperations ops, int remainingSpace, boolean fill) {
-		final Sizes sizes;
+		final Sizes large;
+		final Sizes small;
 		final Map<Integer, Integer> cellSpans;
 		if (fill) {
-			sizes = this.getMaxSizes();
-			cellSpans = new HashMap<>(this.getPreferredSizes().columnWidths);
+			large = this.getMaxSizes();
+			small = this.getPreferredSizes();
 		} else {
-			sizes = this.getPreferredSizes();
-			cellSpans = new HashMap<>(this.getMinSizes().columnWidths);
+			large = this.getPreferredSizes();
+			small = this.getMinSizes();
 		}
 
-		final SortedSet<Constrained.At> prioritizedConstrained = new TreeSet<>();
-		this.grid.forEach((x, y, values) -> {
-			values.forEach(constrained -> prioritizedConstrained.add(constrained.new At(ops.chooseCoord(x, y))));
-		});
+		cellSpans = new HashMap<>(ops.getCellSpans(small));
 
-		for (final Constrained.At at : prioritizedConstrained) {
-			if (fill && !ops.fills(at.constrained())) {
-				continue;
+		final PriorityQueue<Constrained.At> prioritized = new PriorityQueue<>(this.grid.getSize());
+		this.grid.forEach((x, y, values) -> {
+			if (fill) {
+				values = values.filter(ops::fills);
 			}
 
+			values.forEach(constrained -> {
+				prioritized.add(constrained.new At(ops.chooseCoord(x, y)));
+			});
+		});
+
+		for (final Constrained.At at : prioritized) {
 			final int currentSpan = cellSpans.get(at.coord);
-			final Dimension targetSize = sizes.componentSizes.get(at.constrained().component);
+
+			final Dimension targetSize = large.componentSizes.get(at.constrained().component);
 			assert targetSize != null;
 			final int targetSpan = ops.getSpan(targetSize);
 			final int targetDiff = targetSpan - currentSpan;
@@ -241,7 +246,7 @@ public class FlexGridLayout implements LayoutManager2 {
 		);
 	}
 
-	// TODO respect fill/alignment
+	// TODO respect alignment
 	private void layoutAxisImpl(
 			int startPos, CartesianOperations ops,
 			Map<Integer, Integer> cellSpans,
@@ -422,7 +427,7 @@ public class FlexGridLayout implements LayoutManager2 {
 
 			@Override
 			public boolean fills(Constrained constrained) {
-				return constrained.fillY;
+				return constrained.fillX;
 			}
 
 			@Override

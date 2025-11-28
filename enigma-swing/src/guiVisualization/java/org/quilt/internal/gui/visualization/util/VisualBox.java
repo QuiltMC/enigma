@@ -13,12 +13,115 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
 public class VisualBox extends JPanel {
+	public static final int DEFAULT_SIZE = 100;
+
+	public static final Color PATCH_PURPLE = new Color(151, 34, 255);
+	public static final Color PATCH_MAGENTA = new Color(220, 41, 221);
+	public static final Color PATCH_CYAN = new Color(39, 162, 253);
+	public static final Color PATCH_BLUE = new Color(51, 68, 255);
+
+	public static VisualBox of() {
+		return of(null);
+	}
+
+	public static VisualBox of(@Nullable Color color) {
+		return of(null, color);
+	}
+
+	public static VisualBox of(@Nullable String name, @Nullable Color color) {
+		return of(name, color, DEFAULT_SIZE);
+	}
+
+	public static VisualBox of(int size) {
+		return of (null, size);
+	}
+
+	public static VisualBox of(@Nullable Color color, int size) {
+		return of(null, color, size);
+	}
+
+	public static VisualBox of(@Nullable String name, @Nullable Color color, int size) {
+		return of(name, color, size, size);
+	}
+
+	public static VisualBox of(int width, int height) {
+		return of(null, width, height);
+	}
+
 	public static VisualBox of(@Nullable Color color, int width, int height) {
 		return of(null, color, width, height);
 	}
 
 	public static VisualBox of(@Nullable String name, @Nullable Color color, int width, int height) {
 		return new VisualBox(name, color, width, height, width / 2, height / 2, width * 2, height * 2);
+	}
+
+	public static VisualBox ofFixed() {
+		return ofFixed(null);
+	}
+
+	public static VisualBox ofFixed(@Nullable Color color) {
+		return ofFixed(null, color);
+	}
+
+	public static VisualBox ofFixed(@Nullable String name, @Nullable Color color) {
+		return ofFixed(name, color, DEFAULT_SIZE);
+	}
+
+	public static VisualBox ofFixed(int size) {
+		return ofFixed(null, size);
+	}
+
+	public static VisualBox ofFixed(@Nullable Color color, int size) {
+		return ofFixed(null, color, size);
+	}
+
+	public static VisualBox ofFixed(@Nullable String name, @Nullable Color color, int size) {
+		return ofFixed(name, color, size, size);
+	}
+
+	public static VisualBox ofFixed(int width, int height) {
+		return ofFixed(null, width, height);
+	}
+
+	public static VisualBox ofFixed(@Nullable Color color, int width, int height) {
+		return ofFixed(null, color, width, height);
+	}
+
+	public static VisualBox ofFixed(@Nullable String name, @Nullable Color color, int width, int height) {
+		return new VisualBox(name, color, width, height, width, height, width, height);
+	}
+
+	public static VisualBox purplePatchOf() {
+		return purplePatchOf(null);
+	}
+
+	public static VisualBox purplePatchOf(@Nullable String name) {
+		return of(name, PATCH_PURPLE);
+	}
+
+	public static VisualBox magentaPatchOf() {
+		return purplePatchOf(null);
+	}
+
+	public static VisualBox magentaPatchOf(@Nullable String name) {
+		return of(name, PATCH_MAGENTA);
+	}
+
+	public static VisualBox cyanPatchOf() {
+		return cyanPatchOf(null);
+	}
+
+	public static VisualBox cyanPatchOf(@Nullable String name) {
+		return of(name, PATCH_CYAN);
+	}
+
+	public static VisualBox bluePatchOf() {
+		return bluePatchOf(null);
+	}
+
+	public static VisualBox bluePatchOf(@Nullable String name) {
+		return of(name, PATCH_BLUE);
 	}
 
 	private final int preferredWidth;
