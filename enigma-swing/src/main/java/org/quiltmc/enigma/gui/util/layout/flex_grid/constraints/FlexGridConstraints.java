@@ -140,40 +140,80 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		return this.fill(false, false);
 	}
 
-	public C xAlignment(Alignment alignment) {
+	public C alignX(Alignment alignment) {
 		this.xAlignment = requireNonNullAlignment(alignment);
 		return this.getSelf();
 	}
 
 	public C alignLeft() {
-		return this.xAlignment(Alignment.BEGIN);
+		return this.alignX(Alignment.BEGIN);
+	}
+
+	public C alignCenterX() {
+		return this.alignX(Alignment.CENTER);
 	}
 
 	public C alignRight() {
-		return this.xAlignment(Alignment.END);
+		return this.alignX(Alignment.END);
 	}
 
-	public C yAlignment(Alignment alignment) {
+	public C alignY(Alignment alignment) {
 		this.yAlignment = requireNonNullAlignment(alignment);
 		return this.getSelf();
 	}
 
 	public C alignTop() {
-		return this.yAlignment(Alignment.BEGIN);
+		return this.alignY(Alignment.BEGIN);
+	}
+
+	public C alignCenterY() {
+		return this.alignY(Alignment.CENTER);
 	}
 
 	public C alignBottom() {
-		return this.yAlignment(Alignment.END);
+		return this.alignY(Alignment.END);
 	}
 
 	public C align(Alignment x, Alignment y) {
-		this.xAlignment(x);
-		this.yAlignment(y);
+		this.alignX(x);
+		this.alignY(y);
 		return this.getSelf();
+	}
+
+	public C alignTopLeft() {
+		return this.align(Alignment.BEGIN, Alignment.BEGIN);
+	}
+
+	public C alignTopCenter() {
+		return this.align(Alignment.CENTER, Alignment.BEGIN);
+	}
+
+	public C alignTopRight() {
+		return this.align(Alignment.END, Alignment.BEGIN);
+	}
+
+	public C alightCenterLeft() {
+		return this.align(Alignment.BEGIN, Alignment.CENTER);
 	}
 
 	public C alignCenter() {
 		return this.align(Alignment.CENTER, Alignment.CENTER);
+	}
+
+	public C alignCenterRight() {
+		return this.align(Alignment.END, Alignment.CENTER);
+	}
+
+	public C alignBottomLeft() {
+		return this.align(Alignment.BEGIN, Alignment.END);
+	}
+
+	public C alignBottomCenter() {
+		return this.align(Alignment.CENTER, Alignment.END);
+	}
+
+	public C alignBottomRight() {
+		return this.align(Alignment.END, Alignment.END);
 	}
 
 	public C priority(int priority) {
