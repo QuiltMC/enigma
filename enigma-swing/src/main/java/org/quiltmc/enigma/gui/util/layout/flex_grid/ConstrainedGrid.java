@@ -25,28 +25,32 @@ class ConstrainedGrid {
 	}
 
 	private final SortedMap<Integer, SortedMap<Integer, Map<Component, Constrained>>> grid = new TreeMap<>();
-	private final Map<Component, Position> valuePositions = new HashMap<>();
+	private final Map<Component, Position> componentPositions = new HashMap<>();
 	private final SortedMap<Integer, Set<Component>> valuesByMaxX = new TreeMap<>();
 	private final SortedMap<Integer, Set<Component>> valuesByMaxY = new TreeMap<>();
+	private final Set<Component> xFillers = new HashSet<>();
+	private final Set<Component> yFillers = new HashSet<>();
 
 	void put(int x, int y, Constrained value) {
 		final Component component = value.component();
 
-		final Position oldPos = this.valuePositions.put(component, new Position(x, y));
-		if (oldPos != null) {
-			final Map<Integer, Map<Component, Constrained>> column = this.grid.get(oldPos.x);
-			final Constrained oldValue = column.get(oldPos.y).get(component);
-			column.get(oldPos.y).remove(component, value);
-			this.valuesByMaxX.get(oldPos.x + oldValue.getXExcess()).remove(component);
-			this.valuesByMaxY.get(oldPos.y + oldValue.getYExcess()).remove(component);
-		}
+		this.remove(value.component());
 
 		this.grid
 				.computeIfAbsent(x, ignored -> new TreeMap<>())
 				.computeIfAbsent(y, ignored -> new HashMap<>(1))
 				.put(component, value);
+
 		this.valuesByMaxX.computeIfAbsent(x + value.getXExcess(), ConstrainedGrid::createValueSet).add(component);
 		this.valuesByMaxY.computeIfAbsent(y + value.getYExcess(), ConstrainedGrid::createValueSet).add(component);
+
+		if (value.fillX()) {
+			this.xFillers.add(component);
+		}
+
+		if (value.fillY()) {
+			this.yFillers.add(component);
+		}
 	}
 
 	Stream<Constrained> get(int x, int y) {
@@ -56,12 +60,36 @@ class ConstrainedGrid {
 			.stream();
 	}
 
-	void remove(Component value) {
-		final Position pos = this.valuePositions.remove(value);
+	void remove(Component component) {
+		final Position pos = this.componentPositions.remove(component);
 		if (pos != null) {
-			final Constrained removed = this.grid.get(pos.x).get(pos.y).remove(value);
-			this.valuesByMaxX.get(pos.x + removed.getXExcess()).remove(value);
-			this.valuesByMaxY.get(pos.y + removed.getYExcess()).remove(value);
+			final SortedMap<Integer, Map<Component, Constrained>> column = this.grid.get(pos.x);
+			final Map<Component, Constrained> values = column.get(pos.y);
+			final Constrained removed = values.remove(component);
+			if (values.isEmpty()) {
+				column.remove(pos.y);
+
+				if (column.isEmpty()) {
+					this.grid.remove(pos.x);
+				}
+			}
+
+			final int maxX = pos.x + removed.getXExcess();
+			final Set<Component> maxXValues = this.valuesByMaxX.get(maxX);
+			maxXValues.remove(component);
+			if (maxXValues.isEmpty()) {
+				this.valuesByMaxX.remove(maxX);
+			}
+
+			final int maxY = pos.y + removed.getYExcess();
+			final Set<Component> maxYValues = this.valuesByMaxY.get(maxY);
+			maxYValues.remove(component);
+			if (maxYValues.isEmpty()) {
+				this.valuesByMaxY.remove(maxY);
+			}
+
+			this.xFillers.remove(component);
+			this.yFillers.remove(component);
 		}
 	}
 
@@ -71,6 +99,14 @@ class ConstrainedGrid {
 
 	int getMaxYOrThrow() {
 		return this.valuesByMaxY.lastKey();
+	}
+
+	boolean noneFillX() {
+		return this.xFillers.isEmpty();
+	}
+
+	boolean noneFillY() {
+		return this.yFillers.isEmpty();
 	}
 
 	int getSize() {
