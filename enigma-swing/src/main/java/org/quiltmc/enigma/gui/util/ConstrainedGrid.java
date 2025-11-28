@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.util;
 
+import com.google.common.collect.ImmutableSortedMap;
 import org.quiltmc.enigma.gui.util.FlexGridLayout.Constrained;
 
 import java.awt.Component;
@@ -23,14 +24,14 @@ class ConstrainedGrid {
 		return new HashSet<>();
 	}
 
-	private final Map<Integer, Map<Integer, Map<Component, Constrained>>> grid = new TreeMap<>();
+	private final SortedMap<Integer, SortedMap<Integer, Map<Component, Constrained>>> grid = new TreeMap<>();
 	private final Map<Component, Position> valuePositions = new HashMap<>();
 	private final SortedMap<Integer, Set<Component>> valuesByMaxX = new TreeMap<>();
 	private final SortedMap<Integer, Set<Component>> valuesByMaxY = new TreeMap<>();
 
 	void put(int x, int y, Constrained value) {
 		final Component component = value.component();
-		final Position oldPos = this.valuePositions.replace(component, new Position(x, y));
+		final Position oldPos = this.valuePositions.put(component, new Position(x, y));
 		if (oldPos != null) {
 			final Map<Integer, Map<Component, Constrained>> column = this.grid.get(oldPos.x);
 			final Constrained oldValue = column.get(oldPos.y).get(component);
@@ -48,7 +49,7 @@ class ConstrainedGrid {
 	}
 
 	Stream<Constrained> get(int x, int y) {
-		return this.grid.getOrDefault(x, Map.of())
+		return this.grid.getOrDefault(x, ImmutableSortedMap.of())
 			.getOrDefault(y, Map.of())
 			.values()
 			.stream();
