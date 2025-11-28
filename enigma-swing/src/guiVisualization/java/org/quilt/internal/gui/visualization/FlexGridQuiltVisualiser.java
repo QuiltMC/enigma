@@ -3,20 +3,62 @@ package org.quilt.internal.gui.visualization;
 import org.quilt.internal.gui.visualization.util.VisualBox;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.FlexGridLayout;
+import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints.Absolute;
 
 import javax.swing.JFrame;
-import java.awt.Color;
+import java.util.function.UnaryOperator;
 
 public class FlexGridQuiltVisualiser implements Visualizer {
-	private static final int PATCH_SIZE = 100;
+	public static void visualizeQuilt(
+			JFrame window,
+			UnaryOperator<Absolute> constrainer1,
+			UnaryOperator<Absolute> constrainer2,
+			UnaryOperator<Absolute> constrainer3,
 
-	private static final Color PURPLE = new Color(151, 34, 255);
-	private static final Color MAGENTA = new Color(220, 41, 221);
-	private static final Color CYAN = new Color(39, 162, 253);
-	private static final Color BLUE = new Color(51, 68, 255);
+			UnaryOperator<Absolute> constrainer4,
+			UnaryOperator<Absolute> constrainer5,
+			UnaryOperator<Absolute> constrainer6,
 
-	private static VisualBox patchOf(String name, Color color) {
-		return VisualBox.of(name, color, PATCH_SIZE, PATCH_SIZE);
+			UnaryOperator<Absolute> constrainer7,
+			UnaryOperator<Absolute> constrainer8,
+			UnaryOperator<Absolute> constrainer9
+	) {
+		visualizeQuilt(
+				window,
+				"[0, 0]", constrainer1, "[1, 0]", constrainer2, "[2, 0]", constrainer3,
+				"[0, 1]", constrainer4, "[1, 1]", constrainer5, "[2, 1]", constrainer6,
+				"[0, 2]", constrainer7, "[1, 2]", constrainer8, "[2, 2]", constrainer9
+		);
+	}
+
+	public static void visualizeQuilt(
+			JFrame window,
+			String name1, UnaryOperator<Absolute> constrainer1,
+			String name2, UnaryOperator<Absolute> constrainer2,
+			String name3, UnaryOperator<Absolute> constrainer3,
+
+			String name4, UnaryOperator<Absolute> constrainer4,
+			String name5, UnaryOperator<Absolute> constrainer5,
+			String name6, UnaryOperator<Absolute> constrainer6,
+
+			String name7, UnaryOperator<Absolute> constrainer7,
+			String name8, UnaryOperator<Absolute> constrainer8,
+			String name9, UnaryOperator<Absolute> constrainer9
+	) {
+		window.setLayout(new FlexGridLayout());
+
+		final Absolute constraints = FlexGridConstraints.createAbsolute();
+		window.add(VisualBox.purplePatchOf(name1), constrainer1.apply(constraints));
+		window.add(VisualBox.magentaPatchOf(name2), constrainer2.apply(constraints.nextColumn()));
+		window.add(VisualBox.cyanPatchOf(name3), constrainer3.apply(constraints.nextColumn()));
+
+		window.add(VisualBox.magentaPatchOf(name4), constrainer4.apply(constraints.nextRow()));
+		window.add(VisualBox.cyanPatchOf(name5), constrainer5.apply(constraints.nextColumn()));
+		window.add(VisualBox.bluePatchOf(name6), constrainer6.apply(constraints.nextColumn()));
+
+		window.add(VisualBox.purplePatchOf(name7), constrainer7.apply(constraints.nextRow()));
+		window.add(VisualBox.bluePatchOf(name8), constrainer8.apply(constraints.nextColumn()));
+		window.add(VisualBox.purplePatchOf(name9), constrainer9.apply(constraints.nextColumn()));
 	}
 
 	@Override
@@ -26,20 +68,12 @@ public class FlexGridQuiltVisualiser implements Visualizer {
 
 	@Override
 	public void visualize(JFrame window) {
-		window.setLayout(new FlexGridLayout());
-
-		final FlexGridConstraints.Absolute constraints = FlexGridConstraints.createAbsolute();
-		window.add(patchOf("[0, 0]", PURPLE), constraints);
-		window.add(patchOf("[1, 0]", MAGENTA), constraints.nextColumn());
-		window.add(patchOf("[2, 0]", CYAN), constraints.nextColumn());
-
-		window.add(patchOf("[0, 1]", MAGENTA), constraints.nextRow());
-		window.add(patchOf("[1, 1]", CYAN), constraints.nextColumn());
-		window.add(patchOf("[2, 1]", BLUE), constraints.nextColumn());
-
-		window.add(patchOf("[0, 2]", PURPLE), constraints.nextRow());
-		window.add(patchOf("[1, 2]", BLUE), constraints.nextColumn());
-		window.add(patchOf("[2, 2]", PURPLE), constraints.nextColumn());
+		visualizeQuilt(
+				window,
+				UnaryOperator.identity(), UnaryOperator.identity(), UnaryOperator.identity(),
+				UnaryOperator.identity(), UnaryOperator.identity(), UnaryOperator.identity(),
+				UnaryOperator.identity(), UnaryOperator.identity(), UnaryOperator.identity()
+		);
 
 		window.pack();
 	}

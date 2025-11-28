@@ -24,6 +24,8 @@ public final class Main {
 		registerVisualizer(new FlexGridColumnVisualiser());
 		registerVisualizer(new FlexGridQuiltVisualiser());
 		registerVisualizer(new FlexGridOverlapVisualiser());
+		registerVisualizer(new FlexGridFillVisualizer());
+		registerVisualizer(new FlexGridAlignmentVisualizer());
 	}
 
 	private static void position(Window window) {
