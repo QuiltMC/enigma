@@ -278,6 +278,7 @@
 	"prompt.open": "Open",
 	"prompt.error": "Error",
 	"prompt.invalid_input": "Invalid input",
+	"prompt.dismiss": "Dismiss",
 
 	"prompt.search.classes": "Classes",
 	"prompt.search.methods": "Methods",

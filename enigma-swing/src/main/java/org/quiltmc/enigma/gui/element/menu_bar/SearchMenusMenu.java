@@ -868,6 +868,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 	// not a MenuElement so it can't be selected
 	private class HintItem extends JPanel implements Retranslatable {
+		static final int PAD = 3;
+
 		final String translationKey;
 		final TrackedValue<Boolean> config;
 
@@ -879,14 +881,14 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			this.translationKey = translationKey;
 			this.config = config;
 
-			this.setBorder(createEmptyBorder(0, 2, 0, 0));
+			this.setBorder(createEmptyBorder(0, PAD, 0, PAD));
 
 			this.setLayout(new GridBagLayout());
 
 			this.add(this.infoIndicator);
 
 			final var spacer = Box.createHorizontalBox();
-			spacer.setPreferredSize(new Dimension(3, 1));
+			spacer.setPreferredSize(new Dimension(PAD, 1));
 			this.add(spacer);
 
 			final Font oldHintFont = this.hint.getFont();
@@ -901,7 +903,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			this.dismissButton.setBackground(new Color(0, true));
 			this.dismissButton.setMargin(new Insets(0, 0, 0, 0));
 			final Font oldDismissFont = this.dismissButton.getFont();
-			this.dismissButton.setFont(oldDismissFont.deriveFont(oldDismissFont.getSize2D() * 1.5f));
+			this.dismissButton.setFont(oldDismissFont.deriveFont(oldDismissFont.getSize2D() * 1.3f));
 			this.dismissButton.addActionListener(e -> this.dismiss());
 			this.add(this.dismissButton);
 
@@ -921,6 +923,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		@Override
 		public void retranslate() {
 			this.hint.setText(I18n.translate(this.translationKey));
+			this.dismissButton.setToolTipText(I18n.translate("prompt.dismiss"));
 		}
 	}
 }
