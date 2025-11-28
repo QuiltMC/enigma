@@ -45,8 +45,6 @@ public final class Main {
 		final int x = (screenSize.width - width) / 2;
 		final int y = (screenSize.height - height) / 2;
 
-		System.out.printf("size: %s x %s%n", width, height);
-
 		WINDOW.setBounds(x, y, width, height);
 		WINDOW.setVisible(true);
 	}
