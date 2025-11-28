@@ -22,6 +22,7 @@ public final class Main {
 		registerVisualizer(new FlexGridRelativeRowVisualiser());
 		registerVisualizer(new FlexGridColumnVisualiser());
 		registerVisualizer(new FlexGridGridVisualiser());
+		registerVisualizer(new FlexGridOverlapVisualiser());
 	}
 
 	private static void position(Window window) {

@@ -67,6 +67,12 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		return this.getSelf();
 	}
 
+	public C size(int width, int height) {
+		this.width(width);
+		this.height(height);
+		return this.getSelf();
+	}
+
 	public C fillX(boolean fill) {
 		this.fillX = fill;
 		return this.getSelf();
@@ -228,10 +234,14 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 			return this;
 		}
 
-		public Absolute nextRow() {
+		public Absolute advanceRows(int count) {
 			this.x = 0;
-			this.y++;
-			return this;
+			this.y += count;
+			return this.getSelf();
+		}
+
+		public Absolute nextRow() {
+			return this.advanceRows(1);
 		}
 
 		public Absolute y(int y) {
@@ -239,9 +249,13 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 			return this;
 		}
 
+		public Absolute advanceColumns(int count) {
+			this.x += count;
+			return this.getSelf();
+		}
+
 		public Absolute nextColumn() {
-			this.x++;
-			return this;
+			return this.advanceColumns(1);
 		}
 
 		public Absolute pos(int x, int y) {
