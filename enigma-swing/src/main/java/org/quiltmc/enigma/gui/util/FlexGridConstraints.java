@@ -28,7 +28,6 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 	int width;
 	int height;
 
-	// TODO merge fill+alignment
 	boolean fillX;
 	boolean fillY;
 
