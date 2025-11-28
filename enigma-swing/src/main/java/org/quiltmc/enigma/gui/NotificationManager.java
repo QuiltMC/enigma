@@ -139,8 +139,8 @@ public class NotificationManager implements ValidationContext.Notifier {
 		NO_CHAT,
 		FULL;
 
-		public String getText() {
-			return I18n.translate("notification.level." + this.name().toLowerCase());
+		public String getTranslationKey() {
+			return "notification.level." + this.name().toLowerCase();
 		}
 	}
 
