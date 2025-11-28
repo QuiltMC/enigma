@@ -30,6 +30,8 @@ import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
@@ -47,8 +49,6 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.AWTEventListener;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
@@ -63,6 +63,7 @@ import java.util.stream.Stream;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static javax.swing.BorderFactory.createEmptyBorder;
+import static org.quiltmc.enigma.util.Utils.getLastOrNull;
 
 public class SearchMenusMenu extends AbstractEnigmaMenu {
 	/**
@@ -153,8 +154,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		this.addPermanentChildren();
 
-		// Always focus field, but don't always select its text, because it loses focus when packing new search results.
-		this.field.addHierarchyListener(new HierarchyListener() {
+		MenuSelectionManager.defaultManager().addChangeListener(new ChangeListener() {
 			@Nullable
 			ImmutableList<MenuElement> fieldPath;
 
@@ -167,19 +167,28 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 
 			@Override
-			public void hierarchyChanged(HierarchyEvent e) {
+			public void stateChanged(ChangeEvent e) {
 				if (SearchMenusMenu.this.field.isShowing()) {
-					final Window window = SwingUtilities.getWindowAncestor(SearchMenusMenu.this.field);
-					if (window != null && window.getType() == Window.Type.POPUP) {
-						// HACK: if PopupFactory::fitsOnScreen is false for light- and medium-weight popups, it makes a
-						// heavy-weight popup instead, whose HeavyWeightWindow component is by default is not focusable.
-						// It prevented this.field from focusing and receiving input.
-						window.setFocusableWindowState(true);
+					final var manager = (MenuSelectionManager) e.getSource();
+					if (getLastOrNull(manager.getSelectedPath()) == SearchMenusMenu.this.getPopupMenu()) {
+						manager.setSelectedPath(this.getFieldPath().toArray(new MenuElement[0]));
 					}
-
-					SearchMenusMenu.this.field.requestFocus();
-					MenuSelectionManager.defaultManager().setSelectedPath(this.getFieldPath().toArray(new MenuElement[0]));
 				}
+			}
+		});
+
+		// Always focus field, but don't always select its text, because it loses focus when packing new search results.
+		this.field.addHierarchyListener(e -> {
+			if (this.field.isShowing()) {
+				final Window window = SwingUtilities.getWindowAncestor(this.field);
+				if (window != null && window.getType() == Window.Type.POPUP) {
+					// HACK: if PopupFactory::fitsOnScreen is false for light- and medium-weight popups, it makes a
+					// heavy-weight popup instead, whose HeavyWeightWindow component is by default is not focusable.
+					// It prevented this.field from focusing and receiving input.
+					window.setFocusableWindowState(true);
+				}
+
+				this.field.requestFocus();
 			}
 		});
 
@@ -263,7 +272,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			popupMenu.setBorder(this.defaultPopupBorder);
 			popupMenu.pack();
 
-			// re-show if shrinking to move the popup back down in case it had to be shifted up to fit items
+			// HACK: re-show if shrinking to move the popup back down in case it had to be shifted up to fit items
 			// re-showing can also result in dropped keystrokes; do so as infrequently as possible
 			// note: the initial showing from JMenu would cause an SOE if we also showed here for the initial showing
 			if (popupMenu.getHeight() < oldHeight && popupMenu.isShowing()) {
@@ -620,7 +629,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 
 			class Item extends JMenuItem {
-				private final ImmutableList<MenuElement> path;
+				final ImmutableList<MenuElement> searchablePath;
 
 				Item(String searchName) {
 					super(searchName);
@@ -629,10 +638,10 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 						clearSelectionAndChoose(Result.this.searchable, MenuSelectionManager.defaultManager());
 					});
 
-					this.path = buildPathTo(this.getSearchable());
+					this.searchablePath = buildPathTo(this.getSearchable());
 
-					if (!this.path.isEmpty()) {
-						final String pathText = this.path.stream()
+					if (!this.searchablePath.isEmpty()) {
+						final String pathText = this.searchablePath.stream()
 								.flatMap(element -> {
 									if (element instanceof SearchableElement searchableElement) {
 										return Stream.of(searchableElement.getSearchName());
@@ -667,13 +676,13 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 					return ItemHolder.this;
 				}
 
-				void selectSearchable() {
-					if (!this.path.isEmpty()) {
-						MenuSelectionManager.defaultManager().setSelectedPath(this.path.toArray(new MenuElement[0]));
+				void selectSearchable(MenuSelectionManager manager) {
+					if (!this.searchablePath.isEmpty()) {
+						manager.setSelectedPath(this.searchablePath.toArray(new MenuElement[0]));
 					}
 				}
 
-				private SearchableElement getSearchable() {
+				SearchableElement getSearchable() {
 					return this.getHolder().getResult().searchable;
 				}
 			}
@@ -793,15 +802,6 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		static final int PREVIEW_MODIFIER_KEY = KeyEvent.VK_SHIFT;
 
 		@Nullable
-		static <T> T getLastOrNull(T[] array) {
-			if (array.length > 0) {
-				return array[array.length - 1];
-			} else {
-				return null;
-			}
-		}
-
-		@Nullable
 		RestorablePath restorablePath;
 
 		@Override
@@ -810,7 +810,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				if (keyEvent.getID() == KeyEvent.KEY_PRESSED) {
 					final int keyCode = keyEvent.getKeyCode();
 					if (keyCode == PREVIEW_MODIFIER_KEY && keyEvent.getModifiersEx() == PREVIEW_MODIFIER_MASK) {
-						final MenuElement[] selectedPath = MenuSelectionManager.defaultManager().getSelectedPath();
+						final MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+						final MenuElement[] selectedPath = manager.getSelectedPath();
 
 						final MenuElement selected = getLastOrNull(selectedPath);
 						if (selected != null) {
@@ -819,7 +820,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 								this.restorablePath = new RestorablePath(item.getSearchable(), selectedPath);
 
-								item.selectSearchable();
+								item.selectSearchable(manager);
 
 								return;
 							} else if (this.restorablePath != null && this.restorablePath.searched == selected) {
@@ -849,6 +850,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 						if (keyEvent.getKeyCode() == PREVIEW_MODIFIER_KEY) {
 							if (keyEvent.getModifiersEx() == 0) {
 								MenuSelectionManager.defaultManager().setSelectedPath(this.restorablePath.helpPath);
+								this.restorablePath = null;
 							}
 						} else {
 							this.restorablePath = null;
