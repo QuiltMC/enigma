@@ -148,22 +148,35 @@ public class FlexGridLayout implements LayoutManager2 {
 
 		final int availableSpace = ops.getParentSpace(parent) - leadingInset - ops.getTrailingInset(insets);
 
-		final Sizes preferredSizes = this.getPreferredSizes();
+		final Sizes preferred = this.getPreferredSizes();
 
-		final int extraSpace = availableSpace - ops.getTotalSpace(preferredSizes);
+		final int extraSpace = availableSpace - ops.getTotalSpace(preferred);
 		if (extraSpace >= 0) {
-			this.layoutFixedAxis(preferredSizes, leadingInset + extraSpace / 2, ops);
-		} else {
-			final Sizes minSizes = this.getMinSizes();
-
-			final int extraMinSpace = availableSpace - ops.getTotalSpace(minSizes);
-			if (extraMinSpace <= 0) {
-				this.layoutFixedAxis(minSizes, leadingInset, ops);
+			if (extraSpace == 0 || ops.noneFill(this.grid)) {
+				this.layoutFixedAxis(preferred, leadingInset + extraSpace / 2, ops);
 			} else {
-				final Map<Integer, Integer> cellSpans = this.allocateCellSpace(ops, extraMinSpace);
+				final Map<Integer, Integer> cellSpans = this.allocateCellSpace(ops, extraSpace, true);
 
-				this.layoutAxisImpl(leadingInset, ops, cellSpans, (component, coord) -> {
-					final Dimension preferredSize = preferredSizes.componentSizes.get(component);
+				final Sizes max = this.getMaxSizes();
+				this.layoutAxisImpl(leadingInset, ops, cellSpans, (constrained, coord) -> {
+					final Sizes targets = ops.fills(constrained) ? max : preferred;
+					final Dimension targetSize = targets.componentSizes.get(constrained.component);
+					assert targetSize != null;
+
+					return Math.min(ops.getSpan(targetSize), cellSpans.get(coord));
+				});
+			}
+		} else {
+			final Sizes min = this.getMinSizes();
+
+			final int extraMinSpace = availableSpace - ops.getTotalSpace(min);
+			if (extraMinSpace <= 0) {
+				this.layoutFixedAxis(min, leadingInset, ops);
+			} else {
+				final Map<Integer, Integer> cellSpans = this.allocateCellSpace(ops, extraMinSpace, false);
+
+				this.layoutAxisImpl(leadingInset, ops, cellSpans, (constrained, coord) -> {
+					final Dimension preferredSize = preferred.componentSizes.get(constrained.component);
 					assert preferredSize != null;
 					return Math.min(ops.getSpan(preferredSize), cellSpans.get(coord));
 				});
@@ -171,28 +184,40 @@ public class FlexGridLayout implements LayoutManager2 {
 		}
 	}
 
-	private Map<Integer, Integer> allocateCellSpace(CartesianOperations ops, int remainingSpace) {
+	private Map<Integer, Integer> allocateCellSpace(CartesianOperations ops, int remainingSpace, boolean fill) {
+		final Sizes sizes;
+		final Map<Integer, Integer> cellSpans;
+		if (fill) {
+			sizes = this.getMaxSizes();
+			cellSpans = new HashMap<>(this.getPreferredSizes().columnWidths);
+		} else {
+			sizes = this.getPreferredSizes();
+			cellSpans = new HashMap<>(this.getMinSizes().columnWidths);
+		}
+
 		final SortedSet<Constrained.At> prioritizedConstrained = new TreeSet<>();
 		this.grid.forEach((x, y, values) -> {
 			values.forEach(constrained -> prioritizedConstrained.add(constrained.new At(ops.chooseCoord(x, y))));
 		});
 
-		final ImmutableMap<Component, Dimension> preferredComponentSizes = this.getPreferredSizes().componentSizes;
-		final Map<Integer, Integer> cellSpans = new HashMap<>(this.getMinSizes().columnWidths);
 		for (final Constrained.At at : prioritizedConstrained) {
-			final int currentSpan = cellSpans.get(at.coord);
-			final Dimension preferredSize = preferredComponentSizes.get(at.constrained().component);
-			assert preferredSize != null;
-			final int preferredSpan = ops.getSpan(preferredSize);
-			final int preferredDiff = preferredSpan - currentSpan;
-			if (preferredDiff > 0) {
-				if (preferredDiff <= remainingSpace) {
-					cellSpans.put(at.coord, preferredSpan);
+			if (fill && !ops.fills(at.constrained())) {
+				continue;
+			}
 
-					if (remainingSpace == preferredDiff) {
+			final int currentSpan = cellSpans.get(at.coord);
+			final Dimension targetSize = sizes.componentSizes.get(at.constrained().component);
+			assert targetSize != null;
+			final int targetSpan = ops.getSpan(targetSize);
+			final int targetDiff = targetSpan - currentSpan;
+			if (targetDiff > 0) {
+				if (targetDiff <= remainingSpace) {
+					cellSpans.put(at.coord, targetSpan);
+
+					if (remainingSpace == targetDiff) {
 						break;
 					} else {
-						remainingSpace -= preferredDiff;
+						remainingSpace -= targetDiff;
 					}
 				} else {
 					final int lastOfSpan = remainingSpace;
@@ -212,7 +237,7 @@ public class FlexGridLayout implements LayoutManager2 {
 	private void layoutFixedAxis(Sizes sizes, int startPos, CartesianOperations ops) {
 		this.layoutAxisImpl(
 				startPos, ops, ops.getCellSpans(sizes),
-				(component, coord) -> ops.getSpan(sizes.componentSizes.get(component))
+				(constrained, coord) -> ops.getSpan(sizes.componentSizes.get(constrained.component))
 		);
 	}
 
@@ -220,7 +245,7 @@ public class FlexGridLayout implements LayoutManager2 {
 	private void layoutAxisImpl(
 			int startPos, CartesianOperations ops,
 			Map<Integer, Integer> cellSpans,
-			BiFunction<Component, Integer, Integer> getComponentSpan
+			BiFunction<Constrained, Integer, Integer> getComponentSpan
 	) {
 		final Map<Integer, Integer> positions = new HashMap<>();
 
@@ -231,7 +256,7 @@ public class FlexGridLayout implements LayoutManager2 {
 			final int pos = positions.computeIfAbsent(oppositeCoord, ignored -> startPos);
 
 			values.forEach(constrained -> {
-				final int span = getComponentSpan.apply(constrained.component, coord);
+				final int span = getComponentSpan.apply(constrained, coord);
 				ops.setBounds(constrained.component, pos, span);
 			});
 
@@ -361,6 +386,11 @@ public class FlexGridLayout implements LayoutManager2 {
 	private interface CartesianOperations {
 		CartesianOperations X = new CartesianOperations() {
 			@Override
+			public int chooseCoord(int x, int y) {
+				return x;
+			}
+
+			@Override
 			public int getLeadingInset(Insets insets) {
 				return insets.left;
 			}
@@ -391,8 +421,13 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
-			public int chooseCoord(int x, int y) {
-				return x;
+			public boolean fills(Constrained constrained) {
+				return constrained.fillY;
+			}
+
+			@Override
+			public boolean noneFill(ConstrainedGrid grid) {
+				return grid.noneFillX();
 			}
 
 			@Override
@@ -407,6 +442,11 @@ public class FlexGridLayout implements LayoutManager2 {
 		};
 
 		CartesianOperations Y = new CartesianOperations() {
+			@Override
+			public int chooseCoord(int x, int y) {
+				return y;
+			}
+
 			@Override
 			public int getLeadingInset(Insets insets) {
 				return insets.top;
@@ -438,8 +478,13 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
-			public int chooseCoord(int x, int y) {
-				return y;
+			public boolean fills(Constrained constrained) {
+				return constrained.fillY;
+			}
+
+			@Override
+			public boolean noneFill(ConstrainedGrid grid) {
+				return grid.noneFillY();
 			}
 
 			@Override
@@ -453,13 +498,15 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 		};
 
+		int chooseCoord(int x, int y);
 		int getLeadingInset(Insets insets);
 		int getTrailingInset(Insets insets);
 		int getParentSpace(Container parent);
 		int getTotalSpace(Sizes sizes);
 		ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes);
 		int getSpan(Dimension size);
-		int chooseCoord(int x, int y);
+		boolean fills(Constrained constrained);
+		boolean noneFill(ConstrainedGrid grid);
 		void setBounds(Component component, int pos, int span);
 
 		CartesianOperations opposite();
