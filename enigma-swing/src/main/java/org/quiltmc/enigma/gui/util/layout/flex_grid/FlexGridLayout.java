@@ -1,8 +1,9 @@
-package org.quiltmc.enigma.gui.util;
+package org.quiltmc.enigma.gui.util.layout.flex_grid;
 
 import com.google.common.collect.ImmutableMap;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
 import org.quiltmc.enigma.util.Utils;
 
 import java.awt.Component;
@@ -46,8 +47,8 @@ public class FlexGridLayout implements LayoutManager2 {
 			final int x;
 			final int y;
 			if (constraints instanceof FlexGridConstraints.Absolute absolute) {
-				x = absolute.x;
-				y = absolute.y;
+				x = absolute.getX();
+				y = absolute.getY();
 			} else {
 				x = this.getRelativeX();
 				y = this.getRelativeY();
@@ -224,10 +225,10 @@ public class FlexGridLayout implements LayoutManager2 {
 		final Map<Integer, Integer> positions = new HashMap<>();
 
 		this.grid.forEach((x, y, values) -> {
-			final int oppositeCoord = ops.opposite().chooseCoord(x, y);
-			final int pos = positions.computeIfAbsent(oppositeCoord, ignored -> startPos);
-
 			final int coord = ops.chooseCoord(x, y);
+			final int oppositeCoord = ops.opposite().chooseCoord(x, y);
+
+			final int pos = positions.computeIfAbsent(oppositeCoord, ignored -> startPos);
 
 			values.forEach(constrained -> {
 				final int span = getComponentSpan.apply(constrained.component, coord);
@@ -258,10 +259,10 @@ public class FlexGridLayout implements LayoutManager2 {
 		Constrained(Component component, FlexGridConstraints<?> constraints) {
 			this(
 					component,
-					constraints.width, constraints.height,
-					constraints.fillX, constraints.fillY,
-					constraints.xAlignment, constraints.yAlignment,
-					constraints.priority
+					constraints.getWidth(), constraints.getHeight(),
+					constraints.fillsX(), constraints.fillsY(),
+					constraints.getXAlignment(), constraints.getYAlignment(),
+					constraints.getPriority()
 			);
 		}
 

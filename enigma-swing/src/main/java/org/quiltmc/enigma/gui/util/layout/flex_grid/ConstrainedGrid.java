@@ -1,7 +1,7 @@
-package org.quiltmc.enigma.gui.util;
+package org.quiltmc.enigma.gui.util.layout.flex_grid;
 
 import com.google.common.collect.ImmutableSortedMap;
-import org.quiltmc.enigma.gui.util.FlexGridLayout.Constrained;
+import org.quiltmc.enigma.gui.util.layout.flex_grid.FlexGridLayout.Constrained;
 
 import java.awt.Component;
 import java.util.HashMap;
@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 /**
  * A map of cartesian coordinates to {@link Constrained} values.<br>
- * Only designed for use with {@link FlexGridLayout}.
+ * Only designed for use in {@link FlexGridLayout}.
  *
  * <p> Multiple values can be associated with the same coordinates,
  * but a value may only be associated with one coordinate pair at a time.
@@ -31,6 +31,7 @@ class ConstrainedGrid {
 
 	void put(int x, int y, Constrained value) {
 		final Component component = value.component();
+
 		final Position oldPos = this.valuePositions.put(component, new Position(x, y));
 		if (oldPos != null) {
 			final Map<Integer, Map<Component, Constrained>> column = this.grid.get(oldPos.x);
