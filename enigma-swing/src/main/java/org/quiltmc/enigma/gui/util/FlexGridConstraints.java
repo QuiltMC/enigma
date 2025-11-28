@@ -229,8 +229,8 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		}
 
 		public Absolute nextRow() {
-			this.x++;
-			this.y = 0;
+			this.x = 0;
+			this.y++;
 			return this;
 		}
 
@@ -240,7 +240,7 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		}
 
 		public Absolute nextColumn() {
-			this.y++;
+			this.x++;
 			return this;
 		}
 
