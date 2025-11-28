@@ -2,6 +2,7 @@ package org.quiltmc.enigma.util;
 
 import com.google.common.io.CharStreams;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -215,5 +216,14 @@ public class Utils {
 		}
 
 		return Optional.empty();
+	}
+
+	/**
+	 * @return {@code null} if the passed {@code array} is {@code null} or empty,
+	 * or the last element of the {@code array} otherwise
+	 */
+	@Nullable
+	public static <T> T getLastOrNull(@Nullable T[] array) {
+		return array == null || array.length == 0 ? null : array[array.length - 1];
 	}
 }
