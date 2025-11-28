@@ -18,6 +18,12 @@ public final class Main {
 
 	private static final JFrame WINDOW = new JFrame("Gui Visualization");
 
+	// bootstrap
+	static {
+		addVisualizer(FlexGridRelativeRowVisualiser.TITLE, FlexGridRelativeRowVisualiser::new);
+		addVisualizer(FlexGridColumnVisualiser.TITLE, FlexGridColumnVisualiser::new);
+	}
+
 	private static void position(Window window) {
 		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		final int x = (screenSize.width - window.getWidth()) / 2;
@@ -30,8 +36,6 @@ public final class Main {
 		WINDOW.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
 		WINDOW.setLayout(new FlowLayout());
-
-		addVisualizer(FlexGridRelativeRowVisualiser.TITLE, FlexGridRelativeRowVisualiser::new);
 
 		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		final int width = screenSize.width * 2 / 3;
