@@ -29,6 +29,7 @@ import javax.swing.JPanel;
 import javax.swing.JToolTip;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
+import javax.swing.MenuElement;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.Timer;
@@ -100,6 +101,8 @@ public final class GuiUtil {
 	public static final Icon CHEVRON_DOWN_BLACK = loadIcon("chevron-down-black");
 	public static final Icon CHEVRON_UP_WHITE = loadIcon("chevron-up-white");
 	public static final Icon CHEVRON_DOWN_WHITE = loadIcon("chevron-down-white");
+
+	public static final MenuElement[] EMPTY_MENU_ELEMENTS = new MenuElement[0];
 
 	private static final String DESKTOP_FONT_HINTS_KEY = "awt.font.desktophints";
 
