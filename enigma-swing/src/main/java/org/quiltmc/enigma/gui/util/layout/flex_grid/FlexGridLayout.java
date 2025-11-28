@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
+import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints.Alignment;
 import org.quiltmc.enigma.util.Utils;
 
 import java.awt.Component;
@@ -246,7 +247,6 @@ public class FlexGridLayout implements LayoutManager2 {
 		);
 	}
 
-	// TODO respect alignment
 	private void layoutAxisImpl(
 			int startPos, CartesianOperations ops,
 			Map<Integer, Integer> cellSpans,
@@ -259,13 +259,21 @@ public class FlexGridLayout implements LayoutManager2 {
 			final int oppositeCoord = ops.opposite().chooseCoord(x, y);
 
 			final int pos = positions.computeIfAbsent(oppositeCoord, ignored -> startPos);
+			final Integer cellSpan = cellSpans.get(coord);
 
 			values.forEach(constrained -> {
 				final int span = getComponentSpan.apply(constrained, coord);
-				ops.setBounds(constrained.component, pos, span);
+
+				final int constrainedPos = span == cellSpan ? pos : switch (ops.getAlignment(constrained)) {
+					case BEGIN -> pos;
+					case CENTER -> pos + (cellSpan - span) / 2;
+					case END -> pos + cellSpan - span;
+				};
+
+				ops.setBounds(constrained.component, constrainedPos, span);
 			});
 
-			positions.put(oppositeCoord, pos + cellSpans.get(coord));
+			positions.put(oppositeCoord, pos + cellSpan);
 		});
 	}
 
@@ -273,7 +281,7 @@ public class FlexGridLayout implements LayoutManager2 {
 			Component component,
 			int width, int height,
 			boolean fillX, boolean fillY,
-			FlexGridConstraints.Alignment xAlignment, FlexGridConstraints.Alignment yAlignment,
+			Alignment xAlignment, Alignment yAlignment,
 			int priority
 	) {
 		static Constrained defaultOf(Component component) {
@@ -436,6 +444,11 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
+			public Alignment getAlignment(Constrained constrained) {
+				return constrained.xAlignment;
+			}
+
+			@Override
 			public void setBounds(Component component, int x, int width) {
 				component.setBounds(x, component.getY(), width, component.getHeight());
 			}
@@ -493,6 +506,11 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
+			public Alignment getAlignment(Constrained constrained) {
+				return constrained.yAlignment;
+			}
+
+			@Override
 			public void setBounds(Component component, int y, int height) {
 				component.setBounds(component.getX(), y, component.getWidth(), height);
 			}
@@ -512,6 +530,7 @@ public class FlexGridLayout implements LayoutManager2 {
 		int getSpan(Dimension size);
 		boolean fills(Constrained constrained);
 		boolean noneFill(ConstrainedGrid grid);
+		Alignment getAlignment(Constrained constrained);
 		void setBounds(Component component, int pos, int span);
 
 		CartesianOperations opposite();
