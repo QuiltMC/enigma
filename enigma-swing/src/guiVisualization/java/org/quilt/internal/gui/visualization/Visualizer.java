@@ -5,5 +5,5 @@ import javax.swing.JFrame;
 public interface Visualizer {
 	String getTitle();
 
-	void visualizeWindow(JFrame window);
+	void visualize(JFrame window);
 }

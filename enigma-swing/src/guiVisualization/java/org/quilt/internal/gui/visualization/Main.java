@@ -20,7 +20,7 @@ public final class Main {
 
 	// bootstrap
 	static {
-		registerVisualizer(new FlexGridRelativeRowVisualiser());
+		registerVisualizer(new FlexGridDefaultRowVisualiser());
 		registerVisualizer(new FlexGridColumnVisualiser());
 		registerVisualizer(new FlexGridQuiltVisualiser());
 		registerVisualizer(new FlexGridOverlapVisualiser());
@@ -62,7 +62,7 @@ public final class Main {
 				return new JFrame(visualizer.getTitle());
 			});
 
-			visualizer.visualizeWindow(window);
+			visualizer.visualize(window);
 
 			window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			window.addWindowListener(new WindowAdapter() {

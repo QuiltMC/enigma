@@ -5,14 +5,14 @@ import org.quiltmc.enigma.gui.util.FlexGridLayout;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
-public class FlexGridRelativeRowVisualiser implements Visualizer {
+public class FlexGridDefaultRowVisualiser implements Visualizer {
 	@Override
 	public String getTitle() {
-		return "Flex Grid Relative Row";
+		return "Flex Grid Default Row";
 	}
 
 	@Override
-	public void visualizeWindow(JFrame window) {
+	public void visualize(JFrame window) {
 		window.setLayout(new FlexGridLayout());
 
 		window.add(new JLabel("Label 1"));
