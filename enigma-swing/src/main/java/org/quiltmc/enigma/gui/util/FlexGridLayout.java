@@ -224,15 +224,15 @@ public class FlexGridLayout implements LayoutManager2 {
 		final Map<Integer, Integer> positions = new HashMap<>();
 
 		this.grid.forEach((x, y, values) -> {
-			final int coord = ops.chooseCoord(x, y);
-			final int pos = positions.computeIfAbsent(coord, ignored -> startPos);
+			final int otherCoord = ops.chooseOtherCoord(x, y);
+			final int pos = positions.computeIfAbsent(otherCoord, ignored -> startPos);
 
 			values.forEach(constrained -> {
-				final int span = getComponentSpan.apply(constrained.component, coord);
+				final int span = getComponentSpan.apply(constrained.component, otherCoord);
 				ops.setBounds(constrained.component, pos, span);
 			});
 
-			positions.put(coord, pos + cellSpans.get(coord));
+			positions.put(otherCoord, pos + cellSpans.get(ops.chooseCoord(x, y)));
 		});
 	}
 
@@ -393,6 +393,11 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
+			public int chooseOtherCoord(int x, int y) {
+				return y;
+			}
+
+			@Override
 			public void setBounds(Component component, int x, int width) {
 				component.setBounds(x, component.getY(), width, component.getHeight());
 			}
@@ -435,6 +440,11 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
+			public int chooseOtherCoord(int x, int y) {
+				return x;
+			}
+
+			@Override
 			public void setBounds(Component component, int y, int height) {
 				component.setBounds(component.getX(), y, component.getWidth(), height);
 			}
@@ -447,6 +457,7 @@ public class FlexGridLayout implements LayoutManager2 {
 		ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes);
 		int getSpan(Dimension size);
 		int chooseCoord(int x, int y);
+		int chooseOtherCoord(int x, int y);
 		void setBounds(Component component, int pos, int span);
 	}
 }
