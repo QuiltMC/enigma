@@ -20,6 +20,7 @@ import java.awt.Insets;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
+import static org.quiltmc.enigma.gui.util.GuiUtil.EMPTY_MENU_ELEMENTS;
 import static javax.swing.BorderFactory.createCompoundBorder;
 import static javax.swing.BorderFactory.createEmptyBorder;
 
@@ -162,7 +163,7 @@ public class PlaceheldMenuTextField extends PlaceheldTextField implements MenuEl
 
 	@Override
 	public MenuElement[] getSubElements() {
-		return new MenuElement[0];
+		return EMPTY_MENU_ELEMENTS;
 	}
 
 	@Override

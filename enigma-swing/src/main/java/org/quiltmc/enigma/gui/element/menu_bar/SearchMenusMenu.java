@@ -62,8 +62,9 @@ import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
-import static javax.swing.BorderFactory.createEmptyBorder;
+import static org.quiltmc.enigma.gui.util.GuiUtil.EMPTY_MENU_ELEMENTS;
 import static org.quiltmc.enigma.util.Utils.getLastOrNull;
+import static javax.swing.BorderFactory.createEmptyBorder;
 
 public class SearchMenusMenu extends AbstractEnigmaMenu {
 	/**
@@ -171,7 +172,13 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				if (SearchMenusMenu.this.field.isShowing()) {
 					final var manager = (MenuSelectionManager) e.getSource();
 					if (getLastOrNull(manager.getSelectedPath()) == SearchMenusMenu.this.getPopupMenu()) {
-						manager.setSelectedPath(this.getFieldPath().toArray(new MenuElement[0]));
+						// select here instead of in the hierarchy listener below because:
+						// 1. the manager doesn't report the final path in a hierarchy listener
+						// 2. selecting from the hierarchy listener caused bugs when restoring after showing a result:
+						//    - this.field and the restored item both appeared selected, but arrow keys couldn't select
+						//    - the final selected path got an increasing number of duplicates of this.field;
+						//      none should have been in the path
+						manager.setSelectedPath(this.getFieldPath().toArray(EMPTY_MENU_ELEMENTS));
 					}
 				}
 			}
@@ -678,7 +685,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 				void selectSearchable(MenuSelectionManager manager) {
 					if (!this.searchablePath.isEmpty()) {
-						manager.setSelectedPath(this.searchablePath.toArray(new MenuElement[0]));
+						manager.setSelectedPath(this.searchablePath.toArray(EMPTY_MENU_ELEMENTS));
 					}
 				}
 
