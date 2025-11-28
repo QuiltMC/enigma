@@ -13,7 +13,7 @@ public class FlexGridColumnVisualiser implements Visualizer {
 	}
 
 	@Override
-	public void visualizeWindow(JFrame window) {
+	public void visualize(JFrame window) {
 		window.setLayout(new FlexGridLayout());
 
 		final FlexGridConstraints.Absolute constraints = FlexGridConstraints.createAbsolute();
