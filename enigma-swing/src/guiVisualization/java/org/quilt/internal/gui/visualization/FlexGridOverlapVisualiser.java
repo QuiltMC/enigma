@@ -21,10 +21,11 @@ public class FlexGridOverlapVisualiser implements Visualizer {
 	 * | GB  |  B  |
 	 * -------------
 	 * |  G  |
+	 * -------
 	 * </pre></code>
 	 */
 	@Override
-	public void visualizeWindow(JFrame window) {
+	public void visualize(JFrame window) {
 		window.setLayout(new FlexGridLayout());
 
 		final FlexGridConstraints.Absolute constraints = FlexGridConstraints.createAbsolute();

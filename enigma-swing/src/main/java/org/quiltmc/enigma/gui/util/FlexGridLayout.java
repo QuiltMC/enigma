@@ -137,11 +137,11 @@ public class FlexGridLayout implements LayoutManager2 {
 
 	@Override
 	public void layoutContainer(Container parent) {
-		this.layoutAxis(parent, AxisOperations.X);
-		this.layoutAxis(parent, AxisOperations.Y);
+		this.layoutAxis(parent, CartesianOperations.X);
+		this.layoutAxis(parent, CartesianOperations.Y);
 	}
 
-	private void layoutAxis(Container parent, AxisOperations ops) {
+	private void layoutAxis(Container parent, CartesianOperations ops) {
 		final Insets insets = parent.getInsets();
 		final int leadingInset = ops.getLeadingInset(insets);
 
@@ -170,8 +170,7 @@ public class FlexGridLayout implements LayoutManager2 {
 		}
 	}
 
-	// TODO fix erroneous overlap and inconsistent sizes
-	private Map<Integer, Integer> allocateCellSpace(AxisOperations ops, int remainingSpace) {
+	private Map<Integer, Integer> allocateCellSpace(CartesianOperations ops, int remainingSpace) {
 		final SortedSet<Constrained.At> prioritizedConstrained = new TreeSet<>();
 		this.grid.forEach((x, y, values) -> {
 			values.forEach(constrained -> prioritizedConstrained.add(constrained.new At(ops.chooseCoord(x, y))));
@@ -209,7 +208,7 @@ public class FlexGridLayout implements LayoutManager2 {
 		return cellSpans;
 	}
 
-	private void layoutFixedAxis(Sizes sizes, int startPos, AxisOperations ops) {
+	private void layoutFixedAxis(Sizes sizes, int startPos, CartesianOperations ops) {
 		this.layoutAxisImpl(
 				startPos, ops, ops.getCellSpans(sizes),
 				(component, coord) -> ops.getSpan(sizes.componentSizes.get(component))
@@ -218,22 +217,24 @@ public class FlexGridLayout implements LayoutManager2 {
 
 	// TODO respect fill/alignment
 	private void layoutAxisImpl(
-			int startPos, AxisOperations ops,
+			int startPos, CartesianOperations ops,
 			Map<Integer, Integer> cellSpans,
 			BiFunction<Component, Integer, Integer> getComponentSpan
 	) {
 		final Map<Integer, Integer> positions = new HashMap<>();
 
 		this.grid.forEach((x, y, values) -> {
-			final int otherCoord = ops.chooseOtherCoord(x, y);
-			final int pos = positions.computeIfAbsent(otherCoord, ignored -> startPos);
+			final int oppositeCoord = ops.opposite().chooseCoord(x, y);
+			final int pos = positions.computeIfAbsent(oppositeCoord, ignored -> startPos);
+
+			final int coord = ops.chooseCoord(x, y);
 
 			values.forEach(constrained -> {
-				final int span = getComponentSpan.apply(constrained.component, otherCoord);
+				final int span = getComponentSpan.apply(constrained.component, coord);
 				ops.setBounds(constrained.component, pos, span);
 			});
 
-			positions.put(otherCoord, pos + cellSpans.get(ops.chooseCoord(x, y)));
+			positions.put(oppositeCoord, pos + cellSpans.get(coord));
 		});
 	}
 
@@ -356,8 +357,8 @@ public class FlexGridLayout implements LayoutManager2 {
 		}
 	}
 
-	private interface AxisOperations {
-		AxisOperations X = new AxisOperations() {
+	private interface CartesianOperations {
+		CartesianOperations X = new CartesianOperations() {
 			@Override
 			public int getLeadingInset(Insets insets) {
 				return insets.left;
@@ -394,17 +395,17 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
-			public int chooseOtherCoord(int x, int y) {
-				return y;
-			}
-
-			@Override
 			public void setBounds(Component component, int x, int width) {
 				component.setBounds(x, component.getY(), width, component.getHeight());
 			}
+
+			@Override
+			public CartesianOperations opposite() {
+				return Y;
+			}
 		};
 
-		AxisOperations Y = new AxisOperations() {
+		CartesianOperations Y = new CartesianOperations() {
 			@Override
 			public int getLeadingInset(Insets insets) {
 				return insets.top;
@@ -441,13 +442,13 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
-			public int chooseOtherCoord(int x, int y) {
-				return x;
+			public void setBounds(Component component, int y, int height) {
+				component.setBounds(component.getX(), y, component.getWidth(), height);
 			}
 
 			@Override
-			public void setBounds(Component component, int y, int height) {
-				component.setBounds(component.getX(), y, component.getWidth(), height);
+			public CartesianOperations opposite() {
+				return X;
 			}
 		};
 
@@ -458,7 +459,8 @@ public class FlexGridLayout implements LayoutManager2 {
 		ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes);
 		int getSpan(Dimension size);
 		int chooseCoord(int x, int y);
-		int chooseOtherCoord(int x, int y);
 		void setBounds(Component component, int pos, int span);
+
+		CartesianOperations opposite();
 	}
 }
