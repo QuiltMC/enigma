@@ -9,7 +9,6 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.function.Supplier;
 
 public final class Main {
 	private Main() {
@@ -20,8 +19,9 @@ public final class Main {
 
 	// bootstrap
 	static {
-		addVisualizer(FlexGridRelativeRowVisualiser.TITLE, FlexGridRelativeRowVisualiser::new);
-		addVisualizer(FlexGridColumnVisualiser.TITLE, FlexGridColumnVisualiser::new);
+		registerVisualizer(new FlexGridRelativeRowVisualiser());
+		registerVisualizer(new FlexGridColumnVisualiser());
+		registerVisualizer(new FlexGridGridVisualiser());
 	}
 
 	private static void position(Window window) {
@@ -47,10 +47,11 @@ public final class Main {
 		WINDOW.setVisible(true);
 	}
 
-	private static void addVisualizer(String title, Supplier<JFrame> factory) {
-		final JButton button = new JButton(title);
+	private static void registerVisualizer(Visualizer visualizer) {
+		final JButton button = new JButton(visualizer.getTitle());
 		button.addActionListener(e -> {
-			final JFrame window = factory.get();
+			final JFrame window = new JFrame(visualizer.getTitle());
+			visualizer.visualizeWindow(window);
 
 			window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			window.addWindowListener(new WindowAdapter() {
