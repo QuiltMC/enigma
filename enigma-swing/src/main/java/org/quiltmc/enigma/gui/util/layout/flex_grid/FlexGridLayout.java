@@ -396,143 +396,146 @@ public class FlexGridLayout implements LayoutManager2 {
 		}
 	}
 
-	private interface CartesianOperations {
-		CartesianOperations X = new CartesianOperations() {
+	private enum CartesianOperations {
+		X() {
 			@Override
-			public int chooseCoord(int x, int y) {
+			int chooseCoord(int x, int y) {
 				return x;
 			}
 
 			@Override
-			public int getLeadingInset(Insets insets) {
+			int getLeadingInset(Insets insets) {
 				return insets.left;
 			}
 
 			@Override
-			public int getTrailingInset(Insets insets) {
+			int getTrailingInset(Insets insets) {
 				return insets.right;
 			}
 
 			@Override
-			public int getParentSpace(Container parent) {
+			int getParentSpace(Container parent) {
 				return parent.getWidth();
 			}
 
 			@Override
-			public int getTotalSpace(Sizes sizes) {
+			int getTotalSpace(Sizes sizes) {
 				return sizes.totalWidth;
 			}
 
 			@Override
-			public ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes) {
+			ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes) {
 				return sizes.columnWidths;
 			}
 
 			@Override
-			public int getSpan(Dimension size) {
+			int getSpan(Dimension size) {
 				return size.width;
 			}
 
 			@Override
-			public boolean fills(Constrained constrained) {
+			boolean fills(Constrained constrained) {
 				return constrained.fillX;
 			}
 
 			@Override
-			public boolean noneFill(ConstrainedGrid grid) {
+			boolean noneFill(ConstrainedGrid grid) {
 				return grid.noneFillX();
 			}
 
 			@Override
-			public Alignment getAlignment(Constrained constrained) {
+			Alignment getAlignment(Constrained constrained) {
 				return constrained.xAlignment;
 			}
 
 			@Override
-			public void setBounds(Component component, int x, int width) {
+			void setBounds(Component component, int x, int width) {
 				component.setBounds(x, component.getY(), width, component.getHeight());
 			}
 
 			@Override
-			public CartesianOperations opposite() {
+			CartesianOperations opposite() {
 				return Y;
 			}
-		};
-
-		CartesianOperations Y = new CartesianOperations() {
+		},
+		Y() {
 			@Override
-			public int chooseCoord(int x, int y) {
+			int chooseCoord(int x, int y) {
 				return y;
 			}
 
 			@Override
-			public int getLeadingInset(Insets insets) {
+			int getLeadingInset(Insets insets) {
 				return insets.top;
 			}
 
 			@Override
-			public int getTrailingInset(Insets insets) {
+			int getTrailingInset(Insets insets) {
 				return insets.bottom;
 			}
 
 			@Override
-			public int getParentSpace(Container parent) {
+			int getParentSpace(Container parent) {
 				return parent.getHeight();
 			}
 
 			@Override
-			public int getTotalSpace(Sizes sizes) {
+			int getTotalSpace(Sizes sizes) {
 				return sizes.totalHeight;
 			}
 
 			@Override
-			public ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes) {
+			ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes) {
 				return sizes.rowHeights;
 			}
 
 			@Override
-			public int getSpan(Dimension size) {
+			int getSpan(Dimension size) {
 				return size.height;
 			}
 
 			@Override
-			public boolean fills(Constrained constrained) {
+			boolean fills(Constrained constrained) {
 				return constrained.fillY;
 			}
 
 			@Override
-			public boolean noneFill(ConstrainedGrid grid) {
+			boolean noneFill(ConstrainedGrid grid) {
 				return grid.noneFillY();
 			}
 
 			@Override
-			public Alignment getAlignment(Constrained constrained) {
+			Alignment getAlignment(Constrained constrained) {
 				return constrained.yAlignment;
 			}
 
 			@Override
-			public void setBounds(Component component, int y, int height) {
+			void setBounds(Component component, int y, int height) {
 				component.setBounds(component.getX(), y, component.getWidth(), height);
 			}
 
 			@Override
-			public CartesianOperations opposite() {
+			CartesianOperations opposite() {
 				return X;
 			}
 		};
 
-		int chooseCoord(int x, int y);
-		int getLeadingInset(Insets insets);
-		int getTrailingInset(Insets insets);
-		int getParentSpace(Container parent);
-		int getTotalSpace(Sizes sizes);
-		ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes);
-		int getSpan(Dimension size);
-		boolean fills(Constrained constrained);
-		boolean noneFill(ConstrainedGrid grid);
-		Alignment getAlignment(Constrained constrained);
-		void setBounds(Component component, int pos, int span);
+		abstract int chooseCoord(int x, int y);
 
-		CartesianOperations opposite();
+		abstract int getLeadingInset(Insets insets);
+		abstract int getTrailingInset(Insets insets);
+		abstract int getParentSpace(Container parent);
+
+		abstract int getTotalSpace(Sizes sizes);
+		abstract ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes);
+		abstract int getSpan(Dimension size);
+
+		abstract boolean fills(Constrained constrained);
+		abstract boolean noneFill(ConstrainedGrid grid);
+		abstract Alignment getAlignment(Constrained constrained);
+
+		abstract void setBounds(Component component, int pos, int span);
+
+		abstract CartesianOperations opposite();
 	}
 }
