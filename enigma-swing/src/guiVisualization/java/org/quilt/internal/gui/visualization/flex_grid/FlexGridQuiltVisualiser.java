@@ -10,6 +10,14 @@ import javax.swing.JFrame;
 import java.util.function.UnaryOperator;
 
 public class FlexGridQuiltVisualiser implements Visualizer {
+	/**
+	 * Visualizes Quilt's logo, giving each patch a name indicating its coordinates.
+	 *
+	 * @see #visualizeQuilt(JFrame,
+	 * String, UnaryOperator, String, UnaryOperator, String, UnaryOperator,
+	 * String, UnaryOperator, String, UnaryOperator, String, UnaryOperator,
+	 * String, UnaryOperator, String, UnaryOperator, String, UnaryOperator)
+	 */
 	public static void visualizeQuilt(
 			JFrame window,
 			UnaryOperator<Absolute> constrainer1,
@@ -32,6 +40,18 @@ public class FlexGridQuiltVisualiser implements Visualizer {
 		);
 	}
 
+	/**
+	 * Gives the passed {@code window} a {@link FlexGridLayout} and forms Quilt's logo out of a 3 x 3 grid of
+	 * {@link VisualBox} patches.
+	 *
+	 * <p> The patches are given the passed names and their constraints are adjusted using the passed constrainers.<br>
+	 * The same {@link FlexGridConstraints} instance is passed to each constrainer, and its x and y coordinates are
+	 * updated for each patch before passing it.
+	 *
+	 * @see #visualizeQuilt(JFrame,
+	 * UnaryOperator, UnaryOperator, UnaryOperator, UnaryOperator, UnaryOperator,
+	 * UnaryOperator, UnaryOperator, UnaryOperator, UnaryOperator)
+	 */
 	public static void visualizeQuilt(
 			JFrame window,
 			String name1, UnaryOperator<Absolute> constrainer1,
