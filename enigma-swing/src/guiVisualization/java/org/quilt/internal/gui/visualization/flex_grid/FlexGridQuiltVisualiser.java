@@ -1,5 +1,6 @@
-package org.quilt.internal.gui.visualization;
+package org.quilt.internal.gui.visualization.flex_grid;
 
+import org.quilt.internal.gui.visualization.Visualizer;
 import org.quilt.internal.gui.visualization.util.VisualBox;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.FlexGridLayout;
