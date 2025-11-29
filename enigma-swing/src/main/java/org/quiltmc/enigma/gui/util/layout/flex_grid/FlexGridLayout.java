@@ -278,7 +278,9 @@ public class FlexGridLayout implements LayoutManager2 {
 			});
 		});
 
-		for (final Constrained.At at : prioritized) {
+		while (!prioritized.isEmpty()) {
+			final Constrained.At at = prioritized.remove();
+
 			final int currentSpan = cellSpans.get(at.coord);
 
 			final Dimension targetSize = large.componentSizes.get(at.constrained().component);
