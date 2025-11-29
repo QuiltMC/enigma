@@ -10,6 +10,8 @@ import org.quiltmc.enigma.util.Utils;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.util.Comparator;
@@ -19,6 +21,73 @@ import java.util.PriorityQueue;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/**
+ * A layout manager that lays out components in a grid and allocates space according to priority.
+ *
+ * <p> Flex grids are similar to {@link GridBagLayout}s, with some key differences:
+ * <ul>
+ *     <li> flex grids don't {@linkplain GridBagConstraints#weightx weight} their components; instead, space is
+ *          allocated according to {@linkplain FlexGridConstraints#priority(int) priority} and position
+ *     <li> flex grids respect each component's {@linkplain Component#getMaximumSize() maximum size}
+ *     <li> flex grids support negative coordinates
+ * </ul>
+ *
+ * <h4>Constraints</h4>
+ *
+ * Flex grids are configured by passing {@link FlexGridConstraints} when
+ * {@linkplain Container#add(Component, Object) adding} {@link Component}s.<br>
+ * If no constraints are specified,
+ * a default set of {@linkplain FlexGridConstraints#createRelative() relative} constraints are used.<br>
+ * If non-{@linkplain FlexGridConstraints flex grid} constraints are passed,
+ * an {@link IllegalArgumentException} is thrown.
+ *
+ * <h4>Space allocation</h4>
+ *
+ * <p> Space is allocated to components per-axis, with high-{@linkplain FlexGridConstraints#priority(int) priority}
+ * components getting space first. In ties, components with the least position on the axis get priority.<br>
+ * Components never get less space in an axis than their {@linkplain Component#getMinimumSize() minimum sizes}
+ * allow, and they never get more space than their {@linkplain Component#getMaximumSize() maximum sizes} allow.
+ * Components only ever get more space in an axis than their
+ * {@linkplain Component#getPreferredSize() preferred sizes} request if they're set to
+ * {@linkplain FlexGridConstraints#fill(boolean, boolean) fill} that axis.
+ *
+ * <p> Space allocation behavior depends on the parent container's available space and
+ * child components' total required space (as before, per-axis):
+ * <table>
+ *     <tr>
+ *         <th>less than minimum space</th>
+ *         <td>each component gets its minimum size (excess is clipped)</td>
+ *     </tr>
+ *     <tr>
+ *         <th>between minimum and preferred space</th>
+ *         <td>
+ *             each component gets at least its minimum size; components get additional space
+ *             - up to their preferred size - according to priority
+ *         </td>
+ *     </tr>
+ *     <tr>
+ *         <th>more than preferred space</th>
+ *         <td>
+ *             each component gets at least is preferred size; components that
+ *             {@linkplain FlexGridConstraints#fill(boolean, boolean) fill} the axis get additional space
+ *             - up to their max size - according to priority
+ *        </td>
+ *     </tr>
+ * </table>
+ *
+ * <h4>Grid specifics</h4>
+ *
+ * <ul>
+ *     <li> a component can occupy multiple grid cells when its {@linkplain FlexGridConstraints#width(int) width}
+ *          or {@linkplain FlexGridConstraints#height(int) height} exceeds one; it occupies cells starting
+ *          from its coordinates and extending in the positive direction of each axis
+ *     <li> any number of components can share grid cells, resulting in overlap
+ *     <li> only the relative values of coordinates matter; components with the least x coordinate are left-most
+ *          whether the coordinate is {@code -1000}, {@code 0}, or {@code 1000}
+ *     <li> vacant rows and columns are ignored; if two components are at x {@code -10} and {@code 10} and
+ *          no other component has an x coordinate in that range, the two components are adjacent (in terms of x)
+ * </ul>
+ */
 public class FlexGridLayout implements LayoutManager2 {
 	private final ConstrainedGrid grid = new ConstrainedGrid();
 
