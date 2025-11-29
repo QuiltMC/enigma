@@ -222,6 +222,22 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		return this.getSelf();
 	}
 
+	public C defaultPriority() {
+		return this.priority(DEFAULT_PRIORITY);
+	}
+
+	public C addPriority(int amount) {
+		return this.priority(this.priority + amount);
+	}
+
+	public C incrementPriority() {
+		return this.addPriority(1);
+	}
+
+	public C decrementPriority() {
+		return this.addPriority(-1);
+	}
+
 	public abstract C copy();
 
 	abstract C getSelf();
