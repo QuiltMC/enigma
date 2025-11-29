@@ -20,6 +20,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * The main entrypoint for {@link Visualizer}s.
+ *
+ * <p> Opens a window full of buttons that open visualizer windows.
+ */
 public final class Main {
 	private Main() {
 		throw new UnsupportedOperationException();

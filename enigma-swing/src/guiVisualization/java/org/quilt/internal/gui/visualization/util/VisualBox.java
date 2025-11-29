@@ -12,6 +12,13 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
+/**
+ * A simple box with customizable sizes, color, and name.
+ *
+ * <p> Boxes have a dashed outline and a transparent background.<br>
+ * There are numerous factories for creating boxes with as much specificity as needed.
+ */
+@SuppressWarnings("unused")
 public class VisualBox extends JPanel {
 	public static final int DEFAULT_SIZE = 100;
 
