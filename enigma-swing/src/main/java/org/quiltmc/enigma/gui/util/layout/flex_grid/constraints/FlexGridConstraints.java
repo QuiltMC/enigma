@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 
 import java.util.Objects;
 
+@SuppressWarnings("unused")
 public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C>> {
 	public static final int DEFAULT_PRIORITY = 0;
 	public static final int DEFAULT_WIDTH = 1;
