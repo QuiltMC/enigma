@@ -223,7 +223,7 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 
 	public abstract C copy();
 
-	protected abstract C getSelf();
+	abstract C getSelf();
 
 	public enum Alignment {
 		BEGIN, CENTER, END
@@ -273,7 +273,7 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		}
 
 		@Override
-		protected Relative getSelf() {
+		Relative getSelf() {
 			return this;
 		}
 	}
@@ -372,7 +372,7 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		}
 
 		@Override
-		protected Absolute getSelf() {
+		Absolute getSelf() {
 			return this;
 		}
 	}
