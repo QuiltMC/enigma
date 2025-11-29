@@ -1,4 +1,6 @@
-package org.quilt.internal.gui.visualization;
+package org.quilt.internal.gui.visualization.flex_grid;
+
+import org.quilt.internal.gui.visualization.Visualizer;
 
 import javax.swing.JFrame;
 

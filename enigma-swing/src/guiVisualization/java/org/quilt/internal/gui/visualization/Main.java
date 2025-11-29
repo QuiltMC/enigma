@@ -1,5 +1,13 @@
 package org.quilt.internal.gui.visualization;
 
+import org.quilt.internal.gui.visualization.flex_grid.FlexGridAlignAndFillVisualizer;
+import org.quilt.internal.gui.visualization.flex_grid.FlexGridAlignmentVisualizer;
+import org.quilt.internal.gui.visualization.flex_grid.FlexGridColumnVisualiser;
+import org.quilt.internal.gui.visualization.flex_grid.FlexGridDefaultRowVisualiser;
+import org.quilt.internal.gui.visualization.flex_grid.FlexGridFillVisualizer;
+import org.quilt.internal.gui.visualization.flex_grid.FlexGridOverlapVisualiser;
+import org.quilt.internal.gui.visualization.flex_grid.FlexGridQuiltVisualiser;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
