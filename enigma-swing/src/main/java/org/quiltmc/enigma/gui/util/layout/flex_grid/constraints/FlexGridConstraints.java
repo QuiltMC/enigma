@@ -1,9 +1,24 @@
 package org.quiltmc.enigma.gui.util.layout.flex_grid.constraints;
 
 import com.google.common.base.Preconditions;
+import org.quiltmc.enigma.gui.util.layout.flex_grid.FlexGridLayout;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.util.Objects;
 
+/**
+ * Constraints for components added to a {@link Container} with a {@link FlexGridLayout} using
+ * {@link Container#add(Component, Object)}.
+ *
+ * <p> {@link FlexGridConstraints} is to {@link GridBagConstraints} as
+ * {@link FlexGridLayout} is to {@link GridBagLayout}.<br>
+ * TODO differences, chaining, copying
+ *
+ * @param <C> the type of these constraints; usually not relevant to users
+ */
 @SuppressWarnings("unused")
 public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C>> {
 	public static final int DEFAULT_PRIORITY = 0;
