@@ -6,6 +6,7 @@ import org.quilt.internal.gui.visualization.flex_grid.FlexGridColumnVisualiser;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridDefaultRowVisualiser;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridFillVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridOverlapVisualiser;
+import org.quilt.internal.gui.visualization.flex_grid.FlexGridPriorityVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridQuiltVisualiser;
 
 import javax.swing.JButton;
@@ -35,6 +36,7 @@ public final class Main {
 		registerVisualizer(new FlexGridFillVisualizer());
 		registerVisualizer(new FlexGridAlignmentVisualizer());
 		registerVisualizer(new FlexGridAlignAndFillVisualizer());
+		registerVisualizer(new FlexGridPriorityVisualizer());
 	}
 
 	private static void position(Window window) {
