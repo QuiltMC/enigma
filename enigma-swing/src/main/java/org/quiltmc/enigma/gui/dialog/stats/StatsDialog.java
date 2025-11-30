@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.gui.dialog;
+package org.quiltmc.enigma.gui.dialog.stats;
 
 import org.quiltmc.enigma.api.stats.GenerationParameters;
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
@@ -6,16 +6,12 @@ import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.api.stats.StatsGenerator;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.dialog.ProgressDialog;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -68,21 +64,7 @@ public class StatsDialog {
 		String overallText = I18n.translate("menu.file.stats.overall") + " - " + String.format("%.2f%%", result.getPercentage(StatType.values()));
 		contentPane.add(new JLabel(overallText), GridBagConstraintsBuilder.create().width(20).anchor(GridBagConstraints.CENTER).build());
 
-		final int[] i = {1};
-		result.getOverall().getTypes().stream().sorted(Comparator.comparing(StatType::getName)).forEach(type -> {
-			JCheckBox checkBox = new JCheckBox(type.getName());
-			checkboxes.put(type, checkBox);
-			contentPane.add(checkBox, cb.pos(0, i[0]).weightX(1.0).anchor(GridBagConstraints.WEST).build());
-
-			GridBagConstraintsBuilder labels = cb.anchor(GridBagConstraints.EAST);
-
-			contentPane.add(new JLabel(Integer.toString(result.getMapped(type))), labels.pos(1, i[0]).build());
-			contentPane.add(new JLabel("/"), labels.pos(2, i[0]).build());
-			contentPane.add(new JLabel(Integer.toString(result.getMappable(type))), labels.pos(3, i[0]).build());
-			contentPane.add(new JLabel(String.format("%.2f%%", result.getPercentage(type))), labels.pos(4, i[0]).build());
-
-			i[0]++;
-		});
+		contentPane.add(new JScrollPane(new StatTable(result)), cb.pos(0, 1).anchor(GridBagConstraints.EAST).fill(GridBagConstraints.HORIZONTAL).weightX(1.0).build());
 
 		GridBagConstraintsBuilder cb1 = cb.pos(0, 0).width(5).weightX(1.0).anchor(GridBagConstraints.WEST);
 
