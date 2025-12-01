@@ -11,11 +11,18 @@ import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.Map;
@@ -58,8 +65,6 @@ public class StatsDialog {
 		contentPane.setLayout(new GridBagLayout());
 
 		GridBagConstraintsBuilder cb = GridBagConstraintsBuilder.create().insets(2);
-
-		Map<StatType, JCheckBox> checkboxes = new EnumMap<>(StatType.class);
 
 		String overallText = I18n.translate("menu.file.stats.overall") + " - " + String.format("%.2f%%", result.getPercentage(StatType.values()));
 		contentPane.add(new JLabel(overallText), GridBagConstraintsBuilder.create().width(20).anchor(GridBagConstraints.CENTER).build());
@@ -105,25 +110,13 @@ public class StatsDialog {
 
 		// show generate button
 		JButton button = new JButton(I18n.translate("menu.file.stats.generate"));
-		button.setEnabled(false);
+		button.setEnabled(true);
 		button.addActionListener(action -> {
 			dialog.dispose();
-
-			Config.stats().lastTopLevelPackage.setValue(topLevelPackage.getText());
-
-			generateStats(gui, checkboxes);
+			showGenerateDiagramDialog(gui, result);
 		});
 
 		contentPane.add(button, cb1.pos(0, result.getOverall().getTypes().size() + 5).weightY(1.0).anchor(GridBagConstraints.SOUTHWEST).build());
-
-		// add action listener to each checkbox
-		checkboxes.forEach((key, value) -> value.addActionListener(action -> {
-			if (!button.isEnabled()) {
-				button.setEnabled(true);
-			} else if (checkboxes.entrySet().stream().noneMatch(entry -> entry.getValue().isSelected())) {
-				button.setEnabled(false);
-			}
-		}));
 
 		// show the frame
 		dialog.pack();
@@ -132,6 +125,36 @@ public class StatsDialog {
 		size.width = ScaleUtil.scale(350);
 		dialog.setSize(size);
 		dialog.setLocationRelativeTo(gui.getFrame());
+		dialog.setVisible(true);
+	}
+
+	private static void showGenerateDiagramDialog(Gui gui, ProjectStatsResult result) {
+		JDialog dialog = new JDialog();
+
+		dialog.setTitle("Generate Diagram");
+		dialog.setLayout(new GridLayout(0, 1));
+		Container contentPane = dialog.getContentPane();
+
+		Map<StatType, JCheckBox> checkboxes = new EnumMap<>(StatType.class);
+		for (StatType type : result.getOverall().getTypes()) {
+			JCheckBox checkbox = new JCheckBox(type.getName());
+			checkboxes.put(type, checkbox);
+			contentPane.add(checkbox);
+		}
+
+		JButton generateButton = new JButton("Generate");
+		generateButton.addActionListener(action -> {
+			dialog.dispose();
+			generateStats(gui, checkboxes);
+		});
+
+		for (JCheckBox checkbox : checkboxes.values()) {
+			checkbox.addActionListener(action -> generateButton.setEnabled(checkboxes.values().stream().anyMatch(JCheckBox::isSelected)));
+		}
+
+		contentPane.add(generateButton);
+		dialog.setSize(300, 200);
+		dialog.setLocationRelativeTo(null);
 		dialog.setVisible(true);
 	}
 
