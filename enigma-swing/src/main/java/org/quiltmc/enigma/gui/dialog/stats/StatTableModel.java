@@ -57,8 +57,7 @@ public class StatTableModel extends AbstractTableModel {
 		TYPE("Type", String.class, (result, type) -> type.getName()),
 		MAPPED("Mapped", Integer.class, ProjectStatsResult::getMapped),
 		TOTAL("Total", Integer.class, ProjectStatsResult::getMappable),
-		//PERCENTAGE("%", String.class, (result, type) -> String.format("%.2f%%", result.getPercentage(type))),
-		PROGRESS_BAR("Progress", StatProgressBar.class, (result, type) -> new StatProgressBar(result.getPercentage(type)));
+		PROGRESS_BAR("Progress", Double.class, ProjectStatsResult::getPercentage);
 
 		private final String name;
 		private final Class<?> type;

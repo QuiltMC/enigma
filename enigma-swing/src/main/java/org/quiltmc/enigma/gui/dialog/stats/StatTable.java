@@ -14,7 +14,7 @@ public class StatTable extends JPanel {
 		this.setLayout(new BorderLayout());
 		JTable table = new JTable();
 		table.setModel(new StatTableModel(result));
-		table.setDefaultRenderer(StatProgressBar.class, new ProgressBarRenderer());
+		table.setDefaultRenderer(Double.class, new ProgressBarRenderer());
 		this.add(table.getTableHeader(), BorderLayout.NORTH);
 		this.add(table, BorderLayout.CENTER);
 	}
@@ -22,7 +22,7 @@ public class StatTable extends JPanel {
 	private static class ProgressBarRenderer implements TableCellRenderer {
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			return (StatProgressBar) value;
+			return new StatProgressBar((double) value, false);
 		}
 	}
 }

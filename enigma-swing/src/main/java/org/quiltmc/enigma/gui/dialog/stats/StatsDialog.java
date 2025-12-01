@@ -67,7 +67,7 @@ public class StatsDialog {
 		GridBagConstraintsBuilder cb = GridBagConstraintsBuilder.create().insets(2);
 
 		String overallText = I18n.translate("menu.file.stats.overall") + " - " + String.format("%.2f%%", result.getPercentage(StatType.values()));
-		contentPane.add(new JLabel(overallText), GridBagConstraintsBuilder.create().width(20).anchor(GridBagConstraints.CENTER).build());
+		contentPane.add(new StatProgressBar(result.getPercentage(), true), GridBagConstraintsBuilder.create().width(20).anchor(GridBagConstraints.CENTER).build());
 
 		contentPane.add(new JScrollPane(new StatTable(result)), cb.pos(0, 1).anchor(GridBagConstraints.EAST).fill(GridBagConstraints.HORIZONTAL).weightX(1.0).build());
 
