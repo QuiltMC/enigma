@@ -42,21 +42,32 @@ public class StatProgressBar extends JComponent {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D) g.create();
-		g2.setColor(new Color(0x19D219));
 
 		if (this.isCircular) {
 			int startX = (this.getWidth() - CIRCLE_SIZE) / 2;
 			int startY = (this.getHeight() - CIRCLE_SIZE) / 2;
-			Arc2D outer = new Arc2D.Double(startX, startY, CIRCLE_SIZE, CIRCLE_SIZE, 90, -(360.0 * this.progress / 100), Arc2D.PIE);
-			Arc2D inner = new Arc2D.Double(startX + THICKNESS, startY + THICKNESS, CIRCLE_SIZE - 2 * THICKNESS, CIRCLE_SIZE - 2 * THICKNESS, 90, -(360.0 * this.progress / 100), Arc2D.PIE);
-			Area ring = new Area(outer);
-			ring.subtract(new Area(inner));
-			g2.fill(ring);
+			g2.setColor(this.getBackground().darker());
+			Area inactiveRing = createRing(startX, startY, CIRCLE_SIZE, CIRCLE_SIZE, 0, 360);
+			g2.fill(inactiveRing);
+			g2.setColor(new Color(0x19D219));
+			Area activeRing = createRing(startX, startY, CIRCLE_SIZE, CIRCLE_SIZE, 0, 360 * this.progress / 100);
+			g2.fill(activeRing);
 		} else {
 			int startY = (this.getHeight() - THICKNESS) / 2;
+			g2.setColor(new Color((int) (this.getBackground().getRed() * 0.8), (int) (this.getBackground().getGreen() * 0.8), (int) (this.getBackground().getBlue() * 0.8)));
+			g2.fillRoundRect(0, startY, this.getWidth(), THICKNESS, 10, 10);
+			g2.setColor(new Color(0x19D219));
 			g2.fillRoundRect(0, startY, (int) (this.getWidth() * this.progress / 100), THICKNESS, 10, 10);
 		}
 
 		g2.dispose();
+	}
+
+	private static Area createRing(int x, int y, int w, int h, double startAngle, double arcAngle) {
+		Arc2D outer = new Arc2D.Double(x, y, w, h, startAngle + 90, -arcAngle, Arc2D.PIE);
+		Arc2D inner = new Arc2D.Double(x + THICKNESS, y + THICKNESS, w - 2 * THICKNESS, h - 2 * THICKNESS, startAngle + 90, -arcAngle, Arc2D.PIE);
+		Area ring = new Area(outer);
+		ring.subtract(new Area(inner));
+		return ring;
 	}
 }
