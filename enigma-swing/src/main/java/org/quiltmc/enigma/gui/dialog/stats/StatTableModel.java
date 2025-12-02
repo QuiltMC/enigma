@@ -68,7 +68,6 @@ public class StatTableModel extends AbstractTableModel {
 			this.getter = getter;
 		}
 
-		//TODO localize
 		public String getName() {
 			return I18n.translate(this.name);
 		}
