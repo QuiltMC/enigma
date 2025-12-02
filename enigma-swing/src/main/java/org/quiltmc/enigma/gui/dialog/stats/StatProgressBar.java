@@ -3,8 +3,16 @@ package org.quiltmc.enigma.gui.dialog.stats;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.RenderingHints;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Area;
 
@@ -49,10 +57,10 @@ public class StatProgressBar extends JComponent {
 			int startX = (this.getWidth() - CIRCLE_SIZE) / 2;
 			int startY = (this.getHeight() - CIRCLE_SIZE) / 2;
 			g2.setColor(this.getBackgroundColor());
-			Area backgroundRing = createRing(startX, startY, CIRCLE_SIZE, CIRCLE_SIZE, 0, 360);
+			Area backgroundRing = createRing(startX, startY, 0, 360);
 			g2.fill(backgroundRing);
 			g2.setColor(COLOR);
-			Area foregroundRing = createRing(startX, startY, CIRCLE_SIZE, CIRCLE_SIZE, 0, 360 * this.progress / 100);
+			Area foregroundRing = createRing(startX, startY, 0, 360 * this.progress / 100);
 			g2.fill(foregroundRing);
 		} else {
 			int startY = (this.getHeight() - THICKNESS) / 2;
@@ -70,9 +78,9 @@ public class StatProgressBar extends JComponent {
 		return new Color((int) (background.getRed() * 0.8), (int) (background.getGreen() * 0.8), (int) (background.getBlue() * 0.8));
 	}
 
-	private static Area createRing(int x, int y, int w, int h, double startAngle, double arcAngle) {
-		Arc2D outer = new Arc2D.Double(x, y, w, h, startAngle + 90, -arcAngle, Arc2D.PIE);
-		Arc2D inner = new Arc2D.Double(x + THICKNESS, y + THICKNESS, w - 2 * THICKNESS, h - 2 * THICKNESS, startAngle + 90, -arcAngle, Arc2D.PIE);
+	private static Area createRing(int x, int y, double startAngle, double arcAngle) {
+		Arc2D outer = new Arc2D.Double(x, y, CIRCLE_SIZE, CIRCLE_SIZE, startAngle + 90, -arcAngle, Arc2D.PIE);
+		Arc2D inner = new Arc2D.Double(x + THICKNESS, y + THICKNESS, CIRCLE_SIZE - 2 * THICKNESS, CIRCLE_SIZE - 2 * THICKNESS, startAngle + 90, -arcAngle, Arc2D.PIE);
 		Area ring = new Area(outer);
 		ring.subtract(new Area(inner));
 		return ring;

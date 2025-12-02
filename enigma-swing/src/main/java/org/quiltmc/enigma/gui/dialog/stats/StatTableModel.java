@@ -4,11 +4,9 @@ import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.util.I18n;
 
-import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.util.Comparator;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public class StatTableModel extends AbstractTableModel {
 	private final ProjectStatsResult result;

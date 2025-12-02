@@ -1,13 +1,12 @@
 package org.quiltmc.enigma.gui.dialog.stats;
 
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
-import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 
-import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
+import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
-import java.awt.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.awt.BorderLayout;
+import java.awt.Component;
 
 public class StatTable extends JPanel {
 	public StatTable(ProjectStatsResult result) {
