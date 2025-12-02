@@ -112,7 +112,7 @@ public class StatsDialog {
 		// show the frame
 		dialog.pack();
 		Dimension size = dialog.getSize();
-		dialog.setMinimumSize(size);
+		dialog.setMinimumSize((Dimension) size.clone());
 		size.width = ScaleUtil.scale(350);
 		dialog.setSize(size);
 		dialog.setLocationRelativeTo(gui.getFrame());
@@ -120,9 +120,7 @@ public class StatsDialog {
 	}
 
 	private static void showGenerateDiagramDialog(Gui gui, ProjectStatsResult result) {
-		JDialog dialog = new JDialog();
-
-		dialog.setTitle(I18n.translate("menu.file.stats.generate"));
+		JDialog dialog = new JDialog(gui.getFrame(), I18n.translate("menu.file.stats.generate"), true);
 		dialog.setLayout(new GridLayout(0, 1));
 		Container contentPane = dialog.getContentPane();
 
@@ -144,14 +142,18 @@ public class StatsDialog {
 		}
 
 		contentPane.add(generateButton);
-		dialog.setSize(300, 200);
+
+		dialog.pack();
+		Dimension size = dialog.getSize();
+		dialog.setMinimumSize((Dimension) size.clone());
+		size.width = ScaleUtil.scale(175);
+		dialog.setSize(size);
 		dialog.setLocationRelativeTo(gui.getFrame());
 		dialog.setVisible(true);
 	}
 
 	private static void showSettingsDialog(Gui gui) {
-		JDialog dialog = new JDialog();
-		dialog.setTitle(I18n.translate("menu.file.stats.settings.title"));
+		JDialog dialog = new JDialog(gui.getFrame(), I18n.translate("menu.file.stats.settings.title"), true);
 		dialog.setLayout(new GridBagLayout());
 		Container contentPane = dialog.getContentPane();
 
@@ -202,6 +204,7 @@ public class StatsDialog {
 		contentPane.add(cancelButton, cb.pos(1, 5).anchor(GridBagConstraints.WEST).build());
 
 		dialog.pack();
+		dialog.setMinimumSize(dialog.getSize());
 		dialog.setLocationRelativeTo(gui.getFrame());
 		dialog.setVisible(true);
 	}
