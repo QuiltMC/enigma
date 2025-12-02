@@ -45,8 +45,10 @@ public class StatProgressBar extends JComponent {
 		g2.setColor(new Color(0x19D219));
 
 		if (this.isCircular) {
-			Arc2D outer = new Arc2D.Double(0, 0, CIRCLE_SIZE, CIRCLE_SIZE, 90, -(360.0 * this.progress / 100), Arc2D.PIE);
-			Arc2D inner = new Arc2D.Double(THICKNESS, THICKNESS, CIRCLE_SIZE - 2 * THICKNESS, CIRCLE_SIZE - 2 * THICKNESS, 90, -(360.0 * this.progress / 100), Arc2D.PIE);
+			int startX = (this.getWidth() - CIRCLE_SIZE) / 2;
+			int startY = (this.getHeight() - CIRCLE_SIZE) / 2;
+			Arc2D outer = new Arc2D.Double(startX, startY, CIRCLE_SIZE, CIRCLE_SIZE, 90, -(360.0 * this.progress / 100), Arc2D.PIE);
+			Arc2D inner = new Arc2D.Double(startX + THICKNESS, startY + THICKNESS, CIRCLE_SIZE - 2 * THICKNESS, CIRCLE_SIZE - 2 * THICKNESS, 90, -(360.0 * this.progress / 100), Arc2D.PIE);
 			Area ring = new Area(outer);
 			ring.subtract(new Area(inner));
 			g2.fill(ring);

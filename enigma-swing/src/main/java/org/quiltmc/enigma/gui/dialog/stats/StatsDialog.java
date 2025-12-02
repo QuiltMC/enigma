@@ -7,22 +7,11 @@ import org.quiltmc.enigma.api.stats.StatsGenerator;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.ProgressDialog;
-import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
-import org.quiltmc.enigma.gui.util.ScaleUtil;
+import org.quiltmc.enigma.gui.util.*;
 import org.quiltmc.enigma.util.I18n;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.Map;
@@ -66,11 +55,41 @@ public class StatsDialog {
 
 		GridBagConstraintsBuilder cb = GridBagConstraintsBuilder.create().insets(2);
 
-		contentPane.add(new StatProgressBar(result.getPercentage(), true), GridBagConstraintsBuilder.create().width(20).anchor(GridBagConstraints.CENTER).build());
+		JPanel header = new JPanel(new GridBagLayout());
+
+		header.add(new StatProgressBar(result.getPercentage(), true), cb.pos(0, 1).weightX(1.0).build());
+
+		JPanel activeSettingsPanel = new JPanel();
+		activeSettingsPanel.setLayout(new BoxLayout(activeSettingsPanel, BoxLayout.Y_AXIS));
+		JLabel activeSettingsLabel = new JLabel("Active Settings"); //TODO localize
+		activeSettingsLabel.setFont(activeSettingsLabel.getFont().deriveFont(16.0f));
+		activeSettingsLabel.setHorizontalAlignment(JLabel.CENTER);
+		activeSettingsPanel.add(activeSettingsLabel);
+
+		if (!packageName.isEmpty()) {
+			activeSettingsPanel.add(GuiUtil.unboldLabel(new JLabel("Package:" + " " + packageName))); //TODO localize
+		}
+
+		if (Config.stats().shouldIncludeSyntheticParameters.value()) {
+			activeSettingsPanel.add(GuiUtil.unboldLabel(new JLabel(I18n.translate("menu.file.stats.synthetic_parameters"))));
+		}
+
+		if (Config.stats().shouldCountFallbackNames.value()) {
+			activeSettingsPanel.add(GuiUtil.unboldLabel(new JLabel(I18n.translate("menu.file.stats.count_fallback"))));
+		}
+
+		if (packageName.isEmpty() && !Config.stats().shouldIncludeSyntheticParameters.value() && !Config.stats().shouldCountFallbackNames.value()) {
+			activeSettingsPanel.add(GuiUtil.unboldLabel(new JLabel("Default Settings"))); //TODO localize
+		}
+
+		activeSettingsPanel.setPreferredSize(new Dimension(200, 100));
+		header.add(activeSettingsPanel, cb.pos(1, 1).weightX(2.0).anchor(GridBagConstraints.NORTHWEST).build());
+
+		contentPane.add(header, cb.fill(GridBagConstraints.HORIZONTAL).anchor(GridBagConstraints.CENTER).build());
 
 		contentPane.add(new JScrollPane(new StatTable(result)), cb.pos(0, 1).anchor(GridBagConstraints.EAST).fill(GridBagConstraints.HORIZONTAL).weightX(1.0).build());
 
-		GridBagConstraintsBuilder cb1 = cb.pos(0, 0).width(5).weightX(1.0).anchor(GridBagConstraints.WEST);
+		GridBagConstraintsBuilder cb1 = cb.width(5).weightX(1.0).anchor(GridBagConstraints.WEST);
 
 		// show filter button
 		JButton settingsButton = new JButton(I18n.translate("menu.file.stats.filter")); //TODO change text and translation key
