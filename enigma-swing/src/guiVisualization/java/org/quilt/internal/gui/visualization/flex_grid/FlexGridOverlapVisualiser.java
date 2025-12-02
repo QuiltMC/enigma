@@ -30,9 +30,9 @@ public class FlexGridOverlapVisualiser implements Visualizer {
 		window.setLayout(new FlexGridLayout());
 
 		final FlexGridConstraints.Absolute constraints = FlexGridConstraints.createAbsolute();
-		window.add(VisualBox.of(Color.RED, 300, 100), constraints.size(3, 1));
-		window.add(VisualBox.of(Color.GREEN, 100, 300), constraints.size(1, 3));
-		window.add(VisualBox.of(Color.BLUE, 200, 200), constraints.size(2, 2));
+		window.add(VisualBox.of(Color.RED, 300, 100), constraints.extent(3, 1));
+		window.add(VisualBox.of(Color.GREEN, 100, 300), constraints.extent(1, 3));
+		window.add(VisualBox.of(Color.BLUE, 200, 200), constraints.extent(2, 2));
 
 		window.pack();
 	}

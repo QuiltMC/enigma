@@ -78,9 +78,14 @@ import java.util.function.Function;
  * <h4>Grid specifics</h4>
  *
  * <ul>
- *     <li> a component can occupy multiple grid cells when its {@linkplain FlexGridConstraints#width(int) width}
- *          or {@linkplain FlexGridConstraints#height(int) height} exceeds one; it occupies cells starting
- *          from its coordinates and extending in the positive direction of each axis
+ *     <li> components with {@linkplain FlexGridConstraints#createRelative() relative constraints} (or no constraints)
+ *          are added to the end of the bottom row,<br>
+ *          or ({@value FlexGridConstraints.Absolute#DEFAULT_X}, {@value FlexGridConstraints.Absolute#DEFAULT_Y})
+ *          if no other components have been added
+ *     <li> a component can occupy multiple grid cells when its constraint
+ *          {@linkplain FlexGridConstraints#xExtent(int) xExtent} or
+ *          {@linkplain FlexGridConstraints#yExtent(int) yExtent} exceeds {@code 1};
+ *          it occupies cells starting from its coordinates and extending in the positive direction of each axis
  *     <li> any number of components can share grid cells, resulting in overlap
  *     <li> only the relative values of coordinates matter; components with the least x coordinate are left-most
  *          whether the coordinate is {@code -1000}, {@code 0}, or {@code 1000}
@@ -91,8 +96,25 @@ import java.util.function.Function;
 public class FlexGridLayout implements LayoutManager2 {
 	private final ConstrainedGrid grid = new ConstrainedGrid();
 
+	/**
+	 * Lazily populated cache.
+	 *
+	 * @see #getPreferredSizes()
+	 */
 	private @Nullable Sizes preferredSizes;
+
+	/**
+	 * Lazily populated cache.
+	 *
+	 * @see #getMinSizes()
+	 */
 	private @Nullable Sizes minSizes;
+
+	/**
+	 * Lazily populated cache.
+	 *
+	 * @see #getMaxSizes()
+	 */
 	private @Nullable Sizes maxSizes;
 
 	@Override
@@ -350,7 +372,7 @@ public class FlexGridLayout implements LayoutManager2 {
 
 	record Constrained(
 			Component component,
-			int width, int height,
+			int xExtent, int yExtent,
 			boolean fillX, boolean fillY,
 			Alignment xAlignment, Alignment yAlignment,
 			int priority
@@ -358,7 +380,7 @@ public class FlexGridLayout implements LayoutManager2 {
 		static Constrained defaultOf(Component component) {
 			return new Constrained(
 				component,
-				FlexGridConstraints.DEFAULT_WIDTH, FlexGridConstraints.DEFAULT_HEIGHT,
+				FlexGridConstraints.DEFAULT_X_EXTENT, FlexGridConstraints.DEFAULT_Y_EXTENT,
 				FlexGridConstraints.DEFAULT_FILL_X, FlexGridConstraints.DEFAULT_FILL_Y,
 				FlexGridConstraints.DEFAULT_X_ALIGNMENT, FlexGridConstraints.DEFAULT_Y_ALIGNMENT,
 				FlexGridConstraints.DEFAULT_PRIORITY
@@ -368,7 +390,7 @@ public class FlexGridLayout implements LayoutManager2 {
 		Constrained(Component component, FlexGridConstraints<?> constraints) {
 			this(
 					component,
-					constraints.getWidth(), constraints.getHeight(),
+					constraints.getXExtent(), constraints.getYExtent(),
 					constraints.fillsX(), constraints.fillsY(),
 					constraints.getXAlignment(), constraints.getYAlignment(),
 					constraints.getPriority()
@@ -376,11 +398,11 @@ public class FlexGridLayout implements LayoutManager2 {
 		}
 
 		int getXExcess() {
-			return this.width - 1;
+			return this.xExtent - 1;
 		}
 
 		int getYExcess() {
-			return this.height - 1;
+			return this.yExtent - 1;
 		}
 
 		private class At implements Comparable<At> {
@@ -413,6 +435,10 @@ public class FlexGridLayout implements LayoutManager2 {
 		}
 	}
 
+	/**
+	 * A collection of sizes and size metrics use for calculating min/max/preferred container size and
+	 * for laying out the container.
+	 */
 	private record Sizes(
 			int totalWidth, int totalHeight,
 			ImmutableMap<Integer, Integer> rowHeights, ImmutableMap<Integer, Integer> columnWidths,
@@ -427,10 +453,10 @@ public class FlexGridLayout implements LayoutManager2 {
 				values.forEach(constrained -> {
 					final Dimension size = componentSizes.computeIfAbsent(constrained.component, getSize);
 
-					final int componentCellWidth = Utils.ceilDiv(size.width, constrained.width);
-					final int componentCellHeight = Utils.ceilDiv(size.height, constrained.height);
-					for (int xOffset = 0; xOffset < constrained.width; xOffset++) {
-						for (int yOffset = 0; yOffset < constrained.width; yOffset++) {
+					final int componentCellWidth = Utils.ceilDiv(size.width, constrained.xExtent);
+					final int componentCellHeight = Utils.ceilDiv(size.height, constrained.yExtent);
+					for (int xOffset = 0; xOffset < constrained.xExtent; xOffset++) {
+						for (int yOffset = 0; yOffset < constrained.xExtent; yOffset++) {
 							final Dimension cellSize = cellSizes
 									.computeIfAbsent(x + xOffset, ignored -> new HashMap<>())
 									.computeIfAbsent(y + yOffset, ignored -> new Dimension());
@@ -467,6 +493,9 @@ public class FlexGridLayout implements LayoutManager2 {
 		}
 	}
 
+	/**
+	 * Sets of operations for the {@link #X} and {@link #Y} axes of a cartesian plane.
+	 */
 	private enum CartesianOperations {
 		X() {
 			@Override
