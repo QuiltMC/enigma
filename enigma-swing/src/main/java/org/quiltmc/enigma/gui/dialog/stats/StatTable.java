@@ -12,6 +12,7 @@ public class StatTable extends JPanel {
 	public StatTable(ProjectStatsResult result) {
 		this.setLayout(new BorderLayout());
 		JTable table = new JTable();
+		table.setCellSelectionEnabled(false);
 		table.setModel(new StatTableModel(result));
 		table.setDefaultRenderer(Double.class, new ProgressBarRenderer());
 		this.add(table.getTableHeader(), BorderLayout.NORTH);
