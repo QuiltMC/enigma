@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.dialog.stats;
 
 import org.quiltmc.enigma.api.stats.ProjectStatsResult;
 import org.quiltmc.enigma.api.stats.StatType;
+import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -54,10 +55,10 @@ public class StatTableModel extends AbstractTableModel {
 	}
 
 	enum Column {
-		TYPE("Type", String.class, (result, type) -> type.getName()),
-		MAPPED("Mapped", Integer.class, ProjectStatsResult::getMapped),
-		TOTAL("Total", Integer.class, ProjectStatsResult::getMappable),
-		PROGRESS_BAR("Progress", Double.class, ProjectStatsResult::getPercentage);
+		TYPE("menu.file.stats.column.type", String.class, (result, type) -> type.getName()),
+		MAPPED("menu.file.stats.column.mapped", Integer.class, ProjectStatsResult::getMapped),
+		TOTAL("menu.file.stats.column.total", Integer.class, ProjectStatsResult::getMappable),
+		PROGRESS_BAR("menu.file.stats.column.progress", Double.class, ProjectStatsResult::getPercentage);
 
 		private final String name;
 		private final Class<?> type;
@@ -71,7 +72,7 @@ public class StatTableModel extends AbstractTableModel {
 
 		//TODO localize
 		public String getName() {
-			return this.name;
+			return I18n.translate(this.name);
 		}
 
 		public Class<?> getType() {

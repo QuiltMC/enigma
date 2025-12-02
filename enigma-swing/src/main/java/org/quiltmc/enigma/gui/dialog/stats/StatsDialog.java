@@ -61,25 +61,25 @@ public class StatsDialog {
 
 		JPanel activeSettingsPanel = new JPanel();
 		activeSettingsPanel.setLayout(new BoxLayout(activeSettingsPanel, BoxLayout.Y_AXIS));
-		JLabel activeSettingsLabel = new JLabel("Active Settings"); //TODO localize
+		JLabel activeSettingsLabel = new JLabel(I18n.translate("menu.file.stats.active_settings"));
 		activeSettingsLabel.setFont(activeSettingsLabel.getFont().deriveFont(16.0f));
 		activeSettingsLabel.setHorizontalAlignment(JLabel.CENTER);
 		activeSettingsPanel.add(activeSettingsLabel);
 
 		if (!packageName.isEmpty()) {
-			activeSettingsPanel.add(GuiUtil.unboldLabel(new JLabel("Package:" + " " + packageName))); //TODO localize
+			activeSettingsPanel.add(GuiUtil.unboldLabel(new JLabel(I18n.translate("menu.file.stats.settings.top_level_package.short") + " " + packageName)));
 		}
 
 		if (Config.stats().shouldIncludeSyntheticParameters.value()) {
-			activeSettingsPanel.add(GuiUtil.unboldLabel(new JLabel(I18n.translate("menu.file.stats.synthetic_parameters"))));
+			activeSettingsPanel.add(GuiUtil.unboldLabel(new JLabel(I18n.translate("menu.file.stats.settings.synthetic_parameters"))));
 		}
 
 		if (Config.stats().shouldCountFallbackNames.value()) {
-			activeSettingsPanel.add(GuiUtil.unboldLabel(new JLabel(I18n.translate("menu.file.stats.count_fallback"))));
+			activeSettingsPanel.add(GuiUtil.unboldLabel(new JLabel(I18n.translate("menu.file.stats.settings.count_fallback"))));
 		}
 
 		if (packageName.isEmpty() && !Config.stats().shouldIncludeSyntheticParameters.value() && !Config.stats().shouldCountFallbackNames.value()) {
-			activeSettingsPanel.add(GuiUtil.unboldLabel(new JLabel("Default Settings"))); //TODO localize
+			activeSettingsPanel.add(GuiUtil.unboldLabel(new JLabel(I18n.translate("menu.file.stats.settings.default"))));
 		}
 
 		activeSettingsPanel.setPreferredSize(new Dimension(200, 100));
@@ -92,7 +92,7 @@ public class StatsDialog {
 		GridBagConstraintsBuilder cb1 = cb.width(5).weightX(1.0).anchor(GridBagConstraints.WEST);
 
 		// show filter button
-		JButton settingsButton = new JButton(I18n.translate("menu.file.stats.filter")); //TODO change text and translation key
+		JButton settingsButton = new JButton(I18n.translate("menu.file.stats.settings"));
 		settingsButton.addActionListener(action -> {
 			dialog.dispose();
 			showSettingsDialog(gui);
@@ -122,7 +122,7 @@ public class StatsDialog {
 	private static void showGenerateDiagramDialog(Gui gui, ProjectStatsResult result) {
 		JDialog dialog = new JDialog();
 
-		dialog.setTitle("Generate Diagram"); //TODO localize
+		dialog.setTitle(I18n.translate("menu.file.stats.generate"));
 		dialog.setLayout(new GridLayout(0, 1));
 		Container contentPane = dialog.getContentPane();
 
@@ -133,7 +133,7 @@ public class StatsDialog {
 			contentPane.add(checkbox);
 		}
 
-		JButton generateButton = new JButton("Generate"); //TODO localize
+		JButton generateButton = new JButton(I18n.translate("menu.file.stats.generate.short"));
 		generateButton.addActionListener(action -> {
 			dialog.dispose();
 			generateStats(gui, checkboxes);
@@ -151,14 +151,14 @@ public class StatsDialog {
 
 	private static void showSettingsDialog(Gui gui) {
 		JDialog dialog = new JDialog();
-		dialog.setTitle("Stat Settings"); //TODO localize
+		dialog.setTitle(I18n.translate("menu.file.stats.settings.title"));
 		dialog.setLayout(new GridBagLayout());
 		Container contentPane = dialog.getContentPane();
 
 		GridBagConstraintsBuilder cb = GridBagConstraintsBuilder.create().pos(0, 0).width(5).weightX(1.0).anchor(GridBagConstraints.WEST);
 
 		// show top-level package option
-		JLabel topLevelPackageOption = new JLabel(I18n.translate("menu.file.stats.top_level_package"));
+		JLabel topLevelPackageOption = new JLabel(I18n.translate("menu.file.stats.settings.top_level_package"));
 		contentPane.add(topLevelPackageOption, cb.pos(0, 1).build());
 
 		JTextField topLevelPackage = new JTextField();
@@ -166,16 +166,16 @@ public class StatsDialog {
 		contentPane.add(topLevelPackage, cb.pos(0, 2).fill(GridBagConstraints.HORIZONTAL).build());
 
 		// show synthetic members option
-		JCheckBox syntheticParametersOption = new JCheckBox(I18n.translate("menu.file.stats.synthetic_parameters"));
+		JCheckBox syntheticParametersOption = new JCheckBox(I18n.translate("menu.file.stats.settings.synthetic_parameters"));
 		syntheticParametersOption.setSelected(Config.stats().shouldIncludeSyntheticParameters.value());
 		contentPane.add(syntheticParametersOption, cb.pos(0, 3).build());
 
 		// show synthetic members option
-		JCheckBox countFallbackOption = new JCheckBox(I18n.translate("menu.file.stats.count_fallback"));
+		JCheckBox countFallbackOption = new JCheckBox(I18n.translate("menu.file.stats.settings.count_fallback"));
 		countFallbackOption.setSelected(Config.stats().shouldCountFallbackNames.value());
 		contentPane.add(countFallbackOption, cb.pos(0, 4).build());
 
-		JButton applyButton = new JButton("Apply"); // TODO localize
+		JButton applyButton = new JButton(I18n.translate("prompt.apply"));
 		applyButton.addActionListener(action -> {
 			dialog.dispose();
 			ProgressDialog.runOffThread(gui, listener -> {
@@ -194,7 +194,7 @@ public class StatsDialog {
 		});
 		contentPane.add(applyButton, cb.pos(0, 5).anchor(GridBagConstraints.EAST).build());
 
-		JButton cancelButton = new JButton("Cancel"); //TODO localize
+		JButton cancelButton = new JButton(I18n.translate("prompt.cancel"));
 		cancelButton.addActionListener(action -> {
 			dialog.dispose();
 			show(gui);
