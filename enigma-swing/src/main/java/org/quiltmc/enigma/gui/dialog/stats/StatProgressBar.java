@@ -11,6 +11,7 @@ import java.awt.geom.Area;
 public class StatProgressBar extends JComponent {
 	public static final int THICKNESS = ScaleUtil.scale(10);
 	public static final int CIRCLE_SIZE = ScaleUtil.scale(100);
+	public static final Color COLOR = new Color(0x19D219);
 	private final double progress;
 	private final boolean isCircular;
 
@@ -46,21 +47,26 @@ public class StatProgressBar extends JComponent {
 		if (this.isCircular) {
 			int startX = (this.getWidth() - CIRCLE_SIZE) / 2;
 			int startY = (this.getHeight() - CIRCLE_SIZE) / 2;
-			g2.setColor(this.getBackground().darker());
-			Area inactiveRing = createRing(startX, startY, CIRCLE_SIZE, CIRCLE_SIZE, 0, 360);
-			g2.fill(inactiveRing);
-			g2.setColor(new Color(0x19D219));
-			Area activeRing = createRing(startX, startY, CIRCLE_SIZE, CIRCLE_SIZE, 0, 360 * this.progress / 100);
-			g2.fill(activeRing);
+			g2.setColor(this.getBackgroundColor());
+			Area backgroundRing = createRing(startX, startY, CIRCLE_SIZE, CIRCLE_SIZE, 0, 360);
+			g2.fill(backgroundRing);
+			g2.setColor(COLOR);
+			Area foregroundRing = createRing(startX, startY, CIRCLE_SIZE, CIRCLE_SIZE, 0, 360 * this.progress / 100);
+			g2.fill(foregroundRing);
 		} else {
 			int startY = (this.getHeight() - THICKNESS) / 2;
-			g2.setColor(new Color((int) (this.getBackground().getRed() * 0.8), (int) (this.getBackground().getGreen() * 0.8), (int) (this.getBackground().getBlue() * 0.8)));
+			g2.setColor(this.getBackgroundColor());
 			g2.fillRoundRect(0, startY, this.getWidth(), THICKNESS, 10, 10);
-			g2.setColor(new Color(0x19D219));
+			g2.setColor(COLOR);
 			g2.fillRoundRect(0, startY, (int) (this.getWidth() * this.progress / 100), THICKNESS, 10, 10);
 		}
 
 		g2.dispose();
+	}
+
+	private Color getBackgroundColor() {
+		Color background = this.getBackground();
+		return new Color((int) (background.getRed() * 0.8), (int) (background.getGreen() * 0.8), (int) (background.getBlue() * 0.8));
 	}
 
 	private static Area createRing(int x, int y, int w, int h, double startAngle, double arcAngle) {
