@@ -8,6 +8,9 @@ import java.util.Collection;
 
 /**
  * An index of the main jar <em>and</em> library jars of an {@link EnigmaProject}.
+ *
+ * <p> <b>Note:</b> currently the contained {@link ReferenceIndex} does <em>not</em> index main jar references to
+ * library types and members.
  */
 public class CombinedJarIndex extends AbstractJarIndex {
 	public CombinedJarIndex(
@@ -23,7 +26,7 @@ public class CombinedJarIndex extends AbstractJarIndex {
 	 */
 	public static CombinedJarIndex empty(MainJarIndex mainIndex, LibrariesJarIndex libIndex) {
 		EntryIndex entryIndex = new CombinedEntryIndex(mainIndex.entryIndex, libIndex.entryIndex);
-		ReferenceIndex referenceIndex = new ReferenceIndex();
+		ReferenceIndex referenceIndex = new CombinedReferenceIndex(mainIndex.referenceIndex, libIndex.referenceIndex);
 		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
 		LambdaIndex lambdaIndex = new LambdaIndex();
 		return new CombinedJarIndex(

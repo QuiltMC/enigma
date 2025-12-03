@@ -13,27 +13,27 @@ import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableDefE
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
-import org.quiltmc.enigma.util.CombinedSet;
+import org.quiltmc.enigma.util.CombinedCollection;
 
 import java.util.Collection;
 
 class CombinedEntryIndex implements EntryIndex {
-	private final EntryIndexImpl mainIndex;
-	private final EntryIndexImpl libIndex;
+	private final EntryIndex mainIndex;
+	private final EntryIndex libIndex;
 
 	private final Collection<ClassEntry> classes;
 	private final Collection<MethodEntry> methods;
 	private final Collection<LocalVariableEntry> parameters;
 	private final Collection<FieldEntry> fields;
 
-	CombinedEntryIndex(EntryIndexImpl mainIndex, EntryIndexImpl libIndex) {
+	CombinedEntryIndex(EntryIndex mainIndex, EntryIndex libIndex) {
 		this.mainIndex = mainIndex;
 		this.libIndex = libIndex;
 
-		this.classes = new CombinedSet<>(this.mainIndex.getClasses(), this.libIndex.getClasses());
-		this.methods = new CombinedSet<>(this.mainIndex.getMethods(), this.libIndex.getMethods());
-		this.parameters = new CombinedSet<>(this.mainIndex.getParameters(), this.libIndex.getParameters());
-		this.fields = new CombinedSet<>(this.mainIndex.getFields(), this.libIndex.getFields());
+		this.classes = new CombinedCollection<>(this.mainIndex.getClasses(), this.libIndex.getClasses());
+		this.methods = new CombinedCollection<>(this.mainIndex.getMethods(), this.libIndex.getMethods());
+		this.parameters = new CombinedCollection<>(this.mainIndex.getParameters(), this.libIndex.getParameters());
+		this.fields = new CombinedCollection<>(this.mainIndex.getFields(), this.libIndex.getFields());
 	}
 
 	@Override

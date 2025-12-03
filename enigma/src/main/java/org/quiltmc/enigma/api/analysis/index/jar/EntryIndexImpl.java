@@ -15,9 +15,9 @@ import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntr
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 class EntryIndexImpl implements EntryIndex {
 	private final EntryTree<EntryMapping> tree = new HashEntryTree<>();
@@ -170,22 +170,22 @@ class EntryIndexImpl implements EntryIndex {
 	}
 
 	@Override
-	public Set<ClassEntry> getClasses() {
+	public Collection<ClassEntry> getClasses() {
 		return this.classDefinitions.keySet();
 	}
 
 	@Override
-	public Set<MethodEntry> getMethods() {
+	public Collection<MethodEntry> getMethods() {
 		return this.methodDefinitions.keySet();
 	}
 
 	@Override
-	public Set<LocalVariableEntry> getParameters() {
+	public Collection<LocalVariableEntry> getParameters() {
 		return this.parameterDefinitions.keySet();
 	}
 
 	@Override
-	public Set<FieldEntry> getFields() {
+	public Collection<FieldEntry> getFields() {
 		return this.fieldDefinitions.keySet();
 	}
 

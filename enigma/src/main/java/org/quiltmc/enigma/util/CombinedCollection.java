@@ -5,10 +5,9 @@ import org.jspecify.annotations.NonNull;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 /**
- * A set backed by two other sets.
+ * A collection backed by two other collections.
  *
  * <p> Does <b>not</b> support the {@link #add(Object)} or {@link #addAll(Collection)} methods!
  *
@@ -16,15 +15,15 @@ import java.util.Set;
  *
  * @param <T> the type of elements
  */
-public class CombinedSet<T> implements Set<T> {
+public class CombinedCollection<T> implements Collection<T> {
 	private static UnsupportedOperationException createUnsupportedAddException() {
-		return new UnsupportedOperationException("cannot add to combined set!");
+		return new UnsupportedOperationException("cannot add to combined collection!");
 	}
 
-	private final Set<T> first;
-	private final Set<T> second;
+	private final Collection<T> first;
+	private final Collection<T> second;
 
-	public CombinedSet(Set<T> first, Set<T> second) {
+	public CombinedCollection(Collection<T> first, Collection<T> second) {
 		this.first = first;
 		this.second = second;
 	}
@@ -91,7 +90,7 @@ public class CombinedSet<T> implements Set<T> {
 
 	@Override
 	public boolean remove(Object o) {
-		return this.first.remove(o) || this.second.remove(o);
+		return this.first.remove(o) | this.second.remove(o);
 	}
 
 	@SuppressWarnings("SuspiciousMethodCalls")
@@ -107,14 +106,12 @@ public class CombinedSet<T> implements Set<T> {
 
 	@Override
 	public boolean retainAll(@NonNull Collection<?> collection) {
-		final boolean firstChanged = this.first.retainAll(collection);
-		final boolean secondChanged = this.second.retainAll(collection);
-		return firstChanged || secondChanged;
+		return this.first.retainAll(collection) | this.second.retainAll(collection);
 	}
 
 	@Override
 	public boolean removeAll(@NonNull Collection<?> collection) {
-		return this.first.removeAll(collection) || this.second.removeAll(collection);
+		return this.first.removeAll(collection) | this.second.removeAll(collection);
 	}
 
 	@Override
@@ -124,7 +121,7 @@ public class CombinedSet<T> implements Set<T> {
 	}
 
 	private class CombinedIterator implements Iterator<T> {
-		Iterator<T> delegate = CombinedSet.this.first.iterator();
+		Iterator<T> delegate = CombinedCollection.this.first.iterator();
 
 		boolean iteratingFirst = true;
 
@@ -135,7 +132,7 @@ public class CombinedSet<T> implements Set<T> {
 				return true;
 			} else {
 				if (this.iteratingFirst) {
-					this.delegate = CombinedSet.this.second.iterator();
+					this.delegate = CombinedCollection.this.second.iterator();
 					this.iteratingFirst = false;
 
 					return this.delegate.hasNext();

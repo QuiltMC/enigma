@@ -9,15 +9,17 @@ import java.util.Collection;
 /**
  * An index of the main jar of an {@link EnigmaProject}.
  */
-public class MainJarIndex extends AbstractJarIndex {
+public final class MainJarIndex extends AbstractJarIndex {
 	final EntryIndexImpl entryIndex;
+	final ReferenceIndex referenceIndex;
 
-	public MainJarIndex(
+	private MainJarIndex(
 			EntryIndexImpl entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex,
 			BridgeMethodIndex bridgeMethodIndex, JarIndexer... otherIndexers
 	) {
 		super(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex, otherIndexers);
 		this.entryIndex = entryIndex;
+		this.referenceIndex = referenceIndex;
 	}
 
 	/**
@@ -27,7 +29,7 @@ public class MainJarIndex extends AbstractJarIndex {
 	public static MainJarIndex empty() {
 		EntryIndexImpl entryIndex = new EntryIndexImpl();
 		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
-		ReferenceIndex referenceIndex = new ReferenceIndex();
+		ReferenceIndex referenceIndex = new ReferenceIndexImpl();
 		BridgeMethodIndex bridgeMethodIndex = new BridgeMethodIndex(entryIndex, inheritanceIndex, referenceIndex);
 		PackageVisibilityIndex packageVisibilityIndex = new PackageVisibilityIndex();
 		EnclosingMethodIndex enclosingMethodIndex = new EnclosingMethodIndex();
