@@ -43,6 +43,6 @@ public class ClassLoaderClassProvider implements ClassProvider {
 
 	@Override
 	public Collection<String> getClassNames() {
-		return List.of("java/lang/Object", "java/lang/Record");
+		return List.of("java.lang.Object", "java.lang.Record");
 	}
 }

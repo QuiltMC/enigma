@@ -20,7 +20,6 @@ import java.util.Map;
 
 public class ReferenceIndex implements JarIndexer {
 	private Multimap<MethodEntry, MethodEntry> methodReferences = HashMultimap.create();
-	private Multimap<MethodEntry, FieldEntry> fieldReferences = HashMultimap.create();
 
 	private Multimap<MethodEntry, EntryReference<MethodEntry, MethodDefEntry>> referencesToMethods = HashMultimap.create();
 	private Multimap<ClassEntry, EntryReference<ClassEntry, MethodDefEntry>> referencesToClasses = HashMultimap.create();
@@ -83,7 +82,6 @@ public class ReferenceIndex implements JarIndexer {
 	@Override
 	public void indexFieldReference(MethodDefEntry callerEntry, FieldEntry referencedEntry, ReferenceTargetType targetType) {
 		this.referencesToFields.put(referencedEntry, new EntryReference<>(referencedEntry, referencedEntry.getName(), callerEntry, targetType));
-		this.fieldReferences.put(callerEntry, referencedEntry);
 	}
 
 	@Override
@@ -102,7 +100,6 @@ public class ReferenceIndex implements JarIndexer {
 	@Override
 	public void processIndex(JarIndex index) {
 		this.methodReferences = this.remapReferences(index, this.methodReferences);
-		this.fieldReferences = this.remapReferences(index, this.fieldReferences);
 		this.referencesToMethods = this.remapReferencesTo(index, this.referencesToMethods);
 		this.referencesToClasses = this.remapReferencesTo(index, this.referencesToClasses);
 		this.referencesToFields = this.remapReferencesTo(index, this.referencesToFields);
@@ -140,10 +137,6 @@ public class ReferenceIndex implements JarIndexer {
 
 	public Collection<MethodEntry> getMethodsReferencedBy(MethodEntry entry) {
 		return this.methodReferences.get(entry);
-	}
-
-	public Collection<FieldEntry> getFieldsReferencedBy(MethodEntry entry) {
-		return this.fieldReferences.get(entry);
 	}
 
 	public Collection<EntryReference<FieldEntry, MethodDefEntry>> getReferencesToField(FieldEntry entry) {

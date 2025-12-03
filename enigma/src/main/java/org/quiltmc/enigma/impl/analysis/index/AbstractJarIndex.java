@@ -2,7 +2,6 @@ package org.quiltmc.enigma.impl.analysis.index;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import org.quiltmc.enigma.api.Enigma;
@@ -13,9 +12,7 @@ import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndexer;
-import org.quiltmc.enigma.api.analysis.index.jar.ReferenceIndex;
 import org.quiltmc.enigma.api.class_provider.ClassProvider;
-import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.IndexEntryResolver;
 import org.quiltmc.enigma.api.translation.representation.Lambda;
@@ -28,19 +25,16 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.util.I18n;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public abstract class AbstractJarIndex implements JarIndex {
 	private final Set<String> indexedClasses = new HashSet<>();
-	private final ImmutableMap<Class<? extends JarIndexer>, JarIndexer> indexers;
+	private final Map<Class<? extends JarIndexer>, JarIndexer> indexers = new LinkedHashMap<>();
 	private final IndexEntryResolver entryResolver;
 
 	private final Multimap<String, MethodDefEntry> methodImplementations = HashMultimap.create();
@@ -51,23 +45,12 @@ public abstract class AbstractJarIndex implements JarIndex {
 	/**
 	 * Creates a new empty index with all provided indexers.
 	 * Indexers will be run in the order they're passed to this constructor.
-	 *
-	 * @param entryIndex        the entry index
-	 * @param inheritanceIndex  the inheritance index
-	 * @param referenceIndex    the reference index
-	 * @param bridgeMethodIndex the bridge method index
-	 * @param otherIndexers	    other indexers to use
+	 * @param indexers the indexers to use
 	 */
-	public AbstractJarIndex(
-			EntryIndex entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex,
-			BridgeMethodIndex bridgeMethodIndex, JarIndexer... otherIndexers
-	) {
-		this.indexers = Stream
-				.concat(
-					Stream.of(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex),
-					Arrays.stream(otherIndexers)
-				)
-				.collect(ImmutableMap.toImmutableMap(JarIndexer::getClass, Function.identity()));
+	public AbstractJarIndex(JarIndexer... indexers) {
+		for (JarIndexer indexer : indexers) {
+			this.indexers.put(indexer.getClass(), indexer);
+		}
 
 		this.entryResolver = new IndexEntryResolver(this);
 		this.childrenByClass = ArrayListMultimap.create();
@@ -88,37 +71,8 @@ public abstract class AbstractJarIndex implements JarIndex {
 		}
 	}
 
-	@Override
-	public void indexJar(ProjectClassProvider classProvider, ProgressListener progress) {
-		this.indexJar(this.getIndexableClassNames(classProvider), classProvider, progress);
-	}
-
-	/**
-	 * Runs every configured indexer over the provided jar on classes matching the passed {@code classNameFilter}.
-	 *
-	 * @param classProvider   a class provider containing all classes in the jar and libraries
-	 * @param progress        a progress listener to track index completion
-	 * @param classNameFilter a predicate used to filter out class names
-	 */
-	public void indexJar(
-			ProjectClassProvider classProvider, ProgressListener progress, Predicate<String> classNameFilter
-	) {
-		final Collection<String> classNames = this.getIndexableClassNames(classProvider).stream()
-				.filter(classNameFilter)
-				.collect(Collectors.toSet());
-		this.indexJar(classNames, classProvider, progress);
-	}
-
-	/**
-	 * Gets the names of classes this indexer should index.
-	 *
-	 * @param classProvider a class provider containing all classes in the jar
-	 */
-	public abstract Collection<String> getIndexableClassNames(ProjectClassProvider classProvider);
-
 	/**
 	 * Runs every configured indexer over the provided jar.
-	 *
 	 * @param classProvider a class provider containing all classes in the jar
 	 * @param progress a progress listener to track index completion
 	 */

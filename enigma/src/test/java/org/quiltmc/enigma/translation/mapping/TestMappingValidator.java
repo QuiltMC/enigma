@@ -176,14 +176,6 @@ public class TestMappingValidator {
 	}
 
 	@RepeatedTest(value = 2, name = REPEATED_TEST_NAME)
-	public void conflictingWithObjectMethods() {
-		ValidationContext vc = TestUtil.newVC();
-		remapper.validatePutMapping(vc, TestEntryFactory.newMethod("a", "b", "()V"), new EntryMapping("toString"));
-
-		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
-	}
-
-	@RepeatedTest(value = 2, name = REPEATED_TEST_NAME)
 	public void testParameterNames() {
 		MethodEntry method = TestEntryFactory.newMethod("a", "a", "(II)I");
 

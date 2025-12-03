@@ -7,8 +7,6 @@ import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
-import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
-import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,16 +41,5 @@ public class TestIsRenamable {
 
 		var wait = TestEntryFactory.newMethod("b", "wait", "()V");
 		Assertions.assertFalse(obfProject.isRenamable(wait));
-	}
-
-	@Test
-	public void libraryOverrides() {
-		final ClassEntry toStringOverrider = TestEntryFactory.newClass("j");
-
-		final MethodEntry toString = TestEntryFactory.newMethod(
-				toStringOverrider, "toString", "()Ljava/lang/String;"
-		);
-
-		Assertions.assertFalse(obfProject.isRenamable(toString));
 	}
 }
