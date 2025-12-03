@@ -12,8 +12,8 @@ import java.util.Collection;
  * <p> <b>Note:</b> currently the contained {@link ReferenceIndex} does <em>not</em> index main jar references to
  * library types and members.
  */
-public class CombinedJarIndex extends AbstractJarIndex {
-	public CombinedJarIndex(
+public final class CombinedJarIndex extends AbstractJarIndex {
+	private CombinedJarIndex(
 			EntryIndex entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex,
 			BridgeMethodIndex bridgeMethodIndex, JarIndexer... otherIndexers
 	) {
