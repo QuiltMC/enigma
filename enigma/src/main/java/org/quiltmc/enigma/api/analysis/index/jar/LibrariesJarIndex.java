@@ -10,11 +10,14 @@ import java.util.Collection;
  * An index of the library jars of an {@link EnigmaProject}.
  */
 public class LibrariesJarIndex extends AbstractJarIndex {
+	final EntryIndexImpl entryIndex;
+
 	public LibrariesJarIndex(
-			EntryIndex entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex,
+			EntryIndexImpl entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex,
 			BridgeMethodIndex bridgeMethodIndex, JarIndexer... otherIndexers
 	) {
 		super(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex, otherIndexers);
+		this.entryIndex = entryIndex;
 	}
 
 	/**
@@ -22,7 +25,7 @@ public class LibrariesJarIndex extends AbstractJarIndex {
 	 * @return the newly created index
 	 */
 	public static LibrariesJarIndex empty() {
-		EntryIndex entryIndex = new EntryIndex();
+		EntryIndexImpl entryIndex = new EntryIndexImpl();
 		ReferenceIndex referenceIndex = new ReferenceIndex();
 		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
 		return new LibrariesJarIndex(

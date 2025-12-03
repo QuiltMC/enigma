@@ -21,8 +21,8 @@ public class CombinedJarIndex extends AbstractJarIndex {
 	 * Creates an empty index, configured to use all built-in indexers.
 	 * @return the newly created index
 	 */
-	public static CombinedJarIndex empty() {
-		EntryIndex entryIndex = new EntryIndex();
+	public static CombinedJarIndex empty(MainJarIndex mainIndex, LibrariesJarIndex libIndex) {
+		EntryIndex entryIndex = new CombinedEntryIndex(mainIndex.entryIndex, libIndex.entryIndex);
 		ReferenceIndex referenceIndex = new ReferenceIndex();
 		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
 		LambdaIndex lambdaIndex = new LambdaIndex();
