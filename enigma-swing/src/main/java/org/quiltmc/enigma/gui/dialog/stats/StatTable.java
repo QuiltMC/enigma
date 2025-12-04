@@ -22,7 +22,7 @@ public class StatTable extends JPanel {
 	private static class ProgressBarRenderer implements TableCellRenderer {
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			return new StatProgressBar((double) value, false);
+			return new StatProgressBar.Straight((double) value);
 		}
 	}
 }

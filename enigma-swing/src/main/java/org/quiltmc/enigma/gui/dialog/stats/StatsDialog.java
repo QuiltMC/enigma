@@ -70,7 +70,7 @@ public class StatsDialog {
 
 		JPanel header = new JPanel(new GridBagLayout());
 
-		header.add(new StatProgressBar(result.getPercentage(), true), cb.pos(0, 1).weightX(1.0).build());
+		header.add(new StatProgressBar.Circular(result.getPercentage()), cb.pos(0, 1).weightX(1.0).build());
 
 		JPanel activeSettingsPanel = new JPanel();
 		activeSettingsPanel.setLayout(new BoxLayout(activeSettingsPanel, BoxLayout.Y_AXIS));
