@@ -74,18 +74,21 @@ public class PlaceheldTextField extends JTextField {
 		super.paintComponent(graphics);
 
 		if (this.placeholder.isFull() && this.getText().isEmpty()) {
-			GuiUtil.trySetRenderingHints(graphics);
+			final Graphics disposableGraphics = graphics.create();
+			GuiUtil.trySetRenderingHints(disposableGraphics);
 
 			Utils.findFirstNonNull(this.placeholderColor, this.getDisabledTextColor(), this.getForeground())
-					.ifPresent(graphics::setColor);
-			graphics.setFont(this.getFont());
+					.ifPresent(disposableGraphics::setColor);
+			disposableGraphics.setFont(this.getFont());
 
 			final Insets insets = this.getInsets();
 			// HACK to keep the text vertically centered when subclasses adjust preferred height
 			final int extraTop = (this.getPreferredSize().height - super.getPreferredSize().height) / 2;
-			final int baseY = graphics.getFontMetrics().getMaxAscent() + insets.top + extraTop;
+			final int baseY = disposableGraphics.getFontMetrics().getMaxAscent() + insets.top + extraTop;
 
-			graphics.drawString(this.placeholder.getText(), insets.left, baseY);
+			disposableGraphics.drawString(this.placeholder.getText(), insets.left, baseY);
+
+			disposableGraphics.dispose();
 		}
 	}
 

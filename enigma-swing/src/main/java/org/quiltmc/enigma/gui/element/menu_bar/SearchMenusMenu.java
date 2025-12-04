@@ -747,20 +747,23 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				public void paint(Graphics graphics) {
 					super.paint(graphics);
 
-					GuiUtil.trySetRenderingHints(graphics);
+					final Graphics disposableGraphics = graphics.create();
+					GuiUtil.trySetRenderingHints(disposableGraphics);
 					final Color color = this.getForeground();
 					if (color != null) {
-						graphics.setColor(color);
+						disposableGraphics.setColor(color);
 					}
 
 					final Font aliasFont = this.getAliasFont();
 					if (aliasFont != null) {
-						graphics.setFont(aliasFont);
+						disposableGraphics.setFont(aliasFont);
 					}
 
 					final Insets insets = this.getInsets();
-					final int baseY = graphics.getFontMetrics().getMaxAscent() + insets.top;
-					graphics.drawString(this.alias, this.getWidth() - insets.right - this.getAliasWidth(), baseY);
+					final int baseY = disposableGraphics.getFontMetrics().getMaxAscent() + insets.top;
+					disposableGraphics.drawString(this.alias, this.getWidth() - insets.right - this.getAliasWidth(), baseY);
+
+					disposableGraphics.dispose();
 				}
 
 				int getAliasWidth() {
