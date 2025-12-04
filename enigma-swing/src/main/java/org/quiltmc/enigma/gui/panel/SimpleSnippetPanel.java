@@ -5,6 +5,7 @@ import org.quiltmc.enigma.api.source.Token;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
+import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.LineIndexer;
 
 import javax.swing.JEditorPane;
@@ -14,6 +15,8 @@ import java.awt.Color;
 public class SimpleSnippetPanel extends AbstractEditorPanel<JScrollPane> {
 	public SimpleSnippetPanel(Gui gui, @Nullable Token target) {
 		super(gui);
+
+		this.editor.setCaretColor(GuiUtil.TRANSPARENT);
 
 		this.addSourceSetListener(source -> {
 			this.installEditorRuler(new LineIndexer(source.toString()).getLine(this.getSourceBounds().start()));
