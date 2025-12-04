@@ -40,6 +40,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
+import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.LineIndexer;
 import org.quiltmc.enigma.util.Result;
@@ -68,7 +69,7 @@ public class DeclarationSnippetPanel extends AbstractEditorPanel<JScrollPane> {
 
 		this.getEditor().setEditable(false);
 
-		this.editor.setCaretColor(new Color(0, 0, 0, 0));
+		this.editor.setCaretColor(GuiUtil.TRANSPARENT);
 		this.editor.getCaret().setSelectionVisible(true);
 
 		this.addSourceSetListener(source -> {

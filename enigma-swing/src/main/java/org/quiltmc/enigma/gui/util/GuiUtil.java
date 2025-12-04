@@ -79,6 +79,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public final class GuiUtil {
+	public static final Color TRANSPARENT = new Color(0, true);
+
 	private GuiUtil() {
 		throw new UnsupportedOperationException();
 	}
