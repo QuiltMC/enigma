@@ -41,7 +41,7 @@ public class StatsDialog {
 			if (nullableResult == null) {
 				generateAndShow(gui, generator, parameters);
 			} else {
-				SwingUtilities.invokeLater(() -> show(gui, nullableResult, ""));
+				SwingUtilities.invokeLater(() -> show(gui, nullableResult, Config.stats().lastTopLevelPackage.value()));
 			}
 		} else {
 			throw new IllegalStateException("Cannot open stats dialog without a project open! (stats generator is null)");
@@ -56,7 +56,7 @@ public class StatsDialog {
 			}
 
 			ProjectStatsResult result = generator.getResult(parameters);
-			SwingUtilities.invokeLater(() -> show(gui, result, ""));
+			SwingUtilities.invokeLater(() -> show(gui, result, Config.stats().lastTopLevelPackage.value()));
 		});
 	}
 
