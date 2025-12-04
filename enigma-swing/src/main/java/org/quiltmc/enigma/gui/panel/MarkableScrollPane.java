@@ -296,7 +296,9 @@ public class MarkableScrollPane extends JScrollPane {
 			this.paintState = this.createPaintState();
 		}
 
-		this.paintState.paint(graphics);
+		final Graphics disposableGraphics = graphics.create();
+		this.paintState.paint(disposableGraphics);
+		disposableGraphics.dispose();
 	}
 
 	private PaintState createPaintState() {
