@@ -21,10 +21,10 @@ public class MainJarIndex extends IndependentJarIndex {
 	 * @return the newly created index
 	 */
 	public static MainJarIndex empty() {
-		EntryIndex entryIndex = new EntryIndexImpl();
+		EntryIndex entryIndex = new IndependentEntryIndex();
 		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
-		ReferenceIndex referenceIndex = new ReferenceIndexImpl();
-		BridgeMethodIndex bridgeMethodIndex = new BridgeMethodIndexImpl(entryIndex, inheritanceIndex, referenceIndex);
+		ReferenceIndex referenceIndex = new IndependentReferenceIndex();
+		BridgeMethodIndex bridgeMethodIndex = new IndependentBridgeMethodIndex(entryIndex, inheritanceIndex, referenceIndex);
 		PackageVisibilityIndex packageVisibilityIndex = new PackageVisibilityIndex();
 		EnclosingMethodIndex enclosingMethodIndex = new EnclosingMethodIndex();
 		LambdaIndex lambdaIndex = new LambdaIndex();

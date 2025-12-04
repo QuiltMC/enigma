@@ -18,7 +18,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import java.util.Collection;
 import java.util.Map;
 
-class ReferenceIndexImpl implements ReferenceIndex {
+class IndependentReferenceIndex implements ReferenceIndex {
 	private Multimap<MethodEntry, MethodEntry> methodReferences = HashMultimap.create();
 	private Multimap<MethodEntry, FieldEntry> fieldReferences = HashMultimap.create();
 

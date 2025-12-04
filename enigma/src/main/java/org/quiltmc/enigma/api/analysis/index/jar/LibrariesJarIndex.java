@@ -21,12 +21,12 @@ public class LibrariesJarIndex extends IndependentJarIndex {
 	 * @return the newly created index
 	 */
 	public static LibrariesJarIndex empty() {
-		EntryIndex entryIndex = new EntryIndexImpl();
-		ReferenceIndex referenceIndex = new ReferenceIndexImpl();
+		EntryIndex entryIndex = new IndependentEntryIndex();
+		ReferenceIndex referenceIndex = new IndependentReferenceIndex();
 		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
 		return new LibrariesJarIndex(
 				entryIndex, inheritanceIndex, referenceIndex,
-				new BridgeMethodIndexImpl(entryIndex, inheritanceIndex, referenceIndex)
+				new IndependentBridgeMethodIndex(entryIndex, inheritanceIndex, referenceIndex)
 		);
 	}
 
