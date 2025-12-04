@@ -52,7 +52,7 @@ public class StatTableModel extends AbstractTableModel {
 			.orElseThrow();
 	}
 
-	enum Column {
+	private enum Column {
 		TYPE("menu.file.stats.column.type", String.class, (result, type) -> type.getName()),
 		MAPPED("menu.file.stats.column.mapped", Integer.class, ProjectStatsResult::getMapped),
 		TOTAL("menu.file.stats.column.total", Integer.class, ProjectStatsResult::getMappable),
