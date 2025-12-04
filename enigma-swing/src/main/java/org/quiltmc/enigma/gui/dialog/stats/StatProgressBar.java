@@ -18,7 +18,8 @@ import java.awt.geom.Area;
 
 public class StatProgressBar extends JComponent {
 	public static final int THICKNESS = ScaleUtil.scale(10);
-	public static final int CIRCLE_SIZE = ScaleUtil.scale(100);
+	public static final int CIRCLE_DIAMETER = ScaleUtil.scale(100);
+	public static final int CORNER_RADIUS = ScaleUtil.scale(10);
 	public static final Color COLOR = new Color(0x19D219);
 	private final double progress;
 	private final boolean isCircular;
@@ -34,14 +35,14 @@ public class StatProgressBar extends JComponent {
 	private void addLabel() {
 		this.setLayout(new GridBagLayout());
 		JLabel label = new JLabel(String.format("%.2f%%", this.progress));
-		label.setFont(label.getFont().deriveFont(Font.BOLD, 18.0f));
+		label.setFont(label.getFont().deriveFont(Font.BOLD, ScaleUtil.scale(18.0f)));
 		this.add(label, GridBagConstraintsBuilder.create().anchor(GridBagConstraints.CENTER).build());
 	}
 
 	@Override
 	public Dimension getPreferredSize() {
 		if (this.isCircular) {
-			return new Dimension(CIRCLE_SIZE, CIRCLE_SIZE);
+			return new Dimension(CIRCLE_DIAMETER, CIRCLE_DIAMETER);
 		} else {
 			return super.getPreferredSize();
 		}
@@ -54,8 +55,8 @@ public class StatProgressBar extends JComponent {
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		if (this.isCircular) {
-			int startX = (this.getWidth() - CIRCLE_SIZE) / 2;
-			int startY = (this.getHeight() - CIRCLE_SIZE) / 2;
+			int startX = (this.getWidth() - CIRCLE_DIAMETER) / 2;
+			int startY = (this.getHeight() - CIRCLE_DIAMETER) / 2;
 			g2.setColor(this.getBackgroundColor());
 			Area backgroundRing = createRing(startX, startY, 0, 360);
 			g2.fill(backgroundRing);
@@ -65,9 +66,9 @@ public class StatProgressBar extends JComponent {
 		} else {
 			int startY = (this.getHeight() - THICKNESS) / 2;
 			g2.setColor(this.getBackgroundColor());
-			g2.fillRoundRect(0, startY, this.getWidth(), THICKNESS, 10, 10);
+			g2.fillRoundRect(0, startY, this.getWidth(), THICKNESS, CORNER_RADIUS, CORNER_RADIUS);
 			g2.setColor(COLOR);
-			g2.fillRoundRect(0, startY, (int) (this.getWidth() * this.progress / 100), THICKNESS, 10, 10);
+			g2.fillRoundRect(0, startY, (int) (this.getWidth() * this.progress / 100), THICKNESS, CORNER_RADIUS, CORNER_RADIUS);
 		}
 
 		g2.dispose();
@@ -79,8 +80,8 @@ public class StatProgressBar extends JComponent {
 	}
 
 	private static Area createRing(int x, int y, double startAngle, double arcAngle) {
-		Arc2D outer = new Arc2D.Double(x, y, CIRCLE_SIZE, CIRCLE_SIZE, startAngle + 90, -arcAngle, Arc2D.PIE);
-		Arc2D inner = new Arc2D.Double(x + THICKNESS, y + THICKNESS, CIRCLE_SIZE - 2 * THICKNESS, CIRCLE_SIZE - 2 * THICKNESS, startAngle + 90, -arcAngle, Arc2D.PIE);
+		Arc2D outer = new Arc2D.Double(x, y, CIRCLE_DIAMETER, CIRCLE_DIAMETER, startAngle + 90, -arcAngle, Arc2D.PIE);
+		Arc2D inner = new Arc2D.Double(x + THICKNESS, y + THICKNESS, CIRCLE_DIAMETER - 2 * THICKNESS, CIRCLE_DIAMETER - 2 * THICKNESS, startAngle + 90, -arcAngle, Arc2D.PIE);
 		Area ring = new Area(outer);
 		ring.subtract(new Area(inner));
 		return ring;

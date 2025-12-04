@@ -75,7 +75,7 @@ public class StatsDialog {
 		JPanel activeSettingsPanel = new JPanel();
 		activeSettingsPanel.setLayout(new BoxLayout(activeSettingsPanel, BoxLayout.Y_AXIS));
 		JLabel activeSettingsLabel = new JLabel(I18n.translate("menu.file.stats.active_settings"));
-		activeSettingsLabel.setFont(activeSettingsLabel.getFont().deriveFont(16.0f));
+		activeSettingsLabel.setFont(activeSettingsLabel.getFont().deriveFont(ScaleUtil.scale(16.0f)));
 		activeSettingsLabel.setHorizontalAlignment(JLabel.CENTER);
 		activeSettingsPanel.add(activeSettingsLabel);
 
