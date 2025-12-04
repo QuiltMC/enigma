@@ -31,7 +31,7 @@ public final class CombinedJarIndex extends AbstractJarIndex {
 		LambdaIndex lambdaIndex = new LambdaIndex();
 		return new CombinedJarIndex(
 				entryIndex, inheritanceIndex, referenceIndex,
-				new BridgeMethodIndex(entryIndex, inheritanceIndex, referenceIndex),
+				new CombinedBridgeMethodIndex(mainIndex.bridgeMethodIndex, libIndex.bridgeMethodIndex),
 				// required by MappingValidator
 				lambdaIndex
 		);

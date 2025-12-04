@@ -12,6 +12,7 @@ import java.util.Collection;
 public class LibrariesJarIndex extends AbstractJarIndex {
 	final EntryIndex entryIndex;
 	final ReferenceIndex referenceIndex;
+	final BridgeMethodIndex bridgeMethodIndex;
 
 	public LibrariesJarIndex(
 			EntryIndex entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex,
@@ -20,6 +21,7 @@ public class LibrariesJarIndex extends AbstractJarIndex {
 		super(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex, otherIndexers);
 		this.entryIndex = entryIndex;
 		this.referenceIndex = referenceIndex;
+		this.bridgeMethodIndex = bridgeMethodIndex;
 	}
 
 	/**
@@ -32,7 +34,7 @@ public class LibrariesJarIndex extends AbstractJarIndex {
 		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
 		return new LibrariesJarIndex(
 				entryIndex, inheritanceIndex, referenceIndex,
-				new BridgeMethodIndex(entryIndex, inheritanceIndex, referenceIndex)
+				new BridgeMethodIndexImpl(entryIndex, inheritanceIndex, referenceIndex)
 		);
 	}
 

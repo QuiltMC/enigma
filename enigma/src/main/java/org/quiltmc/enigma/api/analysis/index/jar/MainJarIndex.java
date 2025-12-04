@@ -12,6 +12,7 @@ import java.util.Collection;
 public class MainJarIndex extends AbstractJarIndex {
 	final EntryIndex entryIndex;
 	final ReferenceIndex referenceIndex;
+	final BridgeMethodIndex bridgeMethodIndex;
 
 	public MainJarIndex(
 			EntryIndex entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex,
@@ -20,6 +21,7 @@ public class MainJarIndex extends AbstractJarIndex {
 		super(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex, otherIndexers);
 		this.entryIndex = entryIndex;
 		this.referenceIndex = referenceIndex;
+		this.bridgeMethodIndex = bridgeMethodIndex;
 	}
 
 	/**
@@ -30,7 +32,7 @@ public class MainJarIndex extends AbstractJarIndex {
 		EntryIndex entryIndex = new EntryIndexImpl();
 		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
 		ReferenceIndex referenceIndex = new ReferenceIndexImpl();
-		BridgeMethodIndex bridgeMethodIndex = new BridgeMethodIndex(entryIndex, inheritanceIndex, referenceIndex);
+		BridgeMethodIndex bridgeMethodIndex = new BridgeMethodIndexImpl(entryIndex, inheritanceIndex, referenceIndex);
 		PackageVisibilityIndex packageVisibilityIndex = new PackageVisibilityIndex();
 		EnclosingMethodIndex enclosingMethodIndex = new EnclosingMethodIndex();
 		LambdaIndex lambdaIndex = new LambdaIndex();
