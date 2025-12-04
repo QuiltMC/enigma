@@ -25,13 +25,14 @@ public final class CombinedJarIndex extends AbstractJarIndex {
 	 * @return the newly created index
 	 */
 	public static CombinedJarIndex empty(MainJarIndex mainIndex, LibrariesJarIndex libIndex) {
-		EntryIndex entryIndex = new CombinedEntryIndex(mainIndex.entryIndex, libIndex.entryIndex);
-		ReferenceIndex referenceIndex = new CombinedReferenceIndex(mainIndex.referenceIndex, libIndex.referenceIndex);
+		EntryIndex entryIndex = new CombinedEntryIndex(mainIndex.getEntryIndex(), libIndex.getEntryIndex());
+		ReferenceIndex referenceIndex =
+			new CombinedReferenceIndex(mainIndex.getReferenceIndex(), libIndex.getReferenceIndex());
 		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
 		LambdaIndex lambdaIndex = new LambdaIndex();
 		return new CombinedJarIndex(
 				entryIndex, inheritanceIndex, referenceIndex,
-				new CombinedBridgeMethodIndex(mainIndex.bridgeMethodIndex, libIndex.bridgeMethodIndex),
+				new CombinedBridgeMethodIndex(mainIndex.getBridgeMethodIndex(), libIndex.getBridgeMethodIndex()),
 				// required by MappingValidator
 				lambdaIndex
 		);
