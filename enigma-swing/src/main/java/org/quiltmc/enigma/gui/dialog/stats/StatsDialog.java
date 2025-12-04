@@ -110,7 +110,7 @@ public class StatsDialog {
 			dialog.dispose();
 			showSettingsDialog(gui);
 		});
-		contentPane.add(settingsButton, cb1.pos(0, result.getOverall().getTypes().size() + 5).anchor(GridBagConstraints.EAST).build());
+		contentPane.add(settingsButton, cb1.pos(0, 2).anchor(GridBagConstraints.SOUTHEAST).build());
 
 		// show generate button
 		JButton button = new JButton(I18n.translate("menu.file.stats.generate"));
@@ -120,7 +120,7 @@ public class StatsDialog {
 			showGenerateDiagramDialog(gui, result);
 		});
 
-		contentPane.add(button, cb1.pos(0, result.getOverall().getTypes().size() + 5).weightY(1.0).anchor(GridBagConstraints.SOUTHWEST).build());
+		contentPane.add(button, cb1.pos(0, 2).weightY(1.0).anchor(GridBagConstraints.SOUTHWEST).build());
 
 		// show the frame
 		dialog.pack();
@@ -151,6 +151,7 @@ public class StatsDialog {
 		});
 
 		for (JCheckBox checkbox : checkboxes.values()) {
+			checkbox.setSelected(true);
 			checkbox.addActionListener(action -> generateButton.setEnabled(checkboxes.values().stream().anyMatch(JCheckBox::isSelected)));
 		}
 
