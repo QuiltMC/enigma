@@ -124,11 +124,9 @@ public class StatsDialog {
 
 		// show the frame
 		dialog.pack();
-		Dimension size = dialog.getSize();
-		dialog.setMinimumSize((Dimension) size.clone());
-		size.width = ScaleUtil.scale(350);
-		dialog.setSize(size);
+		dialog.getSize().width = ScaleUtil.scale(350);
 		dialog.setLocationRelativeTo(gui.getFrame());
+		dialog.setResizable(false);
 		dialog.setVisible(true);
 	}
 
