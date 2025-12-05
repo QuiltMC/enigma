@@ -9,7 +9,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import java.util.Collection;
 
-public interface ReferenceIndex extends JarIndexer {
+public sealed interface ReferenceIndex extends JarIndexer permits CombinedReferenceIndex, IndependentReferenceIndex {
 	Collection<MethodEntry> getMethodsReferencedBy(MethodEntry entry);
 
 	Collection<FieldEntry> getFieldsReferencedBy(MethodEntry entry);

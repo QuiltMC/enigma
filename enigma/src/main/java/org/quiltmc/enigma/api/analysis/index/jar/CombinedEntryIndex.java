@@ -17,7 +17,7 @@ import org.quiltmc.enigma.util.CombinedCollection;
 
 import java.util.Collection;
 
-class CombinedEntryIndex implements EntryIndex {
+final class CombinedEntryIndex implements EntryIndex {
 	private final EntryIndex mainIndex;
 	private final EntryIndex libIndex;
 

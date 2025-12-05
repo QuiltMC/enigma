@@ -17,7 +17,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import java.util.Collection;
 
-public interface EntryIndex extends JarIndexer {
+public sealed interface EntryIndex extends JarIndexer permits CombinedEntryIndex, IndependentEntryIndex {
 	boolean hasClass(ClassEntry entry);
 
 	boolean hasMethod(MethodEntry entry);

@@ -13,7 +13,7 @@ import java.util.Collection;
 /**
  * <b>Note:</b> does <em>not</em> currently index main jar references to library types and members.
  */
-class CombinedReferenceIndex implements ReferenceIndex {
+final class CombinedReferenceIndex implements ReferenceIndex {
 	private final ReferenceIndex mainIndex;
 	private final ReferenceIndex libIndex;
 

@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-class IndependentEntryIndex implements EntryIndex {
+final class IndependentEntryIndex implements EntryIndex {
 	private final EntryTree<EntryMapping> tree = new HashEntryTree<>();
 
 	private final Map<FieldEntry, FieldDefEntry> fieldDefinitions = new HashMap<>();

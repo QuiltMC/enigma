@@ -5,7 +5,8 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import java.util.Map;
 
-public interface BridgeMethodIndex extends JarIndexer {
+public sealed interface BridgeMethodIndex extends JarIndexer
+		permits CombinedBridgeMethodIndex, IndependentBridgeMethodIndex {
 	void findBridgeMethods();
 
 	boolean isBridgeMethod(MethodEntry entry);

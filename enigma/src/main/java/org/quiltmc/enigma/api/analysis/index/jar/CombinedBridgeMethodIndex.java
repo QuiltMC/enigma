@@ -6,7 +6,7 @@ import org.quiltmc.enigma.util.UnmodifiableCombinedMap;
 
 import java.util.Map;
 
-class CombinedBridgeMethodIndex implements BridgeMethodIndex {
+final class CombinedBridgeMethodIndex implements BridgeMethodIndex {
 	private final BridgeMethodIndex mainIndex;
 	private final BridgeMethodIndex libIndex;
 	private final Map<MethodEntry, MethodEntry> specializedToBridge;

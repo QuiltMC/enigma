@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class IndependentBridgeMethodIndex implements BridgeMethodIndex {
+final class IndependentBridgeMethodIndex implements BridgeMethodIndex {
 	private final EntryIndex entryIndex;
 	private final InheritanceIndex inheritanceIndex;
 	private final ReferenceIndex referenceIndex;
