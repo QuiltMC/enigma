@@ -8,10 +8,10 @@ import org.quiltmc.enigma.gui.util.layout.flex_grid.FlexGridLayout;
 import javax.swing.JFrame;
 import java.awt.Color;
 
-public class FlexGridOverlapVisualiser implements Visualizer {
+public class FlexGridExtentOverlapVisualiser implements Visualizer {
 	@Override
 	public String getTitle() {
-		return "Flex Grid Overlap";
+		return "Flex Grid Extent Overlap";
 	}
 
 	/**
