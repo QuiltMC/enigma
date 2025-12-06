@@ -5,7 +5,6 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints.Alignment;
-import org.quiltmc.enigma.util.Utils;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -20,6 +19,8 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
+import static org.quiltmc.enigma.util.Utils.ceilDiv;
 
 /**
  * A layout manager that lays out components in a grid and allocates space according to priority.
@@ -254,7 +255,8 @@ public class FlexGridLayout implements LayoutManager2 {
 					final Dimension targetSize = targets.componentSizes.get(constrained.component);
 					assert targetSize != null;
 
-					return Math.min(ops.getSpan(targetSize), cellSpans.get(coord));
+					final int extendedCellSpan = ops.calculateExtendedCellSpan(constrained, coord, cellSpans);
+					return Math.min(ops.getSpan(targetSize), extendedCellSpan);
 				});
 			}
 		} else {
@@ -269,7 +271,9 @@ public class FlexGridLayout implements LayoutManager2 {
 				this.layoutAxisImpl(leadingInset, ops, cellSpans, (constrained, coord) -> {
 					final Dimension preferredSize = preferred.componentSizes.get(constrained.component);
 					assert preferredSize != null;
-					return Math.min(ops.getSpan(preferredSize), cellSpans.get(coord));
+
+					final int extendedCellSpan = ops.calculateExtendedCellSpan(constrained, coord, cellSpans);
+					return Math.min(ops.getSpan(preferredSize), extendedCellSpan);
 				});
 			}
 		}
@@ -300,32 +304,39 @@ public class FlexGridLayout implements LayoutManager2 {
 			});
 		});
 
-		while (!prioritized.isEmpty()) {
+		while (!prioritized.isEmpty() && remainingSpace > 0) {
 			final Constrained.At at = prioritized.remove();
-
-			final int currentSpan = cellSpans.get(at.coord);
 
 			final Dimension targetSize = large.componentSizes.get(at.constrained().component);
 			assert targetSize != null;
-			final int targetSpan = ops.getSpan(targetSize);
-			final int targetDiff = targetSpan - currentSpan;
-			if (targetDiff > 0) {
-				if (targetDiff <= remainingSpace) {
-					cellSpans.put(at.coord, targetSpan);
 
-					if (remainingSpace == targetDiff) {
-						break;
-					} else {
+			final int extent = ops.getExtent(at.constrained());
+
+			final int targetSpan = ceilDiv(ops.getSpan(targetSize), extent);
+
+			for (int i = 0; i < extent; i++) {
+				final int extendedCoord = at.coord + i;
+				final int currentSpan = cellSpans.get(extendedCoord);
+
+				final int targetDiff = targetSpan - currentSpan;
+				if (targetDiff > 0) {
+					if (targetDiff <= remainingSpace) {
+						cellSpans.put(extendedCoord, targetSpan);
+
 						remainingSpace -= targetDiff;
-					}
-				} else {
-					final int lastOfSpan = remainingSpace;
-					cellSpans.compute(at.coord, (ignored, span) -> {
-						assert span != null;
-						return span + lastOfSpan;
-					});
+						if (remainingSpace == 0) {
+							break;
+						}
+					} else {
+						final int lastOfSpan = remainingSpace;
+						remainingSpace = 0;
+						cellSpans.compute(extendedCoord, (ignored, span) -> {
+							assert span != null;
+							return span + lastOfSpan;
+						});
 
-					break;
+						break;
+					}
 				}
 			}
 		}
@@ -352,21 +363,20 @@ public class FlexGridLayout implements LayoutManager2 {
 			final int oppositeCoord = ops.opposite().chooseCoord(x, y);
 
 			final int pos = positions.computeIfAbsent(oppositeCoord, ignored -> startPos);
-			final Integer cellSpan = cellSpans.get(coord);
 
 			values.forEach(constrained -> {
 				final int span = getComponentSpan.apply(constrained, coord);
 
-				final int constrainedPos = span == cellSpan ? pos : switch (ops.getAlignment(constrained)) {
+				final int constrainedPos = switch (ops.getAlignment(constrained)) {
 					case BEGIN -> pos;
-					case CENTER -> pos + (cellSpan - span) / 2;
-					case END -> pos + cellSpan - span;
+					case CENTER -> pos + (ops.calculateExtendedCellSpan(constrained, coord, cellSpans) - span) / 2;
+					case END -> pos + ops.calculateExtendedCellSpan(constrained, coord, cellSpans) - span;
 				};
 
 				ops.setBounds(constrained.component, constrainedPos, span);
 			});
 
-			positions.put(oppositeCoord, pos + cellSpan);
+			positions.put(oppositeCoord, pos + cellSpans.get(coord));
 		});
 	}
 
@@ -453,8 +463,8 @@ public class FlexGridLayout implements LayoutManager2 {
 				values.forEach(constrained -> {
 					final Dimension size = componentSizes.computeIfAbsent(constrained.component, getSize);
 
-					final int componentCellWidth = Utils.ceilDiv(size.width, constrained.xExtent);
-					final int componentCellHeight = Utils.ceilDiv(size.height, constrained.yExtent);
+					final int componentCellWidth = ceilDiv(size.width, constrained.xExtent);
+					final int componentCellHeight = ceilDiv(size.height, constrained.yExtent);
 					for (int xOffset = 0; xOffset < constrained.xExtent; xOffset++) {
 						for (int yOffset = 0; yOffset < constrained.xExtent; yOffset++) {
 							final Dimension cellSize = cellSizes
@@ -549,6 +559,11 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
+			int getExtent(Constrained constrained) {
+				return constrained.xExtent;
+			}
+
+			@Override
 			void setBounds(Component component, int x, int width) {
 				component.setBounds(x, component.getY(), width, component.getHeight());
 			}
@@ -610,6 +625,11 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
+			int getExtent(Constrained constrained) {
+				return constrained.yExtent;
+			}
+
+			@Override
 			void setBounds(Component component, int y, int height) {
 				component.setBounds(component.getX(), y, component.getWidth(), height);
 			}
@@ -633,9 +653,21 @@ public class FlexGridLayout implements LayoutManager2 {
 		abstract boolean fills(Constrained constrained);
 		abstract boolean noneFill(ConstrainedGrid grid);
 		abstract Alignment getAlignment(Constrained constrained);
+		abstract int getExtent(Constrained constrained);
 
 		abstract void setBounds(Component component, int pos, int span);
 
 		abstract CartesianOperations opposite();
+
+		// TODO cache?
+		int calculateExtendedCellSpan(Constrained constrained, int coord, Map<Integer, Integer> cellSpans) {
+			int extendedCellSpan = 0;
+			final int extent = this.getExtent(constrained);
+			for (int i = 0; i < extent; i++) {
+				extendedCellSpan += cellSpans.get(coord + i);
+			}
+
+			return extendedCellSpan;
+		}
 	}
 }
