@@ -10,7 +10,7 @@ import org.quilt.internal.gui.visualization.flex_grid.FlexGridPriorityFillVisual
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridPriorityVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridQuiltVisualiser;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridSparseVisualizer;
-import org.quilt.internal.gui.visualization.flex_grid.FlexGridVVisualizer;
+import org.quilt.internal.gui.visualization.flex_grid.FlexGridGreaterVisualizer;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -47,7 +47,7 @@ public final class Main {
 		registerVisualizer(new FlexGridPriorityVisualizer());
 		registerVisualizer(new FlexGridPriorityFillVisualizer());
 		registerVisualizer(new FlexGridSparseVisualizer());
-		registerVisualizer(new FlexGridVVisualizer());
+		registerVisualizer(new FlexGridGreaterVisualizer());
 	}
 
 	private static void position(Window window) {
