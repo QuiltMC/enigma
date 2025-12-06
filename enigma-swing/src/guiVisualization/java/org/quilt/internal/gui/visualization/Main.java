@@ -13,6 +13,7 @@ import org.quilt.internal.gui.visualization.flex_grid.FlexGridPriorityVisualizer
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridQuiltVisualiser;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridSparseVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridGreaterVisualizer;
+import org.quilt.internal.gui.visualization.flex_grid.FlexGridTetrisVisualizer;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -52,6 +53,7 @@ public final class Main {
 		registerVisualizer(new FlexGridGreaterVisualizer());
 		registerVisualizer(new FlexGridCheckersVisualizer());
 		registerVisualizer(new FlexGridDiagonalBricksVisualizer());
+		registerVisualizer(new FlexGridTetrisVisualizer());
 	}
 
 	private static void position(Window window) {
