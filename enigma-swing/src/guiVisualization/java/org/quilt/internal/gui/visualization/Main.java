@@ -9,6 +9,7 @@ import org.quilt.internal.gui.visualization.flex_grid.FlexGridDiagonalBricksVisu
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridFillVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridExtentOverlapVisualiser;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridPriorityFillVisualizer;
+import org.quilt.internal.gui.visualization.flex_grid.FlexGridPriorityScrollPanes;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridPriorityVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridQuiltVisualiser;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridSparseVisualizer;
@@ -54,6 +55,7 @@ public final class Main {
 		registerVisualizer(new FlexGridCheckersVisualizer());
 		registerVisualizer(new FlexGridDiagonalBricksVisualizer());
 		registerVisualizer(new FlexGridTetrisVisualizer());
+		registerVisualizer(new FlexGridPriorityScrollPanes());
 	}
 
 	private static void position(Window window) {
