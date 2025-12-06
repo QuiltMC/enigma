@@ -9,6 +9,7 @@ import org.quilt.internal.gui.visualization.flex_grid.FlexGridExtentOverlapVisua
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridPriorityFillVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridPriorityVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridQuiltVisualiser;
+import org.quilt.internal.gui.visualization.flex_grid.FlexGridSparseVisualizer;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -44,6 +45,7 @@ public final class Main {
 		registerVisualizer(new FlexGridAlignAndFillVisualizer());
 		registerVisualizer(new FlexGridPriorityVisualizer());
 		registerVisualizer(new FlexGridPriorityFillVisualizer());
+		registerVisualizer(new FlexGridSparseVisualizer());
 	}
 
 	private static void position(Window window) {
