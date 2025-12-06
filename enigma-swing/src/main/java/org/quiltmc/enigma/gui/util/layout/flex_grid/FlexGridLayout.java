@@ -56,18 +56,18 @@ import static org.quiltmc.enigma.util.Utils.ceilDiv;
  * child components' total required space (as before, per-axis):
  * <table>
  *     <tr>
- *         <th>less than minimum space</th>
+ *         <th>space ≤ min</th>
  *         <td>each component gets its minimum size (excess is clipped)</td>
  *     </tr>
  *     <tr>
- *         <th>between minimum and preferred space</th>
+ *         <th>min < space < preferred</th>
  *         <td>
  *             each component gets at least its minimum size; components get additional space
  *             - up to their preferred size - according to priority
  *         </td>
  *     </tr>
  *     <tr>
- *         <th>more than preferred space</th>
+ *         <th>space ≥ preferred</th>
  *         <td>
  *             each component gets at least is preferred size; components that
  *             {@linkplain FlexGridConstraints#fill(boolean, boolean) fill} the axis get additional space
