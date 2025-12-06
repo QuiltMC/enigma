@@ -5,6 +5,7 @@ import org.quilt.internal.gui.visualization.flex_grid.FlexGridAlignmentVisualize
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridCheckersVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridColumnVisualiser;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridDefaultRowVisualiser;
+import org.quilt.internal.gui.visualization.flex_grid.FlexGridDiagonalBricksVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridFillVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridExtentOverlapVisualiser;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridPriorityFillVisualizer;
@@ -50,6 +51,7 @@ public final class Main {
 		registerVisualizer(new FlexGridSparseVisualizer());
 		registerVisualizer(new FlexGridGreaterVisualizer());
 		registerVisualizer(new FlexGridCheckersVisualizer());
+		registerVisualizer(new FlexGridDiagonalBricksVisualizer());
 	}
 
 	private static void position(Window window) {

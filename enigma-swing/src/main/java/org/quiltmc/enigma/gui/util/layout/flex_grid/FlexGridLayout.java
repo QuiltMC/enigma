@@ -483,7 +483,7 @@ public class FlexGridLayout implements LayoutManager2 {
 					final int componentCellWidth = ceilDiv(size.width, constrained.xExtent);
 					final int componentCellHeight = ceilDiv(size.height, constrained.yExtent);
 					for (int xOffset = 0; xOffset < constrained.xExtent; xOffset++) {
-						for (int yOffset = 0; yOffset < constrained.xExtent; yOffset++) {
+						for (int yOffset = 0; yOffset < constrained.yExtent; yOffset++) {
 							final Dimension cellSize = cellSizes
 									.computeIfAbsent(x + xOffset, ignored -> new HashMap<>())
 									.computeIfAbsent(y + yOffset, ignored -> new Dimension());
