@@ -2,6 +2,7 @@ package org.quilt.internal.gui.visualization;
 
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridAlignAndFillVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridAlignmentVisualizer;
+import org.quilt.internal.gui.visualization.flex_grid.FlexGridCheckersVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridColumnVisualiser;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridDefaultRowVisualiser;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridFillVisualizer;
@@ -48,6 +49,7 @@ public final class Main {
 		registerVisualizer(new FlexGridPriorityFillVisualizer());
 		registerVisualizer(new FlexGridSparseVisualizer());
 		registerVisualizer(new FlexGridGreaterVisualizer());
+		registerVisualizer(new FlexGridCheckersVisualizer());
 	}
 
 	private static void position(Window window) {
