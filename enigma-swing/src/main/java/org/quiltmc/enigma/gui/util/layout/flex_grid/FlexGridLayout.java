@@ -249,8 +249,11 @@ public class FlexGridLayout implements LayoutManager2 {
 			} else {
 				final Map<Integer, Integer> cellSpans = this.allocateCellSpace(ops, extraSpace, true);
 
+				final int allocatedSpace = cellSpans.values().stream().mapToInt(Integer::intValue).sum();
+				final int startPos = leadingInset + (availableSpace - allocatedSpace) / 2;
+
 				final Sizes max = this.getMaxSizes();
-				this.layoutAxisImpl(leadingInset, ops, cellSpans, (constrained, coord) -> {
+				this.layoutAxisImpl(startPos, ops, cellSpans, (constrained, coord) -> {
 					final Sizes targets = ops.fills(constrained) ? max : preferred;
 					final Dimension targetSize = targets.componentSizes.get(constrained.component);
 					assert targetSize != null;
