@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.gui.util.layout.flex_grid;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
@@ -17,6 +18,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -247,7 +250,7 @@ public class FlexGridLayout implements LayoutManager2 {
 			if (extraSpace == 0 || ops.noneFill(this.grid)) {
 				this.layoutFixedAxis(preferred, leadingInset + extraSpace / 2, ops);
 			} else {
-				final Map<Integer, Integer> cellSpans = this.allocateCellSpace(ops, extraSpace, true);
+				final SortedMap<Integer, Integer> cellSpans = this.allocateCellSpace(ops, extraSpace, true);
 
 				final int allocatedSpace = cellSpans.values().stream().mapToInt(Integer::intValue).sum();
 				final int startPos = leadingInset + (availableSpace - allocatedSpace) / 2;
@@ -268,7 +271,7 @@ public class FlexGridLayout implements LayoutManager2 {
 			if (extraMinSpace <= 0) {
 				this.layoutFixedAxis(min, leadingInset, ops);
 			} else {
-				final Map<Integer, Integer> cellSpans = this.allocateCellSpace(ops, extraMinSpace, false);
+				final SortedMap<Integer, Integer> cellSpans = this.allocateCellSpace(ops, extraMinSpace, false);
 
 				this.layoutAxisImpl(leadingInset, ops, cellSpans, (constrained, coord) -> {
 					final Dimension preferredSize = preferred.componentSizes.get(constrained.component);
@@ -280,10 +283,10 @@ public class FlexGridLayout implements LayoutManager2 {
 		}
 	}
 
-	private Map<Integer, Integer> allocateCellSpace(CartesianOperations ops, int remainingSpace, boolean fill) {
+	private SortedMap<Integer, Integer> allocateCellSpace(CartesianOperations ops, int remainingSpace, boolean fill) {
 		final Sizes large;
 		final Sizes small;
-		final Map<Integer, Integer> cellSpans;
+		final SortedMap<Integer, Integer> cellSpans;
 		if (fill) {
 			large = this.getMaxSizes();
 			small = this.getPreferredSizes();
@@ -292,7 +295,7 @@ public class FlexGridLayout implements LayoutManager2 {
 			small = this.getMinSizes();
 		}
 
-		cellSpans = new HashMap<>(ops.getCellSpans(small));
+		cellSpans = new TreeMap<>(ops.getCellSpans(small));
 
 		final PriorityQueue<Constrained.At> prioritized = new PriorityQueue<>(this.grid.getSize());
 		this.grid.forEach((x, y, values) -> {
@@ -354,16 +357,24 @@ public class FlexGridLayout implements LayoutManager2 {
 
 	private void layoutAxisImpl(
 			int startPos, CartesianOperations ops,
-			Map<Integer, Integer> cellSpans,
+			SortedMap<Integer, Integer> cellSpans,
 			BiFunction<Constrained, Integer, Integer> getComponentSpan
 	) {
-		final Map<Integer, Integer> positions = new HashMap<>();
+		final Map<Integer, Integer> beginPositions = new HashMap<>();
+		int currentPos = startPos;
+		for (final Map.Entry<Integer, Integer> entry : cellSpans.entrySet()) {
+			final int coord = entry.getKey();
+			final int span = entry.getValue();
+
+			beginPositions.put(coord, currentPos);
+
+			currentPos += span;
+		}
 
 		this.grid.forEach((x, y, values) -> {
 			final int coord = ops.chooseCoord(x, y);
-			final int oppositeCoord = ops.opposite().chooseCoord(x, y);
 
-			final int pos = positions.computeIfAbsent(oppositeCoord, ignored -> startPos);
+			final int beginPos = beginPositions.get(coord);
 
 			values.forEach(constrained -> {
 				final int extent = ops.getExtent(constrained);
@@ -376,15 +387,13 @@ public class FlexGridLayout implements LayoutManager2 {
 				final int span = Math.min(getComponentSpan.apply(constrained, coord), extendedCellSpan);
 
 				final int constrainedPos = switch (ops.getAlignment(constrained)) {
-					case BEGIN -> pos;
-					case CENTER -> pos + (extendedCellSpan - span) / 2;
-					case END -> pos + extendedCellSpan - span;
+					case BEGIN -> beginPos;
+					case CENTER -> beginPos + (extendedCellSpan - span) / 2;
+					case END -> beginPos + extendedCellSpan - span;
 				};
 
 				ops.setBounds(constrained.component, constrainedPos, span);
 			});
-
-			positions.put(oppositeCoord, pos + cellSpans.get(coord));
 		});
 	}
 
@@ -459,7 +468,7 @@ public class FlexGridLayout implements LayoutManager2 {
 	 */
 	private record Sizes(
 			int totalWidth, int totalHeight,
-			ImmutableMap<Integer, Integer> rowHeights, ImmutableMap<Integer, Integer> columnWidths,
+			ImmutableSortedMap<Integer, Integer> rowHeights, ImmutableSortedMap<Integer, Integer> columnWidths,
 			ImmutableMap<Component, Dimension> componentSizes
 	) {
 		static Sizes calculate(ConstrainedGrid grid, Function<Component, Dimension> getSize) {
@@ -498,7 +507,7 @@ public class FlexGridLayout implements LayoutManager2 {
 			return new Sizes(
 				columnWidths.values().stream().mapToInt(Integer::intValue).sum(),
 				rowHeights.values().stream().mapToInt(Integer::intValue).sum(),
-				ImmutableMap.copyOf(rowHeights), ImmutableMap.copyOf(columnWidths),
+				ImmutableSortedMap.copyOf(rowHeights), ImmutableSortedMap.copyOf(columnWidths),
 				ImmutableMap.copyOf(componentSizes)
 			);
 		}
@@ -542,7 +551,7 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
-			ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes) {
+			ImmutableSortedMap<Integer, Integer> getCellSpans(Sizes sizes) {
 				return sizes.columnWidths;
 			}
 
@@ -608,7 +617,7 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
-			ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes) {
+			ImmutableSortedMap<Integer, Integer> getCellSpans(Sizes sizes) {
 				return sizes.rowHeights;
 			}
 
@@ -655,7 +664,7 @@ public class FlexGridLayout implements LayoutManager2 {
 		abstract int getParentSpace(Container parent);
 
 		abstract int getTotalSpace(Sizes sizes);
-		abstract ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes);
+		abstract ImmutableSortedMap<Integer, Integer> getCellSpans(Sizes sizes);
 		abstract int getSpan(Dimension size);
 
 		abstract boolean fills(Constrained constrained);
