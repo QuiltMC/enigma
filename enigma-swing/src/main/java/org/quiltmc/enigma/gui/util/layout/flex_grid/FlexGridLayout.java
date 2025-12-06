@@ -35,25 +35,25 @@ import static org.quiltmc.enigma.util.Utils.ceilDiv;
  *
  * <h4>Constraints</h4>
  *
- * Flex grids are configured by passing {@link FlexGridConstraints} when
+ * Configure flex grids by passing {@link FlexGridConstraints} when
  * {@linkplain Container#add(Component, Object) adding} {@link Component}s.<br>
- * If no constraints are specified,
- * a default set of {@linkplain FlexGridConstraints#createRelative() relative} constraints are used.<br>
- * If non-{@linkplain FlexGridConstraints flex grid} constraints are passed,
- * an {@link IllegalArgumentException} is thrown.
+ * When no constraints are specified, a default set of {@linkplain FlexGridConstraints#createRelative() relative}
+ * constraints are used.<br>
+ * Passing non-{@linkplain FlexGridConstraints flex grid} constraints will result in an
+ * {@link IllegalArgumentException}.
  *
  * <h4>Space allocation</h4>
  *
  * <p> Space is allocated to components per-axis, with high-{@linkplain FlexGridConstraints#priority(int) priority}
  * components getting space first. In ties, components with the least position on the axis get priority.<br>
- * Components never get less space in an axis than their {@linkplain Component#getMinimumSize() minimum sizes}
- * allow, and they never get more space than their {@linkplain Component#getMaximumSize() maximum sizes} allow.
- * Components only ever get more space in an axis than their
- * {@linkplain Component#getPreferredSize() preferred sizes} request if they're set to
+ * A component never gets less space in an axis than its {@linkplain Component#getMinimumSize() minimum size}
+ * allows, and it never gets more space than its {@linkplain Component#getMaximumSize() maximum size} allows.
+ * A components only ever gets more space in an axis than its
+ * {@linkplain Component#getPreferredSize() preferred size} requests if it's set to
  * {@linkplain FlexGridConstraints#fill(boolean, boolean) fill} that axis.
  *
  * <p> Space allocation behavior depends on the parent container's available space and
- * child components' total required space (as before, per-axis):
+ * child components' total sizes (as before, per-axis):
  * <table>
  *     <tr>
  *         <th>space ≤ min</th>
@@ -81,7 +81,7 @@ import static org.quiltmc.enigma.util.Utils.ceilDiv;
  * <ul>
  *     <li> components with {@linkplain FlexGridConstraints#createRelative() relative constraints} (or no constraints)
  *          are added to the end of the bottom row,<br>
- *          or ({@value FlexGridConstraints.Absolute#DEFAULT_X}, {@value FlexGridConstraints.Absolute#DEFAULT_Y})
+ *          or put at ({@value FlexGridConstraints.Absolute#DEFAULT_X}, {@value FlexGridConstraints.Absolute#DEFAULT_Y})
  *          if no other components have been added
  *     <li> a component can occupy multiple grid cells when its constraint
  *          {@linkplain FlexGridConstraints#xExtent(int) xExtent} or
