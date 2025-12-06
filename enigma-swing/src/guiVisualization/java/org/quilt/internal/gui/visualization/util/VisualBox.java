@@ -12,6 +12,9 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
+import static org.quiltmc.enigma.util.Arguments.requireNonNegative;
+import static org.quiltmc.enigma.util.Arguments.requireNotLess;
+
 /**
  * A simple box with customizable sizes, color, and name.
  *
@@ -26,6 +29,13 @@ public class VisualBox extends JPanel {
 	public static final Color PATCH_MAGENTA = new Color(220, 41, 221);
 	public static final Color PATCH_CYAN = new Color(39, 162, 253);
 	public static final Color PATCH_BLUE = new Color(51, 68, 255);
+
+	private static final String MIN_WIDTH = "minWidth";
+	private static final String MIN_HEIGHT = "minHeight";
+	private static final String PREFERRED_WIDTH = "preferredWidth";
+	private static final String PREFERRED_HEIGHT = "preferredHeight";
+	private static final String MAX_WIDTH = "maxWidth";
+	private static final String MAX_HEIGHT = "maxHeight";
 
 	public static VisualBox of() {
 		return of(null);
@@ -60,7 +70,7 @@ public class VisualBox extends JPanel {
 	}
 
 	public static VisualBox of(@Nullable String name, @Nullable Color color, int width, int height) {
-		return new VisualBox(name, color, width, height, width / 2, height / 2, width * 2, height * 2);
+		return new VisualBox(name, color, width / 2, height / 2, width, height, width * 2, height * 2);
 	}
 
 	public static VisualBox ofFixed() {
@@ -131,29 +141,29 @@ public class VisualBox extends JPanel {
 		return of(name, PATCH_BLUE);
 	}
 
-	private final int preferredWidth;
-	private final int preferredHeight;
-
 	private final int minWidth;
 	private final int minHeight;
+
+	private final int preferredWidth;
+	private final int preferredHeight;
 
 	private final int maxWidth;
 	private final int maxHeight;
 
 	protected VisualBox(
 			@Nullable String name, @Nullable Color color,
-			int preferredWidth, int preferredHeight,
 			int minWidth, int minHeight,
+			int preferredWidth, int preferredHeight,
 			int maxWidth, int maxHeight
 	) {
-		this.preferredWidth = preferredWidth;
-		this.preferredHeight = preferredHeight;
+		this.minWidth = requireNonNegative(minWidth, MIN_WIDTH);
+		this.minHeight = requireNonNegative(minHeight, MIN_HEIGHT);
 
-		this.minWidth = minWidth;
-		this.minHeight = minHeight;
+		this.preferredWidth = requireNotLess(preferredWidth, PREFERRED_WIDTH, minWidth, MIN_WIDTH);
+		this.preferredHeight = requireNotLess(preferredHeight, PREFERRED_HEIGHT, minHeight, MIN_HEIGHT);
 
-		this.maxWidth = maxWidth;
-		this.maxHeight = maxHeight;
+		this.maxWidth = requireNotLess(maxWidth, MAX_WIDTH, preferredWidth, PREFERRED_WIDTH);
+		this.maxHeight = requireNotLess(maxHeight, MAX_HEIGHT, preferredHeight, PREFERRED_HEIGHT);
 
 		this.setBackground(new Color(0, true));
 
@@ -164,7 +174,6 @@ public class VisualBox extends JPanel {
 		final Color foreground = this.getForeground();
 
 		this.setLayout(new GridBagLayout());
-		// this.setLayout(new BorderLayout());
 
 		final var center = new JPanel(new VerticalFlowLayout(5));
 		center.setBackground(this.getBackground());

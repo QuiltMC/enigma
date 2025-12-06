@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -209,5 +210,9 @@ public class Utils {
 
 	public static long ceilDiv(long dividend, long divisor) {
 		return -Math.floorDiv(-dividend, divisor);
+	}
+
+	public static <T> T requireNonNull(T object, String name) {
+		return Objects.requireNonNull(object, () -> name + " must not be null!");
 	}
 }

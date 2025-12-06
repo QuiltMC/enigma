@@ -1,13 +1,14 @@
 package org.quiltmc.enigma.gui.util.layout.flex_grid.constraints;
 
-import com.google.common.base.Preconditions;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.FlexGridLayout;
 
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.util.Objects;
+
+import static org.quiltmc.enigma.util.Arguments.requirePositive;
+import static org.quiltmc.enigma.util.Utils.requireNonNull;
 
 /**
  * Constraints for components added to a {@link Container} with a {@link FlexGridLayout} using
@@ -50,16 +51,15 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 	public static final Alignment DEFAULT_X_ALIGNMENT = Alignment.BEGIN;
 	public static final Alignment DEFAULT_Y_ALIGNMENT = Alignment.CENTER;
 
+	private static final String EXTENT = "extent";
+	private static final String ALIGNMENT = "alignment";
+
 	public static Relative createRelative() {
 		return Relative.of();
 	}
 
 	public static Absolute createAbsolute() {
 		return Absolute.of();
-	}
-
-	private static Alignment requireNonNullAlignment(Alignment alignment) {
-		return Objects.requireNonNull(alignment, "alignment must not be null!");
 	}
 
 	/**
@@ -155,8 +155,7 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 	 * @see #extent(int, int)
 	 */
 	public C xExtent(int extent) {
-		Preconditions.checkArgument(extent > 0, "extent must be positive!");
-		this.xExtent = extent;
+		this.xExtent = requirePositive(extent, EXTENT);
 		return this.getSelf();
 	}
 
@@ -173,8 +172,7 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 	 * @see #extent(int, int)
 	 */
 	public C yExtent(int extent) {
-		Preconditions.checkArgument(extent > 0, "extent must be positive!");
-		this.yExtent = extent;
+		this.yExtent = requirePositive(extent, EXTENT);
 		return this.getSelf();
 	}
 
@@ -343,7 +341,7 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 	 * @see #align(Alignment, Alignment)
 	 */
 	public C alignX(Alignment alignment) {
-		this.xAlignment = requireNonNullAlignment(alignment);
+		this.xAlignment = requireNonNull(alignment, ALIGNMENT);
 		return this.getSelf();
 	}
 
@@ -408,7 +406,7 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 	 * @see #align(Alignment, Alignment)
 	 */
 	public C alignY(Alignment alignment) {
-		this.yAlignment = requireNonNullAlignment(alignment);
+		this.yAlignment = requireNonNull(alignment, ALIGNMENT);
 		return this.getSelf();
 	}
 
