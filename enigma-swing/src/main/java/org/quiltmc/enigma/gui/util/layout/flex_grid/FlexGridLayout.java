@@ -255,8 +255,7 @@ public class FlexGridLayout implements LayoutManager2 {
 					final Dimension targetSize = targets.componentSizes.get(constrained.component);
 					assert targetSize != null;
 
-					final int extendedCellSpan = ops.calculateExtendedCellSpan(constrained, coord, cellSpans);
-					return Math.min(ops.getSpan(targetSize), extendedCellSpan);
+					return ops.getSpan(targetSize);
 				});
 			}
 		} else {
@@ -272,8 +271,7 @@ public class FlexGridLayout implements LayoutManager2 {
 					final Dimension preferredSize = preferred.componentSizes.get(constrained.component);
 					assert preferredSize != null;
 
-					final int extendedCellSpan = ops.calculateExtendedCellSpan(constrained, coord, cellSpans);
-					return Math.min(ops.getSpan(preferredSize), extendedCellSpan);
+					return ops.getSpan(preferredSize);
 				});
 			}
 		}
@@ -328,11 +326,11 @@ public class FlexGridLayout implements LayoutManager2 {
 							break;
 						}
 					} else {
-						final int lastOfSpan = remainingSpace;
+						final int lastOfSpace = remainingSpace;
 						remainingSpace = 0;
 						cellSpans.compute(extendedCoord, (ignored, span) -> {
 							assert span != null;
-							return span + lastOfSpan;
+							return span + lastOfSpace;
 						});
 
 						break;
@@ -365,12 +363,19 @@ public class FlexGridLayout implements LayoutManager2 {
 			final int pos = positions.computeIfAbsent(oppositeCoord, ignored -> startPos);
 
 			values.forEach(constrained -> {
-				final int span = getComponentSpan.apply(constrained, coord);
+				final int extent = ops.getExtent(constrained);
+
+				int extendedCellSpan = 0;
+				for (int i = 0; i < extent; i++) {
+					extendedCellSpan += cellSpans.get(coord + i);
+				}
+
+				final int span = Math.min(getComponentSpan.apply(constrained, coord), extendedCellSpan);
 
 				final int constrainedPos = switch (ops.getAlignment(constrained)) {
 					case BEGIN -> pos;
-					case CENTER -> pos + (ops.calculateExtendedCellSpan(constrained, coord, cellSpans) - span) / 2;
-					case END -> pos + ops.calculateExtendedCellSpan(constrained, coord, cellSpans) - span;
+					case CENTER -> pos + (extendedCellSpan - span) / 2;
+					case END -> pos + extendedCellSpan - span;
 				};
 
 				ops.setBounds(constrained.component, constrainedPos, span);
@@ -658,16 +663,5 @@ public class FlexGridLayout implements LayoutManager2 {
 		abstract void setBounds(Component component, int pos, int span);
 
 		abstract CartesianOperations opposite();
-
-		// TODO cache?
-		int calculateExtendedCellSpan(Constrained constrained, int coord, Map<Integer, Integer> cellSpans) {
-			int extendedCellSpan = 0;
-			final int extent = this.getExtent(constrained);
-			for (int i = 0; i < extent; i++) {
-				extendedCellSpan += cellSpans.get(coord + i);
-			}
-
-			return extendedCellSpan;
-		}
 	}
 }
