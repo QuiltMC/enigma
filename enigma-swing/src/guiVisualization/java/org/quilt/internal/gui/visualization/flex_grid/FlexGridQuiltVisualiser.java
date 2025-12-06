@@ -34,9 +34,9 @@ public class FlexGridQuiltVisualiser implements Visualizer {
 	) {
 		visualizeQuilt(
 				window,
-				"[0, 0]", constrainer1, "[1, 0]", constrainer2, "[2, 0]", constrainer3,
-				"[0, 1]", constrainer4, "[1, 1]", constrainer5, "[2, 1]", constrainer6,
-				"[0, 2]", constrainer7, "[1, 2]", constrainer8, "[2, 2]", constrainer9
+				"(0, 0)", constrainer1, "(1, 0)", constrainer2, "(2, 0)", constrainer3,
+				"(0, 1)", constrainer4, "(1, 1)", constrainer5, "(2, 1)", constrainer6,
+				"(0, 2)", constrainer7, "(1, 2)", constrainer8, "(2, 2)", constrainer9
 		);
 	}
 

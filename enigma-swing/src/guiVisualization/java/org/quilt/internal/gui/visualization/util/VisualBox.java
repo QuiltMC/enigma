@@ -11,6 +11,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 import static org.quiltmc.enigma.util.Arguments.requireNonNegative;
 import static org.quiltmc.enigma.util.Arguments.requireNotLess;
@@ -150,6 +152,8 @@ public class VisualBox extends JPanel {
 	private final int maxWidth;
 	private final int maxHeight;
 
+	private final JLabel sizeLabel = new JLabel();
+
 	protected VisualBox(
 			@Nullable String name, @Nullable Color color,
 			int minWidth, int minHeight,
@@ -184,7 +188,17 @@ public class VisualBox extends JPanel {
 			center.add(nameLabel, BorderLayout.WEST);
 		}
 
-		final JLabel dimensions = new JLabel("%s x %s".formatted(this.preferredWidth, this.preferredHeight));
+		this.sizeLabel.setForeground(foreground);
+		center.add(this.sizeLabel);
+		this.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				final Dimension size = VisualBox.this.getSize();
+				VisualBox.this.sizeLabel.setText("%s x %s".formatted(size.width, size.height));
+			}
+		});
+
+		final JLabel dimensions = new JLabel("[%s x %s]".formatted(this.preferredWidth, this.preferredHeight));
 		dimensions.setForeground(foreground);
 		center.add(dimensions, BorderLayout.EAST);
 
