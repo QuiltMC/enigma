@@ -7,10 +7,10 @@ import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstrai
 
 import javax.swing.JFrame;
 
-public class FlexGridVVisualizer implements Visualizer {
+public class FlexGridGreaterVisualizer implements Visualizer {
 	@Override
 	public String getTitle() {
-		return "Flex Grid V";
+		return "Flex Grid >";
 	}
 
 	@Override
@@ -19,11 +19,13 @@ public class FlexGridVVisualizer implements Visualizer {
 
 		final FlexGridConstraints.Absolute constraints = FlexGridConstraints.createAbsolute();
 
-		window.add(VisualBox.of(), constraints);
+		window.add(VisualBox.of(), constraints.pos(0, 2));
+		window.add(VisualBox.of(), constraints.pos(0, -2));
+
 		window.add(VisualBox.of(), constraints.pos(1, 1));
-		window.add(VisualBox.of(), constraints.pos(2, 2));
-		window.add(VisualBox.of(), constraints.pos(3, 1));
-		window.add(VisualBox.of(), constraints.pos(4, 0));
+		window.add(VisualBox.of(), constraints.pos(1, -1));
+
+		window.add(VisualBox.of(), constraints.pos(2, 0));
 
 		window.pack();
 	}
