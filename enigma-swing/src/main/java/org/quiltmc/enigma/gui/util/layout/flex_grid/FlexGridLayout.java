@@ -258,7 +258,7 @@ public class FlexGridLayout implements LayoutManager2 {
 				final Sizes max = this.getMaxSizes();
 				this.layoutAxisImpl(startPos, ops, cellSpans, (constrained, coord) -> {
 					final Sizes targets = ops.fills(constrained) ? max : preferred;
-					final Dimension targetSize = targets.componentSizes.get(constrained.component);
+					final Size targetSize = targets.componentSizes.get(constrained.component);
 					assert targetSize != null;
 
 					return ops.getSpan(targetSize);
@@ -274,7 +274,7 @@ public class FlexGridLayout implements LayoutManager2 {
 				final SortedMap<Integer, Integer> cellSpans = this.allocateCellSpace(ops, extraMinSpace, false);
 
 				this.layoutAxisImpl(leadingInset, ops, cellSpans, (constrained, coord) -> {
-					final Dimension preferredSize = preferred.componentSizes.get(constrained.component);
+					final Size preferredSize = preferred.componentSizes.get(constrained.component);
 					assert preferredSize != null;
 
 					return ops.getSpan(preferredSize);
@@ -311,7 +311,7 @@ public class FlexGridLayout implements LayoutManager2 {
 		while (!prioritized.isEmpty() && remainingSpace > 0) {
 			final Constrained.At at = prioritized.remove();
 
-			final Dimension targetSize = large.componentSizes.get(at.constrained().component);
+			final Size targetSize = large.componentSizes.get(at.constrained().component);
 			assert targetSize != null;
 
 			final int extent = ops.getExtent(at.constrained());
@@ -462,6 +462,12 @@ public class FlexGridLayout implements LayoutManager2 {
 		}
 	}
 
+	private record Size(int width, int height) {
+		static Size of(Dimension dimension) {
+			return new Size(dimension.width, dimension.height);
+		}
+	}
+
 	/**
 	 * A collection of sizes and size metrics use for calculating min/max/preferred container size and
 	 * for laying out the container.
@@ -469,16 +475,17 @@ public class FlexGridLayout implements LayoutManager2 {
 	private record Sizes(
 			int totalWidth, int totalHeight,
 			ImmutableSortedMap<Integer, Integer> rowHeights, ImmutableSortedMap<Integer, Integer> columnWidths,
-			ImmutableMap<Component, Dimension> componentSizes
+			ImmutableMap<Component, Size> componentSizes
 	) {
 		static Sizes calculate(ConstrainedGrid grid, Function<Component, Dimension> getSize) {
-			final Map<Component, Dimension> componentSizes = new HashMap<>();
+			final Map<Component, Size> componentSizes = new HashMap<>();
 
 			final Map<Integer, Map<Integer, Dimension>> cellSizes = new HashMap<>();
 
 			grid.forEach((x, y, values) -> {
 				values.forEach(constrained -> {
-					final Dimension size = componentSizes.computeIfAbsent(constrained.component, getSize);
+					final Size size = componentSizes
+							.computeIfAbsent(constrained.component, component -> Size.of(getSize.apply(component)));
 
 					final int componentCellWidth = ceilDiv(size.width, constrained.xExtent);
 					final int componentCellHeight = ceilDiv(size.height, constrained.yExtent);
@@ -499,8 +506,14 @@ public class FlexGridLayout implements LayoutManager2 {
 			final Map<Integer, Integer> columnWidths = new HashMap<>();
 			cellSizes.forEach((x, column) -> {
 				column.forEach((y, size) -> {
-					rowHeights.compute(y, (ignored, height) -> height == null ? size.height : Math.max(height, size.height));
-					columnWidths.compute(x, (ignored, width) -> width == null ? size.width : Math.max(width, size.width));
+					rowHeights.compute(y, (ignored, height) -> height == null
+							? size.height
+							: Math.max(height, size.height)
+					);
+					columnWidths.compute(x, (ignored, width) -> width == null
+							? size.width
+							: Math.max(width, size.width)
+					);
 				});
 			});
 
@@ -557,6 +570,11 @@ public class FlexGridLayout implements LayoutManager2 {
 
 			@Override
 			int getSpan(Dimension size) {
+				return size.width;
+			}
+
+			@Override
+			int getSpan(Size size) {
 				return size.width;
 			}
 
@@ -627,6 +645,11 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
+			int getSpan(Size size) {
+				return size.height;
+			}
+
+			@Override
 			boolean fills(Constrained constrained) {
 				return constrained.fillY;
 			}
@@ -666,6 +689,7 @@ public class FlexGridLayout implements LayoutManager2 {
 		abstract int getTotalSpace(Sizes sizes);
 		abstract ImmutableSortedMap<Integer, Integer> getCellSpans(Sizes sizes);
 		abstract int getSpan(Dimension size);
+		abstract int getSpan(Size size);
 
 		abstract boolean fills(Constrained constrained);
 		abstract boolean noneFill(ConstrainedGrid grid);
