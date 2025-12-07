@@ -24,7 +24,7 @@ public class FlexGridAlignmentVisualizer implements Visualizer {
 		FlexGridQuiltVisualiser.visualizeQuilt(
 				window,
 				Absolute::alignTopLeft, Absolute::alignTopCenter, Absolute::alignTopRight,
-				Absolute::alightCenterLeft, Absolute::alignCenter, Absolute::alignCenterRight,
+				Absolute::alignCenterLeft, Absolute::alignCenter, Absolute::alignCenterRight,
 				Absolute::alignBottomLeft, Absolute::alignBottomCenter, Absolute::alignBottomRight
 		);
 
