@@ -36,6 +36,8 @@ class ConstrainedGrid {
 
 		this.remove(value.component());
 
+		this.componentPositions.put(component, new Position(x, y));
+
 		this.grid
 				.computeIfAbsent(x, ignored -> new TreeMap<>())
 				.computeIfAbsent(y, ignored -> new HashMap<>(1))
