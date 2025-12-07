@@ -11,7 +11,7 @@ import javax.swing.JTextArea;
 import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER;
 import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER;
 
-public class FlexGridPriorityScrollPanes implements Visualizer {
+public class FlexGridPriorityScrollPanesVisualizer implements Visualizer {
 	@Override
 	public String getTitle() {
 		return "Flex Grid Priority Scroll Panes";
