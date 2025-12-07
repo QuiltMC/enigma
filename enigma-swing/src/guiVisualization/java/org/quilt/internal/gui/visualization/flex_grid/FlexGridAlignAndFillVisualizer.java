@@ -18,7 +18,7 @@ public class FlexGridAlignAndFillVisualizer implements Visualizer {
 				c -> c.fillOnlyY().alignTopCenter(),
 				c -> c.fillNone().alignTopRight(),
 
-				c -> c.fillOnlyX().alightCenterLeft(),
+				c -> c.fillOnlyX().alignCenterLeft(),
 				c -> c.fillBoth().alignCenter(),
 				c -> c.fillOnlyX().alignCenterRight(),
 

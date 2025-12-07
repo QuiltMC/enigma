@@ -520,7 +520,7 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 	 * @see #alignLeft()
 	 * @see #align(Alignment, Alignment)
 	 */
-	public C alightCenterLeft() {
+	public C alignCenterLeft() {
 		return this.alignCenterY().alignLeft();
 	}
 
