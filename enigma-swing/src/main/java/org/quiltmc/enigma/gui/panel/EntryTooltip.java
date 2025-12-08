@@ -573,6 +573,10 @@ public class EntryTooltip extends JWindow {
 		return text;
 	}
 
+	private static String translatePlaceholder(String key) {
+		return "<%s>".formatted(I18n.translate(key));
+	}
+
 	private ImmutableList<ParamJavadoc> paramJavadocsOf(
 			Entry<?> target, Font nameFont, Font javadocFont, MouseAdapter stopInteraction
 	) {
@@ -681,7 +685,10 @@ public class EntryTooltip extends JWindow {
 			parentClicked = null;
 		}
 
-		final JLabel parentLabel = new JLabel(nameBuilder.isEmpty() ? "<no package>" : nameBuilder.toString());
+		final JLabel parentLabel = new JLabel(nameBuilder.isEmpty()
+				? translatePlaceholder("editor.tooltip.label.no_package")
+				: nameBuilder.toString()
+		);
 
 		final Font parentFont;
 		if (parentClicked == null) {
@@ -779,12 +786,12 @@ public class EntryTooltip extends JWindow {
 				if (access == null || !(access.isSynthetic())) {
 					return project.getRemapper().deobfuscate(entry).getSimpleName();
 				} else {
-					return "<synthetic>";
+					return translatePlaceholder("editor.tooltip.label.synthetic");
 				}
 			}
 		}
 
-		return "<anonymous>";
+		return translatePlaceholder("editor.tooltip.label.anonymous");
 	}
 
 	public void setZoom(int amount) {
