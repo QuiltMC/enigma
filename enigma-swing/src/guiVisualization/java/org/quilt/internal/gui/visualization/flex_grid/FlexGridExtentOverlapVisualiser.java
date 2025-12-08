@@ -15,15 +15,15 @@ public class FlexGridExtentOverlapVisualiser implements Visualizer {
 	}
 
 	/**
-	 * <code><pre>
+	 * <pre><code>
 	 * -------------------
 	 * | RGB | RB  |  R  |
-	 * -------------------
+	 * ------+-----+------
 	 * | GB  |  B  |
-	 * -------------
+	 * ------+------
 	 * |  G  |
 	 * -------
-	 * </pre></code>
+	 * </code></pre>
 	 */
 	@Override
 	public void visualize(JFrame window) {

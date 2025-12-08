@@ -158,17 +158,12 @@ public class FlexGridLayout implements LayoutManager2 {
 		if (constraints == null) {
 			this.addDefaultConstrainedLayoutComponent(component);
 		} else {
-			final int x;
-			final int y;
+			final Constrained constrained = Constrained.of(component, constraints);
 			if (constraints instanceof FlexGridConstraints.Absolute absolute) {
-				x = absolute.getX();
-				y = absolute.getY();
+				this.grid.put(absolute.getX(), absolute.getY(), constrained);
 			} else {
-				x = this.getRelativeX();
-				y = this.getRelativeY();
+				this.grid.putRelative(constrained);
 			}
-
-			this.grid.put(x, y, Constrained.of(component, constraints));
 		}
 	}
 
@@ -178,16 +173,7 @@ public class FlexGridLayout implements LayoutManager2 {
 	}
 
 	private void addDefaultConstrainedLayoutComponent(Component component) {
-		this.grid.put(this.getRelativeX(), this.getRelativeY(), Constrained.defaultOf(component));
-	}
-
-	private int getRelativeX() {
-		// TODO this gives max x, but should give max x *of bottom row*
-		return this.grid.isEmpty() ? FlexGridConstraints.Absolute.DEFAULT_X : this.grid.getMaxXOrThrow() + 1;
-	}
-
-	private int getRelativeY() {
-		return this.grid.isEmpty() ? FlexGridConstraints.Absolute.DEFAULT_Y : this.grid.getMaxYOrThrow();
+		this.grid.putRelative(Constrained.defaultOf(component));
 	}
 
 	@Override
@@ -682,7 +668,6 @@ public class FlexGridLayout implements LayoutManager2 {
 
 		abstract int getTotalSpace(Sizes sizes);
 		abstract ImmutableSortedMap<Integer, Integer> getCellSpans(Sizes sizes);
-
 		abstract int getSpan(Size size);
 
 		abstract boolean fills(Constrained constrained);
