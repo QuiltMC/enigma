@@ -7,6 +7,8 @@ import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints.Alignment;
 
+import javax.swing.JComponent;
+import javax.swing.border.Border;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -35,6 +37,7 @@ import static org.quiltmc.enigma.util.Utils.ceilDiv;
  *          allocated according to {@linkplain FlexGridConstraints#priority(int) priority} and position
  *     <li> flex grids respect each component's {@linkplain Component#getMaximumSize() maximum size}
  *     <li> flex grids support negative coordinates
+ *     <li> flex grids do <em>not</em> support insets; use {@linkplain JComponent#setBorder(Border) borders} instead
  * </ul>
  *
  * <h4>Constraints</h4>
