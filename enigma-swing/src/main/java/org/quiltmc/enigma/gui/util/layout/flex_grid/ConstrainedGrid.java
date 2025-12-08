@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.gui.util.layout.flex_grid;
 
-import com.google.common.collect.ImmutableSortedMap;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.FlexGridLayout.Constrained;
 
 import java.awt.Component;
@@ -55,13 +54,6 @@ class ConstrainedGrid {
 		}
 	}
 
-	Stream<Constrained> get(int x, int y) {
-		return this.grid.getOrDefault(x, ImmutableSortedMap.of())
-			.getOrDefault(y, Map.of())
-			.values()
-			.stream();
-	}
-
 	void remove(Component component) {
 		final Position pos = this.componentPositions.remove(component);
 		if (pos != null) {
@@ -111,10 +103,6 @@ class ConstrainedGrid {
 		return this.yFillers.isEmpty();
 	}
 
-	int getSize() {
-		return this.valuesByMaxX.size();
-	}
-
 	boolean isEmpty() {
 		return this.valuesByMaxX.isEmpty();
 	}
@@ -127,10 +115,29 @@ class ConstrainedGrid {
 		});
 	}
 
+	<T> Stream<T> map(EntryFunction<T> mapper) {
+		return this.grid.entrySet().stream().flatMap(columnEntry -> columnEntry
+			.getValue()
+			.entrySet()
+			.stream()
+			.flatMap(rowEntry -> rowEntry
+				.getValue()
+				.values()
+				.stream()
+				.map(constrained -> mapper.apply(columnEntry.getKey(), rowEntry.getKey(), constrained))
+			)
+		);
+	}
+
 	private record Position(int x, int y) { }
 
 	@FunctionalInterface
 	interface EntriesConsumer {
 		void accept(int x, int y, Stream<Constrained> values);
+	}
+
+	@FunctionalInterface
+	interface EntryFunction<T> {
+		T apply(int x, int y, Constrained value);
 	}
 }
