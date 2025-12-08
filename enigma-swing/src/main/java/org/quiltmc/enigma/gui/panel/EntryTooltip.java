@@ -317,6 +317,7 @@ public class EntryTooltip extends JWindow {
 					final Dimension oldSize = opening ? null : this.getSize();
 					final Point oldMousePos = MouseInfo.getPointerInfo().getLocation();
 					this.declarationSnippet.addSourceSetListener(source -> {
+						this.repaint();
 						// JTextAreas (javadocs) adjust their preferred sizes after the first pack, so pack twice
 						this.pack();
 						// There seems to be a race condition when packing twice in a row where
@@ -324,7 +325,6 @@ public class EntryTooltip extends JWindow {
 						// based on the second pack.
 						// Using invokeLater for *only* the second pack *seems* to solve it.
 						SwingUtilities.invokeLater(this::pack);
-						this.repaint();
 
 						if (this.declarationSnippet != null) {
 							// without this, the editor gets focus and has a blue border
@@ -364,8 +364,8 @@ public class EntryTooltip extends JWindow {
 			}
 		}
 
-		this.pack();
 		this.repaint();
+		this.pack();
 
 		if (opening) {
 			this.moveNearCursor();
