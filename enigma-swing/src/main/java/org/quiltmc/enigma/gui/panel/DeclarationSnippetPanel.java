@@ -72,6 +72,9 @@ public class DeclarationSnippetPanel extends AbstractEditorPanel<JScrollPane> {
 		this.editor.setCaretColor(GuiUtil.TRANSPARENT);
 		this.editor.getCaret().setSelectionVisible(true);
 
+		// TODO try custom scroll pane that accounts for scroll bars in pref size instead?
+		this.editorScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
 		this.addSourceSetListener(source -> {
 			if (!this.isBounded()) {
 				// the source isn't very useful if it couldn't be trimmed

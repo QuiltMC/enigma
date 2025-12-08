@@ -20,28 +20,27 @@ import org.quiltmc.enigma.gui.docker.ClassesDocker;
 import org.quiltmc.enigma.gui.docker.DeobfuscatedClassesDocker;
 import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.docker.ObfuscatedClassesDocker;
-import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
+import org.quiltmc.enigma.gui.util.layout.flex_grid.FlexGridLayout;
+import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Utils;
 
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JWindow;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -128,7 +127,7 @@ public class EntryTooltip extends JWindow {
 		super(gui.getFrame());
 
 		this.gui = gui;
-		this.content = new JPanel(new GridBagLayout());
+		this.content = new JPanel(new FlexGridLayout());
 
 		this.setAlwaysOnTop(true);
 		this.setType(Window.Type.POPUP);
@@ -211,7 +210,6 @@ public class EntryTooltip extends JWindow {
 		this.repopulated = !opening;
 		this.content.removeAll();
 
-		@Nullable
 		final MouseAdapter stopInteraction = Config.editor().entryTooltips.interactable.value()
 				? null : new MouseAdapter() {
 					@Override
@@ -226,7 +224,7 @@ public class EntryTooltip extends JWindow {
 		final Font editorFont = ScaleUtil.scaleFont(Config.currentFonts().editor.value());
 		final Font italEditorFont = ScaleUtil.scaleFont(Config.currentFonts().editor.value().deriveFont(Font.ITALIC));
 
-		int gridY = 0;
+		final FlexGridConstraints.Absolute constraints = FlexGridConstraints.createAbsolute();
 
 		{
 			final Box parentLabelRow = Box.createHorizontalBox();
@@ -241,75 +239,49 @@ public class EntryTooltip extends JWindow {
 			parentLabelRow.add(colonLabelOf("", editorFont));
 
 			parentLabelRow.add(this.parentLabelOf(target, editorFont, stopInteraction));
-			parentLabelRow.add(Box.createHorizontalGlue());
 
-			this.add(parentLabelRow, GridBagConstraintsBuilder.create()
-					.pos(0, gridY++)
-					.insets(ROW_OUTER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET)
-					.anchor(GridBagConstraints.LINE_START)
-					.build()
-			);
+			parentLabelRow.setBorder(createEmptyBorder(ROW_OUTER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET));
+			this.add(parentLabelRow, constraints.copy().alignCenterLeft());
 		}
-
-		final var mainContent = new JPanel(new GridBagLayout());
-		// Put all main content in one big scroll pane.
-		// Ideally there'd be separate javadoc and snippet scroll panes, but multiple scroll pane children
-		// of a grid bag parent don't play nice when space is limited.
-		// The snippet has its own scroll pane, but wrapping it in this one effectively disables its resizing.
-		final var mainScroll = new JScrollPane(mainContent);
-		mainScroll.setBorder(createEmptyBorder());
-		int mainGridY = 0;
 
 		final String javadoc = this.getJavadoc(target).orElse(null);
 		final ImmutableList<ParamJavadoc> paramJavadocs =
 				this.paramJavadocsOf(target, editorFont, italEditorFont, stopInteraction);
 		if (javadoc != null || !paramJavadocs.isEmpty()) {
-			mainContent.add(new JSeparator(), GridBagConstraintsBuilder.create()
-					.pos(0, mainGridY++)
-					.weightX(1)
-					.fill(GridBagConstraints.HORIZONTAL)
-					.build()
-			);
+			this.add(new JSeparator(), constraints.nextRow().copy().fillX());
+
+			final var javadocs = new JPanel(new FlexGridLayout());
+			final FlexGridConstraints.Absolute javadocsConstraints = FlexGridConstraints.createAbsolute();
 
 			if (javadoc != null) {
-				mainContent.add(javadocOf(javadoc, italEditorFont, stopInteraction), GridBagConstraintsBuilder.create()
-						.pos(0, mainGridY++)
-						.insets(ROW_INNER_INSET, ROW_OUTER_INSET)
-						.weightX(1)
-						.fill(GridBagConstraints.HORIZONTAL)
-						.anchor(GridBagConstraints.LINE_START)
-						.build()
-				);
+				final JTextArea javadocText = javadocOf(javadoc, italEditorFont, stopInteraction);
+				javadocText.setBorder(createEmptyBorder(ROW_INNER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET));
+				javadocs.add(javadocText, javadocsConstraints.copy().fillX());
 			}
 
 			if (!paramJavadocs.isEmpty()) {
-				final JPanel params = new JPanel(new GridBagLayout());
-				int paramsGridY = 0;
+				final JPanel params = new JPanel(new FlexGridLayout());
+
+				final FlexGridConstraints.Absolute paramsConstraints = FlexGridConstraints.createAbsolute();
 
 				for (final ParamJavadoc paramJavadoc : paramJavadocs) {
-					params.add(paramJavadoc.name, GridBagConstraintsBuilder.create()
-							.pos(0, paramsGridY)
-							.anchor(GridBagConstraints.FIRST_LINE_END)
-							.build()
+					params.add(paramJavadoc.name, paramsConstraints.copy().alignTopRight());
+
+					params.add(paramJavadoc.javadoc, paramsConstraints.nextColumn().copy()
+							.fillX()
+							.alignTopLeft()
 					);
 
-					params.add(paramJavadoc.javadoc, GridBagConstraintsBuilder.create()
-							.pos(1, paramsGridY++)
-							.weightX(1)
-							.fill(GridBagConstraints.HORIZONTAL)
-							.anchor(GridBagConstraints.LINE_START)
-							.build()
-					);
+					paramsConstraints.nextRow();
 				}
 
-				mainContent.add(params, GridBagConstraintsBuilder.create()
-						.insets(ROW_INNER_INSET, ROW_OUTER_INSET)
-						.pos(0, mainGridY++)
-						.weightX(1)
-						.fill(GridBagConstraints.HORIZONTAL)
-						.build()
-				);
+				params.setBorder(createEmptyBorder(ROW_INNER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET));
+				javadocs.add(params, javadocsConstraints.nextRow().copy().fillX());
 			}
+
+			final JScrollPane javadocsScroll = new JScrollPane(javadocs);
+			javadocsScroll.setBorder(createEmptyBorder());
+			this.add(javadocsScroll, constraints.nextRow().copy().fillX());
 		}
 
 		if (this.declarationSnippet != null) {
@@ -345,20 +317,20 @@ public class EntryTooltip extends JWindow {
 					final Dimension oldSize = opening ? null : this.getSize();
 					final Point oldMousePos = MouseInfo.getPointerInfo().getLocation();
 					this.declarationSnippet.addSourceSetListener(source -> {
+						// JTextAreas (javadocs) adjust their preferred sizes after the first pack, so pack twice
 						this.pack();
-						// swing </3
-						// a second call is required to eliminate extra space
-						this.pack();
+						// There seems to be a race condition when packing twice in a row where
+						// the tooltips window can be sized based on the first pack, but components are sized
+						// based on the second pack.
+						// Using invokeLater for *only* the second pack *seems* to solve it.
+						SwingUtilities.invokeLater(this::pack);
+						this.repaint();
 
 						if (this.declarationSnippet != null) {
 							// without this, the editor gets focus and has a blue border
 							// but only when it's in a scroll pane, for some reason
 							this.declarationSnippet.ui.requestFocus();
 						}
-
-						final JScrollBar vertical = mainScroll.getVerticalScrollBar();
-						// scroll to bottom so declaration snippet is in view
-						vertical.setValue(vertical.getMaximum());
 
 						if (oldSize == null) {
 							// opening
@@ -378,42 +350,22 @@ public class EntryTooltip extends JWindow {
 					this.declarationSnippet.editor.addMouseListener(stopInteraction);
 				}
 
-				mainContent.add(this.declarationSnippet.ui, GridBagConstraintsBuilder.create()
-						.pos(0, mainGridY++)
-						.weightX(1)
-						.fill(GridBagConstraints.HORIZONTAL)
-						.anchor(GridBagConstraints.LINE_START)
-						.build()
+				this.add(this.declarationSnippet.ui, constraints.nextRow().copy()
+						.fillX()
+						.alignCenterLeft()
+						.incrementPriority()
 				);
 			} else {
-				mainContent.add(new JSeparator(), GridBagConstraintsBuilder.create()
-						.pos(0, mainGridY++)
-						.weightX(1)
-						.fill(GridBagConstraints.HORIZONTAL)
-						.build()
-				);
+				this.add(new JSeparator(), constraints.nextRow().copy().fillX());
 
-				mainContent.add(
-						labelOf(I18n.translate("editor.tooltip.message.no_source"), italEditorFont),
-						GridBagConstraintsBuilder.create()
-							.pos(0, mainGridY++)
-							.weightX(1)
-							.fill(GridBagConstraints.HORIZONTAL)
-							.anchor(GridBagConstraints.LINE_START)
-							.insets(ROW_INNER_INSET, ROW_OUTER_INSET)
-							.build()
-				);
+				final JLabel noSource = labelOf(I18n.translate("editor.tooltip.message.no_source"), italEditorFont);
+				noSource.setBorder(createEmptyBorder(ROW_INNER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET));
+				this.add(noSource, constraints.nextRow().copy().fillX());
 			}
 		}
 
-		this.add(mainScroll, GridBagConstraintsBuilder.create()
-				.pos(0, gridY++)
-				.weight(1, 1)
-				.fill(GridBagConstraints.BOTH)
-				.build()
-		);
-
 		this.pack();
+		this.repaint();
 
 		if (opening) {
 			this.moveNearCursor();
@@ -538,6 +490,7 @@ public class EntryTooltip extends JWindow {
 		}
 	}
 
+	// TODO account for screen insets
 	/**
 	 * Ensures this is entirely on-screen.
 	 */
@@ -712,7 +665,6 @@ public class EntryTooltip extends JWindow {
 			nameBuilder.insert(0, packageName.replace('/', '.'));
 		}
 
-		@Nullable
 		final MouseListener parentClicked;
 		if (stopInteraction == null) {
 			if (immediateParent != null) {

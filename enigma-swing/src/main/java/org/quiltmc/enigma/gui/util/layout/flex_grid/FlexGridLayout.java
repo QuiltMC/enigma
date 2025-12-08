@@ -14,13 +14,14 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static org.quiltmc.enigma.util.Utils.ceilDiv;
@@ -51,7 +52,7 @@ import static org.quiltmc.enigma.util.Utils.ceilDiv;
  * components getting space first. In ties, components with the least position on the axis get priority.<br>
  * A component never gets less space in an axis than its {@linkplain Component#getMinimumSize() minimum size}
  * allows, and it never gets more space than its {@linkplain Component#getMaximumSize() maximum size} allows.
- * A components only ever gets more space in an axis than its
+ * A component only ever gets more space in an axis than its
  * {@linkplain Component#getPreferredSize() preferred size} requests if it's set to
  * {@linkplain FlexGridConstraints#fill(boolean, boolean) fill} that axis.
  *
@@ -66,7 +67,7 @@ import static org.quiltmc.enigma.util.Utils.ceilDiv;
  *         <th>min < space < preferred</th>
  *         <td>
  *             each component gets at least its minimum size; components get additional space
- *             - up to their preferred size - according to priority
+ *             - up to their preferred sizes - according to priority
  *         </td>
  *     </tr>
  *     <tr>
@@ -74,7 +75,7 @@ import static org.quiltmc.enigma.util.Utils.ceilDiv;
  *         <td>
  *             each component gets at least is preferred size; components that
  *             {@linkplain FlexGridConstraints#fill(boolean, boolean) fill} the axis get additional space
- *             - up to their max size - according to priority
+ *             - up to their max sizes - according to priority
  *        </td>
  *     </tr>
  * </table>
@@ -98,6 +99,24 @@ import static org.quiltmc.enigma.util.Utils.ceilDiv;
  * </ul>
  */
 public class FlexGridLayout implements LayoutManager2 {
+	// simplified integer overflow detection
+	// only correctly handles overflow if all values are positive
+	private static int sumOrMax(Collection<Integer> values) {
+		int sum = 0;
+		for (final int value : values) {
+			sum += value;
+			if (sum < 0) {
+				return Integer.MAX_VALUE;
+			}
+		}
+
+		return sum;
+	}
+
+	private static int positiveOrMax(int value) {
+		return value < 0 ? Integer.MAX_VALUE : value;
+	}
+
 	private final ConstrainedGrid grid = new ConstrainedGrid();
 
 	/**
@@ -149,7 +168,7 @@ public class FlexGridLayout implements LayoutManager2 {
 				y = this.getRelativeY();
 			}
 
-			this.grid.put(x, y, new Constrained(component, constraints));
+			this.grid.put(x, y, Constrained.of(component, constraints));
 		}
 	}
 
@@ -163,6 +182,7 @@ public class FlexGridLayout implements LayoutManager2 {
 	}
 
 	private int getRelativeX() {
+		// TODO this gives max x, but should give max x *of bottom row*
 		return this.grid.isEmpty() ? FlexGridConstraints.Absolute.DEFAULT_X : this.grid.getMaxXOrThrow() + 1;
 	}
 
@@ -233,8 +253,10 @@ public class FlexGridLayout implements LayoutManager2 {
 
 	@Override
 	public void layoutContainer(Container parent) {
-		this.layoutAxis(parent, CartesianOperations.X);
-		this.layoutAxis(parent, CartesianOperations.Y);
+		if (!this.grid.isEmpty()) {
+			this.layoutAxis(parent, CartesianOperations.X);
+			this.layoutAxis(parent, CartesianOperations.Y);
+		}
 	}
 
 	private void layoutAxis(Container parent, CartesianOperations ops) {
@@ -248,37 +270,25 @@ public class FlexGridLayout implements LayoutManager2 {
 		final int extraSpace = availableSpace - ops.getTotalSpace(preferred);
 		if (extraSpace >= 0) {
 			if (extraSpace == 0 || ops.noneFill(this.grid)) {
-				this.layoutFixedAxis(preferred, leadingInset + extraSpace / 2, ops);
+				this.layoutAxisImpl(leadingInset + extraSpace / 2, ops, ops.getCellSpans(preferred));
 			} else {
 				final SortedMap<Integer, Integer> cellSpans = this.allocateCellSpace(ops, extraSpace, true);
 
-				final int allocatedSpace = cellSpans.values().stream().mapToInt(Integer::intValue).sum();
+				final int allocatedSpace = sumOrMax(cellSpans.values());
 				final int startPos = leadingInset + (availableSpace - allocatedSpace) / 2;
 
-				final Sizes max = this.getMaxSizes();
-				this.layoutAxisImpl(startPos, ops, cellSpans, (constrained, coord) -> {
-					final Sizes targets = ops.fills(constrained) ? max : preferred;
-					final Size targetSize = targets.componentSizes.get(constrained.component);
-					assert targetSize != null;
-
-					return ops.getSpan(targetSize);
-				});
+				this.layoutAxisImpl(startPos, ops, cellSpans);
 			}
 		} else {
 			final Sizes min = this.getMinSizes();
 
 			final int extraMinSpace = availableSpace - ops.getTotalSpace(min);
 			if (extraMinSpace <= 0) {
-				this.layoutFixedAxis(min, leadingInset, ops);
+				this.layoutAxisImpl(leadingInset, ops, ops.getCellSpans(min));
 			} else {
 				final SortedMap<Integer, Integer> cellSpans = this.allocateCellSpace(ops, extraMinSpace, false);
 
-				this.layoutAxisImpl(leadingInset, ops, cellSpans, (constrained, coord) -> {
-					final Size preferredSize = preferred.componentSizes.get(constrained.component);
-					assert preferredSize != null;
-
-					return ops.getSpan(preferredSize);
-				});
+				this.layoutAxisImpl(leadingInset, ops, cellSpans);
 			}
 		}
 	}
@@ -286,7 +296,6 @@ public class FlexGridLayout implements LayoutManager2 {
 	private SortedMap<Integer, Integer> allocateCellSpace(CartesianOperations ops, int remainingSpace, boolean fill) {
 		final Sizes large;
 		final Sizes small;
-		final SortedMap<Integer, Integer> cellSpans;
 		if (fill) {
 			large = this.getMaxSizes();
 			small = this.getPreferredSizes();
@@ -295,26 +304,21 @@ public class FlexGridLayout implements LayoutManager2 {
 			small = this.getMinSizes();
 		}
 
-		cellSpans = new TreeMap<>(ops.getCellSpans(small));
+		final SortedMap<Integer, Integer> cellSpans = new TreeMap<>(ops.getCellSpans(small));
 
-		final PriorityQueue<Constrained.At> prioritized = new PriorityQueue<>(this.grid.getSize());
-		this.grid.forEach((x, y, values) -> {
-			if (fill) {
-				values = values.filter(ops::fills);
-			}
+		final List<Constrained.At> prioritized = this.grid
+				.map((x, y, constrained) -> fill && !ops.fills(constrained)
+						? Optional.<Constrained.At>empty()
+						: Optional.of(constrained.new At(ops.chooseCoord(x, y)))
+				)
+				.flatMap(Optional::stream)
+				.sorted()
+				.toList();
 
-			values.forEach(constrained -> {
-				prioritized.add(constrained.new At(ops.chooseCoord(x, y)));
-			});
-		});
-
-		while (!prioritized.isEmpty() && remainingSpace > 0) {
-			final Constrained.At at = prioritized.remove();
-
+		for (final Constrained.At at : prioritized) {
+			final int extent = ops.getExtent(at.constrained());
 			final Size targetSize = large.componentSizes.get(at.constrained().component);
 			assert targetSize != null;
-
-			final int extent = ops.getExtent(at.constrained());
 
 			final int targetSpan = ceilDiv(ops.getSpan(targetSize), extent);
 
@@ -343,23 +347,16 @@ public class FlexGridLayout implements LayoutManager2 {
 					}
 				}
 			}
+
+			if (remainingSpace <= 0) {
+				break;
+			}
 		}
 
 		return cellSpans;
 	}
 
-	private void layoutFixedAxis(Sizes sizes, int startPos, CartesianOperations ops) {
-		this.layoutAxisImpl(
-				startPos, ops, ops.getCellSpans(sizes),
-				(constrained, coord) -> ops.getSpan(sizes.componentSizes.get(constrained.component))
-		);
-	}
-
-	private void layoutAxisImpl(
-			int startPos, CartesianOperations ops,
-			SortedMap<Integer, Integer> cellSpans,
-			BiFunction<Constrained, Integer, Integer> getComponentSpan
-	) {
+	private void layoutAxisImpl(int startPos, CartesianOperations ops, SortedMap<Integer, Integer> cellSpans) {
 		final Map<Integer, Integer> beginPositions = new HashMap<>();
 		int currentPos = startPos;
 		for (final Map.Entry<Integer, Integer> entry : cellSpans.entrySet()) {
@@ -370,6 +367,9 @@ public class FlexGridLayout implements LayoutManager2 {
 
 			currentPos += span;
 		}
+
+		final Sizes preferred = this.getPreferredSizes();
+		final Sizes max = this.getMaxSizes();
 
 		this.grid.forEach((x, y, values) -> {
 			final int coord = ops.chooseCoord(x, y);
@@ -384,7 +384,11 @@ public class FlexGridLayout implements LayoutManager2 {
 					extendedCellSpan += cellSpans.get(coord + i);
 				}
 
-				final int span = Math.min(getComponentSpan.apply(constrained, coord), extendedCellSpan);
+				final Sizes targets = ops.fills(constrained) ? max : preferred;
+				final Size targetSize = targets.componentSizes.get(constrained.component);
+				assert targetSize != null;
+
+				final int span = Math.min(ops.getSpan(targetSize), extendedCellSpan);
 
 				final int constrainedPos = switch (ops.getAlignment(constrained)) {
 					case BEGIN -> beginPos;
@@ -414,8 +418,8 @@ public class FlexGridLayout implements LayoutManager2 {
 			);
 		}
 
-		Constrained(Component component, FlexGridConstraints<?> constraints) {
-			this(
+		static Constrained of(Component component, FlexGridConstraints<?> constraints) {
+			return new Constrained(
 					component,
 					constraints.getXExtent(), constraints.getYExtent(),
 					constraints.fillsX(), constraints.fillsY(),
@@ -477,7 +481,17 @@ public class FlexGridLayout implements LayoutManager2 {
 			ImmutableSortedMap<Integer, Integer> rowHeights, ImmutableSortedMap<Integer, Integer> columnWidths,
 			ImmutableMap<Component, Size> componentSizes
 	) {
+		static Sizes EMPTY = new Sizes(
+				0, 0,
+				ImmutableSortedMap.of(), ImmutableSortedMap.of(),
+				ImmutableMap.of()
+		);
+
 		static Sizes calculate(ConstrainedGrid grid, Function<Component, Dimension> getSize) {
+			if (grid.isEmpty()) {
+				return EMPTY;
+			}
+
 			final Map<Component, Size> componentSizes = new HashMap<>();
 
 			final Map<Integer, Map<Integer, Dimension>> cellSizes = new HashMap<>();
@@ -518,8 +532,8 @@ public class FlexGridLayout implements LayoutManager2 {
 			});
 
 			return new Sizes(
-				columnWidths.values().stream().mapToInt(Integer::intValue).sum(),
-				rowHeights.values().stream().mapToInt(Integer::intValue).sum(),
+				sumOrMax(columnWidths.values()),
+				sumOrMax(rowHeights.values()),
 				ImmutableSortedMap.copyOf(rowHeights), ImmutableSortedMap.copyOf(columnWidths),
 				ImmutableMap.copyOf(componentSizes)
 			);
@@ -527,8 +541,8 @@ public class FlexGridLayout implements LayoutManager2 {
 
 		Dimension createTotalDimension(Insets insets) {
 			return new Dimension(
-				this.totalWidth + insets.left + insets.right,
-				this.totalHeight + insets.top + insets.bottom
+				positiveOrMax(this.totalWidth + insets.left + insets.right),
+				positiveOrMax(this.totalHeight + insets.top + insets.bottom)
 			);
 		}
 	}
@@ -569,11 +583,6 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
-			int getSpan(Dimension size) {
-				return size.width;
-			}
-
-			@Override
 			int getSpan(Size size) {
 				return size.width;
 			}
@@ -601,11 +610,6 @@ public class FlexGridLayout implements LayoutManager2 {
 			@Override
 			void setBounds(Component component, int x, int width) {
 				component.setBounds(x, component.getY(), width, component.getHeight());
-			}
-
-			@Override
-			CartesianOperations opposite() {
-				return Y;
 			}
 		},
 		Y() {
@@ -640,11 +644,6 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
-			int getSpan(Dimension size) {
-				return size.height;
-			}
-
-			@Override
 			int getSpan(Size size) {
 				return size.height;
 			}
@@ -673,11 +672,6 @@ public class FlexGridLayout implements LayoutManager2 {
 			void setBounds(Component component, int y, int height) {
 				component.setBounds(component.getX(), y, component.getWidth(), height);
 			}
-
-			@Override
-			CartesianOperations opposite() {
-				return X;
-			}
 		};
 
 		abstract int chooseCoord(int x, int y);
@@ -688,7 +682,7 @@ public class FlexGridLayout implements LayoutManager2 {
 
 		abstract int getTotalSpace(Sizes sizes);
 		abstract ImmutableSortedMap<Integer, Integer> getCellSpans(Sizes sizes);
-		abstract int getSpan(Dimension size);
+
 		abstract int getSpan(Size size);
 
 		abstract boolean fills(Constrained constrained);
@@ -697,7 +691,5 @@ public class FlexGridLayout implements LayoutManager2 {
 		abstract int getExtent(Constrained constrained);
 
 		abstract void setBounds(Component component, int pos, int span);
-
-		abstract CartesianOperations opposite();
 	}
 }
