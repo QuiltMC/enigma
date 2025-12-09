@@ -261,7 +261,7 @@ public class FlexGridLayout implements LayoutManager2 {
 			if (extraSpace == 0 || ops.noneFill(this.grid)) {
 				this.layoutAxisImpl(leadingInset + extraSpace / 2, ops, ops.getCellSpans(preferred));
 			} else {
-				final SortedMap<Integer, Integer> cellSpans = this.allocateCellSpace(ops, extraSpace, true);
+				final ImmutableMap<Integer, Integer> cellSpans = this.allocateCellSpace(ops, extraSpace, true);
 
 				final int allocatedSpace = sumOrMax(cellSpans.values());
 				final int startPos = leadingInset + (availableSpace - allocatedSpace) / 2;
@@ -275,14 +275,16 @@ public class FlexGridLayout implements LayoutManager2 {
 			if (extraMinSpace <= 0) {
 				this.layoutAxisImpl(leadingInset, ops, ops.getCellSpans(min));
 			} else {
-				final SortedMap<Integer, Integer> cellSpans = this.allocateCellSpace(ops, extraMinSpace, false);
+				final ImmutableMap<Integer, Integer> cellSpans = this.allocateCellSpace(ops, extraMinSpace, false);
 
 				this.layoutAxisImpl(leadingInset, ops, cellSpans);
 			}
 		}
 	}
 
-	private SortedMap<Integer, Integer> allocateCellSpace(CartesianOperations ops, int remainingSpace, boolean fill) {
+	private ImmutableMap<Integer, Integer> allocateCellSpace(
+			CartesianOperations ops, int remainingSpace, boolean fill
+	) {
 		final Sizes large;
 		final Sizes small;
 		if (fill) {
@@ -342,10 +344,14 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 		}
 
-		return cellSpans;
+		// ImmutableMaps maintain order and provide O(1) lookups
+		return ImmutableMap.copyOf(cellSpans);
 	}
 
-	private void layoutAxisImpl(int startPos, CartesianOperations ops, SortedMap<Integer, Integer> cellSpans) {
+	/**
+	 * @implNote the passed {@code cellSpans} <em>must</em> be ordered with increasing keys
+	 */
+	private void layoutAxisImpl(int startPos, CartesianOperations ops, ImmutableMap<Integer, Integer> cellSpans) {
 		final Map<Integer, Integer> beginPositions = new HashMap<>();
 		int currentPos = startPos;
 		for (final Map.Entry<Integer, Integer> entry : cellSpans.entrySet()) {
@@ -370,7 +376,9 @@ public class FlexGridLayout implements LayoutManager2 {
 
 				int extendedCellSpan = 0;
 				for (int i = 0; i < extent; i++) {
-					extendedCellSpan += cellSpans.get(coord + i);
+					final Integer span = cellSpans.get(coord + i);
+					assert span != null;
+					extendedCellSpan += span;
 				}
 
 				final Sizes targets = ops.fills(constrained) ? max : preferred;
@@ -462,12 +470,14 @@ public class FlexGridLayout implements LayoutManager2 {
 	}
 
 	/**
-	 * A collection of sizes and size metrics use for calculating min/max/preferred container size and
+	 * A collection of sizes and size metrics used for calculating min/max/preferred container size and
 	 * for laying out the container.
+	 *
+	 * @implNote {@link #rowHeights} and {@link #columnWidths} are ordered with increasing keys
 	 */
 	private record Sizes(
 			int totalWidth, int totalHeight,
-			ImmutableSortedMap<Integer, Integer> rowHeights, ImmutableSortedMap<Integer, Integer> columnWidths,
+			ImmutableMap<Integer, Integer> rowHeights, ImmutableMap<Integer, Integer> columnWidths,
 			ImmutableMap<Component, Size> componentSizes
 	) {
 		static Sizes EMPTY = new Sizes(
@@ -505,8 +515,8 @@ public class FlexGridLayout implements LayoutManager2 {
 				});
 			});
 
-			final Map<Integer, Integer> rowHeights = new HashMap<>();
-			final Map<Integer, Integer> columnWidths = new HashMap<>();
+			final SortedMap<Integer, Integer> rowHeights = new TreeMap<>();
+			final SortedMap<Integer, Integer> columnWidths = new TreeMap<>();
 			cellSizes.forEach((x, column) -> {
 				column.forEach((y, size) -> {
 					rowHeights.compute(y, (ignored, height) -> height == null
@@ -523,7 +533,8 @@ public class FlexGridLayout implements LayoutManager2 {
 			return new Sizes(
 				sumOrMax(columnWidths.values()),
 				sumOrMax(rowHeights.values()),
-				ImmutableSortedMap.copyOf(rowHeights), ImmutableSortedMap.copyOf(columnWidths),
+				// ImmutableMaps maintain order and provide O(1) lookups
+				ImmutableMap.copyOf(rowHeights), ImmutableMap.copyOf(columnWidths),
 				ImmutableMap.copyOf(componentSizes)
 			);
 		}
@@ -567,7 +578,7 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
-			ImmutableSortedMap<Integer, Integer> getCellSpans(Sizes sizes) {
+			ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes) {
 				return sizes.columnWidths;
 			}
 
@@ -628,7 +639,7 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
-			ImmutableSortedMap<Integer, Integer> getCellSpans(Sizes sizes) {
+			ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes) {
 				return sizes.rowHeights;
 			}
 
@@ -670,7 +681,7 @@ public class FlexGridLayout implements LayoutManager2 {
 		abstract int getParentSpace(Container parent);
 
 		abstract int getTotalSpace(Sizes sizes);
-		abstract ImmutableSortedMap<Integer, Integer> getCellSpans(Sizes sizes);
+		abstract ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes);
 		abstract int getSpan(Size size);
 
 		abstract boolean fills(Constrained constrained);
