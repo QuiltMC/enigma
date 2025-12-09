@@ -44,6 +44,9 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Font;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -546,6 +549,25 @@ public final class GuiUtil {
 		});
 
 		return menu;
+	}
+
+	// based on JPopupMenu::getCurrentGraphicsConfiguration
+	/**
+	 * @return an {@link Optional} holding the {@link GraphicsConfiguration} of the
+	 * {@linkplain GraphicsEnvironment#getScreenDevices() screen device} that contains the passed
+	 * {@code x} and {@code y} coordinates if one could be found, or {@link Optional#empty()} otherwise
+	 */
+	public static Optional<GraphicsConfiguration> findGraphicsConfig(int x, int y) {
+		for (final GraphicsDevice device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
+			if (device.getType() == GraphicsDevice.TYPE_RASTER_SCREEN) {
+				final GraphicsConfiguration config = device.getDefaultConfiguration();
+				if (config.getBounds().contains(x, y)) {
+					return Optional.of(config);
+				}
+			}
+		}
+
+		return Optional.empty();
 	}
 
 	public enum FocusCondition {

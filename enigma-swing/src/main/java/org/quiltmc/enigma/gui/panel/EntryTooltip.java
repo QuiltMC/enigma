@@ -41,6 +41,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -318,6 +319,13 @@ public class EntryTooltip extends JWindow {
 					final Point oldMousePos = MouseInfo.getPointerInfo().getLocation();
 					this.declarationSnippet.addSourceSetListener(source -> {
 						this.repaint();
+
+						if (this.declarationSnippet != null) {
+							// without this, the editor gets focus and has a blue border
+							// but only when it's in a scroll pane, for some reason
+							this.declarationSnippet.ui.requestFocus();
+						}
+
 						// JTextAreas (javadocs) adjust their preferred sizes after the first pack, so pack twice
 						this.pack();
 						// There seems to be a race condition when packing twice in a row where
@@ -326,23 +334,19 @@ public class EntryTooltip extends JWindow {
 						// Using invokeLater for *only* the second pack *seems* to solve it.
 						SwingUtilities.invokeLater(this::pack);
 
-						if (this.declarationSnippet != null) {
-							// without this, the editor gets focus and has a blue border
-							// but only when it's in a scroll pane, for some reason
-							this.declarationSnippet.ui.requestFocus();
-						}
-
-						if (oldSize == null) {
-							// opening
-							if (oldMousePos.distance(MouseInfo.getPointerInfo().getLocation()) < SMALL_MOVE_THRESHOLD) {
-								this.moveNearCursor();
+						SwingUtilities.invokeLater(() -> {
+							if (oldSize == null) {
+								// opening
+								if (oldMousePos.distance(MouseInfo.getPointerInfo().getLocation()) < SMALL_MOVE_THRESHOLD) {
+									this.moveNearCursor();
+								} else {
+									this.moveOnScreen();
+								}
 							} else {
-								this.moveOnScreen();
+								// not opening
+								this.moveMaintainingAnchor(oldMousePos, oldSize);
 							}
-						} else {
-							// not opening
-							this.moveMaintainingAnchor(oldMousePos, oldSize);
-						}
+						});
 					});
 				}
 
@@ -419,16 +423,22 @@ public class EntryTooltip extends JWindow {
 		}
 
 		final Dimension size = this.getSize();
-		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		final Toolkit toolkit = Toolkit.getDefaultToolkit();
+		final Dimension screenSize = toolkit.getScreenSize();
+
 		final Point mousePos = MouseInfo.getPointerInfo().getLocation();
 
+		final Insets screenInsets = GuiUtil.findGraphicsConfig(mousePos.x, mousePos.y)
+				.map(toolkit::getScreenInsets)
+				.orElse(new Insets(0, 0, 0, 0));
+
 		final int x = findCoordinateSpace(
-				size.width, screenSize.width,
+				size.width, screenInsets.left, screenSize.width - screenInsets.right,
 				mousePos.x - MOUSE_PAD, mousePos.x + MOUSE_PAD
 		);
 
 		final int y = findCoordinateSpace(
-				size.height, screenSize.height,
+				size.height, screenInsets.top, screenSize.height - screenInsets.bottom,
 				mousePos.y - MOUSE_PAD, mousePos.y + MOUSE_PAD
 		);
 
@@ -481,16 +491,26 @@ public class EntryTooltip extends JWindow {
 			anchoredY = pos.y + yDiff;
 		}
 
-		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		final int targetX = Utils.clamp(anchoredX, 0, screenSize.width - newSize.width);
-		final int targetY = Utils.clamp(anchoredY, 0, screenSize.height - newSize.height);
+		final Toolkit toolkit = Toolkit.getDefaultToolkit();
+		final Dimension screenSize = toolkit.getScreenSize();
+		final Insets screenInsets = GuiUtil.findGraphicsConfig(pos.x, pos.y)
+				.map(toolkit::getScreenInsets)
+				.orElse(new Insets(0, 0, 0, 0));
+
+		final int targetX = Utils.clamp(
+				anchoredX, screenInsets.left,
+				screenSize.width - screenInsets.right - newSize.width
+		);
+		final int targetY = Utils.clamp(
+				anchoredY, screenInsets.top,
+				screenSize.height - screenInsets.bottom - newSize.height
+		);
 
 		if (targetX != pos.x || targetY != pos.y) {
 			this.setLocation(targetX, targetY);
 		}
 	}
 
-	// TODO account for screen insets
 	/**
 	 * Ensures this is entirely on-screen.
 	 */
@@ -499,20 +519,21 @@ public class EntryTooltip extends JWindow {
 			return;
 		}
 
-		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		final Dimension size = this.getSize();
 		final Point pos = this.getLocationOnScreen();
+		final Toolkit toolkit = Toolkit.getDefaultToolkit();
+		final Dimension screenSize = toolkit.getScreenSize();
+		final Insets screenInsets = GuiUtil.findGraphicsConfig(pos.x, pos.y)
+				.map(toolkit::getScreenInsets)
+				.orElse(new Insets(0, 0, 0, 0));
+		final Dimension size = this.getSize();
 
-		final int xOffScreen = pos.x + size.width - screenSize.width;
-		final int yOffScreen = pos.y + size.height - screenSize.height;
+		final int offRight = pos.x + size.width - screenSize.width - screenInsets.right;
+		final int x = Math.max(screenInsets.left, offRight > 0 ? pos.x - offRight : pos.x);
 
-		final boolean moveX = xOffScreen > 0;
-		final boolean moveY = yOffScreen > 0;
+		final int offBottom = pos.y + size.height - screenSize.height - screenInsets.bottom;
+		final int y = Math.max(screenInsets.top, offBottom > 0 ? pos.y - offBottom : pos.y);
 
-		if (moveX || moveY) {
-			final int x = pos.x - (moveX ? xOffScreen : 0);
-			final int y = pos.y - (moveY ? yOffScreen : 0);
-
+		if (x != pos.x || y != pos.y) {
 			this.setLocation(x, y);
 		}
 	}
@@ -526,17 +547,17 @@ public class EntryTooltip extends JWindow {
 		}
 	}
 
-	private static int findCoordinateSpace(int size, int screenSize, int mouseMin, int mouseMax) {
-		final double spaceAfter = screenSize - mouseMax;
+	private static int findCoordinateSpace(int size, int screenMin, int screenMax, int mouseMin, int mouseMax) {
+		final double spaceAfter = screenMax - mouseMax;
 		if (spaceAfter >= size) {
 			return mouseMax;
 		} else {
 			final int spaceBefore = mouseMin - size;
-			if (spaceBefore >= 0) {
+			if (spaceBefore >= screenMin) {
 				return spaceBefore;
 			} else {
 				// doesn't fit before or after; align with screen edge that gives more space
-				return spaceAfter < spaceBefore ? 0 : screenSize - size;
+				return spaceAfter < spaceBefore ? 0 : screenMax - size;
 			}
 		}
 	}
