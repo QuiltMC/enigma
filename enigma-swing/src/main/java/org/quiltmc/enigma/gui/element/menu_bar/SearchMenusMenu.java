@@ -30,7 +30,6 @@ import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -135,8 +134,19 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			Config.main().searchMenus.showChooseHint
 	);
 
+	/**
+	 * Lazily populated cache.
+	 *
+	 * @see #getLookup()
+	 */
 	@Nullable
 	private Lookup lookup;
+
+	/**
+	 * Lazily populated by {@link #getFieldPath()}
+	 */
+	@Nullable
+	ImmutableList<MenuElement> fieldPath;
 
 	protected SearchMenusMenu(Gui gui) {
 		super(gui);
@@ -155,31 +165,17 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		this.addPermanentChildren();
 
-		MenuSelectionManager.defaultManager().addChangeListener(new ChangeListener() {
-			@Nullable
-			ImmutableList<MenuElement> fieldPath;
-
-			ImmutableList<MenuElement> getFieldPath() {
-				if (this.fieldPath == null) {
-					this.fieldPath = buildPathTo(SearchMenusMenu.this.field);
-				}
-
-				return this.fieldPath;
-			}
-
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				if (SearchMenusMenu.this.field.isShowing()) {
-					final var manager = (MenuSelectionManager) e.getSource();
-					if (getLastOrNull(manager.getSelectedPath()) == SearchMenusMenu.this.getPopupMenu()) {
-						// select here instead of in the hierarchy listener below because:
-						// 1. the manager doesn't report the final path in a hierarchy listener
-						// 2. selecting from the hierarchy listener caused bugs when restoring after showing a result:
-						//    - this.field and the restored item both appeared selected, but arrow keys couldn't select
-						//    - the final selected path got an increasing number of duplicates of this.field;
-						//      none should have been in the path
-						manager.setSelectedPath(this.getFieldPath().toArray(EMPTY_MENU_ELEMENTS));
-					}
+		MenuSelectionManager.defaultManager().addChangeListener(e -> {
+			if (this.field.isShowing()) {
+				final var manager = (MenuSelectionManager) e.getSource();
+				if (getLastOrNull(manager.getSelectedPath()) == this.getPopupMenu()) {
+					// select here instead of in the hierarchy listener below because:
+					// 1. the manager doesn't report the final path in a hierarchy listener
+					// 2. selecting from the hierarchy listener caused bugs when restoring after showing a result:
+					//    - this.field and the restored item both appeared selected, but arrow keys couldn't select
+					//    - the final selected path got an increasing number of duplicates of this.field;
+					//      none should have been in the path
+					this.selectField(manager);
 				}
 			}
 		});
@@ -199,16 +195,42 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 		});
 
+		// select field on content change so shift capitalizes instead of viewing selection
+		this.field.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				SearchMenusMenu.this.selectField(MenuSelectionManager.defaultManager());
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				SearchMenusMenu.this.selectField(MenuSelectionManager.defaultManager());
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) { }
+		});
+
 		this.getPopupMenu().addPopupMenuListener(new PopupMenuListener() {
+			// menu-select field on caret change so shift capitalizes instead of viewing selection
+			final ChangeListener selectFieldOnCaretChange =
+					e -> SearchMenusMenu.this.selectField(MenuSelectionManager.defaultManager());
+
 			@Override
 			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
 				SearchMenusMenu.this.field.selectAll();
+				// Only listen for text selection after initial text selection (see popupMenuWillBecomeInvisible).
+				SearchMenusMenu.this.field.getCaret().addChangeListener(this.selectFieldOnCaretChange);
 
 				SearchMenusMenu.this.updateResultItems();
 			}
 
 			@Override
-			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) { }
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+				// Don't listen for text selection before initial text selection so field doesn't get menu-selected
+				// when releasing shift to return from viewing.
+				SearchMenusMenu.this.field.getCaret().removeChangeListener(this.selectFieldOnCaretChange);
+			}
 
 			@Override
 			public void popupMenuCanceled(PopupMenuEvent e) { }
@@ -232,6 +254,18 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		});
 
 		this.retranslate();
+	}
+
+	private void selectField(MenuSelectionManager manager) {
+		manager.setSelectedPath(SearchMenusMenu.this.getFieldPath().toArray(EMPTY_MENU_ELEMENTS));
+	}
+
+	private ImmutableList<MenuElement> getFieldPath() {
+		if (this.fieldPath == null) {
+			this.fieldPath = buildPathTo(SearchMenusMenu.this.field);
+		}
+
+		return this.fieldPath;
 	}
 
 	private void updateResultItems() {
