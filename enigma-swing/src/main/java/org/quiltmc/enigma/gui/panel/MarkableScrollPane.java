@@ -11,8 +11,6 @@ import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
@@ -34,6 +32,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static org.quiltmc.enigma.util.Arguments.requireNonNegative;
+
 /**
  * A scroll pane that renders markers in its view along the right edge, to the left of the vertical scroll bar.<br>
  * Markers support custom {@linkplain Color colors} and {@linkplain MarkerListener listeners}.
@@ -51,11 +51,7 @@ import java.util.TreeMap;
  * @see #removeMarker(Object)
  * @see MarkerListener
  */
-public class MarkableScrollPane extends JScrollPane {
-	private static void requireNonNegative(int value, String name) {
-		Preconditions.checkArgument(value >= 0, "%s (%s) must not be negative!".formatted(name, value));
-	}
-
+public class MarkableScrollPane extends SmartScrollPane {
 	private static final int DEFAULT_MARKER_WIDTH = 10;
 	private static final int DEFAULT_MARKER_HEIGHT = 5;
 
@@ -71,8 +67,8 @@ public class MarkableScrollPane extends JScrollPane {
 	private MouseAdapter viewMouseAdapter;
 
 	/**
-	 * Constructs a scroll pane displaying the passed {@code view} and {@code maxConcurrentMarkers},
-	 * and {@link ScrollBarPolicy#AS_NEEDED AS_NEEDED} scroll bar policies.
+	 * Constructs a scroll pane displaying the passed {@code view} and {@code maxConcurrentMarkers}
+	 * with {@link ScrollBarPolicy#AS_NEEDED AS_NEEDED} scroll bars.
 	 *
 	 * @see #MarkableScrollPane(Component, int, ScrollBarPolicy, ScrollBarPolicy)
 	 */
@@ -83,8 +79,8 @@ public class MarkableScrollPane extends JScrollPane {
 	/**
 	 * @param view                 the component to display in this scroll pane's view port
 	 * @param maxConcurrentMarkers see {@link #setMaxConcurrentMarkers(int)}
-	 * @param verticalPolicy       the vertical scroll bar policy
-	 * @param horizontalPolicy     the horizontal scroll bar policy
+	 * @param vertical             the vertical scroll bar policy
+	 * @param horizontal           the horizontal scroll bar policy
 	 *
 	 * @throws IllegalArgumentException if {@code maxConcurrentMarkers} is negative
 	 *
@@ -92,9 +88,9 @@ public class MarkableScrollPane extends JScrollPane {
 	 */
 	public MarkableScrollPane(
 			@Nullable Component view, int maxConcurrentMarkers,
-			ScrollBarPolicy verticalPolicy, ScrollBarPolicy horizontalPolicy
+			ScrollBarPolicy vertical, ScrollBarPolicy horizontal
 	) {
-		super(view, verticalPolicy.vertical, horizontalPolicy.horizontal);
+		super(view, vertical, horizontal);
 
 		this.setMaxConcurrentMarkers(maxConcurrentMarkers);
 
@@ -352,32 +348,6 @@ public class MarkableScrollPane extends JScrollPane {
 		}
 	}
 
-	public enum ScrollBarPolicy {
-		/**
-		 * @see ScrollPaneConstants#HORIZONTAL_SCROLLBAR_AS_NEEDED
-		 * @see ScrollPaneConstants#VERTICAL_SCROLLBAR_AS_NEEDED
-		 */
-		AS_NEEDED(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED),
-		/**
-		 * @see ScrollPaneConstants#HORIZONTAL_SCROLLBAR_ALWAYS
-		 * @see ScrollPaneConstants#VERTICAL_SCROLLBAR_ALWAYS
-		 */
-		ALWAYS(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS),
-		/**
-		 * @see ScrollPaneConstants#HORIZONTAL_SCROLLBAR_NEVER
-		 * @see ScrollPaneConstants#VERTICAL_SCROLLBAR_NEVER
-		 */
-		NEVER(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-
-		private final int horizontal;
-		private final int vertical;
-
-		ScrollBarPolicy(int horizontal, int vertical) {
-			this.horizontal = horizontal;
-			this.vertical = vertical;
-		}
-	}
-
 	private class PaintState {
 		final NavigableMap<Integer, MarkersPainter> paintersByPos = new TreeMap<>();
 
@@ -420,7 +390,10 @@ public class MarkableScrollPane extends JScrollPane {
 
 					final MarkersPainterBuilder builder = builderByScaledPos.computeIfAbsent(scaledPos, builderPos -> {
 						final int top = Math.max(builderPos - MarkableScrollPane.this.markerHeight / 2, this.areaY);
-						final int bottom = Math.min(top + MarkableScrollPane.this.markerHeight, this.areaY + this.areaHeight);
+						final int bottom = Math.min(
+								top + MarkableScrollPane.this.markerHeight,
+								this.areaY + this.areaHeight
+						);
 
 						return new MarkersPainterBuilder(pos, scaledPos, top, bottom);
 					});
@@ -518,7 +491,10 @@ public class MarkableScrollPane extends JScrollPane {
 							final Point absolutePos = GuiUtil
 									.getAbsolutePos(MarkableScrollPane.this, this.areaX, painter.scaledPos);
 
-							return new ListenerPos(span.getMarker().listener.orElseThrow(), absolutePos.x, absolutePos.y);
+							return new ListenerPos(
+								span.getMarker().listener.orElseThrow(),
+								absolutePos.x, absolutePos.y
+							);
 						})
 						.stream()
 					)
@@ -637,7 +613,11 @@ public class MarkableScrollPane extends JScrollPane {
 					.limit(MarkableScrollPane.this.maxConcurrentMarkers)
 					.toList();
 
-			return MarkableScrollPane.this.markersPainterOf(markers, this.scaledPos, x, this.top, this.bottom - this.top);
+			return MarkableScrollPane.this.markersPainterOf(
+				markers, this.scaledPos,
+				x, this.top,
+				this.bottom - this.top
+			);
 		}
 	}
 
@@ -673,7 +653,7 @@ public class MarkableScrollPane extends JScrollPane {
 		void mouseTransferred(int x, int y);
 
 		/**
-		 * Called when the mouse within the marker.
+		 * Called when the mouse moves within the marker.
 		 */
 		void mouseMoved(int x, int y);
 	}
