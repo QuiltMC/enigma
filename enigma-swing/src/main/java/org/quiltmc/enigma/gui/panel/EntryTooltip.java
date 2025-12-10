@@ -280,7 +280,7 @@ public class EntryTooltip extends JWindow {
 				javadocs.add(params, javadocsConstraints.nextRow().copy().fillX());
 			}
 
-			final JScrollPane javadocsScroll = new JScrollPane(javadocs);
+			final JScrollPane javadocsScroll = new SmartScrollPane(javadocs);
 			javadocsScroll.setBorder(createEmptyBorder());
 			this.add(javadocsScroll, constraints.nextRow().copy().fillX());
 		}

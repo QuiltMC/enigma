@@ -1,15 +1,12 @@
 package org.quilt.internal.gui.visualization.flex_grid;
 
 import org.quilt.internal.gui.visualization.Visualizer;
+import org.quiltmc.enigma.gui.panel.SmartScrollPane;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.FlexGridLayout;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
 
 import javax.swing.JFrame;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-
-import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER;
-import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER;
 
 public class FlexGridPriorityScrollPanesVisualizer implements Visualizer {
 	@Override
@@ -25,7 +22,7 @@ public class FlexGridPriorityScrollPanesVisualizer implements Visualizer {
 
 		final var firstText = new JTextArea(
 				"""
-				5
+				5	4	3	2	1
 				4
 				3
 				2
@@ -33,11 +30,11 @@ public class FlexGridPriorityScrollPanesVisualizer implements Visualizer {
 				"""
 		);
 
-		window.add(new JScrollPane(firstText, VERTICAL_SCROLLBAR_NEVER, HORIZONTAL_SCROLLBAR_NEVER), constraints);
+		window.add(new SmartScrollPane(firstText), constraints);
 
 		final var secondText = new JTextArea(
 				"""
-				e
+				e	d	c	b	a
 				d
 				c
 				b
@@ -45,10 +42,7 @@ public class FlexGridPriorityScrollPanesVisualizer implements Visualizer {
 				"""
 		);
 
-		window.add(
-				new JScrollPane(secondText, VERTICAL_SCROLLBAR_NEVER, HORIZONTAL_SCROLLBAR_NEVER),
-				constraints.nextRow().incrementPriority()
-		);
+		window.add(new SmartScrollPane(secondText), constraints.nextRow().incrementPriority());
 
 		window.pack();
 	}
