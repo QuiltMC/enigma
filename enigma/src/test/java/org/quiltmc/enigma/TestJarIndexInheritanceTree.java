@@ -23,6 +23,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -35,9 +36,9 @@ public class TestJarIndexInheritanceTree {
 
 	private static final ClassEntry OBJECT_CLASS = TestEntryFactory.newClass("java/lang/Object");
 	private static final ClassEntry BASE_CLASS = TestEntryFactory.newClass("a");
-	private static final ClassEntry SUB_CLASS_A = TestEntryFactory.newClass("b");
-	private static final ClassEntry SUB_CLASS_AA = TestEntryFactory.newClass("d");
-	private static final ClassEntry SUB_CLASS_B = TestEntryFactory.newClass("c");
+	private static final ClassEntry SUB_CLASS_A = TestEntryFactory.newClass("c");
+	private static final ClassEntry SUB_CLASS_AA = TestEntryFactory.newClass("e");
+	private static final ClassEntry SUB_CLASS_B = TestEntryFactory.newClass("d");
 	private static final FieldEntry NAME_FIELD = TestEntryFactory.newField(BASE_CLASS, "a", "Ljava/lang/String;");
 	private static final FieldEntry NUM_THINGS_FIELD = TestEntryFactory.newField(SUB_CLASS_B, "a", "I");
 
@@ -51,8 +52,16 @@ public class TestJarIndexInheritanceTree {
 
 	@Test
 	public void obfEntries() {
+		// assertThat(this.index.getIndex(EntryIndex.class).getClasses(), Matchers.containsInAnyOrder(
+		// 		TestEntryFactory.newClass("org/quiltmc/enigma/input/Keep"), BASE_CLASS, SUB_CLASS_A, SUB_CLASS_AA, SUB_CLASS_B
+		// ));
 		assertThat(this.index.getIndex(EntryIndex.class).getClasses(), Matchers.containsInAnyOrder(
-				TestEntryFactory.newClass("org/quiltmc/enigma/input/Keep"), BASE_CLASS, SUB_CLASS_A, SUB_CLASS_AA, SUB_CLASS_B
+				TestEntryFactory.newClass("org/quiltmc/enigma/input/Keep"),
+				BASE_CLASS, SUB_CLASS_A, SUB_CLASS_AA, SUB_CLASS_B,
+				InterfaceTree.OUTER,
+				InterfaceTree.ROOT,
+				InterfaceTree.BRANCH_1_2, InterfaceTree.BRANCH_3_4,
+				InterfaceTree.LEAF_1, InterfaceTree.LEAF_2, InterfaceTree.LEAF_3, InterfaceTree.LEAF_4
 		));
 	}
 
@@ -215,5 +224,66 @@ public class TestJarIndexInheritanceTree {
 		assertThat(entryIndex.hasMethod(TestEntryFactory.newMethod(SUB_CLASS_A, "b", "()V")), is(false));
 		assertThat(entryIndex.hasMethod(TestEntryFactory.newMethod(SUB_CLASS_AA, "b", "()V")), is(false));
 		assertThat(entryIndex.hasMethod(TestEntryFactory.newMethod(SUB_CLASS_B, "b", "()V")), is(true));
+	}
+
+	@Test
+	void streamAncestorsOrder() {
+		final List<ClassEntry> ancestors = this.index.getIndex(InheritanceIndex.class)
+				.streamAncestors(InterfaceTree.ROOT)
+				.toList();
+
+		assertThat(ancestors.size(), is(13));
+
+		// First generation: Object appears once for ROOT
+		assertThat(ancestors.subList(0, 3), Matchers.containsInAnyOrder(
+				InterfaceTree.BRANCH_1_2, InterfaceTree.BRANCH_3_4, OBJECT_CLASS
+		));
+
+		// Second generation: Object appears once for each of the 2 branches
+		assertThat(ancestors.subList(3, 9), Matchers.containsInAnyOrder(
+				InterfaceTree.LEAF_1, InterfaceTree.LEAF_2, InterfaceTree.LEAF_3, InterfaceTree.LEAF_4,
+				OBJECT_CLASS, OBJECT_CLASS
+		));
+
+		// Third generation: Object appears once for each of the 4 leaves
+		assertThat(ancestors.subList(9, 13), Matchers.containsInAnyOrder(
+				OBJECT_CLASS, OBJECT_CLASS, OBJECT_CLASS, OBJECT_CLASS
+		));
+	}
+
+	@Test
+	void getAncestorsOrder() {
+		final List<ClassEntry> ancestors = this.index.getIndex(InheritanceIndex.class)
+				.getAncestors(InterfaceTree.ROOT)
+				.stream()
+				.toList();
+
+		assertThat(ancestors.size(), is(7));
+
+		// Only the first appearance of Object (from the root) is included
+		assertThat(ancestors.subList(0, 3), Matchers.containsInAnyOrder(
+				InterfaceTree.BRANCH_1_2, InterfaceTree.BRANCH_3_4, OBJECT_CLASS
+		));
+
+		assertThat(ancestors.subList(3, 7), Matchers.containsInAnyOrder(
+				InterfaceTree.LEAF_1, InterfaceTree.LEAF_2, InterfaceTree.LEAF_3, InterfaceTree.LEAF_4
+		));
+	}
+
+	private interface InterfaceTree {
+		String OUTER_NAME = "b";
+		String OUTER_PREFIX = OUTER_NAME + "$";
+
+		ClassEntry OUTER = TestEntryFactory.newClass(OUTER_NAME);
+
+		ClassEntry ROOT = TestEntryFactory.newClass(OUTER_PREFIX + "g");
+
+		ClassEntry BRANCH_1_2 = TestEntryFactory.newClass(OUTER_PREFIX + "a");
+		ClassEntry BRANCH_3_4 = TestEntryFactory.newClass(OUTER_PREFIX + "b");
+
+		ClassEntry LEAF_1 = TestEntryFactory.newClass(OUTER_PREFIX + "c");
+		ClassEntry LEAF_2 = TestEntryFactory.newClass(OUTER_PREFIX + "d");
+		ClassEntry LEAF_3 = TestEntryFactory.newClass(OUTER_PREFIX + "e");
+		ClassEntry LEAF_4 = TestEntryFactory.newClass(OUTER_PREFIX + "f");
 	}
 }
