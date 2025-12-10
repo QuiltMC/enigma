@@ -480,3 +480,9 @@ Blood, sweat, refactors, enhancements, tears, unit tests, bugfixes, blood, and m
         - all nullability annotations have been moved away from `javax` to use jspecify
     - new: `javaparser`: `3.27.0`
         - required for supporting navigation to lambdas and static init
+
+# 2.7.1
+
+VINEFLOWERRRRRRRRRR
+
+- downgrade vineflower to 1.11.1 to fix issues with decompilation ([#341](https://github.com/QuiltMC/enigma/pull/341))
