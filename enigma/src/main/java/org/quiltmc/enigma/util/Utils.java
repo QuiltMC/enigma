@@ -198,7 +198,8 @@ public class Utils {
 		return Math.min(max, Math.max(value, min));
 	}
 
-	public static <T> Stream<T> lazyConcat(Supplier<Stream<? extends T>> first, Supplier<Stream<? extends T>> second) {
-		return Stream.of(first, second).flatMap(Supplier::get);
+	@SafeVarargs
+	public static <T> Stream<T> lazyConcat(Supplier<Stream<? extends T>>... streamers) {
+		return Stream.of(streamers).flatMap(Supplier::get);
 	}
 }
