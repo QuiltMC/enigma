@@ -21,21 +21,23 @@ import static org.quiltmc.enigma.util.Utils.requireNonNull;
  *     <li> flex constraints have separate {@link Relative Relative} and {@link Absolute Absolute}
  *          types; {@link Absolute#toRelative() toRelative()} and {@link Relative#toAbsolute() toAbsolute()}
  *          convert between them
- *     <li> flex constraints support negative {@linkplain Absolute#pos(int, int) coordinates}
+ *     <li> {@link Relative Relative} constraints support different
+ *          {@linkplain  Relative#placement(Relative.Placement) placements}
+ *     <li> {@link Absolute Absolute} constraints support negative {@linkplain Absolute#pos(int, int) coordinates}
  *     <li> flex constraints don't use magic constants
  * </ul>
  *
  * <h4>Convenience</h4>
  * <ul>
  *     <li> constraints use the builder pattern; they're designed for method chaining
- *     <li> constraints are mutable, but their values are copied when
+ *     <li> constraints are mutable but {@linkplain #copy() copyable}, and their values are copied when
  *          {@linkplain Container#add(Component, Object) adding} to a container
  *     <li> they have numerous method variations for common use cases, including:
  *          <ul>
  *              <li> {@link Absolute#nextRow() nextRow()} and {@link Absolute#nextColumn() nextColumn()}
  *              <li> {@link #incrementPriority()} and {@link #decrementPriority()}
  *              <li> a method for each combination of vertical and horizontal alignments
- *              <li> {@link #copy()}
+ *              <li> a method for each {@link Relative.Placement Placement}
  *          </ul>
  * </ul>
  *
