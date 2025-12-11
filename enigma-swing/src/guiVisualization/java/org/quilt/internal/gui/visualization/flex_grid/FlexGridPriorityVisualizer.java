@@ -1,6 +1,7 @@
 package org.quilt.internal.gui.visualization.flex_grid;
 
 import org.quilt.internal.gui.visualization.Visualizer;
+import org.quilt.internal.gui.visualization.util.VisualUtils;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints.Absolute;
 
 import javax.swing.JFrame;
@@ -14,7 +15,7 @@ public class FlexGridPriorityVisualizer implements Visualizer {
 
 	@Override
 	public void visualize(JFrame window) {
-		FlexGridQuiltVisualiser.visualizeQuilt(
+		VisualUtils.visualizeFlexGridQuilt(
 				window,
 				UnaryOperator.identity(), Absolute::incrementPriority, Absolute::incrementPriority,
 				Absolute::incrementPriority, Absolute::incrementPriority, Absolute::incrementPriority,
