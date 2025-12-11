@@ -673,22 +673,88 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 	 * @see #toAbsolute(int, int)
 	 */
 	public static final class Relative extends FlexGridConstraints<FlexGridConstraints.Relative> {
+		public static final Placement DEFAULT_PLACEMENT = Placement.ROW_END;
+
 		public static Relative of() {
 			return new Relative(
 				DEFAULT_X_EXTENT, DEFAULT_Y_EXTENT,
 				DEFAULT_FILL_X, DEFAULT_FILL_Y,
 				DEFAULT_X_ALIGNMENT, DEFAULT_Y_ALIGNMENT,
-				DEFAULT_PRIORITY
+				DEFAULT_PRIORITY,
+				DEFAULT_PLACEMENT
 			);
 		}
+
+		private Placement placement;
 
 		private Relative(
 				int xExtent, int yExtent,
 				boolean fillX, boolean fillY,
 				Alignment xAlignment, Alignment yAlignment,
-				int priority
+				int priority,
+				Placement placement
 		) {
 			super(xExtent, yExtent, fillX, fillY, xAlignment, yAlignment, priority);
+
+			this.placement = placement;
+		}
+
+		public Placement getPlacement() {
+			return this.placement;
+		}
+
+		/**
+		 * Sets {@link #placement} to the passed value.
+		 *
+		 * <p> The default value is {@link #DEFAULT_PLACEMENT}.
+		 */
+		public Relative placement(Placement placement) {
+			this.placement = placement;
+			return this;
+		}
+
+		/**
+		 * Sets {@link #placement} to {@link Placement#ROW_END ROW_END}.
+		 *
+		 * <p> The default value is {@link #DEFAULT_PLACEMENT}.
+		 *
+		 * @see #placement(Placement)
+		 */
+		public Relative rowEnd() {
+			return this.placement(Placement.ROW_END);
+		}
+
+		/**
+		 * Sets {@link #placement} to {@link Placement#NEW_ROW NEW_ROW}.
+		 *
+		 * <p> The default value is {@link #DEFAULT_PLACEMENT}.
+		 *
+		 * @see #placement(Placement)
+		 */
+		public Relative newRow() {
+			return this.placement(Placement.NEW_ROW);
+		}
+
+		/**
+		 * Sets {@link #placement} to {@link Placement#COLUMN_END COLUMN_END}.
+		 *
+		 * <p> The default value is {@link #DEFAULT_PLACEMENT}.
+		 *
+		 * @see #placement(Placement)
+		 */
+		public Relative columnEnd() {
+			return this.placement(Placement.COLUMN_END);
+		}
+
+		/**
+		 * Sets {@link #placement} to {@link Placement#NEW_COLUMN NEW_COLUMN}.
+		 *
+		 * <p> The default value is {@link #DEFAULT_PLACEMENT}.
+		 *
+		 * @see #placement(Placement)
+		 */
+		public Relative newColumn() {
+			return this.placement(Placement.NEW_COLUMN);
 		}
 
 		@Override
@@ -697,13 +763,14 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 				this.xExtent, this.yExtent,
 				this.fillX, this.fillY,
 				this.xAlignment, this.yAlignment,
-				this.priority
+				this.priority,
+				this.placement
 			);
 		}
 
 		/**
 		 * Creates {@link Absolute Absolute} constraints at ({@value Absolute#DEFAULT_X}, {@value Absolute#DEFAULT_Y})
-		 * with these constraints' values.
+		 * with these constraints' values ({@link #placement} is ignored).
 		 *
 		 * @see #toAbsolute(int, int)
 		 * @see Absolute#toRelative() Absolute.toRelative()
@@ -719,8 +786,8 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		}
 
 		/**
-		 * Creates {@link Absolute Absolute} constraints with these constraints' values and the passed
-		 * {@code x} and {@code y} coordinates.
+		 * Creates {@link Absolute Absolute} constraints with these constraints' values at the passed
+		 * {@code x} and {@code y} coordinates ({@link #placement} is ignored).
 		 *
 		 * @see #toAbsolute()
 		 * @see Absolute#toRelative() Absolute.toRelative()
@@ -732,6 +799,32 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		@Override
 		Relative getSelf() {
 			return this;
+		}
+
+		/**
+		 * Represents the placement of {@link Relative} constraints.
+		 *
+		 * <p> All placements will put a {@link Component} at ({@value Absolute#DEFAULT_X}, {@value Absolute#DEFAULT_Y})
+		 * if the component is the first to be {@linkplain Container#add(Component, Object) added}
+		 * to its {@link Container}.
+		 */
+		public enum Placement {
+			/**
+			 * At the end of the last row.
+			 */
+			ROW_END,
+			/**
+			 * In a new row after the current last row, with x equal to the current minimum x.
+			 */
+			NEW_ROW,
+			/**
+			 * At the bottom of the last column.
+			 */
+			COLUMN_END,
+			/**
+			 * In a new column after the current last column, with y equal to the current minimum y.
+			 */
+			NEW_COLUMN
 		}
 	}
 
@@ -895,9 +988,10 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		}
 
 		/**
-		 * Creates {@link Relative Relative} constraints with these constraints' values
-		 * ({@link #x} and {@link #y} ar ignored).
+		 * Creates {@link Relative Relative} constraints with these constraints' values and
+		 * {@link Relative#DEFAULT_PLACEMENT DEFAULT_PLACEMENT} ({@link #x} and {@link #y} ar ignored).
 		 *
+		 * @see #toRelative(Relative.Placement)
 		 * @see Relative#toAbsolute() Relative.toAbsolute()
 		 * @see Relative#toAbsolute(int, int) Relative.toAbsolute(int, int)
 		 */
@@ -906,8 +1000,21 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 				this.xExtent, this.yExtent,
 				this.fillX, this.fillY,
 				this.xAlignment, this.yAlignment,
-				this.priority
+				this.priority,
+				Relative.DEFAULT_PLACEMENT
 			);
+		}
+
+		/**
+		 * Creates {@link Relative Relative} constraints with these constraints' values and
+		 * the passed {@code placement} ({@link #x} and {@link #y} ar ignored).
+		 *
+		 * @see #toRelative()
+		 * @see Relative#toAbsolute() Relative.toAbsolute()
+		 * @see Relative#toAbsolute(int, int) Relative.toAbsolute(int, int)
+		 */
+		public Relative toRelative(Relative.Placement placement) {
+			return this.toRelative().placement(placement);
 		}
 
 		@Override

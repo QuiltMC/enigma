@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.quiltmc.enigma.gui.util.layout.flex_grid.ConstrainedGrid.Position;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints.Alignment;
 
@@ -86,10 +87,15 @@ import static org.quiltmc.enigma.util.Utils.ceilDiv;
  * <h4>Grid specifics</h4>
  *
  * <ul>
- *     <li> components with {@linkplain FlexGridConstraints#createRelative() relative constraints} (or no constraints)
- *          are added to the end of the bottom row,<br>
- *          or put at ({@value FlexGridConstraints.Absolute#DEFAULT_X}, {@value FlexGridConstraints.Absolute#DEFAULT_Y})
- *          if no other components have been added
+ *     <li> if a {@link FlexGridConstraints.Relative Relative} component is the first component to be added,
+ *          it's placed at
+ *          ({@value FlexGridConstraints.Absolute#DEFAULT_X}, {@value FlexGridConstraints.Absolute#DEFAULT_Y});
+ *          otherwise its
+ *          {@linkplain FlexGridConstraints.Relative#placement(FlexGridConstraints.Relative.Placement) placement}
+ *          determines its position
+ *     <li> components with no constraints are treated are treated as though they have
+ *          {@link FlexGridConstraints.Relative Relative} constraints with
+ *          {@link FlexGridConstraints.Relative#DEFAULT_PLACEMENT DEFAULT_PLACEMENT}
  *     <li> a component can occupy multiple grid cells when its constraint
  *          {@linkplain FlexGridConstraints#xExtent(int) xExtent} or
  *          {@linkplain FlexGridConstraints#yExtent(int) yExtent} exceeds {@code 1};
@@ -164,8 +170,10 @@ public class FlexGridLayout implements LayoutManager2 {
 			final Constrained constrained = Constrained.of(component, constraints);
 			if (constraints instanceof FlexGridConstraints.Absolute absolute) {
 				this.grid.put(absolute.getX(), absolute.getY(), constrained);
+			} else if (constraints instanceof FlexGridConstraints.Relative relative) {
+				this.grid.putRelative(constrained, relative.getPlacement());
 			} else {
-				this.grid.putRelative(constrained);
+				throw new AssertionError();
 			}
 		}
 	}
@@ -176,7 +184,7 @@ public class FlexGridLayout implements LayoutManager2 {
 	}
 
 	private void addDefaultConstrainedLayoutComponent(Component component) {
-		this.grid.putRelative(Constrained.defaultOf(component));
+		this.grid.putRelative(Constrained.defaultOf(component), FlexGridConstraints.Relative.DEFAULT_PLACEMENT);
 	}
 
 	@Override
@@ -550,7 +558,7 @@ public class FlexGridLayout implements LayoutManager2 {
 	/**
 	 * Sets of operations for the {@link #X} and {@link #Y} axes of a cartesian plane.
 	 */
-	private enum CartesianOperations {
+	enum CartesianOperations {
 		X() {
 			@Override
 			int chooseCoord(int x, int y) {
@@ -608,8 +616,23 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
+			int getExcess(Constrained constrained) {
+				return constrained.getXExcess();
+			}
+
+			@Override
+			Position createPos(int coord, int oppositeCoord) {
+				return new Position(coord, oppositeCoord);
+			}
+
+			@Override
 			void setBounds(Component component, int x, int width) {
 				component.setBounds(x, component.getY(), width, component.getHeight());
+			}
+
+			@Override
+			CartesianOperations opposite() {
+				return Y;
 			}
 		},
 		Y() {
@@ -669,12 +692,31 @@ public class FlexGridLayout implements LayoutManager2 {
 			}
 
 			@Override
+			int getExcess(Constrained constrained) {
+				return constrained.getYExcess();
+			}
+
+			@Override
+			Position createPos(int coord, int oppositeCoord) {
+				return new Position(oppositeCoord, coord);
+			}
+
+			@Override
 			void setBounds(Component component, int y, int height) {
 				component.setBounds(component.getX(), y, component.getWidth(), height);
+			}
+
+			@Override
+			CartesianOperations opposite() {
+				return X;
 			}
 		};
 
 		abstract int chooseCoord(int x, int y);
+
+		int chooseCoord(Position pos) {
+			return this.chooseCoord(pos.x(), pos.y());
+		}
 
 		abstract int getLeadingInset(Insets insets);
 		abstract int getTrailingInset(Insets insets);
@@ -688,7 +730,12 @@ public class FlexGridLayout implements LayoutManager2 {
 		abstract boolean noneFill(ConstrainedGrid grid);
 		abstract Alignment getAlignment(Constrained constrained);
 		abstract int getExtent(Constrained constrained);
+		abstract int getExcess(Constrained constrained);
+
+		abstract Position createPos(int coord, int oppositeCoord);
 
 		abstract void setBounds(Component component, int pos, int span);
+
+		abstract CartesianOperations opposite();
 	}
 }

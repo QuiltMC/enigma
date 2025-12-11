@@ -1,6 +1,7 @@
 package org.quilt.internal.gui.visualization.flex_grid;
 
 import org.quilt.internal.gui.visualization.Visualizer;
+import org.quilt.internal.gui.visualization.util.VisualUtils;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
 
 import javax.swing.JFrame;
@@ -19,7 +20,7 @@ public class FlexGridSparseVisualizer implements Visualizer {
 
 	@Override
 	public void visualize(JFrame window) {
-		FlexGridQuiltVisualiser.visualizeQuilt(
+		VisualUtils.visualizeFlexGridQuilt(
 				window,
 				c -> c.pos(-STEP, -STEP), FlexGridSparseVisualizer::stepColumns, FlexGridSparseVisualizer::stepColumns,
 				c -> c.pos(-STEP, 0), FlexGridSparseVisualizer::stepColumns, FlexGridSparseVisualizer::stepColumns,

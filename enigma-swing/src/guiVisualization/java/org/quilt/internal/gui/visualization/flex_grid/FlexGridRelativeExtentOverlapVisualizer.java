@@ -2,6 +2,7 @@ package org.quilt.internal.gui.visualization.flex_grid;
 
 import org.quilt.internal.gui.visualization.Visualizer;
 import org.quilt.internal.gui.visualization.util.VisualBox;
+import org.quilt.internal.gui.visualization.util.VisualUtils;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.FlexGridLayout;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
 
@@ -19,14 +20,14 @@ public class FlexGridRelativeExtentOverlapVisualizer implements Visualizer {
 
 	/**
 	 * <pre><code>
-	 * -----------------
-	 * |           | R |
-	 * |   --------+----
-	 * |   |       |
-	 * |   |   -----
+	 * ---------------------
+	 * |           | R | P |
+	 * |   --------+--------
+	 * |   |       |   | O |
+	 * |   |   -----   -----
 	 * |   |   |   |
 	 * ----+---+----
-	 * |   | B |
+	 * | G | B |
 	 * ---------
 	 * </code></pre>
 	 */
@@ -42,10 +43,13 @@ public class FlexGridRelativeExtentOverlapVisualizer implements Visualizer {
 			);
 		}
 
-		window.add(VisualBox.of(Color.RED, SQUARE_SIZE));
+		window.add(VisualBox.of(Color.RED, SQUARE_SIZE), FlexGridConstraints.createRelative().rowEnd());
 
-		window.add(VisualBox.of(SQUARE_SIZE), FlexGridConstraints.createAbsolute().y(MAX_EXTENT));
-		window.add(VisualBox.of(Color.BLUE, SQUARE_SIZE));
+		window.add(VisualBox.of(Color.GREEN, SQUARE_SIZE), FlexGridConstraints.createRelative().newRow());
+		window.add(VisualBox.of(Color.BLUE, SQUARE_SIZE), FlexGridConstraints.createRelative().rowEnd());
+
+		window.add(VisualBox.of(VisualUtils.PURPLE, SQUARE_SIZE), FlexGridConstraints.createRelative().newColumn());
+		window.add(VisualBox.of(VisualUtils.ORANGE, SQUARE_SIZE), FlexGridConstraints.createRelative().columnEnd());
 
 		window.pack();
 	}

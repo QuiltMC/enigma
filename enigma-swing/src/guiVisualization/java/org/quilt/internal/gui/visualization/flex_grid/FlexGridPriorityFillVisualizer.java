@@ -1,6 +1,7 @@
 package org.quilt.internal.gui.visualization.flex_grid;
 
 import org.quilt.internal.gui.visualization.Visualizer;
+import org.quilt.internal.gui.visualization.util.VisualUtils;
 
 import javax.swing.JFrame;
 
@@ -12,7 +13,7 @@ public class FlexGridPriorityFillVisualizer implements Visualizer {
 
 	@Override
 	public void visualize(JFrame window) {
-		FlexGridQuiltVisualiser.visualizeQuilt(
+		VisualUtils.visualizeFlexGridQuilt(
 				window,
 				c -> c.fillOnlyX().incrementPriority(),
 				c -> c.fillOnlyY().incrementPriority(),

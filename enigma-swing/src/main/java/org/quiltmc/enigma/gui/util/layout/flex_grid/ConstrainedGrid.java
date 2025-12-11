@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.util.layout.flex_grid;
 
+import org.quiltmc.enigma.gui.util.layout.flex_grid.FlexGridLayout.CartesianOperations;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.FlexGridLayout.Constrained;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
 
@@ -27,8 +28,16 @@ class ConstrainedGrid {
 	private final Map<Component, Position> componentPositions = new HashMap<>();
 	// outer sorted map maps constrained max y to rows
 	// mid sorted map maps constrained max x to values by min y
-	// used to find relative position
-	private final SortedMap<Integer, SortedMap<Integer, SortedMap<Integer, Set<Component>>>> maxGrid = new TreeMap<>();
+	// used to find relative placements
+	private final SortedMap<Integer, SortedMap<Integer, SortedMap<Integer, Set<Component>>>> maxYXGrid = new TreeMap<>();
+	// outer sorted map maps constrained max x to columns
+	// mid sorted map maps constrained max y to values by min x
+	// used to find relative placements
+	private final SortedMap<Integer, SortedMap<Integer, SortedMap<Integer, Set<Component>>>> maxXYGrid = new TreeMap<>();
+
+	// used to find relative placements
+	private final SortedMap<Integer, Set<Component>> componentsByX = new TreeMap<>();
+
 	private final Set<Component> xFillers = new HashSet<>();
 	private final Set<Component> yFillers = new HashSet<>();
 
@@ -44,11 +53,22 @@ class ConstrainedGrid {
 				.computeIfAbsent(x, ignored -> new HashMap<>(1))
 				.put(component, value);
 
-		this.maxGrid
-				.computeIfAbsent(y + value.getYExcess(), ignored -> new TreeMap<>())
-				.computeIfAbsent(x + value.getXExcess(), ignored -> new TreeMap<>())
+		final int maxY = y + value.getYExcess();
+		final int maxX = x + value.getXExcess();
+
+		this.maxYXGrid
+				.computeIfAbsent(maxY, ignored -> new TreeMap<>())
+				.computeIfAbsent(maxX, ignored -> new TreeMap<>())
 				.computeIfAbsent(y, ignored -> new HashSet<>(1))
 				.add(component);
+
+		this.maxXYGrid
+				.computeIfAbsent(maxX, ignore -> new TreeMap<>())
+				.computeIfAbsent(maxY, ignored -> new TreeMap<>())
+				.computeIfAbsent(x, ignored -> new HashSet<>(1))
+				.add(component);
+
+		this.componentsByX.computeIfAbsent(x, ignored -> new HashSet<>()).add(component);
 
 		if (value.fillX()) {
 			this.xFillers.add(component);
@@ -59,26 +79,79 @@ class ConstrainedGrid {
 		}
 	}
 
-	void putRelative(Constrained value) {
+	void putRelative(Constrained value, FlexGridConstraints.Relative.Placement placement) {
 		final int x;
 		final int y;
 		if (this.isEmpty()) {
 			x = FlexGridConstraints.Absolute.DEFAULT_X;
 			y = FlexGridConstraints.Absolute.DEFAULT_Y;
 		} else {
-			final int maxY = this.maxGrid.lastKey();
-			final SortedMap<Integer, SortedMap<Integer, Set<Component>>> maxRow = this.maxGrid.get(maxY);
-			final SortedMap<Integer, Set<Component>> maxXComponentsByY = maxRow.get(maxRow.lastKey());
-
-			final Set<Component> minYMaxXComponents = maxXComponentsByY.get(maxXComponentsByY.firstKey());
-			final Component component = minYMaxXComponents.iterator().next();
-			final Position pos = this.componentPositions.get(component);
-
-			x = pos.x + this.grid.get(pos.y).get(pos.x).get(component).getXExcess() + 1;
-			y = pos.y;
+			switch (placement) {
+				case ROW_END -> {
+					// final int maxY = this.maxYXGrid.lastKey();
+					// final SortedMap<Integer, SortedMap<Integer, Set<Component>>> maxXRow = this.maxYXGrid.get(maxY);
+					// final SortedMap<Integer, Set<Component>> maxXComponentsByY = maxXRow.get(maxXRow.lastKey());
+					//
+					// final Set<Component> minYMaxXComponents = maxXComponentsByY.get(maxXComponentsByY.firstKey());
+					// final Component component = minYMaxXComponents.iterator().next();
+					// final Position pos = this.componentPositions.get(component);
+					//
+					// x = pos.x + this.grid.get(pos.y).get(pos.x).get(component).getXExcess() + 1;
+					// y = pos.y;
+					final Position pos = this.findEndPos(CartesianOperations.X, this.maxYXGrid);
+					x = pos.x;
+					y = pos.y;
+				}
+				case NEW_ROW -> {
+					// min x
+					x = this.componentsByX.firstKey();
+					// max y + 1
+					y = this.maxYXGrid.lastKey() + 1;
+				}
+				case COLUMN_END -> {
+					// final int maxX = this.maxXYGrid.lastKey();
+					// final SortedMap<Integer, SortedMap<Integer, Set<Component>>> maxYRow = this.maxXYGrid.get(maxX);
+					// final SortedMap<Integer, Set<Component>> maxYComponentsByX = maxYRow.get(maxYRow.lastKey());
+					//
+					// final Set<Component> minXMaxYComponents = maxYComponentsByX.get(maxYComponentsByX.firstKey());
+					// final Component component = minXMaxYComponents.iterator().next();
+					// final Position pos = this.componentPositions.get(component);
+					//
+					// x = pos.x;
+					// y = pos.y + this.grid.get(pos.y).get(pos.x).get(component).getYExcess() + 1;
+					final Position pos = this.findEndPos(CartesianOperations.Y, this.maxXYGrid);
+					x = pos.x;
+					y = pos.y;
+				}
+				case NEW_COLUMN -> {
+					// max x + 1
+					x = this.maxXYGrid.lastKey() + 1;
+					// min y
+					y = this.grid.firstKey();
+				}
+				default -> throw new AssertionError();
+			}
 		}
 
 		this.put(x, y, value);
+	}
+
+	private Position findEndPos(
+			CartesianOperations ops,
+			SortedMap<Integer, SortedMap<Integer, SortedMap<Integer, Set<Component>>>> maxGrid
+	) {
+		final int max = maxGrid.lastKey();
+		final SortedMap<Integer, SortedMap<Integer, Set<Component>>> maxXRow = maxGrid.get(max);
+		final SortedMap<Integer, Set<Component>> maxXComponentsByY = maxXRow.get(maxXRow.lastKey());
+
+		final Set<Component> minYMaxXComponents = maxXComponentsByY.get(maxXComponentsByY.firstKey());
+		final Component component = minYMaxXComponents.iterator().next();
+		final Position pos = this.componentPositions.get(component);
+
+		final int coord = ops.chooseCoord(pos) + ops.getExcess(this.grid.get(pos.y).get(pos.x).get(component)) + 1;
+		final int oppositeCoord = ops.opposite().chooseCoord(pos);
+
+		return ops.createPos(coord, oppositeCoord);
 	}
 
 	void remove(Component component) {
@@ -97,26 +170,78 @@ class ConstrainedGrid {
 			}
 
 			final int maxY = pos.y + removed.getYExcess();
-			final SortedMap<Integer, SortedMap<Integer, Set<Component>>> maxRow = this.maxGrid.get(maxY);
 			final int maxX = pos.x + removed.getXExcess();
-			final SortedMap<Integer, Set<Component>> maximumsByY = maxRow.get(maxX);
-			final Set<Component> maxComponents = maximumsByY.get(pos.y);
-			maxComponents.remove(component);
 
-			if (maxComponents.isEmpty()) {
-				maximumsByY.remove(pos.y);
+			this.removeFromMaxGrid(component, pos, maxX, maxY, CartesianOperations.Y, this.maxYXGrid);
+			// final SortedMap<Integer, SortedMap<Integer, Set<Component>>> maxXRow = this.maxYXGrid.get(maxY);
+			// final SortedMap<Integer, Set<Component>> maximumsByY = maxXRow.get(maxX);
+			// final Set<Component> maxXComponents = maximumsByY.get(pos.y);
+			// maxXComponents.remove(component);
+			//
+			// if (maxXComponents.isEmpty()) {
+			// 	maximumsByY.remove(pos.y);
+			//
+			// 	if (maximumsByY.isEmpty()) {
+			// 		maxXRow.remove(maxX);
+			//
+			// 		if (maxXRow.isEmpty()) {
+			// 			this.maxYXGrid.remove(maxY);
+			// 		}
+			// 	}
+			// }
 
-				if (maximumsByY.isEmpty()) {
-					maxRow.remove(maxX);
+			this.removeFromMaxGrid(component, pos, maxX, maxY, CartesianOperations.X, this.maxXYGrid);
+			// final SortedMap<Integer, SortedMap<Integer, Set<Component>>> maxYRow = this.maxXYGrid.get(maxX);
+			// final SortedMap<Integer, Set<Component>> maximumsByX = maxYRow.get(maxY);
+			// final Set<Component> maxYComponents = maximumsByX.get(pos.x);
+			// maxYComponents.remove(component);
+			//
+			// if (maxYComponents.isEmpty()) {
+			// 	maximumsByX.remove(pos.y);
+			//
+			// 	if (maximumsByX.isEmpty()) {
+			// 		maxYRow.remove(maxY);
+			//
+			// 		if (maxYRow.isEmpty()) {
+			// 			this.maxXYGrid.remove(maxX);
+			// 		}
+			// 	}
+			// }
 
-					if (maxRow.isEmpty()) {
-						this.maxGrid.remove(maxY);
-					}
-				}
+			final Set<Component> xComponents = this.componentsByX.get(pos.x);
+			xComponents.remove(component);
+			if (xComponents.isEmpty()) {
+				this.componentsByX.remove(pos.x);
 			}
 
 			this.xFillers.remove(component);
 			this.yFillers.remove(component);
+		}
+	}
+
+	private void removeFromMaxGrid(
+			Component component, Position pos, int maxX, int maxY, CartesianOperations ops,
+			SortedMap<Integer, SortedMap<Integer, SortedMap<Integer, Set<Component>>>> maxGrid
+	) {
+		final int coord = ops.chooseCoord(pos);
+		final int max = ops.chooseCoord(maxX, maxY);
+		final int oppositeMax = ops.opposite().chooseCoord(maxX, maxY);
+
+		final SortedMap<Integer, SortedMap<Integer, Set<Component>>> maxRow = maxGrid.get(max);
+		final SortedMap<Integer, Set<Component>> maximumsByCoord = maxRow.get(oppositeMax);
+		final Set<Component> maxComponents = maximumsByCoord.get(coord);
+		maxComponents.remove(component);
+
+		if (maxComponents.isEmpty()) {
+			maximumsByCoord.remove(coord);
+
+			if (maximumsByCoord.isEmpty()) {
+				maxRow.remove(oppositeMax);
+
+				if (maxRow.isEmpty()) {
+					maxGrid.remove(max);
+				}
+			}
 		}
 	}
 
@@ -154,8 +279,6 @@ class ConstrainedGrid {
 		);
 	}
 
-	private record Position(int x, int y) { }
-
 	@FunctionalInterface
 	interface EntriesConsumer {
 		void accept(int x, int y, Stream<Constrained> values);
@@ -165,4 +288,6 @@ class ConstrainedGrid {
 	interface EntryFunction<T> {
 		T apply(int x, int y, Constrained value);
 	}
+
+	record Position(int x, int y) { }
 }
