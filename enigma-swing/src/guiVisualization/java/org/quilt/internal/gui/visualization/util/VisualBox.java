@@ -27,11 +27,6 @@ import static org.quiltmc.enigma.util.Arguments.requireNotLess;
 public class VisualBox extends JPanel {
 	public static final int DEFAULT_SIZE = 100;
 
-	public static final Color PATCH_PURPLE = new Color(151, 34, 255);
-	public static final Color PATCH_MAGENTA = new Color(220, 41, 221);
-	public static final Color PATCH_CYAN = new Color(39, 162, 253);
-	public static final Color PATCH_BLUE = new Color(51, 68, 255);
-
 	private static final String MIN_WIDTH = "minWidth";
 	private static final String MIN_HEIGHT = "minHeight";
 	private static final String PREFERRED_WIDTH = "preferredWidth";
@@ -116,7 +111,7 @@ public class VisualBox extends JPanel {
 	}
 
 	public static VisualBox purplePatchOf(@Nullable String name) {
-		return of(name, PATCH_PURPLE);
+		return of(name, VisualUtils.PATCH_PURPLE);
 	}
 
 	public static VisualBox magentaPatchOf() {
@@ -124,7 +119,7 @@ public class VisualBox extends JPanel {
 	}
 
 	public static VisualBox magentaPatchOf(@Nullable String name) {
-		return of(name, PATCH_MAGENTA);
+		return of(name, VisualUtils.PATCH_MAGENTA);
 	}
 
 	public static VisualBox cyanPatchOf() {
@@ -132,7 +127,7 @@ public class VisualBox extends JPanel {
 	}
 
 	public static VisualBox cyanPatchOf(@Nullable String name) {
-		return of(name, PATCH_CYAN);
+		return of(name, VisualUtils.PATCH_CYAN);
 	}
 
 	public static VisualBox bluePatchOf() {
@@ -140,7 +135,7 @@ public class VisualBox extends JPanel {
 	}
 
 	public static VisualBox bluePatchOf(@Nullable String name) {
-		return of(name, PATCH_BLUE);
+		return of(name, VisualUtils.PATCH_BLUE);
 	}
 
 	private final int minWidth;

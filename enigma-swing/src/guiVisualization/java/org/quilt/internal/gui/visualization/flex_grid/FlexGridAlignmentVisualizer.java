@@ -2,6 +2,7 @@ package org.quilt.internal.gui.visualization.flex_grid;
 
 import org.quilt.internal.gui.visualization.Visualizer;
 import org.quilt.internal.gui.visualization.util.VisualBox;
+import org.quilt.internal.gui.visualization.util.VisualUtils;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints.Absolute;
 
@@ -21,7 +22,7 @@ public class FlexGridAlignmentVisualizer implements Visualizer {
 
 	@Override
 	public void visualize(JFrame window) {
-		FlexGridQuiltVisualiser.visualizeQuilt(
+		VisualUtils.visualizeFlexGridQuilt(
 				window,
 				Absolute::alignTopLeft, Absolute::alignTopCenter, Absolute::alignTopRight,
 				Absolute::alignCenterLeft, Absolute::alignCenter, Absolute::alignCenterRight,
