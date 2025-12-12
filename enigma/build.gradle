@@ -108,12 +108,17 @@ static String taskNameFrom(String name) {
 	return builder.toString()
 }
 
+
+final obfuscateTestInputs = tasks.register('obfuscateTestInputs') {
+	group = 'test-setup'
+}
+
 // Generate obfuscated JARs for tests
 // If your test fails for class file version problem with proguard, run gradle with -Dorg.gradle.java.home="<older jdk>" flag
 def registerTestJarTasks(String name, String... input) {
 	String taskName = taskNameFrom(name)
 	final testJar = tasks.register("${taskName}TestJar", Jar.class) {
-		group = "test-setup"
+		group = 'test-setup'
 		from(sourceSets.test.output) {
 			include input
 		}
@@ -127,9 +132,13 @@ def registerTestJarTasks(String name, String... input) {
 		: file('src/test/resources/proguard-test.conf')
 
 	final testObf = tasks.register("${taskName}TestObf", ProGuardTask) {
-		group = "test-setup"
+		group = 'test-setup'
 
 		configuration confFileArg
+
+		final outDir = project.layout.buildDirectory.map { it.dir('test-obf') }
+
+		printmapping(outDir.map { it.dir("${name}.map") })
 
 		libraryjars(
 			[jarfilter: '!**.jar', filter: '!module-info.class'],
@@ -138,10 +147,12 @@ def registerTestJarTasks(String name, String... input) {
 
 		injars testJar.map { it.archiveFile }
 
-		outjars file("build/test-obf/${name}.jar")
+		outjars outDir.map { it.dir("${name}.jar") }
 	}
 
-	test.dependsOn(testObf)
+	tasks.named('obfuscateTestInputs') {
+		dependsOn(testObf)
+	}
 }
 
 registerTestJarTasks("complete", "org/quiltmc/enigma/input/**/*.class")
@@ -365,7 +376,7 @@ final testRecommendedImplPluginAgainstBumpedEnigma = tasks
 	}
 }
 
-test.dependsOn(testPreHandlingPluginAgainstCurrentEnigma, testRecommendedImplPluginAgainstBumpedEnigma)
+test.dependsOn(obfuscateTestInputs, testPreHandlingPluginAgainstCurrentEnigma, testRecommendedImplPluginAgainstBumpedEnigma)
 
 publishing {
 	publications {
