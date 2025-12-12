@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.quiltmc.enigma.TestUtil.getResource;
 
 public class SearchMappingsTest {
-	// private static final Path JAR = TestUtil.obfJar("complete");
 	private static final Path JAR = TestUtil.obfJar("search_mappings");
 	private static final Path MAPPINGS = getResource("/search_mappings");
 
