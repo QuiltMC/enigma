@@ -43,6 +43,7 @@
 	"menu.view.languages": "言語",
 	"menu.view.scale": "サイズ",
 	"menu.view.scale.custom": "カスタム...",
+	"menu.view.scale.custom.selected": "カスタム (%.1f%%)...",
 	"menu.view.scale.custom.title": "カスタムサイズ",
 	"menu.view.font": "フォント...",
 	"menu.view.change.title": "変更",
