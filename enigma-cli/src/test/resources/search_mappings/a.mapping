@@ -1,2 +1,2 @@
-CLASS I
+CLASS a
 	FIELD a privateStringField Ljava/lang/String;
