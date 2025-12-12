@@ -21,6 +21,7 @@ import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.GuiController;
 import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.config.SelectionHighlightSection;
 import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
@@ -54,14 +55,13 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -101,6 +101,9 @@ public class BaseEditorPanel {
 	private final BoxHighlightPainter deobfuscatedPainter;
 	private final BoxHighlightPainter debugPainter;
 	private final BoxHighlightPainter fallbackPainter;
+
+	@Nullable
+	private SelectionHighlightHandler selectionHighlightHandler;
 
 	protected ClassHandler classHandler;
 	private DecompiledClassSource source;
@@ -154,11 +157,14 @@ public class BaseEditorPanel {
 		ruler.setFont(this.editor.getFont());
 	}
 
-	public void setClassHandle(ClassHandle handle) {
-		this.setClassHandle(handle, true, null);
+	/**
+	 * @return a future whose completion indicates that this editor's class handle and source have been set
+	 */
+	public CompletableFuture<?> setClassHandle(ClassHandle handle) {
+		return this.setClassHandle(handle, true, null);
 	}
 
-	protected void setClassHandle(
+	protected CompletableFuture<?> setClassHandle(
 			ClassHandle handle, boolean closeOldHandle,
 			@Nullable Function<DecompiledClassSource, Snippet> snippetFactory
 	) {
@@ -170,10 +176,10 @@ public class BaseEditorPanel {
 			}
 		}
 
-		this.setClassHandleImpl(old, handle, snippetFactory);
+		return this.setClassHandleImpl(old, handle, snippetFactory);
 	}
 
-	protected void setClassHandleImpl(
+	protected CompletableFuture<?> setClassHandleImpl(
 			ClassEntry old, ClassHandle handle,
 			@Nullable Function<DecompiledClassSource, Snippet> snippetFactory
 	) {
@@ -196,10 +202,12 @@ public class BaseEditorPanel {
 			}
 		});
 
-		handle.getSource().thenAcceptAsync(
-				res -> BaseEditorPanel.this.handleDecompilerResult(res, snippetFactory),
-				SwingUtilities::invokeLater
-		);
+		return handle.getSource()
+			.thenApplyAsync(
+					res -> this.handleDecompilerResult(res, snippetFactory),
+					SwingUtilities::invokeLater
+			)
+			.thenAcceptAsync(CompletableFuture::join);
 	}
 
 	public void destroy() {
@@ -212,19 +220,22 @@ public class BaseEditorPanel {
 		}
 	}
 
-	private void handleDecompilerResult(
+	private CompletableFuture<?> handleDecompilerResult(
 			Result<DecompiledClassSource, ClassHandleError> res,
 			@Nullable Function<DecompiledClassSource, Snippet> snippetFactory
 	) {
-		SwingUtilities.invokeLater(() -> {
-			if (res.isOk()) {
-				this.setSource(res.unwrap(), snippetFactory);
-			} else {
-				this.displayError(res.unwrapErr());
-			}
+		return CompletableFuture.runAsync(
+			() -> {
+				if (res.isOk()) {
+					this.setSource(res.unwrap(), snippetFactory);
+				} else {
+					this.displayError(res.unwrapErr());
+				}
 
-			this.nextReference = null;
-		});
+				this.nextReference = null;
+			},
+			SwingUtilities::invokeLater
+		);
 	}
 
 	private void displayError(ClassHandleError t) {
@@ -560,27 +571,24 @@ public class BaseEditorPanel {
 			return;
 		}
 
-		// highlight the token momentarily
-		final Timer timer = new Timer(200, null);
-		timer.addActionListener(new ActionListener() {
-			private int counter = 0;
-			private Object highlight = null;
+		this.startHighlightingSelection(boundedToken);
+	}
 
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				if (this.counter % 2 == 0) {
-					this.highlight = BaseEditorPanel.this.addHighlight(boundedToken, SelectionHighlightPainter.INSTANCE);
-				} else if (this.highlight != null) {
-					BaseEditorPanel.this.editor.getHighlighter().removeHighlight(this.highlight);
-				}
+	private void startHighlightingSelection(Token token) {
+		if (this.selectionHighlightHandler != null) {
+			this.selectionHighlightHandler.finish();
+		}
 
-				if (this.counter++ > 6) {
-					timer.stop();
-				}
-			}
-		});
+		final SelectionHighlightSection config = Config.editor().selectionHighlight;
+		final int blinks = config.blinks.value();
+		if (blinks > 0) {
+			final SelectionHighlightHandler handler =
+					new SelectionHighlightHandler(token, config.blinkDelay.value(), blinks);
 
-		timer.start();
+			handler.start();
+
+			this.selectionHighlightHandler = handler;
+		}
 	}
 
 	/**
@@ -666,6 +674,51 @@ public class BaseEditorPanel {
 	private ClassEntry getDeobfOrObfHandleRef() {
 		final ClassEntry deobfRef = this.classHandler.handle.getDeobfRef();
 		return deobfRef == null ? this.classHandler.handle.getRef() : deobfRef;
+	}
+
+	private class SelectionHighlightHandler extends Timer {
+		static final int BLINK_INTERVAL = 2;
+
+		final int counterMax;
+
+		int counter = 0;
+		Object highlight = null;
+
+		SelectionHighlightHandler(Token token, int delay, int blinks) {
+			super(delay, null);
+
+			this.counterMax = blinks * BLINK_INTERVAL;
+
+			this.setInitialDelay(0);
+
+			this.addActionListener(e -> {
+				if (this.counter < this.counterMax) {
+					if (this.counter % BLINK_INTERVAL == 0) {
+						this.highlight = BaseEditorPanel.this.addHighlight(token, SelectionHighlightPainter.INSTANCE);
+					} else {
+						this.removeHighlight();
+					}
+
+					this.counter++;
+				} else {
+					this.finish();
+				}
+			});
+		}
+
+		void removeHighlight() {
+			if (this.highlight != null) {
+				BaseEditorPanel.this.editor.getHighlighter().removeHighlight(this.highlight);
+			}
+		}
+
+		void finish() {
+			this.stop();
+			this.removeHighlight();
+			if (BaseEditorPanel.this.selectionHighlightHandler == this) {
+				BaseEditorPanel.this.selectionHighlightHandler = null;
+			}
+		}
 	}
 
 	public record Snippet(int start, int end) {
