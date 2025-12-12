@@ -25,13 +25,13 @@ import org.quiltmc.enigma.gui.config.theme.properties.NoneThemeProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.SystemThemeProperties;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.util.I18n;
-import org.quiltmc.syntaxpain.SyntaxpainConfiguration;
 
 import javax.swing.UnsupportedLookAndFeelException;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 /**
  * Enigma config is separated into several {@value #FORMAT} files with names matching the methods used to access them:
@@ -240,7 +240,11 @@ public final class Config extends ReflectiveConfig {
 
 		@Override
 		public Vec2i convertFrom(ValueMap<Integer> representation) {
-			return new Vec2i(representation.get("x"), representation.get("y"));
+			final int defaultValue = Objects.requireNonNullElse(representation.getDefaultValue(), 0);
+			return new Vec2i(
+				representation.getOrDefault("x", defaultValue),
+				representation.getOrDefault("y", defaultValue)
+			);
 		}
 
 		@Override
@@ -255,32 +259,6 @@ public final class Config extends ReflectiveConfig {
 		public ComplexConfigValue copy() {
 			return this;
 		}
-	}
-
-	/**
-	 * Updates the backend library Syntaxpain, used for code highlighting and other editor things.
-	 */
-	public static void updateSyntaxpain() {
-		Theme.Fonts fonts = currentFonts();
-		SyntaxPaneProperties.Colors colors = getCurrentSyntaxPaneColors();
-
-		SyntaxpainConfiguration.setEditorFont(fonts.editor.value());
-		// disable dialog; EditorPanel uses a tool bar component instead
-		SyntaxpainConfiguration.setQuickFindDialogFactory(null);
-
-		SyntaxpainConfiguration.setLineRulerPrimaryColor(colors.lineNumbersForeground.value());
-		SyntaxpainConfiguration.setLineRulerSecondaryColor(colors.lineNumbersBackground.value());
-		SyntaxpainConfiguration.setLineRulerSelectionColor(colors.lineNumbersSelected.value());
-
-		SyntaxpainConfiguration.setHighlightColor(colors.highlight.value());
-		SyntaxpainConfiguration.setStringColor(colors.string.value());
-		SyntaxpainConfiguration.setNumberColor(colors.number.value());
-		SyntaxpainConfiguration.setOperatorColor(colors.operator.value());
-		SyntaxpainConfiguration.setDelimiterColor(colors.delimiter.value());
-		SyntaxpainConfiguration.setTypeColor(colors.type.value());
-		SyntaxpainConfiguration.setIdentifierColor(colors.identifier.value());
-		SyntaxpainConfiguration.setCommentColour(colors.comment.value());
-		SyntaxpainConfiguration.setTextColor(colors.text.value());
 	}
 
 	public enum ThemeChoice implements ConfigSerializableObject<String> {

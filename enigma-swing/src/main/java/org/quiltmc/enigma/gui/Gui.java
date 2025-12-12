@@ -43,6 +43,7 @@ import org.quiltmc.enigma.gui.util.LanguageUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.network.ServerMessage;
 import org.quiltmc.enigma.util.I18n;
+import org.quiltmc.enigma.util.Utils;
 import org.quiltmc.enigma.util.validation.Message;
 import org.quiltmc.enigma.util.validation.ParameterizedMessage;
 import org.quiltmc.enigma.util.validation.ValidationContext;
@@ -63,6 +64,7 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -77,6 +79,8 @@ import java.util.function.IntFunction;
 import java.util.stream.Stream;
 
 public class Gui {
+	private static final int DEFAULT_MIN_TOP_ON_SCREEN = 200;
+
 	private final MainWindow mainWindow;
 	private final GuiController controller;
 
@@ -230,7 +234,21 @@ public class Gui {
 		frame.setMinimumSize(ScaleUtil.getDimension(640, 480));
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-		Point windowPos = Config.main().windowPos.value().toPoint();
+		final Point windowPos = Config.main().windowPos.value().toPoint();
+		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
+		// keep the whole width (or as much as will fit) on-screen so window controls in the title bar are accessible
+		final int clampedX = Utils.clamp(windowPos.x, 0, Math.max(0, screenSize.width - frame.getWidth()));
+		// allow some of the bottom to be off-screen, but not the top, because of the title bar
+		final int clampedY = Utils.clamp(windowPos.y, 0, screenSize.height - ScaleUtil.scale(DEFAULT_MIN_TOP_ON_SCREEN));
+
+		if (windowPos.x != clampedX || windowPos.y != clampedY) {
+			windowPos.x = clampedX;
+			windowPos.y = clampedY;
+
+			Config.main().windowPos.setValue(Config.Vec2i.fromPoint(windowPos));
+		}
+
 		frame.setLocation(windowPos);
 
 		this.retranslateUi();
