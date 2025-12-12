@@ -3,6 +3,7 @@ package org.quiltmc.enigma.api.analysis.index.jar;
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
+import org.quiltmc.enigma.api.translation.mapping.tree.MergedEntryMappingTree;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
@@ -25,6 +26,14 @@ final class CombinedEntryIndex implements EntryIndex {
 	private final Collection<MethodEntry> methods;
 	private final Collection<LocalVariableEntry> parameters;
 	private final Collection<FieldEntry> fields;
+
+	/**
+	 * Lazily populated cache.
+	 *
+	 * @see #getTree()
+	 */
+	@Nullable
+	private EntryTree<EntryMapping> tree;
 
 	CombinedEntryIndex(EntryIndex mainIndex, EntryIndex libIndex) {
 		this.mainIndex = mainIndex;
@@ -142,7 +151,10 @@ final class CombinedEntryIndex implements EntryIndex {
 
 	@Override
 	public EntryTree<EntryMapping> getTree() {
-		// TODO
-		throw new UnsupportedOperationException();
+		if (this.tree == null) {
+			this.tree = new MergedEntryMappingTree(this.mainIndex.getTree(), this.libIndex.getTree());
+		}
+
+		return this.tree;
 	}
 }
