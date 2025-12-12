@@ -118,7 +118,7 @@ public class Enigma {
 		this.index(jarIndex, projectClassProvider, progress, "jar", false);
 
 		// lib index
-		this.index(libIndex, projectClassProvider, progress, "jar", true);
+		this.index(libIndex, projectClassProvider, progress, "libs", true);
 
 		// combined main and lib index
 		this.index(comboIndex, projectClassProvider, progress, "combined", true);
