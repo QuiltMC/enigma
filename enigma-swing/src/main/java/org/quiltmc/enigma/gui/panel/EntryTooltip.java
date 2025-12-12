@@ -21,6 +21,7 @@ import org.quiltmc.enigma.gui.docker.DeobfuscatedClassesDocker;
 import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.docker.ObfuscatedClassesDocker;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
+import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Utils;
@@ -36,7 +37,6 @@ import javax.swing.JWindow;
 import javax.swing.tree.TreePath;
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -608,8 +608,8 @@ public class EntryTooltip extends JWindow {
 		text.setWrapStyleWord(true);
 		text.setForeground(Config.getCurrentSyntaxPaneColors().comment.value());
 		text.setFont(font);
-		text.setBackground(invisibleColorOf());
-		text.setCaretColor(invisibleColorOf());
+		text.setBackground(GuiUtil.TRANSPARENT);
+		text.setCaretColor(GuiUtil.TRANSPARENT);
 		text.getCaret().setSelectionVisible(true);
 		text.setBorder(createEmptyBorder());
 
@@ -618,10 +618,6 @@ public class EntryTooltip extends JWindow {
 		}
 
 		return text;
-	}
-
-	private static Color invisibleColorOf() {
-		return new Color(0, 0, 0, 0);
 	}
 
 	private ImmutableList<ParamJavadoc> paramJavadocsOf(
