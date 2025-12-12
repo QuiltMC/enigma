@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.quiltmc.enigma.gui.util.layout.flex_grid.ConstrainedGrid.Position;
+import org.quiltmc.enigma.gui.util.CartesianOperations;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints.Alignment;
 
@@ -251,16 +251,16 @@ public class FlexGridLayout implements LayoutManager2 {
 	@Override
 	public void layoutContainer(Container parent) {
 		if (!this.grid.isEmpty()) {
-			this.layoutAxis(parent, CartesianOperations.X);
-			this.layoutAxis(parent, CartesianOperations.Y);
+			this.layoutAxis(parent, Operations.X.INSTANCE);
+			this.layoutAxis(parent, Operations.Y.INSTANCE);
 		}
 	}
 
-	private void layoutAxis(Container parent, CartesianOperations ops) {
+	private void layoutAxis(Container parent, Operations ops) {
 		final Insets insets = parent.getInsets();
 		final int leadingInset = ops.getLeadingInset(insets);
 
-		final int availableSpace = ops.getParentSpace(parent) - leadingInset - ops.getTrailingInset(insets);
+		final int availableSpace = ops.getSpan(parent) - leadingInset - ops.getTrailingInset(insets);
 
 		final Sizes preferred = this.getPreferredSizes();
 
@@ -291,7 +291,7 @@ public class FlexGridLayout implements LayoutManager2 {
 	}
 
 	private ImmutableMap<Integer, Integer> allocateCellSpace(
-			CartesianOperations ops, int remainingSpace, boolean fill
+			Operations ops, int remainingSpace, boolean fill
 	) {
 		final Sizes large;
 		final Sizes small;
@@ -359,7 +359,7 @@ public class FlexGridLayout implements LayoutManager2 {
 	/**
 	 * @implNote the passed {@code cellSpans} <em>must</em> be ordered with increasing keys
 	 */
-	private void layoutAxisImpl(int startPos, CartesianOperations ops, ImmutableMap<Integer, Integer> cellSpans) {
+	private void layoutAxisImpl(int startPos, Operations ops, ImmutableMap<Integer, Integer> cellSpans) {
 		final Map<Integer, Integer> beginPositions = new HashMap<>();
 		int currentPos = startPos;
 		for (final Map.Entry<Integer, Integer> entry : cellSpans.entrySet()) {
@@ -555,187 +555,117 @@ public class FlexGridLayout implements LayoutManager2 {
 		}
 	}
 
-	/**
-	 * Sets of operations for the {@link #X} and {@link #Y} axes of a cartesian plane.
-	 */
-	enum CartesianOperations {
-		X() {
-			@Override
-			int chooseCoord(int x, int y) {
-				return x;
-			}
+	private interface Operations extends CartesianOperations<Operations> {
+		class X implements Operations, CartesianOperations.X<Operations> {
+			static final Operations.X INSTANCE = new Operations.X();
 
 			@Override
-			int getLeadingInset(Insets insets) {
-				return insets.left;
-			}
-
-			@Override
-			int getTrailingInset(Insets insets) {
-				return insets.right;
-			}
-
-			@Override
-			int getParentSpace(Container parent) {
-				return parent.getWidth();
-			}
-
-			@Override
-			int getTotalSpace(Sizes sizes) {
+			public int getTotalSpace(Sizes sizes) {
 				return sizes.totalWidth;
 			}
 
 			@Override
-			ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes) {
+			public ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes) {
 				return sizes.columnWidths;
 			}
 
 			@Override
-			int getSpan(Size size) {
+			public int getSpan(Size size) {
 				return size.width;
 			}
 
 			@Override
-			boolean fills(Constrained constrained) {
+			public boolean fills(Constrained constrained) {
 				return constrained.fillX;
 			}
 
 			@Override
-			boolean noneFill(ConstrainedGrid grid) {
+			public boolean noneFill(ConstrainedGrid grid) {
 				return grid.noneFillX();
 			}
 
 			@Override
-			Alignment getAlignment(Constrained constrained) {
+			public Alignment getAlignment(Constrained constrained) {
 				return constrained.xAlignment;
 			}
 
 			@Override
-			int getExtent(Constrained constrained) {
+			public int getExtent(Constrained constrained) {
 				return constrained.xExtent;
 			}
 
 			@Override
-			int getExcess(Constrained constrained) {
-				return constrained.getXExcess();
-			}
-
-			@Override
-			Position createPos(int coord, int oppositeCoord) {
-				return new Position(coord, oppositeCoord);
-			}
-
-			@Override
-			void setBounds(Component component, int x, int width) {
+			public void setBounds(Component component, int x, int width) {
 				component.setBounds(x, component.getY(), width, component.getHeight());
 			}
 
 			@Override
-			CartesianOperations opposite() {
-				return Y;
+			public Operations opposite() {
+				return Operations.Y.INSTANCE;
 			}
-		},
-		Y() {
-			@Override
-			int chooseCoord(int x, int y) {
-				return y;
-			}
+		}
+
+		class Y implements Operations, CartesianOperations.Y<Operations> {
+			static final Operations.Y INSTANCE = new Operations.Y();
 
 			@Override
-			int getLeadingInset(Insets insets) {
-				return insets.top;
-			}
-
-			@Override
-			int getTrailingInset(Insets insets) {
-				return insets.bottom;
-			}
-
-			@Override
-			int getParentSpace(Container parent) {
-				return parent.getHeight();
-			}
-
-			@Override
-			int getTotalSpace(Sizes sizes) {
+			public int getTotalSpace(Sizes sizes) {
 				return sizes.totalHeight;
 			}
 
 			@Override
-			ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes) {
+			public ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes) {
 				return sizes.rowHeights;
 			}
 
 			@Override
-			int getSpan(Size size) {
+			public int getSpan(Size size) {
 				return size.height;
 			}
 
 			@Override
-			boolean fills(Constrained constrained) {
+			public boolean fills(Constrained constrained) {
 				return constrained.fillY;
 			}
 
 			@Override
-			boolean noneFill(ConstrainedGrid grid) {
+			public boolean noneFill(ConstrainedGrid grid) {
 				return grid.noneFillY();
 			}
 
 			@Override
-			Alignment getAlignment(Constrained constrained) {
+			public Alignment getAlignment(Constrained constrained) {
 				return constrained.yAlignment;
 			}
 
 			@Override
-			int getExtent(Constrained constrained) {
+			public int getExtent(Constrained constrained) {
 				return constrained.yExtent;
 			}
 
 			@Override
-			int getExcess(Constrained constrained) {
-				return constrained.getYExcess();
-			}
-
-			@Override
-			Position createPos(int coord, int oppositeCoord) {
-				return new Position(oppositeCoord, coord);
-			}
-
-			@Override
-			void setBounds(Component component, int y, int height) {
+			public void setBounds(Component component, int y, int height) {
 				component.setBounds(component.getX(), y, component.getWidth(), height);
 			}
 
 			@Override
-			CartesianOperations opposite() {
-				return X;
+			public Operations opposite() {
+				return Operations.X.INSTANCE;
 			}
-		};
-
-		abstract int chooseCoord(int x, int y);
-
-		int chooseCoord(Position pos) {
-			return this.chooseCoord(pos.x(), pos.y());
 		}
 
-		abstract int getLeadingInset(Insets insets);
-		abstract int getTrailingInset(Insets insets);
-		abstract int getParentSpace(Container parent);
+		int getTotalSpace(Sizes sizes);
+		ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes);
+		int getSpan(Size size);
 
-		abstract int getTotalSpace(Sizes sizes);
-		abstract ImmutableMap<Integer, Integer> getCellSpans(Sizes sizes);
-		abstract int getSpan(Size size);
+		boolean fills(Constrained constrained);
+		boolean noneFill(ConstrainedGrid grid);
+		Alignment getAlignment(Constrained constrained);
+		int getExtent(Constrained constrained);
 
-		abstract boolean fills(Constrained constrained);
-		abstract boolean noneFill(ConstrainedGrid grid);
-		abstract Alignment getAlignment(Constrained constrained);
-		abstract int getExtent(Constrained constrained);
-		abstract int getExcess(Constrained constrained);
+		void setBounds(Component component, int pos, int span);
 
-		abstract Position createPos(int coord, int oppositeCoord);
-
-		abstract void setBounds(Component component, int pos, int span);
-
-		abstract CartesianOperations opposite();
+		@Override
+		Operations opposite();
 	}
 }
