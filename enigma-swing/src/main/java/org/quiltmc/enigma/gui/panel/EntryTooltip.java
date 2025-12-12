@@ -225,8 +225,6 @@ public class EntryTooltip extends JWindow {
 		final Font editorFont = ScaleUtil.scaleFont(Config.currentFonts().editor.value());
 		final Font italEditorFont = ScaleUtil.scaleFont(Config.currentFonts().editor.value().deriveFont(Font.ITALIC));
 
-		final FlexGridConstraints.Absolute constraints = FlexGridConstraints.createAbsolute();
-
 		{
 			final Box parentLabelRow = Box.createHorizontalBox();
 
@@ -242,47 +240,42 @@ public class EntryTooltip extends JWindow {
 			parentLabelRow.add(this.parentLabelOf(target, editorFont, stopInteraction));
 
 			parentLabelRow.setBorder(createEmptyBorder(ROW_OUTER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET));
-			this.add(parentLabelRow, constraints.copy().alignCenterLeft());
+			this.add(parentLabelRow, FlexGridConstraints.createRelative().alignCenterLeft());
 		}
 
 		final String javadoc = this.getJavadoc(target).orElse(null);
 		final ImmutableList<ParamJavadoc> paramJavadocs =
 				this.paramJavadocsOf(target, editorFont, italEditorFont, stopInteraction);
 		if (javadoc != null || !paramJavadocs.isEmpty()) {
-			this.add(new JSeparator(), constraints.nextRow().copy().fillX());
+			this.add(new JSeparator(), FlexGridConstraints.createRelative().newRow().copy().fillX());
 
 			final var javadocs = new JPanel(new FlexGridLayout());
-			final FlexGridConstraints.Absolute javadocsConstraints = FlexGridConstraints.createAbsolute();
 
 			if (javadoc != null) {
 				final JTextArea javadocText = javadocOf(javadoc, italEditorFont, stopInteraction);
 				javadocText.setBorder(createEmptyBorder(ROW_INNER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET));
-				javadocs.add(javadocText, javadocsConstraints.copy().fillX());
+				javadocs.add(javadocText, FlexGridConstraints.createRelative().fillX());
 			}
 
 			if (!paramJavadocs.isEmpty()) {
 				final JPanel params = new JPanel(new FlexGridLayout());
 
-				final FlexGridConstraints.Absolute paramsConstraints = FlexGridConstraints.createAbsolute();
-
 				for (final ParamJavadoc paramJavadoc : paramJavadocs) {
-					params.add(paramJavadoc.name, paramsConstraints.copy().alignTopRight());
+					params.add(paramJavadoc.name, FlexGridConstraints.createRelative().newRow().alignTopRight());
 
-					params.add(paramJavadoc.javadoc, paramsConstraints.nextColumn().copy()
+					params.add(paramJavadoc.javadoc, FlexGridConstraints.createRelative()
 							.fillX()
 							.alignTopLeft()
 					);
-
-					paramsConstraints.nextRow();
 				}
 
 				params.setBorder(createEmptyBorder(ROW_INNER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET));
-				javadocs.add(params, javadocsConstraints.nextRow().copy().fillX());
+				javadocs.add(params, FlexGridConstraints.createRelative().newRow().fillX());
 			}
 
 			final JScrollPane javadocsScroll = new SmartScrollPane(javadocs);
 			javadocsScroll.setBorder(createEmptyBorder());
-			this.add(javadocsScroll, constraints.nextRow().copy().fillX());
+			this.add(javadocsScroll, FlexGridConstraints.createRelative().newRow().fillX());
 		}
 
 		if (this.declarationSnippet != null) {
@@ -354,17 +347,17 @@ public class EntryTooltip extends JWindow {
 					this.declarationSnippet.editor.addMouseListener(stopInteraction);
 				}
 
-				this.add(this.declarationSnippet.ui, constraints.nextRow().copy()
+				this.add(this.declarationSnippet.ui, FlexGridConstraints.createRelative().newRow()
 						.fillX()
 						.alignCenterLeft()
 						.incrementPriority()
 				);
 			} else {
-				this.add(new JSeparator(), constraints.nextRow().copy().fillX());
+				this.add(new JSeparator(), FlexGridConstraints.createRelative().newRow().fillX());
 
 				final JLabel noSource = labelOf(I18n.translate("editor.tooltip.message.no_source"), italEditorFont);
 				noSource.setBorder(createEmptyBorder(ROW_INNER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET));
-				this.add(noSource, constraints.nextRow().copy().fillX());
+				this.add(noSource, FlexGridConstraints.createRelative().newRow().fillX());
 			}
 		}
 
