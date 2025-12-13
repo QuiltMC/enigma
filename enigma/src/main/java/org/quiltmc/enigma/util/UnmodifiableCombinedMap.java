@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * An unmodifiable view of two backing maps.
  *
- * <p> <b>Only intended for maps no {@link #keySet()} overlap.</b> Behavior is undefined in the case of overlap.
+ * <p> <b>Only intended for maps with no {@link #keySet()} overlap.</b> Behavior is undefined in the case of overlap.
  *
  * @param <K> the type of keys
  * @param <V> the type of values
