@@ -35,9 +35,9 @@ import static org.quiltmc.enigma.util.Utils.requireNonNull;
  *     <li> they have numerous method variations for common use cases, including:
  *          <ul>
  *              <li> {@link Absolute#nextRow() nextRow()} and {@link Absolute#nextColumn() nextColumn()}
- *              <li> {@link #incrementPriority()} and {@link #decrementPriority()}
- *              <li> a method for each combination of vertical and horizontal alignments
  *              <li> a method for each {@link Relative.Placement Placement}
+ *              <li> {@link #incrementPriority()} and {@link #decrementPriority()}
+ *              <li> a method for each combination of vertical and horizontal {@link Alignment Alignment}s
  *          </ul>
  * </ul>
  *
@@ -659,13 +659,24 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 	abstract C getSelf();
 
 	public enum Alignment {
-		BEGIN, CENTER, END
+		/**
+		 * Left for horizontal alignment; top for vertical alignment.
+		 */
+		BEGIN,
+		/**
+		 * Middle for both horizontal and vertical alignments.
+		 */
+		CENTER,
+		/**
+		 * Right for horizontal alignment; bottom for vertical alignment.
+		 */
+		END
 	}
 
 	/**
 	 * {@link FlexGridConstraints} with relative coordinates.<br>
-	 * Components will be placed at the end of the bottom-most row at the time of
-	 * {@linkplain Container#add(Component, Object) adding}.
+	 * Components' {@linkplain Placement placements} determine their positions relative to components
+	 * {@linkplain Container#add(Component, Object) added} before them.
 	 *
 	 * <p> Relative components never overlap components added <em>before</em> them, but {@link Absolute Absolute}
 	 * components added after them may overlap.
@@ -687,6 +698,9 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 			);
 		}
 
+		/**
+		 * Defaults to {@link #DEFAULT_PLACEMENT}.
+		 */
 		private Placement placement;
 
 		private Relative(
@@ -709,6 +723,11 @@ public abstract sealed class FlexGridConstraints<C extends FlexGridConstraints<C
 		 * Sets {@link #placement} to the passed value.
 		 *
 		 * <p> The default value is {@link #DEFAULT_PLACEMENT}.
+		 *
+		 * @see #rowEnd()
+		 * @see #newRow()
+		 * @see #columnEnd()
+		 * @see #newColumn()
 		 */
 		public Relative placement(Placement placement) {
 			this.placement = placement;
