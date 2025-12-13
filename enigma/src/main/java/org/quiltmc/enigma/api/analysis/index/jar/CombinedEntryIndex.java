@@ -27,13 +27,7 @@ final class CombinedEntryIndex implements EntryIndex {
 	private final Collection<LocalVariableEntry> parameters;
 	private final Collection<FieldEntry> fields;
 
-	/**
-	 * Lazily populated cache.
-	 *
-	 * @see #getTree()
-	 */
-	@Nullable
-	private EntryTree<EntryMapping> tree;
+	private final EntryTree<EntryMapping> tree;
 
 	CombinedEntryIndex(EntryIndex mainIndex, EntryIndex libIndex) {
 		this.mainIndex = mainIndex;
@@ -43,6 +37,8 @@ final class CombinedEntryIndex implements EntryIndex {
 		this.methods = new CombinedCollection<>(this.mainIndex.getMethods(), this.libIndex.getMethods());
 		this.parameters = new CombinedCollection<>(this.mainIndex.getParameters(), this.libIndex.getParameters());
 		this.fields = new CombinedCollection<>(this.mainIndex.getFields(), this.libIndex.getFields());
+
+		this.tree = new MergedEntryMappingTree(this.mainIndex.getTree(), this.libIndex.getTree());
 	}
 
 	@Override
@@ -151,10 +147,6 @@ final class CombinedEntryIndex implements EntryIndex {
 
 	@Override
 	public EntryTree<EntryMapping> getTree() {
-		if (this.tree == null) {
-			this.tree = new MergedEntryMappingTree(this.mainIndex.getTree(), this.libIndex.getTree());
-		}
-
 		return this.tree;
 	}
 }
