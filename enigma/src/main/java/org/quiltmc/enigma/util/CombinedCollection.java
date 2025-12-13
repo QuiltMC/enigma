@@ -1,10 +1,10 @@
 package org.quiltmc.enigma.util;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 /**
  * A collection backed by two other collections.
@@ -121,42 +121,31 @@ public class CombinedCollection<T> implements Collection<T> {
 	}
 
 	private class CombinedIterator implements Iterator<T> {
-		Iterator<T> delegate = CombinedCollection.this.first.iterator();
+		final Iterator<T> first = CombinedCollection.this.first.iterator();
+		final Iterator<T> second = CombinedCollection.this.second.iterator();
 
-		boolean iteratingFirst = true;
+		// null iff next has not been called
+		@Nullable
+		Iterator<T> nextSource;
 
 		@Override
 		public boolean hasNext() {
-			final boolean currentHasNext = this.delegate.hasNext();
-			if (currentHasNext) {
-				return true;
-			} else {
-				if (this.iteratingFirst) {
-					this.delegate = CombinedCollection.this.second.iterator();
-					this.iteratingFirst = false;
-
-					return this.delegate.hasNext();
-				} else {
-					return false;
-				}
-			}
+			return this.first.hasNext() || this.second.hasNext();
 		}
 
 		@Override
 		public T next() {
-			if (!this.hasNext()) {
-				throw new NoSuchElementException();
-			}
-
-			return this.delegate.next();
+			this.nextSource = this.first.hasNext() ? this.first : this.second;
+			return this.nextSource.next();
 		}
 
-		@SuppressWarnings("ResultOfMethodCallIgnored")
 		@Override
 		public void remove() {
-			// update delegate
-			this.hasNext();
-			this.delegate.remove();
+			if (this.nextSource == null) {
+				throw new IllegalStateException("remove called before any calls to next!");
+			} else {
+				this.nextSource.remove();
+			}
 		}
 	}
 }
