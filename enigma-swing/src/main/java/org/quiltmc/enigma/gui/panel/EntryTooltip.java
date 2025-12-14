@@ -250,7 +250,7 @@ public class EntryTooltip extends JWindow {
 		final ImmutableList<ParamJavadoc> paramJavadocs =
 				this.paramJavadocsOf(target, editorFont, italEditorFont, background, stopInteraction);
 		if (javadoc != null || !paramJavadocs.isEmpty()) {
-			this.add(new JSeparator(), FlexGridConstraints.createRelative().newRow().copy().fillX());
+			this.add(new JSeparator(), FlexGridConstraints.createRelative().newRow().fillX());
 
 			final var javadocs = new JPanel(new FlexGridLayout());
 
