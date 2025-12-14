@@ -15,6 +15,7 @@ import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.IndexEntryResolver;
+import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
@@ -44,6 +45,10 @@ public class TestJarIndexInheritanceTree {
 
 	private static final ClassEntry CONSTRUCTOR_PARENT = TestEntryFactory.newClass("b");
 	private static final ClassEntry CONSTRUCTOR_SUB_CLASS = TestEntryFactory.newClass("c");
+	private static final MethodEntry PARENT_NO_ARGS_CONSTRUCTOR = TestEntryFactory.newMethod(CONSTRUCTOR_PARENT.getFullName(), "<init>", "()V");
+	private static final MethodEntry PARENT_INT_CONSTRUCTOR = TestEntryFactory.newMethod(CONSTRUCTOR_PARENT.getFullName(), "<init>", "(I)V");
+	private static final MethodEntry SUB_CLASS_NO_ARGS_CONSTRUCTOR = TestEntryFactory.newMethod(CONSTRUCTOR_SUB_CLASS.getFullName(), "<init>", "()V");
+	private static final MethodEntry SUB_CLASS_INT_CONSTRUCTOR = TestEntryFactory.newMethod(CONSTRUCTOR_SUB_CLASS.getFullName(), "<init>", "(I)V");
 
 	private final JarIndex index;
 
@@ -221,5 +226,20 @@ public class TestJarIndexInheritanceTree {
 		assertThat(entryIndex.hasMethod(TestEntryFactory.newMethod(SUB_CLASS_A, "b", "()V")), is(false));
 		assertThat(entryIndex.hasMethod(TestEntryFactory.newMethod(SUB_CLASS_AA, "b", "()V")), is(false));
 		assertThat(entryIndex.hasMethod(TestEntryFactory.newMethod(SUB_CLASS_B, "b", "()V")), is(true));
+	}
+
+	@Test
+	public void noConstructorInheritance() {
+		assertThat(
+				this.index.getEntryResolver()
+					.resolveEntry(SUB_CLASS_NO_ARGS_CONSTRUCTOR, ResolutionStrategy.RESOLVE_ROOT),
+				contains(SUB_CLASS_NO_ARGS_CONSTRUCTOR)
+		);
+
+		assertThat(
+				this.index.getEntryResolver()
+					.resolveEntry(SUB_CLASS_INT_CONSTRUCTOR, ResolutionStrategy.RESOLVE_ROOT),
+				contains(SUB_CLASS_INT_CONSTRUCTOR)
+		);
 	}
 }
