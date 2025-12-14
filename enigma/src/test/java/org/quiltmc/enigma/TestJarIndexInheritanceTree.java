@@ -34,12 +34,16 @@ public class TestJarIndexInheritanceTree {
 	public static final Path JAR = TestUtil.obfJar("inheritance_tree");
 
 	private static final ClassEntry OBJECT_CLASS = TestEntryFactory.newClass("java/lang/Object");
+
 	private static final ClassEntry BASE_CLASS = TestEntryFactory.newClass("a");
-	private static final ClassEntry SUB_CLASS_A = TestEntryFactory.newClass("b");
-	private static final ClassEntry SUB_CLASS_AA = TestEntryFactory.newClass("d");
-	private static final ClassEntry SUB_CLASS_B = TestEntryFactory.newClass("c");
+	private static final ClassEntry SUB_CLASS_A = TestEntryFactory.newClass("d");
+	private static final ClassEntry SUB_CLASS_AA = TestEntryFactory.newClass("f");
+	private static final ClassEntry SUB_CLASS_B = TestEntryFactory.newClass("e");
 	private static final FieldEntry NAME_FIELD = TestEntryFactory.newField(BASE_CLASS, "a", "Ljava/lang/String;");
 	private static final FieldEntry NUM_THINGS_FIELD = TestEntryFactory.newField(SUB_CLASS_B, "a", "I");
+
+	private static final ClassEntry CONSTRUCTOR_PARENT = TestEntryFactory.newClass("b");
+	private static final ClassEntry CONSTRUCTOR_SUB_CLASS = TestEntryFactory.newClass("c");
 
 	private final JarIndex index;
 
@@ -52,7 +56,9 @@ public class TestJarIndexInheritanceTree {
 	@Test
 	public void obfEntries() {
 		assertThat(this.index.getIndex(EntryIndex.class).getClasses(), Matchers.containsInAnyOrder(
-				TestEntryFactory.newClass("org/quiltmc/enigma/input/Keep"), BASE_CLASS, SUB_CLASS_A, SUB_CLASS_AA, SUB_CLASS_B
+				TestEntryFactory.newClass("org/quiltmc/enigma/input/Keep"),
+				BASE_CLASS, SUB_CLASS_A, SUB_CLASS_AA, SUB_CLASS_B,
+				CONSTRUCTOR_PARENT, CONSTRUCTOR_SUB_CLASS
 		));
 	}
 
