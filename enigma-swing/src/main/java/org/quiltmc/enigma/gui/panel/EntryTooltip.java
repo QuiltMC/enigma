@@ -38,6 +38,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -243,16 +244,18 @@ public class EntryTooltip extends JWindow {
 			this.add(parentLabelRow, FlexGridConstraints.createRelative().alignCenterLeft());
 		}
 
+		final Color background = this.content.getBackground();
+
 		final String javadoc = this.getJavadoc(target).orElse(null);
 		final ImmutableList<ParamJavadoc> paramJavadocs =
-				this.paramJavadocsOf(target, editorFont, italEditorFont, stopInteraction);
+				this.paramJavadocsOf(target, editorFont, italEditorFont, background, stopInteraction);
 		if (javadoc != null || !paramJavadocs.isEmpty()) {
 			this.add(new JSeparator(), FlexGridConstraints.createRelative().newRow().copy().fillX());
 
 			final var javadocs = new JPanel(new FlexGridLayout());
 
 			if (javadoc != null) {
-				final JTextArea javadocText = javadocOf(javadoc, italEditorFont, stopInteraction);
+				final JTextArea javadocText = javadocOf(javadoc, italEditorFont, background, stopInteraction);
 				javadocText.setBorder(createEmptyBorder(ROW_INNER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET));
 				javadocs.add(javadocText, FlexGridConstraints.createRelative().fillX());
 			}
@@ -569,13 +572,13 @@ public class EntryTooltip extends JWindow {
 		return label;
 	}
 
-	private static JTextArea javadocOf(String javadoc, Font font, MouseAdapter stopInteraction) {
+	private static JTextArea javadocOf(String javadoc, Font font, Color background, MouseAdapter stopInteraction) {
 		final JTextArea text = new JTextArea(javadoc);
 		text.setLineWrap(true);
 		text.setWrapStyleWord(true);
 		text.setForeground(Config.getCurrentSyntaxPaneColors().comment.value());
 		text.setFont(font);
-		text.setBackground(GuiUtil.TRANSPARENT);
+		text.setBackground(background);
 		text.setCaretColor(GuiUtil.TRANSPARENT);
 		text.getCaret().setSelectionVisible(true);
 		text.setBorder(createEmptyBorder());
@@ -592,7 +595,7 @@ public class EntryTooltip extends JWindow {
 	}
 
 	private ImmutableList<ParamJavadoc> paramJavadocsOf(
-			Entry<?> target, Font nameFont, Font javadocFont, MouseAdapter stopInteraction
+			Entry<?> target, Font nameFont, Font javadocFont, Color background, MouseAdapter stopInteraction
 	) {
 		final EnigmaProject project = this.gui.getController().getProject();
 		final EntryIndex entryIndex = project.getJarIndex().getIndex(EntryIndex.class);
@@ -618,7 +621,7 @@ public class EntryTooltip extends JWindow {
 				final EntryMapping mapping = remapper.getMapping(param);
 				if (mapping.javadoc() != null) {
 					final JLabel name = colonLabelOf(remapper.deobfuscate(param).getSimpleName(), nameFont);
-					final JTextArea javadoc = javadocOf(mapping.javadoc(), javadocFont, stopInteraction);
+					final JTextArea javadoc = javadocOf(mapping.javadoc(), javadocFont, background, stopInteraction);
 
 					add.accept(new ParamJavadoc(name, javadoc));
 				}
