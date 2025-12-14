@@ -64,7 +64,7 @@ public class IndexEntryResolver implements EntryResolver {
 		}
 
 		Entry<ClassEntry> entryAsClassChild = this.getClassChild(entry);
-		if (entryAsClassChild != null && !(entryAsClassChild instanceof ClassEntry)) {
+		if (entryAsClassChild != null) {
 			AccessFlags access = this.entryIndex.getEntryAccess(entryAsClassChild);
 
 			// If we're looking for the closest and this entry exists, we're done looking
@@ -73,8 +73,12 @@ public class IndexEntryResolver implements EntryResolver {
 			}
 
 			// Don't search existing private and/or static entries up the hierarchy
-			// Fields and classes can't be redefined, don't search them up the hierarchy
-			if (access != null && (access.isPrivate() || access.isStatic() || entry instanceof FieldEntry || entry instanceof ClassEntry)) {
+			// Fields can't be redefined, don't search them up the hierarchy
+			// Constructors can't be redefined, don't search them up the hierarchy
+			if (
+					(access != null && (access.isPrivate() || access.isStatic() || entry instanceof FieldEntry))
+						|| (entry instanceof MethodEntry method && method.isConstructor())
+			) {
 				return Collections.singleton(entry);
 			} else {
 				// Search the entry up the hierarchy; if the entry exists we can skip static entries, since this one isn't static
@@ -97,7 +101,10 @@ public class IndexEntryResolver implements EntryResolver {
 	 * Get a direct child of any class that is an ancestor of the given entry.
 	 *
 	 * @param entry the descendant of a class
-	 * @return the direct child of a class, which is an ancestor of the given entry or the entry itself
+	 *
+	 * @return the direct child of a class, which is an ancestor of the given entry or the entry itself;
+	 * returns {@code null} if the passed {@code entry} is a {@link ClassEntry} or if all of its ancestors are
+	 * {@link ClassEntry}s; never returns a {@link ClassEntry}
 	 */
 	@Nullable
 	private Entry<ClassEntry> getClassChild(Entry<?> entry) {
