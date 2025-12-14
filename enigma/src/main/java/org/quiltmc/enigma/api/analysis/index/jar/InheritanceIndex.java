@@ -101,17 +101,16 @@ public class InheritanceIndex implements JarIndexer {
 	 * @see #getAncestors(ClassEntry)
 	 */
 	public Stream<ClassEntry> streamAncestors(ClassEntry classEntry) {
-		return this.streamAncestorsImpl(this.getParents(classEntry).stream());
+		return this.streamAncestorsImpl(this.getParents(classEntry));
 	}
 
-	private Stream<ClassEntry> streamAncestorsImpl(Stream<ClassEntry> generation) {
-		final Collection<ClassEntry> currentGeneration = generation.toList();
-
-		return currentGeneration.isEmpty() ? Stream.empty() : Utils.lazyConcat(
-			currentGeneration::stream,
-			() -> this.streamAncestorsImpl(currentGeneration.stream()
+	private Stream<ClassEntry> streamAncestorsImpl(Collection<ClassEntry> generation) {
+		return generation.isEmpty() ? Stream.empty() : Utils.lazyConcat(
+			generation::stream,
+			() -> this.streamAncestorsImpl(generation.stream()
 				.map(this::getParents)
 				.flatMap(Collection::stream)
+				.toList()
 			)
 		);
 	}
