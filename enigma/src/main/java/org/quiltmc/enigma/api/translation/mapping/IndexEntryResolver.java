@@ -103,7 +103,8 @@ public class IndexEntryResolver implements EntryResolver {
 	 * @param entry the descendant of a class
 	 *
 	 * @return the direct child of a class, which is an ancestor of the given entry or the entry itself;
-	 * never returns a {@link ClassEntry}
+	 * returns {@code null} if the passed {@code entry} is a {@link ClassEntry} or if all of its ancestors are
+	 * {@link ClassEntry}s; never returns a {@link ClassEntry}
 	 */
 	@Nullable
 	private Entry<ClassEntry> getClassChild(Entry<?> entry) {
