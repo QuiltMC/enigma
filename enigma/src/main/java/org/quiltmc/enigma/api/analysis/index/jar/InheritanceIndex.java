@@ -2,14 +2,18 @@ package org.quiltmc.enigma.api.analysis.index.jar;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
+import org.quiltmc.enigma.util.Utils;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toCollection;
 
 public class InheritanceIndex implements JarIndexer {
 	private final EntryIndex entryIndex;
@@ -63,21 +67,52 @@ public class InheritanceIndex implements JarIndexer {
 		return descendants;
 	}
 
+	/**
+	 * Prefer {@link #streamAncestors(ClassEntry)} if:
+	 * <ul>
+	 *     <li> performing a search that may terminate before examining all ancestors
+	 *     <li> the creation of a {@link Set} is unnecessary
+	 *     <li> duplicate occurrences of interfaces implemented by multiple ancestors are required
+	 * </ul>
+	 *
+	 * @return a {@link Set} containing the passed {@code classEntry}'s ancestors
+	 *
+	 * @implSpec The returned set has breadth-first iteration order.<br>
+	 *           Only the first (shallowest) occurrence of an interface implemented by multiple ancestors is included.<br>
+	 *           Only the first (shallowest) occurrence of {@code java.lang.Object} is included.
+	 *
+	 * @implNote No guarantees are made about the order within a generation of ancestors.
+	 *
+	 * @see #streamAncestors(ClassEntry)
+	 */
 	public Set<ClassEntry> getAncestors(ClassEntry classEntry) {
-		Set<ClassEntry> ancestors = Sets.newHashSet();
+		return this.streamAncestors(classEntry).collect(toCollection(LinkedHashSet::new));
+	}
 
-		LinkedList<ClassEntry> ancestorQueue = new LinkedList<>();
-		ancestorQueue.push(classEntry);
+	/**
+	 * @return a {@link Stream} of the passed {@code classEntry}'s ancestors in breadth-first order
+	 *
+	 * @implSpec Interfaces implemented by multiple ancestors will occur multiple times in the stream
+	 *           (see {@link Stream#distinct()} and {@link #getAncestors(ClassEntry)}).<br>
+	 *           {@code java.lang.Object} will occur once for each interface.
+	 *
+	 * @implNote No guarantees are made about the order within a generation of ancestors.
+	 *
+	 * @see #getAncestors(ClassEntry)
+	 */
+	public Stream<ClassEntry> streamAncestors(ClassEntry classEntry) {
+		return this.streamAncestorsImpl(this.getParents(classEntry));
+	}
 
-		while (!ancestorQueue.isEmpty()) {
-			ClassEntry ancestor = ancestorQueue.pop();
-			Collection<ClassEntry> parents = this.getParents(ancestor);
-
-			parents.forEach(ancestorQueue::push);
-			ancestors.addAll(parents);
-		}
-
-		return ancestors;
+	private Stream<ClassEntry> streamAncestorsImpl(Collection<ClassEntry> generation) {
+		return generation.isEmpty() ? Stream.empty() : Utils.lazyConcat(
+			generation::stream,
+			() -> this.streamAncestorsImpl(generation.stream()
+				.map(this::getParents)
+				.flatMap(Collection::stream)
+				.toList()
+			)
+		);
 	}
 
 	public Relation computeClassRelation(ClassEntry classEntry, ClassEntry potentialAncestor) {
