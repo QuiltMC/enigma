@@ -21,6 +21,8 @@ import static org.quiltmc.enigma.util.Utils.requireNonNull;
  *     <li> flex constraints have separate {@link Relative Relative} and {@link Absolute Absolute}
  *          types; {@link Absolute#toRelative() toRelative()} and {@link Relative#toAbsolute() toAbsolute()}
  *          convert between them
+ *     <li> {@link Relative Relative} constraints positioning considers all components added before them,
+ *          not just the component added immediately before them
  *     <li> {@link Relative Relative} constraints support different
  *          {@linkplain  Relative#placement(Relative.Placement) placements}
  *     <li> {@link Absolute Absolute} constraints support negative {@linkplain Absolute#pos(int, int) coordinates}
