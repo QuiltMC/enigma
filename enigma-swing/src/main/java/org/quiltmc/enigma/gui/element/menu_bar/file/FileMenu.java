@@ -5,7 +5,7 @@ import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
-import org.quiltmc.enigma.gui.dialog.StatsDialog;
+import org.quiltmc.enigma.gui.dialog.stats.StatsDialog;
 import org.quiltmc.enigma.gui.dialog.keybind.ConfigureKeyBindsDialog;
 import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
 import org.quiltmc.enigma.gui.util.ExtensionFileFilter;
