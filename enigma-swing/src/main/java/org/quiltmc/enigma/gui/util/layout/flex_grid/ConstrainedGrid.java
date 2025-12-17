@@ -119,7 +119,7 @@ class ConstrainedGrid {
 	}
 
 	private Coordinates findEndPos(
-			Operations ops,
+			Operations innerOps,
 			SortedMap<Integer, SortedMap<Integer, SortedMap<Integer, Set<Component>>>> maxGrid
 	) {
 		final int max = maxGrid.lastKey();
@@ -130,11 +130,12 @@ class ConstrainedGrid {
 		final Component component = minYMaxXComponents.iterator().next();
 		final Coordinates coords = this.componentCoordinates.get(component);
 
-		final int coord = ops.chooseCoord(coords)
-				+ ops.getExcess(this.grid.get(coords.y).get(coords.x).get(component)) + 1;
-		final int oppositeCoord = ops.opposite().chooseCoord(coords);
+		final int coord = innerOps.chooseCoord(coords)
+				+ innerOps.getExcess(this.grid.get(coords.y).get(coords.x).get(component))
+				+ 1;
+		final int oppositeCoord = innerOps.opposite().chooseCoord(coords);
 
-		return ops.createPos(coord, oppositeCoord);
+		return innerOps.createPos(coord, oppositeCoord);
 	}
 
 	void remove(Component component) {
@@ -170,12 +171,12 @@ class ConstrainedGrid {
 	}
 
 	private void removeFromMaxGrid(
-			Component component, Coordinates coords, int maxX, int maxY, Operations ops,
+			Component component, Coordinates coords, int maxX, int maxY, Operations outerOps,
 			SortedMap<Integer, SortedMap<Integer, SortedMap<Integer, Set<Component>>>> maxGrid
 	) {
-		final int coord = ops.chooseCoord(coords);
-		final int max = ops.chooseCoord(maxX, maxY);
-		final int oppositeMax = ops.opposite().chooseCoord(maxX, maxY);
+		final int coord = outerOps.chooseCoord(coords);
+		final int max = outerOps.chooseCoord(maxX, maxY);
+		final int oppositeMax = outerOps.opposite().chooseCoord(maxX, maxY);
 
 		final SortedMap<Integer, SortedMap<Integer, Set<Component>>> maxRow = maxGrid.get(max);
 		final SortedMap<Integer, Set<Component>> maximumsByCoord = maxRow.get(oppositeMax);
