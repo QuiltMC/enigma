@@ -1,0 +1,27 @@
+package org.quilt.internal.gui.visualization.flex_grid;
+
+import org.quilt.internal.gui.visualization.Visualizer;
+import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
+import org.quiltmc.enigma.gui.util.layout.flex_grid.FlexGridLayout;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+
+public class FlexGridColumnVisualiser implements Visualizer {
+	@Override
+	public String getTitle() {
+		return "Flex Grid Column";
+	}
+
+	@Override
+	public void visualize(JFrame window) {
+		window.setLayout(new FlexGridLayout());
+
+		final FlexGridConstraints.Absolute constraints = FlexGridConstraints.createAbsolute();
+		window.add(new JLabel("Label 1"), constraints);
+		window.add(new JLabel("Label 2"), constraints.nextRow());
+		window.add(new JLabel("Label 3"), constraints.nextRow());
+
+		window.pack();
+	}
+}
