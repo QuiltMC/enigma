@@ -3,17 +3,15 @@ plugins {
     id "java"
     id "java-library"
     id "maven-publish"
-    id "org.xbib.gradle.plugin.jflex" version "3.0.0"
+    id "org.xbib.gradle.plugin.jflex" version "3.0.2"
 }
 
 repositories {
     mavenCentral()
 }
 
-final ENV = System.getenv()
-
 group = 'org.quiltmc'
-version = "0.3.0${ENV.GITHUB_ACTIONS ? '' : '+local'}"
+version = 'internal'
 
 // exclude auto-generated jflex lexer from checkstyle
 tasks.withType(Checkstyle).configureEach {
@@ -22,25 +20,3 @@ tasks.withType(Checkstyle).configureEach {
 
 // fix jflex generation
 jar.dependsOn(':generateJflex')
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.java
-        }
-    }
-
-    repositories {
-        mavenLocal()
-
-        if (ENV.MAVEN_URL) {
-            maven {
-                url ENV.MAVEN_URL
-                credentials {
-                    username ENV.MAVEN_USERNAME
-                    password ENV.MAVEN_PASSWORD
-                }
-            }
-        }
-    }
-}
