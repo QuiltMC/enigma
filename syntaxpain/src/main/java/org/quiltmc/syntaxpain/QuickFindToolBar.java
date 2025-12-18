@@ -32,7 +32,6 @@ import java.util.regex.PatternSyntaxException;
  * A toolbar used to find instances of specific strings in a {@link JTextComponent}.
  * Designed to be extensible.
  */
-@SuppressWarnings("unused")
 public class QuickFindToolBar extends JToolBar implements DocumentListener, ActionListener {
 	protected static final int SEARCH_FIELD_MAX_WIDTH = 200;
 	protected static final int SEARCH_FIELD_MAX_HEIGHT = 24;

@@ -24,7 +24,6 @@ import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import java.awt.Color;
 
-@SuppressWarnings("unused")
 public class JavaSyntaxKit extends DefaultEditorKit implements ViewFactory {
 	public static final String CONTENT_TYPE = "text/enigma-sources";
 
