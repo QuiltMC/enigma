@@ -3,20 +3,50 @@ plugins {
     id "java"
     id "java-library"
     id "maven-publish"
-    id "org.xbib.gradle.plugin.jflex" version "3.0.2"
-}
-
-repositories {
-    mavenCentral()
 }
 
 group = 'org.quiltmc'
 version = 'internal'
+
+final GENERATED_SOURCES = layout.buildDirectory.dir('generated/sources/main')
+
+configurations {
+	jflexClasspath
+}
+
+sourceSets.main.java.srcDir(GENERATED_SOURCES)
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	jflexClasspath libs.jflex
+}
 
 // exclude auto-generated jflex lexer from checkstyle
 tasks.withType(Checkstyle).configureEach {
     exclude '**org/quiltmc/syntaxpain/generated**'
 }
 
-// fix jflex generation
-jar.dependsOn(':generateJflex')
+ant.taskdef(
+	name: 'jflex',
+	classname: 'jflex.anttask.JFlexTask',
+	classpath: configurations.jflexClasspath.asPath
+)
+
+tasks.register('jflex') {
+	final input = file('src/main/jflex/java.jflex')
+
+	inputs.file(input)
+	outputs.dir(GENERATED_SOURCES)
+
+	doLast {
+		ant.jflex(
+			file: input,
+			destdir: GENERATED_SOURCES.get()
+		)
+	}
+}
+
+compileJava.dependsOn(':jflex')
