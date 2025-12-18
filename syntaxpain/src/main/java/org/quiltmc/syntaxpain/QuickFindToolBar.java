@@ -156,18 +156,6 @@ public class QuickFindToolBar extends JToolBar implements DocumentListener, Acti
 
 		this.prevCaretPos = target.getCaretPosition();
 
-		Container view = target.getParent();
-		Dimension size = this.getSize();
-
-		// Set the width of the dialog to the width of the target
-		size.width = target.getVisibleRect().width;
-		this.setSize(size);
-
-		// Put the dialog at the bottom of the target
-		Point loc = new Point(0, view.getHeight() - size.height);
-		SwingUtilities.convertPointToScreen(loc, view);
-		this.setLocation(loc);
-
 		this.searchField.setFont(target.getFont());
 
 		DocumentSearchData searchData = this.searchData.get();
