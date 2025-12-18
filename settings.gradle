@@ -8,6 +8,8 @@ buildscript {
 	}
 }
 
+includeBuild 'syntaxpain'
+
 include 'enigma'
 include 'enigma-swing'
 include 'enigma-server'
