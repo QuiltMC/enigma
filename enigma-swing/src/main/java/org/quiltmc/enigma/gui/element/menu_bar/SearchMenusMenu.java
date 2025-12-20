@@ -380,6 +380,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	 *
 	 * <p> Its only purpose is to link its (non-static) inner classes to the same {@link SearchableElement}.
 	 */
+	// TODO just make this a field of ItemHolder
 	private record ResultIdentity(SearchableElement searchable) {
 		ImmutableMap<String, ItemHolder> createHolders() {
 			final String searchName = this.searchable.getSearchName();
@@ -442,22 +443,12 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 
 			@Override
-			public int hashCode() {
-				return this.getSearchable().hashCode();
-			}
-
-			@Override
-			public boolean equals(Object o) {
-				return o instanceof ItemHolder other && this.getSearchable() == other.getSearchable();
-			}
-
-			@Override
 			public boolean matches(String term) {
 				return this.lowercaseAlias.contains(term);
 			}
 
 			@Override
-			public Object getIdentity() {
+			public Object identity() {
 				return this.getSearchable();
 			}
 

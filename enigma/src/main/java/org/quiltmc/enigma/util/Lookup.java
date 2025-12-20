@@ -1,7 +1,7 @@
 package org.quiltmc.enigma.util;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedListMultimap;
 import org.jspecify.annotations.NonNull;
 import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie;
@@ -20,6 +20,7 @@ import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
 public final class Lookup<R extends Lookup.Result<R>> {
 	static final int NON_PREFIX_START = 1;
+	// TODO make this an instance field
 	static final int MAX_SUBSTRING_LENGTH = 2;
 
 	private static int getCommonPrefixLength(String left, String right) {
@@ -56,6 +57,7 @@ public final class Lookup<R extends Lookup.Result<R>> {
 		return new Lookup<>(choose, prefixBuilder.view(), containingBuilder.view());
 	}
 
+	private final BinaryOperator<R> chooser;
 	private final ResultCache emptyCache;
 
 	// maps complete search aliases to their corresponding items
@@ -70,10 +72,10 @@ public final class Lookup<R extends Lookup.Result<R>> {
 	private Lookup(BinaryOperator<R> chooser, StringMultiTrie<R> holdersByPrefix, StringMultiTrie<R> holdersByContaining) {
 		this.holdersByPrefix = holdersByPrefix;
 		this.holdersByContaining = holdersByContaining;
+		this.chooser = chooser;
 		this.emptyCache = new ResultCache(
 			"", EmptyStringMultiTrie.Node.get(),
-			ImmutableMap.of(), ImmutableList.of(),
-			chooser
+			ImmutableSet.of(), ImmutableList.of()
 		);
 
 		this.resultCache = this.emptyCache;
@@ -83,7 +85,7 @@ public final class Lookup<R extends Lookup.Result<R>> {
 		if (term.isEmpty()) {
 			this.resultCache = this.emptyCache;
 
-			return (Results<R>) Results.None.INSTANCE;
+			return Results.None.getInstance();
 		}
 
 		final ResultCache oldCache = this.resultCache;
@@ -91,28 +93,55 @@ public final class Lookup<R extends Lookup.Result<R>> {
 
 		if (this.resultCache.hasResults()) {
 			if (this.resultCache.hasSameResults(oldCache)) {
-				return (Results<R>) Results.Same.INSTANCE;
+				return Results.Same.getInstance();
 			} else {
 				return Results.Different.of(this.resultCache);
 			}
 		} else {
-			return (Results<R>) Results.None.INSTANCE;
+			return Results.None.getInstance();
 		}
 	}
 
 	public interface Result<R extends Result<R>> extends Comparable<R> {
 		boolean matches(String term);
 
-		Object getIdentity();
+		Object identity();
 	}
 
-	public sealed interface Results<R> {
-		final class None<R> implements Results<R> {
-			static final None<?> INSTANCE = new None<>();
+	private record ResultWrapper<R extends Result<R>>(R result) implements Comparable<ResultWrapper<R>>{
+		@Override
+		public boolean equals(Object o) {
+			return o instanceof ResultWrapper<?> other && other.result.identity().equals(this.result.identity());
 		}
 
-		final class Same<R> implements Results<R> {
-			static final Same<?> INSTANCE = new Same<>();
+		@Override
+		public int hashCode() {
+			return this.result.identity().hashCode();
+		}
+
+		@Override
+		public int compareTo(@NonNull ResultWrapper<R> other) {
+			return this.result.compareTo(other.result);
+		}
+	}
+
+	public sealed interface Results<R extends Result<R>> {
+		final class None<R extends Result<R>> implements Results<R> {
+			private static final None<?> INSTANCE = new None<>();
+
+			@SuppressWarnings("unchecked")
+			private static <R extends Result<R>> None<R> getInstance() {
+				return (None<R>) INSTANCE;
+			}
+		}
+
+		final class Same<R extends Result<R>> implements Results<R> {
+			private static final Same<?> INSTANCE = new Same<>();
+
+			@SuppressWarnings("unchecked")
+			private static <R extends Result<R>> Same<R> getInstance() {
+				return (Same<R>) INSTANCE;
+			}
 		}
 
 		record Different<R extends Result<R>>(
@@ -121,7 +150,7 @@ public final class Lookup<R extends Lookup.Result<R>> {
 		) implements Results<R> {
 			static <R extends Result<R>> Different<R> of(Lookup<R>.ResultCache cache) {
 				return new Different<>(
-					cache.prefixedItemsBySearchable.values().stream().distinct().collect(toImmutableList()),
+					cache.prefixedResults.stream().map(ResultWrapper::result).distinct().collect(toImmutableList()),
 					cache.containingItems.stream().distinct().collect(toImmutableList())
 				);
 			}
@@ -135,21 +164,18 @@ public final class Lookup<R extends Lookup.Result<R>> {
 	private final class ResultCache {
 		final String term;
 		final StringMultiTrie.Node<R> prefixNode;
-		final ImmutableMap<Object, R> prefixedItemsBySearchable;
+		final ImmutableSet<ResultWrapper<R>> prefixedResults;
 		final ImmutableList<R> containingItems;
-		final BinaryOperator<R> chooser;
 
 		ResultCache(
 			String term, StringMultiTrie.Node<R> prefixNode,
-			ImmutableMap<Object, R> prefixedItemsBySearchable,
-			ImmutableList<R> containingItems,
-			BinaryOperator<R> chooser
+			ImmutableSet<ResultWrapper<R>> prefixedResults,
+			ImmutableList<R> containingItems
 		) {
 			this.term = term;
 			this.prefixNode = prefixNode;
-			this.prefixedItemsBySearchable = prefixedItemsBySearchable;
+			this.prefixedResults = prefixedResults;
 			this.containingItems = containingItems;
-			this.chooser = chooser;
 		}
 
 		private boolean hasResults() {
@@ -193,48 +219,46 @@ public final class Lookup<R extends Lookup.Result<R>> {
 						oneTermIsPrefix = true;
 					}
 
-					final ImmutableMap<Object, R> prefixedItemsBySearchable;
+					final ImmutableSet<ResultWrapper<R>> prefixedResults;
 					if (oneTermIsPrefix && this.prefixNode.getSize() == prefixNode.getSize()) {
-						prefixedItemsBySearchable = this.prefixedItemsBySearchable;
+						prefixedResults = this.prefixedResults;
 					} else {
-						prefixedItemsBySearchable = buildPrefixedItemsBySearchable(prefixNode, this.chooser);
+						prefixedResults = this.buildPrefixedResults(prefixNode);
 					}
 
 					final ImmutableList<R> containingItems;
 					if (cachedTermLength == commonPrefixLength && termLength > MAX_SUBSTRING_LENGTH) {
 						containingItems = this.narrowedContainingItemsOf(term);
 					} else {
-						containingItems = this.buildContaining(term, prefixedItemsBySearchable.keySet());
+						containingItems = this.buildContaining(term, prefixedResults);
 					}
 
-					return new ResultCache(term, prefixNode, prefixedItemsBySearchable, containingItems, this.chooser);
+					return new ResultCache(term, prefixNode, prefixedResults, containingItems);
 				}
 			}
 		}
 
 		private ResultCache createFresh(String term) {
 			final StringMultiTrie.Node<R> prefixNode = Lookup.this.holdersByPrefix.get(term);
-			final ImmutableMap<Object, R> prefixedItemsByElement =
-				buildPrefixedItemsBySearchable(prefixNode, this.chooser);
+			final ImmutableSet<ResultWrapper<R>> prefixedResults = this.buildPrefixedResults(prefixNode);
 			return new ResultCache(
 				term, prefixNode,
-				prefixedItemsByElement,
-				this.buildContaining(term, prefixedItemsByElement.keySet()),
-				this.chooser
+				prefixedResults,
+				this.buildContaining(term, prefixedResults)
 			);
 		}
 
-		private static <R extends Result<R>> ImmutableMap<Object, R> buildPrefixedItemsBySearchable(
-			StringMultiTrie.Node<R> prefixNode, BinaryOperator<R> chooser
-		) {
+		private ImmutableSet<ResultWrapper<R>> buildPrefixedResults(StringMultiTrie.Node<R> prefixNode) {
 			return prefixNode
 				.streamValues()
 				.sorted()
 				.collect(toImmutableMap(
-					Result::getIdentity,
+					ResultWrapper::new,
 					Function.identity(),
-					chooser
-				));
+					Lookup.this.chooser
+				))
+				// use keySet of map so we can respect chooser
+				.keySet();
 		}
 
 		private ImmutableList<R> narrowedContainingItemsOf(String term) {
@@ -243,7 +267,7 @@ public final class Lookup<R extends Lookup.Result<R>> {
 				.collect(toImmutableList());
 		}
 
-		private ImmutableList<R> buildContaining(String term, Set<Object> excluded) {
+		private ImmutableList<R> buildContaining(String term, Set<ResultWrapper<R>> excluded) {
 			final int termLength = term.length();
 			final boolean longTerm = termLength > MAX_SUBSTRING_LENGTH;
 
@@ -266,7 +290,7 @@ public final class Lookup<R extends Lookup.Result<R>> {
 
 			Stream<R> stream = possibilities
 				.stream()
-				.filter(holder -> !excluded.contains(holder.getIdentity()));
+				.filter(result -> !excluded.contains(new ResultWrapper<>(result)));
 
 			if (longTerm) {
 				stream = stream.filter(holder -> holder.matches(term));
