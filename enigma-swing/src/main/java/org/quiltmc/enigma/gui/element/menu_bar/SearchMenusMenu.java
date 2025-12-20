@@ -13,7 +13,7 @@ import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
-import org.quiltmc.enigma.util.Lookup;
+import org.quiltmc.enigma.util.StringLookup;
 import org.tinylog.Logger;
 
 import javax.swing.Box;
@@ -131,12 +131,12 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	);
 
 	/**
-	 * Lazily populated cache.
+	 * Lazily populated {@linkplain #clearLookup() clearable} cache.
 	 *
 	 * @see #getLookup()
 	 */
 	@Nullable
-	private Lookup<Result> lookup;
+	private StringLookup<Result> lookup;
 
 	/**
 	 * Lazily populated by {@link #getFieldPath()}
@@ -267,9 +267,9 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	private void updateResultItems() {
 		final String searchTerm = this.field.getText();
 
-		final Lookup.Results<Result> results = this.getLookup().search(searchTerm);
+		final StringLookup.Results<Result> results = this.getLookup().lookUp(searchTerm);
 
-		if (results instanceof Lookup.Results.None) {
+		if (results instanceof StringLookup.Results.None) {
 			this.keepOnlyPermanentChildren();
 
 			this.viewHint.setVisible(false);
@@ -278,7 +278,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			this.noResults.setVisible(!searchTerm.isEmpty());
 
 			this.refreshPopup();
-		} else if (results instanceof Lookup.Results.Different<Result> different) {
+		} else if (results instanceof StringLookup.Results.Different<Result> different) {
 			this.keepOnlyPermanentChildren();
 
 			this.noResults.setVisible(different.isEmpty());
@@ -331,25 +331,27 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		this.addPermanentChildren();
 	}
 
-	private Lookup<Result> getLookup() {
+	private StringLookup<Result> getLookup() {
 		if (this.lookup == null) {
-			this.lookup = Lookup.build(this.gui
-				.getMenuBar()
-				.streamMenus()
-				.flatMap(SearchMenusMenu::streamElementTree)
-				.<SearchableElement>mapMulti((element, keep) -> {
-					if (element instanceof SearchableElement searchable) {
-						keep.accept(searchable);
-					}
-				})
-				.map(Result::createHolders)
-				.map(Map::entrySet)
-				.flatMap(Collection::stream)
-				.collect(Multimaps.toMultimap(
-					Map.Entry::getKey,
-					Map.Entry::getValue,
-					LinkedListMultimap::create
-				)), Result::choose
+			this.lookup = StringLookup.of(
+				this.gui
+					.getMenuBar()
+					.streamMenus()
+					.flatMap(SearchMenusMenu::streamElementTree)
+					.<SearchableElement>mapMulti((element, keep) -> {
+						if (element instanceof SearchableElement searchable) {
+							keep.accept(searchable);
+						}
+					})
+					.map(Result::createHolders)
+					.map(Map::entrySet)
+					.flatMap(Collection::stream)
+					.collect(Multimaps.toMultimap(
+						Map.Entry::getKey,
+						Map.Entry::getValue,
+						LinkedListMultimap::create
+					)),
+				Result::choose
 			);
 		}
 
@@ -379,7 +381,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	 *
 	 * <p> Contains the information needed to determine whether its item should be included in results.
 	 */
-	private static class Result implements Lookup.Result<Result> {
+	private static class Result implements StringLookup.Result<Result> {
 		// creates a map of lowercase aliases to ItemHolders, each representing the passed searchable
 		static ImmutableMap<String, Result> createHolders(SearchableElement searchable) {
 			final String searchName = searchable.getSearchName();

@@ -2,7 +2,7 @@ package org.quiltmc.enigma.util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
 import org.jspecify.annotations.NonNull;
 import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.EmptyStringMultiTrie;
@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
-public final class Lookup<R extends Lookup.Result<R>> {
+public final class StringLookup<R extends StringLookup.Result<R>> {
 	static final int NON_PREFIX_START = 1;
 	// TODO make this an instance field
 	static final int MAX_SUBSTRING_LENGTH = 2;
@@ -35,12 +35,12 @@ public final class Lookup<R extends Lookup.Result<R>> {
 		return minLength;
 	}
 
-	public static <R extends Result<R>> Lookup<R> build(LinkedListMultimap<String, R> holders, BinaryOperator<R> choose) {
+	public static <R extends Result<R>> StringLookup<R> of(Multimap<String, R> results, BinaryOperator<R> chooser) {
 		final CompositeStringMultiTrie<R> prefixBuilder = CompositeStringMultiTrie.createHashed();
 		final CompositeStringMultiTrie<R> containingBuilder = CompositeStringMultiTrie.createHashed();
 
-		holders.forEach((lowercaseAlias, holder) -> {
-			prefixBuilder.put(lowercaseAlias, holder);
+		results.forEach((lowercaseAlias, result) -> {
+			prefixBuilder.put(lowercaseAlias, result);
 
 			final int aliasLength = lowercaseAlias.length();
 			for (int start = NON_PREFIX_START; start < aliasLength; start++) {
@@ -50,38 +50,42 @@ public final class Lookup<R extends Lookup.Result<R>> {
 					node = node.next(lowercaseAlias.charAt(i));
 				}
 
-				node.put(holder);
+				node.put(result);
 			}
 		});
 
-		return new Lookup<>(choose, prefixBuilder.view(), containingBuilder.view());
+		return new StringLookup<>(prefixBuilder.view(), containingBuilder.view(), chooser);
 	}
 
-	private final BinaryOperator<R> chooser;
-	private final ResultCache emptyCache;
-
-	// maps complete search aliases to their corresponding items
-	private final StringMultiTrie<R> holdersByPrefix;
+	// maps complete search aliases to their corresponding results
+	private final StringMultiTrie<R> resultsByPrefix;
 	// maps all non-prefix MAX_SUBSTRING_LENGTH-length (or less) substrings of search
-	// aliases to their corresponding items; used to narrow down the search scope for substring matches
-	private final StringMultiTrie<R> holdersByContaining;
+	// aliases to their corresponding results; used to narrow down the search scope for substring matches
+	private final StringMultiTrie<R> resultsByContaining;
+
+	private final BinaryOperator<R> chooser;
+
+	private final ResultCache emptyCache = new ResultCache(
+			"", EmptyStringMultiTrie.Node.get(),
+			ImmutableSet.of(), ImmutableList.of()
+	);
 
 	@NonNull
 	private ResultCache resultCache;
 
-	private Lookup(BinaryOperator<R> chooser, StringMultiTrie<R> holdersByPrefix, StringMultiTrie<R> holdersByContaining) {
-		this.holdersByPrefix = holdersByPrefix;
-		this.holdersByContaining = holdersByContaining;
+	private StringLookup(
+			StringMultiTrie<R> resultsByPrefix,
+			StringMultiTrie<R> resultsByContaining,
+			BinaryOperator<R> chooser
+	) {
+		this.resultsByPrefix = resultsByPrefix;
+		this.resultsByContaining = resultsByContaining;
 		this.chooser = chooser;
-		this.emptyCache = new ResultCache(
-			"", EmptyStringMultiTrie.Node.get(),
-			ImmutableSet.of(), ImmutableList.of()
-		);
 
 		this.resultCache = this.emptyCache;
 	}
 
-	public Results<R> search(String term) {
+	public Results<R> lookUp(String term) {
 		if (term.isEmpty()) {
 			this.resultCache = this.emptyCache;
 
@@ -108,7 +112,7 @@ public final class Lookup<R extends Lookup.Result<R>> {
 		Object identity();
 	}
 
-	private record ResultWrapper<R extends Result<R>>(R result) implements Comparable<ResultWrapper<R>>{
+	private record ResultWrapper<R extends Result<R>>(R result) implements Comparable<ResultWrapper<R>> {
 		@Override
 		public boolean equals(Object o) {
 			return o instanceof ResultWrapper<?> other && other.result.identity().equals(this.result.identity());
@@ -145,12 +149,12 @@ public final class Lookup<R extends Lookup.Result<R>> {
 		}
 
 		record Different<R extends Result<R>>(
-			ImmutableList<R> prefixResults,
-			ImmutableList<R> containingResults
+				ImmutableList<R> prefixResults,
+				ImmutableList<R> containingResults
 		) implements Results<R> {
-			static <R extends Result<R>> Different<R> of(Lookup<R>.ResultCache cache) {
+			static <R extends Result<R>> Different<R> of(StringLookup<R>.ResultCache cache) {
 				return new Different<>(
-					cache.prefixedResults.stream().map(ResultWrapper::result).collect(toImmutableList()),
+					cache.prefixResults.stream().map(ResultWrapper::result).collect(toImmutableList()),
 					// TODO respect chooser here?
 					cache.containingResults.stream().distinct().map(ResultWrapper::result).collect(toImmutableList())
 				);
@@ -166,17 +170,17 @@ public final class Lookup<R extends Lookup.Result<R>> {
 	private final class ResultCache {
 		final String term;
 		final StringMultiTrie.Node<R> prefixNode;
-		final ImmutableSet<ResultWrapper<R>> prefixedResults;
+		final ImmutableSet<ResultWrapper<R>> prefixResults;
 		final ImmutableList<ResultWrapper<R>> containingResults;
 
 		ResultCache(
-			String term, StringMultiTrie.Node<R> prefixNode,
-			ImmutableSet<ResultWrapper<R>> prefixedResults,
-			ImmutableList<ResultWrapper<R>> containingResults
+				String term, StringMultiTrie.Node<R> prefixNode,
+				ImmutableSet<ResultWrapper<R>> prefixResults,
+				ImmutableList<ResultWrapper<R>> containingResults
 		) {
 			this.term = term;
 			this.prefixNode = prefixNode;
-			this.prefixedResults = prefixedResults;
+			this.prefixResults = prefixResults;
 			this.containingResults = containingResults;
 		}
 
@@ -186,8 +190,8 @@ public final class Lookup<R extends Lookup.Result<R>> {
 
 		private boolean hasSameResults(ResultCache other) {
 			return this == other
-				|| this.prefixNode == other.prefixNode
-				&& this.containingResults.equals(other.containingResults);
+					|| this.prefixNode == other.prefixNode
+					&& this.containingResults.equals(other.containingResults);
 		}
 
 		private ResultCache updated(String term) {
@@ -221,36 +225,36 @@ public final class Lookup<R extends Lookup.Result<R>> {
 						oneTermIsPrefix = true;
 					}
 
-					final ImmutableSet<ResultWrapper<R>> prefixedResults;
+					final ImmutableSet<ResultWrapper<R>> prefixResults;
 					if (oneTermIsPrefix && this.prefixNode.getSize() == prefixNode.getSize()) {
-						prefixedResults = this.prefixedResults;
+						prefixResults = this.prefixResults;
 					} else {
-						prefixedResults = this.buildPrefixedResults(prefixNode);
+						prefixResults = this.buildPrefixed(prefixNode);
 					}
 
-					final ImmutableList<ResultWrapper<R>> containingItems;
+					final ImmutableList<ResultWrapper<R>> containingResults;
 					if (cachedTermLength == commonPrefixLength && termLength > MAX_SUBSTRING_LENGTH) {
-						containingItems = this.narrowedContainingItemsOf(term);
+						containingResults = this.narrowContaining(term);
 					} else {
-						containingItems = this.buildContaining(term, prefixedResults);
+						containingResults = this.buildContaining(term, prefixResults);
 					}
 
-					return new ResultCache(term, prefixNode, prefixedResults, containingItems);
+					return new ResultCache(term, prefixNode, prefixResults, containingResults);
 				}
 			}
 		}
 
 		private ResultCache createFresh(String term) {
-			final StringMultiTrie.Node<R> prefixNode = Lookup.this.holdersByPrefix.get(term);
-			final ImmutableSet<ResultWrapper<R>> prefixedResults = this.buildPrefixedResults(prefixNode);
+			final StringMultiTrie.Node<R> prefixNode = StringLookup.this.resultsByPrefix.get(term);
+			final ImmutableSet<ResultWrapper<R>> prefixResults = this.buildPrefixed(prefixNode);
 			return new ResultCache(
-				term, prefixNode,
-				prefixedResults,
-				this.buildContaining(term, prefixedResults)
+					term, prefixNode,
+					prefixResults,
+					this.buildContaining(term, prefixResults)
 			);
 		}
 
-		private ImmutableSet<ResultWrapper<R>> buildPrefixedResults(StringMultiTrie.Node<R> prefixNode) {
+		private ImmutableSet<ResultWrapper<R>> buildPrefixed(StringMultiTrie.Node<R> prefixNode) {
 			return prefixNode
 				.streamValues()
 				.map(ResultWrapper::new)
@@ -258,13 +262,13 @@ public final class Lookup<R extends Lookup.Result<R>> {
 				.collect(toImmutableMap(
 					Function.identity(),
 					ResultWrapper::result,
-					Lookup.this.chooser
+					StringLookup.this.chooser
 				))
 				// use keySet of map so we can respect chooser
 				.keySet();
 		}
 
-		private ImmutableList<ResultWrapper<R>> narrowedContainingItemsOf(String term) {
+		private ImmutableList<ResultWrapper<R>> narrowContaining(String term) {
 			return this.containingResults.stream()
 				.filter(wrapper -> wrapper.result.matches(term))
 				.collect(toImmutableList());
@@ -279,7 +283,7 @@ public final class Lookup<R extends Lookup.Result<R>> {
 			final int lastSubstringStart = termLength - substringLength;
 			for (int start = 0; start <= lastSubstringStart; start++) {
 				final int end = start + substringLength;
-				StringMultiTrie.Node<R> node = Lookup.this.holdersByContaining.getRoot();
+				StringMultiTrie.Node<R> node = StringLookup.this.resultsByContaining.getRoot();
 				for (int i = start; i < end; i++) {
 					node = node.next(term.charAt(i));
 
@@ -292,11 +296,11 @@ public final class Lookup<R extends Lookup.Result<R>> {
 			}
 
 			Stream<R> stream = possibilities
-				.stream()
-				.filter(result -> !excluded.contains(new ResultWrapper<>(result)));
+					.stream()
+					.filter(result -> !excluded.contains(new ResultWrapper<>(result)));
 
 			if (longTerm) {
-				stream = stream.filter(holder -> holder.matches(term));
+				stream = stream.filter(result -> result.matches(term));
 			}
 
 			return stream
