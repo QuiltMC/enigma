@@ -13,11 +13,7 @@ import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
-import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie;
-import org.quiltmc.enigma.util.multi_trie.EmptyStringMultiTrie;
-import org.quiltmc.enigma.util.multi_trie.MutableStringMultiTrie;
-import org.quiltmc.enigma.util.multi_trie.StringMultiTrie;
-import org.quiltmc.enigma.util.multi_trie.StringMultiTrie.Node;
+import org.quiltmc.enigma.util.Lookup;
 import org.tinylog.Logger;
 
 import javax.swing.Box;
@@ -54,17 +50,12 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static org.quiltmc.enigma.gui.util.GuiUtil.EMPTY_MENU_ELEMENTS;
 import static org.quiltmc.enigma.util.Utils.getLastOrNull;
@@ -145,7 +136,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	 * @see #getLookup()
 	 */
 	@Nullable
-	private Lookup lookup;
+	private Lookup<ResultIdentity.ItemHolder> lookup;
 
 	/**
 	 * Lazily populated by {@link #getFieldPath()}
@@ -276,9 +267,9 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	private void updateResultItems() {
 		final String searchTerm = this.field.getText();
 
-		final Results results = this.getLookup().search(searchTerm);
+		final Lookup.Results<ResultIdentity.ItemHolder> results = this.getLookup().search(searchTerm);
 
-		if (results instanceof Results.None) {
+		if (results instanceof Lookup.Results.None) {
 			this.keepOnlyPermanentChildren();
 
 			this.viewHint.setVisible(false);
@@ -287,21 +278,21 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			this.noResults.setVisible(!searchTerm.isEmpty());
 
 			this.refreshPopup();
-		} else if (results instanceof Results.Different different) {
+		} else if (results instanceof Lookup.Results.Different<ResultIdentity.ItemHolder> different) {
 			this.keepOnlyPermanentChildren();
 
 			this.noResults.setVisible(different.isEmpty());
 			this.viewHint.configureVisibility();
 			this.chooseHint.configureVisibility();
 
-			different.prefixItems.stream().map(Result.ItemHolder::getItem).forEach(this::add);
+			different.prefixItems().stream().map(ResultIdentity.ItemHolder::getItem).forEach(this::add);
 
-			if (!different.containingItems.isEmpty()) {
-				if (!different.prefixItems.isEmpty()) {
+			if (!different.containingItems().isEmpty()) {
+				if (!different.prefixItems().isEmpty()) {
 					this.add(new JPopupMenu.Separator());
 				}
 
-				different.containingItems.stream().map(Result.ItemHolder::getItem).forEach(this::add);
+				different.containingItems().stream().map(ResultIdentity.ItemHolder::getItem).forEach(this::add);
 			}
 
 			this.refreshPopup();
@@ -340,7 +331,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		this.addPermanentChildren();
 	}
 
-	private Lookup getLookup() {
+	private Lookup<ResultIdentity.ItemHolder> getLookup() {
 		if (this.lookup == null) {
 			this.lookup = Lookup.build(this.gui
 				.getMenuBar()
@@ -351,15 +342,15 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 						keep.accept(searchable);
 					}
 				})
-				.map(Result::new)
-				.map(Result::createHolders)
+				.map(ResultIdentity::new)
+				.map(ResultIdentity::createHolders)
 				.map(Map::entrySet)
 				.flatMap(Collection::stream)
 				.collect(Multimaps.toMultimap(
 					Map.Entry::getKey,
 					Map.Entry::getValue,
 					LinkedListMultimap::create
-				)), Result.ItemHolder::choose
+				)), ResultIdentity.ItemHolder::choose
 			);
 		}
 
@@ -384,246 +375,12 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		this.noResults.setText(I18n.translate("menu.help.search.no_results"));
 	}
 
-	private static final class Lookup {
-		static final int NON_PREFIX_START = 1;
-		static final int MAX_SUBSTRING_LENGTH = 2;
-
-		final BinaryOperator<Result.ItemHolder> chooser;
-
-		final ResultCache emptyCache;
-
-		static int getCommonPrefixLength(String left, String right) {
-			final int minLength = Math.min(left.length(), right.length());
-
-			for (int i = 0; i < minLength; i++) {
-				if (left.charAt(i) != right.charAt(i)) {
-					return i;
-				}
-			}
-
-			return minLength;
-		}
-
-		static Lookup build(LinkedListMultimap<String, Result.ItemHolder> holders, BinaryOperator<Result.ItemHolder> choose) {
-			final CompositeStringMultiTrie<Result.ItemHolder> prefixBuilder = CompositeStringMultiTrie.createHashed();
-			final CompositeStringMultiTrie<Result.ItemHolder> containingBuilder =
-					CompositeStringMultiTrie.createHashed();
-
-			holders.forEach((lowercaseAlias, holder) -> {
-				prefixBuilder.put(lowercaseAlias, holder);
-
-				final int aliasLength = lowercaseAlias.length();
-				for (int start = NON_PREFIX_START; start < aliasLength; start++) {
-					final int end = Math.min(start + MAX_SUBSTRING_LENGTH, aliasLength);
-					MutableStringMultiTrie.Node<Result.ItemHolder> node = containingBuilder.getRoot();
-					for (int i = start; i < end; i++) {
-						node = node.next(lowercaseAlias.charAt(i));
-					}
-
-					node.put(holder);
-				}
-			});
-
-			return new Lookup(choose, prefixBuilder.view(), containingBuilder.view());
-		}
-
-		// maps complete search aliases to their corresponding items
-		final StringMultiTrie<Result.ItemHolder> holdersByPrefix;
-		// maps all non-prefix MAX_SUBSTRING_LENGTH-length (or less) substrings of search
-		// aliases to their corresponding items; used to narrow down the search scope for substring matches
-		final StringMultiTrie<Result.ItemHolder> holdersByContaining;
-
-		@NonNull
-		ResultCache resultCache;
-
-		Lookup(BinaryOperator<Result.ItemHolder> chooser, StringMultiTrie<Result.ItemHolder> holdersByPrefix, StringMultiTrie<Result.ItemHolder> holdersByContaining) {
-			this.chooser = chooser;
-			this.holdersByPrefix = holdersByPrefix;
-			this.holdersByContaining = holdersByContaining;
-			this.emptyCache = new ResultCache(
-				"", EmptyStringMultiTrie.Node.get(),
-				ImmutableMap.of(), ImmutableList.of(),
-				this.chooser
-			);
-
-			this.resultCache = this.emptyCache;
-		}
-
-		Results search(String term) {
-			if (term.isEmpty()) {
-				this.resultCache = this.emptyCache;
-
-				return Results.None.INSTANCE;
-			}
-
-			final ResultCache oldCache = this.resultCache;
-			this.resultCache = this.resultCache.updated(term.toLowerCase());
-
-			if (this.resultCache.hasResults()) {
-				if (this.resultCache.hasSameResults(oldCache)) {
-					return Results.Same.INSTANCE;
-				} else {
-					return Results.Different.of(this.resultCache);
-				}
-			} else {
-				return Results.None.INSTANCE;
-			}
-		}
-
-		final class ResultCache {
-			final String term;
-			final Node<Result.ItemHolder> prefixNode;
-			final ImmutableMap<SearchableElement, Result.ItemHolder> prefixedItemsBySearchable;
-			final ImmutableList<Result.ItemHolder> containingItems;
-			final BinaryOperator<Result.ItemHolder> chooser;
-
-			ResultCache(
-					String term, Node<Result.ItemHolder> prefixNode,
-					ImmutableMap<SearchableElement, Result.ItemHolder> prefixedItemsBySearchable,
-					ImmutableList<Result.ItemHolder> containingItems,
-					BinaryOperator<Result.ItemHolder> chooser
-			) {
-				this.term = term;
-				this.prefixNode = prefixNode;
-				this.prefixedItemsBySearchable = prefixedItemsBySearchable;
-				this.containingItems = containingItems;
-				this.chooser = chooser;
-			}
-
-			boolean hasResults() {
-				return !this.prefixNode.isEmpty() || !this.containingItems.isEmpty();
-			}
-
-			boolean hasSameResults(ResultCache other) {
-				return this == other
-						|| this.prefixNode == other.prefixNode
-							&& this.containingItems.equals(other.containingItems);
-			}
-
-			ResultCache updated(String term) {
-				if (this.term.isEmpty()) {
-					return this.createFresh(term);
-				} else {
-					final int commonPrefixLength = getCommonPrefixLength(this.term, term);
-					final int termLength = term.length();
-					final int cachedTermLength = this.term.length();
-
-					if (commonPrefixLength == 0) {
-						return this.createFresh(term);
-					} else if (commonPrefixLength == termLength && commonPrefixLength == cachedTermLength) {
-						return this;
-					} else {
-						final int backSteps = cachedTermLength - commonPrefixLength;
-						Node<Result.ItemHolder> prefixNode = this.prefixNode.previous(backSteps);
-						// true iff this.term is a prefix of term or vice versa
-						final boolean oneTermIsPrefix;
-						if (termLength > commonPrefixLength) {
-							oneTermIsPrefix = backSteps == 0;
-
-							for (int i = commonPrefixLength; i < termLength; i++) {
-								prefixNode = prefixNode.next(term.charAt(i));
-
-								if (prefixNode.isEmpty()) {
-									break;
-								}
-							}
-						} else {
-							oneTermIsPrefix = true;
-						}
-
-						final ImmutableMap<SearchableElement, Result.ItemHolder> prefixedItemsBySearchable;
-						if (oneTermIsPrefix && this.prefixNode.getSize() == prefixNode.getSize()) {
-							prefixedItemsBySearchable = this.prefixedItemsBySearchable;
-						} else {
-							prefixedItemsBySearchable = buildPrefixedItemsBySearchable(prefixNode, this.chooser);
-						}
-
-						final ImmutableList<Result.ItemHolder> containingItems;
-						if (cachedTermLength == commonPrefixLength && termLength > MAX_SUBSTRING_LENGTH) {
-							containingItems = this.narrowedContainingItemsOf(term);
-						} else {
-							containingItems = this.buildContaining(term, prefixedItemsBySearchable.keySet());
-						}
-
-						return new ResultCache(term, prefixNode, prefixedItemsBySearchable, containingItems, this.chooser);
-					}
-				}
-			}
-
-			ResultCache createFresh(String term) {
-				final Node<Result.ItemHolder> prefixNode = Lookup.this.holdersByPrefix.get(term);
-				final ImmutableMap<SearchableElement, Result.ItemHolder> prefixedItemsByElement =
-						buildPrefixedItemsBySearchable(prefixNode, this.chooser);
-				return new ResultCache(
-					term, prefixNode,
-					prefixedItemsByElement,
-					this.buildContaining(term, prefixedItemsByElement.keySet()),
-					this.chooser
-				);
-			}
-
-			static ImmutableMap<SearchableElement, Result.ItemHolder> buildPrefixedItemsBySearchable(
-					Node<Result.ItemHolder> prefixNode, BinaryOperator<Result.ItemHolder> chooser
-			) {
-				return prefixNode
-					.streamValues()
-					.sorted()
-					.collect(toImmutableMap(
-						Result.ItemHolder::getSearchable,
-						Function.identity(),
-						chooser
-					));
-			}
-
-			ImmutableList<Result.ItemHolder> narrowedContainingItemsOf(String term) {
-				return this.containingItems.stream()
-					.filter(item -> item.getItem().getHolder().lowercaseAlias.contains(term))
-					.collect(toImmutableList());
-			}
-
-			ImmutableList<Result.ItemHolder> buildContaining(String term, Set<SearchableElement> excluded) {
-				final int termLength = term.length();
-				final boolean longTerm = termLength > MAX_SUBSTRING_LENGTH;
-
-				final Set<Result.ItemHolder> possibilities = new HashSet<>();
-				final int substringLength = longTerm ? MAX_SUBSTRING_LENGTH : termLength;
-				final int lastSubstringStart = termLength - substringLength;
-				for (int start = 0; start <= lastSubstringStart; start++) {
-					final int end = start + substringLength;
-					Node<Result.ItemHolder> node = Lookup.this.holdersByContaining.getRoot();
-					for (int i = start; i < end; i++) {
-						node = node.next(term.charAt(i));
-
-						if (node.isEmpty()) {
-							break;
-						}
-					}
-
-					node.streamValues().forEach(possibilities::add);
-				}
-
-				Stream<Result.ItemHolder> stream = possibilities
-						.stream()
-						.filter(holder -> !excluded.contains(holder.getSearchable()));
-
-				if (longTerm) {
-					stream = stream.filter(holder -> holder.lowercaseAlias.contains(term));
-				}
-
-				return stream
-					.sorted()
-					// .map(Result.ItemHolder::getItem)
-					.collect(toImmutableList());
-			}
-		}
-	}
-
 	/**
 	 * A wrapper for a {@link SearchableElement}.
 	 *
 	 * <p> Its only purpose is to link its (non-static) inner classes to the same {@link SearchableElement}.
 	 */
-	private record Result(SearchableElement searchable) {
+	private record ResultIdentity(SearchableElement searchable) {
 		ImmutableMap<String, ItemHolder> createHolders() {
 			final String searchName = this.searchable.getSearchName();
 			return this.searchable.streamSearchAliases()
@@ -642,7 +399,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		 *
 		 * <p> Contains the information needed to determine whether its item should be included in results.
 		 */
-		class ItemHolder implements Comparable<ItemHolder> {
+		class ItemHolder implements Lookup.Result<ItemHolder> {
 			static ItemHolder choose(ItemHolder left, ItemHolder right) {
 				// if aliases share a prefix, try keeping non-aliased item
 				return right.getItem().isSearchNamed() && !left.getItem().isSearchNamed() ? right : left;
@@ -672,11 +429,11 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 
 			SearchableElement getSearchable() {
-				return Result.this.searchable();
+				return ResultIdentity.this.searchable();
 			}
 
-			Result getResult() {
-				return Result.this;
+			ResultIdentity getResult() {
+				return ResultIdentity.this;
 			}
 
 			@Override
@@ -694,6 +451,16 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				return o instanceof ItemHolder other && this.getSearchable() == other.getSearchable();
 			}
 
+			@Override
+			public boolean matches(String term) {
+				return this.lowercaseAlias.contains(term);
+			}
+
+			@Override
+			public Object getIdentity() {
+				return this.getSearchable();
+			}
+
 			class Item extends JMenuItem {
 				final ImmutableList<MenuElement> searchablePath;
 
@@ -701,7 +468,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 					super(searchName);
 
 					this.addActionListener(e -> {
-						clearSelectionAndChoose(Result.this.searchable, MenuSelectionManager.defaultManager());
+						clearSelectionAndChoose(ResultIdentity.this.searchable, MenuSelectionManager.defaultManager());
 					});
 
 					this.searchablePath = buildPathTo(this.getSearchable());
@@ -836,32 +603,6 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		}
 	}
 
-	private sealed interface Results {
-		final class None implements Results {
-			static final None INSTANCE = new None();
-		}
-
-		final class Same implements Results {
-			static final Same INSTANCE = new Same();
-		}
-
-		record Different(
-				ImmutableList<Result.ItemHolder> prefixItems,
-				ImmutableList<Result.ItemHolder> containingItems
-		) implements Results {
-			static Different of(Lookup.ResultCache cache) {
-				return new Different(
-						cache.prefixedItemsBySearchable.values().stream().distinct().collect(toImmutableList()),
-						cache.containingItems.stream().distinct().collect(toImmutableList())
-				);
-			}
-
-			boolean isEmpty() {
-				return this.prefixItems.isEmpty() && this.containingItems.isEmpty();
-			}
-		}
-	}
-
 	private class KeyHandler implements AWTEventListener {
 		static final int PREVIEW_MODIFIER_MASK = InputEvent.SHIFT_DOWN_MASK;
 		static final int PREVIEW_MODIFIER_KEY = KeyEvent.VK_SHIFT;
@@ -880,7 +621,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 						final MenuElement selected = getLastOrNull(selectedPath);
 						if (selected != null) {
-							if (selected instanceof Result.ItemHolder.Item item) {
+							if (selected instanceof ResultIdentity.ItemHolder.Item item) {
 								SearchMenusMenu.this.viewHint.dismiss();
 
 								this.restorablePath = new RestorablePath(item.getSearchable(), selectedPath);
@@ -896,7 +637,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 						final int modifiers = keyEvent.getModifiersEx();
 						if (modifiers == 0) {
 							final MenuSelectionManager manager = MenuSelectionManager.defaultManager();
-							if (getLastOrNull(manager.getSelectedPath()) instanceof Result.ItemHolder.Item item) {
+							if (getLastOrNull(manager.getSelectedPath()) instanceof ResultIdentity.ItemHolder.Item item) {
 								this.execute(item.getSearchable(), manager);
 							}
 						} else if (modifiers == PREVIEW_MODIFIER_MASK) {
