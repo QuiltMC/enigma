@@ -74,8 +74,8 @@ public class Token implements Serializable, Comparable<Token> {
 		if (obj != null) {
 			Token token = (Token) obj;
 			return ((this.start == token.start)
-				&& (this.length == token.length)
-				&& (this.type.equals(token.type)));
+					&& (this.length == token.length)
+					&& (this.type.equals(token.type)));
 		} else {
 			return false;
 		}

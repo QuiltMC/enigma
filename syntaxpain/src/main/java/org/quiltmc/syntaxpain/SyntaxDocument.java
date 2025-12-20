@@ -457,7 +457,7 @@ public class SyntaxDocument extends PlainDocument {
 	@Override
 	public String toString() {
 		return "SyntaxDocument(" + this.lexer + ", " + ((this.tokens == null) ? 0 : this.tokens.size()) + " tokens)@"
-			+ this.hashCode();
+				+ this.hashCode();
 	}
 
 	// our logger instance...
