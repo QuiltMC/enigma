@@ -282,7 +282,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		} else if (results instanceof StringLookup.Results.Different<Result> different) {
 			this.keepOnlyPermanentChildren();
 
-			this.noResults.setVisible(different.isEmpty());
+			this.noResults.setVisible(false);
 			this.viewHint.configureVisibility();
 			this.chooseHint.configureVisibility();
 

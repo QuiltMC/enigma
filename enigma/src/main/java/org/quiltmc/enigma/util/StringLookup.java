@@ -162,11 +162,6 @@ public final class StringLookup<R extends StringLookup.Result<R>> {
 					cache.containResults.stream().distinct().map(ResultWrapper::result).collect(toImmutableList())
 				);
 			}
-
-			// TODO is this always false?
-			public boolean isEmpty() {
-				return this.prefixResults.isEmpty() && this.containResults.isEmpty();
-			}
 		}
 	}
 
