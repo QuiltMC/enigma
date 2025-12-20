@@ -146,7 +146,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	 * Lazily populated by {@link #getFieldPath()}
 	 */
 	@Nullable
-	ImmutableList<MenuElement> fieldPath;
+	private ImmutableList<MenuElement> fieldPath;
 
 	protected SearchMenusMenu(Gui gui) {
 		super(gui);
