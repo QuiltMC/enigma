@@ -136,7 +136,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	 * @see #getLookup()
 	 */
 	@Nullable
-	private Lookup<ResultIdentity.ItemHolder> lookup;
+	private Lookup<Result> lookup;
 
 	/**
 	 * Lazily populated by {@link #getFieldPath()}
@@ -267,7 +267,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	private void updateResultItems() {
 		final String searchTerm = this.field.getText();
 
-		final Lookup.Results<ResultIdentity.ItemHolder> results = this.getLookup().search(searchTerm);
+		final Lookup.Results<Result> results = this.getLookup().search(searchTerm);
 
 		if (results instanceof Lookup.Results.None) {
 			this.keepOnlyPermanentChildren();
@@ -278,21 +278,21 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			this.noResults.setVisible(!searchTerm.isEmpty());
 
 			this.refreshPopup();
-		} else if (results instanceof Lookup.Results.Different<ResultIdentity.ItemHolder> different) {
+		} else if (results instanceof Lookup.Results.Different<Result> different) {
 			this.keepOnlyPermanentChildren();
 
 			this.noResults.setVisible(different.isEmpty());
 			this.viewHint.configureVisibility();
 			this.chooseHint.configureVisibility();
 
-			different.prefixResults().stream().map(ResultIdentity.ItemHolder::getItem).forEach(this::add);
+			different.prefixResults().stream().map(Result::getItem).forEach(this::add);
 
 			if (!different.containingResults().isEmpty()) {
 				if (!different.prefixResults().isEmpty()) {
 					this.add(new JPopupMenu.Separator());
 				}
 
-				different.containingResults().stream().map(ResultIdentity.ItemHolder::getItem).forEach(this::add);
+				different.containingResults().stream().map(Result::getItem).forEach(this::add);
 			}
 
 			this.refreshPopup();
@@ -331,7 +331,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		this.addPermanentChildren();
 	}
 
-	private Lookup<ResultIdentity.ItemHolder> getLookup() {
+	private Lookup<Result> getLookup() {
 		if (this.lookup == null) {
 			this.lookup = Lookup.build(this.gui
 				.getMenuBar()
@@ -342,15 +342,14 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 						keep.accept(searchable);
 					}
 				})
-				.map(ResultIdentity::new)
-				.map(ResultIdentity::createHolders)
+				.map(Result::createHolders)
 				.map(Map::entrySet)
 				.flatMap(Collection::stream)
 				.collect(Multimaps.toMultimap(
 					Map.Entry::getKey,
 					Map.Entry::getValue,
 					LinkedListMultimap::create
-				)), ResultIdentity.ItemHolder::choose
+				)), Result::choose
 			);
 		}
 
@@ -376,220 +375,207 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	}
 
 	/**
-	 * A wrapper for a {@link SearchableElement}.
+	 * A result that {@linkplain #getItem() lazily-creates} an {@link Item}.
 	 *
-	 * <p> Its only purpose is to link its (non-static) inner classes to the same {@link SearchableElement}.
+	 * <p> Contains the information needed to determine whether its item should be included in results.
 	 */
-	// TODO just make this a field of ItemHolder
-	private record ResultIdentity(SearchableElement searchable) {
-		ImmutableMap<String, ItemHolder> createHolders() {
-			final String searchName = this.searchable.getSearchName();
-			return this.searchable.streamSearchAliases()
+	private static class Result implements Lookup.Result<Result> {
+		// creates a map of lowercase aliases to ItemHolders, each representing the passed searchable
+		static ImmutableMap<String, Result> createHolders(SearchableElement searchable) {
+			final String searchName = searchable.getSearchName();
+			return searchable.streamSearchAliases()
 				.filter(alias -> !alias.isEmpty())
 				.map(alias -> Map.entry(alias.toLowerCase(), alias))
 				.collect(toImmutableMap(
 					Map.Entry::getKey,
-					entry -> new ItemHolder(searchName, entry.getKey(), entry.getValue()),
+					entry -> new Result(searchable, searchName, entry.getKey(), entry.getValue()),
 					// ignore case-insensitive duplicate aliases
 					(left, right) -> left
 				));
 		}
 
-		/**
-		 * A holder for a {@linkplain #getItem() lazily-created} {@link Item}.
-		 *
-		 * <p> Contains the information needed to determine whether its item should be included in results.
-		 */
-		class ItemHolder implements Lookup.Result<ItemHolder> {
-			static ItemHolder choose(ItemHolder left, ItemHolder right) {
-				// if aliases share a prefix, try keeping non-aliased item
-				return right.getItem().isSearchNamed() && !left.getItem().isSearchNamed() ? right : left;
+		static Result choose(Result left, Result right) {
+			// if aliases share a prefix, try keeping non-aliased item
+			return right.getItem().isSearchNamed() && !left.getItem().isSearchNamed() ? right : left;
+		}
+
+		final SearchableElement searchable;
+		final String searchName;
+		final String alias;
+		final String lowercaseAlias;
+
+		@Nullable
+		Item item;
+
+		Result(SearchableElement searchable, String searchName, String lowercaseAlias, String alias) {
+			this.searchable = searchable;
+			this.searchName = searchName;
+			this.lowercaseAlias = lowercaseAlias;
+			this.alias = alias;
+		}
+
+		Item getItem() {
+			if (this.item == null) {
+				this.item = this.alias.equals(this.searchName)
+						? new Item(this.searchName)
+						: new AliasedItem(this.searchName, this.alias);
 			}
 
-			final String searchName;
-			final String alias;
-			final String lowercaseAlias;
+			return this.item;
+		}
 
-			@Nullable
-			Item item;
+		@Override
+		public int compareTo(@NonNull Result other) {
+			return this.identity().getSearchName().compareTo(other.identity().getSearchName());
+		}
 
-			ItemHolder(String searchName, String lowercaseAlias, String alias) {
-				this.searchName = searchName;
-				this.lowercaseAlias = lowercaseAlias;
-				this.alias = alias;
-			}
+		@Override
+		public boolean matches(String term) {
+			return this.lowercaseAlias.contains(term);
+		}
 
-			Item getItem() {
-				if (this.item == null) {
-					this.item = this.alias.equals(this.searchName)
-							? new Item(this.searchName)
-							: new AliasedItem(this.searchName, this.alias);
+		@Override
+		public SearchableElement identity() {
+			return this.searchable;
+		}
+
+		class Item extends JMenuItem {
+			final ImmutableList<MenuElement> searchablePath;
+
+			Item(String searchName) {
+				super(searchName);
+
+				this.addActionListener(e -> {
+					clearSelectionAndChoose(Result.this.searchable, MenuSelectionManager.defaultManager());
+				});
+
+				this.searchablePath = buildPathTo(this.getSearchable());
+
+				if (!this.searchablePath.isEmpty()) {
+					final String pathText = this.searchablePath.stream()
+							.flatMap(element -> {
+								if (element instanceof SearchableElement searchableElement) {
+									return Stream.of(searchableElement.getSearchName());
+								} else if (element.getComponent() instanceof JMenuItem menuItem) {
+									return Stream.of(menuItem.getText());
+								} else {
+									// JPopupMenus' names come from their parent JMenus; skip them
+									// JMenuBar has no name
+									if (element instanceof JPopupMenu || element instanceof JMenuBar) {
+										return Stream.empty();
+									} else {
+										Logger.error(
+												"Cannot determine name of menu element in path to %s: %s"
+													.formatted(searchName, element)
+										);
+
+										return Stream.of("???");
+									}
+								}
+							})
+							.collect(Collectors.joining(" > "));
+
+					this.setToolTipText(pathText);
 				}
+			}
 
-				return this.item;
+			boolean isSearchNamed() {
+				return true;
+			}
+
+			Result getHolder() {
+				return Result.this;
+			}
+
+			void selectSearchable(MenuSelectionManager manager) {
+				if (!this.searchablePath.isEmpty()) {
+					manager.setSelectedPath(this.searchablePath.toArray(EMPTY_MENU_ELEMENTS));
+				}
 			}
 
 			SearchableElement getSearchable() {
-				return ResultIdentity.this.searchable();
+				return this.getHolder().searchable;
 			}
+		}
 
-			ResultIdentity getResult() {
-				return ResultIdentity.this;
+		class AliasedItem extends Item {
+			static final int UNSET_WIDTH = -1;
+
+			final String alias;
+
+			int aliasWidth = UNSET_WIDTH;
+			@Nullable
+			Font aliasFont;
+
+			AliasedItem(String searchName, String alias) {
+				super(searchName);
+
+				this.alias = alias;
 			}
 
 			@Override
-			public int compareTo(@NonNull ItemHolder other) {
-				return this.getSearchable().getSearchName().compareTo(other.getSearchable().getSearchName());
+			boolean isSearchNamed() {
+				return false;
 			}
 
 			@Override
-			public boolean matches(String term) {
-				return this.lowercaseAlias.contains(term);
+			public void setFont(Font font) {
+				super.setFont(font);
+
+				this.aliasWidth = UNSET_WIDTH;
+				this.aliasFont = null;
+			}
+
+			@Nullable
+			Font getAliasFont() {
+				if (this.aliasFont == null) {
+					final Font font = this.getFont();
+					if (font != null) {
+						this.aliasFont = font.deriveFont(Font.ITALIC);
+					}
+				}
+
+				return this.aliasFont;
 			}
 
 			@Override
-			public Object identity() {
-				return this.getSearchable();
+			public Dimension getPreferredSize() {
+				final Dimension size = super.getPreferredSize();
+
+				size.width += this.getAliasWidth();
+
+				return size;
 			}
 
-			class Item extends JMenuItem {
-				final ImmutableList<MenuElement> searchablePath;
+			@Override
+			public void paint(Graphics graphics) {
+				super.paint(graphics);
 
-				Item(String searchName) {
-					super(searchName);
-
-					this.addActionListener(e -> {
-						clearSelectionAndChoose(ResultIdentity.this.searchable, MenuSelectionManager.defaultManager());
-					});
-
-					this.searchablePath = buildPathTo(this.getSearchable());
-
-					if (!this.searchablePath.isEmpty()) {
-						final String pathText = this.searchablePath.stream()
-								.flatMap(element -> {
-									if (element instanceof SearchableElement searchableElement) {
-										return Stream.of(searchableElement.getSearchName());
-									} else if (element.getComponent() instanceof JMenuItem menuItem) {
-										return Stream.of(menuItem.getText());
-									} else {
-										// JPopupMenus' names come from their parent JMenus; skip them
-										// JMenuBar has no name
-										if (element instanceof JPopupMenu || element instanceof JMenuBar) {
-											return Stream.empty();
-										} else {
-											Logger.error(
-													"Cannot determine name of menu element in path to %s: %s"
-														.formatted(searchName, element)
-											);
-
-											return Stream.of("???");
-										}
-									}
-								})
-								.collect(Collectors.joining(" > "));
-
-						this.setToolTipText(pathText);
-					}
+				final Graphics disposableGraphics = graphics.create();
+				GuiUtil.trySetRenderingHints(disposableGraphics);
+				final Color color = this.getForeground();
+				if (color != null) {
+					disposableGraphics.setColor(color);
 				}
 
-				boolean isSearchNamed() {
-					return true;
+				final Font aliasFont = this.getAliasFont();
+				if (aliasFont != null) {
+					disposableGraphics.setFont(aliasFont);
 				}
 
-				ItemHolder getHolder() {
-					return ItemHolder.this;
-				}
+				final Insets insets = this.getInsets();
+				final int baseY = disposableGraphics.getFontMetrics().getMaxAscent() + insets.top;
+				disposableGraphics.drawString(this.alias, this.getWidth() - insets.right - this.getAliasWidth(), baseY);
 
-				void selectSearchable(MenuSelectionManager manager) {
-					if (!this.searchablePath.isEmpty()) {
-						manager.setSelectedPath(this.searchablePath.toArray(EMPTY_MENU_ELEMENTS));
-					}
-				}
-
-				SearchableElement getSearchable() {
-					return this.getHolder().getResult().searchable;
-				}
+				disposableGraphics.dispose();
 			}
 
-			class AliasedItem extends Item {
-				static final int UNSET_WIDTH = -1;
-
-				final String alias;
-
-				int aliasWidth = UNSET_WIDTH;
-				@Nullable
-				Font aliasFont;
-
-				AliasedItem(String searchName, String alias) {
-					super(searchName);
-
-					this.alias = alias;
+			int getAliasWidth() {
+				if (this.aliasWidth < 0) {
+					this.aliasWidth = this.getFontMetrics(this.getAliasFont()).stringWidth(this.alias);
 				}
 
-				@Override
-				boolean isSearchNamed() {
-					return false;
-				}
-
-				@Override
-				public void setFont(Font font) {
-					super.setFont(font);
-
-					this.aliasWidth = UNSET_WIDTH;
-					this.aliasFont = null;
-				}
-
-				@Nullable
-				Font getAliasFont() {
-					if (this.aliasFont == null) {
-						final Font font = this.getFont();
-						if (font != null) {
-							this.aliasFont = font.deriveFont(Font.ITALIC);
-						}
-					}
-
-					return this.aliasFont;
-				}
-
-				@Override
-				public Dimension getPreferredSize() {
-					final Dimension size = super.getPreferredSize();
-
-					size.width += this.getAliasWidth();
-
-					return size;
-				}
-
-				@Override
-				public void paint(Graphics graphics) {
-					super.paint(graphics);
-
-					final Graphics disposableGraphics = graphics.create();
-					GuiUtil.trySetRenderingHints(disposableGraphics);
-					final Color color = this.getForeground();
-					if (color != null) {
-						disposableGraphics.setColor(color);
-					}
-
-					final Font aliasFont = this.getAliasFont();
-					if (aliasFont != null) {
-						disposableGraphics.setFont(aliasFont);
-					}
-
-					final Insets insets = this.getInsets();
-					final int baseY = disposableGraphics.getFontMetrics().getMaxAscent() + insets.top;
-					disposableGraphics.drawString(this.alias, this.getWidth() - insets.right - this.getAliasWidth(), baseY);
-
-					disposableGraphics.dispose();
-				}
-
-				int getAliasWidth() {
-					if (this.aliasWidth < 0) {
-						this.aliasWidth = this.getFontMetrics(this.getAliasFont()).stringWidth(this.alias);
-					}
-
-					return this.aliasWidth;
-				}
+				return this.aliasWidth;
 			}
 		}
 	}
@@ -612,7 +598,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 						final MenuElement selected = getLastOrNull(selectedPath);
 						if (selected != null) {
-							if (selected instanceof ResultIdentity.ItemHolder.Item item) {
+							if (selected instanceof Result.Item item) {
 								SearchMenusMenu.this.viewHint.dismiss();
 
 								this.restorablePath = new RestorablePath(item.getSearchable(), selectedPath);
@@ -628,7 +614,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 						final int modifiers = keyEvent.getModifiersEx();
 						if (modifiers == 0) {
 							final MenuSelectionManager manager = MenuSelectionManager.defaultManager();
-							if (getLastOrNull(manager.getSelectedPath()) instanceof ResultIdentity.ItemHolder.Item item) {
+							if (getLastOrNull(manager.getSelectedPath()) instanceof Result.Item item) {
 								this.execute(item.getSearchable(), manager);
 							}
 						} else if (modifiers == PREVIEW_MODIFIER_MASK) {
