@@ -59,6 +59,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -292,14 +294,14 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			this.viewHint.configureVisibility();
 			this.chooseHint.configureVisibility();
 
-			different.prefixItems.forEach(this::add);
+			different.prefixItems.stream().map(Result.ItemHolder::getItem).forEach(this::add);
 
 			if (!different.containingItems.isEmpty()) {
 				if (!different.prefixItems.isEmpty()) {
 					this.add(new JPopupMenu.Separator());
 				}
 
-				different.containingItems.forEach(this::add);
+				different.containingItems.stream().map(Result.ItemHolder::getItem).forEach(this::add);
 			}
 
 			this.refreshPopup();
@@ -357,7 +359,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 					Map.Entry::getKey,
 					Map.Entry::getValue,
 					LinkedListMultimap::create
-				))
+				)), Result.ItemHolder::choose
 			);
 		}
 
@@ -386,10 +388,9 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		static final int NON_PREFIX_START = 1;
 		static final int MAX_SUBSTRING_LENGTH = 2;
 
-		final ResultCache emptyCache = new ResultCache(
-				"", EmptyStringMultiTrie.Node.get(),
-				ImmutableMap.of(), ImmutableList.of()
-		);
+		final BinaryOperator<Result.ItemHolder> chooser;
+
+		final ResultCache emptyCache;
 
 		static int getCommonPrefixLength(String left, String right) {
 			final int minLength = Math.min(left.length(), right.length());
@@ -403,7 +404,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			return minLength;
 		}
 
-		static Lookup build(LinkedListMultimap<String, Result.ItemHolder> holders) {
+		static Lookup build(LinkedListMultimap<String, Result.ItemHolder> holders, BinaryOperator<Result.ItemHolder> choose) {
 			final CompositeStringMultiTrie<Result.ItemHolder> prefixBuilder = CompositeStringMultiTrie.createHashed();
 			final CompositeStringMultiTrie<Result.ItemHolder> containingBuilder =
 					CompositeStringMultiTrie.createHashed();
@@ -423,7 +424,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				}
 			});
 
-			return new Lookup(prefixBuilder.view(), containingBuilder.view());
+			return new Lookup(choose, prefixBuilder.view(), containingBuilder.view());
 		}
 
 		// maps complete search aliases to their corresponding items
@@ -433,11 +434,19 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		final StringMultiTrie<Result.ItemHolder> holdersByContaining;
 
 		@NonNull
-		ResultCache resultCache = this.emptyCache;
+		ResultCache resultCache;
 
-		Lookup(StringMultiTrie<Result.ItemHolder> holdersByPrefix, StringMultiTrie<Result.ItemHolder> holdersByContaining) {
+		Lookup(BinaryOperator<Result.ItemHolder> chooser, StringMultiTrie<Result.ItemHolder> holdersByPrefix, StringMultiTrie<Result.ItemHolder> holdersByContaining) {
+			this.chooser = chooser;
 			this.holdersByPrefix = holdersByPrefix;
 			this.holdersByContaining = holdersByContaining;
+			this.emptyCache = new ResultCache(
+				"", EmptyStringMultiTrie.Node.get(),
+				ImmutableMap.of(), ImmutableList.of(),
+				this.chooser
+			);
+
+			this.resultCache = this.emptyCache;
 		}
 
 		Results search(String term) {
@@ -464,18 +473,21 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		final class ResultCache {
 			final String term;
 			final Node<Result.ItemHolder> prefixNode;
-			final ImmutableMap<SearchableElement, Result.ItemHolder.Item> prefixedItemsBySearchable;
-			final ImmutableList<Result.ItemHolder.Item> containingItems;
+			final ImmutableMap<SearchableElement, Result.ItemHolder> prefixedItemsBySearchable;
+			final ImmutableList<Result.ItemHolder> containingItems;
+			final BinaryOperator<Result.ItemHolder> chooser;
 
 			ResultCache(
 					String term, Node<Result.ItemHolder> prefixNode,
-					ImmutableMap<SearchableElement, Result.ItemHolder.Item> prefixedItemsBySearchable,
-					ImmutableList<Result.ItemHolder.Item> containingItems
+					ImmutableMap<SearchableElement, Result.ItemHolder> prefixedItemsBySearchable,
+					ImmutableList<Result.ItemHolder> containingItems,
+					BinaryOperator<Result.ItemHolder> chooser
 			) {
 				this.term = term;
 				this.prefixNode = prefixNode;
 				this.prefixedItemsBySearchable = prefixedItemsBySearchable;
 				this.containingItems = containingItems;
+				this.chooser = chooser;
 			}
 
 			boolean hasResults() {
@@ -519,57 +531,57 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 							oneTermIsPrefix = true;
 						}
 
-						final ImmutableMap<SearchableElement, Result.ItemHolder.Item> prefixedItemsBySearchable;
+						final ImmutableMap<SearchableElement, Result.ItemHolder> prefixedItemsBySearchable;
 						if (oneTermIsPrefix && this.prefixNode.getSize() == prefixNode.getSize()) {
 							prefixedItemsBySearchable = this.prefixedItemsBySearchable;
 						} else {
-							prefixedItemsBySearchable = buildPrefixedItemsBySearchable(prefixNode);
+							prefixedItemsBySearchable = buildPrefixedItemsBySearchable(prefixNode, this.chooser);
 						}
 
-						final ImmutableList<Result.ItemHolder.Item> containingItems;
+						final ImmutableList<Result.ItemHolder> containingItems;
 						if (cachedTermLength == commonPrefixLength && termLength > MAX_SUBSTRING_LENGTH) {
 							containingItems = this.narrowedContainingItemsOf(term);
 						} else {
 							containingItems = this.buildContaining(term, prefixedItemsBySearchable.keySet());
 						}
 
-						return new ResultCache(term, prefixNode, prefixedItemsBySearchable, containingItems);
+						return new ResultCache(term, prefixNode, prefixedItemsBySearchable, containingItems, this.chooser);
 					}
 				}
 			}
 
 			ResultCache createFresh(String term) {
 				final Node<Result.ItemHolder> prefixNode = Lookup.this.holdersByPrefix.get(term);
-				final ImmutableMap<SearchableElement, Result.ItemHolder.Item> prefixedItemsByElement =
-						buildPrefixedItemsBySearchable(prefixNode);
+				final ImmutableMap<SearchableElement, Result.ItemHolder> prefixedItemsByElement =
+						buildPrefixedItemsBySearchable(prefixNode, this.chooser);
 				return new ResultCache(
 					term, prefixNode,
 					prefixedItemsByElement,
-					this.buildContaining(term, prefixedItemsByElement.keySet())
+					this.buildContaining(term, prefixedItemsByElement.keySet()),
+					this.chooser
 				);
 			}
 
-			static ImmutableMap<SearchableElement, Result.ItemHolder.Item> buildPrefixedItemsBySearchable(
-					Node<Result.ItemHolder> prefixNode
+			static ImmutableMap<SearchableElement, Result.ItemHolder> buildPrefixedItemsBySearchable(
+					Node<Result.ItemHolder> prefixNode, BinaryOperator<Result.ItemHolder> chooser
 			) {
 				return prefixNode
 					.streamValues()
 					.sorted()
 					.collect(toImmutableMap(
 						Result.ItemHolder::getSearchable,
-						Result.ItemHolder::getItem,
-						// if aliases share a prefix, try keeping non-aliased item
-						(left, right) -> right.isSearchNamed() && !left.isSearchNamed() ? right : left
+						Function.identity(),
+						chooser
 					));
 			}
 
-			ImmutableList<Result.ItemHolder.Item> narrowedContainingItemsOf(String term) {
+			ImmutableList<Result.ItemHolder> narrowedContainingItemsOf(String term) {
 				return this.containingItems.stream()
-					.filter(item -> item.getHolder().lowercaseAlias.contains(term))
+					.filter(item -> item.getItem().getHolder().lowercaseAlias.contains(term))
 					.collect(toImmutableList());
 			}
 
-			ImmutableList<Result.ItemHolder.Item> buildContaining(String term, Set<SearchableElement> excluded) {
+			ImmutableList<Result.ItemHolder> buildContaining(String term, Set<SearchableElement> excluded) {
 				final int termLength = term.length();
 				final boolean longTerm = termLength > MAX_SUBSTRING_LENGTH;
 
@@ -600,7 +612,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 				return stream
 					.sorted()
-					.map(Result.ItemHolder::getItem)
+					// .map(Result.ItemHolder::getItem)
 					.collect(toImmutableList());
 			}
 		}
@@ -631,8 +643,13 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		 * <p> Contains the information needed to determine whether its item should be included in results.
 		 */
 		class ItemHolder implements Comparable<ItemHolder> {
-			private final String searchName;
-			private final String alias;
+			static ItemHolder choose(ItemHolder left, ItemHolder right) {
+				// if aliases share a prefix, try keeping non-aliased item
+				return right.getItem().isSearchNamed() && !left.getItem().isSearchNamed() ? right : left;
+			}
+
+			final String searchName;
+			final String alias;
 			final String lowercaseAlias;
 
 			@Nullable
@@ -829,8 +846,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		}
 
 		record Different(
-				ImmutableList<Result.ItemHolder.Item> prefixItems,
-				ImmutableList<Result.ItemHolder.Item> containingItems
+				ImmutableList<Result.ItemHolder> prefixItems,
+				ImmutableList<Result.ItemHolder> containingItems
 		) implements Results {
 			static Different of(Lookup.ResultCache cache) {
 				return new Different(
