@@ -10,6 +10,11 @@ version = 'internal'
 
 final GENERATED_SOURCES = layout.buildDirectory.dir('generated/sources/main')
 
+checkstyle {
+	// use root project's checkstyle config
+	configDirectory = project.layout.projectDirectory.dir('../config/checkstyle/')
+}
+
 configurations {
 	jflexClasspath
 }
