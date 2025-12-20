@@ -13,6 +13,7 @@ import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
+import org.quiltmc.enigma.util.Lazy;
 import org.quiltmc.enigma.util.StringLookup;
 import org.tinylog.Logger;
 
@@ -130,19 +131,28 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			Config.main().searchMenus.showChooseHint
 	);
 
-	/**
-	 * Lazily populated {@linkplain #clearLookup() clearable} cache.
-	 *
-	 * @see #getLookup()
-	 */
-	@Nullable
-	private StringLookup<Result> lookup;
+	private final Lazy.Clearable<StringLookup<Result>> lookup = Lazy.clearableOf(() -> StringLookup.of(
+			this.gui
+				.getMenuBar()
+				.streamMenus()
+				.flatMap(SearchMenusMenu::streamElementTree)
+				.<SearchableElement>mapMulti((element, keep) -> {
+					if (element instanceof SearchableElement searchable) {
+						keep.accept(searchable);
+					}
+				})
+				.map(Result::createHolders)
+				.map(Map::entrySet)
+				.flatMap(Collection::stream)
+				.collect(Multimaps.toMultimap(
+					Map.Entry::getKey,
+					Map.Entry::getValue,
+					LinkedListMultimap::create
+				)),
+			Result::choose
+	));
 
-	/**
-	 * Lazily populated by {@link #getFieldPath()}
-	 */
-	@Nullable
-	private ImmutableList<MenuElement> fieldPath;
+	private final Lazy<ImmutableList<MenuElement>> fieldPath = Lazy.of(() -> buildPathTo(this.field));
 
 	protected SearchMenusMenu(Gui gui) {
 		super(gui);
@@ -253,21 +263,13 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	}
 
 	private void selectField(MenuSelectionManager manager) {
-		manager.setSelectedPath(SearchMenusMenu.this.getFieldPath().toArray(EMPTY_MENU_ELEMENTS));
-	}
-
-	private ImmutableList<MenuElement> getFieldPath() {
-		if (this.fieldPath == null) {
-			this.fieldPath = buildPathTo(SearchMenusMenu.this.field);
-		}
-
-		return this.fieldPath;
+		manager.setSelectedPath(this.fieldPath.get().toArray(EMPTY_MENU_ELEMENTS));
 	}
 
 	private void updateResultItems() {
 		final String searchTerm = this.field.getText();
 
-		final StringLookup.Results<Result> results = this.getLookup().lookUp(searchTerm);
+		final StringLookup.Results<Result> results = this.lookup.get().lookUp(searchTerm);
 
 		if (results instanceof StringLookup.Results.None) {
 			this.keepOnlyPermanentChildren();
@@ -331,35 +333,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		this.addPermanentChildren();
 	}
 
-	private StringLookup<Result> getLookup() {
-		if (this.lookup == null) {
-			this.lookup = StringLookup.of(
-				this.gui
-					.getMenuBar()
-					.streamMenus()
-					.flatMap(SearchMenusMenu::streamElementTree)
-					.<SearchableElement>mapMulti((element, keep) -> {
-						if (element instanceof SearchableElement searchable) {
-							keep.accept(searchable);
-						}
-					})
-					.map(Result::createHolders)
-					.map(Map::entrySet)
-					.flatMap(Collection::stream)
-					.collect(Multimaps.toMultimap(
-						Map.Entry::getKey,
-						Map.Entry::getValue,
-						LinkedListMultimap::create
-					)),
-				Result::choose
-			);
-		}
-
-		return this.lookup;
-	}
-
 	public void clearLookup() {
-		this.lookup = null;
+		this.lookup.clear();
 	}
 
 	@Override
