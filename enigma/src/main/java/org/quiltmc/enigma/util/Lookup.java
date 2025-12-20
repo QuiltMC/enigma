@@ -145,18 +145,20 @@ public final class Lookup<R extends Lookup.Result<R>> {
 		}
 
 		record Different<R extends Result<R>>(
-			ImmutableList<R> prefixItems,
-			ImmutableList<R> containingItems
+			ImmutableList<R> prefixResults,
+			ImmutableList<R> containingResults
 		) implements Results<R> {
 			static <R extends Result<R>> Different<R> of(Lookup<R>.ResultCache cache) {
 				return new Different<>(
-					cache.prefixedResults.stream().map(ResultWrapper::result).distinct().collect(toImmutableList()),
-					cache.containingItems.stream().distinct().collect(toImmutableList())
+					cache.prefixedResults.stream().map(ResultWrapper::result).collect(toImmutableList()),
+					// TODO respect chooser here?
+					cache.containingResults.stream().distinct().map(ResultWrapper::result).collect(toImmutableList())
 				);
 			}
 
+			// TODO is this always false?
 			public boolean isEmpty() {
-				return this.prefixItems.isEmpty() && this.containingItems.isEmpty();
+				return this.prefixResults.isEmpty() && this.containingResults.isEmpty();
 			}
 		}
 	}
@@ -165,27 +167,27 @@ public final class Lookup<R extends Lookup.Result<R>> {
 		final String term;
 		final StringMultiTrie.Node<R> prefixNode;
 		final ImmutableSet<ResultWrapper<R>> prefixedResults;
-		final ImmutableList<R> containingItems;
+		final ImmutableList<ResultWrapper<R>> containingResults;
 
 		ResultCache(
 			String term, StringMultiTrie.Node<R> prefixNode,
 			ImmutableSet<ResultWrapper<R>> prefixedResults,
-			ImmutableList<R> containingItems
+			ImmutableList<ResultWrapper<R>> containingResults
 		) {
 			this.term = term;
 			this.prefixNode = prefixNode;
 			this.prefixedResults = prefixedResults;
-			this.containingItems = containingItems;
+			this.containingResults = containingResults;
 		}
 
 		private boolean hasResults() {
-			return !this.prefixNode.isEmpty() || !this.containingItems.isEmpty();
+			return !this.prefixNode.isEmpty() || !this.containingResults.isEmpty();
 		}
 
 		private boolean hasSameResults(ResultCache other) {
 			return this == other
 				|| this.prefixNode == other.prefixNode
-				&& this.containingItems.equals(other.containingItems);
+				&& this.containingResults.equals(other.containingResults);
 		}
 
 		private ResultCache updated(String term) {
@@ -226,7 +228,7 @@ public final class Lookup<R extends Lookup.Result<R>> {
 						prefixedResults = this.buildPrefixedResults(prefixNode);
 					}
 
-					final ImmutableList<R> containingItems;
+					final ImmutableList<ResultWrapper<R>> containingItems;
 					if (cachedTermLength == commonPrefixLength && termLength > MAX_SUBSTRING_LENGTH) {
 						containingItems = this.narrowedContainingItemsOf(term);
 					} else {
@@ -251,23 +253,24 @@ public final class Lookup<R extends Lookup.Result<R>> {
 		private ImmutableSet<ResultWrapper<R>> buildPrefixedResults(StringMultiTrie.Node<R> prefixNode) {
 			return prefixNode
 				.streamValues()
+				.map(ResultWrapper::new)
 				.sorted()
 				.collect(toImmutableMap(
-					ResultWrapper::new,
 					Function.identity(),
+					ResultWrapper::result,
 					Lookup.this.chooser
 				))
 				// use keySet of map so we can respect chooser
 				.keySet();
 		}
 
-		private ImmutableList<R> narrowedContainingItemsOf(String term) {
-			return this.containingItems.stream()
-				.filter(item -> item.matches(term))
+		private ImmutableList<ResultWrapper<R>> narrowedContainingItemsOf(String term) {
+			return this.containingResults.stream()
+				.filter(wrapper -> wrapper.result.matches(term))
 				.collect(toImmutableList());
 		}
 
-		private ImmutableList<R> buildContaining(String term, Set<ResultWrapper<R>> excluded) {
+		private ImmutableList<ResultWrapper<R>> buildContaining(String term, Set<ResultWrapper<R>> excluded) {
 			final int termLength = term.length();
 			final boolean longTerm = termLength > MAX_SUBSTRING_LENGTH;
 
@@ -297,6 +300,7 @@ public final class Lookup<R extends Lookup.Result<R>> {
 			}
 
 			return stream
+				.map(ResultWrapper::new)
 				.sorted()
 				.collect(toImmutableList());
 		}

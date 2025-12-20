@@ -285,14 +285,14 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			this.viewHint.configureVisibility();
 			this.chooseHint.configureVisibility();
 
-			different.prefixItems().stream().map(ResultIdentity.ItemHolder::getItem).forEach(this::add);
+			different.prefixResults().stream().map(ResultIdentity.ItemHolder::getItem).forEach(this::add);
 
-			if (!different.containingItems().isEmpty()) {
-				if (!different.prefixItems().isEmpty()) {
+			if (!different.containingResults().isEmpty()) {
+				if (!different.prefixResults().isEmpty()) {
 					this.add(new JPopupMenu.Separator());
 				}
 
-				different.containingItems().stream().map(ResultIdentity.ItemHolder::getItem).forEach(this::add);
+				different.containingResults().stream().map(ResultIdentity.ItemHolder::getItem).forEach(this::add);
 			}
 
 			this.refreshPopup();
