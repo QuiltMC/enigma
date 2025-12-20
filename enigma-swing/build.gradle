@@ -97,6 +97,10 @@ project(":enigma").file("src/test/java/org/quiltmc/enigma/input").listFiles().ea
 
 registerTestTask("complete")
 
+tasks.named('checkstyleMain') {
+	dependsOn(gradle.includedBuild('syntaxpain').task(':checkstyleMain'))
+}
+
 void registerPrintColorKeyGroupsMapCode(String lafsName, LookAndFeel... lookAndFeels) {
 	tasks.register("print" + lafsName + "ColorKeyGroupsMapCode", PrintColorKeyGroupsMapCodeTask) { task ->
 		task.lookAndFeels = lookAndFeels as List
