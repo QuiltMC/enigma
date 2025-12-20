@@ -12,6 +12,7 @@ import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -46,13 +47,9 @@ public abstract class Either<L, R> {
 
 	public abstract Optional<R> right();
 
-	public L leftOrThrow() {
-		return this.left().orElseThrow();
-	}
+	public abstract L leftOrThrow();
 
-	public R rightOrThrow() {
-		return this.right().orElseThrow();
-	}
+	public abstract R rightOrThrow();
 
 	public static <L, R> Either<L, R> left(L value) {
 		return new Left<>(value);
@@ -109,6 +106,16 @@ public abstract class Either<L, R> {
 		public Optional<R> right() {
 			return Optional.empty();
 		}
+
+		@Override
+		public L leftOrThrow() {
+			return this.value;
+		}
+
+		@Override
+		public R rightOrThrow() {
+			throw new NoSuchElementException();
+		}
 	}
 
 	private static final class Right<L, R> extends Either<L, R> {
@@ -157,6 +164,16 @@ public abstract class Either<L, R> {
 		@Override
 		public Optional<R> right() {
 			return Optional.of(this.value);
+		}
+
+		@Override
+		public L leftOrThrow() {
+			throw new NoSuchElementException();
+		}
+
+		@Override
+		public R rightOrThrow() {
+			return this.value;
 		}
 	}
 
