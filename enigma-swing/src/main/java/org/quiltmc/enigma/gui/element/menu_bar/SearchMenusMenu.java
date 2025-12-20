@@ -2,6 +2,8 @@ package org.quiltmc.enigma.gui.element.menu_bar;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimaps;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.config.api.values.TrackedValue;
@@ -51,6 +53,7 @@ import java.awt.event.AWTEventListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -337,7 +340,25 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 	private Lookup getLookup() {
 		if (this.lookup == null) {
-			this.lookup = Lookup.build(this.gui);
+			this.lookup = Lookup.build(this.gui
+				.getMenuBar()
+				.streamMenus()
+				.flatMap(SearchMenusMenu::streamElementTree)
+				.<SearchableElement>mapMulti((element, keep) -> {
+					if (element instanceof SearchableElement searchable) {
+						keep.accept(searchable);
+					}
+				})
+				.map(Result::new)
+				.map(Result::createHolders)
+				.map(Map::entrySet)
+				.flatMap(Collection::stream)
+				.collect(Multimaps.toMultimap(
+					Map.Entry::getKey,
+					Map.Entry::getValue,
+					LinkedListMultimap::create
+				))
+			);
 		}
 
 		return this.lookup;
@@ -382,38 +403,25 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			return minLength;
 		}
 
-		static Lookup build(Gui gui) {
+		static Lookup build(LinkedListMultimap<String, Result.ItemHolder> holders) {
 			final CompositeStringMultiTrie<Result.ItemHolder> prefixBuilder = CompositeStringMultiTrie.createHashed();
 			final CompositeStringMultiTrie<Result.ItemHolder> containingBuilder =
 					CompositeStringMultiTrie.createHashed();
-			gui.getMenuBar()
-					.streamMenus()
-					.flatMap(SearchMenusMenu::streamElementTree)
-					.<SearchableElement>mapMulti((element, keep) -> {
-						if (element instanceof SearchableElement searchable) {
-							keep.accept(searchable);
-						}
-					})
-					.forEach(element -> {
-						final Result result = new Result(element);
 
-						final ImmutableMap<String, Result.ItemHolder> holders = result.createHolders();
+			holders.forEach((lowercaseAlias, holder) -> {
+				prefixBuilder.put(lowercaseAlias, holder);
 
-						holders.forEach((lowercaseAlias, holder) -> {
-							prefixBuilder.put(lowercaseAlias, holder);
+				final int aliasLength = lowercaseAlias.length();
+				for (int start = NON_PREFIX_START; start < aliasLength; start++) {
+					final int end = Math.min(start + MAX_SUBSTRING_LENGTH, aliasLength);
+					MutableStringMultiTrie.Node<Result.ItemHolder> node = containingBuilder.getRoot();
+					for (int i = start; i < end; i++) {
+						node = node.next(lowercaseAlias.charAt(i));
+					}
 
-							final int aliasLength = lowercaseAlias.length();
-							for (int start = NON_PREFIX_START; start < aliasLength; start++) {
-								final int end = Math.min(start + MAX_SUBSTRING_LENGTH, aliasLength);
-								MutableStringMultiTrie.Node<Result.ItemHolder> node = containingBuilder.getRoot();
-								for (int i = start; i < end; i++) {
-									node = node.next(lowercaseAlias.charAt(i));
-								}
-
-								node.put(holder);
-							}
-						});
-					});
+					node.put(holder);
+				}
+			});
 
 			return new Lookup(prefixBuilder.view(), containingBuilder.view());
 		}
