@@ -286,14 +286,14 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			this.viewHint.configureVisibility();
 			this.chooseHint.configureVisibility();
 
-			different.prefixResults().stream().map(Result::getItem).forEach(this::add);
+			different.prefixed().stream().map(Result::getItem).forEach(this::add);
 
-			if (!different.containResults().isEmpty()) {
-				if (!different.prefixResults().isEmpty()) {
+			if (!different.containing().isEmpty()) {
+				if (!different.prefixed().isEmpty()) {
 					this.add(new JPopupMenu.Separator());
 				}
 
-				different.containResults().stream().map(Result::getItem).forEach(this::add);
+				different.containing().stream().map(Result::getItem).forEach(this::add);
 			}
 
 			this.refreshPopup();
@@ -402,7 +402,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 		@Override
 		public int compareTo(@NonNull Result other) {
-			return this.identity().getSearchName().compareTo(other.identity().getSearchName());
+			return this.searchable.getSearchName().compareTo(other.searchable.getSearchName());
 		}
 
 		@Override
@@ -459,10 +459,6 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				return true;
 			}
 
-			Result getHolder() {
-				return Result.this;
-			}
-
 			void selectSearchable(MenuSelectionManager manager) {
 				if (!this.searchablePath.isEmpty()) {
 					manager.setSelectedPath(this.searchablePath.toArray(EMPTY_MENU_ELEMENTS));
@@ -470,7 +466,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 
 			SearchableElement getSearchable() {
-				return this.getHolder().searchable;
+				return Result.this.searchable;
 			}
 		}
 

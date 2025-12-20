@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.util;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -61,8 +62,8 @@ public final class StringLookup<R extends StringLookup.Result<R>> {
 	}
 
 	private final ResultCache emptyCache = new ResultCache(
-		"", EmptyStringMultiTrie.Node.get(),
-		ImmutableSet.of(), ImmutableList.of()
+			"", EmptyStringMultiTrie.Node.get(),
+			ImmutableSet.of(), ImmutableList.of()
 	);
 
 	private final int substringDepth;
@@ -102,7 +103,7 @@ public final class StringLookup<R extends StringLookup.Result<R>> {
 			if (this.resultCache.hasSameResults(oldCache)) {
 				return Results.Same.getInstance();
 			} else {
-				return Results.Different.of(this.resultCache);
+				return Results.Different.of(this.resultCache, this.chooser);
 			}
 		} else {
 			return Results.None.getInstance();
@@ -152,14 +153,21 @@ public final class StringLookup<R extends StringLookup.Result<R>> {
 		}
 
 		record Different<R extends Result<R>>(
-				ImmutableList<R> prefixResults,
-				ImmutableList<R> containResults
+				ImmutableCollection<R> prefixed,
+				ImmutableCollection<R> containing
 		) implements Results<R> {
-			private static <R extends Result<R>> Different<R> of(StringLookup<R>.ResultCache cache) {
+			private static <R extends Result<R>> Different<R> of(
+					StringLookup<R>.ResultCache cache, BinaryOperator<R> chooser
+			) {
 				return new Different<>(
-					cache.prefixResults.stream().map(ResultWrapper::result).collect(toImmutableList()),
-					// TODO respect chooser here?
-					cache.containResults.stream().distinct().map(ResultWrapper::result).collect(toImmutableList())
+					cache.prefixed.stream().map(ResultWrapper::result).collect(toImmutableList()),
+					cache.containing.stream()
+						.collect(toImmutableMap(
+							Function.identity(),
+							ResultWrapper::result,
+							chooser
+						))
+						.values()
 				);
 			}
 		}
@@ -168,28 +176,27 @@ public final class StringLookup<R extends StringLookup.Result<R>> {
 	private final class ResultCache {
 		final String term;
 		final StringMultiTrie.Node<R> prefixNode;
-		final ImmutableSet<ResultWrapper<R>> prefixResults;
-		final ImmutableList<ResultWrapper<R>> containResults;
+		final ImmutableSet<ResultWrapper<R>> prefixed;
+		final ImmutableList<ResultWrapper<R>> containing;
 
 		ResultCache(
 				String term, StringMultiTrie.Node<R> prefixNode,
-				ImmutableSet<ResultWrapper<R>> prefixResults,
-				ImmutableList<ResultWrapper<R>> containResults
+				ImmutableSet<ResultWrapper<R>> prefixed, ImmutableList<ResultWrapper<R>> containing
 		) {
 			this.term = term;
 			this.prefixNode = prefixNode;
-			this.prefixResults = prefixResults;
-			this.containResults = containResults;
+			this.prefixed = prefixed;
+			this.containing = containing;
 		}
 
 		boolean hasResults() {
-			return !this.prefixNode.isEmpty() || !this.containResults.isEmpty();
+			return !this.prefixNode.isEmpty() || !this.containing.isEmpty();
 		}
 
 		boolean hasSameResults(ResultCache other) {
 			return this == other
 					|| this.prefixNode == other.prefixNode
-					&& this.containResults.equals(other.containResults);
+					&& this.containing.equals(other.containing);
 		}
 
 		ResultCache updated(String term) {
@@ -223,32 +230,31 @@ public final class StringLookup<R extends StringLookup.Result<R>> {
 						oneTermIsPrefix = true;
 					}
 
-					final ImmutableSet<ResultWrapper<R>> prefixResults;
+					final ImmutableSet<ResultWrapper<R>> prefixed;
 					if (oneTermIsPrefix && this.prefixNode.getSize() == prefixNode.getSize()) {
-						prefixResults = this.prefixResults;
+						prefixed = this.prefixed;
 					} else {
-						prefixResults = this.buildPrefixed(prefixNode);
+						prefixed = this.buildPrefixed(prefixNode);
 					}
 
-					final ImmutableList<ResultWrapper<R>> containResults;
+					final ImmutableList<ResultWrapper<R>> containing;
 					if (cachedTermLength == commonPrefixLength && termLength > StringLookup.this.substringDepth) {
-						containResults = this.narrowContaining(term);
+						containing = this.narrowContaining(term);
 					} else {
-						containResults = this.buildContaining(term, prefixResults);
+						containing = this.buildContaining(term, prefixed);
 					}
 
-					return new ResultCache(term, prefixNode, prefixResults, containResults);
+					return new ResultCache(term, prefixNode, prefixed, containing);
 				}
 			}
 		}
 
 		ResultCache createFresh(String term) {
 			final StringMultiTrie.Node<R> prefixNode = StringLookup.this.resultsByPrefix.get(term);
-			final ImmutableSet<ResultWrapper<R>> prefixResults = this.buildPrefixed(prefixNode);
+			final ImmutableSet<ResultWrapper<R>> prefixed = this.buildPrefixed(prefixNode);
 			return new ResultCache(
 					term, prefixNode,
-					prefixResults,
-					this.buildContaining(term, prefixResults)
+					prefixed, this.buildContaining(term, prefixed)
 			);
 		}
 
@@ -267,7 +273,7 @@ public final class StringLookup<R extends StringLookup.Result<R>> {
 		}
 
 		ImmutableList<ResultWrapper<R>> narrowContaining(String term) {
-			return this.containResults.stream()
+			return this.containing.stream()
 				.filter(wrapper -> wrapper.result.matches(term))
 				.collect(toImmutableList());
 		}
