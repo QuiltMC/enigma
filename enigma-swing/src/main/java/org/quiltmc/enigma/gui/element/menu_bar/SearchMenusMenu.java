@@ -64,7 +64,7 @@ import static javax.swing.BorderFactory.createEmptyBorder;
 
 public class SearchMenusMenu extends AbstractEnigmaMenu {
 	/**
-	 * @return a breadth-first stream of the passed {@code root} element and all of its sub-elements,
+	 * @return a stream of the passed {@code root} element and all of its sub-elements,
 	 * excluding the {@link HelpMenu} and its sub-elements; the help menu is not searchable because it must be open
 	 * to start searching in the first place
 	 */
@@ -132,7 +132,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	);
 
 	private final Lazy.Clearable<StringLookup<Result>> lookup = Lazy.clearableOf(() -> StringLookup.of(
-			this.gui
+			2, Result::choose, this.gui
 				.getMenuBar()
 				.streamMenus()
 				.flatMap(SearchMenusMenu::streamElementTree)
@@ -148,8 +148,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 					Map.Entry::getKey,
 					Map.Entry::getValue,
 					LinkedListMultimap::create
-				)),
-			Result::choose
+				))
 	));
 
 	private final Lazy<ImmutableList<MenuElement>> fieldPath = Lazy.of(() -> buildPathTo(this.field));
@@ -289,12 +288,12 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 			different.prefixResults().stream().map(Result::getItem).forEach(this::add);
 
-			if (!different.containingResults().isEmpty()) {
+			if (!different.containResults().isEmpty()) {
 				if (!different.prefixResults().isEmpty()) {
 					this.add(new JPopupMenu.Separator());
 				}
 
-				different.containingResults().stream().map(Result::getItem).forEach(this::add);
+				different.containResults().stream().map(Result::getItem).forEach(this::add);
 			}
 
 			this.refreshPopup();
