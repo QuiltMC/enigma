@@ -43,8 +43,10 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.RenderingHints;
@@ -499,6 +501,37 @@ public final class GuiUtil {
 				buttonSetter.accept(configValue);
 			}
 		});
+	}
+
+	/**
+	 * @see #getCenteredFontBaseY(FontMetrics, int, int, int)
+	 */
+	public static int getCenteredFontBaseY(FontMetrics fontMetrics, int height, Insets insets) {
+		return getCenteredFontBaseY(fontMetrics, height, insets.top, insets.bottom);
+	}
+
+	/**
+	 * Calculates the baseline Y value for vertically centering the passed {@code fontMetrics}'
+	 * {@linkplain FontMetrics#getFont() font} within a space with the passed
+	 * {@code height}, {@code top} inset, and {@code bottom} inset.<br>
+	 * Typically passed as the {@code y} parameter of {@link Graphics#drawString(String, int, int)}.
+	 *
+	 * @param fontMetrics the metrics used to calculate font space requirements
+	 * @param height      the height of the space containing the font
+	 * @param top         the top inset of the space containing the font
+	 * @param bottom      the bottom inset of the space containing the font
+	 *
+	 * @return the Y value that places the baseline of the {@linkplain FontMetrics#getFont() font} such that it's
+	 * centered within its containing space
+	 */
+	public static int getCenteredFontBaseY(FontMetrics fontMetrics, int height, int top, int bottom) {
+		final int maxAscent = fontMetrics.getMaxAscent();
+		final int maxDescent = fontMetrics.getMaxDescent();
+		// simplified from:
+		// final int availableY = height - top - bottom;
+		// final int extraY = availableY - maxAscent - maxDescent;
+		// return maxAscent + top + extraY / 2;
+		return (maxAscent + top + height - bottom - maxDescent) / 2;
 	}
 
 	public enum FocusCondition {

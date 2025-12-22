@@ -68,9 +68,9 @@ public class PlaceheldMenuTextField extends PlaceheldTextField implements MenuEl
 		final Border originalBorder = this.getBorder();
 		this.selectionBorder = createCompoundBorder(
 			new MatteBorder(
-				DEFAULT_SELECTION_BORDER_TOP, DEFAULT_SELECTION_BORDER_LEFT,
-				DEFAULT_SELECTION_BORDER_BOTTOM, DEFAULT_SELECTION_BORDER_RIGHT,
-				UIManager.getColor("MenuItem.selectionBackground")
+					DEFAULT_SELECTION_BORDER_TOP, DEFAULT_SELECTION_BORDER_LEFT,
+					DEFAULT_SELECTION_BORDER_BOTTOM, DEFAULT_SELECTION_BORDER_RIGHT,
+					UIManager.getColor("MenuItem.selectionBackground")
 			),
 			originalBorder
 		);

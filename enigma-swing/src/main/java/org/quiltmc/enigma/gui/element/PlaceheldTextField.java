@@ -1,7 +1,6 @@
 package org.quiltmc.enigma.gui.element;
 
 import org.jspecify.annotations.Nullable;
-import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.Utils;
 
 import javax.swing.JTextField;
@@ -11,6 +10,9 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
+
+import static org.quiltmc.enigma.gui.util.GuiUtil.getCenteredFontBaseY;
+import static org.quiltmc.enigma.gui.util.GuiUtil.trySetRenderingHints;
 
 /**
  * A text field that displays placeholder text when it's empty.
@@ -75,17 +77,14 @@ public class PlaceheldTextField extends JTextField {
 
 		if (this.placeholder.isFull() && this.getText().isEmpty()) {
 			final Graphics disposableGraphics = graphics.create();
-			GuiUtil.trySetRenderingHints(disposableGraphics);
+			trySetRenderingHints(disposableGraphics);
 
 			Utils.findFirstNonNull(this.placeholderColor, this.getDisabledTextColor(), this.getForeground())
 					.ifPresent(disposableGraphics::setColor);
 			disposableGraphics.setFont(this.getFont());
 
 			final Insets insets = this.getInsets();
-			// HACK to keep the text vertically centered when subclasses adjust preferred height
-			final int extraTop = (this.getPreferredSize().height - super.getPreferredSize().height) / 2;
-			final int baseY = disposableGraphics.getFontMetrics().getMaxAscent() + insets.top + extraTop;
-
+			final int baseY = getCenteredFontBaseY(disposableGraphics.getFontMetrics(), this.getHeight(), insets);
 			disposableGraphics.drawString(this.placeholder.getText(), insets.left, baseY);
 
 			disposableGraphics.dispose();
@@ -93,7 +92,8 @@ public class PlaceheldTextField extends JTextField {
 	}
 
 	/**
-	 * @param placeholder the placeholder text for this field; if {@code null}, no placeholder will be shown
+	 * @param placeholder the placeholder text for this field;
+	 *                    if {@code null} or {@linkplain String#isEmpty() empty}, no placeholder will be shown
 	 */
 	public void setPlaceholder(@Nullable String placeholder) {
 		this.placeholder = placeholder == null || placeholder.isEmpty()
@@ -184,13 +184,14 @@ public class PlaceheldTextField extends JTextField {
 		public int getWidth() {
 			if (this.width < 0) {
 				this.width = PlaceheldTextField.this
-					.getFontMetrics(PlaceheldTextField.this.getFont()).stringWidth(this.text);
+					.getFontMetrics(PlaceheldTextField.this.getFont())
+					.stringWidth(this.text);
 			}
 
 			return this.width;
 		}
 
-		public void clearWidth() {
+		void clearWidth() {
 			this.width = UNSET_WIDTH;
 		}
 	}

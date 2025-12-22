@@ -7,7 +7,6 @@ import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
-import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Lazy;
@@ -53,6 +52,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.quiltmc.enigma.gui.util.GuiUtil.EMPTY_MENU_ELEMENTS;
+import static org.quiltmc.enigma.gui.util.GuiUtil.getCenteredFontBaseY;
+import static org.quiltmc.enigma.gui.util.GuiUtil.trySetRenderingHints;
 import static org.quiltmc.enigma.util.Utils.getLastOrNull;
 import static javax.swing.BorderFactory.createEmptyBorder;
 
@@ -503,7 +504,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				super.paint(graphics);
 
 				final Graphics disposableGraphics = graphics.create();
-				GuiUtil.trySetRenderingHints(disposableGraphics);
+				trySetRenderingHints(disposableGraphics);
 				final Color color = this.getForeground();
 				if (color != null) {
 					disposableGraphics.setColor(color);
@@ -515,7 +516,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				}
 
 				final Insets insets = this.getInsets();
-				final int baseY = disposableGraphics.getFontMetrics().getMaxAscent() + insets.top;
+				final int baseY = getCenteredFontBaseY(disposableGraphics.getFontMetrics(), this.getHeight(), insets);
 				disposableGraphics.drawString(this.alias, this.getWidth() - insets.right - this.getAliasWidth(), baseY);
 
 				disposableGraphics.dispose();
