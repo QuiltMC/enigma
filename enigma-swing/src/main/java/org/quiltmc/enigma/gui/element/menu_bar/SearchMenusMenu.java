@@ -140,6 +140,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 	private final Lazy<ImmutableList<MenuElement>> fieldPath = Lazy.of(() -> buildPathTo(this.field));
 
+	private final List<Component> transientChildren = new LinkedList<>();
+
 	protected SearchMenusMenu(Gui gui) {
 		super(gui);
 
@@ -155,7 +157,10 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		this.viewHint.setVisible(false);
 		this.chooseHint.setVisible(false);
 
-		this.addPermanentChildren();
+		this.add(this.field);
+		this.add(this.noResults);
+		this.add(this.viewHint);
+		this.add(this.chooseHint);
 
 		MenuSelectionManager.defaultManager().addChangeListener(e -> {
 			if (this.field.isShowing()) {
@@ -258,7 +263,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		this.lookup.get().lookUpDifferent(term).ifPresentOrElse(
 				results -> {
 					if (results.areEmpty()) {
-						this.keepOnlyPermanentChildren();
+						this.removeTransientChildren();
 
 						this.noResults.setVisible(!term.isEmpty());
 						this.viewHint.setVisible(false);
@@ -266,31 +271,31 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 						this.refreshPopup();
 					} else {
-						this.keepOnlyPermanentChildren();
+						this.removeTransientChildren();
 
 						this.noResults.setVisible(false);
 						this.viewHint.configureVisibility();
 						this.chooseHint.configureVisibility();
 
-						results.prefixed().stream().map(Result::getItem).forEach(this::add);
+						results.prefixed().stream().map(Result::getItem).forEach(this.transientChildren::add);
 
 						if (!results.containing().isEmpty()) {
 							if (!results.prefixed().isEmpty()) {
-								this.add(new JPopupMenu.Separator());
+								this.transientChildren.add(new JPopupMenu.Separator());
 							}
 
-							results.containing().stream().map(Result::getItem).forEach(this::add);
+							results.containing().stream().map(Result::getItem).forEach(this.transientChildren::add);
 						}
+
+						this.transientChildren.forEach(this::add);
 
 						this.refreshPopup();
 					}
 				},
 				() -> {
-					// in case term went directly from empty to a term with no results (usually via pasting)
-					// or vice versa, update noResults visibility so it only shows if there's a term
-					final boolean noTerm = term.isEmpty();
-					if (noTerm == this.noResults.isVisible()) {
-						this.noResults.setVisible(!noTerm);
+					final boolean showNoResults = this.transientChildren.isEmpty() && !term.isEmpty();
+					if (showNoResults != this.noResults.isVisible()) {
+						this.noResults.setVisible(showNoResults);
 						this.refreshPopup();
 					}
 				}
@@ -317,16 +322,9 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		}
 	}
 
-	private void addPermanentChildren() {
-		this.add(this.field);
-		this.add(this.noResults);
-		this.add(this.viewHint);
-		this.add(this.chooseHint);
-	}
-
-	private void keepOnlyPermanentChildren() {
-		this.removeAll();
-		this.addPermanentChildren();
+	private void removeTransientChildren() {
+		this.transientChildren.forEach(this::remove);
+		this.transientChildren.clear();
 	}
 
 	public void clearLookup() {
