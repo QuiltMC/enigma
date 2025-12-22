@@ -8,6 +8,7 @@ import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.GuiUtil;
+import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Lazy;
 import org.quiltmc.enigma.util.StringLookup;
@@ -604,7 +605,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 	// not a MenuElement so it can't be selected
 	private class HintItem extends JPanel implements Retranslatable {
-		static final int PAD = 3;
+		static final int PAD = ScaleUtil.scale(3);
 
 		final String translationKey;
 		final TrackedValue<Boolean> config;
