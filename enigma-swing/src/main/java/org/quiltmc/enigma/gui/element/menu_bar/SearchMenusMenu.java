@@ -1,9 +1,6 @@
 package org.quiltmc.enigma.gui.element.menu_bar;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Multimaps;
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.ConnectionState;
@@ -49,15 +46,12 @@ import java.awt.event.AWTEventListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static org.quiltmc.enigma.gui.util.GuiUtil.EMPTY_MENU_ELEMENTS;
 import static org.quiltmc.enigma.util.Utils.getLastOrNull;
 import static javax.swing.BorderFactory.createEmptyBorder;
@@ -136,19 +130,11 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				.getMenuBar()
 				.streamMenus()
 				.flatMap(SearchMenusMenu::streamElementTree)
-				.<SearchableElement>mapMulti((element, keep) -> {
-					if (element instanceof SearchableElement searchable) {
-						keep.accept(searchable);
-					}
-				})
-				.map(Result::createHolders)
-				.map(Map::entrySet)
-				.flatMap(Collection::stream)
-				.collect(Multimaps.toMultimap(
-					Map.Entry::getKey,
-					Map.Entry::getValue,
-					LinkedListMultimap::create
-				))
+				.flatMap(element -> element instanceof SearchableElement searchable
+					? Result.stream(searchable)
+					: Stream.empty()
+				)
+				.toList()
 	));
 
 	private final Lazy<ImmutableList<MenuElement>> fieldPath = Lazy.of(() -> buildPathTo(this.field));
@@ -361,18 +347,11 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				// put aliased results last so non-aliased results are kept in the case of duplicates
 				.thenComparing(Result::isAliased);
 
-		// creates a map of lowercase aliases to ItemHolders, each representing the passed searchable
-		static ImmutableMap<String, Result> createHolders(SearchableElement searchable) {
+		static Stream<Result> stream(SearchableElement searchable) {
 			final String searchName = searchable.getSearchName();
 			return searchable.streamSearchAliases()
 				.filter(alias -> !alias.isEmpty())
-				.map(alias -> Map.entry(alias.toLowerCase(), alias))
-				.collect(toImmutableMap(
-					Map.Entry::getKey,
-					entry -> new Result(searchable, searchName, entry.getKey(), entry.getValue()),
-					// ignore case-insensitive duplicate aliases
-					(left, right) -> left
-				));
+				.map(alias -> new Result(searchable, searchName, alias.toLowerCase(), alias));
 		}
 
 		final SearchableElement searchable;

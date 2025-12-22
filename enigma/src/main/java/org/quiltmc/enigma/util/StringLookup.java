@@ -4,13 +4,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
 import org.jspecify.annotations.NonNull;
 import org.quiltmc.enigma.util.multi_trie.CompositeStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.EmptyStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.MutableStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,14 +36,15 @@ public final class StringLookup<R extends StringLookup.Result> {
 	}
 
 	public static <R extends Result> StringLookup<R> of(
-			int substringDepth, Comparator<R> comparator, Multimap<String, R> results
+			int substringDepth, Comparator<R> comparator, Collection<R> results
 	) {
 		Preconditions.checkArgument(substringDepth > 0, "substringDepth must be positive!");
 
 		final CompositeStringMultiTrie<R> prefixBuilder = CompositeStringMultiTrie.createHashed();
 		final CompositeStringMultiTrie<R> substringBuilder = CompositeStringMultiTrie.createHashed();
 
-		results.forEach((string, result) -> {
+		results.forEach(result -> {
+			final String string = result.searchString();
 			prefixBuilder.put(string, result);
 
 			final int stringLength = string.length();
