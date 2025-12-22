@@ -405,8 +405,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		}
 
 		@Override
-		public boolean matches(String term) {
-			return this.lowercaseAlias.contains(term);
+		public String searchString() {
+			return this.lowercaseAlias;
 		}
 
 		@Override

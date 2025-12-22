@@ -111,8 +111,7 @@ public final class StringLookup<R extends StringLookup.Result> {
 	}
 
 	public interface Result {
-		// TODO replace this with ~getSearchString and move this implementation to StringLookup
-		boolean matches(String term);
+		String searchString();
 
 		Object identity();
 	}
@@ -265,7 +264,7 @@ public final class StringLookup<R extends StringLookup.Result> {
 
 		ImmutableList<ResultWrapper<R>> narrowContaining(String term) {
 			return this.containing.stream()
-				.filter(wrapper -> wrapper.result.matches(term))
+				.filter(wrapper -> wrapper.result.searchString().contains(term))
 				.collect(toImmutableList());
 		}
 
@@ -295,7 +294,7 @@ public final class StringLookup<R extends StringLookup.Result> {
 					.filter(result -> !excluded.contains(new ResultWrapper<>(result)));
 
 			if (longTerm) {
-				stream = stream.filter(result -> result.matches(term));
+				stream = stream.filter(result -> result.searchString().contains(term));
 			}
 
 			return stream
