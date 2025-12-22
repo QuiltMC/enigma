@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimaps;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.ConnectionState;
@@ -51,6 +50,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -132,7 +132,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	);
 
 	private final Lazy.Clearable<StringLookup<Result>> lookup = Lazy.clearableOf(() -> StringLookup.of(
-			2, Result::choose, this.gui
+			2, Result.COMPARATOR, this.gui
 				.getMenuBar()
 				.streamMenus()
 				.flatMap(SearchMenusMenu::streamElementTree)
@@ -355,7 +355,12 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	 *
 	 * <p> Contains the information needed to determine whether its item should be included in results.
 	 */
-	private static class Result implements StringLookup.Result<Result> {
+	private static class Result implements StringLookup.Result {
+		static final Comparator<Result> COMPARATOR = Comparator
+				.<Result, String>comparing(result -> result.searchable.getSearchName())
+				// put aliased results last so non-aliased results are kept in the case of duplicates
+				.thenComparing(result -> result.getItem().isAliased());
+
 		// creates a map of lowercase aliases to ItemHolders, each representing the passed searchable
 		static ImmutableMap<String, Result> createHolders(SearchableElement searchable) {
 			final String searchName = searchable.getSearchName();
@@ -368,11 +373,6 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 					// ignore case-insensitive duplicate aliases
 					(left, right) -> left
 				));
-		}
-
-		static Result choose(Result left, Result right) {
-			// if aliases share a prefix, try keeping non-aliased item
-			return right.getItem().isSearchNamed() && !left.getItem().isSearchNamed() ? right : left;
 		}
 
 		final SearchableElement searchable;
@@ -398,11 +398,6 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 
 			return this.item;
-		}
-
-		@Override
-		public int compareTo(@NonNull Result other) {
-			return this.searchable.getSearchName().compareTo(other.searchable.getSearchName());
 		}
 
 		@Override
@@ -455,8 +450,9 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				}
 			}
 
-			boolean isSearchNamed() {
-				return true;
+			// TODO put this in Result to avoid creating Item in COMPARATOR
+			boolean isAliased() {
+				return false;
 			}
 
 			void selectSearchable(MenuSelectionManager manager) {
@@ -486,8 +482,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 
 			@Override
-			boolean isSearchNamed() {
-				return false;
+			boolean isAliased() {
+				return true;
 			}
 
 			@Override

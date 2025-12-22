@@ -11,16 +11,16 @@ import org.quiltmc.enigma.util.multi_trie.EmptyStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.MutableStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
-import static com.google.common.collect.ImmutableMap.toImmutableMap;
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
-public final class StringLookup<R extends StringLookup.Result<R>> {
+// TODO javadoc
+public final class StringLookup<R extends StringLookup.Result> {
 	private static final int NON_PREFIX_START = 1;
 
 	private static int getCommonPrefixLength(String left, String right) {
@@ -35,8 +35,8 @@ public final class StringLookup<R extends StringLookup.Result<R>> {
 		return minLength;
 	}
 
-	public static <R extends Result<R>> StringLookup<R> of(
-			int substringDepth, BinaryOperator<R> chooser, Multimap<String, R> results
+	public static <R extends Result> StringLookup<R> of(
+			int substringDepth, Comparator<R> comparator, Multimap<String, R> results
 	) {
 		Preconditions.checkArgument(substringDepth > 0, "substringDepth must be positive!");
 
@@ -58,7 +58,7 @@ public final class StringLookup<R extends StringLookup.Result<R>> {
 			}
 		});
 
-		return new StringLookup<>(substringDepth, chooser, prefixBuilder.view(), substringBuilder.view());
+		return new StringLookup<>(substringDepth, comparator, prefixBuilder.view(), substringBuilder.view());
 	}
 
 	private final ResultCache emptyCache = new ResultCache(
@@ -67,7 +67,7 @@ public final class StringLookup<R extends StringLookup.Result<R>> {
 	);
 
 	private final int substringDepth;
-	private final BinaryOperator<R> chooser;
+	private final Comparator<ResultWrapper<R>> comparator;
 
 	// maps complete strings to their corresponding results
 	private final StringMultiTrie<R> resultsByPrefix;
@@ -79,11 +79,11 @@ public final class StringLookup<R extends StringLookup.Result<R>> {
 	private ResultCache resultCache = this.emptyCache;
 
 	private StringLookup(
-			int substringDepth, BinaryOperator<R> chooser,
+			int substringDepth, Comparator<R> comparator,
 			StringMultiTrie<R> resultsByPrefix, StringMultiTrie<R> resultsBySubstring
 	) {
 		this.substringDepth = substringDepth;
-		this.chooser = chooser;
+		this.comparator = Comparator.comparing(ResultWrapper::result, comparator);
 
 		this.resultsByPrefix = resultsByPrefix;
 		this.resultsBySubstring = resultsBySubstring;
@@ -103,20 +103,21 @@ public final class StringLookup<R extends StringLookup.Result<R>> {
 			if (this.resultCache.hasSameResults(oldCache)) {
 				return Results.Same.getInstance();
 			} else {
-				return Results.Different.of(this.resultCache, this.chooser);
+				return Results.Different.of(this.resultCache, this.comparator);
 			}
 		} else {
 			return Results.None.getInstance();
 		}
 	}
 
-	public interface Result<R extends Result<R>> extends Comparable<R> {
+	public interface Result {
+		// TODO replace this with ~getSearchString and move this implementation to StringLookup
 		boolean matches(String term);
 
 		Object identity();
 	}
 
-	private record ResultWrapper<R extends Result<R>>(R result) implements Comparable<ResultWrapper<R>> {
+	private record ResultWrapper<R extends Result>(R result) {
 		@Override
 		public boolean equals(Object o) {
 			return o instanceof ResultWrapper<?> other && other.result.identity().equals(this.result.identity());
@@ -126,48 +127,42 @@ public final class StringLookup<R extends StringLookup.Result<R>> {
 		public int hashCode() {
 			return this.result.identity().hashCode();
 		}
-
-		@Override
-		public int compareTo(@NonNull ResultWrapper<R> other) {
-			return this.result.compareTo(other.result);
-		}
 	}
 
-	public sealed interface Results<R extends Result<R>> {
-		final class None<R extends Result<R>> implements Results<R> {
+	public sealed interface Results<R extends Result> {
+		final class None<R extends Result> implements Results<R> {
 			private static final None<?> INSTANCE = new None<>();
 
 			@SuppressWarnings("unchecked")
-			private static <R extends Result<R>> None<R> getInstance() {
+			private static <R extends Result> None<R> getInstance() {
 				return (None<R>) INSTANCE;
 			}
 		}
 
-		final class Same<R extends Result<R>> implements Results<R> {
+		final class Same<R extends Result> implements Results<R> {
 			private static final Same<?> INSTANCE = new Same<>();
 
 			@SuppressWarnings("unchecked")
-			private static <R extends Result<R>> Same<R> getInstance() {
+			private static <R extends Result> Same<R> getInstance() {
 				return (Same<R>) INSTANCE;
 			}
 		}
 
-		record Different<R extends Result<R>>(
+		record Different<R extends Result>(
 				ImmutableCollection<R> prefixed,
 				ImmutableCollection<R> containing
 		) implements Results<R> {
-			private static <R extends Result<R>> Different<R> of(
-					StringLookup<R>.ResultCache cache, BinaryOperator<R> chooser
+			private static <R extends Result> Different<R> of(
+					StringLookup<R>.ResultCache cache, Comparator<ResultWrapper<R>> comparator
 			) {
 				return new Different<>(
+					// prefixed is already sorted
 					cache.prefixed.stream().map(ResultWrapper::result).collect(toImmutableList()),
 					cache.containing.stream()
-						.collect(toImmutableMap(
-							Function.identity(),
-							ResultWrapper::result,
-							chooser
-						))
-						.values()
+						.sorted(comparator)
+						.distinct()
+						.map(ResultWrapper::result)
+						.collect(toImmutableList())
 				);
 			}
 		}
@@ -262,14 +257,10 @@ public final class StringLookup<R extends StringLookup.Result<R>> {
 			return prefixNode
 				.streamValues()
 				.map(ResultWrapper::new)
-				.sorted()
-				.collect(toImmutableMap(
-					Function.identity(),
-					ResultWrapper::result,
-					StringLookup.this.chooser
-				))
-				// use keySet of map so we can respect chooser
-				.keySet();
+				// sort prefixed before results are reported because it's collected to a set
+				// only the first of equivalent elements is kept
+				.sorted(StringLookup.this.comparator)
+				.collect(toImmutableSet());
 		}
 
 		ImmutableList<ResultWrapper<R>> narrowContaining(String term) {
@@ -309,7 +300,6 @@ public final class StringLookup<R extends StringLookup.Result<R>> {
 
 			return stream
 				.map(ResultWrapper::new)
-				.sorted()
 				.collect(toImmutableList());
 		}
 	}
