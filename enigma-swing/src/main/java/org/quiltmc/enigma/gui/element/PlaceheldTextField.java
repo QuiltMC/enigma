@@ -76,18 +76,18 @@ public class PlaceheldTextField extends JTextField {
 		super.paintComponent(graphics);
 
 		if (this.placeholder.isFull() && this.getText().isEmpty()) {
-			final Graphics disposableGraphics = graphics.create();
-			trySetRenderingHints(disposableGraphics);
+			final Graphics localGraphics = graphics.create();
+			trySetRenderingHints(localGraphics);
 
 			Utils.findFirstNonNull(this.placeholderColor, this.getDisabledTextColor(), this.getForeground())
-					.ifPresent(disposableGraphics::setColor);
-			disposableGraphics.setFont(this.getFont());
+					.ifPresent(localGraphics::setColor);
+			localGraphics.setFont(this.getFont());
 
 			final Insets insets = this.getInsets();
-			final int baseY = getCenteredFontBaseY(disposableGraphics.getFontMetrics(), this.getHeight(), insets);
-			disposableGraphics.drawString(this.placeholder.getText(), insets.left, baseY);
+			final int baseY = getCenteredFontBaseY(localGraphics.getFontMetrics(), this.getHeight(), insets);
+			localGraphics.drawString(this.placeholder.getText(), insets.left, baseY);
 
-			disposableGraphics.dispose();
+			localGraphics.dispose();
 		}
 	}
 
