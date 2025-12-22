@@ -252,38 +252,48 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	}
 
 	private void updateResultItems() {
-		final String searchTerm = this.field.getText();
+		final String term = this.field.getText();
 
-		final StringLookup.Results<Result> results = this.lookup.get().lookUp(searchTerm);
+		this.lookup.get().lookUpDifferent(term).ifPresentOrElse(
+				results -> {
+					if (results.areEmpty()) {
+						this.keepOnlyPermanentChildren();
 
-		if (results instanceof StringLookup.Results.None) {
-			this.keepOnlyPermanentChildren();
+						this.noResults.setVisible(!term.isEmpty());
+						this.viewHint.setVisible(false);
+						this.chooseHint.setVisible(false);
 
-			this.viewHint.setVisible(false);
-			this.chooseHint.setVisible(false);
+						this.refreshPopup();
+					} else {
+						this.keepOnlyPermanentChildren();
 
-			this.noResults.setVisible(!searchTerm.isEmpty());
+						this.noResults.setVisible(false);
+						this.viewHint.configureVisibility();
+						this.chooseHint.configureVisibility();
 
-			this.refreshPopup();
-		} else if (results instanceof StringLookup.Results.Different<Result> different) {
-			this.keepOnlyPermanentChildren();
+						results.prefixed().stream().map(Result::getItem).forEach(this::add);
 
-			this.noResults.setVisible(false);
-			this.viewHint.configureVisibility();
-			this.chooseHint.configureVisibility();
+						if (!results.containing().isEmpty()) {
+							if (!results.prefixed().isEmpty()) {
+								this.add(new JPopupMenu.Separator());
+							}
 
-			different.prefixed().stream().map(Result::getItem).forEach(this::add);
+							results.containing().stream().map(Result::getItem).forEach(this::add);
+						}
 
-			if (!different.containing().isEmpty()) {
-				if (!different.prefixed().isEmpty()) {
-					this.add(new JPopupMenu.Separator());
+						this.refreshPopup();
+					}
+				},
+				() -> {
+					// in case term went directly from empty to a term with no results (usually via pasting)
+					// or vice versa, update noResults visibility so it only shows if there's a term
+					final boolean noTerm = term.isEmpty();
+					if (noTerm == this.noResults.isVisible()) {
+						this.noResults.setVisible(!noTerm);
+						this.refreshPopup();
+					}
 				}
-
-				different.containing().stream().map(Result::getItem).forEach(this::add);
-			}
-
-			this.refreshPopup();
-		} // else Results.Same
+		);
 	}
 
 	private void refreshPopup() {
@@ -384,12 +394,12 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		}
 
 		@Override
-		public String searchString() {
+		public String lookupString() {
 			return this.lowercaseAlias;
 		}
 
 		@Override
-		public SearchableElement identity() {
+		public SearchableElement target() {
 			return this.searchable;
 		}
 

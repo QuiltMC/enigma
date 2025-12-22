@@ -10,16 +10,30 @@ import org.quiltmc.enigma.util.multi_trie.EmptyStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.MutableStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
-// TODO javadoc
+/**
+ * Allows {@linkplain #lookUp(String) looking up} {@linkplain Result results} via
+ * {@linkplain Result#lookupString() strings}.<br>
+ * Substrings of {@linkplain Result#lookupString() lookup strings} will be matched.<br>
+ * Any number of {@linkplain Result results} may be associated with a {@linkplain Result#lookupString() string}.<br>
+ * A {@link Result Result} typically wraps the actual object being searched for,
+ * i.e. its {@linkplain Result#target() target}.
+ *
+ * @see #lookUp(String)
+ * @see #of(int, Comparator, Iterable)
+ * @see Result
+ * @see Results
+ *
+ * @param <R> the type of results
+ */
 public final class StringLookup<R extends StringLookup.Result> {
 	private static final int NON_PREFIX_START = 1;
 
@@ -35,16 +49,39 @@ public final class StringLookup<R extends StringLookup.Result> {
 		return minLength;
 	}
 
+	/**
+	 * @param substringDepth the length of substring that can be looked up before having to check
+	 *                       {@link String#contains(CharSequence)};<br>
+	 *                       higher values mean faster lookups at the cost of a greater memory footprint;<br>
+	 *                       for search terms of this length or less, {@link String#contains(CharSequence)}
+	 *                       is not checked;<br>
+	 *                       for longer search terms, {@link String#contains(CharSequence)} is only checked for
+	 *                       results containing a substring of the search term of this length
+	 * @param comparator     a comparator which determines the order of returned {@link Results Results};
+	 *                       note that, in the case of results with the same {@linkplain Result#target() target},
+	 *                       only the first is kept
+	 * @param results        the results which may be {@linkplain #lookUp(String) looked up};<br>
+	 *                       the returned lookup will not reflect changes to the passed iterable;<br>
+	 *                       create a new lookup if strings or results change
+	 *
+	 * @param <R> the type of results
+	 *
+	 * @return a new lookup for the passed {@code results}
+	 *
+	 * @see Result
+	 * @see #lookUp(String)
+	 */
 	public static <R extends Result> StringLookup<R> of(
-			int substringDepth, Comparator<R> comparator, Collection<R> results
+			int substringDepth, Comparator<R> comparator, Iterable<R> results
 	) {
+		// TODO replace this with Arguments::requirePositive from #346
 		Preconditions.checkArgument(substringDepth > 0, "substringDepth must be positive!");
 
 		final CompositeStringMultiTrie<R> prefixBuilder = CompositeStringMultiTrie.createHashed();
 		final CompositeStringMultiTrie<R> substringBuilder = CompositeStringMultiTrie.createHashed();
 
 		results.forEach(result -> {
-			final String string = result.searchString();
+			final String string = result.lookupString();
 			prefixBuilder.put(string, result);
 
 			final int stringLength = string.length();
@@ -62,9 +99,10 @@ public final class StringLookup<R extends StringLookup.Result> {
 		return new StringLookup<>(substringDepth, comparator, prefixBuilder.view(), substringBuilder.view());
 	}
 
-	private final ResultCache emptyCache = new ResultCache(
+	private final ResultCache emptyTermCache = new ResultCache(
 			"", EmptyStringMultiTrie.Node.get(),
-			ImmutableSet.of(), ImmutableList.of()
+			ImmutableSet.of(), ImmutableList.of(),
+			Results.empty()
 	);
 
 	private final int substringDepth;
@@ -77,7 +115,7 @@ public final class StringLookup<R extends StringLookup.Result> {
 	private final StringMultiTrie<R> resultsBySubstring;
 
 	@NonNull
-	private ResultCache resultCache = this.emptyCache;
+	private ResultCache cache = this.emptyTermCache;
 
 	private StringLookup(
 			int substringDepth, Comparator<R> comparator,
@@ -90,81 +128,141 @@ public final class StringLookup<R extends StringLookup.Result> {
 		this.resultsBySubstring = resultsBySubstring;
 	}
 
+	// TODO implement lookUpIgnoreCase
+	/**
+	 * @return results for the passed {@code term}; an empty {@code term} yields empty results
+	 *
+	 * @see #lookUpDifferent(String)
+	 */
 	public Results<R> lookUp(String term) {
-		if (term.isEmpty()) {
-			this.resultCache = this.emptyCache;
-
-			return Results.None.getInstance();
-		}
-
-		final ResultCache oldCache = this.resultCache;
-		this.resultCache = this.resultCache.updated(term.toLowerCase());
-
-		if (this.resultCache.hasResults()) {
-			if (this.resultCache.hasSameResults(oldCache)) {
-				return Results.Same.getInstance();
-			} else {
-				return Results.Different.of(this.resultCache, this.comparator);
-			}
-		} else {
-			return Results.None.getInstance();
-		}
+		return this.lookUpImpl(term).getCache().results;
 	}
 
-	public interface Result {
-		String searchString();
+	/**
+	 * @return an {@link Optional} holding results for the passed {@code term} if they are different from results
+	 * returned by the most recent call to {@code lookUpDifferent(String)} or {@link #lookUp(String)},
+	 * or {@link Optional#empty()} otherwise
+	 *
+	 * @see #lookUp(String)
+	 */
+	public Optional<Results<R>> lookUpDifferent(String term) {
+		return Optional
+			.of(this.lookUpImpl(term))
+			.filter(ResultCache.Update::changed)
+			.map(ResultCache.Update::getCache)
+			.map(ResultCache::getResults);
+	}
 
-		Object identity();
+	private ResultCache.Update lookUpImpl(String term) {
+		final ResultCache.Update updated = this.cache.updated(term.toLowerCase());
+		this.cache = updated.getCache();
+		return updated;
+	}
+
+	// TODO replace result interface with final immutable entry class
+	/**
+	 * A result which may be looked up via a {@link StringLookup}.
+	 *
+	 * <p> A result associates a {@link #lookupString()} with a {@link #target()}.<br>
+	 * Targets are what you actually want to find when performing a lookup.
+	 *
+	 * <p> If a lookup contains multiple results with the same target, only one will appear in {@link Results Results}.
+	 *
+	 * <p> Multiple results with the same target allow looking up the target via different strings
+	 * without creating duplicate lookup results.<br>
+	 * Creating multiple results with the same target and same string is wasteful and should be avoided;
+	 * no attempt is made to exclude them.
+	 */
+	public interface Result {
+		/**
+		 * @return the string used to look up this result; substrings will be matched
+		 *
+		 * @implSpec implementations must be pure
+		 */
+		String lookupString();
+
+		/**
+		 * @return the target of this result
+		 *
+		 * @implSpec implementations must be pure
+		 *
+		 * @implNote the target object is used as the result's identity for certain operations;
+		 * the target's {@link #equals(Object)} and {@link #hashCode()} methods determine equality and placement
+		 */
+		Object target();
 	}
 
 	private record ResultWrapper<R extends Result>(R result) {
 		@Override
 		public boolean equals(Object o) {
-			return o instanceof ResultWrapper<?> other && other.result.identity().equals(this.result.identity());
+			return o instanceof ResultWrapper<?> other && other.result.target().equals(this.result.target());
 		}
 
 		@Override
 		public int hashCode() {
-			return this.result.identity().hashCode();
+			return this.result.target().hashCode();
 		}
 	}
 
-	public sealed interface Results<R extends Result> {
-		final class None<R extends Result> implements Results<R> {
-			private static final None<?> INSTANCE = new None<>();
+	/**
+	 * Represents the {@link Result Result}s found by a {@linkplain #lookUp(String) lookup}.
+	 *
+	 * @param <R> the type of results
+	 *
+	 * @see #lookUp(String)
+	 */
+	public static final class Results<R extends Result> {
+		private static final Results<?> EMPTY = new Results<>(ImmutableList.of(), ImmutableList.of());
 
-			@SuppressWarnings("unchecked")
-			private static <R extends Result> None<R> getInstance() {
-				return (None<R>) INSTANCE;
-			}
+		@SuppressWarnings("unchecked")
+		private static <R extends Result> Results<R> empty() {
+			return (Results<R>) EMPTY;
 		}
 
-		final class Same<R extends Result> implements Results<R> {
-			private static final Same<?> INSTANCE = new Same<>();
+		private final ImmutableCollection<R> prefixed;
+		private final ImmutableCollection<R> containing;
 
-			@SuppressWarnings("unchecked")
-			private static <R extends Result> Same<R> getInstance() {
-				return (Same<R>) INSTANCE;
-			}
+		private Results(ImmutableCollection<R> prefixed, ImmutableCollection<R> containing) {
+			this.prefixed = prefixed;
+			this.containing = containing;
 		}
 
-		record Different<R extends Result>(
-				ImmutableCollection<R> prefixed,
-				ImmutableCollection<R> containing
-		) implements Results<R> {
-			private static <R extends Result> Different<R> of(
-					StringLookup<R>.ResultCache cache, Comparator<ResultWrapper<R>> comparator
-			) {
-				return new Different<>(
-					// prefixed is already sorted
-					cache.prefixed.stream().map(ResultWrapper::result).collect(toImmutableList()),
-					cache.containing.stream()
-						.sorted(comparator)
-						.distinct()
-						.map(ResultWrapper::result)
-						.collect(toImmutableList())
-				);
-			}
+		private static <R extends Result> Results<R> of(
+				Comparator<ResultWrapper<R>> comparator,
+				ImmutableSet<ResultWrapper<R>> prefixed,
+				ImmutableList<ResultWrapper<R>> containing
+		) {
+			return prefixed.isEmpty() && containing.isEmpty() ? empty() : new Results<>(
+				// prefixed is already sorted
+				prefixed.stream().map(ResultWrapper::result).collect(toImmutableList()),
+				containing.stream()
+					.sorted(comparator)
+					.distinct()
+					.map(ResultWrapper::result)
+					.collect(toImmutableList())
+			);
+		}
+
+		public boolean areEmpty() {
+			return this.prefixed.isEmpty() && this.containing.isEmpty();
+		}
+
+		/**
+		 * @return results prefixed with the search term
+		 *
+		 * @see #containing()
+		 */
+		public ImmutableCollection<R> prefixed() {
+			return this.prefixed;
+		}
+
+		/**
+		 * @return results containing the search term but not prefixed with it
+		 *
+		 * @see #prefixed()
+		 */
+		public ImmutableCollection<R> containing() {
+			return this.containing;
 		}
 	}
 
@@ -173,39 +271,40 @@ public final class StringLookup<R extends StringLookup.Result> {
 		final StringMultiTrie.Node<R> prefixNode;
 		final ImmutableSet<ResultWrapper<R>> prefixed;
 		final ImmutableList<ResultWrapper<R>> containing;
+		final Results<R> results;
 
 		ResultCache(
 				String term, StringMultiTrie.Node<R> prefixNode,
-				ImmutableSet<ResultWrapper<R>> prefixed, ImmutableList<ResultWrapper<R>> containing
+				ImmutableSet<ResultWrapper<R>> prefixed, ImmutableList<ResultWrapper<R>> containing,
+				Results<R> results
 		) {
 			this.term = term;
 			this.prefixNode = prefixNode;
 			this.prefixed = prefixed;
 			this.containing = containing;
+			this.results = results;
 		}
 
-		boolean hasResults() {
-			return !this.prefixNode.isEmpty() || !this.containing.isEmpty();
+		Results<R> getResults() {
+			return this.results;
 		}
 
-		boolean hasSameResults(ResultCache other) {
-			return this == other
-					|| this.prefixNode == other.prefixNode
-					&& this.containing.equals(other.containing);
-		}
-
-		ResultCache updated(String term) {
-			if (this.term.isEmpty()) {
-				return this.createFresh(term);
+		ResultCache.Update updated(String term) {
+			if (term.isEmpty()) {
+				return StringLookup.this.emptyTermCache.new Update(!this.results.areEmpty());
+			} else if (this.term.isEmpty()) {
+				final ResultCache fresh = this.createFresh(term);
+				return fresh.new Update(!fresh.results.areEmpty());
 			} else {
 				final int commonPrefixLength = getCommonPrefixLength(this.term, term);
 				final int termLength = term.length();
 				final int cachedTermLength = this.term.length();
 
 				if (commonPrefixLength == 0) {
-					return this.createFresh(term);
+					final ResultCache fresh = this.createFresh(term);
+					return fresh.new Update(!fresh.sameResults(this.prefixNode, this.containing));
 				} else if (commonPrefixLength == termLength && commonPrefixLength == cachedTermLength) {
-					return this;
+					return this.new Update(false);
 				} else {
 					final int backSteps = cachedTermLength - commonPrefixLength;
 					StringMultiTrie.Node<R> prefixNode = this.prefixNode.previous(backSteps);
@@ -239,17 +338,27 @@ public final class StringLookup<R extends StringLookup.Result> {
 						containing = this.buildContaining(term, prefixed);
 					}
 
-					return new ResultCache(term, prefixNode, prefixed, containing);
+					final boolean same = this.sameResults(prefixNode, containing);
+					final Results<R> results = same
+							? this.results
+							: Results.of(StringLookup.this.comparator, prefixed, containing);
+					return new ResultCache(term, prefixNode, prefixed, containing, results).new Update(!same);
 				}
 			}
+		}
+
+		private boolean sameResults(StringMultiTrie.Node<R> prefixNode, ImmutableList<ResultWrapper<R>> containing) {
+			return this.prefixNode == prefixNode && this.containing.equals(containing);
 		}
 
 		ResultCache createFresh(String term) {
 			final StringMultiTrie.Node<R> prefixNode = StringLookup.this.resultsByPrefix.get(term);
 			final ImmutableSet<ResultWrapper<R>> prefixed = this.buildPrefixed(prefixNode);
+			final ImmutableList<ResultWrapper<R>> containing = this.buildContaining(term, prefixed);
 			return new ResultCache(
 					term, prefixNode,
-					prefixed, this.buildContaining(term, prefixed)
+					prefixed, containing,
+					Results.of(StringLookup.this.comparator, prefixed, containing)
 			);
 		}
 
@@ -265,7 +374,7 @@ public final class StringLookup<R extends StringLookup.Result> {
 
 		ImmutableList<ResultWrapper<R>> narrowContaining(String term) {
 			return this.containing.stream()
-				.filter(wrapper -> wrapper.result.searchString().contains(term))
+				.filter(wrapper -> wrapper.result.lookupString().contains(term))
 				.collect(toImmutableList());
 		}
 
@@ -295,12 +404,28 @@ public final class StringLookup<R extends StringLookup.Result> {
 					.filter(result -> !excluded.contains(new ResultWrapper<>(result)));
 
 			if (longTerm) {
-				stream = stream.filter(result -> result.searchString().contains(term));
+				stream = stream.filter(result -> result.lookupString().contains(term));
 			}
 
 			return stream
 				.map(ResultWrapper::new)
 				.collect(toImmutableList());
+		}
+
+		class Update {
+			final boolean changed;
+
+			Update(boolean changed) {
+				this.changed = changed;
+			}
+
+			ResultCache getCache() {
+				return ResultCache.this;
+			}
+
+			boolean changed() {
+				return this.changed;
+			}
 		}
 	}
 }
