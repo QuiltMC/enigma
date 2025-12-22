@@ -277,17 +277,15 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 						this.viewHint.configureVisibility();
 						this.chooseHint.configureVisibility();
 
-						results.prefixed().stream().map(Result::getItem).forEach(this.transientChildren::add);
+						results.prefixed().stream().map(Result::getItem).forEach(this::addTransientChild);
 
 						if (!results.containing().isEmpty()) {
 							if (!results.prefixed().isEmpty()) {
-								this.transientChildren.add(new JPopupMenu.Separator());
+								this.addTransientChild(new JPopupMenu.Separator());
 							}
 
-							results.containing().stream().map(Result::getItem).forEach(this.transientChildren::add);
+							results.containing().stream().map(Result::getItem).forEach(this::addTransientChild);
 						}
-
-						this.transientChildren.forEach(this::add);
 
 						this.refreshPopup();
 					}
@@ -325,6 +323,11 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 	private void removeTransientChildren() {
 		this.transientChildren.forEach(this::remove);
 		this.transientChildren.clear();
+	}
+
+	private void addTransientChild(Component child) {
+		this.add(child);
+		this.transientChildren.add(child);
 	}
 
 	public void clearLookup() {
