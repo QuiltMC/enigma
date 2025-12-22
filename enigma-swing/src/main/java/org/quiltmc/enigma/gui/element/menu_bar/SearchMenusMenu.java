@@ -14,7 +14,6 @@ import org.quiltmc.enigma.util.Lazy;
 import org.quiltmc.enigma.util.StringLookup;
 import org.tinylog.Logger;
 
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -622,11 +621,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 			this.setLayout(new GridBagLayout());
 
+			this.infoIndicator.setBorder(createEmptyBorder(0, 0, 0, PAD));
 			this.add(this.infoIndicator);
-
-			final var spacer = Box.createHorizontalBox();
-			spacer.setPreferredSize(new Dimension(PAD, 1));
-			this.add(spacer);
 
 			final Font oldHintFont = this.hint.getFont();
 			this.hint.setFont(oldHintFont.deriveFont(Font.ITALIC, oldHintFont.getSize2D() * 0.85f));
