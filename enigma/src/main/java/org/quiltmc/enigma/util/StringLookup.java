@@ -77,22 +77,23 @@ public final class StringLookup<R extends StringLookup.Result> {
 		// TODO replace this with Arguments::requirePositive from #346
 		Preconditions.checkArgument(substringDepth > 0, "substringDepth must be positive!");
 
-		final CompositeStringMultiTrie<R> prefixBuilder = CompositeStringMultiTrie.createHashed();
-		final CompositeStringMultiTrie<R> substringBuilder = CompositeStringMultiTrie.createHashed();
+		final CompositeStringMultiTrie<ResultWrapper<R>> prefixBuilder = CompositeStringMultiTrie.createHashed();
+		final CompositeStringMultiTrie<ResultWrapper<R>> substringBuilder = CompositeStringMultiTrie.createHashed();
 
 		results.forEach(result -> {
 			final String string = result.lookupString();
-			prefixBuilder.put(string, result);
+			final ResultWrapper<R> wrapped = new ResultWrapper<>(result);
+			prefixBuilder.put(string, wrapped);
 
 			final int stringLength = string.length();
 			for (int start = NON_PREFIX_START; start < stringLength; start++) {
 				final int end = Math.min(start + substringDepth, stringLength);
-				MutableStringMultiTrie.Node<R> node = substringBuilder.getRoot();
+				MutableStringMultiTrie.Node<ResultWrapper<R>> node = substringBuilder.getRoot();
 				for (int i = start; i < end; i++) {
 					node = node.next(string.charAt(i));
 				}
 
-				node.put(result);
+				node.put(wrapped);
 			}
 		});
 
@@ -109,17 +110,18 @@ public final class StringLookup<R extends StringLookup.Result> {
 	private final Comparator<ResultWrapper<R>> comparator;
 
 	// maps complete strings to their corresponding results
-	private final StringMultiTrie<R> resultsByPrefix;
+	private final StringMultiTrie<ResultWrapper<R>> resultsByPrefix;
 	// maps all non-prefix substringDepth-length (or less) substrings
 	// to their corresponding results; used to narrow down the search scope for substring matches
-	private final StringMultiTrie<R> resultsBySubstring;
+	private final StringMultiTrie<ResultWrapper<R>> resultsBySubstring;
 
 	@NonNull
 	private ResultCache cache = this.emptyTermCache;
 
 	private StringLookup(
 			int substringDepth, Comparator<R> comparator,
-			StringMultiTrie<R> resultsByPrefix, StringMultiTrie<R> resultsBySubstring
+			StringMultiTrie<ResultWrapper<R>> resultsByPrefix,
+			StringMultiTrie<ResultWrapper<R>> resultsBySubstring
 	) {
 		this.substringDepth = substringDepth;
 		this.comparator = Comparator.comparing(ResultWrapper::result, comparator);
@@ -159,7 +161,8 @@ public final class StringLookup<R extends StringLookup.Result> {
 		return updated;
 	}
 
-	// TODO replace result interface with final immutable entry class
+	// Note: this is an interface rather than an Entry record to make it easier for implementers so sort based on a
+	// Result comparator while using the identity of their target.
 	/**
 	 * A result which may be looked up via a {@link StringLookup}.
 	 *
@@ -268,13 +271,13 @@ public final class StringLookup<R extends StringLookup.Result> {
 
 	private final class ResultCache {
 		final String term;
-		final StringMultiTrie.Node<R> prefixNode;
+		final StringMultiTrie.Node<ResultWrapper<R>> prefixNode;
 		final ImmutableSet<ResultWrapper<R>> prefixed;
 		final ImmutableList<ResultWrapper<R>> containing;
 		final Results<R> results;
 
 		ResultCache(
-				String term, StringMultiTrie.Node<R> prefixNode,
+				String term, StringMultiTrie.Node<ResultWrapper<R>> prefixNode,
 				ImmutableSet<ResultWrapper<R>> prefixed, ImmutableList<ResultWrapper<R>> containing,
 				Results<R> results
 		) {
@@ -307,7 +310,7 @@ public final class StringLookup<R extends StringLookup.Result> {
 					return this.new Update(false);
 				} else {
 					final int backSteps = cachedTermLength - commonPrefixLength;
-					StringMultiTrie.Node<R> prefixNode = this.prefixNode.previous(backSteps);
+					StringMultiTrie.Node<ResultWrapper<R>> prefixNode = this.prefixNode.previous(backSteps);
 					// true iff this.term is a prefix of term or vice versa
 					final boolean oneTermIsPrefix;
 					if (termLength > commonPrefixLength) {
@@ -347,12 +350,14 @@ public final class StringLookup<R extends StringLookup.Result> {
 			}
 		}
 
-		private boolean sameResults(StringMultiTrie.Node<R> prefixNode, ImmutableList<ResultWrapper<R>> containing) {
+		private boolean sameResults(
+				StringMultiTrie.Node<ResultWrapper<R>> prefixNode, ImmutableList<ResultWrapper<R>> containing
+		) {
 			return this.prefixNode == prefixNode && this.containing.equals(containing);
 		}
 
 		ResultCache createFresh(String term) {
-			final StringMultiTrie.Node<R> prefixNode = StringLookup.this.resultsByPrefix.get(term);
+			final StringMultiTrie.Node<ResultWrapper<R>> prefixNode = StringLookup.this.resultsByPrefix.get(term);
 			final ImmutableSet<ResultWrapper<R>> prefixed = this.buildPrefixed(prefixNode);
 			final ImmutableList<ResultWrapper<R>> containing = this.buildContaining(term, prefixed);
 			return new ResultCache(
@@ -362,10 +367,9 @@ public final class StringLookup<R extends StringLookup.Result> {
 			);
 		}
 
-		ImmutableSet<ResultWrapper<R>> buildPrefixed(StringMultiTrie.Node<R> prefixNode) {
+		ImmutableSet<ResultWrapper<R>> buildPrefixed(StringMultiTrie.Node<ResultWrapper<R>> prefixNode) {
 			return prefixNode
 				.streamValues()
-				.map(ResultWrapper::new)
 				// sort prefixed before results are reported because it's collected to a set
 				// only the first of equivalent elements is kept
 				.sorted(StringLookup.this.comparator)
@@ -382,12 +386,12 @@ public final class StringLookup<R extends StringLookup.Result> {
 			final int termLength = term.length();
 			final boolean longTerm = termLength > StringLookup.this.substringDepth;
 
-			final Set<R> possibilities = new HashSet<>();
+			final Set<ResultWrapper<R>> possibilities = new HashSet<>();
 			final int substringLength = longTerm ? StringLookup.this.substringDepth : termLength;
 			final int lastSubstringStart = termLength - substringLength;
 			for (int start = 0; start <= lastSubstringStart; start++) {
 				final int end = start + substringLength;
-				StringMultiTrie.Node<R> node = StringLookup.this.resultsBySubstring.getRoot();
+				StringMultiTrie.Node<ResultWrapper<R>> node = StringLookup.this.resultsBySubstring.getRoot();
 				for (int i = start; i < end; i++) {
 					node = node.next(term.charAt(i));
 
@@ -399,17 +403,15 @@ public final class StringLookup<R extends StringLookup.Result> {
 				node.streamValues().forEach(possibilities::add);
 			}
 
-			Stream<R> stream = possibilities
+			Stream<ResultWrapper<R>> stream = possibilities
 					.stream()
-					.filter(result -> !excluded.contains(new ResultWrapper<>(result)));
+					.filter(wrapped -> !excluded.contains(wrapped));
 
 			if (longTerm) {
-				stream = stream.filter(result -> result.lookupString().contains(term));
+				stream = stream.filter(wrapped -> wrapped.result.lookupString().contains(term));
 			}
 
-			return stream
-				.map(ResultWrapper::new)
-				.collect(toImmutableList());
+			return stream.collect(toImmutableList());
 		}
 
 		class Update {
