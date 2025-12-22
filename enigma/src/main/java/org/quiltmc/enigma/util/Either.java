@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 @JsonAdapter(Either.CustomTypeAdapterFactory.class)
-public sealed abstract class Either<L, R> {
+public abstract sealed class Either<L, R> {
 	public abstract <T> T map(Function<L, ? extends T> l, Function<R, ? extends T> r);
 
 	public <A, B> Either<? extends A, ? extends B> flatMap(Function<L, Either<? extends A, ? extends B>> l, Function<R, Either<? extends A, ? extends B>> r) {
