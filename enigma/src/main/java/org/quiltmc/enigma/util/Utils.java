@@ -15,10 +15,12 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -225,5 +227,13 @@ public class Utils {
 	@Nullable
 	public static <T> T getLastOrNull(@Nullable T[] array) {
 		return array == null || array.length == 0 ? null : array[array.length - 1];
+	}
+
+	public static <T> Set<T> createIdentityHashSet() {
+		return Collections.newSetFromMap(new IdentityHashMap<>());
+	}
+
+	public static <T> Set<T> createIdentityHashSet(int expectedMaxSize) {
+		return Collections.newSetFromMap(new IdentityHashMap<>(expectedMaxSize));
 	}
 }

@@ -38,9 +38,25 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 	 */
 	public static <V> CompositeStringMultiTrie<V> createHashed() {
 		// decrease minimum capacity by a factor of 2 at each depth
-		return of(HashSet::new, depth -> new HashMap<>(depth >= HASHED_ROOT_INITIAL_CAPACITY_POWER
-			? HASHED_NODE_MIN_INITIAL_CAPACITY
-			: HASHED_ROOT_INITIAL_CAPACITY >> depth
+		return createHashedBranching(HashSet::new);
+	}
+
+	/**
+	 * Creates a trie with nodes whose branches are held in {@link HashMap}s
+	 * and whose leaves are held in collections created by the passed {@code leavesFactory}.
+	 *
+	 * @param leavesFactory a pure method that create a new, empty {@link Collection} in which to hold leaf values
+	 *
+	 * @param <V> the type of values stored in the created trie
+	 *
+	 * @see #of(Supplier, IntFunction)
+	 * @see #createHashed()
+	 */
+	public static <V> CompositeStringMultiTrie<V> createHashedBranching(Supplier<Collection<V>> leavesFactory) {
+		// decrease minimum capacity by a factor of 2 at each depth
+		return of(leavesFactory, depth -> new HashMap<>(depth >= HASHED_ROOT_INITIAL_CAPACITY_POWER
+				? HASHED_NODE_MIN_INITIAL_CAPACITY
+				: HASHED_ROOT_INITIAL_CAPACITY >> depth
 		));
 	}
 

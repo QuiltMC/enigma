@@ -11,6 +11,7 @@ import org.quiltmc.enigma.util.multi_trie.MutableStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -77,8 +78,16 @@ public final class StringLookup<R extends StringLookup.Result> {
 		// TODO replace this with Arguments::requirePositive from #346
 		Preconditions.checkArgument(substringDepth > 0, "substringDepth must be positive!");
 
-		final CompositeStringMultiTrie<ResultWrapper<R>> prefixBuilder = CompositeStringMultiTrie.createHashed();
-		final CompositeStringMultiTrie<ResultWrapper<R>> substringBuilder = CompositeStringMultiTrie.createHashed();
+		final Comparator<ResultWrapper<R>> wrapperComparator = Comparator.comparing(ResultWrapper::result, comparator);
+		// Use a prioritizing set for prefixes to respect the comparator while excluding duplicates.
+		// Duplicates can be eliminated here because prefix matches are always true matches;
+		// String::contains filtering is never required for prefixes.
+		final CompositeStringMultiTrie<ResultWrapper<R>> prefixBuilder = CompositeStringMultiTrie
+				.createHashedBranching(() -> new PrioritizingSet<>(HashMap::new, wrapperComparator));
+		// Use identity equality semantics so substrings can point to multiple results with the same target.
+		// Duplicates must be present here because returned results may not match String::contains.
+		final CompositeStringMultiTrie<ResultWrapper<R>> substringBuilder =
+				CompositeStringMultiTrie.createHashedBranching(Utils::createIdentityHashSet);
 
 		results.forEach(result -> {
 			final String string = result.lookupString();
@@ -97,7 +106,7 @@ public final class StringLookup<R extends StringLookup.Result> {
 			}
 		});
 
-		return new StringLookup<>(substringDepth, comparator, prefixBuilder.view(), substringBuilder.view());
+		return new StringLookup<>(substringDepth, wrapperComparator, prefixBuilder.view(), substringBuilder.view());
 	}
 
 	private final ResultCache emptyTermCache = new ResultCache(
@@ -119,12 +128,12 @@ public final class StringLookup<R extends StringLookup.Result> {
 	private ResultCache cache = this.emptyTermCache;
 
 	private StringLookup(
-			int substringDepth, Comparator<R> comparator,
+			int substringDepth, Comparator<ResultWrapper<R>> comparator,
 			StringMultiTrie<ResultWrapper<R>> resultsByPrefix,
 			StringMultiTrie<ResultWrapper<R>> resultsBySubstring
 	) {
 		this.substringDepth = substringDepth;
-		this.comparator = Comparator.comparing(ResultWrapper::result, comparator);
+		this.comparator = comparator;
 
 		this.resultsByPrefix = resultsByPrefix;
 		this.resultsBySubstring = resultsBySubstring;
@@ -162,7 +171,7 @@ public final class StringLookup<R extends StringLookup.Result> {
 	}
 
 	// Note: this is an interface rather than an Entry record to make it easier for implementers so sort based on a
-	// Result comparator while using the identity of their target.
+	// Result comparator while using the equality semantics of their target.
 	/**
 	 * A result which may be looked up via a {@link StringLookup}.
 	 *
@@ -189,7 +198,7 @@ public final class StringLookup<R extends StringLookup.Result> {
 		 *
 		 * @implSpec implementations must be pure
 		 *
-		 * @implNote the target object is used as the result's identity for certain operations;
+		 * @implNote the target object's equality semantics are used in place of the result's for certain operations;
 		 * the target's {@link #equals(Object)} and {@link #hashCode()} methods determine equality and placement
 		 */
 		Object target();
