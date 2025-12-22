@@ -53,7 +53,8 @@ public final class StringLookup<R extends StringLookup.Result> {
 	/**
 	 * @param substringDepth the length of substring that can be looked up before having to check
 	 *                       {@link String#contains(CharSequence)};<br>
-	 *                       higher values mean faster lookups at the cost of a greater memory footprint;<br>
+	 *                       higher values mean faster lookups at the cost of a greater memory footprint and
+	 *                       initial indexing time;<br>
 	 *                       for search terms of this length or less, {@link String#contains(CharSequence)}
 	 *                       is not checked;<br>
 	 *                       for longer search terms, {@link String#contains(CharSequence)} is only checked for
