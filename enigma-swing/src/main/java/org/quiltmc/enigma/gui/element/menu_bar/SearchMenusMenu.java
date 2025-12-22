@@ -359,7 +359,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		static final Comparator<Result> COMPARATOR = Comparator
 				.<Result, String>comparing(result -> result.searchable.getSearchName())
 				// put aliased results last so non-aliased results are kept in the case of duplicates
-				.thenComparing(result -> result.getItem().isAliased());
+				.thenComparing(Result::isAliased);
 
 		// creates a map of lowercase aliases to ItemHolders, each representing the passed searchable
 		static ImmutableMap<String, Result> createHolders(SearchableElement searchable) {
@@ -380,24 +380,28 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		final String alias;
 		final String lowercaseAlias;
 
-		@Nullable
-		Item item;
+		final Lazy<Boolean> aliased;
+		final Lazy<Item> item;
 
 		Result(SearchableElement searchable, String searchName, String lowercaseAlias, String alias) {
 			this.searchable = searchable;
 			this.searchName = searchName;
 			this.lowercaseAlias = lowercaseAlias;
 			this.alias = alias;
+
+			this.aliased = Lazy.of(() -> !this.alias.equals(this.searchName));
+			this.item = Lazy.of(() -> this.aliased.get()
+				? new AliasedItem(this.searchName, this.alias)
+				: new Item(this.searchName)
+			);
+		}
+
+		boolean isAliased() {
+			return this.aliased.get();
 		}
 
 		Item getItem() {
-			if (this.item == null) {
-				this.item = this.alias.equals(this.searchName)
-						? new Item(this.searchName)
-						: new AliasedItem(this.searchName, this.alias);
-			}
-
-			return this.item;
+			return this.item.get();
 		}
 
 		@Override
@@ -450,11 +454,6 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				}
 			}
 
-			// TODO put this in Result to avoid creating Item in COMPARATOR
-			boolean isAliased() {
-				return false;
-			}
-
 			void selectSearchable(MenuSelectionManager manager) {
 				if (!this.searchablePath.isEmpty()) {
 					manager.setSelectedPath(this.searchablePath.toArray(EMPTY_MENU_ELEMENTS));
@@ -479,11 +478,6 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 				super(searchName);
 
 				this.alias = alias;
-			}
-
-			@Override
-			boolean isAliased() {
-				return true;
 			}
 
 			@Override
