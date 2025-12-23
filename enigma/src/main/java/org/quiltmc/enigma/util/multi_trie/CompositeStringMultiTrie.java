@@ -45,7 +45,8 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 	 * Creates a trie with nodes whose branches are held in {@link HashMap}s
 	 * and whose leaves are held in collections created by the passed {@code leavesFactory}.
 	 *
-	 * @param leavesFactory a pure method that create a new, empty {@link Collection} in which to hold leaf values
+	 * @param leavesFactory a stateless method that creates a new, empty {@link Collection}
+	 *                      in which to hold leaf values with each call
 	 *
 	 * @param <V> the type of values stored in the created trie
 	 *
@@ -64,9 +65,10 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 	 * Creates a trie with nodes whose branches are held in maps created by the passed {@code branchesFactory}
 	 * and whose leaves are held in collections created by the passed {@code leavesFactory}.
 	 *
-	 * @param leavesFactory   a pure method that create a new, empty {@link Collection} in which to hold leaf values
-	 * @param branchesFactory a pure method that creates a new, empty {@link Map} in which to hold branch nodes;
-	 *                        it receives the depth of the node which may be used to calculate an initial capacity
+	 * @param leavesFactory   a stateless method that creates a new, empty {@link Collection}
+	 *                        in which to hold leaf values with each call
+	 * @param branchesFactory a stateless method that creates a new, empty {@link Map}
+	 *                        in which to hold branch nodes with each call; it receives the depth of the node
 	 *
 	 * @param <V> the type of values stored in the created trie
 	 *
@@ -100,9 +102,7 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 	}
 
 	@VisibleForTesting
-	static final class Root<V>
-			extends MutableMapNode<Character, V, Branch<V>>
-			implements Node<V> {
+	static final class Root<V> extends MutableMapNode<Character, V, Branch<V>> implements Node<V> {
 		private static final int DEPTH = 0;
 
 		private final Collection<V> leaves;

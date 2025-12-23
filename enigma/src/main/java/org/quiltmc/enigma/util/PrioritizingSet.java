@@ -32,6 +32,9 @@ public final class PrioritizingSet<V> implements Set<V> {
 	/**
 	 * Constructs a set backed by a map produced by the passed {@code delegateFactory} and prioritized by the passed
 	 * {@code prioritizer}.
+	 *
+	 * @param delegateFactory a stateless method that creates a new, empty {@link Map} with each call
+	 * @param prioritizer     the comparator used to determine values' priorities
 	 */
 	public PrioritizingSet(Supplier<Map<V, V>> delegateFactory, Comparator<V> prioritizer) {
 		this.delegateFactory = delegateFactory;
