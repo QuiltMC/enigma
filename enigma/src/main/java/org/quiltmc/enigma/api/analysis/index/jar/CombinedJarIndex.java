@@ -8,9 +8,12 @@ import java.util.Collection;
 
 /**
  * An index of the main jar <em>and</em> library jars of an {@link EnigmaProject}.
+ *
+ * <p> <b>Note:</b> currently the contained {@link ReferenceIndex} does <em>not</em> index main jar references to
+ * library types and members.
  */
-public class CombinedJarIndex extends AbstractJarIndex {
-	public CombinedJarIndex(
+public final class CombinedJarIndex extends AbstractJarIndex {
+	private CombinedJarIndex(
 			EntryIndex entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex,
 			BridgeMethodIndex bridgeMethodIndex, JarIndexer... otherIndexers
 	) {
@@ -21,14 +24,15 @@ public class CombinedJarIndex extends AbstractJarIndex {
 	 * Creates an empty index, configured to use all built-in indexers.
 	 * @return the newly created index
 	 */
-	public static CombinedJarIndex empty() {
-		EntryIndex entryIndex = new EntryIndex();
-		ReferenceIndex referenceIndex = new ReferenceIndex();
+	public static CombinedJarIndex empty(MainJarIndex mainIndex, LibrariesJarIndex libIndex) {
+		EntryIndex entryIndex = new CombinedEntryIndex(mainIndex.getEntryIndex(), libIndex.getEntryIndex());
+		ReferenceIndex referenceIndex =
+			new CombinedReferenceIndex(mainIndex.getReferenceIndex(), libIndex.getReferenceIndex());
 		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
 		LambdaIndex lambdaIndex = new LambdaIndex();
 		return new CombinedJarIndex(
 				entryIndex, inheritanceIndex, referenceIndex,
-				new BridgeMethodIndex(entryIndex, inheritanceIndex, referenceIndex),
+				new CombinedBridgeMethodIndex(mainIndex.getBridgeMethodIndex(), libIndex.getBridgeMethodIndex()),
 				// required by MappingValidator
 				lambdaIndex
 		);

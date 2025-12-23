@@ -67,7 +67,10 @@ public abstract class AbstractJarIndex implements JarIndex {
 					Stream.of(entryIndex, inheritanceIndex, referenceIndex, bridgeMethodIndex),
 					Arrays.stream(otherIndexers)
 				)
-				.collect(ImmutableMap.toImmutableMap(JarIndexer::getClass, Function.identity()));
+				.collect(ImmutableMap.toImmutableMap(
+					JarIndexer::getType,
+					Function.identity()
+				));
 
 		this.entryResolver = new IndexEntryResolver(this);
 		this.childrenByClass = ArrayListMultimap.create();

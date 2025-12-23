@@ -39,6 +39,18 @@ public interface JarIndexer {
 
 	String getTranslationKey();
 
+	// TODO we should probably replace this with a type object in a breaking update
+	/**
+	 * @return the class used to {@linkplain JarIndex#getIndex(Class) look up} this indexer in a {@link JarIndex}
+	 *
+	 * @implSpec must return a type to which this indexer is assignable
+	 *
+	 *  @implNote a {@link JarIndex} can only contain one index of a given type
+	 */
+	default Class<? extends JarIndexer> getType() {
+		return this.getClass();
+	}
+
 	record EnclosingMethodData(String owner, String name, String descriptor) {
 		public MethodEntry getMethod() {
 			return MethodEntry.parse(this.owner, this.name, this.descriptor);
