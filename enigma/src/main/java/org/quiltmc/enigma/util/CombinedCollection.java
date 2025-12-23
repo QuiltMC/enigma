@@ -88,6 +88,9 @@ public class CombinedCollection<T> implements Collection<T> {
 		throw createUnsupportedAddException();
 	}
 
+	/**
+	 * Removes the passed object from <em>both</em> backing collections.
+	 */
 	@Override
 	public boolean remove(Object o) {
 		return this.first.remove(o) | this.second.remove(o);
