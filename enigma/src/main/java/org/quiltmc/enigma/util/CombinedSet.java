@@ -7,6 +7,7 @@ import java.util.Set;
  *
  * <p> <b>Note</b>: if backing sets share elements, those elements will appear twice in the combined set's
  * {@linkplain #iterator() iterators} and {@linkplain #stream() streams}.
+ * {@link #size()} will also count duplicate elements.
  *
  * @param <T> the type of elements
  */
