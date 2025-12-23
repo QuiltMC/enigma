@@ -64,7 +64,6 @@ public class PrioritizingSetTest {
 					Group::of
 				));
 
-
 			static Group of(String value) {
 				return new Group(new Element(value, LOW), new Element(value, MID), new Element(value, HIGH));
 			}
