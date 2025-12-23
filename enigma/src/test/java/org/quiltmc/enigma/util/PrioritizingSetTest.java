@@ -39,7 +39,7 @@ public class PrioritizingSetTest {
 		}
 	}
 
-	record Element(String value, int priority) {
+	private record Element(String value, int priority) {
 		static Comparator<Element> COMPARATOR = Comparator.comparing(Element::priority, Comparator.reverseOrder());
 
 		@Override
