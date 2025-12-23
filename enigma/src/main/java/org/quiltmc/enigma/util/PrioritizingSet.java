@@ -15,8 +15,8 @@ import java.util.function.Supplier;
  *
  * <p> A {@link Comparator} determines priority; elements which are placed <em>earlier</em> have higher priority.<br>
  * Held values are replaced when an equivalent value with higher priority is {@linkplain #add(Object) added}.<br>
- * <b>Note</b>: {@link Comparator#compare(Object, Object)} returns <em>negative</em> numbers to indicate that the left
- * object comes first, so low comparisons indicate high (left) priority.
+ * <b>Note</b>: {@link Comparator#compare(Object, Object)} returns negative numbers to indicate that the left
+ * object comes first, so <em>low</em> comparisons indicate <em>high</em> (left) priority.
  *
  * @param <V> the type of values
  *
