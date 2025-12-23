@@ -58,11 +58,11 @@ public class PrioritizingSetTest {
 			static final int HIGH = 1;
 
 			static ImmutableMap<String, Group> BY_VALUE = Stream
-				.of("value1", "value2", "value3")
-				.collect(toImmutableMap(
-					Function.identity(),
-					Group::of
-				));
+					.of("value1", "value2", "value3")
+					.collect(toImmutableMap(
+						Function.identity(),
+						Group::of
+					));
 
 			static Group of(String value) {
 				return new Group(new Element(value, LOW), new Element(value, MID), new Element(value, HIGH));
