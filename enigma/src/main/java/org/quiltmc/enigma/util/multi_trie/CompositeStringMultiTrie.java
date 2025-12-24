@@ -1,12 +1,9 @@
 package org.quiltmc.enigma.util.multi_trie;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -15,7 +12,7 @@ import java.util.stream.Stream;
  *
  * @param <V> the type of values
  *
- * @see #of(Supplier, IntFunction)
+ * @see #of(Supplier, BranchesFactory)
  * @see #createHashed()
  */
 public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie<V> {
@@ -34,7 +31,7 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 	 *
 	 * @param <V> the type of values stored in the created trie
 	 *
-	 * @see #of(Supplier, IntFunction)
+	 * @see #of(Supplier, BranchesFactory)
 	 */
 	public static <V> CompositeStringMultiTrie<V> createHashed() {
 		// decrease minimum capacity by a factor of 2 at each depth
@@ -50,15 +47,11 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 	 *
 	 * @param <V> the type of values stored in the created trie
 	 *
-	 * @see #of(Supplier, IntFunction)
+	 * @see #of(Supplier, BranchesFactory)
 	 * @see #createHashed()
 	 */
 	public static <V> CompositeStringMultiTrie<V> createHashedBranching(Supplier<Collection<V>> leavesFactory) {
-		// decrease minimum capacity by a factor of 2 at each depth
-		return of(leavesFactory, depth -> new HashMap<>(depth >= HASHED_ROOT_INITIAL_CAPACITY_POWER
-				? HASHED_NODE_MIN_INITIAL_CAPACITY
-				: HASHED_ROOT_INITIAL_CAPACITY >> depth
-		));
+		return of(leavesFactory, CompositeStringMultiTrie::hashedBranchesAt);
 	}
 
 	/**
@@ -76,18 +69,23 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 	 */
 	public static <V> CompositeStringMultiTrie<V> of(
 			Supplier<Collection<V>> leavesFactory,
-			IntFunction<Map<Character, Branch<V>>> branchesFactory
+			BranchesFactory<V> branchesFactory
 	) {
 		return new CompositeStringMultiTrie<>(leavesFactory, branchesFactory);
 	}
 
-	private CompositeStringMultiTrie(
-			Supplier<Collection<V>> leavesFactory,
-			IntFunction<Map<Character, Branch<V>>> branchesFactory
-	) {
+	private CompositeStringMultiTrie(Supplier<Collection<V>> leavesFactory, BranchesFactory<V> branchesFactory) {
 		this.root = new Root<>(
-			branchesFactory.apply(Root.DEPTH), leavesFactory.get(),
+			branchesFactory.create(Root.DEPTH), leavesFactory.get(),
 			new Branch.Factory<>(leavesFactory, branchesFactory)
+		);
+	}
+
+	private static <B> Map<Character, B> hashedBranchesAt(int depth) {
+		// decrease minimum capacity by a factor of 2 at each depth
+		return new HashMap<>(depth >= HASHED_ROOT_INITIAL_CAPACITY_POWER
+				? HASHED_NODE_MIN_INITIAL_CAPACITY
+				: HASHED_ROOT_INITIAL_CAPACITY >> depth
 		);
 	}
 
@@ -101,8 +99,7 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 		return this.view;
 	}
 
-	@VisibleForTesting
-	static final class Root<V> extends MutableMapNode<Character, V, Branch<V>> implements Node<V> {
+	private static final class Root<V> extends MutableMapNode<Character, V, Branch<V>> implements Node<V> {
 		private static final int DEPTH = 0;
 
 		private final Collection<V> leaves;
@@ -157,7 +154,7 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 		}
 	}
 
-	public static final class Branch<V> extends MutableMapNode.Branch<Character, V, Branch<V>> implements Node<V> {
+	private static final class Branch<V> extends MutableMapNode.Branch<Character, V, Branch<V>> implements Node<V> {
 		private final MutableMapNode<Character, V, CompositeStringMultiTrie.Branch<V>> parent;
 		private final Node<V> previous;
 
@@ -236,14 +233,14 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 
 		private record Factory<V>(
 				Supplier<Collection<V>> leavesFactory,
-				IntFunction<Map<Character, CompositeStringMultiTrie.Branch<V>>> branchesFactory
+				BranchesFactory<V> branchesFactory
 		) {
 			<P extends MutableMapNode<Character, V, CompositeStringMultiTrie.Branch<V>> & Node<V>>
 					CompositeStringMultiTrie.Branch<V> create(char key, P parent) {
 				final int depth = parent.getDepth() + 1;
 				return new CompositeStringMultiTrie.Branch<>(
 						parent, key, depth,
-						this.leavesFactory.get(), this.branchesFactory.apply(depth),
+						this.leavesFactory.get(), this.branchesFactory.create(depth),
 						this
 				);
 			}
@@ -290,5 +287,25 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 		protected MutableMultiTrie.Node<Character, V> getViewed() {
 			return this.viewed;
 		}
+	}
+
+	/**
+	 * A method that creates a map in which to hold a {@link MutableStringMultiTrie.Node Node}'s branch nodes.
+	 *
+	 * @param <V> the type of values held by {@link MutableStringMultiTrie.Node Node}s
+	 *
+	 * @implSpec Implementations should be stateless and produce a new, empty map with each call to
+	 * {@link #create(int)}.
+	 */
+	@FunctionalInterface
+	public interface BranchesFactory<V> {
+		/**
+		 * @param depth the depth of the node whose branches map is being created
+		 *
+		 * @param <B> the type of branches; the exact type is hidden from implementers
+		 *
+		 * @return a new, empty map in which to hold a {@link MutableStringMultiTrie.Node Node}'s branches
+		 */
+		<B extends MutableStringMultiTrie.Node<V>> Map<Character, B> create(int depth);
 	}
 }

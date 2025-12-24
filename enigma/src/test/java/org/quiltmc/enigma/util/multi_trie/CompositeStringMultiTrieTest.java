@@ -269,8 +269,9 @@ public class CompositeStringMultiTrieTest {
 				() -> "Expected trie to be empty, but had it contents: " + trie.getRoot().streamValues().toList()
 		);
 
+		@SuppressWarnings("unchecked")
 		final Map<Character, ? extends MultiTrie.Node<Character, ?>> rootChildren =
-				((CompositeStringMultiTrie.Root<?>) trie.getRoot()).getBranches();
+				((MutableMapNode<Character, ?, ? extends MultiTrie.Node<Character, ?>>) trie.getRoot()).getBranches();
 		assertTrue(
 				rootChildren.isEmpty(),
 				() -> "Expected root's children to be pruned, but it had children: " + rootChildren
