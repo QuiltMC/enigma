@@ -54,6 +54,7 @@ import java.util.stream.Stream;
 import static org.quiltmc.enigma.gui.util.GuiUtil.EMPTY_MENU_ELEMENTS;
 import static org.quiltmc.enigma.gui.util.GuiUtil.getCenteredFontBaseY;
 import static org.quiltmc.enigma.gui.util.GuiUtil.trySetRenderingHints;
+import static org.quiltmc.enigma.util.StringLookup.toStringLookup;
 import static org.quiltmc.enigma.util.Utils.getLastOrNull;
 import static javax.swing.BorderFactory.createEmptyBorder;
 
@@ -126,17 +127,16 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			Config.main().searchMenus.showChooseHint
 	);
 
-	private final Lazy.Clearable<StringLookup<Result>> lookup = Lazy.clearableOf(() -> StringLookup.of(
-			2, Result.COMPARATOR, this.gui
-				.getMenuBar()
-				.streamMenus()
-				.flatMap(SearchMenusMenu::streamElementTree)
-				.flatMap(element -> element instanceof SearchableElement searchable
-					? Result.stream(searchable)
-					: Stream.empty()
-				)
-				.toList()
-	));
+	private final Lazy.Clearable<StringLookup<Result>> lookup = Lazy.clearableOf(() -> this.gui
+			.getMenuBar()
+			.streamMenus()
+			.flatMap(SearchMenusMenu::streamElementTree)
+			.flatMap(element -> element instanceof SearchableElement searchable
+				? Result.stream(searchable)
+				: Stream.empty()
+			)
+			.collect(toStringLookup(2, Result.COMPARATOR))
+	);
 
 	private final Lazy<ImmutableList<MenuElement>> fieldPath = Lazy.of(() -> buildPathTo(this.field));
 

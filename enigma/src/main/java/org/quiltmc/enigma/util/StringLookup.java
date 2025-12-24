@@ -10,11 +10,14 @@ import org.quiltmc.enigma.util.multi_trie.EmptyStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.MutableStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
@@ -51,6 +54,23 @@ public final class StringLookup<R extends StringLookup.Result> {
 	}
 
 	/**
+	 * @param <R> the type of results
+	 *
+	 * @return a {@link Collector} that accumulates {@link Result}s into a {@link StringLookup} with the passed
+	 * {@code substringDepth} and {@code comparator}
+	 *
+	 * @see #of(int, Comparator, Iterable)
+	 */
+	public static <R extends Result> Collector<R, ?, StringLookup<R>> toStringLookup(
+			int substringDepth, Comparator<R> comparator
+	) {
+		return Collector.of(
+			LinkedList<R>::new, Collection::add, Utils::accumulateLeft,
+			list -> StringLookup.of(substringDepth, comparator, list)
+		);
+	}
+
+	/**
 	 * @param substringDepth the length of substring that can be looked up before having to check
 	 *                       {@link String#contains(CharSequence)};<br>
 	 *                       higher values mean faster lookups at the cost of a greater memory footprint and
@@ -70,6 +90,7 @@ public final class StringLookup<R extends StringLookup.Result> {
 	 *
 	 * @return a new lookup for the passed {@code results}
 	 *
+	 * @see #toStringLookup(int, Comparator)
 	 * @see Result
 	 * @see #lookUp(String)
 	 */
