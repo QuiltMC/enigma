@@ -65,7 +65,7 @@ public final class StringLookup<R extends StringLookup.Result> {
 			int substringDepth, Comparator<R> comparator
 	) {
 		return Collector.of(
-			LinkedList<R>::new, Collection::add, Utils::accumulateLeft,
+			LinkedList<R>::new, Collection::add, Utils::combineLeft,
 			list -> StringLookup.of(substringDepth, comparator, list)
 		);
 	}

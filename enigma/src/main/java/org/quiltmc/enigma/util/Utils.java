@@ -243,7 +243,7 @@ public class Utils {
 	 * Adds the passed {@code right} collection's elements to the passed {@code left} collection
 	 * and returns {@code left}.
 	 *
-	 * <p> Can be used as an accumulator when creating {@link Collector}s using {@link Collector#of}.
+	 * <p> Can be used as the combiner when creating {@link Collector}s using {@link Collector#of}.
 	 *
 	 * @param <T> the type of elements held by each collection
 	 * @param <L> the type of the left collection
@@ -251,7 +251,7 @@ public class Utils {
 	 *
 	 * @return the passed {@code left} collection
 	 */
-	public static <T, L extends Collection<T>, R extends Collection<? extends T>> L accumulateLeft(L left, R right) {
+	public static <T, L extends Collection<T>, R extends Collection<? extends T>> L combineLeft(L left, R right) {
 		left.addAll(right);
 		return left;
 	}
