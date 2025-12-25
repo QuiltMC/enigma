@@ -150,8 +150,12 @@ public class NetworkTest {
 
 		final var handler2 = new DummyClientPacketHandler();
 
+		server.queueConnectionWait();
+
 		final TestEnigmaClient client2 = connectClient(handler2);
 		handler2.client = client2;
+
+		awaitNextConnection();
 
 		client2.sendPacket(packet);
 		final boolean disconnected = handler2.disconnectFromServerLatch.await(3, TimeUnit.SECONDS);
