@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.network;
 
 import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.Assertions;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 
 import java.io.IOException;
@@ -52,6 +53,7 @@ public class TestEnigmaServer extends EnigmaServer {
 	}
 
 	public void queueConnectionWait() {
+		Assertions.assertEquals(0, this.connectionLatch.getCount());
 		this.connectionLatch = new CountDownLatch(1);
 	}
 

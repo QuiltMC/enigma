@@ -68,6 +68,10 @@ public class NetworkTest {
 		return client;
 	}
 
+	private static void awaitNextConnection() throws InterruptedException {
+		Assertions.assertTrue(server.awaitNextConnection(3, TimeUnit.SECONDS), "Client did not connect");
+	}
+
 	/**
 	 * <b>Never</b> directly {@linkplain EnigmaClient#disconnect() disconnect} clients after tests; <b>always</b>
 	 * either manually {@link EnigmaServer#kick(Socket, String) kick} them (like this method does) or wait for them to
@@ -82,7 +86,7 @@ public class NetworkTest {
 		server.kick(clientSocket, "test complete");
 	}
 
-	@RepeatedTest(100000)
+	@RepeatedTest(DEFAULT_REPETITIONS)
 	public void testLogin() throws IOException, InterruptedException {
 		final var handler = new DummyClientPacketHandler();
 
@@ -91,7 +95,7 @@ public class NetworkTest {
 		final TestEnigmaClient client = connectClient(handler);
 		handler.client = client;
 
-		Assertions.assertTrue(server.awaitNextConnection(3, TimeUnit.SECONDS), "Client did not connect");
+		awaitNextConnection();
 
 		Assertions.assertNotEquals(0, handler.disconnectFromServerLatch.getCount(), "The client was disconnected by the server");
 
@@ -142,7 +146,7 @@ public class NetworkTest {
 		handler.client = client1;
 		client1.sendPacket(packet);
 
-		Assertions.assertTrue(server.awaitNextConnection(3, TimeUnit.SECONDS), "Client did not connect");
+		awaitNextConnection();
 
 		final var handler2 = new DummyClientPacketHandler();
 
