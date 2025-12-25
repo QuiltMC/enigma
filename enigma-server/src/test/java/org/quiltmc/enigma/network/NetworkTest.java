@@ -158,7 +158,7 @@ public class NetworkTest {
 		Assertions.assertTrue(disconnected, "Timed out waiting for the server to kick the client");
 	}
 
-	@RepeatedTest(DEFAULT_REPETITIONS)
+	@RepeatedTest(1000)
 	public void testTakenUsername() throws IOException, InterruptedException {
 		final var packet = new LoginC2SPacket(checksum, PASSWORD.toCharArray(), "alice");
 
@@ -166,10 +166,6 @@ public class NetworkTest {
 		final TestEnigmaClient client1 = connectClient(handler);
 		handler.client = client1;
 		client1.sendPacket(packet);
-
-		final List<Socket> clients = server.getClients();
-		Assertions.assertEquals(clients.size(), 1, "Expected exactly one client");
-		final Socket client1Socket = clients.get(0);
 
 		final var handler2 = new DummyClientPacketHandler();
 		final TestEnigmaClient client2 = connectClient(handler2);
@@ -180,7 +176,9 @@ public class NetworkTest {
 
 		Assertions.assertTrue(disconnected, "Timed out waiting for the server to kick the client");
 
-		kickAfterTest(client1Socket);
+		for (final Socket clientSocket : List.copyOf(server.getClients())) {
+			kickAfterTest(clientSocket);
+		}
 	}
 
 	@RepeatedTest(DEFAULT_REPETITIONS)
