@@ -167,6 +167,8 @@ public class NetworkTest {
 		handler.client = client1;
 		client1.sendPacket(packet);
 
+		busyAwaitConnection();
+
 		final var handler2 = new DummyClientPacketHandler();
 		final TestEnigmaClient client2 = connectClient(handler2);
 		handler2.client = client2;
