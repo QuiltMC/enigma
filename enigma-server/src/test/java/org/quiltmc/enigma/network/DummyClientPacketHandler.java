@@ -1,5 +1,7 @@
 package org.quiltmc.enigma.network;
 
+import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.Assertions;
 import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
@@ -10,6 +12,7 @@ import java.util.concurrent.CountDownLatch;
 
 public class DummyClientPacketHandler implements ClientPacketHandler {
 	TestEnigmaClient client;
+	@NonNull
 	CountDownLatch disconnectFromServerLatch = new CountDownLatch(1);
 
 	@Override
@@ -24,13 +27,11 @@ public class DummyClientPacketHandler implements ClientPacketHandler {
 	@SuppressWarnings("deprecation")
 	@Override
 	public void disconnectIfConnected(String reason) {
-		if (this.client != null) {
-			this.client.disconnect();
-		}
+		Assertions.assertNotNull(this.client, "No client!");
+		this.client.disconnect();
 
-		if (this.disconnectFromServerLatch != null) {
-			this.disconnectFromServerLatch.countDown();
-		}
+		Assertions.assertNotNull(this.disconnectFromServerLatch, "No disconnection latch!");
+		this.disconnectFromServerLatch.countDown();
 	}
 
 	@Override
