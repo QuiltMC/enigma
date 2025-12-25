@@ -1,7 +1,5 @@
 package org.quiltmc.enigma.util;
 
-import org.jspecify.annotations.NonNull;
-
 import java.util.function.Supplier;
 
 /**
@@ -50,26 +48,30 @@ public interface Lazy<V> {
 
 			@Override
 			public void clear() {
-				this.value = Either.left(this.supplier);
+				this.populated = false;
+				this.value = null;
 			}
 		}
 	}
 
 	class Simple<V> implements Lazy<V> {
-		@NonNull
-		protected Either<Supplier<V>, V> value;
+		protected final Supplier<V> supplier;
+
+		protected boolean populated;
+		protected V value;
 
 		public Simple(Supplier<V> supplier) {
-			this.value = Either.left(supplier);
+			this.supplier = supplier;
 		}
 
 		@Override
 		public V get() {
-			if (this.value.isLeft()) {
-				this.value = Either.right(this.value.leftOrThrow().get());
+			if (!this.populated) {
+				this.value = this.supplier.get();
+				this.populated = true;
 			}
 
-			return this.value.rightOrThrow();
+			return this.value;
 		}
 	}
 }

@@ -8,6 +8,7 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
@@ -47,12 +48,18 @@ public abstract sealed class Either<L, R> {
 
 	public abstract R rightOrThrow();
 
-	public static <L, R> Either<L, R> left(L value) {
-		return new Left<>(value);
+	/**
+	 * @throws IllegalArgumentException if the passed {@code value} is {@code null}
+	 */
+	public static <L, R> Either<L, R> left(@NonNull L value) {
+		return new Left<>(Utils.requireNonNull(value, "value"));
 	}
 
-	public static <L, R> Either<L, R> right(R value) {
-		return new Right<>(value);
+	/**
+	 * @throws IllegalArgumentException if the passed {@code value} is {@code null}
+	 */
+	public static <L, R> Either<L, R> right(@NonNull R value) {
+		return new Right<>(Utils.requireNonNull(value, "value"));
 	}
 
 	private static final class Left<L, R> extends Either<L, R> {
