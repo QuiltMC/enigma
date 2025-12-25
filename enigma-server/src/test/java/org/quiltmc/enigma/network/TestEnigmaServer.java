@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.network;
 
+import org.jspecify.annotations.NonNull;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 
 import java.io.IOException;
@@ -9,8 +10,11 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 public class TestEnigmaServer extends EnigmaServer {
+	@NonNull
+	private CountDownLatch connectionLatch = new CountDownLatch(0);
 	private final Map<Socket, CountDownLatch> changeConfirmationLatches = new ConcurrentHashMap<>();
 	private final BlockingQueue<Runnable> tasks = new LinkedBlockingDeque<>();
 
@@ -36,6 +40,23 @@ public class TestEnigmaServer extends EnigmaServer {
 		tasksThread.setName("Test server tasks");
 		tasksThread.setDaemon(true);
 		tasksThread.start();
+	}
+
+	@Override
+	Socket acceptClient() throws IOException {
+		final Socket socket = super.acceptClient();
+
+		this.connectionLatch.countDown();
+
+		return socket;
+	}
+
+	public void queueConnectionWait() {
+		this.connectionLatch = new CountDownLatch(1);
+	}
+
+	public boolean awaitNextConnection(int timeout, TimeUnit unit) throws InterruptedException {
+		return this.connectionLatch.await(timeout, unit);
 	}
 
 	@Override

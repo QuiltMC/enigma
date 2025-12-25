@@ -22,9 +22,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BooleanSupplier;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * <b>Warning</b>: Using {@link RepeatedTest @RepeatedTest} on tests that wait on
@@ -47,35 +44,6 @@ public class NetworkTest {
 
 	private static byte[] checksum;
 	private static TestEnigmaServer server;
-
-	/**
-	 * <b>HACK</b>: busy waiting using {@link Thread#sleep(long)} in a {@code while} loop.
-	 *
-	 * @param reason    the reason the passed {@code condition} should not be {@code true}
-	 * @param polls     the number of times to poll the passed {@code condition}; wait time increases with each poll
-	 * @param condition the condition whose {@code false} result is awaited
-	 */
-	@SuppressWarnings("BusyWait")
-	private static void busyAwaitNot(String reason, int polls, BooleanSupplier condition) {
-		int poll = 1;
-		boolean result;
-		while ((result = condition.getAsBoolean()) && poll++ <= polls) {
-			try {
-				Thread.sleep(poll);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		assertFalse(result, reason);
-	}
-
-	private static void busyAwaitConnection() {
-		busyAwaitNot(
-				"Client did not connect", DEFAULT_REPETITIONS,
-				() -> server.getClients().isEmpty() || server.getUnapprovedClients().isEmpty()
-		);
-	}
 
 	@BeforeAll
 	public static void startServer() throws IOException {
@@ -114,13 +82,16 @@ public class NetworkTest {
 		server.kick(clientSocket, "test complete");
 	}
 
-	@RepeatedTest(DEFAULT_REPETITIONS)
+	@RepeatedTest(100000)
 	public void testLogin() throws IOException, InterruptedException {
 		final var handler = new DummyClientPacketHandler();
+
+		server.queueConnectionWait();
+
 		final TestEnigmaClient client = connectClient(handler);
 		handler.client = client;
 
-		busyAwaitConnection();
+		Assertions.assertTrue(server.awaitNextConnection(3, TimeUnit.SECONDS), "Client did not connect");
 
 		Assertions.assertNotEquals(0, handler.disconnectFromServerLatch.getCount(), "The client was disconnected by the server");
 
@@ -159,18 +130,22 @@ public class NetworkTest {
 	}
 
 	// FIXME this test is flaky when run from workflows/build.yml
-	@Test
+	@RepeatedTest(10000)
 	public void testTakenUsername() throws IOException, InterruptedException {
 		final var packet = new LoginC2SPacket(checksum, PASSWORD.toCharArray(), "alice");
 
 		final var handler = new DummyClientPacketHandler();
+
+		server.queueConnectionWait();
+
 		final TestEnigmaClient client1 = connectClient(handler);
 		handler.client = client1;
 		client1.sendPacket(packet);
 
-		busyAwaitConnection();
+		Assertions.assertTrue(server.awaitNextConnection(3, TimeUnit.SECONDS), "Client did not connect");
 
 		final var handler2 = new DummyClientPacketHandler();
+
 		final TestEnigmaClient client2 = connectClient(handler2);
 		handler2.client = client2;
 
