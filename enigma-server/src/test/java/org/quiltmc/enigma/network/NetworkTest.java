@@ -13,9 +13,11 @@ import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.network.packet.c2s.LoginC2SPacket;
 import org.quiltmc.enigma.network.packet.c2s.MessageC2SPacket;
+import org.quiltmc.enigma.network.packet.s2c.KickS2CPacket;
 import org.quiltmc.enigma.util.Utils;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -52,6 +54,13 @@ public class NetworkTest {
 		assertFalse(result, reason);
 	}
 
+	private static void busyAwaitConnection() {
+		busyAwaitNot(
+				"Client did not connect", 100,
+				() -> server.getClients().isEmpty() || server.getUnapprovedClients().isEmpty()
+		);
+	}
+
 	@BeforeAll
 	public static void startServer() throws IOException {
 		Enigma enigma = Enigma.create();
@@ -76,29 +85,44 @@ public class NetworkTest {
 		return client;
 	}
 
+	/**
+	 * <b>Never</b> directly {@linkplain EnigmaClient#disconnect() disconnect} clients after tests; <b>always</b>
+	 * either manually {@link EnigmaServer#kick(Socket, String) kick} them (like this method does) or wait for them to
+	 * be disconnected using {@link DummyClientPacketHandler#disconnectFromServerLatch}.
+	 *
+	 * <p> Directly {@linkplain EnigmaClient#disconnect() disconnecting} a client creates a race condition:
+	 * The {@code "disconnect.disconnected"} {@link EnigmaServer#kick(Socket, String) kick} call in
+	 * {@link EnigmaServer}'s client threads sends a {@link KickS2CPacket} that can be received by
+	 * <em>other</em> test's clients.
+	 */
+	static void kickAfterTest(Socket clientSocket) {
+		server.kick(clientSocket, "test complete");
+	}
+
 	@RepeatedTest(100000)
 	public void testLogin() throws IOException, InterruptedException {
 		var handler = new DummyClientPacketHandler();
 		var client = connectClient(handler);
 		handler.client = client;
 
-		busyAwaitNot(
-				"Client did not connect", 100,
-				() -> server.getClients().isEmpty() || server.getUnapprovedClients().isEmpty()
-		);
-
-		client.sendPacket(new LoginC2SPacket(checksum, PASSWORD.toCharArray(), "alice"));
-		var confirmed = server.waitChangeConfirmation(server.getClients().get(0), 1)
-				.await(3, TimeUnit.SECONDS);
+		busyAwaitConnection();
 
 		Assertions.assertNotEquals(0, handler.disconnectFromServerLatch.getCount(), "The client was disconnected by the server");
+
+		final Socket clientSocket = server.getClients().get(0);
+		final CountDownLatch changeConfirmation = server.waitChangeConfirmation(clientSocket, 1);
+		client.sendPacket(new LoginC2SPacket(checksum, PASSWORD.toCharArray(), "alice"));
+		final boolean confirmed = changeConfirmation.await(3, TimeUnit.SECONDS);
+
 		Assertions.assertTrue(confirmed, "Timed out waiting for the change confirmation");
-		client.disconnect();
+
+		kickAfterTest(clientSocket);
 	}
 
-	@Test
+	@RepeatedTest(100000)
 	public void testInvalidUsername() throws IOException, InterruptedException {
 		var handler = new DummyClientPacketHandler();
+		// TODO this can throw java.net.BindException despite awaiting disconnectFromServerLatch and disconnecting below
 		var client = connectClient(handler);
 		handler.client = client;
 
@@ -106,6 +130,7 @@ public class NetworkTest {
 		var disconnected = handler.disconnectFromServerLatch.await(3, TimeUnit.SECONDS);
 
 		Assertions.assertTrue(disconnected, "Timed out waiting for the server to kick the client");
+		// TODO remove
 		client.disconnect();
 	}
 

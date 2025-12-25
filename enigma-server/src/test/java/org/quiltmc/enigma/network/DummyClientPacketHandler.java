@@ -21,6 +21,7 @@ public class DummyClientPacketHandler implements ClientPacketHandler {
 		return true;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void disconnectIfConnected(String reason) {
 		if (this.client != null) {
