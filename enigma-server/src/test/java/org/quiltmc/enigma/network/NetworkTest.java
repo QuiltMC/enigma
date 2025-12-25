@@ -3,6 +3,7 @@ package org.quiltmc.enigma.network;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.TestUtil;
 import org.quiltmc.enigma.api.Enigma;
@@ -18,6 +19,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class NetworkTest {
 	private static final Path JAR = TestUtil.obfJar("complete");
@@ -25,6 +29,28 @@ public class NetworkTest {
 	private static byte[] checksum;
 	private static TestEnigmaServer server;
 	private static EntryRemapper remapper;
+
+	/**
+	 * <b>HACK</b>: busy waiting using {@link Thread#sleep(long)} in a {@code while} loop.
+	 *
+	 * @param reason    the reason the passed {@code condition} should not be {@code true}
+	 * @param polls     the number of times to poll the passed {@code condition}; wait time increases with each poll
+	 * @param condition the condition whose {@code false} result is awaited
+	 */
+	@SuppressWarnings("BusyWait")
+	private static void busyAwaitNot(String reason, int polls, BooleanSupplier condition) {
+		int poll = 1;
+		boolean result;
+		while ((result = condition.getAsBoolean()) && poll++ <= polls) {
+			try {
+				Thread.sleep(poll);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		assertFalse(result, reason);
+	}
 
 	@BeforeAll
 	public static void startServer() throws IOException {
@@ -50,14 +76,16 @@ public class NetworkTest {
 		return client;
 	}
 
-	@Test
+	@RepeatedTest(100000)
 	public void testLogin() throws IOException, InterruptedException {
 		var handler = new DummyClientPacketHandler();
 		var client = connectClient(handler);
 		handler.client = client;
 
-		Assertions.assertFalse(server.getClients().isEmpty());
-		Assertions.assertFalse(server.getUnapprovedClients().isEmpty());
+		busyAwaitNot(
+				"Client did not connect", 100,
+				() -> server.getClients().isEmpty() || server.getUnapprovedClients().isEmpty()
+		);
 
 		client.sendPacket(new LoginC2SPacket(checksum, PASSWORD.toCharArray(), "alice"));
 		var confirmed = server.waitChangeConfirmation(server.getClients().get(0), 1)
