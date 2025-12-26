@@ -86,6 +86,9 @@ public class NetworkTest {
 		server.kick(clientSocket, "test complete");
 	}
 
+	/**
+	 * When making changes to this test, <em>always</em> test with 100,000 repetitions.
+	 */
 	@RepeatedTest(DEFAULT_REPETITIONS)
 	public void testLogin() throws IOException, InterruptedException {
 		final var handler = new DummyClientPacketHandler();
