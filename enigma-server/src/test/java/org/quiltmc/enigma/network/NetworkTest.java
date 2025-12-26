@@ -134,7 +134,7 @@ public class NetworkTest {
 	}
 
 	// FIXME this test is flaky when run from workflows/build.yml
-	@RepeatedTest(10000)
+	@Test
 	public void testTakenUsername() throws IOException, InterruptedException {
 		final var packet = new LoginC2SPacket(checksum, PASSWORD.toCharArray(), "alice");
 
