@@ -2,6 +2,7 @@ package org.quiltmc.enigma.network;
 
 import org.quiltmc.enigma.network.packet.Packet;
 
+import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
 
 public class TestEnigmaClient extends EnigmaClient {
@@ -23,5 +24,14 @@ public class TestEnigmaClient extends EnigmaClient {
 		if (this.packetSentLatch != null) {
 			this.packetSentLatch.countDown();
 		}
+	}
+
+	/**
+	 * Don't call this at the end of a test; use {@link NetworkTest#kickAfterTest(Socket)} instead.
+	 */
+	@Override
+	@Deprecated
+	public synchronized void disconnect() {
+		super.disconnect();
 	}
 }
