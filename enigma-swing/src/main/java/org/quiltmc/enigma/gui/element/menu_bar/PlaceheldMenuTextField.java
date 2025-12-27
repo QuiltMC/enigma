@@ -39,6 +39,8 @@ public class PlaceheldMenuTextField extends PlaceheldTextField implements MenuEl
 	private CompoundBorder defaultBorder;
 	private CompoundBorder selectionBorder;
 
+	private boolean processUnselectedKeyEvents = true;
+
 	private boolean selectionIncluded;
 
 	private int minHeight = -1;
@@ -87,6 +89,23 @@ public class PlaceheldMenuTextField extends PlaceheldTextField implements MenuEl
 		this.setFocusable(false);
 
 		super.setBorder(this.defaultBorder);
+	}
+
+	/**
+	 * @see #processesUnselectedKeyEvents()
+	 */
+	public void setProcessesUnselectedKeyEvents(boolean process) {
+		this.processUnselectedKeyEvents = process;
+		this.updateCaretVisibility();
+	}
+
+	/**
+	 * @return {@code true} if this field
+	 * {@linkplain #processKeyEvent(KeyEvent, MenuElement[], MenuSelectionManager) processes menu key events}
+	 * while not part of the menu selection, or {@code false} otherwise; defaults to {@code true}
+	 */
+	public boolean processesUnselectedKeyEvents() {
+		return this.processUnselectedKeyEvents;
 	}
 
 	@Override
@@ -154,7 +173,9 @@ public class PlaceheldMenuTextField extends PlaceheldTextField implements MenuEl
 
 	@Override
 	public void processKeyEvent(KeyEvent event, MenuElement[] path, MenuSelectionManager manager) {
-		super.processKeyEvent(event);
+		if (this.shouldProcessKeyEvents()) {
+			this.processKeyEvent(event);
+		}
 	}
 
 	@Override
@@ -162,12 +183,21 @@ public class PlaceheldMenuTextField extends PlaceheldTextField implements MenuEl
 		if (this.selectionIncluded != isIncluded) {
 			this.selectionIncluded = isIncluded;
 
-			this.getCaret().setSelectionVisible(this.selectionIncluded);
-			this.getCaret().setVisible(this.selectionIncluded);
+			this.updateCaretVisibility();
 
 			// update border
 			this.repaint();
 		}
+	}
+
+	private void updateCaretVisibility() {
+		final boolean processesKeyEvents = this.shouldProcessKeyEvents();
+		this.getCaret().setSelectionVisible(processesKeyEvents);
+		this.getCaret().setVisible(processesKeyEvents);
+	}
+
+	private boolean shouldProcessKeyEvents() {
+		return this.processUnselectedKeyEvents || this.selectionIncluded;
 	}
 
 	@Override
