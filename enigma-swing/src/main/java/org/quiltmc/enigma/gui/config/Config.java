@@ -81,6 +81,9 @@ public final class Config extends ReflectiveConfig {
 	@Comment("The settings for the statistics window.")
 	public final StatsSection stats = new StatsSection();
 
+	@Comment("Settings for the search menus menu.")
+	public final SearchMenusSection searchMenus = new SearchMenusSection();
+
 	@Comment("You shouldn't enable options in this section unless you know what you're doing!")
 	public final DevSection development = new DevSection();
 

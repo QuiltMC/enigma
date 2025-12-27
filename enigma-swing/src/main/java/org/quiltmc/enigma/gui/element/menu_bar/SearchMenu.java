@@ -6,17 +6,23 @@ import org.quiltmc.enigma.gui.dialog.SearchDialog;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
 
-import javax.swing.JMenuItem;
+public class SearchMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.search";
 
-public class SearchMenu extends AbstractEnigmaMenu {
-	private final JMenuItem searchItem = new JMenuItem(GuiUtil.DEOBFUSCATED_ICON);
-	private final JMenuItem searchAllItem = new JMenuItem(GuiUtil.DEOBFUSCATED_ICON);
-	private final JMenuItem searchClassItem = new JMenuItem(GuiUtil.CLASS_ICON);
-	private final JMenuItem searchMethodItem = new JMenuItem(GuiUtil.METHOD_ICON);
-	private final JMenuItem searchFieldItem = new JMenuItem(GuiUtil.FIELD_ICON);
+	private final SimpleItem searchItem = new SimpleItem("menu.search");
+	private final SimpleItem searchAllItem = new SimpleItem("menu.search.all");
+	private final SimpleItem searchClassItem = new SimpleItem("menu.search.class");
+	private final SimpleItem searchMethodItem = new SimpleItem("menu.search.method");
+	private final SimpleItem searchFieldItem = new SimpleItem("menu.search.field");
 
 	public SearchMenu(Gui gui) {
 		super(gui);
+
+		this.searchItem.setIcon(GuiUtil.DEOBFUSCATED_ICON);
+		this.searchAllItem.setIcon(GuiUtil.DEOBFUSCATED_ICON);
+		this.searchClassItem.setIcon(GuiUtil.CLASS_ICON);
+		this.searchMethodItem.setIcon(GuiUtil.METHOD_ICON);
+		this.searchFieldItem.setIcon(GuiUtil.FIELD_ICON);
 
 		this.add(this.searchItem);
 		this.add(this.searchAllItem);
@@ -33,12 +39,13 @@ public class SearchMenu extends AbstractEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.search"));
-		this.searchItem.setText(I18n.translate("menu.search"));
-		this.searchAllItem.setText(I18n.translate("menu.search.all"));
-		this.searchClassItem.setText(I18n.translate("menu.search.class"));
-		this.searchMethodItem.setText(I18n.translate("menu.search.method"));
-		this.searchFieldItem.setText(I18n.translate("menu.search.field"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
+
+		this.searchItem.retranslate();
+		this.searchAllItem.retranslate();
+		this.searchClassItem.retranslate();
+		this.searchMethodItem.retranslate();
+		this.searchFieldItem.retranslate();
 	}
 
 	@Override
@@ -54,5 +61,10 @@ public class SearchMenu extends AbstractEnigmaMenu {
 		if (this.gui.getController().getProject() != null) {
 			this.gui.getSearchDialog().show(clear, types);
 		}
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }
