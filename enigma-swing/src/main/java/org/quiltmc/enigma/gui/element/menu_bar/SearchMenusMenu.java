@@ -22,7 +22,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
-import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -40,7 +39,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.Window;
 import java.awt.event.AWTEventListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -174,21 +172,6 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 					//      none should have been in the path
 					this.selectField(manager);
 				}
-			}
-		});
-
-		// Always focus field, but don't always select its text, because it loses focus when packing new search results.
-		this.field.addHierarchyListener(e -> {
-			if (this.field.isShowing()) {
-				final Window window = SwingUtilities.getWindowAncestor(this.field);
-				if (window != null && window.getType() == Window.Type.POPUP) {
-					// HACK: if PopupFactory::fitsOnScreen is false for light- and medium-weight popups, it makes a
-					// heavy-weight popup instead, whose HeavyWeightWindow component is by default is not focusable.
-					// It prevented this.field from focusing and receiving input.
-					window.setFocusableWindowState(true);
-				}
-
-				this.field.requestFocus();
 			}
 		});
 
@@ -568,13 +551,13 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 						if (modifiers == 0) {
 							final MenuSelectionManager manager = MenuSelectionManager.defaultManager();
 							if (getLastOrNull(manager.getSelectedPath()) instanceof Result.Item item) {
-								this.execute(item.getSearchable(), manager);
+								this.choose(item.getSearchable(), manager);
 							}
 						} else if (modifiers == PREVIEW_MODIFIER_MASK) {
 							if (this.restorablePath != null) {
 								final MenuSelectionManager manager = MenuSelectionManager.defaultManager();
 								if (this.restorablePath.searched == getLastOrNull(manager.getSelectedPath())) {
-									this.execute(this.restorablePath.searched, manager);
+									this.choose(this.restorablePath.searched, manager);
 								}
 							}
 						}
@@ -596,7 +579,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 		}
 
-		void execute(SearchableElement searchable, MenuSelectionManager manager) {
+		void choose(SearchableElement searchable, MenuSelectionManager manager) {
 			SearchMenusMenu.this.chooseHint.dismiss();
 			clearSelectionAndChoose(searchable, manager);
 		}

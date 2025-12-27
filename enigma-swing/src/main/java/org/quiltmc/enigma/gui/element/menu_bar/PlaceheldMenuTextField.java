@@ -83,6 +83,9 @@ public class PlaceheldMenuTextField extends PlaceheldTextField implements MenuEl
 			originalBorder
 		);
 
+		// changing focus when menus are open causes buggy behavior, esp. with keyboard navigation
+		this.setFocusable(false);
+
 		super.setBorder(this.defaultBorder);
 	}
 
@@ -150,12 +153,18 @@ public class PlaceheldMenuTextField extends PlaceheldTextField implements MenuEl
 	public void processMouseEvent(MouseEvent event, MenuElement[] path, MenuSelectionManager manager) { }
 
 	@Override
-	public void processKeyEvent(KeyEvent event, MenuElement[] path, MenuSelectionManager manager) { }
+	public void processKeyEvent(KeyEvent event, MenuElement[] path, MenuSelectionManager manager) {
+		super.processKeyEvent(event);
+	}
 
 	@Override
 	public void menuSelectionChanged(boolean isIncluded) {
 		if (this.selectionIncluded != isIncluded) {
 			this.selectionIncluded = isIncluded;
+
+			this.getCaret().setSelectionVisible(this.selectionIncluded);
+			this.getCaret().setVisible(this.selectionIncluded);
+
 			// update border
 			this.repaint();
 		}
