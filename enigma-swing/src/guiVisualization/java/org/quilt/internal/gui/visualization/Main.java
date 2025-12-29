@@ -3,7 +3,7 @@ package org.quilt.internal.gui.visualization;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridAlignAndFillVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridAlignmentVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridCheckersVisualizer;
-import org.quilt.internal.gui.visualization.flex_grid.FlexGridColumnVisualiser;
+import org.quilt.internal.gui.visualization.flex_grid.FlexGridAbsoluteColumnVisualiser;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridDefaultRowVisualiser;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridDiagonalBricksVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridFillVisualizer;
@@ -12,6 +12,7 @@ import org.quilt.internal.gui.visualization.flex_grid.FlexGridPriorityFillVisual
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridPriorityScrollPanesVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridPriorityVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridQuiltVisualiser;
+import org.quilt.internal.gui.visualization.flex_grid.FlexGridRelativeColumnVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridRelativeExtentOverlapVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridRelativeRowsVisualizer;
 import org.quilt.internal.gui.visualization.flex_grid.FlexGridSparseVisualizer;
@@ -44,7 +45,8 @@ public final class Main {
 	// bootstrap
 	static {
 		registerVisualizer(new FlexGridDefaultRowVisualiser());
-		registerVisualizer(new FlexGridColumnVisualiser());
+		registerVisualizer(new FlexGridRelativeColumnVisualizer());
+		registerVisualizer(new FlexGridAbsoluteColumnVisualiser());
 		registerVisualizer(new FlexGridQuiltVisualiser());
 		registerVisualizer(new FlexGridExtentOverlapVisualiser());
 		registerVisualizer(new FlexGridFillVisualizer());

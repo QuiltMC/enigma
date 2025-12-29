@@ -94,8 +94,7 @@ import static org.quiltmc.enigma.util.Utils.ceilDiv;
  *          {@linkplain FlexGridConstraints.Relative#placement(FlexGridConstraints.Relative.Placement) placement}
  *          determines its position
  *     <li> components with no constraints are treated are treated as though they have
- *          {@link FlexGridConstraints.Relative Relative} constraints with
- *          {@link FlexGridConstraints.Relative#DEFAULT_PLACEMENT DEFAULT_PLACEMENT}
+ *          {@link FlexGridConstraints.Relative Relative} constraints with the layout's {@link #defaultPlacement}
  *     <li> a component can occupy multiple grid cells when its constraint
  *          {@linkplain FlexGridConstraints#xExtent(int) xExtent} or
  *          {@linkplain FlexGridConstraints#yExtent(int) yExtent} exceeds {@code 1};
@@ -128,6 +127,9 @@ public class FlexGridLayout implements LayoutManager2 {
 
 	private final ConstrainedGrid grid = new ConstrainedGrid();
 
+	private final FlexGridConstraints.Relative.Placement defaultPlacement;
+
+	// TODO use Lazy.clearableOf(...) from menu-search once it's merged
 	/**
 	 * Lazily populated cache.
 	 *
@@ -148,6 +150,22 @@ public class FlexGridLayout implements LayoutManager2 {
 	 * @see #getMaxSizes()
 	 */
 	private @Nullable Sizes maxSizes;
+
+	/**
+	 * Constructs a flex grid that places components {@linkplain Container#add(Component) added without constraints}
+	 * using {@link FlexGridConstraints.Relative#DEFAULT_PLACEMENT}.
+	 */
+	public FlexGridLayout() {
+		this(FlexGridConstraints.Relative.DEFAULT_PLACEMENT);
+	}
+
+	/**
+	 * Constructs a flex grid that places components {@linkplain Container#add(Component) added without constraints}
+	 * using the passed {@code defaultPlacement}.
+	 */
+	public FlexGridLayout(FlexGridConstraints.Relative.Placement defaultPlacement) {
+		this.defaultPlacement = defaultPlacement;
+	}
 
 	@Override
 	public void addLayoutComponent(Component component, @Nullable Object constraints) throws IllegalArgumentException {
@@ -184,7 +202,7 @@ public class FlexGridLayout implements LayoutManager2 {
 	}
 
 	private void addDefaultConstrainedLayoutComponent(Component component) {
-		this.grid.putRelative(Constrained.defaultOf(component), FlexGridConstraints.Relative.DEFAULT_PLACEMENT);
+		this.grid.putRelative(Constrained.defaultOf(component), this.defaultPlacement);
 	}
 
 	@Override
@@ -415,11 +433,11 @@ public class FlexGridLayout implements LayoutManager2 {
 	) {
 		static Constrained defaultOf(Component component) {
 			return new Constrained(
-				component,
-				FlexGridConstraints.DEFAULT_X_EXTENT, FlexGridConstraints.DEFAULT_Y_EXTENT,
-				FlexGridConstraints.DEFAULT_FILL_X, FlexGridConstraints.DEFAULT_FILL_Y,
-				FlexGridConstraints.DEFAULT_X_ALIGNMENT, FlexGridConstraints.DEFAULT_Y_ALIGNMENT,
-				FlexGridConstraints.DEFAULT_PRIORITY
+					component,
+					FlexGridConstraints.DEFAULT_X_EXTENT, FlexGridConstraints.DEFAULT_Y_EXTENT,
+					FlexGridConstraints.DEFAULT_FILL_X, FlexGridConstraints.DEFAULT_FILL_Y,
+					FlexGridConstraints.DEFAULT_X_ALIGNMENT, FlexGridConstraints.DEFAULT_Y_ALIGNMENT,
+					FlexGridConstraints.DEFAULT_PRIORITY
 			);
 		}
 
