@@ -78,7 +78,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		searchable.onSearchChosen();
 	}
 
-	private static ImmutableList<MenuElement> buildPathTo(MenuElement target) {
+	private static org.quiltmc.enigma.util.Result<ImmutableList<MenuElement>, String> buildPathTo(MenuElement target) {
 		final List<MenuElement> pathBuilder = new LinkedList<>();
 		pathBuilder.add(target);
 		Component element = target.getComponent().getParent();
@@ -97,16 +97,14 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 		if (element instanceof JMenuBar bar) {
 			pathBuilder.add(0, bar);
 
-			return ImmutableList.copyOf(pathBuilder);
+			return org.quiltmc.enigma.util.Result.ok(ImmutableList.copyOf(pathBuilder));
 		} else {
-			Logger.error(
+			return org.quiltmc.enigma.util.Result.err(
 					"""
 					Failed to build path to %s!
 					\tPath does not begin with menu bar: %s
 					""".formatted(target, pathBuilder)
 			);
-
-			return ImmutableList.of();
 		}
 	}
 
@@ -136,7 +134,12 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			.collect(toStringLookup(2, Result.COMPARATOR))
 	);
 
-	private final Lazy<ImmutableList<MenuElement>> fieldPath = Lazy.of(() -> buildPathTo(this.field));
+	private final Lazy<ImmutableList<MenuElement>> fieldPath = Lazy.of(() -> buildPathTo(this.field)
+			.unwrapOrElse(err -> {
+				Logger.error(err);
+				return ImmutableList.of();
+			}
+	));
 
 	private final List<Component> transientChildren = new LinkedList<>();
 
@@ -398,34 +401,33 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 					clearSelectionAndChoose(Result.this.searchable, MenuSelectionManager.defaultManager());
 				});
 
-				this.searchablePath = buildPathTo(this.getSearchable());
+				this.searchablePath = buildPathTo(this.getSearchable()).unwrapOrElse(err -> {
+					Logger.error(err);
+					return ImmutableList.of();
+				});
 
-				if (!this.searchablePath.isEmpty()) {
-					final String pathText = this.searchablePath.stream()
-							.flatMap(element -> {
-								if (element instanceof SearchableElement searchableElement) {
-									return Stream.of(searchableElement.getSearchName());
-								} else if (element.getComponent() instanceof JMenuItem menuItem) {
-									return Stream.of(menuItem.getText());
+				this.setToolTipText(this.searchablePath.isEmpty() ? "????" : this.searchablePath.stream()
+						.flatMap(element -> {
+							if (element instanceof SearchableElement searchableElement) {
+								return Stream.of(searchableElement.getSearchName());
+							} else if (element.getComponent() instanceof JMenuItem menuItem) {
+								return Stream.of(menuItem.getText());
+							} else {
+								// JPopupMenus' names come from their parent JMenus; skip them
+								// JMenuBar has no name
+								if (element instanceof JPopupMenu || element instanceof JMenuBar) {
+									return Stream.empty();
 								} else {
-									// JPopupMenus' names come from their parent JMenus; skip them
-									// JMenuBar has no name
-									if (element instanceof JPopupMenu || element instanceof JMenuBar) {
-										return Stream.empty();
-									} else {
-										Logger.error(
-												"Cannot determine name of menu element in path to %s: %s"
-													.formatted(searchName, element)
-										);
+									Logger.error(
+											"Cannot determine name of menu element in path to %s: %s"
+												.formatted(searchName, element)
+									);
 
-										return Stream.of("???");
-									}
+									return Stream.of("???");
 								}
-							})
-							.collect(Collectors.joining(" > "));
-
-					this.setToolTipText(pathText);
-				}
+							}
+						})
+						.collect(Collectors.joining(" > ")));
 			}
 
 			void selectSearchable(MenuSelectionManager manager) {
