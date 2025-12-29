@@ -85,9 +85,6 @@ public class PlaceheldMenuTextField extends PlaceheldTextField implements MenuEl
 			originalBorder
 		);
 
-		// changing focus when menus are open causes buggy behavior, esp. with keyboard navigation
-		this.setFocusable(false);
-
 		super.setBorder(this.defaultBorder);
 	}
 
