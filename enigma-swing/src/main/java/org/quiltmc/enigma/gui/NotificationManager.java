@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.docker.NotificationsDocker;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
@@ -40,6 +41,10 @@ public class NotificationManager implements ValidationContext.Notifier {
 	public static final int VERTICAL_GAP = 20;
 
 	private final Gui gui;
+	/**
+	 * @see #getGlassPane()
+	 */
+	@Nullable
 	private JPanel glassPane;
 	private final Map<Notification, Integer> activeNotifications = new HashMap<>();
 
@@ -67,23 +72,44 @@ public class NotificationManager implements ValidationContext.Notifier {
 		}, 0, REMOVE_CHECK_INTERVAL_MILLISECONDS);
 	}
 
+	/**
+	 * Ensures {@link #glassPane} is initialized and holds the main window's glass pane before returning it.
+	 */
+	private JPanel getGlassPane() {
+		final JPanel currentGlassPane = (JPanel) this.gui.getFrame().getGlassPane();
+		if (this.glassPane != currentGlassPane) {
+			if (this.glassPane != null) {
+				this.glassPane.setVisible(false);
+			}
+
+			this.glassPane = currentGlassPane;
+
+			GuiUtil.setUpGlassPane(this.glassPane);
+		}
+
+		return this.glassPane;
+	}
+
 	private void removeNotification(Notification notification) {
 		notification.setVisible(false);
-		this.glassPane.remove(notification);
+		final JPanel glass = this.getGlassPane();
+		glass.remove(notification);
 		this.activeNotifications.remove(notification);
 
-		if (!this.activeNotifications.isEmpty()) {
+		if (this.activeNotifications.isEmpty()) {
+			glass.setVisible(false);
+		} else {
 			for (Notification activeNotification : this.activeNotifications.keySet()) {
 				activeNotification.setLocation(activeNotification.getX(), this.getHeightFor(activeNotification));
 			}
 		}
 
-		this.glassPane.revalidate();
+		glass.revalidate();
 	}
 
 	private int getHeightFor(Notification notification) {
 		// neatly orders notifications by their remaining time
-		int height = this.glassPane.getHeight() - notification.getHeight() - VERTICAL_GAP;
+		int height = this.getGlassPane().getHeight() - notification.getHeight() - VERTICAL_GAP;
 
 		if (!this.activeNotifications.isEmpty()) {
 			List<Notification> sortedNotifications = this.activeNotifications.keySet().stream().sorted((a, b) -> Integer.compare(this.activeNotifications.get(b), this.activeNotifications.get(a))).toList();
@@ -100,9 +126,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 	public void notify(ParameterizedMessage message) {
 		Notification notificationPanel = new Notification(this.gui, message.getType(), message.getText(), message.getLongText(), true);
 
-		JPanel glass = (JPanel) this.gui.getFrame().getGlassPane();
-		this.glassPane = glass;
-		GuiUtil.setUpGlassPane(glass);
+		final JPanel glass = this.getGlassPane();
 		glass.add(notificationPanel);
 
 		// set up notification panel
