@@ -39,7 +39,7 @@ public class PlaceheldMenuTextField extends PlaceheldTextField implements MenuEl
 	private CompoundBorder defaultBorder;
 	private CompoundBorder selectionBorder;
 
-	private boolean processUnselectedKeyEvents = true;
+	private boolean processUnselectedKeyEvents;
 
 	private boolean selectionIncluded;
 
@@ -86,6 +86,8 @@ public class PlaceheldMenuTextField extends PlaceheldTextField implements MenuEl
 		);
 
 		super.setBorder(this.defaultBorder);
+
+		this.updateCaretVisibility();
 	}
 
 	/**

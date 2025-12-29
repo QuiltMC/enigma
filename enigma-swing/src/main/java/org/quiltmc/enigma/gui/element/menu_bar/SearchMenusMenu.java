@@ -178,6 +178,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			}
 		});
 
+		this.field.setProcessesUnselectedKeyEvents(true);
+
 		// select field on content change so shift capitalizes instead of viewing selection
 		this.field.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
