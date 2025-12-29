@@ -321,7 +321,6 @@ public final class GuiUtil {
 	 */
 	public static void setUpGlassPane(JPanel glass) {
 		glass.setOpaque(false);
-		glass.setVisible(true);
 		glass.setLayout(null);
 		glass.revalidate();
 	}

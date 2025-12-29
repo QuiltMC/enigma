@@ -127,6 +127,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 		Notification notificationPanel = new Notification(this.gui, message.getType(), message.getText(), message.getLongText(), true);
 
 		final JPanel glass = this.getGlassPane();
+		glass.setVisible(true);
 		glass.add(notificationPanel);
 
 		// set up notification panel
