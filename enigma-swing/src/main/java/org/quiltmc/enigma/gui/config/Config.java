@@ -262,24 +262,12 @@ public final class Config extends ReflectiveConfig {
 	}
 
 	public enum ThemeChoice implements ConfigSerializableObject<String> {
-		DEFAULT(
-			Theme.create(ENVIRONMENT, THEME_FAMILY, "default", new DefaultThemeProperties())
-		),
-		DARCULA(
-			Theme.create(ENVIRONMENT, THEME_FAMILY, "darcula", new DarculaThemeProperties())
-		),
-		DARCERULA(
-			Theme.create(ENVIRONMENT, THEME_FAMILY, "darcerula", new DarcerulaThemeProperties())
-		),
-		METAL(
-			Theme.create(ENVIRONMENT, THEME_FAMILY, "metal", new MetalThemeProperties())
-		),
-		SYSTEM(
-			Theme.create(ENVIRONMENT, THEME_FAMILY, "system", new SystemThemeProperties())
-		),
-		NONE(
-			Theme.create(ENVIRONMENT, THEME_FAMILY, "none", new NoneThemeProperties())
-		);
+		DEFAULT(Theme.create("default", ENVIRONMENT, THEME_FAMILY, new DefaultThemeProperties())),
+		DARCULA(Theme.create("darcula", ENVIRONMENT, THEME_FAMILY, new DarculaThemeProperties())),
+		DARCERULA(Theme.create("darcerula", ENVIRONMENT, THEME_FAMILY, new DarcerulaThemeProperties())),
+		METAL(Theme.create("metal", ENVIRONMENT, THEME_FAMILY, new MetalThemeProperties())),
+		SYSTEM(Theme.create("system", ENVIRONMENT, THEME_FAMILY, new SystemThemeProperties())),
+		NONE(Theme.create("none", ENVIRONMENT, THEME_FAMILY, new NoneThemeProperties()));
 
 		private final Theme theme;
 
