@@ -122,20 +122,18 @@ class ConstrainedGrid {
 			Operations innerOps,
 			SortedMap<Integer, SortedMap<Integer, SortedMap<Integer, Set<Component>>>> maxGrid
 	) {
-		final int max = maxGrid.lastKey();
-		final SortedMap<Integer, SortedMap<Integer, Set<Component>>> maxXRow = maxGrid.get(max);
-		final SortedMap<Integer, Set<Component>> maxXComponentsByY = maxXRow.get(maxXRow.lastKey());
+		final int outerMax = maxGrid.lastKey();
+		final SortedMap<Integer, SortedMap<Integer, Set<Component>>> maxRow = maxGrid.get(outerMax);
+		final int innerMax = maxRow.lastKey();
+		final SortedMap<Integer, Set<Component>> maxColumn = maxRow.get(innerMax);
 
-		final Set<Component> minYMaxXComponents = maxXComponentsByY.get(maxXComponentsByY.firstKey());
-		final Component component = minYMaxXComponents.iterator().next();
-		final Coordinates coords = this.componentCoordinates.get(component);
+		final Set<Component> minCoordMaxComponents = maxColumn.get(maxColumn.firstKey());
+		final Coordinates precedingCoords = this.componentCoordinates.get(minCoordMaxComponents.iterator().next());
 
-		final int coord = innerOps.chooseCoord(coords)
-				+ innerOps.getExcess(this.grid.get(coords.y).get(coords.x).get(component))
-				+ 1;
-		final int oppositeCoord = innerOps.opposite().chooseCoord(coords);
+		final int coord = innerMax + 1;
+		final int oppositeCoord = innerOps.opposite().chooseCoord(precedingCoords);
 
-		return innerOps.createPos(coord, oppositeCoord);
+		return innerOps.createCoords(coord, oppositeCoord);
 	}
 
 	void remove(Component component) {
@@ -247,12 +245,7 @@ class ConstrainedGrid {
 			static final Operations.X INSTANCE = new Operations.X();
 
 			@Override
-			public int getExcess(Constrained constrained) {
-				return constrained.getXExcess();
-			}
-
-			@Override
-			public Coordinates createPos(int coord, int oppositeCoord) {
+			public Coordinates createCoords(int coord, int oppositeCoord) {
 				return new Coordinates(coord, oppositeCoord);
 			}
 
@@ -266,12 +259,7 @@ class ConstrainedGrid {
 			static final Operations.Y INSTANCE = new Operations.Y();
 
 			@Override
-			public int getExcess(Constrained constrained) {
-				return constrained.getYExcess();
-			}
-
-			@Override
-			public Coordinates createPos(int coord, int oppositeCoord) {
+			public Coordinates createCoords(int coord, int oppositeCoord) {
 				return new Coordinates(oppositeCoord, coord);
 			}
 
@@ -285,8 +273,6 @@ class ConstrainedGrid {
 			return this.chooseCoord(coords.x, coords.y);
 		}
 
-		int getExcess(Constrained constrained);
-
-		Coordinates createPos(int coord, int oppositeCoord);
+		Coordinates createCoords(int coord, int oppositeCoord);
 	}
 }
