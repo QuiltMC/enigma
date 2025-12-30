@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.element.menu_bar;
 
+import com.formdev.flatlaf.FlatLaf;
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.element.PlaceheldTextField;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
@@ -86,6 +87,9 @@ public class PlaceheldMenuTextField extends PlaceheldTextField implements MenuEl
 		);
 
 		super.setBorder(this.defaultBorder);
+
+		// HACK flatlaf popups that exceed the main window's bounds don't receive keystrokes if they gain focus
+		this.setFocusable(!(UIManager.getLookAndFeel() instanceof FlatLaf));
 
 		this.updateCaretVisibility();
 	}
