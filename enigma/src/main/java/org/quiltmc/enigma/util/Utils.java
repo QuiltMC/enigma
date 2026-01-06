@@ -13,7 +13,6 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.IdentityHashMap;
@@ -26,7 +25,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Supplier;
-import java.util.stream.Collector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -237,22 +235,5 @@ public class Utils {
 
 	public static <T> Set<T> createIdentityHashSet(int expectedMaxSize) {
 		return Collections.newSetFromMap(new IdentityHashMap<>(expectedMaxSize));
-	}
-
-	/**
-	 * Adds the passed {@code right} collection's elements to the passed {@code left} collection
-	 * and returns {@code left}.
-	 *
-	 * <p> Can be used as the combiner when creating {@link Collector}s using {@link Collector#of}.
-	 *
-	 * @param <T> the type of elements held by each collection
-	 * @param <L> the type of the left collection
-	 * @param <R> the type of the right collection
-	 *
-	 * @return the passed {@code left} collection
-	 */
-	public static <T, L extends Collection<T>, R extends Collection<? extends T>> L combineLeft(L left, R right) {
-		left.addAll(right);
-		return left;
 	}
 }

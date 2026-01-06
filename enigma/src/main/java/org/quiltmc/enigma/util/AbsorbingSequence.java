@@ -5,6 +5,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.NoSuchElementException;
+import java.util.function.Function;
 import java.util.stream.Collector;
 
 /**
@@ -20,6 +21,23 @@ import java.util.stream.Collector;
  * @param <T> the type of values in this sequence
  */
 public final class AbsorbingSequence<T> implements Iterable<T> {
+	/**
+	 * @param <T> the type of elements
+	 * @param <R> the type of the final result
+	 *
+	 * @return a collector that accumulates elements in {@link AbsorbingSequence}s and creates a final result using the
+	 * passed {@code resultFactory}
+	 */
+	public static <T, R> Collector<T, AbsorbingSequence<T>, R> collectorTo(
+			Function<AbsorbingSequence<T>, R> resultFactory
+	) {
+		return Collector.of(
+			AbsorbingSequence::new,
+			AbsorbingSequence::append, AbsorbingSequence::absorb,
+			resultFactory
+		);
+	}
+
 	/**
 	 * {@code null} <em>iff</em> empty
 	 */

@@ -10,11 +10,9 @@ import org.quiltmc.enigma.util.multi_trie.EmptyStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.MutableStringMultiTrie;
 import org.quiltmc.enigma.util.multi_trie.StringMultiTrie;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collector;
@@ -64,10 +62,7 @@ public final class StringLookup<R extends StringLookup.Result> {
 	public static <R extends Result> Collector<R, ?, StringLookup<R>> toStringLookup(
 			int substringDepth, Comparator<R> comparator
 	) {
-		return Collector.of(
-			LinkedList<R>::new, Collection::add, Utils::combineLeft,
-			list -> StringLookup.of(substringDepth, comparator, list)
-		);
+		return AbsorbingSequence.collectorTo(sequence -> StringLookup.of(substringDepth, comparator, sequence));
 	}
 
 	/**
