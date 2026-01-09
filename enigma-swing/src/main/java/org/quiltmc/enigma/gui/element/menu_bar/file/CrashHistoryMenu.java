@@ -3,20 +3,22 @@ package org.quiltmc.enigma.gui.element.menu_bar.file;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.dialog.CrashDialog;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JMenuItem;
 
-public class CrashHistoryMenu extends AbstractEnigmaMenu {
+public class CrashHistoryMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.file.crash_history";
+
 	protected CrashHistoryMenu(Gui gui) {
 		super(gui);
 	}
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.file.crash_history"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 	}
 
 	@Override
@@ -39,5 +41,10 @@ public class CrashHistoryMenu extends AbstractEnigmaMenu {
 
 	private void onCrashClicked(Throwable throwable) {
 		CrashDialog.show(throwable, false);
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

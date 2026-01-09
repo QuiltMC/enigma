@@ -93,8 +93,8 @@ public class EnigmaQuickFindToolBar extends QuickFindToolBar {
 	}
 
 	public void reloadKeyBinds() {
-		putKeyBindAction(KeyBinds.QUICK_FIND_DIALOG_PREVIOUS, this.searchField, e -> this.prevButton.doClick());
-		putKeyBindAction(KeyBinds.QUICK_FIND_DIALOG_NEXT, this.searchField, e -> this.nextButton.doClick());
+		putKeyBindAction(KeyBinds.QUICK_FIND_DIALOG_PREVIOUS, this.searchField, e -> this.prevButton.doClick(0));
+		putKeyBindAction(KeyBinds.QUICK_FIND_DIALOG_NEXT, this.searchField, e -> this.nextButton.doClick(0));
 		putKeyBindAction(
 				KeyBinds.QUICK_FIND_DIALOG_CLOSE, this, FocusCondition.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT,
 				e -> this.setVisible(false)

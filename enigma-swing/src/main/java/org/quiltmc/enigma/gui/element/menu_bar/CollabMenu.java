@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.element.menu_bar;
 
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.NotificationManager;
@@ -14,40 +15,51 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
-public class CollabMenu extends AbstractEnigmaMenu {
-	private final JMenuItem connectItem = new JMenuItem();
-	private final JMenuItem startServerItem = new JMenuItem();
+public class CollabMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.collab";
+
+	private final StatefulItem connectionItem = new StatefulItem(state -> state != ConnectionState.CONNECTED
+			? "menu.collab.connect"
+			: "menu.collab.disconnect"
+	);
+
+	private final StatefulItem hostItem = new StatefulItem(state -> state != ConnectionState.HOSTING
+			? "menu.collab.server.start"
+			: "menu.collab.server.stop"
+	);
 
 	public CollabMenu(Gui gui) {
 		super(gui);
 
-		this.add(this.connectItem);
-		this.add(this.startServerItem);
+		this.add(this.connectionItem);
+		this.add(this.hostItem);
 
-		this.connectItem.addActionListener(e -> this.onConnectClicked());
-		this.startServerItem.addActionListener(e -> this.onStartServerClicked());
+		this.connectionItem.addActionListener(e -> this.onConnectionClicked());
+		this.hostItem.addActionListener(e -> this.onHostClicked());
 	}
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.collab"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 		this.retranslate(this.gui.getConnectionState());
 	}
 
 	private void retranslate(ConnectionState state) {
-		this.connectItem.setText(I18n.translate(state != ConnectionState.CONNECTED ? "menu.collab.connect" : "menu.collab.disconnect"));
-		this.startServerItem.setText(I18n.translate(state != ConnectionState.HOSTING ? "menu.collab.server.start" : "menu.collab.server.stop"));
+		this.connectionItem.retranslate(state);
+		this.hostItem.retranslate(state);
 	}
 
 	@Override
 	public void updateState(boolean jarOpen, ConnectionState state) {
-		this.connectItem.setEnabled(jarOpen && state != ConnectionState.HOSTING);
-		this.startServerItem.setEnabled(jarOpen && state != ConnectionState.CONNECTED);
+		this.connectionItem.setEnabled(jarOpen && state != ConnectionState.HOSTING);
+		this.hostItem.setEnabled(jarOpen && state != ConnectionState.CONNECTED);
 		this.retranslate(state);
 	}
 
-	public void onConnectClicked() {
+	public void onConnectionClicked() {
 		if (this.gui.getController().getClient() != null) {
 			this.gui.getController().disconnectIfConnected(null);
 			return;
@@ -76,7 +88,7 @@ public class CollabMenu extends AbstractEnigmaMenu {
 		Arrays.fill(result.password(), (char) 0);
 	}
 
-	public void onStartServerClicked() {
+	public void onHostClicked() {
 		if (this.gui.getController().getServer() != null) {
 			this.gui.getController().disconnectIfConnected(null);
 			return;
@@ -100,6 +112,46 @@ public class CollabMenu extends AbstractEnigmaMenu {
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), e.toString(), I18n.translate("menu.collab.server.start.error"), JOptionPane.ERROR_MESSAGE);
 			this.gui.getController().disconnectIfConnected(null);
+		}
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
+	}
+
+	private static final class StatefulItem extends JMenuItem implements SearchableElement {
+		final Function<ConnectionState, String> updateTranslationKey;
+
+		@Nullable
+		String translationKey;
+
+		StatefulItem(Function<ConnectionState, String> updateTranslationKey) {
+			this.updateTranslationKey = updateTranslationKey;
+		}
+
+		@Override
+		public Stream<String> streamSearchAliases() {
+			return this.translationKey == null ? Stream.empty() : Stream.concat(
+				Stream.of(this.getSearchName()),
+				SearchableElement.translateExtraAliases(this.translationKey)
+			);
+		}
+
+		void retranslate(ConnectionState state) {
+			this.translationKey = this.updateTranslationKey.apply(state);
+
+			this.setText(I18n.translate(this.translationKey));
+		}
+
+		@Override
+		public String getSearchName() {
+			return this.getText();
+		}
+
+		@Override
+		public void onSearchChosen() {
+			this.doClick(0);
 		}
 	}
 }
