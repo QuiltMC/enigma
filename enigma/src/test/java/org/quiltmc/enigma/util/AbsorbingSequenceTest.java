@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.UnmodifiableIterator;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -103,14 +105,13 @@ public class AbsorbingSequenceTest {
 
 		CompletableFuture.allOf(appendFutures.toArray(new CompletableFuture[0])).join();
 
-		int count = 0;
+		final Set<Integer> encounteredValues = new HashSet<>(values.size());
 		for (final int value : sequence) {
-			count++;
-
+			assertTrue(encounteredValues.add(value), () -> "Duplicate value: " + value);
 			assertSequenceValue(value, values);
 		}
 
-		assertThat(count, is(values.size()));
+		assertThat(encounteredValues.size(), is(values.size()));
 	}
 
 	@Test
@@ -146,13 +147,13 @@ public class AbsorbingSequenceTest {
 
 		CompletableFuture.allOf(absorbFutures).join();
 
-		int count = 0;
+		final Set<Integer> encounteredValues = new HashSet<>(values.size());
 		for (final int value : absorber) {
-			count++;
+			assertTrue(encounteredValues.add(value), () -> "Duplicate value: " + value);
 			assertSequenceValue(value, values);
 		}
 
-		assertThat(count, is(values.size()));
+		assertThat(encounteredValues.size(), is(values.size()));
 
 		for (int i = 0; i < sequences.size(); i++) {
 			final int iSequence = i;
