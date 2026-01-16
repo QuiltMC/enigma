@@ -25,7 +25,6 @@ import org.quiltmc.enigma.gui.config.SelectionHighlightSection;
 import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
 import org.quiltmc.enigma.gui.config.theme.properties.composite.SyntaxPaneProperties;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
-import org.quiltmc.enigma.gui.highlight.SelectionHighlightPainter;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
@@ -46,7 +45,6 @@ import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Highlighter.HighlightPainter;
 import java.awt.FlowLayout;
@@ -102,8 +100,9 @@ public class BaseEditorPanel {
 	private final BoxHighlightPainter debugPainter;
 	private final BoxHighlightPainter fallbackPainter;
 
+	// package-private so EditorHighlightHandler can clean up after itself in finish()
 	@Nullable
-	private SelectionHighlightHandler selectionHighlightHandler;
+	EditorHighlightHandler selectionHighlightHandler;
 
 	protected ClassHandler classHandler;
 	private DecompiledClassSource source;
@@ -582,8 +581,8 @@ public class BaseEditorPanel {
 		final SelectionHighlightSection config = Config.editor().selectionHighlight;
 		final int blinks = config.blinks.value();
 		if (blinks > 0) {
-			final SelectionHighlightHandler handler =
-					new SelectionHighlightHandler(token, config.blinkDelay.value(), blinks);
+			final EditorHighlightHandler handler =
+					new EditorHighlightHandler(this, token, config.blinkDelay.value(), blinks);
 
 			handler.start();
 
@@ -674,51 +673,6 @@ public class BaseEditorPanel {
 	private ClassEntry getDeobfOrObfHandleRef() {
 		final ClassEntry deobfRef = this.classHandler.handle.getDeobfRef();
 		return deobfRef == null ? this.classHandler.handle.getRef() : deobfRef;
-	}
-
-	private class SelectionHighlightHandler extends Timer {
-		static final int BLINK_INTERVAL = 2;
-
-		final int counterMax;
-
-		int counter = 0;
-		Object highlight = null;
-
-		SelectionHighlightHandler(Token token, int delay, int blinks) {
-			super(delay, null);
-
-			this.counterMax = blinks * BLINK_INTERVAL;
-
-			this.setInitialDelay(0);
-
-			this.addActionListener(e -> {
-				if (this.counter < this.counterMax) {
-					if (this.counter % BLINK_INTERVAL == 0) {
-						this.highlight = BaseEditorPanel.this.addHighlight(token, SelectionHighlightPainter.INSTANCE);
-					} else {
-						this.removeHighlight();
-					}
-
-					this.counter++;
-				} else {
-					this.finish();
-				}
-			});
-		}
-
-		void removeHighlight() {
-			if (this.highlight != null) {
-				BaseEditorPanel.this.editor.getHighlighter().removeHighlight(this.highlight);
-			}
-		}
-
-		void finish() {
-			this.stop();
-			this.removeHighlight();
-			if (BaseEditorPanel.this.selectionHighlightHandler == this) {
-				BaseEditorPanel.this.selectionHighlightHandler = null;
-			}
-		}
 	}
 
 	public record Snippet(int start, int end) {
