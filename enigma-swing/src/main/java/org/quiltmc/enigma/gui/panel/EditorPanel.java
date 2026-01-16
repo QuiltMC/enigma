@@ -36,6 +36,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -207,11 +208,11 @@ public class EditorPanel extends BaseEditorPanel {
 	}
 
 	@Override
-	protected void setClassHandleImpl(
+	protected CompletableFuture<?> setClassHandleImpl(
 			ClassEntry old, ClassHandle handle,
 			@Nullable Function<DecompiledClassSource, Snippet> snippetFactory
 	) {
-		super.setClassHandleImpl(old, handle, snippetFactory);
+		final CompletableFuture<?> superFuture = super.setClassHandleImpl(old, handle, snippetFactory);
 
 		handle.addListener(new ClassHandleListener() {
 			@Override
@@ -228,6 +229,8 @@ public class EditorPanel extends BaseEditorPanel {
 		});
 
 		this.listeners.forEach(l -> l.onClassHandleChanged(this, old, handle));
+
+		return superFuture;
 	}
 
 	private void onCaretMove(int pos) {

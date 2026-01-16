@@ -19,13 +19,16 @@ import org.quiltmc.enigma.util.Os;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JToolTip;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
@@ -77,7 +80,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public final class GuiUtil {
 	private GuiUtil() {
@@ -531,6 +537,67 @@ public final class GuiUtil {
 		// final int extraY = availableY - maxAscent - maxDescent;
 		// return maxAscent + top + extraY / 2;
 		return (maxAscent + top + height - bottom - maxDescent) / 2;
+	}
+
+	/**
+	 * Creates a {@link JMenu} containing one {@linkplain JRadioButtonMenuItem radio item} for each value between the
+	 * passed {@code min} and {@code max}, inclusive.
+	 *
+	 * <p> Listeners are added to keep the selected radio item and the passed {@code config}'s
+	 * {@link TrackedValue#value() value} in sync.
+	 *
+	 * @param config   the config value to sync with
+	 * @param min      the minimum allowed value
+	 * 	 *             this should coincide with any minimum imposed on the passed {@code config}
+	 * @param max      the maximum allowed value
+	 * 	 *             this should coincide with any maximum imposed on the passed {@code config}
+	 * @param onUpdate a function to run whenever the passed {@code config} changes, whether because a radio item was
+	 *                 clicked or because another source updated it
+	 *
+	 *  @return a newly created menu allowing configuration of the passed {@code config}
+	 */
+	public static JMenu createIntConfigRadioMenu(
+			TrackedValue<Integer> config, int min, int max, Runnable onUpdate
+	) {
+		final Map<Integer, JRadioButtonMenuItem> radiosByChoice = IntStream.range(min, max + 1)
+				.boxed()
+				.collect(Collectors.toMap(
+					Function.identity(),
+					choice -> {
+						final JRadioButtonMenuItem choiceItem = new JRadioButtonMenuItem();
+						choiceItem.setText(Integer.toString(choice));
+						if (choice.equals(config.value())) {
+							choiceItem.setSelected(true);
+						}
+
+						choiceItem.addActionListener(e -> {
+							if (!config.value().equals(choice)) {
+								config.setValue(choice);
+								onUpdate.run();
+							}
+						});
+
+						return choiceItem;
+					}
+				));
+
+		final ButtonGroup choicesGroup = new ButtonGroup();
+		final JMenu menu = new JMenu();
+		for (final JRadioButtonMenuItem radio : radiosByChoice.values()) {
+			choicesGroup.add(radio);
+			menu.add(radio);
+		}
+
+		config.registerCallback(updated -> {
+			final JRadioButtonMenuItem choiceItem = radiosByChoice.get(updated.value());
+
+			if (!choiceItem.isSelected()) {
+				choiceItem.setSelected(true);
+				onUpdate.run();
+			}
+		});
+
+		return menu;
 	}
 
 	public enum FocusCondition {
