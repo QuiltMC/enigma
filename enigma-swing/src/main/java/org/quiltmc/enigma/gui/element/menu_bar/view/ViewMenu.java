@@ -3,12 +3,13 @@ package org.quiltmc.enigma.gui.element.menu_bar.view;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.dialog.FontDialog;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.SimpleItem;
 import org.quiltmc.enigma.util.I18n;
 
-import javax.swing.JMenuItem;
+public class ViewMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.view";
 
-public class ViewMenu extends AbstractEnigmaMenu {
 	private final StatsMenu stats;
 	private final NotificationsMenu notifications;
 	private final LanguagesMenu languages;
@@ -17,7 +18,7 @@ public class ViewMenu extends AbstractEnigmaMenu {
 	private final EntryTooltipsMenu entryTooltips;
 	private final SelectionHighlightMenu selectionHighlight;
 
-	private final JMenuItem fontItem = new JMenuItem();
+	private final SimpleItem fontItem = new SimpleItem("menu.view.font");
 
 	public ViewMenu(Gui gui) {
 		super(gui);
@@ -43,7 +44,7 @@ public class ViewMenu extends AbstractEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.view"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 
 		this.themes.retranslate();
 		this.notifications.retranslate();
@@ -52,7 +53,7 @@ public class ViewMenu extends AbstractEnigmaMenu {
 		this.stats.retranslate();
 		this.entryTooltips.retranslate();
 		this.selectionHighlight.retranslate();
-		this.fontItem.setText(I18n.translate("menu.view.font"));
+		this.fontItem.retranslate();
 	}
 
 	@Override
@@ -65,5 +66,10 @@ public class ViewMenu extends AbstractEnigmaMenu {
 
 	private void onFontClicked(Gui gui) {
 		FontDialog.display(gui.getFrame());
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }
