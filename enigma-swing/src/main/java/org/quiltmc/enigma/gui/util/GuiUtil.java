@@ -13,7 +13,9 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.gui.config.keybind.KeyBind;
 import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
+import org.quiltmc.enigma.gui.element.menu_bar.SimpleEnigmaMenu;
 import org.quiltmc.enigma.impl.plugin.RecordIndexingService;
+import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Os;
 
 import javax.swing.AbstractButton;
@@ -546,19 +548,26 @@ public final class GuiUtil {
 	 * <p> Listeners are added to keep the selected radio item and the passed {@code config}'s
 	 * {@link TrackedValue#value() value} in sync.
 	 *
-	 * @param config   the config value to sync with
-	 * @param min      the minimum allowed value
-	 * 	 *             this should coincide with any minimum imposed on the passed {@code config}
-	 * @param max      the maximum allowed value
-	 * 	 *             this should coincide with any maximum imposed on the passed {@code config}
-	 * @param onUpdate a function to run whenever the passed {@code config} changes, whether because a radio item was
-	 *                 clicked or because another source updated it
-	 *
-	 *  @return a newly created menu allowing configuration of the passed {@code config}
+	 * @param gui            the gui the created menu will belong to
+	 * @param translationKey the translation key for the created menu; the translation is
+	 *                       {@linkplain I18n#translateFormatted(String, Object...) formatted} with the passed
+	 *                       {@code config}'s {@link TrackedValue#value() value}
+	 * @param config         the config value to sync with
+	 * @param min            the minimum allowed value;
+	 *                       this should coincide with any minimum imposed on the passed {@code config}
+	 * @param max            the maximum allowed value;
+	 *                       this should coincide with any maximum imposed on the passed {@code config}
+	 * @return a newly created menu allowing configuration of the passed {@code config}
 	 */
-	public static JMenu createIntConfigRadioMenu(
-			TrackedValue<Integer> config, int min, int max, Runnable onUpdate
+	public static SimpleEnigmaMenu createIntConfigRadioMenu(
+			Gui gui, String translationKey,
+			TrackedValue<Integer> config, int min, int max
 	) {
+		final SimpleEnigmaMenu menu = new SimpleEnigmaMenu(gui, translationKey, key -> I18n.translateFormatted(
+				translationKey,
+				config.value()
+		));
+
 		final Map<Integer, JRadioButtonMenuItem> radiosByChoice = IntStream.range(min, max + 1)
 				.boxed()
 				.collect(Collectors.toMap(
@@ -573,7 +582,8 @@ public final class GuiUtil {
 						choiceItem.addActionListener(e -> {
 							if (!config.value().equals(choice)) {
 								config.setValue(choice);
-								onUpdate.run();
+								menu.retranslate();
+								gui.getMenuBar().clearSearchMenusResults();
 							}
 						});
 
@@ -582,7 +592,6 @@ public final class GuiUtil {
 				));
 
 		final ButtonGroup choicesGroup = new ButtonGroup();
-		final JMenu menu = new JMenu();
 		for (final JRadioButtonMenuItem radio : radiosByChoice.values()) {
 			choicesGroup.add(radio);
 			menu.add(radio);
@@ -593,7 +602,8 @@ public final class GuiUtil {
 
 			if (!choiceItem.isSelected()) {
 				choiceItem.setSelected(true);
-				onUpdate.run();
+				menu.retranslate();
+				gui.getMenuBar().clearSearchMenusResults();
 			}
 		});
 
