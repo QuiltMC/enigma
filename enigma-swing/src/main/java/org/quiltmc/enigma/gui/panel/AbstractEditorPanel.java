@@ -68,10 +68,10 @@ import java.util.stream.Stream;
 import static org.quiltmc.enigma.gui.util.GuiUtil.consumeMousePositionIn;
 import static org.quiltmc.enigma.gui.util.GuiUtil.getRecordIndexingService;
 
-public class BaseEditorPanel {
+public abstract class AbstractEditorPanel<S extends JScrollPane> {
 	protected final JPanel ui = new JPanel();
 	protected final JEditorPane editor = new JEditorPane();
-	protected final JScrollPane editorScrollPane = new JScrollPane(this.editor);
+	protected final S editorScrollPane = this.createEditorScrollPane(this.editor);
 
 	protected final GuiController controller;
 	protected final Gui gui;
@@ -109,7 +109,7 @@ public class BaseEditorPanel {
 	private SourceBounds sourceBounds = new DefaultBounds();
 	protected boolean settingSource;
 
-	public BaseEditorPanel(Gui gui) {
+	public AbstractEditorPanel(Gui gui) {
 		this.gui = gui;
 		this.controller = gui.getController();
 
@@ -145,6 +145,8 @@ public class BaseEditorPanel {
 		this.retryButton.addActionListener(e -> this.redecompileClass());
 	}
 
+	protected abstract S createEditorScrollPane(JEditorPane editor);
+
 	protected void installEditorRuler(int lineOffset) {
 		final SyntaxPaneProperties.Colors syntaxColors = Config.getCurrentSyntaxPaneColors();
 
@@ -169,6 +171,7 @@ public class BaseEditorPanel {
 	) {
 		ClassEntry old = null;
 		if (this.classHandler != null) {
+			this.classHandler.removeListener();
 			old = this.classHandler.getHandle().getRef();
 			if (closeOldHandle) {
 				this.classHandler.getHandle().close();
@@ -188,14 +191,14 @@ public class BaseEditorPanel {
 		this.classHandler = ClassHandler.of(handle, new ClassHandleListener() {
 			@Override
 			public void onMappedSourceChanged(ClassHandle h, Result<DecompiledClassSource, ClassHandleError> res) {
-				BaseEditorPanel.this.handleDecompilerResult(res, snippetFactory);
+				AbstractEditorPanel.this.handleDecompilerResult(res, snippetFactory);
 			}
 
 			@Override
 			public void onInvalidate(ClassHandle h, InvalidationType t) {
 				SwingUtilities.invokeLater(() -> {
 					if (t == InvalidationType.FULL) {
-						BaseEditorPanel.this.setDisplayMode(DisplayMode.IN_PROGRESS);
+						AbstractEditorPanel.this.setDisplayMode(DisplayMode.IN_PROGRESS);
 					}
 				});
 			}
@@ -537,7 +540,18 @@ public class BaseEditorPanel {
 			return;
 		}
 
-		final List<Token> tokens = Optional.of(this.controller.getTokensForReference(this.source, reference))
+		final List<Token> tokens = this.getReferences(reference);
+
+		if (tokens.isEmpty()) {
+			// DEBUG
+			Logger.debug("No tokens found for {} in {}", reference, this.classHandler.getHandle().getRef());
+		} else {
+			this.gui.showTokens(this, tokens);
+		}
+	}
+
+	protected List<Token> getReferences(EntryReference<Entry<?>, Entry<?>> reference) {
+		return Optional.of(this.controller.getTokensForReference(this.source, reference))
 				.filter(directTokens -> !directTokens.isEmpty())
 				.or(() -> {
 					// record component getters often don't have a declaration token
@@ -550,13 +564,6 @@ public class BaseEditorPanel {
 							: Optional.empty();
 				})
 				.orElse(List.of());
-
-		if (tokens.isEmpty()) {
-			// DEBUG
-			Logger.debug("No tokens found for {} in {}", reference, this.classHandler.getHandle().getRef());
-		} else {
-			this.gui.showTokens(this, tokens);
-		}
 	}
 
 	/**
@@ -635,7 +642,7 @@ public class BaseEditorPanel {
 
 	protected Object addHighlight(Token token, HighlightPainter highlightPainter) {
 		try {
-			return BaseEditorPanel.this.editor.getHighlighter()
+			return AbstractEditorPanel.this.editor.getHighlighter()
 					.addHighlight(token.start, token.end, highlightPainter);
 		} catch (BadLocationException ex) {
 			return null;
@@ -830,7 +837,7 @@ public class BaseEditorPanel {
 
 		@Override
 		public int end() {
-			return BaseEditorPanel.this.source.toString().length();
+			return AbstractEditorPanel.this.source.toString().length();
 		}
 
 		@Override

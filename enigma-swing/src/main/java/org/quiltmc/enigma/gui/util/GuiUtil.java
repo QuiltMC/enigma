@@ -79,6 +79,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public final class GuiUtil {
+	public static final Color TRANSPARENT = new Color(0, true);
+
 	private GuiUtil() {
 		throw new UnsupportedOperationException();
 	}
@@ -398,6 +400,13 @@ public final class GuiUtil {
 		final Point componentPos = component.getLocationOnScreen();
 		componentPos.setLocation(-componentPos.x, -componentPos.y);
 		componentPos.translate(absoluteX, absoluteY);
+
+		return componentPos;
+	}
+
+	public static Point getAbsolutePos(Component component, int relativeX, int relativeY) {
+		final Point componentPos = component.getLocationOnScreen();
+		componentPos.translate(relativeX, relativeY);
 
 		return componentPos;
 	}
