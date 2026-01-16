@@ -228,7 +228,8 @@ final copyBumpAndJarEnigma = tasks.register("copyBumpAndJarEnigma", Sync) {
 	into project.layout.buildDirectory.map { it.dir(destPath) }
 
 	final excludedProjectDirs = [ project(':enigma-server'), project(':enigma-swing') ]
-		.collect { it.projectDir }
+		.collect { it.projectDir } +
+		gradle.includedBuild('syntaxpain').projectDir
 
 	final excludedPaths = [
 		'.git', '.github', '.gradle', '.idea', 'gradlew', 'gradlew.bat', 'gradle/wrapper',
