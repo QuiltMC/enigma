@@ -266,7 +266,7 @@ public class CompositeStringMultiTrieTest {
 	private static void assertEmpty(CompositeStringMultiTrie<?> trie) {
 		assertTrue(
 				trie.isEmpty(),
-				() -> "Expected trie to be empty, but had it contents: " + trie.getRoot().streamValues().toList()
+				() -> "Expected trie to be empty, but it contained: " + trie.getRoot().streamValues().toList()
 		);
 
 		@SuppressWarnings("unchecked")
