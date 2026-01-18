@@ -49,15 +49,4 @@ public class SelectionHighlightMenu extends AbstractSearchableEnigmaMenu {
 	public String getAliasesTranslationKeyPrefix() {
 		return TRANSLATION_KEY;
 	}
-
-	private static class BlinksMenu extends AbstractSearchableEnigmaMenu {
-		protected BlinksMenu(Gui gui) {
-			super(gui);
-		}
-
-		@Override
-		public String getAliasesTranslationKeyPrefix() {
-			return "menu.view.selection_highlight.blinks";
-		}
-	}
 }
