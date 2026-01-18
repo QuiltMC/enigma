@@ -19,6 +19,8 @@ import java.util.stream.Collector;
  * <p> {@linkplain #iterator() Iterators} do <em>not</em> support {@linkplain java.util.Iterator#remove() removal}.
  *
  * @param <T> the type of values in this sequence
+ *
+ * @see #collectorTo(Function)
  */
 public final class AbsorbingSequence<T> implements Iterable<T> {
 	/**

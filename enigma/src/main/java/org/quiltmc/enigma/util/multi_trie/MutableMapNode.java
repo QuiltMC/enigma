@@ -43,7 +43,7 @@ public abstract class MutableMapNode<K, V, B extends Branch<K, V, B>> implements
 	}
 
 	/**
-	 * Implementations should be pure (stateless, no side effects).
+	 * @implSpec Implementations should be pure (stateless, no side effects).
 	 */
 	protected abstract Map<K, B> getBranches();
 
@@ -127,14 +127,14 @@ public abstract class MutableMapNode<K, V, B extends Branch<K, V, B>> implements
 	}
 
 	/**
-	 * Implementations should be pure (stateless, no side effects).
+	 * @implSpec Implementations should be stateless and have no side effects.
 	 *
 	 * @return a new, empty branch node instance
 	 */
 	protected abstract B createBranch(K key);
 
 	/**
-	 * Implementations should be pure (stateless, no side effects).
+	 * @implSpec Implementations should be pure (stateless, no side effects).
 	 */
 	protected abstract Collection<V> getLeaves();
 
@@ -149,14 +149,14 @@ public abstract class MutableMapNode<K, V, B extends Branch<K, V, B>> implements
 	 */
 	protected abstract static class Branch<K, V, B extends Branch<K, V, B>> extends MutableMapNode<K, V, B> {
 		/**
-		 * Implementations should be pure (stateless, no side effects).
+		 * @implSpec Implementations should be pure (stateless, no side effects).
 		 *
 		 * @return this branch's parent; may or may not be another branch node
 		 */
 		protected abstract MutableMapNode<K, V, B> getParent();
 
 		/**
-		 * Implementations should be pure (stateless, no side effects).
+		 * @implSpec Implementations should be pure (stateless, no side effects).
 		 *
 		 * @return the last key in this branch's sequence; the key this branch's parent stores it under
 		 */

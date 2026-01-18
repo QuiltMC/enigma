@@ -3,7 +3,7 @@ package org.quiltmc.enigma.util.multi_trie;
 import java.util.stream.Stream;
 
 /**
- * A multi-trie that allows modification which can also provide unmodifiable views of its contents.
+ * A multi-trie that allows modification but can provide unmodifiable views of its contents.
  *
  * @param <K> the type of keys
  * @param <V> the type of values

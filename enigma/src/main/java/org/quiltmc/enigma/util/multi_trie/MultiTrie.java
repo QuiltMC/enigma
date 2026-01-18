@@ -17,7 +17,7 @@ import java.util.stream.Stream;
  */
 public interface MultiTrie<K, V> {
 	/**
-	 * The root is the node associated with the empty sequence.
+	 * The root is the node associated with the empty prefix.
 	 *
 	 * <p> Other nodes can be looked up via the root.
 	 */
