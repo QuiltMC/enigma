@@ -105,7 +105,7 @@ public class PlaceheldMenuTextField extends PlaceheldTextField implements MenuEl
 	/**
 	 * @return {@code true} if this field
 	 * {@linkplain #processKeyEvent(KeyEvent, MenuElement[], MenuSelectionManager) processes menu key events}
-	 * while not part of the menu selection, or {@code false} otherwise; defaults to {@code true}
+	 * while not part of the menu selection, or {@code false} otherwise; defaults to {@code false}
 	 */
 	public boolean processesUnselectedKeyEvents() {
 		return this.processUnselectedKeyEvents;

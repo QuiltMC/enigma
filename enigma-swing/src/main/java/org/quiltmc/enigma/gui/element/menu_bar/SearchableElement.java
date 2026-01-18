@@ -22,6 +22,7 @@ import java.util.stream.Stream;
  * @see SimpleItem
  * @see SimpleCheckBoxItem
  * @see SimpleRadioItem
+ * @see SimpleEnigmaMenu
  */
 public interface SearchableElement extends MenuElement {
 	String ALIAS_DELIMITER = ";";
@@ -51,7 +52,7 @@ public interface SearchableElement extends MenuElement {
 	}
 
 	/**
-	 * @return the name of this element uses in search results; usually {@link AbstractButton#getText()}
+	 * @return the name this element uses in search results; usually {@link AbstractButton#getText()}
 	 */
 	String getSearchName();
 
