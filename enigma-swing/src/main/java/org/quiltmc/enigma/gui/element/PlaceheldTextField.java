@@ -53,7 +53,7 @@ public class PlaceheldTextField extends JTextField {
 	 *
 	 * @exception IllegalArgumentException if {@code columns} is negative
 	 */
-	public PlaceheldTextField(Document doc, String text, @Nullable String placeholder, int columns) {
+	public PlaceheldTextField(Document doc, @Nullable String text, @Nullable String placeholder, int columns) {
 		super(doc, text, columns);
 		this.setPlaceholder(placeholder);
 	}
