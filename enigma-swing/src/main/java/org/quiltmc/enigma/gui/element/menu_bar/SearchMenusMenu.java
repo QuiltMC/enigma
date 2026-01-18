@@ -300,7 +300,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 			// HACK: re-show if shrinking to move the popup back down in case it had to be shifted up to fit items
 			// re-showing can also result in dropped keystrokes; do so as infrequently as possible
-			// note: the initial showing from JMenu would cause an SOE if we also showed here for the initial showing
+			// note: the initial showing from JMenu would cause a SOE if we also showed here for the initial showing
 			if (popupMenu.getHeight() < oldHeight && popupMenu.isShowing()) {
 				final Point newOrigin = this.getPopupMenuOrigin();
 				popupMenu.show(this, newOrigin.x, newOrigin.y);
@@ -491,23 +491,23 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			public void paint(Graphics graphics) {
 				super.paint(graphics);
 
-				final Graphics localGraphic = graphics.create();
-				trySetRenderingHints(localGraphic);
+				final Graphics localGraphics = graphics.create();
+				trySetRenderingHints(localGraphics);
 				final Color color = this.getForeground();
 				if (color != null) {
-					localGraphic.setColor(color);
+					localGraphics.setColor(color);
 				}
 
 				final Font aliasFont = this.getAliasFont();
 				if (aliasFont != null) {
-					localGraphic.setFont(aliasFont);
+					localGraphics.setFont(aliasFont);
 				}
 
 				final Insets insets = this.getInsets();
-				final int baseY = getCenteredFontBaseY(localGraphic.getFontMetrics(), this.getHeight(), insets);
-				localGraphic.drawString(this.alias, this.getWidth() - insets.right - this.getAliasWidth(), baseY);
+				final int baseY = getCenteredFontBaseY(localGraphics.getFontMetrics(), this.getHeight(), insets);
+				localGraphics.drawString(this.alias, this.getWidth() - insets.right - this.getAliasWidth(), baseY);
 
-				localGraphic.dispose();
+				localGraphics.dispose();
 			}
 
 			int getAliasWidth() {
