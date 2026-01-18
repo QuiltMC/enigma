@@ -34,7 +34,7 @@ Search aliases are language-specific, so there's no need to translate the Englis
 to be searched for in your target language. In fact, any language may add additional aliases that aren't present in the
 English translation.
 
-Since elements can have multiple search aliases, their translations can be lists. Aliases are separated by `;`.<br>
+Since elements can have multiple search aliases, their translations can be lists. Aliases are separated by `;`.
 For example, the `Dev` menu's aliases look like this in the translation file: `"Development;Debugging"`
 This means that aliases may not contain the `;` character.
 
