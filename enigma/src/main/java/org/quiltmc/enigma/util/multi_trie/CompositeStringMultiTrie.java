@@ -34,7 +34,6 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 	 * @see #of(Supplier, BranchesFactory)
 	 */
 	public static <V> CompositeStringMultiTrie<V> createHashed() {
-		// decrease minimum capacity by a factor of 2 at each depth
 		return createHashedBranching(HashSet::new);
 	}
 
@@ -192,8 +191,7 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 
 		@Override
 		public Node<V> previous(int steps) {
-			return MultiTrie.Node.<Character, V, Node<V>>
-				previous(this, steps, Node::previous);
+			return MultiTrie.Node.<Character, V, Node<V>>previous(this, steps, Node::previous);
 		}
 
 		@Override
@@ -231,10 +229,7 @@ public final class CompositeStringMultiTrie<V> implements MutableStringMultiTrie
 			return this.view;
 		}
 
-		private record Factory<V>(
-				Supplier<Collection<V>> leavesFactory,
-				BranchesFactory<V> branchesFactory
-		) {
+		private record Factory<V>(Supplier<Collection<V>> leavesFactory, BranchesFactory<V> branchesFactory) {
 			<P extends MutableMapNode<Character, V, CompositeStringMultiTrie.Branch<V>> & Node<V>>
 					CompositeStringMultiTrie.Branch<V> create(char key, P parent) {
 				final int depth = parent.getDepth() + 1;
