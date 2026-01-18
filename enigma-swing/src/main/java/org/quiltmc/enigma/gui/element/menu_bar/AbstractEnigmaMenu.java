@@ -7,7 +7,7 @@ import javax.swing.JMenu;
 public abstract class AbstractEnigmaMenu extends JMenu implements EnigmaMenu {
 	protected final Gui gui;
 
-	public AbstractEnigmaMenu(Gui gui) {
+	protected AbstractEnigmaMenu(Gui gui) {
 		this.gui = gui;
 	}
 
