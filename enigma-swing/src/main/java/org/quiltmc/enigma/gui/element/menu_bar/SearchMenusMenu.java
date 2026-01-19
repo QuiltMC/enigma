@@ -300,7 +300,7 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 
 			// HACK: re-show if shrinking to move the popup back down in case it had to be shifted up to fit items
 			// re-showing can also result in dropped keystrokes; do so as infrequently as possible
-			// note: the initial showing from JMenu would cause a SOE if we also showed here for the initial showing
+			// note: the initial showing from JMenu would cause an SOE if we also showed here for the initial showing
 			if (popupMenu.getHeight() < oldHeight && popupMenu.isShowing()) {
 				final Point newOrigin = this.getPopupMenuOrigin();
 				popupMenu.show(this, newOrigin.x, newOrigin.y);
