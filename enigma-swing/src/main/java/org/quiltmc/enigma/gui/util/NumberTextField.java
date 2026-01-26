@@ -9,7 +9,6 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import java.awt.Color;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -26,7 +25,7 @@ import static javax.swing.BorderFactory.createLineBorder;
  * <p> The value is only updated when {@link #tryCommit} is called while the edit result is valid.
  *
  * @param <N> the type of number the field holds
- * @param <E> the type or error held by invalid edit results
+ * @param <E> the type of error held by invalid edit results
  *
  * @see #getValue()
  * @see #getEditOrValue()
@@ -35,13 +34,22 @@ import static javax.swing.BorderFactory.createLineBorder;
  * @see #addEditListener(Consumer)
  */
 public class NumberTextField<N extends Number, E> extends JTextField {
+	private static final int INDICATOR_THICKNESS = 1;
+	private static final int BORDER_PAD = 1;
+
+	private static final Border INVALID_BORDER =
+			createLineBorder(Config.getCurrentSyntaxPaneColors().error.value(), INDICATOR_THICKNESS);
+	private static final Border VALID_BORDER =
+			createEmptyBorder(INDICATOR_THICKNESS, INDICATOR_THICKNESS, INDICATOR_THICKNESS, INDICATOR_THICKNESS);
+	private static final Border PAD_BORDER = createEmptyBorder(BORDER_PAD, BORDER_PAD, BORDER_PAD, BORDER_PAD);
+	private static final Border INNER_BORDER = Config.currentTheme().createBorder();
+
 	private final Function<String, Result<N, E>> parse;
 
 	private N value;
 	@Nullable
 	private Result<N, E> editResult;
 
-	// private final Set<EditListener<N, E>> editListeners = new HashSet<>();
 	private final Set<Consumer<Result<N, E>>> editListeners = new HashSet<>();
 
 	/**
@@ -193,14 +201,8 @@ public class NumberTextField<N extends Number, E> extends JTextField {
 	}
 
 	private void setBorder(boolean valid) {
-		final Color indicatorColor = valid
-				// transparent indicator border even if valid to ensure consistent spacing
-				? new Color(0, true)
-				: Config.getCurrentSyntaxPaneColors().error.value();
-		final Border indicatorBorder = createLineBorder(indicatorColor);
-		final Border padBorder = createEmptyBorder(1, 1, 1, 1);
-		final Border innerBorder = Config.currentTheme().createBorder();
+		final Border indicatorBorder = valid ? VALID_BORDER : INVALID_BORDER;
 
-		this.setBorder(createCompoundBorder(createCompoundBorder(indicatorBorder, padBorder), innerBorder));
+		this.setBorder(createCompoundBorder(createCompoundBorder(indicatorBorder, PAD_BORDER), INNER_BORDER));
 	}
 }
