@@ -591,7 +591,6 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 				}
 			}
 
-			@Nullable
 			final TrackedValue<ThemeProperties.SerializableColor> colorConfig =
 					this.getColorConfig(token, type, tokenStore);
 
@@ -611,6 +610,7 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 			}
 		}
 
+		@Nullable
 		private TrackedValue<ThemeProperties.SerializableColor> getColorConfig(
 				Token token, TokenType type, TokenStore tokenStore
 		) {
