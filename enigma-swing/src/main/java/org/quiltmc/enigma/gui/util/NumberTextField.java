@@ -13,6 +13,7 @@ import java.awt.Color;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static javax.swing.BorderFactory.createCompoundBorder;
@@ -31,7 +32,7 @@ import static javax.swing.BorderFactory.createLineBorder;
  * @see #getEditOrValue()
  * @see #edit(Number)
  * @see #tryCommit()
- * @see #addEditListener(EditListener)
+ * @see #addEditListener(Consumer)
  */
 public class NumberTextField<N extends Number, E> extends JTextField {
 	private final Function<String, Result<N, E>> parse;
@@ -40,14 +41,15 @@ public class NumberTextField<N extends Number, E> extends JTextField {
 	@Nullable
 	private Result<N, E> editResult;
 
-	private final Set<EditListener<N, E>> editListeners = new HashSet<>();
+	// private final Set<EditListener<N, E>> editListeners = new HashSet<>();
+	private final Set<Consumer<Result<N, E>>> editListeners = new HashSet<>();
 
 	/**
 	 * @param initialValue the initial value
 	 * @param parse        the method used to parse user input; its results are passed to
-	 *                     {@linkplain EditListener#listen(Result) listeners}
+	 *                     {@linkplain #addEditListener(Consumer) listeners}
 	 *
-	 * @see #addEditListener(EditListener)
+	 * @see #addEditListener(Consumer)
 	 */
 	public NumberTextField(@Nullable N initialValue, Function<String, Result<N, E>> parse) {
 		this.parse = parse;
@@ -139,17 +141,22 @@ public class NumberTextField<N extends Number, E> extends JTextField {
 		this.setBorder(true);
 		this.setText(editValue.toString());
 
-		this.editListeners.forEach(listener -> listener.listen(this.editResult));
+		this.editListeners.forEach(listener -> listener.accept(this.editResult));
 	}
 
 	/**
-	 * @see EditListener
+	 * Adds a listener to be invoked when a field's edited value changes. It receives the new {@link #editResult}.
+	 *
+	 * @see #removeEditListener(Consumer)
 	 */
-	public void addEditListener(EditListener<N, E> listener) {
+	public void addEditListener(Consumer<Result<N, E>> listener) {
 		this.editListeners.add(listener);
 	}
 
-	public void removeEditListener(EditListener<N, E> listener) {
+	/**
+	 * @see #addEditListener(Consumer)
+	 */
+	public void removeEditListener(Consumer<Result<N, E>> listener) {
 		this.editListeners.remove(listener);
 	}
 
@@ -182,7 +189,7 @@ public class NumberTextField<N extends Number, E> extends JTextField {
 			this.setBorder(ok);
 		}
 
-		this.editListeners.forEach(listener -> listener.listen(this.editResult));
+		this.editListeners.forEach(listener -> listener.accept(this.editResult));
 	}
 
 	private void setBorder(boolean valid) {
@@ -195,14 +202,5 @@ public class NumberTextField<N extends Number, E> extends JTextField {
 		final Border innerBorder = Config.currentTheme().createBorder();
 
 		this.setBorder(createCompoundBorder(createCompoundBorder(indicatorBorder, padBorder), innerBorder));
-	}
-
-	/**
-	 * A listener which is invoked when a field's edited value's validity changes. It the error if the edited value is
-	 * invalid, or {@code null} otherwise.
-	 */
-	@FunctionalInterface
-	public interface EditListener<N extends Number, E> {
-		void listen(Result<N, E> edit);
 	}
 }
