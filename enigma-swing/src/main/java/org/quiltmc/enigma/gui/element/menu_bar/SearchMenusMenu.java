@@ -627,6 +627,8 @@ public class SearchMenusMenu extends AbstractEnigmaMenu {
 			final Font oldDismissFont = this.dismissButton.getFont();
 			this.dismissButton.setFont(oldDismissFont.deriveFont(oldDismissFont.getSize2D() * 1.3f));
 			this.dismissButton.addActionListener(e -> this.dismiss());
+			// if the button gains focus, it sometimes prevents key events from reaching the field
+			this.dismissButton.setFocusable(false);
 			this.add(this.dismissButton);
 
 			this.retranslate();
