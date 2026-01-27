@@ -20,6 +20,15 @@ plugins {
 	alias(libs.plugins.shadow)
 }
 
+sourceSets {
+	guiVisualization
+}
+
+configurations {
+	guiVisualizationRuntimeClasspath.extendsFrom runtimeClasspath
+	guiVisualizationCompileClasspath.extendsFrom compileClasspath
+}
+
 dependencies {
 	implementation project(':enigma')
 	implementation project(':enigma-server')
@@ -32,7 +41,9 @@ dependencies {
 	implementation libs.swing.dpi
 	implementation libs.fontchooser
 	implementation libs.javaparser
+
 	testImplementation(testFixtures(project(':enigma')))
+	guiVisualizationImplementation(project)
 }
 
 application {
@@ -96,6 +107,20 @@ project(":enigma").file("src/test/java/org/quiltmc/enigma/input").listFiles().ea
 }
 
 registerTestTask("complete")
+
+final guiVisualizationJar = tasks.register('guiVisualizationJar', Jar.class) {
+	from(sourceSets.guiVisualization.output)
+
+	archiveFileName = 'gui-visualization.jar'
+	destinationDirectory = layout.buildDirectory.map { it.dir('gui-visualization') }
+}
+
+tasks.register('visualizeGui', JavaExec) {
+	dependsOn(guiVisualizationJar)
+
+	classpath = sourceSets.guiVisualization.runtimeClasspath
+	mainClass = 'org.quilt.internal.gui.visualization.Main'
+}
 
 void registerPrintColorKeyGroupsMapCode(String lafsName, LookAndFeel... lookAndFeels) {
 	tasks.register("print" + lafsName + "ColorKeyGroupsMapCode", PrintColorKeyGroupsMapCodeTask) { task ->

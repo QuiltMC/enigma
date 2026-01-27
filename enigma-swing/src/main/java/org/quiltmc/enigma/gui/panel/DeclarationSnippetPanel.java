@@ -48,7 +48,6 @@ import org.tinylog.Logger;
 
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
-import java.awt.Color;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.Function;
@@ -85,7 +84,7 @@ public class DeclarationSnippetPanel extends AbstractEditorPanel<JScrollPane> {
 						.map(Target::token)
 						.map(this::navigateToTokenImpl)
 						.ifPresent(boundedToken -> this.addHighlight(boundedToken, BoxHighlightPainter.create(
-							new Color(0, 0, 0, 0),
+							GuiUtil.TRANSPARENT,
 							Config.getCurrentSyntaxPaneColors().selectionHighlight.value()
 						)));
 			}
@@ -96,7 +95,7 @@ public class DeclarationSnippetPanel extends AbstractEditorPanel<JScrollPane> {
 
 	@Override
 	protected JScrollPane createEditorScrollPane(JEditorPane editor) {
-		return new JScrollPane(editor);
+		return new SmartScrollPane(editor);
 	}
 
 	private Snippet createSnippet(DecompiledClassSource source, Entry<?> targetEntry) {
