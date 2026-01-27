@@ -78,7 +78,7 @@
 	"menu.view.selection_highlight.blink_delay": "Blink delay (%sms)...",
 	"menu.view.selection_highlight.blink_delay.dialog_title": "Blink Delay",
 	"menu.view.selection_highlight.blink_delay.dialog_explanation":
-	"The time (in milliseconds) highlighting indicating which entry has been navigated to blinks on/off.",
+	"The time (in milliseconds) that an entry's highlight will blink on and off to indicate that it's been navigated to.",
 	"menu.view.languages": "Languages",
 	"menu.view.scale": "Scale",
 	"menu.view.scale.custom": "Custom...",
