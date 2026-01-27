@@ -1,14 +1,22 @@
 package org.quiltmc.enigma.gui.panel;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import com.google.common.collect.ImmutableMap;
+import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
 import org.quiltmc.enigma.api.event.ClassHandleListener;
 import org.quiltmc.enigma.api.source.DecompiledClassSource;
+import org.quiltmc.enigma.api.source.TokenStore;
+import org.quiltmc.enigma.api.source.TokenType;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.config.EntryMarkersSection;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
+import org.quiltmc.enigma.gui.config.theme.properties.ThemeProperties;
 import org.quiltmc.enigma.gui.dialog.EnigmaQuickFindToolBar;
 import org.quiltmc.enigma.gui.element.EditorPopupMenu;
 import org.quiltmc.enigma.gui.element.NavigatorPanel;
@@ -18,11 +26,18 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.syntaxpain.PairsMarker;
+import org.quiltmc.enigma.gui.util.ScaleUtil;
+import org.quiltmc.enigma.util.LineIndexer;
+import org.tinylog.Logger;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
@@ -36,12 +51,18 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 
@@ -50,14 +71,17 @@ import static org.quiltmc.enigma.gui.util.GuiUtil.putKeyBindAction;
 import static javax.swing.SwingUtilities.isDescendingFrom;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
-public class EditorPanel extends BaseEditorPanel {
+public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 	private final NavigatorPanel navigatorPanel;
 	private final EnigmaQuickFindToolBar quickFindToolBar = new EnigmaQuickFindToolBar();
 	private final EditorPopupMenu popupMenu;
 
-	private final TooltipManager tooltipManager = new TooltipManager();
+	private final EntryTooltipManager entryTooltipManager = new EntryTooltipManager();
 
 	private final List<EditorActionListener> listeners = new ArrayList<>();
+
+	@NonNull
+	private MarkerManager markerManager = this.createMarkerManager();
 
 	public EditorPanel(Gui gui, NavigatorPanel navigator) {
 		super(gui);
@@ -97,7 +121,7 @@ public class EditorPanel extends BaseEditorPanel {
 		this.editor.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e1) {
-				if ((e1.getModifiersEx() & CTRL_DOWN_MASK) != 0 && e1.getButton() == MouseEvent.BUTTON1) {
+				if (!e1.isConsumed() && (e1.getModifiersEx() & CTRL_DOWN_MASK) != 0 && e1.getButton() == MouseEvent.BUTTON1) {
 					// ctrl + left click
 					EditorPanel.this.navigateToCursorReference();
 				}
@@ -150,9 +174,53 @@ public class EditorPanel extends BaseEditorPanel {
 			if (this.navigatorPanel != null) {
 				this.navigatorPanel.resetEntries(source.getIndex().declarations());
 			}
+
+			this.refreshMarkers(source);
 		});
 
 		this.ui.putClientProperty(EditorPanel.class, this);
+
+		final EntryMarkersSection markersConfig = Config.editor().entryMarkers;
+		this.registerMarkerRefresher(markersConfig.onlyMarkDeclarations, MarkerManager::onlyMarksDeclarations);
+		this.registerMarkerRefresher(markersConfig.markObfuscated, MarkerManager::marksObfuscated);
+		this.registerMarkerRefresher(markersConfig.markFallback, MarkerManager::marksFallback);
+		this.registerMarkerRefresher(markersConfig.markProposed, MarkerManager::marksProposed);
+		this.registerMarkerRefresher(markersConfig.markDeobfuscated, MarkerManager::marksDeobfuscated);
+
+		markersConfig.maxMarkersPerLine.registerCallback(updated -> {
+			this.editorScrollPane.setMaxConcurrentMarkers(updated.value());
+		});
+	}
+
+	private void registerMarkerRefresher(TrackedValue<Boolean> config, Predicate<MarkerManager> handlerGetter) {
+		config.registerCallback(updated -> {
+			if (updated.value() != handlerGetter.test(this.markerManager)) {
+				this.markerManager = this.createMarkerManager();
+
+				final DecompiledClassSource source = this.getSource();
+				if (source != null) {
+					this.refreshMarkers(source);
+				} else {
+					this.editorScrollPane.clearMarkers();
+				}
+			}
+		});
+	}
+
+	private void refreshMarkers(DecompiledClassSource source) {
+		this.editorScrollPane.clearMarkers();
+
+		final TokenStore tokenStore = source.getTokenStore();
+		tokenStore.getByType().forEach((type, tokens) -> {
+			for (final Token token : tokens) {
+				this.markerManager.tryMarking(token, type, tokenStore);
+			}
+		});
+	}
+
+	@Override
+	protected MarkableScrollPane createEditorScrollPane(JEditorPane editor) {
+		return new MarkableScrollPane(editor, Config.editor().entryMarkers.maxMarkersPerLine.value());
 	}
 
 	public void onRename(boolean isNewMapping) {
@@ -199,7 +267,7 @@ public class EditorPanel extends BaseEditorPanel {
 	@Override
 	public void destroy() {
 		super.destroy();
-		this.tooltipManager.removeExternalListeners();
+		this.entryTooltipManager.removeExternalListeners();
 	}
 
 	public NavigatorPanel getNavigatorPanel() {
@@ -207,11 +275,13 @@ public class EditorPanel extends BaseEditorPanel {
 	}
 
 	@Override
-	protected void setClassHandleImpl(
+	protected CompletableFuture<?> setClassHandleImpl(
 			ClassEntry old, ClassHandle handle,
 			@Nullable Function<DecompiledClassSource, Snippet> snippetFactory
 	) {
-		super.setClassHandleImpl(old, handle, snippetFactory);
+		final CompletableFuture<?> superFuture = super.setClassHandleImpl(old, handle, snippetFactory);
+
+		this.editorScrollPane.clearMarkers();
 
 		handle.addListener(new ClassHandleListener() {
 			@Override
@@ -228,6 +298,8 @@ public class EditorPanel extends BaseEditorPanel {
 		});
 
 		this.listeners.forEach(l -> l.onClassHandleChanged(this, old, handle));
+
+		return superFuture;
 	}
 
 	private void onCaretMove(int pos) {
@@ -256,13 +328,13 @@ public class EditorPanel extends BaseEditorPanel {
 	@Override
 	public void offsetEditorZoom(int zoomAmount) {
 		super.offsetEditorZoom(zoomAmount);
-		this.tooltipManager.entryTooltip.setZoom(zoomAmount);
+		this.entryTooltipManager.tooltip.setZoom(zoomAmount);
 	}
 
 	@Override
 	public void resetEditorZoom() {
 		super.resetEditorZoom();
-		this.tooltipManager.entryTooltip.resetZoom();
+		this.entryTooltipManager.tooltip.resetZoom();
 	}
 
 	public void addListener(EditorActionListener listener) {
@@ -300,17 +372,27 @@ public class EditorPanel extends BaseEditorPanel {
 		this.popupMenu.getButtonKeyBinds().forEach((key, button) -> putKeyBindAction(key, this.editor, e -> button.doClick()));
 	}
 
-	private class TooltipManager {
+	private MarkerManager createMarkerManager() {
+		final EntryMarkersSection markersConfig = Config.editor().entryMarkers;
+		return new MarkerManager(
+			markersConfig.onlyMarkDeclarations.value(),
+			markersConfig.markObfuscated.value(),
+			markersConfig.markFallback.value(),
+			markersConfig.markProposed.value(),
+			markersConfig.markDeobfuscated.value()
+		);
+	}
+
+	private class EntryTooltipManager {
 		static final int MOUSE_STOPPED_MOVING_DELAY = 100;
 
-		// DIY tooltip because JToolTip can't be moved or resized
-		final EntryTooltip entryTooltip = new EntryTooltip(EditorPanel.this.gui);
+		final EntryTooltip tooltip = new EntryTooltip(EditorPanel.this.gui);
 
 		final WindowAdapter guiFocusListener = new WindowAdapter() {
 			@Override
 			public void windowLostFocus(WindowEvent e) {
-				if (e.getOppositeWindow() != TooltipManager.this.entryTooltip) {
-					TooltipManager.this.entryTooltip.close();
+				if (e.getOppositeWindow() != EntryTooltipManager.this.tooltip) {
+					EntryTooltipManager.this.tooltip.close();
 				}
 			}
 		};
@@ -325,11 +407,14 @@ public class EditorPanel extends BaseEditorPanel {
 		// This also reduces the chances of accidentally updating the tooltip with
 		// a new entry's content as you move your mouse to the tooltip.
 		final Timer mouseStoppedMovingTimer = new Timer(MOUSE_STOPPED_MOVING_DELAY, e -> {
-			if (Config.editor().entryTooltips.enable.value()) {
+			if (
+					Config.editor().entryTooltips.enable.value()
+						&& !EditorPanel.this.markerManager.markerTooltip.isShowing()
+			) {
 				EditorPanel.this.consumeEditorMouseTarget(
 						(token, entry, resolvedParent) -> {
 							this.hideTimer.stop();
-							if (this.entryTooltip.isVisible()) {
+							if (this.tooltip.isVisible()) {
 								this.showTimer.stop();
 
 								if (!token.equals(this.lastMouseTargetToken)) {
@@ -342,7 +427,7 @@ public class EditorPanel extends BaseEditorPanel {
 							}
 						},
 						() -> consumeMousePositionIn(
-							this.entryTooltip.getContentPane(),
+							this.tooltip.getContentPane(),
 							(absolute, relative) -> this.hideTimer.stop(),
 							absolute -> {
 								this.lastMouseTargetToken = null;
@@ -358,7 +443,7 @@ public class EditorPanel extends BaseEditorPanel {
 				ToolTipManager.sharedInstance().getInitialDelay() - MOUSE_STOPPED_MOVING_DELAY, e -> {
 					EditorPanel.this.consumeEditorMouseTarget((token, entry, resolvedParent) -> {
 						if (token.equals(this.lastMouseTargetToken)) {
-							this.entryTooltip.setVisible(true);
+							this.tooltip.setVisible(true);
 							this.openTooltip(entry, resolvedParent);
 						}
 					});
@@ -367,55 +452,55 @@ public class EditorPanel extends BaseEditorPanel {
 
 		final Timer hideTimer = new Timer(
 				ToolTipManager.sharedInstance().getDismissDelay() - MOUSE_STOPPED_MOVING_DELAY,
-				e -> this.entryTooltip.close()
+				e -> this.tooltip.close()
 		);
 
 		@Nullable
 		Token lastMouseTargetToken;
 
-		TooltipManager() {
+		EntryTooltipManager() {
 			this.mouseStoppedMovingTimer.setRepeats(false);
 			this.showTimer.setRepeats(false);
 			this.hideTimer.setRepeats(false);
 
-			this.entryTooltip.setVisible(false);
+			this.tooltip.setVisible(false);
 
-			this.entryTooltip.addMouseMotionListener(new MouseAdapter() {
+			this.tooltip.addMouseMotionListener(new MouseAdapter() {
 				@Override
 				public void mouseMoved(MouseEvent e) {
 					if (Config.editor().entryTooltips.interactable.value()) {
-						TooltipManager.this.mouseStoppedMovingTimer.stop();
-						TooltipManager.this.hideTimer.stop();
+						EntryTooltipManager.this.mouseStoppedMovingTimer.stop();
+						EntryTooltipManager.this.hideTimer.stop();
 					}
 				}
 			});
 
-			this.entryTooltip.addCloseListener(TooltipManager.this::reset);
+			this.tooltip.addCloseListener(EntryTooltipManager.this::reset);
 
 			EditorPanel.this.editor.addKeyListener(new KeyAdapter() {
 				@Override
 				public void keyTyped(KeyEvent e) {
-					TooltipManager.this.reset();
+					EntryTooltipManager.this.reset();
 				}
 			});
 
 			EditorPanel.this.editor.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent mouseEvent) {
-					TooltipManager.this.entryTooltip.close();
+					EntryTooltipManager.this.tooltip.close();
 				}
 			});
 
 			EditorPanel.this.editor.addMouseMotionListener(new MouseAdapter() {
 				@Override
 				public void mouseMoved(MouseEvent e) {
-					if (!TooltipManager.this.entryTooltip.hasRepopulated()) {
-						TooltipManager.this.mouseStoppedMovingTimer.restart();
+					if (!EntryTooltipManager.this.tooltip.hasRepopulated()) {
+						EntryTooltipManager.this.mouseStoppedMovingTimer.restart();
 					}
 				}
 			});
 
-			EditorPanel.this.editorScrollPane.getViewport().addChangeListener(e -> this.entryTooltip.close());
+			EditorPanel.this.editorScrollPane.getViewport().addChangeListener(e -> this.tooltip.close());
 
 			this.addExternalListeners();
 		}
@@ -432,7 +517,7 @@ public class EditorPanel extends BaseEditorPanel {
 			final Component eventReceiver = focusOwner != null && isDescendingFrom(focusOwner, EditorPanel.this.gui.getFrame())
 					? focusOwner : null;
 
-			this.entryTooltip.open(target, inherited, eventReceiver);
+			this.tooltip.open(target, inherited, eventReceiver);
 		}
 
 		void addExternalListeners() {
@@ -443,6 +528,253 @@ public class EditorPanel extends BaseEditorPanel {
 		void removeExternalListeners() {
 			EditorPanel.this.gui.getFrame().removeWindowFocusListener(this.guiFocusListener);
 			Toolkit.getDefaultToolkit().removeAWTEventListener(this.globalKeyListener);
+		}
+	}
+
+	private class MarkerManager {
+		static final ImmutableMap<TrackedValue<ThemeProperties.SerializableColor>, Integer>
+				MARKER_PRIORITIES_BY_COLOR_CONFIG;
+
+		static {
+			int priority = 0;
+			MARKER_PRIORITIES_BY_COLOR_CONFIG = ImmutableMap.of(
+				Config.getCurrentSyntaxPaneColors().deobfuscatedOutline, priority++,
+				Config.getCurrentSyntaxPaneColors().proposedOutline, priority++,
+				Config.getCurrentSyntaxPaneColors().fallbackOutline, priority++,
+				Config.getCurrentSyntaxPaneColors().obfuscatedOutline, priority++,
+				Config.getCurrentSyntaxPaneColors().debugTokenOutline, priority
+			);
+		}
+
+		final MarkerTooltip markerTooltip = new MarkerTooltip();
+
+		final boolean onlyMarkDeclarations;
+
+		final boolean markObfuscated;
+		final boolean markFallback;
+		final boolean markProposed;
+		final boolean markDeobfuscated;
+
+		MarkerManager(
+				boolean onlyMarkDeclarations,
+				boolean markObfuscated, boolean markFallback, boolean markProposed, boolean markDeobfuscated
+		) {
+			this.onlyMarkDeclarations = onlyMarkDeclarations;
+			this.markObfuscated = markObfuscated;
+			this.markFallback = markFallback;
+			this.markProposed = markProposed;
+			this.markDeobfuscated = markDeobfuscated;
+		}
+
+		void tryMarking(Token token, TokenType type, TokenStore tokenStore) {
+			if (this.onlyMarkDeclarations) {
+				final EntryReference<Entry<?>, Entry<?>> reference =
+						EditorPanel.this.getReference(token);
+
+				if (reference != null) {
+					if (reference.entry instanceof MethodEntry method && method.isConstructor()) {
+						return;
+					}
+
+					final Entry<?> resolved = EditorPanel.this.resolveReference(reference);
+					final EntryReference<Entry<?>, Entry<?>> declaration = EntryReference
+							.declaration(resolved, resolved.getName());
+
+					if (
+							EditorPanel.this.getReferences(declaration).stream()
+								.findFirst()
+								.filter(declarationToken -> !declarationToken.equals(token))
+								.isPresent()
+					) {
+						return;
+					}
+				}
+			}
+
+			final TrackedValue<ThemeProperties.SerializableColor> colorConfig =
+					this.getColorConfig(token, type, tokenStore);
+
+			if (colorConfig != null) {
+				try {
+					final int tokenPos = (int) EditorPanel.this.editor.modelToView2D(token.start).getCenterY();
+
+					final int priority = Objects.requireNonNull(MARKER_PRIORITIES_BY_COLOR_CONFIG.get(colorConfig));
+					final Color color = colorConfig.value();
+					EditorPanel.this.editorScrollPane.addMarker(
+							tokenPos, color, priority,
+							new MarkerListener(token)
+					);
+				} catch (BadLocationException e) {
+					Logger.warn("Tried to add marker for token with bad location: " + token);
+				}
+			}
+		}
+
+		@Nullable
+		private TrackedValue<ThemeProperties.SerializableColor> getColorConfig(
+				Token token, TokenType type, TokenStore tokenStore
+		) {
+			if (tokenStore.isFallback(token)) {
+				return this.markFallback ? Config.getCurrentSyntaxPaneColors().fallbackOutline : null;
+			} else {
+				return switch (type) {
+					case OBFUSCATED -> this.markObfuscated
+							? Config.getCurrentSyntaxPaneColors().obfuscatedOutline
+							: null;
+					case DEOBFUSCATED -> this.markDeobfuscated
+							? Config.getCurrentSyntaxPaneColors().deobfuscatedOutline
+							: null;
+					case JAR_PROPOSED, DYNAMIC_PROPOSED -> this.markProposed
+							? Config.getCurrentSyntaxPaneColors().proposedOutline
+							: null;
+					// these only appear if debugTokenHighlights is true, so no need for a separate marker config
+					case DEBUG -> Config.getCurrentSyntaxPaneColors().debugTokenOutline;
+				};
+			}
+		}
+
+		boolean onlyMarksDeclarations() {
+			return this.onlyMarkDeclarations;
+		}
+
+		boolean marksObfuscated() {
+			return this.markObfuscated;
+		}
+
+		boolean marksFallback() {
+			return this.markFallback;
+		}
+
+		boolean marksProposed() {
+			return this.markProposed;
+		}
+
+		boolean marksDeobfuscated() {
+			return this.markDeobfuscated;
+		}
+
+		private class MarkerListener implements MarkableScrollPane.MarkerListener {
+			private final Token token;
+
+			MarkerListener(Token token) {
+				this.token = token;
+			}
+
+			@Override
+			public void mouseClicked(int x, int y) {
+				EditorPanel.this.navigateToToken(this.token);
+			}
+
+			@Override
+			public void mouseExited(int x, int y) {
+				if (
+						Config.editor().entryMarkers.tooltip.value()
+							&& EditorPanel.this.entryTooltipManager.lastMouseTargetToken == null
+				) {
+					MarkerManager.this.markerTooltip.close();
+				}
+			}
+
+			@Override
+			public void mouseEntered(int x, int y) {
+				if (Config.editor().entryMarkers.tooltip.value()) {
+					EditorPanel.this.entryTooltipManager.tooltip.close();
+					MarkerManager.this.markerTooltip.open(this.token, x, y);
+				}
+			}
+
+			@Override
+			public void mouseTransferred(int x, int y) {
+				this.mouseEntered(x, y);
+			}
+
+			@Override
+			public void mouseMoved(int x, int y) {
+				if (Config.editor().entryMarkers.tooltip.value()) {
+					EditorPanel.this.entryTooltipManager.tooltip.close();
+				}
+			}
+		}
+	}
+
+	private class MarkerTooltip extends JWindow {
+		public static final int DEFAULT_MARKER_PAD = 5;
+		final JPanel content = new JPanel();
+
+		// HACK to make getPreferredSize aware of its (future) position
+		// negative values indicate it's un-set and should be ignored
+		int right = -1;
+
+		MarkerTooltip() {
+			this.setContentPane(this.content);
+
+			this.setAlwaysOnTop(true);
+			this.setType(Window.Type.POPUP);
+			this.setLayout(new BorderLayout());
+		}
+
+		void open(Token target, int markerX, int markerY) {
+			this.content.removeAll();
+
+			if (EditorPanel.this.classHandler == null) {
+				return;
+			}
+
+			final SimpleSnippetPanel snippet = new SimpleSnippetPanel(EditorPanel.this.gui, target);
+
+			this.content.add(snippet.ui);
+
+			snippet.setSource(EditorPanel.this.getSource(), source -> {
+				final String sourceString = source.toString();
+				final LineIndexer lineIndexer = source.getLineIndexer();
+				final int line = lineIndexer.getLine(target.start);
+				int lineStart = lineIndexer.getStartIndex(line);
+				int lineEnd = lineIndexer.getStartIndex(line + 1);
+
+				if (lineEnd < 0) {
+					lineEnd = sourceString.length();
+				}
+
+				while (lineStart < lineEnd && Character.isWhitespace(sourceString.charAt(lineStart))) {
+					lineStart++;
+				}
+
+				while (lineEnd > lineStart && Character.isWhitespace(sourceString.charAt(lineEnd - 1))) {
+					lineEnd--;
+				}
+
+				return new Snippet(lineStart, lineEnd);
+			});
+
+			this.right = markerX - ScaleUtil.scale(DEFAULT_MARKER_PAD);
+
+			this.pack();
+
+			this.setLocation(this.right - this.getWidth(), markerY - this.getHeight() / 2);
+
+			this.right = -1;
+
+			this.setVisible(true);
+		}
+
+		void close() {
+			this.setVisible(false);
+			this.content.removeAll();
+		}
+
+		@Override
+		public Dimension getPreferredSize() {
+			final Dimension size = super.getPreferredSize();
+
+			if (this.right >= 0) {
+				final int left = this.right - size.width;
+				if (left < 0) {
+					// don't extend off the left side of the screen
+					size.width += left;
+				}
+			}
+
+			return size;
 		}
 	}
 }

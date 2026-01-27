@@ -15,6 +15,8 @@ public class ViewMenu extends AbstractEnigmaMenu {
 	private final ThemesMenu themes;
 	private final ScaleMenu scale;
 	private final EntryTooltipsMenu entryTooltips;
+	private final SelectionHighlightMenu selectionHighlight;
+	private final EntryMarkersMenu entryMarkers;
 
 	private final JMenuItem fontItem = new JMenuItem();
 
@@ -26,13 +28,17 @@ public class ViewMenu extends AbstractEnigmaMenu {
 		this.themes = new ThemesMenu(gui);
 		this.scale = new ScaleMenu(gui);
 		this.entryTooltips = new EntryTooltipsMenu(gui);
+		this.selectionHighlight = new SelectionHighlightMenu(gui);
+		this.entryMarkers = new EntryMarkersMenu(gui);
 
 		this.add(this.themes);
+		this.add(this.selectionHighlight);
 		this.add(this.languages);
 		this.add(this.notifications);
 		this.add(this.scale);
 		this.add(this.stats);
 		this.add(this.entryTooltips);
+		this.add(this.entryMarkers);
 		this.add(this.fontItem);
 
 		this.fontItem.addActionListener(e -> this.onFontClicked(this.gui));
@@ -48,6 +54,8 @@ public class ViewMenu extends AbstractEnigmaMenu {
 		this.scale.retranslate();
 		this.stats.retranslate();
 		this.entryTooltips.retranslate();
+		this.selectionHighlight.retranslate();
+		this.entryMarkers.retranslate();
 		this.fontItem.setText(I18n.translate("menu.view.font"));
 	}
 
