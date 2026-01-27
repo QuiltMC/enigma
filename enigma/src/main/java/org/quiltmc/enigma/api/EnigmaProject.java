@@ -78,7 +78,7 @@ public class EnigmaProject {
 		this.jarChecksum = jarChecksum;
 
 		this.mappingsIndex = mappingsIndex;
-		this.remapper = EntryRemapper.mapped(this.enigma, this.combinedIndex, this.mappingsIndex, proposedNames, new HashEntryTree<>(), this.enigma.getNameProposalServices());
+		this.remapper = EntryRemapper.mapped(this, proposedNames, new HashEntryTree<>());
 	}
 
 	/**
@@ -97,12 +97,12 @@ public class EnigmaProject {
 			EntryTree<EntryMapping> mergedTree = EntryTreeUtil.merge(jarProposedMappings, mappings);
 
 			this.mappingsIndex.indexMappings(mergedTree, progress);
-			this.remapper = EntryRemapper.mapped(this.enigma, this.combinedIndex, this.mappingsIndex, jarProposedMappings, mappings, this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.mapped(this, jarProposedMappings, mappings);
 		} else if (!jarProposedMappings.isEmpty()) {
 			this.mappingsIndex.indexMappings(jarProposedMappings, progress);
-			this.remapper = EntryRemapper.mapped(this.enigma, this.combinedIndex, this.mappingsIndex, jarProposedMappings, new HashEntryTree<>(), this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.mapped(this, jarProposedMappings, new HashEntryTree<>());
 		} else {
-			this.remapper = EntryRemapper.empty(this.enigma, this.combinedIndex, this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.empty(this);
 		}
 
 		// update dynamically proposed names
