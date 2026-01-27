@@ -2,19 +2,23 @@ package org.quiltmc.enigma.gui.element.menu_bar.view;
 
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.SimpleCheckBoxItem;
 import org.quiltmc.enigma.util.I18n;
 
-import javax.swing.JCheckBoxMenuItem;
+import static org.quiltmc.enigma.gui.util.GuiUtil.syncStateWithConfig;
 
-import static org.quiltmc.enigma.gui.util.GuiUtil.createSyncedMenuCheckBox;
+public class EntryTooltipsMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.view.entry_tooltips";
 
-public class EntryTooltipsMenu extends AbstractEnigmaMenu {
-	private final JCheckBoxMenuItem enable = createSyncedMenuCheckBox(Config.editor().entryTooltips.enable);
-	private final JCheckBoxMenuItem interactable = createSyncedMenuCheckBox(Config.editor().entryTooltips.interactable);
+	private final SimpleCheckBoxItem enable = new SimpleCheckBoxItem("menu.view.entry_tooltips.enable");
+	private final SimpleCheckBoxItem interactable = new SimpleCheckBoxItem("menu.view.entry_tooltips.interactable");
 
 	protected EntryTooltipsMenu(Gui gui) {
 		super(gui);
+
+		syncStateWithConfig(this.enable, Config.editor().entryTooltips.enable);
+		syncStateWithConfig(this.interactable, Config.editor().entryTooltips.interactable);
 
 		this.add(this.enable);
 		this.add(this.interactable);
@@ -24,8 +28,13 @@ public class EntryTooltipsMenu extends AbstractEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.view.entry_tooltips"));
-		this.enable.setText(I18n.translate("menu.view.entry_tooltips.enable"));
-		this.interactable.setText(I18n.translate("menu.view.entry_tooltips.interactable"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
+		this.enable.retranslate();
+		this.interactable.retranslate();
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

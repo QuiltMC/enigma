@@ -3,7 +3,9 @@ package org.quiltmc.enigma.gui.element.menu_bar.view;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.ConventionalSearchableElement;
+import org.quiltmc.enigma.gui.element.menu_bar.Retranslatable;
 import org.quiltmc.enigma.gui.util.LanguageUtil;
 import org.quiltmc.enigma.util.I18n;
 
@@ -12,15 +14,17 @@ import javax.swing.JRadioButtonMenuItem;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LanguagesMenu extends AbstractEnigmaMenu {
-	private final Map<String, JRadioButtonMenuItem> languages = new HashMap<>();
+public class LanguagesMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.view.languages";
+
+	private final Map<String, LanguageItem> languages = new HashMap<>();
 
 	protected LanguagesMenu(Gui gui) {
 		super(gui);
 
 		ButtonGroup languageButtons = new ButtonGroup();
 		for (String lang : I18n.getAvailableLanguages()) {
-			JRadioButtonMenuItem languageButton = new JRadioButtonMenuItem(I18n.getLanguageName(lang));
+			LanguageItem languageButton = new LanguageItem(lang);
 			this.languages.put(lang, languageButton);
 			languageButtons.add(languageButton);
 			this.add(languageButton);
@@ -31,11 +35,9 @@ public class LanguagesMenu extends AbstractEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.view.languages"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 
-		for (String lang : I18n.getAvailableLanguages()) {
-			this.languages.get(lang).setText(I18n.getLanguageName(lang));
-		}
+		this.languages.values().forEach(LanguageItem::retranslate);
 	}
 
 	@Override
@@ -51,5 +53,38 @@ public class LanguagesMenu extends AbstractEnigmaMenu {
 		Config.main().language.setValue(lang, true);
 		I18n.setLanguage(lang);
 		LanguageUtil.dispatchLanguageChange();
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
+	}
+
+	private static final class LanguageItem extends JRadioButtonMenuItem implements ConventionalSearchableElement, Retranslatable {
+		private final String language;
+
+		LanguageItem(String language) {
+			this.language = language;
+		}
+
+		@Override
+		public void retranslate() {
+			this.setText(I18n.getLanguageName(this.language));
+		}
+
+		@Override
+		public String getSearchName() {
+			return this.getText();
+		}
+
+		@Override
+		public String getAliasesTranslationKeyPrefix() {
+			return "language." + this.language;
+		}
+
+		@Override
+		public void onSearchChosen() {
+			this.doClick(0);
+		}
 	}
 }
