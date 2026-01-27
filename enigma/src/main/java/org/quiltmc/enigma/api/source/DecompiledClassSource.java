@@ -11,6 +11,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableDefEntry;
 import org.quiltmc.enigma.impl.translation.LocalNameGenerator;
+import org.quiltmc.enigma.util.LineIndexer;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -27,11 +28,14 @@ public class DecompiledClassSource {
 
 	private final TokenStore highlightedTokens;
 
+	private final LineIndexer lineIndexer;
+
 	private DecompiledClassSource(ClassEntry classEntry, SourceIndex obfuscatedIndex, SourceIndex remappedIndex, TokenStore highlightedTokens) {
 		this.classEntry = classEntry;
 		this.obfuscatedIndex = obfuscatedIndex;
 		this.remappedIndex = remappedIndex;
 		this.highlightedTokens = highlightedTokens;
+		this.lineIndexer = new LineIndexer(remappedIndex.getSource());
 	}
 
 	public DecompiledClassSource(ClassEntry classEntry, SourceIndex index) {
@@ -126,6 +130,10 @@ public class DecompiledClassSource {
 		}
 
 		return fromOffset + relativeOffset;
+	}
+
+	public LineIndexer getLineIndexer() {
+		return this.lineIndexer;
 	}
 
 	@Override

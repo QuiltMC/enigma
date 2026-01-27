@@ -40,11 +40,14 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
+import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.LineIndexer;
 import org.quiltmc.enigma.util.Result;
 import org.tinylog.Logger;
 
+import javax.swing.JEditorPane;
+import javax.swing.JScrollPane;
 import java.awt.Color;
 import java.util.Comparator;
 import java.util.Optional;
@@ -54,7 +57,7 @@ import java.util.function.Predicate;
 import static org.quiltmc.enigma.gui.util.GuiUtil.getRecordIndexingService;
 import static java.util.Comparator.comparingInt;
 
-public class DeclarationSnippetPanel extends BaseEditorPanel {
+public class DeclarationSnippetPanel extends AbstractEditorPanel<JScrollPane> {
 	private static final String NO_ENTRY_DEFINITION = "no entry definition!";
 	private static final String NO_TOKEN_RANGE = "no token range!";
 	// used to compose error messages
@@ -66,10 +69,8 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 
 		this.getEditor().setEditable(false);
 
-		this.editor.setCaretColor(new Color(0, 0, 0, 0));
+		this.editor.setCaretColor(GuiUtil.TRANSPARENT);
 		this.editor.getCaret().setSelectionVisible(true);
-
-		this.setClassHandle(targetTopClassHandle, false, source -> this.createSnippet(source, target));
 
 		this.addSourceSetListener(source -> {
 			if (!this.isBounded()) {
@@ -78,7 +79,7 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 				this.editor.setText("// " + I18n.translate("editor.snippet.message.no_declaration_found"));
 				this.editor.getHighlighter().removeAllHighlights();
 			} else {
-				this.installEditorRuler(new LineIndexer(source.toString()).getLine(this.getSourceBounds().start()));
+				this.installEditorRuler(source.getLineIndexer().getLine(this.getSourceBounds().start()));
 
 				this.resolveTarget(source, target)
 						.map(Target::token)
@@ -89,6 +90,13 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 						)));
 			}
 		});
+
+		this.setClassHandle(targetTopClassHandle, false, source -> this.createSnippet(source, target));
+	}
+
+	@Override
+	protected JScrollPane createEditorScrollPane(JEditorPane editor) {
+		return new JScrollPane(editor);
 	}
 
 	private Snippet createSnippet(DecompiledClassSource source, Entry<?> targetEntry) {
@@ -144,7 +152,7 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 	private Result<Snippet, String> findLambdaVariable(
 			DecompiledClassSource source, Token target, LocalVariableEntry targetEntry, MethodEntry parent
 	) {
-		final LineIndexer lineIndexer = new LineIndexer(source.toString());
+		final LineIndexer lineIndexer = source.getLineIndexer();
 
 		final EntryIndex entryIndex = this.gui.getController().getProject().getJarIndex().getIndex(EntryIndex.class);
 		return Optional.ofNullable(entryIndex.getDefinition(parent))
@@ -197,9 +205,8 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 			DecompiledClassSource source, Token target, ClassEntry targetEntry
 	) {
 		return this.getNodeType(targetEntry).andThen(nodeType -> {
-			final LineIndexer lineIndexer = new LineIndexer(source.toString());
-			return findDeclaration(source, target, nodeType, lineIndexer)
-				.andThen(declaration -> findTypeDeclarationSnippet(declaration, lineIndexer));
+			return findDeclaration(source, target, nodeType)
+				.andThen(declaration -> findTypeDeclarationSnippet(declaration, source.getLineIndexer()));
 		});
 	}
 
@@ -245,8 +252,6 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 	private Result<Snippet, String> findMethodSnippet(
 			DecompiledClassSource source, Token target, MethodEntry targetEntry
 	) {
-		final LineIndexer lineIndexer = new LineIndexer(source.toString());
-
 		final Class<? extends CallableDeclaration<?>> nodeType;
 		final Function<CallableDeclaration<?>, Optional<BlockStmt>> bodyGetter;
 		if (targetEntry.isConstructor()) {
@@ -257,7 +262,7 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 			bodyGetter = declaration -> ((MethodDeclaration) declaration).getBody();
 		}
 
-		return findDeclaration(source, target, nodeType, lineIndexer).andThen(declaration -> {
+		return findDeclaration(source, target, nodeType).andThen(declaration -> {
 			final Range range = declaration.getRange().orElseThrow();
 
 			return bodyGetter.apply(declaration)
@@ -265,10 +270,10 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 					.getRange()
 					.<Result<Range, String>>map(Result::ok)
 					.orElseGet(() -> Result.err("no method body range!"))
-					.map(bodyRange -> toSnippet(lineIndexer, range.begin, bodyRange.begin))
+					.map(bodyRange -> toSnippet(source.getLineIndexer(), range.begin, bodyRange.begin))
 				)
 				// no body: abstract
-				.orElseGet(() -> Result.ok(toSnippet(lineIndexer, range)));
+				.orElseGet(() -> Result.ok(toSnippet(source.getLineIndexer(), range)));
 		});
 	}
 
@@ -296,8 +301,7 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 	private Result<Snippet, String> findComponentParent(DecompiledClassSource source, ClassDefEntry parent) {
 		final Token parentToken = source.getIndex().getDeclarationToken(parent);
 
-		final LineIndexer lineIndexer = new LineIndexer(source.toString());
-		return findDeclaration(source, parentToken, RecordDeclaration.class, lineIndexer)
+		return findDeclaration(source, parentToken, RecordDeclaration.class)
 			.andThen(parentDeclaration -> parentDeclaration
 				.getImplementedTypes()
 				.getFirst()
@@ -309,7 +313,7 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 							.getRange()
 							.map(implRange -> implRange.begin.right(-1))
 							.map(beforeImpl -> toSnippet(
-								lineIndexer,
+								source.getLineIndexer(),
 								parentDeclaration.getBegin().orElseThrow(),
 								beforeImpl
 							))
@@ -321,26 +325,24 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 					.orElseGet(() -> Result.err("no parent record token range!"))
 				)
 				// no implemented types
-				.orElseGet(() -> findTypeDeclarationSnippet(parentDeclaration, lineIndexer))
+				.orElseGet(() -> findTypeDeclarationSnippet(parentDeclaration, source.getLineIndexer()))
 			);
 	}
 
 	private static Result<Snippet, String> findEnumConstantSnippet(DecompiledClassSource source, Token target) {
-		final LineIndexer lineIndexer = new LineIndexer(source.toString());
-		return findDeclaration(source, target, EnumConstantDeclaration.class, lineIndexer)
-			.andThen(declaration -> Result.ok(toSnippet(lineIndexer, declaration.getRange().orElseThrow())));
+		return findDeclaration(source, target, EnumConstantDeclaration.class)
+			.andThen(declaration -> Result.ok(toSnippet(source.getLineIndexer(), declaration.getRange().orElseThrow())));
 	}
 
 	private static Result<Snippet, String> findRegularFieldSnippet(DecompiledClassSource source, Token target) {
-		final LineIndexer lineIndexer = new LineIndexer(source.toString());
-		return findDeclaration(source, target, FieldDeclaration.class, lineIndexer).andThen(declaration -> declaration
+		return findDeclaration(source, target, FieldDeclaration.class).andThen(declaration -> declaration
 			.getTokenRange()
 			.map(tokenRange -> {
 				final Range range = declaration.getRange().orElseThrow();
 				return declaration.getVariables().stream()
-					.filter(variable -> rangeContains(lineIndexer, variable, target))
+					.filter(variable -> rangeContains(source.getLineIndexer(), variable, target))
 					.findFirst()
-					.map(variable -> toDeclaratorSnippet(range, variable, lineIndexer))
+					.map(variable -> toDeclaratorSnippet(range, variable, source.getLineIndexer()))
 					.orElseGet(() -> Result.err("no matching field declarator!"));
 			})
 			.orElseGet(() -> Result.err(NO_TOKEN_RANGE))
@@ -350,14 +352,12 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 	private Result<Snippet, String> findLocalSnippet(
 			DecompiledClassSource source, Token parentToken, Token targetToken
 	) {
-		final LineIndexer lineIndexer = new LineIndexer(source.toString());
-
-		return findDeclaration(source, parentToken, MethodDeclaration.class, lineIndexer)
+		return findDeclaration(source, parentToken, MethodDeclaration.class)
 			.andThen(declaration -> declaration
 				.getBody()
 				.<Result<BlockStmt, String>>map(Result::ok)
 				.orElseGet(() -> Result.err("no method body!"))
-				.andThen(parentBody -> findLocalSnippet(targetToken, parentBody, lineIndexer, METHOD))
+				.andThen(parentBody -> findLocalSnippet(targetToken, parentBody, source.getLineIndexer(), METHOD))
 			);
 	}
 
@@ -398,12 +398,12 @@ public class DeclarationSnippetPanel extends BaseEditorPanel {
 	 * found declarations always {@linkplain TypeDeclaration#hasRange() have a range}
 	 */
 	private static <D extends BodyDeclaration<?>> Result<D, String> findDeclaration(
-			DecompiledClassSource source, Token target, Class<D> nodeType, LineIndexer lineIndexer
+			DecompiledClassSource source, Token target, Class<D> nodeType
 	) {
 		return parse(source).andThen(unit -> unit
-			.findAll(nodeType, declaration -> rangeContains(lineIndexer, declaration, target))
+			.findAll(nodeType, declaration -> rangeContains(source.getLineIndexer(), declaration, target))
 			.stream()
-			.max(depthComparatorOf(lineIndexer))
+			.max(depthComparatorOf(source.getLineIndexer()))
 			.<Result<D, String>>map(Result::ok)
 			.orElseGet(() -> Result.err("not found in parsed source!"))
 		);

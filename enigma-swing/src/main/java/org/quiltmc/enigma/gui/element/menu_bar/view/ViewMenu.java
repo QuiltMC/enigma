@@ -17,6 +17,7 @@ public class ViewMenu extends AbstractSearchableEnigmaMenu {
 	private final ScaleMenu scale;
 	private final EntryTooltipsMenu entryTooltips;
 	private final SelectionHighlightMenu selectionHighlight;
+	private final EntryMarkersMenu entryMarkers;
 
 	private final SimpleItem fontItem = new SimpleItem("menu.view.font");
 
@@ -29,6 +30,7 @@ public class ViewMenu extends AbstractSearchableEnigmaMenu {
 		this.scale = new ScaleMenu(gui);
 		this.entryTooltips = new EntryTooltipsMenu(gui);
 		this.selectionHighlight = new SelectionHighlightMenu(gui);
+		this.entryMarkers = new EntryMarkersMenu(gui);
 
 		this.add(this.themes);
 		this.add(this.selectionHighlight);
@@ -37,6 +39,7 @@ public class ViewMenu extends AbstractSearchableEnigmaMenu {
 		this.add(this.scale);
 		this.add(this.stats);
 		this.add(this.entryTooltips);
+		this.add(this.entryMarkers);
 		this.add(this.fontItem);
 
 		this.fontItem.addActionListener(e -> this.onFontClicked(this.gui));
@@ -53,6 +56,7 @@ public class ViewMenu extends AbstractSearchableEnigmaMenu {
 		this.stats.retranslate();
 		this.entryTooltips.retranslate();
 		this.selectionHighlight.retranslate();
+		this.entryMarkers.retranslate();
 		this.fontItem.retranslate();
 	}
 

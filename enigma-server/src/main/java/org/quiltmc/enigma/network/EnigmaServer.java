@@ -87,7 +87,8 @@ public abstract class EnigmaServer {
 		thread.start();
 	}
 
-	private void acceptClient() throws IOException {
+	@VisibleForTesting
+	Socket acceptClient() throws IOException {
 		Socket client = this.socket.accept();
 		this.clients.add(client);
 		this.unapprovedClients.add(client);
@@ -127,6 +128,8 @@ public abstract class EnigmaServer {
 		thread.setName("Server I/O thread #" + (nextIoId++));
 		thread.setDaemon(true);
 		thread.start();
+
+		return client;
 	}
 
 	public void stop() {
