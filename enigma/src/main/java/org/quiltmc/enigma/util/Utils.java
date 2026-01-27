@@ -21,6 +21,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -195,5 +196,10 @@ public class Utils {
 
 	public static double clamp(double value, double min, double max) {
 		return Math.min(max, Math.max(value, min));
+	}
+
+	@SafeVarargs
+	public static <T> Stream<T> lazyConcat(Supplier<Stream<? extends T>>... streamers) {
+		return Stream.of(streamers).flatMap(Supplier::get);
 	}
 }
