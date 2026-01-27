@@ -1,0 +1,69 @@
+plugins {
+    id "checkstyle"
+    id "java"
+    id "java-library"
+    id "maven-publish"
+}
+
+group = 'org.quiltmc'
+version = 'internal'
+
+final GENERATED_SOURCES = layout.buildDirectory.dir('generated/sources/main')
+
+checkstyle {
+	// use root project's checkstyle config
+	configDirectory = project.layout.projectDirectory.dir('../config/checkstyle/')
+}
+
+configurations {
+	jflexClasspath
+}
+
+sourceSets.main.java.srcDir(GENERATED_SOURCES)
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	jflexClasspath libs.jflex
+}
+
+// exclude auto-generated jflex lexer from checkstyle
+tasks.withType(Checkstyle).configureEach {
+    exclude '**org/quiltmc/syntaxpain/generated**'
+}
+
+ant.taskdef(
+	name: 'jflex',
+	classname: 'jflex.anttask.JFlexTask',
+	classpath: configurations.jflexClasspath.asPath
+)
+
+tasks.register('jflex') {
+	final input = file('src/main/jflex/java.jflex')
+
+	inputs.file(input)
+	outputs.dir(GENERATED_SOURCES)
+
+	doLast {
+		ant.jflex(
+			file: input,
+			destdir: GENERATED_SOURCES.get()
+		)
+	}
+}
+
+compileJava.dependsOn(':jflex')
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.encoding = "UTF-8"
+
+	it.options.release = 17
+}
