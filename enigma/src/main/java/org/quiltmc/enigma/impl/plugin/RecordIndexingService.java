@@ -52,7 +52,7 @@ public class RecordIndexingService implements JarIndexerService {
 	/**
 	 * @return the {@link MethodEntry} representing the getter of the passed {@code componentField},
 	 * or {@code null} if the passed {@code componentField} is not a record component field
-	 * or if its getter could not be determined; returns both
+	 * or its getter could not be determined. Returns both
 	 * {@linkplain #getDefiniteComponentGetter(FieldEntry) definitive} and
 	 * {@linkplain #getProbableComponentGetter(FieldEntry) probable} getters
 	 */
@@ -64,7 +64,7 @@ public class RecordIndexingService implements JarIndexerService {
 	/**
 	 * @return the {@link FieldEntry} representing the field of the passed {@code componentGetter},
 	 * or {@code null} if the passed {@code componentGetter} is not a record component getter
-	 * or if its field could not be determined; returns both
+	 * or its field could not be determined. Returns both
 	 * {@linkplain #getDefiniteComponentField(MethodEntry) definitive} and
 	 * {@linkplain #getProbableComponentField(MethodEntry) probable} fields
 	 */
@@ -76,7 +76,7 @@ public class RecordIndexingService implements JarIndexerService {
 	/**
 	 * @return the definitive {@link MethodEntry} representing the getter of the passed {@code componentField},
 	 * or {@code null} if the passed {@code componentField} is not a record component field
-	 * or if its getter could not be definitively determined
+	 * or its getter could not be definitively determined
 	 */
 	@Nullable
 	public MethodEntry getDefiniteComponentGetter(FieldEntry componentField) {
@@ -86,7 +86,7 @@ public class RecordIndexingService implements JarIndexerService {
 	/**
 	 * @return the definitive {@link FieldEntry} representing the field of the passed {@code componentGetter},
 	 * or {@code null} if the passed {@code componentGetter} is not a record component getter
-	 * or if its field could not be definitively determined
+	 * or its field could not be definitively determined
 	 */
 	@Nullable
 	public FieldEntry getDefiniteComponentField(MethodEntry componentGetter) {
@@ -96,8 +96,8 @@ public class RecordIndexingService implements JarIndexerService {
 	/**
 	 * @return the probable {@link MethodEntry} representing the getter of the passed {@code componentField},
 	 * or {@code null} if the passed {@code componentField} is not a record component field
-	 * or if its getter was not probabilistically determined;
-	 * does not include {@linkplain #getDefiniteComponentGetter(FieldEntry) definitive} getters
+	 * or its getter was not probabilistically determined.
+	 * Does not include {@linkplain #getDefiniteComponentGetter(FieldEntry) definitive} getters
 	 */
 	@Nullable
 	public MethodEntry getProbableComponentGetter(FieldEntry componentField) {
@@ -107,8 +107,8 @@ public class RecordIndexingService implements JarIndexerService {
 	/**
 	 * @return the probably {@link FieldEntry} representing the field of the passed {@code componentGetter},
 	 * or {@code null} if the passed {@code componentGetter} is not a record component getter
-	 * or if its field was not probabilistically determined;
-	 * does not include {@linkplain #getDefiniteComponentField(MethodEntry) definitive} fields
+	 * or its field was not probabilistically determined.
+	 * Does not include {@linkplain #getDefiniteComponentField(MethodEntry) definitive} fields
 	 */
 	@Nullable
 	public FieldEntry getProbableComponentField(MethodEntry componentGetter) {
@@ -117,8 +117,8 @@ public class RecordIndexingService implements JarIndexerService {
 
 	/**
 	 * @return a {@link Stream} of component fields of the passed {@code recordEntry};
-	 * there's no uncertainty in getter field determination, so all fields are always included;
-	 * if the passed {@code recordEntry} does not represent a record, the stream is empty
+	 * there's no uncertainty in getter field determination, so all fields are always included.
+	 * If the passed {@code recordEntry} does not represent a record, the stream is empty
 	 */
 	public Stream<FieldEntry> streamComponentFields(ClassEntry recordEntry) {
 		return this.visitor.streamComponentFields(recordEntry);
@@ -127,16 +127,16 @@ public class RecordIndexingService implements JarIndexerService {
 	/**
 	 * @return a {@link Stream} of component getter methods of the passed {@code recordEntry};
 	 * includes both {@linkplain #streamDefiniteComponentMethods(ClassEntry) definitive} and
-	 * {@linkplain #streamProbableComponentMethods(ClassEntry) probable} getters;
-	 * if the passed {@code recordEntry} does not represent a record, the stream is empty
+	 * {@linkplain #streamProbableComponentMethods(ClassEntry) probable} getters.
+	 * If the passed {@code recordEntry} does not represent a record, the stream is empty
 	 */
 	public Stream<MethodEntry> streamComponentMethods(ClassEntry recordEntry) {
 		return this.visitor.streamComponentMethods(recordEntry);
 	}
 
 	/**
-	 * @return a {@link Stream} of definitive component getter methods of the passed {@code recordEntry};
-	 * if the passed {@code recordEntry} does not represent a record, the stream is empty
+	 * @return a {@link Stream} of definitive component getter methods of the passed {@code recordEntry}.
+	 * If the passed {@code recordEntry} does not represent a record, the stream is empty
 	 */
 	public Stream<MethodEntry> streamDefiniteComponentMethods(ClassEntry recordEntry) {
 		return this.visitor.streamDefiniteComponentMethods(recordEntry);
@@ -144,8 +144,8 @@ public class RecordIndexingService implements JarIndexerService {
 
 	/**
 	 * @return a {@link Stream} of probable component getter methods of the passed {@code recordEntry};
-	 * does not include {@linkplain #streamDefiniteComponentMethods(ClassEntry) definitive} getters;
-	 * if the passed {@code recordEntry} does not represent a record, the stream is empty
+	 * does not include {@linkplain #streamDefiniteComponentMethods(ClassEntry) definitive} getters.
+	 * If the passed {@code recordEntry} does not represent a record, the stream is empty
 	 */
 	public Stream<MethodEntry> streamProbableComponentMethods(ClassEntry recordEntry) {
 		return this.visitor.streamProbableComponentMethods(recordEntry);
