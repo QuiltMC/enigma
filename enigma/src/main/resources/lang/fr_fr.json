@@ -66,6 +66,7 @@
 	"menu.view.languages": "Langues",
 	"menu.view.scale": "Échelle",
 	"menu.view.scale.custom": "Personnalisée...",
+	"menu.view.scale.custom.selected": "Personnalisée (%.1f%%)...",
 	"menu.view.scale.custom.title": "Échelle personnalisée",
 	"menu.view.font": "Polices...",
 	"menu.view.change.title": "Modifications",

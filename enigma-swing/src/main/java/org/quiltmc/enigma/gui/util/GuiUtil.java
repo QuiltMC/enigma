@@ -557,6 +557,8 @@ public final class GuiUtil {
 	 * <p> Listeners are added to keep the selected radio item and the passed {@code config}'s
 	 * {@link TrackedValue#value() value} in sync.
 	 *
+	 * <p> Consider using {@link NumberInputDialog#promptInt} instead for large int ranges.
+	 *
 	 * @param gui            the gui the created menu will belong to
 	 * @param translationKey the translation key for the created menu; the translation is
 	 *                       {@linkplain I18n#translateFormatted(String, Object...) formatted} with the passed
@@ -566,6 +568,7 @@ public final class GuiUtil {
 	 *                       this should coincide with any minimum imposed on the passed {@code config}
 	 * @param max            the maximum allowed value;
 	 *                       this should coincide with any maximum imposed on the passed {@code config}
+	 *
 	 * @return a newly created menu allowing configuration of the passed {@code config}
 	 */
 	public static SimpleEnigmaMenu createIntConfigRadioMenu(
