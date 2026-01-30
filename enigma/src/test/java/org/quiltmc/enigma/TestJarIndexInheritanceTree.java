@@ -15,6 +15,7 @@ import org.quiltmc.enigma.api.class_provider.JarClassProvider;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.mapping.IndexEntryResolver;
+import org.quiltmc.enigma.api.translation.mapping.ResolutionStrategy;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
@@ -35,12 +36,18 @@ public class TestJarIndexInheritanceTree {
 	public static final Path JAR = TestUtil.obfJar("inheritance_tree");
 
 	private static final ClassEntry OBJECT_CLASS = TestEntryFactory.newClass("java/lang/Object");
+
 	private static final ClassEntry BASE_CLASS = TestEntryFactory.newClass("a");
-	private static final ClassEntry SUB_CLASS_A = TestEntryFactory.newClass("c");
-	private static final ClassEntry SUB_CLASS_AA = TestEntryFactory.newClass("e");
-	private static final ClassEntry SUB_CLASS_B = TestEntryFactory.newClass("d");
+	private static final ClassEntry SUB_CLASS_A = TestEntryFactory.newClass("e");
+	private static final ClassEntry SUB_CLASS_AA = TestEntryFactory.newClass("g");
+	private static final ClassEntry SUB_CLASS_B = TestEntryFactory.newClass("f");
 	private static final FieldEntry NAME_FIELD = TestEntryFactory.newField(BASE_CLASS, "a", "Ljava/lang/String;");
 	private static final FieldEntry NUM_THINGS_FIELD = TestEntryFactory.newField(SUB_CLASS_B, "a", "I");
+
+	private static final ClassEntry CONSTRUCTOR_PARENT = TestEntryFactory.newClass("b");
+	private static final ClassEntry CONSTRUCTOR_SUB_CLASS = TestEntryFactory.newClass("c");
+	private static final MethodEntry SUB_CLASS_NO_ARGS_CONSTRUCTOR = TestEntryFactory.newMethod(CONSTRUCTOR_SUB_CLASS.getFullName(), "<init>", "()V");
+	private static final MethodEntry SUB_CLASS_INT_CONSTRUCTOR = TestEntryFactory.newMethod(CONSTRUCTOR_SUB_CLASS.getFullName(), "<init>", "(I)V");
 
 	private final JarIndex index;
 
@@ -55,6 +62,7 @@ public class TestJarIndexInheritanceTree {
 		assertThat(this.index.getIndex(EntryIndex.class).getClasses(), Matchers.containsInAnyOrder(
 				TestEntryFactory.newClass("org/quiltmc/enigma/input/Keep"),
 				BASE_CLASS, SUB_CLASS_A, SUB_CLASS_AA, SUB_CLASS_B,
+				CONSTRUCTOR_PARENT, CONSTRUCTOR_SUB_CLASS,
 				InterfaceTree.OUTER,
 				InterfaceTree.ROOT,
 				InterfaceTree.BRANCH_1_2, InterfaceTree.BRANCH_3_4,
@@ -224,6 +232,20 @@ public class TestJarIndexInheritanceTree {
 	}
 
 	@Test
+	public void noConstructorInheritance() {
+		assertThat(
+				this.index.getEntryResolver()
+					.resolveEntry(SUB_CLASS_NO_ARGS_CONSTRUCTOR, ResolutionStrategy.RESOLVE_ROOT),
+				contains(SUB_CLASS_NO_ARGS_CONSTRUCTOR)
+		);
+
+		assertThat(
+				this.index.getEntryResolver()
+					.resolveEntry(SUB_CLASS_INT_CONSTRUCTOR, ResolutionStrategy.RESOLVE_ROOT),
+				contains(SUB_CLASS_INT_CONSTRUCTOR)
+		);
+	}
+
 	void streamAncestorsOrder() {
 		final List<ClassEntry> ancestors = this.index.getIndex(InheritanceIndex.class)
 				.streamAncestors(InterfaceTree.ROOT)
@@ -268,7 +290,7 @@ public class TestJarIndexInheritanceTree {
 	}
 
 	private interface InterfaceTree {
-		String OUTER_NAME = "b";
+		String OUTER_NAME = "d";
 		String OUTER_PREFIX = OUTER_NAME + "$";
 
 		ClassEntry OUTER = TestEntryFactory.newClass(OUTER_NAME);
