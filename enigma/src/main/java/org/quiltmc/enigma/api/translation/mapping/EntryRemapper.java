@@ -3,6 +3,7 @@ package org.quiltmc.enigma.api.translation.mapping;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
@@ -30,7 +31,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
-public class EntryRemapper {
+public final class EntryRemapper {
 	private final EntryTree<EntryMapping> deobfMappings;
 	private final EntryTree<EntryMapping> jarProposedMappings;
 	private final EntryTree<EntryMapping> proposedMappings;
@@ -45,7 +46,12 @@ public class EntryRemapper {
 	private final MappingValidator validator;
 	private final List<NameProposalService> proposalServices;
 
-	private EntryRemapper(Enigma enigma, JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> jarProposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
+	private EntryRemapper(
+			Enigma enigma, JarIndex jarIndex, JarIndex combinedIndex,
+			MappingsIndex mappingsIndex,
+			EntryTree<EntryMapping> jarProposedMappings, EntryTree<EntryMapping> deobfMappings,
+			List<NameProposalService> proposalServices
+	) {
 		this.deobfMappings = deobfMappings;
 		this.jarProposedMappings = jarProposedMappings;
 		this.proposedMappings = new HashEntryTree<>(jarProposedMappings);
@@ -58,16 +64,67 @@ public class EntryRemapper {
 		this.jarIndex = jarIndex;
 		this.mappingsIndex = mappingsIndex;
 
-		this.validator = new MappingValidator(this.obfResolver, this.deobfuscator, jarIndex, mappingsIndex);
+		// use combined index for validator so it can find conflicts with lib method names
+		final EntryResolver combinedResolver = combinedIndex.getEntryResolver();
+		this.validator = new MappingValidator(combinedResolver, new MappingTranslator(this.mappings, combinedResolver), combinedIndex, mappingsIndex);
 		this.proposalServices = proposalServices;
 	}
 
-	public static EntryRemapper mapped(Enigma enigma, JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
-		return new EntryRemapper(enigma, jarIndex, mappingsIndex, proposedMappings, deobfMappings, proposalServices);
+	public static EntryRemapper mapped(
+			Enigma project, JarIndex jarIndex, JarIndex combinedIndex,
+			MappingsIndex mappingsIndex,
+			EntryTree<EntryMapping> proposedMappings, EntryTree<EntryMapping> deobfMappings,
+			List<NameProposalService> proposalServices
+	) {
+		return new EntryRemapper(
+			project, jarIndex, combinedIndex,
+			mappingsIndex,
+			proposedMappings, deobfMappings,
+			proposalServices
+		);
 	}
 
-	public static EntryRemapper empty(Enigma enigma, JarIndex index, List<NameProposalService> proposalServices) {
-		return new EntryRemapper(enigma, index, MappingsIndex.empty(), new HashEntryTree<>(), new HashEntryTree<>(), proposalServices);
+	/**
+	 * Creates a remapper with the passed {@code project}'s {@linkplain EnigmaProject#getEnigma() enigma} instance,
+	 * {@linkplain EnigmaProject#getJarIndex() jar index}, {@linkplain EnigmaProject#getCombinedIndex() combined index},
+	 * {@linkplain EnigmaProject#getMappingsIndex() mappings index},
+	 * and its enigma instance's {@linkplain Enigma#getNameProposalServices() name proposal services}.
+	 */
+	public static EntryRemapper mapped(
+			EnigmaProject project, EntryTree<EntryMapping> proposedMappings, EntryTree<EntryMapping> deobfMappings
+	) {
+		return mapped(
+			project.getEnigma(), project.getJarIndex(), project.getCombinedIndex(),
+			project.getMappingsIndex(),
+			proposedMappings, deobfMappings,
+			project.getEnigma().getNameProposalServices()
+		);
+	}
+
+	public static EntryRemapper empty(
+			Enigma enigma,
+			JarIndex jarIndex, JarIndex combinedIndex,
+			List<NameProposalService> proposalServices
+	) {
+		return new EntryRemapper(
+			enigma, jarIndex, combinedIndex,
+			MappingsIndex.empty(), new HashEntryTree<>(), new HashEntryTree<>(),
+			proposalServices
+		);
+	}
+
+	/**
+	 * Creates an empty remapper with the passed {@code project}'s
+	 * {@linkplain EnigmaProject#getEnigma() enigma} instance,
+	 * {@linkplain EnigmaProject#getJarIndex() jar index}, {@linkplain EnigmaProject#getCombinedIndex() combined index},
+	 * and its enigma instance's {@linkplain Enigma#getNameProposalServices() name proposal services}.
+	 */
+	public static EntryRemapper empty(EnigmaProject project) {
+		return empty(
+			project.getEnigma(),
+			project.getJarIndex(), project.getCombinedIndex(),
+			project.getEnigma().getNameProposalServices()
+		);
 	}
 
 	public void validatePutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @NonNull EntryMapping deobfMapping) {
@@ -82,7 +139,9 @@ public class EntryRemapper {
 		EntryMapping oldMapping = this.getMapping(obfuscatedEntry);
 		boolean renaming = !Objects.equals(oldMapping.targetName(), deobfMapping.targetName());
 
-		Collection<Entry<?>> resolvedEntries = renaming ? this.resolveAllRoots(obfuscatedEntry) : this.obfResolver.resolveEntry(obfuscatedEntry, ResolutionStrategy.RESOLVE_CLOSEST);
+		Collection<Entry<?>> resolvedEntries = renaming
+				? this.resolveAllRoots(obfuscatedEntry)
+				: this.obfResolver.resolveEntry(obfuscatedEntry, ResolutionStrategy.RESOLVE_CLOSEST);
 
 		if (renaming && deobfMapping.targetName() != null) {
 			for (Entry<?> resolvedEntry : resolvedEntries) {
