@@ -4,8 +4,8 @@ import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.ChangeDialog;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
 import org.quiltmc.enigma.gui.util.NumberInputDialog;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.ButtonGroup;
@@ -15,7 +15,9 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 
-public class ScaleMenu extends AbstractEnigmaMenu {
+public class ScaleMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.view.scale";
+
 	private static final float PERCENT_FACTOR = 100;
 	public static final float MAX_SCALE_PERCENT = Config.MAX_SCALE_FACTOR * PERCENT_FACTOR;
 	public static final float MIN_SCALE_PERCENT = Config.MIN_SCALE_FACTOR * PERCENT_FACTOR;
@@ -51,7 +53,7 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.view.scale"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 
 		this.retranslateCustomButton();
 		this.forEachDefaultScaleOption((scaleFactor, realFactor) -> this.options.get(realFactor).setText(String.format("%d%%", scaleFactor)));
@@ -118,5 +120,10 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 				.forEach(
 					option -> consumer.accept(option, option / PERCENT_FACTOR)
 				);
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

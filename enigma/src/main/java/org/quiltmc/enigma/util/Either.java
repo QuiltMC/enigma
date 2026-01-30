@@ -8,16 +8,18 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 @JsonAdapter(Either.CustomTypeAdapterFactory.class)
-public abstract class Either<L, R> {
+public abstract sealed class Either<L, R> {
 	public abstract <T> T map(Function<L, ? extends T> l, Function<R, ? extends T> r);
 
 	public <A, B> Either<? extends A, ? extends B> flatMap(Function<L, Either<? extends A, ? extends B>> l, Function<R, Either<? extends A, ? extends B>> r) {
@@ -26,13 +28,9 @@ public abstract class Either<L, R> {
 
 	public abstract <A, B> Either<A, B> mapBoth(Function<L, ? extends A> l, Function<R, ? extends B> r);
 
-	public <T> Either<T, R> mapLeft(Function<L, ? extends T> l) {
-		return this.map(v -> left(l.apply(v)), Either::right);
-	}
+	public abstract <T> Either<T, R> mapLeft(Function<L, ? extends T> l);
 
-	public <T> Either<L, T> mapRight(Function<R, ? extends T> r) {
-		return this.map(Either::left, v -> right(r.apply(v)));
-	}
+	public abstract <T> Either<L, T> mapRight(Function<R, ? extends T> r);
 
 	public abstract Either<L, R> ifLeft(Consumer<? super L> consumer);
 
@@ -46,20 +44,22 @@ public abstract class Either<L, R> {
 
 	public abstract Optional<R> right();
 
-	public L leftOrThrow() {
-		return this.left().orElseThrow();
+	public abstract L leftOrThrow();
+
+	public abstract R rightOrThrow();
+
+	/**
+	 * @throws IllegalArgumentException if the passed {@code value} is {@code null}
+	 */
+	public static <L, R> Either<L, R> left(@NonNull L value) {
+		return new Left<>(Utils.requireNonNull(value, "value"));
 	}
 
-	public R rightOrThrow() {
-		return this.right().orElseThrow();
-	}
-
-	public static <L, R> Either<L, R> left(L value) {
-		return new Left<>(value);
-	}
-
-	public static <L, R> Either<L, R> right(R value) {
-		return new Right<>(value);
+	/**
+	 * @throws IllegalArgumentException if the passed {@code value} is {@code null}
+	 */
+	public static <L, R> Either<L, R> right(@NonNull R value) {
+		return new Right<>(Utils.requireNonNull(value, "value"));
 	}
 
 	private static final class Left<L, R> extends Either<L, R> {
@@ -109,6 +109,27 @@ public abstract class Either<L, R> {
 		public Optional<R> right() {
 			return Optional.empty();
 		}
+
+		@Override
+		public L leftOrThrow() {
+			return this.value;
+		}
+
+		@Override
+		public R rightOrThrow() {
+			throw new NoSuchElementException();
+		}
+
+		@Override
+		public <T> Either<T, R> mapLeft(Function<L, ? extends T> l) {
+			return Either.left(l.apply(this.value));
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public <T> Either<L, T> mapRight(Function<R, ? extends T> r) {
+			return (Either<L, T>) this;
+		}
 	}
 
 	private static final class Right<L, R> extends Either<L, R> {
@@ -157,6 +178,27 @@ public abstract class Either<L, R> {
 		@Override
 		public Optional<R> right() {
 			return Optional.of(this.value);
+		}
+
+		@Override
+		public L leftOrThrow() {
+			throw new NoSuchElementException();
+		}
+
+		@Override
+		public R rightOrThrow() {
+			return this.value;
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public <T> Either<T, R> mapLeft(Function<L, ? extends T> l) {
+			return (Either<T, R>) this;
+		}
+
+		@Override
+		public <T> Either<L, T> mapRight(Function<R, ? extends T> r) {
+			return Either.right(r.apply(this.value));
 		}
 	}
 

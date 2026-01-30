@@ -6,18 +6,18 @@ import org.quiltmc.enigma.gui.highlight.SelectionHighlightPainter;
 import javax.swing.Timer;
 
 /**
- * Handles selection highlights in {@linkplain BaseEditorPanel editor panels}.
+ * Handles selection highlights in {@linkplain AbstractEditorPanel editor panels}.
  */
 class EditorHighlightHandler extends Timer {
 	private static final int BLINK_INTERVAL = 2;
 
-	private final BaseEditorPanel panel;
+	private final AbstractEditorPanel<?> panel;
 	private final int counterMax;
 
 	private int counter = 0;
 	private Object highlight = null;
 
-	EditorHighlightHandler(BaseEditorPanel panel, Token token, int delay, int blinks) {
+	EditorHighlightHandler(AbstractEditorPanel<?> panel, Token token, int delay, int blinks) {
 		super(delay, null);
 
 		this.panel = panel;

@@ -2,6 +2,10 @@
 
 A tool for deobfuscation of Java bytecode. Forked from <https://bitbucket.org/cuchaz/enigma>, originally created by [Jeff Martin](https://www.cuchazinteractive.com/).
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md)
+
 ## License
 
 Enigma is distributed under the [LGPL-3.0](LICENSE).

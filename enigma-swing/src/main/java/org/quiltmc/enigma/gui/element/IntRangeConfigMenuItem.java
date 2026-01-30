@@ -4,11 +4,13 @@ import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
 import org.quiltmc.enigma.gui.util.NumberInputDialog;
+import org.quiltmc.enigma.gui.element.menu_bar.ConventionalSearchableElement;
+import org.quiltmc.enigma.gui.element.menu_bar.Retranslatable;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JMenuItem;
 
-public class BoundedIntConfigMenuItem extends JMenuItem {
+public class IntRangeConfigMenuItem extends JMenuItem implements ConventionalSearchableElement, Retranslatable {
 	public static final String DIALOG_TITLE_TRANSLATION_KEY_SUFFIX = ".dialog_title";
 	public static final String DIALOG_EXPLANATION_TRANSLATION_KEY_SUFFIX = ".dialog_explanation";
 	private final TrackedValue<Integer> config;
@@ -39,7 +41,7 @@ public class BoundedIntConfigMenuItem extends JMenuItem {
 	 *                                    {@value #DIALOG_EXPLANATION_TRANSLATION_KEY_SUFFIX} appended
 	 *                           </ul>
 	 */
-	public BoundedIntConfigMenuItem(
+	public IntRangeConfigMenuItem(
 			Gui gui, TrackedValue<Integer> config,
 			int min, int max, int defaultStep, int altStep,
 			String rootTranslationKey
@@ -51,7 +53,7 @@ public class BoundedIntConfigMenuItem extends JMenuItem {
 		);
 	}
 
-	private BoundedIntConfigMenuItem(
+	private IntRangeConfigMenuItem(
 			Gui gui, TrackedValue<Integer> config, int min, int max, int defaultStep, int altStep,
 			String translationKey, String dialogTitleTranslationKey, String dialogExplanationTranslationKey
 	) {
@@ -74,10 +76,27 @@ public class BoundedIntConfigMenuItem extends JMenuItem {
 
 		config.registerCallback(updated -> {
 			this.retranslate();
+			gui.getMenuBar().clearSearchMenusResults();
 		});
 	}
 
+	@Override
 	public void retranslate() {
 		this.setText(I18n.translateFormatted(this.translationKey, this.config.value()));
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return this.translationKey;
+	}
+
+	@Override
+	public String getSearchName() {
+		return this.getText();
+	}
+
+	@Override
+	public void onSearchChosen() {
+		this.doClick(0);
 	}
 }
