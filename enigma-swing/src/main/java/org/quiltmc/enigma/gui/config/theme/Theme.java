@@ -18,8 +18,8 @@ import javax.swing.border.Border;
 import javax.swing.plaf.metal.MetalBorders;
 import java.awt.Font;
 
-public class Theme extends ReflectiveConfig {
-	public static Theme create(ConfigEnvironment environment, String family, String id, ThemeProperties properties) {
+public final class Theme extends ReflectiveConfig {
+	public static Theme create(String id, ConfigEnvironment environment, String family, ThemeProperties properties) {
 		final Theme theme = ConfigFactory.create(environment, family, id, properties, Theme.class);
 
 		// set properties here because ConfigFactory.create(...) requires a no-args constructor
@@ -27,6 +27,14 @@ public class Theme extends ReflectiveConfig {
 
 		return theme;
 	}
+
+	/**
+	 * This is only public for the sake of reflective config access.
+	 *
+	 * <p> Use {@link #create(String, ConfigEnvironment, String, ThemeProperties)} instead.
+	 */
+	@Deprecated
+	public Theme() { }
 
 	private transient ThemeProperties properties;
 

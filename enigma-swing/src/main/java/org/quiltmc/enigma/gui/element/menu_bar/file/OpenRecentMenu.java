@@ -4,7 +4,7 @@ import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.JMenuItem;
@@ -12,14 +12,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-public class OpenRecentMenu extends AbstractEnigmaMenu {
+public class OpenRecentMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.file.open_recent_project";
+
 	protected OpenRecentMenu(Gui gui) {
 		super(gui);
 	}
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.file.open_recent_project"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 	}
 
 	@Override
@@ -86,5 +88,10 @@ public class OpenRecentMenu extends AbstractEnigmaMenu {
 		}
 
 		return i != 0 ? a.getRoot().resolve(a.subpath(0, i)) : null;
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

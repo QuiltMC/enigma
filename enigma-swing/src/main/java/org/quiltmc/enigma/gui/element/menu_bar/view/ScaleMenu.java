@@ -4,7 +4,7 @@ import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.ChangeDialog;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
 import org.quiltmc.enigma.util.I18n;
 
@@ -17,7 +17,9 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 
-public class ScaleMenu extends AbstractEnigmaMenu {
+public class ScaleMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.view.scale";
+
 	private final int[] defaultOptions = {100, 125, 150, 175, 200};
 	private final ButtonGroup optionsGroup = new ButtonGroup();
 	private final Map<Float, JRadioButtonMenuItem> options = new HashMap<>();
@@ -49,7 +51,7 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.view.scale"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 
 		this.customScaleButton.setText(I18n.translate("menu.view.scale.custom"));
 		this.forEachDefaultScaleOption((scaleFactor, realFactor) -> this.options.get(realFactor).setText(String.format("%d%%", scaleFactor)));
@@ -96,5 +98,10 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 				.forEach(
 					option -> consumer.accept(option, option / 100f)
 				);
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

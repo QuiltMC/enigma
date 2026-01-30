@@ -7,11 +7,12 @@ import org.quiltmc.enigma.gui.dialog.decompiler.DecompilerSettingsDialog;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 
-public class DecompilerMenu extends AbstractEnigmaMenu {
-	private final JMenuItem decompilerSettingsItem = new JMenuItem();
+public class DecompilerMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.decompiler";
+
+	private final SimpleItem decompilerSettingsItem = new SimpleItem("menu.decompiler.settings");
 
 	public DecompilerMenu(Gui gui) {
 		super(gui);
@@ -19,7 +20,7 @@ public class DecompilerMenu extends AbstractEnigmaMenu {
 		ButtonGroup decompilerGroup = new ButtonGroup();
 
 		for (Decompiler decompiler : Decompiler.values()) {
-			JRadioButtonMenuItem decompilerButton = new JRadioButtonMenuItem(decompiler.name);
+			DecompilerItem decompilerButton = new DecompilerItem(decompiler.name);
 			decompilerGroup.add(decompilerButton);
 			if (decompiler.equals(Config.decompiler().activeDecompiler.value())) {
 				decompilerButton.setSelected(true);
@@ -41,7 +42,28 @@ public class DecompilerMenu extends AbstractEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.decompiler"));
-		this.decompilerSettingsItem.setText(I18n.translate("menu.decompiler.settings"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
+		this.decompilerSettingsItem.retranslate();
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
+	}
+
+	private static final class DecompilerItem extends JRadioButtonMenuItem implements SearchableElement {
+		DecompilerItem(String name) {
+			super(name);
+		}
+
+		@Override
+		public String getSearchName() {
+			return this.getText();
+		}
+
+		@Override
+		public void onSearchChosen() {
+			this.doClick(0);
+		}
 	}
 }
