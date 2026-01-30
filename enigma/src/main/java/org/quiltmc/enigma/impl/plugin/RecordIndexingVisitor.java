@@ -3,6 +3,7 @@ package org.quiltmc.enigma.impl.plugin;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.ClassVisitor;
@@ -23,40 +24,123 @@ import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+/**
+ * @see RecordIndexingService
+ */
 final class RecordIndexingVisitor extends ClassVisitor {
+	private static final int REQUIRED_GETTER_ACCESS = Opcodes.ACC_PUBLIC;
+	private static final int ILLEGAL_GETTER_ACCESS = Opcodes.ACC_SYNTHETIC | Opcodes.ACC_BRIDGE | Opcodes.ACC_STATIC;
+
+	private static final ImmutableSet<String> ILLEGAL_GETTER_NAMES = ImmutableSet
+			.of("clone", "finalize", "getClass", "hashCode", "notify", "notifyAll", "toString", "wait");
+
+	// visitation state fields; cleared in visitEnd()
 	private ClassEntry clazz;
 	private final Set<RecordComponentNode> recordComponents = new HashSet<>();
-	private final Set<FieldNode> fields = new HashSet<>();
-	private final Set<MethodNode> methods = new HashSet<>();
+	// this is a multimap because proguard can give component fields with different types the same name
+	private final Multimap<String, FieldNode> fieldsByName = HashMultimap.create();
+	private final Multimap<String, MethodNode> methodsByDescriptor = HashMultimap.create();
 
-	private final BiMap<FieldEntry, MethodEntry> gettersByField;
-	private final Multimap<ClassEntry, FieldEntry> fieldsByClass = HashMultimap.create();
-	private final Multimap<ClassEntry, MethodEntry> methodsByClass = HashMultimap.create();
+	// index fields; contents publicly queryable
+	private final Multimap<ClassEntry, FieldEntry> componentFieldsByClass = HashMultimap.create();
+	// holds methods that are definitely the getters for their field keys
+	private final BiMap<FieldEntry, MethodEntry> definiteComponentGettersByField = HashBiMap.create();
+	// holds methods that are probably, but not certainly getters for their field keys
+	private final BiMap<FieldEntry, MethodEntry> probableComponentGettersByField = HashBiMap.create();
+	// holds methods that are definitely component getters
+	private final Multimap<ClassEntry, MethodEntry> definiteComponentGettersByClass = HashMultimap.create();
+	// holds methods that are probably, but not certainly getters
+	private final Multimap<ClassEntry, MethodEntry> probableComponentGettersByClass = HashMultimap.create();
 
 	RecordIndexingVisitor() {
 		super(Enigma.ASM_VERSION);
-		this.gettersByField = HashBiMap.create();
 	}
 
+	/**
+	 * @see RecordIndexingService#getComponentGetter(FieldEntry)
+	 */
 	@Nullable
 	public MethodEntry getComponentGetter(FieldEntry componentField) {
-		return this.gettersByField.get(componentField);
+		final MethodEntry definiteGetter = this.definiteComponentGettersByField.get(componentField);
+		return definiteGetter == null ? this.probableComponentGettersByField.get(componentField) : definiteGetter;
 	}
 
+	/**
+	 * @see RecordIndexingService#getComponentField(MethodEntry)
+	 */
 	@Nullable
 	public FieldEntry getComponentField(MethodEntry componentGetter) {
-		return this.gettersByField.inverse().get(componentGetter);
+		final FieldEntry definiteField = this.definiteComponentGettersByField.inverse().get(componentGetter);
+		return definiteField == null
+				? this.probableComponentGettersByField.inverse().get(componentGetter)
+				: definiteField;
 	}
 
+	/**
+	 * @see RecordIndexingService#getDefiniteComponentGetter(FieldEntry)
+	 */
+	@Nullable
+	public MethodEntry getDefiniteComponentGetter(FieldEntry componentField) {
+		return this.definiteComponentGettersByField.get(componentField);
+	}
+
+	/**
+	 * @see RecordIndexingService#getDefiniteComponentField(MethodEntry)
+	 */
+	@Nullable
+	public FieldEntry getDefiniteComponentField(MethodEntry componentGetter) {
+		return this.definiteComponentGettersByField.inverse().get(componentGetter);
+	}
+
+	/**
+	 * @see RecordIndexingService#getProbableComponentGetter(FieldEntry)
+	 */
+	@Nullable
+	public MethodEntry getProbableComponentGetter(FieldEntry componentField) {
+		return this.probableComponentGettersByField.get(componentField);
+	}
+
+	/**
+	 * @see RecordIndexingService#getProbableComponentField(MethodEntry)
+	 */
+	@Nullable
+	public FieldEntry getProbableComponentField(MethodEntry componentGetter) {
+		return this.probableComponentGettersByField.inverse().get(componentGetter);
+	}
+
+	/**
+	 * @see RecordIndexingService#streamComponentFields(ClassEntry)
+	 */
 	public Stream<FieldEntry> streamComponentFields(ClassEntry recordEntry) {
-		return this.fieldsByClass.get(recordEntry).stream();
+		return this.componentFieldsByClass.get(recordEntry).stream();
 	}
 
+	/**
+	 * @see RecordIndexingService#streamComponentMethods(ClassEntry)
+	 */
 	public Stream<MethodEntry> streamComponentMethods(ClassEntry recordEntry) {
-		return this.methodsByClass.get(recordEntry).stream();
+		return Stream.concat(
+			this.definiteComponentGettersByClass.get(recordEntry).stream(),
+			this.probableComponentGettersByClass.get(recordEntry).stream()
+		);
+	}
+
+	/**
+	 * @see RecordIndexingService#streamDefiniteComponentMethods(ClassEntry)
+	 */
+	public Stream<MethodEntry> streamDefiniteComponentMethods(ClassEntry recordEntry) {
+		return this.definiteComponentGettersByClass.get(recordEntry).stream();
+	}
+
+	/**
+	 * @see RecordIndexingService#streamProbableComponentMethods(ClassEntry)
+	 */
+	public Stream<MethodEntry> streamProbableComponentMethods(ClassEntry recordEntry) {
+		return this.probableComponentGettersByClass.get(recordEntry).stream();
 	}
 
 	@Override
@@ -74,8 +158,8 @@ final class RecordIndexingVisitor extends ClassVisitor {
 	@Override
 	public FieldVisitor visitField(final int access, final String name, final String descriptor, final String signature, final Object value) {
 		if (this.clazz != null && ((access & Opcodes.ACC_PRIVATE) != 0) && this.recordComponents.stream().anyMatch(component -> component.name.equals(name))) {
-			FieldNode node = new FieldNode(this.api, access, name, descriptor, signature, value);
-			this.fields.add(node);
+			final FieldNode node = new FieldNode(this.api, access, name, descriptor, signature, value);
+			this.fieldsByName.put(node.name, node);
 			return node;
 		}
 
@@ -85,8 +169,8 @@ final class RecordIndexingVisitor extends ClassVisitor {
 	@Override
 	public MethodVisitor visitMethod(final int access, final String name, final String descriptor, final String signature, final String[] exceptions) {
 		if (this.clazz != null && ((access & Opcodes.ACC_PUBLIC) != 0)) {
-			MethodNode node = new MethodNode(this.api, access, name, descriptor, signature, exceptions);
-			this.methods.add(node);
+			final MethodNode node = new MethodNode(this.api, access, name, descriptor, signature, exceptions);
+			this.methodsByDescriptor.put(node.desc, node);
 			return node;
 		}
 
@@ -103,8 +187,8 @@ final class RecordIndexingVisitor extends ClassVisitor {
 		} finally {
 			this.clazz = null;
 			this.recordComponents.clear();
-			this.fields.clear();
-			this.methods.clear();
+			this.fieldsByName.clear();
+			this.methodsByDescriptor.clear();
 		}
 	}
 
@@ -113,43 +197,74 @@ final class RecordIndexingVisitor extends ClassVisitor {
 			return;
 		}
 
-		for (RecordComponentNode component : this.recordComponents) {
-			FieldNode field = null;
-			for (FieldNode node : this.fields) {
-				if (node.name.equals(component.name) && node.desc.equals(component.descriptor)) {
-					field = node;
-					break;
-				}
-			}
+		this.recordComponents.stream()
+				.map(component -> this.fieldsByName.get(component.name).stream()
+					.filter(field -> field.desc.equals(component.descriptor))
+					.findAny()
+					.orElseThrow(() -> new IllegalStateException(
+						"Field not found for record component: " + component.name
+					))
+				)
+				.forEach(field -> {
+					final List<MethodNode> potentialGetters = this.methodsByDescriptor
+							.get("()" + field.desc)
+							.stream()
+							.filter(method -> (method.access & REQUIRED_GETTER_ACCESS) == REQUIRED_GETTER_ACCESS)
+							.filter(method -> (method.access & ILLEGAL_GETTER_ACCESS) == 0)
+							.filter(method -> !ILLEGAL_GETTER_NAMES.contains(method.name))
+							.toList();
 
-			if (field == null) {
-				throw new RuntimeException("Field not found for record component: " + component.name);
-			}
+					if (potentialGetters.isEmpty()) {
+						throw new IllegalStateException("No potential getters for field: " + field);
+					} else {
+						final FieldEntry fieldEntry =
+							new FieldEntry(this.clazz, field.name, new TypeDescriptor(field.desc));
+						// index the field even if a corresponding getter can't be found
+						this.componentFieldsByClass.put(this.clazz, fieldEntry);
 
-			for (MethodNode method : this.methods) {
-				InsnList instructions = method.instructions;
+						if (potentialGetters.size() == 1) {
+							this.indexGetter(potentialGetters.get(0), fieldEntry, true);
+						} else {
+							// If there are multiple methods with the getter's descriptor and access, it's impossible to
+							// tell which is the getter because obfuscation can mismatch getter/field names.
+							// This matching produces as few false-positives as possible by matching name, descriptor,
+							// and the bytecode of a default (non-overriden) getter method.
+							// It can still give a false-positive if a non-getter method's obfuscated name matches the
+							// field's, and that non-getter the has expected descriptor and bytecode of the getter.
+							// It also has false-negatives for getter overrides with non-default bytecode.
+							potentialGetters.stream()
+									.filter(method -> method.name.equals(field.name))
+									// match bytecode to exact expected bytecode for a getter
+									// only check important instructions (ignore new frame instructions, etc.)
+									.filter(method -> {
+										final InsnList instructions = method.instructions;
+										return instructions.size() == 6
+												&& instructions.get(2).getOpcode() == Opcodes.ALOAD
+												&& instructions.get(3) instanceof FieldInsnNode fieldInsn
+												&& fieldInsn.getOpcode() == Opcodes.GETFIELD
+												&& fieldInsn.owner.equals(this.clazz.getFullName())
+												&& fieldInsn.desc.equals(field.desc)
+												&& fieldInsn.name.equals(field.name)
+												&& instructions.get(4).getOpcode() >= Opcodes.IRETURN
+												&& instructions.get(4).getOpcode() <= Opcodes.ARETURN;
+									})
+									.findAny()
+									.ifPresent(getter -> this.indexGetter(getter, fieldEntry, false));
+						}
+					}
+				});
+	}
 
-				// match bytecode to exact expected bytecode for a getter
-				// only check important instructions (ignore new frame instructions, etc.)
-				if (
-						instructions.size() == 6
-							&& instructions.get(2).getOpcode() == Opcodes.ALOAD
-							&& instructions.get(3) instanceof FieldInsnNode fieldInsn
-							&& fieldInsn.getOpcode() == Opcodes.GETFIELD
-							&& fieldInsn.owner.equals(this.clazz.getFullName())
-							&& fieldInsn.desc.equals(field.desc)
-							&& fieldInsn.name.equals(field.name)
-							&& instructions.get(4).getOpcode() >= Opcodes.IRETURN
-							&& instructions.get(4).getOpcode() <= Opcodes.ARETURN
-				) {
-					final FieldEntry fieldEntry = new FieldEntry(this.clazz, field.name, new TypeDescriptor(field.desc));
-					final MethodEntry methodEntry = new MethodEntry(this.clazz, method.name, new MethodDescriptor(method.desc));
+	private void indexGetter(MethodNode getterNode, FieldEntry fieldEntry, boolean definite) {
+		final MethodEntry getterEntry =
+			new MethodEntry(this.clazz, getterNode.name, new MethodDescriptor(getterNode.desc));
 
-					this.gettersByField.put(fieldEntry, methodEntry);
-					this.fieldsByClass.put(this.clazz, fieldEntry);
-					this.methodsByClass.put(this.clazz, methodEntry);
-				}
-			}
+		if (definite) {
+			this.definiteComponentGettersByField.put(fieldEntry, getterEntry);
+			this.definiteComponentGettersByClass.put(this.clazz, getterEntry);
+		} else {
+			this.probableComponentGettersByField.put(fieldEntry, getterEntry);
+			this.probableComponentGettersByClass.put(this.clazz, getterEntry);
 		}
 	}
 }
