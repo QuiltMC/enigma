@@ -126,15 +126,15 @@ public class EditorPopupMenu {
 	}
 
 	public void updateUiState() {
-		EntryReference<Entry<?>, Entry<?>> ref = this.editor.getCursorReference();
-		Entry<?> referenceEntry = ref == null ? null : ref.entry;
+		EntryReference<Entry<?>, Entry<?>> reference = this.editor.getCursorReference();
+		Entry<?> referenceEntry = reference == null ? null : reference.entry;
 		GuiController controller = this.gui.getController();
 
 		boolean isClassEntry = referenceEntry instanceof ClassEntry;
 		boolean isFieldEntry = referenceEntry instanceof FieldEntry;
 		boolean isMethodEntry = referenceEntry instanceof MethodEntry me && !me.isConstructor();
 		boolean isConstructorEntry = referenceEntry instanceof MethodEntry me && me.isConstructor();
-		boolean isRenamable = ref != null && controller.getProject().isRenamable(ref);
+		boolean isRenamable = reference != null && controller.getProject().isRenamable(reference);
 
 		EditableType type = EditableType.fromEntry(referenceEntry);
 
@@ -150,11 +150,7 @@ public class EditorPopupMenu {
 		this.openNextItem.setEnabled(controller.hasNextReference());
 		this.toggleMappingItem.setEnabled(isRenamable && (type != null && this.gui.isEditable(type)));
 
-		if (referenceEntry != null && this.gui.getController().getProject().getRemapper().extendedDeobfuscate(referenceEntry).getType() == TokenType.DEOBFUSCATED) {
-			this.toggleMappingItem.setText(I18n.translate("popup_menu.reset_obfuscated"));
-		} else {
-			this.toggleMappingItem.setText(I18n.translate("popup_menu.mark_deobfuscated"));
-		}
+		this.translateToggleMappingItem(reference);
 	}
 
 	public void retranslateUi() {
@@ -170,10 +166,24 @@ public class EditorPopupMenu {
 		this.openEntryItem.setText(I18n.translate("popup_menu.declaration"));
 		this.openPreviousItem.setText(I18n.translate("popup_menu.back"));
 		this.openNextItem.setText(I18n.translate("popup_menu.forward"));
-		this.toggleMappingItem.setText(I18n.translate("popup_menu.mark_deobfuscated"));
 		this.zoomInItem.setText(I18n.translate("popup_menu.zoom.in"));
 		this.zoomOutMenu.setText(I18n.translate("popup_menu.zoom.out"));
 		this.resetZoomItem.setText(I18n.translate("popup_menu.zoom.reset"));
+
+		this.translateToggleMappingItem(this.editor.getCursorReference());
+	}
+
+	private void translateToggleMappingItem(EntryReference<Entry<?>, Entry<?>> reference) {
+		if (
+				reference != null && this.gui
+					.getController().getProject().getRemapper()
+					.extendedDeobfuscate(reference.getNameableEntry())
+					.getType() == TokenType.DEOBFUSCATED
+		) {
+			this.toggleMappingItem.setText(I18n.translate("popup_menu.reset_obfuscated"));
+		} else {
+			this.toggleMappingItem.setText(I18n.translate("popup_menu.mark_deobfuscated"));
+		}
 	}
 
 	public JPopupMenu getUi() {
