@@ -38,6 +38,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntr
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.impl.plugin.EnumConstantIndexingService;
+import org.quiltmc.enigma.impl.plugin.RecordIndexingService;
 import org.quiltmc.enigma.impl.translation.mapping.MappingsChecker;
 import org.quiltmc.enigma.util.I18n;
 import org.tinylog.Logger;
@@ -288,6 +289,10 @@ public class EnigmaProjectImpl implements EnigmaProject {
 				return !this.getEnumConstantIndexingService()
 					.map(service -> service.isEnumConstant(fieldEntry))
 					.orElse(false);
+			} else if (obfEntry instanceof MethodEntry methodEntry) {
+				return this.getRecordIndexingService()
+					.map(service -> service.getDefiniteComponentField(methodEntry))
+					.isEmpty();
 			} else {
 				return true;
 			}
@@ -300,6 +305,12 @@ public class EnigmaProjectImpl implements EnigmaProject {
 		return this.getEnigma()
 			.getService(JarIndexerService.TYPE, EnumConstantIndexingService.ID)
 			.map(service -> (EnumConstantIndexingService) service);
+	}
+
+	private Optional<RecordIndexingService> getRecordIndexingService() {
+		return this.getEnigma()
+			.getService(JarIndexerService.TYPE, RecordIndexingService.ID)
+			.map(service -> (RecordIndexingService) service);
 	}
 
 	private static boolean isEnumValueOfMethod(ClassDefEntry parent, MethodEntry method) {
