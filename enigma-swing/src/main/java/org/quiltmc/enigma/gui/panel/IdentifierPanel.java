@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.panel;
 
 import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.EnigmaProject;
+import org.quiltmc.enigma.api.analysis.EntryReference;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryChange;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
@@ -30,15 +31,17 @@ import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.MouseEvent;
+import java.util.Objects;
 
 public class IdentifierPanel {
 	private final Gui gui;
 
 	private final JPanel ui = new JPanel();
 
-	private Entry<?> lastEntry;
-	private Entry<?> entry;
-	private Entry<?> deobfEntry;
+	@Nullable
+	private EntryReference<Entry<?>, Entry<?>> lastReference;
+	@Nullable
+	private EntryReference<Entry<?>, Entry<?>> reference;
 
 	private ConvertingTextField nameField;
 
@@ -54,13 +57,15 @@ public class IdentifierPanel {
 		this.ui.setEnabled(false);
 	}
 
-	public void setReference(Entry<?> entry) {
-		this.entry = entry;
+	public void setReference(EntryReference<Entry<?>, Entry<?>> reference) {
+		this.reference = reference;
 		this.refreshReference();
 	}
 
 	public boolean startRenaming() {
-		if (this.nameField == null) return false;
+		if (this.nameField == null) {
+			return false;
+		}
 
 		this.nameField.startEditing();
 
@@ -78,15 +83,15 @@ public class IdentifierPanel {
 
 	public void refreshReference() {
 		final EnigmaProject project = this.gui.getController().getProject();
-		this.deobfEntry = this.entry == null ? null : project.getRemapper().deobfuscate(this.entry);
+		final Entry<?> deobfEntry = this.reference == null ? null : project.getRemapper().deobfuscate(this.reference.entry);
 
 		// Prevent IdentifierPanel from being rebuilt if you didn't click off.
-		if (this.lastEntry == this.entry && this.nameField != null) {
+		if (this.lastReference == this.reference && this.nameField != null) {
 			if (!this.nameField.hasChanges()) {
 				final String name;
 
 				// Find what to set the name to.
-				if (this.deobfEntry instanceof MethodEntry methodEntry && methodEntry.isConstructor()) {
+				if (deobfEntry instanceof MethodEntry methodEntry && methodEntry.isConstructor()) {
 					// Get the parent of the method if it is a constructor.
 					final ClassEntry parent = methodEntry.getParent();
 
@@ -95,10 +100,10 @@ public class IdentifierPanel {
 					}
 
 					name = parent.isInnerClass() ? parent.getName() : parent.getFullName();
-				} else if (this.deobfEntry instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
+				} else if (deobfEntry instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
 					name = classEntry.getFullName();
 				} else {
-					name = this.deobfEntry.getName();
+					name = deobfEntry.getName();
 				}
 
 				this.nameField.setReferenceText(name);
@@ -107,31 +112,31 @@ public class IdentifierPanel {
 			return;
 		}
 
-		this.lastEntry = this.entry;
+		this.lastReference = this.reference;
 
 		this.nameField = null;
 
-		TableHelper th = new TableHelper(this.ui, this.entry, this.gui);
+		TableHelper th = new TableHelper(this.ui, this.reference, this.gui);
 		th.begin();
-		if (this.entry == null) {
+		if (this.reference == null) {
 			this.ui.setEnabled(false);
 		} else {
 			this.ui.setEnabled(true);
 
-			if (this.deobfEntry instanceof ClassEntry ce) {
+			if (deobfEntry instanceof ClassEntry ce) {
 				String name = ce.isInnerClass() ? ce.getName() : ce.getFullName();
 				this.nameField = th.addRenameTextField(EditableType.CLASS, name);
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
+				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.reference.entry.getName());
 
 				if (ce.getParent() != null) {
 					th.addCopiableStringRow(I18n.translate("info_panel.identifier.outer_class"), ce.getParent().getFullName());
 				}
-			} else if (this.deobfEntry instanceof FieldEntry fe) {
+			} else if (deobfEntry instanceof FieldEntry fe) {
 				this.nameField = th.addRenameTextField(EditableType.FIELD, fe.getName());
 				th.addStringRow(I18n.translate("info_panel.identifier.class"), fe.getParent().getFullName());
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
+				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.reference.entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), toReadableType(fe.getDesc()));
-			} else if (this.deobfEntry instanceof MethodEntry me) {
+			} else if (deobfEntry instanceof MethodEntry me) {
 				if (me.isConstructor()) {
 					ClassEntry ce = me.getParent();
 					if (ce != null) {
@@ -143,10 +148,10 @@ public class IdentifierPanel {
 					th.addStringRow(I18n.translate("info_panel.identifier.class"), me.getParent().getFullName());
 				}
 
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
+				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.reference.entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method_descriptor"), me.getDesc().toString());
-			} else if (this.deobfEntry instanceof LocalVariableEntry local) {
-				EditableType type;
+			} else if (deobfEntry instanceof LocalVariableEntry local) {
+				final EditableType type;
 
 				if (local.isArgument()) {
 					type = EditableType.PARAMETER;
@@ -162,8 +167,7 @@ public class IdentifierPanel {
 				// type
 				EntryIndex index = project.getJarIndex().getIndex(EntryIndex.class);
 				// EntryIndex only contains obf entries, so use the obf entry to look up the local's descriptor
-				@Nullable
-				final LocalVariableDefEntry obfLocal = index.getDefinition((LocalVariableEntry) this.entry);
+				final LocalVariableDefEntry obfLocal = index.getDefinition((LocalVariableEntry) this.reference.entry);
 				final String localDesc = obfLocal == null
 						? I18n.translate("info_panel.identifier.type.unknown")
 						: toReadableType(project.getRemapper().deobfuscate(obfLocal.getDesc()));
@@ -173,7 +177,7 @@ public class IdentifierPanel {
 				throw new IllegalStateException("unreachable");
 			}
 
-			var mapping = project.getRemapper().getMapping(this.entry);
+			var mapping = project.getRemapper().getMapping(this.reference.entry);
 			if (Config.main().development.showMappingSourcePlugin.value() && mapping.tokenType().isProposed()) {
 				th.addStringRow(I18n.translate("dev.source_plugin"), mapping.sourcePluginId());
 			}
@@ -245,12 +249,12 @@ public class IdentifierPanel {
 	}
 
 	private EntryChange<? extends Entry<?>> getRename(String newName) {
-		Entry<?> entry = this.entry;
-		if (entry instanceof MethodEntry method && method.isConstructor()) {
-			entry = method.getContainingClass();
-		}
-
-		return EntryChange.modify(entry).withDeobfName(newName);
+		return EntryChange
+			.modify(Objects
+				.requireNonNull(this.reference, "Cannot rename without a reference!")
+				.getNameableEntry(this.gui.getController().getProject())
+			)
+			.withDeobfName(newName);
 	}
 
 	public void retranslateUi() {
@@ -264,13 +268,13 @@ public class IdentifierPanel {
 
 	private static final class TableHelper {
 		private final Container c;
-		private final Entry<?> e;
+		private final EntryReference<Entry<?>, Entry<?>> r;
 		private final Gui gui;
 		private int row;
 
-		TableHelper(Container c, Entry<?> e, Gui gui) {
+		TableHelper(Container c, EntryReference<Entry<?>, Entry<?>> r, Gui gui) {
 			this.c = c;
-			this.e = e;
+			this.r = r;
 			this.gui = gui;
 		}
 
@@ -314,7 +318,7 @@ public class IdentifierPanel {
 				default -> throw new IllegalStateException("Unexpected value: " + type);
 			};
 
-			if (this.gui.getController().getProject().isRenamable(this.e)) {
+			if (this.gui.getController().getProject().isRenamable(this.r)) {
 				ConvertingTextField field = this.addConvertingTextField(description, c2);
 				field.setEditable(this.gui.isEditable(type));
 				return field;

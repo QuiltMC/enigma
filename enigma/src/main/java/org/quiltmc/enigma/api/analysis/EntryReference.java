@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.api.analysis;
 
+import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.translation.Translatable;
 import org.quiltmc.enigma.api.translation.TranslateResult;
 import org.quiltmc.enigma.api.translation.Translator;
@@ -8,7 +9,9 @@ import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.impl.EnigmaProjectImpl;
 
 import java.util.Arrays;
 import java.util.List;
@@ -79,17 +82,23 @@ public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements T
 		return this.declaration;
 	}
 
-	public Entry<?> getNameableEntry() {
-		if (this.entry instanceof MethodEntry method && method.isConstructor()) {
-			// renaming a constructor really means renaming the class
-			return this.entry.getContainingClass();
+	public Entry<?> getNameableEntry(EnigmaProject project) {
+		if (this.entry instanceof MethodEntry method) {
+			if (method.isConstructor()) {
+				// renaming a constructor really means renaming the class
+				return this.entry.getContainingClass();
+			} else {
+				final FieldEntry definiteComponent = ((EnigmaProjectImpl) project).getRecordIndexingService()
+						.map(service -> service.getDefiniteComponentField(method))
+						.orElse(null);
+
+				if (definiteComponent != null) {
+					return definiteComponent;
+				}
+			}
 		}
 
 		return this.entry;
-	}
-
-	public String getNameableName() {
-		return this.getNameableEntry().getName();
 	}
 
 	@Override

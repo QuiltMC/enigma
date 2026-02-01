@@ -70,9 +70,7 @@ public class TestRecordStats {
 		StatsResult stats = new StatsGenerator(project).generate(constructorRecord, new GenerationParameters(EnumSet.of(StatType.METHODS)));
 
 		// 4 total methods: a getter for each field
-		// the int and double getters have unique signatures, so they are definite getters: not mappable
-		// the two string getters are probable getters: mappable
-		final int mappable = 2;
+		final int mappable = 4;
 		assertThat(stats.getMappable(StatType.METHODS), equalTo(mappable));
 		assertThat(stats.getMapped(StatType.METHODS), equalTo(0));
 

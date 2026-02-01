@@ -289,10 +289,6 @@ public class EnigmaProjectImpl implements EnigmaProject {
 				return !this.getEnumConstantIndexingService()
 					.map(service -> service.isEnumConstant(fieldEntry))
 					.orElse(false);
-			} else if (obfEntry instanceof MethodEntry methodEntry) {
-				return this.getRecordIndexingService()
-					.map(service -> service.getDefiniteComponentField(methodEntry))
-					.isEmpty();
 			} else {
 				return true;
 			}
@@ -301,13 +297,13 @@ public class EnigmaProjectImpl implements EnigmaProject {
 		}
 	}
 
-	private Optional<EnumConstantIndexingService> getEnumConstantIndexingService() {
+	public Optional<EnumConstantIndexingService> getEnumConstantIndexingService() {
 		return this.getEnigma()
 			.getService(JarIndexerService.TYPE, EnumConstantIndexingService.ID)
 			.map(service -> (EnumConstantIndexingService) service);
 	}
 
-	private Optional<RecordIndexingService> getRecordIndexingService() {
+	public Optional<RecordIndexingService> getRecordIndexingService() {
 		return this.getEnigma()
 			.getService(JarIndexerService.TYPE, RecordIndexingService.ID)
 			.map(service -> (RecordIndexingService) service);
@@ -318,12 +314,12 @@ public class EnigmaProjectImpl implements EnigmaProject {
 	}
 
 	public boolean isInternallyRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {
-		return obfReference.isNamed() && this.isInternallyRenamable(obfReference.getNameableEntry());
+		return obfReference.isNamed() && this.isInternallyRenamable(obfReference.getNameableEntry(this));
 	}
 
 	@Override
 	public boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {
-		return obfReference.isNamed() && this.isRenamable(obfReference.getNameableEntry());
+		return obfReference.isNamed() && this.isRenamable(obfReference.getNameableEntry(this));
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package org.quiltmc.enigma.api.translation.mapping;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.util.TristateChange;
+import org.quiltmc.enigma.util.Utils;
 
 import java.util.Objects;
 
@@ -23,7 +24,7 @@ public final class EntryChange<E extends Entry<?>> {
 	}
 
 	public static <E extends Entry<?>> EntryChange<E> modify(E target) {
-		return new EntryChange<>(target, TristateChange.unchanged(), TristateChange.unchanged(), TristateChange.unchanged(), TristateChange.unchanged());
+		return new EntryChange<>(Utils.requireNonNull(target, "target"), TristateChange.unchanged(), TristateChange.unchanged(), TristateChange.unchanged(), TristateChange.unchanged());
 	}
 
 	public EntryChange<E> withDeobfName(String name) {
