@@ -5,6 +5,7 @@ import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
+import org.quiltmc.enigma.api.source.Decompilers;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
@@ -286,7 +287,8 @@ public class EntryTooltip extends JWindow {
 			this.declarationSnippet = null;
 		}
 
-		{
+		// tooltip source parsing only recognizes java, not bytecode
+		if (this.gui.getController().getClassHandleProvider().getDecompilerService() != Decompilers.BYTECODE) {
 			final ClassHandle targetTopClassHandle = this.gui.getController().getClassHandleProvider()
 					.openClass(target.getTopLevelClass());
 
@@ -303,8 +305,7 @@ public class EntryTooltip extends JWindow {
 								EntryTooltip.this.declarationSnippet
 										.consumeEditorMouseTarget((token, entry, resolvedParent) -> {
 											EntryTooltip.this.onEntryClick(entry, e.getModifiersEx());
-										}
-								);
+										});
 							}
 						}
 					});

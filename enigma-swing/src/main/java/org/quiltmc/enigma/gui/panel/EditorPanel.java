@@ -515,8 +515,9 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 
 		void openTooltip(Entry<?> target, boolean inherited) {
 			final Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-			final Component eventReceiver = focusOwner != null && isDescendingFrom(focusOwner, EditorPanel.this.gui.getFrame())
-					? focusOwner : null;
+			final Component eventReceiver =
+					focusOwner != null && isDescendingFrom(focusOwner, EditorPanel.this.gui.getFrame())
+						? focusOwner : null;
 
 			this.tooltip.open(target, inherited, eventReceiver);
 		}
