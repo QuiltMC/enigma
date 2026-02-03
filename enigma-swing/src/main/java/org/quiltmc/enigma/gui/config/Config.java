@@ -4,6 +4,7 @@ import org.jspecify.annotations.Nullable;
 import org.quiltmc.config.api.ReflectiveConfig;
 import org.quiltmc.config.api.annotations.Alias;
 import org.quiltmc.config.api.annotations.Comment;
+import org.quiltmc.config.api.annotations.FloatRange;
 import org.quiltmc.config.api.annotations.Processor;
 import org.quiltmc.config.api.annotations.SerializedNameConvention;
 import org.quiltmc.config.api.metadata.NamingSchemes;
@@ -50,6 +51,9 @@ import java.util.Objects;
 @SerializedNameConvention(NamingSchemes.SNAKE_CASE)
 @Processor("processChange")
 public final class Config extends ReflectiveConfig {
+	public static final float MIN_SCALE_FACTOR = 0.25f;
+	public static final float MAX_SCALE_FACTOR = 5.0f;
+
 	private static final String FORMAT = "toml";
 	private static final String FAMILY = "enigma";
 	private static final String THEME_FAMILY = FAMILY + "/theme";
@@ -67,6 +71,7 @@ public final class Config extends ReflectiveConfig {
 	@Processor("grabPossibleLanguages")
 	public final TrackedValue<String> language = this.value(I18n.DEFAULT_LANGUAGE);
 	@Comment("A float representing the current size of the UI. 1.0 represents 100% scaling.")
+	@FloatRange(min = MIN_SCALE_FACTOR, max = MAX_SCALE_FACTOR)
 	public final TrackedValue<Float> scaleFactor = this.value(1.0f);
 	@Comment("The maximum number of saved recent projects, for quickly reopening.")
 	public final TrackedValue<Integer> maxRecentProjects = this.value(10);
@@ -80,6 +85,9 @@ public final class Config extends ReflectiveConfig {
 
 	@Comment("The settings for the statistics window.")
 	public final StatsSection stats = new StatsSection();
+
+	@Comment("Settings for the search menus menu.")
+	public final SearchMenusSection searchMenus = new SearchMenusSection();
 
 	@Comment("You shouldn't enable options in this section unless you know what you're doing!")
 	public final DevSection development = new DevSection();
@@ -259,24 +267,12 @@ public final class Config extends ReflectiveConfig {
 	}
 
 	public enum ThemeChoice implements ConfigSerializableObject<String> {
-		DEFAULT(
-			Theme.create(ENVIRONMENT, THEME_FAMILY, "default", new DefaultThemeProperties())
-		),
-		DARCULA(
-			Theme.create(ENVIRONMENT, THEME_FAMILY, "darcula", new DarculaThemeProperties())
-		),
-		DARCERULA(
-			Theme.create(ENVIRONMENT, THEME_FAMILY, "darcerula", new DarcerulaThemeProperties())
-		),
-		METAL(
-			Theme.create(ENVIRONMENT, THEME_FAMILY, "metal", new MetalThemeProperties())
-		),
-		SYSTEM(
-			Theme.create(ENVIRONMENT, THEME_FAMILY, "system", new SystemThemeProperties())
-		),
-		NONE(
-			Theme.create(ENVIRONMENT, THEME_FAMILY, "none", new NoneThemeProperties())
-		);
+		DEFAULT(Theme.create("default", ENVIRONMENT, THEME_FAMILY, new DefaultThemeProperties())),
+		DARCULA(Theme.create("darcula", ENVIRONMENT, THEME_FAMILY, new DarculaThemeProperties())),
+		DARCERULA(Theme.create("darcerula", ENVIRONMENT, THEME_FAMILY, new DarcerulaThemeProperties())),
+		METAL(Theme.create("metal", ENVIRONMENT, THEME_FAMILY, new MetalThemeProperties())),
+		SYSTEM(Theme.create("system", ENVIRONMENT, THEME_FAMILY, new SystemThemeProperties())),
+		NONE(Theme.create("none", ENVIRONMENT, THEME_FAMILY, new NoneThemeProperties()));
 
 		private final Theme theme;
 

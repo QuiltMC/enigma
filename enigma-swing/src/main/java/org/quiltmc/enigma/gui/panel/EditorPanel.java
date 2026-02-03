@@ -369,7 +369,8 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 		});
 		this.quickFindToolBar.reloadKeyBinds();
 
-		this.popupMenu.getButtonKeyBinds().forEach((key, button) -> putKeyBindAction(key, this.editor, e -> button.doClick()));
+		this.popupMenu.getButtonKeyBinds()
+				.forEach((key, button) -> putKeyBindAction(key, this.editor, e -> button.doClick(0)));
 	}
 
 	private MarkerManager createMarkerManager() {

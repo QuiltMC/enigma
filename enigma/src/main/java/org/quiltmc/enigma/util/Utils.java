@@ -2,6 +2,7 @@ package org.quiltmc.enigma.util;
 
 import com.google.common.io.CharStreams;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,10 +15,12 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -199,6 +202,42 @@ public class Utils {
 		return Math.min(max, Math.max(value, min));
 	}
 
+	public static <T> T requireNonNull(T value, String name) {
+		if (value == null) {
+			throw new NullPointerException(name + " must not be null!");
+		} else {
+			return value;
+		}
+	}
+
+	@SafeVarargs
+	public static <T> Optional<T> findFirstNonNull(T... values) {
+		for (final T value : values) {
+			if (value != null) {
+				return Optional.of(value);
+			}
+		}
+
+		return Optional.empty();
+	}
+
+	/**
+	 * @return {@code null} if the passed {@code array} is {@code null} or empty,
+	 * or the last element of the {@code array} otherwise
+	 */
+	@Nullable
+	public static <T> T getLastOrNull(@Nullable T[] array) {
+		return array == null || array.length == 0 ? null : array[array.length - 1];
+	}
+
+	public static <T> Set<T> createIdentityHashSet() {
+		return Collections.newSetFromMap(new IdentityHashMap<>());
+	}
+
+	public static <T> Set<T> createIdentityHashSet(int expectedMaxSize) {
+		return Collections.newSetFromMap(new IdentityHashMap<>(expectedMaxSize));
+	}
+
 	@SafeVarargs
 	public static <T> Stream<T> lazyConcat(Supplier<Stream<? extends T>>... streamers) {
 		return Stream.of(streamers).flatMap(Supplier::get);
@@ -210,9 +249,5 @@ public class Utils {
 
 	public static long ceilDiv(long dividend, long divisor) {
 		return -Math.floorDiv(-dividend, divisor);
-	}
-
-	public static <T> T requireNonNull(T object, String name) {
-		return Objects.requireNonNull(object, () -> name + " must not be null!");
 	}
 }

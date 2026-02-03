@@ -71,7 +71,9 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 		public final TrackedValue<ThemeProperties.SerializableColor> text;
 		public final TrackedValue<ThemeProperties.SerializableColor> debugToken;
 		public final TrackedValue<ThemeProperties.SerializableColor> debugTokenOutline;
+
 		public final TrackedValue<ThemeProperties.SerializableColor> dockHighlight;
+		public final TrackedValue<ThemeProperties.SerializableColor> error;
 
 		private Colors(
 				ThemeProperties.SerializableColor lineNumbersForeground,
@@ -107,7 +109,9 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 				ThemeProperties.SerializableColor text,
 				ThemeProperties.SerializableColor debugToken,
 				ThemeProperties.SerializableColor debugTokenOutline,
-				ThemeProperties.SerializableColor dockHighlight
+
+				ThemeProperties.SerializableColor dockHighlight,
+				ThemeProperties.SerializableColor error
 		) {
 			this.lineNumbersForeground = TrackedValue.create(lineNumbersForeground, "line_numbers_foreground");
 			this.lineNumbersBackground = TrackedValue.create(lineNumbersBackground, "line_numbers_background");
@@ -142,7 +146,9 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 			this.text = TrackedValue.create(text, "text");
 			this.debugToken = TrackedValue.create(debugToken, "debug_token");
 			this.debugTokenOutline = TrackedValue.create(debugTokenOutline, "debug_token_outline");
+
 			this.dockHighlight = TrackedValue.create(dockHighlight, "dock_highlight");
+			this.error = TrackedValue.create(error, "error");
 		}
 
 		public void configure() {
@@ -183,7 +189,10 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 				this.text,
 
 				this.debugToken,
-				this.debugTokenOutline
+				this.debugTokenOutline,
+
+				this.dockHighlight,
+				this.error
 			);
 		}
 
@@ -226,7 +235,9 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 			private ThemeProperties.SerializableColor text = new ThemeProperties.SerializableColor(0xFF000000);
 			private ThemeProperties.SerializableColor debugToken = new ThemeProperties.SerializableColor(0xFFD9BEF9);
 			private ThemeProperties.SerializableColor debugTokenOutline = new ThemeProperties.SerializableColor(0xFFBD93F9);
+
 			private ThemeProperties.SerializableColor dockHighlight = new ThemeProperties.SerializableColor(0xFF0000FF);
+			private ThemeProperties.SerializableColor error = new ThemeProperties.SerializableColor(0xFFFF0000);
 
 			public Colors build() {
 				return new Colors(
@@ -263,7 +274,9 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 					this.text,
 					this.debugToken,
 					this.debugTokenOutline,
-					this.dockHighlight
+
+					this.dockHighlight,
+					this.error
 				);
 			}
 
@@ -404,6 +417,11 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 
 			public Builder dockHighlight(ThemeProperties.SerializableColor dockHighlight) {
 				this.dockHighlight = dockHighlight;
+				return this;
+			}
+
+			public Builder error(ThemeProperties.SerializableColor error) {
+				this.error = error;
 				return this;
 			}
 		}
