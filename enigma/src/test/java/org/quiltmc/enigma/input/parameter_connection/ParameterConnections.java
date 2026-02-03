@@ -9,4 +9,8 @@ public class ParameterConnections {
 			}
 		};
 	}
+
+	class InnerNamedInstance { }
+
+	static class InnerNamedStatic { }
 }

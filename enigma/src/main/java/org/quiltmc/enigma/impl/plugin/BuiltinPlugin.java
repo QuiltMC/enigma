@@ -24,6 +24,7 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 	@Override
 	public void init(EnigmaPluginContext ctx) {
 		registerRecordNamingService(ctx);
+		registerParamSyntheticFieldNamingService(ctx);
 		registerEnumNamingService(ctx);
 		registerSpecializedMethodNamingService(ctx);
 		registerDecompilerServices(ctx);
@@ -47,6 +48,13 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 
 		ctx.registerService(JarIndexerService.TYPE, ctx1 -> new RecordIndexingService(visitor));
 		ctx.registerService(NameProposalService.TYPE, ctx1 -> new RecordComponentProposalService(visitor));
+	}
+
+	private static void registerParamSyntheticFieldNamingService(EnigmaPluginContext ctx) {
+		final ParamSyntheticFieldIndexingVisitor visitor = new ParamSyntheticFieldIndexingVisitor();
+
+		ctx.registerService(JarIndexerService.TYPE, ctx1 -> new ParamSyntheticFieldIndexingService(visitor));
+		ctx.registerService(NameProposalService.TYPE, ctx1 -> new ParamSyntheticFieldProposalService(visitor));
 	}
 
 	private static void registerSpecializedMethodNamingService(EnigmaPluginContext ctx) {
