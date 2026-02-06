@@ -77,7 +77,7 @@ import static org.quiltmc.enigma.util.Utils.ceilDiv;
  *     <tr>
  *         <th>space ≥ preferred</th>
  *         <td>
- *             each component gets at least is preferred size; components that
+ *             each component gets at least its preferred size; components that
  *             {@linkplain FlexGridConstraints#fill(boolean, boolean) fill} the axis get additional space
  *             - up to their max sizes - according to priority
  *        </td>

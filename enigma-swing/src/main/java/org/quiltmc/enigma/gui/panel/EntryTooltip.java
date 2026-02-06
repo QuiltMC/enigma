@@ -326,7 +326,7 @@ public class EntryTooltip extends JWindow {
 						// JTextAreas (javadocs) adjust their preferred sizes after the first pack, so pack twice
 						this.pack();
 						// There seems to be a race condition when packing twice in a row where
-						// the tooltips window can be sized based on the first pack, but components are sized
+						// the tooltip's window can be sized based on the first pack, but components are sized
 						// based on the second pack.
 						// Using invokeLater for *only* the second pack *seems* to solve it.
 						SwingUtilities.invokeLater(this::pack);
