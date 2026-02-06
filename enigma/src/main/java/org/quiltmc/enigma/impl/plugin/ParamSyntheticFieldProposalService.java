@@ -11,10 +11,10 @@ import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import java.util.Map;
 
 public class ParamSyntheticFieldProposalService implements NameProposalService {
-	private final ParamSyntheticFieldIndexingVisitor visitor;
+	private final ParamSyntheticFieldIndexingService indexer;
 
-	ParamSyntheticFieldProposalService(ParamSyntheticFieldIndexingVisitor visitor) {
-		this.visitor = visitor;
+	ParamSyntheticFieldProposalService(ParamSyntheticFieldIndexingService indexer) {
+		this.indexer = indexer;
 	}
 
 	@Override
