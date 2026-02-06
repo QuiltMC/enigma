@@ -7,6 +7,7 @@ import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.gui.util.CartesianOperations;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
 import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints.Alignment;
+import org.quiltmc.enigma.util.Lazy;
 
 import javax.swing.JComponent;
 import javax.swing.border.Border;
@@ -129,27 +130,14 @@ public class FlexGridLayout implements LayoutManager2 {
 
 	private final FlexGridConstraints.Relative.Placement defaultPlacement;
 
-	// TODO use Lazy.clearableOf(...) from menu-search once it's merged
-	/**
-	 * Lazily populated cache.
-	 *
-	 * @see #getPreferredSizes()
-	 */
-	private @Nullable Sizes preferredSizes;
+	private final Lazy.Clearable<Sizes> preferredSizes =
+			Lazy.clearableOf(() -> Sizes.calculate(this.grid, Component::getPreferredSize));
 
-	/**
-	 * Lazily populated cache.
-	 *
-	 * @see #getMinSizes()
-	 */
-	private @Nullable Sizes minSizes;
+	private final Lazy.Clearable<Sizes> minSizes =
+			Lazy.clearableOf(() -> Sizes.calculate(this.grid, Component::getMinimumSize));
 
-	/**
-	 * Lazily populated cache.
-	 *
-	 * @see #getMaxSizes()
-	 */
-	private @Nullable Sizes maxSizes;
+	private final Lazy.Clearable<Sizes> maxSizes =
+			Lazy.clearableOf(() -> Sizes.calculate(this.grid, Component::getMaximumSize));
 
 	/**
 	 * Constructs a flex grid that places components {@linkplain Container#add(Component) added without constraints}
@@ -222,48 +210,24 @@ public class FlexGridLayout implements LayoutManager2 {
 
 	@Override
 	public void invalidateLayout(Container target) {
-		this.preferredSizes = null;
-		this.minSizes = null;
-		this.maxSizes = null;
+		this.preferredSizes.clear();
+		this.minSizes.clear();
+		this.maxSizes.clear();
 	}
 
 	@Override
 	public Dimension preferredLayoutSize(Container container) {
-		return this.getPreferredSizes().createTotalDimension(container.getInsets());
-	}
-
-	private Sizes getPreferredSizes() {
-		if (this.preferredSizes == null) {
-			this.preferredSizes = Sizes.calculate(this.grid, Component::getPreferredSize);
-		}
-
-		return this.preferredSizes;
+		return this.preferredSizes.get().createTotalDimension(container.getInsets());
 	}
 
 	@Override
 	public Dimension minimumLayoutSize(Container container) {
-		return this.getMinSizes().createTotalDimension(container.getInsets());
-	}
-
-	private Sizes getMinSizes() {
-		if (this.minSizes == null) {
-			this.minSizes = Sizes.calculate(this.grid, Component::getMinimumSize);
-		}
-
-		return this.minSizes;
+		return this.minSizes.get().createTotalDimension(container.getInsets());
 	}
 
 	@Override
 	public Dimension maximumLayoutSize(Container container) {
-		return this.getMaxSizes().createTotalDimension(container.getInsets());
-	}
-
-	private Sizes getMaxSizes() {
-		if (this.maxSizes == null) {
-			this.maxSizes = Sizes.calculate(this.grid, Component::getMaximumSize);
-		}
-
-		return this.maxSizes;
+		return this.maxSizes.get().createTotalDimension(container.getInsets());
 	}
 
 	@Override
@@ -280,7 +244,7 @@ public class FlexGridLayout implements LayoutManager2 {
 
 		final int availableSpace = ops.getSpan(parent) - leadingInset - ops.getTrailingInset(insets);
 
-		final Sizes preferred = this.getPreferredSizes();
+		final Sizes preferred = this.preferredSizes.get();
 
 		final int extraSpace = availableSpace - ops.getTotalSpace(preferred);
 		if (extraSpace >= 0) {
@@ -295,7 +259,7 @@ public class FlexGridLayout implements LayoutManager2 {
 				this.layoutAxisImpl(startPos, ops, cellSpans);
 			}
 		} else {
-			final Sizes min = this.getMinSizes();
+			final Sizes min = this.minSizes.get();
 
 			final int extraMinSpace = availableSpace - ops.getTotalSpace(min);
 			if (extraMinSpace <= 0) {
@@ -314,11 +278,11 @@ public class FlexGridLayout implements LayoutManager2 {
 		final Sizes large;
 		final Sizes small;
 		if (fill) {
-			large = this.getMaxSizes();
-			small = this.getPreferredSizes();
+			large = this.maxSizes.get();
+			small = this.preferredSizes.get();
 		} else {
-			large = this.getPreferredSizes();
-			small = this.getMinSizes();
+			large = this.preferredSizes.get();
+			small = this.minSizes.get();
 		}
 
 		final SortedMap<Integer, Integer> cellSpans = new TreeMap<>(ops.getCellSpans(small));
@@ -389,8 +353,8 @@ public class FlexGridLayout implements LayoutManager2 {
 			currentPos += span;
 		}
 
-		final Sizes preferred = this.getPreferredSizes();
-		final Sizes max = this.getMaxSizes();
+		final Sizes preferred = this.preferredSizes.get();
+		final Sizes max = this.maxSizes.get();
 
 		this.grid.forEach((x, y, values) -> {
 			final int coord = ops.chooseCoord(x, y);
