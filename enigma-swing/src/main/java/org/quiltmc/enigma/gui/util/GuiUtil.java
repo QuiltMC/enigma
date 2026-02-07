@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.util;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.google.common.collect.ImmutableList;
+import org.jspecify.annotations.Nullable;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.service.JarIndexerService;
@@ -12,22 +13,28 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.gui.config.keybind.KeyBind;
 import org.quiltmc.enigma.gui.config.theme.ThemeUtil;
+import org.quiltmc.enigma.gui.element.menu_bar.SimpleEnigmaMenu;
 import org.quiltmc.enigma.impl.plugin.RecordIndexingService;
+import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Os;
 
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JToolTip;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
+import javax.swing.MenuElement;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.Timer;
@@ -41,8 +48,16 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -70,9 +85,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public final class GuiUtil {
+	public static final Color TRANSPARENT = new Color(0, true);
+
 	private GuiUtil() {
 		throw new UnsupportedOperationException();
 	}
@@ -96,6 +116,30 @@ public final class GuiUtil {
 	public static final Icon CHEVRON_DOWN_BLACK = loadIcon("chevron-down-black");
 	public static final Icon CHEVRON_UP_WHITE = loadIcon("chevron-up-white");
 	public static final Icon CHEVRON_DOWN_WHITE = loadIcon("chevron-down-white");
+
+	public static final MenuElement[] EMPTY_MENU_ELEMENTS = new MenuElement[0];
+
+	private static final String DESKTOP_FONT_HINTS_KEY = "awt.font.desktophints";
+
+	@Nullable
+	private static Map<?, ?> desktopFontHints = Toolkit.getDefaultToolkit().getDesktopProperty(DESKTOP_FONT_HINTS_KEY)
+			instanceof Map<?, ?> map ? map : null;
+
+	static {
+		Toolkit.getDefaultToolkit().addPropertyChangeListener(DESKTOP_FONT_HINTS_KEY, e -> {
+			desktopFontHints = e.getNewValue() instanceof Map<?, ?> map ? map : null;
+		});
+	}
+
+	public static void trySetRenderingHints(Graphics graphics) {
+		if (graphics instanceof Graphics2D graphics2D) {
+			if (desktopFontHints == null) {
+				graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			} else {
+				graphics2D.setRenderingHints(desktopFontHints);
+			}
+		}
+	}
 
 	public static void openUrl(String url) {
 		try {
@@ -290,7 +334,6 @@ public final class GuiUtil {
 	 */
 	public static void setUpGlassPane(JPanel glass) {
 		glass.setOpaque(false);
-		glass.setVisible(true);
 		glass.setLayout(null);
 		glass.revalidate();
 	}
@@ -396,6 +439,13 @@ public final class GuiUtil {
 		return componentPos;
 	}
 
+	public static Point getAbsolutePos(Component component, int relativeX, int relativeY) {
+		final Point componentPos = component.getLocationOnScreen();
+		componentPos.translate(relativeX, relativeY);
+
+		return componentPos;
+	}
+
 	public static Optional<RecordIndexingService> getRecordIndexingService(Gui gui) {
 		return gui.getController()
 				.getProject()
@@ -470,6 +520,128 @@ public final class GuiUtil {
 				buttonSetter.accept(configValue);
 			}
 		});
+	}
+
+	/**
+	 * @see #getCenteredFontBaseY(FontMetrics, int, int, int)
+	 */
+	public static int getCenteredFontBaseY(FontMetrics fontMetrics, int height, Insets insets) {
+		return getCenteredFontBaseY(fontMetrics, height, insets.top, insets.bottom);
+	}
+
+	/**
+	 * Calculates the baseline Y value for vertically centering the passed {@code fontMetrics}'
+	 * {@linkplain FontMetrics#getFont() font} within a space with the passed
+	 * {@code height}, {@code top} inset, and {@code bottom} inset.<br>
+	 * Typically passed as the {@code y} parameter of {@link Graphics#drawString(String, int, int)}.
+	 *
+	 * @param fontMetrics the metrics used to calculate font space requirements
+	 * @param height      the height of the space containing the font
+	 * @param top         the top inset of the space containing the font
+	 * @param bottom      the bottom inset of the space containing the font
+	 *
+	 * @return the Y value that places the baseline of the {@linkplain FontMetrics#getFont() font} such that it's
+	 * centered within its containing space
+	 */
+	public static int getCenteredFontBaseY(FontMetrics fontMetrics, int height, int top, int bottom) {
+		final int maxAscent = fontMetrics.getMaxAscent();
+		final int maxDescent = fontMetrics.getMaxDescent();
+		// simplified from:
+		// final int availableY = height - top - bottom;
+		// final int extraY = availableY - maxAscent - maxDescent;
+		// return maxAscent + top + extraY / 2;
+		return (maxAscent + top + height - bottom - maxDescent) / 2;
+	}
+
+	/**
+	 * Creates a {@link JMenu} containing one {@linkplain JRadioButtonMenuItem radio item} for each value between the
+	 * passed {@code min} and {@code max}, inclusive.
+	 *
+	 * <p> Listeners are added to keep the selected radio item and the passed {@code config}'s
+	 * {@link TrackedValue#value() value} in sync.
+	 *
+	 * <p> Consider using {@link NumberInputDialog#promptInt} instead for large int ranges.
+	 *
+	 * @param gui            the gui the created menu will belong to
+	 * @param translationKey the translation key for the created menu; the translation is
+	 *                       {@linkplain I18n#translateFormatted(String, Object...) formatted} with the passed
+	 *                       {@code config}'s {@link TrackedValue#value() value}
+	 * @param config         the config value to sync with
+	 * @param min            the minimum allowed value;
+	 *                       this should coincide with any minimum imposed on the passed {@code config}
+	 * @param max            the maximum allowed value;
+	 *                       this should coincide with any maximum imposed on the passed {@code config}
+	 *
+	 * @return a newly created menu allowing configuration of the passed {@code config}
+	 */
+	public static SimpleEnigmaMenu createIntConfigRadioMenu(
+			Gui gui, String translationKey,
+			TrackedValue<Integer> config, int min, int max
+	) {
+		final SimpleEnigmaMenu menu = new SimpleEnigmaMenu(gui, translationKey, key -> I18n.translateFormatted(
+				translationKey,
+				config.value()
+		));
+
+		final Map<Integer, JRadioButtonMenuItem> radiosByChoice = IntStream.range(min, max + 1)
+				.boxed()
+				.collect(Collectors.toMap(
+					Function.identity(),
+					choice -> {
+						final JRadioButtonMenuItem choiceItem = new JRadioButtonMenuItem();
+						choiceItem.setText(Integer.toString(choice));
+						if (choice.equals(config.value())) {
+							choiceItem.setSelected(true);
+						}
+
+						choiceItem.addActionListener(e -> {
+							if (!config.value().equals(choice)) {
+								config.setValue(choice);
+								menu.retranslate();
+								gui.getMenuBar().clearSearchMenusResults();
+							}
+						});
+
+						return choiceItem;
+					}
+				));
+
+		final ButtonGroup choicesGroup = new ButtonGroup();
+		for (final JRadioButtonMenuItem radio : radiosByChoice.values()) {
+			choicesGroup.add(radio);
+			menu.add(radio);
+		}
+
+		config.registerCallback(updated -> {
+			final JRadioButtonMenuItem choiceItem = radiosByChoice.get(updated.value());
+
+			if (!choiceItem.isSelected()) {
+				choiceItem.setSelected(true);
+				menu.retranslate();
+				gui.getMenuBar().clearSearchMenusResults();
+			}
+		});
+
+		return menu;
+	}
+
+	// based on JPopupMenu::getCurrentGraphicsConfiguration
+	/**
+	 * @return an {@link Optional} holding the {@link GraphicsConfiguration} of the
+	 * {@linkplain GraphicsEnvironment#getScreenDevices() screen device} that contains the passed
+	 * {@code x} and {@code y} coordinates if one could be found, or {@link Optional#empty()} otherwise
+	 */
+	public static Optional<GraphicsConfiguration> findGraphicsConfig(int x, int y) {
+		for (final GraphicsDevice device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
+			if (device.getType() == GraphicsDevice.TYPE_RASTER_SCREEN) {
+				final GraphicsConfiguration config = device.getDefaultConfiguration();
+				if (config.getBounds().contains(x, y)) {
+					return Optional.of(config);
+				}
+			}
+		}
+
+		return Optional.empty();
 	}
 
 	public enum FocusCondition {

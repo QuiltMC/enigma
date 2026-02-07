@@ -4,20 +4,24 @@ import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.ChangeDialog;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
-import org.quiltmc.enigma.gui.util.ScaleUtil;
+import org.quiltmc.enigma.gui.util.NumberInputDialog;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
 import org.quiltmc.enigma.util.I18n;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 
-public class ScaleMenu extends AbstractEnigmaMenu {
+public class ScaleMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.view.scale";
+
+	private static final float PERCENT_FACTOR = 100;
+	public static final float MAX_SCALE_PERCENT = Config.MAX_SCALE_FACTOR * PERCENT_FACTOR;
+	public static final float MIN_SCALE_PERCENT = Config.MIN_SCALE_FACTOR * PERCENT_FACTOR;
+
 	private final int[] defaultOptions = {100, 125, 150, 175, 200};
 	private final ButtonGroup optionsGroup = new ButtonGroup();
 	private final Map<Float, JRadioButtonMenuItem> options = new HashMap<>();
@@ -44,48 +48,68 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 		// note: as of refactoring this code, there is no other path which updates scale
 		// this code is therefore currently pointless
 		// and exists only for a possible future in which some other code path is updating scale *without* calling Gui#updateUiState
-		ScaleUtil.addListener((newScale, oldScale) -> this.updateState());
+		Config.main().scaleFactor.registerCallback(updated -> this.updateState());
 	}
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.view.scale"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
 
-		this.customScaleButton.setText(I18n.translate("menu.view.scale.custom"));
+		this.retranslateCustomButton();
 		this.forEachDefaultScaleOption((scaleFactor, realFactor) -> this.options.get(realFactor).setText(String.format("%d%%", scaleFactor)));
 	}
 
 	@Override
 	public void updateState(boolean jarOpen, ConnectionState state) {
-		JRadioButtonMenuItem option = this.options.get(Config.main().scaleFactor.value());
-		Objects.requireNonNullElse(option, this.customScaleButton).setSelected(true);
+		final JRadioButtonMenuItem option = this.options.get(Config.main().scaleFactor.value());
+		if (option == null) {
+			this.customScaleButton.setSelected(true);
+			this.retranslateCustomButton();
+		} else {
+			final boolean wasCustom = this.customScaleButton.isSelected();
+
+			option.setSelected(true);
+
+			if (wasCustom) {
+				this.retranslateCustomButton();
+			}
+		}
+	}
+
+	private void retranslateCustomButton() {
+		final String text = this.customScaleButton.isSelected()
+				? I18n.translateFormatted(
+					"menu.view.scale.custom.selected",
+					Config.main().scaleFactor.value() * PERCENT_FACTOR
+				)
+				: I18n.translate("menu.view.scale.custom");
+
+		this.customScaleButton.setText(text);
 	}
 
 	private void onScaleClicked(float realScale) {
-		ScaleUtil.setScaleFactor(realScale);
+		Config.main().scaleFactor.setValue(realScale);
 		ChangeDialog.show(this.gui.getFrame());
 	}
 
 	private void onCustomScaleClicked() {
-		String answer = (String) JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("menu.view.scale.custom.title"), I18n.translate("menu.view.scale.custom.title"),
-				JOptionPane.QUESTION_MESSAGE, null, null, Double.toString(Config.main().scaleFactor.value() * 100));
+		final float oldScale = Config.main().scaleFactor.value();
 
-		if (answer == null) {
-			// cancelled
-			// button is considered selected, we need to go back to the old selection
-			this.updateState();
-			return;
+		final String message = I18n.translate("menu.view.scale.custom.explanation") + "\n"
+				+ I18n.translateFormatted("prompt.input.number_range", MIN_SCALE_PERCENT, MAX_SCALE_PERCENT);
+
+		final float newPercent = NumberInputDialog.promptFloat(
+				this.gui.getFrame(),
+				oldScale * PERCENT_FACTOR, MIN_SCALE_PERCENT, MAX_SCALE_PERCENT, 10, 1,
+				I18n.translate("menu.view.scale.custom.title"), message, I18n.translate("prompt.save")
+		);
+
+		final float newScale = newPercent / PERCENT_FACTOR;
+
+		if (newScale != oldScale) {
+			Config.main().scaleFactor.setValue(newScale);
+			ChangeDialog.show(this.gui.getFrame());
 		}
-
-		float newScale = 1.0f;
-		try {
-			newScale = Float.parseFloat(answer) / 100f;
-		} catch (NumberFormatException ignored) {
-			// ignored!
-		}
-
-		ScaleUtil.setScaleFactor(newScale);
-		ChangeDialog.show(this.gui.getFrame());
 
 		// if custom scale matches a default scale, select that instead
 		this.updateState();
@@ -94,7 +118,12 @@ public class ScaleMenu extends AbstractEnigmaMenu {
 	private void forEachDefaultScaleOption(BiConsumer<Integer, Float> consumer) {
 		IntStream.of(this.defaultOptions)
 				.forEach(
-					option -> consumer.accept(option, option / 100f)
+					option -> consumer.accept(option, option / PERCENT_FACTOR)
 				);
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

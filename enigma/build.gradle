@@ -377,7 +377,8 @@ final testRecommendedImplPluginAgainstBumpedEnigma = tasks
 	}
 }
 
-test.dependsOn(obfuscateTestInputs, testPreHandlingPluginAgainstCurrentEnigma, testRecommendedImplPluginAgainstBumpedEnigma)
+test.dependsOn(obfuscateTestInputs)
+check.dependsOn(testPreHandlingPluginAgainstCurrentEnigma, testRecommendedImplPluginAgainstBumpedEnigma)
 
 publishing {
 	publications {

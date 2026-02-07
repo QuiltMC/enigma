@@ -8,12 +8,14 @@ import org.quiltmc.enigma.gui.element.menu_bar.view.ViewMenu;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class MenuBar {
 	private final List<EnigmaMenu> menus = new ArrayList<>();
 
 	private final CollabMenu collabMenu;
 	private final FileMenu fileMenu;
+	private final HelpMenu helpMenu;
 
 	private final Gui gui;
 
@@ -25,7 +27,7 @@ public class MenuBar {
 		ViewMenu viewMenu = new ViewMenu(gui);
 		SearchMenu searchMenu = new SearchMenu(gui);
 		this.collabMenu = new CollabMenu(gui);
-		HelpMenu helpMenu = new HelpMenu(gui);
+		this.helpMenu = new HelpMenu(gui);
 		// Enabled with system property "enigma.development" or "--development" flag
 		DevMenu devMenu = new DevMenu(gui);
 
@@ -36,7 +38,7 @@ public class MenuBar {
 		this.addMenu(viewMenu);
 		this.addMenu(searchMenu);
 		this.addMenu(this.collabMenu);
-		this.addMenu(helpMenu);
+		this.addMenu(this.helpMenu);
 
 		if (Boolean.parseBoolean(System.getProperty("enigma.development")) || Config.main().development.anyEnabled) {
 			this.addMenu(devMenu);
@@ -62,12 +64,20 @@ public class MenuBar {
 		for (EnigmaMenu menu : this.menus) {
 			menu.updateState(jarOpen, connectionState);
 		}
+
+		this.clearSearchMenusResults();
 	}
 
 	public void retranslateUi() {
 		for (EnigmaMenu menu : this.menus) {
 			menu.retranslate();
 		}
+
+		this.clearSearchMenusResults();
+	}
+
+	public void clearSearchMenusResults() {
+		this.helpMenu.clearSearchMenusResults();
 	}
 
 	public CollabMenu getCollabMenu() {
@@ -76,5 +86,9 @@ public class MenuBar {
 
 	public FileMenu getFileMenu() {
 		return this.fileMenu;
+	}
+
+	public Stream<EnigmaMenu> streamMenus() {
+		return this.menus.stream();
 	}
 }

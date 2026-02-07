@@ -5,15 +5,16 @@ import org.quiltmc.enigma.gui.ConnectionState;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.config.keybind.KeyBinds;
-import org.quiltmc.enigma.gui.dialog.StatsDialog;
+import org.quiltmc.enigma.gui.dialog.stats.StatsDialog;
 import org.quiltmc.enigma.gui.dialog.keybind.ConfigureKeyBindsDialog;
-import org.quiltmc.enigma.gui.element.menu_bar.AbstractEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.AbstractSearchableEnigmaMenu;
+import org.quiltmc.enigma.gui.element.menu_bar.SimpleCheckBoxItem;
+import org.quiltmc.enigma.gui.element.menu_bar.SimpleItem;
 import org.quiltmc.enigma.gui.util.ExtensionFileFilter;
+import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.util.I18n;
 
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import java.io.File;
 import java.nio.file.Files;
@@ -21,26 +22,28 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
-public class FileMenu extends AbstractEnigmaMenu {
+public class FileMenu extends AbstractSearchableEnigmaMenu {
+	private static final String TRANSLATION_KEY = "menu.file";
+
 	private final SaveMappingsAsMenu saveMappingsAs;
 	private final CrashHistoryMenu crashHistory;
 	private final OpenRecentMenu openRecent;
 
-	private final JMenuItem jarOpenItem = new JMenuItem();
-	private final JMenuItem jarCloseItem = new JMenuItem();
-	private final JMenuItem openMappingsItem = new JMenuItem();
-	private final JMenuItem maxRecentFilesItem = new JMenuItem();
-	private final JMenuItem saveMappingsItem = new JMenuItem();
-	private final JCheckBoxMenuItem autoSaveMappingsItem = new JCheckBoxMenuItem();
-	private final JMenuItem closeMappingsItem = new JMenuItem();
-	private final JMenuItem dropMappingsItem = new JMenuItem();
-	private final JMenuItem reloadMappingsItem = new JMenuItem();
-	private final JMenuItem reloadAllItem = new JMenuItem();
-	private final JMenuItem exportSourceItem = new JMenuItem();
-	private final JMenuItem exportJarItem = new JMenuItem();
-	private final JMenuItem statsItem = new JMenuItem();
-	private final JMenuItem configureKeyBindsItem = new JMenuItem();
-	private final JMenuItem exitItem = new JMenuItem();
+	private final SimpleItem jarOpenItem = new SimpleItem("menu.file.jar.open");
+	private final SimpleItem jarCloseItem = new SimpleItem("menu.file.jar.close");
+	private final SimpleItem openMappingsItem = new SimpleItem("menu.file.mappings.open");
+	private final SimpleItem maxRecentFilesItem = new SimpleItem("menu.file.max_recent_projects");
+	private final SimpleItem saveMappingsItem = new SimpleItem("menu.file.mappings.save");
+	private final SimpleCheckBoxItem autoSaveMappingsItem = new SimpleCheckBoxItem("menu.file.mappings.auto_save");
+	private final SimpleItem closeMappingsItem = new SimpleItem("menu.file.mappings.close");
+	private final SimpleItem dropMappingsItem = new SimpleItem("menu.file.mappings.drop");
+	private final SimpleItem reloadMappingsItem = new SimpleItem("menu.file.reload_mappings");
+	private final SimpleItem reloadAllItem = new SimpleItem("menu.file.reload_all");
+	private final SimpleItem exportSourceItem = new SimpleItem("menu.file.export.source");
+	private final SimpleItem exportJarItem = new SimpleItem("menu.file.export.jar");
+	private final SimpleItem statsItem = new SimpleItem("menu.file.stats");
+	private final SimpleItem configureKeyBindsItem = new SimpleItem("menu.file.configure_keybinds");
+	private final SimpleItem exitItem = new SimpleItem("menu.file.exit");
 
 	public FileMenu(Gui gui) {
 		super(gui);
@@ -48,6 +51,8 @@ public class FileMenu extends AbstractEnigmaMenu {
 		this.saveMappingsAs = new SaveMappingsAsMenu(gui);
 		this.crashHistory = new CrashHistoryMenu(gui);
 		this.openRecent = new OpenRecentMenu(gui);
+
+		GuiUtil.syncStateWithConfig(this.autoSaveMappingsItem, Config.editor().autoSaveMappings);
 
 		this.add(this.jarOpenItem);
 		this.add(this.jarCloseItem);
@@ -80,7 +85,6 @@ public class FileMenu extends AbstractEnigmaMenu {
 		this.jarCloseItem.addActionListener(e -> this.gui.getController().closeJar());
 		this.maxRecentFilesItem.addActionListener(e -> this.onMaxRecentFilesClicked());
 		this.saveMappingsItem.addActionListener(e -> this.onSaveMappingsClicked());
-		this.autoSaveMappingsItem.addActionListener(e -> Config.editor().autoSaveMappings.setValue(this.autoSaveMappingsItem.getState()));
 		this.closeMappingsItem.addActionListener(e -> this.onCloseMappingsClicked());
 		this.dropMappingsItem.addActionListener(e -> this.gui.getController().dropMappings());
 		this.reloadMappingsItem.addActionListener(e -> this.onReloadMappingsClicked());
@@ -109,7 +113,6 @@ public class FileMenu extends AbstractEnigmaMenu {
 		this.saveMappingsItem.setEnabled(jarOpen && this.gui.mappingsFileChooser.getSelectedFile() != null && this.gui.getConnectionState() != ConnectionState.CONNECTED);
 		this.saveMappingsAs.updateState();
 		this.autoSaveMappingsItem.setEnabled(jarOpen);
-		this.autoSaveMappingsItem.setState(Config.editor().autoSaveMappings.value());
 		this.closeMappingsItem.setEnabled(jarOpen);
 		this.reloadMappingsItem.setEnabled(jarOpen);
 		this.reloadAllItem.setEnabled(jarOpen);
@@ -122,25 +125,25 @@ public class FileMenu extends AbstractEnigmaMenu {
 
 	@Override
 	public void retranslate() {
-		this.setText(I18n.translate("menu.file"));
-		this.jarOpenItem.setText(I18n.translate("menu.file.jar.open"));
-		this.jarCloseItem.setText(I18n.translate("menu.file.jar.close"));
+		this.setText(I18n.translate(TRANSLATION_KEY));
+		this.jarOpenItem.retranslate();
+		this.jarCloseItem.retranslate();
 		this.openRecent.retranslate();
-		this.maxRecentFilesItem.setText(I18n.translate("menu.file.max_recent_projects"));
-		this.openMappingsItem.setText(I18n.translate("menu.file.mappings.open"));
-		this.saveMappingsItem.setText(I18n.translate("menu.file.mappings.save"));
+		this.openMappingsItem.retranslate();
+		this.maxRecentFilesItem.retranslate();
+		this.saveMappingsItem.retranslate();
 		this.saveMappingsAs.retranslate();
-		this.autoSaveMappingsItem.setText(I18n.translate("menu.file.mappings.auto_save"));
-		this.closeMappingsItem.setText(I18n.translate("menu.file.mappings.close"));
-		this.dropMappingsItem.setText(I18n.translate("menu.file.mappings.drop"));
-		this.reloadMappingsItem.setText(I18n.translate("menu.file.reload_mappings"));
-		this.reloadAllItem.setText(I18n.translate("menu.file.reload_all"));
-		this.exportSourceItem.setText(I18n.translate("menu.file.export.source"));
-		this.exportJarItem.setText(I18n.translate("menu.file.export.jar"));
-		this.statsItem.setText(I18n.translate("menu.file.stats"));
-		this.configureKeyBindsItem.setText(I18n.translate("menu.file.configure_keybinds"));
+		this.autoSaveMappingsItem.retranslate();
+		this.closeMappingsItem.retranslate();
+		this.dropMappingsItem.retranslate();
+		this.reloadMappingsItem.retranslate();
+		this.reloadAllItem.retranslate();
+		this.exportSourceItem.retranslate();
+		this.exportJarItem.retranslate();
+		this.statsItem.retranslate();
+		this.configureKeyBindsItem.retranslate();
 		this.crashHistory.retranslate();
-		this.exitItem.setText(I18n.translate("menu.file.exit"));
+		this.exitItem.retranslate();
 	}
 
 	private void onOpenJarClicked() {
@@ -261,5 +264,10 @@ public class FileMenu extends AbstractEnigmaMenu {
 			this.gui.getController().exportJar(path);
 			Config.main().stats.lastSelectedDir.setValue(this.gui.exportJarFileChooser.getCurrentDirectory().getAbsolutePath(), true);
 		}
+	}
+
+	@Override
+	public String getAliasesTranslationKeyPrefix() {
+		return TRANSLATION_KEY;
 	}
 }

@@ -486,3 +486,12 @@ Blood, sweat, refactors, enhancements, tears, unit tests, bugfixes, blood, and m
 VINEFLOWERRRRRRRRRR
 
 - downgrade vineflower to 1.11.1 to fix issues with decompilation ([#341](https://github.com/QuiltMC/enigma/pull/341))
+
+# 2.7.2
+
+version `2.7.2`, or "your beloved enigma team proves once again that they are professionals at introducing performance issues".
+
+- fix memory overuse issues introduced with the library index changes ([#345](https://github.com/QuiltMC/enigma/pull/345))
+  - indexes are now better combined internally to save memory
+- define the iteration order for `InheritanceIndex#getAncestors(ClassEntry)` as breadth-first ([#347](https://github.com/QuiltMC/enigma/pull/347))
+  - add `InheritanceIndex#streamAncestors(ClassEntry)`
