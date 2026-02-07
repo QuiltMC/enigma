@@ -7,12 +7,13 @@ asm = "9.9"
 jspecify = "1.0.0"
 jopt = "6.0-alpha-3"
 flatlaf = "3.4"
-syntaxpain = "0.3.0"
+syntaxpain = "internal"
 swing_dpi = "0.10"
 fontchooser = "2.5.2"
 tinylog = "2.7.0"
 quilt_config = "1.3.2"
 javaparser = "3.27.0"
+jflex = "1.9.1"
 
 vineflower = "1.11.1"
 cfr = "0.2.2"
@@ -46,6 +47,7 @@ syntaxpain = { module = "org.quiltmc:syntaxpain", version.ref = "syntaxpain" }
 swing_dpi = { module = "com.github.lukeu:swing-dpi", version.ref = "swing_dpi" }
 fontchooser = { module = "org.drjekyll:fontchooser", version.ref = "fontchooser" }
 javaparser = { module = "com.github.javaparser:javaparser-core", version.ref = "javaparser" }
+jflex = { module = "de.jflex:jflex", version.ref = "jflex" }
 
 vineflower = { module = "org.vineflower:vineflower", version.ref = "vineflower" }
 cfr = { module = "net.fabricmc:cfr", version.ref = "cfr" }

@@ -108,6 +108,10 @@ project(":enigma").file("src/test/java/org/quiltmc/enigma/input").listFiles().ea
 
 registerTestTask("complete")
 
+tasks.named('checkstyleMain') {
+	dependsOn(gradle.includedBuild('syntaxpain').task(':checkstyleMain'))
+}
+
 final guiVisualizationJar = tasks.register('guiVisualizationJar', Jar.class) {
 	from(sourceSets.guiVisualization.output)
 
