@@ -198,6 +198,9 @@
 	"editor.quick_find.persistent": "Persistent",
 	"editor.tooltip.label.from": "from",
 	"editor.tooltip.label.inherited_from": "inherited from",
+	"editor.tooltip.label.no_package": "no package",
+	"editor.tooltip.label.synthetic": "synthetic",
+	"editor.tooltip.label.anonymous": "anonymous",
 	"editor.tooltip.message.no_source": "No source available",
 	"editor.snippet.message.no_declaration_found": "Unable to locate declaration",
 

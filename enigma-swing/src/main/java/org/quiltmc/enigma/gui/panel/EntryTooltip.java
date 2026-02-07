@@ -5,6 +5,7 @@ import org.jspecify.annotations.Nullable;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.class_handle.ClassHandle;
+import org.quiltmc.enigma.api.source.Decompilers;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.AccessFlags;
@@ -20,28 +21,29 @@ import org.quiltmc.enigma.gui.docker.ClassesDocker;
 import org.quiltmc.enigma.gui.docker.DeobfuscatedClassesDocker;
 import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.docker.ObfuscatedClassesDocker;
-import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
+import org.quiltmc.enigma.gui.util.layout.flex_grid.FlexGridLayout;
+import org.quiltmc.enigma.gui.util.layout.flex_grid.constraints.FlexGridConstraints;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.Utils;
 
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JWindow;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -128,7 +130,7 @@ public class EntryTooltip extends JWindow {
 		super(gui.getFrame());
 
 		this.gui = gui;
-		this.content = new JPanel(new GridBagLayout());
+		this.content = new JPanel(new FlexGridLayout());
 
 		this.setAlwaysOnTop(true);
 		this.setType(Window.Type.POPUP);
@@ -211,7 +213,6 @@ public class EntryTooltip extends JWindow {
 		this.repopulated = !opening;
 		this.content.removeAll();
 
-		@Nullable
 		final MouseAdapter stopInteraction = Config.editor().entryTooltips.interactable.value()
 				? null : new MouseAdapter() {
 					@Override
@@ -226,8 +227,6 @@ public class EntryTooltip extends JWindow {
 		final Font editorFont = ScaleUtil.scaleFont(Config.currentFonts().editor.value());
 		final Font italEditorFont = ScaleUtil.scaleFont(Config.currentFonts().editor.value().deriveFont(Font.ITALIC));
 
-		int gridY = 0;
-
 		{
 			final Box parentLabelRow = Box.createHorizontalBox();
 
@@ -241,75 +240,46 @@ public class EntryTooltip extends JWindow {
 			parentLabelRow.add(colonLabelOf("", editorFont));
 
 			parentLabelRow.add(this.parentLabelOf(target, editorFont, stopInteraction));
-			parentLabelRow.add(Box.createHorizontalGlue());
 
-			this.add(parentLabelRow, GridBagConstraintsBuilder.create()
-					.pos(0, gridY++)
-					.insets(ROW_OUTER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET)
-					.anchor(GridBagConstraints.LINE_START)
-					.build()
-			);
+			parentLabelRow.setBorder(createEmptyBorder(ROW_OUTER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET));
+			this.add(parentLabelRow, FlexGridConstraints.createRelative().alignCenterLeft());
 		}
 
-		final var mainContent = new JPanel(new GridBagLayout());
-		// Put all main content in one big scroll pane.
-		// Ideally there'd be separate javadoc and snippet scroll panes, but multiple scroll pane children
-		// of a grid bag parent don't play nice when space is limited.
-		// The snippet has its own scroll pane, but wrapping it in this one effectively disables its resizing.
-		final var mainScroll = new JScrollPane(mainContent);
-		mainScroll.setBorder(createEmptyBorder());
-		int mainGridY = 0;
+		final Color background = this.content.getBackground();
 
 		final String javadoc = this.getJavadoc(target).orElse(null);
 		final ImmutableList<ParamJavadoc> paramJavadocs =
-				this.paramJavadocsOf(target, editorFont, italEditorFont, stopInteraction);
+				this.paramJavadocsOf(target, editorFont, italEditorFont, background, stopInteraction);
 		if (javadoc != null || !paramJavadocs.isEmpty()) {
-			mainContent.add(new JSeparator(), GridBagConstraintsBuilder.create()
-					.pos(0, mainGridY++)
-					.weightX(1)
-					.fill(GridBagConstraints.HORIZONTAL)
-					.build()
-			);
+			this.add(new JSeparator(), FlexGridConstraints.createRelative().newRow().fillX());
+
+			final var javadocs = new JPanel(new FlexGridLayout());
 
 			if (javadoc != null) {
-				mainContent.add(javadocOf(javadoc, italEditorFont, stopInteraction), GridBagConstraintsBuilder.create()
-						.pos(0, mainGridY++)
-						.insets(ROW_INNER_INSET, ROW_OUTER_INSET)
-						.weightX(1)
-						.fill(GridBagConstraints.HORIZONTAL)
-						.anchor(GridBagConstraints.LINE_START)
-						.build()
-				);
+				final JTextArea javadocText = javadocOf(javadoc, italEditorFont, background, stopInteraction);
+				javadocText.setBorder(createEmptyBorder(ROW_INNER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET));
+				javadocs.add(javadocText, FlexGridConstraints.createRelative().fillX());
 			}
 
 			if (!paramJavadocs.isEmpty()) {
-				final JPanel params = new JPanel(new GridBagLayout());
-				int paramsGridY = 0;
+				final JPanel params = new JPanel(new FlexGridLayout());
 
 				for (final ParamJavadoc paramJavadoc : paramJavadocs) {
-					params.add(paramJavadoc.name, GridBagConstraintsBuilder.create()
-							.pos(0, paramsGridY)
-							.anchor(GridBagConstraints.FIRST_LINE_END)
-							.build()
-					);
+					params.add(paramJavadoc.name, FlexGridConstraints.createRelative().newRow().alignTopRight());
 
-					params.add(paramJavadoc.javadoc, GridBagConstraintsBuilder.create()
-							.pos(1, paramsGridY++)
-							.weightX(1)
-							.fill(GridBagConstraints.HORIZONTAL)
-							.anchor(GridBagConstraints.LINE_START)
-							.build()
+					params.add(paramJavadoc.javadoc, FlexGridConstraints.createRelative()
+							.fillX()
+							.alignTopLeft()
 					);
 				}
 
-				mainContent.add(params, GridBagConstraintsBuilder.create()
-						.insets(ROW_INNER_INSET, ROW_OUTER_INSET)
-						.pos(0, mainGridY++)
-						.weightX(1)
-						.fill(GridBagConstraints.HORIZONTAL)
-						.build()
-				);
+				params.setBorder(createEmptyBorder(ROW_INNER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET));
+				javadocs.add(params, FlexGridConstraints.createRelative().newRow().fillX());
 			}
+
+			final JScrollPane javadocsScroll = new SmartScrollPane(javadocs);
+			javadocsScroll.setBorder(createEmptyBorder());
+			this.add(javadocsScroll, FlexGridConstraints.createRelative().newRow().fillX());
 		}
 
 		if (this.declarationSnippet != null) {
@@ -317,7 +287,8 @@ public class EntryTooltip extends JWindow {
 			this.declarationSnippet = null;
 		}
 
-		{
+		// tooltip source parsing only recognizes java, not bytecode
+		if (this.gui.getController().getClassHandleProvider().getDecompilerService() != Decompilers.BYTECODE) {
 			final ClassHandle targetTopClassHandle = this.gui.getController().getClassHandleProvider()
 					.openClass(target.getTopLevelClass());
 
@@ -334,8 +305,7 @@ public class EntryTooltip extends JWindow {
 								EntryTooltip.this.declarationSnippet
 										.consumeEditorMouseTarget((token, entry, resolvedParent) -> {
 											EntryTooltip.this.onEntryClick(entry, e.getModifiersEx());
-										}
-								);
+										});
 							}
 						}
 					});
@@ -345,10 +315,7 @@ public class EntryTooltip extends JWindow {
 					final Dimension oldSize = opening ? null : this.getSize();
 					final Point oldMousePos = MouseInfo.getPointerInfo().getLocation();
 					this.declarationSnippet.addSourceSetListener(source -> {
-						this.pack();
-						// swing </3
-						// a second call is required to eliminate extra space
-						this.pack();
+						this.repaint();
 
 						if (this.declarationSnippet != null) {
 							// without this, the editor gets focus and has a blue border
@@ -356,21 +323,27 @@ public class EntryTooltip extends JWindow {
 							this.declarationSnippet.ui.requestFocus();
 						}
 
-						final JScrollBar vertical = mainScroll.getVerticalScrollBar();
-						// scroll to bottom so declaration snippet is in view
-						vertical.setValue(vertical.getMaximum());
+						// JTextAreas (javadocs) adjust their preferred sizes after the first pack, so pack twice
+						this.pack();
+						// There seems to be a race condition when packing twice in a row where
+						// the tooltip's window can be sized based on the first pack, but components are sized
+						// based on the second pack.
+						// Using invokeLater for *only* the second pack *seems* to solve it.
+						SwingUtilities.invokeLater(this::pack);
 
-						if (oldSize == null) {
-							// opening
-							if (oldMousePos.distance(MouseInfo.getPointerInfo().getLocation()) < SMALL_MOVE_THRESHOLD) {
-								this.moveNearCursor();
+						SwingUtilities.invokeLater(() -> {
+							if (oldSize == null) {
+								// opening
+								if (oldMousePos.distance(MouseInfo.getPointerInfo().getLocation()) < SMALL_MOVE_THRESHOLD) {
+									this.moveNearCursor();
+								} else {
+									this.moveOnScreen();
+								}
 							} else {
-								this.moveOnScreen();
+								// not opening
+								this.moveMaintainingAnchor(oldMousePos, oldSize);
 							}
-						} else {
-							// not opening
-							this.moveMaintainingAnchor(oldMousePos, oldSize);
-						}
+						});
 					});
 				}
 
@@ -378,41 +351,21 @@ public class EntryTooltip extends JWindow {
 					this.declarationSnippet.editor.addMouseListener(stopInteraction);
 				}
 
-				mainContent.add(this.declarationSnippet.ui, GridBagConstraintsBuilder.create()
-						.pos(0, mainGridY++)
-						.weightX(1)
-						.fill(GridBagConstraints.HORIZONTAL)
-						.anchor(GridBagConstraints.LINE_START)
-						.build()
+				this.add(this.declarationSnippet.ui, FlexGridConstraints.createRelative().newRow()
+						.fillX()
+						.alignCenterLeft()
+						.incrementPriority()
 				);
 			} else {
-				mainContent.add(new JSeparator(), GridBagConstraintsBuilder.create()
-						.pos(0, mainGridY++)
-						.weightX(1)
-						.fill(GridBagConstraints.HORIZONTAL)
-						.build()
-				);
+				this.add(new JSeparator(), FlexGridConstraints.createRelative().newRow().fillX());
 
-				mainContent.add(
-						labelOf(I18n.translate("editor.tooltip.message.no_source"), italEditorFont),
-						GridBagConstraintsBuilder.create()
-							.pos(0, mainGridY++)
-							.weightX(1)
-							.fill(GridBagConstraints.HORIZONTAL)
-							.anchor(GridBagConstraints.LINE_START)
-							.insets(ROW_INNER_INSET, ROW_OUTER_INSET)
-							.build()
-				);
+				final JLabel noSource = labelOf(I18n.translate("editor.tooltip.message.no_source"), italEditorFont);
+				noSource.setBorder(createEmptyBorder(ROW_INNER_INSET, ROW_OUTER_INSET, ROW_INNER_INSET, ROW_OUTER_INSET));
+				this.add(noSource, FlexGridConstraints.createRelative().newRow().fillX());
 			}
 		}
 
-		this.add(mainScroll, GridBagConstraintsBuilder.create()
-				.pos(0, gridY++)
-				.weight(1, 1)
-				.fill(GridBagConstraints.BOTH)
-				.build()
-		);
-
+		this.repaint();
 		this.pack();
 
 		if (opening) {
@@ -467,16 +420,22 @@ public class EntryTooltip extends JWindow {
 		}
 
 		final Dimension size = this.getSize();
-		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		final Toolkit toolkit = Toolkit.getDefaultToolkit();
+		final Dimension screenSize = toolkit.getScreenSize();
+
 		final Point mousePos = MouseInfo.getPointerInfo().getLocation();
 
+		final Insets screenInsets = GuiUtil.findGraphicsConfig(mousePos.x, mousePos.y)
+				.map(toolkit::getScreenInsets)
+				.orElse(new Insets(0, 0, 0, 0));
+
 		final int x = findCoordinateSpace(
-				size.width, screenSize.width,
+				size.width, screenInsets.left, screenSize.width - screenInsets.right,
 				mousePos.x - MOUSE_PAD, mousePos.x + MOUSE_PAD
 		);
 
 		final int y = findCoordinateSpace(
-				size.height, screenSize.height,
+				size.height, screenInsets.top, screenSize.height - screenInsets.bottom,
 				mousePos.y - MOUSE_PAD, mousePos.y + MOUSE_PAD
 		);
 
@@ -529,9 +488,20 @@ public class EntryTooltip extends JWindow {
 			anchoredY = pos.y + yDiff;
 		}
 
-		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		final int targetX = Utils.clamp(anchoredX, 0, screenSize.width - newSize.width);
-		final int targetY = Utils.clamp(anchoredY, 0, screenSize.height - newSize.height);
+		final Toolkit toolkit = Toolkit.getDefaultToolkit();
+		final Dimension screenSize = toolkit.getScreenSize();
+		final Insets screenInsets = GuiUtil.findGraphicsConfig(pos.x, pos.y)
+				.map(toolkit::getScreenInsets)
+				.orElse(new Insets(0, 0, 0, 0));
+
+		final int targetX = Utils.clamp(
+				anchoredX, screenInsets.left,
+				screenSize.width - screenInsets.right - newSize.width
+		);
+		final int targetY = Utils.clamp(
+				anchoredY, screenInsets.top,
+				screenSize.height - screenInsets.bottom - newSize.height
+		);
 
 		if (targetX != pos.x || targetY != pos.y) {
 			this.setLocation(targetX, targetY);
@@ -546,20 +516,21 @@ public class EntryTooltip extends JWindow {
 			return;
 		}
 
-		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		final Dimension size = this.getSize();
 		final Point pos = this.getLocationOnScreen();
+		final Toolkit toolkit = Toolkit.getDefaultToolkit();
+		final Dimension screenSize = toolkit.getScreenSize();
+		final Insets screenInsets = GuiUtil.findGraphicsConfig(pos.x, pos.y)
+				.map(toolkit::getScreenInsets)
+				.orElse(new Insets(0, 0, 0, 0));
+		final Dimension size = this.getSize();
 
-		final int xOffScreen = pos.x + size.width - screenSize.width;
-		final int yOffScreen = pos.y + size.height - screenSize.height;
+		final int offRight = pos.x + size.width - screenSize.width - screenInsets.right;
+		final int x = Math.max(screenInsets.left, offRight > 0 ? pos.x - offRight : pos.x);
 
-		final boolean moveX = xOffScreen > 0;
-		final boolean moveY = yOffScreen > 0;
+		final int offBottom = pos.y + size.height - screenSize.height - screenInsets.bottom;
+		final int y = Math.max(screenInsets.top, offBottom > 0 ? pos.y - offBottom : pos.y);
 
-		if (moveX || moveY) {
-			final int x = pos.x - (moveX ? xOffScreen : 0);
-			final int y = pos.y - (moveY ? yOffScreen : 0);
-
+		if (x != pos.x || y != pos.y) {
 			this.setLocation(x, y);
 		}
 	}
@@ -573,17 +544,17 @@ public class EntryTooltip extends JWindow {
 		}
 	}
 
-	private static int findCoordinateSpace(int size, int screenSize, int mouseMin, int mouseMax) {
-		final double spaceAfter = screenSize - mouseMax;
+	private static int findCoordinateSpace(int size, int screenMin, int screenMax, int mouseMin, int mouseMax) {
+		final double spaceAfter = screenMax - mouseMax;
 		if (spaceAfter >= size) {
 			return mouseMax;
 		} else {
 			final int spaceBefore = mouseMin - size;
-			if (spaceBefore >= 0) {
+			if (spaceBefore >= screenMin) {
 				return spaceBefore;
 			} else {
 				// doesn't fit before or after; align with screen edge that gives more space
-				return spaceAfter < spaceBefore ? 0 : screenSize - size;
+				return spaceAfter < spaceBefore ? 0 : screenMax - size;
 			}
 		}
 	}
@@ -602,13 +573,13 @@ public class EntryTooltip extends JWindow {
 		return label;
 	}
 
-	private static JTextArea javadocOf(String javadoc, Font font, MouseAdapter stopInteraction) {
+	private static JTextArea javadocOf(String javadoc, Font font, Color background, MouseAdapter stopInteraction) {
 		final JTextArea text = new JTextArea(javadoc);
 		text.setLineWrap(true);
 		text.setWrapStyleWord(true);
 		text.setForeground(Config.getCurrentSyntaxPaneColors().comment.value());
 		text.setFont(font);
-		text.setBackground(GuiUtil.TRANSPARENT);
+		text.setBackground(background);
 		text.setCaretColor(GuiUtil.TRANSPARENT);
 		text.getCaret().setSelectionVisible(true);
 		text.setBorder(createEmptyBorder());
@@ -620,8 +591,12 @@ public class EntryTooltip extends JWindow {
 		return text;
 	}
 
+	private static String translatePlaceholder(String key) {
+		return "<%s>".formatted(I18n.translate(key));
+	}
+
 	private ImmutableList<ParamJavadoc> paramJavadocsOf(
-			Entry<?> target, Font nameFont, Font javadocFont, MouseAdapter stopInteraction
+			Entry<?> target, Font nameFont, Font javadocFont, Color background, MouseAdapter stopInteraction
 	) {
 		final EnigmaProject project = this.gui.getController().getProject();
 		final EntryIndex entryIndex = project.getJarIndex().getIndex(EntryIndex.class);
@@ -647,7 +622,7 @@ public class EntryTooltip extends JWindow {
 				final EntryMapping mapping = remapper.getMapping(param);
 				if (mapping.javadoc() != null) {
 					final JLabel name = colonLabelOf(remapper.deobfuscate(param).getSimpleName(), nameFont);
-					final JTextArea javadoc = javadocOf(mapping.javadoc(), javadocFont, stopInteraction);
+					final JTextArea javadoc = javadocOf(mapping.javadoc(), javadocFont, background, stopInteraction);
 
 					add.accept(new ParamJavadoc(name, javadoc));
 				}
@@ -712,7 +687,6 @@ public class EntryTooltip extends JWindow {
 			nameBuilder.insert(0, packageName.replace('/', '.'));
 		}
 
-		@Nullable
 		final MouseListener parentClicked;
 		if (stopInteraction == null) {
 			if (immediateParent != null) {
@@ -729,7 +703,10 @@ public class EntryTooltip extends JWindow {
 			parentClicked = null;
 		}
 
-		final JLabel parentLabel = new JLabel(nameBuilder.isEmpty() ? "<no package>" : nameBuilder.toString());
+		final JLabel parentLabel = new JLabel(nameBuilder.isEmpty()
+				? translatePlaceholder("editor.tooltip.label.no_package")
+				: nameBuilder.toString()
+		);
 
 		final Font parentFont;
 		if (parentClicked == null) {
@@ -827,12 +804,12 @@ public class EntryTooltip extends JWindow {
 				if (access == null || !(access.isSynthetic())) {
 					return project.getRemapper().deobfuscate(entry).getSimpleName();
 				} else {
-					return "<synthetic>";
+					return translatePlaceholder("editor.tooltip.label.synthetic");
 				}
 			}
 		}
 
-		return "<anonymous>";
+		return translatePlaceholder("editor.tooltip.label.anonymous");
 	}
 
 	public void setZoom(int amount) {
