@@ -10,6 +10,7 @@ import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableDefEntry;
+import org.quiltmc.enigma.impl.EnigmaProjectImpl;
 import org.quiltmc.enigma.impl.translation.LocalNameGenerator;
 import org.quiltmc.enigma.util.LineIndexer;
 
@@ -50,15 +51,15 @@ public class DecompiledClassSource {
 		SourceRemapper remapper = new SourceRemapper(this.obfuscatedIndex.getSource(), this.obfuscatedIndex.referenceTokens());
 
 		TokenStore tokenStore = TokenStore.create(this.obfuscatedIndex);
-		SourceRemapper.Result remapResult = remapper.remap((token, movedToken) -> this.remapToken(tokenStore, project, token, movedToken, translator));
+		SourceRemapper.Result remapResult = remapper.remap((token, movedToken) -> this.remapToken(tokenStore, ((EnigmaProjectImpl) project), token, movedToken, translator));
 		SourceIndex remappedIndex = this.obfuscatedIndex.remapTo(remapResult);
 		return new DecompiledClassSource(this.classEntry, this.obfuscatedIndex, remappedIndex, tokenStore);
 	}
 
-	private String remapToken(TokenStore target, EnigmaProject project, Token token, Token movedToken, Translator translator) {
+	private String remapToken(TokenStore target, EnigmaProjectImpl project, Token token, Token movedToken, Translator translator) {
 		EntryReference<Entry<?>, Entry<?>> reference = this.obfuscatedIndex.getReference(token);
 
-		Entry<?> entry = this.obfuscatedIndex.remapToNameable ? reference.getNameableEntry() : reference.entry;
+		Entry<?> entry = this.obfuscatedIndex.remapToNameable ? reference.getNameableEntry(project) : reference.entry;
 		TranslateResult<Entry<?>> translatedEntry = translator.extendedTranslate(entry);
 
 		if (project.isRenamable(reference)) {
@@ -67,6 +68,10 @@ public class DecompiledClassSource {
 				return translatedEntry.getValue().getSourceRemapName();
 			} else {
 				target.add(project, EntryMapping.OBFUSCATED, movedToken);
+			}
+		} else if (project.isInternallyRenamable(reference)) {
+			if (translatedEntry != null && !translatedEntry.isObfuscated()) {
+				return translatedEntry.getValue().getSourceRemapName();
 			}
 		} else if (DEBUG_TOKEN_HIGHLIGHTS) {
 			target.add(project, new EntryMapping(null, null, TokenType.DEBUG, null), movedToken);

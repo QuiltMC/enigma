@@ -435,7 +435,7 @@ public class Gui {
 	}
 
 	public void showCursorReference(EntryReference<Entry<?>, Entry<?>> reference) {
-		this.infoPanel.setReference(reference == null ? null : reference.entry);
+		this.infoPanel.setReference(reference);
 	}
 
 	public void startDocChange(EditorPanel editor) {
@@ -506,7 +506,7 @@ public class Gui {
 			return;
 		}
 
-		Entry<?> obfEntry = cursorReference.getNameableEntry();
+		Entry<?> obfEntry = cursorReference.getNameableEntry(this.controller.getProject());
 		this.toggleMappingFromEntry(obfEntry);
 	}
 

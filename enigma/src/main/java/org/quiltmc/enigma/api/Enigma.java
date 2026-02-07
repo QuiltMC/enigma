@@ -147,7 +147,7 @@ public class Enigma {
 		MappingsIndex mappingsIndex = MappingsIndex.empty();
 		mappingsIndex.indexMappings(proposedNames, progress);
 
-		return new EnigmaProject(this, path, mainProjectProvider, jarIndex, libIndex, comboIndex, mappingsIndex, proposedNames, Utils.zipSha1(path));
+		return EnigmaProject.of(this, path, mainProjectProvider, jarIndex, libIndex, comboIndex, mappingsIndex, proposedNames, Utils.zipSha1(path));
 	}
 
 	private void index(

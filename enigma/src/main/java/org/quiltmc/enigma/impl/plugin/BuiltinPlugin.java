@@ -6,7 +6,6 @@ import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaPluginContext;
 import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
-import org.quiltmc.enigma.api.analysis.index.jar.EntryIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.service.DecompilerService;
 import org.quiltmc.enigma.api.service.JarIndexerService;
@@ -25,6 +24,7 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 	@Override
 	public void init(EnigmaPluginContext ctx) {
 		registerRecordNamingService(ctx);
+		registerParamSyntheticFieldNamingService(ctx);
 		registerEnumNamingService(ctx);
 		registerSpecializedMethodNamingService(ctx);
 		registerDecompilerServices(ctx);
@@ -37,35 +37,10 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 	}
 
 	private static void registerEnumNamingService(EnigmaPluginContext ctx) {
-		final Map<Entry<?>, String> names = new HashMap<>();
-		final EnumFieldNameFindingVisitor visitor = new EnumFieldNameFindingVisitor(names);
+		final EnumFieldNameFindingVisitor visitor = new EnumFieldNameFindingVisitor();
 
-		ctx.registerService(JarIndexerService.TYPE, ctx1 -> JarIndexerService.fromVisitor(visitor, "enigma:enum_initializer_indexer"));
-
-		ctx.registerService(NameProposalService.TYPE, ctx1 -> new NameProposalService() {
-			@Override
-			public Map<Entry<?>, EntryMapping> getProposedNames(Enigma enigma, JarIndex index) {
-				Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
-
-				index.getIndex(EntryIndex.class).getFields().forEach(field -> {
-					if (names.containsKey(field)) {
-						mappings.put(field, this.createMapping(names.get(field), TokenType.JAR_PROPOSED));
-					}
-				});
-
-				return mappings;
-			}
-
-			@Override
-			public Map<Entry<?>, EntryMapping> getDynamicProposedNames(EntryRemapper remapper, @Nullable Entry<?> obfEntry, @Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping) {
-				return null;
-			}
-
-			@Override
-			public String getId() {
-				return "enigma:enum_name_proposer";
-			}
-		});
+		ctx.registerService(JarIndexerService.TYPE, ctx1 -> new EnumConstantIndexingService(visitor));
+		ctx.registerService(NameProposalService.TYPE, ctx1 -> new EnumConstantProposalService(visitor));
 	}
 
 	private static void registerRecordNamingService(EnigmaPluginContext ctx) {
@@ -73,6 +48,13 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 
 		ctx.registerService(JarIndexerService.TYPE, ctx1 -> new RecordIndexingService(visitor));
 		ctx.registerService(NameProposalService.TYPE, ctx1 -> new RecordComponentProposalService(visitor));
+	}
+
+	private static void registerParamSyntheticFieldNamingService(EnigmaPluginContext ctx) {
+		final ParamSyntheticFieldIndexingVisitor visitor = new ParamSyntheticFieldIndexingVisitor();
+
+		ctx.registerService(JarIndexerService.TYPE, ctx1 -> new ParamSyntheticFieldIndexingService(visitor));
+		ctx.registerService(NameProposalService.TYPE, ctx1 -> new ParamSyntheticFieldProposalService(visitor));
 	}
 
 	private static void registerSpecializedMethodNamingService(EnigmaPluginContext ctx) {

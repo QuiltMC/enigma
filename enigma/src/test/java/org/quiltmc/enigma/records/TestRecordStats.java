@@ -66,18 +66,19 @@ public class TestRecordStats {
 
 	@Test
 	void testMethods() {
-		ClassEntry c = TestEntryFactory.newClass("c");
-		StatsResult stats = new StatsGenerator(project).generate(c, new GenerationParameters(EnumSet.of(StatType.METHODS)));
+		ClassEntry constructorRecord = TestEntryFactory.newClass("c");
+		StatsResult stats = new StatsGenerator(project).generate(constructorRecord, new GenerationParameters(EnumSet.of(StatType.METHODS)));
 
-		// 4 mappable methods: 1 for each field
-		assertThat(stats.getMappable(StatType.METHODS), equalTo(4));
+		// 4 total methods: a getter for each field
+		final int mappable = 4;
+		assertThat(stats.getMappable(StatType.METHODS), equalTo(mappable));
 		assertThat(stats.getMapped(StatType.METHODS), equalTo(0));
 
-		project.getRemapper().putMapping(TestUtil.newVC(), TestEntryFactory.newField(c, "a", "Ljava/lang/String;"), new EntryMapping("gaming"));
-		StatsResult stats2 = new StatsGenerator(project).generate(c, new GenerationParameters(EnumSet.of(StatType.METHODS)));
+		project.getRemapper().putMapping(TestUtil.newVC(), TestEntryFactory.newField(constructorRecord, "a", "Ljava/lang/String;"), new EntryMapping("gaming"));
+		StatsResult stats2 = new StatsGenerator(project).generate(constructorRecord, new GenerationParameters(EnumSet.of(StatType.METHODS)));
 
 		// 1 method mapped to match field
-		assertThat(stats2.getMappable(StatType.METHODS), equalTo(4));
+		assertThat(stats2.getMappable(StatType.METHODS), equalTo(mappable));
 		assertThat(stats2.getMapped(StatType.METHODS), equalTo(1));
 	}
 }

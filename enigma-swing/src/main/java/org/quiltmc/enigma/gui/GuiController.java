@@ -437,7 +437,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void navigateTo(EntryReference<Entry<?>, Entry<?>> reference) {
-		if (!this.project.isNavigable(reference.getNameableEntry())) {
+		if (!this.project.isNavigable(reference.getNameableEntry(this.project))) {
 			return;
 		}
 

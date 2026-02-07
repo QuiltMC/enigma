@@ -12,6 +12,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.FieldDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodDefEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
+import org.quiltmc.enigma.impl.EnigmaProjectImpl;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
@@ -38,17 +39,21 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 	}
 
 	public void load(EnigmaProject project, StructureTreeOptions options) {
+		this.loadImpl((EnigmaProjectImpl) project, options);
+	}
+
+	private void loadImpl(EnigmaProjectImpl project, StructureTreeOptions options) {
 		Stream<ParentedEntry<?>> children = project.getJarIndex().getChildrenByClass().get(this.parentEntry).stream();
 
 		children = switch (options.obfuscationVisibility()) {
 			case ALL -> children;
 			case OBFUSCATED -> children
 					// remove deobfuscated members if only obfuscated, unless it's an inner class
-					.filter(e -> (e instanceof ClassEntry) || (project.isObfuscated(e) && project.isRenamable(e)))
+					.filter(e -> (e instanceof ClassEntry) || (project.isObfuscated(e) && project.isInternallyRenamable(e)))
 					// keep constructor methods if the class is obfuscated
 					.filter(e -> !(e instanceof MethodEntry m && m.isConstructor()) || project.isObfuscated(e.getParent()));
 			case DEOBFUSCATED -> children.filter(e -> (e instanceof ClassEntry)
-					|| (!project.isObfuscated(e) && project.isRenamable(e))
+					|| (!project.isObfuscated(e) && project.isInternallyRenamable(e))
 					// keep constructor methods if the class is deobfuscated
 					|| (e instanceof MethodEntry m && m.isConstructor()) && !project.isObfuscated(e.getParent()));
 		};

@@ -152,7 +152,7 @@ public class EditorPanel extends AbstractEditorPanel<MarkableScrollPane> {
 				if (!event.isControlDown() && !event.isAltDown() && Character.isJavaIdentifierStart(event.getKeyChar())) {
 					EnigmaProject project = gui.getController().getProject();
 					EntryReference<Entry<?>, Entry<?>> reference = project.getRemapper().deobfuscate(EditorPanel.this.cursorReference);
-					Entry<?> entry = reference.getNameableEntry();
+					Entry<?> entry = reference.getNameableEntry(EditorPanel.this.gui.getController().getProject());
 
 					String name = String.valueOf(event.getKeyChar());
 					if (entry instanceof ClassEntry classEntry && classEntry.getParent() == null) {
