@@ -12,13 +12,15 @@ import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.quiltmc.enigma.api.Enigma;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 class ParamSyntheticFieldIndexingVisitor extends ClassVisitor {
-	final Multimap<MethodNode, TypeInsnNode> localTypeInstructions = HashMultimap.create();
+	final Map<String, Multimap<MethodNode, TypeInstructionIndex>> localTypeInstructionsByMethodByOwner = new HashMap<>();
 	// excludes no-args constructors
 	final Multimap<String, MethodNode> localConstructorsByOwner = HashMultimap.create();
 	final Multimap<String, FieldNode> localSyntheticFieldsByOwner = HashMultimap.create();
@@ -97,17 +99,23 @@ class ParamSyntheticFieldIndexingVisitor extends ClassVisitor {
 	private void collectResults() {
 		for (final MethodNode method : this.methods) {
 			AbstractInsnNode instruction = method.instructions.getFirst();
+			int index = 0;
 			while (instruction != null) {
 				if (
 						instruction instanceof TypeInsnNode typeInstruction
 							&& typeInstruction.getOpcode() == Opcodes.NEW
 							&& this.localClassNames.contains(typeInstruction.desc)
 				) {
-					this.localTypeInstructions.put(method, typeInstruction);
+					this.localTypeInstructionsByMethodByOwner
+							.computeIfAbsent(this.className, owner -> HashMultimap.create())
+							.put(method, new TypeInstructionIndex(typeInstruction, index));
 				}
 
 				instruction = instruction.getNext();
+				index++;
 			}
 		}
 	}
+
+	record TypeInstructionIndex(TypeInsnNode typeInstruction, int index) { }
 }

@@ -10,6 +10,7 @@ import org.quiltmc.enigma.api.translation.mapping.EntryResolver;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.impl.EnigmaProjectImpl;
 
@@ -95,6 +96,14 @@ public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements T
 				if (definiteComponent != null) {
 					return definiteComponent;
 				}
+			}
+		} else if (this.entry instanceof FieldEntry field) {
+			final LocalVariableEntry linkedParam = ((EnigmaProjectImpl) project).getParamSyntheticFieldIndexingService()
+					.map(service -> service.getLinkedParam(field))
+					.orElse(null);
+
+			if (linkedParam != null) {
+				return linkedParam;
 			}
 		}
 
