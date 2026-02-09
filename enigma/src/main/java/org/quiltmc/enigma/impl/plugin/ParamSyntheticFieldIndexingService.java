@@ -28,7 +28,6 @@ import org.quiltmc.enigma.util.LocalVariableInterpreter;
 import org.quiltmc.enigma.util.LocalVariableValue;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -43,9 +42,7 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 	/**
 	 * invoker param -> invoked param
 	 */
-	private final Map<LocalVariableEntry, LocalVariableEntry> linkedParameters = new HashMap<>();
-	// Parameters used more than once
-	private final Set<LocalVariableEntry> invalidParameters = new HashSet<>();
+	private final Map<LocalVariableEntry, LocalVariableEntry> invokedByInvokerParams = new HashMap<>();
 
 	ParamSyntheticFieldIndexingService() {
 		this.visitor = new ParamSyntheticFieldIndexingVisitor();
@@ -86,8 +83,6 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 
 					final MethodEntry methodEntry = MethodEntry.parse(owner, method.name, method.desc);
 
-					final Map<LocalVariableEntry, LocalVariableEntry> paramsByTarget = new HashMap<>();
-
 					for (int instructionindex = typeInstructionIndex.index() + 1;
 							instructionindex < method.instructions.size();
 							instructionindex++
@@ -98,10 +93,7 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 									&& invocation.name.equals("<init>")
 									&& invocation.owner.equals(typeInstructionIndex.typeInstruction().desc)
 						) {
-							this.collectLinkedParams(
-									method, methodEntry, invocation,
-									frames[instructionindex], paramsByTarget
-							);
+							this.collectLinkedParams(method, methodEntry, invocation, frames[instructionindex]);
 
 							final MethodNode constructor = this.visitor.localConstructorsByDescByOwner
 									.getOrDefault(invocation.owner, Map.of())
@@ -112,7 +104,7 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 											constructor, this::buildSyntheticFieldsByConstructorParam
 										);
 
-								this.linkedParameters.forEach((invokerParam, invokedParam) -> {
+								this.invokedByInvokerParams.forEach((invokerParam, invokedParam) -> {
 									final FieldEntry field = syntheticFieldsByParam.get(invokedParam);
 									if (field != null) {
 										this.linkedFieldsByParam.put(invokerParam, field);
@@ -128,8 +120,7 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 	}
 
 	private void collectLinkedParams(
-			MethodNode method, MethodEntry methodEntry, MethodInsnNode invocation,
-			Frame<LocalVariableValue> frame, Map<LocalVariableEntry, LocalVariableEntry> paramsByTarget
+			MethodNode method, MethodEntry methodEntry, MethodInsnNode invocation, Frame<LocalVariableValue> frame
 	) {
 		final MethodEntry invokedEntry = MethodEntry
 				.parse(invocation.owner, invocation.name, invocation.desc);
@@ -157,29 +148,11 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 					continue;
 				}
 
-				// Skip invalid parameters
-				final var paramEntry = new LocalVariableEntry(methodEntry, value.local());
-				if (this.invalidParameters.contains(paramEntry)) {
-					continue;
-				}
+				final var invokerParam = new LocalVariableEntry(methodEntry, value.local());
 
-				// If another entry was linked to the same one inside this method,
-				// remove it and skip this one
-				final var targetEntry = new LocalVariableEntry(invokedEntry, localIndex);
-				if (paramsByTarget.containsKey(targetEntry)) {
-					final LocalVariableEntry otherParam = paramsByTarget.get(targetEntry);
+				final var invokedParam = new LocalVariableEntry(invokedEntry, localIndex);
 
-					if (otherParam != null && !paramEntry.equals(otherParam)) {
-						paramsByTarget.put(targetEntry, null);
-						this.linkedParameters.remove(otherParam);
-					}
-
-					continue;
-				}
-
-				if (this.tryLink(paramEntry, targetEntry)) {
-					paramsByTarget.put(targetEntry, paramEntry);
-				}
+				this.invokedByInvokerParams.put(invokerParam, invokedParam);
 			}
 		}
 	}
@@ -251,29 +224,5 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 	@Nullable
 	public LocalVariableEntry getLinkedParam(FieldEntry syntheticField) {
 		return this.linkedFieldsByParam.inverse().get(syntheticField);
-	}
-
-	private boolean tryLink(LocalVariableEntry paramEntry, LocalVariableEntry targetEntry) {
-		if (paramEntry.equals(targetEntry)) {
-			throw new IllegalArgumentException("Can't link a parameter to itself!");
-		}
-
-		if (this.linkedParameters.containsKey(paramEntry)) {
-			// If the argument passed was already used somewhere else, invalidate it
-			if (this.linkedParameters.get(paramEntry) != targetEntry) {
-				this.invalidate(paramEntry);
-			}
-
-			return false;
-		}
-
-		this.linkedParameters.put(paramEntry, targetEntry);
-		return true;
-	}
-
-	private void invalidate(LocalVariableEntry paramEntry) {
-		this.invalidParameters.add(paramEntry);
-
-		this.linkedParameters.remove(paramEntry);
 	}
 }
