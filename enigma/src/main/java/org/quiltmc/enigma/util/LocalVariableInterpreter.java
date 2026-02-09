@@ -17,7 +17,9 @@ import java.util.List;
  * @author <a href="https://github.com/IotaBread">IotaBread</a>
  */
 public class LocalVariableInterpreter extends Interpreter<LocalVariableValue> implements Opcodes {
-	public LocalVariableInterpreter() {
+	public static final LocalVariableInterpreter INSTANCE = new LocalVariableInterpreter();
+
+	protected LocalVariableInterpreter() {
 		super(Opcodes.ASM9);
 	}
 

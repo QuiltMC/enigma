@@ -22,7 +22,7 @@ import java.util.Set;
 class ParamSyntheticFieldIndexingVisitor extends ClassVisitor {
 	final Map<String, Multimap<MethodNode, TypeInstructionIndex>> localTypeInstructionsByMethodByOwner = new HashMap<>();
 	// excludes no-args constructors
-	final Multimap<String, MethodNode> localConstructorsByOwner = HashMultimap.create();
+	final Map<String, Map<String, MethodNode>> localConstructorsByDescByOwner = new HashMap<>();
 	final Multimap<String, FieldNode> localSyntheticFieldsByOwner = HashMultimap.create();
 
 	private String className;
@@ -71,7 +71,9 @@ class ParamSyntheticFieldIndexingVisitor extends ClassVisitor {
 			final MethodNode node = new MethodNode(this.api, access, name, descriptor, signature, exceptions);
 
 			if (this.classIsLocal && name.equals("<init>") && !descriptor.startsWith("()")) {
-				this.localConstructorsByOwner.put(this.className, node);
+				this.localConstructorsByDescByOwner
+						.computeIfAbsent(this.className, owner -> new HashMap<>())
+						.put(descriptor, node);
 			}
 
 			if (hasLocalClasses) {

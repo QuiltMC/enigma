@@ -65,166 +65,169 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 			}
 		}
 
-		final var syntheticFieldsByConstructorParamByConstructor =
-			new HashMap<MethodNode, Map<LocalVariableEntry, FieldEntry>>();
+		final Map<MethodNode, Map<LocalVariableEntry, FieldEntry>> syntheticFieldsByParamByConstructor =
+			new HashMap<>();
 
-		this.visitor.localTypeInstructionsByMethodByOwner
-				.forEach((owner, localTypeInstructions) -> localTypeInstructions
-					.forEach((method, typeInstructionIndex) -> {
-						// population of linkedParameters based on QEP's DelegateParametersIndex by IotaBread
+		this.visitor.localTypeInstructionsByMethodByOwner.forEach((owner, typeInstructions) -> typeInstructions
+				.forEach((method, typeInstructionIndex) -> {
+					// population of linkedParameters based on QEP's DelegateParametersIndex by IotaBread
 
-						if (method.parameters == null || method.parameters.isEmpty()) {
-							// no parameter info
-							return;
-						}
+					if (method.parameters == null || method.parameters.isEmpty()) {
+						// no parameter info
+						return;
+					}
 
-						final Frame<LocalVariableValue>[] frames;
-						try {
-							frames = new Analyzer<>(new LocalVariableInterpreter())
-									.analyze(owner, method);
-						} catch (AnalyzerException e) {
-							throw new RuntimeException(e);
-						}
+					final Frame<LocalVariableValue>[] frames;
+					try {
+						frames = new Analyzer<>(LocalVariableInterpreter.INSTANCE).analyze(owner, method);
+					} catch (AnalyzerException e) {
+						throw new RuntimeException(e);
+					}
 
-						final MethodEntry methodEntry = MethodEntry.parse(owner, method.name, method.desc);
+					final MethodEntry methodEntry = MethodEntry.parse(owner, method.name, method.desc);
 
-						final var paramsByTarget = new HashMap<LocalVariableEntry, LocalVariableEntry>();
+					final Map<LocalVariableEntry, LocalVariableEntry> paramsByTarget = new HashMap<>();
 
-						for (int instructionindex = typeInstructionIndex.index() + 1;
-								instructionindex < method.instructions.size();
-								instructionindex++
+					for (int instructionindex = typeInstructionIndex.index() + 1;
+							instructionindex < method.instructions.size();
+							instructionindex++
+					) {
+						final AbstractInsnNode postTypeInstruction = method.instructions.get(instructionindex);
+						if (
+								postTypeInstruction instanceof MethodInsnNode invocation
+									&& invocation.name.equals("<init>")
+									&& invocation.owner.equals(typeInstructionIndex.typeInstruction().desc)
 						) {
-							final AbstractInsnNode postTypeInstruction = method.instructions.get(instructionindex);
-							if (
-									postTypeInstruction instanceof MethodInsnNode invocation
-										&& invocation.name.equals("<init>")
-										&& invocation.owner.equals(typeInstructionIndex.typeInstruction().desc)
-							) {
-								final MethodEntry invokedEntry = MethodEntry
-										.parse(invocation.owner, invocation.name, invocation.desc);
+							this.collectLinkedParams(
+									method, methodEntry, invocation,
+									frames[instructionindex], paramsByTarget
+							);
 
-								final Frame<LocalVariableValue> frame =
-										frames[instructionindex];
-								final boolean isStatic = invocation.getOpcode() == INVOKESTATIC;
-								final Type invokedDesc = Type.getMethodType(invocation.desc);
-								int localIndex = invokedDesc.getArgumentsAndReturnSizes() >> 2;
-								if (isStatic) {
-									localIndex--;
-								}
+							final MethodNode constructor = this.visitor.localConstructorsByDescByOwner
+									.getOrDefault(invocation.owner, Map.of())
+									.get(invocation.desc);
+							if (constructor != null) {
+								final Map<LocalVariableEntry, FieldEntry> syntheticFieldsByParam =
+										syntheticFieldsByParamByConstructor.computeIfAbsent(
+											constructor, this::buildSyntheticFieldsByConstructorParam
+										);
 
-								// Check each of the arguments passed to the invocation
-								for (int invokeArgIndex = invokedDesc.getArgumentCount() - 1;
-										invokeArgIndex >= 0;
-										invokeArgIndex--
-								) {
-									final LocalVariableValue value = frame.pop();
-									localIndex -= value.getSize();
-
-									// If one of the passed arguments is a parameter of the original method, save it
-									if (value.parameter()) {
-										// Skip synthetic parameters
-										final int index = org.quiltmc.enigma.util.AsmUtil.getLocalIndex(method, value.local());
-										if (AsmUtil.matchAccess(method.parameters.get(index), ACC_SYNTHETIC)) {
-											continue;
-										}
-
-										// Skip invalid parameters
-										final var paramEntry = new LocalVariableEntry(methodEntry, value.local());
-										if (this.invalidParameters.contains(paramEntry)) {
-											continue;
-										}
-
-										// If another entry was linked to the same one inside this method,
-										// remove it and skip this one
-										final var targetEntry = new LocalVariableEntry(invokedEntry, localIndex);
-										if (paramsByTarget.containsKey(targetEntry)) {
-											final LocalVariableEntry otherParam = paramsByTarget.get(targetEntry);
-
-											if (otherParam != null && !paramEntry.equals(otherParam)) {
-												paramsByTarget.put(targetEntry, null);
-												this.linkedParameters.remove(otherParam);
-											}
-
-											continue;
-										}
-
-										if (this.tryLink(paramEntry, targetEntry)) {
-											paramsByTarget.put(targetEntry, paramEntry);
-										}
+								this.linkedParameters.forEach((invokerParam, invokedParam) -> {
+									final FieldEntry field = syntheticFieldsByParam.get(invokedParam);
+									if (field != null) {
+										this.linkedFieldsByParam.put(invokerParam, field);
 									}
-								}
-
-								this.visitor.localConstructorsByOwner.get(invocation.owner).stream()
-										.filter(constructor ->
-											!syntheticFieldsByConstructorParamByConstructor.containsKey(constructor)
-												&& constructor.desc.equals(invocation.desc)
-										)
-										.findAny()
-										.ifPresent(constructor -> {
-											final Map<LocalVariableEntry, FieldEntry> syntheticFieldsByConstructorParams =
-													syntheticFieldsByConstructorParamByConstructor
-														.computeIfAbsent(constructor, c -> {
-															AbstractInsnNode constructorInstruction =
-																	c.instructions.getLast();
-															FieldInsnNode fieldPut = null;
-															final Map<LocalVariableEntry, FieldEntry>
-																	paramsBySyntheticField = new HashMap<>();
-															while (constructorInstruction != null) {
-																if (
-																		constructorInstruction
-																			instanceof FieldInsnNode fieldInstruction
-																			&& fieldInstruction.getOpcode() == PUTFIELD
-																			&& this.visitor.localSyntheticFieldsByOwner
-																			.get(fieldInstruction.owner)
-																			.stream()
-																			.anyMatch(field ->
-																				field.name.equals(fieldInstruction.name)
-																					&& field.desc
-																						.equals(fieldInstruction.desc)
-																			)
-																) {
-																	fieldPut = fieldInstruction;
-																} else if (fieldPut != null) {
-																	if (
-																			constructorInstruction
-																				instanceof VarInsnNode varInstruction
-																				&& varInstruction.getOpcode() >= ILOAD
-																				&& varInstruction.getOpcode() <= SALOAD
-																				// TODO account for non/static
-																				//  and double-size params
-																				&& varInstruction.var
-																					< c.parameters.size()
-																	) {
-																		paramsBySyntheticField.put(
-																			// TODO +1 for this??
-																			new LocalVariableEntry(new MethodEntry(new ClassEntry(invocation.owner), constructor.name, new MethodDescriptor(constructor.desc)), varInstruction.var + 1),
-																			new FieldEntry(new ClassEntry(fieldPut.owner), fieldPut.name, new TypeDescriptor(fieldPut.desc))
-																		);
-																	}
-
-																	fieldPut = null;
-																}
-
-																constructorInstruction =
-																	constructorInstruction.getPrevious();
-															}
-
-															return paramsBySyntheticField;
-														});
-
-											this.linkedParameters.forEach((invokerParam, invokedParam) -> {
-												final FieldEntry field = syntheticFieldsByConstructorParams.get(invokedParam);
-												if (field != null) {
-													this.linkedFieldsByParam.put(invokerParam, field);
-												}
-											});
-										});
-
-								break;
+								});
 							}
+
+							break;
 						}
-					})
+					}
+				})
 		);
+	}
+
+	private void collectLinkedParams(
+			MethodNode method, MethodEntry methodEntry, MethodInsnNode invocation,
+			Frame<LocalVariableValue> frame, Map<LocalVariableEntry, LocalVariableEntry> paramsByTarget
+	) {
+		final MethodEntry invokedEntry = MethodEntry
+				.parse(invocation.owner, invocation.name, invocation.desc);
+
+		final boolean isStatic = invocation.getOpcode() == INVOKESTATIC;
+		final Type invokedDesc = Type.getMethodType(invocation.desc);
+		int localIndex = invokedDesc.getArgumentsAndReturnSizes() >> 2;
+		if (isStatic) {
+			localIndex--;
+		}
+
+		// Check each of the arguments passed to the invocation
+		for (int invokeArgIndex = invokedDesc.getArgumentCount() - 1;
+				invokeArgIndex >= 0;
+				invokeArgIndex--
+		) {
+			final LocalVariableValue value = frame.pop();
+			localIndex -= value.getSize();
+
+			// If one of the passed arguments is a parameter of the original method, save it
+			if (value.parameter()) {
+				// Skip synthetic parameters
+				final int index = AsmUtil.getLocalIndex(method, value.local());
+				if (AsmUtil.matchAccess(method.parameters.get(index), ACC_SYNTHETIC)) {
+					continue;
+				}
+
+				// Skip invalid parameters
+				final var paramEntry = new LocalVariableEntry(methodEntry, value.local());
+				if (this.invalidParameters.contains(paramEntry)) {
+					continue;
+				}
+
+				// If another entry was linked to the same one inside this method,
+				// remove it and skip this one
+				final var targetEntry = new LocalVariableEntry(invokedEntry, localIndex);
+				if (paramsByTarget.containsKey(targetEntry)) {
+					final LocalVariableEntry otherParam = paramsByTarget.get(targetEntry);
+
+					if (otherParam != null && !paramEntry.equals(otherParam)) {
+						paramsByTarget.put(targetEntry, null);
+						this.linkedParameters.remove(otherParam);
+					}
+
+					continue;
+				}
+
+				if (this.tryLink(paramEntry, targetEntry)) {
+					paramsByTarget.put(targetEntry, paramEntry);
+				}
+			}
+		}
+	}
+
+	private Map<LocalVariableEntry, FieldEntry> buildSyntheticFieldsByConstructorParam(MethodNode constructor) {
+		AbstractInsnNode constructorInstruction = constructor.instructions.getLast();
+		FieldInsnNode fieldPut = null;
+		final Map<LocalVariableEntry, FieldEntry> paramsBySyntheticField = new HashMap<>();
+		while (constructorInstruction != null) {
+			if (
+					constructorInstruction
+						instanceof FieldInsnNode fieldInstruction
+						&& fieldInstruction.getOpcode() == PUTFIELD
+						&& this.visitor.localSyntheticFieldsByOwner
+						.get(fieldInstruction.owner)
+						.stream()
+						.anyMatch(field ->
+							field.name.equals(fieldInstruction.name)
+								&& field.desc
+									.equals(fieldInstruction.desc)
+						)
+			) {
+				fieldPut = fieldInstruction;
+			} else if (fieldPut != null) {
+				if (
+						constructorInstruction
+							instanceof VarInsnNode varInstruction
+							&& varInstruction.getOpcode() >= ILOAD
+							&& varInstruction.getOpcode() <= SALOAD
+							// TODO account for non/static
+							//  and double-size params
+							&& varInstruction.var
+								< constructor.parameters.size()
+				) {
+					paramsBySyntheticField.put(
+						// TODO +1 for this??
+						new LocalVariableEntry(new MethodEntry(new ClassEntry(fieldPut.owner), constructor.name, new MethodDescriptor(constructor.desc)), varInstruction.var),
+						new FieldEntry(new ClassEntry(fieldPut.owner), fieldPut.name, new TypeDescriptor(fieldPut.desc))
+					);
+				}
+
+				fieldPut = null;
+			}
+
+			constructorInstruction = constructorInstruction.getPrevious();
+		}
+
+		return paramsBySyntheticField;
 	}
 
 	@Override
