@@ -191,9 +191,10 @@ public abstract class AbstractJarIndex implements JarIndex {
 	@Override
 	public void indexField(FieldDefEntry fieldEntry) {
 		this.indexers.forEach((key, indexer) -> indexer.indexField(fieldEntry));
-		if (!fieldEntry.getAccess().isSynthetic()) {
+		// DEBUG
+		// if (!fieldEntry.getAccess().isSynthetic()) {
 			this.childrenByClass.put(fieldEntry.getParent(), fieldEntry);
-		}
+		// }
 	}
 
 	@Override

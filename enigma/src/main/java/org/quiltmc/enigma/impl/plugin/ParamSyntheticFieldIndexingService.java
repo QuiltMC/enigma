@@ -17,20 +17,17 @@ import org.objectweb.asm.tree.analysis.Frame;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.service.JarIndexerService;
-import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
-import org.quiltmc.enigma.util.AsmUtil;
 import org.quiltmc.enigma.util.LocalVariableInterpreter;
 import org.quiltmc.enigma.util.LocalVariableValue;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 public class ParamSyntheticFieldIndexingService implements JarIndexerService, Opcodes {
@@ -39,18 +36,8 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 	private final ParamSyntheticFieldIndexingVisitor visitor;
 	private final BiMap<LocalVariableEntry, FieldEntry> linkedFieldsByParam = HashBiMap.create();
 
-	/**
-	 * invoker param -> invoked param
-	 */
-	private final Map<LocalVariableEntry, LocalVariableEntry> invokedByInvokerParams = new HashMap<>();
-
 	ParamSyntheticFieldIndexingService() {
 		this.visitor = new ParamSyntheticFieldIndexingVisitor();
-	}
-
-	static boolean isSameMethod(ClassNode owner, MethodNode node, MethodInsnNode methodInstruction) {
-		return node.name.equals(methodInstruction.name)
-				&& node.desc.equals(methodInstruction.desc) && owner.name.equals(methodInstruction.owner);
 	}
 
 	@Override
@@ -65,9 +52,11 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 		final Map<MethodNode, Map<LocalVariableEntry, FieldEntry>> syntheticFieldsByParamByConstructor =
 			new HashMap<>();
 
+		final Map<LocalVariableEntry, LocalVariableEntry> invokedByInvokerParams = new HashMap<>();
+
 		this.visitor.localTypeInstructionsByMethodByOwner.forEach((owner, typeInstructions) -> typeInstructions
 				.forEach((method, typeInstructionIndex) -> {
-					// population of linkedParameters based on QEP's DelegateParametersIndex by IotaBread
+					// population of invokedByInvokerParams based on QEP's DelegateParametersIndex by IotaBread
 
 					if (method.parameters == null || method.parameters.isEmpty()) {
 						// no parameter info
@@ -93,18 +82,24 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 									&& invocation.name.equals("<init>")
 									&& invocation.owner.equals(typeInstructionIndex.typeInstruction().desc)
 						) {
-							this.collectLinkedParams(method, methodEntry, invocation, frames[instructionindex]);
-
 							final MethodNode constructor = this.visitor.localConstructorsByDescByOwner
 									.getOrDefault(invocation.owner, Map.of())
 									.get(invocation.desc);
 							if (constructor != null) {
+								final MethodEntry constructorEntry = MethodEntry
+										.parse(invocation.owner, invocation.name, invocation.desc);
+
+								invokedByInvokerParams.putAll(collectLinkedParams(
+										methodEntry, constructorEntry,
+										invocation, frames[instructionindex]
+								));
+
 								final Map<LocalVariableEntry, FieldEntry> syntheticFieldsByParam =
-										syntheticFieldsByParamByConstructor.computeIfAbsent(
-											constructor, this::buildSyntheticFieldsByConstructorParam
+										syntheticFieldsByParamByConstructor.computeIfAbsent(constructor, c ->
+											this.buildSyntheticFieldsByConstructorParam(c, constructorEntry)
 										);
 
-								this.invokedByInvokerParams.forEach((invokerParam, invokedParam) -> {
+								invokedByInvokerParams.forEach((invokerParam, invokedParam) -> {
 									final FieldEntry field = syntheticFieldsByParam.get(invokedParam);
 									if (field != null) {
 										this.linkedFieldsByParam.put(invokerParam, field);
@@ -119,45 +114,41 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 		);
 	}
 
-	private void collectLinkedParams(
-			MethodNode method, MethodEntry methodEntry, MethodInsnNode invocation, Frame<LocalVariableValue> frame
+	private static Map<LocalVariableEntry, LocalVariableEntry> collectLinkedParams(
+			MethodEntry invokerEntry, MethodEntry invokedEntry,
+			MethodInsnNode invocation, Frame<LocalVariableValue> frame
 	) {
-		final MethodEntry invokedEntry = MethodEntry
-				.parse(invocation.owner, invocation.name, invocation.desc);
-
 		final boolean isStatic = invocation.getOpcode() == INVOKESTATIC;
 		final Type invokedDesc = Type.getMethodType(invocation.desc);
-		int localIndex = invokedDesc.getArgumentsAndReturnSizes() >> 2;
+		int invokedLocalIndex = invokedDesc.getArgumentsAndReturnSizes() >> 2;
 		if (isStatic) {
-			localIndex--;
+			invokedLocalIndex--;
 		}
 
+		final Map<LocalVariableEntry, LocalVariableEntry> invokedByInvokerParams = new HashMap<>();
 		// Check each of the arguments passed to the invocation
 		for (int invokeArgIndex = invokedDesc.getArgumentCount() - 1;
 				invokeArgIndex >= 0;
 				invokeArgIndex--
 		) {
-			final LocalVariableValue value = frame.pop();
-			localIndex -= value.getSize();
+			final LocalVariableValue invokerValue = frame.pop();
+			invokedLocalIndex -= invokerValue.getSize();
 
 			// If one of the passed arguments is a parameter of the original method, save it
-			if (value.parameter()) {
-				// Skip synthetic parameters
-				final int index = AsmUtil.getLocalIndex(method, value.local());
-				if (AsmUtil.matchAccess(method.parameters.get(index), ACC_SYNTHETIC)) {
-					continue;
-				}
-
-				final var invokerParam = new LocalVariableEntry(methodEntry, value.local());
-
-				final var invokedParam = new LocalVariableEntry(invokedEntry, localIndex);
-
-				this.invokedByInvokerParams.put(invokerParam, invokedParam);
+			if (invokerValue.parameter()) {
+				invokedByInvokerParams.put(
+					new LocalVariableEntry(invokerEntry, invokerValue.local()),
+					new LocalVariableEntry(invokedEntry, invokedLocalIndex)
+				);
 			}
 		}
+
+		return invokedByInvokerParams;
 	}
 
-	private Map<LocalVariableEntry, FieldEntry> buildSyntheticFieldsByConstructorParam(MethodNode constructor) {
+	private Map<LocalVariableEntry, FieldEntry> buildSyntheticFieldsByConstructorParam(
+			MethodNode constructor, MethodEntry constructorEntry
+	) {
 		AbstractInsnNode constructorInstruction = constructor.instructions.getLast();
 		FieldInsnNode fieldPut = null;
 		final Map<LocalVariableEntry, FieldEntry> paramsBySyntheticField = new HashMap<>();
@@ -178,18 +169,15 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 				fieldPut = fieldInstruction;
 			} else if (fieldPut != null) {
 				if (
-						constructorInstruction
-							instanceof VarInsnNode varInstruction
+						constructorInstruction instanceof VarInsnNode varInstruction
 							&& varInstruction.getOpcode() >= ILOAD
 							&& varInstruction.getOpcode() <= SALOAD
-							// TODO account for non/static
-							//  and double-size params
-							&& varInstruction.var
-								< constructor.parameters.size()
+							// TODO double-size params?
+							&& varInstruction.var < constructor.parameters.size() + 1
 				) {
 					paramsBySyntheticField.put(
 						// TODO +1 for this??
-						new LocalVariableEntry(new MethodEntry(new ClassEntry(fieldPut.owner), constructor.name, new MethodDescriptor(constructor.desc)), varInstruction.var),
+						new LocalVariableEntry(constructorEntry, varInstruction.var),
 						new FieldEntry(new ClassEntry(fieldPut.owner), fieldPut.name, new TypeDescriptor(fieldPut.desc))
 					);
 				}
@@ -206,10 +194,6 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 	@Override
 	public String getId() {
 		return ID;
-	}
-
-	public void forEachSyntheticFieldLinkedParam(BiConsumer<LocalVariableEntry, FieldEntry> action) {
-		this.linkedFieldsByParam.forEach(action);
 	}
 
 	public Stream<Map.Entry<LocalVariableEntry, FieldEntry>> streamSyntheticFieldLinkedParams() {

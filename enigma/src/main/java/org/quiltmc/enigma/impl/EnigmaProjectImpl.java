@@ -250,7 +250,11 @@ public class EnigmaProjectImpl implements EnigmaProject {
 			return false;
 		}
 
-		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry);
+		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry)
+				|| obfEntry instanceof FieldEntry field
+				&& this.getParamSyntheticFieldIndexingService()
+					.map(service -> service.getLinkedParam(field))
+					.isPresent();
 	}
 
 	private boolean isLibraryMethodOverride(MethodEntry methodEntry) {
