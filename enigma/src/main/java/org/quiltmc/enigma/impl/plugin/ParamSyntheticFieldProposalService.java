@@ -10,8 +10,11 @@ import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
+import org.quiltmc.enigma.util.Lazy;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,19 +40,43 @@ public class ParamSyntheticFieldProposalService implements NameProposalService {
 			@Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping
 	) {
 		if (obfEntry == null) {
-			return this.indexer.streamSyntheticFieldLinkedParams()
-				.flatMap(entry -> {
-					final EntryMapping mapping = remapper.getMapping(entry.getKey());
-					return mapping.tokenType() == TokenType.OBFUSCATED ? Stream.empty()
-							: Stream.of(Map.entry(entry.getValue(), withMetaInfo(mapping)));
-				})
+			return Stream
+				.concat(
+					this.indexer.streamSyntheticFieldLinkedParams().flatMap(entry -> {
+						final EntryMapping mapping = remapper.getMapping(entry.getKey());
+						return mapping.tokenType() == TokenType.OBFUSCATED ? Stream.empty()
+								: Stream.of(Map.entry(entry.getValue(), withMetaInfo(mapping)));
+					}),
+					this.indexer.streamFakeLocalLinkedParams().flatMap(entry -> {
+						final EntryMapping mapping = remapper.getMapping(entry.getKey());
+						return mapping.tokenType() == TokenType.OBFUSCATED ? Stream.empty()
+								: Stream.of(Map.entry(entry.getValue(), withMetaInfo(mapping)));
+					})
+				)
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 		} else if (obfEntry instanceof LocalVariableEntry local) {
+			final Lazy<Optional<EntryMapping>> mapping = Lazy.of(() ->
+					newMapping != null && newMapping.tokenType() != TokenType.OBFUSCATED
+						? Optional.of(withMetaInfo(newMapping)) : Optional.empty()
+			);
+
+			final Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
+
 			final FieldEntry field = this.indexer.getLinkedSyntheticField(local);
 			if (field != null) {
-				if (newMapping != null && newMapping.tokenType() != TokenType.OBFUSCATED) {
-					return Map.of(field, withMetaInfo(newMapping));
-				}
+				mapping.get().ifPresent(m -> mappings.put(field, m));
+				// if (newMapping != null && newMapping.tokenType() != TokenType.OBFUSCATED) {
+				// 	return Map.of(field, withMetaInfo(newMapping));
+				// }
+			}
+
+			final LocalVariableEntry fakeLocal = this.indexer.getFakeLocal(local);
+			if (fakeLocal != null) {
+				mapping.get().ifPresent(m -> mappings.put(fakeLocal, m));
+			}
+
+			if (!mappings.isEmpty()) {
+				return mappings;
 			}
 		}
 

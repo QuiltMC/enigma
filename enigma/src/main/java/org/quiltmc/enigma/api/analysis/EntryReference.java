@@ -105,6 +105,14 @@ public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements T
 			if (linkedParam != null) {
 				return linkedParam;
 			}
+		} else if (this.entry instanceof LocalVariableEntry local) {
+			final LocalVariableEntry linkedParam = ((EnigmaProjectImpl) project).getParamSyntheticFieldIndexingService()
+					.map(service -> service.getLinkedParam(local))
+					.orElse(null);
+
+			if (linkedParam != null) {
+				return linkedParam;
+			}
 		}
 
 		return this.entry;

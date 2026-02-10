@@ -7,6 +7,7 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
@@ -19,16 +20,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class ParamSyntheticFieldIndexingVisitor extends ClassVisitor {
+class ParamSyntheticFieldIndexingVisitor extends ClassVisitor implements Opcodes {
+	private static <I, K, V> Map<K, V> createHashMap(I ignored) {
+		return new HashMap<>();
+	}
+
 	final Map<String, Multimap<MethodNode, TypeInstructionIndex>> localTypeInstructionsByMethodByOwner = new HashMap<>();
 	// excludes no-args constructors
 	final Map<String, Map<String, MethodNode>> localConstructorsByDescByOwner = new HashMap<>();
-	final Multimap<String, FieldNode> localSyntheticFieldsByOwner = HashMultimap.create();
+	final Map<String, Map<String, Map<String, FieldNode>>> localSyntheticFieldsByDescByNameByOwner = new HashMap<>();
+	final Map<String, Map<MethodNode, FieldNode>> localSyntheticFieldsByGettersByOwner = new HashMap<>();
 
 	private String className;
 	private boolean classIsLocal;
-	private final List<MethodNode> methods = new LinkedList<>();
+	private final List<MethodNode> outerClassMethods = new LinkedList<>();
 	private final Set<String> localClassNames = new HashSet<>();
+	private final Multimap<String, MethodNode> localMethodsByOwner = HashMultimap.create();
 
 	ParamSyntheticFieldIndexingVisitor() {
 		super(Enigma.ASM_VERSION);
@@ -54,9 +61,12 @@ class ParamSyntheticFieldIndexingVisitor extends ClassVisitor {
 
 	@Override
 	public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
-		if (this.classIsLocal && (access & Opcodes.ACC_SYNTHETIC) != 0 && (access & Opcodes.ACC_STATIC) == 0) {
+		if (this.classIsLocal && (access & ACC_SYNTHETIC) != 0 && (access & ACC_STATIC) == 0) {
 			final var node = new FieldNode(access, name, descriptor, signature, value);
-			this.localSyntheticFieldsByOwner.put(this.className, node);
+			this.localSyntheticFieldsByDescByNameByOwner
+					.computeIfAbsent(this.className, ParamSyntheticFieldIndexingVisitor::createHashMap)
+					.computeIfAbsent(name, ParamSyntheticFieldIndexingVisitor::createHashMap)
+					.put(descriptor, node);
 
 			return node;
 		} else {
@@ -70,14 +80,20 @@ class ParamSyntheticFieldIndexingVisitor extends ClassVisitor {
 		if (this.classIsLocal || hasLocalClasses) {
 			final MethodNode node = new MethodNode(this.api, access, name, descriptor, signature, exceptions);
 
-			if (this.classIsLocal && name.equals("<init>") && !descriptor.startsWith("()")) {
-				this.localConstructorsByDescByOwner
-						.computeIfAbsent(this.className, owner -> new HashMap<>())
-						.put(descriptor, node);
+			if (this.classIsLocal) {
+				if (name.equals("<init>")) {
+					if (!descriptor.startsWith("()")) {
+						this.localConstructorsByDescByOwner
+								.computeIfAbsent(this.className, ParamSyntheticFieldIndexingVisitor::createHashMap)
+								.put(descriptor, node);
+					}
+				}
+
+				this.localMethodsByOwner.put(this.className, node);
 			}
 
 			if (hasLocalClasses) {
-				this.methods.add(node);
+				this.outerClassMethods.add(node);
 			}
 
 			return node;
@@ -94,18 +110,19 @@ class ParamSyntheticFieldIndexingVisitor extends ClassVisitor {
 
 		this.className = null;
 		this.classIsLocal = false;
-		this.methods.clear();
+		this.outerClassMethods.clear();
 		this.localClassNames.clear();
+		this.localMethodsByOwner.clear();
 	}
 
 	private void collectResults() {
-		for (final MethodNode method : this.methods) {
+		for (final MethodNode method : this.outerClassMethods) {
 			AbstractInsnNode instruction = method.instructions.getFirst();
 			int index = 0;
 			while (instruction != null) {
 				if (
 						instruction instanceof TypeInsnNode typeInstruction
-							&& typeInstruction.getOpcode() == Opcodes.NEW
+							&& typeInstruction.getOpcode() == NEW
 							&& this.localClassNames.contains(typeInstruction.desc)
 				) {
 					this.localTypeInstructionsByMethodByOwner
@@ -117,6 +134,23 @@ class ParamSyntheticFieldIndexingVisitor extends ClassVisitor {
 				index++;
 			}
 		}
+
+		this.localMethodsByOwner.forEach((owner, method) -> {
+			for (final AbstractInsnNode instruction : method.instructions) {
+				if (instruction instanceof FieldInsnNode fieldInstruction && fieldInstruction.getOpcode() == GETFIELD) {
+					final FieldNode field = this.localSyntheticFieldsByDescByNameByOwner
+							.getOrDefault(owner, Map.of())
+							.getOrDefault(fieldInstruction.name, Map.of())
+							.get(fieldInstruction.desc);
+
+					if (field != null) {
+						this.localSyntheticFieldsByGettersByOwner
+								.computeIfAbsent(owner, ParamSyntheticFieldIndexingVisitor::createHashMap)
+								.put(method, field);
+					}
+				}
+			}
+		});
 	}
 
 	record TypeInstructionIndex(TypeInsnNode typeInstruction, int index) { }

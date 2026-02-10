@@ -8,6 +8,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
@@ -17,6 +18,7 @@ import org.objectweb.asm.tree.analysis.Frame;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
 import org.quiltmc.enigma.api.service.JarIndexerService;
+import org.quiltmc.enigma.api.translation.representation.MethodDescriptor;
 import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
@@ -35,6 +37,7 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 
 	private final ParamSyntheticFieldIndexingVisitor visitor;
 	private final BiMap<LocalVariableEntry, FieldEntry> linkedFieldsByParam = HashBiMap.create();
+	private final BiMap<LocalVariableEntry, LocalVariableEntry> linkedFakeLocalsByParam = HashBiMap.create();
 
 	ParamSyntheticFieldIndexingService() {
 		this.visitor = new ParamSyntheticFieldIndexingVisitor();
@@ -100,9 +103,30 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 										);
 
 								invokedByInvokerParams.forEach((invokerParam, invokedParam) -> {
+									// TODO decompilers hide the actual field and treat them as out-of-param-bounds locals instead
+									//  try to match compiler's fake locals in addition to storing the fields
 									final FieldEntry field = syntheticFieldsByParam.get(invokedParam);
 									if (field != null) {
 										this.linkedFieldsByParam.put(invokerParam, field);
+
+										this.visitor.localSyntheticFieldsByGettersByOwner
+												.getOrDefault(invocation.owner, Map.of())
+												.entrySet()
+												.stream()
+												.filter(entry -> {
+													final FieldNode fieldNode = entry.getValue();
+													return fieldNode.name.equals(field.getName())
+															&& fieldNode.desc.equals(field.getDesc().toString());
+												})
+												.findAny()
+												.ifPresent(entry -> {
+													final MethodNode getter = entry.getKey();
+													this.linkedFakeLocalsByParam.put(
+															invokerParam,
+															// TODO index is wrong in all but the simplest cases
+															new LocalVariableEntry(new MethodEntry(field.getParent(), getter.name, new MethodDescriptor(getter.desc)), getter.maxLocals)
+													);
+												});
 									}
 								});
 							}
@@ -157,14 +181,10 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 					constructorInstruction
 						instanceof FieldInsnNode fieldInstruction
 						&& fieldInstruction.getOpcode() == PUTFIELD
-						&& this.visitor.localSyntheticFieldsByOwner
-						.get(fieldInstruction.owner)
-						.stream()
-						.anyMatch(field ->
-							field.name.equals(fieldInstruction.name)
-								&& field.desc
-									.equals(fieldInstruction.desc)
-						)
+						&& this.visitor.localSyntheticFieldsByDescByNameByOwner
+							.getOrDefault(fieldInstruction.owner, Map.of())
+							.getOrDefault(fieldInstruction.name, Map.of())
+							.containsKey(fieldInstruction.desc)
 			) {
 				fieldPut = fieldInstruction;
 			} else if (fieldPut != null) {
@@ -172,11 +192,11 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 						constructorInstruction instanceof VarInsnNode varInstruction
 							&& varInstruction.getOpcode() >= ILOAD
 							&& varInstruction.getOpcode() <= SALOAD
+							// +1 to size for this
 							// TODO double-size params?
 							&& varInstruction.var < constructor.parameters.size() + 1
 				) {
 					paramsBySyntheticField.put(
-						// TODO +1 for this??
 						new LocalVariableEntry(constructorEntry, varInstruction.var),
 						new FieldEntry(new ClassEntry(fieldPut.owner), fieldPut.name, new TypeDescriptor(fieldPut.desc))
 					);
@@ -208,5 +228,19 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 	@Nullable
 	public LocalVariableEntry getLinkedParam(FieldEntry syntheticField) {
 		return this.linkedFieldsByParam.inverse().get(syntheticField);
+	}
+
+	public Stream<Map.Entry<LocalVariableEntry, LocalVariableEntry>> streamFakeLocalLinkedParams() {
+		return this.linkedFakeLocalsByParam.entrySet().stream();
+	}
+
+	@Nullable
+	public LocalVariableEntry getFakeLocal(LocalVariableEntry param) {
+		return this.linkedFakeLocalsByParam.get(param);
+	}
+
+	@Nullable
+	public LocalVariableEntry getLinkedParam(LocalVariableEntry fakeLocal) {
+		return this.linkedFakeLocalsByParam.inverse().get(fakeLocal);
 	}
 }
