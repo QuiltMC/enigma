@@ -109,22 +109,29 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 									if (field != null) {
 										this.linkedFieldsByParam.put(invokerParam, field);
 
-										this.visitor.localSyntheticFieldsByGettersByOwner
+										this.visitor.localSyntheticFieldOffsetsByGettersByOwner
 												.getOrDefault(invocation.owner, Map.of())
 												.entrySet()
 												.stream()
 												.filter(entry -> {
-													final FieldNode fieldNode = entry.getValue();
+													final FieldNode fieldNode = entry.getValue().field();
 													return fieldNode.name.equals(field.getName())
 															&& fieldNode.desc.equals(field.getDesc().toString());
 												})
 												.findAny()
 												.ifPresent(entry -> {
 													final MethodNode getter = entry.getKey();
+
 													this.linkedFakeLocalsByParam.put(
 															invokerParam,
-															// TODO index is wrong in all but the simplest cases
-															new LocalVariableEntry(new MethodEntry(field.getParent(), getter.name, new MethodDescriptor(getter.desc)), getter.maxLocals)
+															new LocalVariableEntry(
+																new MethodEntry(
+																	field.getParent(), getter.name,
+																	new MethodDescriptor(getter.desc)
+																),
+																// TODO see if maxLocals is always the right place to start
+																getter.maxLocals + entry.getValue().indexOffset()
+															)
 													);
 												});
 									}

@@ -40,43 +40,17 @@ public class ParamSyntheticFieldProposalService implements NameProposalService {
 			@Nullable EntryMapping oldMapping, @Nullable EntryMapping newMapping
 	) {
 		if (obfEntry == null) {
-			return Stream
-				.concat(
-					this.indexer.streamSyntheticFieldLinkedParams().flatMap(entry -> {
-						final EntryMapping mapping = remapper.getMapping(entry.getKey());
-						return mapping.tokenType() == TokenType.OBFUSCATED ? Stream.empty()
-								: Stream.of(Map.entry(entry.getValue(), withMetaInfo(mapping)));
-					}),
-					this.indexer.streamFakeLocalLinkedParams().flatMap(entry -> {
-						final EntryMapping mapping = remapper.getMapping(entry.getKey());
-						return mapping.tokenType() == TokenType.OBFUSCATED ? Stream.empty()
-								: Stream.of(Map.entry(entry.getValue(), withMetaInfo(mapping)));
-					})
-				)
+			return this.indexer.streamSyntheticFieldLinkedParams()
+				.flatMap(entry -> {
+					final EntryMapping mapping = remapper.getMapping(entry.getKey());
+					return mapping.tokenType() == TokenType.OBFUSCATED ? Stream.empty()
+							: Stream.of(Map.entry(entry.getValue(), withMetaInfo(mapping)));
+				})
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 		} else if (obfEntry instanceof LocalVariableEntry local) {
-			final Lazy<Optional<EntryMapping>> mapping = Lazy.of(() ->
-					newMapping != null && newMapping.tokenType() != TokenType.OBFUSCATED
-						? Optional.of(withMetaInfo(newMapping)) : Optional.empty()
-			);
-
-			final Map<Entry<?>, EntryMapping> mappings = new HashMap<>();
-
 			final FieldEntry field = this.indexer.getLinkedSyntheticField(local);
-			if (field != null) {
-				mapping.get().ifPresent(m -> mappings.put(field, m));
-				// if (newMapping != null && newMapping.tokenType() != TokenType.OBFUSCATED) {
-				// 	return Map.of(field, withMetaInfo(newMapping));
-				// }
-			}
-
-			final LocalVariableEntry fakeLocal = this.indexer.getFakeLocal(local);
-			if (fakeLocal != null) {
-				mapping.get().ifPresent(m -> mappings.put(fakeLocal, m));
-			}
-
-			if (!mappings.isEmpty()) {
-				return mappings;
+			if (field != null && newMapping != null && newMapping.tokenType() != TokenType.OBFUSCATED) {
+				return Map.of(field, withMetaInfo(newMapping));
 			}
 		}
 

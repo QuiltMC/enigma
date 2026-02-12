@@ -29,7 +29,7 @@ class ParamSyntheticFieldIndexingVisitor extends ClassVisitor implements Opcodes
 	// excludes no-args constructors
 	final Map<String, Map<String, MethodNode>> localConstructorsByDescByOwner = new HashMap<>();
 	final Map<String, Map<String, Map<String, FieldNode>>> localSyntheticFieldsByDescByNameByOwner = new HashMap<>();
-	final Map<String, Map<MethodNode, FieldNode>> localSyntheticFieldsByGettersByOwner = new HashMap<>();
+	final Map<String, Map<MethodNode, FieldIndexOffset>> localSyntheticFieldOffsetsByGettersByOwner = new HashMap<>();
 
 	private String className;
 	private boolean classIsLocal;
@@ -136,6 +136,7 @@ class ParamSyntheticFieldIndexingVisitor extends ClassVisitor implements Opcodes
 		}
 
 		this.localMethodsByOwner.forEach((owner, method) -> {
+			int indexOffset = 0;
 			for (final AbstractInsnNode instruction : method.instructions) {
 				if (instruction instanceof FieldInsnNode fieldInstruction && fieldInstruction.getOpcode() == GETFIELD) {
 					final FieldNode field = this.localSyntheticFieldsByDescByNameByOwner
@@ -144,9 +145,9 @@ class ParamSyntheticFieldIndexingVisitor extends ClassVisitor implements Opcodes
 							.get(fieldInstruction.desc);
 
 					if (field != null) {
-						this.localSyntheticFieldsByGettersByOwner
+						this.localSyntheticFieldOffsetsByGettersByOwner
 								.computeIfAbsent(owner, ParamSyntheticFieldIndexingVisitor::createHashMap)
-								.put(method, field);
+								.put(method, new FieldIndexOffset(field, indexOffset++));
 					}
 				}
 			}
@@ -154,4 +155,6 @@ class ParamSyntheticFieldIndexingVisitor extends ClassVisitor implements Opcodes
 	}
 
 	record TypeInstructionIndex(TypeInsnNode typeInstruction, int index) { }
+
+	record FieldIndexOffset(FieldNode field, int indexOffset) { }
 }
