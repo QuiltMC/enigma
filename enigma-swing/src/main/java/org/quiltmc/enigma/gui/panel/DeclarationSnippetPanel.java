@@ -99,6 +99,7 @@ public class DeclarationSnippetPanel extends AbstractEditorPanel<JScrollPane> {
 		return new JScrollPane(editor);
 	}
 
+	// TODO redirect fake locals to linked params
 	private Snippet createSnippet(DecompiledClassSource source, Entry<?> targetEntry) {
 		return this.resolveTarget(source, targetEntry)
 			.map(target -> this.findSnippet(source, target.token, target.entry))

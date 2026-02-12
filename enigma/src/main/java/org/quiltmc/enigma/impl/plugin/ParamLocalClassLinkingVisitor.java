@@ -22,19 +22,20 @@ import java.util.Map;
 import java.util.Set;
 
 class ParamLocalClassLinkingVisitor extends ClassVisitor implements Opcodes {
-	final Map<String, Multimap<MethodNode, TypeInstructionIndex>> localTypeInstructionsByMethodByOwner = new HashMap<>();
+	final Map<String, Multimap<MethodNode, TypeInstructionIndex>> localTypeInstructionsByMethodByOwner =
+		new HashMap<>();
 	// excludes no-args constructors
 	final Map<String, Map<String, MethodNode>> localConstructorsByDescByOwner = new HashMap<>();
 	final Map<String, Map<String, Map<String, FieldIndexOffset>>> localSyntheticFieldOffsetsByDescByNameByOwner =
-			new HashMap<>();
+		new HashMap<>();
 	final Map<String, Map<MethodNode, FieldNode>> localSyntheticFieldOffsetsByGettersByOwner = new HashMap<>();
 
 	private String className;
 	private boolean classIsLocal;
 	private int syntheticFieldOffset;
-	private final List<MethodNode> outerClassMethods = new LinkedList<>();
 	private final Set<String> localClassNames = new HashSet<>();
-	private final Multimap<String, MethodNode> localMethodsByOwner = HashMultimap.create();
+	// only populated for local/anonymous classes and their outer classes
+	private final List<MethodNode> methods = new LinkedList<>();
 
 	ParamLocalClassLinkingVisitor() {
 		super(Enigma.ASM_VERSION);
@@ -79,6 +80,8 @@ class ParamLocalClassLinkingVisitor extends ClassVisitor implements Opcodes {
 		if (this.classIsLocal || hasLocalClasses) {
 			final MethodNode node = new MethodNode(this.api, access, name, descriptor, signature, exceptions);
 
+			this.methods.add(node);
+
 			if (this.classIsLocal) {
 				if (name.equals("<init>")) {
 					if (!descriptor.startsWith("()")) {
@@ -87,12 +90,6 @@ class ParamLocalClassLinkingVisitor extends ClassVisitor implements Opcodes {
 								.put(descriptor, node);
 					}
 				}
-
-				this.localMethodsByOwner.put(this.className, node);
-			}
-
-			if (hasLocalClasses) {
-				this.outerClassMethods.add(node);
 			}
 
 			return node;
@@ -110,47 +107,54 @@ class ParamLocalClassLinkingVisitor extends ClassVisitor implements Opcodes {
 		this.className = null;
 		this.classIsLocal = false;
 		this.syntheticFieldOffset = 0;
-		this.outerClassMethods.clear();
 		this.localClassNames.clear();
-		this.localMethodsByOwner.clear();
+		this.methods.clear();
 	}
 
 	private void collectResults() {
-		for (final MethodNode method : this.outerClassMethods) {
-			AbstractInsnNode instruction = method.instructions.getFirst();
-			int index = 0;
-			while (instruction != null) {
-				if (
-						instruction instanceof TypeInsnNode typeInstruction
-							&& typeInstruction.getOpcode() == NEW
-							&& this.localClassNames.contains(typeInstruction.desc)
+		if (!this.localClassNames.isEmpty()) {
+			for (final MethodNode method : this.methods) {
+				int index = 0;
+				for (AbstractInsnNode instruction = method.instructions.getFirst();
+						instruction != null;
+						instruction = instruction.getNext()
 				) {
-					this.localTypeInstructionsByMethodByOwner
-							.computeIfAbsent(this.className, owner -> HashMultimap.create())
-							.put(method, new TypeInstructionIndex(typeInstruction, index));
-				}
+					if (
+							instruction instanceof TypeInsnNode typeInstruction
+								&& typeInstruction.getOpcode() == NEW
+								&& this.localClassNames.contains(typeInstruction.desc)
+					) {
+						this.localTypeInstructionsByMethodByOwner
+								.computeIfAbsent(this.className, owner -> HashMultimap.create())
+								.put(method, new TypeInstructionIndex(typeInstruction, index));
+					}
 
-				instruction = instruction.getNext();
-				index++;
+					index++;
+				}
 			}
 		}
 
-		this.localMethodsByOwner.forEach((owner, method) -> {
-			for (final AbstractInsnNode instruction : method.instructions) {
-				if (instruction instanceof FieldInsnNode fieldInstruction && fieldInstruction.getOpcode() == GETFIELD) {
-					final FieldIndexOffset fieldOffset = this.localSyntheticFieldOffsetsByDescByNameByOwner
-							.getOrDefault(owner, Map.of())
-							.getOrDefault(fieldInstruction.name, Map.of())
-							.get(fieldInstruction.desc);
+		if (this.classIsLocal) {
+			for (final MethodNode method : this.methods) {
+				for (final AbstractInsnNode instruction : method.instructions) {
+					if (
+							instruction instanceof FieldInsnNode fieldInstruction
+								&& fieldInstruction.getOpcode() == GETFIELD
+					) {
+						final FieldIndexOffset fieldOffset = this.localSyntheticFieldOffsetsByDescByNameByOwner
+								.getOrDefault(this.className, Map.of())
+								.getOrDefault(fieldInstruction.name, Map.of())
+								.get(fieldInstruction.desc);
 
-					if (fieldOffset != null) {
-						this.localSyntheticFieldOffsetsByGettersByOwner
-								.computeIfAbsent(owner, Utils::createHashMap)
-								.put(method, fieldOffset.field);
+						if (fieldOffset != null) {
+							this.localSyntheticFieldOffsetsByGettersByOwner
+									.computeIfAbsent(this.className, Utils::createHashMap)
+									.put(method, fieldOffset.field);
+						}
 					}
 				}
 			}
-		});
+		}
 	}
 
 	record TypeInstructionIndex(TypeInsnNode typeInstruction, int index) { }
