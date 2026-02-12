@@ -50,7 +50,7 @@ class ParamSyntheticFieldIndexingVisitor extends ClassVisitor implements Opcodes
 
 	@Override
 	public void visitInnerClass(String name, String outerName, String innerName, int access) {
-		if (innerName == null) {
+		if (outerName == null) {
 			if (this.className.equals(name)) {
 				this.classIsLocal = true;
 			} else {
