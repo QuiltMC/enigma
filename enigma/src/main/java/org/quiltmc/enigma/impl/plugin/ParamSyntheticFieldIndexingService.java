@@ -103,8 +103,6 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 										);
 
 								invokedByInvokerParams.forEach((invokerParam, invokedParam) -> {
-									// TODO decompilers hide the actual field and treat them as out-of-param-bounds locals instead
-									//  try to match compiler's fake locals in addition to storing the fields
 									final FieldEntry field = syntheticFieldsByParam.get(invokedParam);
 									if (field != null) {
 										this.linkedFieldsByParam.put(invokerParam, field);
@@ -114,13 +112,24 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 												.entrySet()
 												.stream()
 												.filter(entry -> {
-													final FieldNode fieldNode = entry.getValue().field();
+													final FieldNode fieldNode = entry.getValue();
 													return fieldNode.name.equals(field.getName())
 															&& fieldNode.desc.equals(field.getDesc().toString());
 												})
 												.findAny()
 												.ifPresent(entry -> {
 													final MethodNode getter = entry.getKey();
+													final FieldNode fieldNode = entry.getValue();
+
+													@SuppressWarnings("DataFlowIssue")
+													final String fieldOwner = field.getParent().getFullName();
+
+													final int indexOffset = this.visitor
+															.localSyntheticFieldOffsetsByDescByNameByOwner
+															.get(fieldOwner)
+															.get(fieldNode.name)
+															.get(fieldNode.desc)
+															.indexOffset();
 
 													this.linkedFakeLocalsByParam.put(
 															invokerParam,
@@ -129,8 +138,9 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 																	field.getParent(), getter.name,
 																	new MethodDescriptor(getter.desc)
 																),
-																// TODO see if maxLocals is always the right place to start
-																getter.maxLocals + entry.getValue().indexOffset()
+																// TODO see if maxLocals is always
+																//  the right place to start
+																getter.maxLocals + indexOffset
 															)
 													);
 												});
@@ -188,7 +198,7 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 					constructorInstruction
 						instanceof FieldInsnNode fieldInstruction
 						&& fieldInstruction.getOpcode() == PUTFIELD
-						&& this.visitor.localSyntheticFieldsByDescByNameByOwner
+						&& this.visitor.localSyntheticFieldOffsetsByDescByNameByOwner
 							.getOrDefault(fieldInstruction.owner, Map.of())
 							.getOrDefault(fieldInstruction.name, Map.of())
 							.containsKey(fieldInstruction.desc)
@@ -199,7 +209,7 @@ public class ParamSyntheticFieldIndexingService implements JarIndexerService, Op
 						constructorInstruction instanceof VarInsnNode varInstruction
 							&& varInstruction.getOpcode() >= ILOAD
 							&& varInstruction.getOpcode() <= SALOAD
-							// +1 to size for this
+							// +1 to size for `this`
 							// TODO double-size params?
 							&& varInstruction.var < constructor.parameters.size() + 1
 				) {

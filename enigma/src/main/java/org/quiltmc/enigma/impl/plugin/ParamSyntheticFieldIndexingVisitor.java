@@ -12,6 +12,7 @@ import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.util.Utils;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,18 +22,16 @@ import java.util.Map;
 import java.util.Set;
 
 class ParamSyntheticFieldIndexingVisitor extends ClassVisitor implements Opcodes {
-	private static <I, K, V> Map<K, V> createHashMap(I ignored) {
-		return new HashMap<>();
-	}
-
 	final Map<String, Multimap<MethodNode, TypeInstructionIndex>> localTypeInstructionsByMethodByOwner = new HashMap<>();
 	// excludes no-args constructors
 	final Map<String, Map<String, MethodNode>> localConstructorsByDescByOwner = new HashMap<>();
-	final Map<String, Map<String, Map<String, FieldNode>>> localSyntheticFieldsByDescByNameByOwner = new HashMap<>();
-	final Map<String, Map<MethodNode, FieldIndexOffset>> localSyntheticFieldOffsetsByGettersByOwner = new HashMap<>();
+	final Map<String, Map<String, Map<String, FieldIndexOffset>>> localSyntheticFieldOffsetsByDescByNameByOwner =
+			new HashMap<>();
+	final Map<String, Map<MethodNode, FieldNode>> localSyntheticFieldOffsetsByGettersByOwner = new HashMap<>();
 
 	private String className;
 	private boolean classIsLocal;
+	private int syntheticFieldOffset;
 	private final List<MethodNode> outerClassMethods = new LinkedList<>();
 	private final Set<String> localClassNames = new HashSet<>();
 	private final Multimap<String, MethodNode> localMethodsByOwner = HashMultimap.create();
@@ -63,10 +62,10 @@ class ParamSyntheticFieldIndexingVisitor extends ClassVisitor implements Opcodes
 	public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
 		if (this.classIsLocal && (access & ACC_SYNTHETIC) != 0 && (access & ACC_STATIC) == 0) {
 			final var node = new FieldNode(access, name, descriptor, signature, value);
-			this.localSyntheticFieldsByDescByNameByOwner
-					.computeIfAbsent(this.className, ParamSyntheticFieldIndexingVisitor::createHashMap)
-					.computeIfAbsent(name, ParamSyntheticFieldIndexingVisitor::createHashMap)
-					.put(descriptor, node);
+			this.localSyntheticFieldOffsetsByDescByNameByOwner
+					.computeIfAbsent(this.className, Utils::createHashMap)
+					.computeIfAbsent(name, Utils::createHashMap)
+					.put(descriptor, new FieldIndexOffset(node, this.syntheticFieldOffset++));
 
 			return node;
 		} else {
@@ -84,7 +83,7 @@ class ParamSyntheticFieldIndexingVisitor extends ClassVisitor implements Opcodes
 				if (name.equals("<init>")) {
 					if (!descriptor.startsWith("()")) {
 						this.localConstructorsByDescByOwner
-								.computeIfAbsent(this.className, ParamSyntheticFieldIndexingVisitor::createHashMap)
+								.computeIfAbsent(this.className, Utils::createHashMap)
 								.put(descriptor, node);
 					}
 				}
@@ -110,6 +109,7 @@ class ParamSyntheticFieldIndexingVisitor extends ClassVisitor implements Opcodes
 
 		this.className = null;
 		this.classIsLocal = false;
+		this.syntheticFieldOffset = 0;
 		this.outerClassMethods.clear();
 		this.localClassNames.clear();
 		this.localMethodsByOwner.clear();
@@ -136,18 +136,17 @@ class ParamSyntheticFieldIndexingVisitor extends ClassVisitor implements Opcodes
 		}
 
 		this.localMethodsByOwner.forEach((owner, method) -> {
-			int indexOffset = 0;
 			for (final AbstractInsnNode instruction : method.instructions) {
 				if (instruction instanceof FieldInsnNode fieldInstruction && fieldInstruction.getOpcode() == GETFIELD) {
-					final FieldNode field = this.localSyntheticFieldsByDescByNameByOwner
+					final FieldIndexOffset fieldOffset = this.localSyntheticFieldOffsetsByDescByNameByOwner
 							.getOrDefault(owner, Map.of())
 							.getOrDefault(fieldInstruction.name, Map.of())
 							.get(fieldInstruction.desc);
 
-					if (field != null) {
+					if (fieldOffset != null) {
 						this.localSyntheticFieldOffsetsByGettersByOwner
-								.computeIfAbsent(owner, ParamSyntheticFieldIndexingVisitor::createHashMap)
-								.put(method, new FieldIndexOffset(field, indexOffset++));
+								.computeIfAbsent(owner, Utils::createHashMap)
+								.put(method, fieldOffset.field);
 					}
 				}
 			}

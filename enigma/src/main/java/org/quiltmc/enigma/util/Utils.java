@@ -15,9 +15,11 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -241,5 +243,22 @@ public class Utils {
 	@SafeVarargs
 	public static <T> Stream<T> lazyConcat(Supplier<Stream<? extends T>>... streamers) {
 		return Stream.of(streamers).flatMap(Supplier::get);
+	}
+
+	/**
+	 * Creates a new {@link HashMap}.
+	 *
+	 * <p> A reference to this method can be used in place of {@code ignored -> new HashMap<>()} lambdas.
+	 *
+	 * @param ignored ignored; present to conform to functional interface requirements
+	 *
+	 * @param <I> the type of the param; ignored
+	 * @param <K> the type of the map's keys
+	 * @param <V> the type of the map's values
+	 *
+	 * @return a new, empty {@link HashMap}
+	 */
+	public static <I, K, V> Map<K, V> createHashMap(I ignored) {
+		return new HashMap<>();
 	}
 }
