@@ -107,7 +107,7 @@ public class ParamLocalClassLinkIndexingService implements JarIndexerService, Op
 									if (field != null) {
 										this.linkedFieldsByParam.put(invokerParam, field);
 
-										this.visitor.localSyntheticFieldOffsetsByGettersByOwner
+										this.visitor.localSyntheticFieldOffsetsByGetterByOwner
 												.getOrDefault(invocation.owner, Map.of())
 												.entrySet()
 												.stream()
@@ -245,15 +245,6 @@ public class ParamLocalClassLinkIndexingService implements JarIndexerService, Op
 	@Nullable
 	public LocalVariableEntry getLinkedParam(FieldEntry syntheticField) {
 		return this.linkedFieldsByParam.inverse().get(syntheticField);
-	}
-
-	public Stream<Map.Entry<LocalVariableEntry, LocalVariableEntry>> streamFakeLocalLinkedParams() {
-		return this.linkedFakeLocalsByParam.entrySet().stream();
-	}
-
-	@Nullable
-	public LocalVariableEntry getFakeLocal(LocalVariableEntry param) {
-		return this.linkedFakeLocalsByParam.get(param);
 	}
 
 	@Nullable

@@ -302,6 +302,42 @@ public class EnigmaProjectImpl implements EnigmaProject {
 		}
 	}
 
+	@Override
+	public Entry<?> getNameTarget(Entry<?> entry) {
+		if (entry instanceof MethodEntry method) {
+			if (method.isConstructor()) {
+				// renaming a constructor really means renaming the class
+				return entry.getContainingClass();
+			} else {
+				final FieldEntry definiteComponent = this.getRecordIndexingService()
+						.map(service -> service.getDefiniteComponentField(method))
+						.orElse(null);
+
+				if (definiteComponent != null) {
+					return definiteComponent;
+				}
+			}
+		} else if (entry instanceof FieldEntry field) {
+			final LocalVariableEntry linkedParam = this.getParamSyntheticFieldIndexingService()
+					.map(service -> service.getLinkedParam(field))
+					.orElse(null);
+
+			if (linkedParam != null) {
+				return linkedParam;
+			}
+		} else if (entry instanceof LocalVariableEntry local) {
+			final LocalVariableEntry linkedParam = this.getParamSyntheticFieldIndexingService()
+					.map(service -> service.getLinkedParam(local))
+					.orElse(null);
+
+			if (linkedParam != null) {
+				return linkedParam;
+			}
+		}
+
+		return entry;
+	}
+
 	public Optional<EnumConstantIndexingService> getEnumConstantIndexingService() {
 		return this.getEnigma()
 			.getService(JarIndexerService.TYPE, EnumConstantIndexingService.ID)

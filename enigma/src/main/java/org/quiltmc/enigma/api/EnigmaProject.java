@@ -75,6 +75,12 @@ public interface EnigmaProject {
 
 	boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference);
 
+	// TODO alternative names:
+	//  - getDelegateEntry
+	//  - getRepresentativeEntry
+	//  - getLinkedEntry
+	Entry<?> getNameTarget(Entry<?> entry);
+
 	boolean isObfuscated(Entry<?> entry);
 
 	boolean isSynthetic(Entry<?> entry);

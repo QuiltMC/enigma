@@ -54,7 +54,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static org.quiltmc.enigma.gui.util.GuiUtil.getRecordIndexingService;
 import static java.util.Comparator.comparingInt;
 
 public class DeclarationSnippetPanel extends AbstractEditorPanel<JScrollPane> {
@@ -99,7 +98,6 @@ public class DeclarationSnippetPanel extends AbstractEditorPanel<JScrollPane> {
 		return new JScrollPane(editor);
 	}
 
-	// TODO redirect fake locals to linked params
 	private Snippet createSnippet(DecompiledClassSource source, Entry<?> targetEntry) {
 		return this.resolveTarget(source, targetEntry)
 			.map(target -> this.findSnippet(source, target.token, target.entry))
@@ -487,24 +485,10 @@ public class DeclarationSnippetPanel extends AbstractEditorPanel<JScrollPane> {
 	}
 
 	private Optional<Target> resolveTarget(DecompiledClassSource source, Entry<?> targetEntry) {
-		return Optional.ofNullable(source.getIndex().getDeclarationToken(targetEntry))
-			.map(token -> new Target(token, targetEntry))
-			.or(() -> {
-				if (targetEntry instanceof MethodEntry targetMethod) {
-					// try to find record component getter's corresponding field instead
-					return getRecordIndexingService(this.gui)
-						.map(service -> service.getComponentField(targetMethod))
-						.flatMap(componentField -> Optional
-							.ofNullable(source.getIndex().getDeclarationToken(componentField))
-							.map(fieldToken -> new Target(fieldToken, componentField))
-						);
-				} else {
-					// This can happen as a result of #252: Issue with lost parameter connection.
-					// This can also happen when the token is from a library.
+		final Entry<?> namingTargetEntry = this.gui.getController().getProject().getNameTarget(targetEntry);
 
-					return Optional.empty();
-				}
-			});
+		return Optional.ofNullable(source.getIndex().getDeclarationToken(namingTargetEntry))
+			.map(token -> new Target(token, namingTargetEntry));
 	}
 
 	private record Target(Token token, Entry<?> entry) { }

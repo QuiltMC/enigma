@@ -28,7 +28,7 @@ class ParamLocalClassLinkingVisitor extends ClassVisitor implements Opcodes {
 	final Map<String, Map<String, MethodNode>> localConstructorsByDescByOwner = new HashMap<>();
 	final Map<String, Map<String, Map<String, FieldIndexOffset>>> localSyntheticFieldOffsetsByDescByNameByOwner =
 		new HashMap<>();
-	final Map<String, Map<MethodNode, FieldNode>> localSyntheticFieldOffsetsByGettersByOwner = new HashMap<>();
+	final Map<String, Map<MethodNode, FieldNode>> localSyntheticFieldOffsetsByGetterByOwner = new HashMap<>();
 
 	private String className;
 	private boolean classIsLocal;
@@ -147,7 +147,7 @@ class ParamLocalClassLinkingVisitor extends ClassVisitor implements Opcodes {
 								.get(fieldInstruction.desc);
 
 						if (fieldOffset != null) {
-							this.localSyntheticFieldOffsetsByGettersByOwner
+							this.localSyntheticFieldOffsetsByGetterByOwner
 									.computeIfAbsent(this.className, Utils::createHashMap)
 									.put(method, fieldOffset.field);
 						}
