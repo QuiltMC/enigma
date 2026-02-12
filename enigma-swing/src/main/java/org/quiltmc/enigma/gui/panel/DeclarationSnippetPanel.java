@@ -485,7 +485,7 @@ public class DeclarationSnippetPanel extends AbstractEditorPanel<JScrollPane> {
 	}
 
 	private Optional<Target> resolveTarget(DecompiledClassSource source, Entry<?> targetEntry) {
-		final Entry<?> namingTargetEntry = this.gui.getController().getProject().getNameTarget(targetEntry);
+		final Entry<?> namingTargetEntry = this.gui.getController().getProject().getRepresentative(targetEntry);
 
 		return Optional.ofNullable(source.getIndex().getDeclarationToken(namingTargetEntry))
 			.map(token -> new Target(token, namingTargetEntry));

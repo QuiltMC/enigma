@@ -59,7 +59,7 @@ public class DecompiledClassSource {
 	private String remapToken(TokenStore target, EnigmaProjectImpl project, Token token, Token movedToken, Translator translator) {
 		EntryReference<Entry<?>, Entry<?>> reference = this.obfuscatedIndex.getReference(token);
 
-		Entry<?> entry = this.obfuscatedIndex.remapToNameable ? reference.getNameableEntry(project) : reference.entry;
+		Entry<?> entry = this.obfuscatedIndex.remapToNameable ? reference.getNameTarget(project) : reference.entry;
 		TranslateResult<Entry<?>> translatedEntry = translator.extendedTranslate(entry);
 
 		if (project.isRenamable(reference)) {

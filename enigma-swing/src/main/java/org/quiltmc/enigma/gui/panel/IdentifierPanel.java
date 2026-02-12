@@ -252,7 +252,7 @@ public class IdentifierPanel {
 		return EntryChange
 			.modify(Objects
 				.requireNonNull(this.reference, "Cannot rename without a reference!")
-				.getNameableEntry(this.gui.getController().getProject())
+				.getNameTarget(this.gui.getController().getProject())
 			)
 			.withDeobfName(newName);
 	}

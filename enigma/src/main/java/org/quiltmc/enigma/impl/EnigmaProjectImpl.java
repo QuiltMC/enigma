@@ -252,7 +252,7 @@ public class EnigmaProjectImpl implements EnigmaProject {
 
 		return this.jarIndex.getIndex(EntryIndex.class).hasEntry(obfEntry)
 				|| obfEntry instanceof FieldEntry field
-				&& this.getParamSyntheticFieldIndexingService()
+				&& this.getParamLocalClassLinkIndexingService()
 					.map(service -> service.getLinkedParam(field))
 					.isPresent();
 	}
@@ -304,21 +304,27 @@ public class EnigmaProjectImpl implements EnigmaProject {
 
 	@Override
 	public Entry<?> getNameTarget(Entry<?> entry) {
-		if (entry instanceof MethodEntry method) {
-			if (method.isConstructor()) {
-				// renaming a constructor really means renaming the class
-				return entry.getContainingClass();
-			} else {
-				final FieldEntry definiteComponent = this.getRecordIndexingService()
-						.map(service -> service.getDefiniteComponentField(method))
-						.orElse(null);
+		if (entry instanceof MethodEntry method && method.isConstructor()) {
+			// renaming a constructor really means renaming the class
+			return entry.getContainingClass();
+		} else {
+			return this.getRepresentative(entry);
+		}
+	}
 
-				if (definiteComponent != null) {
-					return definiteComponent;
-				}
+	@Override
+	public Entry<?> getRepresentative(Entry<?> entry) {
+		if (entry instanceof MethodEntry method) {
+			// TODO make sure method entry mappings actually get written
+			final FieldEntry definiteComponent = this.getRecordIndexingService()
+					.map(service -> service.getDefiniteComponentField(method))
+					.orElse(null);
+
+			if (definiteComponent != null) {
+				return definiteComponent;
 			}
 		} else if (entry instanceof FieldEntry field) {
-			final LocalVariableEntry linkedParam = this.getParamSyntheticFieldIndexingService()
+			final LocalVariableEntry linkedParam = this.getParamLocalClassLinkIndexingService()
 					.map(service -> service.getLinkedParam(field))
 					.orElse(null);
 
@@ -326,7 +332,7 @@ public class EnigmaProjectImpl implements EnigmaProject {
 				return linkedParam;
 			}
 		} else if (entry instanceof LocalVariableEntry local) {
-			final LocalVariableEntry linkedParam = this.getParamSyntheticFieldIndexingService()
+			final LocalVariableEntry linkedParam = this.getParamLocalClassLinkIndexingService()
 					.map(service -> service.getLinkedParam(local))
 					.orElse(null);
 
@@ -350,7 +356,7 @@ public class EnigmaProjectImpl implements EnigmaProject {
 			.map(service -> (RecordIndexingService) service);
 	}
 
-	public Optional<ParamLocalClassLinkIndexingService> getParamSyntheticFieldIndexingService() {
+	public Optional<ParamLocalClassLinkIndexingService> getParamLocalClassLinkIndexingService() {
 		return this.getEnigma()
 			.getService(JarIndexerService.TYPE, ParamLocalClassLinkIndexingService.ID)
 			.map(service -> (ParamLocalClassLinkIndexingService) service);
@@ -361,12 +367,12 @@ public class EnigmaProjectImpl implements EnigmaProject {
 	}
 
 	public boolean isInternallyRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {
-		return obfReference.isNamed() && this.isInternallyRenamable(obfReference.getNameableEntry(this));
+		return obfReference.isNamed() && this.isInternallyRenamable(obfReference.getNameTarget(this));
 	}
 
 	@Override
 	public boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {
-		return obfReference.isNamed() && this.isRenamable(obfReference.getNameableEntry(this));
+		return obfReference.isNamed() && this.isRenamable(obfReference.getNameTarget(this));
 	}
 
 	@Override

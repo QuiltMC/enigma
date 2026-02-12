@@ -506,7 +506,7 @@ public class Gui {
 			return;
 		}
 
-		Entry<?> obfEntry = cursorReference.getNameableEntry(this.controller.getProject());
+		Entry<?> obfEntry = cursorReference.getNameTarget(this.controller.getProject());
 		this.toggleMappingFromEntry(obfEntry);
 	}
 

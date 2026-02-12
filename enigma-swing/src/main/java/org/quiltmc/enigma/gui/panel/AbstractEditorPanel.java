@@ -370,7 +370,7 @@ public abstract class AbstractEditorPanel<S extends JScrollPane> {
 			navigationEntry = reference.entry;
 		}
 
-		return navigationEntry;
+		return this.gui.getController().getProject().getRepresentative(navigationEntry);
 	}
 
 	protected void setCursorReference(EntryReference<Entry<?>, Entry<?>> ref) {
@@ -543,7 +543,6 @@ public abstract class AbstractEditorPanel<S extends JScrollPane> {
 		final List<Token> tokens = this.getReferences(reference);
 
 		if (tokens.isEmpty()) {
-			// DEBUG
 			Logger.debug("No tokens found for {} in {}", reference, this.classHandler.getHandle().getRef());
 		} else {
 			this.gui.showTokens(this, tokens);

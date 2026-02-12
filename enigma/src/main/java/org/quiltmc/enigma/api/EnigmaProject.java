@@ -11,8 +11,11 @@ import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.impl.EnigmaProjectImpl;
+import org.quiltmc.enigma.impl.plugin.RecordIndexingService;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -75,11 +78,34 @@ public interface EnigmaProject {
 
 	boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference);
 
-	// TODO alternative names:
-	//  - getDelegateEntry
-	//  - getRepresentativeEntry
-	//  - getLinkedEntry
+	/**
+	 * @return the parent class entry of the passed {@code entry} if it's a constructor,
+	 * or its {@linkplain #getRepresentative(Entry) representative entry} otherwise
+	 */
 	Entry<?> getNameTarget(Entry<?> entry);
+
+	/**
+	 * Some entries are represented by other entries which are treated as their 'source of truth'.
+	 *
+	 * <p> These include:
+	 * <table>
+	 *     <tr><th>Entry</th><th>Representative</th></tr>
+	 *     <tr>
+	 *         <td>
+	 *             {@linkplain RecordIndexingService#getDefiniteComponentGetter(FieldEntry) definite record getters}
+	 *         </td>
+	 *         <td>
+	 *             {@linkplain RecordIndexingService#getDefiniteComponentField(MethodEntry) the corresponding field}
+	 *         </td>
+	 *     </tr>
+	 *     <tr>
+	 *         <td>local/anonymous class synthetic fields</td><td>the corresponding param of the enclosing method</td>
+	 *     </tr>
+	 * </table>
+	 *
+	 * @return the representative entry if there is one, or the passed {@code entry} otherwise
+	 */
+	Entry<?> getRepresentative(Entry<?> entry);
 
 	boolean isObfuscated(Entry<?> entry);
 

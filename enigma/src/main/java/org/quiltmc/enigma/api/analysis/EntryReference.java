@@ -80,7 +80,7 @@ public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements T
 		return this.declaration;
 	}
 
-	public Entry<?> getNameableEntry(EnigmaProject project) {
+	public Entry<?> getNameTarget(EnigmaProject project) {
 		return project.getNameTarget(this.entry);
 	}
 
