@@ -1,6 +1,6 @@
-package org.quiltmc.enigma.input.parameter_connection;
+package org.quiltmc.enigma.input.param_local_class_links;
 
-public class ParameterConnections {
+public class ParamLocalClassLinks {
 	static final Object O = new Object();
 
 	static Object toStringOf(String param) {
