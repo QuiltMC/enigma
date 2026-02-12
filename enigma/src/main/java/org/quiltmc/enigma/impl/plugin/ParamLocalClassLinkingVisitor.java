@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class ParamSyntheticFieldIndexingVisitor extends ClassVisitor implements Opcodes {
+class ParamLocalClassLinkingVisitor extends ClassVisitor implements Opcodes {
 	final Map<String, Multimap<MethodNode, TypeInstructionIndex>> localTypeInstructionsByMethodByOwner = new HashMap<>();
 	// excludes no-args constructors
 	final Map<String, Map<String, MethodNode>> localConstructorsByDescByOwner = new HashMap<>();
@@ -36,7 +36,7 @@ class ParamSyntheticFieldIndexingVisitor extends ClassVisitor implements Opcodes
 	private final Set<String> localClassNames = new HashSet<>();
 	private final Multimap<String, MethodNode> localMethodsByOwner = HashMultimap.create();
 
-	ParamSyntheticFieldIndexingVisitor() {
+	ParamLocalClassLinkingVisitor() {
 		super(Enigma.ASM_VERSION);
 	}
 

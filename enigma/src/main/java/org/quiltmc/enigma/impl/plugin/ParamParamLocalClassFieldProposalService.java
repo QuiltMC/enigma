@@ -10,20 +10,22 @@ import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
-import org.quiltmc.enigma.util.Lazy;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class ParamSyntheticFieldProposalService implements NameProposalService {
+// TODO can BYTECODE be made to utilize EntryReference::getNameableEntry like the java decompilers?
+//  If so, this proposer can be removed.
+/**
+ * This proposes names for synthetic fields, they're only visible when the decompiler is set to BYTECODE.
+ */
+public class ParamParamLocalClassFieldProposalService implements NameProposalService {
 	public static final String ID = "enigma:param_synthetic_field_name_proposer";
 
-	private final ParamSyntheticFieldIndexingService indexer;
+	private final ParamLocalClassLinkIndexingService indexer;
 
-	ParamSyntheticFieldProposalService(ParamSyntheticFieldIndexingService indexer) {
+	ParamParamLocalClassFieldProposalService(ParamLocalClassLinkIndexingService indexer) {
 		this.indexer = indexer;
 	}
 

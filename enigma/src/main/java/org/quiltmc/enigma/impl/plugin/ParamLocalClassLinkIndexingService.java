@@ -32,15 +32,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-public class ParamSyntheticFieldIndexingService implements JarIndexerService, Opcodes {
+public class ParamLocalClassLinkIndexingService implements JarIndexerService, Opcodes {
 	public static final String ID = "enigma:param_synthetic_field_indexer";
 
-	private final ParamSyntheticFieldIndexingVisitor visitor;
+	private final ParamLocalClassLinkingVisitor visitor;
 	private final BiMap<LocalVariableEntry, FieldEntry> linkedFieldsByParam = HashBiMap.create();
 	private final BiMap<LocalVariableEntry, LocalVariableEntry> linkedFakeLocalsByParam = HashBiMap.create();
 
-	ParamSyntheticFieldIndexingService() {
-		this.visitor = new ParamSyntheticFieldIndexingVisitor();
+	ParamLocalClassLinkIndexingService() {
+		this.visitor = new ParamLocalClassLinkingVisitor();
 	}
 
 	@Override

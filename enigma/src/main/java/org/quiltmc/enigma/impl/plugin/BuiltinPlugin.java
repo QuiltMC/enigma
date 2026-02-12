@@ -51,9 +51,9 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 	}
 
 	private static void registerParamSyntheticFieldNamingService(EnigmaPluginContext ctx) {
-		final ParamSyntheticFieldIndexingService indexer = new ParamSyntheticFieldIndexingService();
+		final ParamLocalClassLinkIndexingService indexer = new ParamLocalClassLinkIndexingService();
 		ctx.registerService(JarIndexerService.TYPE, ctx1 -> indexer);
-		ctx.registerService(NameProposalService.TYPE, ctx1 -> new ParamSyntheticFieldProposalService(indexer));
+		ctx.registerService(NameProposalService.TYPE, ctx1 -> new ParamParamLocalClassFieldProposalService(indexer));
 	}
 
 	private static void registerSpecializedMethodNamingService(EnigmaPluginContext ctx) {

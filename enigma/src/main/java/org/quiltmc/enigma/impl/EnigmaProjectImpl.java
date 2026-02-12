@@ -38,7 +38,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntr
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.impl.bytecode.translator.TranslationClassVisitor;
 import org.quiltmc.enigma.impl.plugin.EnumConstantIndexingService;
-import org.quiltmc.enigma.impl.plugin.ParamSyntheticFieldIndexingService;
+import org.quiltmc.enigma.impl.plugin.ParamLocalClassLinkIndexingService;
 import org.quiltmc.enigma.impl.plugin.RecordIndexingService;
 import org.quiltmc.enigma.impl.translation.mapping.MappingsChecker;
 import org.quiltmc.enigma.util.I18n;
@@ -314,10 +314,10 @@ public class EnigmaProjectImpl implements EnigmaProject {
 			.map(service -> (RecordIndexingService) service);
 	}
 
-	public Optional<ParamSyntheticFieldIndexingService> getParamSyntheticFieldIndexingService() {
+	public Optional<ParamLocalClassLinkIndexingService> getParamSyntheticFieldIndexingService() {
 		return this.getEnigma()
-			.getService(JarIndexerService.TYPE, ParamSyntheticFieldIndexingService.ID)
-			.map(service -> (ParamSyntheticFieldIndexingService) service);
+			.getService(JarIndexerService.TYPE, ParamLocalClassLinkIndexingService.ID)
+			.map(service -> (ParamLocalClassLinkIndexingService) service);
 	}
 
 	private static boolean isEnumValueOfMethod(ClassDefEntry parent, MethodEntry method) {
