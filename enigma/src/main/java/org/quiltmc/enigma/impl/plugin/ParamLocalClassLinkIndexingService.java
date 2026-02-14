@@ -2,6 +2,7 @@ package org.quiltmc.enigma.impl.plugin;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableMultimap;
 import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -27,6 +28,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.LocalVariableInterpreter;
 import org.quiltmc.enigma.util.LocalVariableValue;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -107,15 +109,19 @@ public class ParamLocalClassLinkIndexingService implements JarIndexerService, Op
 									if (field != null) {
 										this.linkedFieldsByParam.put(invokerParam, field);
 
-										this.visitor.localSyntheticFieldOffsetsByGetterByOwner
-												.getOrDefault(invocation.owner, Map.of())
+										this.visitor.localSyntheticFieldsByGetterByOwner
+												.getOrDefault(invocation.owner, ImmutableMultimap.of())
+												.asMap()
 												.entrySet()
 												.stream()
-												.filter(entry -> {
-													final FieldNode fieldNode = entry.getValue();
-													return fieldNode.name.equals(field.getName())
-															&& fieldNode.desc.equals(field.getDesc().toString());
-												})
+												.flatMap(entry -> entry
+													.getValue()
+													.stream()
+													.filter(fieldNode ->
+														fieldNode.name.equals(field.getName())
+															&& fieldNode.desc.equals(field.getDesc().toString())
+													)
+													.map(fieldNode -> Map.entry(entry.getKey(), fieldNode)))
 												.findAny()
 												.ifPresent(entry -> {
 													final MethodNode getter = entry.getKey();
