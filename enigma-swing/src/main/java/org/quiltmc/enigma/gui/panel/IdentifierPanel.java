@@ -20,6 +20,7 @@ import org.quiltmc.enigma.gui.event.ConvertingTextFieldListener;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.GuiUtil;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
+import org.quiltmc.enigma.impl.EnigmaProjectImpl;
 import org.quiltmc.enigma.util.I18n;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 
@@ -150,28 +151,33 @@ public class IdentifierPanel {
 
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.reference.entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method_descriptor"), me.getDesc().toString());
-			} else if (deobfEntry instanceof LocalVariableEntry local) {
-				final EditableType type;
+			} else if (this.reference.entry instanceof LocalVariableEntry obfLocal) {
+				final LocalVariableEntry effectiveObfLocal = ((EnigmaProjectImpl) this.gui.getController().getProject())
+						.getParamLocalClassLinkIndexingService()
+						.map(service -> service.getLinkedParam(obfLocal))
+						.orElse(obfLocal);
 
-				if (local.isArgument()) {
+				final LocalVariableEntry effectiveDeobfLocal = project.getRemapper().deobfuscate(effectiveObfLocal);
+
+				final EditableType type;
+				if (effectiveObfLocal.isArgument()) {
 					type = EditableType.PARAMETER;
 				} else {
 					type = EditableType.LOCAL_VARIABLE;
 				}
 
-				this.nameField = th.addRenameTextField(type, local.getName());
-				th.addStringRow(I18n.translate("info_panel.identifier.class"), local.getContainingClass().getFullName());
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method"), local.getParent().getName());
-				th.addStringRow(I18n.translate("info_panel.identifier.index"), Integer.toString(local.getIndex()));
+				this.nameField = th.addRenameTextField(type, effectiveDeobfLocal.getName());
+				th.addStringRow(I18n.translate("info_panel.identifier.class"), effectiveDeobfLocal.getContainingClass().getFullName());
+				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method"), effectiveDeobfLocal.getParent().getName());
+				th.addStringRow(I18n.translate("info_panel.identifier.index"), Integer.toString(effectiveDeobfLocal.getIndex()));
 
 				// type
 				EntryIndex index = project.getJarIndex().getIndex(EntryIndex.class);
 				// EntryIndex only contains obf entries, so use the obf entry to look up the local's descriptor
-				// TODO getRepresentation here?
-				final LocalVariableDefEntry obfLocal = index.getDefinition((LocalVariableEntry) this.reference.entry);
-				final String localDesc = obfLocal == null
+				final LocalVariableDefEntry definition = index.getDefinition(effectiveObfLocal);
+				final String localDesc = definition == null
 						? I18n.translate("info_panel.identifier.type.unknown")
-						: toReadableType(project.getRemapper().deobfuscate(obfLocal.getDesc()));
+						: toReadableType(project.getRemapper().deobfuscate(definition.getDesc()));
 
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), localDesc);
 			} else {

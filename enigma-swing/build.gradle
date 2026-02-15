@@ -24,6 +24,7 @@ dependencies {
 	implementation project(':enigma')
 	implementation project(':enigma-server')
 
+	implementation libs.asm
 	implementation libs.syntaxpain
 	implementation libs.jopt
 	implementation libs.flatlaf
