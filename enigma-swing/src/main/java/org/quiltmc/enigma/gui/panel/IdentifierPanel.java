@@ -167,6 +167,7 @@ public class IdentifierPanel {
 				// type
 				EntryIndex index = project.getJarIndex().getIndex(EntryIndex.class);
 				// EntryIndex only contains obf entries, so use the obf entry to look up the local's descriptor
+				// TODO getRepresentation here?
 				final LocalVariableDefEntry obfLocal = index.getDefinition((LocalVariableEntry) this.reference.entry);
 				final String localDesc = obfLocal == null
 						? I18n.translate("info_panel.identifier.type.unknown")
@@ -174,7 +175,7 @@ public class IdentifierPanel {
 
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), localDesc);
 			} else {
-				throw new IllegalStateException("unreachable");
+				throw new IllegalStateException("Unrecognized entry type: " + deobfEntry);
 			}
 
 			var mapping = project.getRemapper().getMapping(this.reference.entry);

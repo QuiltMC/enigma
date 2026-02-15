@@ -2,7 +2,9 @@ package org.quiltmc.enigma.impl.plugin;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -13,8 +15,6 @@ import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
-import org.objectweb.asm.tree.analysis.Analyzer;
-import org.objectweb.asm.tree.analysis.AnalyzerException;
 import org.objectweb.asm.tree.analysis.Frame;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.class_provider.ProjectClassProvider;
@@ -28,8 +28,8 @@ import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.LocalVariableInterpreter;
 import org.quiltmc.enigma.util.LocalVariableValue;
 
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -54,12 +54,13 @@ public class ParamLocalClassLinkIndexingService implements JarIndexerService, Op
 			}
 		}
 
-		final Map<MethodNode, Map<LocalVariableEntry, FieldEntry>> syntheticFieldsByParamByConstructor =
+		final Map<MethodNode, BiMap<LocalVariableEntry, FieldEntry>> syntheticFieldsByParamByConstructor =
 			new HashMap<>();
 
-		final Map<LocalVariableEntry, LocalVariableEntry> invokedByInvokerParams = new HashMap<>();
+		final Multimap<LocalVariableEntry, LocalVariableEntry> invokedByInvokerParams = HashMultimap.create();
+		final Set<LocalVariableEntry> invokedParams = new HashSet<>();
 
-		this.visitor.localTypeInstructionsByMethodByOwner.forEach((owner, typeInstructions) -> typeInstructions
+		this.visitor.localTypeInstructionIndexesByMethodByOwner.forEach((owner, typeInstructions) -> typeInstructions
 				.forEach((method, typeInstructionIndex) -> {
 					// population of invokedByInvokerParams based on QEP's DelegateParametersIndex by IotaBread
 
@@ -68,12 +69,7 @@ public class ParamLocalClassLinkIndexingService implements JarIndexerService, Op
 						return;
 					}
 
-					final Frame<LocalVariableValue>[] frames;
-					try {
-						frames = new Analyzer<>(LocalVariableInterpreter.INSTANCE).analyze(owner, method);
-					} catch (AnalyzerException e) {
-						throw new RuntimeException(e);
-					}
+					final Frame<LocalVariableValue>[] frames = LocalVariableInterpreter.analyze(owner, method);
 
 					final MethodEntry methodEntry = MethodEntry.parse(owner, method.name, method.desc);
 
@@ -94,15 +90,29 @@ public class ParamLocalClassLinkIndexingService implements JarIndexerService, Op
 								final MethodEntry constructorEntry = MethodEntry
 										.parse(invocation.owner, invocation.name, invocation.desc);
 
-								invokedByInvokerParams.putAll(collectLinkedParams(
+								final Multimap<LocalVariableEntry, LocalVariableEntry> links = collectLinkedParams(
 										methodEntry, constructorEntry,
 										invocation, frames[instructionindex]
-								));
+								);
+								invokedByInvokerParams.putAll(links);
+								invokedParams.addAll(links.values());
 
-								final Map<LocalVariableEntry, FieldEntry> syntheticFieldsByParam =
+								final BiMap<LocalVariableEntry, FieldEntry> syntheticFieldsByParam =
 										syntheticFieldsByParamByConstructor.computeIfAbsent(constructor, c ->
 											this.buildSyntheticFieldsByConstructorParam(c, constructorEntry)
 										);
+
+								final Map<FieldEntry, Integer> fieldOffsets = new HashMap<>();
+								int offset = 0;
+								for (final FieldNode field : this.visitor.localSyntheticFields.get(invocation.owner)) {
+									final FieldEntry fieldEntry = new FieldEntry(
+											constructorEntry.getParent(), field.name, new TypeDescriptor(field.desc)
+									);
+
+									if (invokedParams.contains(syntheticFieldsByParam.inverse().get(fieldEntry))) {
+										fieldOffsets.put(fieldEntry, offset++);
+									}
+								}
 
 								invokedByInvokerParams.forEach((invokerParam, invokedParam) -> {
 									final FieldEntry field = syntheticFieldsByParam.get(invokedParam);
@@ -119,36 +129,24 @@ public class ParamLocalClassLinkIndexingService implements JarIndexerService, Op
 													.stream()
 													.filter(fieldNode ->
 														fieldNode.name.equals(field.getName())
-															&& fieldNode.desc.equals(field.getDesc().toString())
+															&& fieldNode.desc
+																.equals(field.getDesc().toString())
 													)
-													.map(fieldNode -> Map.entry(entry.getKey(), fieldNode)))
+													.map(fieldNode -> Map.entry(entry.getKey(), fieldNode))
+												)
 												.findAny()
 												.ifPresent(entry -> {
 													final MethodNode getter = entry.getKey();
-													final FieldNode fieldNode = entry.getValue();
 
-													@SuppressWarnings("DataFlowIssue")
-													final String fieldOwner = field.getParent().getFullName();
-
-													final int indexOffset = this.visitor
-															.localSyntheticFieldOffsetsByDescByNameByOwner
-															.get(fieldOwner)
-															.get(fieldNode.name)
-															.get(fieldNode.desc)
-															.indexOffset();
-
-													this.linkedFakeLocalsByParam.put(
-															invokerParam,
-															new LocalVariableEntry(
-																new MethodEntry(
-																	field.getParent(), getter.name,
-																	new MethodDescriptor(getter.desc)
-																),
-																// TODO see if maxLocals is always
-																//  the right place to start
-																getter.maxLocals + indexOffset
-															)
+													final LocalVariableEntry fakeLocal = new LocalVariableEntry(
+															new MethodEntry(
+																field.getParent(), getter.name,
+																new MethodDescriptor(getter.desc)
+															),
+															getter.maxLocals + fieldOffsets.get(field)
 													);
+
+													this.linkedFakeLocalsByParam.put(invokerParam, fakeLocal);
 												});
 									}
 								});
@@ -161,7 +159,7 @@ public class ParamLocalClassLinkIndexingService implements JarIndexerService, Op
 		);
 	}
 
-	private static Map<LocalVariableEntry, LocalVariableEntry> collectLinkedParams(
+	private static Multimap<LocalVariableEntry, LocalVariableEntry> collectLinkedParams(
 			MethodEntry invokerEntry, MethodEntry invokedEntry,
 			MethodInsnNode invocation, Frame<LocalVariableValue> frame
 	) {
@@ -172,7 +170,7 @@ public class ParamLocalClassLinkIndexingService implements JarIndexerService, Op
 			invokedLocalIndex--;
 		}
 
-		final Map<LocalVariableEntry, LocalVariableEntry> invokedByInvokerParams = new HashMap<>();
+		final Multimap<LocalVariableEntry, LocalVariableEntry> invokedByInvokerParams = HashMultimap.create();
 		// Check each of the arguments passed to the invocation
 		for (int invokeArgIndex = invokedDesc.getArgumentCount() - 1;
 				invokeArgIndex >= 0;
@@ -193,18 +191,18 @@ public class ParamLocalClassLinkIndexingService implements JarIndexerService, Op
 		return invokedByInvokerParams;
 	}
 
-	private Map<LocalVariableEntry, FieldEntry> buildSyntheticFieldsByConstructorParam(
+	private BiMap<LocalVariableEntry, FieldEntry> buildSyntheticFieldsByConstructorParam(
 			MethodNode constructor, MethodEntry constructorEntry
 	) {
 		AbstractInsnNode constructorInstruction = constructor.instructions.getLast();
 		FieldInsnNode fieldPut = null;
-		final Map<LocalVariableEntry, FieldEntry> paramsBySyntheticField = new HashMap<>();
+		final BiMap<LocalVariableEntry, FieldEntry> paramsBySyntheticField = HashBiMap.create();
 		while (constructorInstruction != null) {
 			if (
 					constructorInstruction
 						instanceof FieldInsnNode fieldInstruction
 						&& fieldInstruction.getOpcode() == PUTFIELD
-						&& this.visitor.localSyntheticFieldOffsetsByDescByNameByOwner
+						&& this.visitor.localSyntheticFieldsByDescByNameByOwner
 							.getOrDefault(fieldInstruction.owner, Map.of())
 							.getOrDefault(fieldInstruction.name, Map.of())
 							.containsKey(fieldInstruction.desc)

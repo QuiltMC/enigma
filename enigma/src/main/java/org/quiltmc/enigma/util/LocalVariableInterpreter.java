@@ -7,6 +7,10 @@ import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.analysis.Analyzer;
+import org.objectweb.asm.tree.analysis.AnalyzerException;
+import org.objectweb.asm.tree.analysis.Frame;
 import org.objectweb.asm.tree.analysis.Interpreter;
 
 import java.util.List;
@@ -18,6 +22,17 @@ import java.util.List;
  */
 public class LocalVariableInterpreter extends Interpreter<LocalVariableValue> implements Opcodes {
 	public static final LocalVariableInterpreter INSTANCE = new LocalVariableInterpreter();
+
+	public static Frame<LocalVariableValue>[] analyze(String owner, MethodNode method) {
+		final Frame<LocalVariableValue>[] frames;
+		try {
+			frames = new Analyzer<>(INSTANCE).analyze(owner, method);
+		} catch (AnalyzerException e) {
+			throw new RuntimeException(e);
+		}
+
+		return frames;
+	}
 
 	protected LocalVariableInterpreter() {
 		super(Opcodes.ASM9);

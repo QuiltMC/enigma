@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.impl.plugin;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import org.objectweb.asm.ClassVisitor;
@@ -22,17 +23,17 @@ import java.util.Map;
 import java.util.Set;
 
 class ParamLocalClassLinkingVisitor extends ClassVisitor implements Opcodes {
-	final Map<String, Multimap<MethodNode, TypeInstructionIndex>> localTypeInstructionsByMethodByOwner =
+	final Map<String, Multimap<MethodNode, TypeInstructionIndex>> localTypeInstructionIndexesByMethodByOwner =
 		new HashMap<>();
 	// excludes no-args constructors
 	final Map<String, Map<String, MethodNode>> localConstructorsByDescByOwner = new HashMap<>();
-	final Map<String, Map<String, Map<String, FieldIndexOffset>>> localSyntheticFieldOffsetsByDescByNameByOwner =
-		new HashMap<>();
+	final Map<String, Map<String, Map<String, FieldNode>>> localSyntheticFieldsByDescByNameByOwner = new HashMap<>();
 	final Map<String, Multimap<MethodNode, FieldNode>> localSyntheticFieldsByGetterByOwner = new HashMap<>();
+	// this just tracks the order in which the fields appear
+	final Multimap<String, FieldNode> localSyntheticFields = ArrayListMultimap.create();
 
 	private String className;
 	private boolean classIsLocal;
-	private int syntheticFieldOffset;
 	private final Set<String> localClassNames = new HashSet<>();
 	// only populated for local/anonymous classes and their outer classes
 	private final List<MethodNode> methods = new LinkedList<>();
@@ -63,10 +64,12 @@ class ParamLocalClassLinkingVisitor extends ClassVisitor implements Opcodes {
 	public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
 		if (this.classIsLocal && (access & ACC_SYNTHETIC) != 0 && (access & ACC_STATIC) == 0) {
 			final var node = new FieldNode(access, name, descriptor, signature, value);
-			this.localSyntheticFieldOffsetsByDescByNameByOwner
+			this.localSyntheticFieldsByDescByNameByOwner
 					.computeIfAbsent(this.className, Utils::createHashMap)
 					.computeIfAbsent(name, Utils::createHashMap)
-					.put(descriptor, new FieldIndexOffset(node, this.syntheticFieldOffset++));
+					.put(descriptor, node);
+
+			this.localSyntheticFields.put(this.className, node);
 
 			return node;
 		} else {
@@ -75,7 +78,9 @@ class ParamLocalClassLinkingVisitor extends ClassVisitor implements Opcodes {
 	}
 
 	@Override
-	public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+	public MethodVisitor visitMethod(
+			int access, String name, String descriptor, String signature, String[] exceptions
+	) {
 		final boolean hasLocalClasses = !this.localClassNames.isEmpty();
 		if (this.classIsLocal || hasLocalClasses) {
 			final MethodNode node = new MethodNode(this.api, access, name, descriptor, signature, exceptions);
@@ -106,7 +111,6 @@ class ParamLocalClassLinkingVisitor extends ClassVisitor implements Opcodes {
 
 		this.className = null;
 		this.classIsLocal = false;
-		this.syntheticFieldOffset = 0;
 		this.localClassNames.clear();
 		this.methods.clear();
 	}
@@ -115,16 +119,13 @@ class ParamLocalClassLinkingVisitor extends ClassVisitor implements Opcodes {
 		if (!this.localClassNames.isEmpty()) {
 			for (final MethodNode method : this.methods) {
 				int index = 0;
-				for (AbstractInsnNode instruction = method.instructions.getFirst();
-						instruction != null;
-						instruction = instruction.getNext()
-				) {
+				for (final AbstractInsnNode instruction : method.instructions) {
 					if (
 							instruction instanceof TypeInsnNode typeInstruction
 								&& typeInstruction.getOpcode() == NEW
 								&& this.localClassNames.contains(typeInstruction.desc)
 					) {
-						this.localTypeInstructionsByMethodByOwner
+						this.localTypeInstructionIndexesByMethodByOwner
 								.computeIfAbsent(this.className, owner -> HashMultimap.create())
 								.put(method, new TypeInstructionIndex(typeInstruction, index));
 					}
@@ -141,15 +142,15 @@ class ParamLocalClassLinkingVisitor extends ClassVisitor implements Opcodes {
 							instruction instanceof FieldInsnNode fieldInstruction
 								&& fieldInstruction.getOpcode() == GETFIELD
 					) {
-						final FieldIndexOffset fieldOffset = this.localSyntheticFieldOffsetsByDescByNameByOwner
+						final FieldNode field = this.localSyntheticFieldsByDescByNameByOwner
 								.getOrDefault(this.className, Map.of())
 								.getOrDefault(fieldInstruction.name, Map.of())
 								.get(fieldInstruction.desc);
 
-						if (fieldOffset != null) {
+						if (field != null) {
 							this.localSyntheticFieldsByGetterByOwner
 									.computeIfAbsent(this.className, owner -> HashMultimap.create())
-									.put(method, fieldOffset.field);
+									.put(method, field);
 						}
 					}
 				}
@@ -158,6 +159,4 @@ class ParamLocalClassLinkingVisitor extends ClassVisitor implements Opcodes {
 	}
 
 	record TypeInstructionIndex(TypeInsnNode typeInstruction, int index) { }
-
-	record FieldIndexOffset(FieldNode field, int indexOffset) { }
 }

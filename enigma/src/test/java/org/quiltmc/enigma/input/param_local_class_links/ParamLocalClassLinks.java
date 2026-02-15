@@ -62,6 +62,25 @@ public class ParamLocalClassLinks {
 		}
 	}
 
+	static Object moreLocalsToString(String left, String right) {
+		final Object first = new Object();
+		final Object o = new Object() {
+			@Override
+			public String toString() {
+				return first + left + right;
+			}
+		};
+
+		final Object second = new Object();
+		final Object third = new Object();
+		final Object fourth = new Object();
+		final String last = first.toString() + second + third + fourth;
+
+		System.out.println(last);
+
+		return o;
+	}
+
 	class InnerNamedInstance { }
 
 	static class InnerNamedStatic {

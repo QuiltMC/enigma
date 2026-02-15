@@ -14,7 +14,6 @@ import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntr
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.io.StringReader;
 import java.nio.file.Path;
 
