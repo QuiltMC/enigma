@@ -25,14 +25,20 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
+import org.quiltmc.enigma.api.translation.representation.entry.ParentedEntry;
 import org.quiltmc.enigma.util.LocalVariableInterpreter;
 import org.quiltmc.enigma.util.LocalVariableValue;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toMap;
 
 public class ParamLocalClassLinkIndexingService implements JarIndexerService, Opcodes {
 	public static final String ID = "enigma:param_synthetic_field_indexer";
@@ -102,15 +108,21 @@ public class ParamLocalClassLinkIndexingService implements JarIndexerService, Op
 											this.buildSyntheticFieldsByConstructorParam(c, constructorEntry)
 										);
 
-								final Map<FieldEntry, Integer> fieldOffsets = new HashMap<>();
-								int offset = 0;
-								for (final FieldNode field : this.visitor.localSyntheticFields.get(invocation.owner)) {
+								final Map<String, Integer> fieldNameOffsets = new HashMap<>();
+								final AtomicInteger offset = new AtomicInteger();
+								final Collection<FieldNode> localFields = this.visitor.localFields.get(invocation.owner);
+								for (final FieldNode field : localFields) {
 									final FieldEntry fieldEntry = new FieldEntry(
 											constructorEntry.getParent(), field.name, new TypeDescriptor(field.desc)
 									);
 
-									if (invokedParams.contains(syntheticFieldsByParam.inverse().get(fieldEntry))) {
-										fieldOffsets.put(fieldEntry, offset++);
+									if (
+											(field.access & ACC_SYNTHETIC) == 0
+												||
+												invokedParams
+												.contains(syntheticFieldsByParam.inverse().get(fieldEntry))
+									) {
+										fieldNameOffsets.put(field.name, offset.getAndIncrement());
 									}
 								}
 
@@ -143,7 +155,7 @@ public class ParamLocalClassLinkIndexingService implements JarIndexerService, Op
 																field.getParent(), getter.name,
 																new MethodDescriptor(getter.desc)
 															),
-															getter.maxLocals + fieldOffsets.get(field)
+															getter.maxLocals + fieldNameOffsets.get(field.getSimpleName())
 													);
 
 													this.linkedFakeLocalsByParam.put(invokerParam, fakeLocal);

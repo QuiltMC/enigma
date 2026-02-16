@@ -17,14 +17,17 @@ public class ParamLocalClassLinks {
 	}
 
 	static Object weirdToString(String param) {
-		final Object[] os = new Object[0];
+		class Dummy { }
+
+		final Dummy os = new Dummy();
+		// final Object[] os = new Object[0];
 
 		return new Object() {
-			final String nonSynthetic = getString();
+			// final String nonSynthetic = getString();
 
 			@Override
 			public String toString() {
-				return O.toString() + os.toString() + param + this.nonSynthetic;
+				return O.toString() + os.toString() + param/* + this.nonSynthetic*/;
 			}
 		};
 	}
@@ -40,10 +43,11 @@ public class ParamLocalClassLinks {
 
 	static int max(int left, int right) {
 		class IntGetter {
-			final int ignored;
+			// final int ignored;
+			// final Object ignored;
 
-			IntGetter(int ignored) {
-				this.ignored = ignored;
+			IntGetter(/*int ignored*/) {
+				// this.ignored = ignored;
 			}
 
 			int left() {
@@ -56,9 +60,9 @@ public class ParamLocalClassLinks {
 		}
 
 		if (left > right) {
-			return new IntGetter(right).left();
+			return new IntGetter(/*right*/).left();
 		} else {
-			return new IntGetter(left).right();
+			return new IntGetter(/*left*/).right();
 		}
 	}
 
@@ -79,6 +83,17 @@ public class ParamLocalClassLinks {
 		System.out.println(last);
 
 		return o;
+	}
+
+	static Object moreLocalsToStringSimple(String left, String right) {
+		final Object first = new Object();
+		return new Object() {
+			final Object nonSynthetic = new Object();
+			@Override
+			public String toString() {
+				return first + left + right + this.nonSynthetic;
+			}
+		};
 	}
 
 	class InnerNamedInstance { }

@@ -31,6 +31,7 @@ class ParamLocalClassLinkingVisitor extends ClassVisitor implements Opcodes {
 	final Map<String, Multimap<MethodNode, FieldNode>> localSyntheticFieldsByGetterByOwner = new HashMap<>();
 	// this just tracks the order in which the fields appear
 	final Multimap<String, FieldNode> localSyntheticFields = ArrayListMultimap.create();
+	final Multimap<String, FieldNode> localFields = ArrayListMultimap.create();
 
 	private String className;
 	private boolean classIsLocal;
@@ -62,8 +63,14 @@ class ParamLocalClassLinkingVisitor extends ClassVisitor implements Opcodes {
 
 	@Override
 	public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
+		final var node = new FieldNode(access, name, descriptor, signature, value);
+
+		if (this.classIsLocal) {
+			this.localFields.put(this.className, node);
+		}
+
 		if (this.classIsLocal && (access & ACC_SYNTHETIC) != 0 && (access & ACC_STATIC) == 0) {
-			final var node = new FieldNode(access, name, descriptor, signature, value);
+			// final var node = new FieldNode(access, name, descriptor, signature, value);
 			this.localSyntheticFieldsByDescByNameByOwner
 					.computeIfAbsent(this.className, Utils::createHashMap)
 					.computeIfAbsent(name, Utils::createHashMap)

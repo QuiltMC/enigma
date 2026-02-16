@@ -22,16 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public final class ParamLocalClassLinksTest {
 	private static final Path JAR = TestUtil.obfJar("param_local_class_links");
 
-	private static final ClassEntry OUTER_CLASS = TestEntryFactory.newClass("a");
-	private static final ClassEntry TO_STRING_OF_ANON_CLASS = TestEntryFactory
-			.newInnerClass(OUTER_CLASS, "1");
-	private static final ClassEntry WEIRD_TO_STRING_ANON_CLASS = TestEntryFactory
-			.newInnerClass(OUTER_CLASS, "2");
-	private static final ClassEntry WITH_VISIBLE_PARAM_ANON_CLASS = TestEntryFactory
-			.newInnerClass(OUTER_CLASS, "3");
-	private static final ClassEntry MAX_LOCAL_CLASS = TestEntryFactory
-			.newInnerClass(OUTER_CLASS, "a");
-	public static final String PROFILE =
+	private static final String PROFILE =
 			"""
 			{
 				"services": {
@@ -49,27 +40,55 @@ public final class ParamLocalClassLinksTest {
 			}\
 			""".formatted(ParamParamLocalClassFieldProposalService.ID, ParamLocalClassLinkIndexingService.ID);
 
-	private final EnigmaProject project;
+	private static final ClassEntry OUTER_CLASS = TestEntryFactory.newClass("a");
+	private static final ClassEntry TO_STRING_OF_ANON_CLASS = TestEntryFactory
+			.newInnerClass(OUTER_CLASS, "1");
+	private static final ClassEntry WEIRD_TO_STRING_ANON_CLASS = TestEntryFactory
+			.newInnerClass(OUTER_CLASS, "2");
+	private static final ClassEntry WITH_VISIBLE_PARAM_ANON_CLASS = TestEntryFactory
+			.newInnerClass(OUTER_CLASS, "3");
+	private static final ClassEntry MORE_LOCALS_TO_STRING_ANON_CLASS = TestEntryFactory
+			.newInnerClass(OUTER_CLASS, "4");
+	private static final ClassEntry MAX_LOCAL_CLASS = TestEntryFactory
+			.newInnerClass(OUTER_CLASS, "a");
+	public static final MethodDescriptor TO_STRING_DESC = new MethodDescriptor("()Ljava/lang/String;");
 
-	private ParamLocalClassLinksTest() throws IOException {
-		this.project = Enigma.builder()
-			.setProfile(EnigmaProfile.parse(new StringReader(PROFILE)))
-			.build()
-			.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
+	private static EnigmaProject openProject() {
+		try {
+			return Enigma.builder()
+				.setProfile(EnigmaProfile.parse(new StringReader(PROFILE)))
+				.build()
+				.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Test
-	void test() {
+	void toStringOf() {
 		final LocalVariableEntry toStringOfParam = new LocalVariableEntry(
 				new MethodEntry(OUTER_CLASS, "a", new MethodDescriptor("(Ljava/lang/String;)Ljava/lang/Object;")),
 				0
 		);
 
 		final LocalVariableEntry fakeLocal = new LocalVariableEntry(
-				new MethodEntry(TO_STRING_OF_ANON_CLASS, "toString", new MethodDescriptor("()Ljava/lang/String;")),
+				new MethodEntry(TO_STRING_OF_ANON_CLASS, "toString", TO_STRING_DESC),
 				1
 		);
 
-		assertEquals(toStringOfParam, this.project.getRepresentative(fakeLocal));
+		assertEquals(toStringOfParam, openProject().getRepresentative(fakeLocal));
+	}
+
+	@Test
+	void weirdToString() {
+		final LocalVariableEntry weirdToStringParam = new LocalVariableEntry(
+				new MethodEntry(OUTER_CLASS, "b", new MethodDescriptor("(Ljava/lang/String;)Ljava/lang/Object;")),
+				0
+		);
+
+		final LocalVariableEntry fakeLocal = new LocalVariableEntry(
+				new MethodEntry(WEIRD_TO_STRING_ANON_CLASS, "toString", TO_STRING_DESC),
+				1
+		);
 	}
 }

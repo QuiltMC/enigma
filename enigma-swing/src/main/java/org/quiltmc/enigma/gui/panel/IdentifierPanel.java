@@ -152,10 +152,12 @@ public class IdentifierPanel {
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.reference.entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method_descriptor"), me.getDesc().toString());
 			} else if (this.reference.entry instanceof LocalVariableEntry obfLocal) {
-				final LocalVariableEntry effectiveObfLocal = ((EnigmaProjectImpl) this.gui.getController().getProject())
-						.getParamLocalClassLinkIndexingService()
-						.map(service -> service.getLinkedParam(obfLocal))
-						.orElse(obfLocal);
+				// DEBUG
+				// final LocalVariableEntry effectiveObfLocal = ((EnigmaProjectImpl) this.gui.getController().getProject())
+				// 		.getParamLocalClassLinkIndexingService()
+				// 		.map(service -> service.getLinkedParam(obfLocal))
+				// 		.orElse(obfLocal);
+				final LocalVariableEntry effectiveObfLocal = obfLocal;
 
 				final LocalVariableEntry effectiveDeobfLocal = project.getRemapper().deobfuscate(effectiveObfLocal);
 
